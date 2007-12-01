@@ -340,7 +340,11 @@ public class Page extends PageFlowSceneElement implements SaveCookie {
     private class PageContentChangeListener implements ChangeListener {
 
         public void stateChanged(ChangeEvent arg0) {
-            pc.updatePageItems(getInstance());
+            if( pc.getView().isShowing()){  //Don't do anything except let PFC know that the graph is dirty if the graph is not showing.
+                pc.setGraphDirty();
+            } else {
+                pc.updatePageItems(getInstance());
+            }
         }
     }
 

@@ -47,6 +47,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.editor.JSFConfigEditorContext;
@@ -93,7 +94,6 @@ public class PageFlowController {
 
     private PageFlowView view;
     private JSFConfigModel configModel;
-    private final Collection<FileObject> webFiles;
     private DataObject configDataObj;
     private final Map<NavigationCase, NavigationCaseEdge> navCase2NavCaseEdge = new WeakHashMap<NavigationCase, NavigationCaseEdge>();
     private final Map<NavigationRule, String> navRule2String = new WeakHashMap<NavigationRule, String>();
@@ -122,14 +122,19 @@ public class PageFlowController {
         //  Project project = FileOwnerQuery.getOwner(configFile);
         //        webFolder = project.getProjectDirectory().getFileObject(DEFAULT_DOC_BASE_FOLDER);
         webFolder = PageFlowView.getWebFolder(configFile);
+        webFiles = setupWebFiles(webFolder);
+    }
+    private Collection<FileObject> webFiles;
+
+    private Collection<FileObject> setupWebFiles(FileObject webFolder) {
+        Collection<FileObject> myWebFiles;
         if (webFolder == null) {
             ifNecessaryShowNoWebFolderDialog();
-
-
-            webFiles = new LinkedList<FileObject>();
+            myWebFiles = new LinkedList<FileObject>();
         } else {
-            webFiles = getAllProjectRelevantFilesObjects();
+            myWebFiles = getAllProjectRelevantFilesObjects();
         }
+        return myWebFiles;
     }
 
     protected void ifNecessaryShowNoWebFolderDialog() {
@@ -173,7 +178,7 @@ public class PageFlowController {
     }
     private PropertyChangeListener pcl;
     private FileChangeListener fcl;
-    
+
     //    private ComponentListener cl;
     public void registerListeners() {
         if (pcl == null) {
@@ -182,15 +187,15 @@ public class PageFlowController {
                 configModel.addPropertyChangeListener(pcl);
             }
         }
-        
+
         FileObject myWebFolder = getWebFolder();
         if (fcl == null) {
             fcl = new WebFolderListener(this);
             if (myWebFolder != null) {
                 try {
                     FileSystem fileSystem = myWebFolder.getFileSystem();
-                    myWebFolder.getFileSystem().addFileChangeListener(fcl);
-                    
+                    fileSystem.addFileChangeListener(fcl);
+
                 } catch (FileStateInvalidException ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -202,14 +207,14 @@ public class PageFlowController {
      * Unregister any listeners.
      */
     public void unregisterListeners() {
-        
+
         if (pcl != null) {
             if (configModel != null) {
                 configModel.removePropertyChangeListener(pcl);
             }
             pcl = null;
         }
-        
+
         FileObject myWebFolder = getWebFolder();
         if (fcl != null && myWebFolder != null) {
             try {
@@ -219,13 +224,51 @@ public class PageFlowController {
             }
         }
     }
-    
-    void flushEventQueue() {
-        if( pcl != null ){
-            if ( pcl instanceof FacesModelPropertyChangeListener) {
-                ((FacesModelPropertyChangeListener)pcl).flushEvents();
-            }
+
+    void flushGraphIfDirty() {
+
+        if (isFilesDirty) {
+            webFiles = setupWebFiles(webFolder);
+            isFilesDirty = false;
         }
+        if (isGraphDirty) {
+            if (isWellFormed) {
+                EventQueue.invokeLater(new Runnable() {
+
+                    public void run() {
+                        view.removeUserMalFormedFacesConfig(); // Does clear graph take care of this?
+                        setupGraph();
+                    }
+                });
+            } else {
+                EventQueue.invokeLater(new Runnable() {
+
+                    public void run() {
+                        view.clearGraph();
+                        view.warnUserMalFormedFacesConfig();
+                    }
+                });
+
+            }
+            isGraphDirty = false;
+        }
+    }
+    private boolean isWellFormed = true;
+    private boolean isGraphDirty = false;
+    private boolean isFilesDirty = false;
+
+    protected void setGraphDirtyWellFormed(boolean isWellFormed) {
+        isGraphDirty = true;
+        this.isWellFormed = isWellFormed;
+    }
+    
+    protected void setGraphDirty() {
+        isGraphDirty = true;
+    }
+
+    protected void setFilesDirty() {
+        this.isFilesDirty = true;
+        isGraphDirty = true;
     }
 
     public boolean isCurrentScope(Scope scope) {
@@ -287,8 +330,6 @@ public class PageFlowController {
         view.validateGraph();
     }
     private static final String CASE_STRING = "case";
-
-
 
     private int getNewCaseNumber(NavigationRule navRule) {
         Collection<String> caseOutcomes = new HashSet<String>();
@@ -404,8 +445,7 @@ public class PageFlowController {
         }
         otherFacesConfigListener = null;
     }
-    
-    
+
     protected void releaseGraphInfo() {
         /* This listener is only created when it was a All_FACES scope */
         if (otherFacesConfigListener != null) {

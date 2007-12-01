@@ -11,11 +11,7 @@ package org.netbeans.modules.web.jsf.navigation;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Queue;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -36,8 +32,7 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
 
     public PageFlowController pfc;
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.web.jsf.navigation");
-    //    public boolean refactoringIsLikely = false;
-    //    PageFlowUtilities pfUtil = PageFlowUtilities.getInstance();
+    
     public FacesModelPropertyChangeListener(PageFlowController pfc) {
         this.pfc = pfc;
     }
@@ -48,67 +43,28 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
         record.setSourceMethodName("propertyChangeEvent.");
         record.setParameters(new Object[]{ev.getPropertyName(), ev.getOldValue(), ev.getNewValue()});
         LOGGER.log(record);
-//        PFModelEvent modelEvent = new PFModelEvent(ev.getPropertyName(), ev.getNewValue(), ev.getOldValue(), ev.getPropagationId(), ev);
-       
-        if( pfc.getView().isShowing()) {
-            shouldSetupGraphRun = true;
-            runEventShowing(ev);
+        if (pfc.getView().isShowing()) {
+            runEventNow(ev);
         } else {
-            saveEvent(ev);
-            //runEvent(ev);
+            setGraphDirty(ev);
         }
 
     }
     
-    Collection<PropertyChangeEvent> waitEvents = new Vector<PropertyChangeEvent>(); 
-    
-    private final void saveEvent(PropertyChangeEvent ev){
-         waitEvents.add(ev);
-         //waitModelEvents.add(ev);    
-    }
-    
-    protected final void flushEvents() {
-        shouldSetupGraphRun = true;
-        for( PropertyChangeEvent ev : waitEvents){
-            runEvent(ev);
-        }
-        waitEvents.clear();
-    }
+    private boolean isWellFormed = true;
+    private final void setGraphDirty(PropertyChangeEvent ev) {
+        if (!(ev.getPropertyName().equals("managed-bean-class")) && !(ev.getPropertyName().equals("managed-bean-name")) && !(ev.getNewValue() == State.NOT_SYNCED)) {
 
-
-    private boolean shouldSetupGraphRun = true;
-    protected final void runEvent(final PropertyChangeEvent ev) {
-        if (ev.getOldValue() == State.NOT_WELL_FORMED) {
-            EventQueue.invokeLater(new Runnable() {
-
-                public void run() {
-                    pfc.getView().removeUserMalFormedFacesConfig(); // Does clear graph take care of this?
-                    setupGraph(ev);
-                }
-            });
-            shouldSetupGraphRun = false;
-        } else if (ev.getNewValue() == State.NOT_WELL_FORMED) {
-            EventQueue.invokeLater(new Runnable() {
-
-                public void run() {
-                    PageFlowView view = pfc.getView();
-                    view.clearGraph();
-                    view.warnUserMalFormedFacesConfig();
-                }
-            });
-            shouldSetupGraphRun = true;
-        } else if (ev.getPropertyName().equals("managed-bean-class") || ev.getPropertyName().equals("managed-bean-name") || ev.getNewValue() == State.NOT_SYNCED) {
-        /* Do Nothing */
-        } else {
-            // System.out.println("Did not catch this event.: " + ev.getPropertyName());
-            if ( shouldSetupGraphRun ) {
-                setupGraphInAWTThread(ev);
-                shouldSetupGraphRun = false;
+            if (ev.getOldValue() == State.NOT_WELL_FORMED) {
+                isWellFormed = true;
+            } else if (ev.getNewValue() == State.NOT_WELL_FORMED) {
+                isWellFormed = false;
             }
+            pfc.setGraphDirtyWellFormed(isWellFormed);
         }
     }
     
-    protected final void runEventShowing(final PropertyChangeEvent ev) {
+    protected final void runEventNow(final PropertyChangeEvent ev) {
         if (ev.getOldValue() == State.NOT_WELL_FORMED) {
             EventQueue.invokeLater(new Runnable() {
 
@@ -178,6 +134,7 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
             // System.out.println("Did not catch this event.: " + ev.getPropertyName());
             setupGraphInAWTThread(ev);
         }
+
     }
 
     private final void replaceFromOutcomeEventHandler(NavigationCase navCase, String oldName, String newName) {
@@ -187,7 +144,7 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
         view.validateGraph();
     }
 
-    //    private final void replaceFromViewIdToViewIdEventHandler(String oldName, String newName, boolean possibleRefactor) {
+//    private final void replaceFromViewIdToViewIdEventHandler(String oldName, String newName, boolean possibleRefactor) {
     private final void replaceFromViewIdToViewIdEventHandler(PropertyChangeEvent ev, Object source, String oldName, String newName) {
 
         LOGGER.entering("\n\nFacesModelPropertyChangeListener", "replaceFromViewIdToViewIdEventHandler");
@@ -216,6 +173,7 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
         return;
         }
         } */
+
         if (oldPageNode != null && !pfc.isPageInAnyFacesConfig(oldName) && !isNewPageLinked) {
             LOGGER.finest("CASE 1: OldPage is not null and does not exist in the facesconfig anymore.  This is the firsttime the new page is linked.");
             final FileObject fileObj = pfc.getWebFolder().getFileObject(newName);
@@ -229,9 +187,11 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
                 } catch (DataObjectNotFoundException ex) {
                     Exceptions.printStackTrace(ex);
                 }
+
             } else {
                 pfc.changeToAbstractNode(oldPageNode, newName);
             }
+
         } else if (oldPageNode == null && !pfc.isPageInAnyFacesConfig(oldName)) {
             //This means that oldPage has already been removed.  Do nothing.
             LOGGER.finest("CASE 2: OldPage was removed before.");
@@ -256,15 +216,19 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
                 NavigationCaseEdge newCaseEdge = null;
                 NavigationCaseEdge oldCaseEdge = null;
                 //                oldCaseEdge = pfc.getCase2Node(thisNavCase);
-                oldCaseEdge = pfc.removeNavCase2NavCaseEdge(thisNavCase);
-                newCaseEdge = new NavigationCaseEdge(pfc.getView().getPageFlowController(), thisNavCase);
+                oldCaseEdge =
+                        pfc.removeNavCase2NavCaseEdge(thisNavCase);
+                newCaseEdge =
+                        new NavigationCaseEdge(pfc.getView().getPageFlowController(), thisNavCase);
                 pfc.putNavCase2NavCaseEdge(navCase, newCaseEdge);
                 navigationCaseEdgeEventHandler(newCaseEdge, oldCaseEdge);
             }
+
         } else {
             LOGGER.finest("CASE 5: Setup Graph");
             setupGraph(ev);
         }
+
         LOGGER.exiting("FacesModelPropertyChangeListener", "replaceFromViewIdToViewIdEventHandler");
     }
     private static final String NEWLINE = "\n";
@@ -288,9 +252,11 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
             pfc.putNavCase2NavCaseEdge(myNewCase, newCaseEdge);
         //            pfc.createEdge(newCaseEdge);
         }
+
         if (myOldCase != null) {
             oldCaseEdge = pfc.removeNavCase2NavCaseEdge(myOldCase);
         }
+
         navigationCaseEdgeEventHandler(newCaseEdge, oldCaseEdge);
     //        view.validateGraph();
     }
@@ -307,16 +273,20 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
                 fromPage = pfc.createPage(newCaseEdge.getFromViewId());
                 view.createNode(fromPage, null, null);
             }
+
             if (toPage == null) {
                 toPage = pfc.createPage(newCaseEdge.getToViewId());
                 view.createNode(toPage, null, null);
             }
+
             pfc.createEdge(newCaseEdge);
         }
+
         if (oldCaseEdge != null) {
             view.removeEdge(oldCaseEdge);
             removePageIfNoReference(oldCaseEdge.getToViewId());
         }
+
         view.validateGraph();
     }
 
@@ -335,6 +305,7 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
                         pfc.removePageName2Page(pageNode, true);
                         view.validateGraph();
                     }
+
                 }
             }
         }
@@ -350,13 +321,16 @@ public class FacesModelPropertyChangeListener implements PropertyChangeListener 
             for (NavigationCase navCase : cases) {
                 navigationCaseEventHandler(null, navCase);
             }
+
             removePageIfNoReference(fromPage);
 
         //Must account for cases being removed with in the rule.
         }
+
         if (myNewRule != null) {
             pfc.putNavRule2String(myNewRule, FacesModelUtility.getFromViewIdFiltered(myNewRule));
         }
+
     }
 
     private final void setupGraphInAWTThread(final PropertyChangeEvent ev) {

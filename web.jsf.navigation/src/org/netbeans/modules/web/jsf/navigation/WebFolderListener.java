@@ -29,9 +29,7 @@ import org.openide.util.Exceptions;
 public class WebFolderListener extends FileChangeAdapter {
 
     private final PageFlowController pfc;
-    private final PageFlowView view;
     private final FileObject webFolder;
-//    private final PageFlowUtilities pfUtil = PageFlowUtilities.getInstance();
 
     /**
      * This web folder listener listens to any modifications related to WebFolder and updates the faces config accordingly.
@@ -40,7 +38,6 @@ public class WebFolderListener extends FileChangeAdapter {
     public WebFolderListener(PageFlowController pfc) {
         super();
         this.pfc = pfc;
-        view = pfc.getView();
         webFolder = pfc.getWebFolder();
     }
     private final Collection<? extends PageContentModelProvider> impls = PageFlowController.getPageContentModelProviders();
@@ -58,6 +55,11 @@ public class WebFolderListener extends FileChangeAdapter {
 
     @Override
     public void fileDataCreated(FileEvent fe) {
+        if( !pfc.getView().isShowing() ) {
+            pfc.setFilesDirty();
+            return;
+        }
+        
         final FileObject fileObj = fe.getFile();
         EventQueue.invokeLater(new Runnable() {
 
@@ -67,13 +69,13 @@ public class WebFolderListener extends FileChangeAdapter {
         });
     }
 
-    @Override
-    public void fileChanged(FileEvent fe) {
-        //            System.out.println("File Changed Event: " + fe);
-    }
 
     @Override
     public void fileDeleted(FileEvent fe) {
+        if( !pfc.getView().isShowing() ) {
+            pfc.setFilesDirty();
+            return;
+        }
         final FileObject fileObj = fe.getFile();
         EventQueue.invokeLater(new Runnable() {
 
@@ -85,6 +87,10 @@ public class WebFolderListener extends FileChangeAdapter {
 
     @Override
     public void fileRenamed(FileRenameEvent fe) {
+        if( !pfc.getView().isShowing() ) {
+            pfc.setFilesDirty();
+            return;
+        }
         /* fileRenamed should not modify the faces-config because it should
          * be up to refactoring to do this. If that is the case, FacesModelPropertyChangeListener
          * should reload it.
@@ -99,12 +105,8 @@ public class WebFolderListener extends FileChangeAdapter {
         });
     }
 
-    @Override
-    public void fileFolderCreated(FileEvent fe) {
-        //            fe.getFile().addFileChangeListener( fcl);
-    }
-
     private void fileDeletedEventHandler(FileObject fileObj) {
+        PageFlowView view = pfc.getView();
         if (!pfc.removeWebFile(fileObj)) {
             return;
         }
@@ -129,7 +131,7 @@ public class WebFolderListener extends FileChangeAdapter {
     }
 
     private void fileCreatedEventHandler(FileObject fileObj) {
-
+        PageFlowView view = pfc.getView();
 
         if (!isKnownFileEvent(fileObj)) {
 
@@ -202,7 +204,7 @@ public class WebFolderListener extends FileChangeAdapter {
 
             renameFile(fileObj, oldDisplayName, newDisplayName);
         }
-        view.validateGraph();
+        pfc.getView().validateGraph();
     }
 
     private void renameFolder(FileObject folderObject, String oldFolderName, String newFolderName) {
@@ -220,7 +222,7 @@ public class WebFolderListener extends FileChangeAdapter {
     }
 
     private void renameFile(FileObject fileObj, String oldDisplayName, String newDisplayName) {
-
+        PageFlowView view = pfc.getView();
         Page oldNode = pfc.getPageName2Page(oldDisplayName);
         Page abstractNode = pfc.getPageName2Page(newDisplayName); // I know I do this twice, but I am trying to keep it less confusing.
         if (oldNode == null && abstractNode != null) {
