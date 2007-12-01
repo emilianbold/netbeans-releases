@@ -44,9 +44,6 @@ import org.jruby.lexer.yacc.ISourcePosition;
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.GsfTokenId;
 import org.netbeans.api.gsf.OffsetRange;
-import org.netbeans.api.gsf.ParserFile;
-import org.netbeans.api.gsf.ParserResult;
-import org.netbeans.api.gsf.SourceFileReader;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
@@ -54,17 +51,14 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
-import org.netbeans.modules.ruby.Formatter;
-import org.netbeans.modules.ruby.RubyParser;
 import org.netbeans.modules.ruby.hints.spi.AstRule;
 import org.netbeans.modules.ruby.hints.spi.Description;
+import org.netbeans.modules.ruby.hints.spi.EditList;
 import org.netbeans.modules.ruby.hints.spi.Fix;
 import org.netbeans.modules.ruby.hints.spi.HintSeverity;
+import org.netbeans.modules.ruby.hints.spi.PreviewableFix;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
-import org.netbeans.spi.gsf.DefaultParseListener;
-import org.netbeans.spi.gsf.DefaultParserFile;
-import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -216,7 +210,7 @@ public class ConvertBlockType implements AstRule {
         return false;
     }
 
-    private static class ConvertTypeFix implements Fix {
+    private static class ConvertTypeFix implements PreviewableFix {
 
         private final CompilationInfo info;
         private final boolean convertToDo;
@@ -265,148 +259,115 @@ public class ConvertBlockType implements AstRule {
             return NbBundle.getMessage(ConvertBlockType.class, key);
         }
 
+
+        public boolean canPreview() {
+            return true;
+        }
+
         public void implement() throws Exception {
+            getEditList().apply();
+        }
+        
+        public EditList getEditList() throws Exception {
+            BaseDocument doc = (BaseDocument) info.getDocument();
+            EditList edits = new EditList(doc);
+
             ISourcePosition pos = node.getPosition();
             int startOffset = pos.getStartOffset();
+            int originalEnd = pos.getEndOffset();
             int endOffset;
             if (convertToDo) {
-                endOffset = pos.getEndOffset() - 1;
+                endOffset = originalEnd - 1;
             } else if (convertToBrace) {
-                endOffset = pos.getEndOffset() - 3;
+                endOffset = originalEnd - 3;
             } else {
-                endOffset = pos.getEndOffset();
+                endOffset = originalEnd;
             }
-            BaseDocument doc = (BaseDocument) info.getDocument();
             if (startOffset > doc.getLength() - 1 || endOffset > doc.getLength()) {
-                return;
+                return edits;
             }
 
             if (convertToDo) {
                 if (doc.getText(startOffset, 1).charAt(0) == '{' && doc.getText(endOffset, 1).charAt(0) == '}') {
-                    try {
-                        String end;
-                        if (endOffset > 0 && !Character.isWhitespace(doc.getText(endOffset - 1, 1).charAt(0))) {
-                            end = " end"; // NOI18N
-                        } else {
-                            end = "end"; // NOI18N
-                        }
-                        doc.atomicLock();
-                        doc.replace(endOffset, 1, end, null); // NOI18N
-                        int newEnd = endOffset + end.length() - 1;
+                    String end;
+                    if (endOffset > 0 && !Character.isWhitespace(doc.getText(endOffset - 1, 1).charAt(0))) {
+                        end = " end"; // NOI18N
+                    } else {
+                        end = "end"; // NOI18N
+                    }
+                    edits.replace(endOffset, 1, end, false, 0); // NOI18N
 
-                        boolean spaceBefore = true;
-                        boolean spaceAfter = true;
-                        int newStart = startOffset;
-                        if (startOffset > 0) {
-                            String s = doc.getText(startOffset - 1, 3);
-                            spaceBefore = Character.isWhitespace(s.charAt(0));
-                            spaceAfter = Character.isWhitespace(s.charAt(2));
-                        }
-                        String insert = "do";
-                        if (!spaceAfter) {
-                            insert = insert + " ";
-                        }
-                        if (!spaceBefore) {
-                            insert = " " + insert;
-                            newStart++;
-                            newEnd++;
-                        }
-                        doc.replace(startOffset, 1, insert, null); // NOI18N
-                        newEnd += insert.length() - 1;
-                        newEnd++;
+                    boolean spaceBefore = true;
+                    boolean spaceAfter = true;
+                    if (startOffset > 0) {
+                        String s = doc.getText(startOffset - 1, 3);
+                        spaceBefore = Character.isWhitespace(s.charAt(0));
+                        spaceAfter = Character.isWhitespace(s.charAt(2));
+                    }
+                    String insert = "do";
+                    if (!spaceAfter) {
+                        insert = insert + " ";
+                    }
+                    if (!spaceBefore) {
+                        insert = " " + insert;
+                    }
+                    edits.replace(startOffset, 1, insert, false, 1); // NOI18N
 
-                        int blockBegin = newStart;
-                        if (expand) {
-                            Node newNode = updateParse(doc, blockBegin);
-                            if (newNode != null) {
-                                expand(doc, newNode, newStart, newEnd);
-                            }
-                        } else if (collapse) {
-                            Node newNode = updateParse(doc, blockBegin);
-                            if (newNode != null) {
-                                collapse(doc, newNode, newStart, newEnd);
-                            }
-                        }
-                    } finally {
-                        doc.atomicUnlock();
+                    if (expand) {
+                        expand(edits, doc, node, startOffset, originalEnd);
+                    } else if (collapse) {
+                        collapse(edits, doc, node, startOffset, originalEnd);
                     }
                 }
             } else if (convertToBrace) {
                 if (doc.getText(startOffset, 2).equals("do") && endOffset <= doc.getLength() - 3 && // NOI18N
                         doc.getText(endOffset, 3).equals("end")) { // NOI18N
-                    try {
-                        // TODO - make sure there is whitespace next to these tokens!!!
-                        // They are optional around {} but not around do/end!
-                        
-                        AstPath path = new AstPath(AstUtilities.getRoot(info), node);
-                        assert path.leaf() == node;
-                        boolean parenIsNecessary = isArgParenNecessary(path, doc);
-                        
-                        doc.atomicLock();
-                        doc.replace(endOffset, 3, "}", null); // NOI18N
-                        doc.replace(startOffset, 2, "{", null); // NOI18N
-                        int newStart = startOffset;
-                        int newEnd = endOffset + 3;
-                        newEnd -= (3 - 1);
-                        newEnd -= (2 - 1);
+                    // TODO - make sure there is whitespace next to these tokens!!!
+                    // They are optional around {} but not around do/end!
+                    AstPath path = new AstPath(AstUtilities.getRoot(info), node);
+                    assert path.leaf() == node;
+                    boolean parenIsNecessary = isArgParenNecessary(path, doc);
 
-                        if (parenIsNecessary) {
-                            // Insert parentheses
-                            assert AstUtilities.isCall(path.leafParent());
-                            OffsetRange range = AstUtilities.getCallRange(path.leafParent());
-                            int insertPos = range.getEnd();
-                            // Check if I should remove a space; e.g. replace "foo arg" with "foo(arg"
-                            if (Character.isWhitespace(doc.getText(insertPos, 1).charAt(0))) {
-                                doc.replace(insertPos, 1, "(", null); // NOI18N
-                            } else {
-                                doc.insertString(insertPos, "(", null); // NOI18N
-                                newStart++;
-                                newEnd++;
-                            }
-                            
-                            // Insert )
-                            doc.insertString(newStart-1, ")", null); // NOI18N
-                            newStart++;
-                            newEnd++;
-                            
-                            if (!Character.isWhitespace(doc.getText(newStart-1, 1).charAt(0))) {
-                                doc.insertString(newStart-1, " ", null); // NOI18N
-                                newStart++;
-                                newEnd++;
-                            }
+                    edits.replace(endOffset, 3, "}", false, 0); // NOI18N
+                    edits.replace(startOffset, 2, "{", false, 0); // NOI18N
+
+                    if (parenIsNecessary) {
+                        // Insert parentheses
+                        assert AstUtilities.isCall(path.leafParent());
+                        OffsetRange range = AstUtilities.getCallRange(path.leafParent());
+                        int insertPos = range.getEnd();
+                        // Check if I should remove a space; e.g. replace "foo arg" with "foo(arg"
+                        if (Character.isWhitespace(doc.getText(insertPos, 1).charAt(0))) {
+                            edits.replace(insertPos, 1, "(", false, 1); // NOI18N
+                        } else {
+                            edits.replace(insertPos, 0, "(", false, 1); // NOI18N
                         }
 
-                        if (expand) {
-                            Node newNode = updateParse(doc, newStart);
-                            if (newNode != null) {
-                                expand(doc, newNode, newStart, newEnd);
-                            }
-                        } else if (collapse) {
-                            Node newNode = updateParse(doc, newStart);
-                            if (newNode != null) {
-                                collapse(doc, newNode, newStart, newEnd);
-                            }
+                        // Insert )
+                        edits.replace(startOffset-1, 0, ")", false, 2); // NOI18N
+
+                        if (!Character.isWhitespace(doc.getText(startOffset-1, 1).charAt(0))) {
+                            edits.replace(startOffset-1, 0, " ", false, 3); // NOI18N
                         }
-                    } finally {
-                        doc.atomicUnlock();
+                    }
+
+                    if (expand) {
+                        expand(edits, doc, node, startOffset, originalEnd);
+                    } else if (collapse) {
+                        collapse(edits, doc, node, startOffset, originalEnd);
                     }
                 }
             } else {
                 assert collapse || expand;
-                try {
-                    // TODO - make sure there is whitespace next to these tokens!!!
-                    // They are optional around {} but not around do/end!
-                    doc.atomicLock();
 
-                    if (expand) {
-                        expand(doc, node, startOffset, endOffset);
-                    } else {
-                        collapse(doc, node, startOffset, endOffset);
-                    }
-                } finally {
-                    doc.atomicUnlock();
+                if (expand) {
+                    expand(edits, doc, node, startOffset, endOffset);
+                } else {
+                    collapse(edits, doc, node, startOffset, endOffset);
                 }
             }
+
+            return edits;
         }
         
         /** JRuby sometimes has wrong AST offsets. For example, for 
@@ -471,8 +432,7 @@ public class ConvertBlockType implements AstRule {
         }
 
         /** NOTE - document should be under atomic lock when this is called */
-        private void expand(BaseDocument doc, Node node, int startOffset, int endOffset) {
-            assert doc.isAtomicLock();
+        private void expand(EditList edits, BaseDocument doc, Node node, int startOffset, int endOffset) {
             assert endOffset <= doc.getLength();
 
             // Look through the document and find the statement separators (;);
@@ -510,7 +470,6 @@ public class ConvertBlockType implements AstRule {
                 // The following is the WRONG way to do it...
                 // I've gotta use a ModificationResult instead!
                 try {
-                    doc.atomicLock();
                     // Process offsets from back to front such that I can
                     // modify the document without worrying that the other offsets
                     // need to be adjusted
@@ -523,53 +482,51 @@ public class ConvertBlockType implements AstRule {
                             continue;
                         }
                         prev = offset;
-                        doc.insertString(offset, "\n", null); // NOI18N
+                        
+                        // Back up over any whitespace
+                        int whitespaces = 0;
+                        for (int i = 1; i < 5 && offset-i > 0; i++) {
+                            char c = doc.getText(offset-i, 1).charAt(0);
+                            if (Character.isWhitespace(c)) {
+                                whitespaces++;
+                            } else {
+                                break;
+                            }
+                        }
+
+                        if (whitespaces > 0) {
+                            edits.replace(offset-whitespaces, whitespaces, "\n", false, 4); // NOI18N
+                        } else {
+                            edits.replace(offset, 0, "\n", false, 4); // NOI18N
+                        }
                         added++;
                     }
 
                     // Remove trailing semicolons
-                    int newEnd = endOffset + added;
-                    for (int offset = startOffset; offset < newEnd && offset < doc.getLength(); offset = Utilities.getRowEnd(doc, offset) + 1) {
-                        int lineEnd = Utilities.getRowLastNonWhite(doc, offset);
-                        if (lineEnd != -1 && doc.getText(lineEnd, 1).charAt(0) == ';') {
-                            doc.remove(lineEnd, 1);
-                            added--;
-                            newEnd--;
+                    for (int offset : offsets) {
+                        char c = doc.getText(offset-1, 1).charAt(0);
+                        if (c == ';') {
+                            edits.replace(offset-1, 1, null, false, 5);
+                        } else if (Character.isWhitespace(c)) {
+                            c = doc.getText(offset-2, 1).charAt(0);
+                            if (c == ';') {
+                                edits.replace(offset-2, 1, null, false, 5);
+                            }
                         }
                     }
+                    int newEnd = endOffset + added;
 
                     // Remove trailing whitespace
-                    stripTrailingWhitespace(doc, startOffset, newEnd);
-                    
-                    // Finally, reformat
-                    new Formatter().reindent(doc, startOffset, newEnd, null, null);
+                    // TODO
+
                 } catch (BadLocationException ble) {
                     Exceptions.printStackTrace(ble);
-                } finally {
-                    doc.atomicUnlock();
                 }
             }
-        }
-        
-        /** Remove trailing whitespace for lines in the given range */
-        private void stripTrailingWhitespace(BaseDocument doc, int startOffset, int endOffset) throws BadLocationException {
-            startOffset = Utilities.getRowStart(doc, startOffset);
-            endOffset = Utilities.getRowEnd(doc, endOffset);
-            for (int offset = endOffset; offset > startOffset; offset = Utilities.getRowStart(doc, offset)-1 ) {
-                if (Utilities.isRowEmpty(doc, offset) || (Utilities.isRowWhite(doc, offset))) {
-                    continue;
-                }
-                
-                int spaceBegin = Utilities.getRowLastNonWhite(doc, offset)+1;
-                int rowEnd = Utilities.getRowEnd(doc, offset); // Should always equal offset? Check on Windows with \r\n stuff
-                if (spaceBegin < rowEnd) {
-                    doc.remove(spaceBegin, rowEnd-spaceBegin);
-                }
-            }
+            edits.format();
         }
 
-        private void collapse(BaseDocument doc, Node node, int startOffset, int endOffset) {
-            assert doc.isAtomicLock();
+        private void collapse(EditList edits, BaseDocument doc, Node node, int startOffset, int endOffset) {
             assert endOffset <= doc.getLength();
 
             // Look through the document and find the statement separators (;);
@@ -609,12 +566,10 @@ public class ConvertBlockType implements AstRule {
                 // The following is the WRONG way to do it...
                 // I've gotta use a ModificationResult instead!
                 try {
-                    doc.atomicLock();
                     // Process offsets from back to front such that I can
                     // modify the document without worrying that the other offsets
                     // need to be adjusted
                     int prev = -1;
-                    int added = 0;
                     //int posDelta; // Amount to add to offsets to account for our
                     for (int i = offsets.size() - 1; i >= 0; i--) {
                         int offset = offsets.get(i);
@@ -657,53 +612,37 @@ public class ConvertBlockType implements AstRule {
                             prevChar = doc.getText(segmentOffset-1, 1).charAt(0);
                         }
                         if (prevChar == '|' || (isDoBlock && (segmentOffset <= startOffset + 3) || (!isDoBlock && (segmentOffset <= startOffset + 1)))) {
-                            doc.replace(segmentOffset, segmentLength, " ", null); // NOI18N
-                            added += 1 - segmentLength;
+                            edits.replace(segmentOffset, segmentLength, " ", false, 4);
                         } else {
-                            doc.replace(segmentOffset, segmentLength, "; ", null); // NOI18N
-                            added += 2 - segmentLength;
-                        }
-                    }
-
-                    // Remove final ";" prior to "end"
-                    endOffset += added;
-                    if (isDoBlock) {
-                        // Back up over "end"
-                        endOffset -= 3;
-                    } else {
-                        // Back up over "}
-                        endOffset -= 1;
-                    }
-                    // Back up over "; "
-                    endOffset -= 2;
-                    if (endOffset < doc.getLength()) {
-                        char c = doc.getText(endOffset, 1).charAt(0);
-                        if (c == ';') {
-                            doc.remove(endOffset, 1);
+                            doc.getText(segmentOffset, 5);
+                            // Don't insert semicolons before "end"
+                            TokenSequence<? extends TokenId> rts = LexUtilities.getRubyTokenSequence(doc, segmentOffset);
+                            rts.move(segmentOffset);
+                            boolean isEnd = false;
+                            while (rts.moveNext()) {
+                                Token tk = rts.token();
+                                TokenId tkid = tk.id();
+                                if (tkid == RubyTokenId.END || tkid == RubyTokenId.RBRACE) {
+                                    isEnd = true;
+                                    break;
+                                } else if (tkid != RubyTokenId.WHITESPACE) {
+                                    break;
+                                }
+                            }
+                            if (isEnd) {
+                              edits.replace(segmentOffset, segmentLength, " ", false, 4);
+                            } else {
+                              edits.replace(segmentOffset, segmentLength, "; ", false, 4);
+                            }
                         }
                     }
                 } catch (BadLocationException ble) {
                     Exceptions.printStackTrace(ble);
-                } finally {
-                    doc.atomicUnlock();
                 }
             }
+            edits.format();
         }
 
-        private Node updateParse(BaseDocument doc, int blockBegin) {
-            Node root = reparse(info.getFileObject(), doc);
-            if (root != null) {
-                // Find the same node
-                AstPath path = new AstPath(root, blockBegin);
-                Node leaf = path.leaf();
-                if (leaf != null && leaf.nodeId == NodeTypes.ITERNODE) {
-                    return leaf;
-                }
-            }
-
-            return null;
-        }
-        
         /** Determine whether parentheses are necessary around the call
          * corresponding to a block call.
          * For example, in 
@@ -745,51 +684,6 @@ public class ConvertBlockType implements AstRule {
 
         public boolean isInteractive() {
             return false;
-        }
-
-        // TODO - move to AstUtilities
-        public static Node reparse(final FileObject fo, final BaseDocument doc) {
-            ParserFile file = new DefaultParserFile(fo, null, false);
-
-            if (file == null) {
-                return null;
-            }
-
-            List<ParserFile> files = Collections.singletonList(file);
-            SourceFileReader reader = new SourceFileReader() {
-
-                public CharSequence read(ParserFile file) throws IOException {
-
-                    if (doc == null) {
-                        return "";
-                    }
-
-                    try {
-                        return doc.getText(0, doc.getLength());
-                    } catch (BadLocationException ble) {
-                        IOException ioe = new IOException();
-                        ioe.initCause(ble);
-                        throw ioe;
-                    }
-                }
-
-                public int getCaretOffset(ParserFile fileObject) {
-                    return -1;
-                }
-            };
-
-            DefaultParseListener listener = new DefaultParseListener();
-            new RubyParser().parseFiles(files, listener, reader);
-
-            ParserResult result = listener.getParserResult();
-
-            if (result == null) {
-                return null;
-            }
-
-            Node root = AstUtilities.getRoot(result);
-
-            return root;
         }
     }
 }
