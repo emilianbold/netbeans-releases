@@ -43,6 +43,7 @@ package org.netbeans.modules.groovy.editor;
 import java.util.ArrayList;
 import java.util.List;
 
+import java.util.StringTokenizer;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
@@ -72,6 +73,7 @@ import org.openide.util.Exceptions;
  * 
  * @author Tor Norbye
  * @author Martin Adamek
+ * @author Gopalakrishnan Sankaran
  */
 public class Formatter implements org.netbeans.api.gsf.Formatter {
     private boolean isGspDocument;
@@ -224,6 +226,25 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
         }
 
         return balance;
+    }
+
+    // This method will indent lines beginning with * by 1 space
+    private boolean isJavaDocComment(BaseDocument doc, int offset, int endOfLine) 
+            throws BadLocationException {
+        int pos = Utilities.getRowFirstNonWhite(doc, offset);
+        if(pos != -1) {
+            Token<?extends GsfTokenId> token = LexUtilities.getToken(doc, pos);
+            if(token != null) {
+                TokenId id = token.id();
+                if(id == GroovyTokenId.BLOCK_COMMENT) {
+                    String text = doc.getText(offset, endOfLine - offset);
+                    if(text.trim().startsWith("*")) {
+                        return true;
+                    }                        
+                }
+            }
+        }        
+        return false;
     }
 
     private boolean isInLiteral(BaseDocument doc, int offset) throws BadLocationException {
@@ -613,7 +634,13 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
                 } else {
                     indent = balance * indentSize + hangingIndent + initialIndent;
                 }
-
+                
+                int endOfLine = Utilities.getRowEnd(doc, offset) + 1;
+                
+                if (isJavaDocComment(doc,offset, endOfLine)) {
+                    indent ++;
+                }
+                
                 if (indent < 0) {
                     indent = 0;
                 }
@@ -628,7 +655,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
                     offsets.add(Integer.valueOf(offset));
                 }
 
-                int endOfLine = Utilities.getRowEnd(doc, offset) + 1;
+
 
                 if (lineBegin != -1) {
                     balance += getTokenBalance(doc, lineBegin, endOfLine, true);
