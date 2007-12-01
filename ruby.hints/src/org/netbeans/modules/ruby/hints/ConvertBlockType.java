@@ -614,22 +614,28 @@ public class ConvertBlockType implements AstRule {
                         if (prevChar == '|' || (isDoBlock && (segmentOffset <= startOffset + 3) || (!isDoBlock && (segmentOffset <= startOffset + 1)))) {
                             edits.replace(segmentOffset, segmentLength, " ", false, 4);
                         } else {
-                            doc.getText(segmentOffset, 5);
-                            // Don't insert semicolons before "end"
+                            // Don't insert semicolons before "end" or around parens in "if (true)" etc.
+                            boolean skipSemicolon = false;
+                            //if (segmentOffset > 0) {
+                            //    Token tkr = LexUtilities.getToken(doc, segmentOffset-1);
+                            //    if (tkr != null && tkr.id() == RubyTokenId.RPAREN) {
+                            //        skipSemicolon = true;
+                            //    }
+                            //}
                             TokenSequence<? extends TokenId> rts = LexUtilities.getRubyTokenSequence(doc, segmentOffset);
                             rts.move(segmentOffset);
-                            boolean isEnd = false;
                             while (rts.moveNext()) {
                                 Token tk = rts.token();
                                 TokenId tkid = tk.id();
-                                if (tkid == RubyTokenId.END || tkid == RubyTokenId.RBRACE) {
-                                    isEnd = true;
+                                if (tkid == RubyTokenId.END || tkid == RubyTokenId.RBRACE ||
+                                        tkid == RubyTokenId.LPAREN) {
+                                    skipSemicolon = true;
                                     break;
                                 } else if (tkid != RubyTokenId.WHITESPACE) {
                                     break;
                                 }
                             }
-                            if (isEnd) {
+                            if (skipSemicolon) {
                               edits.replace(segmentOffset, segmentLength, " ", false, 4);
                             } else {
                               edits.replace(segmentOffset, segmentLength, "; ", false, 4);

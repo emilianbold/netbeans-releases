@@ -274,9 +274,9 @@ public class ConvertBlockTypeTest extends HintTestBase {
                 "Convert {}-block to a do/end-block\n");
     }
 
-    //public void testHintFix23() throws Exception {
-    //    applyHint(this, new ConvertBlockType(), "testfiles/convertblocks11.rb",
-    //            "x.each do^ |foo|",
-    //            "Convert do/end-block to a {}-block, and collapse to a single line");
-    //}
+    public void testHintFix23() throws Exception {
+        applyHint(this, new ConvertBlockType(), "testfiles/convertblocks11.rb",
+                "x.each do^ |foo|",
+                "Convert do/end-block to a {}-block, and collapse to a single line");
+    }
 }

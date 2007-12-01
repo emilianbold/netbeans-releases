@@ -1,1 +1,1 @@
-x.each { |foo| if (true) puts foo end }
+x.each { |foo| if (true); puts foo end }
