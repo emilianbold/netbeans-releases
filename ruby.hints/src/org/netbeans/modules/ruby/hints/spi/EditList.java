@@ -41,7 +41,6 @@ package org.netbeans.modules.ruby.hints.spi;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
@@ -56,9 +55,14 @@ import org.openide.util.Exceptions;
  * A list of edits to be made to a document.  This should probably be combined with the many
  * other similar abstractions in other classes; ModificationResult, Diff, etc.
  * 
+ * @todo Take out the offsetOrdinal number, and manage that on the edit list side
+ *  (order of entry for duplicates should insert a new ordinal)
+ * @todo Make formatting more explicit; allow to add a "format" region edit. These must
+ *   be sorted such that they don't overlap after edits and are all applied last.
+ * 
  * @author Tor Norbye
  */
-public class EditList implements Iterable<Edit> {
+public class EditList {
     private BaseDocument doc;
     private List<Edit> edits;
     private boolean format;
@@ -77,10 +81,6 @@ public class EditList implements Iterable<Edit> {
         edits.add(new Edit(offset, removeLen, insertText, format, offsetOrdinal));
         
         return this;
-    }
-    
-    public Iterator<Edit> iterator() {
-        return edits.iterator();
     }
     
     public void applyToDocument(BaseDocument otherDoc/*, boolean narrow*/) {
