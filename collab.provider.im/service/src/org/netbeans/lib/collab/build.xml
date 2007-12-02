@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project basedir="../../../../" default="all" name="collab-service">
+    
+<property name="includefile" value="includes.xml"/>
+<import file="${includefile}"/>
+
+<target name="setup">
+    <mkdir dir="${dist}"/>
+    <mkdir dir="${apidocdir}"/>
+    <mkdir dir="${dist}/lib"/>
+</target>
+<target name="compile" depends="setup"> 
+    <javac debug="on" deprecation="on" source="1.5" srcdir="."
+           destdir="${dist}" 
+           includes="org/netbeans/lib/collab/**" >
+	<classpath>
+            <path refid="jso_jar"/>
+            <path refid="log4j_jar"/>
+        </classpath>
+        <compilerarg value="-Xlint:unchecked"/>
+        <compilerarg value="-Xlint:deprecation"/> 
+    </javac>
+</target>
+
+<target name="archive" depends="compile"> 
+    <jar jarfile="${dist}/lib/collab-service.jar" > 
+        <fileset dir="${dist}" includes="org/netbeans/lib/collab/**"/>
+    </jar>
+</target>
+
+<target name="apidoc" depends="compile" >
+
+    <javadoc destdir="${apidocdir}" overview="org/netbeans/lib/collab/package.html" packagenames="org.netbeans.lib.collab" sourcepath="." windowtitle="Netbeans Collab Project - Service API" breakiterator="yes" > 
+        <classpath>
+            <path refid="jso_jar"/>
+        </classpath>
+    </javadoc>
+
+    <copy todir="${apidocdir}/org/netbeans/lib/collab">
+        <fileset dir="org/netbeans/lib/collab" 
+                 includes="*.gif,dtd.html,application-iim-poll.html,README"/>
+    </copy> 
+    <mkdir dir="${apidocdir}/sample"/>
+    <copy todir="${apidocdir}/sample">
+      <fileset dir="org/netbeans/lib/collab/sample"/>
+    </copy>
+
+</target>
+
+<target name="jsoext" depends="setup"> 
+    <!-- make Sun JSO extensions javadocs -->
+    <mkdir dir="${dist}/jsoext"/>
+    <javadoc destdir="${dist}/jsoext" packagenames="org.netbeans.jso.iface.x.muc,org.netbeans.jso.iface.x.event,org.netbeans.jso.iface.x.pubsub" sourcepath="." windowtitle="Netbeans JSO extensions - Javadoc">
+        <classpath>
+            <path refid="jso_jar"/>
+        </classpath>
+    </javadoc>
+</target>
+
+<target name="all" depends="apidoc,archive" />
+
+<target name="clean">
+    <delete dir="${dist}/org/netbeans/lib/collab"/>
+    <delete file="${dist}/lib/collab-service.jar"/>
+</target>
+
+</project>

@@ -98,11 +98,8 @@ made subject to such option by the copyright holder.
             </public-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/collablet-api.jar</runtime-relative-path>
-                <binary-origin>../collablet/dist/collablet-api.jar</binary-origin>
+                <binary-origin>collablet/dist/collablet-api.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
 </project>
-
-
-

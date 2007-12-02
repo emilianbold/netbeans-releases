@@ -47,12 +47,12 @@ made subject to such option by the copyright holder.
 
     <target name="compile-lib" depends="init">
         <echo message="Building collablet API..."/>
-        <ant dir="../collablet" target="jar" inheritAll="false"/>
+        <ant dir="collablet" target="jar" inheritAll="false"/>
     </target>
 
     <target name="clean-lib">
         <echo message="Cleaning collablet API..."/>
-        <ant dir="../collablet" target="clean" inheritAll="false"/>
+        <ant dir="collablet" target="clean" inheritAll="false"/>
     </target>
 
     <target name="compile" depends="compile-lib,projectized-common.compile"/>
@@ -62,7 +62,7 @@ made subject to such option by the copyright holder.
     <target name="netbeans-extra" depends="init">
         <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
         <copy todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext">
-          <fileset dir="../collablet/dist">
+          <fileset dir="collablet/dist">
            <include name="collablet-api.jar"/>
           </fileset>
         </copy>

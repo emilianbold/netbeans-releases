@@ -1,0 +1,49 @@
+README
+------
+
+XMPP implementation of im service API's
+----------------------------------------
+
+CollaborationSessionProvider Implementations
+---------------------------------------------
+1. org.netbeans.lib.collab.xmpp.XMPPSessionProvider 
+	This is the standard implementation. 
+	ServiceURL format -  xmpp-host[:xmpp-port]
+2. org.netbeans.lib.collab.xmpp.XMPPSecureSessionProvider
+	This is an SSL enabled implementation. 
+	ServiceURL format -  xmpp-host[:xmpp-port]
+3. org.netbeans.lib.collab.xmpp.ProxySessionProvider
+	This implementation supports http, https, socks proxies. 
+
+	General syntax of serviceURL
+
+	protocol://proxy-host[proxy-port]?attributes
+
+	The default port is 5222.  The attributes are provided using the usual URL query syntax.  Available attributes are 
+
+	service=xmpp-host[:xmpp-port]. This is a mandatory attribute
+	authname=name. This is the proxy credential
+	password=password. This is the proxy credential
+	keepalive=seconds. keepalive period in seconds
+
+	Socks proxy example
+	socks://sprox.example.com?service=jabber.org&authname=bob&password=secret
+
+4. org.netbeans.lib.collab.xmpp.XMPPComponentSessionProvider
+	This implementation Supports Jabber Componet protocol(jabber:component)
+	ServiceURL format -  xmpp-host[:xmpp-port]
+5. org.netbeans.lib.collab.xmpp.XMPPSecureComponentSessionProvider
+	This is an SSL enabled Component protocol implementation.
+	ServiceURL format -  xmpp-host[:xmpp-port]
+
+
+Known Issues
+------------
+
+1.  CollaborationSessionProvider.getSession(String str, org.netbeans.lib.collab.CollaborationSessionListener CollaborationSessionListener) is not implemented
+2. CollaborationSessionProvider.getSession(java.security.Principal principal, org.netbeans.lib.collab.CollaborationSessionListener collaborationSessionListener) is not implemented
+3. PersonalStoreService.search(int searchType, String pattern, String entryType) - if entryType is CONTACT or GROUP and if searchType is SEARCHTYPE_EQUALS then UID_ATTRIBUTE is searched for, else NAME_ATTRIBUTE is searched for. The supported entry types are CONFERENCE, CONTACT, GROUP, GATEWAY
+4. PersonalStoreService.search(int searchType, String pattern, String entryType, int attribute) - if entryType is CONTACT or GROUP, then UID_ATTRIBUTE and MAIL_ATTRIBUTE of these entries can be searched with SEARCHTYPE_EQUALS only
+5. PersonalStoreService.searchPrincipals(int searchType,String pattern) - if searchType is SEARCHTYPE_EQUALS then UID_ATTRIBUTE is searched for, else NAME_ATTRIBUTE is searched for.
+6. PersonalstoreService.searchPrincipals(int searchType,String pattern,int attribute) - UID_ATTRIBUTE and MAIL_ATTRIBUTE can be searched with SEARCHTYPE_EQUALS only
+7. Conference.invite(int accessLevel, Message message, InviteMessageStatusListener listener) - Desired accessLevel to the invitee is not assigned. 

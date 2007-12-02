@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project basedir="src" default="all" name="collab-service">
+
+<target name="all">
+    <ant antfile="org/netbeans/lib/collab/build.xml"/>
+</target>
+
+<target name="clean">
+    <ant antfile="org/netbeans/lib/collab/build.xml" target="clean"/>
+</target>
+
+</project>

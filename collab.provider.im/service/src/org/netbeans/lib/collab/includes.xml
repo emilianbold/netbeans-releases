@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project basedir="../../../../" default="all" name="collab-service-includes">
+
+<property name="libdir" value="${basedir}/../../im/external"/>
+<property name="dist" value="${basedir}/../dist"/>
+<property name="apidocdir" value="${dist}/apidoc"/>
+
+<path id="jso_jar">
+  <pathelement location="${libdir}/jso-core-0.12.5.jar"/>
+  <pathelement location="${libdir}/jso-sasl-0.12.5.jar"/>
+  <pathelement location="${libdir}/jso-tls-0.12.5.jar"/>
+  <pathelement location="${libdir}/jso-x-core-0.12.5.jar"/>
+  <pathelement location="${libdir}/jso-x-disco-0.12.5.jar"/>
+  <pathelement location="${libdir}/jso-x-fneg-0.12.5.jar"/>
+  <pathelement location="${libdir}/jso-x-si-0.12.5.jar"/>
+  <pathelement location="${libdir}/jso-x-sift-0.12.5.jar"/>
+  <pathelement location="${libdir}/jso-x-xdata-0.12.5.jar"/>
+  <pathelement location="${libdir}/jso-x-info-0.12.5.jar"/>
+  <pathelement location="${libdir}/jaxen-core-1.0.jar"/>
+  <pathelement location="${libdir}/saxpath-1.0.jar"/>
+</path>
+
+<path id="xp_jar">
+  <pathelement location="${libdir}/xp-0.5.jar"/>
+</path>
+
+<path id="log4j_jar">
+  <pathelement location="${libdir}/log4j-1.2.8.jar"/>
+</path>
+</project>

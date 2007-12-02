@@ -1,0 +1,417 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Author" content="Jacques Belissent">
+   <title>Netbeans Collab Service API - Overview</title>
+</head>
+<body>
+
+<h1>Netbeans Collab Service API</h1>
+&nbsp;
+<h2>Overview</h2>
+
+The collab service is the communication layer allowing netbeans users to 
+communicate in real-time, by providing access to Conference, Presence, Data Streaming, 
+News and Notification services.  
+
+The Collab Service API may also be used directly in order to build application
+leveraging these services.  Possible applications include:
+<ul>
+<li>portal channels displaying contact lists and allowing 
+real-time communication.
+</li>
+<li>presence status display and initiation of conferences from other Web-based
+collaboration applications, such as web-based email, calendar, or address books.
+</li>
+<li>desktop-based instant messaging clients
+</li>
+<li>handheld-based instant messaging clients (through a gateway)
+</li>
+<li>leverage presence status in server applications in order to notify end-users
+optimally.
+</li>
+</ul>
+
+
+<h3>Available services</h3>
+
+<ul>
+<li>
+<a href="#presence">The Presence Service</a>, which lets users access other
+user's availability, and update one's availability.</li>
+
+<li>
+<a href="#conference">The Conference Service</a>, real-time text conferencing between
+two or more users</li>
+
+<li>
+<a href="#bulletin">The News Service</a>, a bulletin board service
+with instant delivery of new, modified and deleted postings</li>
+
+<li>
+<a href="#message">The Notification Service</a>, an acknowledged alerting/messaging
+service.</li>
+
+<li>
+<a href="#personal">The Personal Store Service</a>, a way to store, retrieve and 
+manage application configuration information, such as contact lists, persistent
+subscriptions, and application profiles.</li>
+
+<li>
+<a href="#streaming">The Content Streaming Service</a>, which let users negotiate
+the use of a data streaming protocol, and use it to transfer files, or other
+data.</li>
+</ul>
+
+
+<h3>Architecture</h3>
+
+<img src="org/netbeans/lib/collab/overview.gif">
+
+
+<br>&nbsp;
+<h2>How to use the API</h2>
+&nbsp;
+<h3>Creating a Session</h3>
+A session is a service-independent authentication handle.&nbsp; It is created
+by passing credentials and having them validated by the services infrastructure.
+<p>In order to create sessions, an application must first instantiate 
+<tt>CollaborationSessionFactory</tt>.  Then the factory can be used to create 
+one or more session objects.  Example:
+
+<blockquote>
+<pre>
+CollaborationSessionFactory fac = new CollaborationSessionFactory();
+
+// create a session listener for asynchronous session events
+CollaborationSessionListener listener = new MyCollaborationSessionListener();
+
+// create a session
+Session session = fac.getSession("myserver.example.com", "fred@example.com",
+                                 "secret", listener);
+</pre>
+</blockquote>
+
+
+<br>&nbsp;
+
+<h3>Accessing services</h3>
+
+<p>Once a Session is created, individual services can&nbsp; be accessed
+using the corresponding accessor and initialization methods.  So for example with the Conference
+service:
+<blockquote>
+<pre>
+// access the Conference Service</tt>
+ConferenceService cService = session.getConferenceService();
+
+// and do not forget to initialize it with your listener
+ConferenceServiceListener csListener = new MyConferenceServiceListener();
+cService.initialize(csListener);
+</pre>
+</blockquote>
+
+<br>&nbsp;
+<p><a NAME="conference"></a>
+<h3>
+The Conference Service</h3>
+Once the ConferenceService object has been created, a conference can be
+initiated by inviting one or more other users.&nbsp; For Example:
+<blockquote>
+<pre>
+// create a ConferenceListener for asynchronous chat events
+// (e.g. messages).
+MyConferenceListener cListener = new MyConferenceListener();
+// create the conference.</tt>
+Conference c = cService.setupConference(cListener, Conference.MANAGE)</tt>
+</pre>
+</blockquote>
+To invite users to this conference, one needs to setup an invite message
+and call invite using this message.
+
+<blockquote>
+<pre>
+// create invite message </tt>
+Message newMsg = c.createInviteMessage(); </tt>
+newMsg.addRecipient("roscoe@example.com"); </tt>
+newMsg.addRecipient("yolanda@example.com"); </tt>
+MessagePart part = newMsg.newPart(); </tt>
+part.setContent("Let's talk"); </tt>
+newMsg.addPart(part); </tt>
+ </tt>
+// send the invite </tt>
+e.invite(newMsg); </tt>
+ </tt>
+</pre>
+</blockquote>
+	
+
+One can also join an already existing public conference, by using its well-known
+address:
+<blockquote>
+<pre>
+<tt>// join public conference conf123@example.com</tt>
+Conference c = cService.join("conf123@example.com", cListener);
+</tt>
+</pre></blockquote>
+Once a <tt>Conference</tt> object is created, it can be used to build and
+send messages, as if it was a private conference.
+<br>&nbsp;
+<p><a NAME="bulletin"></a>
+<h3>
+The News Service</h3>
+To use the news functionality, one needs to create a <tt>NewsChannel</tt>
+object for each news channel of interest, as follows
+<blockquote>
+<pre>
+// create a news channel listener for asynchronous events
+(e.g. messages added or removed).</tt>
+// note: MyNewsChannelListener implements the NewsChannelListener
+interface.</tt>
+MyNewsChannelListener bbListener = new MyNewsChannelListener();
+// subscribe to the news channel.&nbsp; news channel messages
+are received</tt>
+// asynchronously, through the listener.&nbsp; One may also pass
+a null</tt>
+NewsChannel&nbsp; bb = nService.getNewsChannel("hugo@example.com",
+bbListener)</tt>
+</pre></blockquote>
+
+<p><br>Once created, the <tt>NewsChannel</tt> object can be used to generate,
+add or remove messages.
+<blockquote><pre>
+// generate a new message</tt>
+Message message = bb.createMessage();
+// add content to message</tt>
+// publish it</tt>
+bb.addMessage(message);
+</pre></blockquote>
+
+<p><br>To find out which news channels are available, use the <tt>listNewsChannels</tt>
+method:
+<blockquote><pre>
+// get a Collection of news channels.
+java.util.Collection bbList = session.listNewsChannels();
+// loop through the list until you find the one you want
+if (bbList != null) {
+    java.util.Iterator bbIter = bbList.iterator();
+    while (bbIter.hasNext()) {
+        NewsChannel bb = (NewsChannel)bbIter.next();
+        if (bb.getDestination.equals("theOneIWant")) {
+            break;
+        }
+    }
+}
+// subscribe to it to get messages</tt>
+bb.subscribe(bbListener);
+<br>&nbsp;
+<br>&nbsp;</blockquote>
+Finally, it is also possible to create new news channels, as follows:
+<blockquote><tt>bb = session.newNewsChannel("hugo@example.com", bbListener,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Conference.PUBLISH);</blockquote>
+<a NAME="message"></a>
+<h3>
+The Notification Service</h3>
+To send a message, first create one
+<blockquote><tt>// start a message to noah@example.com</tt>
+Message message = nSession.createMessage("noah@example.com");</blockquote>
+fill it with appropriate content and headers,
+<blockquote><tt>message.setHeader("Subject", "just a demo");
+MessagePart part = message.newPart();
+String content = "the body of the message";
+part.setContentType("text/plain");
+part.setContent(content.bytes());</blockquote>
+create a message status listener if you expect status or replies,
+<blockquote><tt>MyMessageStatusListener mListener = new MyMessageStatusListener();</blockquote>
+and send it:
+<blockquote><tt>session.sendMessage(message, mListener);</blockquote>
+
+<p><br>Messages can also be received.&nbsp; This is done through the <tt>NotificationSessionListener.onMessage</tt>
+method.&nbsp; Received messages may be acknowledged or replied-to through
+the <tt>MessageHandler</tt> argument to <tt>onMessage</tt>.
+<br>&nbsp;
+<blockquote><tt>// mark a message read.</tt>
+handler.sendStatus(MessageStatus.READ);
+// reply to a message</tt>
+replyMessage = nSession.createMessage();
+...</tt>
+handler.sendReply(replayMessage);
+</blockquote>
+
+
+
+<br>&nbsp;
+<p><a NAME="presence"></a>
+<h3>The Presence Service</h3>
+To use the presence service, first create a <tt>PresenceSession</tt>
+using <tt>CollaborationSession.accessService</tt>
+<p>
+To access the presence information of a user of the service, use the fetch
+or subscribe methods
+<blockquote>
+<pre>
+// subscribe to hugo's presentity</tt>
+<tt>// Note: MyPresenceInfoListener implements PresenceInfoListener</tt>
+MyPresenceInfoListener piListener = new MyPresenceInfoListener();
+java.util.Date expiration =</tt>
+PresenceSubscription subs = pSession.subscribe("hugo@example.com",
+piListener, expiration);
+...</tt>
+// unsubscribe</tt>
+subs.cancel();
+</pre></blockquote>
+
+<p>
+Presence information is received asynchronously by the presence info listener
+in the form of an XML String.  This String may be parsed using the 
+PresenceHelper class.  The following prints out presence info.
+<blockquote>
+<pre>PresenceHelper ph = new PresenceHelper(pi /* XML string */);
+for (Iterator i = ph.getTuples().iterator(); i.hasNext() ; ) {
+    PresenceTuple t = (PresenceTuple)i.next();
+    System.out.println(t.destination + " " + t.status + " " + t.note);
+}
+</pre></blockquote>
+
+
+<p>To publish presence information updates, use the publish method.
+The argument is an XML String which can be genberated with the
+help of the PresenceHelper class.
+
+<blockquote>
+<pre>
+PresenceTuple pt = new PresenceTuple("hugo@example.com",
+                                     PresenceSession.STATUS_AWAY);
+PresenceHelper ph = new PresenceHelper();
+ph.addTuple(pt);
+pSession.publish(ph.toString());
+</pre>
+</blockquote>
+
+<br>&nbsp;
+<p><a NAME="personal"></a>
+<h3>
+The Personal Store Service</h3>
+To use the Personal Store service, first create a <tt>PersonalStoreSession</tt>
+using <tt>CollaborationSession.accessService</tt>
+<p>
+To retrieve the contact list of the user who owns the current session,
+retrieve the contact folders
+<blockquote>
+<pre>
+Collection folders = psSession.getFolders(PersonalStoreFolder.CONTACT_FOLDER);
+</pre>
+</blockquote>
+
+For each folder <tt>f</tt>the 
+list of contacts can be obtained as follows:
+<blockquote>
+<pre>
+Collection entries = f.getEntries();
+System.out.println(" - " + f.getDisplayName());
+for (Iterator j = entries.iterator() ; j.hasNext() ;) {
+    PersonalContact c = (PersonalContact)j.next();
+    System.out.println("Found " + c.getDisplayName() + " in " + f.getDisplayName());
+}
+</pre>
+</blockquote>
+
+
+<h2>Using an alternate session provider</h2>
+
+The instructions listed above will let you create an IM session, 
+similar to a session that would be created by an XMPP/Jabber client.  
+However, it is possible to create other types of session, by using
+alternative session providers.  Several provider implementation are bundle 
+with the API.  Others can be built and used by the application (e.g. netbeans)
+in order to leverage protocols not provided by default.
+
+<p>The Collab Service Factory can be told to use a specific session provider,
+ by setting the
+<tt>org.netbeans.lib.collab.provider</tt> system property to the class name 
+of the provider yopu want
+to use.  
+For instance, com.example.SessionProvider being a Session
+Provider, one would call:
+
+<blockquote>
+<pre>
+System.setProperty(CollaborationSessionFactory.systemProperty, "com.example.SessionProvider");
+</pre></blockquote>
+
+The Collab Service API includes two alternative session providers:
+<ul>
+<li><tt>org.netbeans.lib.collab.xmpp.XMPPSecureSessionProvider</tt>: connects to the 
+XMPP service using the legacy SSL mode (as opposed to usign startTLS).
+</li>
+
+<li><tt>org.netbeans.lib.collab.xmpp.ProxySessionProvider</tt>: 
+proxies XMPP traffic through a HTTP or SOCKS V5 proxy as specified using the service
+URL argument.
+</li>
+
+<li><tt>org.netbeans.lib.collab.xmpp.XMPPComponentSessionProvider</tt>: 
+authenticates to the jabber service as a jabber:component:accept component
+</li>
+
+<li><tt>org.netbeans.lib.collab.xmpp.XMPPSecureComponentSessionProvider</tt>: 
+same as above but using the old Jabber SSL.
+</li>
+
+<li><tt>org.netbeans.lib.collab.xmpp.httpbind.HTTPBindSessionProvider</tt>: 
+accesses a Jabber/XMPP service through a JEP-0124 gateway.
+</li>
+
+</ul>
+
+The following (outdated) block diagram shows relationships between 
+the various providers,
+the Collab Service API implementation, IM components, and custom application.
+<br>&nbsp;
+<img src="org/netbeans/lib/collab/alternate-providers.gif">
+
+
+<br>&nbsp;
+<h2>Sample programs</h2>
+
+These are a few simple but actual examples written with the Collab Service API.
+They are provided here for educational purposes only and should not be 
+used for other purposes.
+
+<ul>
+<li><b>Talk</b>, a simple command line talk utility using the conference
+service.  It allows the user to initiate conferences, invite users
+in conferences, be invited to conferences, and toggle between conferences.
+<br>
+source code: <a href="sample/Talk.java">Talk.java</a></li>
+
+<li><b>Watcher</b>, a simple command line utility allowing the users
+to keep track of the presence of other users.
+<br>
+source code: <a href="sample/Watcher.java">Watcher.java</a></li>
+
+<li><b>Alerter</b>, a simple command line utility which
+listens for incoming notifications
+<br>
+source code: <a href="sample/Alerter.java">Alerter.java</a></li>
+
+<li><b>News</b>, a simple command line utility to manage news channel:
+create a news channel, post new messages or remive existing messages.
+listens for incoming notifications
+<br>
+source code: <a href="sample/News.java">News.java</a></li>
+
+</ul>
+
+<h2>Default API Provider's documentation (XMPPSessionProvider)</h2>
+<a href=README> Default API Provider's documentation</a>
+
+</body>
+</html>
+
+
+
+
+
