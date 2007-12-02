@@ -75,8 +75,16 @@ public class ModuleLogicalViewTest extends TestBase {
         assertNotNull("found freeform-project-general.xsd", find(lvp, "ant/freeform/src/org/netbeans/modules/ant/freeform/resources/freeform-project-general.xsd"));
         assertNotNull("found FreeformProjectTest.java", find(lvp, "ant/freeform/test/unit/src/org/netbeans/modules/ant/freeform/FreeformProjectTest.java"));
         assertNull("did not find test/cfg-unit.xml", find(lvp, "ant/freeform/test/cfg-unit.xml"));
-        // XXX test that layer.xml is found under Original Files, not Sources
+        Node layer = find(lvp, "ant/freeform/src/org/netbeans/modules/ant/freeform/resources/layer.xml");
+        assertNotNull("Found layer", layer);
+        assertEquals("Sources is parent parent of the layer", "${src.dir}", layer.getParentNode().getParentNode().getName());
+        assertFalse("Has children: " + layer, layer.isLeaf());
+        DataObject obj = layer.getLookup().lookup(DataObject.class);
+        assertNotNull("There is a data object", obj);
+        Node origLayer = obj.getNodeDelegate();
+        assertFalse("Also has children", origLayer.isLeaf());
     }
+    
     
     public void testImportantFilesListening() throws Exception {
         Project p = generateStandaloneModule("module");

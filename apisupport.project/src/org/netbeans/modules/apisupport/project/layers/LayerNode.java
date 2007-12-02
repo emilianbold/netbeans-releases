@@ -68,24 +68,32 @@ import org.openide.filesystems.FileStatusListener;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MultiFileSystem;
+import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.loaders.Environment;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.Lookups;
 import org.openide.xml.XMLUtil;
 
 /**
  * Displays two views of a layer.
  * @author Jesse Glick
  */
-public final class LayerNode extends FilterNode {
+public final class LayerNode extends FilterNode implements Node.Cookie {
     
     public LayerNode(LayerUtils.LayerHandle handle) {
-        super(getDataNode(handle), new LayerChildren(handle));
+        this(getDataNode(handle), handle);
+    }
+    
+    LayerNode(Node delegate, LayerUtils.LayerHandle handle) {
+        super(delegate, new LayerChildren(handle));
     }
     
     private static Node getDataNode(LayerUtils.LayerHandle handle) {
@@ -96,6 +104,29 @@ public final class LayerNode extends FilterNode {
             assert false : e;
             return Node.EMPTY;
         }
+    }
+    
+    public static Environment.Provider createProvider() {
+        class EP implements Environment.Provider {
+            public Lookup getEnvironment(DataObject obj) {
+                Project p = FileOwnerQuery.getOwner(obj.getPrimaryFile());
+                if (p == null) {
+                    return Lookup.EMPTY;
+                }
+                LayerUtils.LayerHandle h = LayerUtils.layerForProject(p);
+                if (h == null) {
+                    return Lookup.EMPTY;
+                }
+                if (obj.getPrimaryFile().equals(h.getLayerFile())) {
+                    DataNode dn = new DataNode(obj, Children.LEAF);
+                    dn.setIconBaseWithExtension("org/netbeans/modules/apisupport/project/ui/resources/layerObject.gif"); // NOI18N
+                    LayerNode ln = new LayerNode(dn, h);
+                    return Lookups.singleton(ln);
+                }
+                return Lookup.EMPTY;
+            }
+        }
+        return new EP();
     }
     
     private static final class LayerChildren extends Children.Keys<LayerChildren.KeyType> {
