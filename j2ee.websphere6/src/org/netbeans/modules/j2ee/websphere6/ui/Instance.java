@@ -231,7 +231,7 @@ public class Instance {
     }
     
     public void setHttpPort(String adminPort) {
-        this.httpPort = httpPort;
+        this.httpPort = adminPort;
     }
     /**
      * An overriden version of the Object's toString() so that the
