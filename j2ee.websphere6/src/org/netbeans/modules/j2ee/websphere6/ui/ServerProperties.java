@@ -792,6 +792,9 @@ public class ServerProperties {
                     "TXT_ServerTypeLocal"))) {                         // NOI18N
                 Instance instance = (Instance) localInstancesCombo.
                         getSelectedItem();
+                if (instance == null) {
+                    return;
+                }
                 
                 // enable the local instances combo
                 localInstancesCombo.setEnabled(true);
@@ -938,19 +941,21 @@ public class ServerProperties {
         // get the selected local instance
         Instance instance = (Instance) localInstancesCombo.getSelectedItem();
         
-        // set the fields' values
-        domainPathField.setText(instance.getDomainPath());
-        hostField.setText(instance.getHost());
-        //portField.setValue(new Integer(instance.getPort()));
-        portField.setText(instance.getPort());
-        if(instantiatingIterator!=null) {
-            instantiatingIterator.setHost(instance.getHost());
-            instantiatingIterator.setPort(instance.getPort());
-            instantiatingIterator.setAdminPort(instance.getAdminPort());
-            instantiatingIterator.setConfigXmlPath(instance.getConfigXmlPath());
-            instantiatingIterator.setDefaultHostPort(instance.getDefaultHostPort());
-            instantiatingIterator.setDomainRoot(instance.getDomainPath());
-            instantiatingIterator.setServerName(instance.getName());
+        if (instance != null) {
+            // set the fields' values
+            domainPathField.setText(instance.getDomainPath());
+            hostField.setText(instance.getHost());
+            //portField.setValue(new Integer(instance.getPort()));
+            portField.setText(instance.getPort());
+            if(instantiatingIterator!=null) {
+                instantiatingIterator.setHost(instance.getHost());
+                instantiatingIterator.setPort(instance.getPort());
+                instantiatingIterator.setAdminPort(instance.getAdminPort());
+                instantiatingIterator.setConfigXmlPath(instance.getConfigXmlPath());
+                instantiatingIterator.setDefaultHostPort(instance.getDefaultHostPort());
+                instantiatingIterator.setDomainRoot(instance.getDomainPath());
+                instantiatingIterator.setServerName(instance.getName());
+            }
         }
     }
     /**
