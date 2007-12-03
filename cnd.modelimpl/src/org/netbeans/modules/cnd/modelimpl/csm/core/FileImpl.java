@@ -794,17 +794,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
     
     public void addDeclaration(CsmOffsetableDeclaration decl) {
-        _addDeclaration(decl);
-        // TODO: remove this dirty hack!
-	if( decl instanceof VariableImpl ) {
-            VariableImpl v = (VariableImpl) decl;
-	    if( isOfFileScope(v) ) {
-		v.setScope(this);
-	    }
-	}
-    }
-    
-    private void _addDeclaration(CsmOffsetableDeclaration decl) {
         CsmUID<CsmOffsetableDeclaration> uidDecl = RepositoryUtils.put(decl);
         try {
             declarationsLock.writeLock().lock();
@@ -812,6 +801,13 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         } finally {
             declarationsLock.writeLock().unlock();
         }
+        // TODO: remove this dirty hack!
+	if( decl instanceof VariableImpl ) {
+            VariableImpl v = (VariableImpl) decl;
+	    if( isOfFileScope(v) ) {
+		v.setScope(this);
+	    }
+	}
     }
     
     public static boolean isOfFileScope(VariableImpl v) {
