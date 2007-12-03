@@ -56,8 +56,6 @@ import org.netbeans.modules.j2ee.deployment.impl.ui.actions.*;
  */
 public class InstanceNode extends AbstractNode implements ServerInstance.StateListener {
     
-    private static int cursorChangeCounter = 0;
-    
     protected ServerInstance instance;
     
     private boolean running;

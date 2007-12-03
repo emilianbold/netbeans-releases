@@ -155,7 +155,6 @@ public class InstanceTargetXNode extends FilterXNode implements ServerInstance.S
     
     public static class InstanceTargetChildren extends Children {
         
-        private ServerTarget target;
         private Node lastDelegateTargetNode;
         
         public InstanceTargetChildren(Node original) {
