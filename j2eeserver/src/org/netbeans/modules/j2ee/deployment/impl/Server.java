@@ -128,7 +128,7 @@ public class Server implements Node.Cookie {
             DataObject dobj = DataObject.find(factoryinstance);
             InstanceCookie cookie = (InstanceCookie) dobj.getCookie(InstanceCookie.class);
             if (cookie == null) {
-                String msg = NbBundle.getMessage(Server.class, "MSG_FactoryFailed", name, cookie);
+                String msg = NbBundle.getMessage(Server.class, "MSG_FactoryFailed", name);
                 LOGGER.log(Level.SEVERE, msg);
                 factoryCls = null;
                 return;
