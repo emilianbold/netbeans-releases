@@ -42,7 +42,8 @@
 package org.netbeans.modules.cnd.highlight;
 
 import javax.swing.text.Document;
-import org.netbeans.modules.cnd.highlight.semantic.MarkOccurencesHighlighter;
+import org.netbeans.modules.cnd.highlight.semantic.MarkOccurrencesHighlighter;
+import org.netbeans.modules.cnd.highlight.semantic.SemanticHighlighter;
 import org.netbeans.modules.cnd.highlight.semantic.ifdef.*;
 import org.netbeans.spi.editor.highlighting.HighlightsLayer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
@@ -63,29 +64,28 @@ public class CppHighlightsLayerFactory implements HighlightsLayerFactory {
         return ich;
     }
 
-    public static MarkOccurencesHighlighter getMarkOccurencesHighlighter(Document doc) {
-        MarkOccurencesHighlighter ich = (MarkOccurencesHighlighter)doc.getProperty(MarkOccurencesHighlighter.class);
+    /*public static MarkOccurrencesHighlighter getMarkOccurencesHighlighter(Document doc) {
+        MarkOccurrencesHighlighter ich = (MarkOccurrencesHighlighter)doc.getProperty(MarkOccurrencesHighlighter.class);
         if (ich == null)
         {
-            doc.putProperty(MarkOccurencesHighlighter.class, ich = new MarkOccurencesHighlighter(doc));
+            doc.putProperty(MarkOccurrencesHighlighter.class, ich = new MarkOccurrencesHighlighter(doc));
         }
         return ich;
-    }
+    }*/
 
     public HighlightsLayer[] createLayers(Context context) {
-        // ugly temp code
         return InactiveCodeHighlighter.USE_MORE_SEMANTIC ? 
             new HighlightsLayer[] {
                 HighlightsLayer.create(
-                    InactiveCodeHighlighter.class.getName(), 
+                    SemanticHighlighter.class.getName(), 
                     ZOrder.SYNTAX_RACK.forPosition(2000),
                     true,
-                    getInactiveCodeHighlighter(context.getDocument()).getHighlightsBag()),
+                    SemanticHighlighter.getHighlightsBag(context.getDocument())),
                 HighlightsLayer.create(
-                    MarkOccurencesHighlighter.class.getName(), 
-                    ZOrder.CARET_RACK,
+                    MarkOccurrencesHighlighter.class.getName(), 
+                    ZOrder.CARET_RACK.forPosition(1000),
                     true,
-                    getMarkOccurencesHighlighter(context.getDocument()).getHighlightsBag()),
+                    MarkOccurrencesHighlighter.getHighlightsBag(context.getDocument())),
             } : 
             new HighlightsLayer[] {    
                 HighlightsLayer.create(

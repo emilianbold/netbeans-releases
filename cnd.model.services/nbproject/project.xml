@@ -33,6 +33,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.editor.lib2</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.6</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.filesystems</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -46,6 +55,14 @@
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>5.9.22</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.modules</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.4</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -83,6 +100,7 @@
                 <friend>org.netbeans.modules.cnd.refactoring</friend>
                 <package>org.netbeans.modules.cnd.api.model.services</package>
                 <package>org.netbeans.modules.cnd.api.model.xref</package>
+                <package>org.netbeans.modules.cnd.model.tasks</package>
             </friend-packages>
         </data>
     </configuration>
