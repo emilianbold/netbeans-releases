@@ -278,7 +278,7 @@ public class AstRenderer {
 
     protected CsmTypedef[] renderTypedef(AST ast, CsmClass cls, CsmObject container) {
         
-        List results = new ArrayList();
+        List<CsmTypedef> results = new ArrayList<CsmTypedef>();
         
         AST typedefNode = ast.getFirstChild();
         
@@ -344,11 +344,11 @@ public class AstRenderer {
                     // error message??
             }
         }
-        return (CsmTypedef[]) results.toArray(new CsmTypedef[results.size()]);
+        return results.toArray(new CsmTypedef[results.size()]);
     }
     
     protected CsmTypedef[] renderTypedef(AST ast, FileImpl file, CsmObject container) {
-        List results = new ArrayList();
+        List<CsmTypedef> results = new ArrayList<CsmTypedef>();
         if( ast != null ) {
             AST firstChild = ast.getFirstChild();
             if( firstChild.getType() == CPPTokenTypes.LITERAL_typedef ) {
@@ -441,7 +441,7 @@ public class AstRenderer {
                 }
             }
         }
-        return (CsmTypedef[]) results.toArray(new CsmTypedef[results.size()]);
+        return results.toArray(new CsmTypedef[results.size()]);
     }
     
     protected CsmTypedef createTypedef(AST ast, FileImpl file, CsmObject container, CsmType type, String name) {
@@ -556,7 +556,7 @@ public class AstRenderer {
         if( qid != null && (qid.getType() == CPPTokenTypes.CSM_QUALIFIED_ID || qid.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND)) {
             int templateDepth = 0;
             if ( qid.getNextSibling() != null ) {
-                List/*<String>*/ l = new ArrayList/*<String>*/();
+                List<String> l = new ArrayList<String>();
                 for( AST namePart = qid.getFirstChild(); namePart != null; namePart = namePart.getNextSibling() ) {
                     if( templateDepth == 0 && namePart.getType() == CPPTokenTypes.ID ) {
                         l.add(namePart.getText());
@@ -583,7 +583,7 @@ public class AstRenderer {
                         }
                     }
                 }
-                return (String[]) l.toArray(new String[l.size()]);
+                return l.toArray(new String[l.size()]);
             }
         }
         return new String[0];
@@ -922,6 +922,7 @@ public class AstRenderer {
 	    public AstRendererEx() {
 		super((FileImpl) file);
 	    }
+	    @Override
 	    protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static, MutableDeclarationsContainer container1, MutableDeclarationsContainer container2, CsmScope scope2) {
 		parameter = new ParameterImpl(offsetAst, file, type, name, scope1);
 		return parameter;
