@@ -247,17 +247,17 @@ public final class ServerRegistry implements java.io.Serializable {
     public ServerInstance getServerInstance(String url) {
         return (ServerInstance) instancesMap().get(url);
     }
-    
+
     public void removeServerInstance(String url) {
         if (url == null)
             return;
-        
+
         // Make sure defaultInstance cache is reset
         ServerString def = getDefaultInstance();
-        if (url.equals(def.getUrl())) {
+        if (def != null && url.equals(def.getUrl())) {
             defaultInstance = null;
         }
-        
+
         ServerInstance instance = (ServerInstance) instancesMap().remove(url);
         if (instance != null) {
             fireInstanceListeners(url, false);
@@ -267,7 +267,7 @@ public final class ServerRegistry implements java.io.Serializable {
         fireDefaultInstance(def != null ? def.getUrl() : null, 
                 newinst != null ? newinst.getUrl() : null);
     }
-    
+
     public ServerInstance[] getServerInstances() {
         ServerInstance[] ret = new ServerInstance[instancesMap().size()];
         instancesMap().values().toArray(ret);
@@ -382,7 +382,6 @@ public final class ServerRegistry implements java.io.Serializable {
                     instancesMap().put(url,instance);
                     // try to create a disconnected deployment manager to see
                     // whether the instance is not corrupted - see #46929
-                    ServerString str = new ServerString(server.getShortName(),url,null);
                     writeInstanceToFile(url,username,password);
                     if (displayName != null) {
                         instance.getInstanceProperties().setProperty(
@@ -518,7 +517,7 @@ public final class ServerRegistry implements java.io.Serializable {
                 ServerString oldValue = defaultInstance;
                 defaultInstance = instance;
                 fireDefaultInstance(oldValue != null ? oldValue.getUrl() : null,
-                        instance != null ? instance.getUrl() : null);
+                        instance.getUrl());
             }
         }
     }
@@ -587,14 +586,25 @@ public final class ServerRegistry implements java.io.Serializable {
         }
         return null;
     }
-    
+
     static private Properties readProperties(File propFile) {
         Properties prop = new Properties();
+        InputStream is = null;
         try {
-            if (propFile != null && propFile.exists())
-                prop.load(new FileInputStream(propFile));
+            if (propFile != null && propFile.exists()) {
+                is = new FileInputStream(propFile);
+                prop.load(is);
+            }
         } catch (IOException ioe) {
             Logger.getLogger("global").log(Level.INFO, ioe.toString());
+        } finally {
+            try {
+                if (is != null) {
+                    is.close();
+                }
+            } catch (IOException ex) {
+                Logger.getLogger("global").log(Level.FINE, null, ex);
+            }
         }
         return prop;
     }

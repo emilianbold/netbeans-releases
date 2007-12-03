@@ -105,7 +105,7 @@ public class ServerFileDistributor extends ServerProgress {
     }
     
     static Map j2eeTypeMap = null;
-    static List getDescriptorPath(J2eeModule module) {
+    static synchronized List getDescriptorPath(J2eeModule module) {
         if (j2eeTypeMap == null) {
             j2eeTypeMap = new HashMap();
             j2eeTypeMap.put(J2eeModule.EJB, Arrays.asList(new String[]{J2eeModule.EJBJAR_XML, J2eeModule.EJBSERVICES_XML}));

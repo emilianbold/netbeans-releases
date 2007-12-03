@@ -46,6 +46,7 @@
  */
 package org.netbeans.modules.j2ee.deployment.impl.ui;
 
+import javax.swing.Action;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.openide.nodes.*;
 import org.openide.filesystems.*;
@@ -110,8 +111,9 @@ implements ServerRegistry.PluginListener, InstanceListener {
     private void updateKeys() {
         ((ServerChildren) getChildren()).updateKeys();
     }
-    
-    public SystemAction[] createActions() {
+
+    @Override
+    public Action[] getActions(boolean context) {
         return new SystemAction[] {
             SystemAction.get(AddServerInstanceAction.class)
         };

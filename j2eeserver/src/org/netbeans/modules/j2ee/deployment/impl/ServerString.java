@@ -47,124 +47,102 @@ public class ServerString implements java.io.Serializable {
 
     private final String plugin;
     private final String instance;
+    /** <i>NonNull</i> */
     private final String[] targets;
     private final transient ServerInstance serverInstance;
     private transient String[] theTargets;
     private static final long serialVersionUID = 923457209372L;
 
-    public ServerString(String plugin, String instance, String[] targets) {
-        if (targets == null)
+    protected ServerString(String plugin, String instance, String[] targets, ServerInstance serverInstance) {
+        if (targets == null) {
             this.targets = new String[0];
-        else 
-            this.targets = targets;
-        this.plugin = plugin; this.instance = instance; this.serverInstance = null;
+        } else {
+            this.targets = targets.clone();
+        }
+        this.plugin = plugin;
+        this.instance = instance;
+        this.serverInstance = serverInstance;
     }
-    
-    public ServerString(Server server) {
-        this.plugin = server.getShortName();
-        this.instance = null;
-        this.targets = new String[0];
-        this.serverInstance = null;
-    }
-    
-    public ServerString(ServerInstance instance) {
-	assert instance != null;
-        this.plugin = instance.getServer().getShortName();
-        this.instance = instance.getUrl();
-        this.serverInstance = instance;
 
-        this.targets = null;
-        /*if (! instance.isRunning()) {
-            this.targets = new String[0];
-            return;
-        }
-        
-        ServerTarget[] serverTargets;
-        try {
-            serverTargets = instance.getTargets();
-        } catch (Exception e) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
-            this.targets = new String[0];
-            return;
-        }
-        this.targets = new String[serverTargets.length];
-        for (int i=0; i<serverTargets.length; i++) {
-            targets[i] = serverTargets[i].getName();
-        }*/
+    public ServerString(String plugin, String instance, String[] targets) {
+        this(plugin, instance, targets, null);
     }
-    
+
+    public ServerString(ServerInstance instance) {
+        this(instance.getServer().getShortName(), instance.getUrl(), null, instance);
+    }
+
     public ServerString(ServerTarget target) {
-        this.plugin = target.getInstance().getServer().getShortName();
-        this.instance = target.getInstance().getUrl();
-        this.targets = new String[] { target.getName() };
-        this.serverInstance = null;
+        this(target.getInstance().getServer().getShortName(),
+                target.getInstance().getUrl(), new String[] {target.getName()}, null);
     }
-    
+
     public ServerString(ServerInstance instance, String targetName) {
-        this.plugin = instance.getServer().getShortName();
-        this.instance = instance.getUrl();
-        this.serverInstance = instance;
-        if (targetName != null && ! "".equals(targetName.trim())) //NOI18N
-            this.targets = new String[] { targetName };
-        else
-            this.targets = null;
+        this(instance.getServer().getShortName(),
+                instance.getUrl(),
+                (targetName != null && ! "".equals(targetName.trim())) ? new String[] {targetName} : null,
+                instance);
     }
-    
+
     public String getPlugin() {
         return plugin;
     }
-    
+
     public String getUrl() {
         return instance;
     }
-    
+
     public String[] getTargets() {
         return getTargets(false);
     }
 
     public String[] getTargets(boolean concrete) {
-        if (! concrete) {
-            if (targets == null) return new String[0];
-            return targets;
-         }
+        if (!concrete || targets.length > 0) {
+            return targets.clone();
+        }
 
-        if (targets != null && targets.length > 0)
-            return targets;
+        if (theTargets != null) {
+            return theTargets.clone();
+        }
 
-        if (theTargets != null)
-            return theTargets;
-        
         ServerTarget[] serverTargets = getServerInstance().getTargets();
         theTargets = new String[serverTargets.length];
-        for (int i=0; i<theTargets.length; i++)
+        for (int i = 0; i < theTargets.length; i++) {
             theTargets[i] = serverTargets[i].getName();
-        return theTargets;
+        }
+        return theTargets.clone();
     }
 
     public Server getServer() {
         return ServerRegistry.getInstance().getServer(plugin);
     }
-    
+
     public ServerInstance getServerInstance() {
-        if (serverInstance != null)
+        if (serverInstance != null) {
             return serverInstance;
+        }
         return ServerRegistry.getInstance().getServerInstance(instance);
     }
-    
+
+    @Override
     public String toString() {
-        if (targets == null) return "Server " + plugin + " Instance " + instance + " Targets none"; // NOI18N
-        return "Server " + plugin + " Instance " + instance + " Targets " + targets.length; // NOI18N
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("Server ").append(plugin); // NOI18N
+        buffer.append(" Instance ").append(instance); // NOI18N
+        if (/*targets == null || */targets.length == 0) {
+            buffer.append(" Targets none"); // NOI18N
+        } else {
+            buffer.append(" Targets ").append(targets.length); // NOI18N
+        }
+        return buffer.toString();
     }
-    
-    public static ServerString fromTarget(ServerInstance instance, Target target) {
-        return new ServerString(new ServerTarget(instance, target));
-    }
-    
+
     public Target[] toTargets() {
         String[] targetNames = getTargets(true);
         Target[] ret = new Target[targetNames.length];
-        for (int i=0; i<targetNames.length; i++)
+        for (int i = 0; i < targetNames.length; i++) {
             ret[i] = getServerInstance().getServerTarget(targetNames[i]).getTarget();
+        }
         return ret;
     }
 }
