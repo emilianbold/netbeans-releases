@@ -71,6 +71,24 @@ public class DiffAction extends AbstractAction {
     
     public void actionPerformed(ActionEvent e) {
         String contextName = Utils.getContextDisplayName(context);
+                
+        File root = HgUtils.getRootFile(context);
+        File [] files = context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
+        boolean bNotManaged = (root == null) || ( files == null || files.length == 0);
+
+        if (bNotManaged) {
+            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(DiffAction.class,"MSG_DIFF_TITLE")); // NOI18N
+            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(DiffAction.class,"MSG_DIFF_TITLE_SEP")); // NOI18N
+            HgUtils.outputMercurialTabInRed(
+                    NbBundle.getMessage(DiffAction.class, "MSG_DIFF_NOT_SUPPORTED_INVIEW_INFO")); // NOI18N
+            HgUtils.outputMercurialTab(""); // NOI18N
+            JOptionPane.showMessageDialog(null,
+                    NbBundle.getMessage(DiffAction.class, "MSG_DIFF_NOT_SUPPORTED_INVIEW"),// NOI18N
+                    NbBundle.getMessage(DiffAction.class, "MSG_DIFF_NOT_SUPPORTED_INVIEW_TITLE"),// NOI18N
+                    JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
         diff(context, Setup.DIFFTYPE_LOCAL, contextName);
     }
     

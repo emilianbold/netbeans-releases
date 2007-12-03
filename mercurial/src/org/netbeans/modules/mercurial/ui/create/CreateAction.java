@@ -145,7 +145,19 @@ public class CreateAction extends AbstractAction {
 
         final Project proj = HgUtils.getProject(context);
         File projFile = HgUtils.getProjectFile(proj);
-        if (projFile == null) return;
+        
+        if (projFile == null) {
+            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(CreateAction.class,"MSG_CREATE_TITLE")); // NOI18N
+            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(CreateAction.class,"MSG_CREATE_TITLE_SEP")); // NOI18N
+            HgUtils.outputMercurialTabInRed(
+                    NbBundle.getMessage(CreateAction.class, "MSG_CREATE_NOT_SUPPORTED_INVIEW_INFO")); // NOI18N
+            HgUtils.outputMercurialTab(""); // NOI18N
+            JOptionPane.showMessageDialog(null,
+                    NbBundle.getMessage(CreateAction.class, "MSG_CREATE_NOT_SUPPORTED_INVIEW"),// NOI18N
+                    NbBundle.getMessage(CreateAction.class, "MSG_CREATE_NOT_SUPPORTED_INVIEW_TITLE"),// NOI18N
+                    JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
         String projName = HgProjectUtils.getProjectName(projFile);
         File root = null;
  

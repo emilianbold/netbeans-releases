@@ -93,6 +93,19 @@ public class PullAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent e) {
+        final File root = HgUtils.getRootFile(context);
+        if (root == null) {
+            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(PullAction.class,"MSG_PULL_TITLE")); // NOI18N
+            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(PullAction.class,"MSG_PULL_TITLE_SEP")); // NOI18N
+            HgUtils.outputMercurialTabInRed(
+                    NbBundle.getMessage(PullAction.class, "MSG_PULL_NOT_SUPPORTED_INVIEW_INFO")); // NOI18N
+            HgUtils.outputMercurialTab(""); // NOI18N
+            JOptionPane.showMessageDialog(null,
+                    NbBundle.getMessage(PullAction.class, "MSG_PULL_NOT_SUPPORTED_INVIEW"),// NOI18N
+                    NbBundle.getMessage(PullAction.class, "MSG_PULL_NOT_SUPPORTED_INVIEW_TITLE"),// NOI18N
+                    JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
         // If the repository has no default pull path then inform user
         if(HgRepositoryContextCache.getPullDefault(context) == null){
             JOptionPane.showMessageDialog(null,

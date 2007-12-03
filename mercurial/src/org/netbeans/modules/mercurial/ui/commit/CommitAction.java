@@ -102,6 +102,19 @@ public class CommitAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent e) {
+        final File root = HgUtils.getRootFile(context);
+        if (root == null) {
+            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(CommitAction.class,"MSG_COMMIT_TITLE")); // NOI18N
+            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(CommitAction.class,"MSG_COMMIT_TITLE_SEP")); // NOI18N
+            HgUtils.outputMercurialTabInRed(
+                    NbBundle.getMessage(CommitAction.class, "MSG_COMMIT_NOT_SUPPORTED_INVIEW_INFO")); // NOI18N
+            HgUtils.outputMercurialTab(""); // NOI18N
+            JOptionPane.showMessageDialog(null,
+                    NbBundle.getMessage(CommitAction.class, "MSG_COMMIT_NOT_SUPPORTED_INVIEW"),// NOI18N
+                    NbBundle.getMessage(CommitAction.class, "MSG_COMMIT_NOT_SUPPORTED_INVIEW_TITLE"),// NOI18N
+                    JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
         String contentTitle = Utils.getContextDisplayName(context);
 
         commit(contentTitle, context);
@@ -110,7 +123,7 @@ public class CommitAction extends AbstractAction {
     public static void commit(String contentTitle, final VCSContext ctx) {
         FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
         File[] roots = ctx.getRootFiles().toArray(new File[ctx.getRootFiles().size()]);
-        if (roots.length == 0) {
+        if (roots == null || roots.length == 0) {
             return;
         }
 

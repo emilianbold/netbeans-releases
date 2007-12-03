@@ -84,14 +84,23 @@ public class MergeAction extends AbstractAction {
 
     public void actionPerformed(ActionEvent ev) {
         final File root = HgUtils.getRootFile(context);
+        if (root == null) {
+            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(MergeAction.class,"MSG_MERGE_TITLE")); // NOI18N
+            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(MergeAction.class,"MSG_MERGE_TITLE_SEP")); // NOI18N
+            HgUtils.outputMercurialTabInRed(
+                    NbBundle.getMessage(MergeAction.class, "MSG_MERGE_NOT_SUPPORTED_INVIEW_INFO")); // NOI18N
+            HgUtils.outputMercurialTab(""); // NOI18N
+            JOptionPane.showMessageDialog(null,
+                    NbBundle.getMessage(MergeAction.class, "MSG_MERGE_NOT_SUPPORTED_INVIEW"),// NOI18N
+                    NbBundle.getMessage(MergeAction.class, "MSG_MERGE_NOT_SUPPORTED_INVIEW_TITLE"),// NOI18N
+                    JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
         if(root != null && !HgCommand.isMergeRequired(root)){
             JOptionPane.showMessageDialog(null,
                 NbBundle.getMessage(MergeAction.class,"MSG_NOTHING_TO_MERGE"),// NOI18N
                 NbBundle.getMessage(MergeAction.class,"MSG_MERGE_TITLE"),// NOI18N
                 JOptionPane.INFORMATION_MESSAGE);
-            return;
-        }
-        if (root == null) {
             return;
         }
 
