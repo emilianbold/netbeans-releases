@@ -78,7 +78,7 @@ public class Utils {
             return "new Integer(Integer.parseInt( " + variable + " ))";
         }
         if( "boolean".equals( typeName )) {
-            return "Boolean.parseBoolean( " + variable + " )";
+            return "\"true\".equals( " + variable + " )";
         } else if( "java.lang.Boolean".equals( typeName )) {
             return "new Boolean( \"true\".equals( " + variable + " ))";
         }
