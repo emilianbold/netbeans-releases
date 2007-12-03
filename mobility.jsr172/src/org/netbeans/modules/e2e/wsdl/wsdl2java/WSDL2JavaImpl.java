@@ -54,7 +54,6 @@ public class WSDL2JavaImpl implements WSDL2Java {
     private WSDLParser wsdlParser;
     private Definition definition;
     
-    private Set<QName> usedTypeNames;
     private Set<QName> usedParameterTypes;
     private Set<QName> usedReturnTypes;
             
@@ -256,7 +255,7 @@ public class WSDL2JavaImpl implements WSDL2Java {
                                     Element e = getReturnElement( re );
                                     if( isElementComplex( e )) {
                                         usedTypes.add( e.getName());
-                                        usedReturnTypes.add( re.getName());
+                                        usedReturnTypeNames.add( re.getName());
                                     }
                                     String javaTypeName = getJavaTypeName( e );
                                     off.write( "public " + javaTypeName + " " );
@@ -278,7 +277,7 @@ public class WSDL2JavaImpl implements WSDL2Java {
                                         Element e = it.next();
                                         if( isElementComplex( e )) {
                                             usedTypes.add( e.getName());
-                                            usedParameterTypes.add( e.getName());
+                                            usedParameterTypeNames.add( e.getName());
                                         }
                                         Type type = e.getType();
                                         String javaTypeName = getJavaTypeName( e );
@@ -295,16 +294,14 @@ public class WSDL2JavaImpl implements WSDL2Java {
             off.write("\n}\n");
             off.close();
         }        
-        
-//        System.err.println(" --- Used Types --- ");
-        usedTypeNames = new HashSet<QName>();
-        for( QName typeName : usedTypes ) {
-            usedTypeNames.addAll( traverseTypes( usedTypes, typeName ));
+                
+        for( QName typeName : usedParameterTypeNames ) {
+            usedParameterTypes.addAll( traverseTypes( usedParameterTypeNames, typeName ));
         }
         
-        for( QName typeName : usedTypeNames ) {
-//            System.err.println(" - " + typeName.getLocalPart());
-        }               
+        for( QName typeName : usedReturnTypeNames ) {
+            usedReturnTypes.addAll( traverseTypes( usedParameterTypeNames, typeName ));
+        }
     }
     
     private String getWrapperTypeName( Type type ) {
@@ -390,13 +387,8 @@ public class WSDL2JavaImpl implements WSDL2Java {
      */
     private void generateTypes() throws Exception {
         Set<Element> usedArrayTypes = new HashSet<Element>();
-        Set<QName> types = new HashSet<QName>();
-
-        for( QName typeName : usedTypeNames ) {
-            types.addAll( getUsedTypes( typeName ));
-        }
-        
-        for( QName type : usedReturnTypes ) {
+                
+        for( QName type : usedReturnTypes ) {            
             Element e = getReturnElement( definition.getSchemaHolder().getSchemaElement( type ));
             usedArrayTypes.addAll( generateType( e ));
         }
@@ -404,17 +396,6 @@ public class WSDL2JavaImpl implements WSDL2Java {
             Element e = definition.getSchemaHolder().getSchemaElement( type );
             usedArrayTypes.addAll( generateType( e ));
         }
-//        System.err.println(" ---- Used complex types ---- ");
-//        for( QName type : types ) {
-//            System.err.println(" - " + type.toString());
-//        }
-//        System.err.println(" ----  ---- ");
-        
-//        System.err.println(" --- Array types --- ");
-//        for( QName typeName : usedArrayTypeNames ) {
-//            System.err.println(" - " + typeName.getLocalPart());
-//        }
-//        System.err.println(" --- --- ");
         if( configuration.getGenerateDataBinding()) {
             generateDataBindingArrays( usedArrayTypes ); 
         }
