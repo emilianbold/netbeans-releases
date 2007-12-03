@@ -2050,7 +2050,7 @@ public class TypeManager implements ITypeManager, IElementLifeTimeEventsSink,
          String stem = (dotpos != -1?  filename.substring(0, dotpos)
                                      : filename);
  		String etupFile = stem + ".etup";
- 		Document etupDoc = XMLManip.getDOMDocument(etupFile);
+ 		Document etupDoc = XMLManip.getDOMDocumentUseWeakCache(etupFile);
  		if (etupDoc != null)
  		{
 			//retNode = ettmDoc.selectSingleNode(pattern);//XMLManip.findElementByID(ettmDoc, id);
@@ -2058,7 +2058,7 @@ public class TypeManager implements ITypeManager, IElementLifeTimeEventsSink,
 			if (retNode == null)
 			{
 				String ettmFile = stem + ".ettm";
-				Document ettmDoc = XMLManip.getDOMDocument(ettmFile);
+				Document ettmDoc = XMLManip.getDOMDocumentUseWeakCache(ettmFile);
 				if (ettmDoc != null)
 				{
 					//retNode = etupDoc.selectSingleNode(pattern);//XMLManip.findElementByID(etupDoc, id);
