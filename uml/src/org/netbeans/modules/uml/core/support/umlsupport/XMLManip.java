@@ -106,6 +106,7 @@ public class XMLManip
    // and parsing happenned multiple times.
    //private static HashMap < String, Document > m_LoadedDocs = new HashMap < String, Document >();
    private static HashMap < String, WeakReference > m_LoadedDocs = new HashMap < String, WeakReference >();
+   private static HashMap < String, Long > m_LoadedDocsTimestamps = new HashMap < String, Long >();
 
    public static XMLManip instance()
    {
@@ -206,11 +207,19 @@ public class XMLManip
 	  {
 	      doc = (Document)docRef.get();
 	  }
+          long lm = -1;
+	  Long lmValue = m_LoadedDocsTimestamps.get(fileName);
+          if (lmValue != null) 
+          {
+              lm = lmValue.longValue();
+          }
+          long currentLastModified = new File(fileName).lastModified();
 	  //doc = m_LoadedDocs.get(fileName);
-	  if (doc == null)
+	  if (doc == null || (currentLastModified > lm))
 	  {
 	      doc = getDOMDocument(fileName);
 	      m_LoadedDocs.put(fileName, new WeakReference(doc));
+              m_LoadedDocsTimestamps.put(fileName, new Long(currentLastModified));
 	  }
       }         
       return doc;
