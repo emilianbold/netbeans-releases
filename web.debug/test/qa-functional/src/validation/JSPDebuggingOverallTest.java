@@ -41,6 +41,7 @@
 package validation;
 
 import java.io.File;
+import javax.swing.JDialog;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
@@ -168,6 +169,8 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
         propertiesDialogOper.ok();
         // if setting default server, it scans server jars; otherwise it continues immediatelly
         ProjectSupport.waitScanFinished();
+        // start thread to close any information dialog
+        closeInformationDialog();
     }
     
     /** Set a random port for Tomcat server and socket debugger transport. */
@@ -426,5 +429,33 @@ public class JSPDebuggingOverallTest extends JellyTestCase {
     public void testStopServer() {
         J2eeServerNode serverNode = new J2eeServerNode(Utils.DEFAULT_SERVER);
         serverNode.stop();
+    }
+    
+    /** Sometimes is opened an information dialog with the following message:
+     * "The Admin Server is stopped at a Break Point. No calls can be executed.
+     * Please, complete your debugging session (continue) in order to be able
+     * to manage this server instance."
+     * It happens only on qa-perf-sol4 and I am not able to reproduce it
+     * manually. That's why we start a new thread which is watching for this
+     * dialog and close it if it appears.
+     */
+    private void closeInformationDialog() {
+        new Thread(new Runnable() {
+            public void run() {
+                // "Information"
+                String informationTitle = Bundle.getString("org.openide.Bundle", "NTF_InformationTitle");
+                while (true) {
+                    JDialog dialog = JDialogOperator.findJDialog(informationTitle, false, false);
+                    if (dialog != null) {
+                        new JDialogOperator(dialog).setVisible(false);
+                    }
+                    try {
+                        Thread.sleep(50);
+                    } catch (InterruptedException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+        }, "JSPDebuggingOverallTest - Wait for info dialog").start();
     }
 }
