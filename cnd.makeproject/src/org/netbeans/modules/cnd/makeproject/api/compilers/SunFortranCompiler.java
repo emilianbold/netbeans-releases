@@ -59,7 +59,7 @@ public class SunFortranCompiler extends BasicCompiler {
         "-w", // No Warnings // NOI18N
         "-w1", // Default // NOI18N
         "-w2", // More Warnings // NOI18N
-        "-erroff", // Convert Warnings to Errors // NOI18N
+        "-errwarn", // Convert Warnings to Errors // NOI18N
     };
     
     /** Creates a new instance of SunCCompiler */
