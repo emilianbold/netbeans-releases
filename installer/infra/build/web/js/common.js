@@ -34,41 +34,62 @@
  * copyright holder.
  */
 
-/* Top header *****************************************************************/
-table.top_header {
-    margin:             0px auto 0px auto;
-    width:                    100%;
-    height:                   57px;
-    border-collapse:      collapse;
-    background-image:      url('../img/products-top-bg.gif');
-    background-repeat:   no-repeat;
-    background-position:     right;
+/* Languages and their ids which NetBeans is available*/
+var LANGUAGE_IDS   = new Array();
+var LANGUAGE_NAMES = new Array();
+
+var PLATFORM_IDS         = new Array();
+var PLATFORM_LONG_NAMES  = new Array();
+var PLATFORM_SHORT_NAMES = new Array();
+
+var BUNDLE_IDS   = new Array();
+var BUNDLE_LONG_NAMES = new Array();
+var BUNDLE_SHORT_NAMES = new Array();
+
+PLATFORM_IDS   	     [0] = "windows";
+PLATFORM_IDS   	     [1] = "linux";
+PLATFORM_IDS         [2] = "solaris-x86";
+PLATFORM_IDS         [3] = "solaris-sparc";
+PLATFORM_IDS         [4] = "macosx";
+PLATFORM_IDS         [5] = "zip";
+/*
+// Commented since NBI installers are not used for now
+PLATFORM_IDS         [4] = "macosx-x86";
+PLATFORM_IDS         [5] = "macosx-ppc";
+*/
+
+BUNDLE_IDS [0] = "javaee";
+BUNDLE_IDS [1] = "mobility";
+BUNDLE_IDS [2] = "javase";
+BUNDLE_IDS [3] = "ruby";
+BUNDLE_IDS [4] = "cpp";
+BUNDLE_IDS [5] = "all";
+
+
+function getNameById(id,ids,names) {
+    for(var i = 0 ; i < ids.length; i++) {
+	if(ids[i] == id) {
+		return names[i];
+	}
+    }
+    return "";
 }
 
-table.top_header td {
-	padding:			25px 23px 0px 23px;	
+function getPlatformShortName(id) {
+    return getNameById(id, PLATFORM_IDS, PLATFORM_SHORT_NAMES);
+}
+function getPlatformLongName(id) {
+    return getNameById(id, PLATFORM_IDS, PLATFORM_LONG_NAMES);
 }
 
-
-table.top_header td.title {
-	width:				95%;
-	font-size:			1.8em;
-	color:				#0e1b55;
+function getLanguageName(id) {
+    return getNameById(id, LANGUAGE_IDS, LANGUAGE_NAMES);
 }
 
-div.download_info {
-	margin:5px 0px 0px 30px;
-	padding-top:0px;
-	padding-left:15px;
-	color: #333333;
+function getBundleShortName(id) {
+    return getNameById(id, BUNDLE_IDS, BUNDLE_SHORT_NAMES);
+}
+function getBundleLongName(id) {
+    return getNameById(id, BUNDLE_IDS, BUNDLE_LONG_NAMES);
 }
 
-p.file_information {
-	color: #333333;
-	font-size:0.9em;
-	font-weight: normal;
-}
-
-a.download_link {
-	font-weight: normal;
-}

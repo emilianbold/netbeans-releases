@@ -36,41 +36,53 @@
 
 /* Top header *****************************************************************/
 table.top_header {
-    margin:             20px auto 0px auto;
-    width:              100%;
-    border-collapse:    collapse;
-    border-bottom:      1px solid #aca8a1;
+    margin:             0px auto 0px auto;
+    width:                    100%;
+    height:                   57px;
+    border-collapse:      collapse;
+    background-image:      url('../img/products-top-bg.gif');
+    background-repeat:   no-repeat;
+    background-position:     right;
 }
 
 table.top_header td {
-	padding:			0px 0px 0px 0px;
+	padding:     25px 23px 0px 23px;        
+	color:			#D5D5D5;
 }
 
-table.top_header table {
-	width:				95%;
-    margin:             0px auto 0px auto;
-	border-collapse:	collapse;
-}
-
-table.top_header table td {
-    padding:            0px 0px 0px 0px;
-	color:				#aca8a1;
-}
-
-table.top_header table td.title {
+table.top_header td.title {
 	width:				100%;
-	font-size:			1.5em;
+	font-size:			1.8em;
+	color:				#0e1b55;	
 }
 
-table.top_header table td.menu {
+table.top_header td.menu {
 	white-space:		nowrap;
+	font-size:		1.2em;
+}
+
+table.subscription_selects {	
+    margin:             10px auto 0px auto;
+    width:              95%;
+    empty-cells:        show;
+    align: left;
+}
+
+table.subscription {	
+	padding: 0px 0px 0px 0px;
+	width: 430px;
+}
+
+table.l_p_select_note {
+	margin: 0px 0px 0px 0px;
 }
 
 /* Language/platform selection ************************************************/
 table.l_p_select {
-	margin:				10px auto 0px auto;
-	width:				95%;
-	border-collapse:	collapse;
+	margin:				0px 0px 0px 0px;
+	padding-top: 0px;
+	width:				100%;
+	border-collapse:	collapse;	
 }
 
 table.l_p_select td {
@@ -78,7 +90,7 @@ table.l_p_select td {
 }
 
 table.l_p_select td.spacer {
-	width:				100%;
+	width:		100%;
 }
 
 table.l_p_select td.label {
@@ -88,18 +100,20 @@ table.l_p_select td.label {
 
 
 /* Missing components warning ************************************************/
-div.missing_components {
-	margin:				10px auto 0px auto;
-	width:				95%;
-	border-collapse:	collapse;	
-	text-align:         	    right;
-	color:          #777777;
+table.missing_components {
+	width:				100%;
+	border-collapse: 	 collapse;
 }
 
+table.missing_components td.label {
+	text-align:         	    right;
+	color:          	  #808080;
+	padding-top: 5px;
+}
 
 /* Components table ***********************************************************/
 table.components_table {
-    margin:             10px auto 0px auto;
+    margin:             0px auto 0px auto;
     width:              95%;
     border-collapse:    collapse;
     empty-cells:        show;
@@ -108,22 +122,52 @@ table.components_table {
 table.components_table th {
     padding:            2px 5px 2px 5px;
     text-align:         center;
-    color:              #ff5e08;
+    color:              #FF8E00;
     font-family:        Arial, sans-serif;
-    font-size:          1.2em;
-    font-weight:        normal;
+    font-weight:        bold;
+    font-size:          1.1em;
     cursor:             default;
 }
 
+table.components_table th.over {
+    background:        #eeeeee;
+}
+
+
+table.components_table .star {
+    padding:            0px 0px 0px 5px;
+    text-align:         center;
+    color:              #FF8E00;
+    font-family:        Arial, sans-serif;
+    font-weight:        bold;
+    font-size:          1.2em;
+    cursor:             default;
+}
+
+
 table.components_table td {
-    border-top:         1px solid #aca8a1;
-    border-bottom:      1px solid #aca8a1;
+    border-top:         1px solid #D5D5D5;
+    border-bottom:      1px solid #D5D5D5;
     padding:            2px 5px 2px 5px;
     text-align:         center;
     font-family:        Verdana, Arial, sans-serif;
     font-size:          1em;
     cursor:             default;
 }
+
+table.components_table td.over {
+    background:        #eeeeee;
+}
+
+
+table.components_table .header {
+    border-width:       0px;
+    padding:            0px 0px 5px 0px;
+    font-weight:       bold;
+    color:          #FF8E00;
+    font-size:        1.1em;
+}
+
 
 table.components_table .left {
     text-align:         left;
@@ -133,16 +177,20 @@ table.components_table .no_border {
     border-width:       0px;
 }
 
+table.components_table .download_button {
+    padding:            5px 9px 2px 9px;
+}
+
 table.components_table .no_padding {
     padding:            0px 0px 0px 0px;
 }
 
 table.components_table .left_border {
-    border-left:        1px solid #aca8a1;
+    border-left:        1px solid #D5D5D5;
 }
 
 table.components_table .bottom_border {
-    border-bottom:      1px solid #aca8a1;
+    border-bottom:      1px solid #D5D5D5;
 }
 
 table.components_table .wide {
@@ -154,7 +202,7 @@ table.components_table .bottom {
 }
 
 table.components_table .beige {
-    background-color:   #fef6e8;
+    background-color:   #FFF4E5;
 }
 
 table.components_table .comment {
@@ -172,23 +220,27 @@ table.components_table .warning {
 }
 
 table.components_table .product_note {
-    color:              #aca8a1;
+    color:              #D5D5D5;
     font-size:          0.85em;
 }
 
 table.components_table .product_display_name {
+    padding:		0px 0px 0px 8px;
+    color:              #333333;
 }
 
 table.components_table .product_display_name_no {
-    color:              #bbbbbb;
+    padding:   0px 0px 0px 8px;
+    color:              #808080;    
 }
 
 
 table.components_table .bundle_display_name {
+    color:              #333333;
 }
 
 table.components_table .bundle_display_name_no {
-    color:              grey;
+    color:              #808080;
 }
 
 
@@ -196,19 +248,18 @@ table.components_table .title {
     font-size:			1.3em;
 	white-space:		nowrap;
 }
-
-
 .pop_up {
+    color:		#333333;
     width:              250px;
-    min-height:         140px;
+    min-height:         10px;    
     margin-top:         1.2em;
     margin-left:        30px;
     padding:            5px 5px 5px 5px;
-    border:             1px solid #cdd1dc;
+    border:             1px solid #6B6B6B;
     position:           absolute; 
     z-index:            100;
     visibility:         hidden;
-    background-color:   #f2f6f9;
+    background-color:   #E6F6FE;
 }
 
 .noscript_warning {
@@ -217,3 +268,14 @@ table.components_table .title {
     font-weight:        bold;
     margin:             20px 40px 20px 40px;
 }
+
+.special_message_number {
+	margin: 0px 0px 0px 22px;
+        color:            #FF5E08; 
+}
+.special_message_text {
+	width: 95%; 
+        margin: 0px auto 0px 8px;
+}
+
+.bold {font-weight:bold;}

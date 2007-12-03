@@ -37,79 +37,175 @@
 
 <html>
     <head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8">
         <title>NetBeans IDE {build.display.version} Download</title>
-        <meta http-equiv="content-type" content="text/html; charset=utf-8">
-        <meta name="description" content="NetBeans IDE {build.display.version} Download">
-        <link rel="stylesheet" type="text/css" href="http://www.netbeans.org/netbeans.css" media="screen">
-        <link rel="stylesheet" type="text/css" href="css/start.css" media="screen">
+        <meta name="description" content="NetBeans IDE {build.display.version} Download"/>
+        <link rel="stylesheet" type="text/css" href="css/netbeans.css" media="screen"/>
+        <link rel="stylesheet" type="text/css" href="css/start.css" media="screen"/>
         <link rel="shortcut icon" href="http://www.netbeans.org/favicon.ico" type="image/x-icon"/>
+	<script type="text/javascript" src="js/common.js"></script>
+	<script type="text/javascript" src="js/languages.js"></script>
+
+	<!-- TRANSLATE HERE: change (_strings.js) -> (_strings_<locale>.js) -->
+	<script type="text/javascript" src="js/common_strings.js"></script>
+        <script type="text/javascript" src="js/start_strings.js"></script>
+	<!-- END OF TRANSLATION PART -->
+
+	<script type="text/javascript" src="js/start.js"></script>
+	<script type="text/javascript" src="js/files.js"></script>
     </head>
     
     <body class="blue-bg">
-        <script type="text/javascript">
-            var string = "" + window.location;
-            var query = string.substring(string.indexOf("?") + 1, string.length);
-            var url = query;
-            
-            window.onload = redirect;
-            
-            function redirect() {
-                window.location = url;
-            }
-        </script>
+        <script type="text/javascript">initialize()</script>
         
-        <div class="align-center" style="background-color:#CCD2E2;">
-            <div id="fixed-logo">                
-                <div class="float-left"><a href="http://www.netbeans.org/index.html"><img src="http://www.netbeans.org/images/v5/nb-logo2.gif" class="logo-link" width="159" height="60" alt="netbeans.org - go to homepage"  title="NetBeans.org - go to the homepage" border="0"/></a></div>
+        <div class="align-center" >
+            <div id="fixed-logo">
+                <div class="float-left" >
+                    <a href="http://www.netbeans.org/index.html" >
+                        <img src="http://www.netbeans.org/images/v5/nb-logo2.gif" class="logo-link" width="159" height="60" alt="netbeans.org - go to homepage"  title="NetBeans.org - go to the homepage" border="0" style="margin-top:10px;"/>
+                    </a>
+                </div>
+                <div id="search">
+                    <form method="get" action="http://www.google.com/custom" style="display:inline;">
+                        <table>
+                            <tr>
+                                <td>
+                                <a href="http://www.netbeans.org/community/search.html" style="color:#213552;">Search:</a> </td><td><input type="text" name="q" class="text" style="border:1px solid #0B686D;"/>
+                                </td>
+                                <td>
+                                    <input type="image" src="http://www.netbeans.org/images/v6/search-button.gif" alt="Search netbeans.org" name="Button"/>
+                                    <input type=hidden name=cof VALUE="GIMP:#FF0F12;LW:193;ALC:#FF0F12;L:http://www.netbeans.org/images/logo.gif;GFNT:#8A8DB0;LC:#0E0E76;LH:45;AH:center;VLC:#0E0E76;S:http://www.netbeans.org/;AWFID:a8753e5d03543916;"><input type=hidden name=domains value="netbeans.org"><input type=hidden name=sitesearch value="netbeans.org">
+                                </td>
+                            </tr>
+                        </table>
+                    </form>
+                </div>
             </div>
         </div>
         
         <div id="center-container">
             <div id="page-border">
-                <div id="fixed-tabs"><img src="http://www.netbeans.org/images/v5/corner-left.png" class="float-left" width="11" height="26" style="_margin-right:-3px;"/><img src="http://www.netbeans.org/images/v5/corner-right.png" class="float-right" width="14" height="26" style="_margin-right:-3px;"/><a href="http://www.netbeans.org/index.html" title=""><img src="http://www.netbeans.org/images/v5/home-off.png" alt="" width="120" height="26" border="0" class="iMenu"></a><a href="http://www.netbeans.org/products/index.html" title="Products"><img src="http://www.netbeans.org/images/v5/products-off.png" alt="Products" width="120" height="26" border="0" class="iMenu"></a><a href="http://www.netbeans.org/catalogue/index.html" title="Plugins"><img src="http://www.netbeans.org/images/v5/catalogue-off.png" alt="Plugins" width="120" height="26" border="0" class="iMenu"></a><a href="http://www.netbeans.org/kb/index.html" title="Docs&nbsp;&amp;&nbsp;Support"><img src="http://www.netbeans.org/images/v5/kb-off.png" alt="Docs&nbsp;&amp;&nbsp;Support" width="120" height="26" border="0" class="iMenu"></a><a href="http://www.netbeans.org/community/index.html" title="Community"><img src="http://www.netbeans.org/images/v5/community-off.png" alt="Community" width="120" height="26" border="0" class="iMenu"></a><a href="http://www.netbeans.org/community/partners/index.html" title="Partners"><img src="http://www.netbeans.org/images/v5/partners-off.png" alt="Partners" width="120" height="26" border="0" class="iMenu"></a></div>
+                <div id="fixed-tabs"><img src="http://www.netbeans.org/images/v6/corner-left.png" class="float-left" width="11" height="26" style="_margin-right:-3px;"/><img src="http://www.netbeans.org/images/v6/corner-right.png" class="float-right" width="14" height="26" style="_margin-right:-3px;"/><a href="http://www.netbeans.org/index.html" title=""><img src="http://www.netbeans.org/images/v6/home-off.png" alt="" width="120" height="26" border="0" class="iMenu"></a><a href="http://www.netbeans.org/features/index.html" title="Features"><img src="http://www.netbeans.org/images/v6/products-off.png" alt="Features" width="120" height="26" border="0" class="iMenu"></a><a href="http://plugins.netbeans.org/PluginPortal/" title="Plugins"><img src="http://www.netbeans.org/images/v6/catalogue-off.png" alt="Plugins" width="120" height="26" border="0" class="iMenu"></a><a href="http://www.netbeans.org/kb/index.html" title="Docs&nbsp;&amp;&nbsp;Support"><img src="http://www.netbeans.org/images/v6/kb-off.png" alt="Docs&nbsp;&amp;&nbsp;Support" width="120" height="26" border="0" class="iMenu"></a><a href="http://www.netbeans.org/community/index.html" title="Community"><img src="http://www.netbeans.org/images/v6/community-off.png" alt="Community" width="120" height="26" border="0" class="iMenu"></a><a href="http://www.netbeans.org/community/partners/index.html" title="Partners"><img src="http://www.netbeans.org/images/v6/partners-off.png" alt="Partners" width="120" height="26" border="0" class="iMenu"></a>
+                </div>
                 <div id="fixed-contentarea">
-                    <div id="navig-breadcrumbs"><a href="http://www.netbeans.org/">HOME</a>  / <a href="http://www.netbeans.org/products/">Products</a> / <a href="http://www.netbeans.org/products/ide/">IDE</a> / Download</div>
-                    <div id="fixed-top-contentbox">
-                        
-                        <div id="download-box" class="bg-white">
-                            <div class="bg-white f-page-cell">
-                                <h1 class="light">NetBeans IDE {build.display.version} Download</h1>
-                                
-                                <img src="http://www.netbeans.org//images/v5/download-arrow.png" class="float-left"/>
-                                <div style="margin:5px 0px 0px 30px; _padding-top:5px;" class="bold blue font-13">
-                                    <script type="text/javascript">
-                                        document.write('Your download should start automatically.');
-                                        document.write('<br>If not, <a href="' + url + '" style="font-weight: normal">download it here</a>.');
-                                    </script>
-                                </div>
-                                <p><div>
-                                    <br>
-                                    <br>
-                                    <a href="http://www.netbeans.org/about/legal/product-licences.html">Legal notice</a> | 
-                                    <a href="http://www.netbeans.org/community/releases/60/relnotes.html">Release Notes</a> | 
-                                    <a href="http://www.netbeans.org/community/releases/60/install.html">Installation Instructions</a>
+                    <div id="navig-breadcrumbs"><a href="http://www.netbeans.org/">HOME</a> / Download</div>
+
+                    <div id="fixed-top-contentbox">                        			
+                        <div class="bg-white">                            
+                            <table class="top_header">
+                                <tr>
+                                    <td class="title">NetBeans IDE {build.display.version} Download Started</td>
+                                </tr>
+                            </table>
+                            <div class="bg-white f-page-cell" style="padding-left: 15px">
+                                <div>
+                                    <img src="img/download-arrow.gif" class="float-left"/>
+                                    <div class="bold black font-13 download_info">	
+                                        <script type="text/javascript">write_download_header();</script>
+                                        <script type="text/javascript">write_download_info();</script>
+                                        <br>
+                                        <a href="http://www.netbeans.org/about/legal/product-licences.html">License Notices</a> | 
+                                        <a href="http://www.netbeans.org/community/releases/60/relnotes.html">Release Notes</a> | 
+                                        <a href="http://www.netbeans.org/community/releases/60/install.html">Installation Instructions</a>
+                                    </div>
                                 </div>
                             </div>
-                        </div>                        
-                        
+                        </div>			
                     </div>
-                </div>
-                <!-- fixed page footer -->
-                <div id="fixed-footer">
-                    <div id="footer-text">
-                        
-                        <div id="footer-navig" class="float-left font-12">
-                            <a href="http://www.cafeshops.com/netbeans/" >Shop</a> &nbsp;
-                            <a href="http://www.netbeans.org/download/sitemaps/www_map.html">SiteMap</a> &nbsp;
-                            <a href="http://www.netbeans.org/about/index.html">About Us</a> &nbsp;
-                            <a href="http://www.netbeans.org/about/contact.html">Contact</a> &nbsp;
-                            
-                            <a href="http://www.netbeans.org/about/legal/index.html">Legal</a> &nbsp;
-                        </div>
-                        <div id="tof" class="float-right">By use of this website, you agree to <a href="http://www.netbeans.org/about/legal/terms-of-use.html">the NetBeans Policies and Term of Use</a></div>
+		    <br><br>
+                    <div class="b-top-dashed">
+                        <h5 style="padding-left:15px;">Find Out More</h5><br>
+                        <table class="full-width colapse">
+                            <tr>
+                                <td class="f-page-cell" style="width:25%;padding-bottom:0px;padding-top:0px;padding-left:20px;">					
+                                    <img src="img/plugins_small.gif" class="valign-top float-left" style="padding-right:12px;padding-bottom:30px;"/>
+                                    <a href="http://plugins.netbeans.org/PluginPortal/">Plugins</a><br><br>
+                                    <span style="height:45px;padding-bottom:7px;">
+                                        Contributed by the NetBeans community and 3rd party vendors.
+                                    </span>		
+                                    
+                                </td>
+                                <td class="f-page-cell b-left b-right"  style="width:26%;padding-bottom:0px;padding-top:0px;padding-right:5px;">
+                                    <img src="img/tutorials_small.gif" class="valign-top float-left" style="padding-right:12px;padding-bottom:30px;"/>
+                                    <a href="http://www.netbeans.org/kb/">Tutorials</a><br><br>
+                                    <span style="height:45px;padding-bottom:7px;">
+                                        Written and recorded by the NetBeans community and professionals.
+                                    </span>		
+                                </td>
+                                <td class="f-page-cell b-right" style="width:25%;padding-bottom:0px;padding-top:0px;">                        
+                                    <img src="img/training_small.gif" class="valign-top float-left" style="padding-right:12px;"/>
+                                    <a href="http://java.sun.com/developer/onlineTraining/">Training</a><br><br>
+                                    <span style="height:45px;padding-bottom:7px;">
+                                        Courses to help you improve your skills.
+                                    </span>		
+                                </td>
+                                
+                                <td class="f-page-cell" style="width:25%;padding-bottom:0px;padding-top:0px;padding-right:0px;">
+                                    <img src="img/support_small.gif" class="valign-top float-left" style="padding-right:12px;"/>
+                                    <a href="http://www.netbeans.org/kb/support.html">Support</a><br><br>
+                                    <span style="height:45px;padding-bottom:7px;">
+                                        24/7 Support.
+                                    </span>		
+                                </td>
+                            </tr>
+                        </table>
+                        <br><br><br><br><br>
                     </div>
                 </div>
             </div>
+
+            <!-- fixed page footer -->
+            <div id="fixed-footer">
+                <div id="footer-text">                        
+                    <div id="footer-navig" class="float-left font-12">
+                        <a href="http://www.cafeshops.com/netbeans/" >Shop</a> &nbsp;
+                        <a href="http://www.netbeans.org/download/sitemaps/www_map.html">SiteMap</a> &nbsp;
+                        <a href="http://www.netbeans.org/about/index.html">About Us</a> &nbsp;
+                        <a href="http://www.netbeans.org/about/contact.html">Contact</a> &nbsp;
+                        <a href="http://www.netbeans.org/about/legal/index.html">Legal</a> &nbsp;
+                    </div>
+                    <div id="tof" class="float-right">
+                        By use of this website, you agree to <a href="http://www.netbeans.org/about/legal/terms-of-use.html">the NetBeans Policies and Terms of Use</a>
+                    </div>
+                </div>
+            </div>
+            <div class="align-center" style="width:910px;margin-left:auto;margin-right:auto;">
+                <center>
+                  	<table>
+				<tr>
+					<td class="companions-left b-green-left valign-center" style="padding-left:7px;">Companion <br>Projects: </td>
+					<td  class="valign-center">
+					<a href="https://openjdk.dev.java.net/"><img alt="" src="http://www.netbeans.org/images/v6/openjdk.gif" border="0" title="Open JDK: an Open SourceJDK" width="63" height="19"></a>&nbsp;&nbsp;
+					</td>
+					<td  class="valign-center">
+						<a href="https://glassfish.dev.java.net/"><img alt="" src="http://www.netbeans.org/images/v6/glassfish.gif" border="0" title="GlassFish Community: an Open Source Application Server" width="56" height="27"></a>&nbsp;&nbsp;&nbsp;
+					</td>
+	                                
+					<td  class="valign-center">
+						<a href="http://community.java.net/mobileandembedded/"><img alt="" src="http://www.netbeans.org/images/v6/mobile-duke.gif" border="0" width="37" heigh="35"></a>&nbsp;&nbsp;&nbsp;
+					</td>
+					<td  class="valign-center">
+						<a href="http://opensolaris.org/"><img alt="" src="http://www.netbeans.org/images/v6/opensolaris.gif" border="0" title="OpenSolaris" width="95" height="17"></a>&nbsp;&nbsp;
+					</td>
+					<td  class="valign-center ">
+						<a href="http://java.net/"><img alt="" src="http://www.netbeans.org/images/v6/javanet.gif" border="0" width="80" heigh="36"></a>&nbsp;&nbsp;
+					</td>
+	                                
+					<td  class="valign-center b-green-right" style="padding-right:20px;">
+						<a href="https://open-esb.dev.java.net/"><img alt="" src="http://www.netbeans.org/images/v6/open-esb.gif" border="0" width="143" heigh="30"></a>
+					</td>
+					<td class="valign-center" style="padding-right:5px;">&nbsp;Powered by:</td>
+					<td  class="companions-right b-green-right valign-center" style="padding-right:10px;"><img src="http://www.netbeans.org/images/v6/poweredby.gif"  width="70" height="14"/></td>
+				</tr>
+			</table>
+                </center>
+            </div>
+
         </div>
+
+        <!-- Begin SiteCatalyst code -->
+        <!--<script language="JavaScript" src="http://www.netbeans.org/images/js/s_code_remote.js"></script>-->
+        <!-- End SiteCatalyst code -->
+
     </body>
 </html>

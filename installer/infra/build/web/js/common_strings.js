@@ -34,41 +34,38 @@
  * copyright holder.
  */
 
-/* Top header *****************************************************************/
-table.top_header {
-    margin:             0px auto 0px auto;
-    width:                    100%;
-    height:                   57px;
-    border-collapse:      collapse;
-    background-image:      url('../img/products-top-bg.gif');
-    background-repeat:   no-repeat;
-    background-position:     right;
-}
+PLATFORM_LONG_NAMES  [0] = "Windows 2000/XP/Vista";
+PLATFORM_SHORT_NAMES [0] = "Windows";
+PLATFORM_LONG_NAMES  [1] = "Linux (x86/x64)";
+PLATFORM_SHORT_NAMES [1] = "Linux";
+PLATFORM_LONG_NAMES  [2] = "Solaris (x86/x64)";
+PLATFORM_SHORT_NAMES [2] = "Solaris (x86/x64)";
+PLATFORM_LONG_NAMES  [3] = "Solaris (sparc)";
+PLATFORM_SHORT_NAMES [3] = "Solaris (sparc)";
+PLATFORM_LONG_NAMES  [4] = "Mac OS X";
+PLATFORM_SHORT_NAMES [4] = "Mac OS X";
+PLATFORM_LONG_NAMES  [5] = "OS Independent Zip";
+PLATFORM_SHORT_NAMES [5] = "OS Independent Zip";
+/*
+// Commented since NBI installers are not used for now
+// Translate these strings as well (if they can be translated) and leave them commented
+PLATFORM_LONG_NAMES  [4] = "Mac OS X (intel)";
+PLATFORM_SHORT_NAMES [4] = "Mac OS X";
 
-table.top_header td {
-	padding:			25px 23px 0px 23px;	
-}
+PLATFORM_LONG_NAMES  [5] = "Mac OS X (powerpc)";
+PLATFORM_SHORT_NAMES [5] = "Mac OS X";
+*/
 
+BUNDLE_SHORT_NAMES[0] = "Web&nbsp;&amp;&nbsp;Java&nbsp;EE";
+BUNDLE_SHORT_NAMES[1] = "Mobility";
+BUNDLE_SHORT_NAMES[2] = "Java&nbsp;SE";
+BUNDLE_SHORT_NAMES[3] = "Ruby";
+BUNDLE_SHORT_NAMES[4] = "C/C++";
+BUNDLE_SHORT_NAMES[5] = "";
 
-table.top_header td.title {
-	width:				95%;
-	font-size:			1.8em;
-	color:				#0e1b55;
-}
-
-div.download_info {
-	margin:5px 0px 0px 30px;
-	padding-top:0px;
-	padding-left:15px;
-	color: #333333;
-}
-
-p.file_information {
-	color: #333333;
-	font-size:0.9em;
-	font-weight: normal;
-}
-
-a.download_link {
-	font-weight: normal;
-}
+BUNDLE_LONG_NAMES[0] = "Web&nbsp;&amp;&nbsp;Java&nbsp;EE";
+BUNDLE_LONG_NAMES[1] = "Mobility";
+BUNDLE_LONG_NAMES[2] = "Java&nbsp;SE";
+BUNDLE_LONG_NAMES[3] = "Ruby";
+BUNDLE_LONG_NAMES[4] = "C/C++";
+BUNDLE_LONG_NAMES[5] = "All";

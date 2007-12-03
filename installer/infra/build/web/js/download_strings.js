@@ -34,41 +34,42 @@
  * copyright holder.
  */
 
-/* Top header *****************************************************************/
-table.top_header {
-    margin:             0px auto 0px auto;
-    width:                    100%;
-    height:                   57px;
-    border-collapse:      collapse;
-    background-image:      url('../img/products-top-bg.gif');
-    background-repeat:   no-repeat;
-    background-position:     right;
-}
+var BUNDLED_SERVERS_GROUP_NAME = "Bundled&nbsp;Servers";
+                                                   
+var MOBILITY_E2E_MESSAGE 	  = "Mobility Web Services Connection wizard is only included in the All download, not in the Mobility download.";
+var NETBEANS_DOWNLOAD_BUNDLES_MSG = "NetBeans IDE Download Bundles";
+var NETBEANS_PACKS_MSG 		  = "NetBeans&nbsp;Packs";
 
-table.top_header td {
-	padding:			25px 23px 0px 23px;	
-}
+var JDK_DOWNLOAD_LINK    = "http://java.sun.com/javase/downloads/index.jsp";
+
+var JDK_NOTE_ALL      = "JDK 6 or JDK 5.0 is required for installing and running the NetBeans IDE. You can <a href=\"{0}\">download the JDK here</a>.";
+var JDK_NOTE_MACOSX   = "JDK 5.0 is required for installing and running the NetBeans IDE.";
+
+var FREE_SIZE_MESSAGE  = "Free,&nbsp;{0}&nbsp;MB";
+var NOT_AVAILABLE_SIZE = "--";
+
+var NOTE_PREFIX    = "Note: ";
+var NOTE_AND_SEP   = "{0} and {1}";
+var NOTE_COMMA_SEP = "{0}, {1}";
+
+var SINGLE_NOT_AVAILABLE_ZIP      = "{0} is not available in {1}";
+var SINGLE_NOT_AVAILABLE_BUNDLE   = "{0} is not available for {1}";
+var MULTIPLE_NOT_AVAILABLE_ZIP    = "{0} are not available in {1}";
+var MULTIPLE_NOT_AVAILABLE_BUNDLE = "{0} are not available for {1}";
 
 
-table.top_header td.title {
-	width:				95%;
-	font-size:			1.8em;
-	color:				#0e1b55;
-}
+var NOTE_SOLARIS = "Note: Mobility is only available for Windows and Linux.";
+var NOTE_MACOSX  = "Note: Mobility is only available for Windows and Linux. UML for Mac OS X is only available from the IDE`s Plugin Manager (Tools | Plugins).";
+var NOTE_ZIP     = "Note: GlassFish and Apache Tomcat are only available in platform specific installers.";
 
-div.download_info {
-	margin:5px 0px 0px 30px;
-	padding-top:0px;
-	padding-left:15px;
-	color: #333333;
-}
+// TRANSLATE NOTE: change download*.gif to download*_<locale>.gif
+var DOWNLOAD_BUTTON_NORMAL    = "img/download.gif";
+var DOWNLOAD_BUTTON_DISABLED  = "img/download_d.gif";
+var DOWNLOAD_BUTTON_HIGHLIGHT = "img/download_h.gif";
 
-p.file_information {
-	color: #333333;
-	font-size:0.9em;
-	font-weight: normal;
-}
+// TRANSLATE NOTE: change to start_<locale>.html
+var START_PAGE = "start.html";
 
-a.download_link {
-	font-weight: normal;
-}
+// DO NOT TRANSLATE
+var ZIP_FILES_PREFIX    = "{nb.zip.files.prefix}";
+var BUNDLE_FILES_PREFIX = "{nb.bundle.files.prefix}";

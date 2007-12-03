@@ -34,41 +34,14 @@
  * copyright holder.
  */
 
-/* Top header *****************************************************************/
-table.top_header {
-    margin:             0px auto 0px auto;
-    width:                    100%;
-    height:                   57px;
-    border-collapse:      collapse;
-    background-image:      url('../img/products-top-bg.gif');
-    background-repeat:   no-repeat;
-    background-position:     right;
-}
+var AUTOMATIC_DOWNLOAD_MESSAGE  = "Your download should start automatically.<br>If not, <a href=\"{0}\" class=\"download_link\">download it here</a>.<br>";
 
-table.top_header td {
-	padding:			25px 23px 0px 23px;	
-}
+var PRODUCT_NAME      = "NetBeans {build.display.version}";
+var INSTALLER_MESSAGE = "Installer for {0}";
+var NOFILE_MESSAGE    = "No file requested" ;
 
+// $PRODUCT_NAME $TYPE (Installer for $PLATFORM/Zip)/$Language ($Language_ID) $filename ($SIZE) MD5: $MD5
+var INFO_MESSAGE = "{0}{1} {2}/{3} ({4})<br>{5} ({6} MB)<br>MD5: {7}";
 
-table.top_header td.title {
-	width:				95%;
-	font-size:			1.8em;
-	color:				#0e1b55;
-}
-
-div.download_info {
-	margin:5px 0px 0px 30px;
-	padding-top:0px;
-	padding-left:15px;
-	color: #333333;
-}
-
-p.file_information {
-	color: #333333;
-	font-size:0.9em;
-	font-weight: normal;
-}
-
-a.download_link {
-	font-weight: normal;
-}
+//DO NOT TRANSLATE
+var SUBSCRIPTION_PHP_URL = "http://services.netbeans.org/sub.php";
