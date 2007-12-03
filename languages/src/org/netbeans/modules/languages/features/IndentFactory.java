@@ -91,6 +91,7 @@ public class IndentFactory implements IndentTask.Factory {
                 if (indentValue instanceof Feature) {
                     Feature m = (Feature) indentValue;
                     m.getValue (Context.create (document, context.startOffset ()));
+                    return;
                 }
                 Object[] params = (Object[]) indentValue;
                 
