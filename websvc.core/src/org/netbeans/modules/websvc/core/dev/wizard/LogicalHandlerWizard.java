@@ -58,6 +58,7 @@ import javax.swing.event.ChangeListener;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.websvc.api.support.SourceGroups;
 
 public class LogicalHandlerWizard implements WizardDescriptor.InstantiatingIterator {
     public int currentPanel = 0;
@@ -80,7 +81,7 @@ public class LogicalHandlerWizard implements WizardDescriptor.InstantiatingItera
         
         wiz = wizard;
         project = Templates.getProject(wiz);
-        SourceGroup[] sourceGroups = Util.getJavaSourceGroups(project);
+        SourceGroup[] sourceGroups = SourceGroups.getJavaSourceGroups(project);
         
         //create the Java Project chooser
 //        firstPanel = JavaTemplates.createPackageChooser(project, sourceGroups, new BottomPanel());

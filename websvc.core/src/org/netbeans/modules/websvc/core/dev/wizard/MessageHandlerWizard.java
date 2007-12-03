@@ -62,6 +62,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
+import org.netbeans.modules.websvc.api.support.SourceGroups;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.openide.filesystems.FileObject;
 
@@ -83,7 +84,7 @@ public class MessageHandlerWizard implements WizardDescriptor.InstantiatingItera
 
         wiz = wizard;
         project = Templates.getProject(wiz);
-        SourceGroup[] sourceGroups = Util.getJavaSourceGroups(project);
+        SourceGroup[] sourceGroups = SourceGroups.getJavaSourceGroups(project);
 
         //create the Java Project chooser
         firstPanel = JavaTemplates.createPackageChooser(project, sourceGroups, new BottomPanel());

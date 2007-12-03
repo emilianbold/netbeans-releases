@@ -58,6 +58,7 @@ import org.netbeans.modules.websvc.core.ServiceCreator;
 import org.openide.WizardDescriptor;
 
 import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.websvc.api.support.SourceGroups;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.filesystems.FileObject;
@@ -104,7 +105,7 @@ public class NewWebServiceFromWSDLWizardIterator implements TemplateWizard.Itera
 
         project = Templates.getProject(wiz);
 
-        SourceGroup[] sourceGroups = Util.getJavaSourceGroups(project);
+        SourceGroup[] sourceGroups = SourceGroups.getJavaSourceGroups(project);
         bottomPanel = new WebServiceFromWSDL(wiz, project);
         WizardDescriptor.Panel<WizardDescriptor> firstPanel; //special case: use Java Chooser
         if (sourceGroups.length == 0)

@@ -58,6 +58,7 @@ import org.netbeans.modules.websvc.core.ServiceCreator;
 import org.openide.WizardDescriptor;
 
 import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.websvc.api.support.SourceGroups;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.filesystems.FileObject;
@@ -108,7 +109,7 @@ public class NewWebServiceWizardIterator implements TemplateWizard.Iterator /*, 
 
         project = Templates.getProject(wiz);
 
-        SourceGroup[] sourceGroups = Util.getJavaSourceGroups(project);
+        SourceGroup[] sourceGroups = SourceGroups.getJavaSourceGroups(project);
         bottomPanel = new WebServiceType(project, wiz);
 //convert Java class not implemented for 5.5 release
 //        ((WebServiceTypePanel) bottomPanel.getComponent()).addItemListener(this);
