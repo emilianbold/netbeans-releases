@@ -873,6 +873,8 @@ public class CsmTracer {
 		dumpModel((CsmFunction) member);
 	    } else if ( member.getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION ) { // inline function
 		dumpModel((CsmFunctionDefinition) member);
+	    } else if ( member.getKind() == CsmDeclaration.Kind.TYPEDEF ) { 
+		dumpModel((CsmTypedef) member);
 	    } else {
 		StringBuilder sb = new StringBuilder(member.getKind().toString());
 		sb.append(' ');
