@@ -370,16 +370,8 @@ public class AstRenderer {
                             break;
                         case CPPTokenTypes.LITERAL_enum:
                             if( AstUtil.findSiblingOfType(curr, CPPTokenTypes.RCURLY) != null ) {
-                                NamespaceImpl nsp = null;
-                                if( container instanceof NamespaceImpl ) {
-                                    nsp = (NamespaceImpl) container;
-                                }
-                                else if( container instanceof ClassImpl ) {
-                                    nsp = ((ClassImpl) container).getContainingNamespaceImpl();
-                                }
-                                if( nsp != null ) {
-                                    ei = EnumImpl.create(curr, nsp, file);
-                                    file.addDeclaration(ei);
+                                if( container instanceof CsmScope) {
+                                    ei = EnumImpl.create(curr, (CsmScope) container, file);
                                     if( container instanceof  MutableDeclarationsContainer )
                                     ((MutableDeclarationsContainer) container).addDeclaration(ei);
                                 }

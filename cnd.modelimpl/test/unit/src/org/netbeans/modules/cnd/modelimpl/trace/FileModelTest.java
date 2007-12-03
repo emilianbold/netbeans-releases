@@ -205,6 +205,11 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("namespace_attrib.cc"); // NOI18N
     }
     
+    public void testTypedefEnumInClassScope() throws Exception {
+        performTest("typedef_enum_in_class_scope.cc"); // NOI18N
+    }
+    
+    
     /////////////////////////////////////////////////////////////////////
     // FAILS
     
