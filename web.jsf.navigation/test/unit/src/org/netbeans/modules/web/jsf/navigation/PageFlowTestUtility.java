@@ -38,20 +38,14 @@
  */
 package org.netbeans.modules.web.jsf.navigation;
 
-import java.awt.Dimension;
-import java.awt.EventQueue;
-import java.awt.Rectangle;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
-import java.util.Arrays;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import javax.swing.JEditorPane;
-import javax.swing.plaf.DimensionUIResource;
 import javax.swing.text.EditorKit;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -73,7 +67,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataLoader;
 import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.test.MockLookup;
