@@ -56,17 +56,21 @@ import javax.swing.Action;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.modules.java.navigation.ElementNode.Description;
 import org.netbeans.modules.java.navigation.actions.OpenAction;
+import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.datatransfer.PasteType;
+import org.openide.util.lookup.Lookups;
 
 /** Node representing an Element
  *
@@ -82,11 +86,10 @@ public class ElementNode extends AbstractNode {
            
     /** Creates a new instance of TreeNode */
     public ElementNode( Description description ) {
-        super(description.subs == null ? Children.LEAF: new ElementChilren(description.subs, description.ui.getFilters()));
+        super(description.subs == null ? Children.LEAF: new ElementChilren(description.subs, description.ui.getFilters()), description.treePathHandle==null?null:Lookups.singleton(description.treePathHandle));
         this.description = description;
         setDisplayName( description.name ); 
     }
-    
     
     @Override
     public Image getIcon(int type) {
@@ -117,11 +120,13 @@ public class ElementNode extends AbstractNode {
         else {
             Action panelActions[] = description.ui.getActions();
             
-            Action actions[]  = new Action[ 2 + panelActions.length ];
+            Action actions[]  = new Action[ 4 + panelActions.length ];
             actions[0] = getOpenAction();
-            actions[1] = null;
+            actions[1] = RefactoringActionsFactory.whereUsedAction();
+            actions[2] = RefactoringActionsFactory.popupSubmenuAction();
+            actions[3] = null;
             for( int i = 0; i < panelActions.length; i++ ){
-                actions[2 + i] = panelActions[i];
+                actions[4 + i] = panelActions[i];
             }
             return actions;
         }
@@ -298,6 +303,7 @@ public class ElementNode extends AbstractNode {
         
         final String name;
         final ElementHandle<? extends Element> elementHandle;
+        final TreePathHandle treePathHandle;
         final ElementKind kind;
         Set<Modifier> modifiers;        
         List<Description> subs; 
@@ -310,6 +316,7 @@ public class ElementNode extends AbstractNode {
             this.ui = ui;
             this.name = null;
             this.elementHandle = null;
+            this.treePathHandle = null;
             this.kind = null;
             this.isInherited = false;
         }
@@ -318,12 +325,14 @@ public class ElementNode extends AbstractNode {
                     String name,
                     ElementHandle<? extends Element> elementHandle,
                     ElementKind kind,
+                    TreePathHandle tpHandle,
                     boolean inherited ) {
             this.ui = ui;
             this.name = name;
             this.elementHandle = elementHandle;
             this.kind = kind;
             this.isInherited = inherited;
+            this.treePathHandle = tpHandle;
         }
 
         public FileObject getFileObject() {

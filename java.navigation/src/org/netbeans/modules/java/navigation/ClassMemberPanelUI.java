@@ -11,11 +11,13 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -49,18 +51,21 @@ import org.openide.explorer.view.Visualizer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  *
  * @author  phrebejk
  */
 public class ClassMemberPanelUI extends javax.swing.JPanel
-        implements ExplorerManager.Provider, FiltersManager.FilterChangeListener {
+        implements ExplorerManager.Provider, FiltersManager.FilterChangeListener, PropertyChangeListener {
     
     private ExplorerManager manager = new ExplorerManager();
     private MyBeanTreeView elementView;
     private TapPanel filtersPanel;
-    private Lookup lookup = null; // XXX may need better lookup
+    private InstanceContent selectedNodes = new InstanceContent();
+    private Lookup lookup = new AbstractLookup(selectedNodes);
     private ClassMemberFilters filters;
     
     private Action[] actions; // General actions for the panel
@@ -72,6 +77,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     public ClassMemberPanelUI() {
                       
         initComponents();
+        manager.addPropertyChangeListener(this);
         
         // Tree view of the elements
         elementView = createBeanTreeView();        
@@ -413,6 +419,17 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
                     }
                 }
             });
+        }
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
+            for (Node n:(Node[])evt.getOldValue()) {
+                selectedNodes.remove(n);
+            }
+            for (Node n:(Node[])evt.getNewValue()) {
+                selectedNodes.add(n);
+            }
         }
     }
 }
