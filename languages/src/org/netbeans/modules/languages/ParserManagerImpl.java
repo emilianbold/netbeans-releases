@@ -220,15 +220,6 @@ public class ParserManagerImpl extends ParserManager {
         Map<String,Set<ASTEvaluator>>   evaluators,
         ASTNode                         root
     ) {
-        if (listeners != null) {
-            Iterator<ParserManagerListener> it = listeners.iterator ();
-            while (it.hasNext ()) {
-                ParserManagerListener l = it.next ();                           //long start = System.currentTimeMillis ();
-                l.parsed (state, ast);
-                                                                                //Long t = times.get (l);if (t == null) t = new Long (0);times.put (l, t.longValue () + System.currentTimeMillis () - start);
-                if (cancel [0]) return;
-            }
-        }                                                                       //Iterator iit = times.keySet ().iterator ();while (iit.hasNext()) {Object object = iit.next();System.out.println("  Listener " + object + " : " + times.get (object));}
 
         if (state == State.PARSING) return;
         if (evaluators != null) {
@@ -261,6 +252,16 @@ public class ParserManagerImpl extends ParserManager {
                 }
             }
         }
+        
+        if (listeners != null) {
+            Iterator<ParserManagerListener> it = listeners.iterator ();
+            while (it.hasNext ()) {
+                ParserManagerListener l = it.next ();                           //long start = System.currentTimeMillis ();
+                l.parsed (state, ast);
+                                                                                //Long t = times.get (l);if (t == null) t = new Long (0);times.put (l, t.longValue () + System.currentTimeMillis () - start);
+                if (cancel [0]) return;
+            }
+        }                                                                       //Iterator iit = times.keySet ().iterator ();while (iit.hasNext()) {Object object = iit.next();System.out.println("  Listener " + object + " : " + times.get (object));}
     }
     
     private void evaluate (

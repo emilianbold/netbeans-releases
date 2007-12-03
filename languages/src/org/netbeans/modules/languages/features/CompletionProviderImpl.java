@@ -209,14 +209,24 @@ public class CompletionProviderImpl implements CompletionProvider {
             if (doc instanceof NbEditorDocument)
                 ((NbEditorDocument) doc).readLock ();
             try {
+                int offset = component.getCaret ().getDot ();
                 TokenSequence tokenSequence = getDeepestTokenSequence (
                     tokenHierarchy,
-                    component.getCaret ().getDot ()
+                    offset
                 );
                 Token token = tokenSequence.token ();
                 if (token != null) {
                     String start = token.text ().toString ();
-
+                    String completionType = getCompletionType (null, token.id ().name ());
+                    int tokenOffset = tokenSequence.offset();
+                    if (completionType == null || (COMPLETION_APPEND.equals (completionType) && 
+                            offset < tokenOffset + token.length ())) {
+                        start = start.substring(0, offset - tokenOffset).trim ();
+                    } else {
+                        start = COMPLETION_COMPLETE.equals (completionType) ? 
+                            start.substring(0, offset - tokenOffset).trim () : ""; // NOI18N
+                    }
+                    
                     Iterator<CompletionItem> it = items.iterator ();
                     while (it.hasNext ()) {
                         CompletionItem completionItem = it.next ();
