@@ -814,6 +814,18 @@ external_declaration_template { K_and_R = false; boolean ctrName=false;}
 		{endTemplateDefinition(); /*#external_declaration_template = #(#[CSM_STRANGE_2, "CSM_STRANGE_2"], #external_declaration_template);*/}
 	;
 
+protected 
+typedef_enum
+        :
+                {if(statementTrace>=1) 
+                        printf("typedef_enum [%d]\n",LT(1).getLine());
+                }                     
+                LITERAL_typedef 
+                {declarationSpecifier(true, false, scInvalid, tqInvalid, tsInvalid, dsInvalid);} 
+                enum_specifier 
+                (init_declarator_list)? SEMICOLON //{end_of_stmt();}
+        ;
+
 external_declaration {String s; K_and_R = false; boolean definition;}
 	:  
 	(
@@ -847,16 +859,8 @@ external_declaration {String s; K_and_R = false; boolean definition;}
 
 	|	
                 //enum typedef )))	
-                (LITERAL_typedef enum_specifier)=>
-                {if(statementTrace>=1) 
-                        printf("external_declaration_2[%d] typedef enum type\n",LT(1).getLine());
-                }                     
-                LITERAL_typedef 
-                {declarationSpecifier(true, false, scInvalid, tqInvalid, tsInvalid, dsInvalid);} 
-                enum_specifier 
-                //{ #external_declaration = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #external_declaration);  }                            
-                (init_declarator_list)? SEMICOLON //{end_of_stmt();}
-                {  #external_declaration = #(#[CSM_GENERIC_DECLARATION, "CSM_GENERIC_DECLARATION"], #external_declaration); }                        		
+                (LITERAL_typedef enum_specifier)=> typedef_enum
+                {  #external_declaration = #(#[CSM_GENERIC_DECLARATION, "CSM_GENERIC_DECLARATION"], #external_declaration); }
 	|
   
 		// Enum definition (don't want to backtrack over this in other alts)
@@ -1139,6 +1143,10 @@ member_declaration
 		}
 		enum_specifier (member_declarator_list)? SEMICOLON!	//{end_of_stmt();}
 		{ #member_declaration = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #member_declaration); }
+	|	
+                //enum typedef )))	
+                (LITERAL_typedef enum_specifier)=> typedef_enum
+		{ #member_declaration = #(#[CSM_FIELD, "CSM_FIELD"], #member_declaration); }
 	|
 		// Constructor declarator
 		(	ctor_decl_spec
@@ -1259,6 +1267,8 @@ member_declaration
 				LT(1).getLine());
 		}
 		(LITERAL___extension__!)? declaration_specifiers (member_declarator_list)? (EOF!|SEMICOLON) //{end_of_stmt();}
+                // now member typedefs are placed under CSM_FIELD, so we do this here as well
+                // TODO: separate imaginery AST nodes for typedefs and fields
 		{ #member_declaration = #(#[CSM_FIELD, "CSM_FIELD"], #member_declaration); }
 	|  
 		// Member without a type (I guess it can only be a function declaration
