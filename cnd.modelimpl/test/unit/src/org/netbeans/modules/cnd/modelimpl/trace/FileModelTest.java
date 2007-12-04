@@ -217,6 +217,10 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("typedef_inside_func.cc"); // NOI18N
     }
     
+    public void testAttributesAlignedClass() throws Exception {
+        performTest("attributes_aligned_class.cc"); // NOI18N
+    }
+    
     /////////////////////////////////////////////////////////////////////
     // FAILS
     
@@ -232,6 +236,7 @@ public class FileModelTest extends TraceModelTestBase {
 	    super.setUp();
 	}
 	
+        @Override
 	protected Class getTestCaseDataClass() {
 	    return FileModelTest.class;
 	}
@@ -240,6 +245,7 @@ public class FileModelTest extends TraceModelTestBase {
 	    performTest("template_inner_class_dtor_definition.cc"); // NOI18N
 	}
 	
+        @Override
 	protected void postSetUp() {
 	    // init flags needed for file model tests
 	    getTraceModel().setDumpModel(true);

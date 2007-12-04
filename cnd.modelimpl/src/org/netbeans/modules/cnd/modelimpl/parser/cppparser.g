@@ -1557,6 +1557,7 @@ class_specifier[DeclSpecifier ds] returns [/*TypeSpecifier*/int ts = tsInvalid]
 		|LITERAL_struct	{ts = tsSTRUCT;}
 		|LITERAL_union	{ts = tsUNION;}
 		)
+                (options {greedy=true;} : type_attribute_specification)?
 		(	id = qualified_id
 			(options{generateAmbigWarnings = false;}:
 				{
@@ -1667,6 +1668,7 @@ initializer
    ;
 
 
+// so far this one is used in predicates only
 class_head     
         { String s; }
 	:	// Used only by predicates	
@@ -1675,6 +1677,7 @@ class_head
 	|	LITERAL_union 
 	|	LITERAL_class 
 	)
+        (options {greedy=true;} : type_attribute_specification)?
 	(
      
             s = scope_override  
