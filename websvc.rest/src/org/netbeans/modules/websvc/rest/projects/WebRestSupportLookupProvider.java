@@ -47,9 +47,9 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.websvc.rest.RestUtils;
+import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServices;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
@@ -58,7 +58,6 @@ import org.netbeans.spi.project.LookupProvider;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.util.Lookup;
-import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 
 /** Lookup Provider for WS Support
@@ -135,12 +134,6 @@ public class WebRestSupportLookupProvider implements LookupProvider {
         private Project prj;
         private RestSupport support;
         
-        private RequestProcessor.Task updateRestSvcTask = RequestProcessor.getDefault().create(new Runnable() {
-            public void run() {
-                updateRestServices();
-            }
-        });
-        
         RestServicesChangeListener(RestServicesModel wsModel, Project prj) {
             this.wsModel=wsModel;
             this.prj=prj;
@@ -148,30 +141,24 @@ public class WebRestSupportLookupProvider implements LookupProvider {
         }
         
         public void propertyChange(PropertyChangeEvent evt) {
-            updateRestServices();
-        }
-        
-        private synchronized void updateRestServices() {
             //System.out.println("updating rest services");
             try {
+                final int[] serviceCount = new int[1];
                 wsModel.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
                     public Void run(RestServicesMetadata metadata) throws IOException {
-                        RestServices root = metadata.getRoot();
-                        
-                        if (root.sizeRestServiceDescription() > 0) {
-                            RestUtils.ensureRestDevelopmentReady(prj);
-                        } else {
-                            RestUtils.removeRestDevelopmentReadiness(prj);
-                        }
-                        
+                        serviceCount[0] = metadata.getRoot().sizeRestServiceDescription();
                         return null;
                     }
                 });
+                if (serviceCount[0] > 0) {
+                    RestUtils.ensureRestDevelopmentReady(prj);
+                } else {
+                    RestUtils.removeRestDevelopmentReadiness(prj);
+                }
             } catch (IOException ex) {
                 Logger.getLogger(this.getClass().getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
             }
             //System.out.println("done updating rest services");
         }
     }
-    
 }

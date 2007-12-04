@@ -87,7 +87,9 @@ public class RestUtils {
      */
     public static void ensureRestDevelopmentReady(Project project) throws IOException {
         RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
-        restSupport.ensureRestDevelopmentReady();
+        if (restSupport != null) {
+            restSupport.ensureRestDevelopmentReady();
+        }
     }
     
     /**
@@ -96,7 +98,9 @@ public class RestUtils {
      */
     public static void removeRestDevelopmentReadiness(Project project) throws IOException {
         RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
-        restSupport.removeRestDevelopmentReadiness();
+        if (restSupport != null && restSupport.isRestSupportOn()) {
+            restSupport.removeRestDevelopmentReadiness();
+        }
     }
     
     /**
