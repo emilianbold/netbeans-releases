@@ -582,6 +582,7 @@ implements FileChangeListener, DataObject.Container {
             f.addFileChangeListener(weakFCL);
             files.put(f, d);
         }
+        if (LOG) err.fine("carefullySort before getOrder");
         List<FileObject> sorted = FileUtil.getOrder(files.keySet(), true);
         List<DataObject> dobs = new ArrayList<DataObject>(sorted.size());
         for (FileObject f : sorted) {
@@ -745,6 +746,9 @@ implements FileChangeListener, DataObject.Container {
                     // data object not recognized or not found
                     obj = null;
                     Exceptions.printStackTrace(ex);
+                } catch (Throwable td) {
+                    obj = null;
+                    err.log(Level.WARNING, "Error recognizing " + fo, td);
                 }
 
                 if (obj != null) {
