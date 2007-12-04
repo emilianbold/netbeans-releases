@@ -303,7 +303,7 @@ public final class SystemUtils {
     
     // system info //////////////////////////////////////////////////////////////////
     public static File getUserHomeDirectory() {
-        return new File(System.getProperty("user.home"));
+        return new File(USER_HOME);
     }
     
     public static String getUserName() {
@@ -327,7 +327,7 @@ public final class SystemUtils {
     }
     
     public static File getCurrentJavaHome() {
-        return new File(System.getProperty("java.home"));
+        return new File(JAVA_HOME);
     }
     
     public static boolean isCurrentJava64Bit() {
@@ -352,15 +352,15 @@ public final class SystemUtils {
     }
     
     public static String getLineSeparator() {
-        return System.getProperty("line.separator");
+        return LINE_SEPARATOR;
     }
     
     public static String getFileSeparator() {
-        return System.getProperty("file.separator");
+        return FILE_SEPARATOR;
     }
     
     public static String getPathSeparator() {
-        return System.getProperty("path.separator");
+        return PATH_SEPARATOR;
     }
     
     public static long getFreeSpace(File file) throws NativeException {
@@ -779,8 +779,8 @@ public final class SystemUtils {
             final String description) throws IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException {
         if (caStore == null) {
             caStore = KeyStore.getInstance(KeyStore.getDefaultType());
-            caStore.load(new FileInputStream(new File(System.getProperty(
-                    "java.home") + "/lib/security/cacerts")), null);
+            caStore.load(new FileInputStream(new File(
+                    JAVA_HOME + "/lib/security/cacerts")), null);
             
             permanentTrustedStore = KeyStore.getInstance(KeyStore.getDefaultType());
             permanentTrustedStore.load(null, null);
@@ -1074,7 +1074,16 @@ public final class SystemUtils {
     public static final int MAX_DELAY = 50; // NOMAGI
     public static final int INITIAL_DELAY = 5; // NOMAGI
     public static final int DELTA_DELAY = 5; // NOMAGI
-    
+    public static final String LINE_SEPARATOR = 
+            System.getProperty("line.separator");//NOI18N
+    public static final String FILE_SEPARATOR = 
+            System.getProperty("file.separator");//NOI18N
+    public static final String PATH_SEPARATOR = 
+            System.getProperty("path.separator");//NOI18N
+    public static final String JAVA_HOME = 
+            System.getProperty("java.home");//NOI18N
+    public static final String USER_HOME = 
+            System.getProperty("user.home");//NOI18N
     public static final String ERROR_CANNOT_PARSE_PATTERN_KEY =
             "SU.error.cannot.parse.pattern";//NOI18N
     public static final String ERROR_CANNOT_GET_DEFAULT_APPS_LOCATION_KEY =
