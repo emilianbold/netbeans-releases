@@ -28,9 +28,7 @@
 package org.netbeans.modules.java.source.save;
 
 import com.sun.source.tree.*;
-import com.sun.source.util.SourcePositions;
-import com.sun.source.util.TreePath;
-import com.sun.source.util.TreePathScanner;
+import com.sun.source.util.*;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.code.Flags;
@@ -271,6 +269,7 @@ public class Reformatter implements ReformatTask {
         private boolean fieldGroup;
         private boolean afterNewline;
         private LinkedList<Diff> diffs = new LinkedList<Diff>();
+        private DanglingElseChecker danglingElseChecker = new DanglingElseChecker();
 
         private Pretty(CompilationInfo info, TreePath path, CodeStyle cs) {
             this(info, info.getText(), info.getTrees().getSourcePositions(),
@@ -1214,8 +1213,11 @@ public class Reformatter implements ReformatTask {
             spaces(cs.spaceBeforeIfParen() ? 1 : 0);
             scan(node.getCondition(), p);
             indent = old;
-            boolean prevblock = wrapStatement(cs.wrapIfStatement(), cs.redundantIfBraces(), cs.spaceBeforeIfLeftBrace() ? 1 : 0, node.getThenStatement());
             StatementTree elseStat = node.getElseStatement();
+            CodeStyle.BracesGenerationStyle redundantIfBraces = cs.redundantIfBraces();
+            if (elseStat != null && redundantIfBraces == CodeStyle.BracesGenerationStyle.ELIMINATE && danglingElseChecker.hasDanglingElse(node.getThenStatement()))
+                redundantIfBraces = CodeStyle.BracesGenerationStyle.LEAVE_ALONE;
+            boolean prevblock = wrapStatement(cs.wrapIfStatement(), redundantIfBraces, cs.spaceBeforeIfLeftBrace() ? 1 : 0, node.getThenStatement());
             if (elseStat != null) {
                 if (cs.placeElseOnNewLine() || !prevblock) {
                     newline();
@@ -2585,6 +2587,69 @@ public class Reformatter implements ReformatTask {
             private FakeBlock(StatementTree stat) {
                 super(0L, com.sun.tools.javac.util.List.of((JCStatement)stat));
                 this.stat = stat;
+            }
+        }
+        
+        private static class DanglingElseChecker extends SimpleTreeVisitor<Void, Void> {
+
+            private boolean foundDanglingElse;
+
+            public boolean hasDanglingElse(Tree t) {
+                if (t == null)
+                    return false;
+                foundDanglingElse = false;
+                visit(t, null);
+                return foundDanglingElse;
+            }
+
+            @Override
+            public Void visitBlock(BlockTree node, Void p) {
+                // Do dangling else checks on single statement blocks since
+                // they often get eliminated and replaced by their constained statement
+                Iterator<? extends StatementTree> it = node.getStatements().iterator();
+                StatementTree stat = it.hasNext() ? it.next() : null;
+                if (stat != null && !it.hasNext())
+                    visit(stat, p);
+                return null;
+            }
+
+            @Override
+            public Void visitDoWhileLoop(DoWhileLoopTree node, Void p) {
+                return visit(node.getStatement(), p);
+            }
+
+            @Override
+            public Void visitEnhancedForLoop(EnhancedForLoopTree node, Void p) {
+                return visit(node.getStatement(), p);
+            }
+
+            @Override
+            public Void visitForLoop(ForLoopTree node, Void p) {
+                return visit(node.getStatement(), p);
+            }
+
+            @Override
+            public Void visitIf(IfTree node, Void p) {
+                if (node.getElseStatement() == null)
+                    foundDanglingElse = true;
+                else
+                    visit(node.getElseStatement(), p);
+                return null;
+            }
+
+            @Override
+            public Void visitLabeledStatement(LabeledStatementTree node, Void p) {
+                return visit(node.getStatement(), p);
+            }
+
+            @Override
+            public Void visitSynchronized(SynchronizedTree node, Void p) {
+                return visit(node.getBlock(), p);
+            }
+
+            @Override
+            public Void visitWhileLoop(WhileLoopTree node, Void p) {
+                return visit(node.getStatement(), p);
             }
         }
     }
