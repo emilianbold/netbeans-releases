@@ -136,9 +136,11 @@ public class WebProjectRestSupport extends RestSupport {
     }
     
     private Servlet getRestServletAdaptor(WebApp webApp) {
-        for (Servlet s : webApp.getServlet()) {
-            if (REST_SERVLET_ADAPTOR.equals(s.getServletName())) {
-                return s;
+        if (webApp != null) {
+            for (Servlet s : webApp.getServlet()) {
+                if (REST_SERVLET_ADAPTOR.equals(s.getServletName())) {
+                    return s;
+                }
             }
         }
         return null;
@@ -173,6 +175,9 @@ public class WebProjectRestSupport extends RestSupport {
     private void addResourceConfigToWebApp() throws IOException {
         FileObject ddFO = getDeploymentDescriptor();
         WebApp webApp = getWebApp();
+        if (webApp == null) {
+            return;
+        }
         boolean needsSave = false;
         try {
             Servlet adaptorServlet = getRestServletAdaptor(webApp);
@@ -209,21 +214,32 @@ public class WebProjectRestSupport extends RestSupport {
     private void removeResourceConfigFromWebApp() throws IOException {
         FileObject ddFO = getDeploymentDescriptor();
         WebApp webApp = getWebApp();
+        if (webApp == null) {
+            return;
+        }
+        boolean needsSave = false;
         Servlet restServlet = getRestServletAdaptor(webApp);
         if (restServlet != null) {
             webApp.removeServlet(restServlet);
+            needsSave = true;
         }
         ServletMapping sm = getRestServletMapping(webApp);
         if (sm != null) {
             webApp.removeServletMapping(sm);
+            needsSave = true;
         }
-        webApp.write(ddFO);
+        if (needsSave) {
+            webApp.write(ddFO);
+        }
     }
     
     private WebApp getWebApp() throws IOException {
             WebModuleImplementation jp = (WebModuleImplementation) project.getLookup().lookup(WebModuleImplementation.class);
             FileObject fo = jp.getDeploymentDescriptor();
-            return DDProvider.getDefault().getDDRoot(fo);
+            if (fo != null) {
+                return DDProvider.getDefault().getDDRoot(fo);
+            }
+            return null;
     }
     
     public FileObject getPersistenceXml() {
