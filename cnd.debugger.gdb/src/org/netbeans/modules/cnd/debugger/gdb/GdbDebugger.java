@@ -44,8 +44,10 @@ package org.netbeans.modules.cnd.debugger.gdb;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -234,8 +236,12 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             gdb.gdb_show("language"); // NOI18N
             if (pae.getID() == DEBUG_ATTACH) {
                 programPID = (Long) lookupProvider.lookupFirst(null, Long.class);
-                gdb.target_attach(Long.toString(programPID));
-//                gdb.file_symbol_file(pae.getExecutable());
+                int token = gdb.target_attach(Long.toString(programPID));
+                CommandBuffer cb = new CommandBuffer(token);
+                cb.postAndWait();
+                if (!symbolsRead(cb.toString(), runDirectory + '/' + pae.getExecutable())) {
+                    gdb.file_symbol_file(pae.getExecutable());
+                }
                 setAttaching();
             } else {
                 gdb.file_exec_and_symbols(getProgramName(pae.getExecutable()));
@@ -362,10 +368,17 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             } else if (evt.getNewValue() == STATE_SILENT_STOP) {
                 interrupt();
             } else if (evt.getNewValue() == STATE_ATTACHING) {
-                if (validAttach()) { // FIXME - Is this needed? Is the need platform specific?
+                if (validAttach()) {
                     setLoading();
                 } else {
-                    finish(false);
+                    String msg = NbBundle.getMessage(GdbDebugger.class, "WARN_AttachValidationFailure"); // NOI18N
+                    Object o = DialogDisplayer.getDefault().notify(
+                            new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.OK_CANCEL_OPTION));
+                    if (o == NotifyDescriptor.OK_OPTION) {
+                        setLoading();
+                    } else {
+                        finish(false);
+                    }
                 }
             } else if (evt.getNewValue() == STATE_RUNNING && 
                     (evt.getOldValue() == STATE_SILENT_STOP ||
@@ -383,6 +396,16 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
     }
     
+    private boolean symbolsRead(String results, String exepath) {
+        for (String line : results.split("\\\\n")) { // NOI18N
+            if (line.contains("Reading symbols from ") && // NOI18N
+                    line.contains(exepath)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     /**
      * Check that the executable from the selected project matches the attached process. Gdb itself
      * doesn't do this validation and its non-trivial and the methods of validation are system
@@ -391,21 +414,80 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
      * @return true if the project matches the attached to executable
      */
     private boolean validAttach() {
-        assert !Thread.currentThread().getName().equals("GdbReaderRP") : // NOI18N
-            "Internal Error: Cannot call validAttach from GdbReaderRP thread"; // NOI18N
+        ProjectActionEvent pae = (ProjectActionEvent) lookupProvider.lookupFirst(null, ProjectActionEvent.class);
+        String exe = pae.getExecutable();
         if (!Utilities.isWindows()) {
-            File dir = new File("/proc/" + Long.toString(programPID));
+            String procpath = "/proc/" + Long.toString(programPID); // NOI18N
+            File dir = new File(procpath);
             if (dir.exists() && dir.isDirectory()) {
-                // various system dependent checks...
+                File pathfile = new File(procpath + "/path/a.out"); // NOI18N - Solaris only?
+                if (!pathfile.exists()) {
+                    pathfile = new File(procpath + "/exe"); // NOI18N - Linux?
+                }
+                if (pathfile.exists()) {
+                    File exefile = new File(exe);
+                    if (exefile.exists()) {
+                        String path = getPathFromSymlink(pathfile.getAbsolutePath());
+                        if (path.equals(exefile.getAbsolutePath())) {
+                            return true;
+                        }
+                    }
+                }
             }
         }
-        ProjectActionEvent pae = (ProjectActionEvent) lookupProvider.lookupFirst(null, ProjectActionEvent.class);
         String info = getInfoFiles();
         if (checkInfoFiles(pae, info)) {
             return true;
         }
-        return true;  // FIXME - this is a debug response!
+        return false;
 //        return false;
+    }
+    
+    private String getPathFromSymlink(String apath) {
+        SymlinkCommand slink = new SymlinkCommand(apath);
+        return slink.getPath();
+    }
+    
+    private static class SymlinkCommand {
+        
+        private String path;
+        private ProcessBuilder pb;
+        private String linkline;
+        
+        SymlinkCommand(String path) {
+            this.path = path;
+            linkline = null;
+            File file = new File("/bin/ls"); // NOI18N
+            
+            if (file.exists()) {
+                List<String> list = new ArrayList<String>();
+                list.add("/bin/ls"); // NOI18N
+                list.add("-l"); // NOI18N
+                list.add(path);
+                pb = new ProcessBuilder(list);
+                pb.redirectErrorStream(true);
+            } else {
+                pb = null;
+            }
+        }
+        
+        public String getPath() {
+            if (pb != null) {
+                try {
+                    Process process = pb.start();
+                    BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                    String line = br.readLine(); // just read 1st line...
+                    br.close();
+                    int pos = line.indexOf("->"); // NOI18N
+                    if (pos > 0) {
+                        return line.substring(pos + 2).trim();
+                    }
+                } catch (IOException ioe) {
+                }
+                
+            }
+            return linkline;
+        }
     }
     
     private String getInfoFiles() {
@@ -1603,7 +1685,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     (MakeConfigurationDescriptor) cdp.getConfigurationDescriptor();
             MakeConfiguration conf = (MakeConfiguration) mcd.getConfs().getActive();
             MakeArtifact ma = new MakeArtifact(mcd, conf);
-            String path = ma.getOutput();
+            String runDirectory = conf.getProfile().getRunDirectory().replace("\\", "/");  // NOI18N
+            String path = runDirectory + '/' + ma.getOutput();
             ProjectActionEvent pae = new ProjectActionEvent(
                     project,
                     DEBUG_ATTACH,

@@ -133,6 +133,7 @@ public class VersionCommand implements Runnable {
                 Process process = pb.start();
                 BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
                 version = br.readLine(); // just read 1st line...
+                br.close();
             } catch (IOException ioe) {
             }
         }
