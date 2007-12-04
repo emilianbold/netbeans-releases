@@ -1,7 +1,12 @@
 I. Steps to run jMaki REST Components
 =====================================
-1. Download jMaki 1.0 NetBeans plugin from jMaki website 
-(https://ajax.dev.java.net/files/documents/3115/69449/org-netbeans-modules-sun-jmaki.nbm)
+1. Install jMaki Ajax plugin (in IDE follow Tools->Plugins->Available Plugins, 
+then select 'jMaki Ajax support' and click 'Install' button).
+
+or
+
+Download and install jMaki 1.0 NetBeans plugin from jMaki website 
+(https://ajax.dev.java.net/jmaki-plugin.html)
 
 2. Open NetBeans 6.0 IDE, then install the plugin by selecting "Downloaded" tab 
 after invoking Tools->Plugins.
