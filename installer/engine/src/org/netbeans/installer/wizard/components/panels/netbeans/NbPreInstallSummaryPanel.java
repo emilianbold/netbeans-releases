@@ -246,7 +246,8 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                     List <Dependency> bases = product.getDependencyByUid("nb-base");
                     if(!bases.isEmpty()) {
                         // dependency is already resolved at this point
-                        base = Registry.getInstance().getProduct(bases.get(0).getUid(), bases.get(0).getVersionResolved());
+                        base = Registry.getInstance().getProducts(bases.get(0)).get(0);
+
                         if(base!=null) {
                             nbLocation = base.getInstallationLocation();
                             try {
