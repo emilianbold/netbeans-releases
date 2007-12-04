@@ -221,9 +221,14 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("attributes_aligned_class.cc"); // NOI18N
     }
     
-	public void testStaticStruct() throws Exception {
-	    performTest("static_struct.cc"); // NOI18N
-	}
+    public void testStaticStruct() throws Exception {
+        performTest("static_struct.cc"); // NOI18N
+    }
+
+    public void testInlineDtorDefinitionName() throws Exception {
+        performTest("inline_dtor_definition_name.cc"); // NOI18N
+    }
+        
 	
     /////////////////////////////////////////////////////////////////////
     // FAILS
@@ -249,10 +254,6 @@ public class FileModelTest extends TraceModelTestBase {
 	    performTest("template_inner_class_dtor_definition.cc"); // NOI18N
 	}
         
-	public void testInlineDtorDefinitionName() throws Exception {
-	    performTest("inline_dtor_definition_name.cc"); // NOI18N
-	}
-	
 	public void testThrowConst() throws Exception {
 	    performTest("throw_const.cc"); // NOI18N
 	}

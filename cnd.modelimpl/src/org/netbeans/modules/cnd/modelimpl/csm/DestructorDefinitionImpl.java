@@ -62,6 +62,9 @@ public final class DestructorDefinitionImpl extends FunctionDefinitionImpl {
     
     protected String initName(AST node) {
         AST token = node.getFirstChild();
+        if( token != null && token.getType() == CPPTokenTypes.LITERAL_inline ) {
+            token = token.getNextSibling();
+        }
         if( token != null && token.getType() == CPPTokenTypes.CSM_QUALIFIED_ID ) {
             token = token.getNextSibling();
             if( token != null && token.getType() == CPPTokenTypes.TILDE ) {
