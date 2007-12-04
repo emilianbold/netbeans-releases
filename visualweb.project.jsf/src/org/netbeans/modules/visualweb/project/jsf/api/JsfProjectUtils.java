@@ -768,7 +768,12 @@ public class JsfProjectUtils {
             return null;
         }
 
-        return slq.getSourceLevel(getSourceRoot(project));
+        FileObject srcRoot = getSourceRoot(project);
+        if (srcRoot == null) {
+            return null;
+        }
+
+        return slq.getSourceLevel(srcRoot);
     }
 
     public static final String J2EE_1_3 = J2eeModule.J2EE_13;
