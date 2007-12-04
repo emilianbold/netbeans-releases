@@ -70,9 +70,10 @@ public class GrailsServerRunnable implements Runnable {
             try {
                 NbProcessDescriptor grailsProcessDesc = new NbProcessDescriptor(grailsExecutable, cmd);
 
+                String[] envp = new String[] { "GRAILS_HOME=" + settings.getGrailsBase() };
                 File cwd = new File(cwdName);
 
-                process = grailsProcessDesc.exec(null, null, cwd);
+                process = grailsProcessDesc.exec(null, envp, cwd);
 
                 outputReady.countDown();
 
