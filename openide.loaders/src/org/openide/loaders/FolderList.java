@@ -578,9 +578,11 @@ implements FileChangeListener, DataObject.Container {
         Map<FileObject,DataObject> files = new LinkedHashMap<FileObject,DataObject>(l.size());
         for (DataObject d : l) {
             FileObject f = d.getPrimaryFile();
-            f.removeFileChangeListener(weakFCL);
-            f.addFileChangeListener(weakFCL);
-            files.put(f, d);
+            if (folder.equals(f.getParent())) {
+                f.removeFileChangeListener(weakFCL);
+                f.addFileChangeListener(weakFCL);
+                files.put(f, d);
+            }
         }
         if (LOG) err.fine("carefullySort before getOrder");
         List<FileObject> sorted = FileUtil.getOrder(files.keySet(), true);
