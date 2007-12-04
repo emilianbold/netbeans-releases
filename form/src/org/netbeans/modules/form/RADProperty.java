@@ -188,10 +188,13 @@ public class RADProperty extends FormProperty {
         Object realValue = super.getRealValue(value);
 
         if (realValue == FormDesignValue.IGNORED_VALUE) {
-            if (component.getBeanInstance() instanceof java.awt.Component 
-                && "text".equals(desc.getName())) { // NOI18N
+            Object instance = component.getBeanInstance();
+            String propName = desc.getName();
+            if (instance instanceof java.awt.Component 
+                && "text".equals(propName)) { // NOI18N
                 realValue = ((FormDesignValue)value).getDescription();
-            } else if (supportsDefaultValue()) {
+            } else if (supportsDefaultValue()
+                    && !((instance instanceof javax.swing.JEditorPane) && "page".equals(propName))) { // Issue 123303 // NOI18N
                 // Issue 87647
                 return getDefaultValue();
             }
