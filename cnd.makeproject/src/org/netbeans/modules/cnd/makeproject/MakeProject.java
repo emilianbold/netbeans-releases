@@ -302,9 +302,9 @@ public final class MakeProject implements Project, AntProjectListener {
             Set subProjects = new HashSet();
             Set<String> subProjectLocations = new HashSet();
 
-            // Try project.xml first (this is cheap)
+            // Try project.xml first if project not already read (this is cheap)
             Element data = helper.getPrimaryConfigurationData(true);
-            if (data.getElementsByTagName(MakeProjectType.MAKE_DEP_PROJECTS).getLength() > 0) {
+            if (!projectDescriptorProvider.gotDescriptor() && data.getElementsByTagName(MakeProjectType.MAKE_DEP_PROJECTS).getLength() > 0) {
                 NodeList nl4 = data.getElementsByTagName(MakeProjectType.MAKE_DEP_PROJECT);
                 if (nl4.getLength() > 0) {
                     for (int i = 0; i < nl4.getLength(); i++) {

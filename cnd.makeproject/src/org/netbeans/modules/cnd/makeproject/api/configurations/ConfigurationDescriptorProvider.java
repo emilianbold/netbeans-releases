@@ -98,6 +98,10 @@ public class ConfigurationDescriptorProvider {
         return projectDescriptor;
     }
     
+    public boolean gotDescriptor() {
+        return projectDescriptor != null;   
+    }
+    
     private class ProjectReader implements Runnable {
         public ConfigurationDescriptor projectDescriptor = null;
         private ConfigurationXMLReader reader;
