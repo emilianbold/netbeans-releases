@@ -131,10 +131,10 @@ public class TestAction extends CallableSystemAction implements Runnable {
             }
 
             // create a copy of form
-            final UIDefaults uiDefaults = FormLAF.initPreviewLaf(selectedLaf);
-            final Frame frame = (Frame) FormDesigner.createFormView(topComp, selectedLaf, uiDefaults);
             FileObject formFile = FormEditor.getFormDataObject(formModel).getFormFile();
             final ClassLoader classLoader = ClassPathUtils.getProjectClassLoader(formFile);
+            final FormLAF.PreviewInfo previewInfo = FormLAF.initPreviewLaf(selectedLaf, classLoader);
+            final Frame frame = (Frame) FormDesigner.createFormView(topComp, previewInfo);
 
             // set title
             String title = frame.getTitle();
@@ -189,10 +189,10 @@ public class TestAction extends CallableSystemAction implements Runnable {
                 public void run() {
                     if (pack) {
                         try {
-                            FormLAF.setUsePreviewDefaults(classLoader, selectedLaf, uiDefaults);
+                            FormLAF.setUsePreviewDefaults(classLoader, previewInfo);
                             frame.pack();
                         } finally {
-                            FormLAF.setUsePreviewDefaults(null, null, null);
+                            FormLAF.setUsePreviewDefaults(null, null);
                         }
                     }
                     frame.setBounds(org.openide.util.Utilities.findCenterBounds(frame.getSize()));

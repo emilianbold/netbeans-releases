@@ -538,8 +538,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         componentLayer.repaint();
     }
 
-    public static Container createFormView(final RADComponent metacomp,
-                                           final Class previewLaf, final UIDefaults uiDefaults)
+    public static Container createFormView(final RADComponent metacomp, final FormLAF.PreviewInfo previewInfo)
         throws Exception
     {
         Container result = null;
@@ -548,7 +547,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         final ClassLoader classLoader = ClassPathUtils.getProjectClassLoader(formFile);
         Locale defaultLocale = switchToDesignLocale(formModel);
         try {
-            FormLAF.setUsePreviewDefaults(classLoader, previewLaf, uiDefaults);
+            FormLAF.setUsePreviewDefaults(classLoader, previewInfo);
             result = (Container) FormLAF.executeWithLookAndFeel(formModel,
             new Mutex.ExceptionAction () {
                 public Object run() throws Exception {
@@ -561,10 +560,10 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                             @Override
                             public void paint(Graphics g) {
                                 try {
-                                    FormLAF.setUsePreviewDefaults(classLoader, previewLaf, uiDefaults);
+                                    FormLAF.setUsePreviewDefaults(classLoader, previewInfo);
                                     super.paint(g);
                                 } finally {
-                                    FormLAF.setUsePreviewDefaults(null, null, null);
+                                    FormLAF.setUsePreviewDefaults(null, null);
                                 }
                             }
                         };
@@ -588,7 +587,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         
         );
         } finally {
-            FormLAF.setUsePreviewDefaults(null, null, null);
+            FormLAF.setUsePreviewDefaults(null, null);
             if (defaultLocale != null)
                 Locale.setDefault(defaultLocale);
         }

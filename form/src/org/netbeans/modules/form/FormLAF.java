@@ -42,6 +42,7 @@
 package org.netbeans.modules.form;
 
 import java.beans.*;
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -86,7 +87,7 @@ public class FormLAF {
     private FormLAF() {
     }
     
-    public static UIDefaults initPreviewLaf(Class lafClass) {
+    public static PreviewInfo initPreviewLaf(Class lafClass, ClassLoader formClassLoader) {
         try {
             boolean previewLafIsMetal = MetalLookAndFeel.class.isAssignableFrom(lafClass);
             if (!ideLafIsMetal && previewLafIsMetal &&
@@ -102,7 +103,7 @@ public class FormLAF {
                     MetalLookAndFeel.setCurrentTheme(theme);
                 }
             }
-
+            
             String noxp = null;
             boolean classic = isClassicWinLAF(lafClass.getName());
             if (classic) {
@@ -123,6 +124,24 @@ public class FormLAF {
                 }
             }
 
+            PreviewInfo info = new PreviewInfo(previewLookAndFeel, previewDefaults);
+            if (isNimbusLAF(lafClass) && !isNimbusLAF(UIManager.getLookAndFeel().getClass())) {
+                try {
+                    // The update of derived colors must be performed within preview block
+                    FormLAF.setUsePreviewDefaults(formClassLoader, info);
+                    for (PropertyChangeListener listener : UIManager.getPropertyChangeListeners()) {
+                        if (listener.getClass().getName().endsWith("UIDefaultColorListener")) { // NOI18N
+                            // Forces update of derived colors, see NimbusDefaults.UIDefaultColorListener
+                            listener.propertyChange(new PropertyChangeEvent(UIManager.class, "lookAndFeel", null, null)); // NOI18N
+                            // Remove listener added by NimbusLookAndFeel.initialize()
+                            UIManager.removePropertyChangeListener(listener);
+                        }
+                    }
+                } finally {
+                    FormLAF.setUsePreviewDefaults(null, null);
+                }
+            }
+
             if (previewLafIsMetal && ideLafIsMetal) {
                 LookAndFeel ideLaf = UIManager.getLookAndFeel();
                 MetalTheme theme = lafToTheme.get(ideLaf.getClass());
@@ -138,7 +157,7 @@ public class FormLAF {
                     createLayoutStyle(previewLookAndFeel.getID())); 
             }
 
-            return previewDefaults;
+            return info;
         } catch (Exception ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         } catch (LinkageError ex) {
@@ -149,6 +168,10 @@ public class FormLAF {
 
     private static boolean isClassicWinLAF(String className) {
         return "com.sun.java.swing.plaf.windows.WindowsClassicLookAndFeel".equals(className); // NOI18N
+    }
+
+    private static boolean isNimbusLAF(Class lafClass) {
+        return lafClass.getName().endsWith("NimbusLookAndFeel"); // NOI18N
     }
 
     private static void invalidateXPStyle() {
@@ -392,12 +415,13 @@ public class FormLAF {
     }
 
     static String oldNoXP;
-    public static void setUsePreviewDefaults(ClassLoader classLoader, Class previewLAF, UIDefaults uiDefaults) {
-        boolean classic = (previewLAF == null)
+    static Object origLAF;
+    public static void setUsePreviewDefaults(ClassLoader classLoader, PreviewInfo info) {
+        boolean classic = (info == null)
             ? ((previewLaf == null) ? false : isClassicWinLAF(previewLaf.getName()))
-            : isClassicWinLAF(previewLAF.getName());
+            : isClassicWinLAF(info.lafClass.getName());
         preview = (classLoader != null);
-        previewLaf = previewLAF;
+        previewLaf = (info == null) ? null : info.lafClass;
         if (preview) {
             if (classic) {
                 oldNoXP = System.getProperty(SWING_NOXP);
@@ -410,9 +434,14 @@ public class FormLAF {
                 classLoaderToDefaults.put(classLoader, classLoaderDefaults);
             }
             Map<Object,Object> added = new HashMap<Object,Object>(classLoaderDefaults);
-            added.keySet().removeAll(uiDefaults.keySet());
-            uiDefaults.putAll(added);
-            delDefaults.setPreviewDefaults(uiDefaults);
+            added.keySet().removeAll(info.defaults.keySet());
+            info.defaults.putAll(added);
+            delDefaults.setPreviewDefaults(info.defaults);
+            // AbstractRegionPainter in Nimus L&F uses UIManager.getLookAndFeel()
+            // We cannot use setLookAndFeel() because it would cause update of everything
+            if (isNimbusLAF(previewLaf)) {
+                origLAF = changeLAFStatesLAF(info.laf);
+            }
         } else {
             if (classic) {
                 if (oldNoXP == null) {
@@ -423,8 +452,35 @@ public class FormLAF {
                 invalidateXPStyle();
             }
             oldNoXP = null;
+            // Restore original (IDEs) UIManager.lookAndFeel
+            if (origLAF != null) {
+                changeLAFStatesLAF(origLAF);
+                origLAF = null;
+            }
         }
         delDefaults.setPreviewing(classLoader);
+    }
+
+    /**
+     * Changes UIManager.lookAndFeel.
+     * 
+     * @param laf look and feel to set in UIManager.
+     * @return previous look and feel stored in UIManager.lookAndFeel.
+     */
+    private static Object changeLAFStatesLAF(Object laf) {
+        Object value = null;
+        try {
+            java.lang.reflect.Method method = UIManager.class.getDeclaredMethod("getLAFState", new Class[0]); // NOI18N
+            method.setAccessible(true);
+            Object lafState = method.invoke(null, new Object[0]);
+            Field field = lafState.getClass().getDeclaredField("lookAndFeel"); // NOI18N
+            field.setAccessible(true);
+            value = field.get(lafState);
+            field.set(lafState, laf);
+        } catch (Exception ex) {
+            Logger.getLogger(FormLAF.class.getName()).log(Level.INFO, ex.getMessage(), ex);
+        }
+        return value;
     }
 
     public static boolean getUsePreviewDefaults() {
@@ -433,6 +489,20 @@ public class FormLAF {
     
     public static boolean inLAFBlock() {
         return preview || delDefaults.isDelegating();
+    }
+
+    /**
+     * Class that encapsulates information needed during preview.
+     */
+    public static class PreviewInfo {
+        PreviewInfo(LookAndFeel laf, UIDefaults defaults) {
+            this.laf = laf;
+            this.lafClass = laf.getClass();
+            this.defaults = defaults;
+        }
+        Class lafClass;
+        UIDefaults defaults;
+        LookAndFeel laf;
     }
 
     /**
@@ -529,6 +599,21 @@ public class FormLAF {
                 value = ide.get(key);
             }
             return value;
+        }
+
+        @Override
+        public Set<Object> keySet() {
+            Set<Object> set;
+            if (delegating) {
+                set = new HashSet<Object>(classLoaderLAFDefaults.keySet());
+                set.addAll(original.keySet());
+            } else if (previewing) {
+                set = new HashSet<Object>(classLoaderLAFDefaults.keySet());
+                set.addAll(preview.keySet());
+            } else {
+                set = ide.keySet();
+            }
+            return set;
         }
 
         @Override
