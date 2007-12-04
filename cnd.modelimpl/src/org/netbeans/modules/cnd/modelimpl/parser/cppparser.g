@@ -1585,7 +1585,6 @@ class_specifier[DeclSpecifier ds] returns [/*TypeSpecifier*/int ts = tsInvalid]
 			(EOF!|RCURLY)
 			{enclosingClass = saveClass;}
 		)
-		//{ #class_specifier = #(#[CSM_CLASS_DECLARATION, id], #class_specifier); }
 	;
 
 enum_specifier
