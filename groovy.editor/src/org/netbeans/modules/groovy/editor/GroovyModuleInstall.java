@@ -39,21 +39,19 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.groovy.gsp;
+package org.netbeans.modules.groovy.editor;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Set;
-import org.netbeans.editor.Settings;
 import org.openide.modules.ModuleInstall;
-
 
 /**
  * 
  * @author mkleint
  * @author Martin Adamek
  */
-public class GspModuleInstaller extends ModuleInstall {
+public class GroovyModuleInstall extends ModuleInstall {
 
     /**
      * screw friend dependency.
@@ -69,39 +67,17 @@ public class GspModuleInstaller extends ModuleInstall {
             meth = moduleSystem.getClass().getMethod("getManager", new Class[0]); //NOI18N
             Object mm = meth.invoke(moduleSystem, new Object[0]);
             Method moduleMeth = mm.getClass().getMethod("get", new Class[]{String.class}); //NOI18N
-
             Object gsfapi = moduleMeth.invoke(mm, "org.netbeans.api.gsf"); //NOI18N
             if (gsfapi != null) {
                 Field frField = gsfapi.getClass().getSuperclass().getDeclaredField("friendNames"); //NOI18N
                 frField.setAccessible(true);
                 Set friends = (Set) frField.get(gsfapi);
-                friends.add("org.netbeans.modules.groovy.gsp"); //NOI18N
-            }
-
-            Object gsf = moduleMeth.invoke(mm, "org.netbeans.modules.gsf"); //NOI18N
-            if (gsf != null) {
-                Field frField = gsf.getClass().getSuperclass().getDeclaredField("friendNames"); //NOI18N
-                frField.setAccessible(true);
-                Set friends = (Set) frField.get(gsf);
-                friends.add("org.netbeans.modules.groovy.gsp"); //NOI18N
-            }
-
-            Object htmleditor = moduleMeth.invoke(mm, "org.netbeans.modules.html.editor"); //NOI18N
-            if (htmleditor != null) {
-                Field frField = htmleditor.getClass().getSuperclass().getDeclaredField("friendNames"); //NOI18N
-                frField.setAccessible(true);
-                Set friends = (Set) frField.get(htmleditor);
-                friends.add("org.netbeans.modules.groovy.gsp"); //NOI18N
+                friends.add("org.netbeans.modules.groovy.editor"); //NOI18N
             }
         } catch (Exception ex) {
             ex.printStackTrace();
-            new IllegalStateException("Cannot fix dependencies for org.netbeans.modules.groovy.gsp."); //NOI18N
+            new IllegalStateException("Cannot fix dependencies for org.netbeans.modules.groovy.editor."); //NOI18N
         }
     }
-
-    @Override
-    public void restored() {
-        Settings.addInitializer(new GspEditorSettings());
-        Settings.reset();
-    }
+    
 }
