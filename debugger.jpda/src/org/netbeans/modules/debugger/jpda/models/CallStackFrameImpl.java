@@ -394,7 +394,7 @@ public class CallStackFrameImpl implements CallStackFrame {
                                                              (PrimitiveValue) value,
                                                              argumentNames[i].getName(),
                                                              //argumentNames[i].getType()));
-                                                             value.type().name()));
+                                                             (value != null) ? value.type().name() : null));
                             }
                         }
                         return argumentList;

@@ -41,7 +41,9 @@
 
 package org.netbeans.api.debugger.jpda;
 
+import com.sun.jdi.ArrayReference;
 import com.sun.jdi.StringReference;
+import com.sun.jdi.Value;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
@@ -126,29 +128,23 @@ public class EvaluatorTest extends NbTestCase {
     
     private void checkEval(Method m) {
         try {
-            Variable eVal = support.getDebugger ().evaluate (m.getExpression());
+            Variable eMethod = support.getDebugger ().evaluate (m.getName()+"()");
             String undo = m.getUndo();
             if (undo != null) {
                 support.getDebugger ().evaluate (undo+"()");
             }
-            Variable eMethod = support.getDebugger ().evaluate (m.getName()+"()");
+            Variable eVal = support.getDebugger ().evaluate (m.getExpression());
             if (undo != null) {
                 support.getDebugger ().evaluate (undo+"()");
             }
             /*System.err.println("  eMethod = "+eMethod);
             System.err.println("  eVal = "+eVal);
             System.err.println("   equals = "+eMethod.equals(eVal));*/
-            Object eMethodJDIValue = ((JDIVariable) eMethod).getJDIValue();
-            Object eValJDIValue = ((JDIVariable) eVal).getJDIValue();
+            Value eMethodJDIValue = ((JDIVariable) eMethod).getJDIValue();
+            Value eValJDIValue = ((JDIVariable) eVal).getJDIValue();
             /*System.err.println("  eMethod JDI Value = "+eMethodJDIValue);
             System.err.println("  eVal JDI Value = "+eValJDIValue);
             System.err.println("   equals = "+eMethodJDIValue.equals(eValJDIValue));*/
-            if (eMethodJDIValue instanceof StringReference) {
-                eMethodJDIValue = ((StringReference) eMethodJDIValue).value();
-            }
-            if (eValJDIValue instanceof StringReference) {
-                eValJDIValue = ((StringReference) eValJDIValue).value();
-            }
             if (eMethod != null) {
                 assertEquals (
                     "Evaluation of expression '" + m.getExpression()+"' of method '"+m.getName()+"()' produced a wrong type of result:",
@@ -158,8 +154,8 @@ public class EvaluatorTest extends NbTestCase {
             }
             assertEquals (
                 "Evaluation of expression '" + m.getExpression()+"' of method '"+m.getName()+"()' produced a wrong value:",
-                eMethodJDIValue, 
-                eValJDIValue
+                new JDIValue(eMethodJDIValue),
+                new JDIValue(eValJDIValue)
             );
             System.err.println("  Method "+m.getName()+"() evaluated successfully.");
         } catch (InvalidExpressionException e) {
@@ -243,5 +239,52 @@ public class EvaluatorTest extends NbTestCase {
         public String getExpression() {
             return expression;
         }
+    }
+    
+    private static class JDIValue {
+        
+        private Value value;
+        
+        public JDIValue(Value value) {
+            this.value = value;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof JDIValue)) return false;
+            Value v = ((JDIValue) obj).value;
+            if (value == null) return v == null;
+            if (value instanceof StringReference) {
+                if (!(v instanceof StringReference)) return false;
+                return ((StringReference) value).value().equals(((StringReference) v).value());
+            }
+            if (value instanceof ArrayReference) {
+                if (!(v instanceof ArrayReference)) return false;
+                ArrayReference a1 = (ArrayReference) value;
+                ArrayReference a2 = (ArrayReference) v;
+                if (!a1.type().equals(a2.type())) return false;
+                if (a1.length() != a2.length()) return false;
+                int n = a1.length();
+                for (int i = 0; i < n; i++) {
+                    if (!new JDIValue(a1.getValue(i)).equals(new JDIValue(a2.getValue(i)))) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            return value.equals(v);
+        }
+
+        @Override
+        public int hashCode() {
+            if (value == null) return 0;
+            else return value.hashCode();
+        }
+
+        @Override
+        public String toString() {
+            return ""+value;
+        }
+        
     }
 }

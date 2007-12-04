@@ -170,6 +170,7 @@ public class EvaluationException2 extends RuntimeException {
         }
 
         message = formatMessage("CTL_EvalError_" + reason, msgParams);
+        message = formatMessage("CTL_EvalErrorExpr", new String[] { node.toString(), message });
 
         return message;
     }

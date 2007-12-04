@@ -42,6 +42,7 @@
 package org.netbeans.modules.debugger.jpda.expr;
 
 import com.sun.jdi.AbsentInformationException;
+import com.sun.jdi.ArrayReference;
 import com.sun.jdi.ArrayType;
 import com.sun.jdi.BooleanType;
 import com.sun.jdi.BooleanValue;
@@ -70,6 +71,7 @@ import com.sun.jdi.Mirror;
 import com.sun.jdi.NativeMethodException;
 import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.ObjectReference;
+import com.sun.jdi.PrimitiveType;
 import com.sun.jdi.PrimitiveValue;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.ShortValue;
@@ -155,6 +157,7 @@ import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.modules.debugger.jpda.expr.EvaluationContext.VariableInfo;
 import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -166,6 +169,8 @@ import org.openide.util.NbBundle;
 
     private static final Logger loggerMethod = Logger.getLogger("org.netbeans.modules.debugger.jpda.invokeMethod"); // NOI18N
     private static final Logger loggerValue = Logger.getLogger("org.netbeans.modules.debugger.jpda.getValue"); // NOI8N
+    
+    private Type newArrayType;
     
     public EvaluatorVisitor() {
     }
@@ -382,7 +387,12 @@ import org.openide.util.NbBundle;
     }
 
     public Mirror visitAssignment(AssignmentTree arg0, EvaluationContext evaluationContext) {
-        throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
+        Mirror var = arg0.getVariable().accept(this, evaluationContext);
+        Mirror exp = arg0.getExpression().accept(this, evaluationContext);
+        VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
+        Value value = (Value) exp;
+        setToMirror(arg0.getVariable(), value, evaluationContext);
+        return value;
     }
 
     public Mirror visitCompoundAssignment(CompoundAssignmentTree arg0, EvaluationContext evaluationContext) {
@@ -882,7 +892,9 @@ import org.openide.util.NbBundle;
     }
 
     public Mirror visitArrayAccess(ArrayAccessTree arg0, EvaluationContext evaluationContext) {
-        throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
+        Mirror array = arg0.getExpression().accept(this, evaluationContext);
+        Mirror index = arg0.getIndex().accept(this, evaluationContext);
+        return ((ArrayReference) array).getValue(((PrimitiveValue) index).intValue());
     }
 
     public Mirror visitLabeledStatement(LabeledStatementTree arg0, EvaluationContext evaluationContext) {
@@ -942,7 +954,140 @@ import org.openide.util.NbBundle;
     }
 
     public Mirror visitNewArray(NewArrayTree arg0, EvaluationContext evaluationContext) {
-        throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
+        Type type;
+        Tree typeTree = arg0.getType();
+        if (typeTree == null) {
+            if (newArrayType == null) {
+                throw new IllegalStateException("No type info for "+arg0);
+            }
+            type = newArrayType;
+        } else {
+            type = (Type) arg0.getType().accept(this, evaluationContext);
+        }
+        List<? extends ExpressionTree> dimensionTrees = arg0.getDimensions();
+        int numDimensions = dimensionTrees.size();
+        if (numDimensions > 0) {
+            int[] dimensions = new int[numDimensions];
+            ArrayType[] arrayTypes = new ArrayType[numDimensions];
+            String arrayClassName = type.name()+"[]";
+            for (int i = 0; i < numDimensions; i++, arrayClassName += "[]") {
+                dimensions[i] = ((PrimitiveValue) dimensionTrees.get(numDimensions - 1 - i).accept(this, evaluationContext)).intValue();
+                List<ReferenceType> classes = type.virtualMachine().classesByName(arrayClassName);
+                if (classes.size() == 0) {
+                    Assert2.error(arg0, "unknownType", arrayClassName);
+                }
+                arrayTypes[i] = (ArrayType) classes.get(0);
+            }
+            return constructNewArray(arrayTypes, dimensions, numDimensions - 1);
+        } else {
+            List<? extends ExpressionTree> initializerTrees = arg0.getInitializers();
+            return constructNewArray(arg0, type, initializerTrees, evaluationContext);
+        }
+    }
+    
+    private ArrayReference constructNewArray(ArrayType[] arrayTypes, int[] dimensions, int dimension) {
+        ArrayReference array = arrayTypes[dimension].newInstance(dimensions[dimension]);
+        if (dimension > 0) {
+            List<ArrayReference> elements = new ArrayList<ArrayReference>(dimensions[dimension]);
+            for (int i = 0; i < dimensions[dimension]; i++) {
+                ArrayReference subArray = constructNewArray(arrayTypes, dimensions, dimension - 1);
+                elements.add(subArray);
+            }
+            try {
+                array.setValues(elements);
+            } catch (InvalidTypeException ex) {
+                throw new IllegalStateException("ArrayType "+arrayTypes[dimension]+" can not have "+elements+" elements.");
+            } catch (ClassNotLoadedException ex) {
+                throw new IllegalStateException(new InvalidExpressionException (ex));
+            }
+        }
+        return array;
+    }
+    
+    private ArrayReference constructNewArray(NewArrayTree arg0, Type type, List<? extends ExpressionTree> initializerTrees, EvaluationContext evaluationContext) {
+        int n = initializerTrees.size();
+        List<Value> elements = new ArrayList<Value>(n);
+        for (int i = 0; i < n; i++) {
+            ExpressionTree exp = initializerTrees.get(i);
+            newArrayType = getSubArrayType(arg0, type);
+            // might call visitNewArray()
+            Value element = (Value) exp.accept(this, evaluationContext);
+            elements.add(element);
+        }
+        int depth = 1;
+        ArrayReference array = getArrayType(arg0, type, depth).newInstance(n);
+        try {
+            array.setValues(elements);
+        } catch (InvalidTypeException ex) {
+            throw new IllegalStateException("ArrayType "+getArrayType(arg0, type, depth)+" can not have "+elements+" elements.");
+        } catch (ClassNotLoadedException ex) {
+            throw new IllegalStateException(new InvalidExpressionException (ex));
+        }
+        return array;
+    }
+    
+    private static final String BRACKETS = "[][][][][][][][][][][][][][][][][][][][]"; // NOI8N
+    
+    private ArrayType getArrayType(NewArrayTree arg0, Type type, int depth) {
+        String arrayClassName;
+        if (depth < BRACKETS.length()/2) {
+            arrayClassName = type.name() + BRACKETS.substring(0, 2*depth);
+        } else {
+            arrayClassName = type.name() + BRACKETS;
+            for (int i = BRACKETS.length()/2; i < depth; i++) {
+                arrayClassName += "[]"; // NOI8N
+            }
+        }
+        List<ReferenceType> classes = type.virtualMachine().classesByName(arrayClassName);
+        if (classes.size() == 0) {
+            Assert2.error(arg0, "unknownType", arrayClassName);
+        }
+        return (ArrayType) classes.get(0);
+    }
+    
+    private Type getSubArrayType(Tree arg0, Type type) {
+        String name = type.name();
+        if (name.endsWith("[]")) {
+            name = name.substring(0, name.length() - 2);
+            if (!name.endsWith("[]")) {
+                Type pType = getPrimitiveType(name, type.virtualMachine());
+                if (pType != null) return pType;
+            }
+            List<ReferenceType> classes = type.virtualMachine().classesByName(name);
+            if (classes.size() == 0) {
+                Assert2.error(arg0, "unknownType", name);
+            }
+            type = classes.get(0);
+        }
+        return type;
+    }
+    
+    private Type getPrimitiveType(String name, VirtualMachine vm) {
+        if (name.equals(Boolean.TYPE.getName())) {
+            return vm.mirrorOf(true).type();
+        }
+        if (name.equals((Byte.TYPE.getName()))) {
+            return vm.mirrorOf((byte) 0).type();
+        }
+        if (name.equals((Character.TYPE.getName()))) {
+            return vm.mirrorOf('a').type();
+        }
+        if (name.equals((Double.TYPE.getName()))) {
+            return vm.mirrorOf(0.).type();
+        }
+        if (name.equals((Float.TYPE.getName()))) {
+            return vm.mirrorOf(0f).type();
+        }
+        if (name.equals((Integer.TYPE.getName()))) {
+            return vm.mirrorOf(0).type();
+        }
+        if (name.equals((Long.TYPE.getName()))) {
+            return vm.mirrorOf(0l).type();
+        }
+        if (name.equals((Short.TYPE.getName()))) {
+            return vm.mirrorOf((short) 0).type();
+        }
+        return null;
     }
 
     public Mirror visitNewClass(NewClassTree arg0, EvaluationContext evaluationContext) {
@@ -1074,7 +1219,16 @@ import org.openide.util.NbBundle;
     }
 
     public Mirror visitArrayType(ArrayTypeTree arg0, EvaluationContext evaluationContext) {
-        throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
+        Type type = (Type) arg0.getType().accept(this, evaluationContext);
+        if (type == null) return null;
+        String arrayClassName = type.name()+"[]";
+        List<ReferenceType> aTypes = type.virtualMachine().classesByName(arrayClassName);
+        if (aTypes.size() > 0) {
+            return aTypes.get(0);
+        } else {
+            Assert2.error(arg0, "unknownType", arrayClassName);
+            return null;
+        }
     }
 
     public Mirror visitTypeCast(TypeCastTree arg0, EvaluationContext evaluationContext) {

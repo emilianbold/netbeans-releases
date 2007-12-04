@@ -65,7 +65,7 @@ public class ArgumentVariable extends AbstractVariable implements org.netbeans.a
         super (
             debugger, 
             value, 
-            name + className.hashCode()
+            name + className
         );
         this.name = name;
         this.className = className;

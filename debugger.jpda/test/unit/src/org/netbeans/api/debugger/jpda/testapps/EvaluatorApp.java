@@ -709,8 +709,54 @@ public class EvaluatorApp {
     
     // Test operand priorities
     
+    public static long testOpPrio1() {
+        return 2 * llx + ix * lx - ix / 5;
+    }
+
     public static long testOpPrio2() {
-        return llx + ix * lx - ix / 5 | llx;
+        return llx + -ix / 5 | llx & ix;
+    }
+
+    public static long testOpPrio3() {
+        return llx * ix >> 5 | llx & ix ^ llx % 10;
+    }
+    
+    // Test arrays
+    
+    public static int[] testArray1() {
+        return new int[10];
+    }
+
+    public static int[] testArray2() {
+        return new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 0 };
+    }
+
+    public static int[][] testArray3a() {
+        return new int[][] { { 1, 2 }, { 3190 }, { 123, 16180, -311111113 } };
+    }
+
+    public static double[][] testArray3b() {
+        return new double[][] { { 1., 2.1222222222 }, { 3.0e190 }, { 12.3, 16e180, -3.1111111111111111113 } };
+    }
+
+    public static String[] testArray4() {
+        return new String[] { "test", "an", "Array" };
+    }
+
+    public static String[][] testArray5() {
+        return new String[120][];
+    }
+
+    public static Object[][][] testArray6() {
+        return new Object[41][120][];
+    }
+
+    public static Object[][][] testArray7() {
+        return new Object[41][][];
+    }
+
+    public static Boolean[][][] testArray8() {
+        return new Boolean[][][] { { { Boolean.TRUE } }, { { Boolean.FALSE }, { Boolean.TRUE }, { Boolean.FALSE } }, { { Boolean.FALSE }, { Boolean.TRUE } } };
     }
 
 }
