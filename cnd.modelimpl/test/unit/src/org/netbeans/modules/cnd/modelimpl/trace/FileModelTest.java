@@ -245,6 +245,10 @@ public class FileModelTest extends TraceModelTestBase {
 	    performTest("template_inner_class_dtor_definition.cc"); // NOI18N
 	}
 	
+	public void testStaticStruct() throws Exception {
+	    performTest("static_struct.cc"); // NOI18N
+	}
+	
         @Override
 	protected void postSetUp() {
 	    // init flags needed for file model tests

@@ -1,0 +1,28 @@
+
+State of macro map:
+Own Map:
+MACROS (sorted 0):
+System Map:
+MACROS (sorted 0):
+
+
+========== Dumping model of FILE static_struct.cc
+Includes:
+    <no includes>
+Macros:
+    <no macros>
+STRUCT point0 (point0 ) [1:1/0-4:6/80] lcurly=14 SCOPE: $Global$ 
+    BASE CLASSES:
+    MEMBERS:
+        FIELD PUBLIC x [2:5/57-2:11/63]  TYPE: int TEXT=int  [2:5/57-2:8/60]  INIT: null  SCOPE: point0 
+        FIELD PUBLIC y [3:5/68-3:11/74]  TYPE: int TEXT=int  [3:5/68-3:8/71]  INIT: null  SCOPE: point0 
+VARIABLE p0 [4:3/77-4:5/79]  TYPE: point0 TEXT=point0  [4:3/77-4:5/79]  INIT: null  SCOPE: $Global$ 
+
+========== Dumping model of PROJECT DummyProject
+STRUCT point0 (point0 ) [1:1/0-4:6/80] lcurly=14 SCOPE: $Global$ 
+    BASE CLASSES:
+    MEMBERS:
+        FIELD PUBLIC x [2:5/57-2:11/63]  TYPE: int TEXT=int  [2:5/57-2:8/60]  INIT: null  SCOPE: point0 
+        FIELD PUBLIC y [3:5/68-3:11/74]  TYPE: int TEXT=int  [3:5/68-3:8/71]  INIT: null  SCOPE: point0 
+VARIABLE p0 [4:3/77-4:5/79]  TYPE: point0 TEXT=point0  [4:3/77-4:5/79]  INIT: null  SCOPE: $Global$ 
+
