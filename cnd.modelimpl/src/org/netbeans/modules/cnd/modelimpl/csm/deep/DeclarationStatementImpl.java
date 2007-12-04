@@ -161,6 +161,13 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
 			    while( next != null && next.getType() ==  CPPTokenTypes.CSM_QUALIFIED_ID );
 			}
 			break;
+                    case CPPTokenTypes.CSM_GENERIC_DECLARATION:
+                        CsmTypedef[] typedefs = renderTypedef(token, (FileImpl) getContainingFile(), getScope());
+			if( typedefs != null && typedefs.length > 0 ) {
+			    for (int i = 0; i < typedefs.length; i++) {
+				declarators.add(typedefs[i]);
+                            }
+                        }
 		}
 	    }
 	}

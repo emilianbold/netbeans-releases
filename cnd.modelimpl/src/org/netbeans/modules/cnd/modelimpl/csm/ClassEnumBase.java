@@ -97,9 +97,14 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
      * to call super.init()
      */
     protected void init(CsmScope scope, AST ast) {
-        this.scopeUID = UIDCsmConverter.scopeToUID(scope);
-        assert (this.scopeUID != null || scope == null) : "null UID for class scope " + scope;
-        this.scopeRef = null;
+	if (scope instanceof CsmIdentifiable) {
+            this.scopeUID = UIDCsmConverter.scopeToUID(scope);
+            assert (this.scopeUID != null || scope == null) : "null UID for class scope " + scope;
+            this.scopeRef = null;
+	} else {
+	    // in the case of classes/enums inside bodies
+	    this.scopeRef = scope;
+	}
 	
 	String qualifiedNamePostfix = getQualifiedNamePostfix();
         if(  CsmKindUtilities.isNamespace(scope) ) {

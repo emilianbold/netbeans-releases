@@ -2381,6 +2381,10 @@ statement
 			printf("statement_1[%d]: declaration\n", LT(1).getLine());
 		}
                 member_declaration                 
+	|
+		( LITERAL_typedef ) =>
+		// TODO: external_declaration is too generic here. Refactor this!
+		external_declaration
         |
                 ( is_declaration ) => 
                 {if (statementTrace>=1) 

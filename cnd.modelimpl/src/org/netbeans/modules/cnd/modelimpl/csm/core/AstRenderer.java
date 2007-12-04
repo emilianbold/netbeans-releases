@@ -1040,6 +1040,7 @@ public class AstRenderer {
             case CPPTokenTypes.CSM_CLASS_DECLARATION:
             case CPPTokenTypes.CSM_ENUM_DECLARATION:
             case CPPTokenTypes.CSM_DECLARATION_STATEMENT:
+            case CPPTokenTypes.CSM_GENERIC_DECLARATION:
                 return new DeclarationStatementImpl(ast, file, scope);
             case CPPTokenTypes.CSM_COMPOUND_STATEMENT:
                 return new CompoundStatementImpl(ast, file, scope);

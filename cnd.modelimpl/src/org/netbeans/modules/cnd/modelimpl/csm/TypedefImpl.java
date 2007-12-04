@@ -78,14 +78,23 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef>  implemen
     private boolean typeUnnamed = false;
     
     // only one of containerRef/containerUID must be used (based on USE_REPOSITORY)
-    private /*final*/ CsmIdentifiable containerRef;// can be set in onDispose or contstructor only
-    private final CsmUID<CsmIdentifiable> containerUID;
+    private /*final*/ CsmObject containerRef;// can be set in onDispose or contstructor only
+    private /*final*/ CsmUID<CsmIdentifiable> containerUID;
             
+    
     public TypedefImpl(AST ast, CsmFile file, CsmObject container, CsmType type, String name) {
+	
         super(ast, file);
-        this.containerUID = UIDCsmConverter.identifiableToUID((CsmIdentifiable)container);
-        assert (containerUID != null || container == null);
-        this.containerRef = null;
+	
+	if (container instanceof CsmIdentifiable) {
+	    this.containerUID = UIDCsmConverter.identifiableToUID((CsmIdentifiable) container);
+	    assert (containerUID != null || container == null);
+	    this.containerRef = null;
+	} else {
+	    // yes, that's possible if it's somewhere within body
+	    this.containerRef = container;
+	}
+
         if (type == null) {
             this.type = createType(ast);
         } else {
@@ -224,12 +233,12 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef>  implemen
     }
 
     private CsmObject _getContainer() {
-        CsmIdentifiable container = this.containerRef;
+        CsmObject container = this.containerRef;
         if (container == null) {
             container = UIDCsmConverter.UIDtoIdentifiable(this.containerUID);
             assert (container != null || this.containerUID == null) : "null object for UID " + this.containerUID;
         }
-        return (CsmObject) container;
+        return container;
     }
     
     ////////////////////////////////////////////////////////////////////////////
