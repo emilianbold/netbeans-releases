@@ -1,11 +1,20 @@
+class Exception {};
 
-void* mynew_a(unsigned int sz) throw (const char) {
-    void* p = malloc(sz);
-    return p;
+namespace ns {
+    class Throwable {};
 }
 
+void foo_1() throw (const char) {
+}
 
-void* mynew_b(unsigned int sz) throw (const char&) {
-    void* p = malloc(sz);
-    return p;
+void foo_2() throw (const char&) {
+}
+
+void foo_3() throw (Exception) {
+}
+
+void foo_4() throw (const Exception&) {
+}
+
+void foo_5() throw (const ns::Throwable&) {
 }
