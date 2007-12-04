@@ -849,7 +849,8 @@ external_declaration {String s; K_and_R = false; boolean definition;}
 	// that is internal to "declaration", and it is invalid
 	// to say "typedef template..."
 	 	// Class definition
-		((LITERAL_typedef)? class_head)=>
+                // we need "static" here for the case "static struct XX {...} myVar; - see issue #106652
+		((LITERAL_typedef | LITERAL_static)? class_head)=>
 		{if (statementTrace>=1) 
 			printf("external_declaration_1a[%d]: Class definition\n",
 				LT(1).getLine());

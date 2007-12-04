@@ -221,6 +221,10 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("attributes_aligned_class.cc"); // NOI18N
     }
     
+	public void testStaticStruct() throws Exception {
+	    performTest("static_struct.cc"); // NOI18N
+	}
+	
     /////////////////////////////////////////////////////////////////////
     // FAILS
     
@@ -243,10 +247,6 @@ public class FileModelTest extends TraceModelTestBase {
 	
 	public void testTemplateInnerClassDtorDefinition() throws Exception {
 	    performTest("template_inner_class_dtor_definition.cc"); // NOI18N
-	}
-	
-	public void testStaticStruct() throws Exception {
-	    performTest("static_struct.cc"); // NOI18N
 	}
 	
         @Override
