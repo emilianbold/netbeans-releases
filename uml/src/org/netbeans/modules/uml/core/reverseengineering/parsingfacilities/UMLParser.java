@@ -157,7 +157,12 @@ public class UMLParser  extends ParseFacility implements IUMLParser
 	 * @param filename [in] The file to be processed.
 	 * @throws PF_E_FILE_NOT_EXIST - if the file does not exist.
 	 */
-	public void processStreamFromFile(String filename)
+        public void processStreamFromFile(String filename) 
+	{
+            processStreamFromFile(filename, REIntegrationUtil.getEncoding(filename));
+        }
+
+	public void processStreamFromFile(String filename, String charset)
 	{
 		if(m_ParserDispatcher != null)
 		{
@@ -181,7 +186,7 @@ public class UMLParser  extends ParseFacility implements IUMLParser
 					ILanguageParser  pParser = retrieveParserForFile(filename);
 					if(pParser != null)
 					{  
-						pParser.parseFile(filename, REIntegrationUtil.getEncoding(filename));
+						pParser.parseFile(filename, charset);
 					}
 				}
 				m_ParserDispatcher.fireEndParse(filename, null);
@@ -196,6 +201,13 @@ public class UMLParser  extends ParseFacility implements IUMLParser
 
 	public void processStreamFromFile(String filename, 
 					  ILanguageParserSettings pSettings)
+	{
+            processStreamFromFile(filename, pSettings, REIntegrationUtil.getEncoding(filename));
+        }
+
+	public void processStreamFromFile(String filename, 
+					  ILanguageParserSettings pSettings,
+                                          String charset)
 	{
 		if(m_ParserDispatcher != null)
 		{
@@ -227,7 +239,7 @@ public class UMLParser  extends ParseFacility implements IUMLParser
 //						}
 //						else
 						{
-							pParser.parseFile(filename, REIntegrationUtil.getEncoding(filename));
+							pParser.parseFile(filename, charset);
 						}
 					}
 				}

@@ -60,6 +60,7 @@ import org.netbeans.modules.uml.core.coreapplication.ICodeGenerator;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.structure.ISourceFileArtifact;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.REIntegrationUtil;
 import org.netbeans.modules.uml.core.support.umlsupport.StringUtilities;
 import org.netbeans.modules.uml.integration.ide.events.ClassInfo;
 import org.netbeans.modules.uml.util.ITaskSupervisor;
@@ -138,6 +139,7 @@ public class JavaCodegen implements ICodeGenerator
             }
         }
         
+        String tempGenerationTargetDir = null;
         int counter = 0;
         ScriptEngineManager mgr = new ScriptEngineManager();
         ScriptEngine engine = mgr.getEngineByName("freemarker");
@@ -294,6 +296,13 @@ public class JavaCodegen implements ICodeGenerator
                             fmap.targetFilePath = targetFilePath;
                             File targetFile = new File(targetFilePath);
                             targetFiles.add(targetFile);
+
+                            String charset = REIntegrationUtil.getEncoding(targetFile.getCanonicalPath());
+                            if (charset == null) {
+                                charset = REIntegrationUtil.getEncoding(targetPackageFolderPath);
+                            }
+                            fmap.charset = charset;
+
                             if (targetFile.exists())
                             {
                                 fmap.existingSourcePath = targetFile.getCanonicalPath();
@@ -305,7 +314,7 @@ public class JavaCodegen implements ICodeGenerator
                                 }
                                 
                                 ParsedInfo existingFileInfo = 
-                                    merger.parse(targetFilePath);
+                                    merger.parse(targetFilePath, charset);
                                 
                                 if (existingFileInfo != null)
                                 {
@@ -381,7 +390,8 @@ public class JavaCodegen implements ICodeGenerator
                                 continue;
 
                             ParsedInfo ascInfo = 
-                                merger.parse(ascFile.getCanonicalPath());
+                                merger.parse(ascFile.getCanonicalPath(),
+                                             REIntegrationUtil.getEncoding(ascFile.getCanonicalPath()));
 
                             if (ascInfo == null)
                                 continue;
@@ -405,8 +415,14 @@ public class JavaCodegen implements ICodeGenerator
                     }
                 }
 
-                if (genToTmp)
-                    clinfo.setExportSourceFolderName(getTempGenerationTargetDir());
+                if (genToTmp) 
+                {
+                    if (tempGenerationTargetDir == null) 
+                    {
+                        tempGenerationTargetDir = getTempGenerationTargetDir();
+                    }
+                    clinfo.setExportSourceFolderName(tempGenerationTargetDir);
+                }
 
                 for (FileMapping fmap : fmappings)
                 {
@@ -460,9 +476,18 @@ public class JavaCodegen implements ICodeGenerator
                                 fmap.ext != null ? "." + fmap.ext : "");
 
                             File fileto = new File(pathto);
-                            Writer w = new BufferedWriter(new FileWriter(fileto));
+                            Writer os = null;
+                            if (fmap.charset != null && java.nio.charset.Charset.isSupported(fmap.charset) ) 
+                            {
+                                os = new OutputStreamWriter(new FileOutputStream(fileto), fmap.charset);
+                            } 
+                            else
+                            {
+                                os = new OutputStreamWriter(new FileOutputStream(fileto));
+                            }
+                            Writer w = new BufferedWriter(os);
                             engine.getContext().setWriter(w);
-
+                            
                             InputStreamReader is = new InputStreamReader(
                                 templFO.getInputStream());
 
@@ -513,7 +538,7 @@ public class JavaCodegen implements ICodeGenerator
                     {
                         if (!(fmap.existingSourcePath == null && ascfiles.size() == 0))
                         {
-                            fmap.generatedFileInfo = merger.parse(fmap.generatedFilePath);
+                            fmap.generatedFileInfo = merger.parse(fmap.generatedFilePath, fmap.charset);
                             
                             if (fmap.existingSourcePath != null)
                             {
@@ -648,6 +673,12 @@ public class JavaCodegen implements ICodeGenerator
                     }
 
                     classifier.addSourceFileNotDuplicate(fmap.targetFilePath);
+                }                    
+                if (genToTmp) {
+                    for (FileMapping fmap : fmappings)
+                    {                                     
+                        deleteDirs(tempGenerationTargetDir, fmap.generatedFilePath); 
+                    }                    
                 }
             }
             
@@ -746,6 +777,40 @@ public class JavaCodegen implements ICodeGenerator
 	return newTargetFolder.getCanonicalPath();
     }
 
+    private void deleteDirs(String topParent, String path) 
+    {               
+        File topDir = new File(topParent);
+        File cur = new File(path);
+        if (! inSubdir(topDir, cur)) 
+        {
+            return;
+        }
+        boolean last = false;
+        while(true) 
+        {
+            if (cur.exists()) 
+            {
+                File[] children = cur.listFiles();
+                if (children == null || children.length == 0) 
+                {
+                    cur.delete();
+                } 
+                else 
+                {
+                    return;
+                }
+            }
+            cur = cur.getParentFile();
+            if (last || cur == null) 
+            {
+                return;
+            }
+            if (topDir.equals(cur)) 
+            {
+                last = true;
+            }
+        }
+    }
     
     private boolean inCorrectPackageSubdir(File dir, File guessedChild, Merger.ParsedInfo info)
 	throws IOException
@@ -880,6 +945,7 @@ public class JavaCodegen implements ICodeGenerator
 	public boolean merge = false;
 	public FileObject templateFileObject = null;
 	public DomainTemplate domainTemplate = null;
+        public String charset = null;
     }
 
 }

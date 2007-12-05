@@ -86,6 +86,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.IUMLParserEventDispatcher;
 import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.IUMLParserEventsSink;
 import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.IUMLParser;
+import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.UMLParser;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.IClassEvent;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.IDependencyEvent;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.IPackageEvent;
@@ -122,41 +123,9 @@ public class Merger implements IUMLParserEventsSink {
     private IUMLParser pParser; 
     private boolean errorHappened = false;
 
-    /**
-     *
-     */
-    public Merger(String newFile, String oldFile, String targetFile) {
-	this.newFile = newFile;
-	this.oldFile = oldFile;
-	this.targetFile = targetFile;
-    }    
-
-
-    public Merger(String newFile, String oldFile) {
-	this.newFile = newFile;
-	this.oldFile = oldFile;
-	this.targetFile = oldFile;
-    }    
-
-    public Merger() {
-    }    
-
     public Merger(Properties props) {
 	this.props = props;
     }    
-
-    public void merge() 
-	throws IOException
-    {			    
-	pParser = connectToParser();
-	parsedNew = parse(newFile);
-
-	pParser = connectToParser();
-	parsedOld = parse(oldFile);
-	
-	merge(parsedNew, newFile, parsedOld, oldFile, targetFile);
-	
-    }
 
 
     public void merge(ParsedInfo parsedNew, 
@@ -219,14 +188,22 @@ public class Merger implements IUMLParserEventsSink {
     }
 
 
-    public ParsedInfo parse(String fileName) 
+    public ParsedInfo parse(String fileName, String charset) 
     {
 	pParser = connectToParser();
 	errorHappened = false;
 	classNodes = new ArrayList<IClassifier>();
 	imports = new ArrayList<Import>();
 	packageNodes = new ArrayList<Node>();
-	pParser.processStreamFromFile(fileName);
+        if (charset != null && java.nio.charset.Charset.isSupported(charset)
+            && pParser instanceof UMLParser) 
+        {
+            ((UMLParser)pParser).processStreamFromFile(fileName, charset);
+        }
+        else 
+        {
+            pParser.processStreamFromFile(fileName);
+        }
 	if (errorHappened || classNodes.size() == 0) 
 	{
 	    return null;
@@ -1186,7 +1163,7 @@ public class Merger implements IUMLParserEventsSink {
 	    fileName = fileName.replace(':', '_');
 	    if (classNodes.size() > 0) 
 		XMLManip.save(classNodes.get(0).getNode().getDocument(), "/tmp/out.txt."+fileName);
-	    */
+            */
 	} catch (Exception ex) {
 	    ex.printStackTrace(System.out);
 	}
