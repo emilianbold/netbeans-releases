@@ -71,7 +71,6 @@ import com.sun.jdi.Mirror;
 import com.sun.jdi.NativeMethodException;
 import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.ObjectReference;
-import com.sun.jdi.PrimitiveType;
 import com.sun.jdi.PrimitiveValue;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.ShortValue;
@@ -124,7 +123,6 @@ import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.TreeVisitor;
 import com.sun.source.tree.TryTree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
@@ -146,7 +144,6 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
@@ -157,7 +154,6 @@ import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.modules.debugger.jpda.expr.EvaluationContext.VariableInfo;
 import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -175,10 +171,12 @@ import org.openide.util.NbBundle;
     public EvaluatorVisitor() {
     }
 
+    @Override
     public Mirror visitAnnotation(AnnotationTree arg0, EvaluationContext evaluationContext) {
         return null;
     }
 
+    @Override
     public Mirror visitMethodInvocation(MethodInvocationTree arg0, EvaluationContext evaluationContext) {
         if (!evaluationContext.canInvokeMethods()) {
             Assert2.error(arg0, "calleeException", new UnsupportedOperationException(), evaluationContext);
@@ -382,10 +380,13 @@ import org.openide.util.NbBundle;
     }
 
     
+    @Override
     public Mirror visitAssert(AssertTree arg0, EvaluationContext evaluationContext) {
-        throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
+        Assert2.error(arg0, "unsupported");
+        return null;
     }
 
+    @Override
     public Mirror visitAssignment(AssignmentTree arg0, EvaluationContext evaluationContext) {
         Mirror var = arg0.getVariable().accept(this, evaluationContext);
         Mirror exp = arg0.getExpression().accept(this, evaluationContext);
@@ -395,6 +396,7 @@ import org.openide.util.NbBundle;
         return value;
     }
 
+    @Override
     public Mirror visitCompoundAssignment(CompoundAssignmentTree arg0, EvaluationContext evaluationContext) {
         Mirror var = arg0.getVariable().accept(this, evaluationContext);
         Mirror exp = arg0.getExpression().accept(this, evaluationContext);
@@ -531,6 +533,7 @@ import org.openide.util.NbBundle;
         throw new IllegalStateException("Unknown assignment var type: "+var);
     }
 
+    @Override
     public Mirror visitBinary(BinaryTree arg0, EvaluationContext evaluationContext) {
         Mirror left = arg0.getLeftOperand().accept(this, evaluationContext);
         Mirror right = arg0.getRightOperand().accept(this, evaluationContext);
@@ -745,26 +748,37 @@ import org.openide.util.NbBundle;
         }
     }
 
+    @Override
     public Mirror visitBlock(BlockTree arg0, EvaluationContext evaluationContext) {
-        throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
+        Assert2.error(arg0, "unsupported");
+        return null;
     }
 
+    @Override
     public Mirror visitBreak(BreakTree arg0, EvaluationContext evaluationContext) {
-        throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
+        Assert2.error(arg0, "unsupported");
+        return null;
     }
 
+    @Override
     public Mirror visitCase(CaseTree arg0, EvaluationContext evaluationContext) {
-        throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
+        Assert2.error(arg0, "unsupported");
+        return null;
     }
 
+    @Override
     public Mirror visitCatch(CatchTree arg0, EvaluationContext evaluationContext) {
-        throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
+        Assert2.error(arg0, "unsupported");
+        return null;
     }
 
+    @Override
     public Mirror visitClass(ClassTree arg0, EvaluationContext evaluationContext) {
-        throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
+        Assert2.error(arg0, "unsupported");
+        return null;
     }
 
+    @Override
     public Mirror visitConditionalExpression(ConditionalExpressionTree arg0, EvaluationContext evaluationContext) {
         Mirror condition = arg0.getCondition().accept(this, evaluationContext);
         if (!(condition instanceof BooleanValue)) {
@@ -778,30 +792,42 @@ import org.openide.util.NbBundle;
         }
     }
 
+    @Override
     public Mirror visitContinue(ContinueTree arg0, EvaluationContext evaluationContext) {
-        throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
+        Assert2.error(arg0, "unsupported");
+        return null;
     }
 
+    @Override
     public Mirror visitDoWhileLoop(DoWhileLoopTree arg0, EvaluationContext evaluationContext) {
-        throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
+        Assert2.error(arg0, "unsupported");
+        return null;
     }
 
+    @Override
     public Mirror visitErroneous(ErroneousTree arg0, EvaluationContext evaluationContext) {
-        throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
+        Assert2.error(arg0, "errorneous");
+        return null;
     }
 
+    @Override
     public Mirror visitExpressionStatement(ExpressionStatementTree arg0, EvaluationContext evaluationContext) {
-        throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
+        return arg0.getExpression().accept(this, evaluationContext);
     }
 
+    @Override
     public Mirror visitEnhancedForLoop(EnhancedForLoopTree arg0, EvaluationContext evaluationContext) {
-        throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
+        Assert2.error(arg0, "unsupported");
+        return null;
     }
 
+    @Override
     public Mirror visitForLoop(ForLoopTree arg0, EvaluationContext evaluationContext) {
-        throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
+        Assert2.error(arg0, "unsupported");
+        return null;
     }
 
+    @Override
     public Mirror visitIdentifier(IdentifierTree arg0, EvaluationContext evaluationContext) {
         TreePath identifierPath = TreePath.getPath(getCurrentPath(), arg0);
         if (identifierPath == null) identifierPath = getCurrentPath();
@@ -883,24 +909,32 @@ import org.openide.util.NbBundle;
         throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
     }
 
+    @Override
     public Mirror visitIf(IfTree arg0, EvaluationContext evaluationContext) {
-        throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
+        Assert2.error(arg0, "unsupported");
+        return null;
     }
 
+    @Override
     public Mirror visitImport(ImportTree arg0, EvaluationContext evaluationContext) {
-        throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
+        Assert2.error(arg0, "unsupported");
+        return null;
     }
 
+    @Override
     public Mirror visitArrayAccess(ArrayAccessTree arg0, EvaluationContext evaluationContext) {
         Mirror array = arg0.getExpression().accept(this, evaluationContext);
         Mirror index = arg0.getIndex().accept(this, evaluationContext);
         return ((ArrayReference) array).getValue(((PrimitiveValue) index).intValue());
     }
 
+    @Override
     public Mirror visitLabeledStatement(LabeledStatementTree arg0, EvaluationContext evaluationContext) {
-        throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
+        Assert2.error(arg0, "unsupported");
+        return null;
     }
 
+    @Override
     public Mirror visitLiteral(LiteralTree arg0, EvaluationContext evaluationContext) {
         VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
         Object value = arg0.getValue();
@@ -945,14 +979,19 @@ import org.openide.util.NbBundle;
         throw new UnsupportedOperationException("Unsupported value: "+value);
     }
 
+    @Override
     public Mirror visitMethod(MethodTree arg0, EvaluationContext evaluationContext) {
-        throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
+        Assert2.error(arg0, "unsupported");
+        return null;
     }
 
+    @Override
     public Mirror visitModifiers(ModifiersTree arg0, EvaluationContext evaluationContext) {
-        throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
+        Assert2.error(arg0, "unsupported");
+        return null;
     }
 
+    @Override
     public Mirror visitNewArray(NewArrayTree arg0, EvaluationContext evaluationContext) {
         Type type;
         Tree typeTree = arg0.getType();
@@ -1090,6 +1129,7 @@ import org.openide.util.NbBundle;
         return null;
     }
 
+    @Override
     public Mirror visitNewClass(NewClassTree arg0, EvaluationContext evaluationContext) {
         TreePath identifierPath = TreePath.getPath(getCurrentPath(), arg0);
         if (identifierPath == null) identifierPath = getCurrentPath();
@@ -1155,14 +1195,18 @@ import org.openide.util.NbBundle;
         }
     }
     
+    @Override
     public Mirror visitParenthesized(ParenthesizedTree arg0, EvaluationContext evaluationContext) {
         return arg0.getExpression().accept(this, evaluationContext);
     }
 
+    @Override
     public Mirror visitReturn(ReturnTree arg0, EvaluationContext evaluationContext) {
-        throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
+        Assert2.error(arg0, "unsupported");
+        return null;
     }
 
+    @Override
     public Mirror visitMemberSelect(MemberSelectTree arg0, EvaluationContext evaluationContext) {
         TreePath memberSelectPath = TreePath.getPath(getCurrentPath(), arg0);
         if (memberSelectPath == null) memberSelectPath = getCurrentPath();
@@ -1178,46 +1222,77 @@ import org.openide.util.NbBundle;
                 Value enumValue = invokeMethod(arg0, valueOfMethod, true, (ClassType) enumType, null,
                              Collections.singletonList(constantNameRef), evaluationContext);
                 return enumValue;
+            case FIELD:
+                ve = (VariableElement) elm;
+                String fieldName = ve.getSimpleName().toString();
+                Mirror expression = arg0.getExpression().accept(this, evaluationContext);
+                if (expression instanceof ClassType) {
+                    Field f = ((ClassType) expression).fieldByName(fieldName);
+                    if (f != null) {
+                        return ((ClassType) expression).getValue(f);
+                    } else {
+                        Assert2.error(arg0, "unknownField", fieldName);
+                        return null;
+                    }
+                }
+                if (expression instanceof ObjectReference) {
+                    if (expression instanceof ArrayReference && "length".equals(fieldName)) {
+                        return expression.virtualMachine().mirrorOf(((ArrayReference) expression).length());
+                    }
+                    ReferenceType type = ((ObjectReference) expression).referenceType();
+                    Field f = type.fieldByName(fieldName);
+                    if (f != null) {
+                        return ((ObjectReference) expression).getValue(f);
+                    } else {
+                        Assert2.error(arg0, "unknownField", fieldName);
+                        return null;
+                    }
+                }
+                throw new IllegalArgumentException("Wrong expression value: "+expression);
+            default:
+                throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"', element kind = "+elm.getKind());
         }
-        Mirror expression = arg0.getExpression().accept(this, evaluationContext);
-        String name = arg0.getIdentifier().toString();
-        if (expression instanceof ClassType) {
-            Field f = ((ClassType) expression).fieldByName(name);
-            if (f != null) {
-                return ((ClassType) expression).getValue(f);
-            }
-        }
-        throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
     }
 
+    @Override
     public Mirror visitEmptyStatement(EmptyStatementTree arg0, EvaluationContext evaluationContext) {
-        throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
+        Assert2.error(arg0, "unsupported");
+        return null;
     }
 
+    @Override
     public Mirror visitSwitch(SwitchTree arg0, EvaluationContext evaluationContext) {
-        throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
+        Assert2.error(arg0, "unsupported");
+        return null;
     }
 
+    @Override
     public Mirror visitSynchronized(SynchronizedTree arg0, EvaluationContext evaluationContext) {
-        throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
+        Assert2.error(arg0, "unsupported");
+        return null;
     }
 
     public Mirror visitThrow(ThrowTree arg0, EvaluationContext evaluationContext) {
         throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
     }
 
+    @Override
     public Mirror visitCompilationUnit(CompilationUnitTree arg0, EvaluationContext evaluationContext) {
-        throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
+        Assert2.error(arg0, "unsupported");
+        return null;
     }
 
+    @Override
     public Mirror visitTry(TryTree arg0, EvaluationContext evaluationContext) {
-        throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
+        Assert2.error(arg0, "unsupported");
+        return null;
     }
 
     public Mirror visitParameterizedType(ParameterizedTypeTree arg0, EvaluationContext evaluationContext) {
         throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
     }
 
+    @Override
     public Mirror visitArrayType(ArrayTypeTree arg0, EvaluationContext evaluationContext) {
         Type type = (Type) arg0.getType().accept(this, evaluationContext);
         if (type == null) return null;
@@ -1231,6 +1306,7 @@ import org.openide.util.NbBundle;
         }
     }
 
+    @Override
     public Mirror visitTypeCast(TypeCastTree arg0, EvaluationContext evaluationContext) {
         ExpressionTree expTree = arg0.getExpression();
         Mirror expression = expTree.accept(this, evaluationContext);
@@ -1267,6 +1343,7 @@ import org.openide.util.NbBundle;
         return expression;
     }
 
+    @Override
     public Mirror visitPrimitiveType(PrimitiveTypeTree arg0, EvaluationContext evaluationContext) {
         TypeKind type = arg0.getPrimitiveTypeKind();
         VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
@@ -1296,6 +1373,7 @@ import org.openide.util.NbBundle;
         throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
     }
 
+    @Override
     public Mirror visitInstanceOf(InstanceOfTree arg0, EvaluationContext evaluationContext) {
         Mirror expression = arg0.getExpression().accept(this, evaluationContext);
         VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
@@ -1308,6 +1386,7 @@ import org.openide.util.NbBundle;
         return vm.mirrorOf(instanceOf(expressionType, type));
     }
 
+    @Override
     public Mirror visitUnary(UnaryTree arg0, EvaluationContext evaluationContext) {
         Mirror expression = arg0.getExpression().accept(this, evaluationContext);
         VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
@@ -1526,16 +1605,20 @@ import org.openide.util.NbBundle;
         throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
     }
 
+    @Override
     public Mirror visitWhileLoop(WhileLoopTree arg0, EvaluationContext evaluationContext) {
-        throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
+        Assert2.error(arg0, "unsupported");
+        return null;
     }
 
     public Mirror visitWildcard(WildcardTree arg0, EvaluationContext evaluationContext) {
         throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
     }
 
+    @Override
     public Mirror visitOther(Tree arg0, EvaluationContext evaluationContext) {
-        throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
+        Assert2.error(arg0, "unsupported");
+        return null;
     }
     
     private void setToMirror(Tree var, Value value, EvaluationContext evaluationContext) {

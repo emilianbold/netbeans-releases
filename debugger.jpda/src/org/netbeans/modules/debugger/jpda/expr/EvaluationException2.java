@@ -164,13 +164,19 @@ public class EvaluationException2 extends RuntimeException {
             msgParams = new String [] { ((Identifier)params[0]).identifier };
         else if (reason.equals("methodCallOnNull"))
             msgParams = new String[] { params[0].toString() };
+        else if (reason.equals("unsupported"))
+            msgParams = new String[] { node.toString() };
+        else if (reason.equals("errorneous"))
+            msgParams = new String[] { node.toString() };
+        else if (reason.equals("unknownField"))
+            msgParams = new String [] { params[0].toString() };
         else {
             reason = "unknownInternalError";
             msgParams = null;
         }
 
         message = formatMessage("CTL_EvalError_" + reason, msgParams);
-        message = formatMessage("CTL_EvalErrorExpr", new String[] { node.toString(), message });
+        //message = formatMessage("CTL_EvalErrorExpr", new String[] { node.toString(), message });
 
         return message;
     }

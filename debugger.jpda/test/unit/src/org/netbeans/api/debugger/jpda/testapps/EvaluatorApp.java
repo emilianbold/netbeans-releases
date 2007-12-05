@@ -41,6 +41,8 @@
 
 package org.netbeans.api.debugger.jpda.testapps;
 
+import java.util.Comparator;
+
 /**
  * Sample application used for testing the evaluator algorithm.
  * Testing is done in two parts. First we stop in main() method and all static
@@ -70,6 +72,7 @@ public class EvaluatorApp {
     private static short    sx = 10;
     private static char     cx = 'a';
     private static byte     btx = 127;
+    private static enum     e { ONE, TWO, THREE }
     
     public EvaluatorApp() {
     }
@@ -721,6 +724,10 @@ public class EvaluatorApp {
         return llx * ix >> 5 | llx & ix ^ llx % 10;
     }
     
+    public static long testOpPrio4() {
+        return (llx - 2*ix) * ix >> (5 | llx) & ix ^ llx % 10;
+    }
+    
     // Test arrays
     
     public static int[] testArray1() {
@@ -757,6 +764,24 @@ public class EvaluatorApp {
 
     public static Boolean[][][] testArray8() {
         return new Boolean[][][] { { { Boolean.TRUE } }, { { Boolean.FALSE }, { Boolean.TRUE }, { Boolean.FALSE } }, { { Boolean.FALSE }, { Boolean.TRUE } } };
+    }
+    
+    // Member select
+    
+    public static int testMember1() {
+        return new String().hashCode();
+    }
+
+    public static Comparator testMember2() {
+        return new String().CASE_INSENSITIVE_ORDER;
+    }
+    
+    public static int testMember3() {
+        return new int[10].length;
+    }
+    
+    public static e testMember4() {
+        return e.ONE;
     }
 
 }
