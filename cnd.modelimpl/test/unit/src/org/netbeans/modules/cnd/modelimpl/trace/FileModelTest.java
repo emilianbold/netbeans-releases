@@ -229,7 +229,10 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("inline_dtor_definition_name.cc"); // NOI18N
     }
         
-	
+    public void testThrowConst() throws Exception {
+        performTest("throw_const.cc"); // NOI18N
+    }
+
     /////////////////////////////////////////////////////////////////////
     // FAILS
     
@@ -254,10 +257,6 @@ public class FileModelTest extends TraceModelTestBase {
 	    performTest("template_inner_class_dtor_definition.cc"); // NOI18N
 	}
         
-	public void testThrowConst() throws Exception {
-	    performTest("throw_const.cc"); // NOI18N
-	}
-
         @Override
 	protected void postSetUp() {
 	    // init flags needed for file model tests

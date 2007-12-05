@@ -2182,9 +2182,7 @@ exception_specification
 	{String so;}
 	:	LITERAL_throw 
 		LPAREN 
-		(	(exception_type_id (COMMA exception_type_id)? )? 
-		|	ELLIPSIS
-		)
+		(exception_type_id (COMMA exception_type_id)? )? 
 		RPAREN
 	;
 
@@ -2193,7 +2191,8 @@ protected
 exception_type_id
 	{ /*TypeSpecifier*/int ts; String so; }
 	:
-	( (so = scope_override ID) | built_in_type ) (STAR | AMPERSAND)*
+	//( (so = scope_override ID) | built_in_type ) (STAR | AMPERSAND)*
+        parameter_declaration
 	;
 
 protected
