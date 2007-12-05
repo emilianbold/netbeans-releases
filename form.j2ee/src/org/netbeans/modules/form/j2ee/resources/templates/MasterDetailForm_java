@@ -9,16 +9,11 @@ import java.util.List;
 import javax.persistence.RollbackException;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 
 public class __NAME__ extends JPanel {
     
     public __NAME__() {
         initComponents();
-        TableSelectionListener listener = new TableSelectionListener();
-        masterTable.getSelectionModel().addListSelectionListener(listener);/* DETAIL_ONLY */
-        detailTable.getSelectionModel().addListSelectionListener(listener);/* DETAIL_ONLY */
         entityManager.getTransaction().begin();
     }
     
@@ -31,19 +26,6 @@ public class __NAME__ extends JPanel {
     private void initComponents() {
     }// </editor-fold>//GEN-END:initComponents
 
-    private class TableSelectionListener implements ListSelectionListener {
-
-        public void valueChanged(ListSelectionEvent e) {
-            if (e.getSource() == masterTable.getSelectionModel()) {
-                boolean enabled = (masterTable.getSelectedRow() != -1);
-                deleteButton.setEnabled(enabled);/* DETAIL_ONLY */
-                newDetailButton.setEnabled(enabled);/* DETAIL_ONLY */
-            }/* DETAIL_ONLY */ else {
-                deleteDetailButton.setEnabled(detailTable.getSelectedRow() != -1);
-            }/* DETAIL_ONLY */
-        }
-        
-    }
     /* DETAIL_ONLY */
     private void deleteDetailButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteDetailButtonActionPerformed
         int index = masterTable.getSelectedRow();
