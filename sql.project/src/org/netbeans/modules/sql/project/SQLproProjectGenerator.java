@@ -56,6 +56,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import java.nio.charset.Charset;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.openide.util.NbBundle;
 
 /**
  * Create a fresh EjbProject from scratch or by importing and exisitng web module 
