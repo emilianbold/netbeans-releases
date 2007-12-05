@@ -46,12 +46,6 @@ import java.util.regex.Pattern;
 import java.util.*;
 import java.util.prefs.Preferences;
 import java.io.File;
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.BufferedInputStream;
-import java.io.InputStreamReader;
-import java.io.IOException;
-import java.util.logging.Level;
 import java.net.InetAddress;
 import org.netbeans.modules.mercurial.config.HgConfigFiles;
 //import org.netbeans.modules.mercurial.options.AnnotationExpression;
@@ -75,7 +69,8 @@ public class HgModuleConfig {
     public static final String KEY_EXECUTABLE_BINARY        = "hgExecBinary";                              // NOI18N
     public static final String KEY_EXPORT_FILENAME          = "hgExportFilename";                          // NOI18N
     public static final String KEY_ANNOTATION_FORMAT        = "annotationFormat";                           // NOI18N
-    public static final String SAVE_PASSWORD                = "savePassword";
+    public static final String SAVE_PASSWORD                = "savePassword";                               // NOI18N
+    public static final String KEY_BACKUP_ON_REVERTMODS = "backupOnRevert";                               // NOI18N
                             // NOI18N
 
     private static final String RECENT_URL = "repository.recentURL";                                        // NOI18N
@@ -143,6 +138,13 @@ public class HgModuleConfig {
 
     public String getExecutableBinaryPath() {
         return (String) getPreferences().get(KEY_EXECUTABLE_BINARY, ""); // NOI18N
+    }
+    public boolean getBackupOnRevertModifications() {
+        return getPreferences().getBoolean(KEY_BACKUP_ON_REVERTMODS, true);
+    }
+
+    public void setBackupOnRevertModifications(boolean bBackup) {
+        getPreferences().putBoolean(KEY_BACKUP_ON_REVERTMODS, bBackup);
     }
     
     public void setExecutableBinaryPath(String path) {

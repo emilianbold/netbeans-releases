@@ -99,6 +99,7 @@ public class HgCommand {
     private static final String HG_COMMIT_DEFAULT_MESSAGE = "[no commit message]"; // NOI18N
     
     private static final String HG_REVERT_CMD = "revert"; // NOI18N
+    private static final String HG_REVERT_NOBACKUP_CMD = "--no-backup"; // NOI18N
     private static final String HG_ADD_CMD = "add"; // NOI18N
     
     private static final String HG_BRANCH_CMD = "branch"; // NOI18N
@@ -1045,11 +1046,15 @@ public class HgCommand {
     public static void doRevert(File repository, List<File> revertFiles, String revision)  throws HgException {
         if (repository == null) return;
         if (revertFiles.size() == 0) return;
+        boolean doBackup = HgModuleConfig.getDefault().getBackupOnRevertModifications();
         
         List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_REVERT_CMD);
+        if(!doBackup){
+            command.add(HG_REVERT_NOBACKUP_CMD);
+        }
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
         if (revision != null){
