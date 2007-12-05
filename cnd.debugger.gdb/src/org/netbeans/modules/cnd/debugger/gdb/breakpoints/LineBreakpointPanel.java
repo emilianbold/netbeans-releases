@@ -150,35 +150,6 @@ public class LineBreakpointPanel extends JPanel implements Controller, HelpCtx.P
         return lb;
     }
     
-    private static int findNumLines(String url) {
-        FileObject file;
-        try {
-            file = URLMapper.findFileObject(new URL(url));
-        } catch (MalformedURLException e) {
-            return 0;
-        }
-        if (file == null) {
-	    return 0;
-	}
-        DataObject dataObject;
-        try {
-            dataObject = DataObject.find(file);
-        } catch (DataObjectNotFoundException ex) {
-            return 0;
-        }
-        EditorCookie ec = dataObject.getCookie(EditorCookie.class);
-        if (ec == null) {
-	    return 0;
-	}
-        ec.prepareDocument().waitFinished();
-        Document d = ec.getDocument();
-        if (!(d instanceof StyledDocument)) {
-	    return 0;
-	}
-        StyledDocument sd = (StyledDocument) d;
-        return NbDocument.findLineNumber(sd, sd.getLength());
-    }
-    
     private void setupConditionPane() {
         /* Not implemented yet
         tfCondition.setKeymap(new FilteredKeymap(tfCondition.getKeymap()));
@@ -437,24 +408,6 @@ public class LineBreakpointPanel extends JPanel implements Controller, HelpCtx.P
             return NbBundle.getMessage(LineBreakpointPanel.class, "MSG_File_Name_Does_Not_Exist"); // NOI18N
         }
         breakpoint.setURL(file.getAbsolutePath());
-	
-	// Now validate the line number
-        try {
-            int line = Integer.parseInt(tfLineNumber.getText().trim());
-            if (line <= 0) {
-                return NbBundle.getMessage(LineBreakpointPanel.class, "MSG_NonPositive_Line_Number_Spec"); // NOI18N
-            }
-            int maxLine = findNumLines(breakpoint.getURL());
-            if (maxLine == 0) { // Not found
-                maxLine = Integer.MAX_VALUE; // Not to bother the user when we did not find it
-            }
-            if (line > maxLine) {
-                return NbBundle.getMessage(LineBreakpointPanel.class, "MSG_TooBig_Line_Number_Spec", // NOI18N
-                        Integer.toString(line), Integer.toString(maxLine));
-            }
-        } catch (NumberFormatException e) {
-            return NbBundle.getMessage(LineBreakpointPanel.class, "MSG_No_Line_Number_Spec"); // NOI18N
-        }
 	
 	// No validation for the (currently unsupported) condition
         return null;
