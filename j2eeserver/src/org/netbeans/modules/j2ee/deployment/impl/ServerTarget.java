@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -52,47 +52,42 @@ import org.openide.util.NbBundle;
 // PENDING issue  --   Target <==> J2EEDomain relationship 1 to many, many to 1, 1 to 1, or many to many
 public class ServerTarget implements Node.Cookie {
 
-    ServerInstance instance;
-    Target target;
+    private final ServerInstance instance;
+    private final Target target;
     //PENDING: caching state, sync, display through icon and action list.
-    
+
     public ServerTarget(ServerInstance instance, Target target) {
         this.instance = instance;
         this.target = target;
     }
-    
+
     public ServerInstance getInstance() {
         return instance;
     }
-    
+
     public String getName() {
         return target.getName();
     }
-    
-    public boolean hasWebContainerOnly() {
-        Server server = instance.getServer();
-        return (server.canDeployWars() && ! server.canDeployEars() && ! server.canDeployEjbJars());
-    }
-    
+
     public Target getTarget() {
         return target;
     }
-    
+
     public boolean isAlsoServerInstance() {
         return instance.getStartServer().isAlsoTargetServer(target);
     }
-    
+
     public boolean isRunning() {
         if (isAlsoServerInstance())
             return instance.isRunning();
-        
+
         StartServer ss = instance.getStartServer();
         if (ss != null) {
             return ss.isRunning(target);
         }
         return false;
     }
-    
+
     public ProgressObject start() {
         StartServer ss = instance.getStartServer();
         if (ss != null && ss.supportsStartTarget(target)) {
@@ -105,7 +100,7 @@ public class ServerTarget implements Node.Cookie {
         String msg = NbBundle.getMessage(ServerTarget.class, "MSG_StartStopTargetNotSupported", name);
         throw new UnsupportedOperationException(msg);
     }
-    
+
     public ProgressObject stop() {
         StartServer ss = instance.getStartServer();
         if (ss != null && ss.supportsStartTarget(target)) {
