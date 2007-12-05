@@ -52,7 +52,7 @@ import org.w3c.dom.Element;
  */
 public class IconImpl extends JSFConfigComponentImpl implements Icon{
     protected static final List<String> SORTED_ELEMENTS = new ArrayList();
-    {
+    static {
         SORTED_ELEMENTS.add(JSFConfigQNames.SMALL_ICON.getLocalName());
         SORTED_ELEMENTS.add(JSFConfigQNames.LARGE_ICON.getLocalName());
     }

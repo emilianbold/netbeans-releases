@@ -57,7 +57,7 @@ import org.w3c.dom.Element;
 public class LocaleConfigImpl extends JSFConfigComponentImpl implements LocaleConfig {
     
     protected static final List<String> SORTED_ELEMENTS = new ArrayList<String>();
-    { 
+    static { 
         SORTED_ELEMENTS.add(JSFConfigQNames.DEFAULT_LOCALE.getLocalName());
         SORTED_ELEMENTS.add(JSFConfigQNames.SUPPORTED_LOCALE.getLocalName());
     }

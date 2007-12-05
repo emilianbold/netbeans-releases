@@ -54,7 +54,7 @@ import org.w3c.dom.Element;
 public class NavigationCaseImpl extends DescriptionGroupImpl implements NavigationCase{
     
     protected static final List<String> NAVIGATION_CASE_SORTED_ELEMENTS = new ArrayList();
-    {
+    static {
         NAVIGATION_CASE_SORTED_ELEMENTS.addAll(DescriptionGroupImpl.DESCRIPTION_GROUP_SORTED_ELEMENTS);
         NAVIGATION_CASE_SORTED_ELEMENTS.add(JSFConfigQNames.FROM_ACTION.getLocalName());
         NAVIGATION_CASE_SORTED_ELEMENTS.add(JSFConfigQNames.FROM_OUTCOME.getLocalName());

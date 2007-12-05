@@ -54,7 +54,7 @@ import org.w3c.dom.Element;
 public abstract class DescriptionGroupImpl extends JSFConfigComponentImpl implements DescriptionGroup {
     
     protected static final List<String> DESCRIPTION_GROUP_SORTED_ELEMENTS = new ArrayList();
-    { 
+    static { 
         DESCRIPTION_GROUP_SORTED_ELEMENTS.add(JSFConfigQNames.DESCRIPTION.getLocalName());
         DESCRIPTION_GROUP_SORTED_ELEMENTS.add(JSFConfigQNames.DISPLAY_NAME.getLocalName());
         DESCRIPTION_GROUP_SORTED_ELEMENTS.add(JSFConfigQNames.ICON.getLocalName());

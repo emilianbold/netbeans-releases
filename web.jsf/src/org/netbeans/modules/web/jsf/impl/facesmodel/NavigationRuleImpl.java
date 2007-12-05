@@ -56,7 +56,7 @@ import org.w3c.dom.Element;
 public class NavigationRuleImpl extends DescriptionGroupImpl implements NavigationRule{
     
     protected static final List<String> NAVIGATION_RULE_SORTED_ELEMENTS = new ArrayList();
-    {
+    static {
         NAVIGATION_RULE_SORTED_ELEMENTS.addAll(DescriptionGroupImpl.DESCRIPTION_GROUP_SORTED_ELEMENTS);
         NAVIGATION_RULE_SORTED_ELEMENTS.add(JSFConfigQNames.FROM_VIEW_ID.getLocalName());
         NAVIGATION_RULE_SORTED_ELEMENTS.add(JSFConfigQNames.NAVIGATION_CASE.getLocalName());

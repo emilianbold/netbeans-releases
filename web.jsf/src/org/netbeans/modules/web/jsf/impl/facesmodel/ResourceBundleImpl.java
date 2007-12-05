@@ -50,7 +50,7 @@ import org.w3c.dom.Element;
 public class ResourceBundleImpl extends DescriptionGroupImpl implements ResourceBundle {
 
     protected static final List<String> RESOURCE_BUNDLE_SORTED_ELEMENTS = new ArrayList<String>();
-    {
+    static {
         RESOURCE_BUNDLE_SORTED_ELEMENTS.addAll(DescriptionGroupImpl.DESCRIPTION_GROUP_SORTED_ELEMENTS);
         RESOURCE_BUNDLE_SORTED_ELEMENTS.add(JSFConfigQNames.BASE_NAME.getLocalName());
         RESOURCE_BUNDLE_SORTED_ELEMENTS.add(JSFConfigQNames.VAR.getLocalName());

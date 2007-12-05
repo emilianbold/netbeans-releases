@@ -61,7 +61,7 @@ public class ManagedBeanImpl extends DescriptionGroupImpl implements ManagedBean
     private ManagedBean.Scope beanScope;
     
     protected static final List<String> SORTED_ELEMENTS = new ArrayList<String>();
-    {
+    static {
         SORTED_ELEMENTS.addAll(DescriptionGroupImpl.DESCRIPTION_GROUP_SORTED_ELEMENTS);
         SORTED_ELEMENTS.add(JSFConfigQNames.MANAGED_BEAN_NAME.getLocalName());
         SORTED_ELEMENTS.add(JSFConfigQNames.MANAGED_BEAN_CLASS.getLocalName());
