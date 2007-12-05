@@ -62,6 +62,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
@@ -978,6 +980,65 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
     
     public synchronized List<Annotation> getAnnotations() {
         return new ArrayList<Annotation>(line2Annotations.values());
+    }
+    
+    public synchronized List<ErrorDescription> getErrorsGE(int offset) {
+        try {
+            Position current = null;
+            int index = -1;
+            int startOffset = Utilities.getRowStart(doc, offset);
+
+            while (current == null) {
+                index = findPositionGE(startOffset);
+
+                if (knownPositions.size() == 0) {
+                    break;
+                }
+                if (index == knownPositions.size()) {
+                    return Collections.emptyList();
+                }
+                current = knownPositions.get(index).get();
+            }
+
+            if (current == null) {
+                //nothing to do:
+                return Collections.emptyList();
+            }
+
+            assert index != (-1);
+
+            List<ErrorDescription> errors = line2Errors.get(current);
+
+            if (errors != null) {
+                SortedMap<Integer, List<ErrorDescription>> sortedErrors = new TreeMap<Integer, List<ErrorDescription>>();
+                
+                for (ErrorDescription ed : errors) {
+                    List<ErrorDescription> errs = sortedErrors.get(ed.getRange().getBegin().getOffset());
+
+                    if (errs == null) {
+                        sortedErrors.put(ed.getRange().getBegin().getOffset(), errs = new LinkedList<ErrorDescription>());
+                    }
+
+                    errs.add(ed);
+                }
+
+                SortedMap<Integer, List<ErrorDescription>> tail = sortedErrors.tailMap(offset);
+
+                if (!tail.isEmpty()) {
+                    Integer k = tail.firstKey();
+
+                    return new LinkedList<ErrorDescription>(sortedErrors.get(k));
+                }
+            }
+
+            //try next line:
+            int endOffset = Utilities.getRowEnd(doc, offset);
+
+            return getErrorsGE(endOffset + 1);
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+            return Collections.emptyList();
+        }
     }
     
     private static final RequestProcessor INSTANCE = new RequestProcessor("AnnotationHolder");
