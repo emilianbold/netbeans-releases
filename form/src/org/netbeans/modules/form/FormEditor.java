@@ -41,15 +41,29 @@
 
 package org.netbeans.modules.form;
 
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.SourcePositions;
 import java.awt.Cursor;
 import java.awt.EventQueue;
 import java.beans.*;
 import java.io.IOException;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import javax.swing.*;
+import javax.swing.text.BadLocationException;
 import org.netbeans.api.editor.guards.SimpleSection;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.form.actions.EditContainerAction;
 import org.netbeans.modules.form.actions.EditFormAction;
 import org.netbeans.modules.form.assistant.AssistantModel;
@@ -59,6 +73,7 @@ import org.netbeans.spi.palette.PaletteController;
 import org.openide.*;
 import org.openide.awt.UndoRedo;
 import org.openide.awt.StatusDisplayer;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Mutex;
@@ -613,6 +628,8 @@ public class FormEditor {
             // - needs to be forced since there might be no change fired
             // - don't wait for the next round, we want to save now
             formModel.fireFormChanged(true);
+            // remove SuppressWarnings annotation if necessary
+            checkSuppressWarningsAnnotation();
             // save the form if changed
             FormEditorSupport fes = formDataObject.getFormEditorSupport();
             try {
@@ -1216,4 +1233,69 @@ public class FormEditor {
     public static boolean isNonVisualTrayEnabled() {
         return Boolean.getBoolean("netbeans.form.non_visual_tray"); // NOI18N
     }
+
+    private void checkSuppressWarningsAnnotation() {
+        FileObject fo = getFormDataObject().getPrimaryFile();
+        ClassPath cp = ClassPath.getClassPath(fo, ClassPath.BOOT);
+        if (cp.findResource("java/lang/SuppressWarnings.class") == null) { // NOI18N
+            // The project's bootclasspath doesn't contain SuppressWarnings class.
+            // So, remove this annotation from initComponents() method.
+            final String foName = fo.getName();
+            JavaSource js = JavaSource.forFileObject(fo);
+            final int[] positions = new int[] {-1,-1};
+            try {
+                js.runModificationTask(new CancellableTask<WorkingCopy>() {
+                    public void cancel() {
+                    }
+                    public void run(WorkingCopy wcopy) throws Exception {
+                        wcopy.toPhase(JavaSource.Phase.RESOLVED);
+
+                        ClassTree clazz = null;
+                        CompilationUnitTree cu = wcopy.getCompilationUnit();
+                        for (Tree tree : cu.getTypeDecls()) {
+                            if (tree.getKind() == Tree.Kind.CLASS) {
+                                ClassTree cand = (ClassTree)tree;
+                                if (foName.equals(cand.getSimpleName().toString())) {
+                                    clazz = cand;
+                                }
+                            }
+                        }
+                        if (clazz == null) return;
+                        
+                        for (Tree tree : clazz.getMembers()) {
+                            if (tree.getKind() == Tree.Kind.METHOD) {
+                                MethodTree method = (MethodTree)tree;
+                                if ("initComponents".equals(method.getName().toString()) // NOI18N
+                                        && (method.getParameters().size() == 0)) {
+                                    ModifiersTree modifiers = method.getModifiers();
+                                    for (AnnotationTree annotation : modifiers.getAnnotations()) {
+                                        if (annotation.getAnnotationType().toString().contains("SuppressWarnings")) { // NOI18N
+                                            SourcePositions sp = wcopy.getTrees().getSourcePositions();
+                                            positions[0] = (int)sp.getStartPosition(cu, annotation);
+                                            positions[1] = (int)sp.getEndPosition(cu, annotation);
+                                            // We cannot use the following code because
+                                            // part of the modifier is in guarded block
+                                            //ModifiersTree newModifiers = wcopy.getTreeMaker().removeModifiersAnnotation(method.getModifiers(), annotation);
+                                            //wcopy.rewrite(modifiers, newModifiers);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+                }).commit();
+            } catch (IOException ioex) {
+                Logger.getLogger(FormEditor.class.getName()).log(Level.INFO, ioex.getLocalizedMessage(), ioex);
+            }
+            if (positions[0] != -1) {
+                try {
+                    getFormDataObject().getFormEditorSupport().getDocument().remove(positions[0], positions[1]-positions[0]);
+                } catch (BadLocationException blex) {
+                    Logger.getLogger(FormEditor.class.getName()).log(Level.INFO, blex.getLocalizedMessage(), blex);
+                }
+            }
+        }
+    }
+
 }
