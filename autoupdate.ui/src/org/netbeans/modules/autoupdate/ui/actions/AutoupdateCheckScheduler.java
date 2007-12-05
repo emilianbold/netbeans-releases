@@ -42,6 +42,7 @@
 package org.netbeans.modules.autoupdate.ui.actions;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
@@ -56,6 +57,8 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
+import javax.swing.ToolTipManager;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
@@ -376,12 +379,28 @@ public class AutoupdateCheckScheduler {
         };
         SwingUtilities.invokeLater( showBalloon );
         flasher.addMouseListener( new MouseAdapter() {
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                showBalloon.run();
-            }
-        }  );
+                Timer t;
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                    if( null != t ) {
+                        t.stop();
+                    }
+                    t = new Timer( ToolTipManager.sharedInstance().getInitialDelay(), new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            showBalloon.run();
+                        }
+                    });
+                    t.start();
+                }
+                @Override
+                public void mouseExited(MouseEvent e) {
+                    if( null != t ) {
+                        t.stop();
+                        t = null;
+                    }
+                }
+            }    
+        );
     }
     
 }
