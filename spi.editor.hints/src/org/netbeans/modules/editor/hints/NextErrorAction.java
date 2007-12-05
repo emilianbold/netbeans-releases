@@ -105,7 +105,7 @@ public class NextErrorAction extends AbstractAction implements PropertyChangeLis
                 if (errorOffset == (-1) && unusedOffset == (-1)) {
                     Toolkit.getDefaultToolkit().beep();
                 } else {
-                    if (unusedOffset == (-1) || errorOffset < unusedOffset) {
+                    if (errorOffset != (-1) && (errorOffset < unusedOffset || unusedOffset == (-1))) {
                         comp.getCaret().setDot(errorOffset);
 
                         Utilities.setStatusText(comp, buildText(errors));
