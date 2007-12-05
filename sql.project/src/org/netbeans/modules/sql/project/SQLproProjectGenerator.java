@@ -167,8 +167,9 @@ public class SQLproProjectGenerator {
         ep.setProperty(IcanproProjectProperties.ASSEMBLY_UNIT_ALIAS, "This Service Assembly"); // NOI18N
         ep.setProperty(IcanproProjectProperties.ASSEMBLY_UNIT_DESCRIPTION, "Represents this Service Assembly"); // NOI18N
         ep.setProperty(IcanproProjectProperties.APPLICATION_SUB_ASSEMBLY_ALIAS, "This Service Unit"); // NOI18N
-        ep.setProperty(IcanproProjectProperties.APPLICATION_SUB_ASSEMBLY_DESCRIPTION, "This represents the Service Unit"); // NOI18N
-        ep.setProperty(IcanproProjectProperties.JBI_COMPONENT_CONF_ROOT, "nbproject/private"); // NOI18N
+        ep.setProperty(IcanproProjectProperties.APPLICATION_SUB_ASSEMBLY_DESCRIPTION, 
+			NbBundle.getMessage(SQLproProjectGenerator.class, "SERVICE_UNIT")); // NOI18N
+        ep.setProperty(IcanproProjectProperties.JBI_COMPONENT_CONF_ROOT, "nbproject/private");
         ep.setProperty(IcanproProjectProperties.JBI_DEPLOYMENT_CONF_ROOT, "nbproject/deployment"); // NOI18N
 
         ep.setProperty(IcanproProjectProperties.BC_DEPLOYMENT_JAR, "${"+IcanproProjectProperties.BUILD_DIR+"}/" + "BCDeployment.jar");

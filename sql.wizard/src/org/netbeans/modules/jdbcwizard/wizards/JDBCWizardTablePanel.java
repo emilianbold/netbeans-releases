@@ -467,7 +467,7 @@ public class JDBCWizardTablePanel extends JPanel {
         	this.takes = takes;
         	columnDisplayDialog = new ColumnDialog(new JDialog(), true);
         	this.columnDisplayDialog.setAlwaysOnTop(true);
-            this.columnDisplayDialog.setResizable(false);
+            this.columnDisplayDialog.setResizable(true);
             this.columnDisplayDialog.setEnabled(true);
             this.columnDisplayDialog.setFocusable(true);
         }
@@ -893,10 +893,10 @@ public class JDBCWizardTablePanel extends JPanel {
     }
 
     /* font selection for column data in table body */
-    private static final Font FONT_TABLE_COLUMNS = new Font("Dialog", Font.PLAIN, 10);
+    private static final Font FONT_TABLE_COLUMNS = new Font("Dialog", Font.PLAIN, 12);
 
     /* font selection for column headers in table body */
-    private static final Font FONT_TABLE_HEADER = new Font("Dialog", Font.BOLD, 10);
+    private static final Font FONT_TABLE_HEADER = new Font("Dialog", Font.BOLD, 12);
 
     private JPanel headerPnl;
 
@@ -970,13 +970,13 @@ public class JDBCWizardTablePanel extends JPanel {
        	this.metaDataTable.getColumn(NbBundle.getMessage( JDBCWizardTablePanel.class,"LBL_properties_jLabell")).setCellEditor(new MyButtonRenderer(NbBundle.getMessage( JDBCWizardTablePanel.class, "BTN_Advanced")));
         // set checkbox column size
         final TableColumn column = this.metaDataTable.getColumnModel().getColumn(0);
-        column.setResizable(false);
+        column.setResizable(true);
         column.setMinWidth(40);
         column.setPreferredWidth(80);
         column.setMaxWidth(120);
         
         final TableColumn columnAdv = this.metaDataTable.getColumnModel().getColumn(2);
-        columnAdv.setResizable(false);
+        columnAdv.setResizable(true);
         columnAdv.setMinWidth(60);
         columnAdv.setPreferredWidth(80);
         columnAdv.setMaxWidth(100);
@@ -988,18 +988,19 @@ public class JDBCWizardTablePanel extends JPanel {
     public void addTable(final List testList) {
         this.metaDataTable = new MetaTableComponent();
         this.metaDataTable.setFont(JDBCWizardTablePanel.FONT_TABLE_COLUMNS);
+        //this.metaDataTable.getTableHeader().setFont(JDBCWizardTablePanel.FONT_TABLE_HEADER);
         this.metaDataTable.getTableHeader().setFont(JDBCWizardTablePanel.FONT_TABLE_HEADER);
         final MyTableModel myModel = new MyTableModel(testList);
         this.metaDataTable.setModel(myModel);
        	this.metaDataTable.getColumn(NbBundle.getMessage( JDBCWizardTablePanel.class,"LBL_properties_jLabell")).setCellRenderer(new MyButtonRenderer(NbBundle.getMessage( JDBCWizardTablePanel.class, "BTN_Advanced")));
-       	this.metaDataTable.getColumn(NbBundle.getMessage( JDBCWizardTablePanel.class,"LBL_properties_jLabell")).setCellEditor(new MyButtonRenderer(NbBundle.getMessage( JDBCWizardTablePanel.class, "BTN_Advanced")));
+       	//this.metaDataTable.getColumn(NbBundle.getMessage( JDBCWizardTablePanel.class,"LBL_properties_jLabell")).setCellEditor(new MyButtonRenderer(NbBundle.getMessage( JDBCWizardTablePanel.class, "BTN_Advanced")));
         this.setLayout(new BorderLayout());
         // add(headerPnl, BorderLayout.NORTH);
-        this.setPreferredSize(new Dimension(100, 100));
-        this.setMaximumSize(new Dimension(150, 150));
+        this.setPreferredSize(new Dimension(150, 150));
+        this.setMaximumSize(new Dimension(250, 250));
         // set checkbox column size
         final TableColumn column = this.metaDataTable.getColumnModel().getColumn(0);
-        column.setResizable(false);
+        column.setResizable(true);
         column.setMinWidth(40);
         column.setPreferredWidth(40);
         column.setMaxWidth(80);

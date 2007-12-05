@@ -1179,7 +1179,7 @@ public class JDBCWizardSelectionPanel extends javax.swing.JPanel implements Wiza
     public static final String LBL_ADD = ">";
 
     /** Label indicating that all elements should be moved. */
-    public static final String LBL_ALL = "ALL";
+    public static final String LBL_ALL = NbBundle.getMessage(JDBCWizardSelectionPanel.class, "ALL");
 
     /** Indicates addition of all source items. */
     public static final String LBL_ADD_ALL = JDBCWizardSelectionPanel.LBL_ALL + " " + JDBCWizardSelectionPanel.LBL_ADD;
