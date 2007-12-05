@@ -55,6 +55,7 @@ import org.openide.ErrorManager;
 
 import com.sun.rave.designtime.DesignContext;
 import org.netbeans.modules.visualweb.jsfsupport.render.RaveRenderKit;
+import org.openide.util.Exceptions;
 
 /**
  * FacesContainer provides a "mock" web/servlet container environment for hosting the design of a
@@ -361,5 +362,19 @@ public class FacesContainer {
         }finally {
             Thread.currentThread().setContextClassLoader(oldContextClassLoader);
         }
+    }
+    
+      public String findComponentClass(String tagName, String taglibUri) {
+        try {
+            JsfTagSupport jsfTagSupport = JsfTagSupport.getInstance(loader, taglibUri);
+            return jsfTagSupport.getComponentClass(loader, tagName);
+        } catch (ClassNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InstantiationException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalAccessException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
     }
 }
