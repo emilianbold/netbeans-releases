@@ -61,10 +61,12 @@ made subject to such option by the copyright holder.
 
     <target name="jdk-5-check" depends="-jdk-init" if="have-jdk-1.6" unless="permit.jdk6.builds">
         <property name="user.build.properties" location="${nb_all}/nbbuild/user.build.properties"/>
+        <property name=".nbbuild.properties" location="${user.home}/.nbbuild.properties"/>
         <fail>You are attempting to build NetBeans using JDK 6 (or higher).
 This is forbidden as it may lead to accidental usage of JDK 6+ APIs.
 Either run Ant with JDK 5, or set nbjdk.home=&lt;JDK 5 home&gt; in ${user.build.properties}
 (can be set from IDE by opening a module project's Properties dialog and picking the right Java Platform in Libraries).
+You can alternatively set this property in ${.nbbuild.properties} to affect all checkouts on this machine.
 If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=true</fail>
     </target>
 

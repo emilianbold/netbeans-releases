@@ -351,6 +351,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
             File nbbuild = new File(nbroot, "nbbuild"); // NOI18N
             providers.add(PropertyUtils.propertiesFilePropertyProvider(new File(nbbuild, "user.build.properties"))); // NOI18N
             providers.add(PropertyUtils.propertiesFilePropertyProvider(new File(nbbuild, "site.build.properties"))); // NOI18N
+            providers.add(PropertyUtils.propertiesFilePropertyProvider(new File(System.getProperty("user.home"), ".nbbuild.properties"))); // NOI18N
         }
         PropertyEvaluator baseEval = PropertyUtils.sequentialPropertyEvaluator(predefs, providers.toArray(new PropertyProvider[providers.size()]));
         providers.add(new NbJdkProvider(baseEval));
