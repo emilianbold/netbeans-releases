@@ -512,6 +512,12 @@ public class Reformatter implements ReformatTask {
                                     int c = col;
                                     Diff d = diffs.isEmpty() ? null : diffs.getFirst();
                                     id = accept(COMMA, SEMICOLON);
+                                    if (id == COMMA) {
+                                        index = tokens.index();
+                                        c = col;
+                                        d = diffs.isEmpty() ? null : diffs.getFirst();
+                                        id = accept(SEMICOLON);
+                                    }
                                     if (id == null) {
                                         rollback(index, c, d);
                                         blankLines(cs.getBlankLinesAfterFields());
@@ -576,6 +582,18 @@ public class Reformatter implements ReformatTask {
                 String spaces = diff.text != null ? diff.text : getIndent();
                 if (spaces.equals(fText.substring(diff.start, diff.end)))
                     diffs.removeFirst();
+            } else if (tokens.movePrevious()) {
+                if (tokens.token().id() == WHITESPACE) {
+                    String text =  tokens.token().text().toString();
+                    int idx = text.lastIndexOf('\n'); //NOI18N
+                    if (idx >= 0) {
+                        text = text.substring(idx + 1);
+                        String ind = getIndent();
+                        if (!ind.equals(text))
+                            diffs.addFirst(new Diff(tokens.offset() + idx + 1, tokens.offset() + tokens.token().length(), ind));
+                    }
+                }
+                tokens.moveNext();
             }
             accept(RBRACE);
             indent = old;
@@ -1007,6 +1025,18 @@ public class Reformatter implements ReformatTask {
                     String spaces = diff.text != null ? diff.text : getIndent();
                     if (spaces.equals(fText.substring(diff.start, diff.end)))
                         diffs.removeFirst();
+                } else if (tokens.movePrevious()) {
+                    if (tokens.token().id() == WHITESPACE) {
+                        String text =  tokens.token().text().toString();
+                        int idx = text.lastIndexOf('\n'); //NOI18N
+                        if (idx >= 0) {
+                            text = text.substring(idx + 1);
+                            String ind = getIndent();
+                            if (!ind.equals(text))
+                                diffs.addFirst(new Diff(tokens.offset() + idx + 1, tokens.offset() + tokens.token().length(), ind));
+                        }
+                    }
+                    tokens.moveNext();
                 }
                 accept(RBRACE);
             }
@@ -1415,6 +1445,18 @@ public class Reformatter implements ReformatTask {
                 String spaces = diff.text != null ? diff.text : getIndent();
                 if (spaces.equals(fText.substring(diff.start, diff.end)))
                     diffs.removeFirst();
+            } else if (tokens.movePrevious()) {
+                if (tokens.token().id() == WHITESPACE) {
+                    String text =  tokens.token().text().toString();
+                    int idx = text.lastIndexOf('\n'); //NOI18N
+                    if (idx >= 0) {
+                        text = text.substring(idx + 1);
+                        String ind = getIndent();
+                        if (!ind.equals(text))
+                            diffs.addFirst(new Diff(tokens.offset() + idx + 1, tokens.offset() + tokens.token().length(), ind));
+                    }
+                }
+                tokens.moveNext();
             }
             accept(RBRACE);
             indent = old;
