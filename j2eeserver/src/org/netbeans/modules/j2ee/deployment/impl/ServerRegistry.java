@@ -61,9 +61,9 @@ import org.openide.modules.InstalledFileLocator;
 //import java.util.logging.*;
 
 public final class ServerRegistry implements java.io.Serializable {
-    
+
     private static final Logger LOGGER = Logger.getLogger(ServerRegistry.class.getName());
-    
+
     public static final String DIR_INSTALLED_SERVERS = "/J2EE/InstalledServers"; //NOI18N
     public static final String DIR_JSR88_PLUGINS = "/J2EE/DeploymentPlugins"; //NOI18N
     public static final String URL_ATTR = InstanceProperties.URL_ATTR;
@@ -77,7 +77,7 @@ public final class ServerRegistry implements java.io.Serializable {
     public synchronized static ServerRegistry getInstance() {
         if(instance == null) instance = new ServerRegistry();
         return instance;
-        
+
         //PENDING need to get this from lookup
         //    return (ServerRegistry) Lookup.getDefault().lookup(ServerRegistry.class);
     }
@@ -93,10 +93,10 @@ public final class ServerRegistry implements java.io.Serializable {
     private transient Collection pluginListeners = new HashSet();
     private transient Collection instanceListeners = new ArrayList();
     private transient InstanceListener[] instanceListenersArray;
-    
+
     // This is the serializable portion of ServerRegistry
     private ServerString defaultInstance;
-    
+
     public ServerRegistry() {
     }
     private synchronized void init() {
@@ -128,6 +128,19 @@ public final class ServerRegistry implements java.io.Serializable {
         }
         //System.out.println("ServerRegistry.init="+(System.currentTimeMillis()-t0));
     }
+
+    private synchronized void fetchInstances(Server server) {
+        Repository rep = (Repository) Lookup.getDefault().lookup(Repository.class);
+        FileObject dir = rep.getDefaultFileSystem().findResource(DIR_INSTALLED_SERVERS);
+        FileObject[] ch = dir.getChildren();
+        for (int i = 0; i < ch.length; i++) {
+            String url = (String) ch[i].getAttribute(URL_ATTR);
+            if (url != null && server.handlesUri(url)) {
+                addInstance(ch[i]);
+            }
+        }
+    }
+
     private Map serversMap() {
         init();
         return servers;
@@ -139,19 +152,23 @@ public final class ServerRegistry implements java.io.Serializable {
     private synchronized void addPlugin(FileObject fo) {
         String name = ""; //NOI18N
         try {
-            if(fo.isFolder()) {
+            if (fo.isFolder()) {
                 name = fo.getName();
-                if(serversMap().containsKey(name)) return;
+                if (serversMap().containsKey(name)){
+                    return;
+                }
                 Server server = new Server(fo);
                 serversMap().put(name,server);
+
+                fetchInstances(server);
                 firePluginListeners(server,true);
             }
         } catch (Exception e) {
-            Logger.getLogger("global").log(Level.WARNING, "Plugin " + name + " installation failed"); //NOI18N
-            Logger.getLogger("global").log(Level.INFO, null, e);
+            LOGGER.log(Level.WARNING, "Plugin " + name + " installation failed"); //NOI18N
+            LOGGER.log(Level.INFO, null, e);
         }
     }
-    
+
     // PENDING should be private
     synchronized void removePlugin(FileObject fo) {
         String name = fo.getName();
@@ -171,7 +188,7 @@ public final class ServerRegistry implements java.io.Serializable {
             firePluginListeners(server,false);
         }
     }
-    
+
     class PluginInstallListener extends LayerListener {
         public void fileFolderCreated(FileEvent fe) {
             super.fileFolderCreated(fe);
@@ -182,7 +199,7 @@ public final class ServerRegistry implements java.io.Serializable {
             removePlugin(fe.getFile());
         }
     }
-    
+
     class InstanceInstallListener extends LayerListener {
         public void fileDataCreated(FileEvent fe) {
             super.fileDataCreated(fe);
@@ -190,9 +207,9 @@ public final class ServerRegistry implements java.io.Serializable {
         }
         // PENDING should support removing of instances?
     }
-    
+
     class LayerListener implements FileChangeListener {
-        
+
         public void fileAttributeChanged(FileAttributeEvent fae) {
             LOGGER.finest("Attribute changed event"); // NOI18N
         }
@@ -202,33 +219,33 @@ public final class ServerRegistry implements java.io.Serializable {
         }
         public void fileRenamed(FileRenameEvent fe) {
         }
-        
+
         public void fileDataCreated(FileEvent fe) {
         }
         public void fileDeleted(FileEvent fe) {
         }
-        
+
     }
-    
+
     public Collection getServers() {
         return serversMap().values();
     }
-    
+
     public Collection getInstances() {
         return instancesMap().values();
     }
-    
+
     public String[] getInstanceURLs() {
         return (String[]) instancesMap().keySet().toArray(new String[instancesMap().size()]);
     }
-    
+
     public void checkInstanceAlreadyExists(String url) throws InstanceCreationException {
         if (getServerInstance(url) != null) {
             String msg = NbBundle.getMessage(ServerRegistry.class, "MSG_InstanceAlreadyExists", url);
             throw new InstanceCreationException(msg);
         }
     }
-    
+
     public void checkInstanceExists(String url) {
         if (getServerInstance(url) == null) {
             String msg = NbBundle.getMessage(ServerRegistry.class, "MSG_InstanceNotExists", url);
@@ -239,11 +256,11 @@ public final class ServerRegistry implements java.io.Serializable {
     public Server getServer(String name) {
         return (Server) serversMap().get(name);
     }
-    
+
     public void addPluginListener(PluginListener pl) {
         pluginListeners.add(pl);
     }
-    
+
     public ServerInstance getServerInstance(String url) {
         return (ServerInstance) instancesMap().get(url);
     }
@@ -264,7 +281,7 @@ public final class ServerRegistry implements java.io.Serializable {
             removeInstanceFromFile(url);
         }
         ServerString newinst = getDefaultInstance(false);
-        fireDefaultInstance(def != null ? def.getUrl() : null, 
+        fireDefaultInstance(def != null ? def.getUrl() : null,
                 newinst != null ? newinst.getUrl() : null);
     }
 
@@ -273,7 +290,7 @@ public final class ServerRegistry implements java.io.Serializable {
         instancesMap().values().toArray(ret);
         return ret;
     }
-    
+
     public static FileObject getInstanceFileObject(String url) {
         Repository rep = (Repository) Lookup.getDefault().lookup(Repository.class);
         FileObject[] installedServers = rep.getDefaultFileSystem().findResource(DIR_INSTALLED_SERVERS).getChildren();
@@ -298,24 +315,24 @@ public final class ServerRegistry implements java.io.Serializable {
      *             or InstanceProperties.DISPLAY_NAME_ATTR they will be ignored
      *             - the explicit parameter values are always used.
      *             <code>null</code> is accepted.
-     * 
-     * @throws InstanceCreationException when instance with same url is already 
+     *
+     * @throws InstanceCreationException when instance with same url is already
      *         registered.
      */
-    public void addInstance(String url, String username, String password, 
+    public void addInstance(String url, String username, String password,
             String displayName, Map<String, String> initialproperties) throws InstanceCreationException {
         // should never have empty url; UI should have prevented this
         if (url == null || url.equals("")) { //NOI18N
             Logger.getLogger("global").log(Level.INFO, NbBundle.getMessage(ServerRegistry.class, "MSG_EmptyUrl"));
             return;
         }
-        
+
         checkInstanceAlreadyExists(url);
         if (!addInstanceImpl(url, username, password, displayName, initialproperties)) {
             throw new InstanceCreationException(NbBundle.getMessage(ServerRegistry.class, "MSG_FailedToCreateInstance", displayName));
         }
-    }    
-    
+    }
+
     private synchronized void writeInstanceToFile(String url, String username, String password) throws IOException {
         if (url == null) {
             Logger.getLogger("global").log(Level.SEVERE, NbBundle.getMessage(ServerRegistry.class, "MSG_NullUrl"));
@@ -326,7 +343,7 @@ public final class ServerRegistry implements java.io.Serializable {
         FileObject instanceFOs[] = dir.getChildren();
         FileObject instanceFO = null;
         for (int i=0; i<instanceFOs.length; i++) {
-            if (url.equals(instanceFOs[i].getAttribute(URL_ATTR))) 
+            if (url.equals(instanceFOs[i].getAttribute(URL_ATTR)))
                 instanceFO = instanceFOs[i];
         }
         String name = FileUtil.findFreeFileName(dir,"instance",null);
@@ -336,7 +353,7 @@ public final class ServerRegistry implements java.io.Serializable {
         instanceFO.setAttribute(USERNAME_ATTR, username);
         instanceFO.setAttribute(PASSWORD_ATTR, password);
     }
-    
+
     private synchronized void removeInstanceFromFile(String url) {
         FileObject instanceFO = getInstanceFileObject(url);
         if (instanceFO == null)
@@ -347,7 +364,7 @@ public final class ServerRegistry implements java.io.Serializable {
             Logger.getLogger("global").log(Level.INFO, null, ioe);
         }
     }
-    
+
     /**
      * Add a new server instance in the server registry.
      *
@@ -424,7 +441,7 @@ public final class ServerRegistry implements java.io.Serializable {
         properties.remove(InstanceProperties.DISPLAY_NAME_ATTR);
         return properties;
     }
-    
+
     public void addInstance(FileObject fo) {
         String url = (String) fo.getAttribute(URL_ATTR);
         String username = (String) fo.getAttribute(USERNAME_ATTR);
@@ -433,7 +450,7 @@ public final class ServerRegistry implements java.io.Serializable {
         //        System.err.println("Adding instance " + fo);
         addInstanceImpl(url, username, password, displayName, null);
     }
-    
+
     public Collection getInstances(InstanceListener il) {
         if (il != null) {
             synchronized(instanceListeners) {
@@ -443,25 +460,25 @@ public final class ServerRegistry implements java.io.Serializable {
         }
         return getInstances();
     }
-    
+
     public void addInstanceListener(InstanceListener il) {
         synchronized(instanceListeners) {
             instanceListenersArray = null;
             instanceListeners.add(il);
         }
     }
-    
+
     public void removeInstanceListener(InstanceListener il) {
         synchronized(instanceListeners) {
             instanceListenersArray = null;
             instanceListeners.remove(il);
         }
     }
-    
+
     public synchronized void removePluginListener(PluginListener pl) {
         pluginListeners.remove(pl);
     }
-    
+
     private void firePluginListeners(Server server, boolean add) {
         for(Iterator i = pluginListeners.iterator();i.hasNext();) {
             PluginListener pl = (PluginListener)i.next();
@@ -470,8 +487,8 @@ public final class ServerRegistry implements java.io.Serializable {
         }
 	configNamesByType = null;
     }
-    
-    
+
+
     private InstanceListener[] getInstanceListeners() {
         InstanceListener[]  retValue = null;
         synchronized (instanceListeners) {
@@ -483,7 +500,7 @@ public final class ServerRegistry implements java.io.Serializable {
         }
         return retValue;
     }
-    
+
     private void fireInstanceListeners(String instance, boolean add) {
         InstanceListener[] instListeners = getInstanceListeners();
         for(int i = 0; i < instListeners.length; i++) {
@@ -494,19 +511,19 @@ public final class ServerRegistry implements java.io.Serializable {
             }
         }
     }
-    
+
     private void fireDefaultInstance(String oldInstance, String newInstance) {
         InstanceListener[] instListeners = getInstanceListeners();
         for(int i = 0; i < instListeners.length; i++) {
             instListeners[i].changeDefaultInstance(oldInstance, newInstance);
         }
     }
-    
+
     public void setDefaultInstance(ServerString instance) {
         if (instance != null && instance.equals(defaultInstance)) {
             return;
         }
-        
+
         if (instance == null) {
             removeDefaultInstanceFile();
             ServerString oldValue = defaultInstance;
@@ -538,11 +555,11 @@ public final class ServerRegistry implements java.io.Serializable {
     private ServerString getInstallerDefaultPlugin() {
         File propFile = InstalledFileLocator.getDefault ().locate ("config/install.properties", null, false); // NOI18N
         Properties installProp = readProperties(propFile); //NOI18N
-        
+
         String j2eeDefaultServerFileName = installProp.getProperty(J2EE_DEFAULT_SERVER);
         if (j2eeDefaultServerFileName == null)
             return null;
-        
+
         File serverFile = InstalledFileLocator.getDefault ().locate (j2eeDefaultServerFileName, null, false);
         Properties defaultServerProp = readProperties(serverFile);
         String serverName = defaultServerProp.getProperty(SERVER_NAME);
@@ -550,7 +567,7 @@ public final class ServerRegistry implements java.io.Serializable {
         String user = defaultServerProp.getProperty(USERNAME_ATTR);
         String password = defaultServerProp.getProperty(PASSWORD_ATTR);
         String targetName = defaultServerProp.getProperty(TARGETNAME_ATTR);
-        
+
         Map<String, String> defaults = new HashMap<String, String>();
         for (Enumeration e = defaultServerProp.propertyNames(); e.hasMoreElements(); ) {
             String name = (String) e.nextElement();
@@ -559,7 +576,7 @@ public final class ServerRegistry implements java.io.Serializable {
                 defaults.put(name, value);
             }
         }
-        
+
         try {
             if (url != null) {
                 InstanceProperties instProp = InstanceProperties.getInstanceProperties(url);
@@ -568,11 +585,11 @@ public final class ServerRegistry implements java.io.Serializable {
                             user, password, null, defaults);
                 }
                 //instProp.setProperties(defaultServerProp);
-                
+
                 ServerInstance inst = getServerInstance(url);
                 if (inst != null)
                     return new ServerString(inst, targetName);
-                
+
             } else if (serverName != null) {
                 Server server = getServer(serverName);
                 if (server != null) {
@@ -608,47 +625,47 @@ public final class ServerRegistry implements java.io.Serializable {
         }
         return prop;
     }
-    
+
     public ServerString getDefaultInstance() {
         return getDefaultInstance(true);
     }
-    
+
     public ServerString getDefaultInstance(boolean readFromFile) {
         if (defaultInstance != null)
             return defaultInstance;
-        
+
         if (readFromFile) {
             defaultInstance = ServerStringConverter.readServerInstance(DIR_INSTALLED_SERVERS, FILE_DEFAULT_INSTANCE);
-            
+
             if (defaultInstance == null) {
                 defaultInstance = getInstallerDefaultPlugin();
             }
-            
+
         }
-        
+
         if (defaultInstance == null) {
             ServerInstance[] instances = getServerInstances();
             if (instances != null && instances.length > 0) {
                 defaultInstance = new ServerString(instances[0]);
             }
         }
-        
+
         setDefaultInstance(defaultInstance);
         return defaultInstance;
     }
-    
-    public interface PluginListener {
-        
+
+    public interface PluginListener extends EventListener {
+
         public void serverAdded(Server name);
-        
+
         public void serverRemoved(Server name);
-        
+
     }
 
     private static HashMap configNamesByType = null;
     private static final Object[] allTypes = new Object[] {
         J2eeModule.EAR, J2eeModule.CLIENT, J2eeModule.CONN, J2eeModule.EJB, J2eeModule.WAR };
-        
+
     private void initConfigNamesByType() {
         if (configNamesByType != null) {
             return;
@@ -674,7 +691,7 @@ public final class ServerRegistry implements java.io.Serializable {
 	Set configNames = (Set) configNamesByType.get(type);
 	return (configNames != null && configNames.contains(name));
     }
-    
+
     public ServerInstance getInstanceOrDefault(String uri) {
         ServerInstance instance = getServerInstance(uri);
         if (instance == null) {
@@ -684,7 +701,7 @@ public final class ServerRegistry implements java.io.Serializable {
             return instance;
         throw new RuntimeException(NbBundle.getMessage(ServerRegistry.class, "MSG_NoServerInstances", uri));
     }
-    
+
     /** Return profiler if any is registered in the IDE, null otherwise. */
     public static Profiler getProfiler() {
         return (Profiler)Lookup.getDefault().lookup(Profiler.class);
