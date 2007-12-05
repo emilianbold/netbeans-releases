@@ -20,7 +20,6 @@
  * $Id$
  *
  */
-
 package org.netbeans.test.installer;
 
 import java.awt.event.KeyEvent;
@@ -57,11 +56,8 @@ public class Utils {
     public static final long MAX_EXECUTION_TIME = 30000000;
     public static final long MAX_INSTALATION_WAIT = 60000000;
     public static final int DELAY = 50;
-    
     public static final String NEWLINE_REGEXP = "(?:\n\r|\r\n|\n|\r)";
-    
     private static final Pattern PATTERN = Pattern.compile("(20[0-9]{10})");
-    
     public static final String NB_DIR_NAME = "NetBeans";
     public static final String GF_DIR_NAME = "GlassFish";
     public static final String TOMACAT_DIR_NAME = "Tomcat";
@@ -131,8 +127,8 @@ public class Utils {
             java.lang.ProcessBuilder builder;
             java.lang.Process process;
 
-            if (0 != data.getPaltformName().compareTo("windows")) {
-                if (data.getPaltformName().contains("linux") || data.getPaltformName().contains("solaris")) {
+            if (0 != data.getPlatformName().compareTo("windows")) {
+                if (data.getPlatformName().contains("linux") || data.getPlatformName().contains("solaris")) {
                     builder = new java.lang.ProcessBuilder("chmod", "+x", command);
                     process = builder.start();
 
@@ -203,8 +199,8 @@ public class Utils {
             java.lang.ProcessBuilder builder;
             java.lang.Process process;
 
-            if (0 != data.getPaltformName().compareTo("windows")) {
-                if (data.getPaltformName().contains("linux") || data.getPaltformName().contains("solaris")) {
+            if (0 != data.getPlatformName().compareTo("windows")) {
+                if (data.getPlatformName().contains("linux") || data.getPlatformName().contains("solaris")) {
                     builder = new java.lang.ProcessBuilder("chmod", "+x", command);
                     process = builder.start();
 
@@ -274,12 +270,36 @@ public class Utils {
         return OK;
     }
 
+    public static void phaseOnePOne(NbTestCase thiz, TestData data, String installerType) {
+        try {
+            data.setWorkDir(thiz.getWorkDir());
+        } catch (IOException ex) {
+            NbTestCase.fail("Can not get WorkDir");
+        }
+
+        data.setInstallerType(installerType);
+
+        System.setProperty("nbi.dont.use.system.exit", "true");
+        System.setProperty("nbi.utils.log.to.console", "false");
+        System.setProperty("user.home", data.getWorkDirCanonicalPath());
+        //there is no build nuber for RC1
+        //NbTestCase.assertNotNull("Determine build number", Utils.determineBuildNumber(data));
+        data.setBuildNumber(null);
+    }
+
+    public static void phaseOnePTwo(TestData data) {
+        NbTestCase.assertEquals("Get installer", Utils.OK, Utils.getInstaller(data));
+        NbTestCase.assertEquals("Extract bundle", Utils.OK, Utils.extractBundle(data));
+        NbTestCase.assertEquals("Load class", Utils.OK, Utils.loadClasses(data));
+        NbTestCase.assertEquals("Run main method", Utils.OK, Utils.runInstaller(data));
+    }
+
     public static String runInstaller(final TestData data) {
         (new Runnable() {
 
             public void run() {
                 try {
-                    data.getInstallerMainClass().getMethod("main", java.lang.String[].class).invoke(null, (java.lang.Object) (new String[] {}));
+                    data.getInstallerMainClass().getMethod("main", java.lang.String[].class).invoke(null, (java.lang.Object) (new String[]{}));
                 } catch (Exception ex) {
                     data.getLogger().log(Level.SEVERE, null, ex);
                 }
@@ -294,7 +314,7 @@ public class Utils {
             public void run() {
                 try {
                     //dirty hack --ignore-lock
-                    data.getUninstallerMainClass().getMethod("main", java.lang.String[].class).invoke(null, (java.lang.Object) (new String[] {"--force-uninstall", "--ignore-lock", "--verbose", "--output ./uninst.log"}));
+                    data.getUninstallerMainClass().getMethod("main", java.lang.String[].class).invoke(null, (java.lang.Object) (new String[]{"--force-uninstall", "--ignore-lock", "--verbose", "--output ./uninst.log"}));
                 } catch (Exception ex) {
                     data.getLogger().log(Level.SEVERE, null, ex);
                 }
@@ -328,9 +348,7 @@ public class Utils {
     public static void stepSetDir(TestData data, String label, String dir) {
         JFrameOperator installerMain = new JFrameOperator(MAIN_FRAME_TITLE);
 
-        new JTextFieldOperator((JTextField) (new JLabelOperator(installerMain, label)
-                    .getLabelFor()
-                    )).setText(data.getWorkDirCanonicalPath() + File.separator + dir);
+        new JTextFieldOperator((JTextField) (new JLabelOperator(installerMain, label).getLabelFor())).setText(data.getWorkDirCanonicalPath() + File.separator + dir);
 
         new JButtonOperator(installerMain, NEXT_BUTTON_LABEL).push();
     }
@@ -364,25 +382,9 @@ public class Utils {
     }
 
     public static void phaseOne(NbTestCase thiz, TestData data, String installerType) {
-        try {
-            data.setWorkDir(thiz.getWorkDir());
-        } catch (IOException ex) {
-            NbTestCase.fail("Can not get WorkDir");
-        }
-
-        data.setInstallerType(installerType);
-
-        System.setProperty("nbi.dont.use.system.exit", "true");
-        System.setProperty("nbi.utils.log.to.console", "false");
-        System.setProperty("user.home", data.getWorkDirCanonicalPath());
-
-        //there is no build nuber for RC1
-        //NbTestCase.assertNotNull("Determine build number", Utils.determineBuildNumber(data));
-        data.setBuildNumber(null);
-        NbTestCase.assertEquals("Get installer", Utils.OK, Utils.getInstaller(data));
-        NbTestCase.assertEquals("Extract bundle", Utils.OK, Utils.extractBundle(data));
-        NbTestCase.assertEquals("Load class", Utils.OK, Utils.loadClasses(data));
-        NbTestCase.assertEquals("Run main method", Utils.OK, Utils.runInstaller(data));
+        phaseOnePOne(thiz, data, installerType);
+        data.setInstallerURL(constructURL(data));
+        phaseOnePTwo(data);
     }
 
     public static void phaseFour(TestData data) {
@@ -395,7 +397,7 @@ public class Utils {
         Utils.waitSecond(data, 5);
 
         NbTestCase.assertEquals("Installer Finshed", 0, ((Integer) System.getProperties().get("nbi.exit.code")).intValue());
-        
+
         NbTestCase.assertEquals("NetBeans dir created", OK, Utils.dirExist(NB_DIR_NAME, data));
 
         NbTestCase.assertEquals("Extract uninstaller jar", OK, Utils.extractUninstallerJar(data));
@@ -409,7 +411,7 @@ public class Utils {
         Utils.waitSecond(data, 5);
 
         NbTestCase.assertEquals("Uninstaller Finshed", 0, ((Integer) System.getProperties().get("nbi.exit.code")).intValue());
-        
+
         NbTestCase.assertFalse("NetBeans dir deleted", Utils.dirExist(NB_DIR_NAME, data).equals(OK));
         NbTestCase.assertFalse("Tomcat dir deleted", Utils.dirExist(TOMACAT_DIR_NAME, data).equals(OK));
         NbTestCase.assertFalse("GlassFish dir deleted", Utils.dirExist(GF_DIR_NAME, data).equals(OK));
@@ -475,7 +477,7 @@ public class Utils {
                     return OK;
                 } else {
                     data.getLogger().log(Level.INFO, "Cannot find build number. Attempt #" + attempt);
-                    
+
                     FileWriter page = new FileWriter(new File(data.getTestWorkDir() + File.separator + "downloadpage" + attempt + ".html"));
                     page.write(pageContent.toString());
                     page.close();
@@ -488,13 +490,13 @@ public class Utils {
         return null;
     }
     
-    
     public static String dirExist(String dirName, TestData data) {
         File dir = new File(data.getTestWorkDir() + File.separator + dirName);
-        if(dir.exists() && dir.isDirectory())
+        if (dir.exists() && dir.isDirectory()) {
             return OK;
-        else
+        } else {
             return "Directory " + dirName + "does not exist";
+        }
     }
 
     private static String toString(Exception ex) {
@@ -517,5 +519,19 @@ public class Utils {
         if (waitingTime >= Utils.MAX_INSTALATION_WAIT) {
             NbTestCase.fail("Installation timeout");
         }
+    }
+
+    public static String constructURL(TestData data) {
+        String val = System.getProperty("installer.url.prefix");
+        String prefix = (data.getBuildNumber() != null) ? "http://bits.netbeans.org/netbeans/6.0/nightly/latest/bundles/netbeans-6.0-" + data.getBuildNumber() : val;
+
+        String bundleType = data.getInstallerType();
+        if (bundleType == null || bundleType.equals("all")) {
+            bundleType = "";
+        } else {
+            bundleType = "-" + bundleType;
+        }
+
+        return prefix + bundleType + "-" + data.getPlatformName() + "." + data.getPlatformExt();
     }
 }

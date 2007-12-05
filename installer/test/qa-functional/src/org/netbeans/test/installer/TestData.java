@@ -54,6 +54,7 @@ public class TestData implements Serializable {
     private String platformExt = null;
     private String installerType = null;
     private String buildNumber = null;
+    private String installerURL = null;
 
     public TestData(Logger logger) {
         assert logger != null;
@@ -71,17 +72,7 @@ public class TestData implements Serializable {
     }
 
     public String getInstallerURL() {
-        String val = System.getProperty("installer.url.prefix");
-        String prefix = (buildNumber != null) ? "http://bits.netbeans.org/netbeans/6.0/nightly/latest/bundles/netbeans-6.0-" + buildNumber : val;
-
-        String bundleType = getInstallerType();
-        if(bundleType == null || bundleType.equals("all")) {
-            bundleType = "";
-        } else {
-            bundleType = "-" + bundleType;
-        }
-
-        return prefix + bundleType + "-" + platformName + "." + platformExt;
+        return installerURL;
     }
 
     public String getBuildNumber() {
@@ -92,6 +83,10 @@ public class TestData implements Serializable {
         this.buildNumber = buildNumber;
     }
 
+    public void setInstallerURL(String URL) {
+        installerURL = URL;
+    }
+    
     private void initPlatformVar() {
 
         if (System.getProperty("os.name").contains("Windows")) {
@@ -122,7 +117,7 @@ public class TestData implements Serializable {
         return platformExt;
     }
 
-    public String getPaltformName() {
+    public String getPlatformName() {
         return platformName;
     }
 
