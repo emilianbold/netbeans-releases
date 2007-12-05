@@ -61,6 +61,7 @@ import java.util.StringTokenizer;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -116,7 +117,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
 
     public static final String          STATE_NONE = "state_none"; // NOI18N
     public static final String          STATE_STARTING = "state_starting"; // NOI18N
-    public static final String          STATE_ATTACHING = "state_attaching"; // NOI18N
     public static final String          STATE_LOADING = "state_loading"; // NOI18N
     public static final String          STATE_LOADED = "state_loaded"; // NOI18N
     public static final String          STATE_READY = "state_ready"; // NOI18N
@@ -236,13 +236,39 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             gdb.gdb_show("language"); // NOI18N
             if (pae.getID() == DEBUG_ATTACH) {
                 programPID = (Long) lookupProvider.lookupFirst(null, Long.class);
-                int token = gdb.target_attach(Long.toString(programPID));
-                CommandBuffer cb = new CommandBuffer(token);
+                CommandBuffer cb = new CommandBuffer(gdb.target_attach(Long.toString(programPID)));
                 cb.postAndWait();
-                if (!symbolsRead(cb.toString(), runDirectory + '/' + pae.getExecutable())) {
-                    gdb.file_symbol_file(pae.getExecutable());
+                final String path = getFullPath(runDirectory, pae.getExecutable());
+                
+                // 1) see if path was explicitly loaded by target_attach (this is system dependent)
+                if (!symbolsRead(cb.toString(), path)) {
+                    // 2) see if we can validate via /proc (or perhaps other platform specific means)
+                    if (validAttach(programPID, path)) {
+                        gdb.file_symbol_file(path);
+                        setLoading();
+                    } else {
+                        // 3) Let the user decide (path may be path to exe but we're loading symbols from a .so). The
+                        // dialog is invoked later because we got here by pressing OK on the Attach dialog. If the
+                        // dialog hasn't been removed yet, posting the NotifyDescriptor fails. The invokeLater
+                        // resolves this race condition.
+                        String msg = NbBundle.getMessage(GdbDebugger.class, "WARN_AttachValidationFailure"); // NOI18N
+                        final NotifyDescriptor nd = new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.OK_CANCEL_OPTION);
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                Object o = DialogDisplayer.getDefault().notify(nd);
+                                if (o == NotifyDescriptor.OK_OPTION) {
+                                    gdb.file_symbol_file(path);
+                                    setLoading();
+                                } else {
+                                    setExited();
+                                    finish(false);
+                                }
+                            }
+                        });
+                    }
+                } else {
+                    setLoading();
                 }
-                setAttaching();
             } else {
                 gdb.file_exec_and_symbols(getProgramName(pae.getExecutable()));
         
@@ -287,11 +313,20 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             finish(false);
         }
     }
+    
+    private String getFullPath(String rundir, String path) {
+        if (Utilities.isWindows() && Character.isLetter(path.charAt(0)) && path.charAt(1) == ':') {
+            return path;
+        } else if (Utilities.isUnix() && path.charAt(0) == '/') {
+            return path;
+        } else {
+            return rundir + '/' + path;
+        }
+    }
 
     public String[] getThreadInformation() {
         while (gdb == null) {
             try {
-                System.err.println("GD.getThreadInformation: null gdb...");
                 Thread.sleep(100);
             } catch (InterruptedException ex) {
             }
@@ -367,19 +402,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 updateLocalVariables(0);
             } else if (evt.getNewValue() == STATE_SILENT_STOP) {
                 interrupt();
-            } else if (evt.getNewValue() == STATE_ATTACHING) {
-                if (validAttach()) {
-                    setLoading();
-                } else {
-                    String msg = NbBundle.getMessage(GdbDebugger.class, "WARN_AttachValidationFailure"); // NOI18N
-                    Object o = DialogDisplayer.getDefault().notify(
-                            new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.OK_CANCEL_OPTION));
-                    if (o == NotifyDescriptor.OK_OPTION) {
-                        setLoading();
-                    } else {
-                        finish(false);
-                    }
-                }
             } else if (evt.getNewValue() == STATE_RUNNING && 
                     (evt.getOldValue() == STATE_SILENT_STOP ||
                      evt.getOldValue() == STATE_READY))  {
@@ -397,50 +419,46 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     }
     
     private boolean symbolsRead(String results, String exepath) {
+        int pos = -1;
         for (String line : results.split("\\\\n")) { // NOI18N
-            if (line.contains("Reading symbols from ") && // NOI18N
-                    line.contains(exepath)) {
-                return true;
+            if (line.contains("Reading symbols from ")) { // NOI18N
+                if (Utilities.isWindows() && (pos = line.indexOf("/cygdrive/")) != -1) { // NOI18N
+                    line = line.substring(0, pos) +
+                            line.substring(pos + 10,pos + 11).toUpperCase() + ':' + line.substring(pos + 11);
+                }
+                String ep = line.substring(21, line.length() - 8);
+                if (ep.equals(exepath) || (Utilities.isWindows() && ep.equals(exepath + ".exe"))) { // NOI18N
+                    return true;
+                }
             }
         }
         return false;
     }
     
     /**
-     * Check that the executable from the selected project matches the attached process. Gdb itself
-     * doesn't do this validation and its non-trivial and the methods of validation are system
-     * dependent.
+     * Check that the executable matches the pid. This is system dependent and doesn't necessarily cause
+     * an attach failure if we can't validate.
      * 
      * @return true if the project matches the attached to executable
      */
-    private boolean validAttach() {
-        ProjectActionEvent pae = (ProjectActionEvent) lookupProvider.lookupFirst(null, ProjectActionEvent.class);
-        String exe = pae.getExecutable();
+    private boolean validAttach(long pid, String exepath) {
         if (!Utilities.isWindows()) {
-            String procpath = "/proc/" + Long.toString(programPID); // NOI18N
-            File dir = new File(procpath);
-            if (dir.exists() && dir.isDirectory()) {
-                File pathfile = new File(procpath + "/path/a.out"); // NOI18N - Solaris only?
-                if (!pathfile.exists()) {
-                    pathfile = new File(procpath + "/exe"); // NOI18N - Linux?
-                }
-                if (pathfile.exists()) {
-                    File exefile = new File(exe);
-                    if (exefile.exists()) {
-                        String path = getPathFromSymlink(pathfile.getAbsolutePath());
-                        if (path.equals(exefile.getAbsolutePath())) {
-                            return true;
-                        }
+            String procdir = "/proc/" + Long.toString(pid); // NOI18N
+            File pathfile = new File(procdir, "path/a.out"); // NOI18N - Solaris only?
+            if (!pathfile.exists()) {
+                pathfile = new File(procdir, "exe"); // NOI18N - Linux?
+            }
+            if (pathfile.exists()) {
+                File exefile = new File(exepath);
+                if (exefile.exists()) {
+                    String path = getPathFromSymlink(pathfile.getAbsolutePath());
+                    if (path.equals(exefile.getAbsolutePath())) {
+                        return true;
                     }
                 }
             }
         }
-        String info = getInfoFiles();
-        if (checkInfoFiles(pae, info)) {
-            return true;
-        }
         return false;
-//        return false;
     }
     
     private String getPathFromSymlink(String apath) {
@@ -488,21 +506,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             }
             return linkline;
         }
-    }
-    
-    private String getInfoFiles() {
-        return null;
-    }
-    
-    private boolean checkInfoFiles(ProjectActionEvent pae, String info) {
-        String executable = pae.getExecutable();
-//        String[] lines = info.split("\\n");
-//        for (String line : lines) {
-//            if (line.contains(executable)) {
-//                return true;
-//            }
-//        }
-        return false;
     }
     
     public GdbProxy getGdbProxy() {
@@ -1473,10 +1476,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     
     public void setStarting() {
         setState(STATE_STARTING);
-    }
-    
-    public void setAttaching() {
-        setState(STATE_ATTACHING);
     }
     
     public void setLoading() {
