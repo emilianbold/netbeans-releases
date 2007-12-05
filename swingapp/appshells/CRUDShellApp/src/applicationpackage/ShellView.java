@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;/* DETAIL_ONLY */
 import java.util.List;
+import javax.persistence.RollbackException;
 import javax.swing.Timer;
 import javax.swing.Icon;
 import javax.swing.JDialog;
@@ -215,8 +216,19 @@ public class ShellView extends FrameView {
             super(app);
         }
         @Override protected Void doInBackground() {
-            entityManager.getTransaction().commit();
-            entityManager.getTransaction().begin();
+            try {
+                entityManager.getTransaction().commit();
+                entityManager.getTransaction().begin();
+            } catch (RollbackException rex) {
+                rex.printStackTrace();
+                entityManager.getTransaction().begin();
+                List<_masterClass_> merged = new ArrayList<_masterClass_>(list.size());
+                for (_masterClass_ _masterEntityInitial_ : list) {
+                    merged.add(entityManager.merge(_masterEntityInitial_));
+                }
+                list.clear();
+                list.addAll(merged);
+            }
             return null;
         }
         @Override protected void finished() {

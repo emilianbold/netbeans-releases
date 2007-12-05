@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;/* DETAIL_ONLY */
 import java.util.List;
+import javax.persistence.RollbackException;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.event.ListSelectionEvent;
@@ -111,8 +112,19 @@ public class __NAME__ extends JPanel {
     }//GEN-LAST:event_newButtonActionPerformed
     
     private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
-        entityManager.getTransaction().commit();
-        entityManager.getTransaction().begin();
+        try {
+            entityManager.getTransaction().commit();
+            entityManager.getTransaction().begin();
+        } catch (RollbackException rex) {
+            rex.printStackTrace();
+            entityManager.getTransaction().begin();
+            List<_masterClass_> merged = new ArrayList<_masterClass_>(list.size());
+            for (_masterClass_ _masterEntityInitial_ : list) {
+                merged.add(entityManager.merge(_masterEntityInitial_));
+            }
+            list.clear();
+            list.addAll(merged);
+        }
     }//GEN-LAST:event_saveButtonActionPerformed
     
     
