@@ -58,7 +58,6 @@ made subject to such option by the copyright holder.
             </module-dependencies>
             <class-path-extension>
                 <runtime-relative-path>ext/jsf-1_2/jsf-api.jar</runtime-relative-path>
-                <binary-origin>build/external/jsf-1.2/jsf-api.jar</binary-origin>
             </class-path-extension>
             <public-packages>
                 <subpackages>javax.faces</subpackages>

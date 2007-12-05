@@ -6,7 +6,6 @@
             <code-name-base>org.netbeans.modules.web.jsf12ri</code-name-base>
             <class-path-extension>
                 <runtime-relative-path>ext/jsf-1_2/jsf-impl.jar</runtime-relative-path>
-                <binary-origin>../jsf-1_2/build/external/jsf-1.2/jsf-impl.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/glassfish-jspparser-2.0.jar</runtime-relative-path>

@@ -151,51 +151,39 @@ made subject to such option by the copyright holder.
             </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/jaxws21/jaxws-tools.jar</runtime-relative-path>
-                <binary-origin>build/external/jaxws21/jaxws-tools.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jaxws21/jaxws-rt.jar</runtime-relative-path>
-                <binary-origin>build/external/jaxws21/jaxws-rt.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jaxws21/jaxb-xjc.jar</runtime-relative-path>
-                <binary-origin>build/external/jaxws21/jaxb-xjc.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jaxws21/jaxb-impl.jar</runtime-relative-path>
-                <binary-origin>build/external/jaxws21/jaxb-impl.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jaxws21/activation.jar</runtime-relative-path>
-                <binary-origin>build/external/jaxws21/activation.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jaxws21/sjsxp.jar</runtime-relative-path>
-                <binary-origin>build/external/jaxws21/sjsxp.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jaxws21/streambuffer.jar</runtime-relative-path>
-                <binary-origin>build/external/jaxws21/streambuffer.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jaxws21/stax-ex.jar</runtime-relative-path>
-                <binary-origin>build/external/jaxws21/stax-ex.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jaxws21/saaj-impl.jar</runtime-relative-path>
-                <binary-origin>build/external/jaxws21/saaj-impl.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jaxws21/FastInfoset.jar</runtime-relative-path>
-                <binary-origin>build/external/jaxws21/FastInfoset.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jaxws21/http.jar</runtime-relative-path>
-                <binary-origin>build/external/jaxws21/http.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jaxws21/resolver.jar</runtime-relative-path>
-                <binary-origin>build/external/jaxws21/resolver.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

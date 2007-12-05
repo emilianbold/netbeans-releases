@@ -214,31 +214,24 @@ made subject to such option by the copyright holder.
             </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/webui-jsf-dt.jar</runtime-relative-path>
-                <binary-origin>build/external/webui-jsf-dt.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/webui-jsf.jar</runtime-relative-path>
-                <binary-origin>build/external/webui-jsf.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/json-2.jar</runtime-relative-path>
-                <binary-origin>build/external/json-2.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/prototype-1.5.0.jar</runtime-relative-path>
-                <binary-origin>build/external/prototype-1.5.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jsf-extensions-common-0.1.jar</runtime-relative-path>
-                <binary-origin>build/external/jsf-extensions-common-0.1.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/dojo-0.9.0.jar</runtime-relative-path>
-                <binary-origin>build/external/dojo-0.9.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jsf-extensions-dynamic-faces-0.1.jar</runtime-relative-path>
-                <binary-origin>build/external/jsf-extensions-dynamic-faces-0.1.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

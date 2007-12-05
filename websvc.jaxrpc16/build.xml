@@ -41,18 +41,5 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <project name="websvc/jaxrpc16" default="netbeans" basedir=".">
-
     <import file="../../nbbuild/templates/projectized.xml"/>
-
-    <target name="unzip_jwsdp16">
-        <mkdir dir="build/external/jaxrpc16"/>
-	<unzip src="external/jwsdp16_jars.zip" dest="build/external/jaxrpc16"/>
-    </target>
-   
-    <target name="common-init" depends="default.init, unzip_jwsdp16"/> 
-
-    <target name="clean" depends="init,projectized-common.clean">
-        <echo message="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/"/>
-        <delete dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/"/>
-    </target>
 </project>

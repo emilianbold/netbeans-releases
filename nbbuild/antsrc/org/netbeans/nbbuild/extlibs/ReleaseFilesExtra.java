@@ -61,7 +61,7 @@ public class ReleaseFilesExtra extends Task {
         StringBuilder b = new StringBuilder();
         for (Map.Entry<?,?> entry : ((Map<?,?>) getProject().getProperties()).entrySet()) {
             String k = (String) entry.getKey();
-            if (k.startsWith("release.") && getProject().resolveFile(k.substring(8)).isFile()) {
+            if (k.startsWith("release.") && getProject().resolveFile(k.substring(8).replaceFirst("!/.+$", "")).isFile()) {
                 if (b.length() > 0) {
                     b.append(',');
                 }

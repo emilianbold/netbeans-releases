@@ -41,26 +41,5 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <project name="websvc/jaxws21/jaxws21api" default="netbeans" basedir=".">
-
     <import file="../../../nbbuild/templates/projectized.xml"/>
-
-    <target name="unzip_jaxws21">
-        <mkdir dir="build/external/jaxws21"/>
-        <unzip src="${nb_all}/websvc/jaxws21/external/jaxws-2.1.zip" dest="build/external/jaxws21"/>
-    </target>
-
-    <target name="common-init" depends="default.init, unzip_jaxws21"/>
-    <!--
-    <target name="netbeans-extra" depends="default.init, unzip_jaxws21">
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxws21"/>
-        <copy description="Copying files" todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxws21/api/">
-            <fileset dir="../external/jaxws21/" includes="jaxb-api.jar, jaxws-api.jar, jsr173_api.jar, jsr181-api.jar, jsr250-api.jar, saaj-api.jar"/>
-        </copy>
-    </target>
-    -->
-    <target name="clean" depends="default.init">
-        <ant antfile="../../../nbbuild/templates/projectized.xml" target="clean"/>
-        <delete dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxws21/api"/>
-    </target>
-    
 </project>

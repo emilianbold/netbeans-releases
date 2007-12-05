@@ -42,8 +42,13 @@
 package org.netbeans.nbbuild.extlibs;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
@@ -54,6 +59,8 @@ import org.apache.tools.ant.util.FileUtils;
  * If the remainder of the property name matches a file (relative to basedir),
  * it is copied to the location in the cluster given by the value.
  * Example: release.external/something.jar=modules/ext/something.jar
+ * You can also use ZIP entries on the left side, e.g.
+ * release.external/release.zip!/something.jar=modules/ext/something.jar
  */
 public class ReleaseFilesCopy extends Task {
 
@@ -66,18 +73,55 @@ public class ReleaseFilesCopy extends Task {
         for (Map.Entry<?,?> entry : ((Map<?,?>) getProject().getProperties()).entrySet()) {
             String k = (String) entry.getKey();
             if (k.startsWith("release.") && !k.matches("release\\.(files|files\\.extra|dir)")) {
-                File from = getProject().resolveFile(k.substring(8));
-                if (from.isFile()) {
-                    File to = FileUtils.getFileUtils().resolveFile(cluster, (String) entry.getValue());
-                    log("Copying " + from + " to " + to);
-                    to.getParentFile().mkdirs();
-                    try {
-                        FileUtils.getFileUtils().copyFile(from, to);
-                    } catch (IOException x) {
-                        throw new BuildException("Could not copy " + from + ": " + x, x, getLocation());
+                File to = FileUtils.getFileUtils().resolveFile(cluster, (String) entry.getValue());
+                String fromString = k.substring(8);
+                int bangSlash = fromString.indexOf("!/");
+                if (bangSlash == -1) {
+                    File from = getProject().resolveFile(fromString);
+                    if (from.isFile()) {
+                        log("Copying " + from + " to " + to);
+                        to.getParentFile().mkdirs();
+                        try {
+                            FileUtils.getFileUtils().copyFile(from, to);
+                        } catch (IOException x) {
+                            throw new BuildException("Could not copy " + from + ": " + x, x, getLocation());
+                        }
+                    } else {
+                        log("Could not find file " + from + " to copy", Project.MSG_WARN);
                     }
                 } else {
-                    log("Could not find file " + from + " to copy", Project.MSG_WARN);
+                    File zip = getProject().resolveFile(fromString.substring(0, bangSlash));
+                    if (zip.isFile()) {
+                        try {
+                            ZipFile zf = new ZipFile(zip);
+                            try {
+                                String path = fromString.substring(bangSlash + 2);
+                                ZipEntry ze = zf.getEntry(path);
+                                if (ze == null) {
+                                    log("No such entry " + path + " in " + zip, Project.MSG_WARN);
+                                    continue;
+                                }
+                                InputStream is = zf.getInputStream(ze);
+                                to.getParentFile().mkdirs();
+                                OutputStream os = new FileOutputStream(to);
+                                try {
+                                    byte[] buf = new byte[4096];
+                                    int read;
+                                    while ((read = is.read(buf)) != -1) {
+                                        os.write(buf, 0, read);
+                                    }
+                                } finally {
+                                    os.close();
+                                }
+                            } finally {
+                                zf.close();
+                            }
+                        } catch (IOException x) {
+                            throw new BuildException("Could not extract " + zip + ": " + x, x, getLocation());
+                        }
+                    } else {
+                        log("Could not find file " + zip + " to extract", Project.MSG_WARN);
+                    }
                 }
             }
         }

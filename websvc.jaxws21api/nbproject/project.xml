@@ -53,27 +53,21 @@ made subject to such option by the copyright holder.
             </public-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/jaxws21/api/jaxws-api.jar</runtime-relative-path>
-                <binary-origin>build/external/jaxws21/jaxws-api.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jaxws21/api/jaxb-api.jar</runtime-relative-path>
-                <binary-origin>build/external/jaxws21/jaxb-api.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jaxws21/api/jsr173_api.jar</runtime-relative-path>
-                <binary-origin>build/external/jaxws21/jsr173_api.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jaxws21/api/jsr181-api.jar</runtime-relative-path>
-                <binary-origin>build/external/jaxws21/jsr181-api.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jaxws21/api/jsr250-api.jar</runtime-relative-path>
-                <binary-origin>build/external/jaxws21/jsr250-api.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jaxws21/api/saaj-api.jar</runtime-relative-path>
-                <binary-origin>build/external/jaxws21/saaj-api.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

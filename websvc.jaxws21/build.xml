@@ -41,18 +41,5 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <project name="websvc/jaxws21" default="netbeans" basedir=".">
-
     <import file="../../nbbuild/templates/projectized.xml"/>
-    
-    <target name="unzip_jaxws21">
-        <mkdir dir="build/external/jaxws21"/>
-        <unzip src="external/jaxws-2.1.zip" dest="build/external/jaxws21"/>
-    </target>
-
-    <target name="common-init" depends="default.init, unzip_jaxws21"/>
-
-    <target name="clean" depends="default.init">
-        <ant antfile="../../nbbuild/templates/projectized.xml" target="clean"/>
-        <delete dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/" includes="jaxws21, jaxws21/*.jar" includeemptydirs="true" />
-    </target>
 </project>
