@@ -228,7 +228,7 @@ made subject to such option by the copyright holder.
                 <runtime-relative-path>ext/jsf-extensions-common-0.1.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/dojo-0.9.0.jar</runtime-relative-path>
+                <runtime-relative-path>ext/dojo-1.0.1.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jsf-extensions-dynamic-faces-0.1.jar</runtime-relative-path>
