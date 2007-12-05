@@ -326,11 +326,11 @@ public final class MissingDatabaseConnectionWarning extends JPanel {
 
         // ListDataListener methods to implement
         public void intervalAdded(ListDataEvent e) {
-            cleanup();
+            // unused
         }
 
         public void intervalRemoved(ListDataEvent e) {
-            // unused
+            cleanup();
         }
         
         public void contentsChanged(ListDataEvent e) {
