@@ -50,8 +50,6 @@ import java.awt.event.AWTEventListener;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -864,46 +862,37 @@ public class TabbedContainer extends JComponent implements Accessible {
         }
         float oldAlpha = currentAlpha;
         currentAlpha = transparent ? ALPHA_TRESHOLD : 1.0f;
-        if( oldAlpha != currentAlpha )
+        if( oldAlpha != currentAlpha ) {
             repaint();
+        }
     }
     
-    MouseWheelListener mouseWheelListener = null;
-    private MouseWheelListener getMouseWheelListener() {
-        if( null == mouseWheelListener ) {
-            mouseWheelListener = new MouseWheelListener() {
-                public void mouseWheelMoved(MouseWheelEvent me) {
-                    if( isTransparencyMouseEvent( me ) ) {
-                        updateTransparency( me.getWheelRotation() > 0 );
-                        me.consume();
-                    }
-                }
-            };
-        }
-        return mouseWheelListener;
-    }
-
     AWTEventListener awtListener = null;
     private AWTEventListener getAWTListener() {
         if( null == awtListener ) {
             awtListener = new AWTEventListener() {
                 public void eventDispatched(AWTEvent event) {
-                    if( event instanceof MouseWheelEvent ) {
-                        //ignore mouse events outside the tabbed container
-                        if( event.getSource() instanceof Component &&
-                            !SwingUtilities.isDescendingFrom( (Component)event.getSource(), TabbedContainer.this) )
+                    if( event.getID() == MouseEvent.MOUSE_PRESSED ) {
+                        //ignore mouse clicks outside this container
+                        if( event.getSource() instanceof Component
+                            && !SwingUtilities.isDescendingFrom((Component)event.getSource(), TabbedContainer.this) )
                             return;
-                        MouseWheelEvent me = (MouseWheelEvent)event;
-                        if( isTransparencyMouseEvent( me ) ) {
-                            updateTransparency( me.getWheelRotation() > 0 );
-                            me.consume();
-                        }
-                    } else if( event.getID() == MouseEvent.MOUSE_PRESSED ) {
-                        setTransparent( false );
+                        if( ((MouseEvent)event).getButton() != MouseEvent.BUTTON3 )
+                            setTransparent( false );
                     } else if( event.getID() == KeyEvent.KEY_PRESSED ) {
                         KeyEvent ke = (KeyEvent)event;
-                        if( !(ke.getKeyCode() == KeyEvent.VK_ALT || ke.getKeyCode() == KeyEvent.VK_SHIFT) )
+                        //TODO make shortcut configurable
+                        if( ke.getKeyCode() == KeyEvent.VK_NUMPAD0 && ke.isControlDown() ) {
+                            setTransparent( !isTransparent() );
+                            ke.consume();
+                            return;
+                        }
+                        if( !(ke.getKeyCode() == KeyEvent.VK_ALT 
+                                || ke.getKeyCode() == KeyEvent.VK_SHIFT
+                                || ke.getKeyCode() == KeyEvent.VK_META
+                                || ke.getKeyCode() == KeyEvent.VK_CONTROL) ) {
                             setTransparent( false );
+                        }
                     }
                 }
             };
@@ -911,26 +900,6 @@ public class TabbedContainer extends JComponent implements Accessible {
         return awtListener;
     }
 
-    /**
-     * Check event modifiers for transparency toggle
-     */
-    private boolean isTransparencyMouseEvent( MouseWheelEvent me ) {
-        return (me.getModifiers() & (MouseEvent.ALT_MASK + MouseEvent.SHIFT_MASK)) == MouseEvent.ALT_MASK + MouseEvent.SHIFT_MASK
-                && me.getID() == MouseEvent.MOUSE_WHEEL;
-    }
-    
-    private void updateTransparency( boolean increaseTransparency ) {
-        float oldAlpha = currentAlpha;
-        if( increaseTransparency ) {
-            currentAlpha = Math.max( ALPHA_TRESHOLD, currentAlpha-0.1f );
-        } else {
-            currentAlpha = Math.min( 1.0f, currentAlpha+0.1f );
-        }
-        if( currentAlpha != oldAlpha ) {
-            JLayeredPane.getLayeredPaneAbove(TabbedContainer.this).repaint();
-        }
-    }
-    
     /**
      * @return True if the container holds slided-in window.
      */
@@ -953,16 +922,13 @@ public class TabbedContainer extends JComponent implements Accessible {
             //register AWT listener in case the inner top component has its only mouse listener
             Toolkit.getDefaultToolkit().addAWTEventListener( getAWTListener(), 
                     MouseEvent.MOUSE_WHEEL_EVENT_MASK+MouseEvent.MOUSE_EVENT_MASK+KeyEvent.KEY_EVENT_MASK );
-            addMouseWheelListener( getMouseWheelListener() );
         }
     }
     
     @Override
     public void removeNotify() {
-        if( null != mouseWheelListener ) {
-            removeMouseWheelListener( mouseWheelListener );
+        if( null != awtListener ) {
             Toolkit.getDefaultToolkit().removeAWTEventListener( awtListener );
-            mouseWheelListener = null;
             awtListener = null;
         }
         super.removeNotify();

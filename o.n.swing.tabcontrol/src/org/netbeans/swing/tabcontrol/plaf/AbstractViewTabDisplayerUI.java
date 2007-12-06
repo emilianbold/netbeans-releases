@@ -120,8 +120,6 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
     /** Pin action */
     private final Action pinAction = new PinAction();
     private static final String PIN_ACTION = "pinAction";
-    //toggle transparency action
-    private static final String TRANSPARENCY_ACTION = "transparencyAction";
     
     public AbstractViewTabDisplayerUI (TabDisplayer displayer) {
         super (displayer);
@@ -377,7 +375,6 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
         comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).
             remove(KeyStroke.getKeyStroke(KeyEvent.VK_NUMPAD0,
                                 InputEvent.CTRL_DOWN_MASK));
-        comp.getActionMap().remove(TRANSPARENCY_ACTION);
     }
 
     /** Registers shortcut for enable/ disable auto-hide functionality */
@@ -386,16 +383,6 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
             put(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE,
                                 InputEvent.CTRL_DOWN_MASK), PIN_ACTION);
         comp.getActionMap().put(PIN_ACTION, pinAction);
-
-        //TODO make shortcut configurable
-        comp.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).
-            put(KeyStroke.getKeyStroke(KeyEvent.VK_NUMPAD0,
-                                InputEvent.CTRL_DOWN_MASK), TRANSPARENCY_ACTION);
-        comp.getActionMap().put(TRANSPARENCY_ACTION, new AbstractAction() {
-            public void actionPerformed(ActionEvent e) {
-                shouldPerformAction(TabbedContainer.COMMAND_TOGGLE_TRANSPARENCY, getSelectionModel().getSelectedIndex(), null);
-            }
-        });
     }
     
     public Polygon getExactTabIndication(int index) {
