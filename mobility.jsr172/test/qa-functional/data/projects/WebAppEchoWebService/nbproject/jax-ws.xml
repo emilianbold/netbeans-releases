@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jax-ws xmlns="http://www.netbeans.org/ns/jax-ws/1">
+  <services>
+    <service name="EchoWS_forWSClient">
+      <implementation-class>forwsclient.EchoWS_forWSClient</implementation-class>
+    </service>
+    <service name="EchoArrays_DOCUMENTService">
+      <implementation-class>ws.EchoArrays_DOCUMENT</implementation-class>
+    </service>
+    <service name="Echo_RPCService">
+      <implementation-class>ws.Echo_RPC</implementation-class>
+    </service>
+    <service name="EchoNoArrays_DOCUMENT">
+      <implementation-class>ws.EchoNoArrays_DOCUMENT</implementation-class>
+    </service>
+  </services>
+  <clients/>
+</jax-ws>
