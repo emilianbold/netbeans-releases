@@ -43,6 +43,7 @@ package org.netbeans.modules.websvc.wsitconf.wsdlmodelext;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -67,6 +68,8 @@ import org.netbeans.modules.websvc.wsitmodelext.security.TrustElement;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.ui.security.listmodels.*;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
+import org.netbeans.modules.websvc.wsitmodelext.addressing.Address;
+import org.netbeans.modules.websvc.wsitmodelext.addressing.Address10;
 import org.netbeans.modules.websvc.wsitmodelext.policy.All;
 import org.netbeans.modules.websvc.wsitmodelext.policy.Policy;
 import org.netbeans.modules.websvc.wsitmodelext.security.AsymmetricBinding;
@@ -78,6 +81,7 @@ import org.netbeans.modules.websvc.wsitmodelext.security.tokens.ProtectionToken;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.RecipientToken;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.SecureConversationToken;
 import org.netbeans.modules.xml.wsdl.model.*;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPAddress;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -291,6 +295,46 @@ public class ProfilesModelHelper {
         return ComboConstants.PROF_GENERIC;
     }
 
+    private static void updateServiceUrl(WSDLComponent c) {
+        if (c instanceof Binding) {
+            Collection<Service> services = c.getModel().getDefinitions().getServices();
+            for (Service s : services) {
+                Collection<Port> ports = s.getPorts();                
+                for (Port p : ports) {
+                   if (p.getBinding().references((Binding)c)) {
+                       List<Address> addresses = p.getExtensibilityElements(Address.class);
+                       if ((addresses != null) && (!addresses.isEmpty())) {
+                           for (Address a : addresses) {
+                               String addr = a.getAddress();
+                               if (addr != null) {
+                                   a.setAddress(addr.replaceFirst("http:", "https:")); //NOI18N
+                               }
+                           }
+                       }
+                       List<Address10> addresses10 = p.getExtensibilityElements(Address10.class);
+                       if ((addresses10 != null) && (!addresses10.isEmpty())) {
+                           for (Address10 a : addresses10) {
+                               String addr = a.getAddress();
+                               if (addr != null) {
+                                   a.setAddress(addr.replaceFirst("http:", "https:")); //NOI18N
+                               }
+                           }
+                       }
+                       List<SOAPAddress> soapAddresses = p.getExtensibilityElements(SOAPAddress.class);
+                       if ((soapAddresses != null) && (!soapAddresses.isEmpty())) {
+                           for (SOAPAddress a : soapAddresses) {
+                               String addr = a.getLocation();
+                               if (addr != null) {
+                                   a.setLocation(addr.replaceFirst("http:", "https:")); //NOI18N
+                               }
+                           }
+                       }
+                   }
+                }
+            }
+        }
+    }
+
     /** Sets security profile on Binding or BindingOperation
      */
     public static void setSecurityProfile(WSDLComponent c, String profile, String oldProfile) {
@@ -370,6 +414,7 @@ public class ProfilesModelHelper {
                 SecurityPolicyModelHelper.disableTrust10(c);
                 SecurityTokensModelHelper.removeSupportingTokens(c);
                 setMessageLevelSecurityProfilePolicies(c, profile);
+                updateServiceUrl(c);
             } else if (ComboConstants.PROF_MSGAUTHSSL.equals(profile)) { // Profile #2
                 WSDLComponent bt = SecurityPolicyModelHelper.setSecurityBindingType(c, ComboConstants.TRANSPORT);
                 SecurityTokensModelHelper.setTokenType(bt, ComboConstants.TRANSPORT, ComboConstants.HTTPS);
@@ -382,6 +427,7 @@ public class ProfilesModelHelper {
                 SecurityTokensModelHelper.removeSupportingTokens(c);
                 SecurityTokensModelHelper.setSupportingTokens(c, ComboConstants.USERNAME, SecurityTokensModelHelper.SIGNED_SUPPORTING);
                 setMessageLevelSecurityProfilePolicies(c, profile);
+                updateServiceUrl(c);
             } else if (ComboConstants.PROF_SAMLSSL.equals(profile)) {   // Profile #3
                 WSDLComponent bt = SecurityPolicyModelHelper.setSecurityBindingType(c, ComboConstants.TRANSPORT);
                 SecurityTokensModelHelper.setTokenType(bt, ComboConstants.TRANSPORT, ComboConstants.HTTPS);
@@ -394,6 +440,7 @@ public class ProfilesModelHelper {
                 SecurityTokensModelHelper.removeSupportingTokens(c);
                 SecurityTokensModelHelper.setSupportingTokens(c, ComboConstants.SAML, SecurityTokensModelHelper.SIGNED_SUPPORTING);
                 setMessageLevelSecurityProfilePolicies(c, profile);
+                updateServiceUrl(c);
             } else if (ComboConstants.PROF_USERNAME.equals(profile)) {   // Profile #4
                 WSDLComponent bt = SecurityPolicyModelHelper.setSecurityBindingType(c, ComboConstants.SYMMETRIC);
                 WSDLComponent tokenType = SecurityTokensModelHelper.setTokenType(bt, ComboConstants.PROTECTION, ComboConstants.X509);
