@@ -148,7 +148,7 @@ FOLD:tag: {
 }
 
 FOLD:comment: {
-    fold_display_name:"<!-- -->";
+    fold_display_name:"LBL_HTML_Comment";
     expand_type_action_name:"LBL_Expand_HTML_Comment";
     collapse_type_action_name:"LBL_Collapse_HTML_Comment";
 }
