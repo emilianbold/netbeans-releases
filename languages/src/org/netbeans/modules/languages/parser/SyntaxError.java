@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,27 +31,41 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-package org.netbeans.api.languages;
 
-import java.io.IOException;
-import java.io.InputStream;
+package org.netbeans.modules.languages.parser;
 
+import org.netbeans.api.languages.ASTItem;
 
 /**
  *
- * @author Jan Jancura
+ * @author hanz
  */
-public abstract class Language {
-
-    public abstract String getMimeType ();
+public class SyntaxError {
     
-    public abstract ASTNode parse (InputStream is) throws IOException, ParseException;
-  
-    {
-//        if (!getClass ().getName ().equals ("org.netbeans.modules.languages.LanguageImpl") &&
-//            !getClass ().getName ().equals ("org.netbeans.modules.languages.NBSLanguage")
-//        )
-//            throw new IllegalArgumentException ();
+    private ASTItem                 item;
+    private String                  message;
+    
+    SyntaxError (ASTItem item, String message) {
+        if (item == null) throw new NullPointerException ();
+        if (message == null) throw new NullPointerException ();
+        this.item = item;
+        this.message = message;
     }
- }
+    
+    public ASTItem getItem () {
+        return item;
+    }
+
+    public String getMessage () {
+        return message;
+    }
+    
+    public String toString () {
+        return "SyntaxError " + message + " : " + item;
+    }
+}

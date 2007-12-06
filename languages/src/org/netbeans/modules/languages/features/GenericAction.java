@@ -85,12 +85,7 @@ public class GenericAction extends BaseAction {
     }
     
     private ASTNode getASTNode(JTextComponent comp) {
-        try {
-            return ParserManagerImpl.get(comp.getDocument()).getAST();
-        } catch (ParseException ex) {
-            ErrorManager.getDefault().notify(ex);
-        } 
-        return null;
+        return ParserManagerImpl.getImpl (comp.getDocument ()).getAST();
     }
     
     

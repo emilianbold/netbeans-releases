@@ -83,27 +83,15 @@ public class NavigatorTest extends TestCase {
     }
     
     public void testAST1 () throws Exception {
-        List<TokenType> tokenTypes = new ArrayList<TokenType> ();
-        tokenTypes.add (new TokenType (null, Pattern.create ("'if' | 'while' | 'function'"), "keyword", 0, null, 0, null));
-        tokenTypes.add (new TokenType (null, Pattern.create ("['a'-'z' '_']+"), "identifier", 1, null, 1, null));
-        tokenTypes.add (new TokenType (null, Pattern.create ("'(' | ')' | '{' | '}'"), "operator", 2, null, 2, null));
-        tokenTypes.add (new TokenType (null, Pattern.create ("[' ' '\n' '\t' '\r']+"), "whitespace", 3, null, 3, null));
-        Map<Integer,String> tokensMap = new HashMap<Integer,String> ();
-        tokensMap.put (0, "keyword");
-        tokensMap.put (1, "identifier");
-        tokensMap.put (2, "operator");
-        tokensMap.put (3, "whitespace");
-        List<Feature> features = new ArrayList<Feature> ();
+        TestLanguage language = new TestLanguage ();
+        language.addToken (0, "keyword", Pattern.create ("'if' | 'while' | 'function'"), null, null, 0, null);
+        language.addToken (1, "identifier", Pattern.create ("['a'-'z' '_']+"), null, null, 1, null);
+        language.addToken (2, "operator", Pattern.create ("'(' | ')' | '{' | '}'"), null, null, 2, null);
+        language.addToken (3, "whitespace", Pattern.create ("[' ' '\n' '\t' '\r']+"), null, null, 3, null);
+        language.addFeature (Feature.create ("SKIP", Selector.create ("whitespace")));
         Map<String,String> exprs = new HashMap<String,String> ();
         exprs.put ("display_name", "$FunctionName$");
-        features.add (Feature.create (
-            "NAVIGATOR",
-            Selector.create ("Function"),
-            exprs,
-            Collections.<String,String>emptyMap(),
-            Collections.<String,Pattern>emptyMap ()
-        ));
-        Language language = Language.create (TEST_MIME_TYPE, tokensMap, features, Parser.create (tokenTypes));
+        language.addFeature (Feature.create ("NAVIGATOR", Selector.create ("Function"), exprs, Collections.<String,String>emptyMap (), Collections.<String,Pattern>emptyMap ()));
         
         ASTToken IDENTIFIER = ASTToken.create (language, "identifier", null, 0, "identifier".length (), null);
         ASTToken IF = ASTToken.create (language, "keyword", "if", 0, "keyword".length (), null);
@@ -114,23 +102,21 @@ public class NavigatorTest extends TestCase {
         ASTToken BRACE2 = ASTToken.create (language, "operator", "}", 0, "operator".length (), null);
         ASTToken FUNCTION = ASTToken.create (language, "keyword", "function", 0, "keyword".length (), null);
     
-        List<Rule> rules = new ArrayList<Rule> ();
-        rules.add (Rule.create ("S", Arrays.asList (new Object[] {"Function", "S"})));
-        rules.add (Rule.create ("S", Arrays.asList (new Object[] {})));
-        rules.add (Rule.create ("Function", Arrays.asList (new Object[] {FUNCTION, "FunctionName", PARENTHESIS, PARENTHESIS2, "Block"})));
-        rules.add (Rule.create ("FunctionName", Arrays.asList (new Object[] {IDENTIFIER})));
-        rules.add (Rule.create ("Statement", Arrays.asList (new Object[] {"IfStatement"})));
-        rules.add (Rule.create ("Statement", Arrays.asList (new Object[] {"WhileStatement"})));
-        rules.add (Rule.create ("Statement", Arrays.asList (new Object[] {"Block"})));
-        rules.add (Rule.create ("IfStatement", Arrays.asList (new Object[] {IF, PARENTHESIS, "ConditionalExpression", PARENTHESIS2, "Block"})));
-        rules.add (Rule.create ("WhileStatement", Arrays.asList (new Object[] {WHILE, PARENTHESIS, "ConditionalExpression", PARENTHESIS2, "Block"})));
-        rules.add (Rule.create ("ConditionalExpression", Arrays.asList (new Object[] {IDENTIFIER})));
-        rules.add (Rule.create ("Block", Arrays.asList (new Object[] {BRACE, "Block1", BRACE2})));
-        rules.add (Rule.create ("Block1", Arrays.asList (new Object[] {IDENTIFIER, "Block1"})));
-        rules.add (Rule.create ("Block1", Arrays.asList (new Object[] {"Statement", "Block1"})));
-        rules.add (Rule.create ("Block1", Arrays.asList (new Object[] {})));
+        language.addRule ("S", Arrays.asList (new Object[] {"Function", "S"}));
+        language.addRule ("S", Arrays.asList (new Object[] {}));
+        language.addRule ("Function", Arrays.asList (new Object[] {FUNCTION, "FunctionName", PARENTHESIS, PARENTHESIS2, "Block"}));
+        language.addRule ("FunctionName", Arrays.asList (new Object[] {IDENTIFIER}));
+        language.addRule ("Statement", Arrays.asList (new Object[] {"IfStatement"}));
+        language.addRule ("Statement", Arrays.asList (new Object[] {"WhileStatement"}));
+        language.addRule ("Statement", Arrays.asList (new Object[] {"Block"}));
+        language.addRule ("IfStatement", Arrays.asList (new Object[] {IF, PARENTHESIS, "ConditionalExpression", PARENTHESIS2, "Block"}));
+        language.addRule ("WhileStatement", Arrays.asList (new Object[] {WHILE, PARENTHESIS, "ConditionalExpression", PARENTHESIS2, "Block"}));
+        language.addRule ("ConditionalExpression", Arrays.asList (new Object[] {IDENTIFIER}));
+        language.addRule ("Block", Arrays.asList (new Object[] {BRACE, "Block1", BRACE2}));
+        language.addRule ("Block1", Arrays.asList (new Object[] {IDENTIFIER, "Block1"}));
+        language.addRule ("Block1", Arrays.asList (new Object[] {"Statement", "Block1"}));
+        language.addRule ("Block1", Arrays.asList (new Object[] {}));
         
-        language.setAnalyser (LLSyntaxAnalyser.create (language, rules, Collections.<Integer>singleton (3)));
         LanguagesManager.getDefault ().addLanguage (language);
         
         String text = 
@@ -165,7 +151,7 @@ public class NavigatorTest extends TestCase {
         
         NbEditorDocument doc = (NbEditorDocument)pane.getDocument();
         doc.putProperty ("mimeType", language.getMimeType ());
-        doc.putProperty (org.netbeans.api.lexer.Language.class, new SLanguageHierarchy (language.getMimeType ()).language ());
+        doc.putProperty (org.netbeans.api.lexer.Language.class, new SLanguageHierarchy (language).language ());
 
         ParserManager parserManager = ParserManager.get(doc);
         pane.setText (text);

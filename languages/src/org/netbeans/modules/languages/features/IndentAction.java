@@ -236,7 +236,7 @@ public class IndentAction extends InsertBreakAction {
             Set<String> end = new HashSet<String> ();
             Map<String,String> endToStart = new HashMap<String,String> ();
             
-            List<Feature> indents = l.getFeatures ("INDENT");
+            List<Feature> indents = l.getFeatureList ().getFeatures ("INDENT");
             Iterator<Feature> it = indents.iterator ();
             while (it.hasNext ()) {
                 Feature indent = it.next ();

@@ -44,6 +44,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.LanguagesManager;
+import org.netbeans.modules.languages.lexer.SLexer;
 import org.netbeans.spi.editor.highlighting.HighlightsContainer;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
@@ -91,6 +92,7 @@ class LanguagesHighlightsLayer extends AbstractHighlightsContainer {
         }
         
         public boolean moveNext () {
+            if (tokenSequence == null) return false;
             attributeSet = new SimpleAttributeSet ();
             do {
                 startOffset1 = endOffset1;
@@ -124,7 +126,7 @@ class LanguagesHighlightsLayer extends AbstractHighlightsContainer {
             if (ts2 == null) return;
             String mimeTypeOut = ts.language ().mimeType ();
             String mimeTypeIn = ts2.language ().mimeType ();
-            if (token.id ().name ().equals (Language.EMBEDDING_TOKEN_TYPE_NAME)) {
+            if (token.id ().name ().equals (SLexer.EMBEDDING_TOKEN_TYPE_NAME)) {
                 Color c = getPreprocessorImportsColor (mimeTypeIn);
                 if (c != null) {
                     attributeSet.addAttribute (StyleConstants.Background, c);

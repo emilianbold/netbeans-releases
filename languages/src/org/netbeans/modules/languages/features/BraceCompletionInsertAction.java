@@ -90,7 +90,7 @@ public class BraceCompletionInsertAction extends ExtDefaultKeyTypedAction {
             }
             String mimeType = ts.language ().mimeType ();
             Language l = LanguagesManager.getDefault ().getLanguage (mimeType);
-            List<Feature> completes = l.getFeatures ("COMPLETE");
+            List<Feature> completes = l.getFeatureList ().getFeatures ("COMPLETE");
             if (completes == null) {
                 super.insertString (doc, dotPos, caret, str, overwrite);
                 return;
@@ -174,7 +174,7 @@ public class BraceCompletionInsertAction extends ExtDefaultKeyTypedAction {
         String str, 
         boolean overwrite
     ) throws BadLocationException {
-        System.out.println ("replaceSelection " + str);
+        S ystem.out.println ("replaceSelection " + str);
         super.replaceSelection (target, dotPos, caret, str, overwrite);
     }
 */        

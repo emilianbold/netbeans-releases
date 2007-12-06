@@ -38,9 +38,8 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
+
 import org.netbeans.api.languages.ASTEvaluator;
-import org.netbeans.api.languages.ASTNode;
-import org.netbeans.api.languages.ParseException;
 import org.netbeans.modules.languages.ParserManagerImpl;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
@@ -143,16 +142,13 @@ class SemanticHighlightsLayer extends AbstractHighlightsContainer {
     }
     
     private void refresh () {
-        ParserManagerImpl parserManager = (ParserManagerImpl) ParserManagerImpl.get (document);
-        try {
-            parserManager.fire (
-                parserManager.getState (), 
-                null, 
-                getEvaluators (), 
-                parserManager.getAST ()
-            );
-        } catch (ParseException ex) {
-        }
+        ParserManagerImpl parserManager = ParserManagerImpl.getImpl (document);
+        parserManager.fire (
+            parserManager.getState (), 
+            null, 
+            getEvaluators (), 
+            parserManager.getAST ()
+        );
     }
     
     private Map<String,Set<ASTEvaluator>> evaluators;

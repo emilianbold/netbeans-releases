@@ -19,8 +19,7 @@
 
 ########### tokens #############################################################
 
-TOKEN:index:( "Index:"):<FILENAME> 
-<FILENAME>:TOKEN:filename:( [^ "\n" "\r"]* ["\n" "\r"]+ ):<DEFAULT>
+TOKEN:index:( "Index:" [^ "\n" "\r"]* ["\n" "\r"]+ )
 TOKEN:header:( "===" [^ "\n" "\r"]* ["\n" "\r"]+ )
 TOKEN:header:( "---" [^ "\n" "\r"]* ["\n" "\r"]+ )
 TOKEN:header:( "+++" [^ "\n" "\r"]* ["\n" "\r"]+ )
@@ -57,21 +56,16 @@ COLOR:filename: {
     background_color:"#e0e0e0";
 }
 
-S = file S;
-S = ;
-file = <index> <filename> body;
-body = body1;
-body1 = <plain> body1;
-body1 = <added> body1;
-body1 = <removed> body1;
-body1 = <header> body1;
-body1 = ;
+S = file*;
+file = name body;
+name = <index>;
+body = (<plain> | <added> | <removed> | <header>)*;
 
 FOLD:body 
 
-NAVIGATOR:file: { 
-    display_name:"$filename$";
-    tooltip:"$filename$";
+NAVIGATOR:name: { 
+    display_name:org.netbeans.modules.languages.diff.Diff.fileName;
+    tooltip:org.netbeans.modules.languages.diff.Diff.filePath;
 }
 
 

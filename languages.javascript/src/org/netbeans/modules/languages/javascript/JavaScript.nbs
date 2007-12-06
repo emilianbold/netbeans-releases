@@ -141,6 +141,29 @@ TOKEN:js_string: (
     )* 
     "\'"
 )
+
+TOKEN:js_error_string: (
+    "\"" ( 
+        [^ "\\" "\"" "\n" "\r"] |
+        ("\\" (
+            . |
+            (["0"-"7"] ["0"-"7"] ["0"-"7"]) |
+            ("x" ["0"-"9" "a"-"f" "A"-"F"] ["0"-"9" "a"-"f" "A"-"F"]) |
+            ("u" ["0"-"9" "a"-"f" "A"-"F"] ["0"-"9" "a"-"f" "A"-"F"] ["0"-"9" "a"-"f" "A"-"F"] ["0"-"9" "a"-"f" "A"-"F"])
+        ))
+    )* 
+)
+TOKEN:js_error_string: (
+    "\'" ( 
+        [^ "\\" "\'" "\n" "\r"] |
+        ("\\" (
+            . |
+            (["0"-"7"] ["0"-"7"] ["0"-"7"]) |
+            ("x" ["0"-"9" "a"-"f" "A"-"F"] ["0"-"9" "a"-"f" "A"-"F"]) |
+            ("u" ["0"-"9" "a"-"f" "A"-"F"] ["0"-"9" "a"-"f" "A"-"F"] ["0"-"9" "a"-"f" "A"-"F"] ["0"-"9" "a"-"f" "A"-"F"])
+        ))
+    )* 
+)
 #TOKEN:js_regularExpression: (
 #    "/" ( [^ "\n" "\r"] )* "/" ['g' 'i' 'm']*
 #)
@@ -306,7 +329,8 @@ ArrayLiteral = "[" (",")* [AssignmentExpression] ( (",")+ AssignmentExpression)*
 ObjectLiteral = "{" [PropertyNameAndValue ("," PropertyNameAndValue)*] "}";
 PropertyNameAndValue = PropertyName ":" AssignmentExpression;
 PropertyName = <js_identifier> | <js_string> | <js_number>;
-FunctionDeclaration = "function" [<GAP>] [FunctionName] "(" FormalParameterList ")" FunctionBody;
+FunctionDeclaration = FunctionHeader FunctionBody;
+FunctionHeader = "function" [<GAP>] [FunctionName] "(" FormalParameterList ")";
 FunctionName = <GAP> | <js_identifier>;
 FunctionBody = Block;
 
@@ -314,15 +338,34 @@ RegularExpression = <js_regularExpression>;
 #RegularExpression = "/";
 #PARSE:RegularExpression:org.netbeans.modules.languages.javascript.JavaScript.parseRegularExpression
 
+
+SYNTAX_ERROR:FunctionHeader: {
+    token_identifier:"{";
+    nt:"FunctionDeclaration";
+}
+
+SYNTAX_ERROR:FunctionHeader: {
+    token_identifier:";";
+    nt:"PrimaryExpressionInitial";
+}
+
+SYNTAX_ERROR:Statement: {
+    token_identifier:";";
+    nt:"Statement";
+}
+
 AST {
-    removeSimple:"!FormalParameterList,FunctionBody,FunctionDeclaration,Statement,VariableDeclaration,Parameter,VariableName,PropertyName,PropertyNameAndValue,Initializer,Error,FunctionName,AssignmentExpressionInitial,AssignmentOperator";
-    #process:org.netbeans.modules.languages.javascript.Semantic.process;
+    #removeSimple:"!FormalParameterList,FunctionBody,FunctionDeclaration,Statement,VariableDeclaration,Parameter,VariableName,PropertyName,PropertyNameAndValue,Initializer,Error,FunctionName,AssignmentExpressionInitial,AssignmentOperator";
 }
 
 ########### colors #############################################################
 
 COLOR:js_separator: {
     color_name: "js_operator";
+}
+
+COLOR:js_error_string: {
+    default_coloring: "string";
 }
 
 #COLOR:FunctionName: {

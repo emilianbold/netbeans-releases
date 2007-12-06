@@ -80,21 +80,13 @@ public class CodeFoldingTest extends TestCase {
     }
     
     public void testAST1 () throws ParseException {
-        List<TokenType> tokenTypes = new ArrayList<TokenType> ();
-        tokenTypes.add (new TokenType (null, Pattern.create ("'if' | 'while'"), "keyword", 0, null, 0, null));
-        tokenTypes.add (new TokenType (null, Pattern.create ("['a'-'z' '_']+"), "identifier", 1, null, 1, null));
-        tokenTypes.add (new TokenType (null, Pattern.create ("'(' | ')' | '{' | '}'"), "operator", 2, null, 2, null));
-        tokenTypes.add (new TokenType (null, Pattern.create ("[' ' '\n' '\t' '\r']+"), "whitespace", 3, null, 3, null));
-        Map<Integer,String> tokensMap = new HashMap<Integer,String> ();
-        tokensMap.put (0, "keyword");
-        tokensMap.put (1, "identifier");
-        tokensMap.put (2, "operator");
-        tokensMap.put (3, "whitespace");
-        
-        List<Feature> features = new ArrayList<Feature> ();
-        features.add (Feature.create ("SKIP", Selector.create ("whitespace")));
-        features.add (Feature.create ("FOLD", Selector.create ("Block")));
-        Language language = Language.create (TEST_MIME_TYPE, tokensMap, features, Parser.create (tokenTypes));
+        TestLanguage language = new TestLanguage ();
+        language.addToken (0, "keyword", Pattern.create ("'if' | 'while'"), null, null, 0, null);
+        language.addToken (1, "identifier", Pattern.create ("['a'-'z' '_']+"), null, null, 1, null);
+        language.addToken (2, "operator", Pattern.create ("'(' | ')' | '{' | '}'"), null, null, 2, null);
+        language.addToken (3, "whitespace", Pattern.create ("[' ' '\n' '\t' '\r']+"), null, null, 3, null);
+        language.addFeature (Feature.create ("SKIP", Selector.create ("whitespace")));
+        language.addFeature (Feature.create ("FOLD", Selector.create ("Block")));
         
         ASTToken IDENTIFIER = ASTToken.create (language, "identifier", null, 0, "identifier".length (), null);
         ASTToken IF = ASTToken.create (language, "keyword", "if", 0, "keyword".length (), null);
@@ -104,21 +96,19 @@ public class CodeFoldingTest extends TestCase {
         ASTToken BRACE = ASTToken.create (language, "operator", "{", 0, "operator".length (), null);
         ASTToken BRACE2 = ASTToken.create (language, "operator", "}", 0, "operator".length (), null);
     
-        List<Rule> rules = new ArrayList<Rule> ();
-        rules.add (Rule.create ("S", Arrays.asList (new Object[] {"Statement", "S"})));
-        rules.add (Rule.create ("S", Arrays.asList (new Object[] {})));
-        rules.add (Rule.create ("Statement", Arrays.asList (new Object[] {"IfStatement"})));
-        rules.add (Rule.create ("Statement", Arrays.asList (new Object[] {"WhileStatement"})));
-        rules.add (Rule.create ("Statement", Arrays.asList (new Object[] {"Block"})));
-        rules.add (Rule.create ("IfStatement", Arrays.asList (new Object[] {IF, PARENTHESIS, "ConditionalExpression", PARENTHESIS2, "Block"})));
-        rules.add (Rule.create ("WhileStatement", Arrays.asList (new Object[] {WHILE, PARENTHESIS, "ConditionalExpression", PARENTHESIS2, "Block"})));
-        rules.add (Rule.create ("ConditionalExpression", Arrays.asList (new Object[] {IDENTIFIER})));
-        rules.add (Rule.create ("Block", Arrays.asList (new Object[] {BRACE, "Block1", BRACE2})));
-        rules.add (Rule.create ("Block1", Arrays.asList (new Object[] {IDENTIFIER, "Block1"})));
-        rules.add (Rule.create ("Block1", Arrays.asList (new Object[] {"Statement", "Block1"})));
-        rules.add (Rule.create ("Block1", Arrays.asList (new Object[] {})));
+        language.addRule ("S", Arrays.asList (new Object[] {"Statement", "S"}));
+        language.addRule ("S", Arrays.asList (new Object[] {}));
+        language.addRule ("Statement", Arrays.asList (new Object[] {"IfStatement"}));
+        language.addRule ("Statement", Arrays.asList (new Object[] {"WhileStatement"}));
+        language.addRule ("Statement", Arrays.asList (new Object[] {"Block"}));
+        language.addRule ("IfStatement", Arrays.asList (new Object[] {IF, PARENTHESIS, "ConditionalExpression", PARENTHESIS2, "Block"}));
+        language.addRule ("WhileStatement", Arrays.asList (new Object[] {WHILE, PARENTHESIS, "ConditionalExpression", PARENTHESIS2, "Block"}));
+        language.addRule ("ConditionalExpression", Arrays.asList (new Object[] {IDENTIFIER}));
+        language.addRule ("Block", Arrays.asList (new Object[] {BRACE, "Block1", BRACE2}));
+        language.addRule ("Block1", Arrays.asList (new Object[] {IDENTIFIER, "Block1"}));
+        language.addRule ("Block1", Arrays.asList (new Object[] {"Statement", "Block1"}));
+        language.addRule ("Block1", Arrays.asList (new Object[] {}));
         
-        language.setAnalyser (LLSyntaxAnalyser.create (language, rules, Collections.<Integer>singleton (3)));
         LanguagesManager.getDefault ().addLanguage (language);
         
         String text = 
@@ -147,11 +137,11 @@ public class CodeFoldingTest extends TestCase {
             //e.printStackTrace();
         }
         
-        //System.out.println("foldManager: " + env.getFoldManager());
+        //S ystem.out.println("foldManager: " + env.getFoldManager());
         
         Document doc = pane.getDocument();
         doc.putProperty ("mimeType", language.getMimeType ());
-        doc.putProperty (org.netbeans.api.lexer.Language.class, new SLanguageHierarchy (language.getMimeType ()).language ());
+        doc.putProperty (org.netbeans.api.lexer.Language.class, new SLanguageHierarchy (language).language ());
 
         LanguagesFoldManager.Factory factory = new LanguagesFoldManager.Factory();
         LanguagesFoldManager foldManager = (LanguagesFoldManager)factory.createFoldManager();
@@ -177,8 +167,8 @@ public class CodeFoldingTest extends TestCase {
         
         ASTNode root = parserManager.getAST();
         
-        //System.out.println("counter: " + counter);
-        //System.out.println("state: " + parserManager.getState());
+        //S ystem.out.println("counter: " + counter);
+        //S ystem.out.println("state: " + parserManager.getState());
         List<FoldItem> items = foldManager.getFolds();
         
         assertEquals (2, items.size ());

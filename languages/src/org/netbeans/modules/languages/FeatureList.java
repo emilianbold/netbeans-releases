@@ -61,7 +61,7 @@ import org.netbeans.api.languages.ParserManager.State;
  *
  * @author hanz
  */
-class FeatureList {
+public class FeatureList {
     
     private Map<String,List<Feature>>   features;
     private Map<String,FeatureList>     lists;
@@ -97,17 +97,16 @@ class FeatureList {
         
     }
     
-    List<Feature> getFeatures (String featureName) {
-        if (features == null) return Collections.<Feature>emptyList ();
-        List<Feature> result = features.get (featureName);
-        if (result != null) return result;
-        return Collections.<Feature>emptyList ();
-    }
-    
-    List<Feature> getFeaturesRec (String featureName) {
+    public List<Feature> getFeatures (String featureName) {
         List<Feature> list = new ArrayList<Feature>();
         collectFeatures(list, featureName);
         return list;
+    }
+    
+   public Feature getFeature (String featureName) {
+        List<Feature> features = getFeatures (featureName);
+        if (features.isEmpty ()) return null;
+        return features.get (0);
     }
     
     private void collectFeatures(List result, String featureName) {
@@ -127,14 +126,23 @@ class FeatureList {
         } // if
     }
     
-    List<Feature> getFeatures (String featureName, String id) {
+    public List<Feature> getFeatures (String featureName, String id) {
         if (lists == null) return Collections.<Feature>emptyList ();
         FeatureList list = lists.get (id);
         if (list == null) return Collections.<Feature>emptyList ();
-        return list.getFeatures (featureName);
+        if (list.features == null) return Collections.<Feature>emptyList ();
+        List<Feature> result = list.features.get (featureName);
+        if (result != null) return result;
+        return Collections.<Feature>emptyList ();
     }
     
-    List<Feature> getFeatures (String featureName, ASTPath path) {
+    public Feature getFeature (String featureName, String id) {
+        List<Feature> features = getFeatures (featureName, id);
+        if (features.isEmpty ()) return null;
+        return features.get (0);
+    }
+
+    public List<Feature> getFeatures (String featureName, ASTPath path) {
         List<Feature> result = null;
         FeatureList list = this;
         for (int i = path.size () - 1; i > 0; i--) {
@@ -153,6 +161,12 @@ class FeatureList {
         }
         if (result == null) return Collections.<Feature>emptyList ();
         return result;
+    }
+    
+    public Feature getFeature (String featureName, ASTPath path) {
+        List<Feature> features = getFeatures (featureName, path);
+        if (features.isEmpty ()) return null;
+        return features.get (0);
     }
     
     void evaluate (

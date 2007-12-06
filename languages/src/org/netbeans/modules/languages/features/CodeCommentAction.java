@@ -63,6 +63,8 @@ import org.netbeans.modules.languages.LanguagesManager;
  * @author Dan
  */
 public class CodeCommentAction extends CommentAction {
+    
+    public static final String COMMENT_LINE = "COMMENT_LINE";
 
     public CodeCommentAction() {
         super(""); // NOI18N
@@ -139,7 +141,7 @@ public class CodeCommentAction extends CommentAction {
         Feature feature = null;
         try {
             Language language = LanguagesManager.getDefault().getLanguage(mimeType);
-            feature = language.getFeature(Language.COMMENT_LINE);
+            feature = language.getFeatureList ().getFeature (COMMENT_LINE);
         } catch (LanguageDefinitionNotFoundException e) {
         }
         if (feature != null) {

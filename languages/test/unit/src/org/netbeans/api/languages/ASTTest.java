@@ -14,6 +14,8 @@ import java.util.Map;
 import junit.framework.TestCase;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
+import org.netbeans.modules.languages.LanguageImpl;
+import org.netbeans.modules.languages.TestLanguage;
 
 
 /**
@@ -27,10 +29,9 @@ public class ASTTest extends TestCase {
     }
     
     public void testAST1 () {
-        Map<Integer,String> tokensMap = new HashMap<Integer, String> ();
-        tokensMap.put (0, "a");
-        tokensMap.put (1, "b");
-        Language language = Language.create ("test/test", tokensMap, Collections.<Feature>emptyList (), null);
+        TestLanguage language = new TestLanguage ();
+        language.addToken (0, "a");
+        language.addToken (1, "b");
         ASTNode n = ASTNode.create (language, "x", Arrays.asList (new ASTItem[] {
             ASTNode.create (language, "a", Arrays.asList (new ASTItem[] {
                 ASTToken.create (language, "b", "bbb", 0, 3, null),

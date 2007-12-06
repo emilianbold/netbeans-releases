@@ -161,11 +161,7 @@ public class DG<N,E,K,V> {
     }
     
     Map<K,V> getProperties (N node) {
-        if (node == null)
-            System.out.println("!");
         Node<N,E,K,V> n = idToNode.get (node);
-        if (n == null)
-            System.out.println(node);
         if (n.properties == null) return Collections.<K,V>emptyMap ();
         return Collections.<K,V>unmodifiableMap (n.properties);
     }

@@ -1,7 +1,6 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -45,15 +44,14 @@ package org.netbeans.modules.languages.parser;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.Set;
 import java.util.Stack;
-import java.util.StringTokenizer;
+
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTPath;
@@ -76,6 +74,8 @@ import org.netbeans.modules.languages.Rule;
  * @author Jan Jancura
  */
 public class LLSyntaxAnalyser {
+    
+    public static final String GAP_TOKEN_TYPE_NAME = "GAP";
 
     private Language        language;
     private List<Rule>      grammarRules;
@@ -106,6 +106,10 @@ public class LLSyntaxAnalyser {
         return skipTokenTypes;
     }
     
+    First getFirst () {
+        return first;
+    }
+    
     public static LLSyntaxAnalyser create (
         Language language, 
         List<Rule> grammarRules,
@@ -119,7 +123,7 @@ public class LLSyntaxAnalyser {
 //            AnalyserAnalyser.printRules (a.grammarRules, null);
         //if (a.printFirst)
 //            AnalyserAnalyser.printF (a.first, null, language);
-//        System.out.println(a.first);
+//        S ystem.out.println(a.first);
 //        AnalyserAnalyser.printUndefinedNTs (a.grammarRules, null);
         return a;
     }
@@ -139,17 +143,18 @@ public class LLSyntaxAnalyser {
     }
     
     public ASTNode read (
-        TokenInput input, 
-        boolean skipErrors, 
-        boolean[] cancel
+        TokenInput                  input, 
+        boolean                     skipErrors, 
+        List<SyntaxError>           syntaxErrors,
+        boolean[]                   cancel
     ) throws ParseException {
         Map<String,List<ASTItem>> embeddings = new HashMap<String, List<ASTItem>> ();
         ASTNode root;
         try {
             if (grammarRules.isEmpty () || input.eof ()) {
-                root = readNoGrammar (input, skipErrors, embeddings, cancel);
+                root = readNoGrammar (input, skipErrors, embeddings, syntaxErrors, cancel);
             } else {
-                root = read2 (input, skipErrors, embeddings, cancel);
+                root = read2 (input, skipErrors, embeddings, syntaxErrors, cancel);
             }
         } catch (CancelledException ex) {
             return null;
@@ -165,11 +170,11 @@ public class LLSyntaxAnalyser {
             List<ASTItem> tokens = embeddings.get (mimeType);
             Language language = LanguagesManager.getDefault ().getLanguage (mimeType);
             TokenInput in = TokenInputUtils.create (tokens);
-            ASTNode r = language.getAnalyser ().read (in, skipErrors, cancel);
+            ASTNode r = language.getAnalyser ().read (in, skipErrors, syntaxErrors, cancel);
             if(r == null) {
                 continue;
             }
-            Feature astProperties = language.getFeature ("AST");
+            Feature astProperties = language.getFeatureList ().getFeature ("AST");
             if (astProperties != null) {
                 String process_embedded = (String)astProperties.getValue("process_embedded");
                 if(process_embedded == null || Boolean.valueOf(process_embedded)) {
@@ -217,39 +222,41 @@ public class LLSyntaxAnalyser {
     // helper methods ..........................................................
     
     private ASTNode read (
-        TokenInput input, 
-        boolean skipErrors, 
-        Map<String,List<ASTItem>> embeddings,
-        boolean[] cancel
+        TokenInput                  input, 
+        boolean                     skipErrors, 
+        Map<String,List<ASTItem>>   embeddings,
+        List<SyntaxError>           syntaxErrors,
+        boolean[]                   cancel
     ) throws ParseException, CancelledException {
         if (grammarRules.isEmpty () || input.eof ())
-            return readNoGrammar (input, skipErrors, embeddings, cancel);
-        return read2 (input, skipErrors, embeddings, cancel);
+            return readNoGrammar (input, skipErrors, embeddings, syntaxErrors, cancel);
+        return read2 (input, skipErrors, embeddings, syntaxErrors, cancel);
     }
     
     private ASTNode read2 (
-        TokenInput input, 
-        boolean skipErrors, 
-        Map<String,List<ASTItem>> embeddings,
-        boolean[] cancel
+        TokenInput                  input, 
+        boolean                     skipErrors, 
+        Map<String,List<ASTItem>>   embeddings,
+        List<SyntaxError>           syntaxErrors,
+        boolean[]                   cancel
     ) throws ParseException, CancelledException {
         Stack<Object> stack = new Stack<Object> ();
         ASTNode root = null, node = null;
-        Iterator it = Collections.singleton ("S").iterator ();
+        ListIterator it = Collections.singletonList ("S").listIterator ();
         boolean firstLine = true;
         do {
             if (cancel [0]) throw new CancelledException ();
             int offset = input.getOffset ();
-            List<ASTItem> whitespaces = readWhitespaces (node, input, skipErrors, embeddings, cancel);
+            List<ASTItem> whitespaces = readWhitespaces (node, input, skipErrors, embeddings, syntaxErrors, cancel);
             if (firstLine && input.eof() && whitespaces != null) {
-                return readNoGrammar (whitespaces, offset, skipErrors, embeddings, cancel);
+                return readNoGrammar (whitespaces, offset, skipErrors, embeddings, syntaxErrors, cancel);
             }
             if (node != null)
                 offset = input.getOffset ();
             while (!it.hasNext ()) {
                 if (stack.empty ()) break;
                 node = (ASTNode) stack.pop ();
-                it = (Iterator) stack.pop ();
+                it = (ListIterator) stack.pop ();
             }
             if (!it.hasNext ()) break;
             Object current = it.next ();
@@ -265,25 +272,24 @@ public class LLSyntaxAnalyser {
                     if (input.eof ()) {
                         if (node == null)
                             root = node = ASTNode.create (language, "Root", whitespaces, offset);
-                        createErrorNode (node, input.getOffset ());
-                        //S ystem.out.println(input.getIndex () + ": unexpected eof " + nt);
+                        it.previous ();
+                        it = readError (node, root, input, null, it, stack, embeddings, syntaxErrors, cancel);
                         return root;
                     }
-                    //S ystem.out.println(input.getIndex () + ": no rule for " + nt + "&" + input.next (0));
-                    createErrorNode (node, input.getOffset ()).addChildren (readEmbeddings (input.read (), skipErrors, embeddings, cancel));
+                    it.previous ();
+                    it = readError (node, root, input, null, it, stack, embeddings, syntaxErrors, cancel);
                 } else {
                     Rule rule = grammarRules.get (newRule);
-                    Feature parse = language.getFeature ("PARSE", rule.getNT ());
+                    Feature parse = language.getFeatureList ().getFeature ("PARSE", rule.getNT ());
                     if (parse != null) {
                         stack.push (it);
                         stack.push (node);
-                        it = Collections.EMPTY_LIST.iterator ();
+                        it = Collections.EMPTY_LIST.listIterator ();
                         ASTNode nast = (ASTNode) parse.getValue (
                             new Object[] {input, stack}
                         );
                         if (nast != null)
                             node.addChildren (nast);
-                        //S ystem.out.println(input.getIndex () + ": >>Java " + nt + "&" + evaluator.getValue ());
                     } else {
                         if (node == null || it.hasNext () || !nt.equals (node.getNT ())) {
                             if (nt.indexOf ('$') > 0 || nt.indexOf ('#') > 0) {
@@ -309,7 +315,7 @@ public class LLSyntaxAnalyser {
                             }
                         }
                         //S ystem.out.println(input.getIndex () + ": " + rule);
-                        it = rule.getRight ().iterator ();
+                        it = rule.getRight ().listIterator ();
                     }
                 }
             } else {
@@ -317,38 +323,33 @@ public class LLSyntaxAnalyser {
                 if (input.eof ()) {
                     if (!skipErrors)
                         throw new ParseException ("Unexpected end of file.", root);
-                    createErrorNode (node, input.getOffset ());
-                    //S ystem.out.println(input.getIndex () + ": unexpected eof " + token);
+                    it.previous ();
+                    it = readError (node, root, input, token, it, stack, embeddings, syntaxErrors, cancel);
                     return root;
                 } else
                 if (!isCompatible (token, input.next (1))) {
-                    if(input.next(1).getTypeName ().equals(Language.GAP_TOKEN_TYPE_NAME)) {
-//                        System.out.println("token " + token + " is not compatible with " + input.next(1));
+                    if(input.next(1).getTypeName ().equals (GAP_TOKEN_TYPE_NAME)) {
                         input.read();
                     } else {
                         if (!skipErrors)
                             throw new ParseException ("Unexpected token " + input.next (1) + ". Expecting " + token, root);
-                        createErrorNode (node, input.getOffset ()).addChildren (readEmbeddings (input.read (), skipErrors, embeddings, cancel));
-                        //S ystem.out.println(input.getIndex () + ": unrecognized token " + token + "<>" + input.next (1));
+                        it.previous ();
+                        it = readError (node, root, input, token, it, stack, embeddings, syntaxErrors, cancel);
                     }
                 } else {
-                    node.addChildren (readEmbeddings (input.read (), skipErrors, embeddings, cancel));
-                    //S ystem.out.println(input.getIndex () + ": token readed " + input.next (1));
+                    node.addChildren (readEmbeddings (input.read (), skipErrors, embeddings, syntaxErrors, cancel));
                 }
             }
         } while (true);
         if (!skipErrors && !input.eof ())
             throw new ParseException ("Unexpected token " + input.next (1) + ".", root);
-        while (
-            !input.eof () //&& 
-            //input.next (1).getMimeType () == mimeType
-        )
-            createErrorNode (node, input.getOffset ()).addChildren (readEmbeddings (input.read (), skipErrors, embeddings, cancel));
+        while (!input.eof ())
+            it = readError (node, root, input, null, it, stack, embeddings, syntaxErrors, cancel);
         if (root == null) {
             root = ASTNode.create (
                 language,
                 "Root", 
-                readWhitespaces (node, input, skipErrors, embeddings, cancel), 
+                readWhitespaces (node, input, skipErrors, embeddings, syntaxErrors, cancel), 
                 input.getOffset ()
             );
         }
@@ -368,11 +369,12 @@ public class LLSyntaxAnalyser {
     }
     
     private List<ASTItem> readWhitespaces (
-        ASTNode node, 
-        TokenInput input, 
-        boolean skipErrors,
-        Map<String,List<ASTItem>> embeddings,
-        boolean[] cancel
+        ASTNode                     node, 
+        TokenInput                  input, 
+        boolean                     skipErrors,
+        Map<String,List<ASTItem>>   embeddings,
+        List<SyntaxError>           syntaxErrors,
+        boolean[]                   cancel
     ) throws ParseException, CancelledException {
         List<ASTItem> result = null;
         while (
@@ -382,21 +384,22 @@ public class LLSyntaxAnalyser {
             if (cancel [0]) throw new CancelledException ();
             ASTToken token = input.read ();
             if (node != null)
-                node.addChildren (readEmbeddings (token, skipErrors, embeddings, cancel));
+                node.addChildren (readEmbeddings (token, skipErrors, embeddings, syntaxErrors, cancel));
             else {
                 if (result == null)
                     result = new ArrayList<ASTItem> ();
-                result.add (readEmbeddings (token, skipErrors, embeddings, cancel));
+                result.add (readEmbeddings (token, skipErrors, embeddings, syntaxErrors, cancel));
             }
         }
         return result;
     }
     
     private ASTItem readEmbeddings (
-        ASTToken token, 
-        boolean skipErrors,
-        Map<String,List<ASTItem>> embeddings,
-        boolean[] cancel
+        ASTToken                    token, 
+        boolean                     skipErrors,
+        Map<String,List<ASTItem>>   embeddings,
+        List<SyntaxError>           syntaxErrors,
+        boolean[]                   cancel
     ) throws ParseException, CancelledException {
         List<ASTItem> children = token.getChildren ();
         if (children.isEmpty ())
@@ -406,10 +409,10 @@ public class LLSyntaxAnalyser {
         String mimeType = children.get (0).getMimeType ();
         Language language = (Language) children.get (0).getLanguage ();
         if (language == null)
-            return readNoGrammar (in, skipErrors, embeddings, cancel);
+            return readNoGrammar (in, skipErrors, embeddings, syntaxErrors, cancel);
 
         //HACK should be deleted - inner language should not define its embedding to other languages...
-        Feature astp = language.getFeature ("AST");
+        Feature astp = language.getFeatureList ().getFeature ("AST");
         if (astp != null) {
             String skip_embedded = (String)astp.getValue("skip_embedded");
             if(skip_embedded != null && Boolean.valueOf(skip_embedded)) {
@@ -434,8 +437,8 @@ public class LLSyntaxAnalyser {
                 return skipEmbedding (token, embeddings, children, mimeType);
         }
 
-        Feature astProperties = language.getFeature ("AST");
-        ASTNode root = language.getAnalyser ().read (in, skipErrors, embeddings, cancel);
+        Feature astProperties = language.getFeatureList ().getFeature ("AST");
+        ASTNode root = language.getAnalyser ().read (in, skipErrors, embeddings, syntaxErrors, cancel);
         if (astProperties != null) {
             String process_embedded = (String)astProperties.getValue("process_embedded");
             if(process_embedded == null || Boolean.valueOf(process_embedded)) {
@@ -534,7 +537,7 @@ public class LLSyntaxAnalyser {
         List<ASTItem> lastTokenChildren = new ArrayList<ASTItem> (lastToken.getChildren ());
         lastTokenChildren.add (ASTToken.create (
             lastTokenChildren.get (0).getLanguage (),
-            Language.GAP_TOKEN_TYPE_NAME,
+            GAP_TOKEN_TYPE_NAME,
             "",
             lastTokenChildren.get (lastTokenChildren.size () - 1).getEndOffset (),
             0,
@@ -552,59 +555,173 @@ public class LLSyntaxAnalyser {
     }
     
     private ASTNode readNoGrammar (
-        TokenInput input,
-        boolean skipErrors,
-        Map<String,List<ASTItem>> embeddings,
-        boolean[] cancel
+        TokenInput                  input,
+        boolean                     skipErrors,
+        Map<String,List<ASTItem>>   embeddings,
+        List<SyntaxError>           syntaxErrors,
+        boolean[]                   cancel
     ) throws ParseException, CancelledException {
         ASTNode root = ASTNode.create (language, "S", input.getIndex ());
         while (!input.eof ()) {
             if (cancel [0]) throw new CancelledException ();
             ASTToken token = input.read ();
-            root.addChildren (readEmbeddings (token, skipErrors, embeddings, cancel));
+            root.addChildren (readEmbeddings (token, skipErrors, embeddings, syntaxErrors, cancel));
         }
         return root;
     }
     
     private ASTNode readNoGrammar (
-        List tokens,
-        int offset,
-        boolean skipErrors,
-        Map<String,List<ASTItem>> embeddings,
-        boolean[] cancel
+        List                        tokens,
+        int                         offset,
+        boolean                     skipErrors,
+        Map<String,List<ASTItem>>   embeddings,
+        List<SyntaxError>           syntaxErrors,
+        boolean[]                   cancel
     ) throws ParseException, CancelledException {
         ASTNode root = ASTNode.create (language, "S", offset);
         for (Iterator iter = tokens.iterator(); iter.hasNext(); ) {
             if (cancel [0]) throw new CancelledException ();
             ASTToken token = (ASTToken) iter.next();
-            root.addChildren (readEmbeddings (token, skipErrors, embeddings, cancel));
+            root.addChildren (readEmbeddings (token, skipErrors, embeddings, syntaxErrors, cancel));
         }
         return root;
     }
     
-    private ASTNode createErrorNode (ASTNode parentNode, int offset) {
-        if (parentNode != null) {
-            List<ASTItem> l = parentNode.getChildren ();
-            if (l != null && l.size () > 0) {
-                ASTItem possibleErrorNode = l.get (l.size () - 1);
-                if (possibleErrorNode instanceof ASTNode)
-                    if (((ASTNode) possibleErrorNode).getNT ().equals ("ERROR"))
-                        return (ASTNode) possibleErrorNode;
+    private ListIterator readError (
+        ASTNode                     parentNode, 
+        ASTNode                     root,
+        TokenInput                  input, 
+        ASTToken                    expectedToken,
+        ListIterator                iterator,
+        Stack                       stack,
+        Map<String,List<ASTItem>>   embeddings,
+        List<SyntaxError>           syntaxErrors,
+        boolean[]                   cancel
+    ) throws ParseException, CancelledException {
+        ListIterator newIterator = findError (parentNode, parentNode, input, expectedToken, iterator, stack, embeddings, syntaxErrors, cancel);
+        if (newIterator != null) return newIterator;
+        if (root != parentNode) {
+            ASTNode n = root;
+            while (n != null) {
+                newIterator = findError (n, parentNode, input, expectedToken, iterator, stack, embeddings, syntaxErrors, cancel);
+                if (newIterator != null) return newIterator;
+                List<ASTItem> children = n.getChildren ();
+                if (children.isEmpty ()) break;
+                ASTItem item = children.get (children.size () - 1);
+                if (item instanceof ASTNode && 
+                    item != parentNode
+                )
+                    n = (ASTNode) item;
+                else
+                    break;
             }
         }
-        ASTNode errorNode = ASTNode.create (
-            language,
-            "ERROR", 
-            null,
-            offset
-        );
-        if (parentNode != null)
-            parentNode.addChildren (errorNode);
-        return errorNode;
+        //S ystem.out.println ("\nUnrecognized Error " + parentNode.getNT () + " : "+ input + " : " + expectedToken);
+        createError (input, expectedToken, syntaxErrors, null);
+        if (!input.eof ())
+            parentNode.addChildren (readEmbeddings (input.read (), true, embeddings, syntaxErrors, cancel));
+        return iterator;
+    }
+
+    private ListIterator findError (
+        ASTNode                     node, 
+        ASTNode                     parentNode, 
+        TokenInput                  input,
+        ASTToken                    expectedToken,
+        ListIterator                iterator,
+        Stack                       stack,
+        Map<String,List<ASTItem>>   embeddings,
+        List<SyntaxError>           syntaxErrors,
+        boolean[]                   cancel
+    ) throws ParseException, CancelledException {
+        List<Feature> features = language.getFeatureList ().getFeatures ("SYNTAX_ERROR", node.getNT ());
+        if (features.isEmpty ()) return null;
+        boolean errorCreated = false;
+        Map<String,String> tokenIdentifierToNt = new HashMap<String,String> ();
+        Iterator<Feature> it = features.iterator ();
+        while (it.hasNext ()) {
+            Feature feature = it.next ();
+            boolean eof = feature.getBoolean ("eof", false);
+            String nextTokenTypeName = (String) feature.getValue ("next_token_type_name");
+            String nextTokenIdentifier = (String) feature.getValue ("next_token_identifier");
+            if (
+                (eof && input.eof ()) ||
+                (!input.eof () && nextTokenTypeName != null && 
+                  nextTokenTypeName.equals (input.next (1).getTypeName ())
+                ) ||
+                (!input.eof () && nextTokenIdentifier != null && 
+                  nextTokenIdentifier.equals (input.next (1).getIdentifier ())
+                ) ||
+                (!eof && nextTokenIdentifier == null && nextTokenTypeName == null)
+            ) {
+                String message = (String) feature.getValue ("message");
+                String tokenIdentifier = (String) feature.getValue ("token_identifier");
+                String nt = (String) feature.getValue ("nt");
+                if (tokenIdentifier != null)
+                    tokenIdentifierToNt.put (tokenIdentifier, nt);
+                if (message != null && !errorCreated) {
+                    createError (input, expectedToken, syntaxErrors, message);
+                    errorCreated = true;
+                }
+            }
+        }
+        if (!errorCreated)
+            createError (input, expectedToken, syntaxErrors, null);
+        //S ystem.out.println ("\nRecognized Error " + parentNode.getNT () + " : "+ input + " : " + expectedToken);
+        if (tokenIdentifierToNt.isEmpty ()) {
+            if (!input.eof ())
+                parentNode.addChildren (readEmbeddings (input.read (), true, embeddings, syntaxErrors, cancel));
+            return iterator;
+        }
+        while (!input.eof () && 
+               !tokenIdentifierToNt.containsKey (input.next (1).getIdentifier ())
+        )
+            parentNode.addChildren (readEmbeddings (input.read (), true, embeddings, syntaxErrors, cancel));
+        if (input.eof ()) return iterator;
+        String nt = tokenIdentifierToNt.get (input.next (1).getIdentifier ());
+        if (nt != null) {
+            String cnt = parentNode.getNT ();
+            while (!cnt.equals (nt) && !stack.isEmpty ()) {
+                cnt = ((ASTNode) stack.pop ()).getNT ();
+                iterator = (ListIterator) stack.pop ();
+            }
+        }
+        return iterator;
+    }
+    
+    private void createError (
+        TokenInput              input,
+        ASTToken                expectedToken,
+        List<SyntaxError>       syntaxErrors,
+        String                  message
+    ) {
+        ASTItem item = input.eof () ? ASTToken.create (null, 0, "", input.getOffset ()) : input.next (1);
+        if (message == null) {
+            if (expectedToken != null) {
+                if (expectedToken.getIdentifier () != null)
+                    message = expectedToken.getIdentifier () + " expected";
+                else {
+                    String type = expectedToken.getTypeName ();
+                    if (type.contains ("identifier"))
+                        message = "identifier expected";
+                    else
+                    if (type.contains ("string"))
+                        message = "string expected";
+                    else
+                    if (type.contains ("keyword"))
+                        message = "keyword expected";
+                }
+            } else
+            if (input.eof ())
+                message = "unexpected end of file";
+            else
+                message = "unexpected token '" + input.next (1).getIdentifier () + "'";
+        }
+        syntaxErrors.add (new SyntaxError (item, message));
     }
     
     private void initTracing () {
-        Feature properties = language.getFeature ("PROPERTIES");
+        Feature properties = language.getFeatureList ().getFeature ("PROPERTIES");
         if (properties == null) return;
         try {
             traceSteps = Integer.parseInt ((String) properties.getValue ("traceSteps"));
@@ -652,8 +769,6 @@ public class LLSyntaxAnalyser {
         T (ASTToken t) {
             type = t.getTypeID ();
             identifier = t.getIdentifier ();
-            if (type == -1 && identifier == null)
-                System.out.println("null null!!!");
         }
         
         public boolean equals (Object o) {

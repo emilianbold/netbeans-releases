@@ -53,7 +53,6 @@ import javax.swing.text.Document;
 
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.CompletionItem.Type;
-import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.ParserManager;
 import org.netbeans.api.languages.ParserManager.State;
@@ -61,7 +60,6 @@ import org.netbeans.api.languages.ParserManagerListener;
 import org.netbeans.api.languages.ASTToken;
 import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.ASTNode;
-import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -81,9 +79,6 @@ import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.project.ActionProvider;
-
-import org.openide.ErrorManager;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 
 
@@ -319,7 +314,8 @@ public class CompletionProviderImpl implements CompletionProvider {
             String start = null;
             Token token = tokenSequence.token ();
             start = token.text ().toString ();
-            List<Feature> features = language.getFeatures (COMPLETION, token.id ().ordinal ());
+            String tokenType = language.getTokenType (token.id ().ordinal ());
+            List<Feature> features = language.getFeatureList ().getFeatures (COMPLETION, tokenType);
             Iterator<Feature> it = features.iterator ();
             while (it.hasNext ()) {
                 Feature feature =  it.next ();
@@ -334,7 +330,7 @@ public class CompletionProviderImpl implements CompletionProvider {
                     start.substring (0, offset - tokenOffset).trim () :
                     "";
                 ignoreCase = false;
-                Feature f = language.getFeature ("PROPERTIES");
+                Feature f = language.getFeatureList ().getFeature ("PROPERTIES");
                 if (f != null)
                     ignoreCase = f.getBoolean ("ignoreCase", false);
                 if (ignoreCase) start = start.toLowerCase ();
@@ -357,11 +353,7 @@ public class CompletionProviderImpl implements CompletionProvider {
                 });
                 return false;
             } else {
-                try {
-                    addParserTags (ParserManagerImpl.get (doc).getAST (), resultSet, language);
-                } catch (ParseException ex) {
-                    ErrorManager.getDefault ().notify (ex);
-                }
+                addParserTags (ParserManagerImpl.getImpl (doc).getAST (), resultSet, language);
                 return true;
             }
         }
@@ -388,7 +380,7 @@ public class CompletionProviderImpl implements CompletionProvider {
             for (int i = path.size () - 1; i >= 0; i--) {
                 item = path.get (i);
                 if (item.getLanguage () == language) break;
-                List<Feature> features = language.getFeatures (COMPLETION, path.subPath (i));
+                List<Feature> features = language.getFeatureList ().getFeatures (COMPLETION, path.subPath (i));
                 Iterator<Feature> it2 = features.iterator ();
                 while (it2.hasNext ()) {
                     Feature feature =  it2.next ();

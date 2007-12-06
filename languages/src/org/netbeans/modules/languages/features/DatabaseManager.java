@@ -120,7 +120,7 @@ public class DatabaseManager {
             Language language = (Language) item.getLanguage ();
             if (language != null) {
                 ASTPath astPath = ASTPath.create (path);
-                Feature feature = language.getFeature ("SEMANTIC_DECLARATION", astPath);
+                Feature feature = language.getFeatureList ().getFeature ("SEMANTIC_DECLARATION", astPath);
                 if (feature != null) {
                     SyntaxContext sc = SyntaxContext.create (doc, astPath);
                     String name = ((String) feature.getValue ("name", sc)).trim ();
@@ -145,7 +145,7 @@ public class DatabaseManager {
                         con.addDefinition (new DatabaseDefinition (name, type, item.getOffset (), item.getEndOffset ()));
                     }
                 }
-                feature = language.getFeature ("SEMANTIC_CONTEXT", astPath);
+                feature = language.getFeatureList ().getFeature ("SEMANTIC_CONTEXT", astPath);
                 if (feature != null) {
                     String type = (String) feature.getValue ("type");
                     DatabaseContext newContext = new DatabaseContext (context, type, item.getOffset (), item.getEndOffset ());
@@ -154,7 +154,7 @@ public class DatabaseManager {
                     path.remove (path.size () - 1);
                     continue;
                 }
-                feature = language.getFeature ("SEMANTIC_USAGE", astPath);
+                feature = language.getFeatureList ().getFeature ("SEMANTIC_USAGE", astPath);
                 if (feature != null) {
                     SyntaxContext sc = SyntaxContext.create (doc, astPath);
                     String name = (String) feature.getValue ("name", sc);

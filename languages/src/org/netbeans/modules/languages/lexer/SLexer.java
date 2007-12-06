@@ -68,6 +68,10 @@ import org.netbeans.spi.lexer.TokenPropertyProvider;
  */
 public class SLexer implements Lexer<STokenId>, Parser.Cookie {
     
+    public static final String ERROR_TOKEN_TYPE_NAME = "error";
+    public static final String EMBEDDING_TOKEN_TYPE_NAME = "PE";
+
+    
     private Language                language;
     private CharInput               input;
     private TokenFactory<STokenId>  tokenFactory;
@@ -154,7 +158,7 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
             else
             if (input.getIndex () == index)
                 input.read ();
-            return createToken (language.getTokenID (Language.ERROR_TOKEN_TYPE_NAME), index);
+            return createToken (language.getTokenID (ERROR_TOKEN_TYPE_NAME), index);
         }
         if (state != sstate && 
             index == input.getIndex ()
@@ -202,7 +206,7 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
                 new InputBridge (input),
                 properties.getPattern ("start"),
                 properties.getPattern ("end"),
-                language.getTokenID (Language.EMBEDDING_TOKEN_TYPE_NAME)
+                language.getTokenID (EMBEDDING_TOKEN_TYPE_NAME)
             );
         }
         return new InputBridge (input);

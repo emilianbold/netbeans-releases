@@ -49,93 +49,55 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
-import org.netbeans.api.languages.ParserManager;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.api.languages.ASTEvaluator;
 import org.netbeans.api.languages.ASTItem;
-import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.ParserManager.State;
-import org.netbeans.api.languages.SyntaxContext;
-import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.ASTNode;
-import org.netbeans.api.lexer.Token;
+import org.netbeans.api.languages.ParserManagerListener;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.languages.Feature;
-import org.netbeans.modules.languages.Language;
+import org.netbeans.modules.languages.ParserManagerImpl;
+import org.netbeans.modules.languages.parser.SyntaxError;
 import org.openide.ErrorManager;
 import org.openide.text.Annotation;
+import org.openide.text.NbDocument;
 
 
 /**
  *
  * @author Jan Jancura
  */
-public class AnnotationManager extends ASTEvaluator {
+public class SyntaxErrorHighlighter implements ParserManagerListener {
     
     private NbEditorDocument            doc;
-    private ParserManager               parser;
+    private ParserManagerImpl           parserManager;
     private List<ASTItem>               items;
     private List<Feature>               marks;
     private List<LanguagesAnnotation>   annotations = new ArrayList<LanguagesAnnotation> ();
 
     
-    /** Creates a new instance of AnnotationManager */
-    public AnnotationManager (Document doc) {
+    /** Creates a new instance of SyntaxErrorHighlighter */
+    public SyntaxErrorHighlighter (Document doc) {
         
         this.doc = (NbEditorDocument) doc;
-        parser = ParserManager.get (doc);
-        parser.addASTEvaluator (this);
-    }
-    
-    public String getFeatureName () {
-        return "MARK";
+        parserManager = ParserManagerImpl.getImpl (doc);
+        parserManager.addListener (this);
     }
 
-    public void beforeEvaluation (State state, ASTNode root) {
-        items = new ArrayList<ASTItem> ();
-        marks = new ArrayList<Feature> ();
-    }
-
-    public void afterEvaluation (State state, ASTNode root) {
-        refresh (items, marks);
-    }
-
-    public void evaluate (State state, List<ASTItem> path, Feature feature) {
-        if (feature.getBoolean ("condition", SyntaxContext.create (doc, ASTPath.create (path)), true)) {
-            items.add (path.get (path.size () - 1));
-            marks.add (feature);
-        }
-    }
-    
-    public void remove () {
-        removeAnnotations ();
-        parser.removeASTEvaluator (this);
-    }
-    
-    private void removeAnnotations () {
-        Iterator<LanguagesAnnotation> it = annotations.iterator ();
-        while (it.hasNext ())
-            doc.removeAnnotation (it.next ());
-    }
-    
-    private void refresh (final List<ASTItem> items, final List<Feature> marks) {
+    public void parsed (State state, final ASTNode root) {
+        final List<SyntaxError> syntaxErrors = new ArrayList<SyntaxError> (parserManager.getSyntaxErrors ());
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
                 try {
                     List<LanguagesAnnotation> newAnnotations = new ArrayList<LanguagesAnnotation> ();
                     Iterator<LanguagesAnnotation> it = annotations.iterator ();
                     LanguagesAnnotation oldAnnotation = it.hasNext () ? it.next () : null;
-                    Iterator<ASTItem> it2 = items.iterator ();
-                    Iterator<Feature> it3 = marks.iterator ();
+                    Iterator<SyntaxError> it2 = syntaxErrors.iterator ();
+                    int lastLineNumber = -1;
                     int count = 0;
                     while (it2.hasNext () && count < 100) {
-                        ASTItem item = it2.next ();
-                        Feature mark = it3.next ();
-                        String message = (String) mark.getValue ("message");
-                        Language language = (Language) item.getLanguage ();
-                        message = LocalizationSupport.localize (language, message);
-                        String type = (String) mark.getValue ("type");
+                        SyntaxError syntaxError = it2.next ();
+                        ASTItem item = syntaxError.getItem ();
+                        String message = syntaxError.getMessage ();
                         while (
                             oldAnnotation != null &&
                             oldAnnotation.getPosition ().getOffset () < item.getOffset ()
@@ -147,38 +109,27 @@ public class AnnotationManager extends ASTEvaluator {
                         if (
                             oldAnnotation != null &&
                             oldAnnotation.getPosition ().getOffset () == item.getOffset () &&
-                            oldAnnotation.getAnnotationType ().equals (type) &&
                             oldAnnotation.getShortDescription ().equals (message)
                         ) {
-                            newAnnotations.add (oldAnnotation);
+                            int ln = NbDocument.findLineNumber (doc, oldAnnotation.getPosition ().getOffset ());
+                            if (ln > lastLineNumber)
+                                newAnnotations.add (oldAnnotation);
+                            lastLineNumber = ln;
                             oldAnnotation = it.hasNext () ? it.next () : null;
                             continue;
                         }
+                        int ln = NbDocument.findLineNumber (doc, item.getOffset ());
+                        if (ln == lastLineNumber) continue;
+                        
                         LanguagesAnnotation la = new LanguagesAnnotation (
-                            type,
+                            "SyntaxError",
                             message
                         );
-   
-                        if (item.getLength() == 0) {
-                            //when the ASTItem length is zero we need to find an appropriate token to signal the error 
-                            TokenHierarchy hi = TokenHierarchy.get(doc);
-                            TokenSequence ts = hi.tokenSequence();
-                            ts.move(item.getOffset());
-                            //test if next token contains the ASTItem's language embedding
-                            if(!(ts.moveNext() && testCreateAnnotation(hi, ts, item, la)))
-                                //if not, do the same with previous token
-                                if(!(ts.movePrevious() && testCreateAnnotation(hi, ts, item, la))) {
-                                    //give up - use default annotation location
-                                    Position position = doc.createPosition(item.getOffset ());
-                                    la.setPosition (position);
-                                    doc.addAnnotation(doc.createPosition(item.getOffset()), item.getLength(), la);
-                                }
-                        } else {
-                            Position position = doc.createPosition(item.getOffset ());
-                            la.setPosition (position);
-                            doc.addAnnotation(doc.createPosition(item.getOffset()), item.getLength(), la);
-                        }
+                        Position position = doc.createPosition (item.getOffset ());
+                        la.setPosition (position);
+                        doc.addAnnotation (position, item.getLength (), la);
                         newAnnotations.add (la);
+                        lastLineNumber = ln;
                     } // while
                     if (oldAnnotation != null)
                         doc.removeAnnotation (oldAnnotation);
@@ -190,27 +141,6 @@ public class AnnotationManager extends ASTEvaluator {
                 }
             }
         });
-    }
-
-    private boolean testCreateAnnotation(TokenHierarchy hi, TokenSequence ts, ASTItem item, LanguagesAnnotation la) throws BadLocationException {
-        if (ts.language () == null)
-            throw new NullPointerException ("ts.language()==null");
-        if (ts.language ().mimeType () == null)
-            throw new NullPointerException ("TokenSequence.mimeType==null");
-        if (ts.language().mimeType().equals(item.getMimeType())) {
-                Token t = ts.token();
-                Position position = doc.createPosition(t.offset(hi));
-                la.setPosition (position);
-                doc.addAnnotation(position, t.length(), la);
-                return true;
-            } else {
-                ts = ts.embedded();
-                if(ts == null) {
-                    return false;
-                } else {
-                    return ts.moveNext() ? testCreateAnnotation(hi, ts, item, la) : false;
-                }
-            }
     }
     
     

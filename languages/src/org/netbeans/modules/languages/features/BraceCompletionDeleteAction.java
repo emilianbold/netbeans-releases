@@ -92,7 +92,7 @@ public class BraceCompletionDeleteAction extends ExtDeleteCharAction {
                     ((NbEditorDocument) doc).readUnlock ();
             }
             Language l = LanguagesManager.getDefault ().getLanguage (mimeType);
-            List<Feature> completes = l.getFeatures ("COMPLETE");
+            List<Feature> completes = l.getFeatureList ().getFeatures ("COMPLETE");
             Iterator<Feature> it = completes.iterator ();
             while (it.hasNext ()) {
                 Feature complete = it.next ();

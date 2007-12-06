@@ -100,7 +100,6 @@ public class ContextASTEvaluator extends ASTEvaluator {
             }
             return context;
         } catch (EmptyStackException ex) {
-            System.out.println("offset " + offset);
             return evaluator.rootContext;
         }
     }
@@ -134,7 +133,6 @@ public class ContextASTEvaluator extends ASTEvaluator {
         DatabaseContext newContext = new DatabaseContext (context, type, leaf.getOffset (), leaf.getEndOffset ());
         context.addContext (leaf, newContext);
         currentContext.push (newContext);
-//        System.out.println("add " + newContext + " to " + context);
     }
 
     public String getFeatureName () {

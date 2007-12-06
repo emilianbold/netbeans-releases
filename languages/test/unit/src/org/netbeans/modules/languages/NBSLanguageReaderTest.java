@@ -7,16 +7,13 @@
 
 package org.netbeans.modules.languages;
 
+import java.io.IOException;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import junit.framework.TestCase;
 
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.modules.languages.parser.LLSyntaxAnalyser;
-import org.netbeans.modules.languages.parser.Parser;
 
 
 /**
@@ -30,7 +27,7 @@ public class NBSLanguageReaderTest extends TestCase {
     }
     
     
-    public void testOK () throws ParseException {
+    public void testOK () throws ParseException, IOException {
         NBSLanguageReader reader = NBSLanguageReader.create (
             "TOKEN:TAG:( '<' ['a'-'z']+ )\n" +
             "TOKEN:SYMBOL:( '>' | '=')\n" +
@@ -51,22 +48,14 @@ public class NBSLanguageReaderTest extends TestCase {
             "test.nbs", 
             "text/x-test"
         );
-        List<TokenType> tokenTypes = reader.getTokenTypes ();
-        assertEquals (10, tokenTypes.size ());
-        assertEquals (0, reader.getFeatures ().size ());
-        Map<Integer,String> tokensMap = new HashMap<Integer,String> ();
-        Iterator<TokenType> it = tokenTypes.iterator ();
-        while (it.hasNext ()) {
-            TokenType tokenType = it.next ();
-            tokensMap.put (tokenType.getTypeID (), tokenType.getType ());
-        }
-        Language language = Language.create ("test/test", tokensMap, reader.getFeatures (), Parser.create (tokenTypes));
+        LanguageImpl language = new LanguageImpl ("test/test", reader);
+        language.read ();
         assertEquals (21, reader.getRules (language).size ());
     }
     
-    public void testUnexpectedToken () {
+    public void testUnexpectedToken () throws IOException {
         try {
-            Language language = TestUtils.createLanguage (
+            LanguageImpl language = TestUtils.createLanguage (
                 "TOKEN:TAG:( '<' ['a'-'z']+ )\n" +
                 "TOKEN:SYMBOL:( '>' | '=')\n" +
                 "TOKEN:ENDTAG:( '</' ['a'-'z']+ )\n" +
@@ -84,15 +73,16 @@ public class NBSLanguageReaderTest extends TestCase {
                 "attribute = <ATTRIBUTE> <SYMBOL,'='> <VALUE>; \n" +
                 "etext = (<TEXT>)*;\n"
             );
+            language.read ();
             assert (false);
         } catch (ParseException ex) {
             assertEquals ("test.nbs 11,10: Unexpected token <operator,'='>. Expecting <operator,';'>", ex.getMessage ());
         }
     }
     
-    public void testUnexpectedCharacter () {
+    public void testUnexpectedCharacter () throws IOException {
         try {
-            Language language = TestUtils.createLanguage (
+            LanguageImpl language = TestUtils.createLanguage (
                 "TOKEN:TAG:( '<' ['a'-'z']+ )\n" +
                 "TOKEN:SYMBOL:( '>' | '=')\n" +
                 "TOKEN:ENDTAG:( '</' ['a'-'z']+ )\n" +
@@ -110,13 +100,14 @@ public class NBSLanguageReaderTest extends TestCase {
                 "attribute = <ATTRIBUTE> <SYMBOL,'='> <VALUE>; \n" +
                 "etext = (<TEXT>)*;\n"
             );
+            language.read ();
             assert (false);
         } catch (ParseException ex) {
             assertEquals ("test.nbs 5,29: Unexpected character 'w'.", ex.getMessage ());
         }
     }
     
-    public void testNoRule () {
+    public void testNoRule () throws IOException {
         try {
             NBSLanguageReader reader = NBSLanguageReader.create (
                 "TOKEN:TAG:( '<' ['a'-'z']+ )\n" +
@@ -145,7 +136,7 @@ public class NBSLanguageReaderTest extends TestCase {
         }
     }
     
-    public void testUndefinedNT () throws ParseException {
+    public void testUndefinedNT () throws ParseException, IOException {
         NBSLanguageReader reader = NBSLanguageReader.create (
             "TOKEN:TAG:( '<' ['a'-'z']+ )\n" +
             "TOKEN:SYMBOL:( '>' | '=')\n" +
@@ -169,13 +160,8 @@ public class NBSLanguageReaderTest extends TestCase {
             List<TokenType> tokenTypes = reader.getTokenTypes ();
             assertEquals (10, tokenTypes.size ());
             assertEquals (0, reader.getFeatures ().size ());
-            Map<Integer,String> tokensMap = new HashMap<Integer,String> ();
-            Iterator<TokenType> it = tokenTypes.iterator ();
-            while (it.hasNext ()) {
-                TokenType tokenType = it.next ();
-                tokensMap.put (tokenType.getTypeID (), tokenType.getType ());
-            }
-            Language language = Language.create ("test/test", tokensMap, reader.getFeatures (), Parser.create (tokenTypes));
+            LanguageImpl language = TestUtils.createLanguage (reader);
+            language.read ();
             List<Rule> grammarRules = reader.getRules (language);
             assertEquals (20, grammarRules.size ());
             LLSyntaxAnalyser.create (language, grammarRules, Collections.<Integer>emptySet ());

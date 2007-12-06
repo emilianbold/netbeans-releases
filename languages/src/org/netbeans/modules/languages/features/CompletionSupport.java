@@ -209,7 +209,7 @@ public class CompletionSupport implements org.netbeans.spi.editor.completion.Com
                 String tokenType = token != null ? token.id ().name () : ""; // NOI18N
                 String mimeType = sequence.language ().mimeType ();
                 Language l = LanguagesManager.getDefault ().getLanguage (mimeType);
-                List<Feature> features = l.getFeatures (CompletionProviderImpl.COMPLETION, tokenType);
+                List<Feature> features = l.getFeatureList ().getFeatures (CompletionProviderImpl.COMPLETION, tokenType);
                 Iterator<Feature> it = features.iterator ();
                 t = isMethod ? text + "()" : text;
                 boolean found = false;
@@ -348,7 +348,7 @@ public class CompletionSupport implements org.netbeans.spi.editor.completion.Com
                 String tokenType = token.id ().name ();
                 String mimeType = sequence.language ().mimeType ();
                 Language l = LanguagesManager.getDefault ().getLanguage (mimeType);
-                List<Feature> features = l.getFeatures (CompletionProviderImpl.COMPLETION, tokenType);
+                List<Feature> features = l.getFeatureList ().getFeatures (CompletionProviderImpl.COMPLETION, tokenType);
                 Iterator<Feature> it = features.iterator ();
                 while (it.hasNext ()) {
                     Feature feature =  it.next ();

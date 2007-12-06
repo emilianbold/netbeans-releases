@@ -53,16 +53,14 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.Document;
 import javax.swing.text.BadLocationException;
-import org.netbeans.api.editor.fold.FoldUtilities;
-import org.netbeans.api.languages.ParserManager;
-import org.netbeans.editor.Utilities;
-import org.openide.text.NbDocument;
 import javax.swing.event.DocumentEvent;
 
+import org.netbeans.api.editor.fold.FoldUtilities;
+import org.netbeans.editor.Utilities;
+import org.openide.text.NbDocument;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.languages.ASTEvaluator;
 import org.netbeans.api.languages.ASTToken;
-import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.ParserManager.State;
 import org.netbeans.api.languages.SyntaxContext;
@@ -72,7 +70,6 @@ import org.netbeans.api.editor.fold.FoldType;
 import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTItem;
-import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
@@ -81,7 +78,6 @@ import org.netbeans.spi.editor.fold.FoldManager;
 import org.netbeans.spi.editor.fold.FoldManagerFactory;
 import org.netbeans.spi.editor.fold.FoldOperation;
 import org.netbeans.modules.languages.Feature;
-import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.ParserManagerImpl;
@@ -99,7 +95,7 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
     
     private FoldOperation       operation;
     private Document            doc;
-    private ParserManager       editorParser;
+    private ParserManagerImpl   parserManager;
     private int                 evalState = STOPPED;
     
     
@@ -117,17 +113,14 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
         if (d instanceof NbEditorDocument) {
             this.doc = d;
             this.operation = operation;
-            editorParser = ParserManager.get (doc);
-            editorParser.addASTEvaluator (this);
-            try {
-                ((ParserManagerImpl) editorParser).fire (
-                    editorParser.getState (), 
-                    null, 
-                    Collections.<String,Set<ASTEvaluator>>singletonMap (FOLD, Collections.<ASTEvaluator>singleton (this)),
-                    editorParser.getAST ()
-                );
-            } catch (ParseException ex) {
-            }
+            parserManager = ParserManagerImpl.getImpl (doc);
+            parserManager.addASTEvaluator (this);
+            parserManager.fire (
+                parserManager.getState (), 
+                null, 
+                Collections.<String,Set<ASTEvaluator>>singletonMap (FOLD, Collections.<ASTEvaluator>singleton (this)),
+                parserManager.getAST ()
+            );
         }
     }
     
@@ -232,9 +225,9 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
     public void release () {
         //S ystem.out.println("release " + mimeType + " : " + operation + " : " + this);
         if (doc != null) {
-            editorParser.removeASTEvaluator (this);
+            parserManager.removeASTEvaluator (this);
         }
-        editorParser = null;
+        parserManager = null;
     }
 
     
@@ -449,7 +442,7 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
         String mimeType = item.getMimeType ();
         Language language = (Language) item.getLanguage ();
         boolean isTokenFold = ((item instanceof ASTToken) && 
-                    fold == language.getFeature (FOLD, ((ASTToken) item).getTypeID ()));
+                    fold == language.getFeatureList ().getFeature (FOLD, ((ASTToken) item).getTypeName ()));
         if (!isTokenFold) {
             TokenHierarchy th = TokenHierarchy.get (doc);
             if (doc instanceof NbEditorDocument)
@@ -481,16 +474,16 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
         }
 
         if (fold.hasSingleValue ()) {
-            String foldName = language.localize((String) fold.getValue (SyntaxContext.create (doc, ASTPath.create (path))));
+            String foldName = LocalizationSupport.localize (language, (String) fold.getValue (SyntaxContext.create (doc, ASTPath.create (path))));
             if (foldName == null) return;            
             addFold (new FoldItem(foldName, s, e, defaultFoldType));
             return;
         }
-        String foldName = language.localize((String) fold.getValue ("fold_display_name", SyntaxContext.create (doc, ASTPath.create (path))));
+        String foldName = LocalizationSupport.localize (language, (String) fold.getValue ("fold_display_name", SyntaxContext.create (doc, ASTPath.create (path))));
         if (foldName == null) {
             foldName = "..."; // NOI18N
         }
-        String foldType = language.localize((String) fold.getValue ("collapse_type_action_name"));
+        String foldType = LocalizationSupport.localize (language, (String) fold.getValue ("collapse_type_action_name"));
         addFold (new FoldItem (foldName, s, e, Folds.getFoldType (foldType)));
     }
     
@@ -505,8 +498,8 @@ public class LanguagesFoldManager extends ASTEvaluator implements FoldManager {
     void init (Document doc) {
         this.doc = doc;
         this.operation = null;
-        editorParser = ParserManager.get(doc);
-        editorParser.addASTEvaluator(this);
+        parserManager = ParserManagerImpl.getImpl (doc);
+        parserManager.addASTEvaluator(this);
     }
     
     List<FoldItem> getFolds() {

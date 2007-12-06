@@ -41,10 +41,11 @@
 
 package org.netbeans.modules.languages.features;
 
+import java.util.Iterator;
+
+import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTPath;
-import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.ASTPath;
-import org.netbeans.api.languages.ParserManager;
 import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -57,7 +58,8 @@ import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.modules.languages.ParserManagerImpl;
 import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.ASTNode;
-import org.netbeans.api.languages.ParseException;
+import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
+import org.netbeans.modules.languages.parser.SyntaxError;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.text.Annotation;
@@ -97,7 +99,7 @@ public class ToolTipAnnotation extends Annotation {
                 tokenSequence.move (offset);
                 if (!tokenSequence.moveNext() && !tokenSequence.movePrevious()) return null;
                 Token token = tokenSequence.token ();
-                Feature tooltip = l.getFeature (TOOLTIP, token.id ().name ());
+                Feature tooltip = l.getFeatureList ().getFeature (TOOLTIP, token.id ().name ());
                 if (tooltip != null) {
                     String s = c ((String) tooltip.getValue (Context.create (document, offset)));
                     return s;
@@ -106,27 +108,32 @@ public class ToolTipAnnotation extends Annotation {
                 document.readUnlock ();
             }
             ASTNode ast = null;
-            try {
-                ParserManager parserManager = ParserManagerImpl.get (document);
-                if (parserManager == null) {
-                    return null;
-                }
-                ast = parserManager.getAST ();
-            } catch (ParseException ex) {
-                ast = ex.getASTNode ();
-            }
+            ParserManagerImpl parserManager = ParserManagerImpl.getImpl (document);
+            if (parserManager == null) return null;
+            ast = parserManager.getAST ();
             if (ast == null) return null;
             ASTPath path = ast.findPath (offset);
             if (path == null) return null;
             int i, k = path.size ();
             for (i = 0; i < k; i++) {
                 ASTPath p = path.subPath (i);
-                Feature tooltip = l.getFeature (TOOLTIP, p);
+                Feature tooltip = l.getFeatureList ().getFeature (TOOLTIP, p);
                 if (tooltip == null) continue;
                 String s = c ((String) tooltip.getValue (SyntaxContext.create (document, p)));
                 return s;
             }
-        } catch (ParseException ex) {
+            Iterator<SyntaxError> it = parserManager.getSyntaxErrors ().iterator ();
+            while (it.hasNext ()) {
+                SyntaxError syntaxError = it.next ();
+                ASTItem item = syntaxError.getItem ();
+                if (item.getOffset () == ast.getEndOffset ())
+                    item = ast.findPath (item.getOffset () - 1).getLeaf ();
+                if (item.getOffset () > offset) break;
+                if (item.getEndOffset () > offset) {
+                    return syntaxError.getMessage ();
+                }
+            }
+        } catch (LanguageDefinitionNotFoundException ex) {
         }
         return null;
     }

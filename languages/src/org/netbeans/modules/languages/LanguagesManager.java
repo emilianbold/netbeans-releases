@@ -41,13 +41,13 @@
 
 package org.netbeans.modules.languages;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
-import org.netbeans.api.languages.ParseException;
 import org.netbeans.modules.languages.features.ActionCreator;
 import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import org.netbeans.modules.languages.features.ColorsManager;
-import org.netbeans.modules.languages.parser.LLSyntaxAnalyser;
-import org.netbeans.modules.languages.parser.Parser;
+import org.netbeans.modules.languages.features.LocalizationSupport;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -66,11 +66,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.languages.ParseException;
+import org.openide.util.RequestProcessor;
+
 
 /**
  *
@@ -111,7 +111,7 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
     public static String normalizeMimeType(String mimeType) {
         if (mimeType.startsWith("test")) { //NOI18N
             int idx = mimeType.indexOf('_'); //NOI18N
-            assert idx != -1 : "Invalid 'testXXX_' mimeType: " + mimeType; //NOI18N
+            if (idx < 0) return mimeType;
             mimeType = mimeType.substring(idx + 1);
         }
         return mimeType;
@@ -132,52 +132,32 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
                     ("Language definition for " + mimeType + " not found.");
             }
             addListener (fo);
-            Language language = null;
             try {
                 NBSLanguageReader reader = NBSLanguageReader.create (fo, mimeType);
-                Map<Integer,String> tokenIDToName = new HashMap<Integer,String> ();
-                List<TokenType> tokenTypes = reader.getTokenTypes ();
-                Parser parser = null;
-                if (tokenTypes.isEmpty ()) {
-                    org.netbeans.api.lexer.Language lexerLanguage = org.netbeans.api.lexer.Language.find (mimeType);
-                    Iterator it = lexerLanguage.tokenIds ().iterator ();
-                    while (it.hasNext()) {
-                        TokenId tokenId = (TokenId) it.next();
-                        tokenIDToName.put (tokenId.ordinal (), tokenId.name ());
+                final LanguageImpl language = new LanguageImpl (mimeType, reader);
+                language.addPropertyChangeListener (new PropertyChangeListener () {
+                    public void propertyChange (PropertyChangeEvent evt) {
+                        initLanguage (language);
+                        language.removePropertyChangeListener (this);
                     }
-                } else {
-                    Iterator<TokenType> it = tokenTypes.iterator ();
-                    while (it.hasNext()) {
-                        TokenType tokenType = it.next ();
-                        tokenIDToName.put (tokenType.getTypeID (), tokenType.getType ());
+                });
+                final String mimeType2 = mimeType;
+                RequestProcessor.getDefault ().post (new Runnable () {
+                    public void run () {
+                        try {
+                            language.read ();
+                        } catch (ParseException ex) {
+                            Utils.message ("Editors/" + mimeType2 + "/language.nbs: " + ex.getMessage ());
+                        } catch (IOException ex) {
+                            Utils.message ("Editors/" + mimeType2 + "/language.nbs: " + ex.getMessage ());
+                        }
                     }
-                    parser = Parser.create (tokenTypes);
-                }
-                List<Feature> features = reader.getFeatures ();
-                language = Language.create (mimeType, tokenIDToName, features, parser);
-                List<Rule> rules = reader.getRules (language);
-                Set<Integer> skipTokenIDs = new HashSet<Integer> ();
-                Iterator<Feature> it = features.iterator ();
-                while (it.hasNext()) {
-                    Feature feature = it.next();
-                    if (feature.getFeatureName ().equals ("SKIP")) {
-                        skipTokenIDs.add (language.getTokenID (feature.getSelector ().toString ()));
-                    }
-                }
-
-                language.setAnalyser (LLSyntaxAnalyser.create (
-                    language, rules, skipTokenIDs
-                ));
-                //l.print ();
-                initLanguage (language);
-            } catch (ParseException ex) {
-                language = Language.create (mimeType);
-                Utils.message (ex.getMessage ());
+                }, 2000);
+                mimeTypeToLanguage.put (mimeType, language);
             } catch (IOException ex) {
-                language = Language.create (mimeType);
+                mimeTypeToLanguage.put (mimeType, Language.create (mimeType));
                 Utils.message ("Editors/" + mimeType + "/language.nbs: " + ex.getMessage ());
             }
-            mimeTypeToLanguage.put (mimeType, language);
         }
         if (parsingLanguage == mimeTypeToLanguage.get (mimeType))
             throw new IllegalArgumentException ();
@@ -223,7 +203,7 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
         }
     }
     
-    private void initLanguage (Language l) {
+    private static void initLanguage (Language l) {
         try {
             
             FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
@@ -240,7 +220,6 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
                                 OutputStream os = fo.getOutputStream();
                                 try {
                                     FileUtil.copy(is, os);
-    //                                    System.out.println("@@@ Successfully created " + fo.getPath());
                                 } finally {
                                     os.close();
                                 }
@@ -255,7 +234,7 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
 
             // init code folding bar
             if (root.getFileObject ("SideBar/org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance") == null &&
-                l.getFeatures("FOLD").size () > 0
+                l.getFeatureList ().getFeatures ("FOLD").size () > 0
             ) {
                 FileUtil.createData (root, "FoldManager/org-netbeans-modules-languages-features-LanguagesFoldManager$Factory.instance");
                 FileUtil.createData(root, "SideBar/org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance").
@@ -273,7 +252,7 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
             initPopupMenu (root, l);
 
             // init navigator
-            if (l.getFeatures ("NAVIGATOR").size () > 0) {
+            if (l.getFeatureList ().getFeatures ("NAVIGATOR").size () > 0) {
                 String foldFileName = "Navigator/Panels/" + l.getMimeType () + 
                     "/org-netbeans-modules-languages-features-LanguagesNavigator.instance";
                 if (fs.findResource (foldFileName) == null)
@@ -281,12 +260,11 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
             }
 
             // init tooltips
-            if (l.getFeatures ("TOOLTIP").size () > 0)
-                FileUtil.createData (root, "ToolTips/org-netbeans-modules-languages-features-ToolTipAnnotation.instance");
+            FileUtil.createData (root, "ToolTips/org-netbeans-modules-languages-features-ToolTipAnnotation.instance");
 
-            if (l.getFeature("COMMENT_LINE") != null) {
+            if (l.getFeatureList ().getFeature ("COMMENT_LINE") != null) {
                 // init editor toolbar
-                FileObject toolbarDefault = FileUtil.createFolder(root, "Toolbars/Default");
+                FileObject toolbarDefault = FileUtil.createFolder (root, "Toolbars/Default");
                 createSeparator(
                         toolbarDefault,
                         "Separator-before-comment",
@@ -327,7 +305,7 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
     }
 
     private static void initPopupMenu (FileObject root, Language l) throws IOException {
-            List<Feature> actions = l.getFeatures("ACTION");
+            List<Feature> actions = l.getFeatureList ().getFeatures("ACTION");
             // Could probably use fixed anchor points if these positions settle down:
             int selectInPos = findPositionOfDefaultPopupAction("org-netbeans-modules-editor-NbSelectInPopupAction.instance", 1000);
             int increment = (findPositionOfDefaultPopupAction("org-openide-actions-CutAction.instance", 2000) - selectInPos) / (actions.size() + 3);
@@ -335,12 +313,12 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
             int pos = selectInPos + increment;
             createSeparator(popup, "SeparatorAfterSelectInPopupAction", pos);
             boolean actionAdded = false;
-            if (l.getFeatures("SEMANTIC_USAGE").size() > 0) {
+            if (l.getFeatureList ().getFeatures("SEMANTIC_USAGE").size() > 0) {
                 actionAdded = true;
                 pos += increment;
                 FileUtil.createData (popup, "org-netbeans-modules-languages-features-GoToDeclarationAction.instance").setAttribute("position", pos);
             }
-            if (l.getFeatures("INDENT").size() > 0) {
+            if (l.getFeatureList ().getFeatures("INDENT").size() > 0) {
                 actionAdded = true;
                 pos += increment;
                 FileUtil.createData (popup, "format").setAttribute("position", pos);
@@ -351,7 +329,7 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
                 actionAdded = true;
                 pos += increment;
                 String name = action.getSelector ().getAsString ();
-                String displayName= l.localize((String)action.getValue ("name"));
+                String displayName= LocalizationSupport.localize (l, (String)action.getValue ("name"));
                 String performer = action.getMethodName ("performer");
                 String enabler = action.getMethodName ("enabled");
                 /* XXX disabled for now; could use numeric position key if desired:
@@ -375,7 +353,7 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
             if (actionAdded) {
                 createSeparator(popup, "SeparatorBeforeCut", pos + increment);
             }
-            if (l.getFeatures("FOLD").size() > 0) {
+            if (l.getFeatureList ().getFeatures("FOLD").size() > 0) {
                 FileUtil.createData (popup, "generate-fold-popup").setAttribute(
                     "position",
                     findPositionOfDefaultPopupAction("org-openide-actions-PasteAction.instance", 3000) + 50

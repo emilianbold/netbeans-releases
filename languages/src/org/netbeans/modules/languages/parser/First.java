@@ -134,7 +134,7 @@ class First {
             int ntid = language.getNTID (nt);
             maps [ntid] = firstForNT;
             List<Integer> indexes = ntToIndexes.get (nt);
-            for (int depthLimit = 1; depthLimit < 3; depthLimit++) {
+            for (int depthLimit = 1; depthLimit <= 4; depthLimit++) {
                 boolean changed = false;
                 Iterator<Integer> it3 = indexes.iterator ();
                 while (it3.hasNext ()) {
@@ -161,9 +161,6 @@ class First {
                         new Stack ()
                     );
                 }
-                //System.out.println(nt + " : " + depthLimit + " : " + changed);
-//                System.out.println("\nnt: " + nt + " depth " + depthLimit);
-//                System.out.println (firstForNT);
                 if (!changed) break;
             }
             //AnalyserAnalyser.printF (f, null);
@@ -268,7 +265,6 @@ class First {
             T t = new T ((ASTToken) e);
             F newInFirst = firstForNT.get (t.type, t.identifier);
             tokens.push (e);
-            //System.out.println("token: " + tokens);
             boolean r = first (
                 rightSide, 
                 indexInRightSide + 1, 

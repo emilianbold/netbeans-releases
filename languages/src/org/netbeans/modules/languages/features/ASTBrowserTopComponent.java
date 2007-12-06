@@ -23,15 +23,16 @@ import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTPath;
-import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.ParserManager;
 import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.languages.ParserManagerImpl;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -242,15 +243,9 @@ final class ASTBrowserTopComponent extends TopComponent {
             pane.addCaretListener (caretListener);
             lastPane = pane;
         }
-        Document doc = editorCookie.getDocument ();
-        if (doc == null || !(doc instanceof NbEditorDocument)) return null;
-        ParserManager parserManager = ParserManager.get ((NbEditorDocument) doc);
-        if (parserManager == null) return null;
-        try {
-            return ParserManager.get ((NbEditorDocument) doc).getAST ();
-        } catch (ParseException ex) {
-            return ex.getASTNode ();
-        }
+        Document document = editorCookie.getDocument ();
+        if (document == null || !(document instanceof NbEditorDocument)) return null;
+        return ParserManagerImpl.getImpl (document).getAST ();
     }
 
     
@@ -293,9 +288,9 @@ final class ASTBrowserTopComponent extends TopComponent {
                 String nt = ((ASTNode) astItem).getNT ();
                 if (nt.equals ("S"))
                     nt += " (" + astItem.getMimeType () + ")";
-                return nt;
+                return nt; // + " [" + astItem.getOffset () + ":" + astItem.getEndOffset () + "]";
             }
-            return astItem.toString ();
+            return astItem.toString (); // + " [" + astItem.getOffset () + ":" + astItem.getEndOffset () + "]";
         }
         
         ASTItem getASTItem () {

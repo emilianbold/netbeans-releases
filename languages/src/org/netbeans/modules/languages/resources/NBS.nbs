@@ -39,34 +39,7 @@
 
 ########### Syntax Coloring ##################################################################
 
-TOKEN:keyword:(
-    "ACTION" |
-    "AST" |
-    "BRACE" |
-    "BUNDLE" |
-    "COLOR" | 
-    "COMMENT_LINE" |
-    "COMPLETE" |  
-    "COMPLETION" | 
-    "FOLD" | 
-    "FORMAT" |
-    "HYPERLINK" | 
-    "IMPORT" | 
-    "INDENT" | 
-    "MARK" | 
-    "NAVIGATOR" | 
-    "PARSE" | 
-    "PROPERTIES" | 
-    "REFORMAT" |
-    "SELECTION" |
-    "SEMANTIC_CONTEXT" |
-    "SEMANTIC_DECLARATION" |
-    "SEMANTIC_USAGE" |
-    "SKIP" | 
-    "STORE" | 
-    "TOKEN" | 
-    "TOOLTIP"
-)
+TOKEN:keyword:("TOKEN")
 TOKEN:identifier: ( ["a"-"z" "A"-"Z"] ["a"-"z" "A"-"Z" "0"-"9" "_"]* )
 TOKEN:operator: ( 
     ":" | "*" | "?" | "+" | "-" | "[" | "]" | "<" | ">" |
@@ -166,7 +139,8 @@ tokenDefName = <identifier>;
 tokenDef1 = "," <string>;
 tokenDef1 = ;
                     
-command = <keyword> command0;
+command = commandName command0;
+commandName = <identifier>;
 command0 = ":" selector [":" value];
 command0 = value;
 value = class | <string> | properties | regularExpression;
@@ -192,6 +166,11 @@ AST {
     removeSimple:"!selector,tokenName,tokenDefName,grammarRuleNT,ntRef,selectorIdentifier";
 }
 
+COLOR:commandName: {
+    color_name: "keyword";
+    default_coloring: "keyword";
+    foreground_color:"blue";
+} 
 NAVIGATOR:token: {
     display_name: "<html><b><font color=000099>TOKEN</font></b>: $tokenName$</html>";
 }

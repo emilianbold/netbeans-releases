@@ -111,12 +111,6 @@ public class GoToDeclarationAction extends BaseAction {
     }
     
     private ASTNode getASTNode(JTextComponent comp) {
-        try {
-            return ParserManagerImpl.get((NbEditorDocument)comp.getDocument()).getAST();
-        } catch (ParseException ex) {
-            ErrorManager.getDefault().notify(ex);
-        } 
-        return null;
+        return ParserManagerImpl.getImpl ((NbEditorDocument)comp.getDocument ()).getAST ();
     }
-    
 }

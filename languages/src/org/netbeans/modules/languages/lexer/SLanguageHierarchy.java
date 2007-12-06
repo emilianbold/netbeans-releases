@@ -41,19 +41,20 @@
 
 package org.netbeans.modules.languages.lexer;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.netbeans.api.languages.ParseException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+
 import org.netbeans.modules.languages.Language;
+import org.netbeans.modules.languages.LanguageImpl;
 import org.netbeans.modules.languages.TokenType;
-import org.netbeans.api.languages.ParseException;
-import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;
@@ -65,18 +66,17 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
  */
 public class SLanguageHierarchy extends LanguageHierarchy<STokenId> {
     
-    private String                      mimeType;
+    private Language                    language;
     private List<STokenId>              tokenIDs;
     private Map<Integer,STokenId>       tokenIDToType;
     
     
-    public SLanguageHierarchy (String mimeType) {
-        this.mimeType = mimeType;
+    public SLanguageHierarchy (Language language) {
+        this.language = language;
     }
     
     protected Collection<STokenId> createTokenIds () {
         if (tokenIDs == null) {
-            Language language = getLanguage ();
             List<TokenType> tokenTypes = language.getParser ().getTokenTypes ();
             tokenIDToType = new HashMap<Integer,STokenId> ();
             tokenIDs = new ArrayList<STokenId> ();
@@ -102,24 +102,16 @@ public class SLanguageHierarchy extends LanguageHierarchy<STokenId> {
     protected Lexer<STokenId> createLexer (LexerRestartInfo<STokenId> info) {
         if (tokenIDs == null) createTokenIds ();
         return new SLexer (
-            getLanguage (), 
+            language, 
             tokenIDToType, 
             info
         );
     }
 
     protected String mimeType () {
-        return mimeType;
-    }
-    
-    
-    // other methods ...........................................................
-    
-    private Language getLanguage () {
-        try {
-            return LanguagesManager.getDefault ().getLanguage (mimeType);
-        } catch (ParseException ex) {
-            return Language.create (mimeType);
-        }
+        return language.getMimeType ();
     }
 }
+
+
+

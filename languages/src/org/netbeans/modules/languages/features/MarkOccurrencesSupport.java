@@ -43,15 +43,15 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
+
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.Highlighting;
 import org.netbeans.api.languages.Highlighting.Highlight;
-import org.netbeans.api.languages.ParseException;
-import org.netbeans.api.languages.ParserManager;
 import org.netbeans.api.languages.ParserManager.State;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.languages.ParserManagerImpl;
 import org.netbeans.modules.languages.features.AnnotationManager.LanguagesAnnotation;
 import org.openide.util.RequestProcessor;
 
@@ -87,27 +87,23 @@ public class MarkOccurrencesSupport implements CaretListener {
     }
     
     private void refresh (int offset) {
-        ParserManager parserManager = ParserManager.get (editor.getDocument ());
+        ParserManagerImpl parserManager = ParserManagerImpl.getImpl (editor.getDocument ());
         if (parserManager.getState () == State.PARSING) {
             return;
         }
-        try {
-            removeHighlights ();
-            ASTNode node = parserManager.getAST ();
-            DatabaseContext root = DatabaseManager.getRoot (node);
-            if (root == null) {
-                // I keep getting NPEs on the next line while editing RHTML
-                // files - please check
-                return;
-            }
-            DatabaseItem item = root.getDatabaseItem (offset);
-            if (item == null)
-                item = root.getDatabaseItem (offset - 1);
-            if (item == null) return;
-            addHighlights (getUssages (item, node));
-        } catch (ParseException ex) {
-            ex.printStackTrace ();
+        removeHighlights ();
+        ASTNode node = parserManager.getAST ();
+        DatabaseContext root = DatabaseManager.getRoot (node);
+        if (root == null) {
+            // I keep getting NPEs on the next line while editing RHTML
+            // files - please check
+            return;
         }
+        DatabaseItem item = root.getDatabaseItem (offset);
+        if (item == null)
+            item = root.getDatabaseItem (offset - 1);
+        if (item == null) return;
+        addHighlights (getUssages (item, node));
     }
     
     private void addHighlights (final List<ASTItem> ussages) {

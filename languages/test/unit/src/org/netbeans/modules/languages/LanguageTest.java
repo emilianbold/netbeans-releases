@@ -37,52 +37,34 @@ public class LanguageTest extends TestCase {
     }
     
     public void testFeatures1 () {
-        Feature feature = Feature.create ("feature", Selector.create ("selector"));
-        Language language = Language.create (
-            "text/test",
-            Collections.<Integer,String>emptyMap (),
-            Collections.<Feature>singletonList (feature),
-            null
-        );
-        assertEquals ("selector", language.getFeature ("feature").getSelector ().getAsString ());
-        assertEquals (1, language.getFeatures ("feature").size ());
+        TestLanguage language = new TestLanguage ();
+        language.addFeature (Feature.create ("feature", Selector.create ("selector")));
+        assertEquals ("selector", language.getFeatureList ().getFeature ("feature").getSelector ().getAsString ());
+        assertEquals (1, language.getFeatureList ().getFeatures ("feature").size ());
     }
     
     public void testFeatures2 () {
-        List<Feature> features = new ArrayList<Feature> ();
-        features.add (Feature.create ("feature", Selector.create ("selector")));
-        features.add (Feature.create ("feature", Selector.create ("selector2")));
-        Language language = Language.create (
-            "text/test",
-            Collections.<Integer,String>emptyMap (),
-            features,
-            null
-        );
-        assertEquals (2, language.getFeatures ("feature").size ());
-        Feature feature = language.getFeature ("feature");
+        TestLanguage language = new TestLanguage ();
+        language.addFeature (Feature.create ("feature", Selector.create ("selector")));
+        language.addFeature (Feature.create ("feature", Selector.create ("selector2")));
+        assertEquals (2, language.getFeatureList ().getFeatures ("feature").size ());
+        Feature feature = language.getFeatureList ().getFeature ("feature");
         assertTrue (feature.getSelector ().toString ().equals ("selector") ||
                     feature.getSelector ().toString ().equals ("selector2")
         );
     }
     
     public void testFeatures3 () {
-        List<Feature> features = new ArrayList<Feature> ();
-        features.add (Feature.create ("feature", Selector.create ("a")));
-        features.add (Feature.create ("feature", Selector.create ("a.b")));
-        features.add (Feature.create ("feature", Selector.create ("c.a")));
-        Map<Integer,String> tokensMap = new HashMap<Integer,String> ();
-        tokensMap.put (0, "a");
-        tokensMap.put (1, "b");
-        tokensMap.put (2, "c");
-        Language language = Language.create (
-            "text/test",
-            tokensMap,
-            features,
-            null
-        );
-        assertEquals ("a", language.getFeature ("feature", "a").getSelector ().getAsString ());
-        assertNull (language.getFeature ("feature", "b"));
-        assertNull (language.getFeature ("feature", "c"));
+        TestLanguage language = new TestLanguage ();
+        language.addToken (0, "a");
+        language.addToken (1, "b");
+        language.addToken (2, "c");
+        language.addFeature (Feature.create ("feature", Selector.create ("a")));
+        language.addFeature (Feature.create ("feature", Selector.create ("a.b")));
+        language.addFeature (Feature.create ("feature", Selector.create ("c.a")));
+        assertEquals ("a", language.getFeatureList ().getFeature ("feature", "a").getSelector ().getAsString ());
+        assertNull (language.getFeatureList ().getFeature ("feature", "b"));
+        assertNull (language.getFeatureList ().getFeature ("feature", "c"));
         
         ASTNode n = ASTNode.create (language, "x", Arrays.asList (new ASTItem[] {
             ASTNode.create (language, "a", Arrays.asList (new ASTItem[] {
@@ -94,15 +76,15 @@ public class LanguageTest extends TestCase {
                 ASTToken.create (language, "a", "aaa", 9, 3, null),
             }), 6)
         }), 0);
-        List<Feature> fs = language.getFeatures ("feature", n.findPath (1));
+        List<Feature> fs = language.getFeatureList ().getFeatures ("feature", n.findPath (1));
         assertEquals (1, fs.size ());
         assertEquals ("a.b", fs.get (0).getSelector ().getAsString ());
-        fs = language.getFeatures ("feature", n.findPath (4));
+        fs = language.getFeatureList ().getFeatures ("feature", n.findPath (4));
         assertEquals (1, fs.size ());
         assertEquals ("a", fs.get (0).getSelector ().getAsString ());
-        fs = language.getFeatures ("feature", n.findPath (7));
+        fs = language.getFeatureList ().getFeatures ("feature", n.findPath (7));
         assertEquals (0, fs.size ());
-        fs = language.getFeatures ("feature", n.findPath (10));
+        fs = language.getFeatureList ().getFeatures ("feature", n.findPath (10));
         assertEquals (2, fs.size ());
         Set<String> s = new HashSet<String> ();
         s.add (fs.get (0).getSelector ().getAsString ());
@@ -112,19 +94,16 @@ public class LanguageTest extends TestCase {
     }
     
     public void testTokens1 () throws ParseException {
-        List<TokenType> tokenTypes = new ArrayList<TokenType> ();
-        tokenTypes.add (new TokenType (null, Pattern.create ("['0'-'9']+"), "jedna", 1, "number", 0, Feature.create ("cislo", Selector.create ("a"))));
-        tokenTypes.add (new TokenType ("number", Pattern.create ("['a'-'z']+"), "dve", 2, "number and character", 1, Feature.create ("cislo a pismeno", Selector.create ("b"))));
-        tokenTypes.add (new TokenType ("number and character", Pattern.create ("'$'"), "tri", 3, null, 2, Feature.create ("prachy", Selector.create ("c"))));
-        tokenTypes.add (new TokenType (null, Pattern.create ("['A'-'Z']+"), "ctyri", 4, "big character", 3, Feature.create ("velke pismeno", Selector.create ("d"))));
-        tokenTypes.add (new TokenType ("big character", Pattern.create ("'+'"), "pet", 5, null, 4, Feature.create ("plus", Selector.create ("e"))));
-        Map<Integer,String> tokensMap = new HashMap<Integer,String> ();
-        tokensMap.put (1, "jedna");
-        tokensMap.put (2, "dve");
-        tokensMap.put (3, "tri");
-        tokensMap.put (4, "ctyri");
-        tokensMap.put (5, "pet");
-        Language language = Language.create ("text/test", tokensMap, Collections.<Feature>emptyList (), Parser.create (tokenTypes));
+        TestLanguage language = new TestLanguage ();
+        language.addToken (1, "jedna", Pattern.create ("['0'-'9']+"), null, "number", 0, Feature.create ("cislo", Selector.create ("a")));
+        language.addToken (2, "dve", Pattern.create ("['a'-'z']+"), "number", "number and character", 1, Feature.create ("cislo a pismeno", Selector.create ("b")));
+        language.addToken (3, "tri", Pattern.create ("'$'"), "number and character", null, 2, Feature.create ("prachy", Selector.create ("c")));
+        language.addToken (4, "ctyri", Pattern.create ("['A'-'Z']+"), null, "big character", 3, Feature.create ("velke pismeno", Selector.create ("d")));
+        language.addToken (5, "pet", Pattern.create ("'+'"), "big character", null, 4, Feature.create ("plus", Selector.create ("e")));
+        language.addFeature (Feature.create ("feature", Selector.create ("a")));
+        language.addFeature (Feature.create ("feature", Selector.create ("a.b")));
+        language.addFeature (Feature.create ("feature", Selector.create ("c.a")));
+        
         assertEquals (5, language.getParser ().getTokenTypes ().size ());
         Parser p = language.getParser ();
         MyCookie cookie = new MyCookie ();

@@ -45,11 +45,13 @@ import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import java.util.Collection;
 import javax.swing.text.JTextComponent;
+
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.ParserManager;
 import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.languages.ParserManagerImpl;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.UI;
@@ -60,6 +62,7 @@ import org.openide.util.Lookup;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.windows.TopComponent;
+
 
 /**
  *
@@ -108,12 +111,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
         JTextComponent textComp = ec.getOpenedPanes()[0];
         NbEditorDocument doc = (NbEditorDocument)textComp.getDocument();
         String selectedText = textComp.getSelectedText();
-        ASTNode node = null;
-        try {
-            node = ParserManager.get(doc).getAST();
-        } catch (ParseException e) {
-            return null;
-        }
+        ASTNode node = ParserManagerImpl.getImpl (doc).getAST ();
         int position = 0;
         if (selectedText != null) {
             position = textComp.getSelectionStart();

@@ -33,7 +33,6 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 import javax.swing.text.SimpleAttributeSet;
 
-import org.netbeans.api.languages.ASTToken;
 import org.netbeans.api.languages.Highlighting;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -98,7 +97,9 @@ class TokenHighlightsLayer extends AbstractHighlightsContainer {
         public boolean moveNext () {
             attributeSet = new SimpleAttributeSet ();
             startOffset1 = endOffset1;
+            if (hierarchy == null) return false;
             TokenSequence ts = hierarchy.tokenSequence ();
+            if (ts == null) return false;
             moveNext(ts);
             return endOffset1 > startOffset1 && startOffset1 < endOffset;
         }

@@ -79,7 +79,7 @@ public class IndentFactory implements IndentTask.Factory {
         }
 
         public void reindent () throws BadLocationException {
-            //System.out.println("SCHLIEMAN reformat !\n  " + context.document() + "\n  " + context.isIndent() + "\n  " + context.startOffset () + "\n  " + context.endOffset());
+            //S ystem.out.println("SCHLIEMAN reformat !\n  " + context.document() + "\n  " + context.isIndent() + "\n  " + context.startOffset () + "\n  " + context.endOffset());
             StyledDocument document = (StyledDocument) context.document ();
             try {
                 MimePath mimePath = MimePath.parse (context.mimePath ());
@@ -312,7 +312,7 @@ public class IndentFactory implements IndentTask.Factory {
                 Set<String> end = new HashSet<String> ();
                 Map<String,String> endToStart = new HashMap<String,String> ();
 
-                List<Feature> indents = l.getFeatures ("INDENT");
+                List<Feature> indents = l.getFeatureList ().getFeatures ("INDENT");
                 Iterator<Feature> it = indents.iterator ();
                 while (it.hasNext ()) {
                     Feature indent = it.next ();

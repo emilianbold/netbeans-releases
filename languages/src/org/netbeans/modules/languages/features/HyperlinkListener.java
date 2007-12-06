@@ -145,12 +145,7 @@ public class HyperlinkListener implements MouseMotionListener, MouseListener,
         int                     offset
     ) {
         try {
-            ASTNode ast = null;
-            try {
-                ast = ParserManagerImpl.get (document).getAST ();
-            } catch (ParseException ex) {
-                ast = ex.getASTNode ();
-            }
+            ASTNode ast = ParserManagerImpl.getImpl (document).getAST ();
             if (ast == null) {
                 String mimeType = (String) document.getProperty ("mimeType");
                 TokenHierarchy tokenHierarchy = TokenHierarchy.get (document);
@@ -162,7 +157,7 @@ public class HyperlinkListener implements MouseMotionListener, MouseListener,
                     Language language = LanguagesManager.getDefault ().getLanguage (mimeType);
                     Token token = tokenSequence.token ();
                     if (token == null) return;
-                    Feature hyperlinkFeature = language.getFeature 
+                    Feature hyperlinkFeature = language.getFeatureList ().getFeature 
                         ("HYPERLINK", token.id ().name ());
                     if (hyperlinkFeature == null) return;
                     ASTToken stoken = ASTToken.create (
@@ -189,7 +184,7 @@ public class HyperlinkListener implements MouseMotionListener, MouseListener,
                 ASTPath p = path.subPath (i);
                 Language language = (Language) p.getLeaf ().getLanguage ();
                 if (language == null) continue;
-                Feature hyperlinkFeature = language.getFeature ("HYPERLINK", p);
+                Feature hyperlinkFeature = language.getFeatureList ().getFeature ("HYPERLINK", p);
                 if (hyperlinkFeature == null) continue;
                 highlight = Highlighting.getHighlighting (document).highlight (
                     p.getLeaf ().getOffset (),

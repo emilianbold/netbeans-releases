@@ -57,6 +57,7 @@ import java.util.Map;
 import java.util.Collections;
 import java.util.Iterator;
 
+import org.netbeans.modules.languages.parser.SyntaxError;
 import org.openide.filesystems.FileObject;
 
 import org.netbeans.api.languages.ASTNode;
@@ -67,6 +68,7 @@ import org.netbeans.api.languages.TokenInput;
 import org.netbeans.api.languages.ASTToken;
 
 import org.netbeans.modules.languages.Feature.Type;
+import org.netbeans.modules.languages.lexer.SLexer;
 import org.netbeans.modules.languages.parser.Pattern;
 import org.netbeans.modules.languages.parser.StringInput;
 import org.netbeans.modules.languages.parser.TokenInputUtils;
@@ -90,22 +92,8 @@ public class NBSLanguageReader {
         InputStream is, 
         String      sourceName, 
         String      mimeType
-    ) throws IOException {
-        BufferedReader reader = null;
-        try {
-            InputStreamReader r = new InputStreamReader (is);
-            reader = new BufferedReader (r);
-            StringBuilder sb = new StringBuilder ();
-            String line = reader.readLine ();
-            while (line != null) {
-                sb.append (line).append ('\n');
-                line = reader.readLine ();
-            }
-            return create (sb.toString (), sourceName, mimeType);
-        } finally {
-            if (reader != null)
-                reader.close ();
-        }
+    ) {
+        return new NBSLanguageReader (is, sourceName, mimeType);
     }
     
     public static NBSLanguageReader create (
@@ -118,6 +106,7 @@ public class NBSLanguageReader {
     
     
     private String          source;
+    private InputStream     inputStream;
     private String          sourceName;
     private String          mimeType;
     private GRNode          grammarTree;
@@ -137,13 +126,23 @@ public class NBSLanguageReader {
         this.mimeType = mimeType;
     }
     
-    public List<TokenType> getTokenTypes () throws ParseException {
+    private NBSLanguageReader (
+        InputStream inputStream, 
+        String sourceName, 
+        String mimeType
+    ) {
+        this.inputStream = inputStream;
+        this.sourceName = sourceName;
+        this.mimeType = mimeType;
+    }
+    
+    public List<TokenType> getTokenTypes () throws ParseException, IOException {
         if (features == null) readNBS ();
         if (tokenTypes == null) return Collections.<TokenType>emptyList ();
         return tokenTypes;
     }
     
-    public List<Feature> getFeatures () throws ParseException {
+    public List<Feature> getFeatures () throws ParseException, IOException {
         if (features == null) readNBS ();
         return features;
     }
@@ -168,7 +167,24 @@ public class NBSLanguageReader {
     // private methods .........................................................
     
     
-    private void readNBS () throws ParseException {
+    private void readNBS () throws ParseException, IOException {
+        if (source == null) {
+            BufferedReader reader = null;
+            try {
+                InputStreamReader r = new InputStreamReader (inputStream);
+                reader = new BufferedReader (r);
+                StringBuilder sb = new StringBuilder ();
+                String line = reader.readLine ();
+                while (line != null) {
+                    sb.append (line).append ('\n');
+                    line = reader.readLine ();
+                }
+                source = sb.toString ();
+            } finally {
+                if (reader != null)
+                    reader.close ();
+            }
+        }
         features = new ArrayList<Feature> ();
         CharInput input = new StringInput (source);
         ASTNode node = null;
@@ -180,12 +196,12 @@ public class NBSLanguageReader {
                 nbsLanguage.getParser (), 
                 input
             );
-            node = nbsLanguage.getAnalyser ().read (tokenInput, false, new boolean[] {false});
-            if (node == null) 
-                System.out.println ("Can not parse " + sourceName);
-            else
-            if (node.getChildren ().isEmpty ())
-                System.out.println ("Can not parse " + sourceName + " " + node.getNT ());
+            node = nbsLanguage.getAnalyser ().read (
+                tokenInput, 
+                false, 
+                new ArrayList<SyntaxError> (),
+                new boolean[] {false}
+            );
         } catch (ParseException ex) {
             //ex.printStackTrace ();
             Point p = Utils.findPosition (source, tokenInput.getOffset ());
@@ -274,9 +290,9 @@ public class NBSLanguageReader {
     ) {
         if (tokenTypes == null) {
             tokenTypes = new ArrayList<TokenType> ();
-            addToken (null, null, Language.ERROR_TOKEN_TYPE_NAME, null, null);
-            addToken (null, null, Language.EMBEDDING_TOKEN_TYPE_NAME, null,null);
-            addToken (null, null, Language.GAP_TOKEN_TYPE_NAME, null, null);
+            addToken (null, null, SLexer.ERROR_TOKEN_TYPE_NAME, null, null);
+            addToken (null, null, SLexer.EMBEDDING_TOKEN_TYPE_NAME, null,null);
+            addToken (null, null, LLSyntaxAnalyser.GAP_TOKEN_TYPE_NAME, null, null);
         }
         int id = tokenTypeToID.size ();
         if (tokenTypeToID.containsKey (typeName))
@@ -409,9 +425,6 @@ public class NBSLanguageReader {
                   i++;
                   while (i < ch.size () && skip (ch.get (i))) i++;
                   if (i < ch.size ()) {
-                      if (ch.get (i) instanceof ASTToken) {
-                          System.out.println(ch.get (i));
-                      }
                       String op = ((ASTNode) ch.get (i)).getTokenTypeIdentifier ("operator");
                       if (op != null) {
                           String nt1 = franta.next (nt);
@@ -485,8 +498,6 @@ public class NBSLanguageReader {
         List<Rule>          rules,
         Language            language
     ) {
-        if (nt.equals("S$3"))
-            System.out.println("");
         do {
             Set<String> names = grNode.names ();
             if (!grNode.isFinal () && names.isEmpty ())

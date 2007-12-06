@@ -81,7 +81,7 @@ public class LanguagesOptions extends BaseOptions {
     public static synchronized LanguagesOptions create(FileObject fo) {
         if (defaultInstance == null) {
             String mimeType = fo.getParent().getPath().substring(8); //'Editors/'
-    //        System.out.println("@@@ LanguagesOptions.create from " + fo.getPath() + " mimeType = '" + mimeType + "'");
+    //        S ystem.out.println("@@@ LanguagesOptions.create from " + fo.getPath() + " mimeType = '" + mimeType + "'");
             defaultInstance = new LanguagesOptions(mimeType);
         } 
         return defaultInstance;

@@ -91,7 +91,6 @@ public class NBS {
                     }
                 }
             }
-            System.out.println(c);
             return getLibrary ().getCompletionItems (c);
         }
         return Collections.<CompletionItem>emptyList ();

@@ -202,7 +202,7 @@ public class BraceHighlighting implements BracesMatcher, BracesMatcherFactory {
             Map<String, String> startToEnd = new HashMap<String, String>();
             Map<String, String> endToStart = new HashMap<String, String>();
 
-            List<Feature> indents = l.getFeatures("BRACE"); //NOI18N
+            List<Feature> indents = l.getFeatureList ().getFeatures("BRACE"); //NOI18N
             Iterator<Feature> it = indents.iterator();
             while (it.hasNext()) {
                 Feature indent = it.next();

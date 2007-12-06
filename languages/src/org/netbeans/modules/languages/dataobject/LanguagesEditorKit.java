@@ -41,13 +41,11 @@
 
 package org.netbeans.modules.languages.dataobject;
 
-import java.awt.event.KeyEvent;
 import java.util.Map;
 import javax.swing.Action;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.event.InputEvent;
 import javax.swing.JLabel;
 import javax.swing.text.Document;
 import javax.swing.Action;
@@ -55,7 +53,6 @@ import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
-import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import javax.swing.text.TextAction;
 import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
@@ -81,6 +78,7 @@ import org.netbeans.modules.languages.features.HyperlinkListener;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.languages.features.DatabaseManager;
 import org.netbeans.modules.languages.features.LanguagesGenerateFoldPopupAction;
+import org.netbeans.modules.languages.features.SyntaxErrorHighlighter;
 import org.netbeans.modules.languages.parser.Pattern;
 
 
@@ -249,6 +247,7 @@ public class LanguagesEditorKit extends NbEditorKit {
     protected void initDocument (Document doc) {
         doc.putProperty("mimeType", mimeType); //NOI18N
         new AnnotationManager (doc);
+        new SyntaxErrorHighlighter (doc);
         new DatabaseManager (doc);
     }
     
@@ -299,7 +298,7 @@ public class LanguagesEditorKit extends NbEditorKit {
             try {
                 String mimeType = (String) getProperty("mimeType"); //NOI18N
                 Language language = LanguagesManager.getDefault ().getLanguage (mimeType);
-                Feature f = language.getFeature("SELECTION"); //NOI18N
+                Feature f = language.getFeatureList ().getFeature ("SELECTION"); //NOI18N
                 if (f != null) {
                     Pattern pat = f.getPattern();
                     if (pat != null) {

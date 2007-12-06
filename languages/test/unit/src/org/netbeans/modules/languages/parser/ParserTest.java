@@ -19,6 +19,7 @@ import java.util.List;
 import junit.framework.*;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
+import org.netbeans.modules.languages.TestLanguage;
 import org.netbeans.modules.languages.TokenType;
 import org.netbeans.modules.languages.parser.Parser.Cookie;
 
@@ -99,7 +100,7 @@ public class ParserTest extends TestCase {
 //            "test\n" +
 //            "t:t"
 //        );
-//        System.out.println(p);
+//        S ystem.out.println(p);
 //        assertEquals ("state: " + p.getState () + " text: " + in, "LINE_COMMENT", p.read (p.getState (), in));
 //        assertEquals ("state: " + p.getState () + " text: " + in, "EOL", p.read (p.getState (), in));
 //        assertEquals ("state: " + p.getState () + " text: " + in, "NAME", p.read (p.getState (), in));
@@ -119,27 +120,28 @@ public class ParserTest extends TestCase {
 //    
     
     
-    private static Parser create (String[] l) throws ParseException {
+    private static TestLanguage create (String[] l) throws ParseException {
+        TestLanguage language = new TestLanguage ();
         List<TokenType> rules = new ArrayList<TokenType> ();
         int i, k = l.length;
         for (i = 0; i < k; i+=4) {
             String tokenName = (String) l [i + 1];
             String pattern = (String) l [i + 2];
-            rules.add (new TokenType (
-                (String) l [i],
-                Pattern.create (pattern),
-                tokenName,
+            language.addToken (
                 (int) i / 4,
+                tokenName,
+                Pattern.create (pattern),
+                (String) l [i],
                 (String) l [i + 3],
                 (int) i / 4,
                 null
-            ));
+            );
         }
-        return Parser.create (rules);
+        return language;
     }
     
     public void testReadJava () throws ParseException {
-        Parser parser = create (new String[] {
+        TestLanguage language = create (new String[] {
             null, "comment", "'/*'-'*/'", null,
             null, "comment", "'//'[^'\n''\r']*", null,
             null, "keyword", "'if'|'else'|'public'|'static'|'private'|'protected'|'class'|'extends'|'import'|'package'|'try'|'int'|'false'|'true'|'void'", null,
@@ -151,7 +153,6 @@ public class ParserTest extends TestCase {
             null, "identifier", "['a'-'z''A'-'Z'][^' ''\\t''\\n''\\r''/''*''-''+''.'',''=''{''}''('')''!''@''#''$''%''^''&''~''|''\\\\'';']*", null
         });
         
-        System.out.println (parser);
         CharInput in = new StringInput (
             "/** dsfsf\n" +
             " asd as * asdf */ " +
@@ -165,14 +166,7 @@ public class ParserTest extends TestCase {
             "}"
         );
         Cookie c = new MyCookie ();
-        Map<Integer,String> tokensMap = new HashMap<Integer,String> ();
-        Iterator<TokenType> it = parser.getTokenTypes ().iterator ();
-        while (it.hasNext ()) {
-            TokenType tokenType = it.next ();
-            tokensMap.put (tokenType.getTypeID (), tokenType.getType ());
-        }
-
-        Language language = Language.create ("test/test", tokensMap, Collections.<Feature>emptyList (), parser);
+        Parser parser = language.getParser ();
         assertEquals ("state: " + c.getState () + " text: " + in, "comment", ((ASTToken) parser.read (c, in, language)).getTypeName ());
         assertEquals ("state: " + c.getState () + " text: " + in, "whitespace", ((ASTToken) parser.read (c, in, language)).getTypeName ());
         assertEquals ("state: " + c.getState () + " text: " + in, "keyword", ((ASTToken) parser.read (c, in, language)).getTypeName ());
@@ -186,7 +180,7 @@ public class ParserTest extends TestCase {
     }
     
     public void testReadHtml () throws ParseException {
-        Parser parser = create (new String[] {
+        TestLanguage language = create (new String[] {
             null, "TEXT", "[^'<']*", null,
             null, "COMMENT", "'<!'-'-->'", null,
             Parser.DEFAULT_STATE, "ELEMENT", "'<'[^' ''>''\\t''\\n''\\r']+", "IN_ELEMENT",
@@ -211,13 +205,7 @@ public class ParserTest extends TestCase {
             "<HTML><\\HTML> <test t>"
         );
         Cookie c = new MyCookie ();
-        Map<Integer,String> tokensMap = new HashMap<Integer,String> ();
-        Iterator<TokenType> it = parser.getTokenTypes ().iterator ();
-        while (it.hasNext ()) {
-            TokenType tokenType = it.next ();
-            tokensMap.put (tokenType.getTypeID (), tokenType.getType ());
-        }
-        Language language = Language.create ("test/test", tokensMap, Collections.<Feature>emptyList (), parser);
+        Parser parser = language.getParser ();
         assertEquals ("state: " + c + " text: " + in, "ELEMENT", ((ASTToken) parser.read (c, in, language)).getTypeName ());
         assertEquals ("state: " + c + " text: " + in, "WHITESPACE", ((ASTToken) parser.read (c, in, language)).getTypeName ());
         assertEquals ("state: " + c + " text: " + in, "ATTRIBUTE_NAME", ((ASTToken) parser.read (c, in, language)).getTypeName ());

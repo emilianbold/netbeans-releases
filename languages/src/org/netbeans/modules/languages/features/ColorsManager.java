@@ -85,7 +85,7 @@ public class ColorsManager {
     static List<AttributeSet> getColors(Language l, ASTPath path, Document doc) {
         List<AttributeSet> result = new ArrayList<AttributeSet> ();
         Context context = SyntaxContext.create(doc, path);
-        List<Feature> fs = l.getFeatures(COLOR, path);
+        List<Feature> fs = l.getFeatureList ().getFeatures(COLOR, path);
         Iterator<Feature> it = fs.iterator();
         while (it.hasNext()) {
             Feature f = it.next();
@@ -107,8 +107,6 @@ public class ColorsManager {
     private static AttributeSet getAttributes (DatabaseItem item) {
         if (item instanceof DatabaseDefinition) {
             DatabaseDefinition definition = (DatabaseDefinition) item;
-            if ("global_variable".equals (definition.getName ()))
-                System.out.println("");
             if (definition.getUsages ().isEmpty ()) {
                 if ("parameter".equals (definition.getType ()))
                     return getUnusedParameterAttributes ();
@@ -248,7 +246,7 @@ public class ColorsManager {
     ) {
         if (l.getParser () == null) return;
         Map<String,AttributeSet> defaultsMap = getDefaultColors();
-        List<Feature> list = l.getFeatures (COLOR);
+        List<Feature> list = l.getFeatureList ().getFeatures (COLOR);
         Iterator<Feature> it = list.iterator();
         while (it.hasNext()) {
             Feature f = it.next();
@@ -284,7 +282,7 @@ public class ColorsManager {
     }
     
     private static List<AttributeSet> getColors(Language l, ResourceBundle bundle) {
-        List<Feature> list = l.getFeatures("COLORS");
+        List<Feature> list = l.getFeatureList ().getFeatures("COLORS");
         List<AttributeSet> result = new ArrayList<AttributeSet> ();
         Iterator<Feature> it = list.iterator();
         while (it.hasNext()) {

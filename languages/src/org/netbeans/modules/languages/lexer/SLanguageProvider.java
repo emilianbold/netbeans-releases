@@ -41,16 +41,19 @@
 
 package org.netbeans.modules.languages.lexer;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.WeakHashMap;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenId;
 import org.netbeans.modules.languages.Feature;
+import org.netbeans.modules.languages.LanguageImpl;
 import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.spi.lexer.LanguageEmbedding;
@@ -68,13 +71,14 @@ public class SLanguageProvider extends LanguageProvider {
     }
 
     public Language<STokenId> findLanguage (String mimeType) {
-//        System.out.println("findLanguage " + mimePath);
         if (LanguagesManager.getDefault ().isSupported (mimeType)) {
             try {
-                 org.netbeans.modules.languages.Language language = 
-                        LanguagesManager.getDefault ().getLanguage (mimeType);
-                 if (language.getParser () == null) return null;
-                return new SLanguageHierarchy (mimeType).language ();
+                org.netbeans.modules.languages.Language language = 
+                    LanguagesManager.getDefault ().getLanguage (mimeType);
+                if (language instanceof LanguageImpl)
+                    new Listener ((LanguageImpl) language);
+                if (language.getParser () == null) return null;
+                return new SLanguageHierarchy (language).language ();
             } catch (ParseException ex) {
             } catch (IllegalArgumentException ex) {
                 // language is currently parsed
@@ -112,7 +116,7 @@ public class SLanguageProvider extends LanguageProvider {
     
     private static Language<STokenId> getPreprocessorImport (LanguagePath languagePath, Token token) {
         String tokenType = token.id ().name ();
-        if (!tokenType.equals (org.netbeans.modules.languages.Language.EMBEDDING_TOKEN_TYPE_NAME)) return null;
+        if (!tokenType.equals (SLexer.EMBEDDING_TOKEN_TYPE_NAME)) return null;
         String mimeType = languagePath.topLanguage ().mimeType ();
         if (!preprocessorImport.containsKey (mimeType)) {
             try {
@@ -161,4 +165,33 @@ public class SLanguageProvider extends LanguageProvider {
         }
         return tokenTypeToLanguage.get (tokenType);
     }
+
+    private static Map<SLanguageProvider,SLanguageProvider> providers = new WeakHashMap<SLanguageProvider,SLanguageProvider> ();
+    {providers.put (this, null);}
+    
+    static void refresh () {
+        Iterator<SLanguageProvider> it = providers.keySet ().iterator ();
+        while (it.hasNext()) {
+            it.next ().firePropertyChange (PROP_LANGUAGE);
+        }
+    }
+    
+    
+    // innerclasses ............................................................
+    
+    private static class Listener implements PropertyChangeListener {
+
+        private LanguageImpl language;
+        
+        Listener (LanguageImpl language) {
+            this.language = language;
+            language.addPropertyChangeListener (this);
+        }
+        
+        public void propertyChange (PropertyChangeEvent evt) {
+            SLanguageProvider.refresh ();
+        }
+    }
 }
+
+

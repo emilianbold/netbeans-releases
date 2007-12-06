@@ -26,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -40,24 +40,15 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
-<fontscolors>
-    <fontcolor default="keyword" name="js_keyword"/>
-    <fontcolor default="separator" name="js_separator"/>
-    <fontcolor default="identifier" name="js_identifier"/>
-    <fontcolor default="comment" name="js_line_comment"/>
-    <fontcolor default="error" name="error"/>
-    <fontcolor default="number" name="js_number"/>
-    <fontcolor foreColor="ff006f00" name="js_regularExpression">
-        <font style="bold"/>
-    </fontcolor>
-    <fontcolor default="whitespace" name="js_whitespace"/>
-    <fontcolor default="string" name="s_p">
-        <font style="bold"/>
-    </fontcolor>
-    <fontcolor default="comment" name="js_comment"/>
-    <fontcolor name="js_operator"/>
-    <fontcolor default="string" name="js_string"/>
-    <fontcolor default="string" name="js_error_string"/>
-    <fontcolor default="string" name="s_string"/>
-</fontscolors>
+<!DOCTYPE type PUBLIC
+         "-//NetBeans//DTD annotation type 1.1//EN"
+         "http://www.netbeans.org/dtds/annotation-type-1_1.dtd">
+<type name="SyntaxError"
+     description_key="CTL_Error"
+     localizing_bundle="org.netbeans.modules.languages.resources.Bundle"
+     visible="true" 
+     glyph="nbresloc:/org/netbeans/modules/languages/resources/error-glyph.gif"
+     type="linepart"
+     browseable="true"
+     severity="error"
+/>

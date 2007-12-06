@@ -56,6 +56,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.StyleConstants;
+
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.AttributesUtilities;
@@ -64,11 +65,10 @@ import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.Highlighting;
 import org.netbeans.api.languages.Highlighting.Highlight;
-import org.netbeans.api.languages.ParseException;
-import org.netbeans.api.languages.ParserManager;
 import org.netbeans.api.languages.ParserManager.State;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.languages.ParserManagerImpl;
 import org.openide.util.RequestProcessor;
 
 
@@ -92,7 +92,7 @@ public class InstantRenameAction extends BaseAction implements KeyListener, Docu
     
     public void actionPerformed (ActionEvent evt, final JTextComponent editor) {
         int offset = editor.getCaretPosition ();
-        ParserManager parserManager = ParserManager.get (editor.getDocument ());
+        ParserManagerImpl parserManager = ParserManagerImpl.getImpl (editor.getDocument ());
         if (parserManager.getState () == State.PARSING) {
             return;
         }
@@ -115,8 +115,6 @@ public class InstantRenameAction extends BaseAction implements KeyListener, Docu
             document.addDocumentListener (this);
             editor.addKeyListener (this);
         } catch (BadLocationException ex) {
-            ex.printStackTrace ();
-        } catch (ParseException ex) {
             ex.printStackTrace ();
         }
     }

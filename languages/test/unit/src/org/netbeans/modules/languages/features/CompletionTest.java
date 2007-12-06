@@ -63,13 +63,9 @@ import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.LanguagesManager;
-import org.netbeans.modules.languages.Rule;
 import org.netbeans.modules.languages.Selector;
-import org.netbeans.modules.languages.TokenType;
+import org.netbeans.modules.languages.TestLanguage;
 import org.netbeans.modules.languages.lexer.SLanguageHierarchy;
-import org.netbeans.modules.languages.parser.LLSyntaxAnalyser;
-import org.netbeans.modules.languages.Rule;
-import org.netbeans.modules.languages.parser.Parser;
 import org.netbeans.modules.languages.parser.Pattern;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
@@ -96,9 +92,9 @@ public class CompletionTest extends TestCase {
             calls,
             Collections.<String,Pattern> emptyMap ()
         ));
-        Language l = createTestLanguage (features);
+        Language language = createTestLanguage (features);
         
-        JEditorPane editor = createTestComponent (l.getMimeType ());
+        JEditorPane editor = createTestComponent (language);
         editor.setCaretPosition (27);
         CompletionProviderImpl cc = new CompletionProviderImpl ();
         CompletionTask ct = cc.createTask (0, editor);
@@ -125,9 +121,9 @@ public class CompletionTest extends TestCase {
             Collections.<String,String> emptyMap (),
             Collections.<String,Pattern> emptyMap ()
         ));
-        Language l = createTestLanguage (features);
+        Language language = createTestLanguage (features);
         
-        JEditorPane editor = createTestComponent (l.getMimeType ());
+        JEditorPane editor = createTestComponent (language);
         editor.setCaretPosition (27);
         CompletionProviderImpl cc = new CompletionProviderImpl ();
         CompletionTask ct = cc.createTask (0, editor);
@@ -148,9 +144,9 @@ public class CompletionTest extends TestCase {
             calls,
             Collections.<String,Pattern> emptyMap ()
         ));
-        Language l = createTestLanguage (features);
+        Language language = createTestLanguage (features);
         
-        JEditorPane editor = createTestComponent (l.getMimeType ());
+        JEditorPane editor = createTestComponent (language);
         ParserManager pm = ParserManager.get (editor.getDocument ());
         editor.getDocument ().insertString(editor.getDocument ().getLength (), " ", null);
         
@@ -180,9 +176,9 @@ public class CompletionTest extends TestCase {
             Collections.<String,String> emptyMap (),
             Collections.<String,Pattern> emptyMap ()
         ));
-        Language l = createTestLanguage (features);
+        Language language = createTestLanguage (features);
         
-        JEditorPane editor = createTestComponent (l.getMimeType ());
+        JEditorPane editor = createTestComponent (language);
         ParserManager.get (editor.getDocument ());
         editor.getDocument ().insertString(editor.getDocument ().getLength (), " ", null);
         
@@ -214,9 +210,9 @@ public class CompletionTest extends TestCase {
             calls,
             Collections.<String,Pattern> emptyMap ()
         ));
-        Language l = createTestLanguage (features);
+        Language language = createTestLanguage (features);
         
-        JEditorPane editor = createTestComponent (l.getMimeType ());
+        JEditorPane editor = createTestComponent (language);
         ParserManager.get (editor.getDocument ());
         editor.getDocument ().insertString(editor.getDocument ().getLength (), " ", null);
         
@@ -260,9 +256,9 @@ public class CompletionTest extends TestCase {
             Collections.<String,String> emptyMap (),
             Collections.<String,Pattern> emptyMap ()
         ));
-        Language l = createTestLanguage (features);
+        Language language = createTestLanguage (features);
         
-        JEditorPane editor = createTestComponent (l.getMimeType ());
+        JEditorPane editor = createTestComponent (language);
         ParserManager.get (editor.getDocument ());
         editor.getDocument ().insertString(editor.getDocument ().getLength (), " ", null);
         
@@ -314,21 +310,12 @@ public class CompletionTest extends TestCase {
     }
     
     private static Language createTestLanguage (List<Feature> features) throws ParseException {
-        List<TokenType> tokenTypes = new ArrayList<TokenType> ();
-        tokenTypes.add (new TokenType (null, Pattern.create ("'if' | 'while'"), "keyword", 0, null, 0, null));
-        tokenTypes.add (new TokenType (null, Pattern.create ("['a'-'z']+"), "identifier", 1, null, 1, null));
-        tokenTypes.add (new TokenType (null, Pattern.create ("'(' | ')' | '{' | '}'"), "operator", 2, null, 2, null));
-        tokenTypes.add (new TokenType (null, Pattern.create ("[' ' '\n' '\t' '\r']+"), "whitespace", 3, null, 3, null));
-        
-        Map<Integer,String> tokensMap = new HashMap<Integer,String> ();
-        tokensMap.put (0, "keyword");
-        tokensMap.put (1, "identifier");
-        tokensMap.put (2, "operator");
-        tokensMap.put (3, "whitespace");
-        
-        features.add (Feature.create ("SKIP", Selector.create ("whitespace")));
-        
-        Language language = Language.create ("text/mt", tokensMap, features, Parser.create (tokenTypes));
+        TestLanguage language = new TestLanguage ();
+        language.addToken (0, "keyword", Pattern.create ("'if' | 'while'"), null, null, 0, null);
+        language.addToken (1, "identifier", Pattern.create ("['a'-'z' '_']+"), null, null, 1, null);
+        language.addToken (2, "operator", Pattern.create ("'(' | ')' | '{' | '}'"), null, null, 2, null);
+        language.addToken (3, "whitespace", Pattern.create ("[' ' '\n' '\t' '\r']+"), null, null, 3, null);
+        language.addFeature (Feature.create ("SKIP", Selector.create ("whitespace")));
         
         ASTToken IDENTIFIER = ASTToken.create (language, "identifier", null, 0, "identifier".length (), null);
         ASTToken IF = ASTToken.create (language, "keyword", "if", 0, "keyword".length (), null);
@@ -338,27 +325,24 @@ public class CompletionTest extends TestCase {
         ASTToken BRACE = ASTToken.create (language, "operator", "{", 0, "operator".length (), null);
         ASTToken BRACE2 = ASTToken.create (language, "operator", "}", 0, "operator".length (), null);
         
-        List<Rule> rules = new ArrayList<Rule> ();
-        rules.add (Rule.create ("S", Arrays.asList (new Object[] {"Statement", "S"})));
-        rules.add (Rule.create ("S", Arrays.asList (new Object[] {})));
-        rules.add (Rule.create ("Statement", Arrays.asList (new Object[] {"IfStatement"})));
-        rules.add (Rule.create ("Statement", Arrays.asList (new Object[] {"WhileStatement"})));
-        rules.add (Rule.create ("Statement", Arrays.asList (new Object[] {"Block"})));
-        rules.add (Rule.create ("IfStatement", Arrays.asList (new Object[] {IF, PARENTHESIS, "ConditionalExpression", PARENTHESIS2, "Block"})));
-        rules.add (Rule.create ("WhileStatement", Arrays.asList (new Object[] {WHILE, PARENTHESIS, "ConditionalExpression", PARENTHESIS2, "Block"})));
-        rules.add (Rule.create ("ConditionalExpression", Arrays.asList (new Object[] {IDENTIFIER})));
-        rules.add (Rule.create ("Block", Arrays.asList (new Object[] {BRACE, "Block1", BRACE2})));
-        rules.add (Rule.create ("Block1", Arrays.asList (new Object[] {IDENTIFIER, "Block1"})));
-        rules.add (Rule.create ("Block1", Arrays.asList (new Object[] {"Statement", "Block1"})));
-        rules.add (Rule.create ("Block1", Arrays.asList (new Object[] {})));
-        
-        language.setAnalyser (LLSyntaxAnalyser.create(language, rules, Collections.<Integer>singleton (3)));
+        language.addRule ("S", Arrays.asList (new Object[] {"Statement", "S"}));
+        language.addRule ("S", Arrays.asList (new Object[] {}));
+        language.addRule ("Statement", Arrays.asList (new Object[] {"IfStatement"}));
+        language.addRule ("Statement", Arrays.asList (new Object[] {"WhileStatement"}));
+        language.addRule ("Statement", Arrays.asList (new Object[] {"Block"}));
+        language.addRule ("IfStatement", Arrays.asList (new Object[] {IF, PARENTHESIS, "ConditionalExpression", PARENTHESIS2, "Block"}));
+        language.addRule ("WhileStatement", Arrays.asList (new Object[] {WHILE, PARENTHESIS, "ConditionalExpression", PARENTHESIS2, "Block"}));
+        language.addRule ("ConditionalExpression", Arrays.asList (new Object[] {IDENTIFIER}));
+        language.addRule ("Block", Arrays.asList (new Object[] {BRACE, "Block1", BRACE2}));
+        language.addRule ("Block1", Arrays.asList (new Object[] {IDENTIFIER, "Block1"}));
+        language.addRule ("Block1", Arrays.asList (new Object[] {"Statement", "Block1"}));
+        language.addRule ("Block1", Arrays.asList (new Object[] {}));
         
         LanguagesManager.getDefault ().addLanguage (language);
         return language;
     }
     
-    private static JEditorPane createTestComponent (String mimeType) {
+    private static JEditorPane createTestComponent (Language language) {
         
         String text = 
             "if (jedna) {\n" +
@@ -371,8 +355,8 @@ public class CompletionTest extends TestCase {
             "}";
         
         JEditorPane editor = new JEditorPane ();
-        editor.getDocument ().putProperty ("mimeType", mimeType);
-        editor.getDocument ().putProperty (org.netbeans.api.lexer.Language.class, new SLanguageHierarchy (mimeType).language ());
+        editor.getDocument ().putProperty ("mimeType", language.getMimeType ());
+        editor.getDocument ().putProperty (org.netbeans.api.lexer.Language.class, new SLanguageHierarchy (language).language ());
         editor.setText (text);
         return editor;
     }

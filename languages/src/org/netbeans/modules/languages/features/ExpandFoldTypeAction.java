@@ -86,16 +86,16 @@ public class ExpandFoldTypeAction extends BaseAction {
         }
     }
 
-    private boolean expand (FoldHierarchy hierarchy, Language l) {
-        List<Feature> folds = l.getFeatures (LanguagesFoldManager.FOLD);
+    private boolean expand (FoldHierarchy hierarchy, Language language) {
+        List<Feature> folds = language.getFeatureList ().getFeatures (LanguagesFoldManager.FOLD);
         Iterator<Feature> it = folds.iterator ();
         while (it.hasNext ()) {
             Feature fold = it.next ();
-            String expand = l.localize((String) fold.getValue ("expand_type_action_name"));
+            String expand = LocalizationSupport.localize (language, (String) fold.getValue ("expand_type_action_name"));
             if (expand == null) continue;
             if (!expand.equals (getValue (NAME)))
                 continue;
-            String collapse = l.localize((String) fold.getValue ("collapse_type_action_name"));
+            String collapse = LocalizationSupport.localize (language, (String) fold.getValue ("collapse_type_action_name"));
             if (collapse == null) continue;
             List<FoldType> types = new ArrayList<FoldType> ();
             types.add (Folds.getFoldType (collapse));

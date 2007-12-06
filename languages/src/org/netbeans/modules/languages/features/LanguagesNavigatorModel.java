@@ -50,8 +50,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
 import javax.swing.event.EventListenerList;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.tree.TreePath;
@@ -60,8 +58,6 @@ import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.Context;
-import org.netbeans.api.languages.ParseException;
-import org.netbeans.api.languages.ParserManager;
 import org.netbeans.api.languages.ParserManager.State;
 import org.netbeans.api.languages.ParserManager.State;
 import org.netbeans.api.languages.ParserManagerListener;
@@ -71,6 +67,7 @@ import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.languages.Language;
+import org.netbeans.modules.languages.ParserManagerImpl;
 import org.openide.cookies.LineCookie;
 import org.openide.loaders.DataObject;
 import org.openide.text.Line;
@@ -143,15 +140,15 @@ class LanguagesNavigatorModel implements TreeModel {
             fire ();
             return;
         }
-        ParserManager parserManager = ParserManager.get (doc);
+        ParserManagerImpl parserManager = ParserManagerImpl.getImpl (doc);
         setParserManager (parserManager);
         refreshASTNode ();
     }
     
     private ParserListener      parserListener;
-    private ParserManager       parserManager;
+    private ParserManagerImpl   parserManager;
     
-    private void setParserManager (ParserManager parserManager) {
+    private void setParserManager (ParserManagerImpl parserManager) {
         if (parserManager == this.parserManager) return;
         if (parserListener == null)
             parserListener = new ParserListener ();
@@ -163,11 +160,7 @@ class LanguagesNavigatorModel implements TreeModel {
     }
     
     private void refreshASTNode () {
-        try {
-            astNode = parserManager.getAST ();
-        } catch (ParseException ex) {
-            astNode = ex.getASTNode ();
-        }
+        astNode = parserManager.getAST ();
         if (astNode == null) {
             root = new NavigatorNode ("", "", null, true);
             fire ();
@@ -368,7 +361,7 @@ class LanguagesNavigatorModel implements TreeModel {
             );
             Language language = (Language) item.getLanguage ();
             if (language != null) {
-                Feature properties = language.getFeature ("PROPERTIES");
+                Feature properties = language.getFeatureList ().getFeature ("PROPERTIES");
                 if (properties != null &&
                     properties.getBoolean ("navigator-sort", false)
                 ) {
@@ -485,7 +478,7 @@ class LanguagesNavigatorModel implements TreeModel {
             Feature navigator = null;
             Language language = (Language) item.getLanguage ();
             if (language == null) return null;
-            navigator = language.getFeature ("NAVIGATOR", astPath);
+            navigator = language.getFeatureList ().getFeature ("NAVIGATOR", astPath);
             if (navigator == null) return null;
             Context context = SyntaxContext.create (document, astPath);
             String displayName = (String) navigator.getValue ("display_name", context);

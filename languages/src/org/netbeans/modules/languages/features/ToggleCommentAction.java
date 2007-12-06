@@ -145,7 +145,7 @@ public class ToggleCommentAction extends ExtKit.ToggleCommentAction {
         Feature feature = null;
         try {
             Language language = LanguagesManager.getDefault().getLanguage(mimeType);
-            feature = language.getFeature(Language.COMMENT_LINE);
+            feature = language.getFeatureList ().getFeature (CodeCommentAction.COMMENT_LINE);
         } catch (LanguageDefinitionNotFoundException e) {
         }
         if (feature != null) {
@@ -166,7 +166,7 @@ public class ToggleCommentAction extends ExtKit.ToggleCommentAction {
         Feature feature = null;
         try {
             Language language = LanguagesManager.getDefault().getLanguage(mimeType);
-            feature = language.getFeature(Language.COMMENT_LINE);
+            feature = language.getFeatureList ().getFeature (CodeCommentAction.COMMENT_LINE);
         } catch (LanguageDefinitionNotFoundException e) {
         }
         if (feature != null) {
@@ -206,7 +206,7 @@ public class ToggleCommentAction extends ExtKit.ToggleCommentAction {
         boolean prefixCommentOk = false;
         try {
             Language language = LanguagesManager.getDefault().getLanguage(mimeType);
-            feature = language.getFeature(Language.COMMENT_LINE);
+            feature = language.getFeatureList ().getFeature (CodeCommentAction.COMMENT_LINE);
         } catch (LanguageDefinitionNotFoundException e) {
         }
         if (feature != null) {

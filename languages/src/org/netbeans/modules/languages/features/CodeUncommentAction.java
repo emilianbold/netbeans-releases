@@ -141,7 +141,7 @@ public class CodeUncommentAction extends UncommentAction {
         Feature feature = null;
         try {
             Language language = LanguagesManager.getDefault().getLanguage(mimeType);
-            feature = language.getFeature(Language.COMMENT_LINE);
+            feature = language.getFeatureList ().getFeature (CodeCommentAction.COMMENT_LINE);
         } catch (LanguageDefinitionNotFoundException e) {
         }
         if (feature != null) {

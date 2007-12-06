@@ -42,10 +42,6 @@
 package org.netbeans.modules.languages.features;
 
 import java.util.Iterator;
-import org.netbeans.api.languages.ASTItem;
-import org.netbeans.api.languages.ASTPath;
-import org.netbeans.api.languages.ParseException;
-import org.netbeans.api.languages.ASTToken;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -53,20 +49,19 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenSequence;
+
+import org.netbeans.api.languages.ASTItem;
+import org.netbeans.api.languages.ASTPath;
+import org.netbeans.api.languages.ASTNode;
+import org.netbeans.api.languages.ASTToken;
+import org.netbeans.api.languages.ASTToken;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.api.languages.ASTNode;
-import org.netbeans.api.languages.ParseException;
-import org.netbeans.api.languages.ASTToken;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
-import org.netbeans.modules.languages.LanguagesManager;
-import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.modules.languages.ParserManagerImpl;
 import org.openide.ErrorManager;
+
 
 /**
  *
@@ -81,7 +76,7 @@ public class FormatAction extends BaseAction {
     public void actionPerformed (ActionEvent e, JTextComponent component) {
         try {
             NbEditorDocument doc = (NbEditorDocument) component.getDocument ();
-            ASTNode root = ParserManagerImpl.get (doc).getAST ();
+            ASTNode root = ParserManagerImpl.getImpl (doc).getAST ();
             if (root == null) return;
             StringBuilder sb = new StringBuilder ();
             Map<String,String> indents = new HashMap<String,String> ();
@@ -98,8 +93,6 @@ public class FormatAction extends BaseAction {
             );
             doc.remove (0, doc.getLength ());
             doc.insertString (0, sb.toString (), null);
-        } catch (ParseException ex) {
-            ErrorManager.getDefault ().notify (ex);
         } catch (BadLocationException ex) {
             ErrorManager.getDefault ().notify (ex);
         }
@@ -149,15 +142,15 @@ public class FormatAction extends BaseAction {
                     continue;
                 }
             }
-            Feature format = language.getFeature ("FORMAT", path2);
+            Feature format = language.getFeatureList ().getFeature ("FORMAT", path2);
             if (format != null)
                 indent = (String) format.getValue ();
 
             // indent
 //                if (e instanceof ASTNode)
-//                    System.out.println("indent " + indent + " " + firstIndented + " : " + ((ASTNode) e).getNT () + " wh:" + whitespace);
+//                    S ystem.out.println("indent " + indent + " " + firstIndented + " : " + ((ASTNode) e).getNT () + " wh:" + whitespace);
 //                else
-//                    System.out.println("indent " + indent + " " + firstIndented + " : " + e + " wh:" + whitespace);
+//                    S ystem.out.println("indent " + indent + " " + firstIndented + " : " + e + " wh:" + whitespace);
 
             if (indent != null) {
                 if (indent.equals ("NewLine"))

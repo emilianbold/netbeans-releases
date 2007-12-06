@@ -74,7 +74,7 @@ class ASTFeatures {
         if (astFeatures == null) {
             astFeatures = new ASTFeatures ();
             mimeTypeToASTFeatures.put (mimeType, astFeatures);
-            Feature optimiseProperty = language.getFeature ("AST");
+            Feature optimiseProperty = language.getFeatureList ().getFeature ("AST");
             if (optimiseProperty != null) {
 
                 String s = (String) optimiseProperty.getValue ("removeEmpty");

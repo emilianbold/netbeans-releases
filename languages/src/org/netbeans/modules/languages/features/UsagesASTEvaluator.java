@@ -62,6 +62,8 @@ import org.netbeans.api.languages.ParserManager;
 import org.netbeans.api.languages.ParserManager.State;
 import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.modules.languages.Feature;
+import org.netbeans.modules.languages.ParserManagerImpl;
+import org.netbeans.modules.languages.parser.SyntaxError;
 
 
 /**
@@ -97,13 +99,13 @@ class UsagesASTEvaluator extends ASTEvaluator {
 
     
     private Document                    document;
-    private ParserManager               parserManager;
+    private ParserManagerImpl           parserManager;
     private Set<DatabaseDefinition>     definitions;
     
     
     UsagesASTEvaluator (Document document) {
         this.document = document;
-        parserManager = ParserManager.get (document);        
+        parserManager = (ParserManagerImpl) ParserManager.get (document);        
         parserManager.addASTEvaluator (this);
     }
     
@@ -140,6 +142,8 @@ class UsagesASTEvaluator extends ASTEvaluator {
                         highlightDefinition (definition);
                         definitions.remove (definition);
                     }
+                } else {
+                    highlightUnresolvedUssage (usage);
                 }
             }
             unresolvedUsages = null;
@@ -147,6 +151,11 @@ class UsagesASTEvaluator extends ASTEvaluator {
         Iterator<DatabaseDefinition> it2 = definitions.iterator ();
         while (it2.hasNext ())
             highlightUnusedDefinition (it2.next ());
+         Iterator<SyntaxError> it3 = parserManager.getSyntaxErrors ().iterator ();
+         while (it3.hasNext ()) {
+            SyntaxError syntaxError = it3.next ();
+            highlightSyntaxError (syntaxError, root);
+         }
          SemanticHighlightsLayer.update (document);
     }
 
@@ -161,7 +170,7 @@ class UsagesASTEvaluator extends ASTEvaluator {
         if (definition != null && definition.getOffset () == leaf.getOffset ()) return;
         if (definition != null && declaration_precedes_ussage && definition.getOffset () > leaf.getOffset ()) return;
         DatabaseUsage usage = new DatabaseUsage (name, leaf.getOffset (), leaf.getEndOffset ());
-//        System.out.println("add " + usage + " (" + definition + ") to " + context);
+//        S ystem.out.println("add " + usage + " (" + definition + ") to " + context);
         if (definition != null) {
             definition.addUsage (usage);
             usage.setDatabaseDefinition (definition);
@@ -210,6 +219,30 @@ class UsagesASTEvaluator extends ASTEvaluator {
                 usage.getEndOffset (), 
                 getFieldAttributes ()
             );
+    }
+    
+    private void highlightUnresolvedUssage (DatabaseUsage usage) {
+        SemanticHighlightsLayer.addHighlight (
+            document, 
+            usage.getOffset (), 
+            usage.getEndOffset (), 
+            getUnresolvedUssageAttributes ()
+        );
+    }
+    
+    private void highlightSyntaxError (SyntaxError syntaxError, ASTNode root) {
+        ASTItem item = syntaxError.getItem ();
+        if (item.getLength () == 0) {
+            int offset = item.getOffset ();
+            if (offset >= root.getEndOffset ()) offset = root.getEndOffset () - 1;
+            item = root.findPath (offset).getLeaf ();
+        }
+        SemanticHighlightsLayer.addHighlight (
+            document, 
+            item.getOffset (), 
+            item.getEndOffset (), 
+            getSyntaxErrorAttributes ()
+        );
     }
 
     private void highlightDefinition (DatabaseDefinition definition) {
@@ -275,6 +308,17 @@ class UsagesASTEvaluator extends ASTEvaluator {
         return unusedParameterAttributeSet;
     }
     
+    private static AttributeSet syntaxErrorAttributeSet;
+    
+    private static AttributeSet getSyntaxErrorAttributes () {
+        if (syntaxErrorAttributeSet == null) {
+            SimpleAttributeSet sas = new SimpleAttributeSet ();
+            sas.addAttribute (EditorStyleConstants.WaveUnderlineColor, Color.red);
+            syntaxErrorAttributeSet = sas;
+        }
+        return syntaxErrorAttributeSet;
+    }
+    
     private static AttributeSet parameterAttributeSet;
     
     private static AttributeSet getParameterAttributes () {
@@ -294,6 +338,17 @@ class UsagesASTEvaluator extends ASTEvaluator {
             unusedLocalVariableAttributeSet = sas;
         }
         return unusedLocalVariableAttributeSet;
+    }
+    
+    private static AttributeSet unresolvedUssageAttributeSet;
+    
+    private static AttributeSet getUnresolvedUssageAttributes () {
+        if (unresolvedUssageAttributeSet == null) {
+            SimpleAttributeSet sas = new SimpleAttributeSet ();
+            sas.addAttribute (EditorStyleConstants.WaveUnderlineColor, Color.red);
+            unresolvedUssageAttributeSet = sas;
+        }
+        return unresolvedUssageAttributeSet;
     }
     
     private static AttributeSet localVariableAttributeSet;

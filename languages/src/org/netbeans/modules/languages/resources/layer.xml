@@ -52,6 +52,7 @@ made subject to such option by the copyright holder.
     <folder name="Editors">
         <folder name="AnnotationTypes">
             <file name="Error.xml" url="Error.xml"/>
+            <file name="SyntaxError.xml" url="SyntaxError.xml"/>
             <file name="Warning.xml" url="Warning.xml"/>
             <file name="Usage.xml" url="Usage.xml"/>
             <file name="Deprecation.xml" url="Deprecation.xml"/>

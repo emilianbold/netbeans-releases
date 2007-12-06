@@ -133,6 +133,7 @@ public class ASTItem {
         children.add (item);
         if (childrenMap != null)
             childrenMap.put (item.getOffset (), item);
+        length = -1;
     }
     
     /**
@@ -146,6 +147,7 @@ public class ASTItem {
         children.remove (item);
         if (childrenMap != null)
             childrenMap.remove (item.getOffset ());
+        length = -1;
     }
     
     /**
@@ -162,6 +164,7 @@ public class ASTItem {
             childrenMap.remove (oldOffset);
             childrenMap.put (item.getOffset (), item);
         }
+        length = -1;
     }
     
     /**
