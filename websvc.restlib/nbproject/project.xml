@@ -57,7 +57,6 @@ made subject to such option by the copyright holder.
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/rest/asm-3.0.jar</runtime-relative-path>
-                <binary-origin>build/external/rest/asm-3.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/rest/http.jar</runtime-relative-path>
@@ -76,19 +75,15 @@ made subject to such option by the copyright holder.
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/rest/framework-1.6-SNAPSHOT.jar</runtime-relative-path>
-                <binary-origin>build/external/rest/framework-1.6-SNAPSHOT.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/rest/http-1.6-SNAPSHOT.jar</runtime-relative-path>
-                <binary-origin>build/external/rest/http-1.6-SNAPSHOT.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/rest/http-utils-1.6-SNAPSHOT.jar</runtime-relative-path>
-                <binary-origin>build/external/rest/http-utils-1.6-SNAPSHOT.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/rest/rcm-1.6-SNAPSHOT.jar</runtime-relative-path>
-                <binary-origin>build/external/rest/rcm-1.6-SNAPSHOT.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/rest/jsp-api-2.0-20040521.jar/</runtime-relative-path>
