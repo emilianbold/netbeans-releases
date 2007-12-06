@@ -575,9 +575,8 @@ itor tabs #66700).
                         cache.refreshFileStatus(aFile, fi, null);
                     }
                 }
-            } else {
-                cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
             }
+
         } catch (HgException ex) {
         }
     }

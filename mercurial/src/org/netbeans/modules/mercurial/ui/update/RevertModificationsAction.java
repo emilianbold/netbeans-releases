@@ -99,7 +99,7 @@ public class RevertModificationsAction extends AbstractAction {
                 performRevert(repository, revStr, files);
             }
         };
-        support.start(rp, repository.getAbsolutePath(), org.openide.util.NbBundle.getMessage(UpdateAction.class, "MSG_Update_Progress")); // NOI18N
+        support.start(rp, repository.getAbsolutePath(), org.openide.util.NbBundle.getMessage(UpdateAction.class, "MSG_Revert_Progress")); // NOI18N
 
         return;
     }
