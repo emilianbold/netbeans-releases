@@ -427,6 +427,7 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
             templatesTable.getSelectionModel()
                 .setSelectionInterval(rowCount, rowCount);
             
+            updateOutputParametersTable();
             enableTableModifyingButtons(true);
         }
         
@@ -442,6 +443,8 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
                 displayTemplatesRowPanel(false);
                 templatesTable.setFocusable(true);
             }
+            
+            updateOutputParametersTable();
         }
         
         else if (cmd.equals("REMOVE_ROW")) // NOI18N
@@ -474,6 +477,8 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
                 else
                     enableTableModifyingButtons(false);
             }
+            
+            updateOutputParametersTable();
         }
     }
     
@@ -584,8 +589,8 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
         addRowButton = new javax.swing.JButton();
         modifyRowButton = new javax.swing.JButton();
         removeRowButton = new javax.swing.JButton();
-        jLabel2 = new javax.swing.JLabel();
-        jLabel1 = new javax.swing.JLabel();
+        outputParamsLabel = new javax.swing.JLabel();
+        domainTemplatesLabel = new javax.swing.JLabel();
 
         templatesTree.setAutoscrolls(true);
         templatesTree.setEditable(true);
@@ -618,9 +623,9 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
                 .add(templatesTreePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(templatesTreePanelLayout.createSequentialGroup()
                         .add(1, 1, 1)
-                        .add(addButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 106, Short.MAX_VALUE)
+                        .add(addButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 110, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(removeButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .add(removeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 68, Short.MAX_VALUE))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, treeScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 185, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -652,11 +657,9 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
         stereotypeLabel.setLabelFor(stereotypeText);
         org.openide.awt.Mnemonics.setLocalizedText(stereotypeLabel, org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "LBL_Stereotype")); // NOI18N
 
-        stereotypeText.addInputMethodListener(new java.awt.event.InputMethodListener() {
-            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
-            }
-            public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
-                stereotypeTextInputMethodTextChanged(evt);
+        stereotypeText.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                stereotypeTextKeyReleased(evt);
             }
         });
 
@@ -668,11 +671,9 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
         descriptionTextArea.setRows(2);
         descriptionTextArea.setTabSize(4);
         descriptionTextArea.setWrapStyleWord(true);
-        descriptionTextArea.addInputMethodListener(new java.awt.event.InputMethodListener() {
-            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
-            }
-            public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
-                descriptionTextAreaInputMethodTextChanged(evt);
+        descriptionTextArea.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                descriptionTextAreaKeyReleased(evt);
             }
         });
         descriptionScroll.setViewportView(descriptionTextArea);
@@ -734,8 +735,8 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
         removeRowButton.setMaximumSize(new java.awt.Dimension(133, 25));
         removeRowButton.setPreferredSize(new java.awt.Dimension(125, 25));
 
-        jLabel2.setLabelFor(templatesTable);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "LBL_Templates")); // NOI18N
+        outputParamsLabel.setLabelFor(templatesTable);
+        org.openide.awt.Mnemonics.setLocalizedText(outputParamsLabel, org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "LBL_Templates")); // NOI18N
 
         org.jdesktop.layout.GroupLayout templatePropsPanelLayout = new org.jdesktop.layout.GroupLayout(templatePropsPanel);
         templatePropsPanel.setLayout(templatePropsPanelLayout);
@@ -751,17 +752,17 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
                             .add(descriptionLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(templatePropsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(stereotypeText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 461, Short.MAX_VALUE)
-                            .add(modelElementCombo, 0, 461, Short.MAX_VALUE)
-                            .add(descriptionScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 461, Short.MAX_VALUE)))
-                    .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 549, Short.MAX_VALUE)
+                            .add(stereotypeText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 476, Short.MAX_VALUE)
+                            .add(modelElementCombo, 0, 476, Short.MAX_VALUE)
+                            .add(descriptionScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 476, Short.MAX_VALUE)))
+                    .add(outputParamsLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 549, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, templatePropsPanelLayout.createSequentialGroup()
                         .addContainerGap()
-                        .add(addRowButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 198, Short.MAX_VALUE)
+                        .add(addRowButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 199, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(modifyRowButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 163, Short.MAX_VALUE)
+                        .add(modifyRowButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 164, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(removeRowButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 162, Short.MAX_VALUE)))
+                        .add(removeRowButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 164, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         templatePropsPanelLayout.setVerticalGroup(
@@ -779,7 +780,7 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
                     .add(descriptionLabel)
                     .add(descriptionScroll, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 82, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jLabel2)
+                .add(outputParamsLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(templatesTableScroll, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 141, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
@@ -787,7 +788,7 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
                     .add(removeRowButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(modifyRowButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(addRowButton))
-                .addContainerGap(17, Short.MAX_VALUE))
+                .addContainerGap(25, Short.MAX_VALUE))
         );
 
         modelElementCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "ACSN_ElementType")); // NOI18N
@@ -800,10 +801,10 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
         modifyRowButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "ACSD_EditTemplateRowButton")); // NOI18N
         removeRowButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "ACSN_RemoveTemplateRow")); // NOI18N
         removeRowButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "ACSD_RemoveTemplateRow")); // NOI18N
-        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "ACSD_OutputParameters")); // NOI18N
+        outputParamsLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "ACSD_OutputParameters")); // NOI18N
 
-        jLabel1.setLabelFor(templatesTree);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "LBL_DomainObjects_PanelTitle")); // NOI18N
+        domainTemplatesLabel.setLabelFor(templatesTree);
+        org.openide.awt.Mnemonics.setLocalizedText(domainTemplatesLabel, org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "LBL_DomainObjects_PanelTitle")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -816,14 +817,14 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
                         .add(templatesTreePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(templatePropsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .add(jLabel1))
+                    .add(domainTemplatesLabel))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jLabel1)
+                .add(domainTemplatesLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, templatePropsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -834,46 +835,6 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "ACSN_TemplatesOptionsPanel")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "ACSD_TemplatesOptionPanel")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-
-private void stereotypeTextInputMethodTextChanged(java.awt.event.InputMethodEvent evt) {//GEN-FIRST:event_stereotypeTextInputMethodTextChanged
-    if (templatesTree == null || templatesTree.getSelectionPath() == null || 
-        templatesTree == null || templatesTree.getSelectionPath() == null || 
-        templatesTree.getSelectionPath().getPathCount() != 3)
-    {
-        return;
-    }
-    
-    TemplateFamilies templateFamilies = dataHandler.getTemplateFamilies();
-    
-    String famName = templatesTree.getSelectionPath().getParentPath()
-        .getLastPathComponent().toString();
-    
-    String domName = templatesTree.getSelectionPath()
-        .getLastPathComponent().toString();
-
-    templateFamilies.getFamilyByName(famName).getDomainByName(domName)
-        .setModelElement(stereotypeText.getText());
-}//GEN-LAST:event_stereotypeTextInputMethodTextChanged
-
-private void descriptionTextAreaInputMethodTextChanged(java.awt.event.InputMethodEvent evt) {//GEN-FIRST:event_descriptionTextAreaInputMethodTextChanged
-    if (templatesTree == null || templatesTree.getSelectionPath() == null || 
-        templatesTree == null || templatesTree.getSelectionPath() == null || 
-        templatesTree.getSelectionPath().getPathCount() != 3)
-    {
-        return;
-    }
-    
-    TemplateFamilies templateFamilies = dataHandler.getTemplateFamilies();
-    
-    String famName = templatesTree.getSelectionPath().getParentPath()
-        .getLastPathComponent().toString();
-    
-    String domName = templatesTree.getSelectionPath()
-        .getLastPathComponent().toString();
-
-    templateFamilies.getFamilyByName(famName).getDomainByName(domName)
-        .setModelElement(descriptionTextArea.getText());
-}//GEN-LAST:event_descriptionTextAreaInputMethodTextChanged
 
 private void modelElementComboItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_modelElementComboItemStateChanged
     if (evt.getSource() != modelElementCombo || 
@@ -976,7 +937,69 @@ private void templatesTableFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST
             populateTemplateProps(familyName, domainName);
         }
     }//GEN-LAST:event_templatesTreeValueChanged
+
+    private void stereotypeTextKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_stereotypeTextKeyReleased
+        if (evt.getSource() != stereotypeText || 
+            templatesTree == null || 
+            templatesTree.getSelectionPath() == null ||
+            templatesTree.getSelectionPath().getPathCount() != 3)
+        {
+            return;
+        }
+
+        TemplateFamilies templateFamilies = dataHandler.getTemplateFamilies();
+
+        String famName = templatesTree.getSelectionPath().getParentPath()
+            .getLastPathComponent().toString();
+
+        String domName = templatesTree.getSelectionPath()
+            .getLastPathComponent().toString();
+
+        templateFamilies.getFamilyByName(famName).getDomainByName(domName)
+            .setStereotype(stereotypeText.getText());
+    }//GEN-LAST:event_stereotypeTextKeyReleased
+
+    private void descriptionTextAreaKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_descriptionTextAreaKeyReleased
+        if (evt.getSource() != descriptionTextArea || 
+            templatesTree == null || 
+            templatesTree.getSelectionPath() == null ||
+            templatesTree.getSelectionPath().getPathCount() != 3)
+        {
+            return;
+        }
+
+        TemplateFamilies templateFamilies = dataHandler.getTemplateFamilies();
+
+        String famName = templatesTree.getSelectionPath().getParentPath()
+            .getLastPathComponent().toString();
+
+        String domName = templatesTree.getSelectionPath()
+            .getLastPathComponent().toString();
+
+        templateFamilies.getFamilyByName(famName).getDomainByName(domName)
+            .setDescription(descriptionTextArea.getText());
+    }//GEN-LAST:event_descriptionTextAreaKeyReleased
     
+    private void updateOutputParametersTable() 
+    {
+        if (templatesTree == null || 
+            templatesTree.getSelectionPath() == null ||
+            templatesTree.getSelectionPath().getPathCount() != 3)
+        {
+            return;
+        }
+
+        TemplateFamilies templateFamilies = dataHandler.getTemplateFamilies();
+
+        String famName = templatesTree.getSelectionPath().getParentPath()
+            .getLastPathComponent().toString();
+
+        String domName = templatesTree.getSelectionPath()
+            .getLastPathComponent().toString();
+
+        templateFamilies.getFamilyByName(famName).getDomainByName(domName)
+            .updateTemplates((DefaultTableModel)templatesTable.getModel());
+    }                                  
     
     private void updateTreeModel(String familyName, String domainName)
     {
@@ -1260,11 +1283,11 @@ private void templatesTableFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST
     private javax.swing.JLabel descriptionLabel;
     private javax.swing.JScrollPane descriptionScroll;
     private javax.swing.JTextArea descriptionTextArea;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel domainTemplatesLabel;
     private javax.swing.JComboBox modelElementCombo;
     private javax.swing.JLabel modelElementLabel;
     private javax.swing.JButton modifyRowButton;
+    private javax.swing.JLabel outputParamsLabel;
     private javax.swing.JButton removeButton;
     private javax.swing.JButton removeRowButton;
     private javax.swing.JLabel stereotypeLabel;
@@ -1276,5 +1299,5 @@ private void templatesTableFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST
     private javax.swing.JPanel templatesTreePanel;
     private javax.swing.JScrollPane treeScroll;
     // End of variables declaration//GEN-END:variables
-   
+
 }

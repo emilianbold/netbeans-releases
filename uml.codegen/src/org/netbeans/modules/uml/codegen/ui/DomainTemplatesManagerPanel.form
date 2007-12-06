@@ -30,7 +30,7 @@
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="templatePropsPanel" max="32767" attributes="0"/>
                   </Group>
-                  <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="domainTemplatesLabel" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -40,7 +40,7 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
+              <Component id="domainTemplatesLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" max="-2" attributes="0">
                   <Component id="templatePropsPanel" alignment="0" max="32767" attributes="1"/>
@@ -61,9 +61,9 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" attributes="0">
                           <EmptySpace min="-2" pref="1" max="-2" attributes="0"/>
-                          <Component id="addButton" pref="106" max="32767" attributes="1"/>
+                          <Component id="addButton" pref="110" max="32767" attributes="1"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="removeButton" max="32767" attributes="1"/>
+                          <Component id="removeButton" pref="68" max="32767" attributes="1"/>
                       </Group>
                       <Component id="treeScroll" alignment="1" pref="185" max="32767" attributes="1"/>
                   </Group>
@@ -186,19 +186,19 @@
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="stereotypeText" alignment="0" pref="461" max="32767" attributes="0"/>
-                              <Component id="modelElementCombo" alignment="0" pref="461" max="32767" attributes="0"/>
-                              <Component id="descriptionScroll" alignment="0" pref="461" max="32767" attributes="0"/>
+                              <Component id="stereotypeText" alignment="0" pref="476" max="32767" attributes="0"/>
+                              <Component id="modelElementCombo" alignment="0" pref="476" max="32767" attributes="0"/>
+                              <Component id="descriptionScroll" alignment="0" pref="476" max="32767" attributes="0"/>
                           </Group>
                       </Group>
-                      <Component id="jLabel2" alignment="0" pref="549" max="32767" attributes="0"/>
+                      <Component id="outputParamsLabel" alignment="0" pref="549" max="32767" attributes="0"/>
                       <Group type="102" alignment="1" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="addRowButton" pref="198" max="32767" attributes="1"/>
+                          <Component id="addRowButton" pref="199" max="32767" attributes="1"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="modifyRowButton" pref="163" max="32767" attributes="1"/>
+                          <Component id="modifyRowButton" pref="164" max="32767" attributes="1"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="removeRowButton" pref="162" max="32767" attributes="0"/>
+                          <Component id="removeRowButton" pref="164" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
@@ -223,7 +223,7 @@
                       <Component id="descriptionScroll" min="-2" pref="82" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                  <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
+                  <Component id="outputParamsLabel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="templatesTableScroll" min="-2" pref="141" max="-2" attributes="0"/>
                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
@@ -232,7 +232,7 @@
                       <Component id="modifyRowButton" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="addRowButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace pref="17" max="32767" attributes="0"/>
+                  <EmptySpace pref="25" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -292,7 +292,7 @@
             </Property>
           </AccessibilityProperties>
           <Events>
-            <EventHandler event="inputMethodTextChanged" listener="java.awt.event.InputMethodListener" parameters="java.awt.event.InputMethodEvent" handler="stereotypeTextInputMethodTextChanged"/>
+            <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="stereotypeTextKeyReleased"/>
           </Events>
         </Component>
         <Component class="javax.swing.JLabel" name="descriptionLabel">
@@ -332,7 +332,7 @@
                 </Property>
               </AccessibilityProperties>
               <Events>
-                <EventHandler event="inputMethodTextChanged" listener="java.awt.event.InputMethodListener" parameters="java.awt.event.InputMethodEvent" handler="descriptionTextAreaInputMethodTextChanged"/>
+                <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="descriptionTextAreaKeyReleased"/>
               </Events>
             </Component>
           </SubComponents>
@@ -456,7 +456,7 @@
             <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
           </AuxValues>
         </Component>
-        <Component class="javax.swing.JLabel" name="jLabel2">
+        <Component class="javax.swing.JLabel" name="outputParamsLabel">
           <Properties>
             <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
               <ComponentRef name="templatesTable"/>
@@ -476,7 +476,7 @@
         </Component>
       </SubComponents>
     </Container>
-    <Component class="javax.swing.JLabel" name="jLabel1">
+    <Component class="javax.swing.JLabel" name="domainTemplatesLabel">
       <Properties>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="templatesTree"/>

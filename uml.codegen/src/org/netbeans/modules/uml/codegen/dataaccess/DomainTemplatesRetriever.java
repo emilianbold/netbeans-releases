@@ -155,7 +155,19 @@ public class DomainTemplatesRetriever
             // all templates, no matter which family they are in 
             // (Java, C++, etc.) will be added under this key
             if (key != null && templates != null & templates.size() > 0)
-                codeGenTemplates.put(key, templates);
+            {
+                // if there are already templates added from another 
+                // domain template, then add to the end of those
+                if (codeGenTemplates.containsKey(key))
+                {
+                    List<DomainTemplate> curTemplates = codeGenTemplates.get(key);
+                    curTemplates.addAll(templates);
+                    codeGenTemplates.put(key, curTemplates);
+                }
+
+                else
+                    codeGenTemplates.put(key, templates);
+            }
         }
     }
 
