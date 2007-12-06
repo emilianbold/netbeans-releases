@@ -50,6 +50,11 @@ import java.util.Map;
 public class CommandBuffer {
     
     // Static parts
+    public static final int STATE_NONE = 0;
+    public static final int STATE_TIMEOUT = 1;
+    public static final int STATE_DONE = 2;
+    public static final int STATE_ERROR = 3;
+    
     private static Map<Integer, CommandBuffer> map = new HashMap<Integer, CommandBuffer>();
     
     public static CommandBuffer getCommandBuffer(Integer id) {
@@ -60,12 +65,16 @@ public class CommandBuffer {
     private StringBuilder buf;
     private CommandBufferCallbackProc cbproc;
     private Integer token;
+    private String err;
+    private int state;
     private Object lock;
     
     public CommandBuffer(int token, CommandBufferCallbackProc cbproc) {
         buf = new StringBuilder();
         this.token = new Integer(token);
         this.cbproc = cbproc;
+        state = STATE_NONE;
+        err = null;
         lock = new Object();
         map.put(this.token, this);
     }
@@ -83,6 +92,7 @@ public class CommandBuffer {
     public String postAndWait() {
         synchronized (lock) {
             try {
+                state = STATE_TIMEOUT; // this will change unless we timeout
                 lock.wait(2000);
                 return toString();
             } catch (InterruptedException ex) {
@@ -102,8 +112,24 @@ public class CommandBuffer {
     
     public void done() {
         synchronized (lock) {
+            state = STATE_DONE;
             lock.notify();
         }
+    }
+    
+    public void error(String msg) {
+        synchronized (lock) {
+            err = msg;
+            state = STATE_ERROR;
+            lock.notify();
+        }
+    }
+    
+    public String getError() {
+        if (state == STATE_ERROR && err != null) {
+            return err;
+        }
+        return null;
     }
     
     public void dispose() {

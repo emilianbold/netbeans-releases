@@ -182,21 +182,13 @@ public class GdbAttachPanel extends JPanel implements Controller, ProcessListRea
      */
     public void processListCallback(List<String> list) {
         Pattern re = getFilterRE();
-//        int count = procList.isStd() ? 6 : 8;
         
         for (String line : list) {
             Vector<String> row = new Vector<String>();
             StringTokenizer tok = new StringTokenizer(line);
-//            StringBuilder args = new StringBuilder();
-//            int i = 0;
             while (tok.hasMoreTokens()) {
-//                if (++i < count) {
-                    row.add(tok.nextToken());
-//                } else {
-//                    args.append(tok.nextToken() + ' ');
-//                }
+                row.add(tok.nextToken());
             }
-//            row.add(args.toString());
             if (re == null || re.matcher(line).find()) {
                 if (procList.isCygwin()) {
                     processModel.addRow(reorderCygwinRow(row));
@@ -212,7 +204,7 @@ public class GdbAttachPanel extends JPanel implements Controller, ProcessListRea
         Vector<String> nurow = new Vector<String>(oldrow.size() - 2);
         String status = oldrow.get(0);
         
-        if (status.length() == 1 && (status.equals("I") ||  status.equals("C") || status.equals("O"))) {
+        if (status.length() == 1 && (status.equals("I") ||  status.equals("C") || status.equals("O"))) { // NOI18N
             // The status field is optional...
             nurow.add(0, oldrow.get(6));  // UID
             nurow.add(1, oldrow.get(4));  // WINPID
@@ -277,18 +269,15 @@ public class GdbAttachPanel extends JPanel implements Controller, ProcessListRea
             
             if (cmd.equals("comboBoxEdited")) { // NOI18N
                 if (current.length() > 0 && !filterList.contains(current)) {
-                    System.err.println("GAP$FC.actionPerformed: New filter");
                     FilterItem item = new FilterItem(current);
                     if (item.isValid()) {
                         filterList.add(item);
                         filterCB.addItem(item);
                         selectedFilter = current;
-//                    changed = true;
                     }
                 }
-            } else if (cmd.equals("comboBoxChanged")) {
+            } else if (cmd.equals("comboBoxChanged")) { // NOI18N
                 if (!current.equals(selectedFilter)) {
-                    System.err.println("GAP$FC.actionPerformed: Filter Changed");
                     selectedFilter = current;
                     changed = true;
                 }

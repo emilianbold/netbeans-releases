@@ -52,7 +52,6 @@ import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 
 
@@ -150,32 +149,32 @@ public class ThreadsNodeModel implements NodeModel {
             return null;
         }
         StringBuilder sb = new StringBuilder();
-        sb.append("<html>");
+        sb.append("<html>"); // NOI18N
         if (bold) { 
-            sb.append("<b>");
+            sb.append("<b>"); // NOI18N
         }
         if (italics) {
-            sb.append("<i>");
+            sb.append("<i>"); // NOI18N
         }
         if (color != null) {
-            sb.append("<font color=");
+            sb.append("<font color="); // NOI18N
             sb.append(Integer.toHexString ((color.getRGB () & 0xffffff)));
-            sb.append(">");
+            sb.append(">"); // NOI18N
         }
-        text = text.replaceAll("&", "&amp;");
-        text = text.replaceAll("<", "&lt;");
-        text = text.replaceAll(">", "&gt;");
+        text = text.replaceAll("&", "&amp;"); // NOI18N
+        text = text.replaceAll("<", "&lt;"); // NOI18N
+        text = text.replaceAll(">", "&gt;"); // NOI18N
         sb.append(text);
         if (color != null) {
-            sb.append("</font>");
+            sb.append("</font>"); // NOI18N
         }
         if (italics) {
-            sb.append("</i>");
+            sb.append("</i>"); // NOI18N
         }
         if (bold) {
-            sb.append("</b>");
+            sb.append("</b>"); // NOI18N
         }
-        sb.append("</html>");
+        sb.append("</html>"); // NOI18N
         return sb.toString();
     }
             

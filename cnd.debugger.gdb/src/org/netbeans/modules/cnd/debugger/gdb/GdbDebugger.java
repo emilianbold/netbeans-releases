@@ -238,36 +238,53 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 programPID = (Long) lookupProvider.lookupFirst(null, Long.class);
                 CommandBuffer cb = new CommandBuffer(gdb.target_attach(Long.toString(programPID)));
                 cb.postAndWait();
-                final String path = getFullPath(runDirectory, pae.getExecutable());
-                
-                // 1) see if path was explicitly loaded by target_attach (this is system dependent)
-                if (!symbolsRead(cb.toString(), path)) {
-                    // 2) see if we can validate via /proc (or perhaps other platform specific means)
-                    if (validAttach(programPID, path)) {
-                        gdb.file_symbol_file(path);
-                        setLoading();
+                String err = cb.getError();
+                if (err != null) {
+                    final String msg;
+                    if (err.toLowerCase().contains("no such process")) { // NOI18N
+                        msg = NbBundle.getMessage(GdbDebugger.class, "ERR_NoSuchProcess"); // NOI18N
                     } else {
-                        // 3) Let the user decide (path may be path to exe but we're loading symbols from a .so). The
-                        // dialog is invoked later because we got here by pressing OK on the Attach dialog. If the
-                        // dialog hasn't been removed yet, posting the NotifyDescriptor fails. The invokeLater
-                        // resolves this race condition.
-                        String msg = NbBundle.getMessage(GdbDebugger.class, "WARN_AttachValidationFailure"); // NOI18N
-                        final NotifyDescriptor nd = new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.OK_CANCEL_OPTION);
-                        SwingUtilities.invokeLater(new Runnable() {
-                            public void run() {
-                                Object o = DialogDisplayer.getDefault().notify(nd);
-                                if (o == NotifyDescriptor.OK_OPTION) {
-                                    gdb.file_symbol_file(path);
-                                    setLoading();
-                                } else {
-                                    setExited();
-                                    finish(false);
-                                }
-                            }
-                        });
+                        msg = NbBundle.getMessage(GdbDebugger.class, "ERR_CantAttach"); // NOI18N
                     }
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
+                            setExited();
+                            finish(false);
+                        }
+                    });
                 } else {
-                    setLoading();
+                    final String path = getFullPath(runDirectory, pae.getExecutable());
+
+                    // 1) see if path was explicitly loaded by target_attach (this is system dependent)
+                    if (!symbolsRead(cb.toString(), path)) {
+                        // 2) see if we can validate via /proc (or perhaps other platform specific means)
+                        if (validAttach(programPID, path)) {
+                            gdb.file_symbol_file(path);
+                            setLoading();
+                        } else {
+                            // 3) Let the user decide (path may be path to exe but we're loading symbols from a .so). The
+                            // dialog is invoked later because we got here by pressing OK on the Attach dialog. If the
+                            // dialog hasn't been removed yet, posting the NotifyDescriptor fails. The invokeLater
+                            // resolves this race condition.
+                            String msg = NbBundle.getMessage(GdbDebugger.class, "WARN_AttachValidationFailure"); // NOI18N
+                            final NotifyDescriptor nd = new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.OK_CANCEL_OPTION);
+                            SwingUtilities.invokeLater(new Runnable() {
+                                public void run() {
+                                    Object o = DialogDisplayer.getDefault().notify(nd);
+                                    if (o == NotifyDescriptor.OK_OPTION) {
+                                        gdb.file_symbol_file(path);
+                                        setLoading();
+                                    } else {
+                                        setExited();
+                                        finish(false);
+                                    }
+                                }
+                            });
+                        }
+                    } else {
+                        setLoading();
+                    }
                 }
             } else {
                 gdb.file_exec_and_symbols(getProgramName(pae.getExecutable()));
@@ -688,8 +705,13 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             setRunning();
         } else if (msg.startsWith("^error,msg=")) { // NOI18N
             msg = msg.substring(11);
+            CommandBuffer cb = CommandBuffer.getCommandBuffer(itok);
             
-            if (typeCompletionTable.get(itok) != null) {
+            if (cb != null) {
+                cb.error(msg);
+                cb.callback();
+                cb.dispose();
+            } else if (typeCompletionTable.get(itok) != null) {
                 StringBuilder typebuf = typeCompletionTable.remove(itok);
                 String tbuf = typebuf.toString();
                 int pos = tbuf.indexOf('='); // its guaranteed to have '='
