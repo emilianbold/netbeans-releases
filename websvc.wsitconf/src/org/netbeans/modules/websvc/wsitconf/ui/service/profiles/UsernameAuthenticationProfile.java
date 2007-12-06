@@ -153,6 +153,10 @@ public class UsernameAuthenticationProfile extends ProfileBase
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, false);
         if (Util.isTomcat(p)) {
             FileObject tomcatLoc = Util.getTomcatLocation(p);
+            if (tomcatLoc == null) {
+                Logger.global.log(Level.INFO, "Tomcat Location could not be detected.");
+                return;
+            }
             ProprietarySecurityPolicyModelHelper.setStoreLocation(component, 
                     tomcatLoc.getPath() + File.separator + CERTS_DIR + File.separator + "server-keystore.jks", false, false);
             ProprietarySecurityPolicyModelHelper.setStoreType(component, KeystorePanel.JKS, false, false);
@@ -176,6 +180,10 @@ public class UsernameAuthenticationProfile extends ProfileBase
                 (Binding)component, CallbackHandler.PASSWORD_CBHANDLER, null, DEFAULT_PASSWORD, true);
         if (Util.isTomcat(p)) {
             FileObject tomcatLoc = Util.getTomcatLocation(p);
+            if (tomcatLoc == null) {
+                Logger.global.log(Level.INFO, "Tomcat Location could not be detected.");
+                return;
+            }
             ProprietarySecurityPolicyModelHelper.setStoreLocation(component, 
                     tomcatLoc.getPath() + File.separator + CERTS_DIR + File.separator + "client-truststore.jks", true, true);
             ProprietarySecurityPolicyModelHelper.setStoreType(component, KeystorePanel.JKS, true, true);

@@ -458,12 +458,13 @@ public class Util {
     public static FileObject getTomcatLocation(Project project) {
         J2eeModuleProvider mp = project.getLookup().lookup(J2eeModuleProvider.class);
         FileObject folder = null;
+        String id = null;
         if (mp != null) { 
             try {
-                String id = mp.getServerInstanceID();
+                id = mp.getServerInstanceID();
                 folder = getTomcatLocation(id);
             } catch (Exception ex) {
-                Logger.getLogger(LOGGER_GLOBAL).log(Level.INFO, null, ex);
+                Logger.getLogger(LOGGER_GLOBAL).log(Level.INFO, id, ex);
             }    
         }
         return folder;
@@ -484,7 +485,7 @@ public class Util {
                 folder = FileUtil.toFileObject(f);
             }
         } catch (Exception ex) {
-            Logger.getLogger(LOGGER_GLOBAL).log(Level.INFO, null, ex);
+            Logger.getLogger(LOGGER_GLOBAL).log(Level.INFO, serverID, ex);
         }    
         return folder;
     }
