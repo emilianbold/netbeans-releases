@@ -63,6 +63,10 @@ public class AstPath implements Iterable<Node> {
 
     public AstPath() {
     }
+        
+    public AstPath(AstPath other) {
+        path.addAll(other.path);
+    }
 
     public AstPath(ArrayList<Node> path) {
         this.path = path;
@@ -95,6 +99,22 @@ public class AstPath implements Iterable<Node> {
 
     public void ascend() {
         path.remove(path.size() - 1);
+    }
+    
+    /**
+     * Return true iff this path contains a node of the given node type
+     * 
+     * @param nodeType The nodeType to check
+     * @return true if the given nodeType is found in the path
+     */
+    public boolean contains(int nodeType) {
+        for (int i = 0, n = path.size(); i < n; i++) {
+            if (path.get(i).nodeId == nodeType) {
+                return true;
+            }
+        }
+        
+        return false;
     }
 
     /**
