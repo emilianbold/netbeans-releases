@@ -155,7 +155,8 @@ public class WebServiceData {
     }
     
     public boolean isReady() {
-        if (! new File(getWsdlFile()).isFile() || getCatalog() == null || ! new File(getCatalog()).isFile()) {
+        if (wsdlFile == null || ! new File(wsdlFile).isFile() || 
+            getCatalog() == null || ! new File(getCatalog()).isFile()) {
             return false;
         }
         
