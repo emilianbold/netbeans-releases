@@ -135,7 +135,7 @@ public class MercurialAnnotator extends VCSAnnotator {
     private String emptyFormat;
     private Boolean needRevisionForFormat;
     private File folderToScan;
-    private ConcurrentLinkedQueue<File> dirsToScan = new ConcurrentLinkedQueue();
+    private ConcurrentLinkedQueue<File> dirsToScan = new ConcurrentLinkedQueue<File>();
     private RequestProcessor.Task scanTask;
     private static final RequestProcessor rp = new RequestProcessor("MercurialAnnotateScan", 1, true); // NOI18N
     
