@@ -106,39 +106,39 @@ final class UnusedTooltipResolver implements HighlightAttributeValue<String> {
                     switch (e.getKind()) {
                         case LOCAL_VARIABLE:
                         case EXCEPTION_PARAMETER:
-                            key = "LBL_UnusedVariable";
+                            key = "LBL_UnusedVariable"; // NOI18N
                             elementDisplayName = e.getSimpleName().toString();
                             break;
                         case PARAMETER:
-                            key = "LBL_UnusedParameter";
+                            key = "LBL_UnusedParameter"; // NOI18N
                             elementDisplayName = e.getSimpleName().toString();
                             break;
                         case FIELD:
-                            key = "LBL_UnusedField";
+                            key = "LBL_UnusedField"; // NOI18N
                             elementDisplayName = e.getSimpleName().toString();
                             break;
                         case METHOD:
-                            key = "LBL_UnusedMethod";
+                            key = "LBL_UnusedMethod"; // NOI18N
                             elementDisplayName = ElementHeaders.getHeader(e, cont, NAME + PARAMETERS);
                             break;
                         case CONSTRUCTOR:
-                            key = "LBL_UnusedConstructor";
+                            key = "LBL_UnusedConstructor"; // NOI18N
                             elementDisplayName = e.getEnclosingElement().getSimpleName().toString() + ElementHeaders.getHeader(e, cont, PARAMETERS);
                             break;
                         case CLASS:
-                            key = "LBL_UnusedClass";
+                            key = "LBL_UnusedClass"; // NOI18N
                             elementDisplayName = e.getSimpleName().toString();
                             break;
                         case INTERFACE:
-                            key = "LBL_UnusedInterface";
+                            key = "LBL_UnusedInterface"; // NOI18N
                             elementDisplayName = e.getSimpleName().toString();
                             break;
                         case ANNOTATION_TYPE:
-                            key = "LBL_UnusedAnnotationType";
+                            key = "LBL_UnusedAnnotationType"; // NOI18N
                             elementDisplayName = e.getSimpleName().toString();
                             break;
                         case ENUM:
-                            key = "LBL_UnusedEnum";
+                            key = "LBL_UnusedEnum"; // NOI18N
                             elementDisplayName = e.getSimpleName().toString();
                             break;
                     }
