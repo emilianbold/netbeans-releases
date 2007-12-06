@@ -191,11 +191,11 @@
                     <attr name="position" intvalue="450"/>
                 </file>
             </folder>
-            <folder name="Customizer">
+            <!-- folder name="Customizer">
                 <file name="org.netbeans.modules.websvc.rest.projects.WebCustomizerCategoryProvider.instance">
                     <attr name="position" intvalue="770"/>
                 </file>
-            </folder>
+            </folder -->
         </folder>
     </folder>
 </filesystem>
