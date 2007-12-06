@@ -40,34 +40,22 @@
 package org.netbeans.modules.ruby.extrahints;
 
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import org.jruby.ast.IfNode;
 import org.jruby.ast.Node;
 import org.jruby.ast.NodeTypes;
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.OffsetRange;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
-import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.hints.spi.AstRule;
 import org.netbeans.modules.ruby.hints.spi.Description;
-import org.netbeans.modules.ruby.hints.spi.EditList;
 import org.netbeans.modules.ruby.hints.spi.Fix;
 import org.netbeans.modules.ruby.hints.spi.HintSeverity;
-import org.netbeans.modules.ruby.hints.spi.PreviewableFix;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -82,7 +70,7 @@ public class RetryOutsideRescue implements AstRule {
 
     public void run(CompilationInfo info, Node node, AstPath path, int caretOffset,
             List<Description> result) {
-        if (!path.contains(NodeTypes.RESCUENODE)) {
+        if (!path.contains(NodeTypes.RESCUEBODYNODE)) {
             OffsetRange range = AstUtilities.getNameRange(node);
 
             range = LexUtilities.getLexerOffsets(info, range);
