@@ -107,7 +107,7 @@ public class ManagerWizard extends JMXTestCase {
         System.out.println("Create package folder " + PACKAGE_COM_FOO_BAR);
         NewFileWizardOperator nfwo = newFileWizardFromMenu(
                 PROJECT_NAME_MANAGER_FUNCTIONAL,
-                FILE_CATEGORY_JAVA_CLASSES,
+                FILE_CATEGORY_JAVA,
                 FILE_TYPE_JAVA_PACKAGE);
         nfwo.next();
         NewFileNameLocationStepOperator nfnlso = nameAndLocationWizard(
@@ -152,7 +152,7 @@ public class ManagerWizard extends JMXTestCase {
         // Handle the popup before the wizard as
         // some updates in popup may update the wizard
         //---------------------------------------
-        clickButton(AGENT_URL_EDIT_BUTTON, nfnlso);
+        pressAndRelease(AGENT_URL_EDIT_BUTTON, nfnlso);
         waitNoEvent(5000);
         NbDialogOperator ndo = new NbDialogOperator(AGENT_URL_DIALOG_TITLE);
         // Check agent URL popup components
@@ -220,7 +220,7 @@ public class ManagerWizard extends JMXTestCase {
         //---------------------------------------
         // Update some values
         System.out.println("Update Agent URL popup values");
-        clickButton(AGENT_URL_EDIT_BUTTON, nfnlso);
+        pressAndRelease(AGENT_URL_EDIT_BUTTON, nfnlso);
         waitNoEvent(5000);
         NbDialogOperator ndo = new NbDialogOperator(AGENT_URL_DIALOG_TITLE);
         manager.setHost("server.sun.com");
@@ -303,7 +303,7 @@ public class ManagerWizard extends JMXTestCase {
         //---------------------------------------
         // Update some values
         System.out.println("Update Agent URL popup values");
-        clickButton(AGENT_URL_EDIT_BUTTON, nfnlso);
+        pressAndRelease(AGENT_URL_EDIT_BUTTON, nfnlso);
         waitNoEvent(5000);
         NbDialogOperator ndo = new NbDialogOperator(AGENT_URL_DIALOG_TITLE);
         manager.setProtocol("jmxmp");

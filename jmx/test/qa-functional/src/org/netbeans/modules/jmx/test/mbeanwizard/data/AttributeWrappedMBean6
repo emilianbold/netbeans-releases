@@ -1,0 +1,118 @@
+/*
+ * AttributeWrappedMBean6.java
+ *
+ * Created on <current Date and Time>
+ */
+
+package com.foo.bar;
+import javax.management.*;
+import java.util.Arrays;
+
+/**
+ * Class AttributeWrappedMBean6
+ * 
+ * @author <author>
+ */
+public class AttributeWrappedMBean6 extends StandardMBean implements AttributeWrappedMBean6MBean {
+    private AttributeWrapper2 theRef;
+
+    public AttributeWrappedMBean6(AttributeWrapper2 theRef) throws NotCompliantMBeanException {
+        //WARNING Uncomment the following call to super() to make this class compile (see BUG ID 122377)
+        // super(AttributeWrappedMBean6MBean.class, true);
+        this.theRef = theRef;
+    }
+    
+    @Override
+    public MBeanInfo getMBeanInfo() {
+        MBeanInfo mbinfo = super.getMBeanInfo();
+        return new MBeanInfo(mbinfo.getClassName(),
+                mbinfo.getDescription(),
+                mbinfo.getAttributes(),
+                mbinfo.getConstructors(),
+                mbinfo.getOperations(),
+                getNotificationInfo());
+    }
+    
+    public MBeanNotificationInfo[] getNotificationInfo() {
+        return new MBeanNotificationInfo[] {};
+    }
+
+    /**
+     * Override customization hook:
+     * You can supply a customized description for MBeanInfo.getDescription()
+     */
+    @Override
+    protected String getDescription(MBeanInfo info) {
+        return "MBean from existing java class wrapped as MXBean with generic attributes";
+    }
+
+    /**
+     * Override customization hook:
+     * You can supply a customized description for MBeanAttributeInfo.getDescription()
+     */
+    @Override
+    protected String getDescription(MBeanAttributeInfo info) {
+        String description = null;
+        if (info.getName().equals("Attribute1")) {
+            description = "Attribute exposed for management";
+        } else if (info.getName().equals("GenericAttribute1")) {
+            description = "Attribute exposed for management";
+        } else if (info.getName().equals("GenericAttribute2")) {
+            description = "Attribute exposed for management";
+        }
+
+        return description;
+    }
+
+    /**
+     * Override customization hook:
+     * You can supply a customized description for MBeanParameterInfo.getDescription()
+     */
+    @Override
+    protected String getDescription(MBeanOperationInfo op, MBeanParameterInfo param, int sequence) {
+        return null;
+    }
+
+    /**
+     * Override customization hook:
+     * You can supply a customized description for MBeanParameterInfo.getName()
+     */
+    @Override
+    protected String getParameterName(MBeanOperationInfo op, MBeanParameterInfo param, int sequence) {
+        return null;
+    }
+
+    /**
+     * Override customization hook:
+     * You can supply a customized description for MBeanOperationInfo.getDescription()
+     */
+    @Override
+    protected String getDescription(MBeanOperationInfo info) {
+        String description = null;
+
+        return description;
+    }
+
+    /**
+     * Get Attribute exposed for management
+     */
+    public String getAttribute1() {
+        return theRef.getAttribute1();
+    }
+
+    /**
+     * Get Attribute exposed for management
+     */
+    public Object getGenericAttribute1() {
+        return theRef.getGenericAttribute1();
+    }
+
+    /**
+     * Get Attribute exposed for management
+     */
+    public Object getGenericAttribute2() {
+        return theRef.getGenericAttribute2();
+    }
+}
+
+

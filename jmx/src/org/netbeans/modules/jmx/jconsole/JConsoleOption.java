@@ -57,12 +57,12 @@ public final class JConsoleOption extends AdvancedOption {
 
     @Override
     public String getDisplayName () {
-        return loc("JConsole");
+        return loc("JConsole");// NOI18N
     }
 
     @Override
     public String getTooltip () {
-        return loc("JConsole_Tooltip");
+        return loc("JConsole_Tooltip");// NOI18N
     }
 
     @Override

@@ -8,7 +8,7 @@ package com.foo.bar;
 
 /**
  * Interface EmptyMBean4MBean
- * MBean from existing java class wrapped as MXBean without attributes and operations
+ * 
  * @author <author>
  */
 public interface EmptyMBean4MBean

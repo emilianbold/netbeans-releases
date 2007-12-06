@@ -8,7 +8,7 @@ package Template.Classes;
 
 /**
  * Interface __NAME__
- * {0}
+ *
  * @author __USER__
  */
 public interface __NAME__ 

@@ -84,7 +84,7 @@ public class J2SEProjectType {
     private static final String STANDARD_IMPORT_STRING = "<import file=\"nbproject/build-impl.xml\"/>";// NOI18N
     private static final String MANAGEMENT_IMPORT_STRING = "<import file=\"nbproject/management-build-impl.xml\"/>";// NOI18N
     private static final String MANAGEMENT_NAME_SPACE = "http://www.netbeans.org/ns/jmx/1";// NOI18N
-    private static SpecificationVersion JDK15Version = new SpecificationVersion("1.5");
+    private static SpecificationVersion JDK15Version = new SpecificationVersion("1.5");// NOI18N
     public static boolean isProjectTypeSupported(Project project) {
         AuxiliaryConfiguration aux = (AuxiliaryConfiguration) project.getLookup().lookup(AuxiliaryConfiguration.class);
         if (aux == null) {

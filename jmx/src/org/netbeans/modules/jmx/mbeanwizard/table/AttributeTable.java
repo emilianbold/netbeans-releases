@@ -39,9 +39,11 @@
  * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.jmx.mbeanwizard.table;
+import java.awt.event.ActionEvent;
 import org.netbeans.modules.jmx.WizardHelpers;
 import org.netbeans.modules.jmx.mbeanwizard.renderer.ComboBoxRenderer;
 import java.awt.Dimension;
+import java.awt.event.ActionListener;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.JComboBox;
@@ -61,7 +63,7 @@ import org.netbeans.modules.jmx.mbeanwizard.editor.JTextFieldCellEditor;
  * Class responsible for the attribute table in the Method and Attribute Panel
  * 
  */
-public class AttributeTable extends JTable {
+public class AttributeTable extends JTable implements ActionListener {
     
     /*******************************************************************/
     // here we use raw model calls (i.e getValueAt and setValueAt) to
@@ -167,6 +169,7 @@ public class AttributeTable extends JTable {
                 JComboBox typeBox = WizardHelpers.instanciateTypeJComboBox();
                 Object o = getModel().getValueAt(row,column);
                 typeBox.setSelectedItem(o);
+                typeBox.addActionListener(this); 
                 return new JComboBoxCellEditor(typeBox, this);
             } else {
                 if (column == 2) { //access mode
@@ -220,5 +223,9 @@ public class AttributeTable extends JTable {
     public FireEvent getWiz() {
     
         return this.wiz;
-    }   
+    }
+
+    public void actionPerformed(ActionEvent arg0) {
+        wiz.event();
+    }
 }

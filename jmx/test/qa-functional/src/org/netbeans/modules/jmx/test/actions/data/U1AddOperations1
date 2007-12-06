@@ -35,14 +35,12 @@ public class U1AddOperations1 extends U1AddOperations1Super
      * op3 Description
      * @param s s Description
      * @param f f Description
-     * @throws UserException UserException Description
-     * @throws IllegalStateException IllegalStateException Description
+     * @throws com.foo.bar.UserException UserException Description
+     * @throws java.lang.IllegalStateException IllegalStateException Description
      * @return long
      */
     public long op3(String s, float f) throws UserException, IllegalStateException {
-        
         //TODO add your own implementation
-        
         return 0;
     }
 }

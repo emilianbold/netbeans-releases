@@ -59,6 +59,7 @@ import org.netbeans.modules.jmx.WizardConstants;
 import org.netbeans.modules.jmx.GenericWizardPanel;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import org.openide.util.HelpCtx;
 
 /**
  *
@@ -514,6 +515,9 @@ public class SNMPPanel extends javax.swing.JPanel {
             wiz.putProperty(WizardConstants.SNMP_ACL_FILE, 
                     getPanel().aclFileJTextField.getText());
         }
+        public HelpCtx getHelp() {
+           return new HelpCtx( "mgt_properties");  // NOI18N
+        } 
     }
 
 }

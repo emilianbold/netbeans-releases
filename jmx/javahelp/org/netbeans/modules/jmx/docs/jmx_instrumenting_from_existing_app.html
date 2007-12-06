@@ -38,9 +38,9 @@ MBean. The MBean wizard is used to generate the classes. <br>
 </p>
 <ol>
   <li>Select <span style="font-style: italic;">File/New File...</span></li>
-  <li>Select the <span style="font-style: italic;">Management </span>category.
+  <li>Select the <span style="font-style: italic;">JMX </span>category.
 In <span style="font-style: italic;">File Types</span> select <span
- style="font-style: italic;">JMX MBean</span></li>
+ style="font-style: italic;">JMX MBean From Existing Java Class</span></li>
   <li>Type in a <span style="font-style: italic;">Name</span>, a <span
  style="font-style: italic;">Package</span><br>
   </li>
@@ -59,19 +59,6 @@ Any documentation that is typed from this wizard will be generated as :</li>
 at runtime for Dynamic and Extended MBeans.<br>
     </li>
   </ul>
-  <li>If you want your MBean to implement the MBeanRegistration interface,
-check the <span style="font-style: italic;">Implement MBeanRegistration
-Interface</span> checkbox. The <span style="font-weight: bold;">MBeanRegistration
-interface is a handy interface that allows your MBean to track its life
-cycle</span>. Events of interest are related to MBean registration
-(pre/post register/unregister callbacks).</li>
-  <li>You can check <span style="font-style: italic;">Generate Private
-Fields for preRegister Method Parameters</span>. Selecting this option
-will make the wizard generate some private fields to keep
-references on parameters that are passed to preRegister callbacks.
-Keeping references on the provided ObjectName and MBeanServer is
-generally of interest.<br>
-  </li>
   <li>Click <span style="font-style: italic;">Next&gt;</span><br>
   </li>
   <li>A set of discovered potential attributes (if any) are displayed
@@ -139,42 +126,6 @@ type in what this parameter represents.</li>
     <li>In the column <span style="font-style: italic;">Description</span>,
 type in what this operation represents (eg: Reset the current Status)</li>
   </ul>
-  <li>Click <span style="font-style: italic;">Next&gt;</span></li>
-  <li>If you want your MBean to send notifications, select the <span
- style="font-style: italic;">Implement NotificationEmitter</span> Interface.
-The wizard can generate an implementation of this interface based on a
-NotificationBroadcasterSupport delegation. Some code to handle the
-notification sequence number can also be generated. Check the
-associated checkboxes to have this code generated.</li>
-  <li>If you want your MBean to define notifications, click <span
- style="font-style: italic;">Add Notification</span>.</li>
-  <li>In the <span style="font-style: italic;">Notifications </span>Table,
-first row, type in the following:</li>
-  <ul>
-    <li>In the column <span style="font-style: italic;">Notification
-Class</span>, 
-you can select a standard JMX notification class or type in your own
-Notification class. If you select AttributeChangeNotification class,
-the Notification type will be automaticaly set to
-AttributeChangeNotification.ATTRIBUTE_CHANGE.<br>
-    </li>
-    <li>In the column <span style="font-style: italic;">Description</span>
-type in a notification description (eg: "Send a notification when the
-Status attribute is changed")</li>
-    <li>In the column Notification type,&nbsp; click <span
- style="font-style: italic;">Edit </span>button.</li>
-    <ul>
-      <li>Click <span style="font-style: italic;">Add Type</span></li>
-      <li>In the column <span style="font-style: italic;">Notification,
-        </span>you
-can change the default type to your own type (eg :
-com.foo.event.BIRTHDAY)<span style="font-style: italic;"><br>
-        </span></li>
-    </ul>
-  </ul>
-  <li>Click <span style="font-style: italic;">Next&gt;</span></li>
-  <li>If you want to generate a JUnit test, check the <span
- style="font-style: italic;">Create JUnit Test</span> checkbox.</li>
   <li>Click <span style="font-style: italic;">Finish</span>.</li>
   <li>The MBean implementation class is opened in the editor.&nbsp;
 If you selected a Standard MBean type, an MBean interface (named <span

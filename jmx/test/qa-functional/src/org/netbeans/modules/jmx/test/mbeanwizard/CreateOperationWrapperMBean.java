@@ -41,15 +41,14 @@
 
 package org.netbeans.modules.jmx.test.mbeanwizard;
 
-import java.util.ArrayList;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jemmy.drivers.tables.JTableMouseDriver;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.jmx.test.helpers.MBean;
-import org.netbeans.modules.jmx.test.helpers.Operation;
 import static org.netbeans.modules.jmx.test.helpers.JellyConstants.*;
 
 
@@ -77,8 +76,8 @@ public class CreateOperationWrapperMBean extends MBeanWizardTestCase {
     private static String GENERIC_OPERATION_2 = "genericOperation2";
     private static String GENERIC_OPERATION_3 = "genericOperation3";
     
-    // Depending on the MBean name, the attributes wizard execution will differ
-    private String mbeanName = null;
+    // Depending on the MBean, the operations wizard execution will differ
+    private MBean mbean = null;
     
     /** Need to be defined because of JUnit */
     public CreateOperationWrapperMBean(String name) {
@@ -126,15 +125,14 @@ public class CreateOperationWrapperMBean extends MBeanWizardTestCase {
         System.out.println("============  createWrappedMBean1  ============");
         
         String description = "MBean from existing java class with all operations";
-        mbeanName = OPERATION_WRAPPED_MBEAN_NAME_1;
-        MBean myMBean = new MBean(
-                mbeanName,
+        mbean = new MBean(
+                OPERATION_WRAPPED_MBEAN_NAME_1,
                 FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS,
                 PACKAGE_COM_FOO_BAR,
                 description,
                 PACKAGE_COM_FOO_BAR + "." + OPERATION_WRAPPER_NAME_1,
                 false, null, null, null);
-        wizardExecution(FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS, myMBean);
+        wizardExecution(FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS, mbean);
     }
     
     /**
@@ -145,15 +143,14 @@ public class CreateOperationWrapperMBean extends MBeanWizardTestCase {
         System.out.println("============  createWrappedMBean2  ============");
         
         String description = "MBean from existing java class with minimal operations";
-        mbeanName = OPERATION_WRAPPED_MBEAN_NAME_2;
-        MBean myMBean = new MBean(
-                mbeanName,
+        mbean = new MBean(
+                OPERATION_WRAPPED_MBEAN_NAME_2,
                 FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS,
                 PACKAGE_COM_FOO_BAR,
                 description,
                 PACKAGE_COM_FOO_BAR + "." + OPERATION_WRAPPER_NAME_1,
                 false, null, null, null);
-        wizardExecution(FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS, myMBean);
+        wizardExecution(FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS, mbean);
     }
     
     /**
@@ -164,15 +161,14 @@ public class CreateOperationWrapperMBean extends MBeanWizardTestCase {
         System.out.println("============  createWrappedMBean3  ============");
         
         String description = "MBean from existing java class with generic operations";
-        mbeanName = OPERATION_WRAPPED_MBEAN_NAME_3;
-        MBean myMBean = new MBean(
-                mbeanName,
+        mbean = new MBean(
+                OPERATION_WRAPPED_MBEAN_NAME_3,
                 FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS,
                 PACKAGE_COM_FOO_BAR,
                 description,
                 PACKAGE_COM_FOO_BAR + "." + OPERATION_WRAPPER_NAME_2,
                 false, null, null, null);
-        wizardExecution(FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS, myMBean);
+        wizardExecution(FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS, mbean);
     }
     
     /**
@@ -184,15 +180,14 @@ public class CreateOperationWrapperMBean extends MBeanWizardTestCase {
         
         String description = "MBean from existing java class wrapped as MXBean " +
                 "with all operations";
-        mbeanName = OPERATION_WRAPPED_MBEAN_NAME_4;
-        MBean myMBean = new MBean(
-                mbeanName,
+        mbean = new MBean(
+                OPERATION_WRAPPED_MBEAN_NAME_4,
                 FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS,
                 PACKAGE_COM_FOO_BAR,
                 description,
                 PACKAGE_COM_FOO_BAR + "." + OPERATION_WRAPPER_NAME_1,
                 true, null, null, null);
-        wizardExecution(FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS, myMBean);
+        wizardExecution(FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS, mbean);
     }
     
     /**
@@ -205,15 +200,14 @@ public class CreateOperationWrapperMBean extends MBeanWizardTestCase {
         
         String description = "MBean from existing java class wrapped as MXBean " +
                 "with minimal operations";
-        mbeanName = OPERATION_WRAPPED_MBEAN_NAME_5;
-        MBean myMBean = new MBean(
-                mbeanName,
+        mbean = new MBean(
+                OPERATION_WRAPPED_MBEAN_NAME_5,
                 FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS,
                 PACKAGE_COM_FOO_BAR,
                 description,
                 PACKAGE_COM_FOO_BAR + "." + OPERATION_WRAPPER_NAME_1,
                 true, null, null, null);
-        wizardExecution(FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS, myMBean);
+        wizardExecution(FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS, mbean);
     }
     
     /**
@@ -226,15 +220,312 @@ public class CreateOperationWrapperMBean extends MBeanWizardTestCase {
         
         String description = "MBean from existing java class wrapped as MXBean " +
                 "with generic operations";
-        mbeanName = OPERATION_WRAPPED_MBEAN_NAME_6;
-        MBean myMBean = new MBean(
-                mbeanName,
+        mbean = new MBean(
+                OPERATION_WRAPPED_MBEAN_NAME_6,
                 FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS,
                 PACKAGE_COM_FOO_BAR,
                 description,
                 PACKAGE_COM_FOO_BAR + "." + OPERATION_WRAPPER_NAME_2,
                 true, null, null, null);
-        wizardExecution(FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS, myMBean);
+        wizardExecution(FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS, mbean);
+    }
+    
+    //========================= Panel discovery ==================================//
+    
+    /**
+     * New file JMX wizard execution.
+     * Depending on the JMX file type, the wizard execution will have different
+     * behavior/fields.
+     */
+    protected void wizardExecution(String fileType, MBean mbean) {
+        
+        // New File wizard execution
+        // -------------------------
+        NewFileWizardOperator nfwo = newFileWizardFromMenu(
+                PROJECT_NAME_MBEAN_FUNCTIONAL,
+                FILE_CATEGORY_JMX,
+                fileType);
+        nfwo.next();
+        
+        // Name and Location wizard execution
+        // ----------------------------------
+        NewFileNameLocationStepOperator nfnlso = nameAndLocationWizard(
+                mbean.getName(),
+                mbean.getPackage(),
+                mbean.getDescription(),
+                mbean.getClassToWrap(),
+                mbean.isObjectWrappedAsMXBean());
+        // Check Name and Location wizard
+        System.out.println("Check name and location wizard");
+        checkNameAndLocationWizard(nfnlso, mbean);
+        // Get the generated files before switching to next wizard
+        String mbeanCreatedClassFile = nfnlso.txtCreatedFile().getText();
+        String mbeanCreatedInterfaceFile = getTextFieldContent(
+                CREATED_FILE_TEXT_FIELD, nfnlso);
+        
+        // Operations wizard execution
+        // ------------------------------------------
+        nfnlso.next();
+        nfnlso.next();
+        // Check MBean operations wizard
+        System.out.println("Check MBean operations wizard " +
+                "before operations selection");
+        checkMBeanOperationsWizardBeforeSelection(nfnlso, fileType);
+        // Select/unselect MBean operations
+        System.out.println("Select/unselect and update MBean operations");
+        updateMBeanOperations(nfnlso);
+        sleep(2000);
+        // Check MBean operations wizard
+        System.out.println("Check MBean operations wizard " +
+                "after operations selection");
+        checkMBeanOperationsWizardAfterSelection(nfnlso, fileType);
+
+        sleep(2000);
+        nfnlso.finish();
+        
+        // Check generated files
+        System.out.println("Check created files");
+        checkCreatedFiles(mbeanCreatedClassFile, mbeanCreatedInterfaceFile, mbean);
+    }
+    
+    /**
+     * Select/unselect and update wrapped operations.
+     */
+    private void updateMBeanOperations(
+            NewFileNameLocationStepOperator nfnlso) {
+        
+        JTableOperator jto = getTableOperator(WRAPPER_OPERATION_TABLE, nfnlso);
+        // Give the focus to the table operator
+        giveAPIFocus(jto);
+        
+        // Depending on the MBean, performs the following :
+        // - check/uncheck operations to keep
+        // - modify parameters
+        // - modify exceptions
+        // - modify description
+        
+        // Expose all operations
+        if (mbean.getName().equals(OPERATION_WRAPPED_MBEAN_NAME_1) ||
+                mbean.getName().equals(OPERATION_WRAPPED_MBEAN_NAME_4)) {
+            
+            // Add description on parameters for OPERATION_2
+            jto.editCellAt(jto.findCellRow(OPERATION_2),
+                    jto.findColumn(OPERATION_PARAMETERS_COLUMN_NAME));
+            updateMBeanOperationParameter(jto, 0, null, null, MBEAN_PARAMETER_DESCRIPTION_2);
+            
+            // Add description on exceptions for OPERATION_1
+            jto.editCellAt(jto.findCellRow(OPERATION_1),
+                    jto.findColumn(OPERATION_EXCEPTIONS_COLUMN_NAME));
+            updateMBeanOperationException(jto, 0, null, MBEAN_EXCEPTION_DESCRIPTION_1);
+        }
+        // Expose minimal operations
+        else if (mbean.getName().equals(OPERATION_WRAPPED_MBEAN_NAME_2) ||
+                mbean.getName().equals(OPERATION_WRAPPED_MBEAN_NAME_5)) {
+            
+            // Unselect OPERATION_1 and OPERATION_2
+            unselectOperation(jto, OPERATION_1);
+            unselectOperation(jto, OPERATION_2);
+        }
+        // Expose generic operations
+        else if(mbean.getName().equals(OPERATION_WRAPPED_MBEAN_NAME_3) ||
+                mbean.getName().equals(OPERATION_WRAPPED_MBEAN_NAME_6)) {
+            // Nothing to do
+            // We just want to check that generation is successfull
+        }
+    }
+    
+    /**
+     * Check Operations wizard before MBean operations selection
+     */
+    private void checkMBeanOperationsWizardBeforeSelection(
+            NewFileNameLocationStepOperator nfnlso, String fileType) {
+ 
+        JTableOperator jto = getTableOperator(WRAPPER_OPERATION_TABLE, nfnlso);
+        int rowCount = 0;
+
+        System.out.println("Check all MBean operations are selected");
+
+        // Wrapped java class is OPERATION_WRAPPER_NAME_1
+        if (mbean.getClassToWrap().equals(
+                PACKAGE_COM_FOO_BAR + "." + OPERATION_WRAPPER_NAME_1)) {
+            rowCount = jto.getRowCount();
+            if (rowCount != 4) {
+                System.out.println("(ERROR) Found " + rowCount + " operations" +
+                        " instead of expected 4");
+            }
+            assertEquals(4, rowCount);
+            verifyOperationSelection(jto, OPERATION_1, true);
+            verifyOperationSelection(jto, OPERATION_2, true);
+            // Cannot verify overloaded OPERATION_3 selection
+            // As there is 2 operations defined for OPERATION_3 (using different parameters),
+            // we need to retreive the row index using other value than the operation name
+            // I've tried with parameters value ("java.lang.Object[] param0,int param1"
+            // and "java.lang.String[] param0,int param1") but it does not work
+        } 
+        // Wrapped java class is OPERATION_WRAPPER_NAME_2
+        else if (mbean.getClassToWrap().equals(
+                PACKAGE_COM_FOO_BAR + "." + OPERATION_WRAPPER_NAME_2)) {
+            rowCount = jto.getRowCount();
+            if (rowCount != 3) {
+                System.out.println("(ERROR) Found " + rowCount + " operations" +
+                        " instead of expected 3");
+            }
+            assertEquals(3, rowCount);
+            verifyOperationSelection(jto, GENERIC_OPERATION_1, true);
+            verifyOperationSelection(jto, GENERIC_OPERATION_2, true);
+            verifyOperationSelection(jto, GENERIC_OPERATION_3, true);
+        }
+        super.checkMBeanOperationsWizard(nfnlso, fileType);
+    }
+
+    /**
+     * Check Operations wizard after MBean operations selection
+     */
+    protected void checkMBeanOperationsWizardAfterSelection(
+            NewFileNameLocationStepOperator nfnlso, String fileType) {
+
+        JTableOperator jto = getTableOperator(WRAPPER_OPERATION_TABLE, nfnlso);
+        int rowCount = 0;
+
+        System.out.println("Check MBean operations have been selected/unselected");
+
+        // Wrapped java class is OPERATION_WRAPPER_NAME_1
+        if (mbean.getClassToWrap().equals(
+                PACKAGE_COM_FOO_BAR + "." + OPERATION_WRAPPER_NAME_1)) {
+            rowCount = jto.getRowCount();
+            if (rowCount != 4) {
+                System.out.println("(ERROR) Found " + rowCount + " operations" +
+                        " instead of expected 4");
+            }
+            assertEquals(4, rowCount);
+            // Expose all operations
+            if (mbean.getName().equals(OPERATION_WRAPPED_MBEAN_NAME_1) ||
+                    mbean.getName().equals(OPERATION_WRAPPED_MBEAN_NAME_4)) {
+                verifyOperationSelection(jto, OPERATION_1, true);
+                verifyOperationSelection(jto, OPERATION_2, true);
+                // Cannot verify overloaded OPERATION_3 selection
+                // As there is 2 operations defined for OPERATION_3 (using different parameters),
+                // we need to retreive the row index using other value than the operation name
+                // I've tried with parameters value ("java.lang.Object[] param0,int param1"
+                // and "java.lang.String[] param0,int param1") but it does not work
+            } 
+            // Expose minimal operations
+            else if (mbean.getName().equals(OPERATION_WRAPPED_MBEAN_NAME_2) ||
+                    mbean.getName().equals(OPERATION_WRAPPED_MBEAN_NAME_5)) {
+                verifyOperationSelection(jto, OPERATION_1, false);
+                verifyOperationSelection(jto, OPERATION_2, false);
+                // Cannot verify overloaded OPERATION_3 selection
+                // As there is 2 operations defined for OPERATION_3 (using different parameters),
+                // we need to retreive the row index using other value than the operation name
+                // I've tried with parameters value ("java.lang.Object[] param0,int param1"
+                // and "java.lang.String[] param0,int param1") but it does not work
+            }
+        } 
+        // Wrapped java class is OPERATION_WRAPPER_NAME_2
+        else if (mbean.getClassToWrap().equals(
+                PACKAGE_COM_FOO_BAR + "." + OPERATION_WRAPPER_NAME_2)) {
+            rowCount = jto.getRowCount();
+            if (rowCount != 3) {
+                System.out.println("(ERROR) Found " + rowCount + " operations" +
+                        " instead of expected 3");
+            }
+            assertEquals(3, rowCount);
+            verifyOperationSelection(jto, GENERIC_OPERATION_1, true);
+            verifyOperationSelection(jto, GENERIC_OPERATION_2, true);
+            verifyOperationSelection(jto, GENERIC_OPERATION_3, true);
+        }
+        super.checkMBeanOperationsWizard(nfnlso, fileType);
+    }
+    
+    private void updateMBeanOperationParameter(
+            JTableOperator jto, int rowIndex,
+            String name, String type, String description) {
+        
+        pressAndRelease(OPERATION_ADD_PARAM_BUTTON, jto);
+        sleep(2000);
+        JTableMouseDriver jtmd = new JTableMouseDriver();
+        
+        NbDialogOperator ndo = new NbDialogOperator(PARAMETER_DIALOG_TITLE);
+        JTableOperator jto2 = getTableOperator(PARAMETER_TABLE, ndo);  
+            
+        if (name != null) {
+            jto2.clickForEdit(rowIndex, 
+                    jto2.findColumn(PARAMETER_NAME_COLUMN_NAME));
+            // Give the focus to the table operator
+            giveAPIFocus(jto2);
+            jtmd.editCell(jto2, rowIndex,
+                    jto2.findColumn(PARAMETER_NAME_COLUMN_NAME), name);
+        }
+        if (type != null) {
+            jto2.clickForEdit(rowIndex, 
+                    jto2.findColumn(PARAMETER_TYPE_COLUMN_NAME));
+            // Give the focus to the table operator
+            giveAPIFocus(jto2);
+            jtmd.editCell(jto2, rowIndex,
+                    jto2.findColumn(PARAMETER_TYPE_COLUMN_NAME), type);
+        }
+        if (description != null) {
+            jto2.clickForEdit(rowIndex,
+                    jto2.findColumn(PARAMETER_DESCRIPTION_COLUMN_NAME));
+            // Give the focus to the table operator
+            giveAPIFocus(jto2);
+            jtmd.editCell(jto2, rowIndex,
+                    jto2.findColumn(PARAMETER_DESCRIPTION_COLUMN_NAME), description);
+        }
+        // Close the popup
+        //clickButton(CLOSE_JBUTTON, ndo);
+        ndo.ok();
+        sleep(2000);
+    }
+    
+    private void updateMBeanOperationException(
+            JTableOperator jto, int rowIndex,
+            String className, String description) {
+        
+        pressAndRelease(OPERATION_ADD_EXCEP_BUTTON, jto);
+        sleep(2000);
+        JTableMouseDriver jtmd = new JTableMouseDriver();
+        
+        NbDialogOperator ndo = new NbDialogOperator(EXCEPTION_DIALOG_TITLE);
+        JTableOperator jto2 = getTableOperator(EXCEPTION_TABLE, ndo);
+        
+        if (className != null) {
+            jto2.clickForEdit(rowIndex, 
+                    jto2.findColumn(EXCEPTION_CLASS_COLUMN_NAME));
+            // Give the focus to the table operator
+            giveAPIFocus(jto2);
+            jtmd.editCell(jto2, rowIndex,
+                    jto2.findColumn(EXCEPTION_CLASS_COLUMN_NAME), className);
+        }
+        if (description != null) {
+            jto2.clickForEdit(rowIndex, 
+                    jto2.findColumn(EXCEPTION_DESCRIPTION_COLUMN_NAME));
+            // Give the focus to the table operator
+            giveAPIFocus(jto2);
+            jtmd.editCell(jto2, rowIndex,
+                    jto2.findColumn(EXCEPTION_DESCRIPTION_COLUMN_NAME), description);
+        }
+        // Close the popup
+        //clickButton(CLOSE_JBUTTON, ndo);
+        ndo.ok();
+        sleep(2000);
+    }
+    
+    private void unselectOperation(JTableOperator jto, String name) {
+        int rowIndex  = jto.findCellRow(name);
+        int columnIndex = jto.findColumn(OPERATION_INCLUDE_COLUMN_NAME);
+        jto.selectCell(rowIndex, columnIndex);
+    }
+    
+    private void verifyOperationSelection(
+            JTableOperator jto, String name,  boolean selected) {
+        int rowIndex  = jto.findCellRow(name);
+        int columnIndex = jto.findColumn(OPERATION_INCLUDE_COLUMN_NAME);
+        if (selected) {
+            assertTrue((Boolean)getTableCellValue(jto, rowIndex, columnIndex));
+        } else {
+            assertFalse((Boolean)getTableCellValue(jto, rowIndex, columnIndex));
+        }
     }
     
     //========================= JAVA CLASS generation ===========================//
@@ -264,7 +555,11 @@ public class CreateOperationWrapperMBean extends MBeanWizardTestCase {
             // Add methods to the java class
             // Set caret position after the first occurence of "}",
             // that is after the constructor declaration
-            eo.setCaretPosition("}", false);
+            //SL: constructor is not always generated by NetBeans,
+            //SL: so rather set caret after the first "{"
+            //SL: which is the beginning of class body.
+            // eo.setCaretPosition("}", false);
+            eo.setCaretPosition("{", false);
             eo.insert(addOperation1() +
                     addOperation2() +
                     addOperation3_String());
@@ -281,7 +576,11 @@ public class CreateOperationWrapperMBean extends MBeanWizardTestCase {
             // Add methods to the java class
             // Set caret position after the first occurence of "}",
             // that is after the constructor declaration
-            eo.setCaretPosition("}", false);
+            //SL: constructor is not always generated by NetBeans,
+            //SL: so rather set caret after the first "{"
+            //SL: which is the beginning of class body.
+            // eo.setCaretPosition("}", false);
+            eo.setCaretPosition("{", false);
             eo.insert(addGenericOperation1() +
                     addGenericOperation2() +
                     addGenericOperation3());
@@ -330,170 +629,5 @@ public class CreateOperationWrapperMBean extends MBeanWizardTestCase {
         return "\n\tpublic String " + GENERIC_OPERATION_3 + "(String param1) {" +
                 "\n\t\treturn null;" +
                 "\n\t}\n";
-    }
-    
-    //========================= Panel discovery ==================================//
-    
-    /**
-     * Overloaded method to select/unselect wrapped operations
-     * instead of creating new ones.
-     */
-    protected void addMBeanOperations(
-            NewFileNameLocationStepOperator nfnlso,
-            ArrayList<Operation> operList,
-            String fileType) {
-        
-        JTableOperator jto = getTableOperator(WRAPPER_OPERATION_TABLE, nfnlso);
-        
-        System.out.println("Select/unselect and update MBeans operations");
-        
-        // Depending on the MBean, performs the following :
-        // - check/uncheck operations to keep
-        // - modify parameters
-        // - modify exceptions
-        // - modify description
-        
-        // Expose all operations
-        if (mbeanName.equals(OPERATION_WRAPPED_MBEAN_NAME_1) ||
-                mbeanName.equals(OPERATION_WRAPPED_MBEAN_NAME_4)) {
-            
-            // Add description on parameters for OPERATION_2 and OPERATION_3
-            jto.editCellAt(jto.findCellRow(OPERATION_2),
-                    jto.findColumn(OPERATION_PARAMETERS_COLUMN_NAME));
-            updateMBeanOperationParameter(jto, 0, null, null, MBEAN_PARAMETER_DESCRIPTION_1);
-            jto.editCellAt(jto.findCellRow(OPERATION_3),
-                    jto.findColumn(OPERATION_PARAMETERS_COLUMN_NAME));
-            updateMBeanOperationParameter(jto, 1, null, null, MBEAN_PARAMETER_DESCRIPTION_2);
-            
-            // Add description on exceptions for OPERATION_1
-            jto.editCellAt(jto.findCellRow(OPERATION_1),
-                    jto.findColumn(OPERATION_EXCEPTIONS_COLUMN_NAME));
-            updateMBeanOperationException(jto, 0, null, MBEAN_EXCEPTION_DESCRIPTION_1);
-        }
-        // Expose minimal operations
-        else if (mbeanName.equals(OPERATION_WRAPPED_MBEAN_NAME_2) ||
-                mbeanName.equals(OPERATION_WRAPPED_MBEAN_NAME_5)) {
-            
-            // Unselect OPERATION_1, OPERATION_2 and OPERATION_3
-            unselectOperation(jto, OPERATION_1);
-            unselectOperation(jto, OPERATION_2);
-            unselectOperation(jto, OPERATION_3);
-        }
-        // Expose generic operations
-        else if(mbeanName.equals(OPERATION_WRAPPED_MBEAN_NAME_3) ||
-                mbeanName.equals(OPERATION_WRAPPED_MBEAN_NAME_6)) {
-            // Nothing to do
-            // We just want to check that generation is successfull
-        }
-    }
-    
-    /**
-     * Overloaded method to check selected/unselected wrapped operations
-     */
-    protected void checkMBeanOperationsWizard(
-            NewFileNameLocationStepOperator nfnlso, String fileType) {
-        
-        JTableOperator jto = getTableOperator(WRAPPER_OPERATION_TABLE, nfnlso);
-        
-        System.out.println("Check selected/unselected MBeans operations");
-        
-        // Expose all operations
-        if (mbeanName.equals(OPERATION_WRAPPED_MBEAN_NAME_1) ||
-                mbeanName.equals(OPERATION_WRAPPED_MBEAN_NAME_4)) {
-            
-            verifyOperationSelection(jto, OPERATION_1, true);
-            verifyOperationSelection(jto, OPERATION_2, true);
-            verifyOperationSelection(jto, OPERATION_3, true);
-        }
-        // Expose minimal operations
-        else if (mbeanName.equals(OPERATION_WRAPPED_MBEAN_NAME_2) ||
-                mbeanName.equals(OPERATION_WRAPPED_MBEAN_NAME_5)) {
-            
-            verifyOperationSelection(jto, OPERATION_1, false);
-            verifyOperationSelection(jto, OPERATION_2, false);
-            verifyOperationSelection(jto, OPERATION_3, false);
-        }
-        super.checkMBeanAttributesWizard(nfnlso, fileType);
-    }
-    
-    
-    protected void updateMBeanOperationParameter(
-            JTableOperator jto, int rowIndex,
-            String name, String type, String description) {
-        
-        JTableMouseDriver jtmd = new JTableMouseDriver();
-        
-        clickButton(OPERATION_ADD_PARAM_BUTTON, jto);
-        waitNoEvent(5000);
-        
-        NbDialogOperator ndo = new NbDialogOperator(PARAMETER_DIALOG_TITLE);
-        JTableOperator jto2 = getTableOperator(PARAMETER_TABLE, ndo);
-        
-        clickButton(PARAMETER_ADD_BUTTON, ndo);
-        waitNoEvent(5000);
-        
-        if (name != null) {
-            jtmd.editCell(jto2, rowIndex,
-                    jto2.findColumn(PARAMETER_NAME_COLUMN_NAME), name);
-        }
-        if (type != null) {
-            jtmd.editCell(jto2, rowIndex,
-                    jto2.findColumn(PARAMETER_TYPE_COLUMN_NAME), type);
-        }
-        if (description != null) {
-            jtmd.editCell(jto2, rowIndex,
-                    jto2.findColumn(PARAMETER_DESCRIPTION_COLUMN_NAME), description);
-        }
-        // Close the popup
-        //clickButton(CLOSE_JBUTTON, ndo);
-        ndo.ok();
-        waitNoEvent(5000);
-    }
-    
-    protected void updateMBeanOperationException(
-            JTableOperator jto, int rowIndex,
-            String className, String description) {
-        
-        JTableMouseDriver jtmd = new JTableMouseDriver();
-        
-        clickButton(OPERATION_ADD_EXCEP_BUTTON, jto);
-        waitNoEvent(5000);
-        
-        NbDialogOperator ndo = new NbDialogOperator(EXCEPTION_DIALOG_TITLE);
-        JTableOperator jto2 = getTableOperator(EXCEPTION_TABLE, ndo);
-        
-        clickButton(EXCEPTION_ADD_BUTTON, ndo);
-        waitNoEvent(5000);
-        
-        if (className != null) {
-            jtmd.editCell(jto2, rowIndex,
-                    jto2.findColumn(EXCEPTION_CLASS_COLUMN_NAME), className);
-        }
-        if (description != null) {
-            jtmd.editCell(jto2, rowIndex,
-                    jto2.findColumn(EXCEPTION_DESCRIPTION_COLUMN_NAME), description);
-        }
-        // Close the popup
-        //clickButton(CLOSE_JBUTTON, ndo);
-        ndo.ok();
-        waitNoEvent(5000);
-    }
-    
-    
-    private void unselectOperation(JTableOperator jto, String name) {
-        int rowIndex  = jto.findCellRow(name);
-        int columnIndex = jto.findColumn(OPERATION_INCLUDE_COLUMN_NAME);
-        jto.selectCell(rowIndex, columnIndex);
-    }
-    
-    private void verifyOperationSelection(
-            JTableOperator jto, String name,  boolean selected) {
-        int rowIndex  = jto.findCellRow(name);
-        int columnIndex = jto.findColumn(OPERATION_INCLUDE_COLUMN_NAME);
-        if (selected) {
-            assertTrue((Boolean)getTableCellValue(jto, rowIndex, columnIndex));
-        } else {
-            assertFalse((Boolean)getTableCellValue(jto, rowIndex, columnIndex));
-        }
     }
 }

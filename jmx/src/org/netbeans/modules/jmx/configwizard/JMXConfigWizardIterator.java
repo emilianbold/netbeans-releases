@@ -292,13 +292,13 @@ public class JMXConfigWizardIterator implements TemplateWizard.Iterator
                 putClientProperty("WizardPanel_contentSelectedIndex", new Integer(2)); // NOI18N
         
         wiz.putProperty(WizardConstants.RMI_PORT, 
-                Integer.valueOf(bundle.getString("RMI_Port_Default")));// NOI18N
+                Integer.valueOf(NbBundle.getBundle("org.netbeans.modules.jmx.configwizard.Bundle_noi18n").getString("RMI_Port_Default")));// NOI18N
         wiz.putProperty(WizardConstants.SNMP_PORT, 
-                Integer.valueOf(bundle.getString("SNMP_Port_Default")));// NOI18N
+                Integer.valueOf(NbBundle.getBundle("org.netbeans.modules.jmx.configwizard.Bundle_noi18n").getString("SNMP_Port_Default")));// NOI18N
         wiz.putProperty(WizardConstants.SNMP_TRAP_PORT, 
-                Integer.valueOf(bundle.getString("SNMP_Trap_Port_Default")));// NOI18N
+                Integer.valueOf(NbBundle.getBundle("org.netbeans.modules.jmx.configwizard.Bundle_noi18n").getString("SNMP_Trap_Port_Default")));// NOI18N
         wiz.putProperty(WizardConstants.SNMP_INTERFACES,
-                bundle.getString("SNMP_Interface_Default"));// NOI18N
+                NbBundle.getBundle("org.netbeans.modules.jmx.configwizard.Bundle_noi18n").getString("SNMP_Interface_Default"));// NOI18N
         
     }
 

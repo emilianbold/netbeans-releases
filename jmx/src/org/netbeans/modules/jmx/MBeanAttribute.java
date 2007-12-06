@@ -73,7 +73,7 @@ public class MBeanAttribute implements Comparable {
     private boolean wrapped = false;
     private List classParameterTypes;
     private boolean isArray;
-    
+    private TypeMirror mirror;
     /** Creates a new instance of MBeanAttribute */
     public MBeanAttribute(String name, String description,
             ExecutableElement getter, ExecutableElement setter,
@@ -86,6 +86,7 @@ public class MBeanAttribute implements Comparable {
         if (getter != null) {
             List<? extends TypeParameterElement> methodParameterTypes = getter.getTypeParameters();
             TypeMirror type = getter.getReturnType();
+            mirror = type;
             typeName = JavaModelHelper.getTypeName(type, methodParameterTypes, classParameterTypes, info);
             this.isReadable = true;
             boolean hasIsMethod = (getter.getSimpleName().toString().startsWith("is")); // NOI18N
@@ -100,12 +101,14 @@ public class MBeanAttribute implements Comparable {
             List<? extends TypeParameterElement> methodParameterTypes = setter.getTypeParameters();
             TypeMirror type = setter.getParameters().get(0).asType();
             typeName = JavaModelHelper.getTypeName(type, methodParameterTypes, classParameterTypes, info);
-            
+            mirror = type;
             this.access = WizardConstants.ATTR_ACCESS_WRITE_ONLY;
             this.setMethodExits = true;
         }
     }
-    
+    public TypeMirror getTypeMirror() {
+        return mirror;
+    }
     /**
      * Constructor
      * @param attrName the attribute name
@@ -114,13 +117,14 @@ public class MBeanAttribute implements Comparable {
      * @param attrDescription the attribute description
      */
     public MBeanAttribute(String attrName, String attrType, String attrAccess,
-            String attrDescription) {
+            String attrDescription, TypeMirror mirror) {
         this.name = attrName;
         this.typeName = attrType;
         this.access = attrAccess;
         this.description = attrDescription;
         this.getter = null;
         this.setter = null;
+        this.mirror = mirror;
     }
     
     /**
@@ -132,7 +136,7 @@ public class MBeanAttribute implements Comparable {
      * @param isIntrospected true only if attribute have been discovered
      */
     public MBeanAttribute(String attrName, String attrType, String attrAccess,
-            String attrDescription, boolean isIntrospected) {
+            String attrDescription, boolean isIntrospected, TypeMirror mirror) {
         this.name = attrName;
         this.typeName = attrType;
         this.access = attrAccess;
@@ -140,6 +144,7 @@ public class MBeanAttribute implements Comparable {
         this.wrapped = isIntrospected;
         this.getter = null;
         this.setter = null;
+        this.mirror = mirror;
     }
     
     /**
@@ -290,7 +295,8 @@ public class MBeanAttribute implements Comparable {
     public int compareTo(Object o) {
         String concat = name + typeName;
         MBeanAttribute obj = (MBeanAttribute) o;
-        
+        //System.out.println("COMPARTE TO " + obj);
+        //System.out.println("COMPARTE TO " + obj.getName() + " " + obj.getTypeName());
         return concat.compareTo(obj.getName() + obj.getTypeName());
     }
 }

@@ -266,7 +266,7 @@ public class AgentPanel extends javax.swing.JPanel {
          * @return <CODE>HelpCtx</CODE> the corresponding help context.
          */
         public HelpCtx getHelp() {
-           return new HelpCtx("jmx_agent_app"); //NOI18N
+           return new HelpCtx("tutorial"); //NOI18N
         }
       
     } 

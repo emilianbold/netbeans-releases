@@ -237,6 +237,7 @@ public class AddMBeanAttributesActions extends ActionsTestCase {
             String interfaceName) {
         
         ArrayList<Attribute> attrList = null;
+        Node node = null;
         
         // Call menu item
         System.out.println("Call action menu " + popupPath);
@@ -271,9 +272,9 @@ public class AddMBeanAttributesActions extends ActionsTestCase {
         attrList.add(new Attribute("Attr0", "int", READ_ONLY, "Attr0 Description"));
         attrList.add(new Attribute("Attr1", "boolean", READ_ONLY, "Attr1 Description"));
         attrList.add(new Attribute("Attr2", "java.util.Date", READ_ONLY, "Attr2 Description"));
-        attrList.add(new Attribute("Attr3", "ObjectName", READ_WRITE, "Attr3 Description"));
+        attrList.add(new Attribute("Attr3", "javax.management.ObjectName", READ_WRITE, "Attr3 Description"));
         attrList.add(new Attribute("Attr4", "boolean", READ_WRITE, "Attr4 Description"));
-        attrList.add(new Attribute("Attr5", "String[]", READ_WRITE, "Attr5 Description"));
+        attrList.add(new Attribute("Attr5", "java.lang.String[]", READ_WRITE, "Attr5 Description"));
         attrList.add(new Attribute("Attr6", "java.util.List", READ_WRITE, "Attr6 Description"));
         attrList.add(new Attribute("Attr7", "double", READ_ONLY, "Attr7 Description"));
         attrList.add(new Attribute("Attr8", "char", READ_WRITE, "Attr8 Description"));
@@ -282,8 +283,8 @@ public class AddMBeanAttributesActions extends ActionsTestCase {
         
         // Check warning message is displayed
         System.out.println("Check warning message");
-        String message = "One or more of the added attribute implementations \n" +
-                "already exists in the " + className + " class.\n" +
+        String message = "One or more of the added attribute implementations already \n" +
+                "exists in the " + className + " class.\n" +
                 interfaceName  + " will be updated with the new operations.\n" +
                 className + " will not be updated with the following methods,\n" +
                 "because they are already present in the class:\n" +
@@ -300,26 +301,22 @@ public class AddMBeanAttributesActions extends ActionsTestCase {
         ndo.ok();
         
         // Save updated java class file
-        selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" +
+        node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" +
                 SOURCE_PACKAGES + "|" + packageName + "|" + className);
         EditorOperator eo = new EditorOperator(className);
         eo.save();
+        sleep(2000);
         System.out.println("Check updated java class file");
-        String content = getFileContent(getGoldenFile(className));
-        // Update golden file content package
-        content = content.replaceAll(PACKAGE_COM_FOO_BAR, packageName);
-        assertTrue(compareFileContents(eo.getText(), content));
+        checkUpdatedFiles(eo, node.getPath(), getGoldenFile(className));
         
         // Save updated java interface file
-        selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" +
+        node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" +
                 SOURCE_PACKAGES + "|" + packageName + "|" + interfaceName);
         eo = new EditorOperator(interfaceName);
         eo.save();
+        sleep(2000);
         System.out.println("Check updated java interface file");
-        content = getFileContent(getGoldenFile(interfaceName));
-        // Update golden file content package
-        content = content.replaceAll(PACKAGE_COM_FOO_BAR, packageName);
-        assertTrue(compareFileContents(eo.getText(), content));
+        checkUpdatedFiles(eo, node.getPath(), getGoldenFile(interfaceName));
     }
 }
 

@@ -20,11 +20,10 @@ public class U3Simple4 {
                     // TODO provide a Simple5 reference to StandardMBean constructor
                     registerMBean(new StandardMBean(null,
                     Simple5Intf.class),
-                    new ObjectName("bar.foo.com:type=Simple5"));
+                    new ObjectName("com.foo.bar:type=Simple5"));
         }catch(JMException ex) {
             // TODO handle exception
         }
-        
     }
     
     /**

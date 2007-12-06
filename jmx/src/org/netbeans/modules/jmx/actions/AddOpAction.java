@@ -107,6 +107,7 @@ public class AddOpAction extends NodeAction {
             }
             //detect if implementation of operations exists
             JavaSource mbeanClass = cfg.getMBeanClass();
+            String itfName = JavaModelHelper.getManagementInterfaceSimpleName(mbeanClass);
             String className = JavaModelHelper.getSimpleName(mbeanClass);
             MBeanOperation[] operations = cfg.getOperations();
             boolean hasExistOp = false;
@@ -121,7 +122,7 @@ public class AddOpAction extends NodeAction {
             
             if (hasExistOp) {
                 AddOperationsInfoPanel infoPanel =
-                        new AddOperationsInfoPanel(className,
+                        new AddOperationsInfoPanel(itfName, className,
                         operations);
                 if (!infoPanel.configure()) {
                     return;

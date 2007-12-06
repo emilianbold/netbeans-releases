@@ -169,7 +169,7 @@ public class CreateOneFeatureMBean extends MBeanWizardTestCase {
     private ArrayList<Operation> constructMBeanOperations() {
         Parameter parameter1 = new Parameter(
                 MBEAN_PARAMETER_NAME_1,
-                "String",
+                "java.lang.String",
                 MBEAN_PARAMETER_DESCRIPTION_1);
         Parameter parameter2 = new Parameter(
                 MBEAN_PARAMETER_NAME_2,

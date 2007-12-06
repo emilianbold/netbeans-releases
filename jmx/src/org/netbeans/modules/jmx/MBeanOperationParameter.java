@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.jmx;
 
+import javax.lang.model.type.TypeMirror;
+
 /**
  * Class which gives the structure of an MBean operation parameter
  *
@@ -50,7 +52,7 @@ public class MBeanOperationParameter {
     private String paramName        = "";// NOI18N
     private String paramType        = "";// NOI18N
     private String paramDescription = "";// NOI18N
-
+    private TypeMirror mirror;
     /**
      * Constructor
      * @param paramName the parameter name
@@ -60,9 +62,25 @@ public class MBeanOperationParameter {
     public MBeanOperationParameter(String paramName, String paramType, 
             String paramDescription) {
         
+        this(paramName,paramType, paramDescription, null);
+    }
+    /**
+     * Constructor
+     * @param paramName the parameter name
+     * @param paramType the parameter type
+     * @param paramDescription the parameter description
+     */
+    public MBeanOperationParameter(String paramName, String paramType, 
+            String paramDescription, TypeMirror mirror) {
+        
         this.paramName = paramName;
         this.paramType = paramType;
         this.paramDescription = paramDescription;
+        this.mirror = mirror;
+    }
+    
+    public TypeMirror getTypeMirror() {
+        return mirror;
     }
     
     /**

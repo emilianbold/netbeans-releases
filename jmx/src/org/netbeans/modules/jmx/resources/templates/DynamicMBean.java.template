@@ -9,7 +9,7 @@ import java.util.Arrays;
 
 /**
  * __NAME__ Dynamic MBean
- * {0}
+ * 
  * @author __USER__
  */
 public class __NAME__ extends __NAME__DynamicSupport

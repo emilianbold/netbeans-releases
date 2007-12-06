@@ -64,7 +64,7 @@ public class MBeanNameAndLocationWizard extends MBeanWizardTestCase {
     private static final String MBEAN_FROM_EXISTING_JAVA_CLASS_NEW_FILE_DESCRIPTION =
             "\nCreates a new JMX MBean from an existing Java Class.";
     private static final String STANDARD_MBEAN_WITH_METADATA_NEW_FILE_DESCRIPTION =
-            "\nCreates a new JMX MBean with metadata.";
+            "\nCreates a new JMX MBean that extends javax.management.StandardMBean class.";
     
     /** Need to be defined because of JUnit */
     public MBeanNameAndLocationWizard(String name) {
@@ -176,7 +176,7 @@ public class MBeanNameAndLocationWizard extends MBeanWizardTestCase {
         checkNameAndLocationWizardComponents(nfnlso, fileType, null);
         // Check name and location wizard default values
         mbean = new MBean(mbeanDefaultClassName, null, "",
-                mbeanDefaultClassName + " Description", null, false,
+                mbeanDefaultClassName + " Description", "", false,
                 null, null, null);
         checkNameAndLocationWizardValues(
                 nfnlso, fileType, PROJECT_NAME_MBEAN_FUNCTIONAL, mbean);
@@ -286,7 +286,7 @@ public class MBeanNameAndLocationWizard extends MBeanWizardTestCase {
         assertTrue(nfnlso.btBack().isEnabled());
         // MBean from existing java class
         if (fileType.equals(FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS)) {
-            if (mbean == null || mbean.getClassToWrap() == null) {
+            if (mbean == null || mbean.getClassToWrap() == "") {
                 assertFalse(nfnlso.btNext().isEnabled());
             } else {
                 assertTrue(nfnlso.btNext().isEnabled());
@@ -398,8 +398,7 @@ public class MBeanNameAndLocationWizard extends MBeanWizardTestCase {
             assertNull(jl);
             jl = getLabel(CLASS_TO_WRAP_DOES_NOT_EXIST_WARNING, nfnlso.getContentPane());
             assertNull(jl);
-            // Check next and finish buttons not disabled anymore
-            assertTrue(nfnlso.btFinish().isEnabled());
+            // Check next button is not disabled anymore
             assertTrue(nfnlso.btNext().isEnabled());
         }
         

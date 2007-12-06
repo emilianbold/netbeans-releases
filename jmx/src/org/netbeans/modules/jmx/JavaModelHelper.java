@@ -9,6 +9,7 @@
 
 package org.netbeans.modules.jmx;
 
+import com.sun.javadoc.Doc;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
@@ -30,6 +31,7 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePathScanner;
+//import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -96,8 +98,8 @@ public class JavaModelHelper {
             "    {1}\n" + // NOI18N
             "'}'\n\n"; // NOI18N
     
-    public static String INIT_METHOD_NAME = "init";
-    public static String GET_MBEANSERVER_METHOD_NAME = "getMBeanServer";
+    public static String INIT_METHOD_NAME = "init";// NOI18N
+    public static String GET_MBEANSERVER_METHOD_NAME = "getMBeanServer";// NOI18N
     private static class ValueHolder {
         Object value;
         void setValue(Object value) {
@@ -126,17 +128,21 @@ public class JavaModelHelper {
         public Void visitClass(ClassTree t, Void v) {
             Element el = info.getTrees().getElement(getCurrentPath());
             if (el == null) {
-                throw new RuntimeException("Invalid Class");
+                throw new RuntimeException("Invalid Class");// NOI18N
             }
             TypeElement te = (TypeElement) el;
             if(te.getKind().equals(ElementKind.INTERFACE)) {
-                holder.setValue(false);
+                holder.setValue(null);
                 return null;
             }
             // Is it a DynamicMBean
-            TypeElement dmb = info.getElements().getTypeElement("javax.management.DynamicMBean");
-            // Perhaps the other side
-            //
+            TypeElement dmb = info.getElements().getTypeElement("javax.management.DynamicMBean");// NOI18N
+            
+            if(dmb == null) {
+                holder.setValue(null);
+                return null;
+            }
+            
             boolean isDynamic = info.getTypes().isSubtype(te.asType(), dmb.asType());
             holder.setValue(isDynamic);
             return null;
@@ -154,7 +160,7 @@ public class JavaModelHelper {
         public Void visitClass(ClassTree t, Void v) {
             Element el = info.getTrees().getElement(getCurrentPath());
             if (el == null) {
-                throw new RuntimeException("Invalid Class");
+                throw new RuntimeException("Invalid Class");// NOI18N
             }
             TypeElement te = (TypeElement) el;
             
@@ -182,7 +188,7 @@ public class JavaModelHelper {
         public Void visitClass(ClassTree t, Void v) {
             Element el = info.getTrees().getElement(getCurrentPath());
             if (el == null) {
-                throw new RuntimeException("Invalid Class");
+                throw new RuntimeException("Invalid Class");// NOI18N
             }
             TypeElement te = (TypeElement) el;
             String className = te.getSimpleName().toString();
@@ -199,12 +205,11 @@ public class JavaModelHelper {
                     VariableElement param = it.next();
                     // To type
                     TypeMirror type = param.asType();
-                    TypeElement typeElement = (TypeElement)info.getTypes().asElement(type);
                     String tName = null;
-                    if(typeElement == null)
-                        tName = getPrimitive(type.getKind());
-                    else
-                        tName = typeElement.getSimpleName().toString();
+                    //if(typeElement == null)
+                    //    tName = getPrimitive(type.getKind());
+                    //else
+                        tName = type.toString();
                     // We should access the quli
                     construct += tName;
                     if (it.hasNext())
@@ -228,7 +233,7 @@ public class JavaModelHelper {
         public Void visitClass(ClassTree t, Void v) {
             Element el = info.getTrees().getElement(getCurrentPath());
             if (el == null) {
-                throw new RuntimeException("Invalid Class");
+                throw new RuntimeException("Invalid Class");// NOI18N
             }
             TypeElement te = (TypeElement) el;
             holder.setValue(te.getSimpleName().toString());
@@ -245,7 +250,7 @@ public class JavaModelHelper {
         public Void visitClass(ClassTree t, Void v) {
             Element el = info.getTrees().getElement(getCurrentPath());
             if (el == null) {
-                throw new RuntimeException("Invalid Class");
+                throw new RuntimeException("Invalid Class");// NOI18N
             }
             holder.setValue(el.getKind().equals(ElementKind.INTERFACE));
             return null;
@@ -263,7 +268,7 @@ public class JavaModelHelper {
         public Void visitClass(ClassTree t, Void v) {
             Element el = info.getTrees().getElement(getCurrentPath());
             if (el == null) {
-                throw new RuntimeException("Invalid Class");
+                throw new RuntimeException("Invalid Class");// NOI18N
             }
             holder.setValue(el.getModifiers().contains(m));
             return null;
@@ -282,7 +287,7 @@ public class JavaModelHelper {
         public Void visitClass(ClassTree t, Void v) {
             Element el = info.getTrees().getElement(getCurrentPath());
             if (el == null) {
-                throw new RuntimeException("Invalid Class");
+                throw new RuntimeException("Invalid Class");// NOI18N
             }
             
             TypeElement te = (TypeElement) el;
@@ -303,15 +308,18 @@ public class JavaModelHelper {
     }
     
     private static class FullClassNameMemberVisitor extends MemberVisitor {
+        private boolean leafFound;
         public FullClassNameMemberVisitor(CompilationInfo info, ValueHolder holder) {
             super(info, holder);
         }
         
         @Override
         public Void visitClass(ClassTree t, Void v) {
+           if(leafFound) return null;
+           leafFound=true;
             Element el = info.getTrees().getElement(getCurrentPath());
             if (el == null) {
-                throw new RuntimeException("Invalid Class");
+                throw new RuntimeException("Invalid Class");// NOI18N
             }
             TypeElement te = (TypeElement) el;
             holder.setValue(te.getQualifiedName().toString());
@@ -328,7 +336,7 @@ public class JavaModelHelper {
         public Void visitClass(ClassTree t, Void v) {
             Element el = info.getTrees().getElement(getCurrentPath());
             if (el == null) {
-                throw new RuntimeException("Invalid Class");
+                throw new RuntimeException("Invalid Class");// NOI18N
             }
             TypeElement te = (TypeElement) el;
             // Should be the package because the current class is not an
@@ -347,7 +355,7 @@ public class JavaModelHelper {
         public Void visitClass(ClassTree t, Void v) {
             Element el = info.getTrees().getElement(getCurrentPath());
             if (el == null) {
-                throw new RuntimeException("Invalid Class");
+                throw new RuntimeException("Invalid Class");// NOI18N
             }
             TypeElement te = (TypeElement) el;
             boolean superClassCheck = false;
@@ -394,7 +402,7 @@ public class JavaModelHelper {
         public Void visitClass(ClassTree t, Void v) {
             Element el = info.getTrees().getElement(getCurrentPath());
             if (el == null) {
-                throw new RuntimeException("Invalid Class");
+                throw new RuntimeException("Invalid Class");// NOI18N
             }
             Set results = new HashSet();
             TypeElement te = (TypeElement) el;
@@ -427,6 +435,7 @@ public class JavaModelHelper {
         }
     }
     
+    
     private static class MBeanModelVisitor extends MemberVisitor {
         
         private static final String attributeDescription =
@@ -439,17 +448,23 @@ public class JavaModelHelper {
                 "Information on the management interface of the MBean"; // NOI18N
         private boolean real;
         private TypeElement itfType;
+        private CompilationInfo info;
+        private boolean introspectedLeaf;
         public MBeanModelVisitor(CompilationInfo info, ValueHolder holder, boolean real, TypeElement itfType) {
             super(info, holder);
             this.real = real;
             this.itfType = itfType;
+            this.info = info;
+            
         }
         
         @Override
         public Void visitClass(ClassTree t, Void v) {
+            if(introspectedLeaf) return null;
+            introspectedLeaf = true;
             Element el = info.getTrees().getElement(getCurrentPath());
             if (el == null) {
-                throw new RuntimeException("Invalid Class");
+                throw new RuntimeException("Invalid Class");// NOI18N
             }
             Set results = new HashSet();
             TypeElement te = (TypeElement) el;
@@ -482,8 +497,17 @@ public class JavaModelHelper {
             // XXX REVISIT
             // DO WE REALLY NEED TO CHECK FOR DUPLICATION?
             // WAITING FOR TOMAS REPLY ON THAT
+            //System.out.println("CREATE result 1");
             holder.setValue(constructResult(attributes,operations, info));
+            //System.out.println("CREATE result 2");
             return null;
+        }
+        
+        private boolean isObjectMethod(ExecutableElement method) {
+            Element el = method.getEnclosingElement();
+            TypeMirror obj = info.getElements().getTypeElement("java.lang.Object").asType(); // NOI18N
+            if(info.getTypes().isSameType(obj, el.asType())) return true;
+            return false;
         }
         
         private void deepIntrospection(TypeElement clazz,
@@ -496,31 +520,32 @@ public class JavaModelHelper {
             List<? extends TypeMirror> itfs = itftype.getInterfaces();
             for(TypeMirror itf : itfs) {
                 TypeElement itfElement =
-                        (TypeElement)info.getTypes().asElement(itf);
+                       (TypeElement)info.getTypes().asElement(itf);
                 deepIntrospection(clazz, itfElement, attributes, operations);
             }
             List<ExecutableElement> methods =
                     ElementFilter.methodsIn(itftype.getEnclosedElements());
             // Now analyze each method.
             for (ExecutableElement method : methods) {
+                if(isObjectMethod(method)) continue;
+                if(!method.getModifiers().contains(Modifier.PUBLIC)) continue;
                 String name = method.getSimpleName().toString();
-                
+              //System.out.println("METHOD NAME : " + name);
                 List<? extends VariableElement> args = method.getParameters();
                 TypeMirror ret = method.getReturnType();
                 boolean isVoid = ret.getKind().equals(TypeKind.VOID);
                 int argCount = args.size();
-                
                 final MBeanAttribute attr;
                 
                 if (name.startsWith("get") && !name.equals("get") // NOI18N
-                        && argCount == 0 && !isVoid) { // NOI18N
+                        && argCount == 0 && !isVoid) {
                     // if the method is "T getX()" it is a getter
                     attr = new MBeanAttribute(name.substring(3),
                             attributeDescription,
                             method,
                             null, clazz.getTypeParameters(), info);
                 } else if (name.startsWith("set") && !name.equals("set") // NOI18N
-                        && argCount == 1 && isVoid) { // NOI18N
+                        && argCount == 1 && isVoid) {
                     // if the method is "void setX(T x)" it is a setter
                     attr = new MBeanAttribute(name.substring(3),
                             attributeDescription,
@@ -528,7 +553,7 @@ public class JavaModelHelper {
                             method, clazz.getTypeParameters(), info);
                 } else if (name.startsWith("is") && !name.equals("is") // NOI18N
                         && argCount == 0
-                        && ret.getKind().equals(TypeKind.BOOLEAN)) { // NOI18N
+                        && ret.getKind().equals(TypeKind.BOOLEAN)) {
                     // if the method is "boolean isX()" it is a getter
                     attr = new MBeanAttribute(name.substring(2),
                             attributeDescription,
@@ -540,7 +565,11 @@ public class JavaModelHelper {
                 }
                 
                 if (attr != null) {
+                  //System.out.println("We have a anattribute to add " 
+                  //          + attr.getName());
                     if (testConsistency(attributes, attr)) {
+                   //     System.out.println("Adding " +
+                    //        attr.getName());
                         attributes.add(attr);
                     }
                 } else {
@@ -566,40 +595,40 @@ public class JavaModelHelper {
          *  -  It exposes a  boolean isXX() method AND a YY getXX() or a void setXX(Y).
          * Returns false if the attribute is already in attributes List
          */
-        private static boolean testConsistency(List<MBeanAttribute> attributes,
-                MBeanAttribute attr)
-                throws NotCompliantMBeanException {
-            for (Iterator it = attributes.iterator(); it.hasNext(); ) {
-                MBeanAttribute mb = (MBeanAttribute) it.next();
-                if (mb.getName().equals(attr.getName())) {
-                    if ((attr.isReadable() && mb.isReadable())) {
-                        final String msg =
-                                "Conflicting getters for attribute " + mb.getName(); // NOI18N
-                        throw new NotCompliantMBeanException(msg);
-                    }
-                    if (!mb.getTypeName().equals(attr.getTypeName())) {
-                        if (mb.isWritable() && attr.isWritable()) {
-                            final String msg =
-                                    "Type mismatch between parameters of set" + // NOI18N
-                                    mb.getName() + " methods"; // NOI18N
-                            throw new NotCompliantMBeanException(msg);
-                        } else {
-                            final String msg =
-                                    "Type mismatch between parameters of get or is" + // NOI18N
-                                    mb.getName() + ", set" + mb.getName() + " methods"; // NOI18N
-                            throw new NotCompliantMBeanException(msg);
-                        }
-                    }
-                    if (attr.isReadable() && mb.isReadable()) {
-                        return false;
-                    }
-                    if (attr.isWritable() && mb.isWritable()) {
-                        return false;
-                    }
-                }
-            }
-            return true;
-        }
+            private static boolean testConsistency(List/*<MBeanAttribute>*/attributes,
+					   MBeanAttribute attr)
+	throws NotCompliantMBeanException {
+	for (Iterator it = attributes.iterator(); it.hasNext(); ) {
+	    MBeanAttribute mb = (MBeanAttribute) it.next();
+	    if (mb.getName().equals(attr.getName())) {
+		if ((attr.isReadable() && mb.isReadable())) {
+		    final String msg =
+			"Conflicting getters for attribute " + mb.getName(); // NOI18N
+		    throw new NotCompliantMBeanException(msg);
+		}
+		if (!mb.getTypeName().equals(attr.getTypeName())) {
+		    if (mb.isWritable() && attr.isWritable()) {
+			final String msg =
+			    "Type mismatch between parameters of set" + // NOI18N
+			    mb.getName() + " methods"; // NOI18N
+			throw new NotCompliantMBeanException(msg);
+		    } else {
+			final String msg =
+			    "Type mismatch between parameters of get or is" + // NOI18N
+			    mb.getName() + ", set" + mb.getName() + " methods"; // NOI18N
+			throw new NotCompliantMBeanException(msg);
+		    }
+		}
+		if (attr.isReadable() && mb.isReadable()) {
+		    return false;
+		}
+		if (attr.isWritable() && mb.isWritable()) {
+		    return false;
+		}
+	    }
+	}
+	return true;
+    }
         
         /*
          * We are merging getters and setters in a single Attribute.
@@ -611,10 +640,10 @@ public class JavaModelHelper {
             final MBeanAttribute[] attrlist = new MBeanAttribute[len];
             attributes.toArray(attrlist);
             final ArrayList mergedAttributes = new ArrayList();
-            
+            //System.out.println("LEN : " + len);
             for (int i=0;i<len;i++) {
                 final MBeanAttribute bi = attrlist[i];
-                
+                        
                 // bi can be null if it has already been eliminated
                 // by the loop below at an earlier iteration
                 // (cf. attrlist[j]=null;) In this case, just skip it.
@@ -641,6 +670,7 @@ public class JavaModelHelper {
                     //
                     if (mi == null) continue;
                     if ((mi.getName().compareTo(bi.getName()) == 0)) {
+                        if(mi.getTypeName().equals(bi.getTypeName())) {
                         // mi and bi have the same name, which means that
                         // that the attribute has been inserted twice in
                         // the list, which means that it is a read-write
@@ -661,6 +691,7 @@ public class JavaModelHelper {
                         // safer not to...
                         //
                         // break;
+                        }
                     }
                 }
                 
@@ -670,14 +701,535 @@ public class JavaModelHelper {
                 //
                 mergedAttributes.add(att);
             }
-            
+            /*final int opNb = operations.size();
+            final MBeanOperation[] oplist = new MBeanOperation[opNb];
+            operations.toArray(oplist);
+            final ArrayList mergedOperations = new ArrayList();
+
+            for (int i = 0; i < opNb; i++) {
+                final MBeanOperation bi = oplist[i];
+
+                // bi can be null if it has already been eliminated
+                // by the loop below at an earlier iteration
+                // (cf. attrlist[j]=null;) In this case, just skip it.
+                //
+                if (bi == null) {
+                    continue;
+                }
+
+                // Placeholder for the final attribute info we're going to
+                // keep.
+                //
+                MBeanOperation op = bi;
+
+                // The loop below will try to find whether bi is also present
+                // elsewhere further down the list.
+                // If it is not, op will be left unchanged.
+                // Otherwise, the found attribute info will be merged with
+                // att and `removed' from the array by setting them to `null'
+                //
+                for (int j = i + 1; j < opNb; j++) {
+                    MBeanOperation mi = oplist[j];
+
+                    // mi can be null if it has already been eliminated
+                    // by this loop at an earlier iteration.
+                    // (cf. attrlist[j]=null;) In this case, just skip it.
+                    //
+                    if (mi == null) {
+                        continue;
+                    }
+                    if (bi.getName().equals(mi.getName())) {
+                        if (isEqual(bi, mi)) {
+                            // bi override mi so mi will not be be added to merged operations.
+
+                            oplist[j] = null;
+
+                            op = new MBeanOperation(bi.getMethod(), bi.getDescription(), bi.getClassParameterTypes(), info);
+                        }
+                    }
+                }
+
+                // Now all operations info which had the same name and the same signature
+                // or herited signature than have been merged together in op.
+                // Simply add op to the merged list.
+                //
+                mergedOperations.add(op);
+            }
+             */
             return new MBeanDO(mergedAttributes, operations);
         }
+         private boolean isEqual(MBeanOperation bi, MBeanOperation mi) {
+            if (bi.getParametersSize() != mi.getParametersSize()) {
+                return false;
+            }
+
+            for (int i = 0; i < bi.getParametersSize(); i++) {
+                TypeMirror biParam = bi.getParameter(i).getTypeMirror();
+                TypeMirror miParam = mi.getParameter(i).getTypeMirror();
+                if (bi.compareTo(mi) != 0)
+                    return false;
+            }
+
+            return true;
+        }
+
     }
-    
+
+  private static class MBeanModelFromClassVisitor extends MemberVisitor {
+        
+        private static final String attributeDescription =
+                "Attribute exposed for management"; // NOI18N
+        private static final String operationDescription =
+                "Operation exposed for management"; // NOI18N
+        private static final String constructorDescription =
+                "Public constructor of the MBean"; // NOI18N
+        private static final String mbeanInfoDescription =
+                "Information on the management interface of the MBean"; // NOI18N
+        private boolean real;
+        private TypeElement itfType;
+        private CompilationInfo info;
+        private boolean introspectedLeaf;
+        public MBeanModelFromClassVisitor(CompilationInfo info, ValueHolder holder, boolean real, TypeElement itfType) {
+            super(info, holder);
+            this.real = real;
+            this.itfType = itfType;
+            this.info = info;  
+        }
+        
+        @Override
+        public Void visitClass(ClassTree t, Void v) {
+            if(introspectedLeaf) return null;
+            introspectedLeaf = true;
+            Element el = info.getTrees().getElement(getCurrentPath());
+            if (el == null) {
+                throw new RuntimeException("Invalid Class");// NOI18N
+            }
+            Set results = new HashSet();
+            TypeElement te = (TypeElement) el;
+            
+            itfType = te;
+            
+            List<MBeanAttribute> attributes =
+                    new ArrayList<MBeanAttribute>();
+            List<MBeanOperation> operations =
+                    new ArrayList<MBeanOperation>();
+            try {
+                //Introspect class
+                //System.out.println("ROOT INTROSPECT " + itfType.getQualifiedName());
+                deepIntrospection(te, itfType, attributes, operations);
+            }catch(Exception  ex) {
+                // XXX REVISIT With LOGGING
+                ex.printStackTrace();
+            }
+            // XXX REVISIT
+            // DO WE REALLY NEED TO CHECK FOR DUPLICATION?
+            // WAITING FOR TOMAS REPLY ON THAT
+            //System.out.println("CREATE result 1");
+            holder.setValue(constructResult(attributes,operations, info));
+            //System.out.println("CREATE result 2");
+            return null;
+        }
+        
+        private boolean isObjectMethod(ExecutableElement method) {
+            Element el = method.getEnclosingElement();
+            TypeMirror obj = info.getElements().getTypeElement("java.lang.Object").asType();// NOI18N
+            if(info.getTypes().isSameType(obj, el.asType())) return true;
+            return false;
+        }
+        
+        private void deepIntrospection(TypeElement clazz,
+                TypeElement itftype,
+                List<MBeanAttribute> attributes,
+                List<MBeanOperation> operations) throws NotCompliantMBeanException {
+            if(itftype == null) return;
+            
+            //Top level loop to iterate on all Mother classes
+            TypeMirror mother = itftype.getSuperclass();
+            TypeElement itfElement =
+                  (TypeElement)info.getTypes().asElement(mother);
+            deepIntrospection(clazz, itfElement, attributes, operations);
+           
+            
+            List<ExecutableElement> methods =
+                    ElementFilter.methodsIn(itftype.getEnclosedElements());
+            // Now analyze each method.
+            //System.out.println("ITERATING METHODS of " + itftype.getQualifiedName().toString());
+            for (ExecutableElement method : methods) {
+                //System.out.println("ITERATING METHOD " + method.getSimpleName());
+                if(isObjectMethod(method)) continue;
+                if(!method.getModifiers().contains(Modifier.PUBLIC)) continue;
+                String name = method.getSimpleName().toString();
+                //System.out.println("METHOD NAME : " + name);
+                List<? extends VariableElement> args = method.getParameters();
+                TypeMirror ret = method.getReturnType();
+                boolean isVoid = ret.getKind().equals(TypeKind.VOID);
+                int argCount = args.size();
+                final MBeanAttribute attr;
+                
+                if (name.startsWith("get") && !name.equals("get") // NOI18N
+                        && argCount == 0 && !isVoid) {
+                    // if the method is "T getX()" it is a getter
+                    attr = new MBeanAttribute(name.substring(3),
+                            attributeDescription,
+                            method,
+                            null, clazz.getTypeParameters(), info);
+                } else if (name.startsWith("set") && !name.equals("set") // NOI18N
+                        && argCount == 1 && isVoid) {
+                    // if the method is "void setX(T x)" it is a setter
+                    attr = new MBeanAttribute(name.substring(3),
+                            attributeDescription,
+                            null,
+                            method, clazz.getTypeParameters(), info);
+                } else if (name.startsWith("is") && !name.equals("is") // NOI18N
+                        && argCount == 0
+                        && ret.getKind().equals(TypeKind.BOOLEAN)) {
+                    // if the method is "boolean isX()" it is a getter
+                    attr = new MBeanAttribute(name.substring(2),
+                            attributeDescription,
+                            method,
+                          null, clazz.getTypeParameters(), info);
+              } else {
+                  // in all other cases it is an operation
+                  attr = null;
+              }
+
+              if (attr != null) {
+                  /* System.out.println("We have a anattribute to add " 
+                  + attr.getName());
+                  if (testConsistency(attributes, attr)) {
+                  System.out.println("Adding " +
+                  attr.getName());
+                  attributes.add(attr);
+                  }*/
+                  attributes.add(attr);
+              } else {
+                  final MBeanOperation oper =
+                          new MBeanOperation(method, operationDescription,
+                          clazz.getTypeParameters(), info);
+                  operations.add(oper);
+              }
+          }
+      }
+
+      /**
+       * Checks if the types and the signatures of
+       * getters/setters/operations are conform to the MBean design patterns.
+       *
+       * Error cases:
+       * 	-  It exposes a method void Y getXX() AND a method void setXX(Z)
+       *     (parameter type mismatch)
+       * 	-  It exposes a method void setXX(Y) AND a method void setXX(Z)
+       *     (parameter type mismatch)
+       *  -  It exposes a  boolean isXX() method AND a YY getXX() or a void setXX(Y).
+       * Returns false if the attribute is already in attributes List
+       */
+      private static boolean testConsistency(List<MBeanAttribute> attributes,
+              MBeanAttribute attr)
+              throws NotCompliantMBeanException {
+          for (Iterator it = attributes.iterator(); it.hasNext();) {
+              MBeanAttribute mb = (MBeanAttribute) it.next();
+              if (mb.getName().equals(attr.getName())) {
+                  //if ((attr.isReadable() && mb.isReadable())) {
+                  // final String msg =
+                  //         "Conflicting getters for attribute " + mb.getName(); // NOI18N
+                  //  throw new NotCompliantMBeanException(msg);
+                  return false;
+              }
+              if (mb.getTypeName().equals(attr.getTypeName())) {
+                  if (mb.isWritable() && attr.isWritable()) {
+                      // final String msg =
+                      //         "Type mismatch between parameters of set" + // NOI18N
+                      //         mb.getName() + " methods"; // NOI18N
+                      //throw new NotCompliantMBeanException(msg);
+                      return false;
+                  } else {
+                      //final String msg =
+                      //        "Type mismatch between parameters of get or is" + // NOI18N
+                      //        mb.getName() + ", set" + mb.getName() + " methods"; // NOI18N
+                      //throw new NotCompliantMBeanException(msg);
+                      return false;
+                  }
+              }
+              if (attr.isReadable() && mb.isReadable()) {
+                  return false;
+              }
+              if (attr.isWritable() && mb.isWritable()) {
+                  return false;
+              }
+          }
+
+          return true;
+      }
+
+      /*
+       * We are merging getters and setters in a single Attribute.
+       *
+       */
+      private MBeanDO constructResult(List<MBeanAttribute> attributes,
+              List<MBeanOperation> operations, CompilationInfo info) {
+          final int len = attributes.size();
+          final MBeanAttribute[] attrlist = new MBeanAttribute[len];
+          attributes.toArray(attrlist);
+          final ArrayList<MBeanAttribute> mergedAttributes = new ArrayList<MBeanAttribute>();
+          //System.out.println("LEN : " + len);
+          for (int i = 0; i < len; i++) {
+              final MBeanAttribute bi = attrlist[i];
+
+              // bi can be null if it has already been eliminated
+              // by the loop below at an earlier iteration
+              // (cf. attrlist[j]=null;) In this case, just skip it.
+              //
+              if (bi == null) {
+                  continue;
+              }
+
+              // Placeholder for the final attribute info we're going to
+              // keep.
+              //
+              MBeanAttribute att = bi;
+
+              // The loop below will try to find whether bi is also present
+              // elsewhere further down the list.
+              // If it is not, att will be left unchanged.
+              // Otherwise, the found attribute info will be merged with
+              // att and `removed' from the array by setting them to `null'
+              //
+              for (int j = i + 1; j < len; j++) {
+                  MBeanAttribute mi = attrlist[j];
+
+                  // mi can be null if it has already been eliminated
+                  // by this loop at an earlier iteration.
+                  // (cf. attrlist[j]=null;) In this case, just skip it.
+                  //
+                  if (mi == null) {
+                      continue;
+                  }
+                  if ((mi.getName().compareTo(bi.getName()) == 0)) {
+                      if ((mi.getTypeName().compareTo(bi.getTypeName()) == 0)) {
+
+                          // mi and bi have the same name, which means that
+                          // that the attribute has been inserted twice in
+                          // the list, which means that it is a read-write
+                          // attribute.
+                          // So we're going to replace att with a new
+                          // attribute info with read-write mode.
+                          // We also set attrlist[j] to null in order to avoid
+                          // duplicates (attrlist[j] and attrlist[i] are now
+                          // merged into att).
+                          //
+                          attrlist[j] = null;
+                          att = new MBeanAttribute(bi.getName(),
+                                  bi.getDescription(),
+                                  bi.getGetter() != null ? bi.getGetter() : mi.getGetter(),
+                                  bi.getSetter() != null ? bi.getSetter() : mi.getSetter(),
+                                  bi.getClassParameterTypes(), info);
+                      // I think we could break, but it is probably
+                      // safer not to...
+                      //
+                      // break;
+                      } else 
+                          // mi and bi have the same name, which means that
+                          // that the attribute has been inserted twice in
+                          // the list, which means that it is two different 
+                          // attributes with different type.
+                          att = new MBeanAttribute(bi.getName(),
+                                  bi.getDescription(),
+                                  bi.getGetter(),
+                                  bi.getSetter(),
+                                  bi.getClassParameterTypes(), info);
+                      }
+                  }
+
+              // Now all attributes info which had the same name than bi
+              // have been merged together in att.
+              // Simply add att to the merged list.
+              //
+              //System.out.println("ADDING MERGED ATTRIBUTE " + att);
+              mergedAttributes.add(att);
+          }
+          
+          // Remove Overriden attributes
+          int len2 = mergedAttributes.size();
+          final MBeanAttribute[] attrlist2 = new MBeanAttribute[len2];
+          mergedAttributes.toArray(attrlist2);
+          final ArrayList<MBeanAttribute> finalMergedAttributes = new ArrayList<MBeanAttribute>();
+          for(int i = 0; i < len2; i++){
+              final MBeanAttribute bi = attrlist2[i];
+              // bi can be null if it has already been eliminated
+              // by the loop below at an earlier iteration
+              // (cf. attrlist[j]=null;) In this case, just skip it.
+              //
+              if (bi == null) {
+                  continue;
+              }
+
+              // Placeholder for the final attribute info we're going to
+              // keep.
+              //
+              MBeanAttribute att = bi;
+
+              // The loop below will try to find whether bi is also present
+              // elsewhere further down the list.
+              // If it is not, att will be left unchanged.
+              // Otherwise, the found attribute info will be merged with
+              // att and `removed' from the array by setting them to `null'
+              //
+              for (int j = i + 1; j < len2; j++) {
+                  MBeanAttribute mi = attrlist2[j];
+
+                  // mi can be null if it has already been eliminated
+                  // by this loop at an earlier iteration.
+                  // (cf. attrlist[j]=null;) In this case, just skip it.
+                  //
+                  if (mi == null) {
+                      continue;
+                  }
+                  if ((bi.getName().compareTo(mi.getName()) == 0)) {
+                      if(overridedType(bi.getTypeMirror(),mi.getTypeMirror(), info)){
+                         att = mi;
+                         attrlist2[j] = null;
+                      }else
+                         if(overridedType(mi.getTypeMirror(),bi.getTypeMirror(), info)){
+                            att = bi;
+                            attrlist2[j] = null;
+                        }
+                  }
+             }
+              //System.out.println("Finally adding : " + att.getName() + " " + 
+              //        att.getAccess());
+             finalMergedAttributes.add(att);
+          }
+          
+          final int opNb = operations.size();
+          final MBeanOperation[] oplist = new MBeanOperation[opNb];
+          operations.toArray(oplist);
+          final ArrayList mergedOperations = new ArrayList();
+
+          for (int i = 0; i < opNb; i++) {
+              final MBeanOperation bi = oplist[i];
+
+              // bi can be null if it has already been eliminated
+              // by the loop below at an earlier iteration
+              // (cf. attrlist[j]=null;) In this case, just skip it.
+              //
+              if (bi == null) {
+                  continue;
+              }
+
+              // Placeholder for the final attribute info we're going to
+              // keep.
+              //
+              MBeanOperation op = bi;
+
+              // The loop below will try to find whether bi is also present
+              // elsewhere further down the list.
+              // If it is not, op will be left unchanged.
+              // Otherwise, the found attribute info will be merged with
+              // att and `removed' from the array by setting them to `null'
+              //
+              for (int j = i + 1; j < opNb; j++) {
+                  MBeanOperation mi = oplist[j];
+
+                  // mi can be null if it has already been eliminated
+                  // by this loop at an earlier iteration.
+                  // (cf. attrlist[j]=null;) In this case, just skip it.
+                  //
+                  if (mi == null) {
+                      continue;
+                  }
+                  if (bi.getName().equals(mi.getName())) {
+
+                      if (override(bi, mi, info)) {
+                          // bi override mi so mi will not be be added to merged operations.
+
+                          oplist[j] = null;
+
+                          op = new MBeanOperation(mi.getMethod(), mi.getDescription(), mi.getClassParameterTypes(), info);
+                      } else if (override(mi, bi, info)) {
+                          // bi override mi so mi will not be be added to merged operations.
+
+                          oplist[j] = null;
+
+                          op = new MBeanOperation(bi.getMethod(), bi.getDescription(), bi.getClassParameterTypes(), info);
+                      } else {
+                          // mi and bi have the same name, which means that
+                          // that the attribute has been inserted twice in
+                          // the list, which means that it is two different 
+                          // attributes with different type.
+                          op = new MBeanOperation(bi.getMethod(), bi.getDescription(), bi.getClassParameterTypes(), info);
+                      }
+                  }
+              }
+
+              // Now all operations info which had the same name and the same signature
+              // or herited signature than have been merged together in op.
+              // Simply add op to the merged list.
+              //
+              mergedOperations.add(op);
+          }
+          return new MBeanDO(finalMergedAttributes, mergedOperations);
+      }
+        private boolean override(MBeanOperation bi, MBeanOperation mi, CompilationInfo info) {
+            if (bi.getParametersSize() != mi.getParametersSize()) {
+                return false;
+            }
+
+            for (int i = 0; i < bi.getParametersSize(); i++) {
+                TypeMirror biParam = bi.getParameter(i).getTypeMirror();
+                TypeMirror miParam = mi.getParameter(i).getTypeMirror();
+                if (!overridedType(biParam, miParam, info)) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private boolean overridedType(TypeMirror bi, TypeMirror mi, 
+                CompilationInfo info) {
+            //System.out.println("TYPE KIND : " + bi.getKind());
+            TypeKind biKind = bi.getKind();
+            TypeKind miKind = mi.getKind();
+            if(biKind.equals(miKind)) {
+                if(biKind.equals(TypeKind.BOOLEAN) || 
+                   biKind.equals(TypeKind.BYTE) ||
+                   biKind.equals(TypeKind.CHAR) ||
+                   biKind.equals(TypeKind.DOUBLE) ||
+                   biKind.equals(TypeKind.FLOAT) ||
+                   biKind.equals(TypeKind.INT) ||
+                   biKind.equals(TypeKind.LONG) ||
+                   biKind.equals(TypeKind.SHORT))
+                    return true;
+                if(biKind.equals(TypeKind.DECLARED)) {
+                    //System.out.println("BI " + bi + " MI " + mi);
+                   if(info.getTypeUtilities().isCastable(bi, mi)) {
+                       //System.out.println("Overriding !!!!!");
+                       return true;
+                   }
+                }
+                if(biKind.equals(TypeKind.ARRAY)) {
+                    int dim1 = getArrayDimension(bi);
+                    int dim2 = getArrayDimension(mi);
+                    //System.out.println("ARRAY DIM " + dim1 + " ARRAY DIM "  + dim2);
+                    if(dim1 != dim2) return false;
+                    bi = getComponentType(bi);
+                    mi = getComponentType(mi);
+                    TypeElement ex1 = (TypeElement) info.getTypes().asElement(bi);
+                    TypeElement ex2 = (TypeElement) info.getTypes().asElement(mi);
+                    boolean over = ex1.getQualifiedName().toString().equals(ex2.
+                            getQualifiedName().toString());
+                    if(over)
+                        //System.out.println("Overriding !!!!!");
+                    return over;
+                }
+            }
+            return false;
+            
+        }
+    }
     private static class AgentGeneratorSampleCodeTransformer extends TreePathScanner<Void,Object> {
-        private static final String NO_SAMPLE_BODY = "{//TODO Add your MBean registration code here}";
-        private static final String PROP_AGENT_INIT_METHOD_NAME = "init";
+        private static final String NO_SAMPLE_BODY = "{//TODO Add your MBean registration code here}";// NOI18N
+        private static final String PROP_AGENT_INIT_METHOD_NAME = "init";// NOI18N
         private final WorkingCopy w;
         private final boolean removeSampleCode;
         
@@ -717,7 +1269,8 @@ public class JavaModelHelper {
         
         @Override
         public Void visitClass(ClassTree clazz, Void v) {
-            updateDescription(text, clazz);
+            Element el = w.getTrees().getElement(getCurrentPath());
+            updateDescription(w, el, w.getTreeMaker(), text, clazz);
             return null;
         }
     }
@@ -738,7 +1291,7 @@ public class JavaModelHelper {
             TreeMaker make = w.getTreeMaker();
             Element el = w.getTrees().getElement(getCurrentPath());
             if (el == null) {
-                throw new RuntimeException("Invalid Class");
+                throw new RuntimeException("Invalid Class");// NOI18N
             }
             // Needed not to update the method body
             isClass = ! el.getKind().equals(ElementKind.INTERFACE);
@@ -748,17 +1301,23 @@ public class JavaModelHelper {
                         attributes[i].getIsMethodExits()) && !attributes[i].isWrapped();
                 boolean hasSetter = (attributes[i].getSetMethodExits() &&
                         !attributes[i].isWrapped());
-                if (attributes[i].isReadable() && !hasGetter) {
-                    MethodTree method = addGetAttrMethod(attributes[i]);
-                    updated = make.addClassMember(updated, method);
-                    // w.rewrite(clazz, copy);
+
+                if (attributes[i].isReadable()) {
+                    if (!isClass || !hasGetter) {
+                        MethodTree method = addGetAttrMethod(attributes[i]);
+                        updated = make.addClassMember(updated, method);
+                    }
                 }
-                if (attributes[i].isWritable() && !hasSetter) {
-                    MethodTree method = addSetAttrMethod(attributes[i]);
-                    updated = make.addClassMember(updated, method);
+
+                if (attributes[i].isWritable()) {
+                    if (!isClass || !hasSetter) {
+                        MethodTree method = addSetAttrMethod(attributes[i]);
+                        updated = make.addClassMember(updated, method);
                     //w.rewrite(clazz, copy);
+                    }
                 }
-            }
+            }   
+                    
             if(isClass){
                 for (int i = attributes.length - 1; i >= 0; i--) {
                     if (!attributes[i].getIsMethodExits() && !attributes[i].getGetMethodExits() &&
@@ -803,7 +1362,7 @@ public class JavaModelHelper {
            // String t = attribute.
            // if(attribute.isArray()) {
            // }
-            ExpressionTree retType = getType(w, attribute.getTypeName());
+            ExpressionTree retType = getType(w, attribute.getTypeName(), attribute.getTypeMirror());
             TypeElement retTypeElement = w.getElements().getTypeElement(attribute.getTypeName());
             
             MethodTree newMethod = null;
@@ -831,8 +1390,7 @@ public class JavaModelHelper {
                     null // default value - not applicable here, used by annotations
                     );
             }
-            Comment c = Comment.create(Style.JAVADOC, -2, -2, -2, "Get " + attribute.getDescription() + "\n" + doc.toString()); // NOI18N
-            make.addComment(newMethod, c, true);
+            JavaModelHelper.addComment(make, newMethod, Style.JAVADOC, "Get " + attribute.getDescription() + "\n" + doc.toString()); // NOI18N
             return newMethod;
         }
         
@@ -861,14 +1419,14 @@ public class JavaModelHelper {
             
             //Create a parameter
             ModifiersTree parMods = make.Modifiers(Collections.<Modifier>emptySet(), Collections.<AnnotationTree>emptyList());
-            ExpressionTree t = getType(w, attribute.getTypeName());
-            VariableTree par1 = make.Variable(parMods, "value", t, null);
+            ExpressionTree t = getType(w, attribute.getTypeName(), attribute.getTypeMirror());
+            VariableTree par1 = make.Variable(parMods, "value", t, null);// NOI18N
             List<VariableTree> parList = new ArrayList<VariableTree>(1);
             parList.add(par1);
          
             // now, start the method creation
             MethodTree newMethod = null;
-            String opName = "set" + attribute.getName();
+            String opName = "set" + attribute.getName();// NOI18N
             if(isClass) {
                  newMethod = make.Method(
                         make.Modifiers(Collections.singleton(Modifier.PUBLIC)), // modifiers and annotations
@@ -892,20 +1450,18 @@ public class JavaModelHelper {
                         null // default value - not applicable here, used by annotations
                         );
             }
-            Comment c = Comment.create(Style.JAVADOC, -2, -2, -2, "Set " + attribute.getDescription() + "\n" + doc.toString()); // NOI18N
-            make.addComment(newMethod, c, true);
+            JavaModelHelper.addComment(make, newMethod, Comment.Style.JAVADOC, "Set " + attribute.getDescription() + "\n" + doc.toString()); // NOI18N
             return newMethod;
         }
         
         private VariableTree addAttrField(MBeanAttribute attribute) {
-            ExpressionTree t = getType(w, attribute.getTypeName());
+            ExpressionTree t = getType(w, attribute.getTypeName(), attribute.getTypeMirror());
             TreeMaker make = w.getTreeMaker();
             Set<Modifier> modifiers  = new HashSet<Modifier>();
             modifiers.add(Modifier.PRIVATE);
             VariableTree var = make.Variable(make.Modifiers(modifiers),
                     WizardHelpers.forceFirstLetterLowerCase(attribute.getName()), t, null);
-            Comment c = Comment.create("Attribute : " + attribute.getName()); // NOI18N
-            make.addComment(var, c, true);
+            JavaModelHelper.addComment(make, var, Comment.Style.JAVADOC, "Attribute : " + attribute.getName()); // NOI18N
             return var;
         }
     }
@@ -926,15 +1482,17 @@ public class JavaModelHelper {
             TreeMaker make = w.getTreeMaker();
             Element el = w.getTrees().getElement(getCurrentPath());
             if (el == null) {
-                throw new RuntimeException("Invalid Class");
+                throw new RuntimeException("Invalid Class");// NOI18N
             }
             // Needed not to update the method body
             isClass = ! el.getKind().equals(ElementKind.INTERFACE);
+            ClassTree updated = clazz;
             for(int i = 0; i < operations.length; i++) {
-                MethodTree m = addOperation(operations[i]);
-                ClassTree copy = make.addClassMember(clazz, m);
-                w.rewrite(clazz, copy);
+                if(isClass && operations[i].isMethodExists()) continue;
+                MethodTree method = addOperation(operations[i]);
+                updated = make.addClassMember(updated, method);
             }
+            w.rewrite(clazz, updated);
             return null;
         }
         private MethodTree addOperation(MBeanOperation operation) {
@@ -942,8 +1500,9 @@ public class JavaModelHelper {
             
             StringBuffer body = new StringBuffer();
             if (operation.isWrapped()) {
-                if  (!operation.getReturnTypeName().equals(WizardConstants.VOID_NAME))
-                    body.append("{return "); // NOI18N
+                body.append("{");// NOI18N
+                if (!operation.getReturnTypeName().equals(WizardConstants.VOID_NAME))
+                    body.append("return "); // NOI18N
                 body.append("theRef." + operation.getName() + "("); // NOI18N
                 for (int i = 0; i < operation.getParametersSize(); i ++) {
                     MBeanOperationParameter param = operation.getParameter(i);
@@ -959,7 +1518,7 @@ public class JavaModelHelper {
                             WizardHelpers.getDefaultValue(operation.getReturnTypeName()) +
                             ";"); // NOI18N
                 }
-                body.append("}");
+                body.append("}");// NOI18N
             }
             
             StringBuffer doc = new StringBuffer();
@@ -969,7 +1528,7 @@ public class JavaModelHelper {
             List<VariableTree> params = new ArrayList<VariableTree>(operation.getParametersSize());
             for (int i = 0; i < operation.getParametersSize(); i ++) {
                 MBeanOperationParameter param = operation.getParameter(i);
-                ExpressionTree t = getType(w, param.getParamType());
+                ExpressionTree t = getType(w, param.getParamType(), param.getTypeMirror());
                 VariableTree par = make.Variable(parMods, param.getParamName(), t, null);
                 params.add(par);
                 doc.append("@param " + param.getParamName() + " " +  // NOI18N
@@ -979,7 +1538,7 @@ public class JavaModelHelper {
             List<ExpressionTree> exceptions = new ArrayList<ExpressionTree>();
             for (int i = 0; i < operation.getExceptionsSize(); i ++) {
                 MBeanOperationException exception = operation.getException(i);
-                ExpressionTree t = getType(w, exception.getExceptionClass());
+                ExpressionTree t = getType(w, exception.getExceptionClass(), null);
                 exceptions.add(t);
                 doc.append("@throws " + exception.getExceptionClass() + " " + // NOI18N
                         exception.getExceptionDescription() + "\n"); // NOI18N
@@ -988,7 +1547,7 @@ public class JavaModelHelper {
             if (!operation.getReturnTypeName().equals(WizardConstants.VOID_NAME)) {
                 doc.append("@return " + operation.getReturnTypeName() +  "\n"); // NOI18N
             }
-            ExpressionTree t = getType(w, operation.getReturnTypeName());
+            ExpressionTree t = getType(w, operation.getReturnTypeName(), operation.getTypeMirror());
             String opName = operation.getName();
             MethodTree newMethod = null;
             if(isClass) {
@@ -1014,8 +1573,7 @@ public class JavaModelHelper {
                         null // default value - not applicable here, used by annotations
                         );
             }
-            Comment c = Comment.create(Style.JAVADOC, -2, -2, -2, doc.toString());
-            make.addComment(newMethod, c, true);
+            JavaModelHelper.addComment(make, newMethod, Comment.Style.JAVADOC,doc.toString());
             return newMethod;
         }
     }
@@ -1023,7 +1581,7 @@ public class JavaModelHelper {
     private static class AttributeImplementationVisitor extends MemberVisitor {
         
         private MBeanAttribute attribute;
-        
+        private boolean leafDone;
         public AttributeImplementationVisitor(CompilationInfo info, ValueHolder holder,
                 MBeanAttribute attribute) {
             super(info, holder);
@@ -1032,13 +1590,17 @@ public class JavaModelHelper {
         
         @Override
         public Void visitClass(ClassTree t, Void v) {
+            if(leafDone) return null;
+            leafDone = true;
             Element el = info.getTrees().getElement(getCurrentPath());
             if (el == null) {
-                throw new RuntimeException("Invalid Class");
+                throw new RuntimeException("Invalid Class");// NOI18N
             }
             TypeElement te = (TypeElement) el;
-            
+            //System.out.println("SERACHING 1");
+                    
             MBeanAttribute found = searchAttributeImplementation(te, info);
+            //System.out.println("SERACHING 2");
             holder.setValue(found);
             return null;
         }
@@ -1049,41 +1611,50 @@ public class JavaModelHelper {
             MBeanAttribute found = null;
             if(sup != null) {
                 TypeElement supElement = (TypeElement) info.getTypes().asElement(sup);
-                found = searchAttributeImplementation(supElement, info);
+                searchAttributeImplementation(supElement, info);
             }
-            if(found != null) return found;
-            
+            //System.out.println("SERACHING FOR " + clazz.getSimpleName());
             List<ExecutableElement> methods =
                     ElementFilter.methodsIn(clazz.getEnclosedElements());
             for(ExecutableElement method : methods) {
-                if(method.getSimpleName().toString().equals("get" + attribute.getName())) {
-                    attribute.setGetMethodExits(method.getParameters().isEmpty() &&
-                            method.getModifiers().contains(Modifier.PUBLIC));
+                //System.out.println("METHOD " + method.getSimpleName());
+                if(method.getSimpleName().toString().equals("get" + attribute.getName())) {// NOI18N
+                    attribute.setGetMethodExits(method.getParameters().isEmpty());// &&
+                           // method.getModifiers().contains(Modifier.PUBLIC));
                     // Update with potential Exceptions
                     if(attribute.getGetMethodExits()) {
                         updateAttributeWithExceptions(method, attribute, info);
                     }
                 }
-                if(method.getSimpleName().toString().equals("is" + attribute.getName())) {
-                    attribute.setIsMethodExits(method.getParameters().isEmpty() &&
-                            method.getModifiers().contains(Modifier.PUBLIC));
+                if(method.getSimpleName().toString().equals("is" + attribute.getName())) {// NOI18N
+                    attribute.setIsMethodExits(method.getParameters().isEmpty());// &&
+                           //method.getModifiers().contains(Modifier.PUBLIC));
                     // Update with potential Exceptions
                     if(attribute.getIsMethodExits()) {
                         updateAttributeWithExceptions(method, attribute, info);
                     }
                 }
-                if(method.getSimpleName().toString().equals("set" + attribute.getName())) {
+                if(method.getSimpleName().toString().equals("set" + attribute.getName())) {// NOI18N
                     boolean sameType = false;
+                    
                     if(method.getParameters().size() == 1) {
                         List<? extends VariableElement> params = method.getParameters();
                         VariableElement p = params.get(0);
-                        String fullType = 
-                                WizardHelpers.getFullTypeName(attribute.getTypeName());
-                        TypeElement elem = info.getElements().getTypeElement(fullType);
-                        sameType = p.asType().equals(elem.asType());
+                       
+                        //System.out.println("set" + attribute.getName());
+                        //System.out.println("What is the impl type " + p.asType());
+                        //System.out.println("What is the itf type " + attribute.getTypeMirror());
+                        // XXX equals on MirrorType seems not to work in some cases...
+                        //TypeMirror tm = attribute.getTypeMirror();
+                        //if(tm != null)
+                         //   sameType = p.asType().equals(tm);
+                        //else {
+                            String tn = getTypeName(p.asType(), null, null, info);
+                            sameType = tn.contains(attribute.getTypeName());
+                        //} 
                     }
-                    attribute.setSetMethodExits(sameType &&
-                            method.getModifiers().contains(Modifier.PUBLIC));
+                    attribute.setSetMethodExits(sameType);// &&
+                           // method.getModifiers().contains(Modifier.PUBLIC));
                     // Update with potential Exceptions
                     if(attribute.getSetMethodExits()) {
                         updateAttributeWithExceptions(method, attribute, info);
@@ -1114,7 +1685,7 @@ public class JavaModelHelper {
     private static class OperationImplementationVisitor extends MemberVisitor {
         
         private MBeanOperation operation;
-        
+        private boolean leafVisited;
         public OperationImplementationVisitor(CompilationInfo info, ValueHolder holder,
                 MBeanOperation operation) {
             super(info, holder);
@@ -1123,13 +1694,17 @@ public class JavaModelHelper {
         
         @Override
         public Void visitClass(ClassTree t, Void v) {
+            if(leafVisited) return null;
+            leafVisited = true;
             Element el = info.getTrees().getElement(getCurrentPath());
             if (el == null) {
-                throw new RuntimeException("Invalid Class");
+                throw new RuntimeException("Invalid Class");// NOI18N
             }
             TypeElement te = (TypeElement) el;
-            
+           // System.out.println("Search Operatione 1");
             MBeanOperation found = searchOperationImplementation(te, info);
+                    //    System.out.println("Search Operatione 2");
+                        
             holder.setValue(found);
             return null;
         }
@@ -1144,26 +1719,34 @@ public class JavaModelHelper {
                 found = searchOperationImplementation(supElement, info);
             }
             if(found != null) return found;
-            
             List<ExecutableElement> methods =
                     ElementFilter.methodsIn(clazz.getEnclosedElements());
+            //System.out.println("CLAZZ " + clazz.getSimpleName());
             for(ExecutableElement method : methods) {
+               // System.out.println("OPERATION " + method.getSimpleName());
                 if(method.getSimpleName().toString().equals(operation.getName())) {
+                 //   System.out.println("SAME OPERATION " + method.getSimpleName());
                     List<? extends VariableElement> params = method.getParameters();
                     if(params.size() == operation.getParametersList().size()) {
+                     //   System.out.println("SAME SIZE " + params.size());
                         List<MBeanOperationParameter> ps = operation.getParametersList();
                         int i = 0;
                         boolean sameParams = true;
                         for(VariableElement param : params) {
                             TypeMirror type = param.asType();
                             MBeanOperationParameter p = ps.get(i);
-                            TypeElement te = info.getElements().getTypeElement(WizardHelpers.getFullTypeName(p.getParamType()));
-                            sameParams = sameParams && te.asType().equals(type);
+                            //TypeElement te = info.getElements().getTypeElement(WizardHelpers.getFullTypeName(p.getParamType()));
+                            //System.out.println("IS SAME" + te.asType() + " " + type );
+                            //System.out.println("IS SAME" + te.asType().equals(type) );
+                            //String tn = getTypeName(te.asType(), null, null, info);
+                            //System.out.println("IS SAME" + p.getParamType() + " " + type );
+                            boolean sameType = type.toString().contains(p.getParamType());
+                            sameParams = sameParams && sameType;
                             i++;
                         }
-                        if(sameParams && method.getModifiers().contains(Modifier.PUBLIC)) {
-                            // Need to update Exceptions ...
-                            updateOperationWithExceptions(method, operation, info);
+                        if(sameParams){// && method.getModifiers().contains(Modifier.PUBLIC)) {
+                            operation.setMethodExists(true);
+                            //updateOperationWithExceptions(method, operation, info);
                             return operation;
                         }
                     }
@@ -1172,18 +1755,7 @@ public class JavaModelHelper {
             return null;
         }
         
-        private static void updateOperationWithExceptions(ExecutableElement method,
-                MBeanOperation operation,
-                CompilationInfo info) {
-            List<? extends TypeMirror> exceptions = method.getThrownTypes();
-            List<MBeanOperationException> operExceptions = operation.getExceptionsList();
-            for(TypeMirror exception : exceptions) {
-                TypeElement elem = (TypeElement) info.getTypes().asElement(exception);
-                MBeanOperationException ex =
-                        new MBeanOperationException(elem.getQualifiedName().toString(), null);
-                operExceptions.add(ex);
-            }
-        }
+       
     }
     
     private static class IsGeneratedAgentAgentVisitor extends MemberVisitor {
@@ -1195,7 +1767,7 @@ public class JavaModelHelper {
         public Void visitClass(ClassTree t, Void v) {
             Element el = info.getTrees().getElement(getCurrentPath());
             if (el == null) {
-                throw new RuntimeException("Invalid Class");
+                throw new RuntimeException("Invalid Class");// NOI18N
             }
             TypeElement te = (TypeElement) el;
             // How do I test the TypeElement to be an Interface????
@@ -1249,7 +1821,7 @@ public class JavaModelHelper {
             //Obtain the owner of this method, getCurrentPath() returns a path from root (CompilationUnitTree) to current node (tree)
             // XXX REVISIT WITH API CHANGES
             TreeMaker make = w.getTreeMaker();
-            TypeElement emitter = w.getElements().getTypeElement("javax.management.NotificationEmitter");
+            TypeElement emitter = w.getElements().getTypeElement("javax.management.NotificationEmitter");// NOI18N
             ClassTree copy = make.addClassImplementsClause(clazz, make.QualIdent(emitter));
             
             MethodTree m = addAddNotifListMethod(genBroadcastDeleg);
@@ -1301,12 +1873,12 @@ public class JavaModelHelper {
             TreeMaker make = w.getTreeMaker();
             ModifiersTree parMods = make.Modifiers(Collections.<Modifier>emptySet(), Collections.<AnnotationTree>emptyList());
             // make a variable trees - representing parameters
-            TypeElement listenerType = w.getElements().getTypeElement("javax.management.NotificationListener");
-            TypeElement filterType = w.getElements().getTypeElement("javax.management.NotificationFilter");
-            TypeElement handbackType = w.getElements().getTypeElement("java.lang.Object");
-            VariableTree par1 = make.Variable(parMods, "listener", make.QualIdent(listenerType), null);
-            VariableTree par2 = make.Variable(parMods, "filter", make.QualIdent(filterType), null);
-            VariableTree par3 = make.Variable(parMods, "handback", make.QualIdent(handbackType), null);
+            TypeElement listenerType = w.getElements().getTypeElement("javax.management.NotificationListener");// NOI18N
+            TypeElement filterType = w.getElements().getTypeElement("javax.management.NotificationFilter");// NOI18N
+            TypeElement handbackType = w.getElements().getTypeElement("java.lang.Object");// NOI18N
+            VariableTree par1 = make.Variable(parMods, "listener", make.QualIdent(listenerType), null);// NOI18N
+            VariableTree par2 = make.Variable(parMods, "filter", make.QualIdent(filterType), null);// NOI18N
+            VariableTree par3 = make.Variable(parMods, "handback", make.QualIdent(handbackType), null);// NOI18N
             List<VariableTree> parList = new ArrayList<VariableTree>(3);
             parList.add(par1);
             parList.add(par2);
@@ -1314,13 +1886,13 @@ public class JavaModelHelper {
             
             // now, start the method creation
             MethodTree newMethod = make.Method(
-                    make.Modifiers(Collections.singleton(Modifier.PUBLIC)), // modifiers and annotations
-                    "addNotificationListener", // name
+                    make.Modifiers(Collections.singleton(Modifier.PUBLIC)),// NOI18N // modifiers and annotations
+                    "addNotificationListener",// NOI18N // name
                     make.PrimitiveType(TypeKind.VOID), // return type
                     Collections.<TypeParameterTree>emptyList(), // type parameters for parameters
                     parList, // parameters
-                    Collections.singletonList(make.Identifier("IllegalArgumentException")), // throws
-                    (genBroadcastDeleg ? "{broadcaster.addNotificationListener(listener, filter, handback);}" : BODY_COMMENT), //body
+                    Collections.singletonList(make.Identifier("IllegalArgumentException")), // NOI18N// throws
+                    (genBroadcastDeleg ? "{broadcaster.addNotificationListener(listener, filter, handback);}" : BODY_COMMENT), // NOI18N //body
                     null // default value - not applicable here, used by annotations
                     );
             return newMethod;
@@ -1340,7 +1912,7 @@ public class JavaModelHelper {
             methodBody.append("{return new MBeanNotificationInfo[] {\n"); // NOI18N
             MessageFormat notifInfo = new MessageFormat(MBEAN_NOTIF_INFO_PATTERN);
             TypeElement te =
-                    w.getElements().getTypeElement("javax.management.MBeanNotificationInfo");
+                    w.getElements().getTypeElement("javax.management.MBeanNotificationInfo");// NOI18N
             
             Tree retValue = make.ArrayType(make.QualIdent(te));
             int notifTypeIndex = 0;
@@ -1371,7 +1943,7 @@ public class JavaModelHelper {
             
             MethodTree newMethod = make.Method(
                     make.Modifiers(Collections.singleton(Modifier.PUBLIC)), // modifiers and annotations
-                    "getNotificationInfo", // name
+                    "getNotificationInfo", // NOI18N// name
                     retValue, // return type
                     Collections.<TypeParameterTree>emptyList(), // type parameters for parameters
                     Collections.<VariableTree>emptyList(), // parameters
@@ -1387,20 +1959,20 @@ public class JavaModelHelper {
             
             ModifiersTree parMods = make.Modifiers(Collections.<Modifier>emptySet(), Collections.<AnnotationTree>emptyList());
             // make a variable trees - representing parameters
-            TypeElement listenerType = w.getElements().getTypeElement("javax.management.NotificationListener");
-            VariableTree par1 = make.Variable(parMods, "listener", make.QualIdent(listenerType), null);
+            TypeElement listenerType = w.getElements().getTypeElement("javax.management.NotificationListener");// NOI18N
+            VariableTree par1 = make.Variable(parMods, "listener", make.QualIdent(listenerType), null);// NOI18N
             List<VariableTree> parList = new ArrayList<VariableTree>(1);
             parList.add(par1);
             
             // now, start the method creation
             MethodTree newMethod = make.Method(
                     make.Modifiers(Collections.singleton(Modifier.PUBLIC)), // modifiers and annotations
-                    "removeNotificationListener", // name
+                    "removeNotificationListener", // NOI18N // name
                     make.PrimitiveType(TypeKind.VOID), // return type
                     Collections.<TypeParameterTree>emptyList(), // type parameters for parameters
                     parList, // parameters
-                    Collections.singletonList(make.Identifier("ListenerNotFoundException")), // throws
-                    (genBroadcastDeleg ? "{broadcaster.removeNotificationListener(listener);}" : BODY_COMMENT), //body
+                    Collections.singletonList(make.Identifier("ListenerNotFoundException")), // NOI18N // throws
+                    (genBroadcastDeleg ? "{broadcaster.removeNotificationListener(listener);}" : BODY_COMMENT), // NOI18N //body
                     null // default value - not applicable here, used by annotations
                     );
             return newMethod;
@@ -1410,12 +1982,12 @@ public class JavaModelHelper {
             TreeMaker make = w.getTreeMaker();
             ModifiersTree parMods = make.Modifiers(Collections.<Modifier>emptySet(), Collections.<AnnotationTree>emptyList());
             // make a variable trees - representing parameters
-            TypeElement listenerType = w.getElements().getTypeElement("javax.management.NotificationListener");
-            TypeElement filterType = w.getElements().getTypeElement("javax.management.NotificationFilter");
-            TypeElement handbackType = w.getElements().getTypeElement("java.lang.Object");
-            VariableTree par1 = make.Variable(parMods, "listener", make.QualIdent(listenerType), null);
-            VariableTree par2 = make.Variable(parMods, "filter", make.QualIdent(filterType), null);
-            VariableTree par3 = make.Variable(parMods, "handback", make.QualIdent(handbackType), null);
+            TypeElement listenerType = w.getElements().getTypeElement("javax.management.NotificationListener");// NOI18N
+            TypeElement filterType = w.getElements().getTypeElement("javax.management.NotificationFilter");// NOI18N
+            TypeElement handbackType = w.getElements().getTypeElement("java.lang.Object");// NOI18N
+            VariableTree par1 = make.Variable(parMods, "listener", make.QualIdent(listenerType), null);// NOI18N
+            VariableTree par2 = make.Variable(parMods, "filter", make.QualIdent(filterType), null);// NOI18N
+            VariableTree par3 = make.Variable(parMods, "handback", make.QualIdent(handbackType), null);// NOI18N
             List<VariableTree> parList = new ArrayList<VariableTree>(3);
             parList.add(par1);
             parList.add(par2);
@@ -1424,12 +1996,12 @@ public class JavaModelHelper {
             // now, start the method creation
             MethodTree newMethod = make.Method(
                     make.Modifiers(Collections.singleton(Modifier.PUBLIC)), // modifiers and annotations
-                    "removeNotificationListener", // name
+                    "removeNotificationListener", // NOI18N // name
                     make.PrimitiveType(TypeKind.VOID), // return type
                     Collections.<TypeParameterTree>emptyList(), // type parameters for parameters
                     parList, // parameters
-                    Collections.singletonList(make.Identifier("ListenerNotFoundException")), // throws
-                    (genBroadcastDeleg ? "{broadcaster.removeNotificationListener(listener, filter, handback);}" : BODY_COMMENT), //body
+                    Collections.singletonList(make.Identifier("ListenerNotFoundException")), // NOI18N // throws
+                    (genBroadcastDeleg ? "{broadcaster.removeNotificationListener(listener, filter, handback);}" : BODY_COMMENT), // NOI18N //body
                     null // default value - not applicable here, used by annotations
                     );
             return newMethod;
@@ -1443,7 +2015,7 @@ public class JavaModelHelper {
             modifiers.add(Modifier.SYNCHRONIZED);
             MethodTree newMethod = make.Method(
                     make.Modifiers(modifiers), // modifiers and annotations
-                    "getNextSeqNumber", // name
+                    "getNextSeqNumber", // NOI18N // name
                     make.PrimitiveType(TypeKind.LONG), // return type
                     Collections.<TypeParameterTree>emptyList(), // type parameters for parameters
                     Collections.<VariableTree>emptyList(), // parameters
@@ -1457,12 +2029,12 @@ public class JavaModelHelper {
             TreeMaker make = w.getTreeMaker();
             Set<Modifier> modifiers  = new HashSet<Modifier>();
             modifiers.add(Modifier.PRIVATE);
-            VariableTree var = make.Variable(make.Modifiers(modifiers), "seqNumber", make.PrimitiveType(TypeKind.LONG), null);
+            VariableTree var = make.Variable(make.Modifiers(modifiers), "seqNumber", make.PrimitiveType(TypeKind.LONG), null);// NOI18N
             return var;
         }
         private VariableTree addBroadcasterField() {
             TreeMaker make = w.getTreeMaker();
-            TypeElement supportType = w.getElements().getTypeElement("javax.management.NotificationBroadcasterSupport");
+            TypeElement supportType = w.getElements().getTypeElement("javax.management.NotificationBroadcasterSupport");// NOI18N
             // Write a new XX
             ExpressionTree ex = make.QualIdent(supportType);
             NewClassTree initializer =
@@ -1482,7 +2054,7 @@ public class JavaModelHelper {
             modifiers.add(Modifier.PRIVATE);
             modifiers.add(Modifier.STATIC);
             modifiers.add(Modifier.FINAL);
-            TypeElement stringElem = w.getElements().getTypeElement("java.lang.String");
+            TypeElement stringElem = w.getElements().getTypeElement("java.lang.String");// NOI18N
             ExpressionTree stringType = make.QualIdent(stringElem);
             for (int i = 0; i < notifs.length; i ++) {
                 if (!notifs[i].getNotificationClass().equals(
@@ -1490,13 +2062,12 @@ public class JavaModelHelper {
                     for (int j = 0; j < notifs[i].getNotificationTypeCount(); j++) {
                         VariableTree var =
                                 make.Variable(make.Modifiers(modifiers),
-                                "NOTIF_TYPE_" + notifTypeIndex,
+                                "NOTIF_TYPE_" + notifTypeIndex,// NOI18N
                                 stringType,
                                 make.Literal(notifs[i].getNotificationType(j).getNotificationType())
                                 );
                         if(notifTypeIndex == 0) {
-                            Comment c = Comment.create(comments);
-                            make.addComment(var, c, true);
+                            JavaModelHelper.addComment(make, var, Comment.Style.JAVADOC, comments);
                         }
                         copy = make.addClassMember(copy, var);
                         notifTypeIndex++;
@@ -1553,7 +2124,7 @@ public class JavaModelHelper {
         
         @Override public Void visitClass(ClassTree clazz, Void v) {
             TreeMaker make = w.getTreeMaker();
-            TypeElement emitter = w.getElements().getTypeElement("javax.management.MBeanRegistration");
+            TypeElement emitter = w.getElements().getTypeElement("javax.management.MBeanRegistration");// NOI18N
             ClassTree copy = make.addClassImplementsClause(clazz, make.QualIdent(emitter));
             
             
@@ -1590,15 +2161,15 @@ public class JavaModelHelper {
                         "mbeanServer = server;" +  // NOI18N
                         methodBody;
             
-            methodBody = "{" + methodBody +"}";
+            methodBody = "{" + methodBody +"}";// NOI18N
             
             ModifiersTree parMods = make.Modifiers(Collections.<Modifier>emptySet(), Collections.<AnnotationTree>emptyList());
             // make a variable trees - representing parameters
-            TypeElement serverType = w.getElements().getTypeElement("javax.management.MBeanServer");
-            TypeElement nameType = w.getElements().getTypeElement("javax.management.ObjectName");
+            TypeElement serverType = w.getElements().getTypeElement("javax.management.MBeanServer");// NOI18N
+            TypeElement nameType = w.getElements().getTypeElement("javax.management.ObjectName");// NOI18N
             Tree nameTree = make.QualIdent(nameType);
-            VariableTree par1 = make.Variable(parMods, "server", make.QualIdent(serverType), null);
-            VariableTree par2 = make.Variable(parMods, "name", make.QualIdent(nameType), null);
+            VariableTree par1 = make.Variable(parMods, "server", make.QualIdent(serverType), null);// NOI18N
+            VariableTree par2 = make.Variable(parMods, "name", make.QualIdent(nameType), null);// NOI18N
             
             List<VariableTree> parList = new ArrayList<VariableTree>(2);
             parList.add(par1);
@@ -1607,17 +2178,16 @@ public class JavaModelHelper {
             // now, start the method creation
             MethodTree newMethod = make.Method(
                     make.Modifiers(Collections.singleton(Modifier.PUBLIC)), // modifiers and annotations
-                    "preRegister", // name
+                    "preRegister", // NOI18N
                     nameTree, // return type
                     Collections.<TypeParameterTree>emptyList(), // type parameters for parameters
                     parList, // parameters
-                    Collections.singletonList(make.Identifier("Exception")), // throws
+                    Collections.singletonList(make.Identifier("Exception")), // NOI18N
                     methodBody,//body
                     null // default value - not applicable here, used by annotations
                     );
-            Comment c = Comment.create(Style.JAVADOC, -2, -2, -2, PRE_REGISTER_JAVADOC);
-            make.addComment(newMethod, c, true);
-            
+            JavaModelHelper.addComment(make, newMethod, Comment.Style.JAVADOC,PRE_REGISTER_JAVADOC);
+           
             return newMethod;
         }
         
@@ -1627,7 +2197,7 @@ public class JavaModelHelper {
                     "{//TODO postRegister implementation;}"; // NOI18N
             ModifiersTree parMods = make.Modifiers(Collections.<Modifier>emptySet(), Collections.<AnnotationTree>emptyList());
             // make a variable trees - representing parameters
-            VariableTree par1 = make.Variable(parMods, "registrationDone", make.Identifier("Boolean"), null);
+            VariableTree par1 = make.Variable(parMods, "registrationDone", make.Identifier("Boolean"), null); // NOI18N
             
             List<VariableTree> parList = new ArrayList<VariableTree>(1);
             parList.add(par1);
@@ -1635,7 +2205,7 @@ public class JavaModelHelper {
             // now, start the method creation
             MethodTree newMethod = make.Method(
                     make.Modifiers(Collections.singleton(Modifier.PUBLIC)), // modifiers and annotations
-                    "postRegister", // name
+                    "postRegister", // NOI18N // name
                     make.PrimitiveType(TypeKind.VOID), // return type
                     Collections.<TypeParameterTree>emptyList(), // type parameters for parameters
                     parList, // parameters
@@ -1644,8 +2214,7 @@ public class JavaModelHelper {
                     null // default value - not applicable here, used by annotations
                     );
             
-            Comment c = Comment.create(Style.JAVADOC, -2, -2, -2, POST_REGISTER_JAVADOC);
-            make.addComment(newMethod, c, true);
+            JavaModelHelper.addComment(make, newMethod, Comment.Style.JAVADOC, POST_REGISTER_JAVADOC);
             return newMethod;
         }
         
@@ -1657,17 +2226,16 @@ public class JavaModelHelper {
             
             MethodTree newMethod = make.Method(
                     make.Modifiers(Collections.singleton(Modifier.PUBLIC)), // modifiers and annotations
-                    "preDeregister", // name
+                    "preDeregister", // NOI18N // name
                     make.PrimitiveType(TypeKind.VOID), // return type
                     Collections.<TypeParameterTree>emptyList(), // type parameters for parameters
                     Collections.<VariableTree>emptyList(), // parameters
-                    Collections.singletonList(make.Identifier("Exception")), // throws
+                    Collections.singletonList(make.Identifier("Exception")), // NOI18N // throws
                     methodBody, //body
                     null // default value - not applicable here, used by annotations
                     );
             
-            Comment c = Comment.create(Style.JAVADOC, -2, -2, -2, PRE_DEREGISTER_JAVADOC);
-            make.addComment(newMethod, c, true);
+            JavaModelHelper.addComment(make, newMethod, Comment.Style.JAVADOC,PRE_DEREGISTER_JAVADOC);
             return newMethod;
         }
         
@@ -1679,7 +2247,7 @@ public class JavaModelHelper {
             
             MethodTree newMethod = make.Method(
                     make.Modifiers(Collections.singleton(Modifier.PUBLIC)), // modifiers and annotations
-                    "postDeregister", // name
+                    "postDeregister", // NOI18N // name
                     make.PrimitiveType(TypeKind.VOID), // return type
                     Collections.<TypeParameterTree>emptyList(), // type parameters for parameters
                     Collections.<VariableTree>emptyList(), // parameters
@@ -1688,8 +2256,7 @@ public class JavaModelHelper {
                     null // default value - not applicable here, used by annotations
                     );
             
-            Comment c = Comment.create(Style.JAVADOC, -2, -2, -2, POST_DEREGISTER_JAVADOC);
-            make.addComment(newMethod, c, true);
+            JavaModelHelper.addComment(make, newMethod, Comment.Style.JAVADOC, POST_DEREGISTER_JAVADOC);
             return newMethod;
         }
         
@@ -1697,8 +2264,8 @@ public class JavaModelHelper {
             TreeMaker make = w.getTreeMaker();
             Set<Modifier> modifiers  = new HashSet<Modifier>();
             modifiers.add(Modifier.PRIVATE);
-            TypeElement serverType = w.getElements().getTypeElement("javax.management.MBeanServer");
-            VariableTree var = make.Variable(make.Modifiers(modifiers), "mbeanServer", make.QualIdent(serverType), null);
+            TypeElement serverType = w.getElements().getTypeElement("javax.management.MBeanServer");// NOI18N
+            VariableTree var = make.Variable(make.Modifiers(modifiers), "mbeanServer", make.QualIdent(serverType), null);// NOI18N
             return var;
         }
         
@@ -1706,8 +2273,8 @@ public class JavaModelHelper {
             TreeMaker make = w.getTreeMaker();
             Set<Modifier> modifiers  = new HashSet<Modifier>();
             modifiers.add(Modifier.PRIVATE);
-            TypeElement nameType = w.getElements().getTypeElement("javax.management.ObjectName");
-            VariableTree var = make.Variable(make.Modifiers(modifiers), "objectName", make.QualIdent(nameType), null);
+            TypeElement nameType = w.getElements().getTypeElement("javax.management.ObjectName");// NOI18N
+            VariableTree var = make.Variable(make.Modifiers(modifiers), "objectName", make.QualIdent(nameType), null);// NOI18N
             return var;
         }
     }
@@ -1783,7 +2350,8 @@ public class JavaModelHelper {
         @Override
         public Void visitClass(ClassTree clazz, Void v) {
             TreeMaker maker = w.getTreeMaker();
-            updateDescription(mbean.getDescription(), clazz);
+            Element el = w.getTrees().getElement(getCurrentPath());
+            updateDescription(w, el, maker, mbean.getDescription(), clazz);
             
             List attrList = mbean.getAttributes();
             MBeanAttribute[] attributes = (MBeanAttribute[])
@@ -1801,19 +2369,19 @@ public class JavaModelHelper {
         
         private ClassTree addGetAttribute(TreeMaker maker, 
                 MBeanDO mbean, MBeanAttribute[] attributes, ClassTree clazz) {
-            TypeElement teret = w.getElements().getTypeElement("java.lang.Object");
+            TypeElement teret = w.getElements().getTypeElement("java.lang.Object");// NOI18N
             Tree retVal = maker.QualIdent(teret);
             
             ModifiersTree parMods = maker.Modifiers(Collections.<Modifier>emptySet(), Collections.<AnnotationTree>emptyList());
             // make a variable trees - representing parameters
-            TypeElement attributeType = w.getElements().getTypeElement("java.lang.String");
-            VariableTree par1 = maker.Variable(parMods, "attributeName", maker.QualIdent(attributeType), null);
+            TypeElement attributeType = w.getElements().getTypeElement("java.lang.String");// NOI18N
+            VariableTree par1 = maker.Variable(parMods, "attributeName", maker.QualIdent(attributeType), null);// NOI18N
             List<VariableTree> parList = new ArrayList<VariableTree>(1);
             parList.add(par1);
             List<ExpressionTree> exceptions = new ArrayList<ExpressionTree>(3);
-            exceptions.add(maker.Identifier("AttributeNotFoundException"));
-            exceptions.add(maker.Identifier("MBeanException"));
-            exceptions.add(maker.Identifier("ReflectionException"));
+            exceptions.add(maker.Identifier("AttributeNotFoundException"));// NOI18N
+            exceptions.add(maker.Identifier("MBeanException"));// NOI18N
+            exceptions.add(maker.Identifier("ReflectionException"));// NOI18N
 
             // getAttribute Content
            
@@ -1832,14 +2400,14 @@ public class JavaModelHelper {
                 content.append(formCheckAttr.format(args)+"\n\n"); // NOI18N
             }
             content.append("throw new AttributeNotFoundException(\"Unknown Attribute \" + attributeName);"); // NOI18N
-            content.append("}");
+            content.append("}");// NOI18N
             // MethodTree mt = w.getTrees().getTree(method);
             // BlockTree copyBody = maker.createMethodBody(mt, content.toString());
             // w.rewrite(mt.getBody(), copyBody);
             
             MethodTree newMethod = maker.Method(
                     maker.Modifiers(Collections.singleton(Modifier.PUBLIC)), // modifiers and annotations
-                    "getAttribute", // name
+                    "getAttribute", // NOI18N // name
                     retVal, // return type
                     Collections.<TypeParameterTree>emptyList(), // type parameters for parameters
                     parList, // parameters
@@ -1847,9 +2415,9 @@ public class JavaModelHelper {
                     content.toString(), //body
                     null // default value - not applicable here, used by annotations
                     );
-            Comment c = Comment.create(Style.JAVADOC, -2, -2, -2, "Gets the value of the specified attribute of the DynamicMBean.\n"+
-                                       " @param attributeName The attribute name");
-            maker.addComment(newMethod, c, true);
+            JavaModelHelper.addComment(maker, newMethod, Comment.Style.JAVADOC,
+                    "Gets the value of the specified attribute of the DynamicMBean.\n"+// NOI18N
+                                       " @param attributeName The attribute name");// NOI18N
             ClassTree copy = maker.insertClassMember(clazz, 1, newMethod);
             return copy;
         }
@@ -1857,15 +2425,15 @@ public class JavaModelHelper {
         private ClassTree addSetAttribute(TreeMaker maker, 
                 MBeanDO mbean, MBeanAttribute[] attributes, ClassTree clazz) {
             ModifiersTree parMods = maker.Modifiers(Collections.<Modifier>emptySet(), Collections.<AnnotationTree>emptyList());
-            TypeElement attributeType = w.getElements().getTypeElement("javax.management.Attribute");
-            VariableTree par1 = maker.Variable(parMods, "attribute", maker.QualIdent(attributeType), null);
+            TypeElement attributeType = w.getElements().getTypeElement("javax.management.Attribute");// NOI18N
+            VariableTree par1 = maker.Variable(parMods, "attribute", maker.QualIdent(attributeType), null);// NOI18N
             List<VariableTree> parList = new ArrayList<VariableTree>(1);
             parList.add(par1);
             List<ExpressionTree> exceptions = new ArrayList<ExpressionTree>(4);
-            exceptions.add(maker.Identifier("AttributeNotFoundException"));
-            exceptions.add(maker.Identifier("MBeanException"));
-            exceptions.add(maker.Identifier("ReflectionException"));
-            exceptions.add(maker.Identifier("InvalidAttributeValueException"));
+            exceptions.add(maker.Identifier("AttributeNotFoundException"));// NOI18N
+            exceptions.add(maker.Identifier("MBeanException"));// NOI18N
+            exceptions.add(maker.Identifier("ReflectionException"));// NOI18N
+            exceptions.add(maker.Identifier("InvalidAttributeValueException"));// NOI18N
             
             // setAttribute content
             StringBuffer content = new StringBuffer();
@@ -1895,7 +2463,7 @@ public class JavaModelHelper {
             
             MethodTree newMethod = maker.Method(
                     maker.Modifiers(Collections.singleton(Modifier.PUBLIC)), // modifiers and annotations
-                    "setAttribute", // name
+                    "setAttribute", // NOI18N // name
                     maker.PrimitiveType(TypeKind.VOID), // return type
                     Collections.<TypeParameterTree>emptyList(), // type parameters for parameters
                     parList, // parameters
@@ -1903,9 +2471,8 @@ public class JavaModelHelper {
                     content.toString(), //body
                     null // default value - not applicable here, used by annotations
                     );
-             Comment c = Comment.create(Style.JAVADOC, -2, -2, -2, "Sets the value of the specified attribute of the DynamicMBean.\n"+
-                                "@param attribute The attribute to set");
-             maker.addComment(newMethod, c, true);
+             JavaModelHelper.addComment(maker, newMethod, Comment.Style.JAVADOC, "Sets the value of the specified attribute of the DynamicMBean.\n"+// NOI18N
+                                "@param attribute The attribute to set");// NOI18N
              ClassTree copy = maker.insertClassMember(clazz, 2, newMethod);
              
              return copy;
@@ -1913,25 +2480,25 @@ public class JavaModelHelper {
         
         private ClassTree addInvoke(TreeMaker maker,
                 MBeanDO mbean, ClassTree clazz) {
-            TypeElement operName = w.getElements().getTypeElement("java.lang.String");
-            TypeElement paramsType = w.getElements().getTypeElement("java.lang.Object");
+            TypeElement operName = w.getElements().getTypeElement("java.lang.String");// NOI18N
+            TypeElement paramsType = w.getElements().getTypeElement("java.lang.Object");// NOI18N
             Tree params = maker.ArrayType(maker.QualIdent(paramsType));
-            TypeElement signType = w.getElements().getTypeElement("java.lang.String");
+            TypeElement signType = w.getElements().getTypeElement("java.lang.String");// NOI18N
             Tree sign = maker.ArrayType(maker.QualIdent(signType));
             
             ModifiersTree parMods = maker.Modifiers(Collections.<Modifier>emptySet(), Collections.<AnnotationTree>emptyList());
 
-            VariableTree par1 = maker.Variable(parMods, "operationName", maker.QualIdent(operName), null);
-            VariableTree par2 = maker.Variable(parMods, "params", params, null);
-            VariableTree par3 = maker.Variable(parMods, "signature", sign, null);
+            VariableTree par1 = maker.Variable(parMods, "operationName", maker.QualIdent(operName), null);// NOI18N
+            VariableTree par2 = maker.Variable(parMods, "params", params, null);// NOI18N
+            VariableTree par3 = maker.Variable(parMods, "signature", sign, null);// NOI18N
             List<VariableTree> parList = new ArrayList<VariableTree>(1);
             parList.add(par1);
             parList.add(par2);
             parList.add(par3);
             
             List<ExpressionTree> exceptions = new ArrayList<ExpressionTree>(2);
-            exceptions.add(maker.Identifier("MBeanException"));
-            exceptions.add(maker.Identifier("ReflectionException"));
+            exceptions.add(maker.Identifier("MBeanException"));// NOI18N
+            exceptions.add(maker.Identifier("ReflectionException"));// NOI18N
             
             // Invoke content
             List opList = mbean.getOperations();
@@ -1963,22 +2530,21 @@ public class JavaModelHelper {
                 content.append(formOperation.format(arg));
                 content.append("\n"); // NOI18N
             }
-            content.append("throw new IllegalArgumentException(\"Unknown Operation \" +\n" +
-                    "operationName);");
+            content.append("throw new IllegalArgumentException(\"Unknown Operation \" +\n" +// NOI18N
+                    "operationName);");// NOI18N
             content.append("}");// NOI18N
             
             MethodTree newMethod = maker.Method(
                     maker.Modifiers(Collections.singleton(Modifier.PUBLIC)), // modifiers and annotations
-                    "invoke", // name
-                    maker.QualIdent(w.getElements().getTypeElement("java.lang.Object")), // return type
+                    "invoke", // NOI18N // name
+                    maker.QualIdent(w.getElements().getTypeElement("java.lang.Object")), // NOI18N // return type
                     Collections.<TypeParameterTree>emptyList(), // type parameters for parameters
                     parList, // parameters
                     exceptions, // throws
                     content.toString(), //body
                     null // default value - not applicable here, used by annotations
                     );
-            Comment c = Comment.create(Style.JAVADOC, -2, -2, -2, "Allows an operation to be invoked on the DynamicMBean.");
-            maker.addComment(newMethod, c, true);
+            JavaModelHelper.addComment(maker, newMethod, Comment.Style.JAVADOC, "Allows an operation to be invoked on the DynamicMBean.");// NOI18N
             ClassTree copy = maker.insertClassMember(clazz, 3, newMethod);
 
             return copy;
@@ -2049,27 +2615,27 @@ public class JavaModelHelper {
             }
             opInfo.append("}"); // NOI18N
             StringBuffer content = new StringBuffer();
-            content.append("{");
-            content.append("MBeanAttributeInfo[] dAttributes = new MBeanAttributeInfo[]");
+            content.append("{");// NOI18N
+            content.append("MBeanAttributeInfo[] dAttributes = new MBeanAttributeInfo[]");// NOI18N
             content.append(attrInfo.toString());
-            content.append(";");
-            content.append("MBeanConstructorInfo[] dConstructors = createConstructors();");
+            content.append(";");// NOI18N
+            content.append("MBeanConstructorInfo[] dConstructors = createConstructors();");// NOI18N
             content.append(paramsInfo.toString());
-            content.append("MBeanOperationInfo[] dOperations = new MBeanOperationInfo[]");
+            content.append("MBeanOperationInfo[] dOperations = new MBeanOperationInfo[]");// NOI18N
             content.append(opInfo.toString());
-            content.append(";");
-            content.append("dMBeanInfo = new MBeanInfo(\""+ mbean.getName()+"\",\n"+
-                    "\"");
+            content.append(";");// NOI18N
+            content.append("dMBeanInfo = new MBeanInfo(\""+ mbean.getName()+"\",\n"+// NOI18N
+                    "\"");// NOI18N
             content.append(mbean.getDescription());
-            content.append("\",\n" +
-                    "dAttributes,\n"+
-                    "dConstructors,\n"+
-                    "dOperations,\n"+
-                    "getNotificationInfo());" +
-                    "}");
+            content.append("\",\n" +// NOI18N
+                    "dAttributes,\n"+// NOI18N
+                    "dConstructors,\n"+// NOI18N
+                    "dOperations,\n"+// NOI18N
+                    "getNotificationInfo());" +// NOI18N
+                    "}");// NOI18N
             MethodTree newMethod = maker.Method(
                     maker.Modifiers(Collections.singleton(Modifier.PRIVATE)), // modifiers and annotations
-                    "buildDynamicMBeanInfo", // name
+                    "buildDynamicMBeanInfo", // NOI18N // name
                     maker.PrimitiveType(TypeKind.VOID), // return type
                     Collections.EMPTY_LIST,
                     Collections.EMPTY_LIST,
@@ -2077,14 +2643,13 @@ public class JavaModelHelper {
                     content.toString(),//body
                     null // default value - not applicable here, used by annotations
                     );
-            Comment c = Comment.create(Style.JAVADOC, -2, -2, -2, "Build the private dMBeanInfo field,\n"+
-                    "which represents the management interface exposed by the MBean,\n"+
-                    "that is, the set of attributes, constructors, operations and\n"+
-                    "notifications which are available for management.\n"+
-                    "A reference to the dMBeanInfo object is returned by the getMBeanInfo()\n"+
-                    "method of the DynamicMBean interface. Note that, once constructed,\n"+
-                    "an MBeanInfo object is immutable.");
-            maker.addComment(newMethod, c, true);
+            JavaModelHelper.addComment(maker, newMethod, Comment.Style.JAVADOC,"Build the private dMBeanInfo field,\n"+// NOI18N
+                    "which represents the management interface exposed by the MBean,\n"+// NOI18N
+                    "that is, the set of attributes, constructors, operations and\n"+// NOI18N
+                    "notifications which are available for management.\n"+// NOI18N
+                    "A reference to the dMBeanInfo object is returned by the getMBeanInfo()\n"+// NOI18N
+                    "method of the DynamicMBean interface. Note that, once constructed,\n"+// NOI18N
+                    "an MBeanInfo object is immutable.");// NOI18N
             ClassTree copy = maker.insertClassMember(clazz, 5, newMethod);
             
             return copy;
@@ -2099,10 +2664,25 @@ public class JavaModelHelper {
                 "for (int i = 0; i < params.length; i++)\n" + // NOI18N
                 "    signature[i] = params[i].getType();\n"; // NOI18N
         
-        private static String METADATA_UPDATE_COMMENT =
-                " Override customization hook:\n" + 
-                " You can supply a customized description for MBeanInfo.getDescription()";
-                
+        private static String METADATA_MBEANINFO_UPDATE_COMMENT =
+                " Override customization hook:\n" + // NOI18N
+                " You can supply a customized description for MBeanInfo.getDescription()";// NOI18N
+        
+        private static String METADATA_MBEANPARAMATER_NAME_UPDATE_COMMENT =
+                " Override customization hook:\n" + // NOI18N
+                " You can supply a customized description for MBeanParameterInfo.getName()";// NOI18N
+        
+        private static String METADATA_MBEANPARAMATER_DESCRIPTION_UPDATE_COMMENT =
+                " Override customization hook:\n" + // NOI18N
+                " You can supply a customized description for MBeanParameterInfo.getDescription()";// NOI18N
+            
+        private static String METADATA_MBEANATTRIBUTE_DESCRIPTION_UPDATE_COMMENT =
+                " Override customization hook:\n" + // NOI18N
+                " You can supply a customized description for MBeanAttributeInfo.getDescription()";// NOI18N
+        private static String METADATA_MBEANOPERATION_DESCRIPTION_UPDATE_COMMENT =
+                " Override customization hook:\n" + // NOI18N
+                " You can supply a customized description for MBeanOperationInfo.getDescription()";// NOI18N
+        
         private final WorkingCopy w;
         private final MBeanDO mbean;
         public UpdateExtendedStandardMBeanTemplateTransformer(WorkingCopy w, MBeanDO mbean) {
@@ -2113,7 +2693,8 @@ public class JavaModelHelper {
         @Override
         public Void visitClass(ClassTree clazz, Void v) {
             TreeMaker make = w.getTreeMaker();
-            updateDescription(mbean.getDescription() +
+            Element el = w.getTrees().getElement(getCurrentPath());
+            updateDescription(w, el, make, mbean.getDescription() +
                     "\nDynamic MBean based on StandardMBean\n", clazz); // NOI18N
             addMethods(mbean, clazz);
             super.visitClass(clazz, v);
@@ -2124,7 +2705,7 @@ public class JavaModelHelper {
             TreeMaker maker = w.getTreeMaker();
             ClassTree copy = clazz;
             if (mbean.isWrapppedClass()) {
-                ExpressionTree t = getType(w, mbean.getWrappedClassName());
+                ExpressionTree t = getType(w, mbean.getWrappedClassName(), null);
                 
                  // Add a field
                 Set<Modifier> modifiers  = new HashSet<Modifier>();
@@ -2144,11 +2725,12 @@ public class JavaModelHelper {
                 List<ExpressionTree> exceptions = new ArrayList<ExpressionTree>(1);
                 exceptions.add(maker.Identifier("NotCompliantMBeanException"));// NOI18N
                 StringBuffer body = new StringBuffer();
-                body.append("{super(" + mbean.getName() + WizardConstants.MBEAN_ITF_SUFFIX + ".class");// NOI18N
+                body.append("{//WARNING Uncomment the following call to super() to make this class compile (see BUG ID 122377)\n");
+                body.append("// super(" + mbean.getName() + WizardConstants.MBEAN_ITF_SUFFIX + ".class");// NOI18N
                 if(mbean.isWrapppedClassMXBean())
                     body.append(", true");// NOI18N
-                body.append(");\n");
-                 body.append("this.theRef = theRef;}");   
+                body.append(");\n");// NOI18N
+                 body.append("this.theRef = theRef;}");   // NOI18N
                 MethodTree newConstructor =
                         maker.Constructor(maker.Modifiers(modifiers2),
                         Collections.EMPTY_LIST,
@@ -2157,9 +2739,13 @@ public class JavaModelHelper {
                         body.toString());
                 copy = maker.insertClassMember(copy, 1, newConstructor);
             }
-            
-            ModifiersTree parMods = maker.Modifiers(Collections.<Modifier>emptySet(), Collections.<AnnotationTree>emptyList());
-            ModifiersTree mt = maker.Modifiers(Collections.singleton(Modifier.PROTECTED));
+            TypeElement annotationType = w.getElements().getTypeElement("java.lang.Override"); // NOI18N
+            Tree annotationTree = maker.QualIdent(annotationType);
+            AnnotationTree overrideAnnotation = maker.Annotation(annotationTree, Collections.<ExpressionTree>emptyList());
+            List<AnnotationTree> annotations = new ArrayList<AnnotationTree>();
+            annotations.add(overrideAnnotation);
+            ModifiersTree parMods = maker.Modifiers(Collections.<Modifier>emptySet());
+            ModifiersTree mt = maker.Modifiers(Collections.singleton(Modifier.PROTECTED), annotations);
             IdentifierTree strTree = maker.Identifier("String"); // NOI18N
             
             // Add protected String getDescription(MBeanInfo info)
@@ -2168,7 +2754,6 @@ public class JavaModelHelper {
             VariableTree descMBeanInfo = maker.Variable(parMods, "info", mbeanInfo, null); // NOI18N
             List<VariableTree> paramsMBeanInfo = new ArrayList<VariableTree>(1);
             paramsMBeanInfo.add(descMBeanInfo);
-            
             MethodTree methodDescrMBeanInfo = maker.Method(
                     mt, // modifiers and annotations
                     "getDescription", // NOI18N
@@ -2179,10 +2764,8 @@ public class JavaModelHelper {
                     "{return \"" + mbean.getDescription() +"\";}", // NOI18N
                     null // default value - not applicable here, used by annotations
                     );
-            
-            Comment c = Comment.create(Style.JAVADOC, -2, -2, -2, METADATA_UPDATE_COMMENT);
-            maker.addComment(methodDescrMBeanInfo, c, true);
-            
+            JavaModelHelper.addComment(maker, methodDescrMBeanInfo, Comment.Style.JAVADOC,METADATA_MBEANINFO_UPDATE_COMMENT);
+
             copy = maker.addClassMember(copy, methodDescrMBeanInfo);
             
             // Add protected String getDescription(MBeanAttributeInfo info)
@@ -2202,8 +2785,7 @@ public class JavaModelHelper {
                     "{String description = null;\n" + getAttDescCode(mbean) + "\nreturn description;}", // NOI18N
                     null // default value - not applicable here, used by annotations
                     );
-            c = Comment.create(Style.JAVADOC, -2, -2, -2, METADATA_UPDATE_COMMENT);
-            maker.addComment(methodDescrAttributeInfo, c, true);
+            JavaModelHelper.addComment(maker, methodDescrAttributeInfo, Comment.Style.JAVADOC,METADATA_MBEANATTRIBUTE_DESCRIPTION_UPDATE_COMMENT);
             copy = maker.addClassMember(copy, methodDescrAttributeInfo);
             
             // Add protected String getDescription(MBeanOperationInfo op, MBeanParameterInfo param,int sequence)
@@ -2211,7 +2793,7 @@ public class JavaModelHelper {
             TypeElement paramInfoType = w.getElements().getTypeElement("javax.management.MBeanParameterInfo"); // NOI18N
             ExpressionTree operInfo = maker.QualIdent(operInfoType);
             ExpressionTree paramInfo = maker.QualIdent(paramInfoType);
-            ExpressionTree seq = maker.Identifier("int");
+            ExpressionTree seq = maker.Identifier("int");// NOI18N
             VariableTree param1 = maker.Variable(parMods, "op", operInfo, null); // NOI18N
             VariableTree param2 = maker.Variable(parMods, "param", paramInfo, null); // NOI18N
             VariableTree param3 = maker.Variable(parMods, "sequence", seq, null); // NOI18N
@@ -2230,8 +2812,7 @@ public class JavaModelHelper {
                     "{"+ getParamDescCode(mbean, true) + "\nreturn null;}", // NOI18N
                     null // default value - not applicable here, used by annotations
                     );
-            c = Comment.create(Style.JAVADOC, -2, -2, -2, METADATA_UPDATE_COMMENT);
-            maker.addComment(methodDescrOperationParamInfo, c, true);
+            JavaModelHelper.addComment(maker, methodDescrOperationParamInfo, Comment.Style.JAVADOC, METADATA_MBEANPARAMATER_DESCRIPTION_UPDATE_COMMENT);
             copy = maker.addClassMember(copy, methodDescrOperationParamInfo);
             
             // Add protected String getParameterName(MBeanOperationInfo op, MBeanParameterInfo param, int sequence)
@@ -2246,8 +2827,7 @@ public class JavaModelHelper {
                     "{"+getParamDescCode(mbean,false) + "\nreturn null;}", // NOI18N
                     null // default value - not applicable here, used by annotations
                     );
-            c = Comment.create(Style.JAVADOC, -2, -2, -2, METADATA_UPDATE_COMMENT);
-            maker.addComment(methodParamName, c, true);
+            JavaModelHelper.addComment(maker, methodParamName, Comment.Style.JAVADOC,METADATA_MBEANPARAMATER_NAME_UPDATE_COMMENT);
             copy = maker.addClassMember(copy, methodParamName);
             
             // Add getDescription(MBeanOperationInfo)
@@ -2265,8 +2845,7 @@ public class JavaModelHelper {
                     "{String description = null;\n" + getOpDescCode(mbean) + "\nreturn description;}", // NOI18N
                     null // default value - not applicable here, used by annotations
                     );
-            c = Comment.create(Style.JAVADOC, -2, -2, -2, METADATA_UPDATE_COMMENT);
-            maker.addComment(methodDescrOperationInfo, c, true);
+            JavaModelHelper.addComment(maker, methodDescrOperationInfo, Comment.Style.JAVADOC,METADATA_MBEANOPERATION_DESCRIPTION_UPDATE_COMMENT);
             copy = maker.addClassMember(copy, methodDescrOperationInfo);
             
             w.rewrite(clazz, copy); 
@@ -2288,7 +2867,7 @@ public class JavaModelHelper {
                 for (int j = 0; j < operations[i].getParametersSize(); j ++) {
                     MBeanOperationParameter param = operations[i].getParameter(j);
                     content.append(WizardHelpers.getFullTypeNameCode(
-                            param.getParamType()));
+                            removeGeneric(param.getParamType())));
                     if (j < operations[i].getParametersSize() - 1) {
                         content.append(","); // NOI18N
                     }
@@ -2390,7 +2969,7 @@ public class JavaModelHelper {
                 
                 // Access to the ObjectName constructor
                 TypeElement objectNameClass =
-                        w.getElements().getTypeElement("javax.management.ObjectName");
+                        w.getElements().getTypeElement("javax.management.ObjectName");// NOI18N
                 // ObjectName creation
                 LiteralTree objNameValTree = treeMaker.Literal(objectName);
                 ArrayList<ExpressionTree> initializer = new ArrayList<ExpressionTree>(1);
@@ -2417,14 +2996,14 @@ public class JavaModelHelper {
                         treeMaker.NewClass(null, Collections.<ExpressionTree>emptyList(), mbeanClassEx, initializerMBeanClass, null);
                 
                 // getMBeanServer()
-                IdentifierTree getMBSTree = w.getTreeMaker().Identifier("getMBeanServer");
+                IdentifierTree getMBSTree = w.getTreeMaker().Identifier("getMBeanServer");// NOI18N
                 MethodInvocationTree getMBSInvocation =
                         treeMaker.MethodInvocation(Collections.<ExpressionTree>emptyList(),
                         getMBSTree,
                         Collections.<ExpressionTree>emptyList());
                 
                 // getMBeanServer().registerMBean
-                MemberSelectTree registerMBeanSelIdent = w.getTreeMaker().MemberSelect(getMBSInvocation, "registerMBean");
+                MemberSelectTree registerMBeanSelIdent = w.getTreeMaker().MemberSelect(getMBSInvocation, "registerMBean");// NOI18N
                 
                 // Now register MBean MethodInvocation
                 List<ExpressionTree> registerParams = new ArrayList<ExpressionTree>(2);
@@ -2443,8 +3022,7 @@ public class JavaModelHelper {
                 
                 if(constructor != null &&
                         constructor.getParameters().size() != 0) {
-                    Comment c = Comment.create(REGISTRATION_COMMENTS);
-                    treeMaker.addComment(t, c, true);
+                    JavaModelHelper.addComment(treeMaker, t, Comment.Style.LINE, REGISTRATION_COMMENTS);
                 }
                 
                 BlockTree newBody = treeMaker.Block(newStatements, false);
@@ -2503,7 +3081,7 @@ public class JavaModelHelper {
                 
                 // Access to the ObjectName constructor
                 TypeElement objectNameClass =
-                        w.getElements().getTypeElement("javax.management.ObjectName");
+                        w.getElements().getTypeElement("javax.management.ObjectName");// NOI18N
                 // ObjectName creation
                 LiteralTree objNameValTree = treeMaker.Literal(objectName);
                 ArrayList<ExpressionTree> initializer = new ArrayList<ExpressionTree>(1);
@@ -2515,7 +3093,7 @@ public class JavaModelHelper {
                 // Standard MBean creation
                 ArrayList<ExpressionTree> initializerStdMBeanClass = new ArrayList<ExpressionTree>(1);
                 TypeElement stdMbeanClass =
-                        w.getElements().getTypeElement("javax.management.StandardMBean");
+                        w.getElements().getTypeElement("javax.management.StandardMBean");// NOI18N
                 ExpressionTree stdMbeanClassEx = treeMaker.QualIdent(stdMbeanClass);
                 
                 // Means that we need to generate the Wrapped Object creation
@@ -2545,7 +3123,7 @@ public class JavaModelHelper {
                     TypeElement mgtItf =
                             w.getElements().getTypeElement(itf);
                     ExpressionTree mgtItfEx = treeMaker.QualIdent(mgtItf);
-                    MemberSelectTree mst = treeMaker.MemberSelect(mgtItfEx, "class");
+                    MemberSelectTree mst = treeMaker.MemberSelect(mgtItfEx, "class");// NOI18N
                     initializerStdMBeanClass.add(mst);
                 } else
                     initializerStdMBeanClass.add(treeMaker.Literal(null));
@@ -2554,14 +3132,14 @@ public class JavaModelHelper {
                         treeMaker.NewClass(null, Collections.<ExpressionTree>emptyList(), stdMbeanClassEx, initializerStdMBeanClass, null);
            
                 // getMBeanServer()
-                IdentifierTree getMBSTree = w.getTreeMaker().Identifier("getMBeanServer");
+                IdentifierTree getMBSTree = w.getTreeMaker().Identifier("getMBeanServer");// NOI18N
                 MethodInvocationTree getMBSInvocation =
                         treeMaker.MethodInvocation(Collections.<ExpressionTree>emptyList(),
                         getMBSTree,
                         Collections.<ExpressionTree>emptyList());
                 
                 // getMBeanServer().registerMBean
-                MemberSelectTree registerMBeanSelIdent = w.getTreeMaker().MemberSelect(getMBSInvocation, "registerMBean");
+                MemberSelectTree registerMBeanSelIdent = w.getTreeMaker().MemberSelect(getMBSInvocation, "registerMBean");// NOI18N
                 
                 // Now register MBean MethodInvocation
                 List<ExpressionTree> registerParams = new ArrayList<ExpressionTree>(2);
@@ -2579,14 +3157,12 @@ public class JavaModelHelper {
                 ExpressionStatementTree t = treeMaker.ExpressionStatement(registerInvocation);
                 newStatements.add((StatementTree)t);
                 if(constructor == null) {
-                    Comment c = Comment.create("TODO replace first StandardMBean constructor parameter by your own " + wrappedClassStr +" object."); // NOI18N
-                    treeMaker.addComment(t, c, true);
+                    JavaModelHelper.addComment(treeMaker, t, Comment.Style.LINE,"TODO replace first StandardMBean constructor parameter by your own " + wrappedClassStr +" object."); // NOI18N
                 }
-                    
+                
                 if(constructor != null &&
                         constructor.getParameters().size() != 0) {
-                    Comment c = Comment.create(REGISTRATION_COMMENTS);
-                    treeMaker.addComment(t, c, true);
+                    JavaModelHelper.addComment(treeMaker, t, Comment.Style.LINE,REGISTRATION_COMMENTS);
                 }
                 
                 BlockTree newBody = treeMaker.Block(newStatements, false);
@@ -2732,6 +3308,8 @@ public class JavaModelHelper {
                 new IsDynamicMBeanVisitor(parameter, value).scan(parameter.getCompilationUnit(), null);
             }
         }, true);
+        Object val = value.getValue();
+        if(val == null) return false;
         return (Boolean) value.getValue();
     }
     
@@ -2740,6 +3318,26 @@ public class JavaModelHelper {
        if(itf != null)
            return true;
        return isDynamicMBean(baseClass);
+    }
+    
+    public static boolean checkKnownType(JavaSource baseClass, final String type) {
+        try {
+            final ValueHolder value = new ValueHolder();
+            // Check if the Agent has getMBeanServer method and a method named init
+            baseClass.runUserActionTask(new CancellableTask<CompilationController>() {
+                public void cancel() {}
+                public void run(CompilationController ctrl) throws IOException {
+                    ctrl.toPhase(Phase.ELEMENTS_RESOLVED);
+                    value.setValue(isKnownType(ctrl, type));
+                }
+            }, true);
+            Object val = value.getValue();
+            if(val == null) return false;
+            return (Boolean)val;
+        }catch(IOException ex){
+           // System.out.println("Eoor occured" + ex);
+        }
+        return false;
     }
     
     public static String getFullClassName(JavaSource baseClass) throws IOException {
@@ -2762,7 +3360,7 @@ public class JavaModelHelper {
             public void cancel() {}
             public void run(CompilationController parameter) throws IOException {
                 parameter.toPhase(Phase.ELEMENTS_RESOLVED);
-                new SearchInterfaceVisitor(parameter, value, "javax.management.MBeanRegistration").scan(parameter.getCompilationUnit(), null);
+                new SearchInterfaceVisitor(parameter, value, "javax.management.MBeanRegistration").scan(parameter.getCompilationUnit(), null);// NOI18N
             }
         }, true);
         
@@ -2797,10 +3395,10 @@ public class JavaModelHelper {
     }
     
     private static TypeElement getManagementInterface(JavaSource baseClass) throws IOException {
-          TypeElement itf = JavaModelHelper.isStandardMBean(baseClass);
+          TypeElement itf = isStandardMBean(baseClass);
           if(itf != null)
             return itf;
-          itf = JavaModelHelper.isMXBean(baseClass);
+          itf = isMXBean(baseClass);
           return itf;
     }
     
@@ -2811,11 +3409,16 @@ public class JavaModelHelper {
             public void cancel() {}
             public void run(CompilationController parameter) throws IOException {
                 parameter.toPhase(Phase.ELEMENTS_RESOLVED);
-                TypeElement mgtItf = getManagementInterface(baseClass);
-                if(mgtItf == null)
-                    throw new IOException("Invalid MBean class " + baseClass);
+                TypeElement mgtItf = null;
+                if (real) {
+                    mgtItf = getManagementInterface(baseClass);
+                    if (mgtItf == null) {
+                        throw new IOException("Invalid MBean class " + baseClass);// NOI18N
+                    }// NOI18N
                 
-                new MBeanModelVisitor(parameter, value, real, mgtItf).scan(parameter.getCompilationUnit(), null);
+                    new MBeanModelVisitor(parameter, value, real, mgtItf).scan(parameter.getCompilationUnit(), null);
+                } else
+                    new MBeanModelFromClassVisitor(parameter, value, real, mgtItf).scan(parameter.getCompilationUnit(), null);
             }
         }, true);
         return (MBeanDO) value.getValue();
@@ -2857,17 +3460,14 @@ public class JavaModelHelper {
                 boolean isMXBean = true;
                 List<? extends AnnotationMirror> annotations = itf.getAnnotationMirrors();
                 for(AnnotationMirror annotation : annotations) {
-                    if ("javax.management.MXBean".equals(((TypeElement) 
+                    if ("javax.management.MXBean".equals(((TypeElement) // NOI18N
                             annotation.getAnnotationType().asElement()).
                             getQualifiedName().toString())) {
-                        
                         Map<? extends ExecutableElement, ? extends AnnotationValue> values = 
                                 parameter.getElements().getElementValuesWithDefaults(annotation);
                         for(ExecutableElement name : values.keySet()) {
-                            System.out.println("ANNOTATION PARAMETER NAME : " + name.getSimpleName().toString());
-                            if("value".equals(name.getSimpleName().toString())) {
+                            if("value".equals(name.getSimpleName().toString())) {// NOI18N
                                 AnnotationValue value = values.get(name);
-                                System.out.println("ANNOTATION PARAMETER VALUE : " + value.getValue());
                                 if(Boolean.FALSE.equals(value.getValue())) {
                                     isMXBean = false;
                                 }
@@ -2884,27 +3484,27 @@ public class JavaModelHelper {
         return (TypeElement)value.getValue();
     }
     
-    public static boolean implementsDynamicMBeanItf(JavaSource baseClass) throws IOException {
+    /*public static boolean implementsDynamicMBeanItf(JavaSource baseClass) throws IOException {
         final ValueHolder value = new ValueHolder();
         // Check if the Agent has getMBeanServer method and a method named init
         baseClass.runUserActionTask(new CancellableTask<CompilationController>() {
             public void cancel() {}
             public void run(CompilationController parameter) throws IOException {
                 parameter.toPhase(Phase.ELEMENTS_RESOLVED);
-                new SearchInterfaceVisitor(parameter, value, "javax.management.DynamicMBean").scan(parameter.getCompilationUnit(), null);
+                new SearchInterfaceVisitor(parameter, value, "javax.management.DynamicMBean").scan(parameter.getCompilationUnit(), null);// NOI18N
             }
         }, true);
         return value.getValue() != null;
     }
-    
-    public static boolean implementsNotificationEmitterItf(JavaSource baseClass) throws IOException {
+    */
+    public static boolean implementsNotificationBroadcaster(JavaSource baseClass) throws IOException {
         final ValueHolder value = new ValueHolder();
         // Check if the Agent has getMBeanServer method and a method named init
         baseClass.runUserActionTask(new CancellableTask<CompilationController>() {
             public void cancel() {}
             public void run(CompilationController parameter) throws IOException {
                 parameter.toPhase(Phase.ELEMENTS_RESOLVED);
-                new SearchInterfaceVisitor(parameter, value, "javax.management.NotificationEmitter").scan(parameter.getCompilationUnit(), null);
+                new SearchInterfaceVisitor(parameter, value, "javax.management.NotificationBroadcaster").scan(parameter.getCompilationUnit(), null);// NOI18N
             }
         }, true);
         return value.getValue() != null;
@@ -3067,6 +3667,32 @@ public class JavaModelHelper {
             }
         }).commit();    //Commit the changes into document;
     }
+    public static void addCommentSurroundedByWhiteLine(TreeMaker treeMaker,
+            Tree t, Comment.Style style, String content) {
+        Comment commentEmptyLine = Comment.create(Comment.Style.WHITESPACE, -1, -1, -1, "\n\n");// NOI18N
+        treeMaker.insertComment(t, commentEmptyLine, -1, true);
+        addComment(treeMaker, t, style, content);  
+        Comment commentEmptyLine2 = Comment.create(Comment.Style.WHITESPACE, -1, -1, -1, "\n\n");// NOI18N
+        treeMaker.insertComment(t, commentEmptyLine2, -1, true);
+    }
+    public static void addCommentPrefixedByWhiteLine(TreeMaker treeMaker,
+            Tree t, Comment.Style style, String content) {
+        Comment commentEmptyLine = Comment.create(Comment.Style.WHITESPACE, -1, -1, -1, "\n\n");// NOI18N
+        treeMaker.insertComment(t, commentEmptyLine, -1, true);
+        addComment(treeMaker, t, style, content);
+    }
+    public static void addCommentFollowedByWhiteLine(TreeMaker treeMaker,
+            Tree t, Comment.Style style, String content) {
+        addComment(treeMaker, t, style, content);
+        Comment commentEmptyLine = Comment.create(Comment.Style.WHITESPACE, -1, -1, -1, "\n\n");// NOI18N
+        treeMaker.insertComment(t, commentEmptyLine, -1, true);
+    }
+    
+    public static void addComment(TreeMaker treeMaker,
+            Tree t, Comment.Style style, String content) {
+        Comment comment = Comment.create(style, -1, -1, -1, content);
+        treeMaker.insertComment(t, comment, -1, true);
+    }
     
     public static void addAttributesToMBean(final JavaSource baseClass, final MBeanAttribute[] attributes) throws IOException {
         baseClass.runUserActionTask(new CancellableTask<CompilationController>() {
@@ -3100,7 +3726,7 @@ public class JavaModelHelper {
                 if(itfType == null)
                     itfType = isMXBean(baseClass);
                 if(itfType == null)
-                    throw new IOException("Invalid MBean class " + baseClass);
+                    throw new IOException("Invalid MBean class " + baseClass);// NOI18N
                 
                 FileObject sourceFile = SourceUtils.getFile(itfType, parameter.getClasspathInfo());
                 JavaSource itfSource = null;
@@ -3133,10 +3759,9 @@ public class JavaModelHelper {
         attributes = mbean.getAttributes().toArray(attributes);
         MBeanOperation[] operations = new MBeanOperation[mbean.getOperations().size()];
         operations = mbean.getOperations().toArray(operations);
-        
         if(mbean.isWrapppedClass()) {
             // Remove constructor
-           removeMethod(baseClass, "<init>");
+           removeMethod(baseClass, "<init>");// NOI18N
         }
         
         // Update Template (Metadata + description methods)
@@ -3209,7 +3834,7 @@ public class JavaModelHelper {
     
     public static boolean isMain(ExecutableElement method) {
         //has "main" name
-        if (!"main".contentEquals(method.getSimpleName())) {
+        if (!"main".contentEquals(method.getSimpleName())) {// NOI18N
             return false;
         }
         //is public static?
@@ -3234,7 +3859,7 @@ public class JavaModelHelper {
             return false;
         }
         //Is it an array of String?
-        if (!"java.lang.String".contentEquals(((TypeElement)((DeclaredType)type).asElement()).getQualifiedName())) {
+        if (!"java.lang.String".contentEquals(((TypeElement)((DeclaredType)type).asElement()).getQualifiedName())) {// NOI18N
             return false;
         }
         return true;
@@ -3304,7 +3929,7 @@ public class JavaModelHelper {
         }).commit();    //Commit the changes into document
         
         if(removeMainMethod)
-            removeMethod(js, "main");
+            removeMethod(js, "main");// NOI18N
     }
     
     public static TypeMirror getComponentType(TypeMirror array) {
@@ -3313,7 +3938,12 @@ public class JavaModelHelper {
         else
             return getComponentType(((ArrayType)array).getComponentType());
     }
-    
+    public static int getArrayDimension(TypeMirror array) {
+        if(!(array instanceof ArrayType))
+            return 0;
+        else
+            return getArrayDimension(((ArrayType)array).getComponentType()) + 1;
+    }
     public static String getTypeName(TypeMirror type, 
             List<? extends TypeParameterElement> methodParameterTypes, 
             List<? extends TypeParameterElement> classParameterTypes,
@@ -3322,11 +3952,12 @@ public class JavaModelHelper {
         String tName = type.toString();
         
         TypeMirror comp = JavaModelHelper.getComponentType(type);
-        TypeElement retType = (TypeElement)info.getTypes().asElement(comp);
-        if(methodParameterTypes.contains(retType) ||
-                classParameterTypes.contains(retType))
-            tName = "Object";
-       return tName;
+        if(comp == null) throw new RuntimeException("Unknown Type : " + // NOI18N
+                tName);
+        if(comp.getKind().equals(TypeKind.TYPEVAR))
+            tName = "java.lang.Object";// NOI18N
+        
+        return tName;
     }
     
     public static String getPrimitive(TypeKind type) {
@@ -3372,49 +4003,132 @@ public class JavaModelHelper {
         return bodyText;
     }
     
-    private static ExpressionTree getType(WorkingCopy w, String type) {
-        if(type == null)
-            return null;
-        TypeElement retTypeElement = w.getElements().getTypeElement(type);
-        if(retTypeElement != null)
-            return w.getTreeMaker().QualIdent(retTypeElement);
-        if(WizardHelpers.isPrimitiveType(type) ||
-                WizardHelpers.isStandardWrapperType(type) || "void".equals(type))
-            return w.getTreeMaker().Identifier(type);
-        ExpressionTree arrayType = getArrayType(w, type);
-        if(arrayType != null)
-            return arrayType;
-        
-        throw new IllegalArgumentException("Unknown type " + type);
+    static String removeGeneric(String type) {
+         int gen = type.indexOf("<");// NOI18N
+         if(gen != -1)
+            type = type.substring(0,gen);
+         return type;
     }
     
-    public static ExpressionTree getArrayType(WorkingCopy w, 
-            String type) {
+    private static boolean isKnownTypeNoVoid(CompilationController ctrl, String type) {
+        if(getTypeElement(ctrl, type) != null)
+            return true;
+        if(WizardHelpers.isPrimitiveType(type) ||
+           WizardHelpers.isStandardWrapperType(type))
+            return true;
+        if(getArrayType(ctrl, type) != null)
+            return true;
+        return false;
+        
+    }
+    
+    private static boolean isKnownType(CompilationController ctrl, String type) {
+        if(type == null) return false;
+        if(isKnownTypeNoVoid(ctrl, type)) return true;
+        
+        return "void".equals(type);// NOI18N
+    }
+    
+    private static TypeElement getTypeElement(CompilationController ctrl, String type) {
+        TypeElement retTypeElement = null;
+        if(type == null) return null;
+        type = removeGeneric(type);
+        retTypeElement = ctrl.getElements().getTypeElement(type);
+       // System.out.println("retTypeElement " + retTypeElement);
+        return retTypeElement;
+    }
+    
+    private static ExpressionTree getType(WorkingCopy w, String type, TypeMirror mirror) {
+      //  System.out.println("TYPE " + type + " MIRROR " + mirror);
+        if(type == null && mirror == null)
+            return null;
+        TypeElement retTypeElement = null;
+        
+        /*if (mirror != null) {
+            Object obj = w.getTypes().asElement(mirror);
+            if (obj instanceof TypeElement) {
+                retTypeElement = (TypeElement) obj;
+            } else {
+                String primitive = getPrimitive(mirror.getKind());
+                if(primitive == null)
+                    return w.getTreeMaker().Identifier("Object"); // NOI18N
+                else
+                   return w.getTreeMaker().Identifier(primitive);
+            }
+            if (retTypeElement != null) {
+                return w.getTreeMaker().QualIdent(retTypeElement);
+            }
+        }
+        */
+        
+        if(type != null) {
+            if(retTypeElement == null)
+                retTypeElement = getTypeElement(w, type);          
+            if(retTypeElement == null)
+                retTypeElement = w.getElements().getTypeElement(type);
+            if(retTypeElement != null)
+                return w.getTreeMaker().QualIdent(retTypeElement);
+            ExpressionTree arrayType = getArrayTree(w, type);
+            if(arrayType != null)
+                return arrayType;
+            if(WizardHelpers.isPrimitiveType(type) ||
+                    WizardHelpers.isStandardWrapperType(type) || "void".equals(type))// NOI18N
+                return w.getTreeMaker().Identifier(type);
+            
+            // XXX REVISIT, THIS SHOULD NEVER HAPPEN IF THEN INPUT WERE CHECKED
+            return w.getTreeMaker().Identifier(type);
+        }
+        
+        throw new IllegalArgumentException("Unknown type " + type);// NOI18N
+    }
+    
+    private static Object getArrayType(CompilationController ctrl, String type) {
+        //System.out.println("getArrayType " + type);
         TypeMirror ret = null;
         int length = type.length();
-        int current = type.indexOf("[]");
+        int current = type.indexOf("[]");// NOI18N
         if(current == -1) return null;
         String componentType = type.substring(0, current);
+        //System.out.println("COmnent type " + componentType);
         if(WizardHelpers.isPrimitiveType(componentType) ||
-                WizardHelpers.isStandardWrapperType(componentType))
-            return w.getTreeMaker().Identifier(type);
-        
-        ret = w.getElements().getTypeElement(componentType).asType();
+           WizardHelpers.isStandardWrapperType(componentType))
+            return componentType;
+        ret = ctrl.getElements().getTypeElement(componentType).asType();
+        if(ret == null) return null;
         String arrays = type.substring(current, type.length());
         int dim = arrays.length() / 2;
         for(int i = 0; i < dim; i++) {
-            ret = w.getTypes().getArrayType(ret);
-            
+            ret = ctrl.getTypes().getArrayType(ret);
         }
-        return (ExpressionTree) w.getTreeMaker().Type(ret);
+        return ret;
     }
     
-    private static void updateDescription(String text, ClassTree clazz) {
-        // XXX REVISIT
-        // WE DON't KNOW HOW TO DO THAT YET
-        //MessageFormat formDoc = new MessageFormat(mbeanClass.getJavadocText());
-        //Object[] args = new Object[] { mbean.getDescription() }; // NOI18N
-        //mbeanClass.setJavadocText(formDoc.format(args));
+    public static ExpressionTree getArrayTree(WorkingCopy w, 
+            String type) {
+        String componentType = null;
+        Object o = getArrayType(w, type);
+        if(o instanceof String)
+            return w.getTreeMaker().Identifier(type);
+        if(o instanceof TypeMirror)
+            return (ExpressionTree) w.getTreeMaker().Type((TypeMirror)o);
+        return null;
+    }
+    
+    private static void updateDescription(WorkingCopy ctrl,
+            Element clazzElement,
+            TreeMaker make,
+            String text, ClassTree clazz) {
+        Doc doc = ctrl.getElementUtilities().javaDocFor(clazzElement);
+        //doc.setRawCommentText("TEST IT TEST OY");
+        String txt = doc.commentText();
+        int i = txt.indexOf("{0}");// NOI18N
+        //System.out.println( "JAVADOC TEXT : [" + txt + "]");
+        MessageFormat formDoc = new MessageFormat(txt);
+        Object[] args = new Object[] { text };
+        //addComment(make, clazz, Comment.Style.JAVADOC, formDoc.format(args));
+        //ctrl.rewriteInComment(i,3,text);
+        //ctrl.getTreeMaker().removeComment(clazz, 1, true);
+        //ctrl.rewrite(clazz,clazz);
     }
     
 }

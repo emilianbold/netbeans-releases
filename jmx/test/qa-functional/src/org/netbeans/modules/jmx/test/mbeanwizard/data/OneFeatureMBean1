@@ -10,21 +10,23 @@ import java.util.Arrays;
 
 /**
  * Class OneFeatureMBean1
- * MBean from existing java class with one simple attribute and one two parameter operation
+ * 
  * @author <author>
  */
 public class OneFeatureMBean1 extends StandardMBean implements OneFeatureMBean1MBean {
-    
-            // Attribute : FirstAttribute
+    /**
+     * Attribute : FirstAttribute
+     */
     private int firstAttribute;
-
-        private EmptyJavaClass theRef;
+    private EmptyJavaClass theRef;
 
     public OneFeatureMBean1(EmptyJavaClass theRef) throws NotCompliantMBeanException {
-        super(OneFeatureMBean1MBean.class);
+        //WARNING Uncomment the following call to super() to make this class compile (see BUG ID 122377)
+        // super(OneFeatureMBean1MBean.class);
         this.theRef = theRef;
     }
-
+    
+    @Override
     public MBeanInfo getMBeanInfo() {
         MBeanInfo mbinfo = super.getMBeanInfo();
         return new MBeanInfo(mbinfo.getClassName(),
@@ -43,92 +45,91 @@ public class OneFeatureMBean1 extends StandardMBean implements OneFeatureMBean1M
      * Override customization hook:
      * You can supply a customized description for MBeanInfo.getDescription()
      */
-
+    @Override
     protected String getDescription(MBeanInfo info) {
-        return "MBean from existing java class with one simple attribute, one two parameter operation and no notification";
+        return "MBean from existing java class with one simple attribute and one two parameter operation";
     }
 
     /**
      * Override customization hook:
-     * You can supply a customized description for MBeanInfo.getDescription()
+     * You can supply a customized description for MBeanAttributeInfo.getDescription()
      */
-
+    @Override
     protected String getDescription(MBeanAttributeInfo info) {
         String description = null;
-
         if (info.getName().equals("FirstAttribute")) {
             description = "First Attribute description";
         }
+
         return description;
     }
 
     /**
      * Override customization hook:
-     * You can supply a customized description for MBeanInfo.getDescription()
+     * You can supply a customized description for MBeanParameterInfo.getDescription()
      */
-
-    protected String getDescription(MBeanOperationInfo op,
-                                    MBeanParameterInfo param, int sequence) {
+    @Override
+    protected String getDescription(MBeanOperationInfo op, MBeanParameterInfo param, int sequence) {
         if (op.getName().equals("FirstOperation")) {
             switch (sequence) {
-              case 0:
-                return "First Parameter Description";
-              case 1:
-                return "Second Parameter Description";
-              default:
-                return null;
+                case 0:
+                    return "First Parameter Description";
+                case 1:
+                    return "Second Parameter Description";
+                default:
+                    return null;
             }
         }
+
         return null;
     }
 
     /**
      * Override customization hook:
-     * You can supply a customized description for MBeanInfo.getDescription()
+     * You can supply a customized description for MBeanParameterInfo.getName()
      */
-
-    protected String getParameterName(MBeanOperationInfo op,
-                                      MBeanParameterInfo param, int sequence) {
+    @Override
+    protected String getParameterName(MBeanOperationInfo op, MBeanParameterInfo param, int sequence) {
         if (op.getName().equals("FirstOperation")) {
             switch (sequence) {
-              case 0:
-                return "firstParameter";
-              case 1:
-                return "secondParameter";
-              default:
-                return null;
+                case 0:
+                    return "firstParameter";
+                case 1:
+                    return "secondParameter";
+                default:
+                    return null;
             }
         }
+
         return null;
     }
 
     /**
      * Override customization hook:
-     * You can supply a customized description for MBeanInfo.getDescription()
+     * You can supply a customized description for MBeanOperationInfo.getDescription()
      */
-
+    @Override
     protected String getDescription(MBeanOperationInfo info) {
         String description = null;
         MBeanParameterInfo[] params = info.getSignature();
         String[] signature = new String[params.length];
-
-        for (int i = 0; i < params.length; i++)
+        for (int i = 0; i < params.length; i++) {
             signature[i] = params[i].getType();
+        }
         String[] methodSignature;
 
-        methodSignature = new String[]{java.lang.String.class.getName(),
-                javax.management.ObjectName.class.getName()};
-        if (info.getName().equals("FirstOperation") &&
-            Arrays.equals(signature, methodSignature)) {
+        methodSignature = new String[]{java.lang.String.class.getName(), javax.management.ObjectName.class.getName()};
+        if (info.getName().equals("FirstOperation") && Arrays.equals(signature, methodSignature)) {
             description = "First Operation Description";
         }
+
+
         return description;
     }
 
     /**
      * Get First Attribute description
      */
-
     public int getFirstAttribute() {
         return firstAttribute;
     }
@@ -138,7 +139,8 @@ public class OneFeatureMBean1 extends StandardMBean implements OneFeatureMBean1M
      * @param firstParameter First Parameter Description
      * @param secondParameter Second Parameter Description
      */
-
     public void FirstOperation(String firstParameter, ObjectName secondParameter) {
     }
 }
+
+

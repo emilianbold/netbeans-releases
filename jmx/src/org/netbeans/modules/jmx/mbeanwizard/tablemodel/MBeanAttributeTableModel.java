@@ -92,10 +92,10 @@ public class MBeanAttributeTableModel extends AbstractJMXTableModel {
         
         MBeanAttribute attribute = new MBeanAttribute(
                 WizardConstants.ATTR_NAME_DEFVALUE + lastIndex,
-                WizardConstants.STRING_OBJ_NAME,
+                WizardConstants.STRING_OBJ_FULLNAME,
                 WizardConstants.ATTR_ACCESS_READ_WRITE,
                 WizardConstants.ATTR_DESCR_DEFVALUE_PREFIX + lastIndex +
-                WizardConstants.ATTR_DESCR_DEFVALUE_SUFFIX);
+                WizardConstants.ATTR_DESCR_DEFVALUE_SUFFIX, null);
         lastIndex++;
         return attribute;
     }
@@ -157,8 +157,7 @@ public class MBeanAttributeTableModel extends AbstractJMXTableModel {
                mba.getName(),
                mba.getTypeName(),
                mba.getAccess(),
-               mba.getDescription()
-       );
+               mba.getDescription(), mba.getTypeMirror());
        data.add(mba); 
        //table is informed about the change to update the view
        this.fireTableDataChanged();

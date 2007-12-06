@@ -143,7 +143,7 @@ public class WizardConstants
     static public final String METH_PARAM_DESCR_DEFVALUE_SUFFIX = " Description";// NOI18N
     
     static public final String METH_EXCEP_CLASS_DEFVALUE = "java.lang.Exception"; // NOI18N
-    static public final String METH_EXCEP_DESCR_DEFVALUE = "Exception description"; // NOI18N
+    static public final String METH_EXCEP_DESCR_DEFVALUE = "Exception Description"; // NOI18N
     
     static public final String NOTIF_DESCR_DEFVALUE = "NewNotification Description";// NOI18N
     
@@ -180,6 +180,7 @@ public class WizardConstants
     public static final String PROP_ATTR_NB                      = "wizdata.attributeNb"; // NOI18N
     public static final String PROP_ATTR_NAME                    = "wizdata.attributeName"; // NOI18N
     public static final String PROP_ATTR_TYPE                    = "wizdata.attributeType"; // NOI18N
+    public static final String PROP_ATTR_TYPE_MIRROR                    = "wizdata.attributeTypeMirror"; // NOI18N
     public static final String PROP_ATTR_DESCR                   = "wizdata.attributeDescription"; // NOI18N
     public static final String PROP_METHOD_NB                    = "wizdata.methodNb"; // NOI18N
     public static final String PROP_METHOD_NAME                  = "wizdata.methodName"; // NOI18N
@@ -205,6 +206,7 @@ public class WizardConstants
     public static final String PROP_INTRO_ATTR_NB                = "wizdata.intro_attributeNb";// NOI18N
     public static final String PROP_INTRO_ATTR_NAME              = "wizdata.intro_attributeName";// NOI18N
     public static final String PROP_INTRO_ATTR_TYPE              = "wizdata.intro_attributeType";// NOI18N
+        public static final String PROP_INTRO_ATTR_TYPE_MIRROR              = "wizdata.intro_attributeTypeMirror";// NOI18N
     public static final String PROP_INTRO_ATTR_RW                = "wizdata.intro_attributeAccess";// NOI18N
     public static final String PROP_INTRO_ATTR_DESCR             = "wizdata.intro_attributeDescr";// NOI18N
     public static final String PROP_INTRO_ATTR_SELECT            = "wizdata.intro_attributeSelect";// NOI18N

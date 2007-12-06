@@ -77,19 +77,18 @@ public class JellyConstants {
     public static final String SOURCE_PACKAGES = "Source Packages";
     public static final String TEST_PACKAGES = "Test Packages";
     
-    // Project properties names
-    public static final String MONITORING_AND_MANAGEMENT = "Monitoring and Management";
-    
     // ==================================================================
     // FILE DEFINITIONS
     // ==================================================================
     
     // File categories
-    public static final String FILE_CATEGORY_JAVA_CLASSES = "Java Classes";
+    public static final String FILE_CATEGORY_JAVA = "Java";
     public static final String FILE_CATEGORY_JMX = "JMX";
     public static final String FILE_CATEGORY_OTHER = "Other";
     
     // File types
+    //JF: need to distinguish between java empty file and other empty file
+    public static final String FILE_TYPE_EMPTY_JAVA_FILE = "Empty Java File";
     public static final String FILE_TYPE_EMPTY_FILE = "Empty File";
     public static final String FILE_TYPE_JAVA_PACKAGE = "Java Package";
     public static final String FILE_TYPE_JAVA_CLASS = "Java Class";
@@ -113,6 +112,10 @@ public class JellyConstants {
     // Project Properties action item
     public static final String ACTION_PROPERTIES = "Properties";
     public static final String PROPERTIES_DIALOG_TITLE = "Project Properties";    
+    
+    // Project Properties Monitoring and Management
+    public static final String MONITORING_AND_MANAGEMENT = "Monitoring and Management";
+    public static final String ENABLE_RMI_REMOTE_ACCESS_CHECK_BOX = "enableRmiRemoteAccessCheckBox";
     
     // ==================================================================
     // MBEAN COMPONENTS DEFINITIONS

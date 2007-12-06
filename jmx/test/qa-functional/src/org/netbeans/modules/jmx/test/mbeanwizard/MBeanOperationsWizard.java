@@ -261,7 +261,7 @@ public class MBeanOperationsWizard extends MBeanWizardTestCase {
         // Open parameters dialog operator
         jto.editCellAt(jto.findCellRow(operation.getName()),
                 jto.findColumn(OPERATION_PARAMETERS_COLUMN_NAME));
-        clickButton(OPERATION_ADD_PARAM_BUTTON, jto);
+        pressAndRelease(OPERATION_ADD_PARAM_BUTTON, jto);
         waitNoEvent(5000);
         
         NbDialogOperator ndo = new NbDialogOperator(PARAMETER_DIALOG_TITLE);
@@ -302,7 +302,7 @@ public class MBeanOperationsWizard extends MBeanWizardTestCase {
         // Open exceptions dialog operator
         jto.editCellAt(jto.findCellRow(operation.getName()),
                 jto.findColumn(OPERATION_EXCEPTIONS_COLUMN_NAME));
-        clickButton(OPERATION_ADD_EXCEP_BUTTON, jto);
+        pressAndRelease(OPERATION_ADD_EXCEP_BUTTON, jto);
         waitNoEvent(5000);
         
         NbDialogOperator ndo = new NbDialogOperator(EXCEPTION_DIALOG_TITLE);
@@ -354,7 +354,7 @@ public class MBeanOperationsWizard extends MBeanWizardTestCase {
         // Remove the first operation with the same name
         jto.selectCell(jto.findCellRow("DuplicatedOperation"),
                 jto.findColumn(OPERATION_NAME_COLUMN_NAME));
-        clickButton(removeButton, nfnlso);
+        pressAndRelease(removeButton, nfnlso);
         waitNoEvent(5000);
         // Check warning message is not displayed anymore
         jl = getLabel(SAME_OPERATION_WARNING, nfnlso.getContentPane());
@@ -375,7 +375,7 @@ public class MBeanOperationsWizard extends MBeanWizardTestCase {
         // First reset operation table
         while (jto.getRowCount() != 0) {
             selectTableCell(tableOperator, ndo, 0, 0);
-            clickButton(removeButton, ndo);
+            pressAndRelease(removeButton, ndo);
             waitNoEvent(5000);
         }
         
@@ -405,7 +405,7 @@ public class MBeanOperationsWizard extends MBeanWizardTestCase {
                 }
                 
                 // Set default parameters values
-                if (operation.getParameterSize() > 0) {
+                if (operation.getParameters() != null) {
                     int paramIndex = 0;
                     for (Parameter parameter : operation.getParameters()) {
                         
@@ -417,7 +417,7 @@ public class MBeanOperationsWizard extends MBeanWizardTestCase {
                         }
                         // Set default parameter type
                         if (parameter.getType() == null) {
-                            parameter.setType("String");
+                            parameter.setType("java.lang.String");
                         }
                         // Set default parameter description
                         if (parameter.getDescription() == null) {
@@ -428,7 +428,7 @@ public class MBeanOperationsWizard extends MBeanWizardTestCase {
                 }
                 
                 // Set default exceptions values
-                if (operation.getExceptionSize() > 0) {
+                if (operation.getExceptions() != null) {
                     for (Exception exception : operation.getExceptions()) {
                         
                         // Set default exception class name
@@ -437,7 +437,7 @@ public class MBeanOperationsWizard extends MBeanWizardTestCase {
                         }
                         // Set default exception description
                         if (exception.getDescription() == null) {
-                            exception.setDescription("Exception description");
+                            exception.setDescription("Exception Description");
                         }
                     }
                 }
@@ -477,7 +477,7 @@ public class MBeanOperationsWizard extends MBeanWizardTestCase {
         // Parameter construction
         Parameter parameter = new Parameter(
                 MBEAN_PARAMETER_NAME_1,
-                "String",
+                "java.lang.String",
                 MBEAN_PARAMETER_DESCRIPTION_1);
         
         ArrayList<Parameter> parameters = new ArrayList<Parameter>();

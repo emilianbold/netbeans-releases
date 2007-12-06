@@ -17,12 +17,11 @@ public class U2Simple4 {
         try { // Register MBean in Platform MBeanServer
             ManagementFactory.getPlatformMBeanServer().
                     // TODO Replace Dynamic1 Constructor parameters with valid values
-                    registerMBean(new Dynamic1((int[])null),
+                    registerMBean(new Dynamic1(int[]),
                     new ObjectName("com.foo.bar:type=Dynamic1"));
         }catch(JMException ex) {
             // TODO handle exception
         }
-        
     }
     
     /**

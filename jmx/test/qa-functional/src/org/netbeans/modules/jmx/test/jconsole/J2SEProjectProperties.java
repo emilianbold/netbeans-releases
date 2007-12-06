@@ -41,22 +41,20 @@
 
 package org.netbeans.modules.jmx.test.jconsole;
 
-import java.awt.Component;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.KeyStroke;
+import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.operators.JMenuItemOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.jemmy.util.NameComponentChooser;
 import org.netbeans.junit.NbTestSuite;
 import static org.netbeans.modules.jmx.test.helpers.JellyConstants.*;
 
 /**
  * Select created Anagram Game managed with JMX project.
  * Then, run/debug project with monitoring and management.
+ * 
+ * Same test as J2SEProject but configuring JConsole via 
+ * Project -> Properties.
  */
 public class J2SEProjectProperties extends JConsoleTestCase {
 
@@ -83,6 +81,8 @@ public class J2SEProjectProperties extends JConsoleTestCase {
 
     public void runWithJConsole() {
 
+        String rmiPort = "5000";
+        
         System.out.println("============  runWithJConsole  ============");
 
         System.out.println("Invoke Project -> Properties");
@@ -95,11 +95,34 @@ public class J2SEProjectProperties extends JConsoleTestCase {
         new Node(new JTreeOperator(ndo), MONITORING_AND_MANAGEMENT).select();
 
         sleep(5000);
-    }
 
+        // Enable RMI remote access
+        setCheckBoxSelection(ENABLE_RMI_REMOTE_ACCESS_CHECK_BOX, ndo, true);
+        
+        // Set the RMI port
+        setTextFieldContent(RMI_PORT_TEXT_FIELD, ndo, rmiPort);
+
+        selectNode(PROJECT_NAME_J2SE_PROJECT_INTEGRATION);
+        doItLocal("Run Main Project With Monitoring and Management", 
+                "run-management", rmiPort);
+    }
 
     public void debugWithJConsole() {
 
         System.out.println("============  debugWithJConsole  ============");
+    }
+
+    private void doItLocal(String action, String target, String rmiPort) {
+
+        MainWindowOperator mainWindow = MainWindowOperator.getDefault();
+        // push "Open" toolbar button in "System" toolbar
+        System.out.println("Starting " + action + "...");
+        mainWindow.getToolbarButton(mainWindow.getToolbar("Management"),
+                action).push();
+        sleep(2000);
+
+        checkOutputTabOperator(target, "Found manageable process, connecting JConsole to process...");
+        checkOutputTabOperator("-connect-jconsole", "jconsole  -interval=4");
+        terminateProcess("Processes|anagrams (-connect-jconsole)");
     }
 }

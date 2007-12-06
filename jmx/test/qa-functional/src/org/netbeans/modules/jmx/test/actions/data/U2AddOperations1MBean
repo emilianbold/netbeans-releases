@@ -1,7 +1,7 @@
 package com.foo.bar;
 
-import java.util.List;
 import java.util.Date;
+import java.util.List;
 
 public interface U2AddOperations1MBean extends U2AddOperations1SuperMBean {
     
@@ -15,7 +15,7 @@ public interface U2AddOperations1MBean extends U2AddOperations1SuperMBean {
     /**
      * op1 Description
      * @param s s Description
-     * @throws UserException UserException Description
+     * @throws com.foo.bar.UserException UserException Description
      * @return int
      */
     public int op1(String[] s) throws UserException;
@@ -24,17 +24,16 @@ public interface U2AddOperations1MBean extends U2AddOperations1SuperMBean {
      * op2 Description
      * @param l l Description
      * @param d d Description
-     * @throws UserException Exception description
      * @return Boolean
      */
-    public Boolean op2(List l, Date d) throws UserException;
+    public Boolean op2(List l, Date d);
 
     /**
      * op3 Description
      * @param s s Description
      * @param f f Description
-     * @throws UserException UserException Description
-     * @throws IllegalStateException IllegalStateException Description
+     * @throws com.foo.AddMBeanOperationsActions.UserException UserException Description
+     * @throws java.lang.IllegalStateException IllegalStateException Description
      * @return long
      */
     public long op3(String s, float f) throws UserException, IllegalStateException;

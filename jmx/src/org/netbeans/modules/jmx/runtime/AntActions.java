@@ -171,30 +171,30 @@ public class AntActions {
                 new NotifyDescriptor.Message(NbBundle.getMessage(J2SEProjectType.class, "ERR_MMNotEnabled"), NotifyDescriptor.WARNING_MESSAGE));// NOI18N
             return;
         }
-        
-        if(rmiConnect) {
-            handleRemoteManagement(project, target, projectProperties);
-        } else {
-            handleLocalManagement(project, target, projectProperties);
-        }
+        Properties p = null;
+        if(rmiConnect) //{
+            p = createRemoteManagementProperties(project, target, projectProperties);
+        //} else {
+        handleLocalManagement(project, target, projectProperties, p, localAttach);
+        //}
     }
     
-    private static void handleRemoteManagement(Project project, String target, Properties properties) {
+    private static Properties createRemoteManagementProperties(Project project, String target, Properties properties) {
         // 2. check if the project has been modified for management
         if(!J2SEProjectType.checkProjectIsModifiedForManagement(project)||
            !J2SEProjectType.checkProjectCanBeManaged(project))
-            return;
+            return null;
         
         String projectRootDir = FileUtil.toFile(project.getProjectDirectory()).getAbsolutePath();
         
         boolean launchJConsole = 
                 Boolean.valueOf(properties.
                 getProperty(ManagementCompositePanelProvider.ATTACH_JCONSOLE_KEY, 
-                "true"));
+                "true"));// NOI18N
         boolean useRMIPort = 
                 Boolean.valueOf(properties.
                 getProperty(ManagementCompositePanelProvider.RMI_USE_PORT_KEY, 
-                "true"));
+                "true"));// NOI18N
         
         String rmiPort = null;
         String configFile = null;
@@ -237,13 +237,13 @@ public class AntActions {
             props.setProperty("management.jvmargs", managementArgs);// NOI18N
             
             props.setProperty("connecting.jconsole.msg", msg);// NOI18N
-            props.setProperty("jconsole.managed.process.url", url);// NOI18N
+            props.setProperty("jconsole.managed.process.url", "RMI access enabled on " + url);// NOI18N
             
             
             //Run the run-management target. Run the app with remote mgt enabled
-            ExecutorTask t = runTarget(project, target, props);
+            //ExecutorTask t = runTarget(project, target, props);
             
-            if(launchJConsole) {
+            /*if(launchJConsole) {
                 //Launch the JConsole task poller.
                 //Such task will launch JCOnsole only if run target doesn't fail AND
                 // A connector is found in shared memory.
@@ -251,14 +251,17 @@ public class AntActions {
                 JConsoleRemoteAction action = new JConsoleRemoteAction(Integer.valueOf(rmiPort), project, t, properties);
                 rp.post(action);
             }
-        
+            */
+            return props;
         }catch(Exception e) {
             System.out.println(e.toString());
             e.printStackTrace();
         }
+        return null;
     }
      
-    private static void handleLocalManagement(Project project, String target, Properties properties) {
+    private static void handleLocalManagement(Project project, String target, 
+            Properties properties, Properties remoteProperties, boolean launchJConsole) {
          // 2. check if the project has been modified for management
         if(!J2SEProjectType.checkProjectIsModifiedForManagement(project)||
            !J2SEProjectType.checkProjectCanBeManaged(project))
@@ -268,11 +271,17 @@ public class AntActions {
         String key = String.valueOf(System.currentTimeMillis());
         try {
             //Add property to ant execution context
-            Properties props = new Properties();
+            Properties props = remoteProperties == null ? new Properties() : remoteProperties;
+            String remoteArgs = props.getProperty("management.jvmargs");// NOI18N
+           
             String managementArgs = "-Dcom.sun.management.jmxremote -Djmx.process.virtual.pid=" + key;// NOI18N
+            if(remoteArgs != null)
+                managementArgs = managementArgs + " " + remoteArgs;
+            
             props.setProperty("management.jvmargs", managementArgs);// NOI18N
             props.setProperty("connecting.jconsole.msg", NbBundle.getMessage(AntActions.class, "MSG_ConnectingJConsole"));// NOI18N
-            props.setProperty("jconsole.managed.process.url", "");// NOI18N
+            if(remoteProperties == null)
+                props.setProperty("jconsole.managed.process.url", "");// NOI18N
             
             //Run the run-lcl-mgt target. Run the app with lsocal mgt enabled
             ExecutorTask t = runTarget(project, target, props);
@@ -280,10 +289,12 @@ public class AntActions {
             //Launch the JConsole task poller.
             //Such task will launch JCOnsole only if run target doesn't fail AND
             // A connector is found in shared memory.
-            RequestProcessor rp = new RequestProcessor();
-            JConsoleAction action = new JConsoleAction("jmx.process.virtual.pid=" + // NOI18N
+            if(launchJConsole) {
+                RequestProcessor rp = new RequestProcessor();
+                JConsoleAction action = new JConsoleAction("jmx.process.virtual.pid=" + // NOI18N
                     key, project, t, properties);
-            rp.post(action);
+                rp.post(action);
+            }
         }catch(Exception e) {
             System.out.println(e.toString());
             e.printStackTrace();
@@ -340,16 +351,31 @@ public class AntActions {
                 String pluginsPath = 
                     properties.getProperty(ManagementCompositePanelProvider.PLUGINS_PATH_KEY);
                 boolean classpath = Boolean.valueOf(properties.getProperty(ManagementCompositePanelProvider.PLUGINS_CLASSPATH_KEY));
-                if(pluginsPath != null || classpath)
+                if((pluginsPath != null && !pluginsPath.equals(""))|| classpath)
                     notileandothers.append("-pluginpath ");// NOI18N
-                if(pluginsPath != null)
+                if(pluginsPath != null && !pluginsPath.equals(""))
                     notileandothers.append(pluginsPath);
                 
-                String runClasspath = (String) properties.get("javac.classpath") // NOI18N
+                Object javacPath = properties.get("javac.classpath"); // NOI18N
+                Object buildDir = properties.get("build.dir"); // NOI18N
+                Object classesDir = properties.get("classes"); // NOI18N
+                Object filePath = properties.get("file.reference.build-classes"); // NOI18N
+                StringBuffer runClassPath = new StringBuffer();
+                if(javacPath != null)
+                    runClassPath.append(javacPath.toString()+ File.pathSeparator);
+                if(buildDir != null)
+                    runClassPath.append(buildDir.toString()+ File.pathSeparator);
+                if(classesDir != null)
+                    runClassPath.append(classesDir.toString()+ File.pathSeparator);
+                if(filePath != null)
+                    runClassPath.append(filePath.toString()+ File.pathSeparator);
+                
+                /*String runClasspath = (String) properties.get("javac.classpath") // NOI18N
                         + File.pathSeparator + properties.get("build.dir") + File.separator + "classes" + // NOI18N
                         File.pathSeparator + properties.get("file.reference.build-classes"); // NOI18N
+                 */ 
                 if(classpath)
-                    notileandothers.append((pluginsPath != null ? File.pathSeparator : "") + runClasspath);// NOI18N
+                    notileandothers.append((pluginsPath != null ? File.pathSeparator : "") + runClassPath.toString());// NOI18N
                 
             }   
             props.setProperty("jconsole.settings.notile", notileandothers.toString());// NOI18N
@@ -453,11 +479,14 @@ public class AntActions {
                 JMXConnectorFactory.connect(url);
                 return;
             }catch(IOException e) {
+                e.printStackTrace();
                 //Not yet connected
                 //continue
             }catch(SecurityException se) {
-                //OK Connected.
+                se.printStackTrace();
                 return;
+            }catch(Exception ex) {
+                ex.printStackTrace();
             }
             
             Thread.sleep(1000);

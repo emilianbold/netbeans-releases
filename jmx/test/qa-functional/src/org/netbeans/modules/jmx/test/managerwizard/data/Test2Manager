@@ -24,11 +24,11 @@ public class Test2Manager {
      * is called
      */
     public void connect() throws Exception {
-        /* Create JMX Agent URL */ 
+        // Create JMX Agent URL
         JMXServiceURL url = new JMXServiceURL("service:jmx:rmi://server.sun.com:5000/jndi/rmi://server.sun.com:5000/jmxrmi");
-        /* Connect the JMXConnector */ 
+        // Connect the JMXConnector
         connector = JMXConnectorFactory.connect(url, null);
-        /* Get the MBeanServerConnection */ 
+        // Get the MBeanServerConnection
         mbsc = connector.getMBeanServerConnection();
     }
     

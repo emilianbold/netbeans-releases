@@ -10,7 +10,7 @@ import java.util.Arrays;
 
 /**
  * Class __NAME__
- * {0}
+ *
  * @author __USER__
  */
 public class __NAME__ extends StandardMBean implements __NAME__MBean {
@@ -19,6 +19,7 @@ public class __NAME__ extends StandardMBean implements __NAME__MBean {
         super(__NAME__MBean.class);
     }
 
+    @Override
     public MBeanInfo getMBeanInfo() {
             MBeanInfo mbinfo = super.getMBeanInfo();
             return new MBeanInfo(mbinfo.getClassName(),

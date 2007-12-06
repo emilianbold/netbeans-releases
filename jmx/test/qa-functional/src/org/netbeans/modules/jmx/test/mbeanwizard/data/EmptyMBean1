@@ -9,14 +9,13 @@ import javax.management.*;
 
 /**
  * Class EmptyMBean1
- * StandardMBean without attributes and operations
+ * 
  * @author <author>
  */
 public class EmptyMBean1 implements EmptyMBean1MBean {
     
-    public EmptyMBean1()  {
+    public EmptyMBean1(){
     }
-
 }
 
 

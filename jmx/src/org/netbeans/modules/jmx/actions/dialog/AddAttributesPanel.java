@@ -168,6 +168,18 @@ public class AddAttributesPanel extends javax.swing.JPanel
     }
     
     private boolean isAcceptable() {
+        // First check the type that has been entered...
+        boolean isOK = true;
+         for (int i=0; i < attributeModel.size(); i++) {
+            String type = attributeModel.getAttribute(i).getTypeName();
+            isOK = JavaModelHelper.checkKnownType(currentClass, type);
+            if(!isOK) {
+                stateLabel.setText(bundle.getString("LBL_State_Bad_Type") + type); // NOI18N
+                return false;
+            } 
+         }
+         
+         
         if (!(attributeModel.getRowCount() > attributeModel.getFirstEditable())) {
             stateLabel.setText(bundle.getString("LBL_NoAttribute")); // NOI18N
             return false;

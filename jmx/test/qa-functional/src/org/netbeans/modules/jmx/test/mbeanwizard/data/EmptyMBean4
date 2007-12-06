@@ -10,18 +10,19 @@ import java.util.Arrays;
 
 /**
  * Class EmptyMBean4
- * MBean from existing java class wrapped as MXBean without attributes and operations
+ * 
  * @author <author>
  */
 public class EmptyMBean4 extends StandardMBean implements EmptyMBean4MBean {
-    
-        private EmptyJavaClass theRef;
+    private EmptyJavaClass theRef;
 
     public EmptyMBean4(EmptyJavaClass theRef) throws NotCompliantMBeanException {
-        super(EmptyMBean4MBean.class, true);
+        //WARNING Uncomment the following call to super() to make this class compile (see BUG ID 122377)
+        // super(EmptyMBean4MBean.class, true);
         this.theRef = theRef;
     }
-
+    
+    @Override
     public MBeanInfo getMBeanInfo() {
         MBeanInfo mbinfo = super.getMBeanInfo();
         return new MBeanInfo(mbinfo.getClassName(),
@@ -40,16 +41,16 @@ public class EmptyMBean4 extends StandardMBean implements EmptyMBean4MBean {
      * Override customization hook:
      * You can supply a customized description for MBeanInfo.getDescription()
      */
-
+    @Override
     protected String getDescription(MBeanInfo info) {
-        return "MBean from existing java class wrapped as MXBean without attributes, operations and notifications";
+        return "MBean from existing java class wrapped as MXBean without attributes and operations";
     }
 
     /**
      * Override customization hook:
-     * You can supply a customized description for MBeanInfo.getDescription()
+     * You can supply a customized description for MBeanAttributeInfo.getDescription()
      */
-
+    @Override
     protected String getDescription(MBeanAttributeInfo info) {
         String description = null;
 
@@ -58,29 +59,27 @@ public class EmptyMBean4 extends StandardMBean implements EmptyMBean4MBean {
 
     /**
      * Override customization hook:
-     * You can supply a customized description for MBeanInfo.getDescription()
+     * You can supply a customized description for MBeanParameterInfo.getDescription()
      */
-
-    protected String getDescription(MBeanOperationInfo op,
-                                    MBeanParameterInfo param, int sequence) {
+    @Override
+    protected String getDescription(MBeanOperationInfo op, MBeanParameterInfo param, int sequence) {
         return null;
     }
 
     /**
      * Override customization hook:
-     * You can supply a customized description for MBeanInfo.getDescription()
+     * You can supply a customized description for MBeanParameterInfo.getName()
      */
-
-    protected String getParameterName(MBeanOperationInfo op,
-                                      MBeanParameterInfo param, int sequence) {
+    @Override
+    protected String getParameterName(MBeanOperationInfo op, MBeanParameterInfo param, int sequence) {
         return null;
     }
 
     /**
      * Override customization hook:
-     * You can supply a customized description for MBeanInfo.getDescription()
+     * You can supply a customized description for MBeanOperationInfo.getDescription()
      */
-
+    @Override
     protected String getDescription(MBeanOperationInfo info) {
         String description = null;
 

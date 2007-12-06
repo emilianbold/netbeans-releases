@@ -11,20 +11,24 @@ import java.util.Arrays;
 
 /**
  * Class SeveralFeaturesMBean3
- * StandardMBean with metadata with several attributes and operations
+ * 
  * @author <author>
  */
 public class SeveralFeaturesMBean3 extends StandardMBean implements SeveralFeaturesMBean3MBean {
-    
-        // Attribute : FirstAttribute
+    /**
+     * Attribute : FirstAttribute
+     */
     private int firstAttribute;
-    // Attribute : SecondAttribute
+    /**
+     * Attribute : SecondAttribute
+     */
     private Date secondAttribute;
-
+    
     public SeveralFeaturesMBean3() throws NotCompliantMBeanException {
         super(SeveralFeaturesMBean3MBean.class);
     }
     
+    @Override
     public MBeanInfo getMBeanInfo() {
         MBeanInfo mbinfo = super.getMBeanInfo();
         return new MBeanInfo(mbinfo.getClassName(),
@@ -43,161 +47,155 @@ public class SeveralFeaturesMBean3 extends StandardMBean implements SeveralFeatu
      * Override customization hook:
      * You can supply a customized description for MBeanInfo.getDescription()
      */
-
+    @Override
     protected String getDescription(MBeanInfo info) {
         return "StandardMBean with metadata with several attributes and operations";
     }
 
     /**
      * Override customization hook:
-     * You can supply a customized description for MBeanInfo.getDescription()
+     * You can supply a customized description for MBeanAttributeInfo.getDescription()
      */
-
+    @Override
     protected String getDescription(MBeanAttributeInfo info) {
         String description = null;
-
         if (info.getName().equals("FirstAttribute")) {
             description = "First Attribute description";
         } else if (info.getName().equals("SecondAttribute")) {
             description = "Second Attribute description";
         }
+
         return description;
     }
 
     /**
      * Override customization hook:
-     * You can supply a customized description for MBeanInfo.getDescription()
+     * You can supply a customized description for MBeanParameterInfo.getDescription()
      */
-
-    protected String getDescription(MBeanOperationInfo op,
-                                    MBeanParameterInfo param, int sequence) {
+    @Override
+    protected String getDescription(MBeanOperationInfo op, MBeanParameterInfo param, int sequence) {
         if (op.getName().equals("FirstOperation")) {
             switch (sequence) {
-              default:
-                return null;
+                default:
+                    return null;
             }
         } else if (op.getName().equals("SecondOperation")) {
             switch (sequence) {
-              default:
-                return null;
+                default:
+                    return null;
             }
         } else if (op.getName().equals("ThirdOperation")) {
             switch (sequence) {
-              case 0:
-                return "First Parameter Description";
-              case 1:
-                return "Second Parameter Description";
-              case 2:
-                return "Third Parameter Description";
-              case 3:
-                return "Fourth Parameter Description";
-              case 4:
-                return "Fifth Parameter Description";
-              case 5:
-                return "Sixth Parameter Description";
-              case 6:
-                return "Seventh Parameter Description";
-              case 7:
-                return "Eighth Parameter Description";
-              case 8:
-                return "Nineth Parameter Description";
-              case 9:
-                return "Tenth Parameter Description";
-              default:
-                return null;
+                case 0:
+                    return "First Parameter Description";
+                case 1:
+                    return "Second Parameter Description";
+                case 2:
+                    return "Third Parameter Description";
+                case 3:
+                    return "Fourth Parameter Description";
+                case 4:
+                    return "Fifth Parameter Description";
+                case 5:
+                    return "Sixth Parameter Description";
+                case 6:
+                    return "Seventh Parameter Description";
+                case 7:
+                    return "Eighth Parameter Description";
+                case 8:
+                    return "Nineth Parameter Description";
+                case 9:
+                    return "Tenth Parameter Description";
+                default:
+                    return null;
             }
         }
+
         return null;
     }
 
     /**
      * Override customization hook:
-     * You can supply a customized description for MBeanInfo.getDescription()
+     * You can supply a customized description for MBeanParameterInfo.getName()
      */
-
-    protected String getParameterName(MBeanOperationInfo op,
-                                      MBeanParameterInfo param, int sequence) {
+    @Override
+    protected String getParameterName(MBeanOperationInfo op, MBeanParameterInfo param, int sequence) {
         if (op.getName().equals("FirstOperation")) {
             switch (sequence) {
-              default:
-                return null;
+                default:
+                    return null;
             }
         } else if (op.getName().equals("SecondOperation")) {
             switch (sequence) {
-              default:
-                return null;
+                default:
+                    return null;
             }
         } else if (op.getName().equals("ThirdOperation")) {
             switch (sequence) {
-              case 0:
-                return "firstParameter";
-              case 1:
-                return "secondParameter";
-              case 2:
-                return "thirdParameter";
-              case 3:
-                return "fourthParameter";
-              case 4:
-                return "fifthParameter";
-              case 5:
-                return "sixthParameter";
-              case 6:
-                return "seventhParameter";
-              case 7:
-                return "eighthParameter";
-              case 8:
-                return "ninethParameter";
-              case 9:
-                return "tenthParameter";
-              default:
-                return null;
+                case 0:
+                    return "firstParameter";
+                case 1:
+                    return "secondParameter";
+                case 2:
+                    return "thirdParameter";
+                case 3:
+                    return "fourthParameter";
+                case 4:
+                    return "fifthParameter";
+                case 5:
+                    return "sixthParameter";
+                case 6:
+                    return "seventhParameter";
+                case 7:
+                    return "eighthParameter";
+                case 8:
+                    return "ninethParameter";
+                case 9:
+                    return "tenthParameter";
+                default:
+                    return null;
             }
         }
+
         return null;
     }
 
     /**
      * Override customization hook:
-     * You can supply a customized description for MBeanInfo.getDescription()
+     * You can supply a customized description for MBeanOperationInfo.getDescription()
      */
-
+    @Override
     protected String getDescription(MBeanOperationInfo info) {
         String description = null;
         MBeanParameterInfo[] params = info.getSignature();
         String[] signature = new String[params.length];
-
-        for (int i = 0; i < params.length; i++)
+        for (int i = 0; i < params.length; i++) {
             signature[i] = params[i].getType();
+        }
         String[] methodSignature;
 
         methodSignature = new String[]{};
-        if (info.getName().equals("FirstOperation") &&
-            Arrays.equals(signature, methodSignature)) {
+        if (info.getName().equals("FirstOperation") && Arrays.equals(signature, methodSignature)) {
             description = "First Operation Description";
         }
+
         methodSignature = new String[]{};
-        if (info.getName().equals("SecondOperation") && Arrays.equals(signature,
-                                                                      methodSignature)) {
+        if (info.getName().equals("SecondOperation") && Arrays.equals(signature, methodSignature)) {
             description = "Second Operation Description";
         }
-        methodSignature = new String[]{java.lang.String.class.getName(),
-                java.lang.Boolean.TYPE.getName(), java.lang.Byte.TYPE.getName(),
-                java.lang.Character.TYPE.getName(),
-                java.util.Date.class.getName(), java.lang.Integer.TYPE.getName(),
-                java.lang.Long.TYPE.getName(),
-                javax.management.ObjectName.class.getName(),
-                java.lang.Float.TYPE.getName(), java.lang.Double.TYPE.getName()};
-        if (info.getName().equals("ThirdOperation") &&
-            Arrays.equals(signature, methodSignature)) {
+
+        methodSignature = new String[]{java.lang.String.class.getName(), java.lang.Boolean.TYPE.getName(), java.lang.Byte.TYPE.getName(), java.lang.Character.TYPE.getName(), java.util.Date.class.getName(), java.lang.Integer.TYPE.getName(), java.lang.Long.TYPE.getName(), javax.management.ObjectName.class.getName(), java.lang.Float.TYPE.getName(), java.lang.Double.TYPE.getName()};
+        if (info.getName().equals("ThirdOperation") && Arrays.equals(signature, methodSignature)) {
             description = "Third Operation Description";
         }
+
+
         return description;
     }
 
     /**
      * Get First Attribute description
      */
-
     public int getFirstAttribute() {
         return firstAttribute;
     }
@@ -205,7 +203,6 @@ public class SeveralFeaturesMBean3 extends StandardMBean implements SeveralFeatu
     /**
      * Get Second Attribute description
      */
-
     public Date getSecondAttribute() {
         return secondAttribute;
     }
@@ -213,7 +210,6 @@ public class SeveralFeaturesMBean3 extends StandardMBean implements SeveralFeatu
     /**
      * Set Second Attribute description
      */
-
     public void setSecondAttribute(Date value) {
         secondAttribute = value;
     }
@@ -221,7 +217,6 @@ public class SeveralFeaturesMBean3 extends StandardMBean implements SeveralFeatu
     /**
      * First Operation Description
      */
-
     public void FirstOperation() {
     }
 
@@ -230,8 +225,8 @@ public class SeveralFeaturesMBean3 extends StandardMBean implements SeveralFeatu
      * @throws java.lang.NullPointerException First Exception description
      * @return int
      */
-
     public int SecondOperation() throws NullPointerException {
+        //TODO add your own implementation
         return 0;
     }
 
@@ -249,12 +244,8 @@ public class SeveralFeaturesMBean3 extends StandardMBean implements SeveralFeatu
      * @param tenthParameter Tenth Parameter Description
      * @return java.util.Date
      */
-
-    public Date ThirdOperation(String firstParameter, boolean secondParameter,
-                               byte thirdParameter, char fourthParameter,
-                               Date fifthParameter, int sixthParameter,
-                               long seventhParameter, ObjectName eighthParameter,
-                               float ninethParameter, double tenthParameter) {
+    public Date ThirdOperation(String firstParameter, boolean secondParameter, byte thirdParameter, char fourthParameter, Date fifthParameter, int sixthParameter, long seventhParameter, ObjectName eighthParameter, float ninethParameter, double tenthParameter) {
+        //TODO add your own implementation
         return null;
     }
 }

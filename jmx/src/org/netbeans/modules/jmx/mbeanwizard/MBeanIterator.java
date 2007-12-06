@@ -122,7 +122,7 @@ public abstract class MBeanIterator implements TemplateWizard.Iterator {
         //
         // cf ../projects/projectui/src/org/netbeans/modules/project/ui/actions/NewProject.java
         //
-        wiz.putProperty("setAsMain", false); // NOI18N
+        //wiz.putProperty("setAsMain", false); // NOI18N
         
         try {
             

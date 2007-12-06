@@ -112,7 +112,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
         System.out.println("Create package folder " + PACKAGE_COM_FOO_BAR);
         NewFileWizardOperator nfwo = newFileWizardFromMenu(
                 PROJECT_NAME_CONFIGURATION_FUNCTIONAL,
-                FILE_CATEGORY_JAVA_CLASSES,
+                FILE_CATEGORY_JAVA,
                 FILE_TYPE_JAVA_PACKAGE);
         nfwo.next();
         NewFileNameLocationStepOperator nfnlso = nameAndLocationWizard(
@@ -497,7 +497,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
         // Add valid credential
         System.out.println("Add valid credential (non null role/password)");
         rmiConfig.allowedCredentials.add(new AllowedCredential("role", "password", "readwrite"));
-        clickButton(RMI_CREDENTIALS_ADD_BUTTON, nfnlso);
+        pressAndRelease(RMI_CREDENTIALS_ADD_BUTTON, nfnlso);
         waitNoEvent(5000);
         jtmd.editCell(jto, 0, jto.findColumn(CREDENTIAL_ROLE_COLUMN_NAME), "role");
         jtmd.editCell(jto, 0, jto.findColumn(CREDENTIAL_PASSWORD_COLUMN_NAME), "password");
@@ -557,7 +557,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
         System.out.println("Add invalid credential (null role)");
         rmiConfig.invalidCredential = true;
         rmiConfig.allowedCredentials.add(new AllowedCredential(null, "password", "readonly"));
-        clickButton(RMI_CREDENTIALS_ADD_BUTTON, nfnlso);
+        pressAndRelease(RMI_CREDENTIALS_ADD_BUTTON, nfnlso);
         waitNoEvent(5000);
         jtmd.editCell(jto, 0, jto.findColumn(CREDENTIAL_PASSWORD_COLUMN_NAME), "password");
         // Check Enable RMI wizard components
@@ -572,7 +572,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
         rmiConfig.invalidCredential = false;
         rmiConfig.allowedCredentials.remove(0);
         jtmd.selectCell(jto, 0, 0);
-        clickButton(RMI_CREDENTIALS_REMOVE_BUTTON, nfnlso);
+        pressAndRelease(RMI_CREDENTIALS_REMOVE_BUTTON, nfnlso);
         // Check Enable RMI wizard components
         System.out.println("Check Enable RMI wizard components");
         checkEnableRMIWizardComponents(nfnlso, rmiConfig);
@@ -584,7 +584,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
         System.out.println("Add invalid credential (null password)");
         rmiConfig.invalidCredential = true;
         rmiConfig.allowedCredentials.add(new AllowedCredential("role", null, "readonly"));
-        clickButton(RMI_CREDENTIALS_ADD_BUTTON, nfnlso);
+        pressAndRelease(RMI_CREDENTIALS_ADD_BUTTON, nfnlso);
         waitNoEvent(5000);
         jtmd.editCell(jto, 0, jto.findColumn(CREDENTIAL_ROLE_COLUMN_NAME), "role");
         // Check Enable RMI wizard components
@@ -634,7 +634,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
         // Add 5 credentials
         System.out.println("Add 5 credentials");
         for (int i = 0; i < 5; i++) {
-            clickButton(RMI_CREDENTIALS_ADD_BUTTON, nfnlso);
+            pressAndRelease(RMI_CREDENTIALS_ADD_BUTTON, nfnlso);
             waitNoEvent(5000);
         }
         // Edit 2 credentials (rows 2 and 3)
@@ -652,13 +652,13 @@ public class ManagementConfigurationWizard extends JMXTestCase {
         // Remove invalid credentials (rows 0, 1 and 4)
         System.out.println("Remove invalid credentials (rows 0, 1 and 4)");
         jtmd.selectCell(jto, 4, 0);
-        clickButton(RMI_CREDENTIALS_REMOVE_BUTTON, nfnlso);
+        pressAndRelease(RMI_CREDENTIALS_REMOVE_BUTTON, nfnlso);
         waitNoEvent(5000);
         jtmd.selectCell(jto, 1, 0);
-        clickButton(RMI_CREDENTIALS_REMOVE_BUTTON, nfnlso);
+        pressAndRelease(RMI_CREDENTIALS_REMOVE_BUTTON, nfnlso);
         waitNoEvent(5000);
         jtmd.selectCell(jto, 0, 0);
-        clickButton(RMI_CREDENTIALS_REMOVE_BUTTON, nfnlso);
+        pressAndRelease(RMI_CREDENTIALS_REMOVE_BUTTON, nfnlso);
         waitNoEvent(5000);
         // Check Enable RMI wizard components
         System.out.println("Check Enable RMI wizard components");
@@ -791,7 +791,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
         }
         assertFalse(nfnlso.btFinish().isEnabled());
         assertTrue(nfnlso.btCancel().isEnabled());
-        assertFalse(nfnlso.btHelp().isEnabled());
+        assertTrue(nfnlso.btHelp().isEnabled());
     }
     
     /**
@@ -882,7 +882,7 @@ public class ManagementConfigurationWizard extends JMXTestCase {
         assertFalse(nfnlso.btNext().isEnabled());
         assertTrue(nfnlso.btFinish().isEnabled());
         assertTrue(nfnlso.btCancel().isEnabled());
-        assertFalse(nfnlso.btHelp().isEnabled());
+        assertTrue(nfnlso.btHelp().isEnabled());
     }
     
     /**

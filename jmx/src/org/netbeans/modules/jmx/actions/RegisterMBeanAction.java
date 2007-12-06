@@ -162,19 +162,19 @@ public class RegisterMBeanAction extends NodeAction {
                     imports.add(itf);
                     // Remove package name
                     itf = WizardHelpers.getClassName(itf);
-                    itf = itf + ".class";
+                    itf = itf + ".class";// NOI18N
                 }
                 methodCall.append("new StandardMBean(" // NOI18N
-                        + (ctr == null ? null : "new " + ctr) + ",\n"
+                        + (ctr == null ? null : "new " + ctr) + ",\n"// NOI18N
                         + itf);
                 
                 if(cfg.isMXBean())
-                    methodCall.append(", true");
+                    methodCall.append(", true");// NOI18N
                 
                 methodCall.append(")");// NOI18N
             } else {
                 
-                methodCall.append((ctr == null ? null : "new " + ctr));
+                methodCall.append((ctr == null ? null : "new " + ctr));// NOI18N
             }
             
             MessageFormat objNameFormat =

@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.jmx.mbeanwizard;
 
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.modules.jmx.MBeanAttribute;
 import org.netbeans.modules.jmx.WizardConstants;
 
@@ -55,8 +56,8 @@ public class MBeanWrapperAttribute extends MBeanAttribute {
 
     /** Creates a new instance of MBeanWrapperAttribute */
     public MBeanWrapperAttribute(Boolean isSelected, String attrName,
-            String attrType, String attrAccess, String attrDescription) {
-        super(attrName,attrType,attrAccess,attrDescription);
+            String attrType, String attrAccess, String attrDescription, TypeMirror m) {
+        super(attrName,attrType,attrAccess,attrDescription, m);
         this.selected = isSelected;
         this.originalAccess = attrAccess;
     }

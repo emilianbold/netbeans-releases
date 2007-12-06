@@ -53,6 +53,7 @@ import org.netbeans.modules.jmx.WizardConstants;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
+import javax.lang.model.type.TypeMirror;
 import javax.swing.JLabel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
@@ -152,8 +153,8 @@ public class MBeanWrapperAttributePanel extends MBeanAttributePanel
                         attributeModel.remRow(selectedRow, attributeTable);
                         attributeModel.selectNextRow(selectedRow, attributeTable);  
                     } catch (Exception ex) {
-                        System.out.println("Exception here : ");// NOI18N
-                        ex.printStackTrace();
+                        //System.out.println("Exception here : ");// NOI18N
+                        //ex.printStackTrace();
                     }
                 } else {
                     attrRemoveJButton.setEnabled(false);
@@ -337,7 +338,8 @@ public class MBeanWrapperAttributePanel extends MBeanAttributePanel
                             (String)wiz.getProperty(WizardConstants.PROP_ATTR_NAME + i),
                             (String)wiz.getProperty(WizardConstants.PROP_ATTR_TYPE + i),
                             (String)wiz.getProperty(WizardConstants.PROP_ATTR_RW + i),
-                            (String)wiz.getProperty(WizardConstants.PROP_ATTR_DESCR + i)));
+                            (String)wiz.getProperty(WizardConstants.PROP_ATTR_DESCR + i),
+                            (TypeMirror) wiz.getProperty(WizardConstants.PROP_ATTR_TYPE_MIRROR + i)));
                             
                 }
                 getPanel().orderNumber = oNumber;
@@ -379,6 +381,8 @@ public class MBeanWrapperAttributePanel extends MBeanAttributePanel
                     
                     wiz.putProperty(WizardConstants.PROP_ATTR_TYPE + j,
                             attr.getTypeName());
+                    wiz.putProperty(WizardConstants.PROP_ATTR_TYPE_MIRROR + j,
+                            attr.getTypeMirror());
                     
                     wiz.putProperty(WizardConstants.PROP_ATTR_RW + j,
                             attr.getAccess());
@@ -398,6 +402,8 @@ public class MBeanWrapperAttributePanel extends MBeanAttributePanel
                     
                     wiz.putProperty(WizardConstants.PROP_INTRO_ATTR_TYPE + i,
                             attr.getTypeName());
+                    wiz.putProperty(WizardConstants.PROP_INTRO_ATTR_TYPE_MIRROR + i,
+                            attr.getTypeMirror());
                     
                     wiz.putProperty(WizardConstants.PROP_INTRO_ATTR_RW + i,
                             attr.getAccess());

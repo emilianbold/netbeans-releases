@@ -146,7 +146,7 @@ public class MBeanWrapperAttributeTableModel extends MBeanAttributeTableModel {
                 attr.getName(),
                 attr.getTypeName(),
                 attr.getAccess(),
-                attr.getDescription());
+                attr.getDescription(), attr.getTypeMirror());
         data.add(mba);
         
         //table is informed about the change to update the view
@@ -157,10 +157,10 @@ public class MBeanWrapperAttributeTableModel extends MBeanAttributeTableModel {
         MBeanWrapperAttribute mba = new MBeanWrapperAttribute(
                 true,
                 WizardConstants.ATTR_NAME_DEFVALUE + lastIndex,
-                WizardConstants.STRING_OBJ_NAME,
+                WizardConstants.STRING_OBJ_FULLNAME,
                 WizardConstants.ATTR_ACCESS_READ_WRITE,
                 WizardConstants.ATTR_DESCR_DEFVALUE_PREFIX + lastIndex +
-                WizardConstants.ATTR_DESCR_DEFVALUE_SUFFIX);
+                WizardConstants.ATTR_DESCR_DEFVALUE_SUFFIX, null);
         lastIndex++;
         data.add(mba);
         

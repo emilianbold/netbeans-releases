@@ -77,6 +77,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import javax.swing.JTextField;
+import org.openide.util.HelpCtx;
 
 /**
  *
@@ -920,5 +921,8 @@ public class RMIPanel extends javax.swing.JPanel {
             wiz.putProperty(WizardConstants.RMI_SSL_CLIENT_AUTHENTICATE, 
                     new Boolean(sslClientAuth));
         }
+        public HelpCtx getHelp() {
+           return new HelpCtx( "mgt_properties");  // NOI18N
+        }   
     }
 }

@@ -141,7 +141,7 @@ made subject to such option by the copyright holder.
 
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.jmx.mbeanwizard.ExtendedStandardMBeanIterator.createExtendedStandardMBeanIterator"/>
 
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/FromExistingClass.html"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/jmx/resources/ExtendedStandardMBean.html"/>
 
                 <attr name="templateCategory" stringvalue="java-classes"/>
             </file>

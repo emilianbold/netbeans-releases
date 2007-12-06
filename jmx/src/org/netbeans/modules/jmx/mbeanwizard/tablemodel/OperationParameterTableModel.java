@@ -86,7 +86,7 @@ public class OperationParameterTableModel extends AbstractJMXTableModel{
         
         return new MBeanOperationParameter(
                 WizardConstants.METH_PARAM_NAME_DEFVALUE + this.getRowCount(),
-                WizardConstants.STRING_OBJ_NAME,
+                WizardConstants.STRING_OBJ_FULLNAME,
                 WizardConstants.METH_PARAM_DESCR_DEFVALUE_PREFIX + 
                 this.getRowCount() +
                         WizardConstants.METH_PARAM_DESCR_DEFVALUE_SUFFIX);

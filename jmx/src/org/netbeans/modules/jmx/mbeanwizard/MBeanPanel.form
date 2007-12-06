@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.3" maxVersion="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <NonVisualComponents>
     <Component class="javax.swing.ButtonGroup" name="mbeanTypeButtonGroup">
     </Component>
@@ -29,7 +29,7 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="mbeanDescriptionJTextField" pref="440" max="32767" attributes="1"/>
                           <Group type="102" alignment="0" attributes="0">
-                              <Component id="classSelectionJTextField" pref="353" max="32767" attributes="0"/>
+                              <Component id="classSelectionJTextField" pref="361" max="32767" attributes="0"/>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Component id="browseButton" min="-2" max="-2" attributes="0"/>
                           </Group>
@@ -71,34 +71,43 @@
   <SubComponents>
     <Component class="javax.swing.JTextField" name="mbeanDescriptionJTextField">
       <Properties>
-        <Property name="name" type="java.lang.String" value="mbeanDescriptionJTextField"/>
+        <Property name="name" type="java.lang.String" value="mbeanDescriptionJTextField" noResource="true"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="generatedFileJTextField">
       <Properties>
         <Property name="editable" type="boolean" value="false"/>
         <Property name="horizontalAlignment" type="int" value="2"/>
-        <Property name="name" type="java.lang.String" value="generatedFileJTextField"/>
+        <Property name="name" type="java.lang.String" value="generatedFileJTextField" noResource="true"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="mbeanDecriptionJLabel">
       <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="mbeanDescriptionJTextField"/>
+        </Property>
         <Property name="text" type="java.lang.String" value="jLabel1"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="generatedFileJLabel">
       <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="generatedFileJTextField"/>
+        </Property>
         <Property name="text" type="java.lang.String" value="jLabel2"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="classSelectionJLabel">
       <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="classSelectionJTextField"/>
+        </Property>
         <Property name="text" type="java.lang.String" value="jLabel3"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="classSelectionJTextField">
       <Properties>
-        <Property name="name" type="java.lang.String" value="ExistingClassTextField"/>
+        <Property name="name" type="java.lang.String" value="ExistingClassTextField" noResource="true"/>
         <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
           <Dimension value="[160, 19]"/>
         </Property>
@@ -107,11 +116,12 @@
     <Component class="javax.swing.JButton" name="browseButton">
       <Properties>
         <Property name="text" type="java.lang.String" value="jButton1"/>
-        <Property name="name" type="java.lang.String" value="browseButton"/>
+        <Property name="name" type="java.lang.String" value="browseButton" noResource="true"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JCheckBox" name="isMXBean">
       <Properties>
+        <Property name="mnemonic" type="int" value="105"/>
         <Property name="text" type="java.lang.String" value="isMXBean"/>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
@@ -121,7 +131,7 @@
         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
           <Insets value="[0, 0, 0, 0]"/>
         </Property>
-        <Property name="name" type="java.lang.String" value="isMXBeanCheckBox"/>
+        <Property name="name" type="java.lang.String" value="isMXBeanCheckBox" noResource="true"/>
       </Properties>
     </Component>
   </SubComponents>

@@ -42,6 +42,7 @@ package org.netbeans.modules.jmx.mbeanwizard.generator;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.jmx.JavaModelHelper;
 import org.netbeans.modules.jmx.MBeanAttribute;
@@ -239,6 +240,9 @@ public class Translator {
                     WizardConstants.PROP_ATTR_TYPE + i);
             if ((attrType == null) || (attrType.equals(""))) // NOI18N
                 throw new IllegalArgumentException("attribute type invalid"); // NOI18N
+                   
+            TypeMirror mirror   = (TypeMirror)wiz.getProperty(
+                    WizardConstants.PROP_ATTR_TYPE_MIRROR + i);
             
             String attrAccess = (String)wiz.getProperty(
                     WizardConstants.PROP_ATTR_RW + i);
@@ -254,7 +258,7 @@ public class Translator {
             
             attributes.add(new MBeanAttribute(
                     WizardHelpers.capitalizeFirstLetter(attrName), attrType,
-                    attrAccess, attrDescr, false));
+                    attrAccess, attrDescr, false, mirror));
         }
         
         String strNbWrapAttr = (String)wiz.getProperty(
@@ -273,7 +277,10 @@ public class Translator {
                     WizardConstants.PROP_INTRO_ATTR_TYPE + i);
             if ((attrType == null) || (attrType.equals(""))) // NOI18N
                 throw new IllegalArgumentException("attribute type invalid"); // NOI18N
-            
+            TypeMirror mirror   = (TypeMirror)wiz.getProperty(
+                    WizardConstants.PROP_INTRO_ATTR_TYPE_MIRROR + i);
+            if (attrType == null)
+                throw new IllegalArgumentException("attribute type invalid. No mirror"); // NOI18N
             String attrAccess = (String)wiz.getProperty(
                     WizardConstants.PROP_INTRO_ATTR_RW + i);
             if ((attrAccess == null) || 
@@ -295,8 +302,12 @@ public class Translator {
             if (attrSelect) {
                 MBeanAttribute attr =  new MBeanAttribute(
                     WizardHelpers.capitalizeFirstLetter(attrName), attrType,
-                    attrAccess, attrDescr, true);
+                    attrAccess, attrDescr, true, mirror);
                 MBeanAttribute updated = JavaModelHelper.searchAttributeImplementation(wrappedClass, attr);
+                
+                //System.out.println("SEARCHING "+ attr.getName() + "UPDATED " + updated);
+                if(updated == null)
+                    updated = attr;
                 attributes.add(updated);
             }
         }

@@ -259,6 +259,7 @@ public class AddMBeanOperationsActions extends ActionsTestCase {
         ArrayList<Operation> opList = null;
         ArrayList<Parameter> parameters = null;
         ArrayList<Exception> exceptions = null;
+        Node node = null;
         
         // Call menu item
         System.out.println("Call action menu " + popupPath);
@@ -283,7 +284,7 @@ public class AddMBeanOperationsActions extends ActionsTestCase {
         parameters = new ArrayList<Parameter>();
         parameters.add(new Parameter("param0", "java.lang.String[]", ""));
         exceptions = new ArrayList<Exception>();
-        exceptions.add(new Exception("IllegalStateException", ""));
+        exceptions.add(new Exception("java.lang.IllegalStateException", ""));
         opList.add(new Operation("op5", "double", parameters, exceptions,
                 "Operation exposed for management"));
         checkMBeanOperations(jto, false, opList);
@@ -295,22 +296,24 @@ public class AddMBeanOperationsActions extends ActionsTestCase {
         opList.add(new Operation("op0", "void", "op0 Description"));
         // Operation 1
         parameters = new ArrayList<Parameter>();
-        parameters.add(new Parameter("s", "String[]", "s Description"));
+        parameters.add(new Parameter("s", "java.lang.String[]", "s Description"));
         exceptions = new ArrayList<Exception>();
-        exceptions.add(new Exception(USER_EXCEPTION, "UserException Description"));
+        exceptions.add(new Exception(packageName + "." + USER_EXCEPTION, 
+                "UserException Description"));
         opList.add(new Operation("op1", "int", parameters, exceptions, "op1 Description"));
         // Operation 2
         parameters = new ArrayList<Parameter>();
-        parameters.add(new Parameter("l", "List", "l Description"));
-        parameters.add(new Parameter("d", "Date", "d Description"));
+        parameters.add(new Parameter("l", "java.util.List", "l Description"));
+        parameters.add(new Parameter("d", "java.util.Date", "d Description"));
         opList.add(new Operation("op2", "Boolean", parameters, null, "op2 Description"));
         // Operation 3
         parameters = new ArrayList<Parameter>();
         parameters.add(new Parameter("s", "String", "s Description"));
         parameters.add(new Parameter("f", "float", "f Description"));
         exceptions = new ArrayList<Exception>();
-        exceptions.add(new Exception(USER_EXCEPTION, "UserException Description"));
-        exceptions.add(new Exception("IllegalStateException", "IllegalStateException Description"));
+        exceptions.add(new Exception(packageName + "." + USER_EXCEPTION, 
+                "UserException Description"));
+        exceptions.add(new Exception("java.lang.IllegalStateException", "IllegalStateException Description"));
         opList.add(new Operation("op3", "long", parameters, exceptions, "op3 Description"));
         addMBeanOperations(ndo, jto, opList);
         ndo.ok();
@@ -323,34 +326,30 @@ public class AddMBeanOperationsActions extends ActionsTestCase {
                 className + " will not be updated with the following methods,\n" +
                 "because they are already present in the class:\n" +
                 " - op0()\n" +
-                " - op1(String[])\n" +
-                " - op2(List,Date)\n";
+                " - op1(java.lang.String[])\n" +
+                " - op2(java.util.List,java.util.Date)\n";
         ndo = new NbDialogOperator(
                 ADD_OPERATIONS_DIALOG_TITLE.replaceAll("<INTERFACE>", interfaceName));
         assertEquals(message, getTextAreaOperator(ACTION_INFO_TEXT_AREA, ndo).getText());
         ndo.ok();
         
         // Save updated java class file
-        selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" +
+        node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" +
                 SOURCE_PACKAGES + "|" + packageName + "|" + className);
         EditorOperator eo = new EditorOperator(className);
         eo.save();
+        sleep(2000);
         System.out.println("Check updated java class file");
-        String content = getFileContent(getGoldenFile(className));
-        // Update golden file content package
-        content = content.replaceAll(PACKAGE_COM_FOO_BAR, packageName);
-        assertTrue(compareFileContents(eo.getText(), content));
+        checkUpdatedFiles(eo, node.getPath(), getGoldenFile(className));
         
         // Save updated java interface file
-        selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" +
+        node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" +
                 SOURCE_PACKAGES + "|" + packageName + "|" + interfaceName);
         eo = new EditorOperator(interfaceName);
         eo.save();
+        sleep(2000);
         System.out.println("Check updated java interface file");
-        content = getFileContent(getGoldenFile(interfaceName));
-        // Update golden file content package
-        content = content.replaceAll(PACKAGE_COM_FOO_BAR, packageName);
-        assertTrue(compareFileContents(eo.getText(), content));
+        checkUpdatedFiles(eo, node.getPath(), getGoldenFile(interfaceName));
     }
 }
 

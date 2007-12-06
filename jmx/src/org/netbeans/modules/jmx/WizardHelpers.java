@@ -552,6 +552,12 @@ public class WizardHelpers
         } if (type.equals(WizardConstants.STRING_OBJ_NAME)) {
             result = true;
         }
+        // XXX REVISIT
+        // As a workaround of types not being checked, we handle 
+        // implicit java.lang cases
+        // Experimental, for Add attributes Action checks
+        if(!type.contains(".")) result = true;
+        
         return result;
     }
     
@@ -1267,8 +1273,8 @@ public class WizardHelpers
         typeCombo.addItem(WizardConstants.FLOAT_NAME);
         typeCombo.addItem(WizardConstants.DOUBLE_NAME);
         typeCombo.addItem(WizardConstants.OBJECTNAME_FULLNAME);        
-        typeCombo.addItem(WizardConstants.STRING_OBJ_NAME);
-        typeCombo.setSelectedItem(WizardConstants.STRING_OBJ_NAME);
+        typeCombo.addItem(WizardConstants.STRING_OBJ_FULLNAME);
+        typeCombo.setSelectedItem(WizardConstants.STRING_OBJ_FULLNAME);
         typeCombo.setEditable(true);
         
         return typeCombo;

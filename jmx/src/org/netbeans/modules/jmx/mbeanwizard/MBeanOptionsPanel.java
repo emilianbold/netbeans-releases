@@ -919,7 +919,7 @@ public class MBeanOptionsPanel extends javax.swing.JPanel
         }
         
         public HelpCtx getHelp() {
-           return new HelpCtx(  "jmx_instrumenting_from_existing_app");  // NOI18N
+           return new HelpCtx("jmx_instrumenting_from_existing_app");  // NOI18N
         } 
     }
 }

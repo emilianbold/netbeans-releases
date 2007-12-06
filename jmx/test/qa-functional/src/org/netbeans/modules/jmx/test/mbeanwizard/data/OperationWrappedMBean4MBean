@@ -1,0 +1,50 @@
+/*
+ * OperationWrappedMBean4MBean.java
+ *
+ * Created on <current Date and Time>
+ */
+
+package com.foo.bar;
+
+import java.util.List;
+
+/**
+ * Interface OperationWrappedMBean4MBean
+ * 
+ * @author <author>
+ */
+public interface OperationWrappedMBean4MBean
+{
+
+    /**
+     * Operation exposed for management
+     * @throws java.lang.IllegalStateException First Exception description
+     */
+    public void operation1() throws IllegalStateException;
+
+    /**
+     * Operation exposed for management
+     * @param param0 Second Parameter Description
+     * @return boolean
+     */
+    public boolean operation2(List param0);
+
+    /**
+     * Operation exposed for management
+     * @param param0
+     * @param param1
+     * @return java.lang.Integer
+     */
+    public Integer operation3(Object[] param0, int param1);
+
+    /**
+     * Operation exposed for management
+     * @param param0
+     * @param param1
+     * @return java.lang.Integer
+     */
+    public Integer operation3(String[] param0, int param1);
+    
+}
+
+

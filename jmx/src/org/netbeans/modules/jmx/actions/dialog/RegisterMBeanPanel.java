@@ -346,8 +346,8 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         } else
             updateConstructors(currentMBeanClass);
         }catch(IOException ex) {
-            ex.printStackTrace();
-            System.out.println(ex);
+            //ex.printStackTrace();
+            //System.out.println(ex);
         }
     }
     
@@ -473,7 +473,7 @@ public class RegisterMBeanPanel extends javax.swing.JPanel
         if (isMBean) {
             String className = JavaModelHelper.getSimpleName(mbeanClass);
             String packageName = JavaModelHelper.getPackage(mbeanClass);
-            objectNameTextField.setText(packageName + ":type=" + className);
+            objectNameTextField.setText(packageName + ":type=" + className);// NOI18N
             // NOI18N
             constructorsMap = JavaModelHelper.getConstructors(mbeanClass);    
             Object[] constructors = getConstructors(constructorsMap);

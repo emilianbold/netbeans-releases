@@ -50,6 +50,8 @@ import java.io.InputStream;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.Action;
 /**
  *
@@ -92,8 +94,12 @@ public class LaunchAction extends javax.swing.AbstractAction {
             try {
                 
                 JConsoleSettings settings = JConsoleSettings.getDefault();
-                String cp = settings.NETBEANS_CLASS_PATH + File.pathSeparator + 
-                        settings.getClassPath();
+                String cp = settings.NETBEANS_CLASS_PATH;
+                String settingsCP = settings.getClassPath();
+                
+                if(settingsCP != null)
+                    cp = cp + File.pathSeparator + settingsCP;
+                        
                 String url = settings.getDefaultUrl() == null ? "" : settings.getDefaultUrl();// NOI18N
                 String polling = String.valueOf(settings.getPolling());
                 String vmOptions = settings.getVMOptions() == null ? "" : settings.getVMOptions();// NOI18N
@@ -103,21 +109,54 @@ public class LaunchAction extends javax.swing.AbstractAction {
                 String otherArgs = settings.getOtherArgs();
                 String commonCmdLine = javahome + File.separator + "bin" + File.separator + "java" + " " + vmOptions + " " + "-classpath ";// NOI18N
                 
-                String enclosing = "";// NOI18N
-                
-                String os = System.getProperty("os.name");// NOI18N
-                
-                if(os.startsWith("Win"))// NOI18N
-                    enclosing = "\"";// NOI18N
-                
-                String classpath = enclosing + cp + File.pathSeparator + javahome + File.separator + "lib" + // NOI18N
-                                               File.separator + "jconsole.jar" + enclosing;// NOI18N
+                String classpath =  cp + File.pathSeparator + javahome + File.separator + "lib" + // NOI18N
+                                               File.separator + "jconsole.jar";// NOI18N
                 String args = "-interval=" + polling + " " + tile + (otherArgs == null ? "" : " " + otherArgs); // NOI18N
-                if(JConsoleSettings.isNetBeansJVMGreaterThanJDK15()) {
-                    if(pluginsPath != null && !pluginsPath.equals("")) {
-                        args = args + " -pluginpath " + pluginsPath;
+                boolean jdk6 = JConsoleSettings.isNetBeansJVMGreaterThanJDK15();
+                List<String> arguments = new ArrayList<String>();
+                arguments.add(javahome + File.separator + "bin" + File.separator + "java");// NOI18N
+                if(vmOptions != null&& !vmOptions.equals(""))
+                    arguments.add(vmOptions);
+                arguments.add("-classpath");// NOI18N
+                
+                arguments.add(classpath);
+                arguments.add("sun.tools.jconsole.JConsole");// NOI18N
+                //String[] argsp = null;
+                if(jdk6) {
+                    if(pluginsPath != null && !pluginsPath.equals("")) { // NOI18N
+                        arguments.add("-pluginpath");// NOI18N
+                        arguments.add(pluginsPath);
+                        args = "-pluginpath " + pluginsPath;// NOI18N
                     }
                 }
+                    
+                arguments.add("-interval=" + polling);// NOI18N
+                
+                if(tile != null && !tile.equals(""))// NOI18N
+                    arguments.add(tile);
+                
+                if(otherArgs != null && !otherArgs.equals(""))// NOI18N
+                    arguments.add(otherArgs);
+                
+                if(url != null && !url.equals(""))// NOI18N
+                    arguments.add(url);
+                
+                //String[] argsp = {javahome + File.separator + "bin" + File.separator + "java",
+                //vmOptions, "-classpath", classpath, "-interval=" + polling, tile + (otherArgs == null ? "" : " " + otherArgs),
+                //"-pluginpath", };
+                
+                
+                //String enclosing = "";// NOI18N
+                
+                //String os = System.getProperty("os.name");// NOI18N
+                //if(os.startsWith("Win"))// NOI18N
+                //    enclosing = "\"";// NOI18N
+                
+                //String classpath = cp + File.pathSeparator + javahome + File.separator + "lib" + // NOI18N
+                      //                         File.separator + "jconsole.jar";// NOI18N
+                
+                
+                
                 String cmdLine = commonCmdLine + classpath + 
                                  " sun.tools.jconsole.JConsole "+ args + " " + url;// NOI18N
                 
@@ -127,8 +166,12 @@ public class LaunchAction extends javax.swing.AbstractAction {
                 
                 console.message(cmdLine);
                 
+                String[] argsp = new String[arguments.size()];
+                argsp = arguments.toArray(argsp);
+                //for(int i = 0; i< argsp.length; i++)
+                //    console.message(argsp[i]);
                 Process p =
-                        Runtime.getRuntime().exec(cmdLine, null);
+                        Runtime.getRuntime().exec(argsp, null);
                 task.addTaskListener(new RuntimeProcessNodeActionListener(p, console));
                 //Set err reader;
                 RequestProcessor rp = new RequestProcessor();

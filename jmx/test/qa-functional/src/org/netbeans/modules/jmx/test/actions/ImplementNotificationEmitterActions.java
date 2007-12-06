@@ -82,6 +82,8 @@ public class ImplementNotificationEmitterActions extends ActionsTestCase {
         suite.addTest(new ImplementNotificationEmitterActions("test3"));
         suite.addTest(new ImplementNotificationEmitterActions("test4"));
         suite.addTest(new ImplementNotificationEmitterActions("test5"));
+        suite.addTest(new ImplementNotificationEmitterActions("test6"));
+        suite.addTest(new ImplementNotificationEmitterActions("test7"));
         return suite;
     }
 
@@ -149,7 +151,8 @@ public class ImplementNotificationEmitterActions extends ActionsTestCase {
         System.out.println("====================  test1  ====================");
 
         System.out.println("Check action menu components for " + SIMPLE_1);
-        Node node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" + SOURCE_PACKAGES + "|" + packageName + "|" + SIMPLE_1);
+        Node node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" + 
+                SOURCE_PACKAGES + "|" + packageName + "|" + SIMPLE_1);
         // Check menu item
         JMenuItemOperator jmio = showMenuItem(node, popupPath);
         assertFalse(jmio.isEnabled());
@@ -160,7 +163,8 @@ public class ImplementNotificationEmitterActions extends ActionsTestCase {
         System.out.println("====================  test2  ====================");
 
         System.out.println("Check action menu components for " + DYNAMIC_3);
-        Node node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" + SOURCE_PACKAGES + "|" + packageName + "|" + DYNAMIC_3);
+        Node node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" + 
+                SOURCE_PACKAGES + "|" + packageName + "|" + DYNAMIC_3);
         // Check menu item
         JMenuItemOperator jmio = showMenuItem(node, popupPath);
         assertFalse(jmio.isEnabled());
@@ -173,7 +177,8 @@ public class ImplementNotificationEmitterActions extends ActionsTestCase {
         System.out.println("====================  test3  ====================");
 
         System.out.println("Check action menu components for " + className);
-        Node node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" + SOURCE_PACKAGES + "|" + packageName + "|" + className);
+        Node node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" + 
+                SOURCE_PACKAGES + "|" + packageName + "|" + className);
         // Check menu item
         JMenuItemOperator jmio = showMenuItem(node, popupPath);
         assertTrue(jmio.isEnabled());
@@ -188,11 +193,9 @@ public class ImplementNotificationEmitterActions extends ActionsTestCase {
         node.select();
         EditorOperator eo = new EditorOperator(className);
         eo.save();
+        sleep(2000);
         System.out.println("Check update java class file");
-        String content = getFileContent(getGoldenFile(className));
-        // Update golden file content package
-        content = content.replaceAll(PACKAGE_COM_FOO_BAR, packageName);
-        assertTrue(compareFileContents(eo.getText(), content));
+        checkUpdatedFiles(eo, node.getPath(), getGoldenFile(className));
     }
 
     public void test4() {
@@ -203,7 +206,8 @@ public class ImplementNotificationEmitterActions extends ActionsTestCase {
         System.out.println("====================  test4  ====================");
 
         System.out.println("Check action menu components for " + className);
-        Node node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" + SOURCE_PACKAGES + "|" + packageName + "|" + className);
+        Node node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" + 
+                SOURCE_PACKAGES + "|" + packageName + "|" + className);
         // Check menu item
         JMenuItemOperator jmio = showMenuItem(node, popupPath);
         assertTrue(jmio.isEnabled());
@@ -222,19 +226,19 @@ public class ImplementNotificationEmitterActions extends ActionsTestCase {
         // Add new notifications
         System.out.println("Add notifications");
         notifList = new ArrayList<Notification>();
-        notifList.add(new Notification("javax.management.AttributeChangeNotification", "notif0 Description", null));
+        notifList.add(new Notification("javax.management.AttributeChangeNotification", 
+                "notif0 Description", null));
         addMBeanNotifications(ndo, jto, notifList);
         ndo.ok();
 
         // Save updated java class file
-        selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" + SOURCE_PACKAGES + "|" + packageName + "|" + className);
+        node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" + 
+                SOURCE_PACKAGES + "|" + packageName + "|" + className);
         EditorOperator eo = new EditorOperator(className);
         eo.save();
+        sleep(2000);
         System.out.println("Check updated java class file");
-        String content = getFileContent(getGoldenFile(className));
-        // Update golden file content package
-        content = content.replaceAll(PACKAGE_COM_FOO_BAR, packageName);
-        assertTrue(compareFileContents(eo.getText(), content));
+        checkUpdatedFiles(eo, node.getPath(), getGoldenFile(className));
     }
 
 
@@ -246,7 +250,8 @@ public class ImplementNotificationEmitterActions extends ActionsTestCase {
         System.out.println("====================  test5  ====================");
 
         System.out.println("Check action menu components for " + SIMPLE_1);
-        Node node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" + SOURCE_PACKAGES + "|" + packageName + "|" + SIMPLE_1);
+        Node node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" +
+                SOURCE_PACKAGES + "|" + packageName + "|" + SIMPLE_1);
         System.out.println("Open java file " + SIMPLE_1);
         new Action(null, "Open").perform(node);
         // Check menu item
@@ -260,7 +265,8 @@ public class ImplementNotificationEmitterActions extends ActionsTestCase {
         System.out.println("====================  test6  ====================");
 
         System.out.println("Check action menu components for " + DYNAMIC_3);
-        Node node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" + SOURCE_PACKAGES + "|" + packageName + "|" + DYNAMIC_3);
+        Node node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" + 
+                SOURCE_PACKAGES + "|" + packageName + "|" + DYNAMIC_3);
         System.out.println("Open java file " + DYNAMIC_3);
         new Action(null, "Open").perform(node);
         // Check menu item
@@ -268,7 +274,6 @@ public class ImplementNotificationEmitterActions extends ActionsTestCase {
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
         assertFalse(jmio.isEnabled());
     }
-
 
     public void test7() {
 
@@ -279,7 +284,8 @@ public class ImplementNotificationEmitterActions extends ActionsTestCase {
         System.out.println("====================  test7  ====================");
 
         System.out.println("Check action menu components for " + className);
-        Node node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" + SOURCE_PACKAGES + "|" + packageName + "|" + className);
+        Node node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" + 
+                SOURCE_PACKAGES + "|" + packageName + "|" + className);
         System.out.println("Open java file " + className);
         new Action(null, "Open").perform(node);
         // Check menu item
@@ -307,12 +313,12 @@ public class ImplementNotificationEmitterActions extends ActionsTestCase {
         notifList.add(new Notification("javax.management.AttributeChangeNotification", "notif0 Description", null));
         // Notification 1
         types = new ArrayList<NotificationType>();
-        types.add(new NotificationType("com.foo.bar.notif1"));
+        types.add(new NotificationType(packageName + ".notif1"));
         notifList.add(new Notification("javax.management.Notification", "notif1 Description", types));
         // Notification 2
         types = new ArrayList<NotificationType>();
-        types.add(new NotificationType("com.foo.bar.notif2.type1"));
-        types.add(new NotificationType("com.foo.bar.notif2.type2"));
+        types.add(new NotificationType(packageName + ".notif2.type1"));
+        types.add(new NotificationType(packageName + ".notif2.type2"));
         notifList.add(new Notification("javax.management.Notification", "notif2 Description", types));
         // Notification 3
         notifList.add(new Notification(packageName + "." + USER_NOTIFICATION, "notif3 Description", null));
@@ -320,13 +326,12 @@ public class ImplementNotificationEmitterActions extends ActionsTestCase {
         ndo.ok();
 
         // Save updated java class file
-        selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" + SOURCE_PACKAGES + "|" + packageName + "|" + className);
+        node = selectNode(PROJECT_NAME_ACTION_FUNCTIONAL + "|" + 
+                SOURCE_PACKAGES + "|" + packageName + "|" + className);
         eo = new EditorOperator(className);
         eo.save();
+        sleep(2000);
         System.out.println("Check updated java class file");
-        String content = getFileContent(getGoldenFile(className));
-        // Update golden file content package
-        content = content.replaceAll(PACKAGE_COM_FOO_BAR, packageName);
-        assertTrue(compareFileContents(eo.getText(), content));
+        checkUpdatedFiles(eo, node.getPath(), getGoldenFile(className));
     }
 }

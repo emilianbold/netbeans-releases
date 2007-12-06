@@ -88,7 +88,7 @@ public class AddNotifAction extends NodeAction {
         if (foClass == null) return false;
         try {
             boolean isMBean = JavaModelHelper.testMBeanCompliance(foClass);
-            boolean isNotifBroadCaster = JavaModelHelper.implementsNotificationEmitterItf(foClass);
+            boolean isNotifBroadCaster = JavaModelHelper.implementsNotificationBroadcaster(foClass);
             
             return isMBean && !isNotifBroadCaster;
         }catch(IOException ex) {

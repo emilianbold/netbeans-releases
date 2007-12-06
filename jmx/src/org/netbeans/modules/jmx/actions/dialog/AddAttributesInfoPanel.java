@@ -61,13 +61,13 @@ import org.openide.util.NbBundle;
 public class AddAttributesInfoPanel extends javax.swing.JPanel {
     
     private ResourceBundle bundle;
-    
+    private String title;
     private JButton btnOK;
      
     /** 
      * Creates new form Panel.
      */
-    public AddAttributesInfoPanel(String mbeanClassName, MBeanAttribute[] attributes) {
+    public AddAttributesInfoPanel(String itfName, String mbeanClassName, MBeanAttribute[] attributes) {
         bundle = NbBundle.getBundle(AddAttributesInfoPanel.class);
         
         // init tags
@@ -91,6 +91,11 @@ public class AddAttributesInfoPanel extends javax.swing.JPanel {
         Object[] args = {mbeanClassName, mbeanClassName, mbeanClassName, methodsList.toString()};
         String msg = formAttribute.format(args);
         
+        formAttribute = 
+                new MessageFormat(bundle.getString("LBL_AddAttributesAction.Title")); // NOI18N
+        Object[] args2 = {itfName};
+        title = formAttribute.format(args2);
+        
         infoTextArea.setText(msg);
         getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_PANEL"));// NOI18N
     }
@@ -106,8 +111,7 @@ public class AddAttributesInfoPanel extends javax.swing.JPanel {
      */
     public boolean configure() {
         
-        // create and display the dialog:
-        String title = bundle.getString("LBL_AddAttributesAction.Title"); // NOI18N
+        // create and display the dialog
 
         btnOK = new JButton(bundle.getString("LBL_OK")); // NOI18N
         btnOK.setEnabled(isAcceptable());

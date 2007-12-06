@@ -1,0 +1,34 @@
+/*
+ * AttributeWrappedMBean3MBean.java
+ *
+ * Created on <current Date and Time>
+ */
+
+package com.foo.bar;
+
+/**
+ * Interface AttributeWrappedMBean3MBean
+ * 
+ * @author <author>
+ */
+public interface AttributeWrappedMBean3MBean
+{
+
+    /**
+     * Get Attribute exposed for management
+     */
+    public String getAttribute1();
+
+    /**
+     * Get Attribute exposed for management
+     */
+    public Object getGenericAttribute1();
+
+    /**
+     * Get Attribute exposed for management
+     */
+    public Object getGenericAttribute2();
+    
+}
+
+

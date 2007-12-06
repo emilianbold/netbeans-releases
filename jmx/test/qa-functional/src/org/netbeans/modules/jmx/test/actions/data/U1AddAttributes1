@@ -7,12 +7,10 @@ import javax.management.ObjectName;
 
 public class U1AddAttributes1 extends U1AddAttributes1Super 
         implements U1AddAttributes1MBean {
-    
     /**
      * Attribute : Attr7
      */
     private double attr7;
-
     /**
      * Attribute : Attr8
      */
@@ -81,22 +79,18 @@ public class U1AddAttributes1 extends U1AddAttributes1Super
      * Set Attr3 Description
      */
     public void setAttr3(ObjectName value) {
-
-        //TODO add your own implementation.
     }
 
     /**
      * Set Attr4 Description
      */
     public void setAttr4(boolean value) {
-
-        //TODO add your own implementation.
     }
 
     /**
      * Get Attr6 Description
      */
-    public java.util.List getAttr6() {
+    public List getAttr6() {
         return null;
     }
 

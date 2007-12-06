@@ -49,6 +49,9 @@ import static org.netbeans.modules.jmx.test.helpers.JellyConstants.*;
 /**
  * Select created Anagram Game managed with JMX project.
  * Then, run/debug project with monitoring and management.
+ * 
+ * Same test as J2SEProject but configuring JConsole via
+ *  Tools -> Options
  */
 public class J2SEProjectOptions extends JConsoleTestCase {
 

@@ -79,7 +79,7 @@ public final class JConsolePanelController extends OptionsPanelController {
     
     @Override
     public HelpCtx getHelpCtx() {
-        return null;
+        return new HelpCtx("jconsole_standalone"); // NOI18N
     }
     
     @Override

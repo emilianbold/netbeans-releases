@@ -152,7 +152,7 @@ public class ManagerGenerator {
         }).commit();    //Commit the changes into document
         
         if(!mainMethodSelected)
-            JavaModelHelper.removeMethod(js, "main");
+            JavaModelHelper.removeMethod(js, "main");// NOI18N
         
         WizardHelpers.save(managerDObj);
         Set set = new HashSet();
@@ -203,29 +203,27 @@ public class ManagerGenerator {
                 if(JavaModelHelper.isMain(e)) {
                     List<? extends StatementTree> statements = tree.getBody().getStatements();
                     List<StatementTree> newStatements = new ArrayList<StatementTree>(statements);
-                    IdentifierTree managerField = w.getTreeMaker().Identifier("manager");
-                    MemberSelectTree closeSelect = treeMaker.MemberSelect(managerField, "close");
+                    IdentifierTree managerField = w.getTreeMaker().Identifier("manager");// NOI18N
+                    MemberSelectTree closeSelect = treeMaker.MemberSelect(managerField, "close");// NOI18N
                     MethodInvocationTree closeInvokation =
                             treeMaker.MethodInvocation(Collections.<ExpressionTree>emptyList(),
                             closeSelect,
                             Collections.<ExpressionTree>emptyList());
                     
                     ExpressionStatementTree t = treeMaker.ExpressionStatement(closeInvokation);
-                    newStatements.add((StatementTree)t);
                     if (sampleSelected) {
-                        Comment comment0 = Comment.create("\n SAMPLE MBEAN NAME DISCOVERY. Uncomment following code."); // NOI18N
-                        Comment comment1= Comment.create("\n" +// NOI18N
+                        JavaModelHelper.addCommentPrefixedByWhiteLine(treeMaker, t, Comment.Style.LINE, "SAMPLE MBEAN NAME DISCOVERY. Uncomment following code."); // NOI18N
+                        JavaModelHelper.addCommentFollowedByWhiteLine(treeMaker, t, Comment.Style.BLOCK, "\n" +// NOI18N
                                 " Set resultSet = \n" +// NOI18N
                                 "    manager.getMBeanServerConnection().queryNames(null, null);\n" +// NOI18N
                                 " for(Iterator i = resultSet.iterator(); i.hasNext();) {\n" +// NOI18N
                                 "     System.out.println(\"MBean name: \" + i.next());\n" +// NOI18N
                                 " }\n");// NOI18N
-                        treeMaker.insertComment(t, comment0, -1, true);
-                        treeMaker.insertComment(t, comment1, -1, true);
+                    } else {
+                        JavaModelHelper.addCommentSurroundedByWhiteLine(treeMaker, t, Comment.Style.LINE, " TODO add your Management Logic");// NOI18N
                     }
-                    Comment comment2 = Comment.create(" Close connection"); // NOI18N
-                    treeMaker.insertComment(t, comment2, -1, true);
-                    
+                    JavaModelHelper.addComment(treeMaker, t, Comment.Style.LINE, " Close connection"); // NOI18N
+                    newStatements.add((StatementTree)t);
                     // Add System.out.println
                     IdentifierTree systemField = treeMaker.Identifier("System");// NOI18N
                     MemberSelectTree outSelect = treeMaker.MemberSelect(systemField, "out");// NOI18N
@@ -244,24 +242,23 @@ public class ManagerGenerator {
                     BlockTree newBody = treeMaker.Block(newStatements, false);
                     w.rewrite(tree.getBody(), newBody);
                 } else {
-                    if(e.getSimpleName().toString().equals("connect")) {
+                    if(e.getSimpleName().toString().equals("connect")) {// NOI18N
                        // List<? extends StatementTree> statements = tree.getBody().getStatements();
                        // List<StatementTree> newStatements = new ArrayList<StatementTree>(statements);
                         List<StatementTree> newStatements = new ArrayList<StatementTree>();
                         
-                        IdentifierTree connectorField = w.getTreeMaker().Identifier("connector");
-                        MemberSelectTree getMBSCSelect = treeMaker.MemberSelect(connectorField, "getMBeanServerConnection");
+                        IdentifierTree connectorField = w.getTreeMaker().Identifier("connector");// NOI18N
+                        MemberSelectTree getMBSCSelect = treeMaker.MemberSelect(connectorField, "getMBeanServerConnection");// NOI18N
                         MethodInvocationTree getMBSCInvokation =
                                 treeMaker.MethodInvocation(Collections.<ExpressionTree>emptyList(),
                                 getMBSCSelect,
                                 Collections.<ExpressionTree>emptyList());
                         
-                        IdentifierTree mbscField = w.getTreeMaker().Identifier("mbsc");
+                        IdentifierTree mbscField = w.getTreeMaker().Identifier("mbsc");// NOI18N
                         AssignmentTree bt = treeMaker.Assignment(mbscField, getMBSCInvokation);
                         
                         ExpressionStatementTree t = treeMaker.ExpressionStatement(bt);
-                        Comment comment = Comment.create(" Get the MBeanServerConnection"); // NOI18N
-                        treeMaker.insertComment(t, comment, -1, true);
+                        JavaModelHelper.addComment(treeMaker, t, Comment.Style.LINE, " Get the MBeanServerConnection"); // NOI18N
                         
                         fillURL(treeMaker, newStatements);
                         
@@ -296,7 +293,7 @@ public class ManagerGenerator {
                 VariableTree vt = treeMaker.Variable( treeMaker.Modifiers(
                         Collections.<Modifier>emptySet(),
                         Collections.<AnnotationTree>emptyList()
-                        ), "env", mapEx, mapConstructor);
+                        ), "env", mapEx, mapConstructor);// NOI18N
                 
                newStatements.add(vt);
                 
@@ -352,9 +349,8 @@ public class ManagerGenerator {
             VariableTree vt = treeMaker.Variable(treeMaker.Modifiers(
                     Collections.<Modifier>emptySet(),
                     Collections.<AnnotationTree>emptyList()
-                    ), "url", urlTree, urlConstructor);
-            Comment c = Comment.create(" Create JMX Agent URL");
-            treeMaker.insertComment(vt, c, -1, true);
+                    ), "url", urlTree, urlConstructor);// NOI18N
+           JavaModelHelper.addComment(treeMaker, vt, Comment.Style.LINE, " Create JMX Agent URL");// NOI18N
             newStatements.add(vt);
         }
         
@@ -368,7 +364,7 @@ public class ManagerGenerator {
             connectParams.add(treeMaker.Identifier("url"));// NOI18N
             
             if (isSecurityChecked && isUserCredential)
-                connectParams.add(treeMaker.Identifier("env"));
+                connectParams.add(treeMaker.Identifier("env"));// NOI18N
             else
                 connectParams.add(treeMaker.Literal(null));
             
@@ -383,20 +379,18 @@ public class ManagerGenerator {
             ExpressionStatementTree t = treeMaker.ExpressionStatement(bt);
             newStatements.add((StatementTree)t);
             if (isSecurityChecked && isSampleCredential) {
-                Comment comment1= Comment.create("\n SAMPLE CREDENTIALS. Uncomment following code. \n" +
+                JavaModelHelper.addCommentPrefixedByWhiteLine(treeMaker, t, Comment.Style.BLOCK, "\n SAMPLE CREDENTIALS. Uncomment following code. \n" + // NOI18N
                         " Replace userName and userPassword with your parameters. \n" + // NOI18N
-                        " Provide env parameter when calling JMXConnectorFactory.connect(url, env)\n");// NOI18N
-                Comment comment2= Comment.create("\n" +// NOI18N
+                        " Provide env parameter when calling JMXConnectorFactory.connect(url, env)\n\n");// NOI18N
+                
+                JavaModelHelper.addCommentFollowedByWhiteLine(treeMaker, t, Comment.Style.BLOCK, "\n" +// NOI18N
                         "Map env = new HashMap(); \n" +// NOI18N
                         "env.put(JMXConnector.CREDENTIALS, new String[]{\"" +// NOI18N
                         "userName\", \"" +// NOI18N
                         "userPassword" +// NOI18N
                         "\"});\n");// NOI18N
-                treeMaker.insertComment(t, comment1, -1, true);
-                treeMaker.insertComment(t, comment2, -1, true);
             }
-            Comment comment = Comment.create(" Connect the JMXConnector"); // NOI18N
-            treeMaker.insertComment(t, comment, -1, true);
+            JavaModelHelper.addComment(treeMaker, t, Comment.Style.LINE, " Connect the JMXConnector"); // NOI18N
         }
     }
 }

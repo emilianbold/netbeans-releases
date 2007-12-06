@@ -44,12 +44,14 @@ made subject to such option by the copyright holder.
 
 <map version="1.0">
   <mapID target="jmx_about" url="jmx_about.html" />
+        <mapID target="tutorial" url="tutorial.html" />
         <mapID target="ext_documentation" url="ext_documentation.html" />
 	<mapID target="jmx_architecture" url="jmx_architecture.html" />
         <mapID target="jmx_instrumentation" url="jmx_instrumentation.html" />
         <mapID target="jmx_agent" url="jmx_agent.html" />
         <mapID target="jmx_manager" url="jmx_manager.html" />
         <mapID target="jmx_jdk50" url="jmx_jdk50.html" />
+        <mapID target="jmx_jdk60" url="jmx_jdk60.html" />
         <mapID target="jmx_progr_model" url="jmx_progr_model.html"/>
         
         <mapID target="jmx_instrumenting_app" url="jmx_instrumenting_app.html"/>

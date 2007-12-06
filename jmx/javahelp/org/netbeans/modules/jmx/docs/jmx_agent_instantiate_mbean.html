@@ -16,23 +16,17 @@
 <h2>Registering MBeans in a JMX Agent<br>
 </h2>
 <br>
-This is performed by a contextual action (enabled only if an<span style="font-weight: bold;">
-JMX Agent </span>is selected) located under the <span
- style="font-style: italic; font-weight: bold;">Management</span> menu.
+This is performed by a contextual action located under the <span
+ style="font-style: italic; font-weight: bold;">JMX</span> menu.
 You can access the management menu from :<br>
 <ul>
-  <li>The top level menu</li>
-  <li>The the contextual menu of the project tree node (right click on selected node)<br>
-  </li>
+    <li>The contextual menu of the editor (right click in the editor)</li>
 </ul>
 <br>
 <h2>Applicability of the Action</h2>
 <br>
-This action&nbsp; applies when a <span style="font-weight: bold;">JMX
-Agent is selected</span>. A JMX Agent class is <span
- style="font-weight: bold;">a class generated from the JMX Agent Wizard</span>.<br>
-The JMX Agent <span style="font-weight: bold;">init</span> method is
-updated with the code needed to :<br>
+ Any Java Class
+<br>
 <ul>
   <li><span style="font-weight: bold;">Instantiate</span> (Call an MBean
 constructor)<br>
@@ -49,7 +43,7 @@ multiple times to register multiple MBeans.
 <h2>Using the Instantiate and Register MBean Action<br>
 </h2>
 <ol>
-  <li>From the <span style="font-weight: bold; font-style: italic;">Management</span>
+  <li>From the <span style="font-weight: bold; font-style: italic;">JMX</span>
 menu, select<span style="font-style: italic;"><span
  style="font-weight: bold;"> Instantiate and Register</span></span><span
  style="font-weight: bold; font-style: italic;"> MBean...</span></li>
@@ -82,8 +76,6 @@ key to avoid naming conflict.</li>
   <li>You can now select an MBean constructor.</li>
   <li>Click OK when you have finished.<br>
   </li>
-  <li>The JMX Agent source code is loaded in the editor.</li>
-  <li>Go to the edit method to visualize generated code.</li>
   <li>If you don't need to update the generated code (no parameters to
 provide to the MBean constructor), you can now compile, run and
 visualize the MBeans living in your
@@ -97,13 +89,6 @@ automatically.</li>
 If your MBean needs some parameters at construction time, you need
 to update the generated code with these parameters.<br>
 <br>
-<ol>
-  <li>In the Agent source file, go to the <span
- style="font-style: italic; font-weight: bold;">init()</span> method</li>
-  <li>Provide the required parameters to the MBean constructor. In the
-following extract, the MBean constructor needs a String.<br>
-  </li>
-</ol>
 <span style="font-style: italic;"><br>
 //TODO update Status(String) constructor parameters with valid values.</span><br
  style="font-style: italic;">

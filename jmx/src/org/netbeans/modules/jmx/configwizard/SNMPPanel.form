@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.0" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.2" maxVersion="1.2" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <NonVisualComponents>
     <Component class="javax.swing.ButtonGroup" name="managementFilesGroup">
     </Component>
   </NonVisualComponents>
   <AuxValues>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -26,7 +28,7 @@
       <SubComponents>
         <Component class="javax.swing.JCheckBox" name="sNMPJCheckBox">
           <Properties>
-            <Property name="name" type="java.lang.String" value="sNMPJCheckBox"/>
+            <Property name="name" type="java.lang.String" value="sNMPJCheckBox" noResource="true"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="sNMPJCheckBoxActionPerformed"/>
@@ -40,7 +42,7 @@
         <Component class="javax.swing.JLabel" name="sNMPPortJLabel">
           <Properties>
             <Property name="text" type="java.lang.String" value="port"/>
-            <Property name="name" type="java.lang.String" value="sNMPPortJLabel"/>
+            <Property name="name" type="java.lang.String" value="sNMPPortJLabel" noResource="true"/>
           </Properties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -53,7 +55,7 @@
             <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[55, 20]"/>
             </Property>
-            <Property name="name" type="java.lang.String" value="sNMPPortJTextField"/>
+            <Property name="name" type="java.lang.String" value="sNMPPortJTextField" noResource="true"/>
             <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[55, 20]"/>
             </Property>
@@ -67,7 +69,7 @@
         <Component class="javax.swing.JLabel" name="interfaceJLabel">
           <Properties>
             <Property name="text" type="java.lang.String" value="interface"/>
-            <Property name="name" type="java.lang.String" value="interfaceJLabel"/>
+            <Property name="name" type="java.lang.String" value="interfaceJLabel" noResource="true"/>
           </Properties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -80,7 +82,7 @@
             <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[100, 20]"/>
             </Property>
-            <Property name="name" type="java.lang.String" value="interfaceJTextField"/>
+            <Property name="name" type="java.lang.String" value="interfaceJTextField" noResource="true"/>
             <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[100, 20]"/>
             </Property>
@@ -94,7 +96,7 @@
         <Component class="javax.swing.JLabel" name="sNMPTrapPortJLabel">
           <Properties>
             <Property name="text" type="java.lang.String" value="trap"/>
-            <Property name="name" type="java.lang.String" value="sNMPTrapPortJLabel"/>
+            <Property name="name" type="java.lang.String" value="sNMPTrapPortJLabel" noResource="true"/>
           </Properties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -107,7 +109,7 @@
             <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[55, 20]"/>
             </Property>
-            <Property name="name" type="java.lang.String" value="trapPortJTextField"/>
+            <Property name="name" type="java.lang.String" value="trapPortJTextField" noResource="true"/>
             <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[55, 20]"/>
             </Property>
@@ -120,7 +122,7 @@
         </Component>
         <Component class="javax.swing.JCheckBox" name="aclJCheckBox">
           <Properties>
-            <Property name="name" type="java.lang.String" value="aclJCheckBox"/>
+            <Property name="name" type="java.lang.String" value="aclJCheckBox" noResource="true"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="aclJCheckBoxActionPerformed"/>
@@ -142,7 +144,7 @@
           <SubComponents>
             <Component class="javax.swing.JLabel" name="customACL">
               <Properties>
-                <Property name="name" type="java.lang.String" value="customACL"/>
+                <Property name="name" type="java.lang.String" value="customACL" noResource="true"/>
               </Properties>
               <Constraints>
                 <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -155,7 +157,7 @@
                 <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[200, 20]"/>
                 </Property>
-                <Property name="name" type="java.lang.String" value="aclFileJTextField"/>
+                <Property name="name" type="java.lang.String" value="aclFileJTextField" noResource="true"/>
                 <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[200, 20]"/>
                 </Property>
@@ -174,7 +176,7 @@
                 <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[90, 20]"/>
                 </Property>
-                <Property name="name" type="java.lang.String" value="aclFileJButton"/>
+                <Property name="name" type="java.lang.String" value="aclFileJButton" noResource="true"/>
                 <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
                   <Dimension value="[90, 20]"/>
                 </Property>

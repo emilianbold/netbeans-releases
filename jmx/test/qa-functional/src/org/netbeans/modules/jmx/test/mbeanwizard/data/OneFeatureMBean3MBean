@@ -10,26 +10,24 @@ import javax.management.ObjectName;
 
 /**
  * Interface OneFeatureMBean3MBean
- * StandardMBean with metadata with one simple attribute and one two parameter operation
+ * 
  * @author <author>
  */
 public interface OneFeatureMBean3MBean
 {
-    
 
     /**
      * Get First Attribute description
      */
-
-    public int getFirstAttribute() ;
+    public int getFirstAttribute();
 
     /**
      * First Operation Description
      * @param firstParameter First Parameter Description
      * @param secondParameter Second Parameter Description
      */
-
-    public void FirstOperation(String firstParameter, ObjectName secondParameter) ;
+    public void FirstOperation(String firstParameter, ObjectName secondParameter);
+    
 }
 
 

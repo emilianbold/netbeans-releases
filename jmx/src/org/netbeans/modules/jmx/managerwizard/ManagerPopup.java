@@ -84,8 +84,8 @@ public class ManagerPopup extends javax.swing.JPanel implements DocumentListener
         initComponents();
         
         okJButton = new JButton(bundle.getString("LBL_okButton.text")); // NOI18N
-        rmiHostJTextField.setText(bundle.getString("TXT_host"));// NOI18N
-        rmiPortJTextField.setText(bundle.getString("TXT_port"));// NOI18N
+        rmiHostJTextField.setText(NbBundle.getBundle("org.netbeans.modules.jmx.managerwizard.Bundle_noi18n").getString("TXT_host"));// NOI18N
+        rmiPortJTextField.setText(NbBundle.getBundle("org.netbeans.modules.jmx.managerwizard.Bundle_noi18n").getString("TXT_port"));// NOI18N
         
         protocolJComboBox.addItem(bundle.getString("TXT_protocol"));// NOI18N
         

@@ -43,32 +43,20 @@ interface which lists the methods for all exposed attributes and
 operations, and the class which implements this interface and provides
 the functionality of the instrumented resource. </p>
 <h2>Using the MBean Wizard to Generate a
-Standard MBean</h2>
+Standard MBean with Metadata</h2>
 <p class="pBody">This section dissects an example standard
-MBean. The MBean wizard is used to generate the classes. <br>
+MBean exposing some metadata (in tools such as JConsole).
+The MBean wizard is used to generate the classes. <br>
 </p>
 <ol>
   <li>Select <span style="font-style: italic;">File/New File...</span></li>
-  <li>Select the <span style="font-style: italic;">Management </span>category.
+  <li>Select the <span style="font-style: italic;">JMX </span>category.
 In <span style="font-style: italic;">File Types</span> select <span
- style="font-style: italic;">JMX MBean</span></li>
+ style="font-style: italic;">Standard MBean With Metadata</span></li>
   <li>Type in a <span style="font-style: italic;">Name</span>, a <span
  style="font-style: italic;">Package </span>and a <span
  style="font-style: italic;">Description</span>. <br>
   </li>
-  <li>Click <span style="font-style: italic;">Next&gt;</span><br>
-  </li>
-  <li>Choose an MBean type. By default a Standard MBean will be
-created. If you want to go for a <span style="font-weight: bold;">more
-dynamic and more self documented</span> kind of MBean, you can select <span
- style="font-style: italic; font-weight: bold;">Dynamic MBean</span>.
-This kind of MBean is more complex to implement<span
- style="font-style: italic;"> </span>but allows you to provide some
-documented MetaData. An <span style="font-style: italic;"><span
- style="font-weight: bold;">Extended Standard MBean</span> </span>is <span
- style="font-weight: bold;">as simple to implement as a Standard MBean
-and has the dynamicity of a Dynamic MBean</span>. This kind of MBean is
-well suited to add management to an existing class.</li>
   <li>You can enter a Description in order to document your MBean
 class. Any documentation that is typed from this wizard will be
 generated as :</li>
@@ -78,23 +66,10 @@ generated as :</li>
 at runtime for Dynamic and Extended MBeans.<br>
     </li>
   </ul>
-  <li>If you want your MBean to implement the MBeanRegistration interface,
-check the <span style="font-style: italic;">Implement MBeanRegistration
-Interface</span> checkbox. <span style="font-weight: bold;">MBeanRegistration
-interface is a handy interface that allows your MBean to track its life
-cycle</span>. Events of interest are related to MBean registration
-(pre/post register/unregister callbacks).</li>
-  <li>You can check <span style="font-style: italic;">Generate Private
-Fields for preRegister Method Parameters</span>. Selecting this option
-will make the wizard generate some private fields to keep
-references on parameters that are passed to preRegister callbacks.
-Keeping references on the provided ObjectName and MBeanServer is
-generally of interest.<br>
+  <li>Click <span style="font-style: italic;">Next&gt;</span><br>
   </li>
   <li>From now on, you can click <span style="font-style: italic;">Finish</span>
 at any time.</li>
-  <li>Click <span style="font-style: italic;">Next&gt;</span><br>
-  </li>
   <li>If you want your MBean to have attributes, click <span
  style="font-style: italic;">Add Attribute.</span><br>
   </li>
@@ -151,51 +126,14 @@ type in what this parameter represents.</li>
     <li>In the column <span style="font-style: italic;">Description</span>,
 type in what this operation represents (eg: Reset the current Status)</li>
   </ol>
-  <li>Click <span style="font-style: italic;">Next&gt;</span></li>
-  <li>If you want your MBean to send notifications, select the <span
- style="font-style: italic;">Implement NotificationEmitter</span> Interface.
-The wizard can generate an implementation of this interface based on a
-NotificationBroadcasterSupport delegation. Some code to handle the
-notification sequence number can also be generated. Select the
-associated checkboxes to have this code generated.</li>
-  <li>If you want your MBean to define notifications click <span
- style="font-style: italic;">Add Notification</span>.</li>
-  <li>In the <span style="font-style: italic;">Notifications </span>Table,
-first row, type in the following:</li>
-  <ol>
-    <li>In the column <span style="font-style: italic;">Notification
-Class</span>
-you can select a standard JMX notification class or type in your own
-Notification class. If you select the AttributeChangeNotification class,
-the Notification type will be automaticaly set to
-AttributeChangeNotification.ATTRIBUTE_CHANGE.<br>
-    </li>
-    <li>In the column <span style="font-style: italic;">Description</span>
-type in a notification description (eg: "Send a notification when the
-Status attribute is changed")</li>
-    <li>In the column Notification type,&nbsp; click <span
- style="font-style: italic;">Edit </span>button.</li>
-    <ol>
-      <li>Click <span style="font-style: italic;">Add Type</span></li>
-      <li>In the column <span style="font-style: italic;">Notification,
-        </span>you
-can change the default type to your own type (eg :
-com.foo.event.BIRTHDAY)<span style="font-style: italic;"><br>
-        </span></li>
-    </ol>
-  </ol>
-  <li>Click <span style="font-style: italic;">Next&gt;</span></li>
-  <li>If you want to generate a JUnit test, select the <span
- style="font-style: italic;">Create JUnit Test</span> checkbox.</li>
   <li>Click <span style="font-style: italic;">Finish</span>.</li>
   <li>The MBean implementation class is opened in the editor.&nbsp;
 If you selected a Standard MBean type, an MBean interface (named <span
  style="font-style: italic;">&lt;MBean
-Name&gt;MBean</span>), an implementation class (named <span
- style="font-style: italic;">&lt;MBean Name&gt;) </span>and a JUnit test
-are generated in the src and test packages you selected.</li>
-  <li>You can now add your own logic to the generated code and run the
-JUnit test.</li>
+Name&gt;MBean</span>) and an implementation class (named <span
+ style="font-style: italic;">&lt;MBean Name&gt;) </span> are generated in the src 
+ package you selected.</li>
+  <li>You can now add your own logic to the generated code.</li>
 </ol>
 <br>
 <h3 class="pHeading2">

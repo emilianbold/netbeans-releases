@@ -157,8 +157,8 @@ public class MBeanWrapperOperationPanel extends MBeanOperationPanel
                         getModel().remRow(selectedRow, operationTable);
                         getModel().selectNextRow(selectedRow, operationTable);  
                     } catch (Exception ex) {
-                        System.out.println("Exception here : ");// NOI18N
-                        ex.printStackTrace();
+                        //System.out.println("Exception here : ");// NOI18N
+                        //ex.printStackTrace();
                     }
                 } else {
                     opRemoveJButton.setEnabled(false);

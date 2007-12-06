@@ -6,6 +6,8 @@ import java.lang.reflect.Constructor;
 
 public class U1Dynamic4 extends U1Dynamic4Support implements NotificationEmitter
 {
+    private NotificationBroadcasterSupport broadcaster = new NotificationBroadcasterSupport();
+    private long seqNumber;
     /* Creates a new instance of U1Dynamic4 */
     public U1Dynamic4()
     {
@@ -94,34 +96,12 @@ public class U1Dynamic4 extends U1Dynamic4Support implements NotificationEmitter
     
     private MBeanInfo dMBeanInfo;
 
-    /**
-     * MBeanNotification support
-     * You shouldn't update these methods
-     */
     public void addNotificationListener(NotificationListener listener, NotificationFilter filter, Object handback) throws IllegalArgumentException {
         broadcaster.addNotificationListener(listener, filter, handback);
     }
 
     public MBeanNotificationInfo[] getNotificationInfo() {
-        return new MBeanNotificationInfo[] {
-            new MBeanNotificationInfo(new String[] {
-                AttributeChangeNotification.ATTRIBUTE_CHANGE},
-                javax.management.AttributeChangeNotification.class.getName(),
-                "notif0 Description"),
-                new MBeanNotificationInfo(new String[] {
-                NOTIF_TYPE_0},
-                javax.management.Notification.class.getName(),
-                "notif1 Description"),
-                new MBeanNotificationInfo(new String[] {
-                NOTIF_TYPE_1,
-                NOTIF_TYPE_2},
-                javax.management.Notification.class.getName(),
-                "notif2 Description"),
-                new MBeanNotificationInfo(new String[] {
-                },
-                com.foo.bar.UserNotification.class.getName(),
-                "notif3 Description")
-            };
+        return new MBeanNotificationInfo[]{new MBeanNotificationInfo(new String[]{AttributeChangeNotification.ATTRIBUTE_CHANGE}, javax.management.AttributeChangeNotification.class.getName(), "notif0 Description"), new MBeanNotificationInfo(new String[]{NOTIF_TYPE_0}, javax.management.Notification.class.getName(), "notif1 Description"), new MBeanNotificationInfo(new String[]{NOTIF_TYPE_1, NOTIF_TYPE_2}, javax.management.Notification.class.getName(), "notif2 Description"), new MBeanNotificationInfo(new String[]{}, com.foo.bar.UserNotification.class.getName(), "notif3 Description")};
     }
 
     public void removeNotificationListener(NotificationListener listener) throws ListenerNotFoundException {
@@ -132,20 +112,13 @@ public class U1Dynamic4 extends U1Dynamic4Support implements NotificationEmitter
         broadcaster.removeNotificationListener(listener, filter, handback);
     }
 
-    private synchronized long getNextSeqNumber() {
+    public synchronized long getNextSeqNumber() {
         return seqNumber++;
     }
-
-    private long seqNumber;
-
-    private final NotificationBroadcasterSupport broadcaster = new NotificationBroadcasterSupport();
-
     /**
      * Notification types definitions. To use when creating JMX Notifications.
      */
     private static final String NOTIF_TYPE_0 = "com.foo.bar.notif1";
-
     private static final String NOTIF_TYPE_1 = "com.foo.bar.notif2.type1";
-
     private static final String NOTIF_TYPE_2 = "com.foo.bar.notif2.type2";
 }

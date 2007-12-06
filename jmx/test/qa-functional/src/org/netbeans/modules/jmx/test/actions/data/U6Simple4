@@ -18,13 +18,12 @@ public class U6Simple4 {
         try { // Register MBean in Platform MBeanServer
             ManagementFactory.getPlatformMBeanServer().
                     // TODO Replace Dynamic1 Constructor parameters with valid values
-                    registerMBean(new StandardMBean(new Dynamic1(String),
+                    registerMBean(new StandardMBean(new Dynamic1(java.lang.String),
                     null),
-                    new ObjectName("bar.foo.com:type=Dynamic1"));
+                    new ObjectName("com.foo.bar:type=Dynamic1"));
         }catch(JMException ex) {
             // TODO handle exception
         }
-        
     }
     
     /**

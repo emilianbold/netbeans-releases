@@ -19,13 +19,12 @@ public class U5Simple4 {
         try { // Register MBean in Platform MBeanServer
             ManagementFactory.getPlatformMBeanServer().
                     // TODO Replace Simple5 Constructor parameters with valid values
-                    registerMBean(new StandardMBean(new Simple5(String),
+                    registerMBean(new StandardMBean(new Simple5(java.lang.String),
                     Simple5Intf.class, true),
-                    new ObjectName("bar.foo.com:type=Simple5"));
+                    new ObjectName("com.foo.bar:type=Simple5"));
         }catch(JMException ex) {
             // TODO handle exception
         }
-        
     }
     
     /**

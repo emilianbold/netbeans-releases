@@ -100,7 +100,10 @@ public class JTextFieldCellEditor extends DefaultCellEditor
          */
         public Component getTableCellEditorComponent(JTable table,
                 Object value, boolean isSelected, int row, int column) {
-            tf.setText(model.getValueAt(row,column).toString());
+            Object data = model.getValueAt(row,column);
+            if(data != null)
+                tf.setText(data.toString());
+  
             return tf;
         }
         

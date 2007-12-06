@@ -59,6 +59,7 @@ import java.awt.Component;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.util.ResourceBundle;
+import javax.lang.model.type.TypeMirror;
 import javax.swing.JLabel;
 import javax.swing.JTextArea;
 
@@ -194,8 +195,8 @@ public class MBeanAttributePanel extends JPanel implements DocumentListener,
                     attributeModel.selectNextRow(selectedRow, attributeTable);
                     
                 } catch (Exception ex) {
-                    System.out.println("Exception here : ");// NOI18N
-                    ex.printStackTrace();
+                    //System.out.println("Exception here : ");// NOI18N
+                    //ex.printStackTrace();
                 }
                 
                 // if the model has no rows, disable the remove button
@@ -382,7 +383,9 @@ public class MBeanAttributePanel extends JPanel implements DocumentListener,
                 
                 String descr = (String)wiz.getProperty(WizardConstants.PROP_ATTR_DESCR + i);
                 
-                attrModel.addRow(new MBeanAttribute(name,type,access,descr));
+                TypeMirror mirror = (TypeMirror)wiz.getProperty(WizardConstants.PROP_ATTR_TYPE_MIRROR + i);
+                
+                attrModel.addRow(new MBeanAttribute(name,type,access,descr, mirror));
                 
             }
             wiz.putProperty(WizardConstants.WIZARD_ERROR_MESSAGE, "");// NOI18N
@@ -417,6 +420,8 @@ public class MBeanAttributePanel extends JPanel implements DocumentListener,
                 
                 wiz.putProperty(WizardConstants.PROP_ATTR_TYPE + i,
                         attr.getTypeName());
+                wiz.putProperty(WizardConstants.PROP_ATTR_TYPE_MIRROR + i,
+                        attr.getTypeMirror());
                 
                 wiz.putProperty(WizardConstants.PROP_ATTR_RW + i,
                         attr.getAccess());

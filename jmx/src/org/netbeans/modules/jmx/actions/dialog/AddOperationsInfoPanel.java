@@ -64,15 +64,16 @@ public class AddOperationsInfoPanel extends javax.swing.JPanel {
     private ResourceBundle bundle;
     
     private JButton btnOK;
-     
+    private String title;
     /**
      * 
      * Creates new form Panel.
      * @param mbeanClassName <CODE>String</CODE> name of the MBean to update
+     * @param itfName <CODE>String</CODE> name of the MBean interface to update
      * @param operations <CODE>MBeanOperation[]</CODE> operations of this MBean
      * @param opExist <CODE>boolean[]</CODE> represents if each operation already exists.
      */
-    public AddOperationsInfoPanel(String mbeanClassName, MBeanOperation[] operations) {
+    public AddOperationsInfoPanel(String itfName, String mbeanClassName, MBeanOperation[] operations) {
         bundle = NbBundle.getBundle(AddOperationsInfoPanel.class);
         
         // init tags
@@ -93,6 +94,11 @@ public class AddOperationsInfoPanel extends javax.swing.JPanel {
         String msg = formAttribute.format(args);
         infoTextArea.setText(msg);
        
+        formAttribute = 
+                new MessageFormat(bundle.getString("LBL_AddOperationsAction.Title")); // NOI18N
+        Object[] args2 = {itfName};
+        title = formAttribute.format(args2);
+        
         getAccessibleContext().setAccessibleDescription(bundle.getString("ACCESS_PANEL"));// NOI18N
     }
     
@@ -108,8 +114,6 @@ public class AddOperationsInfoPanel extends javax.swing.JPanel {
     public boolean configure() {
         
         // create and display the dialog:
-        String title = bundle.getString("LBL_AddOperationsAction.Title"); // NOI18N
-
         btnOK = new JButton(bundle.getString("LBL_OK")); // NOI18N
         btnOK.setEnabled(isAcceptable());
         btnOK.getAccessibleContext().setAccessibleDescription(

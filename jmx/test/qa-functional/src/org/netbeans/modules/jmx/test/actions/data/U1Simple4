@@ -21,7 +21,6 @@ public class U1Simple4 {
         }catch(JMException ex) {
             // TODO handle exception
         }
-        
     }
     
     /**

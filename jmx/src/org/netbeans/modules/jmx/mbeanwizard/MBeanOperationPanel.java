@@ -388,7 +388,7 @@ public class MBeanOperationPanel extends JPanel implements ListSelectionListener
                 if (!(exceptsStr.length == 1 && exceptsStr[0].equals(""))) {// NOI18N
                     for (int j=0; j < exceptsStr.length; j++) {
                         String desc = (String)
-                        wiz.getProperty(WizardConstants.PROP_METHOD_PARAM + i +
+                        wiz.getProperty(WizardConstants.PROP_METHOD_EXCEP + i +
                                 WizardConstants.DESC + j);
                         exceptions.add(
                                 new MBeanOperationException(exceptsStr[j], desc));

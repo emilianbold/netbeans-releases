@@ -8,9 +8,7 @@ public class U1Simple2 implements U1Simple2MBean, NotificationEmitter {
     public U1Simple2()  {
     }
 
-    public void addNotificationListener(NotificationListener listener,
-                                        NotificationFilter filter,
-                                        Object handback) throws IllegalArgumentException {
+    public void addNotificationListener(NotificationListener listener, NotificationFilter filter, Object handback) throws IllegalArgumentException {
     }
 
     public MBeanNotificationInfo[] getNotificationInfo() {
@@ -20,9 +18,7 @@ public class U1Simple2 implements U1Simple2MBean, NotificationEmitter {
     public void removeNotificationListener(NotificationListener listener) throws ListenerNotFoundException {
     }
 
-    public void removeNotificationListener(NotificationListener listener,
-                                           NotificationFilter filter,
-                                           Object handback) throws ListenerNotFoundException {
+    public void removeNotificationListener(NotificationListener listener, NotificationFilter filter, Object handback) throws ListenerNotFoundException {
     }
 }
 

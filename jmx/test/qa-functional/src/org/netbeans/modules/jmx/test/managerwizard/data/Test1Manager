@@ -25,17 +25,16 @@ public class Test1Manager {
         
         //Manager instantiation and connection to the remote agent
         Test1Manager manager = Test1Manager.getDefault();
-        /*
-         * SAMPLE MBEAN NAME DISCOVERY. Uncomment following code. 
-         */ 
+
+        // SAMPLE MBEAN NAME DISCOVERY. Uncomment following code.
         /*
          * Set resultSet =
          * manager.getMBeanServerConnection().queryNames(null, null);
          * for(Iterator i = resultSet.iterator(); i.hasNext();) {
          * System.out.println("MBean name: " + i.next());
-         * } 
-         */ 
-        /* Close connection */ 
+         * } */
+
+        // Close connection
         manager.close();
         System.out.println("Connection closed.");
     }
@@ -46,20 +45,20 @@ public class Test1Manager {
      * is called
      */
     public void connect() throws Exception {
-        /* Create JMX Agent URL */ 
+        // Create JMX Agent URL
         JMXServiceURL url = new JMXServiceURL("");
+
         /*
          * SAMPLE CREDENTIALS. Uncomment following code.
          * Replace userName and userPassword with your parameters.
-         * Provide env parameter when calling JMXConnectorFactory.connect(url, env) 
-         */ 
-        /*
+         * Provide env parameter when calling JMXConnectorFactory.connect(url, env)
+         *  */ /*
          * Map env = new HashMap();
-         * env.put(JMXConnector.CREDENTIALS, new String[]{"userName", "userPassword"}); 
-         */ 
-        /* Connect the JMXConnector */ 
+         * env.put(JMXConnector.CREDENTIALS, new String[]{"userName", "userPassword"}); */
+
+        // Connect the JMXConnector
         connector = JMXConnectorFactory.connect(url, null);
-        /* Get the MBeanServerConnection */ 
+        // Get the MBeanServerConnection
         mbsc = connector.getMBeanServerConnection();
     }
     

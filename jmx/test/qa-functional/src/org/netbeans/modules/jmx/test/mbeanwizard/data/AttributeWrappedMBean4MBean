@@ -1,0 +1,61 @@
+/*
+ * AttributeWrappedMBean4MBean.java
+ *
+ * Created on <current Date and Time>
+ */
+
+package com.foo.bar;
+
+import java.util.List;
+
+/**
+ * Interface AttributeWrappedMBean4MBean
+ * 
+ * @author <author>
+ */
+public interface AttributeWrappedMBean4MBean
+{
+
+    /**
+     * Get Attribute exposed for management
+     */
+    public String getAttribute1();
+
+    /**
+     * Get Attribute exposed for management
+     */
+    public boolean isAttribute2();
+
+    /**
+     * Get Attribute exposed for management
+     */
+    public List getAttribute3();
+
+    /**
+     * Get Attribute exposed for management
+     */
+    public String[] getAttribute4();
+
+    /**
+     * Set Attribute exposed for management
+     */
+    public void setAttribute4(String[] value);
+
+    /**
+     * Get Attribute exposed for management
+     */
+    public Double getAttribute5();
+
+    /**
+     * Set Attribute exposed for management
+     */
+    public void setAttribute5(Double value);
+
+    /**
+     * Set Attribute exposed for management
+     */
+    public void setAttribute6(float value);
+    
+}
+
+

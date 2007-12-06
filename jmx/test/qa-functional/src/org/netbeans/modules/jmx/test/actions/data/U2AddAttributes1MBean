@@ -1,6 +1,7 @@
 package com.foo.bar;
 
 import java.util.Date;
+import java.util.List;
 import javax.management.ObjectName;
 
 
@@ -22,7 +23,7 @@ public interface U2AddAttributes1MBean {
     /**
      * Get Attr1 Description
      */
-    public boolean isAttr1();
+    public boolean getAttr1();
 
     /**
      * Get Attr2 Description
@@ -42,7 +43,7 @@ public interface U2AddAttributes1MBean {
     /**
      * Get Attr4 Description
      */
-    public boolean isAttr4();
+    public boolean getAttr4();
 
     /**
      * Set Attr4 Description
@@ -62,12 +63,12 @@ public interface U2AddAttributes1MBean {
     /**
      * Get Attr6 Description
      */
-    public java.util.List getAttr6();
+    public List getAttr6();
 
     /**
      * Set Attr6 Description
      */
-    public void setAttr6(java.util.List value);
+    public void setAttr6(List value);
 
     /**
      * Get Attr7 Description

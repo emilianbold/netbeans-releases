@@ -1,0 +1,35 @@
+/*
+ * OperationWrappedMBean2MBean.java
+ *
+ * Created on <current Date and Time>
+ */
+
+package com.foo.bar;
+
+/**
+ * Interface OperationWrappedMBean2MBean
+ * 
+ * @author <author>
+ */
+public interface OperationWrappedMBean2MBean
+{
+
+    /**
+     * Operation exposed for management
+     * @param param0
+     * @param param1
+     * @return java.lang.Integer
+     */
+    public Integer operation3(Object[] param0, int param1);
+
+    /**
+     * Operation exposed for management
+     * @param param0
+     * @param param1
+     * @return java.lang.Integer
+     */
+    public Integer operation3(String[] param0, int param1);
+    
+}
+
+

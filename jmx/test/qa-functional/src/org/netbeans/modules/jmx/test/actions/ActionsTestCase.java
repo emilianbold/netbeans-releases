@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.jmx.test.actions;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Properties;
@@ -117,7 +118,7 @@ public class ActionsTestCase extends JMXTestCase {
         // New File wizard
         NewFileWizardOperator nfwo = newFileWizardFromMenu(
                 PROJECT_NAME_ACTION_FUNCTIONAL,
-                FILE_CATEGORY_JAVA_CLASSES,
+                FILE_CATEGORY_JAVA,
                 FILE_TYPE_JAVA_CLASS);
         nfwo.next();
         // Name and Location wizard
@@ -197,5 +198,20 @@ public class ActionsTestCase extends JMXTestCase {
             ArrayList<Operation> opList) {
         
         super.addMBeanOperations(ndo, jto, OPERATION_ADD_BUTTON_FROM_ACTION, opList);
+    }
+    /**
+     * Check the updated files with expected golden files.
+     */
+    protected void checkUpdatedFiles(
+            EditorOperator eo,
+            String updatedFile,
+            File goldenFile) {
+        
+        String content = getFileContent(goldenFile);
+        // Update golden file content package
+        content = content.replaceAll(PACKAGE_COM_FOO_BAR, packageName);
+        System.out.println("Compare updated file \n\t" + updatedFile +
+                "\nwith expected \n\t" + goldenFile.getPath());
+        assertTrue(compareFileContents(eo.getText(), content));
     }
 }

@@ -11,44 +11,38 @@ import javax.management.ObjectName;
 
 /**
  * Interface SeveralFeaturesMBean3MBean
- * StandardMBean with metadata with several attributes and operations
+ * 
  * @author <author>
  */
 public interface SeveralFeaturesMBean3MBean
 {
-    
 
     /**
      * Get First Attribute description
      */
-
-    public int getFirstAttribute() ;
+    public int getFirstAttribute();
 
     /**
      * Get Second Attribute description
      */
-
-    public Date getSecondAttribute() ;
+    public Date getSecondAttribute();
 
     /**
      * Set Second Attribute description
      */
-
-    public void setSecondAttribute(Date value) ;
+    public void setSecondAttribute(Date value);
 
     /**
      * First Operation Description
      */
-
-    public void FirstOperation() ;
+    public void FirstOperation();
 
     /**
      * Second Operation Description
      * @throws java.lang.NullPointerException First Exception description
      * @return int
      */
-
-    public int SecondOperation() throws NullPointerException ;
+    public int SecondOperation() throws NullPointerException;
 
     /**
      * Third Operation Description
@@ -64,12 +58,8 @@ public interface SeveralFeaturesMBean3MBean
      * @param tenthParameter Tenth Parameter Description
      * @return java.util.Date
      */
-
-    public Date ThirdOperation(String firstParameter, boolean secondParameter,
-                               byte thirdParameter, char fourthParameter,
-                               Date fifthParameter, int sixthParameter,
-                               long seventhParameter, ObjectName eighthParameter,
-                               float ninethParameter, double tenthParameter) ;
+    public Date ThirdOperation(String firstParameter, boolean secondParameter, byte thirdParameter, char fourthParameter, Date fifthParameter, int sixthParameter, long seventhParameter, ObjectName eighthParameter, float ninethParameter, double tenthParameter);
+    
 }
 
 

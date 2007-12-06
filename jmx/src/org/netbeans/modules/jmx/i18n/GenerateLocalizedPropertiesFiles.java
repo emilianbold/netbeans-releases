@@ -34,10 +34,10 @@ public class GenerateLocalizedPropertiesFiles {
      */
     public static void main(String[] args) throws Exception {
        
-        String dirs = System.getProperty("jmx.i18n.properties.dirs");
-        StringTokenizer tokenizer = new StringTokenizer(dirs, ",");
-        String prefix = System.getProperty("jmx.i18n.prefix");
-        String locale = System.getProperty("jmx.i18n.locale");
+        String dirs = System.getProperty("jmx.i18n.properties.dirs");// NOI18N
+        StringTokenizer tokenizer = new StringTokenizer(dirs, ",");// NOI18N
+        String prefix = System.getProperty("jmx.i18n.prefix");// NOI18N
+        String locale = System.getProperty("jmx.i18n.locale");// NOI18N
       while(tokenizer.hasMoreElements()) {
             generateFile(locale, prefix, tokenizer.nextToken());
       }
@@ -45,13 +45,13 @@ public class GenerateLocalizedPropertiesFiles {
     
     private static void generateFile(String locale,
             String prefix, String dir) throws Exception {
-        File file = new File("." + File.separator + "src" + 
-                File.separator + dir + File.separator + "Bundle.properties");
-        System.out.println("Reading file : " + file.getAbsolutePath());
-        String newDir = "." + File.separator + "build" + 
-                File.separator + "locale" + File.separator + dir;
-        String newFileName = newDir + File.separator + "Bundle_"+ locale + 
-                ".properties";
+        File file = new File("." + File.separator + "src" + // NOI18N
+                File.separator + dir + File.separator + "Bundle.properties");// NOI18N
+        System.out.println("Reading file : " + file.getAbsolutePath());// NOI18N
+        String newDir = "." + File.separator + "build" + // NOI18N
+                File.separator + "locale" + File.separator + dir;// NOI18N
+        String newFileName = newDir + File.separator + "Bundle_"+ locale + // NOI18N
+                ".properties";// NOI18N
         File dirs = new File(newDir);
         dirs.mkdirs();
         File f = new File(newFileName);
@@ -68,19 +68,19 @@ public class GenerateLocalizedPropertiesFiles {
             String key = (String)entry.getKey();
             
             String value = (String) entry.getValue();
-            if(!key.endsWith("Template")) {
+            if(!key.endsWith("Template")) {// NOI18N
                 //We are not translating Numbers
                 try {
                     Integer.valueOf(value);
                 }catch(Exception e) {
-                    if(!("localhost".equals(value)))
+                    if(!("localhost".equals(value)))// NOI18N
                         value = parseEscapes(prefix) + entry.getValue();
                 }
             }
             newProperties.setProperty(key, value);
         }
-        System.out.println("Localized file : " + newFileName);
-        newProperties.store(output, "Localized in " + locale);
+        System.out.println("Localized file : " + newFileName);// NOI18N
+        newProperties.store(output, "Localized in " + locale);// NOI18N
         output.close();
     }
     
@@ -95,19 +95,19 @@ public class GenerateLocalizedPropertiesFiles {
             // Handle escapes.
             if (ch == '\\') {
                 if (iChar >= length) {
-                    throw new ParseException("Orphaned escape character.",iChar);
+                    throw new ParseException("Orphaned escape character.",iChar);// NOI18N
                 }
                 ch = text.charAt(iChar++);
                 if (ch == 'u') {
                     // A Unicode escape sequence.
                     if (iChar > length - 4) {
-                        throw new ParseException("Malformed Unicode escape.",iChar);
+                        throw new ParseException("Malformed Unicode escape.",iChar);// NOI18N
                     }
                     int value = 0;
                     for (int iDigit = 4; iDigit > 0; iDigit--) {
                         int digitValue = Character.digit(text.charAt(iChar++), 16);
                         if (digitValue < 0) {
-                            throw new ParseException("Malformed Unicode escape.",iChar);
+                            throw new ParseException("Malformed Unicode escape.",iChar);// NOI18N
                         }
                         value = (value << 4) + digitValue;
                     }
@@ -115,10 +115,10 @@ public class GenerateLocalizedPropertiesFiles {
                 } else {
                     // A standard escape sequence.
                     switch (ch) {
-                        case 't' : ch = '\t'; break;
-                        case 'r' : ch = '\r'; break;
-                        case 'n' : ch = '\n'; break;
-                        case 'f' : ch = '\f'; break;
+                        case 't' : ch = '\t'; break;// NOI18N
+                        case 'r' : ch = '\r'; break;// NOI18N
+                        case 'n' : ch = '\n'; break;// NOI18N
+                        case 'f' : ch = '\f'; break;// NOI18N
                     }
                     sb.append(ch);
                 }

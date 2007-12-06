@@ -152,7 +152,7 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
         // Check menu item
         EditorOperator eo = new EditorOperator(SIMPLE_3);
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
-        assertFalse(jmio.isEnabled());
+        assertTrue(jmio.isEnabled());
     }
     
     public void test2() {
@@ -169,8 +169,8 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
         // Check menu item
         EditorOperator eo = new EditorOperator(className);
         // The generated code is inserted at the cursor position
-        eo.setCaretPosition("//TODO Add your MBean registration code here", false);
-        eo.insert("\n");
+        eo.select("//TODO Add your MBean registration code here\n");
+//        eo.setCaretPosition("//TODO Add your MBean registration code here", true);
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
         assertTrue(jmio.isEnabled());
         
@@ -205,11 +205,9 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
         // Save updated java file
         node.select();
         eo.save();
+        sleep(2000);
         System.out.println("Check update java class file");
-        String content = getFileContent(getGoldenFile(className));
-        // Update golden file content package
-        content = content.replaceAll(PACKAGE_COM_FOO_BAR, packageName);
-        assertTrue(compareFileContents(eo.getText(), content));
+        checkUpdatedFiles(eo, node.getPath(), getGoldenFile(className));
     }
     
     public void test3() {
@@ -226,8 +224,8 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
         // Check menu item
         EditorOperator eo = new EditorOperator(className);
         // The generated code is inserted at the cursor position
-        eo.setCaretPosition("//TODO Add your MBean registration code here", false);
-        eo.insert("\n");
+        eo.select("//TODO Add your MBean registration code here\n");
+//        eo.setCaretPosition("//TODO Add your MBean registration code here", true);
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
         assertTrue(jmio.isEnabled());
         
@@ -252,11 +250,9 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
         node.select();
         eo = new EditorOperator(className);
         eo.save();
+        sleep(2000);
         System.out.println("Check update java class file");
-        String content = getFileContent(getGoldenFile(className));
-        // Update golden file content package
-        content = content.replaceAll(PACKAGE_COM_FOO_BAR, packageName);
-        assertTrue(compareFileContents(eo.getText(), content));
+        checkUpdatedFiles(eo, node.getPath(), getGoldenFile(className));
     }
     
     public void test4() {
@@ -273,8 +269,8 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
         // Check menu item
         EditorOperator eo = new EditorOperator(className);
         // The generated code is inserted at the cursor position
-        eo.setCaretPosition("//TODO Add your MBean registration code here", false);
-        eo.insert("\n");
+        eo.select("//TODO Add your MBean registration code here\n");
+//        eo.setCaretPosition("//TODO Add your MBean registration code here", true);
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
         assertTrue(jmio.isEnabled());
         
@@ -327,11 +323,9 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
         node.select();
         eo = new EditorOperator(className);
         eo.save();
+        sleep(2000);
         System.out.println("Check update java class file");
-        String content = getFileContent(getGoldenFile(className));
-        // Update golden file content package
-        content = content.replaceAll(PACKAGE_COM_FOO_BAR, packageName);
-        assertTrue(compareFileContents(eo.getText(), content));
+        checkUpdatedFiles(eo, node.getPath(), getGoldenFile(className));
     }
     
     public void test5() {
@@ -348,8 +342,8 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
         // Check menu item
         EditorOperator eo = new EditorOperator(className);
         // The generated code is inserted at the cursor position
-        eo.setCaretPosition("//TODO Add your MBean registration code here", false);
-        eo.insert("\n");
+        eo.select("//TODO Add your MBean registration code here\n");
+//        eo.setCaretPosition("//TODO Add your MBean registration code here", true);
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
         assertTrue(jmio.isEnabled());
         
@@ -380,11 +374,9 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
         node.select();
         eo = new EditorOperator(className);
         eo.save();
+        sleep(2000);
         System.out.println("Check update java class file");
-        String content = getFileContent(getGoldenFile(className));
-        // Update golden file content package
-        content = content.replaceAll(PACKAGE_COM_FOO_BAR, packageName);
-        assertTrue(compareFileContents(eo.getText(), content));
+        checkUpdatedFiles(eo, node.getPath(), getGoldenFile(className));
     }
     
     public void test6() {
@@ -401,8 +393,8 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
         // Check menu item
         EditorOperator eo = new EditorOperator(className);
         // The generated code is inserted at the cursor position
-        eo.setCaretPosition("//TODO Add your MBean registration code here", false);
-        eo.insert("\n");
+        eo.select("//TODO Add your MBean registration code here\n");
+//        eo.setCaretPosition("//TODO Add your MBean registration code here", true);
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
         assertTrue(jmio.isEnabled());
         
@@ -426,8 +418,8 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
                 packageName + "." + SIMPLE_5_INTF);
         System.out.println("Set object wrapped as MXBean");
         setCheckBoxSelection(OBJECT_WRAPPED_AS_MXBEAN_CHECK_BOX, ndo, true);
-        System.out.println("Set MBean constructor to " + SIMPLE_5 + "(String)");
-        selectComboBoxItem(CONSTRUCTOR_COMBO_BOX, ndo, SIMPLE_5 + "(String)");
+        System.out.println("Set MBean constructor to " + SIMPLE_5 + "(java.lang.String)");
+        selectComboBoxItem(CONSTRUCTOR_COMBO_BOX, ndo, SIMPLE_5 + "(java.lang.String)");
         assertTrue(ndo.btOK().isEnabled());
         ndo.ok();
         
@@ -435,11 +427,9 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
         node.select();
         eo = new EditorOperator(className);
         eo.save();
+        sleep(2000);
         System.out.println("Check update java class file");
-        String content = getFileContent(getGoldenFile(className));
-        // Update golden file content package
-        content = content.replaceAll(PACKAGE_COM_FOO_BAR, packageName);
-        assertTrue(compareFileContents(eo.getText(), content));
+        checkUpdatedFiles(eo, node.getPath(), getGoldenFile(className));
     }
     
     public void test7() {
@@ -456,8 +446,8 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
         // Check menu item
         EditorOperator eo = new EditorOperator(className);
         // The generated code is inserted at the cursor position
-        eo.setCaretPosition("//TODO Add your MBean registration code here", false);
-        eo.insert("\n");
+        eo.select("//TODO Add your MBean registration code here\n");
+//        eo.setCaretPosition("//TODO Add your MBean registration code here", true);
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
         assertTrue(jmio.isEnabled());
         
@@ -479,8 +469,8 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
                 "Apply JMX Design Pattern Management Interface");
         selectComboBoxItem(MANAGEMENT_INTERFACE_COMBO_BOX, ndo, 
                 "Apply JMX Design Pattern Management Interface");
-        System.out.println("Set MBean constructor to " + DYNAMIC_1 + "(String)");
-        selectComboBoxItem(CONSTRUCTOR_COMBO_BOX, ndo, DYNAMIC_1 + "(String)");
+        System.out.println("Set MBean constructor to " + DYNAMIC_1 + "(java.lang.String)");
+        selectComboBoxItem(CONSTRUCTOR_COMBO_BOX, ndo, DYNAMIC_1 + "(java.lang.String)");
         assertTrue(ndo.btOK().isEnabled());
         ndo.ok();
         
@@ -488,11 +478,9 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
         node.select();
         eo = new EditorOperator(className);
         eo.save();
+        sleep(2000);
         System.out.println("Check update java class file");
-        String content = getFileContent(getGoldenFile(className));
-        // Update golden file content package
-        content = content.replaceAll(PACKAGE_COM_FOO_BAR, packageName);
-        assertTrue(compareFileContents(eo.getText(), content));
+        checkUpdatedFiles(eo, node.getPath(), getGoldenFile(className));
     }
     
     public void test8() {
@@ -509,8 +497,8 @@ public class GenerateMBeanRegistrationActions extends ActionsTestCase {
         // Check menu item
         EditorOperator eo = new EditorOperator(className);
         // The generated code is inserted at the cursor position
-        eo.setCaretPosition("//TODO Add your MBean registration code here", false);
-        eo.insert("\n");
+        eo.select("//TODO Add your MBean registration code here\n");
+//        eo.setCaretPosition("//TODO Add your MBean registration code here", true);
         JMenuItemOperator jmio = showMenuItem(eo, popupPath);
         assertTrue(jmio.isEnabled());
         

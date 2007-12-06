@@ -9,7 +9,7 @@ import javax.management.*;
 
 /**
  * Class EmptyMBean2
- * MXBean without attributes and operations
+ * 
  * @author <author>
  */
 public class EmptyMBean2 implements EmptyMBean2MXBean {
@@ -17,3 +17,5 @@ public class EmptyMBean2 implements EmptyMBean2MXBean {
     public EmptyMBean2(){
     }
 }
+
+

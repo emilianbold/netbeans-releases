@@ -3,8 +3,6 @@ package com.foo.bar;
 import javax.management.*;
 
 public class U1Standard1 extends javax.management.StandardMBean implements U1Standard1MBean, NotificationEmitter {
-    
-    /* Creates a new instance of U1Standard1 */
     private NotificationBroadcasterSupport broadcaster = new NotificationBroadcasterSupport();
     
     /* Creates a new instance of U1Standard1 */
@@ -52,17 +50,12 @@ public class U1Standard1 extends javax.management.StandardMBean implements U1Sta
                 getNotificationInfo());
     }
     
-    public void addNotificationListener(NotificationListener listener,NotificationFilter filter,Object handback) throws IllegalArgumentException {
+    public void addNotificationListener(NotificationListener listener, NotificationFilter filter, Object handback) throws IllegalArgumentException {
         broadcaster.addNotificationListener(listener, filter, handback);
     }
 
     public MBeanNotificationInfo[] getNotificationInfo() {
-        return new MBeanNotificationInfo[] {
-            new MBeanNotificationInfo(new String[] {
-                AttributeChangeNotification.ATTRIBUTE_CHANGE},
-                javax.management.AttributeChangeNotification.class.getName(),
-                "notif0 Description")
-            };
+        return new MBeanNotificationInfo[]{new MBeanNotificationInfo(new String[]{AttributeChangeNotification.ATTRIBUTE_CHANGE}, javax.management.AttributeChangeNotification.class.getName(), "notif0 Description")};
     }
 
     public void removeNotificationListener(NotificationListener listener) throws ListenerNotFoundException {

@@ -1,0 +1,160 @@
+/*
+ * AttributeWrappedMBean4.java
+ *
+ * Created on <current Date and Time>
+ */
+
+package com.foo.bar;
+import java.util.List;
+import javax.management.*;
+import java.util.Arrays;
+
+/**
+ * Class AttributeWrappedMBean4
+ * 
+ * @author <author>
+ */
+public class AttributeWrappedMBean4 extends StandardMBean implements AttributeWrappedMBean4MBean {
+    private AttributeWrapper1 theRef;
+
+    public AttributeWrappedMBean4(AttributeWrapper1 theRef) throws NotCompliantMBeanException {
+        //WARNING Uncomment the following call to super() to make this class compile (see BUG ID 122377)
+        // super(AttributeWrappedMBean4MBean.class, true);
+        this.theRef = theRef;
+    }
+    
+    @Override
+    public MBeanInfo getMBeanInfo() {
+        MBeanInfo mbinfo = super.getMBeanInfo();
+        return new MBeanInfo(mbinfo.getClassName(),
+                mbinfo.getDescription(),
+                mbinfo.getAttributes(),
+                mbinfo.getConstructors(),
+                mbinfo.getOperations(),
+                getNotificationInfo());
+    }
+    
+    public MBeanNotificationInfo[] getNotificationInfo() {
+        return new MBeanNotificationInfo[] {};
+    }
+
+    /**
+     * Override customization hook:
+     * You can supply a customized description for MBeanInfo.getDescription()
+     */
+    @Override
+    protected String getDescription(MBeanInfo info) {
+        return "MBean from existing java class wrapped as MXBean with all attributes";
+    }
+
+    /**
+     * Override customization hook:
+     * You can supply a customized description for MBeanAttributeInfo.getDescription()
+     */
+    @Override
+    protected String getDescription(MBeanAttributeInfo info) {
+        String description = null;
+        if (info.getName().equals("Attribute1")) {
+            description = "Attribute exposed for management";
+        } else if (info.getName().equals("Attribute2")) {
+            description = "Attribute exposed for management";
+        } else if (info.getName().equals("Attribute3")) {
+            description = "Attribute exposed for management";
+        } else if (info.getName().equals("Attribute4")) {
+            description = "Attribute exposed for management";
+        } else if (info.getName().equals("Attribute5")) {
+            description = "Attribute exposed for management";
+        } else if (info.getName().equals("Attribute6")) {
+            description = "Attribute exposed for management";
+        }
+
+        return description;
+    }
+
+    /**
+     * Override customization hook:
+     * You can supply a customized description for MBeanParameterInfo.getDescription()
+     */
+    @Override
+    protected String getDescription(MBeanOperationInfo op, MBeanParameterInfo param, int sequence) {
+        return null;
+    }
+
+    /**
+     * Override customization hook:
+     * You can supply a customized description for MBeanParameterInfo.getName()
+     */
+    @Override
+    protected String getParameterName(MBeanOperationInfo op, MBeanParameterInfo param, int sequence) {
+        return null;
+    }
+
+    /**
+     * Override customization hook:
+     * You can supply a customized description for MBeanOperationInfo.getDescription()
+     */
+    @Override
+    protected String getDescription(MBeanOperationInfo info) {
+        String description = null;
+
+        return description;
+    }
+
+    /**
+     * Get Attribute exposed for management
+     */
+    public String getAttribute1() {
+        return theRef.getAttribute1();
+    }
+
+    /**
+     * Get Attribute exposed for management
+     */
+    public boolean isAttribute2() {
+        return theRef.isAttribute2();
+    }
+
+    /**
+     * Get Attribute exposed for management
+     */
+    public List getAttribute3() {
+        return theRef.getAttribute3();
+    }
+
+    /**
+     * Get Attribute exposed for management
+     */
+    public String[] getAttribute4() {
+        return theRef.getAttribute4();
+    }
+
+    /**
+     * Set Attribute exposed for management
+     */
+    public void setAttribute4(String[] value) {
+        theRef.setAttribute4(value);
+    }
+
+    /**
+     * Get Attribute exposed for management
+     */
+    public Double getAttribute5() {
+        return theRef.getAttribute5();
+    }
+
+    /**
+     * Set Attribute exposed for management
+     */
+    public void setAttribute5(Double value) {
+        theRef.setAttribute5(value);
+    }
+
+    /**
+     * Set Attribute exposed for management
+     */
+    public void setAttribute6(float value) {
+        theRef.setAttribute6(value);
+    }
+}
+
+

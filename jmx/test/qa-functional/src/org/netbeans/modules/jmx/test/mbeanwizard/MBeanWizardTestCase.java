@@ -174,7 +174,7 @@ public class MBeanWizardTestCase extends JMXTestCase {
         // New File wizard
         NewFileWizardOperator nfwo = newFileWizardFromMenu(
                 PROJECT_NAME_MBEAN_FUNCTIONAL,
-                FILE_CATEGORY_JAVA_CLASSES,
+                FILE_CATEGORY_JAVA,
                 FILE_TYPE_JAVA_CLASS);
         nfwo.next();
         // Name and Location wizard
@@ -231,7 +231,7 @@ public class MBeanWizardTestCase extends JMXTestCase {
             // Add MBean attributes
             System.out.println("Add MBean attributes wizard");
             addMBeanAttributes(nfnlso, attributes, fileType);
-            waitNoEvent(5000);
+            sleep(2000);
             
             nfnlso.next();
             // Check MBean operations wizard
@@ -240,7 +240,7 @@ public class MBeanWizardTestCase extends JMXTestCase {
             // Add MBean operations
             System.out.println("Add MBean operations wizard");
             addMBeanOperations(nfnlso, operations, fileType);
-            waitNoEvent(5000);
+            sleep(2000);
         }
         nfnlso.finish();
         

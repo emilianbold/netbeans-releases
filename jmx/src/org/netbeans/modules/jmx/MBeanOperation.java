@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
@@ -65,6 +66,7 @@ public class MBeanOperation implements Comparable {
     private List<MBeanOperationParameter> parameters = null;
     private List<MBeanOperationException> exceptions = null;
     private List classParameterTypes;
+    private TypeMirror mirror;
     /** Creates a new instance of MBeanOperation */
     public MBeanOperation(ExecutableElement method, String description, 
             List<? extends TypeParameterElement> classParameterTypes, CompilationInfo info) {
@@ -73,9 +75,10 @@ public class MBeanOperation implements Comparable {
         this.description = description;
         this.name = method.getSimpleName().toString();
         this.methodExists = true;
-        
+
         List<? extends TypeParameterElement> methodParameterTypes = method.getTypeParameters();
         TypeMirror type = method.getReturnType();
+        mirror = type;
         
         returnTypeName = JavaModelHelper.getTypeName(type, methodParameterTypes, classParameterTypes, info);
         
@@ -87,9 +90,9 @@ public class MBeanOperation implements Comparable {
         ArrayList exceptArray = new ArrayList();
         
         for (TypeMirror exception : exceptions) {
-            Element ex = info.getTypes().asElement(exception);
+            TypeElement ex = (TypeElement) info.getTypes().asElement(exception);
             exceptArray.add(
-                    new MBeanOperationException(ex.getSimpleName().toString(), ""));// NOI18N
+                    new MBeanOperationException(ex.getQualifiedName().toString(), ""));// NOI18N
         }
         
         this.exceptions = exceptArray;
@@ -104,7 +107,7 @@ public class MBeanOperation implements Comparable {
             
             paramArray.add(
                     new MBeanOperationParameter("param"+ i, // NOI18N
-                        typeName, ""));// NOI18N
+                        typeName, "", paramType));// NOI18N
             i++;
         }
         this.parameters = paramArray;
@@ -112,6 +115,9 @@ public class MBeanOperation implements Comparable {
         forceParamName(this.parameters);
     }
     
+    public TypeMirror getTypeMirror() {
+        return mirror;
+    }
     /**
      * Constructor
      * @param operationName the name of the operation

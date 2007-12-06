@@ -20,11 +20,10 @@ public class U4Simple4 {
             ManagementFactory.getPlatformMBeanServer().
                     registerMBean(new StandardMBean(new Simple5(),
                     Simple5Intf.class),
-                    new ObjectName("bar.foo.com:type=Simple5"));
+                    new ObjectName("com.foo.bar:type=Simple5"));
         }catch(JMException ex) {
             // TODO handle exception
         }
-        
     }
     
     /**

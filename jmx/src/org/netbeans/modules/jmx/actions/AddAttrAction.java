@@ -108,6 +108,7 @@ public class AddAttrAction extends NodeAction {
             }
             //detect if implementation of attributes exists
             JavaSource mbeanClass = cfg.getMBeanClass();
+            String itfName = JavaModelHelper.getManagementInterfaceSimpleName(mbeanClass);
             String className = JavaModelHelper.getSimpleName(mbeanClass);
             MBeanAttribute[] attributes = cfg.getAttributes();
             boolean hasExistAttr = false;
@@ -122,7 +123,7 @@ public class AddAttrAction extends NodeAction {
             
             if(hasExistAttr) {
                 AddAttributesInfoPanel infoPanel =
-                        new AddAttributesInfoPanel(className,
+                        new AddAttributesInfoPanel(itfName, className,
                         attributes);
                 if (!infoPanel.configure()) {
                     return;

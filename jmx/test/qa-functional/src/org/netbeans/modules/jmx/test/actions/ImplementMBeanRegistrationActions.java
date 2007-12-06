@@ -159,17 +159,16 @@ public class ImplementMBeanRegistrationActions extends ActionsTestCase {
         jmio.push();
         NbDialogOperator ndo = new NbDialogOperator(
                 IMPLEMENT_MBEAN_REGISTRATION_DIALOG_TITLE);
+        System.out.println("Do not generate private fiels");
         ndo.ok();
         
         // Save updated java file
         node.select();
         EditorOperator eo = new EditorOperator(className);
         eo.save();
+        sleep(2000);
         System.out.println("Check update java class file");
-        String content = getFileContent(getGoldenFile(className));
-        // Update golden file content package
-        content = content.replaceAll(PACKAGE_COM_FOO_BAR, packageName);
-        assertTrue(compareFileContents(eo.getText(), content));
+        checkUpdatedFiles(eo, node.getPath(), getGoldenFile(className));
     }
     
     //=========================================================================
@@ -234,10 +233,9 @@ public class ImplementMBeanRegistrationActions extends ActionsTestCase {
         node.select();
         EditorOperator eo = new EditorOperator(className);
         eo.save();
-        String content = getFileContent(getGoldenFile(className));
-        // Update golden file content package
-        content = content.replaceAll(PACKAGE_COM_FOO_BAR, packageName);
-        assertTrue(compareFileContents(eo.getText(), content));
+        sleep(2000);
+        System.out.println("Check update java class file");
+        checkUpdatedFiles(eo, node.getPath(), getGoldenFile(className));
     }
 }
 

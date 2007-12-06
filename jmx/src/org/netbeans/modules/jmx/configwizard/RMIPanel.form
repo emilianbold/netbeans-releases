@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.0" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.2" maxVersion="1.2" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <NonVisualComponents>
     <Component class="javax.swing.ButtonGroup" name="managementFilesGroup">
     </Component>
@@ -18,7 +18,9 @@
     </Component>
   </NonVisualComponents>
   <AuxValues>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -38,7 +40,7 @@
       <SubComponents>
         <Component class="javax.swing.JLabel" name="rMIPortJLabel">
           <Properties>
-            <Property name="name" type="java.lang.String" value="rMIPortJLabel"/>
+            <Property name="name" type="java.lang.String" value="rMIPortJLabel" noResource="true"/>
           </Properties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -51,7 +53,7 @@
             <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[55, 20]"/>
             </Property>
-            <Property name="name" type="java.lang.String" value="rMIPortJTextField"/>
+            <Property name="name" type="java.lang.String" value="rMIPortJTextField" noResource="true"/>
             <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[55, 20]"/>
             </Property>
@@ -67,7 +69,7 @@
         </Component>
         <Component class="javax.swing.JCheckBox" name="rMIJCheckBox">
           <Properties>
-            <Property name="name" type="java.lang.String" value="rMIJCheckBox"/>
+            <Property name="name" type="java.lang.String" value="rMIJCheckBox" noResource="true"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="rMIJCheckBoxActionPerformed"/>
@@ -80,7 +82,7 @@
         </Component>
         <Component class="javax.swing.JCheckBox" name="authJCheckBox">
           <Properties>
-            <Property name="name" type="java.lang.String" value="authJCheckBox"/>
+            <Property name="name" type="java.lang.String" value="authJCheckBox" noResource="true"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="authJCheckBoxActionPerformed"/>
@@ -93,7 +95,7 @@
         </Component>
         <Component class="javax.swing.JCheckBox" name="sslJCheckBox">
           <Properties>
-            <Property name="name" type="java.lang.String" value="sslJCheckBox"/>
+            <Property name="name" type="java.lang.String" value="sslJCheckBox" noResource="true"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="sslJCheckBoxActionPerformed"/>
@@ -106,7 +108,7 @@
         </Component>
         <Component class="javax.swing.JLabel" name="tableNameJLabel">
           <Properties>
-            <Property name="name" type="java.lang.String" value="tableNameJLabel"/>
+            <Property name="name" type="java.lang.String" value="tableNameJLabel" noResource="true"/>
           </Properties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -116,7 +118,7 @@
         </Component>
         <Component class="javax.swing.JLabel" name="sslProtocolJLabel">
           <Properties>
-            <Property name="name" type="java.lang.String" value="sslProtocolJLabel"/>
+            <Property name="name" type="java.lang.String" value="sslProtocolJLabel" noResource="true"/>
           </Properties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -129,7 +131,7 @@
             <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[50, 20]"/>
             </Property>
-            <Property name="name" type="java.lang.String" value="sslProtocolJTextField"/>
+            <Property name="name" type="java.lang.String" value="sslProtocolJTextField" noResource="true"/>
             <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[65, 20]"/>
             </Property>
@@ -142,7 +144,7 @@
         </Component>
         <Component class="javax.swing.JLabel" name="sslCipherJLabel">
           <Properties>
-            <Property name="name" type="java.lang.String" value="sslCipherJLabel"/>
+            <Property name="name" type="java.lang.String" value="sslCipherJLabel" noResource="true"/>
           </Properties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -155,7 +157,7 @@
             <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[50, 20]"/>
             </Property>
-            <Property name="name" type="java.lang.String" value="sslCipherJTextField"/>
+            <Property name="name" type="java.lang.String" value="sslCipherJTextField" noResource="true"/>
             <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[65, 20]"/>
             </Property>
@@ -168,7 +170,7 @@
         </Component>
         <Component class="javax.swing.JCheckBox" name="sslClientAuthJCheckBox">
           <Properties>
-            <Property name="name" type="java.lang.String" value="sslClientAuthJCheckBox"/>
+            <Property name="name" type="java.lang.String" value="sslClientAuthJCheckBox" noResource="true"/>
           </Properties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -178,7 +180,7 @@
         </Component>
         <Component class="javax.swing.JButton" name="addAuth">
           <Properties>
-            <Property name="name" type="java.lang.String" value="addAuth"/>
+            <Property name="name" type="java.lang.String" value="addAuth" noResource="true"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addAuthActionPerformed"/>
@@ -191,7 +193,7 @@
         </Component>
         <Component class="javax.swing.JButton" name="removeAuth">
           <Properties>
-            <Property name="name" type="java.lang.String" value="removeAuth"/>
+            <Property name="name" type="java.lang.String" value="removeAuth" noResource="true"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="removeAuthActionPerformed"/>

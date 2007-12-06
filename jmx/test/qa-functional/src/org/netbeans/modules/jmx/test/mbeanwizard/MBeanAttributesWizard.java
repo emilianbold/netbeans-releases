@@ -274,7 +274,7 @@ public class MBeanAttributesWizard extends MBeanWizardTestCase {
         // Remove the first attribute with the same name
         jto.selectCell(jto.findCellRow("DuplicatedAttribute"),
                 jto.findColumn(ATTRIBUTE_NAME_COLUMN_NAME));
-        clickButton(removeButton, nfnlso);
+        pressAndRelease(removeButton, nfnlso);
         waitNoEvent(5000);
         // Check warning message is not displayed anymore
         jl = getLabel(SAME_ATTRIBUTE_WARNING, nfnlso.getContentPane());
@@ -300,7 +300,7 @@ public class MBeanAttributesWizard extends MBeanWizardTestCase {
         // First reset attribute table
         while (jto.getRowCount() != 0) {
             selectTableCell(tableOperator, ndo, 0, 0);
-            clickButton(removeButton, ndo);
+            pressAndRelease(removeButton, ndo);
             waitNoEvent(5000);
         }
         
@@ -321,7 +321,7 @@ public class MBeanAttributesWizard extends MBeanWizardTestCase {
                 }
                 // Set default attribute type
                 if (attribute.getType() == null) {
-                    attribute.setType("String");
+                    attribute.setType("java.lang.String");
                 }
                 // Set default attribute access
                 if (attribute.getAccess() == null) {

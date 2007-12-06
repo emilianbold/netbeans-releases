@@ -72,6 +72,7 @@ import org.netbeans.jellytools.actions.NewFileAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.drivers.focus.APIFocusDriver;
 import org.netbeans.jemmy.drivers.tables.JTableMouseDriver;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.ContainerOperator;
@@ -261,29 +262,39 @@ public abstract class JMXTestCase extends JellyTestCase {
         if (attrList != null) {
             for (Attribute attribute : attrList) {
                 
-                clickButton(ATTRIBUTE_ADD_BUTTON, ndo);
-                waitNoEvent(5000);
-                
+                clickMouse(ATTRIBUTE_ADD_BUTTON, ndo);
+                // Give the focus to the table operator
+                jto.clickMouse();
+                giveAPIFocus(jto);
+                				
                 // Non default attribute name
                 if (attribute.getName() != null) {
+                    jto.clickForEdit(rowIndex,
+                            jto.findColumn(ATTRIBUTE_NAME_COLUMN_NAME));
                     jtmd.editCell(jto, rowIndex,
-                            jto.findColumn(ATTRIBUTE_NAME_COLUMN_NAME),
+                            jto.findColumn(ATTRIBUTE_NAME_COLUMN_NAME), 
                             attribute.getName());
                 }
                 // Non default attribute type
                 if (attribute.getType() != null) {
+                    jto.clickForEdit(rowIndex,
+                            jto.findColumn(ATTRIBUTE_TYPE_COLUMN_NAME));
                     jtmd.editCell(jto, rowIndex,
                             jto.findColumn(ATTRIBUTE_TYPE_COLUMN_NAME),
                             attribute.getType());
                 }
                 // Non default attribute access
                 if (attribute.getAccess() != null) {
+                    jto.clickForEdit(rowIndex,
+                            jto.findColumn(ATTRIBUTE_ACCESS_COLUMN_NAME));
                     jtmd.selectCell(jto, rowIndex,
                             jto.findColumn(ATTRIBUTE_ACCESS_COLUMN_NAME));
                     selectComboBoxItem(accessBox, jto, attribute.getAccess());
                 }
                 // Non default attribute description
                 if (attribute.getDescription() != null) {
+                    jto.clickForEdit(rowIndex,
+                            jto.findColumn(ATTRIBUTE_DESCRIPTION_COLUMN_NAME));
                     jtmd.editCell(jto, rowIndex,
                             jto.findColumn(ATTRIBUTE_DESCRIPTION_COLUMN_NAME),
                             attribute.getDescription());
@@ -313,38 +324,55 @@ public abstract class JMXTestCase extends JellyTestCase {
         if (opList != null) {
             for (Operation operation : opList) {
                 
-                clickButton(addButton, ndo);
-                waitNoEvent(5000);
+                clickMouse(addButton, ndo);
+                // Give the focus to the table operator
+                jto.clickMouse();
+                giveAPIFocus(jto);
                 
                 // Non default operation name
                 if (operation.getName() != null) {
+                    jto.clickForEdit(rowIndex,
+                            jto.findColumn(OPERATION_NAME_COLUMN_NAME));
                     jtmd.editCell(jto, rowIndex,
                             jto.findColumn(OPERATION_NAME_COLUMN_NAME),
                             operation.getName());
                 }
                 // Non default operation return type
                 if (operation.getReturnType() != null) {
+                    jto.clickForEdit(rowIndex,
+                            jto.findColumn(OPERATION_RETURN_TYPE_COLUMN_NAME));
                     jtmd.editCell(jto, rowIndex,
                             jto.findColumn(OPERATION_RETURN_TYPE_COLUMN_NAME),
                             operation.getReturnType());
                 }
-                if (operation.getParameters() != null) {
-                    jto.editCellAt(rowIndex,
-                            jto.findColumn(OPERATION_PARAMETERS_COLUMN_NAME));
-                    addMBeanOperationParameters(jto, operation);
-                }
-                if (operation.getExceptions() != null) {
-                    jto.editCellAt(rowIndex,
-                            jto.findColumn(OPERATION_EXCEPTIONS_COLUMN_NAME));
-                    addMBeanOperationExceptions(jto, operation);
-                }
                 // Non default operation description
                 if (operation.getDescription() != null) {
+                    jto.clickForEdit(rowIndex,
+                            jto.findColumn(OPERATION_DESCRIPTION_COLUMN_NAME));
                     jtmd.editCell(jto, rowIndex,
                             jto.findColumn(OPERATION_DESCRIPTION_COLUMN_NAME),
                             operation.getDescription());
                 }
                 
+                // IMPORTANT :
+                // The parameters and exceptions MUST be added at last
+                // because they start a new table operator that keep the focus
+                // (so the current operation table operator has no more focus)
+                if (operation.getParameters() != null) {
+                    jto.clickForEdit(rowIndex,
+                            jto.findColumn(OPERATION_PARAMETERS_COLUMN_NAME));
+                    jto.editCellAt(rowIndex,
+                            jto.findColumn(OPERATION_PARAMETERS_COLUMN_NAME));
+                    addMBeanOperationParameters(jto, operation);
+                }
+                if (operation.getExceptions() != null) {
+                    jto.clickForEdit(rowIndex,
+                            jto.findColumn(OPERATION_EXCEPTIONS_COLUMN_NAME));
+                    jto.editCellAt(rowIndex,
+                            jto.findColumn(OPERATION_EXCEPTIONS_COLUMN_NAME));
+                    addMBeanOperationExceptions(jto, operation);
+                }
+
                 rowIndex++;
             }
         }
@@ -357,19 +385,19 @@ public abstract class JMXTestCase extends JellyTestCase {
             JTableOperator jto,
             Operation operation) {
         
+        pressAndRelease(OPERATION_ADD_PARAM_BUTTON, jto);
+        sleep(2000);
         JTableMouseDriver jtmd = new JTableMouseDriver();
         int rowIndex = 0;
-        
-        clickButton(OPERATION_ADD_PARAM_BUTTON, jto);
-        waitNoEvent(5000);
         
         NbDialogOperator ndo = new NbDialogOperator(PARAMETER_DIALOG_TITLE);
         JTableOperator jto2 = getTableOperator(PARAMETER_TABLE, ndo);
         
         for (Parameter parameter : operation.getParameters()) {
-            
-            clickButton(PARAMETER_ADD_BUTTON, ndo);
-            waitNoEvent(5000);
+           
+            clickMouse(PARAMETER_ADD_BUTTON, ndo);
+            // Give the focus to the table operator
+            giveAPIFocus(jto2);
             
             // Non default parameter name
             if (parameter.getName() != null) {
@@ -392,9 +420,8 @@ public abstract class JMXTestCase extends JellyTestCase {
             rowIndex++;
         }
         // Close the popup
-        //clickButton(CLOSE_JBUTTON, ndo);
-        ndo.ok();
-        waitNoEvent(5000);
+        clickMouse(CLOSE_JBUTTON, ndo);
+        //ndo.ok();
     }
     
     /**
@@ -404,19 +431,19 @@ public abstract class JMXTestCase extends JellyTestCase {
             JTableOperator jto,
             Operation operation) {
         
+        pressAndRelease(OPERATION_ADD_EXCEP_BUTTON, jto);
+        sleep(2000);
         JTableMouseDriver jtmd = new JTableMouseDriver();
         int rowIndex = 0;
-        
-        clickButton(OPERATION_ADD_EXCEP_BUTTON, jto);
-        waitNoEvent(5000);
-        
+
         NbDialogOperator ndo = new NbDialogOperator(EXCEPTION_DIALOG_TITLE);
         JTableOperator jto2 = getTableOperator(EXCEPTION_TABLE, ndo);
         
         for (Exception exception : operation.getExceptions()) {
             
-            clickButton(EXCEPTION_ADD_BUTTON, ndo);
-            waitNoEvent(5000);
+            clickMouse(EXCEPTION_ADD_BUTTON, ndo);
+            // Give the focus to the table operator
+            giveAPIFocus(jto2);
             
             // Non default exception class name
             if (exception.getClassName() != null) {
@@ -433,9 +460,8 @@ public abstract class JMXTestCase extends JellyTestCase {
             rowIndex++;
         }
         // Close the popup
-        //clickButton(CLOSE_JBUTTON, ndo);
-        ndo.ok();
-        waitNoEvent(5000);
+        clickMouse(CLOSE_JBUTTON, ndo);
+        //ndo.ok();
     }
     
     /**
@@ -453,8 +479,10 @@ public abstract class JMXTestCase extends JellyTestCase {
         if (notifList != null) {
             for (Notification notification : notifList) {
                 
-                clickButton(NOTIFICATION_ADD_BUTTON, ndo);
-                waitNoEvent(5000);
+                clickMouse(NOTIFICATION_ADD_BUTTON, ndo);
+                // Give the focus to the table operator
+                jto.clickMouse();
+                giveAPIFocus(jto);
 
                 // Non default notification class name
                 if (notification.getClassName() != null) {
@@ -486,19 +514,19 @@ public abstract class JMXTestCase extends JellyTestCase {
             JTableOperator jto,
             Notification notification) {
         
+        pressAndRelease(NOTIFICATION_ADD_TYPE_BUTTON, jto);
+        sleep(2000);
         JTableMouseDriver jtmd = new JTableMouseDriver();
         int rowIndex = 0;
-        
-        clickButton(NOTIFICATION_ADD_TYPE_BUTTON, jto);
-        waitNoEvent(5000);
         
         NbDialogOperator ndo = new NbDialogOperator(TYPE_DIALOG_TITLE);
         JTableOperator jto2 = getTableOperator(TYPE_TABLE, ndo);
         
         for (NotificationType notifType : notification.getTypes()) {
             
-            clickButton(TYPE_ADD_BUTTON, ndo);
-            waitNoEvent(5000);
+            clickMouse(TYPE_ADD_BUTTON, ndo);
+            // Give the focus to the table operator
+            giveAPIFocus(jto2);
             
             // Non default type
             if (notifType.getType() != null) {
@@ -507,9 +535,8 @@ public abstract class JMXTestCase extends JellyTestCase {
             rowIndex++;
         }
         // Close the popup
-        //clickButton(TYPE_CLOSE_BUTTON, ndo);
-        ndo.ok();
-        waitNoEvent(5000);
+        clickMouse(TYPE_CLOSE_BUTTON, ndo);
+        //ndo.ok();
     }
     
     /**
@@ -585,7 +612,7 @@ public abstract class JMXTestCase extends JellyTestCase {
         if (isEditable) {
             // Open parameters dialog operator
             jto.editCellAt(rowIndex, columnIndex);
-            clickButton(OPERATION_ADD_PARAM_BUTTON, jto);
+            pressAndRelease(OPERATION_ADD_PARAM_BUTTON, jto);
             waitNoEvent(5000);
             
             NbDialogOperator ndo = new NbDialogOperator(PARAMETER_DIALOG_TITLE);
@@ -651,7 +678,7 @@ public abstract class JMXTestCase extends JellyTestCase {
         if (isEditable) {
             // Open parameters dialog operator
             jto.editCellAt(rowIndex, columnIndex);
-            clickButton(OPERATION_ADD_EXCEP_BUTTON, jto);
+            pressAndRelease(OPERATION_ADD_EXCEP_BUTTON, jto);
             waitNoEvent(5000);
             
             NbDialogOperator ndo = new NbDialogOperator(EXCEPTION_DIALOG_TITLE);
@@ -814,10 +841,15 @@ public abstract class JMXTestCase extends JellyTestCase {
         return new JButtonOperator(jb);
     }
     
-    public void clickButton(String componentName, ContainerOperator co) {
+    public void pressAndRelease(String componentName, ContainerOperator co) {
         JButtonOperator jbo = getButtonOperator(componentName, co);
         jbo.press();
         jbo.release();
+    }
+    
+    public void clickMouse(String componentName, ContainerOperator co) {
+        JButtonOperator jbo = getButtonOperator(componentName, co);
+        jbo.clickMouse();
     }
     
     //    public void clickButton(String componentName, ContainerOperator co) {
@@ -870,6 +902,13 @@ public abstract class JMXTestCase extends JellyTestCase {
         JTable table = (JTable)co.findSubComponent(
                 new NameComponentChooser(componentName));
         return new JTableOperator(table);
+    }
+    
+    public JTable getTable(
+            String componentName, ContainerOperator co) {
+        JTable table = (JTable)co.findSubComponent(
+                new NameComponentChooser(componentName));
+        return table;
     }
     
     public void selectTableCell(
@@ -973,7 +1012,7 @@ public abstract class JMXTestCase extends JellyTestCase {
         JMenuItemOperator jmio = jpmo.showMenuItem(path);
         return jmio;
     }
-    
+
     /**
      * Perform action on the specified node
      * Seems to not work as expected when performing some checks before
@@ -1100,42 +1139,55 @@ public abstract class JMXTestCase extends JellyTestCase {
                 createdLine = createdBufferedReader.readLine();
                 // The end of expected stream has not been reached
                 if (expectedLine != null) {
-                    // Compare lines
-                    if (!expectedLine.endsWith("<current Date and Time>") &&
-                            !expectedLine.endsWith("<author>") &&
-                            !expectedLine.equals(createdLine)) {
-                        // If the difference concerns indentation,
-                        // just display a warning
-                        if (expectedLine.trim().equals(createdLine.trim())) {
-                            // Indentation differences are meaningfull
-                            // for non empty lines
-                            if (!expectedLine.trim().equals("")) {
-                                System.out.println("Created line " + lineNumber +
-                                        " indentation differs from expected");
+                    // Created line is not null
+                    if (createdLine != null) {
+                        // Compare lines
+                        if (!expectedLine.endsWith("<current Date and Time>") &&
+                                !expectedLine.endsWith("<author>") &&
+                                !expectedLine.equals(createdLine)) {
+                            // If the difference concerns indentation,
+                            // just display a warning
+                            if (expectedLine.trim().equals(createdLine.trim())) {
+                                // Indentation differences are meaningfull
+                                // for non empty lines
+                                if (!expectedLine.trim().equals("")) {
+                                    System.out.println("(WARNING) Created line " + lineNumber +
+                                            " indentation differs from expected");
+                                    System.out.println("Created line :\n\t" + createdLine);
+                                    System.out.println("instead of expected :\n\t" + expectedLine);
+                                }
+                            } else {
+                                System.out.println("(ERROR) Created line " + lineNumber +
+                                        " differs from expected");
                                 System.out.println("Created line :\n\t" + createdLine);
                                 System.out.println("instead of expected :\n\t" + expectedLine);
+                                return false;
                             }
-                        } else {
-                            System.out.println("Created line " + lineNumber +
-                                    " differs from expected");
-                            System.out.println("Created line :\n\t" + createdLine);
-                            System.out.println("instead of expected :\n\t" + expectedLine);
-                            return false;
                         }
+                    }
+                    // Created line is null
+                    else if (!expectedLine.trim().equals("")) {
+                        System.out.println("Created line " + lineNumber +
+                                " differs from expected");
+                        System.out.println("Created line :\n\t" + createdLine);
+                        System.out.println("instead of expected :\n\t" + expectedLine);
+                        return false;
                     }
                 }
                 // The end of expected stream has been reached
-                // while the end of created stream has not been reached
-                else if (createdLine != null) {
-                    System.out.println("Created line " + lineNumber +
-                            " differs from expected");
-                    System.out.println("Created line :\n\t" + createdLine);
-                    System.out.println("instead of expected :\n\t" + expectedLine);
-                    return false;
-                }
-                // The end of both expected and created stream has been reached
                 else {
-                    return true;
+                    // Created line is not null
+                    if (createdLine != null && !createdLine.trim().equals("")) {
+                        System.out.println("Created line " + lineNumber +
+                                " differs from expected");
+                        System.out.println("Created line :\n\t" + createdLine);
+                        System.out.println("instead of expected :\n\t" + expectedLine);
+                        return false;
+                    }
+                    // Created line is null
+                    else {
+                        return true;
+                    }
                 }
             }
         } catch (IOException e) {
@@ -1175,7 +1227,16 @@ public abstract class JMXTestCase extends JellyTestCase {
         new EventTool().waitNoEvent(timeout);
     }
 
-    public void sleep(long timeout) {
+    /**
+     * Give the focus to the specified component operator.
+     */
+    protected void giveAPIFocus(ComponentOperator operator) {
+        APIFocusDriver mfd = new APIFocusDriver();
+        mfd.giveFocus(operator);
+        sleep(2000);
+    }
+    
+    protected void sleep(long timeout) {
         try {
             Thread.sleep(timeout);
         }

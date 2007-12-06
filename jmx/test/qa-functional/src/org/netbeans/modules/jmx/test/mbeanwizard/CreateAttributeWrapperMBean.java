@@ -41,12 +41,11 @@
 
 package org.netbeans.modules.jmx.test.mbeanwizard;
 
-import java.util.ArrayList;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.jmx.test.helpers.Attribute;
 import org.netbeans.modules.jmx.test.helpers.MBean;
 import static org.netbeans.modules.jmx.test.helpers.JellyConstants.*;
 
@@ -77,8 +76,8 @@ public class CreateAttributeWrapperMBean extends MBeanWizardTestCase {
     private static String GENERIC_ATTRIBUTE_1 = "GenericAttribute1";
     private static String GENERIC_ATTRIBUTE_2 = "GenericAttribute2";
     
-    // Depending on the MBean name, the attributes wizard execution will differ
-    private String mbeanName = null;
+    // Depending on the MBean, the attributes wizard execution will differ
+    private MBean mbean = null;
     
     /** Need to be defined because of JUnit */
     public CreateAttributeWrapperMBean(String name) {
@@ -126,15 +125,14 @@ public class CreateAttributeWrapperMBean extends MBeanWizardTestCase {
         System.out.println("============  createWrappedMBean1  ============");
         
         String description = "MBean from existing java class with all attributes";
-        mbeanName = ATTRIBUTE_WRAPPED_MBEAN_NAME_1;
-        MBean myMBean = new MBean(
-                mbeanName,
+        mbean = new MBean(
+                ATTRIBUTE_WRAPPED_MBEAN_NAME_1,
                 FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS,
                 PACKAGE_COM_FOO_BAR,
                 description,
                 PACKAGE_COM_FOO_BAR + "." + ATTRIBUTE_WRAPPER_NAME_1,
                 false, null, null, null);
-        wizardExecution(FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS, myMBean);
+        wizardExecution(FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS, mbean);
     }
     
     /**
@@ -145,15 +143,14 @@ public class CreateAttributeWrapperMBean extends MBeanWizardTestCase {
         System.out.println("============  createWrappedMBean2  ============");
         
         String description = "MBean from existing java class with minimal attributes";
-        mbeanName = ATTRIBUTE_WRAPPED_MBEAN_NAME_2;
-        MBean myMBean = new MBean(
-                mbeanName,
+        mbean = new MBean(
+                ATTRIBUTE_WRAPPED_MBEAN_NAME_2,
                 FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS,
                 PACKAGE_COM_FOO_BAR,
                 description,
                 PACKAGE_COM_FOO_BAR + "." + ATTRIBUTE_WRAPPER_NAME_1,
                 false, null, null, null);
-        wizardExecution(FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS, myMBean);
+        wizardExecution(FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS, mbean);
     }
     
     /**
@@ -164,15 +161,14 @@ public class CreateAttributeWrapperMBean extends MBeanWizardTestCase {
         System.out.println("============  createWrappedMBean3  ============");
         
         String description = "MBean from existing java class with generic attributes";
-        mbeanName = ATTRIBUTE_WRAPPED_MBEAN_NAME_3;
-        MBean myMBean = new MBean(
-                mbeanName,
+        mbean = new MBean(
+                ATTRIBUTE_WRAPPED_MBEAN_NAME_3,
                 FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS,
                 PACKAGE_COM_FOO_BAR,
                 description,
                 PACKAGE_COM_FOO_BAR + "." + ATTRIBUTE_WRAPPER_NAME_2,
                 false, null, null, null);
-        wizardExecution(FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS, myMBean);
+        wizardExecution(FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS, mbean);
     }
     
     /**
@@ -184,15 +180,14 @@ public class CreateAttributeWrapperMBean extends MBeanWizardTestCase {
         
         String description = "MBean from existing java class wrapped as MXBean " +
                 "with all attributes";
-        mbeanName = ATTRIBUTE_WRAPPED_MBEAN_NAME_4;
-        MBean myMBean = new MBean(
-                mbeanName,
+        mbean = new MBean(
+                ATTRIBUTE_WRAPPED_MBEAN_NAME_4,
                 FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS,
                 PACKAGE_COM_FOO_BAR,
                 description,
                 PACKAGE_COM_FOO_BAR + "." + ATTRIBUTE_WRAPPER_NAME_1,
                 true, null, null, null);
-        wizardExecution(FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS, myMBean);
+        wizardExecution(FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS, mbean);
     }
     
     /**
@@ -204,15 +199,14 @@ public class CreateAttributeWrapperMBean extends MBeanWizardTestCase {
         
         String description = "MBean from existing java class wrapped as MXBean " +
                 "with minimal attributes";
-        mbeanName = ATTRIBUTE_WRAPPED_MBEAN_NAME_5;
-        MBean myMBean = new MBean(
-                mbeanName,
+        mbean = new MBean(
+                ATTRIBUTE_WRAPPED_MBEAN_NAME_5,
                 FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS,
                 PACKAGE_COM_FOO_BAR,
                 description,
                 PACKAGE_COM_FOO_BAR + "." + ATTRIBUTE_WRAPPER_NAME_1,
                 true, null, null, null);
-        wizardExecution(FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS, myMBean);
+        wizardExecution(FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS, mbean);
     }
     
     /**
@@ -224,15 +218,247 @@ public class CreateAttributeWrapperMBean extends MBeanWizardTestCase {
         
         String description = "MBean from existing java class wrapped as MXBean " +
                 "with generic attributes";
-        mbeanName = ATTRIBUTE_WRAPPED_MBEAN_NAME_6;
-        MBean myMBean = new MBean(
-                mbeanName,
+        mbean = new MBean(
+                ATTRIBUTE_WRAPPED_MBEAN_NAME_6,
                 FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS,
                 PACKAGE_COM_FOO_BAR,
                 description,
                 PACKAGE_COM_FOO_BAR + "." + ATTRIBUTE_WRAPPER_NAME_2,
                 true, null, null, null);
-        wizardExecution(FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS, myMBean);
+        wizardExecution(FILE_TYPE_MBEAN_FROM_EXISTING_JAVA_CLASS, mbean);
+    }
+    
+    //========================= Panel discovery ==================================//
+    
+    /**
+     * New file JMX wizard execution.
+     * Depending on the JMX file type, the wizard execution will have different
+     * behavior/fields.
+     */
+    protected void wizardExecution(String fileType, MBean mbean) {
+        
+        // New File wizard execution
+        // -------------------------
+        NewFileWizardOperator nfwo = newFileWizardFromMenu(
+                PROJECT_NAME_MBEAN_FUNCTIONAL,
+                FILE_CATEGORY_JMX,
+                fileType);
+        nfwo.next();
+        
+        // Name and Location wizard execution
+        // ----------------------------------
+        NewFileNameLocationStepOperator nfnlso = nameAndLocationWizard(
+                mbean.getName(),
+                mbean.getPackage(),
+                mbean.getDescription(),
+                mbean.getClassToWrap(),
+                mbean.isObjectWrappedAsMXBean());
+        // Check Name and Location wizard
+        System.out.println("Check name and location wizard");
+        checkNameAndLocationWizard(nfnlso, mbean);
+        // Get the generated files before switching to next wizard
+        String mbeanCreatedClassFile = nfnlso.txtCreatedFile().getText();
+        String mbeanCreatedInterfaceFile = getTextFieldContent(
+                CREATED_FILE_TEXT_FIELD, nfnlso);
+        
+        // Attributes wizard execution
+        // ------------------------------------------
+        nfnlso.next();
+        // Check MBean attributes wizard
+        System.out.println("Check MBean attributes wizard " +
+                "before attributes selection");
+        checkMBeanAttributesWizardBeforeSelection(nfnlso, fileType);
+        // Select/unselect MBean attributes
+        System.out.println("Select/unselect and update MBean attributes");
+        updateMBeanAttributes(nfnlso);
+        sleep(2000);
+        // Check MBean attributes wizard
+        System.out.println("Check MBean attributes wizard " +
+                "after attributes selection");
+        checkMBeanAttributesWizardAfterSelection(nfnlso, fileType);
+
+        nfnlso.next();
+        sleep(2000);
+        nfnlso.finish();
+        
+        // Check generated files
+        System.out.println("Check created files");
+        checkCreatedFiles(mbeanCreatedClassFile, mbeanCreatedInterfaceFile, mbean);
+    }
+    
+    /**
+     * Select/unselect and update wrapped attributes.
+     */
+    private void updateMBeanAttributes(
+            NewFileNameLocationStepOperator nfnlso) {
+        
+        JTableOperator jto = getTableOperator(WRAPPER_ATTRIBUTE_TABLE, nfnlso);
+        // Give the focus to the table operator
+        giveAPIFocus(jto);
+        
+        // Depending on the MBean, performs the following :
+        // - check/uncheck attributes to keep
+        // - modify access
+        // - modify description
+        
+        // Expose all attributes
+        if (mbean.getName().equals(ATTRIBUTE_WRAPPED_MBEAN_NAME_1) ||
+                mbean.getName().equals(ATTRIBUTE_WRAPPED_MBEAN_NAME_4)) {
+            
+            // Set ATTRIBUTE_3 access to read only
+            jto.selectCell(jto.findCellRow(ATTRIBUTE_3),
+                    jto.findColumn(ATTRIBUTE_ACCESS_COLUMN_NAME));
+            selectComboBoxItem(WRAPPER_ATTRIBUTE_ACCESS_BOX, jto, READ_ONLY);
+            // Unselect ATTRIBUTE_6 returning java.util.Date
+            // As there is 2 setters defined for ATTRIBUTE_6 (returning float and Date),
+            // we retreive the row index using the returned type value instead
+            // of the attribute name
+            unselectAttribute(jto, "java.util.Date");
+        }
+        // Expose minimal attributes
+        else if (mbean.getName().equals(ATTRIBUTE_WRAPPED_MBEAN_NAME_2) ||
+                mbean.getName().equals(ATTRIBUTE_WRAPPED_MBEAN_NAME_5)) {
+            
+            // Unselect ATTRIBUTE_1, ATTRIBUTE_3 and ATTRIBUTE_5
+            unselectAttribute(jto, ATTRIBUTE_1);
+            unselectAttribute(jto, ATTRIBUTE_3);
+            unselectAttribute(jto, ATTRIBUTE_5);
+            // Unselect ATTRIBUTE_6 returning float
+            // As there is 2 setters defined for ATTRIBUTE_6 (returning float and Date),
+            // we retreive the row index using the returned type value instead
+            // of the attribute name
+            unselectAttribute(jto, "float");
+        }
+        // Expose generic attributes
+        else if(mbean.getName().equals(ATTRIBUTE_WRAPPED_MBEAN_NAME_3) ||
+                mbean.getName().equals(ATTRIBUTE_WRAPPED_MBEAN_NAME_6)) {
+            // Nothing to do
+            // We just want to check that generation is successfull
+        }
+    }
+    
+    /**
+     * Check Attributes wizard before MBean attributes selection
+     */
+    private void checkMBeanAttributesWizardBeforeSelection(
+            NewFileNameLocationStepOperator nfnlso, String fileType) {
+        
+        JTableOperator jto = getTableOperator(WRAPPER_ATTRIBUTE_TABLE, nfnlso);
+        int rowCount = 0;
+        
+        System.out.println("Check all MBean attributes are selected");
+
+        // Wrapped java class is ATTRIBUTE_WRAPPER_NAME_1
+        if (mbean.getClassToWrap().equals(
+                PACKAGE_COM_FOO_BAR + "." + ATTRIBUTE_WRAPPER_NAME_1)) {
+            rowCount = jto.getRowCount();
+            if (rowCount != 7) {
+                System.out.println("(ERROR) Found " + rowCount + " attributes" +
+                        " instead of expected 7");
+            }
+            assertEquals(7, rowCount);
+            verifyAttributeSelection(jto, ATTRIBUTE_1, true);
+            verifyAttributeSelection(jto, ATTRIBUTE_2, true);
+            verifyAttributeSelection(jto, ATTRIBUTE_3, true);
+            verifyAttributeSelection(jto, ATTRIBUTE_4, true);
+            verifyAttributeSelection(jto, ATTRIBUTE_5, true);
+            // As there is 2 setters defined for ATTRIBUTE_6 (returning float and Date),
+            // we retreive the row index using the returned type value instead
+            // of the attribute name
+            verifyAttributeSelection(jto, "float", true);
+            verifyAttributeSelection(jto, "java.util.Date", true);
+        }
+        // Wrapped java class is ATTRIBUTE_WRAPPER_NAME_2
+        else if (mbean.getClassToWrap().equals(
+                PACKAGE_COM_FOO_BAR + "." + ATTRIBUTE_WRAPPER_NAME_2)) {
+            rowCount = jto.getRowCount();
+            if (rowCount != 3) {
+                System.out.println("(ERROR) Found " + rowCount + " attributes" +
+                        " instead of expected 3");
+            }
+            assertEquals(3, rowCount);
+            verifyAttributeSelection(jto, ATTRIBUTE_1, true);
+            verifyAttributeSelection(jto, GENERIC_ATTRIBUTE_1, true);
+            verifyAttributeSelection(jto, GENERIC_ATTRIBUTE_2, true);
+        }
+        super.checkMBeanAttributesWizard(nfnlso, fileType);
+    }
+    
+    /**
+     * Check Attributes wizard after MBean attributes selection
+     */
+    private void checkMBeanAttributesWizardAfterSelection(
+            NewFileNameLocationStepOperator nfnlso, String fileType) {
+        
+        JTableOperator jto = getTableOperator(WRAPPER_ATTRIBUTE_TABLE, nfnlso);
+        int rowCount = 0;
+        
+        System.out.println("Check MBean attributes have been selected/unselected");
+ 
+        // Wrapped java class is ATTRIBUTE_WRAPPER_NAME_1
+        if (mbean.getClassToWrap().equals(
+                PACKAGE_COM_FOO_BAR + "." + ATTRIBUTE_WRAPPER_NAME_1)) {
+            rowCount = jto.getRowCount();
+            if (rowCount != 7) {
+                System.out.println("(ERROR) Found " + rowCount + " attributes" +
+                        " instead of expected 7");
+            }
+            assertEquals(7, rowCount);
+            // Expose all attributes
+            if (mbean.getName().equals(ATTRIBUTE_WRAPPED_MBEAN_NAME_1) ||
+                    mbean.getName().equals(ATTRIBUTE_WRAPPED_MBEAN_NAME_4)) {
+                verifyAttributeSelection(jto, ATTRIBUTE_1, true);
+                verifyAttributeSelection(jto, ATTRIBUTE_2, true);
+                verifyAttributeSelection(jto, ATTRIBUTE_3, true);
+                verifyAttributeSelection(jto, ATTRIBUTE_4, true);
+                verifyAttributeSelection(jto, ATTRIBUTE_5, true);
+                verifyAttributeSelection(jto, "float", true);
+                verifyAttributeSelection(jto, "java.util.Date", false);
+            } 
+            // Expose minimal attributes
+            else if (mbean.getName().equals(ATTRIBUTE_WRAPPED_MBEAN_NAME_2) ||
+                    mbean.getName().equals(ATTRIBUTE_WRAPPED_MBEAN_NAME_5)) {
+                verifyAttributeSelection(jto, ATTRIBUTE_1, false);
+                verifyAttributeSelection(jto, ATTRIBUTE_2, true);
+                verifyAttributeSelection(jto, ATTRIBUTE_3, false);
+                verifyAttributeSelection(jto, ATTRIBUTE_4, true);
+                verifyAttributeSelection(jto, ATTRIBUTE_5, false);
+                verifyAttributeSelection(jto, "float", false);
+                verifyAttributeSelection(jto, "java.util.Date", true);
+            }
+        }
+        // Wrapped java class is ATTRIBUTE_WRAPPER_NAME_2
+        else if (mbean.getClassToWrap().equals(
+                PACKAGE_COM_FOO_BAR + "." + ATTRIBUTE_WRAPPER_NAME_2)) {
+            rowCount = jto.getRowCount();
+            if (rowCount != 3) {
+                System.out.println("(ERROR) Found " + rowCount + " attributes" +
+                        " instead of expected 3");
+            }
+            assertEquals(3, rowCount);
+            verifyAttributeSelection(jto, ATTRIBUTE_1, true);
+            verifyAttributeSelection(jto, GENERIC_ATTRIBUTE_1, true);
+            verifyAttributeSelection(jto, GENERIC_ATTRIBUTE_2, true);
+        }
+        super.checkMBeanAttributesWizard(nfnlso, fileType);
+    }
+    
+    
+    private void unselectAttribute(JTableOperator jto, String name) {
+        int rowIndex = jto.findCellRow(name);
+        int columnIndex = jto.findColumn(ATTRIBUTE_EXPOSE_COLUMN_NAME);
+        jto.selectCell(rowIndex, columnIndex);
+    }
+    
+    private void verifyAttributeSelection(
+            JTableOperator jto, String name, boolean selected) {
+        int rowIndex = jto.findCellRow(name);
+        int columnIndex = jto.findColumn(ATTRIBUTE_EXPOSE_COLUMN_NAME);
+        if (selected) {
+            assertTrue((Boolean)getTableCellValue(jto, rowIndex, columnIndex));
+        } else {
+            assertFalse((Boolean)getTableCellValue(jto, rowIndex, columnIndex));
+        }
     }
     
     //========================= JAVA CLASS generation ===========================//
@@ -262,7 +488,11 @@ public class CreateAttributeWrapperMBean extends MBeanWizardTestCase {
             // Add methods to the java class
             // Set caret position after the first occurence of "}",
             // that is after the constructor declaration
-            eo.setCaretPosition("}", false);
+            //JF: constructor is not always generated by NetBeans,
+            //JF: so rather set caret after the first "{"
+            //JF: which is the beginning of class body.
+            // eo.setCaretPosition("}", false);
+            eo.setCaretPosition("{", false);
             eo.insert(addGetAttribute1() +
                     addGetAttribute2() +
                     addIsAttribute2() +
@@ -288,7 +518,11 @@ public class CreateAttributeWrapperMBean extends MBeanWizardTestCase {
             // Add methods to the java class
             // Set caret position after the first occurence of "}",
             // that is after the constructor declaration
-            eo.setCaretPosition("}", false);
+            //JF: constructor is not always generated by NetBeans,
+            //JF: so rather set caret after the first "{"
+            //JF: which is the beginning of class body.
+            // eo.setCaretPosition("}", false);
+            eo.setCaretPosition("{", false);
             eo.insert(addGetGenericAttribute1() +
                     addGetGenericAttribute2() +
                     addGetAttribute1());
@@ -379,117 +613,6 @@ public class CreateAttributeWrapperMBean extends MBeanWizardTestCase {
         return "\n\tpublic <T> T get" + GENERIC_ATTRIBUTE_2 + "() {" +
                 "\n\t\treturn null;" +
                 "\n\t}\n";
-    }
-    
-    //========================= Panel discovery ==================================//
-    
-    /**
-     * Overloaded method to select/unselect wrapped attributes
-     * instead of creating new ones.
-     */
-    protected void addMBeanAttributes(
-            NewFileNameLocationStepOperator nfnlso,
-            ArrayList<Attribute> attrList,
-            String fileType) {
-        
-        JTableOperator jto = getTableOperator(WRAPPER_ATTRIBUTE_TABLE, nfnlso);
-        
-        System.out.println("Select/unselect and update MBeans attributes");
-        
-        // Depending on the MBean, performs the following :
-        // - check/uncheck attributes to keep
-        // - modify access
-        // - modify description
-        
-        // Expose all attributes
-        if (mbeanName.equals(ATTRIBUTE_WRAPPED_MBEAN_NAME_1) ||
-                mbeanName.equals(ATTRIBUTE_WRAPPED_MBEAN_NAME_4)) {
-            
-            // Set ATTRIBUTE_3 access to read only
-            jto.selectCell(jto.findCellRow(ATTRIBUTE_3),
-                    jto.findColumn(ATTRIBUTE_ACCESS_COLUMN_NAME));
-            selectComboBoxItem(WRAPPER_ATTRIBUTE_ACCESS_BOX, jto, READ_ONLY);
-            // Unselect ATTRIBUTE_6 returning java.util.Date
-            // As there is 2 setters defined for ATTRIBUTE_6 (returning float and Date),
-            // we retreive the row index using the returned type value instead
-            // of the attribute name
-            unselectAttribute(jto, "java.util.Date");
-        }
-        // Expose minimal attributes
-        else if (mbeanName.equals(ATTRIBUTE_WRAPPED_MBEAN_NAME_2) ||
-                mbeanName.equals(ATTRIBUTE_WRAPPED_MBEAN_NAME_5)) {
-            
-            // Unselect ATTRIBUTE_1, ATTRIBUTE_3 and ATTRIBUTE_5
-            unselectAttribute(jto, ATTRIBUTE_1);
-            unselectAttribute(jto, ATTRIBUTE_3);
-            unselectAttribute(jto, ATTRIBUTE_5);
-            // Unselect ATTRIBUTE_6 returning float
-            // As there is 2 setters defined for ATTRIBUTE_6 (returning float and Date),
-            // we retreive the row index using the returned type value instead
-            // of the attribute name
-            unselectAttribute(jto, "float");
-        }
-        // Expose generic attributes
-        else if(mbeanName.equals(ATTRIBUTE_WRAPPED_MBEAN_NAME_3) ||
-                mbeanName.equals(ATTRIBUTE_WRAPPED_MBEAN_NAME_6)) {
-            // Nothing to do
-            // We just want to check that generation is successfull
-        }
-    }
-    
-    /**
-     * Overloaded method to check selected/unselected wrapped attributes
-     */
-    protected void checkMBeanAttributesWizard(
-            NewFileNameLocationStepOperator nfnlso, String fileType) {
-        
-        JTableOperator jto = getTableOperator(WRAPPER_ATTRIBUTE_TABLE, nfnlso);
-        
-        System.out.println("Check selected/unselected MBeans attributes");
-        
-        // Expose all attributes
-        if (mbeanName.equals(ATTRIBUTE_WRAPPED_MBEAN_NAME_1) ||
-                mbeanName.equals(ATTRIBUTE_WRAPPED_MBEAN_NAME_4)) {
-            
-            assertEquals(READ_ONLY, getComboBoxItem(WRAPPER_ATTRIBUTE_ACCESS_BOX, jto));
-            verifyAttributeSelection(jto, ATTRIBUTE_1, true);
-            verifyAttributeSelection(jto, ATTRIBUTE_2, true);
-            verifyAttributeSelection(jto, ATTRIBUTE_3, true);
-            verifyAttributeSelection(jto, ATTRIBUTE_4, true);
-            verifyAttributeSelection(jto, ATTRIBUTE_5, true);
-            verifyAttributeSelection(jto, "float", true);
-            verifyAttributeSelection(jto, "java.util.Date", false);
-        }
-        // Expose minimal attributes
-        else if (mbeanName.equals(ATTRIBUTE_WRAPPED_MBEAN_NAME_2) ||
-                mbeanName.equals(ATTRIBUTE_WRAPPED_MBEAN_NAME_5)) {
-            verifyAttributeSelection(jto, ATTRIBUTE_1, false);
-            verifyAttributeSelection(jto, ATTRIBUTE_2, true);
-            verifyAttributeSelection(jto, ATTRIBUTE_3, false);
-            verifyAttributeSelection(jto, ATTRIBUTE_4, true);
-            verifyAttributeSelection(jto, ATTRIBUTE_5, false);
-            verifyAttributeSelection(jto, "float", false);
-            verifyAttributeSelection(jto, "java.util.Date", true);
-        }
-        super.checkMBeanAttributesWizard(nfnlso, fileType);
-    }
-    
-    
-    private void unselectAttribute(JTableOperator jto, String name) {
-        int rowIndex = jto.findCellRow(name);
-        int columnIndex = jto.findColumn(ATTRIBUTE_EXPOSE_COLUMN_NAME);
-        jto.selectCell(rowIndex, columnIndex);
-    }
-    
-    private void verifyAttributeSelection(
-            JTableOperator jto, String name, boolean selected) {
-        int rowIndex = jto.findCellRow(name);
-        int columnIndex = jto.findColumn(ATTRIBUTE_EXPOSE_COLUMN_NAME);
-        if (selected) {
-            assertTrue((Boolean)getTableCellValue(jto, rowIndex, columnIndex));
-        } else {
-            assertFalse((Boolean)getTableCellValue(jto, rowIndex, columnIndex));
-        }
     }
 }
 
