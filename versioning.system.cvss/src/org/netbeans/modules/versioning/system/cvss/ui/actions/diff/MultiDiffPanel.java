@@ -261,7 +261,6 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         }
         prevAction.setEnabled(currentIndex > 0 || currentDifferenceIndex > 0);
         dividerSet = false;
-        updateSplitLocation();
     }
     
     public void addNotify() {
@@ -284,6 +283,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
                     updateSplitLocation();
                 }
             });
+            return;
         }
         dividerSet = true;
         JTable jt = fileTable.getTable();
@@ -646,6 +646,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
                                 if (currentModelIndex == fi) {
                                     setDiffIndex(currentIndex, 0);
                                 }
+                                updateSplitLocation();
                             }
                         });
                     } catch (IOException e) {
@@ -800,6 +801,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         prevButton.setToolTipText(org.openide.util.NbBundle.getMessage(MultiDiffPanel.class, "CTL_DiffPanel_Prev_Tooltip")); // NOI18N
         prevButton.setFocusable(false);
         prevButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+
         prevButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         controlsToolBar.add(prevButton);
 
