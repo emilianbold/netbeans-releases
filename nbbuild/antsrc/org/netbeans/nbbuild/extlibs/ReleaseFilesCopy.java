@@ -50,7 +50,6 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.util.FileUtils;
 
@@ -87,7 +86,7 @@ public class ReleaseFilesCopy extends Task {
                             throw new BuildException("Could not copy " + from + ": " + x, x, getLocation());
                         }
                     } else {
-                        log("Could not find file " + from + " to copy", Project.MSG_WARN);
+                        throw new BuildException("Could not find file " + from + " to copy", getLocation());
                     }
                 } else {
                     File zip = getProject().resolveFile(fromString.substring(0, bangSlash));
@@ -98,8 +97,7 @@ public class ReleaseFilesCopy extends Task {
                                 String path = fromString.substring(bangSlash + 2);
                                 ZipEntry ze = zf.getEntry(path);
                                 if (ze == null) {
-                                    log("No such entry " + path + " in " + zip, Project.MSG_WARN);
-                                    continue;
+                                    throw new BuildException("No such entry " + path + " in " + zip, getLocation());
                                 }
                                 InputStream is = zf.getInputStream(ze);
                                 to.getParentFile().mkdirs();
@@ -120,7 +118,7 @@ public class ReleaseFilesCopy extends Task {
                             throw new BuildException("Could not extract " + zip + ": " + x, x, getLocation());
                         }
                     } else {
-                        log("Could not find file " + zip + " to extract", Project.MSG_WARN);
+                        throw new BuildException("Could not find file " + zip + " to extract", getLocation());
                     }
                 }
             }
