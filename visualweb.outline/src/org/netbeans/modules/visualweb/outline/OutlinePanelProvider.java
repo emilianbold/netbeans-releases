@@ -65,8 +65,9 @@ import org.openide.util.WeakListeners;
 public class OutlinePanelProvider implements NavigatorPanelWithUndo {
 
 
-    /** Current context to work on. */
-    private Lookup.Result<DesignBean> currentContextResult;
+    // #123003 Removed memory leak.
+//    /** Current context to work on. */
+//    private Lookup.Result<DesignBean> currentContextResult;
 
     /** Listens on the retrieved <code>Lookup.Result</code>. */
     private /*final*/ LookupListener outlineLookupListener;// = new OutlineLookupListener();
@@ -90,7 +91,7 @@ public class OutlinePanelProvider implements NavigatorPanelWithUndo {
     }
 
     public void panelActivated(Lookup lookup) {
-        currentContextResult = lookup.lookup(new Lookup.Template<DesignBean>(DesignBean.class));
+        Lookup.Result<DesignBean> currentContextResult = lookup.lookup(new Lookup.Template<DesignBean>(DesignBean.class));
 
         if (isFine()) {
             fine("panelActivated lookup=" + lookup); // NOI18N
