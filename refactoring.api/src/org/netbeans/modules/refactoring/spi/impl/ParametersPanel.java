@@ -675,7 +675,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
      * @param event Event object.
      */
     public void stop(ProgressEvent event) {
-       SwingUtilities.invokeLater(new Runnable() {
+        Runnable run = new Runnable() {
             public void run() {
                 progressHandle.finish();
                 progressPanel.remove(progressBar);
@@ -684,7 +684,12 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                 //setButtonsEnabled(true); 
                 //validate();
             }
-        });
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            run.run();
+        } else {
+            SwingUtilities.invokeLater(run);
+        }
     }
     
     public void stateChanged(ChangeEvent e) {
