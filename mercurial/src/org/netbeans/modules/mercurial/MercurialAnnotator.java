@@ -48,15 +48,19 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.api.project.Project;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.netbeans.modules.versioning.util.Utils;
 import javax.swing.*;
 import java.awt.Image;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.regex.Pattern;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.lang.reflect.Field;
 import java.lang.Exception;
 import org.netbeans.modules.mercurial.ui.annotate.AnnotateAction;
@@ -130,9 +134,14 @@ public class MercurialAnnotator extends VCSAnnotator {
     private MessageFormat format;
     private String emptyFormat;
     private Boolean needRevisionForFormat;
+    private File folderToScan;
+    private ConcurrentLinkedQueue<File> dirsToScan = new ConcurrentLinkedQueue();
+    private RequestProcessor.Task scanTask;
+    private static final RequestProcessor rp = new RequestProcessor("MercurialAnnotateScan", 1, true); // NOI18N
     
     public MercurialAnnotator() {
         cache = Mercurial.getInstance().getFileStatusCache();
+        scanTask = rp.create(new ScanTask());
         initDefaults();
     }
     
@@ -200,8 +209,15 @@ public class MercurialAnnotator extends VCSAnnotator {
         File mostImportantFile = null;
         boolean folderAnnotation = false;
         
-        for (File file : context.getRootFiles()) {
-            FileInformation info = cache.getStatus(file);
+        for (final File file : context.getRootFiles()) {
+            FileInformation info = cache.getCachedStatus(file);
+            if (info == null) {
+                File parentFile = file.getParentFile();
+                Mercurial.LOG.log(Level.FINE, "null cached status for: {0} {1} {2}", new Object[] {file, folderToScan, parentFile});
+                folderToScan = parentFile;
+                reScheduleScan(1000);
+                continue;
+            }
             int status = info.getStatus();
             if ((status & includeStatus) == 0) continue;
             
@@ -242,7 +258,11 @@ public class MercurialAnnotator extends VCSAnnotator {
         boolean isVersioned = false;
         for (Iterator i = context.getRootFiles().iterator(); i.hasNext();) {
             File file = (File) i.next();
-            if ((cache.getStatus(file).getStatus() & STATUS_BADGEABLE) != 0) {
+            // There is an assumption here that annotateName was already 
+            // called and FileStatusCache.getStatus was scheduled if
+            // FileStatusCache.getCachedStatus returned null.
+            FileInformation info = cache.getCachedStatus(file);
+            if ((info != null && (info.getStatus() & STATUS_BADGEABLE) != 0)) {
                 isVersioned = true;
                 break;
             }
@@ -633,5 +653,28 @@ public class MercurialAnnotator extends VCSAnnotator {
         }
         return true;
     }
-    
+
+    private void reScheduleScan(int delayMillis) {
+        File dirToScan = dirsToScan.peek();
+        if (!folderToScan.equals(dirToScan)) {
+            if (!dirsToScan.offer(folderToScan)) {
+                Mercurial.LOG.log(Level.FINE, "reScheduleScan failed to add to dirsToScan queue: {0} ", folderToScan);
+            }
+        }
+        scanTask.schedule(delayMillis);
+    }
+
+    private class ScanTask implements Runnable {
+        public void run() {
+            Thread.interrupted();
+            File dirToScan = dirsToScan.poll();
+            if (dirToScan != null) {
+                cache.getScannedFiles(dirToScan, null);
+                dirToScan = dirsToScan.peek();
+                if (dirToScan != null) {
+                    scanTask.schedule(1000);
+                }
+            }
+        }
+    }
 }

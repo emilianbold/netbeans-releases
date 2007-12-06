@@ -277,7 +277,7 @@ public class FileStatusCache {
      * @see FileInformation
      */
     public FileInformation getStatus(File file) {
-        if (file.isDirectory() && (hg.isAdministrative(file) || SharabilityQuery.getSharability(file) == SharabilityQuery.NOT_SHARABLE))
+        if (file.isDirectory() && (hg.isAdministrative(file) || HgUtils.isIgnored(file)))
             return FileStatusCache.FILE_INFORMATION_EXCLUDED_DIRECTORY;
         File dir = file.getParentFile();
         if (dir == null) {
@@ -363,7 +363,7 @@ public class FileStatusCache {
         Mercurial.LOG.log(Level.FINE, "createFileInformation(): {0}", file); // NOI18N
         if (file == null)
             return FILE_INFORMATION_UNKNOWN;
-        if (hg.isAdministrative(file) || SharabilityQuery.getSharability(file) == SharabilityQuery.NOT_SHARABLE)
+        if (hg.isAdministrative(file) || HgUtils.isIgnored(file))
             return file.isDirectory() ? FILE_INFORMATION_EXCLUDED_DIRECTORY : FILE_INFORMATION_EXCLUDED; // Excluded
 
         File rootManagedFolder = hg.getTopmostManagedParent(file);        
@@ -404,11 +404,11 @@ public class FileStatusCache {
     }
  
     @SuppressWarnings("unchecked") // Need to change turbo module to remove warning at source
-    private Map<File, FileInformation> getScannedFiles(File dir, Map<File, FileInformation> interestingFiles) {
+    public Map<File, FileInformation> getScannedFiles(File dir, Map<File, FileInformation> interestingFiles) {
         Map<File, FileInformation> files;
         
         files = (Map<File, FileInformation>) turbo.readEntry(dir, FILE_STATUS_MAP);
-        if (files != null) return files;
+         if (files != null) return files;
         if (isNotManagedByDefault(dir)) {
             if (interestingFiles == null) return FileStatusCache.NOT_MANAGED_MAP;
         }
@@ -682,7 +682,7 @@ public class FileStatusCache {
             // Only interested in looking for Hg managed dirs
             for (File file : files) {
                 if (file.isDirectory() && hg.getTopmostManagedParent(file) != null){
-                    if (hg.isAdministrative(file) || SharabilityQuery.getSharability(file) == SharabilityQuery.NOT_SHARABLE)
+                    if (hg.isAdministrative(file) || HgUtils.isIgnored(file))
                         folderFiles.put(file, FILE_INFORMATION_EXCLUDED_DIRECTORY); // Excluded dir
                     else
                         folderFiles.put(file, FILE_INFORMATION_UPTODATE_DIRECTORY);
@@ -693,6 +693,21 @@ public class FileStatusCache {
             return folderFiles;
         }
                 
+        boolean bInIgnoredDir = HgUtils.isIgnored(dir);
+        if(bInIgnoredDir){
+            for (File file : files) {
+                if (HgUtils.isPartOfMercurialMetadata(file)) continue;
+                
+                if (file.isDirectory()) {
+                    folderFiles.put(file, FILE_INFORMATION_EXCLUDED_DIRECTORY); // Excluded dir
+                } else {
+                    Mercurial.LOG.log(Level.FINE, "scanFolder exclude: {0}", file); // NOI18N
+                    folderFiles.put(file, FILE_INFORMATION_EXCLUDED);
+                }
+            }
+            return folderFiles;
+        }
+        
         if(interestingFiles == null){
             try {
                 interestingFiles = HgCommand.getInterestingStatus(rootManagedFolder, dir);
@@ -719,30 +734,22 @@ public class FileStatusCache {
         
         if (interestingFiles == null || interestingFiles.isEmpty()) return folderFiles;
 
-        boolean bInIgnoredDir = SharabilityQuery.getSharability(dir) == SharabilityQuery.NOT_SHARABLE;
-        if(bInIgnoredDir){
-            for (File file : files) {
-                if (HgUtils.isPartOfMercurialMetadata(file)) continue;
-                
-                if (file.isDirectory()) {
-                    folderFiles.put(file, FILE_INFORMATION_EXCLUDED_DIRECTORY); // Excluded dir
-                } else {
-                    folderFiles.put(file, FILE_INFORMATION_EXCLUDED);
-                }
-            }
-            return folderFiles;
-        }
-        
         for (File file : files) {
             if (HgUtils.isPartOfMercurialMetadata(file)) continue;
             
             if (file.isDirectory()) {
-                if (hg.isAdministrative(file) || SharabilityQuery.getSharability(file) == SharabilityQuery.NOT_SHARABLE)
+                if (hg.isAdministrative(file) || HgUtils.isIgnored(file)) {
                     folderFiles.put(file, FILE_INFORMATION_EXCLUDED_DIRECTORY); // Excluded dir
-                else
+                } else {
                     folderFiles.put(file, FILE_INFORMATION_UPTODATE_DIRECTORY);
+                }
             } else {
                 FileInformation fi = interestingFiles.get(file);
+                if (fi == null) {
+                    // We have removed -i from HgCommand.getInterestingFiles
+                    // so we might have a file we should be ignoring
+                    fi = createFileInformation(file);
+                }
                 if (fi != null && fi.getStatus() != FileInformation.STATUS_VERSIONED_UPTODATE)
                     folderFiles.put(file, fi);
             }

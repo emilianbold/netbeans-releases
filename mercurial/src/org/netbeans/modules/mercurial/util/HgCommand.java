@@ -89,7 +89,7 @@ public class HgCommand {
     private static final String HG_STATUS_FLAG_INCLUDE_CMD = "-I"; // NOI18N
     private static final String HG_STATUS_FLAG_INCLUDE_GLOB_CMD = "glob:"; // NOI18N
     private static final String HG_STATUS_FLAG_INCLUDE_END_CMD = "*"; // NOI18N
-    private static final String HG_STATUS_FLAG_INTERESTING_CMD = "-marduiC"; // NOI18N
+    private static final String HG_STATUS_FLAG_INTERESTING_CMD = "-marduC"; // NOI18N
     private static final String HG_STATUS_FLAG_UNKNOWN_CMD = "-u"; // NOI18N
     
     private static final String HG_COMMIT_CMD = "commit"; // NOI18N
