@@ -90,6 +90,7 @@ public class ProfilesModelHelper {
 
     public static final String XWS_SECURITY_SERVER = "xws-security-server";
     public static final String XWS_SECURITY_CLIENT = "xws-security-client";
+    public static final String WSSIP = "wssip";    
     public static final String DEFAULT_PASSWORD = "wsit";
     public static final String DEFAULT_USERNAME = "wsit";
 

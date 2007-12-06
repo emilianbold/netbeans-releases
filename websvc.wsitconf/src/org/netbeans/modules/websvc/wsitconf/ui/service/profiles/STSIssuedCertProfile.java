@@ -144,7 +144,7 @@ public class STSIssuedCertProfile extends SecurityProfile
             ProprietarySecurityPolicyModelHelper.setStoreType(component, KeystorePanel.JKS, false, false);
             ProprietarySecurityPolicyModelHelper.setStorePassword(component, KeystorePanel.DEFAULT_PASSWORD, false, false);
         }
-        ProprietarySecurityPolicyModelHelper.setKeyStoreAlias(component, ProfilesModelHelper.XWS_SECURITY_SERVER, false);
+        ProprietarySecurityPolicyModelHelper.setKeyStoreAlias(component, ProfilesModelHelper.WSSIP, false);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, false);
     }
 
@@ -153,7 +153,7 @@ public class STSIssuedCertProfile extends SecurityProfile
     }
     
     public boolean isServiceDefaultSetupUsed(WSDLComponent component, Project p) {
-        if (ProfilesModelHelper.XWS_SECURITY_SERVER.equals(ProprietarySecurityPolicyModelHelper.getStoreAlias(component, false))) {
+        if (ProfilesModelHelper.WSSIP.equals(ProprietarySecurityPolicyModelHelper.getStoreAlias(component, false))) {
             if (Util.isTomcat(p)) {
                 FileObject tomcatLoc = Util.getTomcatLocation(p);
                 String loc = tomcatLoc.getPath() + File.separator + "certs" + File.separator + "server-keystore.jks";
