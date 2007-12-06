@@ -150,6 +150,7 @@ import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
+import javax.lang.model.type.TypeVariable;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.modules.debugger.jpda.expr.EvaluationContext.VariableInfo;
@@ -184,9 +185,24 @@ import org.openide.util.NbBundle;
         if (loggerMethod.isLoggable(Level.FINE)) {
             loggerMethod.fine("STARTED : "+arg0+" in thread "+evaluationContext.getFrame().thread());
         }
-        TreePath methodInvokePath = TreePath.getPath(getCurrentPath(), arg0);
-        if (methodInvokePath == null) methodInvokePath = getCurrentPath();
-        Element elm = evaluationContext.getTrees().getElement(methodInvokePath);
+        Mirror object = null;
+        String methodName;
+        boolean isStatic;
+        ExpressionTree expression = arg0.getMethodSelect();
+        Element elm;
+        if (expression.getKind() == Tree.Kind.MEMBER_SELECT) {
+            MemberSelectTree mst = (MemberSelectTree) expression;
+            object = mst.getExpression().accept(this, evaluationContext);
+            methodName = mst.getIdentifier().toString();
+            TreePath memberSelectPath = TreePath.getPath(getCurrentPath(), mst);
+            if (memberSelectPath == null) memberSelectPath = getCurrentPath();
+            elm = evaluationContext.getTrees().getElement(memberSelectPath);
+        } else {
+            TreePath methodInvokePath = TreePath.getPath(getCurrentPath(), arg0);
+            if (methodInvokePath == null) methodInvokePath = getCurrentPath();
+            elm = evaluationContext.getTrees().getElement(methodInvokePath);
+            methodName = elm.getSimpleName().toString();
+        }
         TypeMirror typeMirror = elm.asType();
         TypeKind kind = typeMirror.getKind();
         if (kind != TypeKind.EXECUTABLE) {
@@ -194,7 +210,7 @@ import org.openide.util.NbBundle;
         }
         ExecutableElement methodElement = (ExecutableElement) elm;
         ExecutableType execTypeMirror = (ExecutableType) typeMirror;
-        String methodName = methodElement.getSimpleName().toString();
+        isStatic = methodElement.getModifiers().contains(Modifier.STATIC);
         
         List<? extends ExpressionTree> args = arg0.getArguments();
         List<Value> argVals = new ArrayList<Value>(args.size());
@@ -205,18 +221,8 @@ import org.openide.util.NbBundle;
             }
             argVals.add((Value) argValue);
         }
-        ExpressionTree identifier = arg0.getMethodSelect();
-        //String methodName;
-        Mirror object = null;
-        if (identifier.getKind() == Tree.Kind.MEMBER_SELECT) {
-            //methodName = ((IdentifierTree) identifier).getName().toString();
-            // or
-            //methodName = ((MemberSelectTree) identifier).getIdentifier().toString();
-            object = ((MemberSelectTree) identifier).getExpression().accept(this, evaluationContext);
-        }
         ObjectReference objectReference;
         ClassType type;
-        boolean isStatic = methodElement.getModifiers().contains(Modifier.STATIC);
         if (isStatic) {
             objectReference = null;
             if (object instanceof ClassType) {
@@ -234,27 +240,9 @@ import org.openide.util.NbBundle;
             }
             type = (ClassType) objectReference.referenceType();
         }
-        /*
-        System.err.println("TreePath = "+evaluationContext.getTreePath());
-        TreePath tp = evaluationContext.getTreePath();
-        for (java.util.Iterator<Tree> it = tp.iterator(); it.hasNext(); ) {
-            System.err.println("  element: '"+it.next()+"'");
-        }
-         */
-        /*
-        System.err.println("MIT = "+arg0);
-        System.err.println("methodInvokePath = "+methodInvokePath);
-        Element elm = evaluationContext.getTrees().getElement(methodInvokePath);
-        TypeMirror typeMirror = evaluationContext.getTrees().getTypeMirror(methodInvokePath);
-        System.err.println("TypeMirror = "+typeMirror+", kind = "+typeMirror.getKind()+", toString() = "+typeMirror.toString());
-        typeMirror = elm.asType();
-        System.err.println("TypeMirror = "+typeMirror+", kind = "+typeMirror.getKind()+", toString() = "+typeMirror.toString());
-         */
-        
-        System.err.println("Element = "+elm+", kind = "+elm.getKind()+", name = "+elm.getSimpleName());
         Method method = getConcreteMethod(type, methodName, execTypeMirror.getParameterTypes());
         if (method == null) {
-            Assert2.error(arg0, "noSuchMethod", type.name(), methodName);
+            Assert2.error(arg0, "noSuchMethod", methodName, type.name());
         }
         return invokeMethod(arg0, method, isStatic, type, objectReference, argVals, evaluationContext);
     }
@@ -292,13 +280,27 @@ import org.openide.util.NbBundle;
     private static String createSignature(List<? extends TypeMirror> typeArguments) {
         StringBuilder signature = new StringBuilder("(");
         for (TypeMirror param : typeArguments) {
-            String paramType = param.toString();//getSimpleName().toString();
+            String paramType = getTypeName(param);//getSimpleName().toString();
             signature.append(getSignature(paramType));
         }
         signature.append(')');
         //String returnType = elm.getReturnType().toString();
         //signature.append(getSignature(returnType));
         return signature.toString();
+    }
+    
+    private static String getTypeName(TypeMirror type) {
+        if (type.getKind() == TypeKind.ARRAY) {
+            return getTypeName(((javax.lang.model.type.ArrayType) type).getComponentType())+"[]";
+        }
+        if (type.getKind() == TypeKind.TYPEVAR) {
+            TypeVariable tv = (TypeVariable) type;
+            return getTypeName(tv.getUpperBound());
+        }
+        if (type.getKind() == TypeKind.DECLARED) {
+            return ((DeclaredType) type).asElement().toString();
+        }
+        return type.toString();
     }
     
     private static String getSignature(String javaType) {
@@ -1134,6 +1136,10 @@ import org.openide.util.NbBundle;
         TreePath identifierPath = TreePath.getPath(getCurrentPath(), arg0);
         if (identifierPath == null) identifierPath = getCurrentPath();
         Element elm = evaluationContext.getTrees().getElement(identifierPath);
+        if (elm == null) {
+            // Unresolved class
+            Assert2.error(arg0, "unknownType", arg0.getIdentifier());
+        }
         if (elm.getKind() != ElementKind.CONSTRUCTOR) {
             throw new IllegalStateException("Element "+elm+" is of "+elm.getKind()+" kind. Tree = "+arg0);
         }
@@ -1158,6 +1164,9 @@ import org.openide.util.NbBundle;
             }
             evaluationContext.methodToBeInvoked();
             Method constructorMethod = getConcreteMethod(classType, "<init>", ((ExecutableType) cType).getParameterTypes());
+            if (constructorMethod == null) {
+                Assert2.error(arg0, "noSuchMethod", "<init>", classType);
+            }
             return classType.newInstance(evaluationContext.getFrame().thread(),
                                          constructorMethod,
                                          argVals,
@@ -1249,6 +1258,15 @@ import org.openide.util.NbBundle;
                     }
                 }
                 throw new IllegalArgumentException("Wrong expression value: "+expression);
+            case CLASS:
+                TypeElement te = (TypeElement) elm;
+                String className = te.getQualifiedName().toString();
+                vm = evaluationContext.getDebugger().getVirtualMachine();
+                List<ReferenceType> classes = vm.classesByName(className);
+                if (classes.size() == 0) {
+                    Assert2.error(arg0, "unknownType", className);
+                }
+                return classes.get(0);
             default:
                 throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"', element kind = "+elm.getKind());
         }
@@ -1288,8 +1306,9 @@ import org.openide.util.NbBundle;
         return null;
     }
 
+    @Override
     public Mirror visitParameterizedType(ParameterizedTypeTree arg0, EvaluationContext evaluationContext) {
-        throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
+        return arg0.getType().accept(this, evaluationContext);
     }
 
     @Override

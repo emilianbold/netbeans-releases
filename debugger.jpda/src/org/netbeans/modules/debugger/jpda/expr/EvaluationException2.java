@@ -133,7 +133,7 @@ public class EvaluationException2 extends RuntimeException {
         else if (reason.equals("ambigousMethod"))
             msgParams = new String [] { ((Identifier)params[0]).typeContext.name(),  ((Identifier)params[0]).identifier };
         else if (reason.equals("noSuchMethod"))
-            msgParams = new String [] { (String) params[1], (String) params[0] };
+            msgParams = new String [] { (String) params[0], (String) params[1] };
         else if (reason.equals("callException"))
             msgParams = new String [] { ((Identifier)params[1]).typeContext.name(),  ((Identifier)params[1]).identifier, params[0].toString() };
         else if (reason.equals("calleeException"))

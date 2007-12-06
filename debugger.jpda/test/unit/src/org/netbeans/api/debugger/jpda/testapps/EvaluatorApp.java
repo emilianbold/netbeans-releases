@@ -41,7 +41,10 @@
 
 package org.netbeans.api.debugger.jpda.testapps;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Vector;
 
 /**
  * Sample application used for testing the evaluator algorithm.
@@ -783,5 +786,54 @@ public class EvaluatorApp {
     public static e testMember4() {
         return e.ONE;
     }
+    
+    // Method calls
+    
+    public static Object testMethod1() {
+        return System.getProperties();
+    }
 
+    public static int testMethod2() {
+        return java.lang.Runtime.getRuntime().availableProcessors();
+    }
+
+    public static long testMethod3() {
+        return Runtime.getRuntime().maxMemory();
+    }
+
+    public static int testMethod4() {
+        return java.io.File.listRoots().length;
+    }
+
+    public static boolean testMethod5() {
+        return System.err.checkError();
+    }
+
+    public static String testMethod6() {
+        return Boolean.valueOf(System.in.markSupported()).toString();
+    }
+
+    public static String testMethod7() {
+        return String.valueOf(Math.min(Double.NEGATIVE_INFINITY, -100000)).intern().toLowerCase().concat(String.valueOf(Double.POSITIVE_INFINITY)).substring(1, 5);
+    }
+    
+    // Constructors
+    
+    public static boolean testConstructor1() {
+        return new Boolean(true).booleanValue();
+    }
+
+    public static int testConstructor2() {
+        return new ArrayList().size();
+    }
+
+    public static int testConstructor3() {
+        return new java.util.TreeSet(new Vector(Arrays.asList(new String[] { "1", "2", "3", "4", "5", "6", "7", "8", "9" }))).size();
+    }
+
+    // Generics
+    
+    public static String testParametrized1() {
+        return new ArrayList<String>(Arrays.asList(new String[] {"a", "b", "c"})).get(0);
+    }
 }
