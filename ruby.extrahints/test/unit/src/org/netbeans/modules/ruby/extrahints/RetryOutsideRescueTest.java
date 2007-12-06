@@ -39,16 +39,7 @@
 
 package org.netbeans.modules.ruby.extrahints;
 
-import java.util.List;
 import java.util.Set;
-import java.util.prefs.Preferences;
-import javax.swing.JComponent;
-import junit.framework.TestCase;
-import org.jruby.ast.Node;
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.modules.ruby.AstPath;
-import org.netbeans.modules.ruby.hints.spi.Description;
-import org.netbeans.modules.ruby.hints.spi.HintSeverity;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.ruby.hints.HintTestBase;
