@@ -15,6 +15,24 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.diff</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <implementation-version/>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.editor.errorstripe</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                        <implementation-version/>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.editor.fold</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -136,6 +154,7 @@
                 <friend>org.netbeans.modules.versioning.system.perforce</friend>
                 <friend>org.netbeans.modules.subversion</friend>
                 <friend>org.netbeans.modules.localhistory</friend>
+                <package>org.netbeans.modules.versioning.annotate</package>
                 <package>org.netbeans.modules.versioning.util</package>
                 <package>org.netbeans.modules.proxy</package>
                 <package>org.netbeans.modules.turbo</package>

@@ -815,6 +815,16 @@ public final class Utils {
         Logger.getLogger(caller.getClass().getName()).log(Level.FINE, e.getMessage(), e);
     }
 
+    /**
+     * Convenience method for awkward Logger invocation.
+     *  
+     * @param caller caller object for logger name determination
+     * @param e exception that defines the error
+     */
+    public static void logWarn(Object caller, Throwable e) {
+        logWarn(caller.getClass(), e);
+    }
+
     private static class ViewEnv implements CloneableEditorSupport.Env {
         
         private final FileObject    file;
