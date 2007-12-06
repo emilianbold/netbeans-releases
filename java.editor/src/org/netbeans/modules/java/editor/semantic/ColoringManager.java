@@ -134,6 +134,7 @@ public final class ColoringManager {
         
         if (colorings.contains(UNUSED)) {
             attribs.add(AttributesUtilities.createImmutable(EditorStyleConstants.Tooltip, new UnusedTooltipResolver()));
+            attribs.add(AttributesUtilities.createImmutable("unused-browseable", Boolean.TRUE));
         }
         
 //        colorings = colorings.size() > 0 ? EnumSet.copyOf(colorings) : EnumSet.noneOf(ColoringAttributes.class);
