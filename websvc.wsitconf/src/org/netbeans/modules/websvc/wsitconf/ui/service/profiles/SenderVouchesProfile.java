@@ -53,7 +53,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile;
 import org.netbeans.modules.websvc.wsitconf.spi.features.ClientDefaultsFeature;
 import org.netbeans.modules.websvc.wsitconf.spi.features.SecureConversationFeature;
 import org.netbeans.modules.websvc.wsitconf.spi.features.ServiceDefaultsFeature;
@@ -65,7 +64,6 @@ import org.netbeans.modules.websvc.wsitconf.wizard.SamlCallbackCreator;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.PolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPolicyModelHelper;
-import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityTokensModelHelper;
 import org.netbeans.modules.websvc.wsitmodelext.policy.Policy;
@@ -85,7 +83,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Martin Grebac
  */
-public class SenderVouchesProfile extends SecurityProfile 
+public class SenderVouchesProfile extends ProfileBase 
         implements SecureConversationFeature,ClientDefaultsFeature,ServiceDefaultsFeature {
     private static final String CERTS_DIR = "certs";
     
@@ -101,24 +99,6 @@ public class SenderVouchesProfile extends SecurityProfile
 
     public String getDescription() {
         return ComboConstants.PROF_SAMLSENDER_INFO;
-    }
-    
-    /**
-     * Called when the profile is selected in the combo box.
-     */
-    public void profileSelected(WSDLComponent component) {
-        ProfilesModelHelper.setSecurityProfile(component, getDisplayName());
-        boolean isRM = RMModelHelper.isRMEnabled(component);
-        if (isRM) {
-            ProfilesModelHelper.enableSecureConversation(component, true);
-        }
-    }
-
-    /**
-     * Called when there's another profile selected, or security is disabled at all.
-     */ 
-    public void profileDeselected(WSDLComponent component) {
-        SecurityPolicyModelHelper.disableSecurity(component, false);
     }
 
     /**
@@ -157,6 +137,8 @@ public class SenderVouchesProfile extends SecurityProfile
     }
 
     public void setClientDefaults(WSDLComponent component, WSDLComponent serviceBinding, Project p) {
+        ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, true);
+        ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, true);
         if (Util.isTomcat(p)) {
             FileObject tomcatLoc = Util.getTomcatLocation(p);
             ProprietarySecurityPolicyModelHelper.setStoreLocation(component, 
@@ -226,17 +208,22 @@ public class SenderVouchesProfile extends SecurityProfile
     }
     
     public boolean isServiceDefaultSetupUsed(WSDLComponent component, Project p) {
-        if (ProfilesModelHelper.XWS_SECURITY_SERVER.equals(ProprietarySecurityPolicyModelHelper.getStoreAlias(component, false))) {
+        String keyAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(component, false);
+        String keyLoc = ProprietarySecurityPolicyModelHelper.getStoreLocation(component, false);
+        String keyPasswd = ProprietarySecurityPolicyModelHelper.getStorePassword(component, false);
+        if (ProfilesModelHelper.XWS_SECURITY_SERVER.equals(keyAlias)) {
             if (Util.isTomcat(p)) {
                 FileObject tomcatLoc = Util.getTomcatLocation(p);
                 String loc = tomcatLoc.getPath() + File.separator + CERTS_DIR + File.separator + "server-keystore.jks";
-                if (loc.equals(ProprietarySecurityPolicyModelHelper.getStoreLocation(component, false))) {
-                    if (KeystorePanel.DEFAULT_PASSWORD.equals(ProprietarySecurityPolicyModelHelper.getStorePassword(component, false))) {
+                if (loc.equals(keyLoc)) {
+                    if (KeystorePanel.DEFAULT_PASSWORD.equals(keyPasswd)) {
                         return true;
                     }
                 }
             } else {
-                return true;
+                if ((keyLoc == null) && (keyPasswd == null)) {
+                    return true;
+                }
             }
         }
         return false;
@@ -253,25 +240,34 @@ public class SenderVouchesProfile extends SecurityProfile
             cbName = "Saml11SVCallbackHandler";
         }
         
+        String keyAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(component, false);
+        String trustAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(component, true);
+        String trustLoc = ProprietarySecurityPolicyModelHelper.getStoreLocation(component, true);
+        String keyLoc = ProprietarySecurityPolicyModelHelper.getStoreLocation(component, false);
+        String keyPasswd = ProprietarySecurityPolicyModelHelper.getStorePassword(component, false);
+        String trustPasswd = ProprietarySecurityPolicyModelHelper.getStorePassword(component, true);
+        
         String cbHandler = ProprietarySecurityPolicyModelHelper.getCallbackHandler((Binding)component, CallbackHandler.SAML_CBHANDLER);
         if ((PKGNAME + "." + cbName).equals(cbHandler)) {
-            if (ProfilesModelHelper.XWS_SECURITY_CLIENT.equals(ProprietarySecurityPolicyModelHelper.getStoreAlias(component, false)) && 
-                ProfilesModelHelper.XWS_SECURITY_SERVER.equals(ProprietarySecurityPolicyModelHelper.getStoreAlias(component, true))) {
+            if (ProfilesModelHelper.XWS_SECURITY_CLIENT.equals(keyAlias) && 
+                ProfilesModelHelper.XWS_SECURITY_SERVER.equals(trustAlias)) {
                     if (Util.isTomcat(p)) {
                         FileObject tomcatLoc = Util.getTomcatLocation(p);
                         String loc = tomcatLoc.getPath() + File.separator + CERTS_DIR + File.separator + "client-truststore.jks";
-                        if (loc.equals(ProprietarySecurityPolicyModelHelper.getStoreLocation(component, true))) {
-                            if (KeystorePanel.DEFAULT_PASSWORD.equals(ProprietarySecurityPolicyModelHelper.getStorePassword(component, true))) {
+                        if (loc.equals(trustLoc)) {
+                            if (KeystorePanel.DEFAULT_PASSWORD.equals(trustPasswd)) {
                                 loc = tomcatLoc.getPath() + File.separator + CERTS_DIR + File.separator + "client-keystore.jks";
-                                if (loc.equals(ProprietarySecurityPolicyModelHelper.getStoreLocation(component, false))) {
-                                    if (KeystorePanel.DEFAULT_PASSWORD.equals(ProprietarySecurityPolicyModelHelper.getStorePassword(component, false))) {
+                                if (loc.equals(keyLoc)) {
+                                    if (KeystorePanel.DEFAULT_PASSWORD.equals(keyPasswd)) {
                                         return true;
                                     }
                                 }
                             }
                         }
                     } else {
-                        return true;
+                        if ((trustLoc == null) && (keyLoc == null) && (keyPasswd == null) && (trustPasswd == null)){
+                            return true;
+                        }
                     }
             }
         }

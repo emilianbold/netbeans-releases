@@ -46,7 +46,6 @@ import java.io.File;
 import javax.swing.JPanel;
 import javax.swing.undo.UndoManager;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile;
 import org.netbeans.modules.websvc.wsitconf.spi.features.ClientDefaultsFeature;
 import org.netbeans.modules.websvc.wsitconf.spi.features.SecureConversationFeature;
 import org.netbeans.modules.websvc.wsitconf.spi.features.ServiceDefaultsFeature;
@@ -56,7 +55,6 @@ import org.netbeans.modules.websvc.wsitconf.util.UndoCounter;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPolicyModelHelper;
-import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityTokensModelHelper;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.ProtectionToken;
@@ -72,7 +70,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Martin Grebac
  */
-public class EndorsingCertificateProfile extends SecurityProfile 
+public class EndorsingCertificateProfile extends ProfileBase 
         implements SecureConversationFeature,ClientDefaultsFeature,ServiceDefaultsFeature  {
     private static final String CERTS_DIR = "certs";
     
@@ -88,24 +86,6 @@ public class EndorsingCertificateProfile extends SecurityProfile
         return ComboConstants.PROF_ENDORSCERT_INFO;
     }
     
-    /**
-     * Called when the profile is selected in the combo box.
-     */
-    public void profileSelected(WSDLComponent component) {
-        ProfilesModelHelper.setSecurityProfile(component, getDisplayName());
-        boolean isRM = RMModelHelper.isRMEnabled(component);
-        if (isRM) {
-            ProfilesModelHelper.enableSecureConversation(component, true);
-        }
-    }
-
-    /**
-     * Called when there's another profile selected, or security is disabled at all.
-     */ 
-    public void profileDeselected(WSDLComponent component) {
-        SecurityPolicyModelHelper.disableSecurity(component, false);
-    }
-
     /**
      * Should return true if the profile is set on component, false otherwise
      */
@@ -169,40 +149,53 @@ public class EndorsingCertificateProfile extends SecurityProfile
     }
  
     public boolean isServiceDefaultSetupUsed(WSDLComponent component, Project p) {
-        if (ProfilesModelHelper.XWS_SECURITY_SERVER.equals(ProprietarySecurityPolicyModelHelper.getStoreAlias(component, false))) {
+        String keyAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(component, false);
+        String keyLoc = ProprietarySecurityPolicyModelHelper.getStoreLocation(component, false);
+        String keyPasswd = ProprietarySecurityPolicyModelHelper.getStorePassword(component, false);
+        if (ProfilesModelHelper.XWS_SECURITY_SERVER.equals(keyAlias)) {
             if (Util.isTomcat(p)) {
                 FileObject tomcatLoc = Util.getTomcatLocation(p);
                 String loc = tomcatLoc.getPath() + File.separator + CERTS_DIR + File.separator + "server-keystore.jks";
-                if (loc.equals(ProprietarySecurityPolicyModelHelper.getStoreLocation(component, false))) {
-                    if (KeystorePanel.DEFAULT_PASSWORD.equals(ProprietarySecurityPolicyModelHelper.getStorePassword(component, false))) {
+                if (loc.equals(keyLoc)) {
+                    if (KeystorePanel.DEFAULT_PASSWORD.equals(keyPasswd)) {
                         return true;
                     }
                 }
             } else {
-                return true;
+                if ((keyLoc == null) && (keyPasswd == null)) {
+                    return true;
+                }
             }
         }
         return false;
     }
 
     public boolean isClientDefaultSetupUsed(WSDLComponent component, Binding serviceBinding, Project p) {
-        if (ProfilesModelHelper.XWS_SECURITY_CLIENT.equals(ProprietarySecurityPolicyModelHelper.getStoreAlias(component, false)) &&
-            ProfilesModelHelper.XWS_SECURITY_SERVER.equals(ProprietarySecurityPolicyModelHelper.getStoreAlias(component, true))) {
+        String keyAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(component, false);
+        String trustAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(component, true);
+        String trustLoc = ProprietarySecurityPolicyModelHelper.getStoreLocation(component, true);
+        String keyLoc = ProprietarySecurityPolicyModelHelper.getStoreLocation(component, false);
+        String keyPasswd = ProprietarySecurityPolicyModelHelper.getStorePassword(component, false);
+        String trustPasswd = ProprietarySecurityPolicyModelHelper.getStorePassword(component, true);
+        if (ProfilesModelHelper.XWS_SECURITY_CLIENT.equals(keyAlias) &&
+            ProfilesModelHelper.XWS_SECURITY_SERVER.equals(trustAlias)) {
                 if (Util.isTomcat(p)) {
                     FileObject tomcatLoc = Util.getTomcatLocation(p);
                     String loc = tomcatLoc.getPath() + File.separator + CERTS_DIR + File.separator + "client-truststore.jks";
-                    if (loc.equals(ProprietarySecurityPolicyModelHelper.getStoreLocation(component, true))) {
-                        if (KeystorePanel.DEFAULT_PASSWORD.equals(ProprietarySecurityPolicyModelHelper.getStorePassword(component, true))) {
+                    if (loc.equals(trustLoc)) {
+                        if (KeystorePanel.DEFAULT_PASSWORD.equals(trustPasswd)) {
                             loc = tomcatLoc.getPath() + File.separator + CERTS_DIR + File.separator + "client-keystore.jks";
-                            if (loc.equals(ProprietarySecurityPolicyModelHelper.getStoreLocation(component, false))) {
-                                if (KeystorePanel.DEFAULT_PASSWORD.equals(ProprietarySecurityPolicyModelHelper.getStorePassword(component, false))) {
+                            if (loc.equals(keyLoc)) {
+                                if (KeystorePanel.DEFAULT_PASSWORD.equals(keyPasswd)) {
                                     return true;
                                 }
                             }
                         }
                     }
                 } else {
-                    return true;
+                    if ((trustLoc == null) && (keyLoc == null) && (keyPasswd == null) && (trustPasswd == null)){
+                        return true;
+                    }
                 }
         }
         return false;

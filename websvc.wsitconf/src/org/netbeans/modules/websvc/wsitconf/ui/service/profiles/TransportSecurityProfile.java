@@ -45,14 +45,12 @@ import java.awt.Dialog;
 import javax.swing.JPanel;
 import javax.swing.undo.UndoManager;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile;
 import org.netbeans.modules.websvc.wsitconf.spi.features.ClientDefaultsFeature;
 import org.netbeans.modules.websvc.wsitconf.spi.features.ServiceDefaultsFeature;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.util.UndoCounter;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPolicyModelHelper;
-import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
@@ -64,7 +62,7 @@ import org.openide.DialogDisplayer;
  *
  * @author Martin Grebac
  */
-public class TransportSecurityProfile extends SecurityProfile 
+public class TransportSecurityProfile extends ProfileBase 
         implements ClientDefaultsFeature,ServiceDefaultsFeature {
     
     public int getId() {
@@ -82,15 +80,9 @@ public class TransportSecurityProfile extends SecurityProfile
     /**
      * Called when the profile is selected in the combo box.
      */
+    @Override
     public void profileSelected(WSDLComponent component) {
         ProfilesModelHelper.setSecurityProfile(component, getDisplayName());
-    }
-
-    /**
-     * Called when there's another profile selected, or security is disabled at all.
-     */ 
-    public void profileDeselected(WSDLComponent component) {
-        SecurityPolicyModelHelper.disableSecurity(component, false);
     }
 
     /**

@@ -46,7 +46,6 @@ import java.io.File;
 import javax.swing.JPanel;
 import javax.swing.undo.UndoManager;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile;
 import org.netbeans.modules.websvc.wsitconf.spi.features.ClientDefaultsFeature;
 import org.netbeans.modules.websvc.wsitconf.spi.features.SecureConversationFeature;
 import org.netbeans.modules.websvc.wsitconf.spi.features.ServiceDefaultsFeature;
@@ -56,7 +55,6 @@ import org.netbeans.modules.websvc.wsitconf.util.UndoCounter;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPolicyModelHelper;
-import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityTokensModelHelper;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.ProtectionToken;
@@ -73,7 +71,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Martin Grebac
  */
-public class STSIssuedCertProfile extends SecurityProfile 
+public class STSIssuedCertProfile extends ProfileBase 
         implements SecureConversationFeature,ClientDefaultsFeature,ServiceDefaultsFeature  {
     
     public int getId() {
@@ -86,24 +84,6 @@ public class STSIssuedCertProfile extends SecurityProfile
 
     public String getDescription() {
         return ComboConstants.PROF_STSISSUEDCERT_INFO;
-    }
-    
-    /**
-     * Called when the profile is selected in the combo box.
-     */
-    public void profileSelected(WSDLComponent component) {
-        ProfilesModelHelper.setSecurityProfile(component, getDisplayName());
-        boolean isRM = RMModelHelper.isRMEnabled(component);
-        if (isRM) {
-            ProfilesModelHelper.enableSecureConversation(component, true);
-        }
-    }
-
-    /**
-     * Called when there's another profile selected, or security is disabled at all.
-     */ 
-    public void profileDeselected(WSDLComponent component) {
-        SecurityPolicyModelHelper.disableSecurity(component, false);
     }
 
     /**
@@ -146,7 +126,7 @@ public class STSIssuedCertProfile extends SecurityProfile
             ProprietarySecurityPolicyModelHelper.setStoreType(component, KeystorePanel.JKS, false, false);
             ProprietarySecurityPolicyModelHelper.setStorePassword(component, KeystorePanel.DEFAULT_PASSWORD, false, false);
         }
-        ProprietarySecurityPolicyModelHelper.setKeyStoreAlias(component, ProfilesModelHelper.WSSIP, false);
+        ProprietarySecurityPolicyModelHelper.setKeyStoreAlias(component, ProfilesModelHelper.XWS_SECURITY_SERVER, false);
     }
 
     public void setClientDefaults(WSDLComponent component, WSDLComponent securityBinding, Project p) {
@@ -154,17 +134,22 @@ public class STSIssuedCertProfile extends SecurityProfile
     }
     
     public boolean isServiceDefaultSetupUsed(WSDLComponent component, Project p) {
-        if (ProfilesModelHelper.WSSIP.equals(ProprietarySecurityPolicyModelHelper.getStoreAlias(component, false))) {
+        String keyAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(component, false);
+        String keyLoc = ProprietarySecurityPolicyModelHelper.getStoreLocation(component, false);
+        String keyPasswd = ProprietarySecurityPolicyModelHelper.getStorePassword(component, false);
+        if (ProfilesModelHelper.XWS_SECURITY_SERVER.equals(keyAlias)) {
             if (Util.isTomcat(p)) {
                 FileObject tomcatLoc = Util.getTomcatLocation(p);
                 String loc = tomcatLoc.getPath() + File.separator + "certs" + File.separator + "server-keystore.jks";
-                if (loc.equals(ProprietarySecurityPolicyModelHelper.getStoreLocation(component, false))) {
-                    if (KeystorePanel.DEFAULT_PASSWORD.equals(ProprietarySecurityPolicyModelHelper.getStorePassword(component, false))) {
+                if (loc.equals(keyLoc)) {
+                    if (KeystorePanel.DEFAULT_PASSWORD.equals(keyPasswd)) {
                         return true;
                     }
                 }
             } else {
-                return true;
+                if ((keyLoc == null) && (keyPasswd == null)) {
+                    return true;
+                }
             }
         }
         return false;
@@ -184,5 +169,4 @@ public class STSIssuedCertProfile extends SecurityProfile
     public void enableSecureConversation(WSDLComponent component, boolean enable) {
         ProfilesModelHelper.enableSecureConversation(component, enable);
     }
-    
 }

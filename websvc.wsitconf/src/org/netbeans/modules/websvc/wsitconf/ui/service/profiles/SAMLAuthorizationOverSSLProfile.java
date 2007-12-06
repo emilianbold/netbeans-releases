@@ -52,7 +52,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile;
 import org.netbeans.modules.websvc.wsitconf.spi.features.ClientDefaultsFeature;
 import org.netbeans.modules.websvc.wsitconf.spi.features.ServiceDefaultsFeature;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
@@ -60,7 +59,6 @@ import org.netbeans.modules.websvc.wsitconf.util.UndoCounter;
 import org.netbeans.modules.websvc.wsitconf.wizard.SamlCallbackCreator;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPolicyModelHelper;
-import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityTokensModelHelper;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.CallbackHandler;
 import org.netbeans.modules.xml.wsdl.model.Binding;
@@ -75,7 +73,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Martin Grebac
  */
-public class SAMLAuthorizationOverSSLProfile extends SecurityProfile 
+public class SAMLAuthorizationOverSSLProfile extends ProfileBase 
         implements ClientDefaultsFeature,ServiceDefaultsFeature {
     
     private static final String PKGNAME = "samlcb";
@@ -95,15 +93,9 @@ public class SAMLAuthorizationOverSSLProfile extends SecurityProfile
     /**
      * Called when the profile is selected in the combo box.
      */
+    @Override
     public void profileSelected(WSDLComponent component) {
         ProfilesModelHelper.setSecurityProfile(component, getDisplayName());
-    }
-
-    /**
-     * Called when there's another profile selected, or security is disabled at all.
-     */ 
-    public void profileDeselected(WSDLComponent component) {
-        SecurityPolicyModelHelper.disableSecurity(component, false);
     }
 
     /**

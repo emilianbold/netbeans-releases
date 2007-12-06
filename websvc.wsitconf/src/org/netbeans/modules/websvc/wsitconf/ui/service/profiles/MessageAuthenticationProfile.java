@@ -45,7 +45,6 @@ import java.awt.Dialog;
 import javax.swing.JPanel;
 import javax.swing.undo.UndoManager;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile;
 import org.netbeans.modules.websvc.wsitconf.spi.features.ClientDefaultsFeature;
 import org.netbeans.modules.websvc.wsitconf.spi.features.SecureConversationFeature;
 import org.netbeans.modules.websvc.wsitconf.spi.features.ServiceDefaultsFeature;
@@ -78,8 +77,7 @@ import org.openide.DialogDisplayer;
  *
  * @author Martin Grebac
  */
-public class MessageAuthenticationProfile 
-        extends SecurityProfile 
+public class MessageAuthenticationProfile extends ProfileBase 
         implements SecureConversationFeature,ClientDefaultsFeature,ServiceDefaultsFeature {
 
     private static final String DEFAULT_USERNAME = "wsit";
@@ -88,7 +86,7 @@ public class MessageAuthenticationProfile
     public int getId() {
         return 40;
     }
-
+    
     public String getDisplayName() {
         return ComboConstants.PROF_MSGAUTHSSL;
     }
@@ -97,24 +95,6 @@ public class MessageAuthenticationProfile
         return ComboConstants.PROF_MSGAUTHSSL_INFO;
     }
     
-    /**
-     * Called when the profile is selected in the combo box.
-     */
-    public void profileSelected(WSDLComponent component) {
-        ProfilesModelHelper.setSecurityProfile(component, getDisplayName());
-        boolean isRM = RMModelHelper.isRMEnabled(component);
-        if (isRM) {
-            ProfilesModelHelper.enableSecureConversation(component, true);
-        }
-    }
-
-    /**
-     * Called when there's another profile selected, or security is disabled at all.
-     */ 
-    public void profileDeselected(WSDLComponent component) {
-        SecurityPolicyModelHelper.disableSecurity(component, false);
-    }
-
     /**
      * Should return true if the profile is set on component, false otherwise
      */
@@ -162,20 +142,30 @@ public class MessageAuthenticationProfile
     public boolean isServiceDefaultSetupUsed(WSDLComponent component, Project p) {
         String keyAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(component, false);
         String trustAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(component, true);
-        if ((keyAlias == null) && (trustAlias == null)) {
+        String trustLoc = ProprietarySecurityPolicyModelHelper.getStoreLocation(component, true);
+        String keyLoc = ProprietarySecurityPolicyModelHelper.getStoreLocation(component, false);
+        String keyPasswd = ProprietarySecurityPolicyModelHelper.getStorePassword(component, false);
+        String trustPasswd = ProprietarySecurityPolicyModelHelper.getStorePassword(component, true);
+        if ((keyAlias == null) && (trustAlias == null)  && (trustLoc == null) && (keyLoc == null) && (trustPasswd == null) && (keyPasswd == null)) {
             return true;
         }
         return false;
     }
 
     public boolean isClientDefaultSetupUsed(WSDLComponent component, Binding serviceBinding, Project p) {
+        String trustLoc = ProprietarySecurityPolicyModelHelper.getStoreLocation(component, true);
+        String keyLoc = ProprietarySecurityPolicyModelHelper.getStoreLocation(component, false);
+        String keyPasswd = ProprietarySecurityPolicyModelHelper.getStorePassword(component, false);
+        String trustPasswd = ProprietarySecurityPolicyModelHelper.getStorePassword(component, true);
         String keyAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(component, false);
         String trustAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(component, true);
-        if ((keyAlias == null) && (trustAlias == null)) {
+        if ((keyAlias == null) && (trustAlias == null)  && (trustLoc == null) && (keyLoc == null) && (trustPasswd == null) && (keyPasswd == null)) {
             String user = ProprietarySecurityPolicyModelHelper.getDefaultUsername((Binding)component);
             String passwd = ProprietarySecurityPolicyModelHelper.getDefaultPassword((Binding)component);
             if ((DEFAULT_PASSWORD.equals(passwd)) && (DEFAULT_USERNAME.equals(user))) {
-                return true;
+                if ((trustLoc == null) && (trustPasswd == null) && (keyPasswd != null) && (keyLoc == null)) {
+                    return true;
+                }
             }
         }
         return false;

@@ -49,7 +49,6 @@ import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.undo.UndoManager;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile;
 import org.netbeans.modules.websvc.wsitconf.spi.features.ClientDefaultsFeature;
 import org.netbeans.modules.websvc.wsitconf.spi.features.SecureConversationFeature;
 import org.netbeans.modules.websvc.wsitconf.spi.features.ServiceDefaultsFeature;
@@ -59,7 +58,6 @@ import org.netbeans.modules.websvc.wsitconf.util.UndoCounter;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPolicyModelHelper;
-import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityTokensModelHelper;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.CallbackHandler;
@@ -77,7 +75,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Martin Grebac
  */
-public class UsernameAuthenticationProfile extends SecurityProfile 
+public class UsernameAuthenticationProfile extends ProfileBase 
         implements SecureConversationFeature,ClientDefaultsFeature,ServiceDefaultsFeature  {
     
     public static final String DEFAULT_USERNAME = "wsitUser";
@@ -98,24 +96,6 @@ public class UsernameAuthenticationProfile extends SecurityProfile
         return ComboConstants.PROF_USERNAME_INFO;
     }
     
-    /**
-     * Called when the profile is selected in the combo box.
-     */
-    public void profileSelected(WSDLComponent component) {
-        ProfilesModelHelper.setSecurityProfile(component, getDisplayName());
-        boolean isRM = RMModelHelper.isRMEnabled(component);
-        if (isRM) {
-            ProfilesModelHelper.enableSecureConversation(component, true);
-        }
-    }
-
-    /**
-     * Called when there's another profile selected, or security is disabled at all.
-     */ 
-    public void profileDeselected(WSDLComponent component) {
-        SecurityPolicyModelHelper.disableSecurity(component, false);
-    }
-
     /**
      * Should return true if the profile is set on component, false otherwise
      */
@@ -147,17 +127,22 @@ public class UsernameAuthenticationProfile extends SecurityProfile
     }
     
     public boolean isServiceDefaultSetupUsed(WSDLComponent component, Project p) {
-        if (ProfilesModelHelper.XWS_SECURITY_SERVER.equals(ProprietarySecurityPolicyModelHelper.getStoreAlias(component, false))) {
+        String storeAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(component, false);
+        String storeLoc = ProprietarySecurityPolicyModelHelper.getStoreLocation(component, false);
+        String storePasswd = ProprietarySecurityPolicyModelHelper.getStorePassword(component, false);
+        if (ProfilesModelHelper.XWS_SECURITY_SERVER.equals(storeAlias)) {
             if (Util.isTomcat(p)) {
                 FileObject tomcatLoc = Util.getTomcatLocation(p);
                 String loc = tomcatLoc.getPath() + File.separator + CERTS_DIR + File.separator + "server-keystore.jks";
-                if (loc.equals(ProprietarySecurityPolicyModelHelper.getStoreLocation(component, false))) {
-                    if (KeystorePanel.DEFAULT_PASSWORD.equals(ProprietarySecurityPolicyModelHelper.getStorePassword(component, false))) {
+                if (loc.equals(storeLoc)) {
+                    if (KeystorePanel.DEFAULT_PASSWORD.equals(storePasswd)) {
                         return true;
                     }
                 }
             } else {
-                return true;
+                if ((storePasswd == null) || (storeLoc == null)) {
+                    return true;
+                }
             }
         }
         return false;
@@ -200,20 +185,25 @@ public class UsernameAuthenticationProfile extends SecurityProfile
     }
 
     public boolean isClientDefaultSetupUsed(WSDLComponent component, Binding serviceBinding, Project p) {
-        if (ProfilesModelHelper.XWS_SECURITY_SERVER.equals(ProprietarySecurityPolicyModelHelper.getStoreAlias(component, true))) {
+        String trustAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(component, true);
+        String trustPasswd = ProprietarySecurityPolicyModelHelper.getStorePassword(component, true);
+        String trustLoc = ProprietarySecurityPolicyModelHelper.getStoreLocation(component, true);
+        if (ProfilesModelHelper.XWS_SECURITY_SERVER.equals(trustAlias)) {
             String user = ProprietarySecurityPolicyModelHelper.getDefaultUsername((Binding)component);
             String passwd = ProprietarySecurityPolicyModelHelper.getDefaultPassword((Binding)component);
             if ((DEFAULT_PASSWORD.equals(passwd)) && (DEFAULT_USERNAME.equals(user))) {
                 if (Util.isTomcat(p)) {
                     FileObject tomcatLoc = Util.getTomcatLocation(p);
                     String loc = tomcatLoc.getPath() + File.separator + CERTS_DIR + File.separator + "client-truststore.jks";
-                    if (loc.equals(ProprietarySecurityPolicyModelHelper.getStoreLocation(component, true))) {
-                        if (KeystorePanel.DEFAULT_PASSWORD.equals(ProprietarySecurityPolicyModelHelper.getStorePassword(component, true))) {
+                    if (loc.equals(trustLoc)) {
+                        if (KeystorePanel.DEFAULT_PASSWORD.equals(trustPasswd)) {
                             return true;
                         }
                     }
                 } else {
-                    return true;
+                    if ((trustPasswd == null) && (trustLoc == null)) {
+                        return true;
+                    }
                 }
             }
         }
