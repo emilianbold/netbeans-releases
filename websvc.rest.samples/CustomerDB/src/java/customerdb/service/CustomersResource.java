@@ -43,8 +43,9 @@ package customerdb.service;
 
 import customerdb.Customer;
 import java.util.Collection;
-import javax.ws.rs.UriTemplate;
-import javax.ws.rs.HttpMethod;
+import javax.ws.rs.Path;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.ProduceMime;
 import javax.ws.rs.ConsumeMime;
 import javax.ws.rs.core.Response;
@@ -59,7 +60,7 @@ import customerdb.converter.CustomerConverter;
  * @author Peter Liu
  */
 
-@UriTemplate("/customers/")
+@Path("/customers/")
 public class CustomersResource {
     @HttpContext
     private UriInfo context;
@@ -82,11 +83,11 @@ public class CustomersResource {
      *
      * @return an instance of CustomersConverter
      */
-    @HttpMethod("GET")
+    @GET
     @ProduceMime({"application/xml", "application/json"})
     public CustomersConverter get() {
         try {
-            return new CustomersConverter(getEntities(), context.getAbsolute());
+            return new CustomersConverter(getEntities(), context.getAbsolutePath());
         } finally {
             PersistenceService.getInstance().close();
         }
@@ -98,7 +99,7 @@ public class CustomersResource {
      * @param data an CustomerConverter entity that is deserialized from an XML stream
      * @return an instance of CustomerConverter
      */
-    @HttpMethod("POST")
+    @POST
     @ConsumeMime({"application/xml", "application/json"})
     public Response post(CustomerConverter data) {
         PersistenceService service = PersistenceService.getInstance();
@@ -107,7 +108,7 @@ public class CustomersResource {
             Customer entity = data.getEntity();
             createEntity(entity);
             service.commitTx();
-            return Builder.created(context.getAbsolute().resolve(entity.getCustomerId() + "/")).build();
+            return Response.created(context.getAbsolutePath().resolve(entity.getCustomerId() + "/")).build();
         } finally {
             service.close();
         }
@@ -118,7 +119,7 @@ public class CustomersResource {
      *
      * @return an instance of CustomerResource
      */
-    @UriTemplate("{customerId}/")
+    @Path("{customerId}/")
     public customerdb.service.CustomerResource getCustomerResource() {
         return new CustomerResource(context);
     }

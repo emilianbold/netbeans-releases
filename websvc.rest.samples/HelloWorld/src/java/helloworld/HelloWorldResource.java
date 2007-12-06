@@ -41,9 +41,10 @@
 
 package helloworld;
 
-import javax.ws.rs.UriTemplate;
+import javax.ws.rs.Path;
 import javax.ws.rs.UriParam;
-import javax.ws.rs.HttpMethod;
+import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
 import javax.ws.rs.ProduceMime;
 import javax.ws.rs.ConsumeMime;
 import javax.ws.rs.core.HttpContext;
@@ -55,7 +56,7 @@ import javax.ws.rs.core.UriInfo;
  * @author Peter Liu
  */
 
-@UriTemplate("/helloWorld")
+@Path("/helloWorld")
 public class HelloWorldResource {
     @HttpContext
     private UriInfo context;
@@ -68,7 +69,7 @@ public class HelloWorldResource {
      * Retrieves representation of an instance of helloworld.HelloWorldResource
      * @return an instance of java.lang.String
      */
-    @HttpMethod("GET")
+    @GET
     @ProduceMime("text/html")
     public String getXml() {
         return "<html><body><h1>Hello World!</body></h1></html>";
@@ -79,7 +80,7 @@ public class HelloWorldResource {
      * @param content representation for the resource
      * @return an HTTP response with content of the updated or created resource.
      */
-    @HttpMethod("PUT")
+    @PUT
     @ConsumeMime("application/xml")
     public void putXml(String content) {
     }

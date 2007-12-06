@@ -56,6 +56,10 @@ made subject to such option by the copyright holder.
                 <runtime-relative-path>ext/rest/wadl2java.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
+                <runtime-relative-path>ext/rest/asm-3.0.jar</runtime-relative-path>
+                <binary-origin>build/external/rest/asm-3.0.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
                 <runtime-relative-path>ext/rest/http.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
@@ -71,7 +75,20 @@ made subject to such option by the copyright holder.
                 <runtime-relative-path>ext/rest/comresrcgen.jar/</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/grizzly-1.0.13.jar</runtime-relative-path>
+                <runtime-relative-path>ext/rest/framework-1.6-SNAPSHOT.jar</runtime-relative-path>
+                <binary-origin>build/external/rest/framework-1.6-SNAPSHOT.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/rest/http-1.6-SNAPSHOT.jar</runtime-relative-path>
+                <binary-origin>build/external/rest/http-1.6-SNAPSHOT.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/rest/http-utils-1.6-SNAPSHOT.jar</runtime-relative-path>
+                <binary-origin>build/external/rest/http-utils-1.6-SNAPSHOT.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/rest/rcm-1.6-SNAPSHOT.jar</runtime-relative-path>
+                <binary-origin>build/external/rest/rcm-1.6-SNAPSHOT.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/rest/jsp-api-2.0-20040521.jar/</runtime-relative-path>
@@ -85,6 +102,15 @@ made subject to such option by the copyright holder.
                 <package>javax.ws.rs</package>
                 <package>javax.ws.rs.core</package>
                 <package>javax.ws.rs.ext</package>
+                <package>com.sun.ws.rest.api</package>
+                <package>com.sun.ws.rest.api.container</package>
+                <package>com.sun.ws.rest.api.container.grizzly</package>
+                <package>com.sun.ws.rest.api.container.httpserver</package>
+                <package>com.sun.ws.rest.api.core</package>
+                <package>com.sun.ws.rest.api.model</package>
+                <package>com.sun.ws.rest.api.representation</package>
+                <package>com.sun.ws.rest.api.uri</package>
+                <package>com.sun.ws.rest.api.view</package>
             </friend-packages>
         </data>
     </configuration>

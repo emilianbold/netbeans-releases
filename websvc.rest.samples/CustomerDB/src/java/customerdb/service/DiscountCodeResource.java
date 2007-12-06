@@ -42,9 +42,11 @@
 package customerdb.service;
 
 import customerdb.DiscountCode;
-import javax.ws.rs.UriTemplate;
+import javax.ws.rs.Path;
 import javax.ws.rs.UriParam;
-import javax.ws.rs.HttpMethod;
+import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.ProduceMime;
 import javax.ws.rs.ConsumeMime;
 import javax.ws.rs.WebApplicationException;
@@ -81,12 +83,12 @@ public class DiscountCodeResource {
      * @param id identifier for the entity
      * @return an instance of DiscountCodeConverter
      */
-    @HttpMethod("GET")
+    @GET
     @ProduceMime({"application/xml", "application/json"})
     public DiscountCodeConverter get(@UriParam("discountCode")
     String id) {
         try {
-            return new DiscountCodeConverter(getEntity(id), context.getAbsolute());
+            return new DiscountCodeConverter(getEntity(id), context.getAbsolutePath());
         } finally {
             PersistenceService.getInstance().close();
         }
@@ -98,7 +100,7 @@ public class DiscountCodeResource {
      * @param id identifier for the entity
      * @param data an DiscountCodeConverter entity that is deserialized from a XML stream
      */
-    @HttpMethod("PUT")
+    @PUT
     @ConsumeMime({"application/xml", "application/json"})
     public void put(@UriParam("discountCode")
     String id, DiscountCodeConverter data) {
@@ -117,7 +119,7 @@ public class DiscountCodeResource {
      *
      * @param id identifier for the entity
      */
-    @HttpMethod("DELETE")
+    @DELETE
     public void delete(@UriParam("discountCode")
     String id) {
         PersistenceService service = PersistenceService.getInstance();
@@ -137,7 +139,7 @@ public class DiscountCodeResource {
      * @param id identifier for the parent entity
      * @return an instance of CustomersResource
      */
-    @UriTemplate("customers/")
+    @Path("customers/")
     public CustomersResource getCustomersResource(@UriParam("discountCode")
     String id) {
         final DiscountCode parent = getEntity(id);
@@ -166,7 +168,7 @@ public class DiscountCodeResource {
         try {
             return (DiscountCode) PersistenceService.getInstance().createNamedQuery("DiscountCode.findByDiscountCode").setParameter("discountCode", id).getSingleResult();
         } catch (NoResultException ex) {
-            throw new WebApplicationException(new Throwable("Resource for " + context.getAbsolute() + " does not exist."), 404);
+            throw new WebApplicationException(new Throwable("Resource for " + context.getAbsolutePath() + " does not exist."), 404);
         }
     }
 

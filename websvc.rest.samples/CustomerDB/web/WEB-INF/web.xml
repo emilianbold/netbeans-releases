@@ -45,10 +45,6 @@
     <servlet>
         <servlet-name>ServletAdaptor</servlet-name>
         <servlet-class>com.sun.ws.rest.impl.container.servlet.ServletAdaptor</servlet-class>
-        <init-param>
-            <param-name>webresourceclass</param-name>
-            <param-value>webresources.WebResources</param-value>
-        </init-param>
         <load-on-startup>1</load-on-startup>
     </servlet>
     <servlet-mapping>

@@ -42,9 +42,11 @@
 package customerdb.service;
 
 import customerdb.Customer;
-import javax.ws.rs.UriTemplate;
+import javax.ws.rs.Path;
 import javax.ws.rs.UriParam;
-import javax.ws.rs.HttpMethod;
+import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.ProduceMime;
 import javax.ws.rs.ConsumeMime;
 import javax.ws.rs.WebApplicationException;
@@ -80,12 +82,12 @@ public class CustomerResource {
      * @param id identifier for the entity
      * @return an instance of CustomerConverter
      */
-    @HttpMethod("GET")
+    @GET
     @ProduceMime({"application/xml", "application/json"})
     public CustomerConverter get(@UriParam("customerId")
     Integer id) {
         try {
-            return new CustomerConverter(getEntity(id), context.getAbsolute());
+            return new CustomerConverter(getEntity(id), context.getAbsolutePath());
         } finally {
             PersistenceService.getInstance().close();
         }
@@ -97,7 +99,7 @@ public class CustomerResource {
      * @param id identifier for the entity
      * @param data an CustomerConverter entity that is deserialized from a XML stream
      */
-    @HttpMethod("PUT")
+    @PUT
     @ConsumeMime({"application/xml", "application/json"})
     public void put(@UriParam("customerId")
     Integer id, CustomerConverter data) {
@@ -116,7 +118,7 @@ public class CustomerResource {
      *
      * @param id identifier for the entity
      */
-    @HttpMethod("DELETE")
+    @DELETE
     public void delete(@UriParam("customerId")
     Integer id) {
         PersistenceService service = PersistenceService.getInstance();
@@ -136,7 +138,7 @@ public class CustomerResource {
      * @param id identifier for the parent entity
      * @return an instance of DiscountCodeResource
      */
-    @UriTemplate("discountCode/")
+    @Path("discountCode/")
     public customerdb.service.DiscountCodeResource getDiscountCodeResource(@UriParam("customerId")
     Integer id) {
         final Customer parent = getEntity(id);
@@ -146,7 +148,7 @@ public class CustomerResource {
             protected DiscountCode getEntity(String id) {
                 DiscountCode entity = parent.getDiscountCode();
                 if (entity == null) {
-                    throw new WebApplicationException(new Throwable("Resource for " + context.getAbsolute() + " does not exist."), 404);
+                    throw new WebApplicationException(new Throwable("Resource for " + context.getAbsolutePath() + " does not exist."), 404);
                 }
                 return entity;
             }
@@ -163,7 +165,7 @@ public class CustomerResource {
         try {
             return (Customer) PersistenceService.getInstance().createNamedQuery("Customer.findByCustomerId").setParameter("customerId", id).getSingleResult();
         } catch (NoResultException ex) {
-            throw new WebApplicationException(new Throwable("Resource for " + context.getAbsolute() + " does not exist."), 404);
+            throw new WebApplicationException(new Throwable("Resource for " + context.getAbsolutePath() + " does not exist."), 404);
         }
     }
 

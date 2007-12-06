@@ -68,6 +68,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.Annotatio
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.ObjectProvider;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObjectManager;
+import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServices;
 import org.openide.filesystems.FileObject;
@@ -159,32 +160,11 @@ public class RestServicesImpl implements RestServices {
             final Map<TypeElement, RestServiceDescriptionImpl> result =
                     new HashMap<TypeElement, RestServiceDescriptionImpl>();
             
-            helper.getAnnotationScanner().findAnnotations("javax.ws.rs.UriTemplate",   // NOI18N
-                    (Set<ElementKind>) EnumSet.of(ElementKind.CLASS),
-                    new AnnotationHandler() {
-                public void handleAnnotation(TypeElement type, Element element, AnnotationMirror annotation) {
-                    //System.out.println("ElementKind.CLASS type = " + type + " element = " + element +
-                    //         " annotation = " + annotation);
-                    if (!result.containsKey(type)) {
-                        //System.out.println("adding RestServiceDescImpl for " + type.getQualifiedName().toString());
-                        result.put(type, new RestServiceDescriptionImpl(helper, type));
-                    }
-                }
-            });
-            
-            helper.getAnnotationScanner().findAnnotations("javax.ws.rs.HttpMethod",    // NOI18N
-                    (Set<ElementKind>) EnumSet.of(ElementKind.METHOD),
-                    new AnnotationHandler() { 
-                public void handleAnnotation(TypeElement type, Element element, AnnotationMirror annotation) {
-                    //System.out.println("ElementKind.METHOD type = " + type +
-                    //        " element = " + element +
-                    //        " annotation = " + annotation);
-                    if (!result.containsKey(type)) {
-                        //System.out.println("adding RestServiceDescImpl for " + type.getQualifiedName().toString());
-                        result.put(type, new RestServiceDescriptionImpl(helper, type));
-                    }
-                }
-            });
+            findAnnotation(RestConstants.PATH, EnumSet.of(ElementKind.CLASS), result);
+            findAnnotation(RestConstants.GET, EnumSet.of(ElementKind.METHOD), result);
+            findAnnotation(RestConstants.POST, EnumSet.of(ElementKind.METHOD), result);
+            findAnnotation(RestConstants.PUT, EnumSet.of(ElementKind.METHOD), result);
+            findAnnotation(RestConstants.DELETE, EnumSet.of(ElementKind.METHOD), result);
             
             return new ArrayList<RestServiceDescriptionImpl>(result.values());
         }
@@ -195,15 +175,13 @@ public class RestServicesImpl implements RestServices {
             
             if (type.getKind() != ElementKind.INTERFACE) { // don't consider interfaces
                 boolean isRest = false;
-                if (helper.hasAnnotation(type.getAnnotationMirrors(), "javax.ws.rs.UriTemplate")) { // NOI18N
+                if (helper.hasAnnotation(type.getAnnotationMirrors(), RestConstants.PATH)) { // NOI18N
                     isRest = true;
                 } else {
                     for (Element element : type.getEnclosedElements()) {
-                        if (element.getKind() == ElementKind.METHOD) {
-                            if (helper.hasAnnotation(element.getAnnotationMirrors(), "javax.ws.rs.HttpMethod")) {    //NOI18N
-                                isRest = true;
-                                break;
-                            }
+                        if (Utils.hasHttpMethod(element)) {
+                            isRest = true;
+                            break;
                         }
                     }
                 }
@@ -234,6 +212,20 @@ public class RestServicesImpl implements RestServices {
             }
             
             return false;
+        }
+        
+        private void findAnnotation(
+                String annotationType, EnumSet<ElementKind> kinds, 
+                final Map<TypeElement, RestServiceDescriptionImpl> result) throws InterruptedException {
+            
+            helper.getAnnotationScanner().findAnnotations(annotationType, kinds,
+                    new AnnotationHandler() {
+                public void handleAnnotation(TypeElement type, Element element, AnnotationMirror annotation) {
+                    if (!result.containsKey(type)) {
+                        result.put(type, new RestServiceDescriptionImpl(helper, type));
+                    }
+                }
+            });
         }
     }
     

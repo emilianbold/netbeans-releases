@@ -43,8 +43,9 @@ package customerdb.service;
 
 import customerdb.DiscountCode;
 import java.util.Collection;
-import javax.ws.rs.UriTemplate;
-import javax.ws.rs.HttpMethod;
+import javax.ws.rs.Path;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.ProduceMime;
 import javax.ws.rs.ConsumeMime;
 import javax.ws.rs.core.Response;
@@ -60,7 +61,7 @@ import customerdb.converter.DiscountCodeConverter;
  * @author Peter Liu
  */
 
-@UriTemplate("/discountCodes/")
+@Path("/discountCodes/")
 public class DiscountCodesResource {
     @HttpContext
     private UriInfo context;
@@ -83,11 +84,11 @@ public class DiscountCodesResource {
      *
      * @return an instance of DiscountCodesConverter
      */
-    @HttpMethod("GET")
+    @GET
     @ProduceMime({"application/xml", "application/json"})
     public DiscountCodesConverter get() {
         try {
-            return new DiscountCodesConverter(getEntities(), context.getAbsolute());
+            return new DiscountCodesConverter(getEntities(), context.getAbsolutePath());
         } finally {
             PersistenceService.getInstance().close();
         }
@@ -99,7 +100,7 @@ public class DiscountCodesResource {
      * @param data an DiscountCodeConverter entity that is deserialized from an XML stream
      * @return an instance of DiscountCodeConverter
      */
-    @HttpMethod("POST")
+    @POST
     @ConsumeMime({"application/xml", "application/json"})
     public Response post(DiscountCodeConverter data) {
         PersistenceService service = PersistenceService.getInstance();
@@ -108,7 +109,7 @@ public class DiscountCodesResource {
             DiscountCode entity = data.getEntity();
             createEntity(entity);
             service.commitTx();
-            return Builder.created(context.getAbsolute().resolve(entity.getDiscountCode() + "/")).build();
+            return Response.created(context.getAbsolutePath().resolve(entity.getDiscountCode() + "/")).build();
         } finally {
             service.close();
         }
@@ -119,7 +120,7 @@ public class DiscountCodesResource {
      *
      * @return an instance of DiscountCodeResource
      */
-    @UriTemplate("{discountCode}/")
+    @Path("{discountCode}/")
     public customerdb.service.DiscountCodeResource getDiscountCodeResource() {
         return new DiscountCodeResource(context);
     }

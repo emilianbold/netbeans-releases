@@ -41,8 +41,10 @@
 
 package org.netbeans.modules.websvc.rest.model.impl;
 
+import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 
 /**
@@ -51,42 +53,51 @@ import javax.lang.model.element.ExecutableElement;
  */
 public class Utils {
 
-    private static final String URI_TEMPLATE = "javax.ws.rs.UriTemplate"; //NOI18N
-    private static final String HTTP_METHOD = "javax.ws.rs.HttpMethod"; //NOI18N
-    private static final String CONSUME_MIME = "javax.ws.rs.ConsumeMime"; //NOI18N
-    private static final String PRODUCE_MIME = "javax.ws.rs.ProduceMime"; //NOI18N
     private static final String VALUE = "value";        //NOI18N
 
     public static String getUriTemplate(Element element) {
-        return getAnnotationValue(element, URI_TEMPLATE, VALUE);
+        return getAnnotationValue(element, RestConstants.PATH, VALUE);
     }
 
     public static String getConsumeMime(Element element) {
-        return getAnnotationValue(element, CONSUME_MIME, VALUE);
+        return getAnnotationValue(element, RestConstants.CONSUME_MIME, VALUE);
     }
 
     public static String getProduceMime(Element element) {
-        return getAnnotationValue(element, PRODUCE_MIME, VALUE);
+        return getAnnotationValue(element, RestConstants.PRODUCE_MIME, VALUE);
     }
 
     public static String getHttpMethod(Element element) {
-        return getAnnotationValue(element, HTTP_METHOD, VALUE);
+        if (hasAnnotationType(element, RestConstants.GET)) {
+            return RestConstants.GET_ANNOTATION;
+        } else if (hasAnnotationType(element, RestConstants.POST)) {
+            return RestConstants.POST_ANNOTATION;
+        } else if (hasAnnotationType(element, RestConstants.PUT)) {
+            return RestConstants.PUT_ANNOTATION;
+        } else if (hasAnnotationType(element, RestConstants.DELETE)) {
+            return RestConstants.DELETE_ANNOTATION;
+        }
+        return null;
     }
 
     public static boolean hasUriTemplate(Element element) {
-        return hasAnnotationType(element, URI_TEMPLATE);
+        return hasAnnotationType(element, RestConstants.PATH);
     }
     
     public static boolean hasHttpMethod(Element element) {
-        return hasAnnotationType(element, HTTP_METHOD);
+        return element.getKind() == ElementKind.METHOD && 
+              (hasAnnotationType(element, RestConstants.GET) ||
+               hasAnnotationType(element, RestConstants.POST) ||
+               hasAnnotationType(element, RestConstants.PUT) ||
+               hasAnnotationType(element, RestConstants.DELETE));
     }
     
     public static boolean hasConsumeMime(Element element) {
-        return hasAnnotationType(element, CONSUME_MIME);
+        return hasAnnotationType(element, RestConstants.CONSUME_MIME);
     }
     
     public static boolean hasProduceMime(Element element) {
-        return hasAnnotationType(element, PRODUCE_MIME);
+        return hasAnnotationType(element, RestConstants.PRODUCE_MIME);
     }
 
     private static String getAnnotationValue(Element element, String annotationType, String paramName) {
