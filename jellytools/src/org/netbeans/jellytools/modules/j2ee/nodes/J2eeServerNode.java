@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -57,14 +57,14 @@ import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 
-/** Node representing a J2EE Server node under Servers node.
+/** Node representing a J2EE Server node under Servers node. Default timeout
+ * for all actions is 120 seconds.
  * <p>
  * Usage:<br>
  * <pre>
- *      J2eeServerNode server = J2eeServerNode.invoke("Bundled Tomcat");
+ *      J2eeServerNode server = J2eeServerNode.invoke("GlassFish");
  *      server.start();
  *      ....
- *      server.waitFinished();
  *      server.stop();
  * </pre>
  *
@@ -114,39 +114,46 @@ public class J2eeServerNode extends Node {
     
     /** performs 'Properties' with this node */
     public void properties() {
+        waitNotWaiting();
         customizerAction.perform(this);
     }
     
     /** performs 'Start in Debug Mode' with this node */
     public void debug() {
+        waitNotWaiting();
         startDebugAction.perform(this);
         waitDebugging();
     }
     
     /** performs 'Refresh' with this node */
     public void refresh() {
+        waitNotWaiting();
         refreshAction.perform(this);
         waitNotWaiting();
     }
     
     /** performs 'Remove' with this node */
     public void remove() {
+        waitNotWaiting();
         removeInstanceAction.perform(this);
     }
     
     /** performs 'Restart' with this node */
     public void restart() {
+        waitNotWaiting();
         restartAction.perform(this);
     }
     
     /** performs 'Start' with this node */
     public void start() {
+        waitNotWaiting();
         startAction.perform(this);
         waitRunning();
     }
     
     /** performs 'Stop' with this node */
     public void stop() {
+        waitNotWaiting();
         stopAction.perform(this);
         waitStopped();
     }
@@ -156,19 +163,22 @@ public class J2eeServerNode extends Node {
         waitNotWaiting();
     }
     
-    //// PRIVATE METHODS ////
-    
+    /** Waits till server is running in debug mode. */
     private void waitDebugging() {
         waitServerState(ServerInstance.STATE_DEBUGGING);
     }
     
+    /** Waits till server is running. */
     private void waitRunning() {
         waitServerState(ServerInstance.STATE_RUNNING);
     }
     
+    /** Waits till server is stopped. */
     private void waitStopped() {
         waitServerState(ServerInstance.STATE_STOPPED);
     }
+    
+    //// PRIVATE METHODS ////
 
     private void waitServerState(int state) {
         org.openide.nodes.Node ideNode = (org.openide.nodes.Node) getOpenideNode();
@@ -223,6 +233,7 @@ public class J2eeServerNode extends Node {
     
     private static Object waitFor(Waitable action) {
         Waiter waiter = new Waiter(action);
+        waiter.getTimeouts().setTimeout("Waiter.WaitingTime", 120000);
         try {
             return waiter.waitAction(null);
         } catch (InterruptedException ex) {
