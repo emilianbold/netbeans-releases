@@ -94,7 +94,7 @@ public class UtilitiesTest extends NbTestCase {
                 "}", "t(java.lang.String)");
     }
     
-    public void testFuzzyResolveConstructor() throws Exception {
+    public void testFuzzyResolveConstructor1() throws Exception {
         performTest("package test;" +
                 "public class Test {" +
                 "   private void test() {" +
@@ -103,6 +103,17 @@ public class UtilitiesTest extends NbTestCase {
                 "   }" +
                 "   private Test(String s) {}" +
                 "}", "Test(java.lang.String)");
+    }
+    
+    public void testFuzzyResolveConstructor2() throws Exception {
+        performTest("package test;" +
+                "import java.awt.Font;\n" +
+                "public class Test {" +
+                "   private void test() {" +
+                "       new Font(getSetting(\"fontName\"), Font.BOLD, 12);" +
+                "   }\n" +
+                "   public Object getSetting(String s) {return s;}\n" +
+                "}", "Font(java.lang.String,int,int)", "");
     }
     
     private FileObject source;

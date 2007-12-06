@@ -705,7 +705,10 @@ public class Utilities {
                         index[0] = innerIndex;
                         found = ee;
                     } else {
-                        return null;
+                        //see testFuzzyResolveConstructor2:
+                        if (index[0] != innerIndex || !info.getTypes().isSameType(candidateType[0], innerCandidate)) {
+                            return null;
+                        }
                     }
                 }
             }
@@ -713,5 +716,6 @@ public class Utilities {
 
         return found;
     }
+    
     
 }
