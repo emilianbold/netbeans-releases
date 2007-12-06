@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="-build-jbrowse-tests">
-        <ant dir="../../java/source/test" target="buildtests" inheritall="false" />
+        <ant dir="../source/test" target="buildtests" inheritall="false" />
         <ant dir="../../openide/text/test" target="buildtests" inheritall="false" />
         <ant dir="../../editor" target="test-build" inheritall="false" />
     </target>
