@@ -955,6 +955,9 @@ WADLParser.prototype = {
                 var r = rarr[i];   
                 var path = r.attributes.getNamedItem('path');
                 var pathVal = path.nodeValue;
+                if (pathVal.indexOf('{') > -1) {
+                    continue;
+                }
                 pathVal = this.addSeperator(pathVal);
                 var cName = this.trimSeperator(pathVal);
                 ts.topUrls[i] = pathVal;
