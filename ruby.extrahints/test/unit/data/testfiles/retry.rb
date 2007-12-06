@@ -20,7 +20,7 @@ end
 
 retry #2
 
-def
+def foo
   retry #3
 end
 
