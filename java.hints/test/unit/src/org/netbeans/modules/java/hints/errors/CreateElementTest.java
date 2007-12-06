@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.java.hints.errors;
 
-import org.netbeans.modules.java.hints.errors.AddParameterOrLocalFix;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -379,6 +378,24 @@ public class CreateElementTest extends HintsTestBase {
                 "AddParameterOrLocalFix:kk:int:true",
                 "CreateFieldFix:kk:org.netbeans.test.java.hints.Bug117431:int:[private, static]",
                 "AddParameterOrLocalFix:kk:int:false"
+        )));
+    }
+    
+    public void testMethodArgument() throws Exception {
+        //do not offer same hint more times for a same unknown variable
+        performTestAnalysisTest("org.netbeans.test.java.hints.MethodArgument", 217, new HashSet<String>(Arrays.asList(
+		"AddParameterOrLocalFix:xx:int:true",
+		"CreateFieldFix:xx:org.netbeans.test.java.hints.MethodArgument:int:[private, static]",
+                "AddParameterOrLocalFix:xx:int:false"
+        )));
+    }
+    
+    public void testConstructorArgument() throws Exception {
+        //do not offer same hint more times for a same unknown variable
+        performTestAnalysisTest("org.netbeans.test.java.hints.ConstructorArgument", 181, new HashSet<String>(Arrays.asList(
+		"AddParameterOrLocalFix:xx:int:true",
+		"CreateFieldFix:xx:org.netbeans.test.java.hints.ConstructorArgument:int:[private, static]",
+                "AddParameterOrLocalFix:xx:int:false"
         )));
     }
     

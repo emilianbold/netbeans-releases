@@ -52,8 +52,10 @@ import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.ReturnTree;
@@ -153,6 +155,12 @@ public final class CreateElementUtilities {
             case NEW_ARRAY:
                 return computeNewArray(types, info, currentPath, unresolved, offset);
                 
+            case METHOD_INVOCATION:
+                return computeMethodInvocation(types, info, currentPath, unresolved, offset);
+                
+            case NEW_CLASS:
+                return computeNewClass(types, info, currentPath, unresolved, offset);
+                
             case POSTFIX_INCREMENT:
             case POSTFIX_DECREMENT:
             case PREFIX_INCREMENT:
@@ -227,7 +235,6 @@ public final class CreateElementUtilities {
                 
             case CASE:
             case ANNOTATION:
-            case NEW_CLASS:
             case UNBOUNDED_WILDCARD:
             case EXTENDS_WILDCARD:
             case SUPER_WILDCARD:
@@ -705,6 +712,60 @@ public final class CreateElementUtilities {
                 
                 return Collections.singletonList(((ArrayType) whole).getComponentType());
             }
+        }
+        
+        return null;
+    }
+    
+    private static List<? extends TypeMirror> computeMethodInvocation(Set<ElementKind> types, CompilationInfo info, TreePath parent, Tree error, int offset) {
+        MethodInvocationTree nat = (MethodInvocationTree) parent.getLeaf();
+        boolean errorInRealArguments = false;
+        
+        for (Tree param : nat.getArguments()) {
+            errorInRealArguments |= param == error;
+        }
+        
+        if (errorInRealArguments) {
+            TypeMirror[] proposedType = new TypeMirror[1];
+            int[] proposedIndex = new int[1];
+            ExecutableElement ee = org.netbeans.modules.editor.java.Utilities.fuzzyResolveMethodInvocation(info, parent, proposedType, proposedIndex);
+            
+            if (ee == null) { //cannot be resolved
+                return null;
+            }
+            
+            types.add(ElementKind.PARAMETER);
+            types.add(ElementKind.LOCAL_VARIABLE);
+            types.add(ElementKind.FIELD);
+            
+            return Collections.singletonList(proposedType[0]);
+        }
+        
+        return null;
+    }
+    
+    private static List<? extends TypeMirror> computeNewClass(Set<ElementKind> types, CompilationInfo info, TreePath parent, Tree error, int offset) {
+        NewClassTree nct = (NewClassTree) parent.getLeaf();
+        boolean errorInRealArguments = false;
+        
+        for (Tree param : nct.getArguments()) {
+            errorInRealArguments |= param == error;
+        }
+        
+        if (errorInRealArguments) {
+            TypeMirror[] proposedType = new TypeMirror[1];
+            int[] proposedIndex = new int[1];
+            ExecutableElement ee = org.netbeans.modules.editor.java.Utilities.fuzzyResolveMethodInvocation(info, parent, proposedType, proposedIndex);
+            
+            if (ee == null) { //cannot be resolved
+                return null;
+            }
+            
+            types.add(ElementKind.PARAMETER);
+            types.add(ElementKind.LOCAL_VARIABLE);
+            types.add(ElementKind.FIELD);
+            
+            return Collections.singletonList(proposedType[0]);
         }
         
         return null;

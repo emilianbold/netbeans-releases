@@ -275,6 +275,8 @@ public final class CreateElement implements ErrorRule<Void> {
         
         modifiers.addAll(getAccessModifiers(info, source, target));
         
+        List<Fix> result = new ArrayList<Fix>();
+        
         if (methodInvocation != null) {
             //create method:
             MethodInvocationTree mit = (MethodInvocationTree) methodInvocation.getLeaf();
@@ -285,7 +287,7 @@ public final class CreateElement implements ErrorRule<Void> {
             if (types == null || types.isEmpty()) {
                 return Collections.<Fix>emptyList();
             }
-            return prepareCreateMethodFix(info, methodInvocation, modifiers, target, simpleName, mit.getArguments(), types);
+            result.addAll(prepareCreateMethodFix(info, methodInvocation, modifiers, target, simpleName, mit.getArguments(), types));
         }
 	
         if (newClass != null) {
@@ -315,12 +317,10 @@ public final class CreateElement implements ErrorRule<Void> {
             
             target = (TypeElement) clazz;
             
-            return prepareCreateMethodFix(info, newClass, getAccessModifiers(info, source, target), target, "<init>", nct.getArguments(), null);
+            result.addAll(prepareCreateMethodFix(info, newClass, getAccessModifiers(info, source, target), target, "<init>", nct.getArguments(), null));
         }
         
         //field like or class (type):
-        List<Fix> result = new ArrayList<Fix>();
-
         Set<ElementKind> fixTypes = EnumSet.noneOf(ElementKind.class);
         TypeMirror[] superType = new TypeMirror[1];
         int[] numTypeParameters = new int[1];
