@@ -153,7 +153,7 @@ public class Wizard {
             
             // initialize uri for components list xml schema
             if (System.getProperty(COMPONENTS_SCHEMA_URI_PROPERTY) != null) {
-                componentsInstanceUri =
+                componentsSchemaUri =
                         System.getProperty(COMPONENTS_SCHEMA_URI_PROPERTY);
             } else {
                 componentsSchemaUri = DEFAULT_COMPONENTS_SCHEMA_URI;
