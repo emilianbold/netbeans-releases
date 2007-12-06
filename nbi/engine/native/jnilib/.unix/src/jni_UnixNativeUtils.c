@@ -40,6 +40,7 @@
 #include <sys/statvfs.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "../../.common/src/CommonUtils.h"
 #include "jni_UnixNativeUtils.h"
@@ -117,4 +118,8 @@ JNIEXPORT jint JNICALL Java_org_netbeans_installer_utils_system_UnixNativeUtils_
     }
     
     FREE(path);
+}
+
+JNIEXPORT jboolean JNICALL Java_org_netbeans_installer_utils_system_UnixNativeUtils_isCurrentUserAdmin0 (JNIEnv *jEnv, jobject jObject) {
+    return (geteuid()==0);
 }

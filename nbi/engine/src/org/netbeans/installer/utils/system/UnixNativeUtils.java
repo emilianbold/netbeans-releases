@@ -121,25 +121,11 @@ public abstract class UnixNativeUtils extends NativeUtils {
     public static final String DEFAULT_XDG_DATA_DIRS =
             "/usr/share"; // NOI18N
     
-    public boolean isCurrentUserAdmin() {
+    public boolean isCurrentUserAdmin() throws NativeException{
         if(isUserAdminSet) {
             return isUserAdmin;
         }
-        boolean result = false;
-        try {
-            ExecutionResults resRealID = SystemUtils.executeCommand("id", "-ru");
-            ExecutionResults resEffID = SystemUtils.executeCommand("id", "-u");
-            String realID = resRealID.getStdOut();
-            String effID = resRealID.getStdOut();
-            if(realID!=null && effID!=null) {
-                result = (realID.equals("0") && effID.equals("0"));
-            }
-            
-        } catch (IOException ex) {
-            LogManager.log(ErrorLevel.CRITICAL,
-                    "Can`t execute id command");
-            LogManager.log(ErrorLevel.CRITICAL,ex);
-        }
+        boolean result = isCurrentUserAdmin0();
         isUserAdmin = result;
         isUserAdminSet = true;
         return result;
@@ -630,6 +616,8 @@ public abstract class UnixNativeUtils extends NativeUtils {
     private native void setPermissions0(String path, int mode, int change);
     
     private native int getPermissions0(String path);
+    
+    private native boolean isCurrentUserAdmin0();
     
     /////////////////////////////////////////////////////////////////////////////////
     // Inner Classes

@@ -84,6 +84,14 @@ JNIEXPORT void JNICALL Java_org_netbeans_installer_utils_system_UnixNativeUtils_
 JNIEXPORT jint JNICALL Java_org_netbeans_installer_utils_system_UnixNativeUtils_getPermissions0
   (JNIEnv *, jobject, jstring);
 
+/*
+ * Class:     org_netbeans_installer_utils_system_UnixNativeUtils
+ * Method:    isCurrentUserAdmin0
+ * Signature: ()Z
+ */
+JNIEXPORT jboolean JNICALL Java_org_netbeans_installer_utils_system_UnixNativeUtils_isCurrentUserAdmin0
+  (JNIEnv *, jobject);
+
 
 
 #ifdef __cplusplus
