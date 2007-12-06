@@ -74,7 +74,8 @@ import org.openide.util.Lookup;
 public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessibleClassLoader {
 
     private static final Logger LOGGER = Logger.getLogger(ProxyClassLoader.class.getName());
-    
+    private static final boolean LOG_LOADING = LOGGER.isLoggable(Level.FINE);
+
     /** All known packages */
     private final Map<String, Package> packages = new HashMap<String, Package>();
 
@@ -180,6 +181,9 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
     @Override
     protected synchronized Class loadClass(String name, boolean resolve)
                                             throws ClassNotFoundException {
+        if (LOG_LOADING) LOGGER.log(Level.FINEST, "{0} initiated loading of {1}",
+                    new Object[] {this, name});
+        
         Class cls = null;
 
         int last = name.lastIndexOf('.');
@@ -237,7 +241,11 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
     /** May return null */ 
     private synchronized Class selfLoadClass(String pkg, String name) { 
         Class cls = findLoadedClass(name); 
-        if (cls == null) cls = doLoadClass(pkg, name);
+        if (cls == null) {
+            cls = doLoadClass(pkg, name);
+            if (LOG_LOADING) LOGGER.log(Level.FINEST, "{0} loaded {1}",
+                        new Object[] {this, name});
+        }
         return cls; 
     }
 
