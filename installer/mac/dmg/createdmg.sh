@@ -50,16 +50,21 @@ srcdirs=$*
 
 volname="NetBeans 6.1"
 
-rm -f $tmpdir/template.sparseimage
-bunzip2 -d -c `dirname $0`/template.sparseimage.bz2 > $tmpdir/template.sparseimage
-rm -rf $tmpdir/mountpoint
-mkdir $tmpdir/mountpoint
-hdiutil mount -verbose -mountpoint $tmpdir/mountpoint $tmpdir/template.sparseimage
-rm -rf $tmpdir/mountpoint/*
-rsync -a $srcdirs --exclude .DS_Store $tmpdir/mountpoint/
-diskutil rename $tmpdir/mountpoint "$volname"
-hdiutil detach -verbose $tmpdir/mountpoint
+#rm -f $tmpdir/template.sparseimage
+#bunzip2 -d -c `dirname $0`/template.sparseimage.bz2 > $tmpdir/template.sparseimage
+#rm -rf $tmpdir/mountpoint
+#mkdir $tmpdir/mountpoint
+rm -rf $tmpdir/NetBeans6.1
+mkdir $tmpdir/NetBeans6.1
+#hdiutil mount -verbose -mountpoint $tmpdir/mountpoint $tmpdir/template.sparseimage
+#rm -rf $tmpdir/mountpoint/*
+#rsync -a $srcdirs --exclude .DS_Store $tmpdir/mountpoint/
+rsync -a $srcdirs --exclude .DS_Store $tmpdir/NetBeans6.1/
+#diskutil rename $tmpdir/mountpoint "$volname"
+#hdiutil detach -verbose $tmpdir/mountpoint
 rm -f "$dmg"
-hdiutil create -verbose -srcdevice $tmpdir/template.sparseimage "$dmg"
-rm -f $tmpdir/template.sparseimage
-rmdir $tmpdir/mountpoint
+#hdiutil create -verbose -srcdevice $tmpdir/template.sparseimage "$dmg"
+hdiutil create -verbose -srcfolder $tmpdir/NetBeans6.1/ "$dmg"
+
+#rm -f $tmpdir/template.sparseimage
+#rmdir $tmpdir/mountpoint
