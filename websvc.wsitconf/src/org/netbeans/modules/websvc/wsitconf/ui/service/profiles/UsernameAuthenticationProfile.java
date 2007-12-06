@@ -164,6 +164,8 @@ public class UsernameAuthenticationProfile extends SecurityProfile
     }
 
     public void setServiceDefaults(WSDLComponent component, Project p) {
+        ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, false);
+        ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, false);
         if (Util.isTomcat(p)) {
             FileObject tomcatLoc = Util.getTomcatLocation(p);
             ProprietarySecurityPolicyModelHelper.setStoreLocation(component, 
@@ -178,11 +180,11 @@ public class UsernameAuthenticationProfile extends SecurityProfile
             }
         }
         ProprietarySecurityPolicyModelHelper.setKeyStoreAlias(component,ProfilesModelHelper.XWS_SECURITY_SERVER, false);
-        ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, false);
     }
     
     public void setClientDefaults(WSDLComponent component, WSDLComponent serviceBinding, Project p) {
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, true);
+        ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, true);
         ProprietarySecurityPolicyModelHelper.setCallbackHandler(
                 (Binding)component, CallbackHandler.USERNAME_CBHANDLER, null, DEFAULT_USERNAME, true);
         ProprietarySecurityPolicyModelHelper.setCallbackHandler(

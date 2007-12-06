@@ -138,6 +138,8 @@ public class MutualCertificatesProfile extends SecurityProfile
     }
     
     public void setServiceDefaults(WSDLComponent component, Project p) {
+        ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, false);
+        ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, false);        
         if (Util.isTomcat(p)) {
             FileObject tomcatLoc = Util.getTomcatLocation(p);
             ProprietarySecurityPolicyModelHelper.setStoreLocation(component, 
@@ -146,10 +148,11 @@ public class MutualCertificatesProfile extends SecurityProfile
             ProprietarySecurityPolicyModelHelper.setStorePassword(component, KeystorePanel.DEFAULT_PASSWORD, false, false);
         }
         ProprietarySecurityPolicyModelHelper.setKeyStoreAlias(component,ProfilesModelHelper.XWS_SECURITY_SERVER, false);
-        ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, false);
     }    
 
     public void setClientDefaults(WSDLComponent component, WSDLComponent serviceBinding, Project p) {
+        ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, true);
+        ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, true);
         if (Util.isTomcat(p)) {
             FileObject tomcatLoc = Util.getTomcatLocation(p);
             ProprietarySecurityPolicyModelHelper.setStoreLocation(component, 
@@ -164,7 +167,7 @@ public class MutualCertificatesProfile extends SecurityProfile
         }
         ProprietarySecurityPolicyModelHelper.setKeyStoreAlias(component,ProfilesModelHelper.XWS_SECURITY_CLIENT, true);
         ProprietarySecurityPolicyModelHelper.setTrustPeerAlias(component,ProfilesModelHelper.XWS_SECURITY_SERVER, true);
-    }    
+    }
     
     public boolean isClientDefaultSetupUsed(WSDLComponent component, Binding serviceBinding, Project p) {
         if (ProfilesModelHelper.XWS_SECURITY_CLIENT.equals(ProprietarySecurityPolicyModelHelper.getStoreAlias(component, false)) && 

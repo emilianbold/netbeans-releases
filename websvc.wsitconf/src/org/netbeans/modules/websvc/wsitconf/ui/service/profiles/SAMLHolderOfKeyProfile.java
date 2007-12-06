@@ -156,6 +156,8 @@ public class SAMLHolderOfKeyProfile extends SecurityProfile
     }
 
     public void setServiceDefaults(WSDLComponent component, Project p) {
+        ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, false);
+        ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, false);
         if (Util.isTomcat(p)) {
             FileObject tomcatLoc = Util.getTomcatLocation(p);
             ProprietarySecurityPolicyModelHelper.setStoreLocation(component, 
@@ -164,7 +166,6 @@ public class SAMLHolderOfKeyProfile extends SecurityProfile
             ProprietarySecurityPolicyModelHelper.setStorePassword(component, KeystorePanel.DEFAULT_PASSWORD, false, false);
         }
         ProprietarySecurityPolicyModelHelper.setKeyStoreAlias(component,ProfilesModelHelper.XWS_SECURITY_SERVER, false);
-        ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, false);
     }
     
     private String getSamlVersion(Binding serviceBinding) {
@@ -187,23 +188,25 @@ public class SAMLHolderOfKeyProfile extends SecurityProfile
         return SecurityTokensModelHelper.getTokenProfileVersion(token);
     }
     
-    public void setClientDefaults(WSDLComponent binding, WSDLComponent serviceBinding, Project p) {
+    public void setClientDefaults(WSDLComponent component, WSDLComponent serviceBinding, Project p) {
 
+        ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, true);
+        ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, true);
         if (Util.isTomcat(p)) {
             FileObject tomcatLoc = Util.getTomcatLocation(p);
-            ProprietarySecurityPolicyModelHelper.setStoreLocation(binding, 
+            ProprietarySecurityPolicyModelHelper.setStoreLocation(component, 
                     tomcatLoc.getPath() + File.separator + CERTS_DIR + File.separator + "client-keystore.jks", false, true);
-            ProprietarySecurityPolicyModelHelper.setStoreType(binding, KeystorePanel.JKS, false, true);
-            ProprietarySecurityPolicyModelHelper.setStorePassword(binding, KeystorePanel.DEFAULT_PASSWORD, false, true);
+            ProprietarySecurityPolicyModelHelper.setStoreType(component, KeystorePanel.JKS, false, true);
+            ProprietarySecurityPolicyModelHelper.setStorePassword(component, KeystorePanel.DEFAULT_PASSWORD, false, true);
 
-            ProprietarySecurityPolicyModelHelper.setStoreLocation(binding, 
+            ProprietarySecurityPolicyModelHelper.setStoreLocation(component, 
                     tomcatLoc.getPath() + File.separator + CERTS_DIR + File.separator + "client-truststore.jks", true, true);
-            ProprietarySecurityPolicyModelHelper.setStoreType(binding, KeystorePanel.JKS, true, true);
-            ProprietarySecurityPolicyModelHelper.setStorePassword(binding, KeystorePanel.DEFAULT_PASSWORD, true, true);
+            ProprietarySecurityPolicyModelHelper.setStoreType(component, KeystorePanel.JKS, true, true);
+            ProprietarySecurityPolicyModelHelper.setStorePassword(component, KeystorePanel.DEFAULT_PASSWORD, true, true);
         }
-        ProprietarySecurityPolicyModelHelper.setKeyStoreAlias(binding, 
+        ProprietarySecurityPolicyModelHelper.setKeyStoreAlias(component, 
                 ProfilesModelHelper.XWS_SECURITY_CLIENT, true);
-        ProprietarySecurityPolicyModelHelper.setTrustPeerAlias(binding, 
+        ProprietarySecurityPolicyModelHelper.setTrustPeerAlias(component, 
                 ProfilesModelHelper.XWS_SECURITY_SERVER, true);
 
         FileObject targetFolder = null;
@@ -243,7 +246,7 @@ public class SAMLHolderOfKeyProfile extends SecurityProfile
             }
         }
         ProprietarySecurityPolicyModelHelper.setCallbackHandler(
-                (Binding)binding, CallbackHandler.SAML_CBHANDLER, PKGNAME + "." + cbName, null, true);
+                (Binding)component, CallbackHandler.SAML_CBHANDLER, PKGNAME + "." + cbName, null, true);
     }
     
     public boolean isServiceDefaultSetupUsed(WSDLComponent component, Project p) {

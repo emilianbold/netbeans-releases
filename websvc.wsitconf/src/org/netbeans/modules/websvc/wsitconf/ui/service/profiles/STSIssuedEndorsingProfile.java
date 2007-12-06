@@ -137,6 +137,8 @@ public class STSIssuedEndorsingProfile extends SecurityProfile
     }
 
     public void setServiceDefaults(WSDLComponent component, Project p) {
+        ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, false);
+        ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, false);
         if (Util.isTomcat(p)) {
             FileObject tomcatLoc = Util.getTomcatLocation(p);
             ProprietarySecurityPolicyModelHelper.setStoreLocation(component, 
@@ -145,7 +147,6 @@ public class STSIssuedEndorsingProfile extends SecurityProfile
             ProprietarySecurityPolicyModelHelper.setStorePassword(component, KeystorePanel.DEFAULT_PASSWORD, false, false);
         }
         ProprietarySecurityPolicyModelHelper.setKeyStoreAlias(component, ProfilesModelHelper.WSSIP, false);
-        ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, false);
     }
 
     public void setClientDefaults(WSDLComponent component, WSDLComponent securityBinding, Project p) {
