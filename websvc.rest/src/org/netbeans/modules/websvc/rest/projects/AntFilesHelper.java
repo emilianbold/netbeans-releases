@@ -63,12 +63,12 @@ public class AntFilesHelper {
     /**
      * IMPORTANT: bump up version when you change the dependencies list
      */
-    public static final int CURRENT_DEPENDECIES_VERSION = 1;
+    public static final int CURRENT_DEPENDECIES_VERSION = 2;
     // dependency(from, to)
     public static Map<String,String> dependencies = new HashMap<String,String>();
     static {
         //IMPORTANT: bump up version when you change the dependencies list
-        dependencies.put("-post-compile", "-rest-post-compile");
+        //dependencies.put("-post-compile", "-rest-post-compile");
         //IMPORTANT: bump up version when you change the dependencies list
     }
     

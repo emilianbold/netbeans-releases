@@ -150,6 +150,7 @@ public class WebRestSupportLookupProvider implements LookupProvider {
                         return null;
                     }
                 });
+
                 if (serviceCount[0] > 0) {
                     RestUtils.ensureRestDevelopmentReady(prj);
                 } else {

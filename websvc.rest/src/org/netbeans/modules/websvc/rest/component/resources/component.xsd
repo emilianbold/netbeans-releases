@@ -94,7 +94,7 @@
                 <xsd:annotation>
                     <xsd:documentation>
                         service element represents a service. It has a name will 
-                        be used to specify the value of UriTemplate annotation 
+                        be used to specify the value of Path annotation 
                         in generated (REST) code.
                     </xsd:documentation>
                 </xsd:annotation>            

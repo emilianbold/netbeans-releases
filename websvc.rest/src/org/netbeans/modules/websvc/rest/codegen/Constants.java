@@ -42,6 +42,7 @@
 package org.netbeans.modules.websvc.rest.codegen;
 
 import javax.lang.model.element.Modifier;
+import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 
 /**
  *
@@ -49,33 +50,25 @@ import javax.lang.model.element.Modifier;
  */
 public class Constants {
     
-    public static final String REST_API_PACKAGE = "javax.ws.rs.";       //NOI18N
+    public static final String XML_TRANSIENT_ANNOTATION = "XmlTransient"; //NOI18N
+   
+    public static final String XML_ROOT_ELEMENT_ANNOTATION = "XmlRootElement";  //NOI18N
     
-    public static final String WEB_APPLICATION_EXCEPTION = REST_API_PACKAGE + "WebApplicationException";
+    public static final String XML_ELEMENT_ANNOTATION = "XmlElement";  //NOI18N
     
-    public static final String URI_TEMPLATE = REST_API_PACKAGE + "UriTemplate";        //NOI18N
+    public static final String XML_ATTRIBUTE_ANNOTATION = "XmlAttribute";  //NOI18N
     
-    public static final String HTTP_METHOD = REST_API_PACKAGE + "HttpMethod";         //NOI18N
+    public static final String WEB_APPLICATION_EXCEPTION = RestConstants.REST_API_PACKAGE + "WebApplicationException";
     
-    public static final String PRODUCE_MIME = REST_API_PACKAGE + "ProduceMime";        //NOI18N
+    public static final String HTTP_RESPONSE = RestConstants.REST_API_PACKAGE + "core.Response"; //NOI18N
     
-    public static final String CONSUME_MIME = REST_API_PACKAGE + "ConsumeMime";    //NOI18N
+    public static final String RESPONSE_BUILDER = RestConstants.REST_API_PACKAGE + "core.Response.Builder";       //NOI8N
     
-    public static final String URI_PARAM = REST_API_PACKAGE + "UriParam";  //NOI18N
+    public static final String ENTITY_TYPE = RestConstants.REST_API_PACKAGE + "Entity";
     
-    public static final String QUERY_PARAM = REST_API_PACKAGE + "QueryParam";  //NOI18N
+    public static final String HTTP_CONTEXT = RestConstants.REST_API_PACKAGE + "core.HttpContext";    //NOI18N
     
-    public static final String DEFAULT_VALUE = REST_API_PACKAGE + "DefaultValue";       //NOI18N
-    
-    public static final String HTTP_RESPONSE = REST_API_PACKAGE + "core.Response"; //NOI18N
-    
-    public static final String RESPONSE_BUILDER = REST_API_PACKAGE + "core.Response.Builder";       //NOI8N
-    
-    public static final String ENTITY_TYPE = REST_API_PACKAGE + "Entity";
-    
-    public static final String HTTP_CONTEXT = REST_API_PACKAGE + "core.HttpContext";    //NOI18N
-    
-    public static final String URI_INFO = REST_API_PACKAGE + "core.UriInfo";     //NOI18N
+    public static final String URI_INFO = RestConstants.REST_API_PACKAGE + "core.UriInfo";     //NOI18N
     
     public static final String URI_TYPE = "java.net.URI";       //NOI18N
     
@@ -106,30 +99,6 @@ public class Constants {
     public static final String COLLECTIONS_TYPE = "java.util.Collections";  //NOI18N
     
     public static final String ARRAY_LIST_TYPE = "java.util.ArrayList"; //NOI18N
-    
-    public static final String HTTP_CONTEXT_ANNOTATION = "HttpContext";     //NOI18N
-    
-    public static final String URI_TEMPLATE_ANNOTATION = "UriTemplate"; //NOI18N
-    
-    public static final String URI_PARAM_ANNOTATION = "UriParam";       //NOI18N
-    
-    public static final String QUERY_PARAM_ANNOTATION = "QueryParam";       //NOI18N
-    
-    public static final String DEFAULT_VALUE_ANNOTATION = "DefaultValue";       //NOI18N
-    
-    public static final String HTTP_METHOD_ANNOTATION = "HttpMethod";   //NOI18N
-    
-    public static final String PRODUCE_MIME_ANNOTATION = "ProduceMime"; //NOI18N
-    
-    public static final String CONSUME_MIME_ANNOTATION = "ConsumeMime"; //NOI18N
-    
-    public static final String XML_TRANSIENT_ANNOTATION = "XmlTransient"; //NOI18N
-   
-    public static final String XML_ROOT_ELEMENT_ANNOTATION = "XmlRootElement";  //NOI18N
-    
-    public static final String XML_ELEMENT_ANNOTATION = "XmlElement";  //NOI18N
-    
-    public static final String XML_ATTRIBUTE_ANNOTATION = "XmlAttribute";  //NOI18N
     
     public static final Modifier[] PUBLIC = new Modifier[] { Modifier.PUBLIC };
     
@@ -186,15 +155,17 @@ public class Constants {
     }
     
     public enum HttpMethodType {
-        GET("get"),             //NOI18N
-        PUT("put"),             //NOI18N
-        POST("post"),           //NOI18N
-        DELETE("delete");       //NOI18N
+        GET("get", RestConstants.GET),   //NOI18N
+        PUT("put", RestConstants.PUT), //NOI18N
+        POST("post", RestConstants.POST), //NOI18N
+        DELETE("delete", RestConstants.DELETE); //NOI18N
         
         private String prefix; 
+        private String annotationType;
         
-        HttpMethodType(String prefix) {
+        HttpMethodType(String prefix, String annotationType) {
             this.prefix = prefix;
+            this.annotationType = annotationType;
         }
         
         public String value() {
@@ -203,6 +174,10 @@ public class Constants {
         
         public String prefix() {
             return prefix;
+        }
+        
+        public String getAnnotationType() {
+            return annotationType;
         }
     }
     

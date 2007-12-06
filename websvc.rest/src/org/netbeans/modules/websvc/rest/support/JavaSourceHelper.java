@@ -92,7 +92,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.websvc.rest.codegen.Constants;
-import org.netbeans.modules.websvc.rest.codegen.Constants.HttpMethodType;
+import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import org.openide.ErrorManager;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
@@ -783,8 +783,8 @@ public class JavaSourceHelper {
         for (ExecutableElement method : methods) {
             List<? extends AnnotationMirror> anmirs = method.getAnnotationMirrors();
 
-            AnnotationMirror mirrorHttpMethod = findAnnotation(anmirs, Constants.HTTP_METHOD_ANNOTATION);
-            if (annotationHasAttributeValue(mirrorHttpMethod, HttpMethodType.GET.name())) {
+            AnnotationMirror mirrorHttpMethod = findAnnotation(anmirs, RestConstants.GET);
+            if (mirrorHttpMethod != null) {
                 TypeMirror tm = method.getReturnType();
                 if (tm != null && tm.getKind() == TypeKind.DECLARED) {
                     TypeElement returnType = (TypeElement) ((DeclaredType) tm).asElement();

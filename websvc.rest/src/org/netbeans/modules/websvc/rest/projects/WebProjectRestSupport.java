@@ -49,7 +49,6 @@ import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
@@ -185,10 +184,6 @@ public class WebProjectRestSupport extends RestSupport {
                 adaptorServlet = (Servlet) webApp.createBean("Servlet");
                 adaptorServlet.setServletName(REST_SERVLET_ADAPTOR);
                 adaptorServlet.setServletClass(REST_SERVLET_ADAPTOR_CLASS);
-                InitParam initParam = (InitParam) webApp.createBean("InitParam");
-                initParam.setParamName(PARAM_WEB_RESOURCE_CLASS);
-                initParam.setParamValue(WEB_RESOURCE_CLASS);
-                adaptorServlet.setInitParam(new InitParam[] { initParam });
                 adaptorServlet.setLoadOnStartup(BigInteger.valueOf(1));
                 webApp.addServlet(adaptorServlet);
                 needsSave = true;

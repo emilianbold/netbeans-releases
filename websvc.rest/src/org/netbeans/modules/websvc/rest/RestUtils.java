@@ -55,6 +55,7 @@ import org.openide.filesystems.FileObject;
 import javax.xml.xpath.*;
 import org.netbeans.modules.websvc.rest.codegen.Constants;
 import org.netbeans.modules.websvc.rest.codegen.model.ClientStubModel;
+import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
@@ -226,7 +227,7 @@ public class RestUtils {
         List<? extends AnnotationMirror> annotations = JavaSourceHelper.getClassAnnotations(rSrc);
         for (AnnotationMirror annotation : annotations) {
             String cAnonType = annotation.getAnnotationType().toString();
-            if (Constants.URI_TEMPLATE.equals(cAnonType) || Constants.URI_TEMPLATE_ANNOTATION.equals(cAnonType)) {
+            if (RestConstants.PATH.equals(cAnonType) || RestConstants.PATH_ANNOTATION.equals(cAnonType)) {
                 path = getValueFromAnnotation(annotation);
             }
         }
@@ -238,7 +239,7 @@ public class RestUtils {
         if (annotations != null && annotations.size() > 0) {
             for (AnnotationMirror annotation : annotations) {
                 String classAnonType = annotation.getAnnotationType().toString();
-                if (Constants.URI_TEMPLATE.equals(classAnonType)) {
+                if (RestConstants.PATH.equals(classAnonType)) {
                     return true;
                 } else {
                     return false;
@@ -270,9 +271,9 @@ public class RestUtils {
             if (mAnons != null && mAnons.size() > 0) {
                 for (AnnotationTree mAnon : mAnons) {
                     String mAnonType = mAnon.getAnnotationType().toString();
-                    if (Constants.URI_TEMPLATE_ANNOTATION.equals(mAnonType) || Constants.URI_TEMPLATE.equals(mAnonType)) {
+                    if (RestConstants.PATH_ANNOTATION.equals(mAnonType) || RestConstants.PATH.equals(mAnonType)) {
                         return true;
-                    } else if (Constants.HTTP_METHOD_ANNOTATION.equals(mAnonType) || Constants.HTTP_METHOD.equals(mAnonType)) {
+                    } else if (RestConstants.GET_ANNOTATION.equals(mAnonType) || RestConstants.GET.equals(mAnonType)) {
                         return true;
                     }
                 }
@@ -309,12 +310,9 @@ public class RestUtils {
             if (mAnons != null && mAnons.size() > 0) {
                 for (AnnotationTree mAnon : mAnons) {
                     String mAnonType = mAnon.getAnnotationType().toString();
-                    if (Constants.HTTP_METHOD_ANNOTATION.equals(mAnonType) || Constants.HTTP_METHOD.equals(mAnonType)) {
-                        String value = getValueFromAnnotation(mAnon);
-                        if (value.equals("GET")) {
-                            isHttpGetMethod = true;
-                        }
-                    } else if (Constants.PRODUCE_MIME_ANNOTATION.equals(mAnonType) || Constants.PRODUCE_MIME.equals(mAnonType)) {
+                    if (RestConstants.GET_ANNOTATION.equals(mAnonType) || RestConstants.GET.equals(mAnonType)) {
+                        isHttpGetMethod = true;
+                    } else if (RestConstants.PRODUCE_MIME_ANNOTATION.equals(mAnonType) || RestConstants.PRODUCE_MIME.equals(mAnonType)) {
                         isXmlMime = true;
                     }
                 }

@@ -56,6 +56,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.codegen.Constants;
+import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 
 /**
@@ -154,7 +155,7 @@ public class ClientStubModel {
                 for (AnnotationTree mAnon : mAnons) {
                     String mAnonType = mAnon.getAnnotationType().toString();
                     List<? extends ExpressionTree> eAnons = mAnon.getArguments();
-                    if (Constants.URI_TEMPLATE_ANNOTATION.equals(mAnonType) || Constants.URI_TEMPLATE.equals(mAnonType)) {
+                    if (RestConstants.PATH_ANNOTATION.equals(mAnonType) || RestConstants.PATH.equals(mAnonType)) {
                         m = createNavigationMethod(mName);
                         m.setTree(tree);
                         m.setType(MethodType.GETCHILD);
@@ -174,7 +175,7 @@ public class ClientStubModel {
                                 value = value.substring(value.indexOf("\"") + 1, value.lastIndexOf("/"));
                             } else {
                                 throw new IOException("Cannot find method with " +
-                                    "@UriTemplate(\"subresource/\") or @UriTemplate(\"{containerId}/\")");
+                                    "@Path(\"subresource/\") or @Path(\"{containerId}/\")");
                             }
                             ((NavigationMethod) m).setNavigationUri(value);
                         }
@@ -186,37 +187,38 @@ public class ClientStubModel {
                         }
                         String linkName = RestUtils.findStubNameFromClass(returnType);
                         ((NavigationMethod) m).setLinkName(linkName);
-                    } else if (Constants.HTTP_METHOD_ANNOTATION.equals(mAnonType) || Constants.HTTP_METHOD.equals(mAnonType)) {
+                    } else if (RestConstants.GET_ANNOTATION.equals(mAnonType) || RestConstants.GET.equals(mAnonType)) {
                         if (m == null) {
-                            m = createMethod(mName);
-                            m.setTree(tree);
+                            m = createMethod(mName, tree);
+                            m.setType(MethodType.GET);
                         }
-                        for (ExpressionTree eAnon : eAnons) {
-                            String value = RestUtils.getValueFromAnnotation(eAnon);
-                            if (value.equals(MethodType.GET.value())) {
-                                m.setType(MethodType.GET);
-                            } else if (value.equals(MethodType.PUT.value())) {
-                                m.setType(MethodType.PUT);
-                            } else if (value.equals(MethodType.POST.value())) {
-                                m.setType(MethodType.POST);
-                            } else if (value.equals(MethodType.DELETE.value())) {
-                                m.setType(MethodType.DELETE);
-                            }
-                        }
-                    } else if (Constants.PRODUCE_MIME_ANNOTATION.equals(mAnonType) || Constants.PRODUCE_MIME.equals(mAnonType)) {
+                    } else if (RestConstants.POST_ANNOTATION.equals(mAnonType) || RestConstants.POST.equals(mAnonType)) {
                         if (m == null) {
-                            m = createMethod(mName);
-                            m.setTree(tree);
+                            m = createMethod(mName, tree);
+                            m.setType(MethodType.POST);
+                        }
+                    } else if (RestConstants.PUT_ANNOTATION.equals(mAnonType) || RestConstants.PUT.equals(mAnonType)) {
+                        if (m == null) {
+                            m = createMethod(mName, tree);
+                            m.setType(MethodType.PUT);
+                        }
+                    } else if (RestConstants.DELETE_ANNOTATION.equals(mAnonType) || RestConstants.DELETE.equals(mAnonType)) {
+                        if (m == null) {
+                            m = createMethod(mName, tree);
+                            m.setType(MethodType.DELETE);
+                        }
+                    } else if (RestConstants.PRODUCE_MIME_ANNOTATION.equals(mAnonType) || RestConstants.PRODUCE_MIME.equals(mAnonType)) {
+                        if (m == null) {
+                            m = createMethod(mName, tree);
                         }
                         for (ExpressionTree eAnon : eAnons) {
                             String value = RestUtils.getValueFromAnnotation(eAnon);
                             Representation rep = new Representation(value);
                             m.getResponse().setRepresentation(rep);
                         }
-                    } else if (Constants.CONSUME_MIME_ANNOTATION.equals(mAnonType) || Constants.CONSUME_MIME.equals(mAnonType)) {
+                    } else if (RestConstants.CONSUME_MIME_ANNOTATION.equals(mAnonType) || RestConstants.CONSUME_MIME.equals(mAnonType)) {
                         if (m == null) {
-                            m = createMethod(mName);
-                            m.setTree(tree);
+                            m = createMethod(mName, tree);
                         }
                         for (ExpressionTree eAnon : eAnons) {
                             String value = RestUtils.getValueFromAnnotation(eAnon);
@@ -233,7 +235,7 @@ public class ClientStubModel {
         buildRepresentationDocument(r, src);
     }
         
-    private Method createMethod(String mName) {
+    private Method createMethod(String mName, MethodTree tree) {
         Method m = new Method(mName);
         Representation rep1 = new Representation("application/xml");
         Request request = new Request();
@@ -243,6 +245,7 @@ public class ClientStubModel {
         Response response = new Response();
         response.setRepresentation(rep2);
         m.setResponse(response);
+        m.setTree(tree);
         return m;
     }
     

@@ -68,6 +68,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.rest.codegen.Constants.MimeType;
 import org.netbeans.modules.websvc.rest.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.rest.codegen.model.RestComponentBean;
+import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import org.netbeans.modules.websvc.rest.support.AbstractTask;
 import org.netbeans.modules.websvc.rest.support.Inflector;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
@@ -198,7 +199,7 @@ public abstract class RestComponentGenerator extends AbstractGenerator {
                 JavaSourceHelper.addImports(copy, getSubresourceLocatorImports());
 
                 ClassTree tree = JavaSourceHelper.getTopLevelClassTree(copy);
-                String[] annotations = new String[]{Constants.URI_TEMPLATE_ANNOTATION};
+                String[] annotations = new String[]{RestConstants.PATH_ANNOTATION};
                 Object[] annotationAttrs = new Object[]{getSubresourceLocatorUriTemplate()};
                 String[] params = null;
                 Object[] paramTypes = null;
@@ -210,7 +211,7 @@ public abstract class RestComponentGenerator extends AbstractGenerator {
                 if (uriParamAnnotationAttribute != null) {
                     params = new String[]{"id"}; //NOI18N
                     paramTypes = new Object[]{Integer.class.getName()};
-                    paramAnnotations = new String[]{Constants.URI_PARAM_ANNOTATION};
+                    paramAnnotations = new String[]{RestConstants.URI_PARAM_ANNOTATION};
                     paramAnnotationAttrs = new Object[]{uriParamAnnotationAttribute};
                     addTryFinallyBlock = true;
                 }
@@ -368,7 +369,7 @@ public abstract class RestComponentGenerator extends AbstractGenerator {
             for (VariableElement ve : method.getParameters()) {
                 List<? extends AnnotationMirror> annotations = ve.getAnnotationMirrors();
                 for (AnnotationMirror m : annotations) {
-                    if (JavaSourceHelper.isOfAnnotationType(m, Constants.URI_PARAM_ANNOTATION)) {
+                    if (JavaSourceHelper.isOfAnnotationType(m, RestConstants.URI_PARAM_ANNOTATION)) {
                         Collection<? extends AnnotationValue> values = m.getElementValues().values();
                         for (AnnotationValue av : values) {
                             if (av.getValue() instanceof String) {
@@ -544,7 +545,7 @@ public abstract class RestComponentGenerator extends AbstractGenerator {
 
     public Collection<String> getExistingUriTemplates() {
         if (existingUriTemplates == null) {
-            existingUriTemplates = JavaSourceHelper.getAnnotationValuesForAllMethods(targetResourceJS, Constants.URI_TEMPLATE);
+            existingUriTemplates = JavaSourceHelper.getAnnotationValuesForAllMethods(targetResourceJS, RestConstants.PATH);
         }
 
         return existingUriTemplates;

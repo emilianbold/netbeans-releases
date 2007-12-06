@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import javax.swing.text.BadLocationException;
 import javax.xml.parsers.ParserConfigurationException;
+import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import org.netbeans.spi.palette.PaletteController;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileAttributeEvent;
@@ -65,10 +66,12 @@ import org.xml.sax.SAXException;
  * @author Ayub Khan
  */
 public class RestPaletteListener implements PropertyChangeListener, FileChangeListener {
-    
-    public static final String REST_TEMPLATE = "@UriTemplate";      //NOI18N
-    
-    public static final String HTTP_METHOD = "@HttpMethod";         //NOI18N
+    public static final String AT = "@"; //NOI18N
+    public static final String APATH = AT + RestConstants.PATH_ANNOTATION;      //NOI18N
+    public static final String AGET = AT + RestConstants.GET_ANNOTATION;      //NOI18N
+    public static final String APOST = AT + RestConstants.POST_ANNOTATION;      //NOI18N
+    public static final String APUT = AT + RestConstants.PUT_ANNOTATION;      //NOI18N
+    public static final String ADELETE = AT + RestConstants.DELETE_ANNOTATION;      //NOI18N
     
     PaletteController pc = null;
     
@@ -126,8 +129,11 @@ public class RestPaletteListener implements PropertyChangeListener, FileChangeLi
             if (doc != null) {
                 String docText = doc.getText(0, doc.getLength());
                 
-                return (docText.indexOf(REST_TEMPLATE) != -1) ||
-                        (docText.indexOf(HTTP_METHOD) != -1);
+                return (docText.indexOf(APATH) != -1) ||
+                        (docText.indexOf(AGET) != -1) ||
+                        (docText.indexOf(APOST) != -1) ||
+                        (docText.indexOf(APUT) != -1) ||
+                        (docText.indexOf(ADELETE) != -1);
             }
         } catch (BadLocationException ex) {
         }

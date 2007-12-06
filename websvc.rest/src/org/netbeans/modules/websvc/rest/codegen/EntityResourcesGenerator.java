@@ -48,7 +48,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -59,7 +58,6 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.codegen.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.rest.codegen.Constants.MimeType;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBean;
@@ -68,11 +66,11 @@ import org.netbeans.modules.websvc.rest.codegen.model.EntityClassInfo.FieldInfo;
 import org.netbeans.modules.websvc.rest.codegen.model.GenericResourceBean;
 import org.netbeans.modules.websvc.rest.codegen.model.RelatedEntityResource;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBeanModel;
+import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import org.netbeans.modules.websvc.rest.support.Inflector;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.rest.support.Utils;
 import org.netbeans.modules.websvc.rest.wizard.Util;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -99,23 +97,26 @@ public class EntityResourcesGenerator extends AbstractGenerator {
     private static final String DEFAULT_PU_FIELD = "DEFAULT_PU";        //NOI18N
     
     private static final String[] CONTAINER_IMPORTS = {
-        Constants.URI_TEMPLATE,
-        Constants.HTTP_METHOD,
-        Constants.PRODUCE_MIME,
-        Constants.CONSUME_MIME,
-        Constants.QUERY_PARAM,
-        Constants.DEFAULT_VALUE,
-        Constants.RESPONSE_BUILDER,
+        RestConstants.PATH,
+        RestConstants.GET,
+        RestConstants.POST,
+        RestConstants.PRODUCE_MIME,
+        RestConstants.CONSUME_MIME,
+        RestConstants.QUERY_PARAM,
+        RestConstants.DEFAULT_VALUE,
+        Constants.HTTP_RESPONSE,
         Constants.HTTP_CONTEXT,
         Constants.URI_INFO
     };
     
     private static final String[] ITEM_IMPORTS = {
-        Constants.URI_TEMPLATE,
-        Constants.URI_PARAM,
-        Constants.HTTP_METHOD,
-        Constants.PRODUCE_MIME,
-        Constants.CONSUME_MIME,
+        RestConstants.PATH,
+        RestConstants.URI_PARAM,
+        RestConstants.GET,
+        RestConstants.PUT,
+        RestConstants.DELETE,
+        RestConstants.PRODUCE_MIME,
+        RestConstants.CONSUME_MIME,
         Constants.WEB_APPLICATION_EXCEPTION,
         Constants.NO_RESULT_EXCEPTION
     };
@@ -380,7 +381,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
                     JavaSourceHelper.addImports(copy, getContainerResourceImports(bean));
                     
                     JavaSourceHelper.addClassAnnotation(copy,
-                            new String[] {Constants.URI_TEMPLATE_ANNOTATION},
+                            new String[] {RestConstants.PATH_ANNOTATION},
                             new Object[] {bean.getUriTemplate(),
                             JavaSourceHelper.createIdentifierTree(copy,
                                     "{"+ getItemResourceName(bean) + ".class}")});
@@ -659,7 +660,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         String[] annotations = null;
         
         if (bean.isContainer()) {
-            annotations = new String[] {Constants.HTTP_CONTEXT_ANNOTATION};
+            annotations = new String[] {RestConstants.HTTP_CONTEXT_ANNOTATION};
         }
         
         modifiedTree = JavaSourceHelper.addField(copy, modifiedTree, modifiers,
@@ -688,11 +689,11 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         Modifier[] modifiers = new Modifier[] {Modifier.PUBLIC};
         String methodName = HttpMethodType.GET.prefix();
         String[] annotations = new String[] {
-            Constants.HTTP_METHOD_ANNOTATION,
-            Constants.PRODUCE_MIME_ANNOTATION};
+            RestConstants.GET_ANNOTATION,
+            RestConstants.PRODUCE_MIME_ANNOTATION};
         
         Object[] annotationAttrs = new Object[] {
-            HttpMethodType.GET.value(),
+            null,
             JavaSourceHelper.createIdentifierTree(copy, mimeTypes) };
         
         Object returnType = getConverterType(bean);
@@ -700,8 +701,8 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         String[] parameters = new String[] {"start", "max"};        //NOI18N
         Object[] paramTypes = new String[] {"int", "int"};          //NOI18N
         String[][] paramAnnotations = new String[][] {
-            {Constants.QUERY_PARAM_ANNOTATION, Constants.DEFAULT_VALUE_ANNOTATION},
-            {Constants.QUERY_PARAM_ANNOTATION, Constants.DEFAULT_VALUE_ANNOTATION}
+            {RestConstants.QUERY_PARAM_ANNOTATION, RestConstants.DEFAULT_VALUE_ANNOTATION},
+            {RestConstants.QUERY_PARAM_ANNOTATION, RestConstants.DEFAULT_VALUE_ANNOTATION}
         };
         
         Object[][] paramAnnotationAttrs = new Object[][] {
@@ -710,7 +711,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         };
          
         String bodyText = "{ try {" +
-                "return new $CONVERTER$(getEntities(start, max), context.getAbsolute());" +
+                "return new $CONVERTER$(getEntities(start, max), context.getAbsolutePath());" +
                 "} finally {" +
                 "PersistenceService.getInstance().close();" +
                 "}" +
@@ -733,10 +734,10 @@ public class EntityResourcesGenerator extends AbstractGenerator {
             EntityResourceBean bean, String mimeTypes) {
         String methodName = HttpMethodType.POST.prefix();
         String[] annotations = new String[] {
-            Constants.HTTP_METHOD_ANNOTATION,
-            Constants.CONSUME_MIME_ANNOTATION};
+            RestConstants.POST_ANNOTATION,
+            RestConstants.CONSUME_MIME_ANNOTATION};
         Object[] annotationAttrs = new Object[] {
-            HttpMethodType.POST.value(),
+            null,
             JavaSourceHelper.createIdentifierTree(copy, mimeTypes) };
         //Object returnType = getConverterType(model.getItemResourceBean(bean.getEntityClassInfo()));
         Object returnType = Constants.HTTP_RESPONSE;
@@ -751,7 +752,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
                 "$CLASS$ entity = data.getEntity();" +
                 "createEntity(entity);" +
                 "service.commitTx();" +
-                "return Builder.created(context.getAbsolute().resolve($ID_TO_URI$ + \"/\")).build();" +
+                "return Response.created(context.getAbsolutePath().resolve($ID_TO_URI$ + \"/\")).build();" +
                 "} finally {" +
                 "service.close();" +
                 "}" +
@@ -778,7 +779,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
             EntityResourceBean bean, RelatedEntityResource relatedResource) {
         EntityResourceBean subBean = relatedResource.getResourceBean();
         Modifier[] modifiers = new Modifier[] {Modifier.PUBLIC};
-        String[] annotations = new String[] {Constants.URI_TEMPLATE_ANNOTATION};
+        String[] annotations = new String[] {RestConstants.PATH_ANNOTATION};
         String[] annotationAttrs = new String[] {subBean.getUriTemplate()};
         Object returnType = getResourceType(subBean);
         String resourceName = getResourceName(subBean);
@@ -869,7 +870,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
     
     private ClassTree addGetUriMethod(WorkingCopy copy, ClassTree tree,
             EntityResourceBean bean) {
-        String bodyText = "{return context.getAbsolute();}";
+        String bodyText = "{return context.getAbsolutePath();}";
         
         String comment = "Returns the URI associated with this resource.\n\n" +
                 "@return URI associated with this resource";
@@ -885,11 +886,11 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         Modifier[] modifiers = new Modifier[] {Modifier.PUBLIC};
         String methodName = HttpMethodType.GET.prefix();
         String[] annotations = new String[] {
-            Constants.HTTP_METHOD_ANNOTATION,
-            Constants.PRODUCE_MIME_ANNOTATION};
+            RestConstants.GET_ANNOTATION,
+            RestConstants.PRODUCE_MIME_ANNOTATION};
         
         Object[] annotationAttrs = new Object[] {
-            HttpMethodType.GET.value(),
+            null,
             JavaSourceHelper.createIdentifierTree(copy, mimeTypes) };
         
         Object returnType = getConverterType(bean);
@@ -901,7 +902,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         String idList = getIdFieldIdList(bean);
         
         String bodyText = "{ try {" +
-                "return  new $CONVERTER$(getEntity($ID_LIST$), context.getAbsolute()); " +
+                "return  new $CONVERTER$(getEntity($ID_LIST$), context.getAbsolutePath()); " +
                 "} finally {" +
                 "PersistenceService.getInstance().close();" +
                 "}" +
@@ -928,11 +929,11 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         Modifier[] modifiers = new Modifier[] {Modifier.PUBLIC};
         String methodName = HttpMethodType.PUT.prefix();
         String[] annotations = new String[] {
-            Constants.HTTP_METHOD_ANNOTATION,
-            Constants.CONSUME_MIME_ANNOTATION};
+            RestConstants.PUT_ANNOTATION,
+            RestConstants.CONSUME_MIME_ANNOTATION};
         
         Object[] annotationAttrs = new Object[] {
-            HttpMethodType.PUT.value(),
+            null,
             JavaSourceHelper.createIdentifierTree(copy, mimeTypes) };
         
         String[] params = getIdFieldIdArray(bean, true, "data"); 
@@ -974,10 +975,9 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         Object returnType = Constants.VOID;
         
         String[] annotations = new String[] {
-            Constants.HTTP_METHOD_ANNOTATION
+            RestConstants.DELETE_ANNOTATION
         };
-        Object[] annotationAttrs = new Object[] {
-            HttpMethodType.DELETE.value() };
+        Object[] annotationAttrs = new Object[] { null };
         
         String[] parameters = getIdFieldIdArray(bean, false, null);
         Object[] paramTypes = getIdFieldTypeArray(bean, false, null); 
@@ -1014,7 +1014,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
         EntityResourceBean subBean = relatedResource.getResourceBean();
         FieldInfo fieldInfo = relatedResource.getFieldInfo();
         Modifier[] modifiers = new Modifier[] {Modifier.PUBLIC};
-        String[] annotations = new String[] {Constants.URI_TEMPLATE_ANNOTATION};
+        String[] annotations = new String[] {RestConstants.PATH_ANNOTATION};
         
         String[] params = getIdFieldIdArray(bean, false, null); 
         Object[] paramTypes = getIdFieldTypeArray(bean, false, null); 
@@ -1053,7 +1053,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
                     "@Override protected $SUBCLASS$ getEntity($ID_PARAMS$) {" +
                     "$SUBCLASS$ entity = parent.$GETTER$();" +
                     "if (entity == null) {" +
-                    "throw new WebApplicationException(new Throwable(\"Resource for \" + context.getAbsolute() + \" does not exist.\"), 404);" +
+                    "throw new WebApplicationException(new Throwable(\"Resource for \" + context.getAbsolutePath() + \" does not exist.\"), 404);" +
                     "}" +
                     "return entity;" +
                     "}" +
@@ -1163,7 +1163,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
                 "createQuery(\"SELECT e FROM $CLASS$ e where e.$ID$ = :$ID$\")." +
                 "setParameter(\"$ID$\", $ID_STRING$).getSingleResult();" +
                 "} catch (NoResultException ex) {" +
-                "throw new WebApplicationException(new Throwable(\"Resource for \" + context.getAbsolute() + \" does not exist.\"), 404);" +
+                "throw new WebApplicationException(new Throwable(\"Resource for \" + context.getAbsolutePath() + \" does not exist.\"), 404);" +
                 "}" +
                 "}";
         
@@ -1901,7 +1901,7 @@ public class EntityResourcesGenerator extends AbstractGenerator {
             String[] uriParamArray = new String[size];
             
             for (int i = 0; i < size; i++) {
-                uriParamArray[i] = Constants.URI_PARAM_ANNOTATION;
+                uriParamArray[i] = RestConstants.URI_PARAM_ANNOTATION;
             }
             
             if (append) {
@@ -1911,9 +1911,9 @@ public class EntityResourcesGenerator extends AbstractGenerator {
             return uriParamArray;
         } else {
             if (!append) {
-                return new String[] {Constants.URI_PARAM_ANNOTATION};
+                return new String[] {RestConstants.URI_PARAM_ANNOTATION};
             } else {
-                return new String[] {Constants.URI_PARAM_ANNOTATION, additionalUriParam};
+                return new String[] {RestConstants.URI_PARAM_ANNOTATION, additionalUriParam};
             }
         }
     }
