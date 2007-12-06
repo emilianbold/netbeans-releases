@@ -120,6 +120,7 @@ public class FormUtils
         { "javax.swing.JComponent", CLASS_AND_SUBCLASSES,
                 "debugGraphicsOptions", PROP_EXPERT,
                 "preferredSize", PROP_NORMAL,
+                "componentPopupMenu", PROP_NORMAL,
                 "actionMap", PROP_HIDDEN },
         { "javax.swing.JComponent", CLASS_AND_SWING_SUBCLASSES,
                 "graphics", PROP_HIDDEN,
