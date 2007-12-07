@@ -19,6 +19,7 @@ rootnames:
   Scripts
   Documentation
   test/othertests
+  Vendor
   selenium
 rootProperties:
   app/controllers
@@ -41,6 +42,7 @@ rootProperties:
   script
   doc
   test/othertests
+  vendor
   selenium
 rootFiles:
   apis
@@ -63,6 +65,7 @@ rootFiles:
   selenium
   spec
   unit
+  vendor
   views
 extraFiles:
   README

@@ -11,6 +11,7 @@ rootnames:
   selenium
   spec
   test
+  vendor
 rootProperties:
   app
   components
@@ -24,6 +25,7 @@ rootProperties:
   selenium
   spec
   test
+  vendor
 rootFiles:
   app
   components
@@ -37,6 +39,7 @@ rootFiles:
   selenium
   spec
   test
+  vendor
 extraFiles:
   README
   Rakefile

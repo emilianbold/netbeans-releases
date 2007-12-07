@@ -240,8 +240,8 @@ public final class SourceRoots {
         // It should be split up into multiple roots that are indexed
         // as platform (not as sources, thus not rescanned on subsequent startups,
         // and possibly pulling in preindexed libraries).
-        //sourceRootNames.add(getNodeDescription("vendor")); // NOI18N
-        //sourceRootProperties.add("vendor"); // NOI18N
+        sourceRootNames.add(getNodeDescription("vendor")); // NOI18N
+        sourceRootProperties.add("vendor"); // NOI18N
 
         // Add in other top-level dirs we don't know about
         if (fo != null) {
@@ -344,10 +344,6 @@ public final class SourceRoots {
                 String name = f.getName();
                 // Deliberately skipped
                 if (name.equals("nbproject") || name.equals("tmp")) { // NOI18N
-                    continue;
-                }
-                // Vendor is handled specially in the boot classpath provider
-                if (name.equals("vendor")) { // NOI18N
                     continue;
                 }
                 result.add(f);

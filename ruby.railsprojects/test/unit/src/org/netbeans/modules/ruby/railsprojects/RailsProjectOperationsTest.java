@@ -110,6 +110,7 @@ public class RailsProjectOperationsTest extends RailsProjectTestBase {
             prjDir.getFileObject("test/mocks"),
             prjDir.getFileObject("test/unit"),
             prjDir.getFileObject("tmp"),
+            prjDir.getFileObject("vendor"),
             prjDir.getFileObject("README"),
             prjDir.getFileObject("Rakefile"),
         };

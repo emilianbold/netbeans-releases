@@ -10,6 +10,7 @@ rootnames:
   script
   spec
   test
+  vendor
 rootProperties:
   app
   components
@@ -22,6 +23,7 @@ rootProperties:
   script
   spec
   test
+  vendor
 rootFiles:
   app
   components
@@ -34,6 +36,7 @@ rootFiles:
   script
   spec
   test
+  vendor
 extraFiles:
   README
   Rakefile
