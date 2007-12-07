@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Scanner;
+import java.util.logging.Logger;
 import javax.lang.model.element.*;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -122,12 +123,16 @@ public class FindUsagesVisitor extends FindVisitor {
         ClassTree classTree = ((NewClassTree) node).getClassBody();
         if (classTree != null && p.getKind()==ElementKind.CONSTRUCTOR) {
             Element anonClass = workingCopy.getTrees().getElement(TreePath.getPath(workingCopy.getCompilationUnit(), classTree));
-            for (ExecutableElement c: ElementFilter.constructorsIn(anonClass.getEnclosedElements())) {
-                MethodTree t = workingCopy.getTrees().getTree(c);
-                TreePath superCall = trees.getPath(workingCopy.getCompilationUnit(), ((ExpressionStatementTree) t.getBody().getStatements().get(0)).getExpression());
-                Element superCallElement = trees.getElement(superCall);
-                if (superCallElement != null && superCallElement.equals(p)) {
-                    addUsage(superCall);
+            if (anonClass==null) {
+                Logger.getLogger("org.netbeans.modules.refactoring.java").severe("FindUsages cannot resolve " + classTree);
+            } else {
+                for (ExecutableElement c : ElementFilter.constructorsIn(anonClass.getEnclosedElements())) {
+                    MethodTree t = workingCopy.getTrees().getTree(c);
+                    TreePath superCall = trees.getPath(workingCopy.getCompilationUnit(), ((ExpressionStatementTree) t.getBody().getStatements().get(0)).getExpression());
+                    Element superCallElement = trees.getElement(superCall);
+                    if (superCallElement != null && superCallElement.equals(p)) {
+                        addUsage(superCall);
+                    }
                 }
             }
         } else {
