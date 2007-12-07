@@ -222,12 +222,12 @@ class UsagesASTEvaluator extends ASTEvaluator {
     }
     
     private void highlightUnresolvedUssage (DatabaseUsage usage) {
-        SemanticHighlightsLayer.addHighlight (
-            document, 
-            usage.getOffset (), 
-            usage.getEndOffset (), 
-            getUnresolvedUssageAttributes ()
-        );
+//        SemanticHighlightsLayer.addHighlight (
+//            document, 
+//            usage.getOffset (), 
+//            usage.getEndOffset (), 
+//            getUnresolvedUssageAttributes ()
+//        );
     }
     
     private void highlightSyntaxError (SyntaxError syntaxError, ASTNode root) {
