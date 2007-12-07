@@ -83,9 +83,9 @@ import org.openide.util.Utilities;
 public class LocationChooser extends JFileChooser implements PropertyChangeListener {
         
 
-    private static final Dimension PREFERRED_SIZE = new Dimension (500,340);
+    private static final Dimension PREFERRED_SIZE = new Dimension (600,340);
     
-    private WizardDescriptor.InstantiatingIterator iterator;
+    private WizardDescriptor.InstantiatingIterator<WizardDescriptor> iterator;
     private LocationChooser.Panel firer;
     private PlatformFileView platformFileView;
     private PlatformAccessory accessory;
@@ -120,11 +120,11 @@ public class LocationChooser extends JFileChooser implements PropertyChangeListe
                         }
         }});
         getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put (KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "cancel");
-        
+     
     }
 
     
-    public Dimension getPreferredSize () {
+    public @Override Dimension getPreferredSize () {
         return PREFERRED_SIZE;
     }
     
@@ -172,7 +172,7 @@ public class LocationChooser extends JFileChooser implements PropertyChangeListe
         }
     }
 
-    private WizardDescriptor.InstantiatingIterator getInstaller () {
+    private WizardDescriptor.InstantiatingIterator<WizardDescriptor> getInstaller () {
         return this.iterator;
     }
     
@@ -253,12 +253,12 @@ public class LocationChooser extends JFileChooser implements PropertyChangeListe
     /**
      * Controller for the LocationChooser panel.
      */
-    public static class Panel implements WizardDescriptor.Panel {
+    public static class Panel implements WizardDescriptor.Panel<WizardDescriptor> {
             
         LocationChooser             component;
         private final ChangeSupport cs = new ChangeSupport(this);
 
-        public java.awt.Component getComponent() {
+        public LocationChooser getComponent() {
             if (component == null) {
                 this.component = new LocationChooser (this);
             }
@@ -270,11 +270,11 @@ public class LocationChooser extends JFileChooser implements PropertyChangeListe
         }
         
         public boolean isValid() {
-            return ((LocationChooser)this.getComponent()).valid();
+            return getComponent().valid();
         }
         
-        public void readSettings(Object settings) {
-            ((LocationChooser)this.getComponent()).read ((WizardDescriptor) settings);
+        public void readSettings(WizardDescriptor wiz) {
+            getComponent().read(wiz);
         }
         
         public void addChangeListener(ChangeListener l) {
@@ -285,23 +285,23 @@ public class LocationChooser extends JFileChooser implements PropertyChangeListe
             cs.removeChangeListener(l);
         }
         
-        public void storeSettings(Object settings) {
-            ((LocationChooser)this.getComponent()).store((WizardDescriptor)settings);
+        public void storeSettings(WizardDescriptor wiz) {
+            getComponent().store(wiz);
         }
         
         /**
          * Returns the currently selected installer.
          */
-        WizardDescriptor.InstantiatingIterator getInstallerIterator() {
-            return ((LocationChooser)this.getComponent()).getInstaller ();
+        WizardDescriptor.InstantiatingIterator<WizardDescriptor> getInstallerIterator() {
+            return getComponent().getInstaller();
         }
         
         void setPlatformInstall (PlatformInstall platformInstall) {
-            ((LocationChooser)this.getComponent ()).setPlatformInstall (platformInstall);
+            getComponent().setPlatformInstall(platformInstall);
         }
         
         PlatformInstall getPlatformInstall () {
-            return ((LocationChooser)this.getComponent ()).getPlatformInstall ();
+            return getComponent().getPlatformInstall();
         }
         
     }
@@ -359,7 +359,7 @@ public class LocationChooser extends JFileChooser implements PropertyChangeListe
             this.fsv = fsv;            
         }
                 
-        public Icon getIcon(File _f) {
+        public @Override Icon getIcon(File _f) {
             File f = FileUtil.normalizeFile(_f);
             Icon original = fsv.getSystemIcon(f);
             if (original == null) {
@@ -389,6 +389,11 @@ public class LocationChooser extends JFileChooser implements PropertyChangeListe
         
         
         private boolean isPlatformDir ( File f ) {
+            //XXX: Workaround of hard NFS mounts on Solaris.
+            final int osId = Utilities.getOperatingSystem();
+            if (osId == Utilities.OS_SOLARIS || osId == Utilities.OS_SUNOS) {
+                return false;
+            }
             FileObject fo = (f != null) ? convertToValidDir(f) : null;
             if (fo != null) {
                 //XXX: Workaround of /net folder on Unix, the folders in the root are not badged as platforms.

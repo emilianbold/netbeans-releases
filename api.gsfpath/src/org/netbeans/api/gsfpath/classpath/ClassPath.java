@@ -82,6 +82,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 
 /**
  * ClassPath objects should be used to access contents of the ClassPath, searching
@@ -220,6 +221,7 @@ public final class ClassPath {
      */
     private Map<FileObject,FilteringPathResourceImplementation> root2Filter = new WeakHashMap<FileObject,FilteringPathResourceImplementation>();
     private PropertyChangeListener pListener;
+    private PropertyChangeListener weakPListener;
     private RootsListener rootsListener;
     private List<ClassPath.Entry> entriesCache;
     private long invalidEntries;    //Lamport ordering of events
@@ -317,8 +319,8 @@ public final class ClassPath {
         else {
             List<ClassPath.Entry> cache = new ArrayList<ClassPath.Entry> ();
             for (PathResourceImplementation pr : resources) {
-                pr.removePropertyChangeListener(pListener);
-                pr.addPropertyChangeListener(pListener);
+                pr.removePropertyChangeListener(weakPListener);
+                pr.addPropertyChangeListener(weakPListener = WeakListeners.propertyChange(pListener, pr));
                 for (URL root : pr.getRoots()) {
                     cache.add(new Entry(root,
                             pr instanceof FilteringPathResourceImplementation ? (FilteringPathResourceImplementation) pr : null));
@@ -333,7 +335,7 @@ public final class ClassPath {
             throw new IllegalArgumentException ();
         this.impl = impl;
         this.pListener = new SPIListener ();
-        this.impl.addPropertyChangeListener (this.pListener);
+        this.impl.addPropertyChangeListener (weakPListener = WeakListeners.propertyChange(this.pListener, this.impl));
     }
 
     /**
@@ -572,7 +574,7 @@ public final class ClassPath {
      */
     public final class Entry {
 
-        private URL url;
+        private final URL url;
         private FileObject root;
         private IOException lastError;
         private FilteringPathResourceImplementation filter;
@@ -593,19 +595,27 @@ public final class ClassPath {
          * the method may return null.
          * @return classpath entry root folder
          */
-        public synchronized FileObject  getRoot() {
-            if (root == null || !root.isValid()) {
-                root = URLMapper.findFileObject(this.url);
-                if (root == null) {
-                    this.lastError = new IOException(MessageFormat.format("The package root {0} does not exist or can not be read.",
-                        new Object[] {this.url}));
-                    return null;
-                }
-                else if (root.isData()) {
-                    throw new IllegalArgumentException ("Invalid ClassPath root: "+this.url+". The root must be a folder.");
+        public  FileObject  getRoot() {
+            synchronized (this) {
+                if (root != null && root.isValid()) {
+                    return root;
                 }
             }
-            return root;
+            FileObject _root = URLMapper.findFileObject(this.url);            
+            synchronized (this) {
+                if (root == null || !root.isValid()) {
+                    if (_root == null) {
+                        this.lastError = new IOException(MessageFormat.format("The package root {0} does not exist or can not be read.",
+                            new Object[] {this.url}));
+                        return null;
+                    }
+                    else if (_root.isData()) {
+                        throw new IllegalArgumentException ("Invalid ClassPath root: "+this.url+". The root must be a folder.");
+                    }
+                    root = _root;
+                }
+                return root;
+            }
         }
 
         /**
@@ -701,6 +711,19 @@ public final class ClassPath {
 
         public String toString() {
             return "Entry[" + url + "]"; // NOI18N
+        }
+        
+        @Override
+        public boolean equals (Object other) {
+            if (other instanceof ClassPath.Entry) {
+                return Utilities.compareObjects(((ClassPath.Entry)other).url, this.url);
+            }
+            return false;
+        }
+        
+        @Override
+        public int hashCode () {
+            return this.url == null ? 0 : this.url.hashCode();
         }
     }
 
@@ -882,8 +905,8 @@ public final class ClassPath {
                     return;
                 }
                 for (PathResourceImplementation pri : resources) {
-                    pri.removePropertyChangeListener(pListener);
-                    pri.addPropertyChangeListener(pListener);
+                    pri.removePropertyChangeListener(weakPListener);
+                    pri.addPropertyChangeListener(weakPListener = WeakListeners.propertyChange(pListener, pri));
                 }
             }
         }

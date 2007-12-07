@@ -58,7 +58,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -136,7 +135,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         return manager;
     }
 
-    public void addNotify () {
+    public @Override void addNotify () {
         super.addNotify();
         this.expandPlatforms (this.initialPlatform);
     }
@@ -496,11 +495,11 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
             this.changed = true;
         }
         
-        public int hashCode () {
+        public @Override int hashCode() {
             return this.categoryName.hashCode ();
         }
         
-        public boolean equals (Object other) {
+        public @Override boolean equals(Object other) {
             if (other instanceof PlatformCategoriesDescriptor) {
                 PlatformCategoriesDescriptor desc = (PlatformCategoriesDescriptor) other;
                 return this.categoryName.equals(desc.categoryName) && 
@@ -523,12 +522,12 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
             this.platforms = platforms;
         }
 
-        protected void addNotify() {
+        protected @Override void addNotify() {
             super.addNotify();
             this.setKeys (this.platforms);
         }
 
-        protected void removeNotify() {
+        protected @Override void removeNotify() {
             super.removeNotify();
             this.setKeys(new Node[0]);
         }
@@ -549,19 +548,19 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
             this.iconDelegate = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().getRoot()).getNodeDelegate();
         }
         
-        public String getName () {
+        public @Override String getName() {
             return this.desc.getName ();
         }
         
-        public String getDisplayName () {
+        public @Override String getDisplayName() {
             return this.getName ();
         }
         
-        public Image getIcon(int type) {
+        public @Override Image getIcon(int type) {
             return this.iconDelegate.getIcon(type);
         }        
         
-        public Image getOpenedIcon(int type) {
+        public @Override Image getOpenedIcon(int type) {
             return this.iconDelegate.getOpenedIcon (type);
         }                        
         
@@ -569,12 +568,12 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
     
     private static class PlatformCategoriesChildren extends Children.Keys<PlatformCategoriesDescriptor> {
         
-        protected void addNotify () {
+        protected @Override void addNotify() {
             super.addNotify ();
             this.refreshPlatforms ();
         }
         
-        protected void removeNotify () {
+        protected @Override void removeNotify() {
             super.removeNotify ();
         }
         

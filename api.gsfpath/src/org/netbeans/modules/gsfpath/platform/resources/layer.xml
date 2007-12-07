@@ -41,7 +41,6 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
-
 <filesystem>
     <folder name="org-netbeans-api-gsfpath">
         <!-- Platform - related area -->
@@ -53,8 +52,7 @@ made subject to such option by the copyright holder.
 
     <folder name="Services">
         <folder name="Platforms">
-            <attr name="SystemFileSystem.localizingBundle"
-                stringvalue="org.netbeans.modules.gsfpath.platform.resources.Bundle"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.gsfpath.platform.resources.Bundle"/>
             <folder name="org-netbeans-api-gsfpath-Platform">
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/gsfpath/platform/resources/platformList.gif"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.gsfpath.platform.resources.Bundle"/>
@@ -69,18 +67,15 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.gsfpath.platform.resources.Bundle"/>
                 <folder name="org-netbeans-api-gsfpath-Platform">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.gsfpath.platform.resources.Bundle"/>
-                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/gsfpath/platform/resources/templates/javaplatform.html" />
+                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/gsfpath/platform/resources/templates/javaplatform.html"/>
                 </folder>
             </folder>
         </folder>
     </folder>
 <!-- No UI yet - need default Ruby platform registrations for JRuby, native Ruby, etc.
     <folder name="Menu">
-        <folder name="Tools">
-            <attr name="Separator1.instance/JavaPlatformsCustomizerAction.instance" boolvalue="true"/>
-            <attr name="JavaPlatformsCustomizerAction.instance/RubyPlatformsCustomizerAction.instance" boolvalue="true"/>            
-            <attr name="RubyPlatformsCustomizerAction.instance/LibrariesCustomizerAction.instance" boolvalue="true"/>            
-            <file name="RubyPlatformsCustomizerAction.instance">
+        <folder name="Tools">            
+            <file name="JavaPlatformsCustomizerAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.gsfpath.platform.ui.PlatformsCustomizerAction"/>
             </file>
         </folder>

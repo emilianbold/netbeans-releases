@@ -63,6 +63,6 @@ public abstract class CustomPlatformInstall extends GeneralPlatformInstall {
      * the platform. The instantiate method of the returned iterator should
      * return the Set containing the created JavaPlatform.
      */
-    public abstract WizardDescriptor.InstantiatingIterator/*<XXX what?>*/ createIterator();            
+    public abstract WizardDescriptor.InstantiatingIterator<WizardDescriptor> createIterator();
     
 }

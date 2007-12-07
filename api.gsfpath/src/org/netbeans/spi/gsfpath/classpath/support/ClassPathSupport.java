@@ -125,7 +125,7 @@ public class ClassPathSupport {
      * archive must be used.  Cannot be null; can be empty array; array can contain nulls.
      * @return API classpath
      */
-    public static ClassPath createClassPath (FileObject[] roots) {
+    public static ClassPath createClassPath(FileObject... roots) {
         assert roots != null;
         List<PathResourceImplementation> l = new ArrayList<PathResourceImplementation> ();
         for (FileObject root : roots) {
@@ -150,7 +150,7 @@ public class ClassPathSupport {
      *   Cannot be null; can be empty array; array can contain nulls.
      * @return API classpath
      */
-    public static ClassPath createClassPath (URL[] roots) {
+    public static ClassPath createClassPath(URL... roots) {
         assert roots != null;
         List<PathResourceImplementation> l = new ArrayList<PathResourceImplementation> ();
         for (URL root : roots) {
@@ -168,7 +168,7 @@ public class ClassPathSupport {
      * @param delegates ClassPathImplementations to delegate to.
      * @return SPI classpath
      */
-    public static ClassPathImplementation createProxyClassPathImplementation (ClassPathImplementation[] delegates) {
+    public static ClassPathImplementation createProxyClassPathImplementation(ClassPathImplementation... delegates) {
         return new ProxyClassPathImplementation (delegates);
     }
 
@@ -179,7 +179,7 @@ public class ClassPathSupport {
      * @param delegates ClassPaths to delegate to.
      * @return API classpath
      */
-    public static ClassPath createProxyClassPath (ClassPath[] delegates) {
+    public static ClassPath createProxyClassPath(ClassPath... delegates) {
         assert delegates != null;
         ClassPathImplementation[] impls = new ClassPathImplementation [delegates.length];
         for (int i = 0; i < delegates.length; i++) {

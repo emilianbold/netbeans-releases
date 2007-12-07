@@ -62,7 +62,7 @@ public abstract class PlatformInstall extends GeneralPlatformInstall {
      * the platform. The instantiate method of the returned iterator should
      * return the Set containing the created JavaPlatform.
      */
-    public abstract WizardDescriptor.InstantiatingIterator createIterator(FileObject baseFolder);
+    public abstract WizardDescriptor.InstantiatingIterator<WizardDescriptor> createIterator(FileObject baseFolder);
 
     /**
      * Checks whether a given folder contains a platform of the supported type.
