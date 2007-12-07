@@ -980,8 +980,9 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 
                                     if (!inner) { // not inner class name
                                         if (ad == 0) { // zero array depth
-                                            if (CsmKindUtilities.isClass(lastType.getClassifier())) {
-                                                CsmClass clazz = (CsmClass)lastType.getClassifier();
+                                            CsmClassifier classifier = CsmBaseUtilities.getOriginalClassifier(lastType.getClassifier());
+                                            if (CsmKindUtilities.isClass(classifier)) {
+                                                CsmClass clazz = (CsmClass)classifier;
                                                 List fldList = finder.findFields(clazz, clazz, var, true, staticOnly, true, true,scopeAccessedClassifier, this.sort);
 //                                                // add enumerators
 //                                                List enumerators = finder.findEnumerators(clazz, clazz, var, true, true, true, this.sort);
@@ -1362,7 +1363,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                             if (lastType != null) {
                                 CsmClassifier classifier;
                                 if (lastType.getArrayDepth() == 0) { // Not array
-                                    classifier = lastType.getClassifier();
+                                    classifier = CsmBaseUtilities.getOriginalClassifier(lastType.getClassifier());
                                 } else { // Array of some depth
                                     classifier = CsmCompletion.OBJECT_CLASS_ARRAY; // Use Object in this case
                                 }
