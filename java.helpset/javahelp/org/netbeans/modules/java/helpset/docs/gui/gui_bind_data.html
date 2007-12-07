@@ -20,8 +20,10 @@
         <ul>
             <li><a href="nbdocs://org.netbeans.modules.db/org/netbeans/modules/db/docs/connectdb.html">Connected to a database</a> in the IDE.</li>
             <li><a href="gui_addcomponent.html">Added the component</a> to a form in the GUI Builder.</li>
-            <li>Created classes that represent the database tables to which you want to 
-                bind. Steps on creating the entity classes for binding data to a component  
+            <li>Created entity classes that represent the database tables to which you want to 
+                bind. Entity classes are special classes that use the the 
+                <a href="../persistence/general/persistence_about.html">Java Persistence API</a> (JPA). 
+                Steps on creating the entity classes for binding data to a component  
             are given below.</li>
         </ul>
 
@@ -100,7 +102,9 @@ among the entities are correctly covered by the generated classes.</li>
         <dl>
             <dt><a name="seealso">See Also</a></dt>
             <dd><a href="gui_bind_properties.html">Binding Two Bean Properties</a></dd>       
-            <dd><a href="gui_bind_synthetic.html">Special Binding Properties</a></dd>                   
+            <dd><a href="gui_bind_synthetic.html">Special Binding Properties</a></dd>
+            <dd><a href="gui_converters.html">Converting Values Between Source and Target Properties</a></dd>
+            <dd><a href="gui_validators.html">Validating Target Value Changes in Bindings (Java Desktop Applications)</a></dd>
             <dd><a href="gui_addcomponent.html">Adding a Component to a Form</a></dd>
             <dd><a href="gui_editcomponentprops.html">Editing Component Properties</a></dd>
             <dd><a href="gui_designing.html">Designing Java GUIs with the GUI Builder</a></dd>
