@@ -131,6 +131,7 @@ public class LanguageImpl extends Language {
     }
     
     public String getTokenType (int tokenTypeID) {
+        if (idToTokenType == null) return null;
         return idToTokenType.get (tokenTypeID);
     }
     
