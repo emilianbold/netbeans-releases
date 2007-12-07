@@ -562,7 +562,7 @@ public class NBSLanguageReader {
         String          n,
         Language        language
     ) {
-        if (n.startsWith ("\"")) {
+        if (n.startsWith ("\"") || n.startsWith ("'")) {
             l.add (ASTToken.create (
                 language,
                 -1,
@@ -573,7 +573,7 @@ public class NBSLanguageReader {
         }
         int i = n.indexOf ('#');
         if (i < 0) {
-            l.add (n);
+            l.add (n); 
             return;
         }
         String type = n.substring (0, i);
