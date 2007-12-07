@@ -49,7 +49,6 @@ import antlr.NoViableAltForCharException;
 import antlr.TokenStreamException;
 import java.io.IOException;
 import java.io.Reader;
-import org.netbeans.api.gsf.GsfTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
@@ -62,20 +61,20 @@ import org.netbeans.spi.lexer.TokenFactory;
  * @author Mila Metelka
  * @author Martin Adamek
  */
-final class GroovyLexer implements Lexer<GsfTokenId> {
+final class GroovyLexer implements Lexer<GroovyTokenId> {
     
     private GroovyScanner scanner;
     private LexerInput lexerInput;
     private MyCharBuffer myCharBuffer;
-    private TokenFactory<GsfTokenId> tokenFactory;
+    private TokenFactory<GroovyTokenId> tokenFactory;
     
-    public GroovyLexer(LexerRestartInfo<GsfTokenId> info) {
+    public GroovyLexer(LexerRestartInfo<GroovyTokenId> info) {
         this.scanner = new GroovyScanner((LexerSharedInputState)null);
         scanner.setWhitespaceIncluded(true);
         restart(info);
     }
     
-    private void restart(LexerRestartInfo<GsfTokenId> info) {
+    private void restart(LexerRestartInfo<GroovyTokenId> info) {
         tokenFactory = info.tokenFactory();
         this.lexerInput = info.input();
 
@@ -98,14 +97,14 @@ final class GroovyLexer implements Lexer<GsfTokenId> {
         }
     }
 
-    private Token<GsfTokenId> createToken(int tokenIntId, int tokenLength) {
-        GsfTokenId id = GroovyTokenId.getTokenId(tokenIntId);
+    private Token<GroovyTokenId> createToken(int tokenIntId, int tokenLength) {
+        GroovyTokenId id = GroovyTokenId.getTokenId(tokenIntId);
         String fixedText = id.fixedText();
         return (fixedText != null) ? tokenFactory.getFlyweightToken(id, fixedText)
                                    : tokenFactory.createToken(id, tokenLength);
     }
 
-    public Token<GsfTokenId> nextToken() {
+    public Token<GroovyTokenId> nextToken() {
         try {
             antlr.Token antlrToken = scanner.nextToken();
             if (antlrToken != null) {

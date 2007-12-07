@@ -48,7 +48,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.gsf.CompilationInfo;
 
-import org.netbeans.api.gsf.GsfTokenId;
+import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -114,13 +114,13 @@ public class LexUtilities {
     
     /** Find the ruby token sequence (in case it's embedded in something else at the top level */
     @SuppressWarnings("unchecked")
-    public static TokenSequence<?extends GsfTokenId> getGroovyTokenSequence(BaseDocument doc, int offset) {
+    public static TokenSequence<?extends GroovyTokenId> getGroovyTokenSequence(BaseDocument doc, int offset) {
         TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
         return getGroovyTokenSequence(th, offset);
     }
     
     @SuppressWarnings("unchecked")
-    private static TokenSequence<? extends GsfTokenId> findRhtmlDelimited(TokenSequence t, int offset) {
+    private static TokenSequence<? extends GroovyTokenId> findRhtmlDelimited(TokenSequence t, int offset) {
         if (t.language().mimeType().equals("text/x-gsp")) {
             t.move(offset);
             if (t.moveNext() && t.token() != null && 
@@ -130,7 +130,7 @@ public class LexUtilities {
                         "groovy".equals(t.token().id().primaryCategory())) { // NOI18N
                     TokenSequence<?> ets = t.embedded();
                     if (ets != null) {
-                        return (TokenSequence<? extends GsfTokenId>)ets;
+                        return (TokenSequence<? extends GroovyTokenId>)ets;
                     }
                 }
             }
@@ -140,8 +140,8 @@ public class LexUtilities {
     }
     
     @SuppressWarnings("unchecked")
-    public static TokenSequence<?extends GsfTokenId> getGroovyTokenSequence(TokenHierarchy<Document> th, int offset) {
-        TokenSequence<?extends GsfTokenId> ts = th.tokenSequence(GroovyTokenId.language());
+    public static TokenSequence<?extends GroovyTokenId> getGroovyTokenSequence(TokenHierarchy<Document> th, int offset) {
+        TokenSequence<?extends GroovyTokenId> ts = th.tokenSequence(GroovyTokenId.language());
 
         if (ts == null) {
             // Possibly an embedding scenario such as an RHTML file
@@ -154,7 +154,7 @@ public class LexUtilities {
 
                     break;
                 } else {
-                    TokenSequence<? extends GsfTokenId> ets = findRhtmlDelimited(t, offset);
+                    TokenSequence<? extends GroovyTokenId> ets = findRhtmlDelimited(t, offset);
                     if (ets != null) {
                         return ets;
                     }
@@ -170,7 +170,7 @@ public class LexUtilities {
 
                         break;
                     } else {
-                        TokenSequence<? extends GsfTokenId> ets = findRhtmlDelimited(t, offset);
+                        TokenSequence<? extends GroovyTokenId> ets = findRhtmlDelimited(t, offset);
                         if (ets != null) {
                             return ets;
                         }
@@ -182,8 +182,8 @@ public class LexUtilities {
         return ts;
     }
 
-    public static Token<?extends GsfTokenId> getToken(BaseDocument doc, int offset) {
-        TokenSequence<?extends GsfTokenId> ts = getGroovyTokenSequence(doc, offset);
+    public static Token<?extends GroovyTokenId> getToken(BaseDocument doc, int offset) {
+        TokenSequence<?extends GroovyTokenId> ts = getGroovyTokenSequence(doc, offset);
 
         if (ts != null) {
             try {
@@ -202,7 +202,7 @@ public class LexUtilities {
                 return null;
             }
 
-            Token<?extends GsfTokenId> token = ts.token();
+            Token<?extends GroovyTokenId> token = ts.token();
 
             return token;
         }
@@ -211,7 +211,7 @@ public class LexUtilities {
     }
 
     public static char getTokenChar(BaseDocument doc, int offset) {
-        Token<?extends GsfTokenId> token = getToken(doc, offset);
+        Token<?extends GroovyTokenId> token = getToken(doc, offset);
 
         if (token != null) {
             String text = token.text().toString();
@@ -226,7 +226,7 @@ public class LexUtilities {
     }
 
     /** Search forwards in the token sequence until a token of type <code>down</code> is found */
-    public static OffsetRange findHeredocEnd(TokenSequence<?extends GsfTokenId> ts,  Token<?extends GsfTokenId> startToken) {
+    public static OffsetRange findHeredocEnd(TokenSequence<?extends GroovyTokenId> ts,  Token<?extends GroovyTokenId> startToken) {
         // Look for the end of the given heredoc
         String text = startToken.text().toString();
         assert text.startsWith("<<");
@@ -240,7 +240,7 @@ public class LexUtilities {
         String textn = text+"\n";
 
         while (ts.moveNext()) {
-            Token<?extends GsfTokenId> token = ts.token();
+            Token<?extends GroovyTokenId> token = ts.token();
             TokenId id = token.id();
 
             if (id == GroovyTokenId.STRING_END || id == GroovyTokenId.QUOTED_STRING_END) {
@@ -255,7 +255,7 @@ public class LexUtilities {
     }
 
     /** Search forwards in the token sequence until a token of type <code>down</code> is found */
-    public static OffsetRange findHeredocBegin(TokenSequence<?extends GsfTokenId> ts,  Token<?extends GsfTokenId> endToken) {
+    public static OffsetRange findHeredocBegin(TokenSequence<?extends GroovyTokenId> ts,  Token<?extends GroovyTokenId> endToken) {
         // Look for the end of the given heredoc
         String text = endToken.text().toString();
         if (text.endsWith("\n")) {
@@ -265,7 +265,7 @@ public class LexUtilities {
         String textSQuotes = "'" + text + "'";
 
         while (ts.movePrevious()) {
-            Token<?extends GsfTokenId> token = ts.token();
+            Token<?extends GroovyTokenId> token = ts.token();
             TokenId id = token.id();
 
             if (id == GroovyTokenId.STRING_BEGIN || id == GroovyTokenId.QUOTED_STRING_BEGIN) {
@@ -286,12 +286,12 @@ public class LexUtilities {
     }
     
     /** Search forwards in the token sequence until a token of type <code>down</code> is found */
-    public static OffsetRange findFwd(BaseDocument doc, TokenSequence<?extends GsfTokenId> ts, TokenId up,
+    public static OffsetRange findFwd(BaseDocument doc, TokenSequence<?extends GroovyTokenId> ts, TokenId up,
         TokenId down) {
         int balance = 0;
 
         while (ts.moveNext()) {
-            Token<?extends GsfTokenId> token = ts.token();
+            Token<?extends GroovyTokenId> token = ts.token();
             TokenId id = token.id();
             
             if (id == up) {
@@ -309,12 +309,12 @@ public class LexUtilities {
     }
 
     /** Search backwards in the token sequence until a token of type <code>up</code> is found */
-    public static OffsetRange findBwd(BaseDocument doc, TokenSequence<?extends GsfTokenId> ts, TokenId up,
+    public static OffsetRange findBwd(BaseDocument doc, TokenSequence<?extends GroovyTokenId> ts, TokenId up,
         TokenId down) {
         int balance = 0;
 
         while (ts.movePrevious()) {
-            Token<?extends GsfTokenId> token = ts.token();
+            Token<?extends GroovyTokenId> token = ts.token();
             TokenId id = token.id();
 
             if (id == up) {
@@ -336,11 +336,11 @@ public class LexUtilities {
      * It does not use indentation for clues since this could be wrong and be
      * precisely the reason why the user is using pair matching to see what's wrong.
      */
-    public static OffsetRange findBegin(BaseDocument doc, TokenSequence<?extends GsfTokenId> ts) {
+    public static OffsetRange findBegin(BaseDocument doc, TokenSequence<?extends GroovyTokenId> ts) {
         int balance = 0;
 
         while (ts.movePrevious()) {
-            Token<?extends GsfTokenId> token = ts.token();
+            Token<?extends GroovyTokenId> token = ts.token();
             TokenId id = token.id();
 
             if (isBeginToken(id, doc, ts)) {
@@ -358,11 +358,11 @@ public class LexUtilities {
         return OffsetRange.NONE;
     }
 
-    public static OffsetRange findEnd(BaseDocument doc, TokenSequence<?extends GsfTokenId> ts) {
+    public static OffsetRange findEnd(BaseDocument doc, TokenSequence<?extends GroovyTokenId> ts) {
         int balance = 0;
 
         while (ts.moveNext()) {
-            Token<?extends GsfTokenId> token = ts.token();
+            Token<?extends GroovyTokenId> token = ts.token();
             TokenId id = token.id();
 
             if (isBeginToken(id, doc, ts)) {
@@ -400,7 +400,7 @@ public class LexUtilities {
         try {
             int first = Utilities.getRowFirstNonWhite(doc, offset);
             if (first != -1) {
-                Token<? extends GsfTokenId> token = getToken(doc, first);
+                Token<? extends GroovyTokenId> token = getToken(doc, first);
                 if (token != null) {
                     TokenId id = token.id();
                     if (id == GroovyTokenId.LITERAL_while || id == GroovyTokenId.LITERAL_for) {
@@ -429,7 +429,7 @@ public class LexUtilities {
      * with a corresponding "end" token, such as "begin", "def", "module",
      * etc.
      */
-    public static boolean isBeginToken(TokenId id, BaseDocument doc, TokenSequence<?extends GsfTokenId> ts) {
+    public static boolean isBeginToken(TokenId id, BaseDocument doc, TokenSequence<?extends GroovyTokenId> ts) {
         return END_PAIRS.contains(id);
     }
     
@@ -452,7 +452,7 @@ public class LexUtilities {
             int begin = Utilities.getRowStart(doc, offset);
             int end = upToOffset ? offset : Utilities.getRowEnd(doc, offset);
 
-            TokenSequence<?extends GsfTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, begin);
+            TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, begin);
             if (ts == null) {
                 return 0;
             }
@@ -466,7 +466,7 @@ public class LexUtilities {
             int balance = 0;
 
             do {
-                Token<?extends GsfTokenId> token = ts.token();
+                Token<?extends GroovyTokenId> token = ts.token();
                 TokenId id = token.id();
 
                 if (isBeginToken(id, doc, ts)) {
@@ -490,7 +490,7 @@ public class LexUtilities {
             int begin = Utilities.getRowStart(doc, offset);
             int end = Utilities.getRowEnd(doc, offset);
 
-            TokenSequence<?extends GsfTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, begin);
+            TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, begin);
             if (ts == null) {
                 return 0;
             }
@@ -504,7 +504,7 @@ public class LexUtilities {
             int balance = 0;
 
             do {
-                Token<?extends GsfTokenId> token = ts.token();
+                Token<?extends GroovyTokenId> token = ts.token();
                 TokenId id = token.id();
 
                 if (id == up) {
@@ -530,7 +530,7 @@ public class LexUtilities {
      */
     public static int getTokenBalance(BaseDocument doc, TokenId open, TokenId close, int offset)
         throws BadLocationException {
-        TokenSequence<?extends GsfTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, 0);
+        TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, 0);
         if (ts == null) {
             return 0;
         }
@@ -671,7 +671,7 @@ public class LexUtilities {
      */
     @SuppressWarnings("unchecked")
     public static String getStringAt(int caretOffset, TokenHierarchy<Document> th) {
-        TokenSequence<?extends GsfTokenId> ts = getGroovyTokenSequence(th, caretOffset);
+        TokenSequence<?extends GroovyTokenId> ts = getGroovyTokenSequence(th, caretOffset);
 
         if (ts == null) {
             return null;
@@ -689,7 +689,7 @@ public class LexUtilities {
             ts.movePrevious();
         }
 
-        Token<?extends GsfTokenId> token = ts.token();
+        Token<?extends GroovyTokenId> token = ts.token();
 
         if (token != null) {
             TokenId id = token.id();
@@ -759,7 +759,7 @@ public class LexUtilities {
      *     if the offset is not inside a require string.
      */
     public static int getRequireStringOffset(int caretOffset, TokenHierarchy<Document> th) {
-        TokenSequence<?extends GsfTokenId> ts = getGroovyTokenSequence(th, caretOffset);
+        TokenSequence<?extends GroovyTokenId> ts = getGroovyTokenSequence(th, caretOffset);
 
         if (ts == null) {
             return -1;
@@ -777,7 +777,7 @@ public class LexUtilities {
             ts.movePrevious();
         }
 
-        Token<?extends GsfTokenId> token = ts.token();
+        Token<?extends GroovyTokenId> token = ts.token();
 
         if (token != null) {
             TokenId id = token.id();
@@ -841,8 +841,8 @@ public class LexUtilities {
      */
     @SuppressWarnings("unchecked")
     private static int getLiteralStringOffset(int caretOffset, TokenHierarchy<Document> th,
-        GsfTokenId begin) {
-        TokenSequence<?extends GsfTokenId> ts = getGroovyTokenSequence(th, caretOffset);
+        GroovyTokenId begin) {
+        TokenSequence<?extends GroovyTokenId> ts = getGroovyTokenSequence(th, caretOffset);
 
         if (ts == null) {
             return -1;
@@ -860,7 +860,7 @@ public class LexUtilities {
             ts.movePrevious();
         }
 
-        Token<?extends GsfTokenId> token = ts.token();
+        Token<?extends GroovyTokenId> token = ts.token();
 
         if (token != null) {
             TokenId id = token.id();
@@ -902,7 +902,7 @@ public class LexUtilities {
     }
 
     public static boolean isInsideQuotedString(BaseDocument doc, int offset) {
-        TokenSequence<?extends GsfTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, offset);
+        TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, offset);
 
         if (ts == null) {
             return false;
@@ -911,14 +911,14 @@ public class LexUtilities {
         ts.move(offset);
 
         if (ts.moveNext()) {
-            Token<?extends GsfTokenId> token = ts.token();
+            Token<?extends GroovyTokenId> token = ts.token();
             TokenId id = token.id();
             if (id == GroovyTokenId.QUOTED_STRING_LITERAL || id == GroovyTokenId.QUOTED_STRING_END) {
                 return true;
             }
         }
         if (ts.movePrevious()) {
-            Token<?extends GsfTokenId> token = ts.token();
+            Token<?extends GroovyTokenId> token = ts.token();
             TokenId id = token.id();
             if (id == GroovyTokenId.QUOTED_STRING_LITERAL || id == GroovyTokenId.QUOTED_STRING_BEGIN) {
                 return true;
@@ -929,7 +929,7 @@ public class LexUtilities {
     }
 
     public static boolean isInsideRegexp(BaseDocument doc, int offset) {
-        TokenSequence<?extends GsfTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, offset);
+        TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, offset);
 
         if (ts == null) {
             return false;
@@ -938,14 +938,14 @@ public class LexUtilities {
         ts.move(offset);
 
         if (ts.moveNext()) {
-            Token<?extends GsfTokenId> token = ts.token();
+            Token<?extends GroovyTokenId> token = ts.token();
             TokenId id = token.id();
             if (id == GroovyTokenId.REGEXP_LITERAL || id == GroovyTokenId.REGEXP_END) {
                 return true;
             }
         }
         if (ts.movePrevious()) {
-            Token<?extends GsfTokenId> token = ts.token();
+            Token<?extends GroovyTokenId> token = ts.token();
             TokenId id = token.id();
             if (id == GroovyTokenId.REGEXP_LITERAL || id == GroovyTokenId.REGEXP_BEGIN) {
                 return true;
@@ -959,7 +959,7 @@ public class LexUtilities {
         // Check if the caret is within a comment, and if so insert a new
         // leaf "node" which contains the comment line and then comment block
         try {
-            Token<?extends GsfTokenId> token = LexUtilities.getToken(doc, caretOffset);
+            Token<?extends GroovyTokenId> token = LexUtilities.getToken(doc, caretOffset);
 
             if ((token != null) && (token.id() == GroovyTokenId.LINE_COMMENT)) {
                 // First add a range for the current line
@@ -1001,7 +1001,7 @@ public class LexUtilities {
                     int offset = token.offset(th);
                     return new OffsetRange(offset, offset + token.length());
                 }
-            } else if (token != null && token.id() == GsfTokenId.DOCUMENTATION) {
+            } else if (token != null && token.id() == GroovyTokenId.DOCUMENTATION) {
                 // Select the whole token block
                 TokenHierarchy<BaseDocument> th = TokenHierarchy.get(doc);
                 int begin = token.offset(th);

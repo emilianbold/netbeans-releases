@@ -46,7 +46,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.api.gsf.GsfTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.spi.lexer.LanguageHierarchy;
@@ -58,257 +57,329 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
  * 
  * @author Martin Adamek
  */
-public class GroovyTokenId extends GsfTokenId {
+public class GroovyTokenId implements TokenId {
 
     public static final int ERROR_INT = 221;
+
+    // Copied from GroovyTokenId
+    public static final GroovyTokenId ERROR = new GroovyTokenId("GSF_ERROR", null, "error");
+    public static final GroovyTokenId IDENTIFIER = new GroovyTokenId("GSF_IDENTIFIER", null, "identifier");
+    public static final GroovyTokenId CLASS_VAR = new GroovyTokenId("GSF_CLASS", null, "staticfield");
+    public static final GroovyTokenId INSTANCE_VAR = new GroovyTokenId("GSF_INSTANCE", null, "field");
+    public static final GroovyTokenId GLOBAL_VAR = new GroovyTokenId("GSF_GLOBAL", null, "static");
+    public static final GroovyTokenId CONSTANT = new GroovyTokenId("GSF_CONSTANT", null, "constant");
+    public static final GroovyTokenId DOCUMENTATION = new GroovyTokenId("GSF_DOCUMENTATION", null, "comment");
+    public static final GroovyTokenId INT_LITERAL = new GroovyTokenId("GSF_INT_LITERAL", null, "number");
+    public static final GroovyTokenId REGEXP_LITERAL = new GroovyTokenId("GSF_REGEXP_LITERAL", null, "regexp");
+    public static final GroovyTokenId LONG_LITERAL = new GroovyTokenId("GSF_LONG_LITERAL", null, "number");
+    public static final GroovyTokenId FLOAT_LITERAL = new GroovyTokenId("GSF_FLOAT_LITERAL", null, "number");
+    public static final GroovyTokenId DOUBLE_LITERAL = new GroovyTokenId("GSF_DOUBLE_LITERAL", null, "number");
+    public static final GroovyTokenId CHAR_LITERAL = new GroovyTokenId("GSF_CHAR_LITERAL", null, "character");
+    public static final GroovyTokenId STRING_LITERAL = new GroovyTokenId("GSF_STRING_LITERAL", null, "string");
+    public static final GroovyTokenId WHITESPACE = new GroovyTokenId("GSF_WHITESPACE", null, "whitespace");
+    public static final GroovyTokenId LINE_COMMENT = new GroovyTokenId("GSF_LINE_COMMENT", null, "comment");
+    public static final GroovyTokenId BLOCK_COMMENT = new GroovyTokenId("GSF_BLOCK_COMMENT", null, "comment");
+    public static final GroovyTokenId TODO = new GroovyTokenId("GSF_TODO", null, "todo");
+    public static final GroovyTokenId TYPE_SYMBOL = new GroovyTokenId("GSF_TYPESYMBOL", null, "typesymbol");
+    public static final GroovyTokenId LPAREN = new GroovyTokenId("GSF_LPAREN", "(", "separator");
+    public static final GroovyTokenId RPAREN = new GroovyTokenId("GSF_RPAREN", ")", "separator");
+    public static final GroovyTokenId LBRACE = new GroovyTokenId("GSF_LBRACE", "{", "separator");
+    public static final GroovyTokenId RBRACE = new GroovyTokenId("GSF_RBRACE", "}", "separator");
+    public static final GroovyTokenId LBRACKET = new GroovyTokenId("GSF_LBRACKET", "[", "separator");
+    public static final GroovyTokenId RBRACKET = new GroovyTokenId("GSF_RBRACKET", "]", "separator");
+    public static final GroovyTokenId STRING_BEGIN = new GroovyTokenId("GSF_STRING_BEGIN", null, "string");
+    public static final GroovyTokenId STRING_END = new GroovyTokenId("GSF_STRING_END", null, "string");
+    public static final GroovyTokenId REGEXP_BEGIN = new GroovyTokenId("GSF_REGEXP_BEGIN", null, "regexp"); // or separator?
+    public static final GroovyTokenId REGEXP_END = new GroovyTokenId("GSF_REGEXP_END", null, "regexp");
+    public static final GroovyTokenId CHAR_LITERAL_INCOMPLETE = new GroovyTokenId("GSF_CHAR_LITERAL_INCOMPLETE", null, "character");
+    public static final GroovyTokenId STRING_LITERAL_INCOMPLETE = new GroovyTokenId("GSF_STRING_LITERAL_INCOMPLETE", null, "string");
+    public static final GroovyTokenId BLOCK_COMMENT_INCOMPLETE = new GroovyTokenId("GSF_BLOCK_COMMENT_INCOMPLETE", null, "comment");
+    public static final GroovyTokenId JAVADOC_COMMENT_INCOMPLETE = new GroovyTokenId("GSF_JAVADOC_COMMENT_INCOMPLETE", null, "comment");
+    public static final GroovyTokenId INVALID_COMMENT_END = new GroovyTokenId("GSF_INVALID_COMMENT_END", "*/", "error");
+    public static final GroovyTokenId FLOAT_LITERAL_INVALID = new GroovyTokenId("GSF_FLOAT_LITERAL_INVALID", null, "number");
+    public static final GroovyTokenId ANY_KEYWORD = new GroovyTokenId("GSF_ANY_KEYWORD", null, "keyword");
+    public static final GroovyTokenId ANY_OPERATOR = new GroovyTokenId("GSF_ANY_OPERATOR", null, "operator");
     
-    public static final GsfTokenId QUOTED_STRING_LITERAL = new GsfTokenId("QUOTED_STRING_LITERAL", null, "string");
-    public static final GsfTokenId QUOTED_STRING_END = new GsfTokenId("QUOTED_STRING_END", null, "string");
-    public static final GsfTokenId QUOTED_STRING_BEGIN = new GsfTokenId("QUOTED_STRING_BEGIN", null, "string");
-    public static final GsfTokenId EMBEDDED_GROOVY = new GsfTokenId("EMBEDDED_GROOVY", null, "default");
+    private final String name;
+    private final String primaryCategory;
+    private final String fixedText;
+    private final int ordinal;
+    protected static int nextOrdinal;
+
+    public GroovyTokenId(String name, String fixedText, String primaryCategory) {
+        this.name = name;
+        this.primaryCategory = primaryCategory;
+        this.fixedText = fixedText;
+        synchronized (GroovyTokenId.class) {
+            this.ordinal = nextOrdinal++;
+        }
+    }
+
+    public String primaryCategory() {
+        return primaryCategory;
+    }
+
+    public String fixedText() {
+        return fixedText;
+    }
+
+    public String name() {
+        return name;
+    }
+
+    public int ordinal() {
+        return ordinal;
+    }
+    
+    public String toString() {
+        return getClass().getName() + ":" + name + ":" + ordinal;
+    }
+    
+    
+    
+    public static final GroovyTokenId QUOTED_STRING_LITERAL = new GroovyTokenId("QUOTED_STRING_LITERAL", null, "string");
+    public static final GroovyTokenId QUOTED_STRING_END = new GroovyTokenId("QUOTED_STRING_END", null, "string");
+    public static final GroovyTokenId QUOTED_STRING_BEGIN = new GroovyTokenId("QUOTED_STRING_BEGIN", null, "string");
+    public static final GroovyTokenId EMBEDDED_GROOVY = new GroovyTokenId("EMBEDDED_GROOVY", null, "default");
     
     public static TokenId NONUNARY_OP;
 
     // <editor-fold defaultstate="collapsed" desc="Tokens">
-    public static final GsfTokenId ABSTRACT = new GsfTokenId("ABSTRACT", null, "keyword");
-    public static final GsfTokenId ANNOTATION_ARRAY_INIT = new GsfTokenId("ANNOTATION_ARRAY_INIT", null, "annotation");
-    public static final GsfTokenId ANNOTATION_DEF = new GsfTokenId("ANNOTATION_DEF", null, "annotation");
-    public static final GsfTokenId ANNOTATION_FIELD_DEF = new GsfTokenId("ANNOTATION_FIELD_DEF", null, "annotation");
-    public static final GsfTokenId ANNOTATION_MEMBER_VALUE_PAIR = new GsfTokenId("ANNOTATION_MEMBER_VALUE_PAIR", null, "annotation");
-    public static final GsfTokenId ANNOTATION = new GsfTokenId("ANNOTATION", null, "annotation");
-    public static final GsfTokenId ANNOTATIONS = new GsfTokenId("ANNOTATIONS", null, "annotation");
-    public static final GsfTokenId ARRAY_DECLARATOR = new GsfTokenId("ARRAY_DECLARATOR", null, "default");
-    public static final GsfTokenId ASSIGN = new GsfTokenId("ASSIGN", null, "operator");
-    public static final GsfTokenId AT = new GsfTokenId("AT", null, "operator");
-    public static final GsfTokenId BAND_ASSIGN = new GsfTokenId("BAND_ASSIGN", null, "operator");
-    public static final GsfTokenId BAND = new GsfTokenId("BAND", null, "operator");
-    public static final GsfTokenId BIG_SUFFIX = new GsfTokenId("BIG_SUFFIX", null, "number");
-    public static final GsfTokenId BLOCK = new GsfTokenId("BLOCK", null, "default");
-    public static final GsfTokenId BNOT = new GsfTokenId("BNOT", null, "operator");
-    public static final GsfTokenId BOR_ASSIGN = new GsfTokenId("BOR_ASSIGN", null, "operator");
-    public static final GsfTokenId BOR = new GsfTokenId("BOR", null, "operator");
-    public static final GsfTokenId BSR_ASSIGN = new GsfTokenId("BSR_ASSIGN", null, "operator");
-    public static final GsfTokenId BSR = new GsfTokenId("BSR", null, "operator");
-    public static final GsfTokenId BXOR_ASSIGN = new GsfTokenId("BXOR_ASSIGN", null, "operator");
-    public static final GsfTokenId BXOR = new GsfTokenId("BXOR", null, "operator");
-    public static final GsfTokenId CASE_GROUP = new GsfTokenId("CASE_GROUP", null, "default");
-    public static final GsfTokenId CLASS_DEF = new GsfTokenId("CLASS_DEF", null, "default");
-    public static final GsfTokenId CLOSED_BLOCK = new GsfTokenId("CLOSABLE_BLOCK", null, "default");
-    public static final GsfTokenId CLOSURE_OP = new GsfTokenId("CLOSURE_LIST", null, "operator");
-    public static final GsfTokenId COLON = new GsfTokenId("COLON", null, "operator");
-    public static final GsfTokenId COMMA = new GsfTokenId("COMMA", null, "operator");
-    public static final GsfTokenId COMPARE_TO = new GsfTokenId("COMPARE_TO", null, "operator");
-    public static final GsfTokenId CTOR_CALL = new GsfTokenId("CTOR_CALL", null, "default");
-    public static final GsfTokenId CTOR_IDENT = new GsfTokenId("CTOR_IDENT", null, "default");
-    public static final GsfTokenId DEC = new GsfTokenId("DEC", null, "operator");
-    public static final GsfTokenId DIGIT = new GsfTokenId("DIGIT", null, "number");
-    public static final GsfTokenId DIV_ASSIGN = new GsfTokenId("DIV_ASSIGN", null, "operator");
-    public static final GsfTokenId DIV = new GsfTokenId("DIV", null, "operator");
-    public static final GsfTokenId DOLLAR = new GsfTokenId("DOLLAR", null, "operator");
-    public static final GsfTokenId DOT = new GsfTokenId("DOT", null, "operator");
-    public static final GsfTokenId DYNAMIC_MEMBER = new GsfTokenId("DYNAMIC_MEMBER", null, "default");
-    public static final GsfTokenId ELIST = new GsfTokenId("ELIST", null, "default");
-    public static final GsfTokenId EMPTY_STAT = new GsfTokenId("EMPTY_STAT", null, "default");
-    public static final GsfTokenId ENUM_CONSTANT_DEF = new GsfTokenId("ENUM_CONSTANT_DEF", null, "default");
-    public static final GsfTokenId ENUM_DEF = new GsfTokenId("ENUM_DEF", null, "default");
-    public static final GsfTokenId EOF = new GsfTokenId("EOF", null, "default");
-    public static final GsfTokenId EQUAL = new GsfTokenId("EQUAL", null, "operator");
-    public static final GsfTokenId ESC = new GsfTokenId("ESC", null, "default");
-    public static final GsfTokenId EXPONENT = new GsfTokenId("EXPONENT", null, "number");
-    public static final GsfTokenId EXPR = new GsfTokenId("EXPR", null, "default");
-    public static final GsfTokenId EXTENDS_CLAUSE = new GsfTokenId("EXTENDS_CLAUSE", null, "default");
-    public static final GsfTokenId FINAL = new GsfTokenId("FINAL", null, "keyword");
-    public static final GsfTokenId FLOAT_SUFFIX = new GsfTokenId("FLOAT_SUFFIX", null, "number");
-    public static final GsfTokenId FOR_CONDITION = new GsfTokenId("FOR_CONDITION", null, "default");
-    public static final GsfTokenId FOR_EACH_CLAUSE = new GsfTokenId("FOR_EACH_CLAUSE", null, "keyword");
-    public static final GsfTokenId FOR_IN_ITERABLE = new GsfTokenId("FOR_IN_ITERABLE", null, "default");
-    public static final GsfTokenId FOR_INIT = new GsfTokenId("FOR_INIT", null, "default");
-    public static final GsfTokenId FOR_ITERATOR = new GsfTokenId("FOR_ITERATOR", null, "default");
-    public static final GsfTokenId GE = new GsfTokenId("GE", null, "operator");
-    public static final GsfTokenId GT = new GsfTokenId("GT", null, "operator");
-    public static final GsfTokenId HEX_DIGIT = new GsfTokenId("HEX_DIGIT", null, "number");
-    public static final GsfTokenId IMPLEMENTS_CLAUSE = new GsfTokenId("IMPLEMENTS_CLAUSE", null, "default");
-    public static final GsfTokenId IMPLICIT_PARAMETERS = new GsfTokenId("IMPLICIT_PARAMETERS", null, "default");
-    public static final GsfTokenId IMPORT = new GsfTokenId("IMPORT", null, "default");
-    public static final GsfTokenId INC = new GsfTokenId("INC", null, "operator");
-    public static final GsfTokenId INDEX_OP = new GsfTokenId("INDEX_OP", null, "default");
-    public static final GsfTokenId INSTANCE_INIT = new GsfTokenId("INSTANCE_INIT", null, "default");
-    public static final GsfTokenId INTERFACE_DEF = new GsfTokenId("INTERFACE_DEF", null, "default");
-    public static final GsfTokenId LABELED_ARG = new GsfTokenId("LABELED_ARG", null, "default");
-    public static final GsfTokenId LABELED_STAT = new GsfTokenId("LABELED_STAT", null, "default");
-    public static final GsfTokenId LAND = new GsfTokenId("LAND", null, "operator");
-    public static final GsfTokenId LE = new GsfTokenId("LE", null, "operator");
-    public static final GsfTokenId LETTER = new GsfTokenId("LETTER", null, "default");
-    public static final GsfTokenId LIST_CONSTRUCTOR = new GsfTokenId("LIST_CONSTRUCTOR", null, "default");
-    public static final GsfTokenId LITERAL_as = new GsfTokenId("LITERAL_as", null, "keyword");
-    public static final GsfTokenId LITERAL_assert = new GsfTokenId("LITERAL_assert", null, "keyword");
-    public static final GsfTokenId LITERAL_boolean = new GsfTokenId("LITERAL_boolean", null, "keyword");
-    public static final GsfTokenId LITERAL_break = new GsfTokenId("LITERAL_break", null, "keyword");
-    public static final GsfTokenId LITERAL_byte = new GsfTokenId("LITERAL_byte", null, "keyword");
-    public static final GsfTokenId LITERAL_case = new GsfTokenId("LITERAL_case", null, "keyword");
-    public static final GsfTokenId LITERAL_catch = new GsfTokenId("LITERAL_catch", null, "keyword");
-    public static final GsfTokenId LITERAL_class = new GsfTokenId("LITERAL_class", null, "keyword");
-    public static final GsfTokenId LITERAL_continue = new GsfTokenId("LITERAL_continue", null, "keyword");
-    public static final GsfTokenId LITERAL_def = new GsfTokenId("LITERAL_def", null, "keyword");
-    public static final GsfTokenId LITERAL_default = new GsfTokenId("LITERAL_default", null, "keyword");
-    public static final GsfTokenId LITERAL_double = new GsfTokenId("LITERAL_double", null, "keyword");
-    public static final GsfTokenId LITERAL_else = new GsfTokenId("LITERAL_else", null, "keyword");
-    public static final GsfTokenId LITERAL_enum = new GsfTokenId("LITERAL_enum", null, "keyword");
-    public static final GsfTokenId LITERAL_extends = new GsfTokenId("LITERAL_extends", null, "keyword");
-    public static final GsfTokenId LITERAL_false = new GsfTokenId("LITERAL_false", null, "keyword");
-    public static final GsfTokenId LITERAL_finally = new GsfTokenId("LITERAL_finally", null, "keyword");
-    public static final GsfTokenId LITERAL_float = new GsfTokenId("LITERAL_float", null, "keyword");
-    public static final GsfTokenId LITERAL_for = new GsfTokenId("LITERAL_for", null, "keyword");
-    public static final GsfTokenId LITERAL_char = new GsfTokenId("LITERAL_char", null, "keyword");
-    public static final GsfTokenId LITERAL_if = new GsfTokenId("LITERAL_if", null, "keyword");
-    public static final GsfTokenId LITERAL_implements = new GsfTokenId("LITERAL_implements", null, "keyword");
-    public static final GsfTokenId LITERAL_import = new GsfTokenId("LITERAL_import", null, "keyword");
-    public static final GsfTokenId LITERAL_in = new GsfTokenId("LITERAL_in", null, "keyword");
-    public static final GsfTokenId LITERAL_instanceof = new GsfTokenId("LITERAL_instanceof", null, "keyword");
-    public static final GsfTokenId LITERAL_int = new GsfTokenId("LITERAL_int", null, "keyword");
-    public static final GsfTokenId LITERAL_interface = new GsfTokenId("LITERAL_interface", null, "keyword");
-    public static final GsfTokenId LITERAL_long = new GsfTokenId("LITERAL_long", null, "keyword");
-    public static final GsfTokenId LITERAL_native = new GsfTokenId("LITERAL_native", null, "keyword");
-    public static final GsfTokenId LITERAL_new = new GsfTokenId("LITERAL_new", null, "keyword");
-    public static final GsfTokenId LITERAL_null = new GsfTokenId("LITERAL_null", null, "keyword");
-    public static final GsfTokenId LITERAL_package = new GsfTokenId("LITERAL_package", null, "keyword");
-    public static final GsfTokenId LITERAL_private = new GsfTokenId("LITERAL_private", null, "keyword");
-    public static final GsfTokenId LITERAL_protected = new GsfTokenId("LITERAL_protected", null, "keyword");
-    public static final GsfTokenId LITERAL_public = new GsfTokenId("LITERAL_public", null, "keyword");
-    public static final GsfTokenId LITERAL_return = new GsfTokenId("LITERAL_return", null, "keyword");
-    public static final GsfTokenId LITERAL_short = new GsfTokenId("LITERAL_short", null, "keyword");
-    public static final GsfTokenId LITERAL_static = new GsfTokenId("LITERAL_static", null, "keyword");
-    public static final GsfTokenId LITERAL_super = new GsfTokenId("LITERAL_super", null, "keyword");
-    public static final GsfTokenId LITERAL_switch = new GsfTokenId("LITERAL_switch", null, "keyword");
-    public static final GsfTokenId LITERAL_synchronized = new GsfTokenId("LITERAL_synchronized", null, "keyword");
-    public static final GsfTokenId LITERAL_this = new GsfTokenId("LITERAL_this", null, "keyword");
-    public static final GsfTokenId LITERAL_threadsafe = new GsfTokenId("LITERAL_threadsafe", null, "keyword");
-    public static final GsfTokenId LITERAL_throw = new GsfTokenId("LITERAL_throw", null, "keyword");
-    public static final GsfTokenId LITERAL_throws = new GsfTokenId("LITERAL_throws", null, "keyword");
-    public static final GsfTokenId LITERAL_transient = new GsfTokenId("LITERAL_transient", null, "keyword");
-    public static final GsfTokenId LITERAL_true = new GsfTokenId("LITERAL_true", null, "keyword");
-    public static final GsfTokenId LITERAL_try = new GsfTokenId("LITERAL_try", null, "keyword");
-    public static final GsfTokenId LITERAL_void = new GsfTokenId("LITERAL_void", null, "keyword");
-    public static final GsfTokenId LITERAL_volatile = new GsfTokenId("LITERAL_volatile", null, "keyword");
-    public static final GsfTokenId LITERAL_while = new GsfTokenId("LITERAL_while", null, "keyword");
-    public static final GsfTokenId LNOT = new GsfTokenId("LNOT", null, "operator");
-    public static final GsfTokenId LOR = new GsfTokenId("LOR", null, "operator");
-    public static final GsfTokenId LT = new GsfTokenId("LT", null, "operator");
-    public static final GsfTokenId MAP_CONSTRUCTOR = new GsfTokenId("MAP_CONSTRUCTOR", null, "default");
-    public static final GsfTokenId MEMBER_POINTER = new GsfTokenId("MEMBER_POINTER", null, "operator");
-    public static final GsfTokenId METHOD_CALL = new GsfTokenId("METHOD_CALL", null, "default");
-    public static final GsfTokenId METHOD_DEF = new GsfTokenId("METHOD_DEF", null, "default");
-    public static final GsfTokenId MINUS_ASSIGN = new GsfTokenId("MINUS_ASSIGN", null, "operator");
-    public static final GsfTokenId MINUS = new GsfTokenId("MINUS", null, "operator");
-    public static final GsfTokenId MOD_ASSIGN = new GsfTokenId("MOD_ASSIGN", null, "operator");
-    public static final GsfTokenId MOD = new GsfTokenId("MOD", null, "operator");
-    public static final GsfTokenId MODIFIERS = new GsfTokenId("MODIFIERS", null, "default");
-    public static final GsfTokenId NLS = new GsfTokenId("NLS", null, "default");
-    public static final GsfTokenId NOT_EQUAL = new GsfTokenId("NOT_EQUAL", null, "operator");
-    public static final GsfTokenId NULL_TREE_LOOKAHEAD = new GsfTokenId("NULL_TREE_LOOKAHEAD", null, "default");
-    public static final GsfTokenId NUM_BIG_DECIMAL = new GsfTokenId("NUM_BIG_DECIMAL", null, "number");
-    public static final GsfTokenId NUM_BIG_INT = new GsfTokenId("NUM_BIG_INT", null, "number");
-    public static final GsfTokenId NUM_DOUBLE = new GsfTokenId("NUM_DOUBLE", null, "number");
-    public static final GsfTokenId NUM_FLOAT = new GsfTokenId("NUM_FLOAT", null, "number");
-    public static final GsfTokenId NUM_INT = new GsfTokenId("NUM_INT", null, "number");
-    public static final GsfTokenId NUM_LONG = new GsfTokenId("NUM_LONG", null, "number");
-    public static final GsfTokenId OBJBLOCK = new GsfTokenId("OBJBLOCK", null, "default");
-    public static final GsfTokenId ONE_NL = new GsfTokenId("ONE_NL", null, "default");
-    public static final GsfTokenId OPTIONAL_DOT = new GsfTokenId("OPTIONAL_DOT", null, "operator");
-    public static final GsfTokenId PACKAGE_DEF = new GsfTokenId("PACKAGE_DEF", null, "default");
-    public static final GsfTokenId PARAMETER_DEF = new GsfTokenId("PARAMETER_DEF", null, "default");
-    public static final GsfTokenId PARAMETERS = new GsfTokenId("PARAMETERS", null, "default");
-    public static final GsfTokenId PLUS_ASSIGN = new GsfTokenId("PLUS_ASSIGN", null, "operator");
-    public static final GsfTokenId PLUS = new GsfTokenId("PLUS", null, "operator");
-    public static final GsfTokenId POST_DEC = new GsfTokenId("POST_DEC", null, "default");
-    public static final GsfTokenId POST_INC = new GsfTokenId("POST_INC", null, "default");
-    public static final GsfTokenId QUESTION = new GsfTokenId("QUESTION", null, "operator");
-    public static final GsfTokenId RANGE_EXCLUSIVE = new GsfTokenId("RANGE_EXCLUSIVE", null, "operator");
-    public static final GsfTokenId RANGE_INCLUSIVE = new GsfTokenId("RANGE_INCLUSIVE", null, "operator");
-    public static final GsfTokenId REGEX_FIND = new GsfTokenId("REGEX_FIND", null, "operator");
-    public static final GsfTokenId REGEX_MATCH = new GsfTokenId("REGEX_MATCH", null, "operator");
-    public static final GsfTokenId REGEXP_SYMBOL = new GsfTokenId("REGEXP_SYMBOL", null, "default");
-    public static final GsfTokenId SELECT_SLOT = new GsfTokenId("SELECT_SLOT", null, "default");
-    public static final GsfTokenId SEMI = new GsfTokenId("SEMI", null, "operator");
-    public static final GsfTokenId SH_COMMENT = new GsfTokenId("SH_COMMENT", null, "comment");
-    public static final GsfTokenId SL_ASSIGN = new GsfTokenId("SL_ASSIGN", null, "operator");
-    public static final GsfTokenId SL_COMMENT = new GsfTokenId("SL_COMMENT", null, "comment");
-    public static final GsfTokenId SL = new GsfTokenId("SL", null, "operator");
-    public static final GsfTokenId SLIST = new GsfTokenId("SLIST", null, "default");
-    public static final GsfTokenId SPREAD_ARG = new GsfTokenId("SPREAD_ARG", null, "default");
-    public static final GsfTokenId SPREAD_DOT = new GsfTokenId("SPREAD_DOT", null, "operator");
-    public static final GsfTokenId SPREAD_MAP_ARG = new GsfTokenId("SPREAD_MAP_ARG", null, "default");
-    public static final GsfTokenId SR_ASSIGN = new GsfTokenId("SR_ASSIGN", null, "operator");
-    public static final GsfTokenId SR = new GsfTokenId("SR", null, "operator");
-    public static final GsfTokenId STAR_ASSIGN = new GsfTokenId("STAR_ASSIGN", null, "operator");
-    public static final GsfTokenId STAR_STAR_ASSIGN = new GsfTokenId("STAR_STAR_ASSIGN", null, "operator");
-    public static final GsfTokenId STAR_STAR = new GsfTokenId("STAR_STAR", null, "operator");
-    public static final GsfTokenId STAR = new GsfTokenId("STAR", null, "operator");
-    public static final GsfTokenId STATIC_IMPORT = new GsfTokenId("STATIC_IMPORT", null, "default");
-    public static final GsfTokenId STATIC_INIT = new GsfTokenId("STATIC_INIT", null, "default");
-    public static final GsfTokenId STRICTFP = new GsfTokenId("STRICTFP", null, "default");
-    public static final GsfTokenId STRING_CONSTRUCTOR = new GsfTokenId("STRING_CONSTRUCTOR", null, "string");
-    public static final GsfTokenId STRING_CTOR_END = new GsfTokenId("STRING_CTOR_END", null, "string");
-    public static final GsfTokenId STRING_CTOR_MIDDLE = new GsfTokenId("STRING_CTOR_MIDDLE", null, "string");
-    public static final GsfTokenId STRING_CTOR_START = new GsfTokenId("STRING_CTOR_START", null, "string");
-    public static final GsfTokenId STRING_CH = new GsfTokenId("STRING_CH", null, "string");
-    public static final GsfTokenId STRING_NL = new GsfTokenId("STRING_NL", null, "string");
-    public static final GsfTokenId SUPER_CTOR_CALL = new GsfTokenId("SUPER_CTOR_CALL", null, "default");
-    public static final GsfTokenId TRIPLE_DOT = new GsfTokenId("TRIPLE_DOT", null, "operator");
-    public static final GsfTokenId TYPE_ARGUMENT = new GsfTokenId("TYPE_ARGUMENT", null, "default");
-    public static final GsfTokenId TYPE_ARGUMENTS = new GsfTokenId("TYPE_ARGUMENTS", null, "default");
-    public static final GsfTokenId TYPE_LOWER_BOUNDS = new GsfTokenId("TYPE_LOWER_BOUNDS", null, "default");
-    public static final GsfTokenId TYPE_PARAMETER = new GsfTokenId("TYPE_PARAMETER", null, "default");
-    public static final GsfTokenId TYPE_PARAMETERS = new GsfTokenId("TYPE_PARAMETERS", null, "default");
-    public static final GsfTokenId TYPE_UPPER_BOUNDS = new GsfTokenId("TYPE_UPPER_BOUNDS", null, "default");
-    public static final GsfTokenId TYPE = new GsfTokenId("TYPE", null, "default");
-    public static final GsfTokenId TYPECAST = new GsfTokenId("TYPECAST", null, "default");
-    public static final GsfTokenId UNARY_MINUS = new GsfTokenId("UNARY_MINUS", null, "default");
-    public static final GsfTokenId UNARY_PLUS = new GsfTokenId("UNARY_PLUS", null, "default");
-    public static final GsfTokenId UNUSED_CONST = new GsfTokenId("UNUSED_CONST", null, "default");
-    public static final GsfTokenId UNUSED_DO = new GsfTokenId("UNUSED_DO", null, "default");
-    public static final GsfTokenId UNUSED_GOTO = new GsfTokenId("UNUSED_GOTO", null, "default");
-    public static final GsfTokenId VARIABLE_DEF = new GsfTokenId("VARIABLE_DEF", null, "default");
-    public static final GsfTokenId VARIABLE_PARAMETER_DEF = new GsfTokenId("VARIABLE_PARAMETER_DEF", null, "default");
-    public static final GsfTokenId VOCAB = new GsfTokenId("VOCAB", null, "default");
-    public static final GsfTokenId WILDCARD_TYPE = new GsfTokenId("WILDCARD_TYPE", null, "default");
+    public static final GroovyTokenId ABSTRACT = new GroovyTokenId("ABSTRACT", null, "keyword");
+    public static final GroovyTokenId ANNOTATION_ARRAY_INIT = new GroovyTokenId("ANNOTATION_ARRAY_INIT", null, "annotation");
+    public static final GroovyTokenId ANNOTATION_DEF = new GroovyTokenId("ANNOTATION_DEF", null, "annotation");
+    public static final GroovyTokenId ANNOTATION_FIELD_DEF = new GroovyTokenId("ANNOTATION_FIELD_DEF", null, "annotation");
+    public static final GroovyTokenId ANNOTATION_MEMBER_VALUE_PAIR = new GroovyTokenId("ANNOTATION_MEMBER_VALUE_PAIR", null, "annotation");
+    public static final GroovyTokenId ANNOTATION = new GroovyTokenId("ANNOTATION", null, "annotation");
+    public static final GroovyTokenId ANNOTATIONS = new GroovyTokenId("ANNOTATIONS", null, "annotation");
+    public static final GroovyTokenId ARRAY_DECLARATOR = new GroovyTokenId("ARRAY_DECLARATOR", null, "default");
+    public static final GroovyTokenId ASSIGN = new GroovyTokenId("ASSIGN", null, "operator");
+    public static final GroovyTokenId AT = new GroovyTokenId("AT", null, "operator");
+    public static final GroovyTokenId BAND_ASSIGN = new GroovyTokenId("BAND_ASSIGN", null, "operator");
+    public static final GroovyTokenId BAND = new GroovyTokenId("BAND", null, "operator");
+    public static final GroovyTokenId BIG_SUFFIX = new GroovyTokenId("BIG_SUFFIX", null, "number");
+    public static final GroovyTokenId BLOCK = new GroovyTokenId("BLOCK", null, "default");
+    public static final GroovyTokenId BNOT = new GroovyTokenId("BNOT", null, "operator");
+    public static final GroovyTokenId BOR_ASSIGN = new GroovyTokenId("BOR_ASSIGN", null, "operator");
+    public static final GroovyTokenId BOR = new GroovyTokenId("BOR", null, "operator");
+    public static final GroovyTokenId BSR_ASSIGN = new GroovyTokenId("BSR_ASSIGN", null, "operator");
+    public static final GroovyTokenId BSR = new GroovyTokenId("BSR", null, "operator");
+    public static final GroovyTokenId BXOR_ASSIGN = new GroovyTokenId("BXOR_ASSIGN", null, "operator");
+    public static final GroovyTokenId BXOR = new GroovyTokenId("BXOR", null, "operator");
+    public static final GroovyTokenId CASE_GROUP = new GroovyTokenId("CASE_GROUP", null, "default");
+    public static final GroovyTokenId CLASS_DEF = new GroovyTokenId("CLASS_DEF", null, "default");
+    public static final GroovyTokenId CLOSED_BLOCK = new GroovyTokenId("CLOSABLE_BLOCK", null, "default");
+    public static final GroovyTokenId CLOSURE_OP = new GroovyTokenId("CLOSURE_LIST", null, "operator");
+    public static final GroovyTokenId COLON = new GroovyTokenId("COLON", null, "operator");
+    public static final GroovyTokenId COMMA = new GroovyTokenId("COMMA", null, "operator");
+    public static final GroovyTokenId COMPARE_TO = new GroovyTokenId("COMPARE_TO", null, "operator");
+    public static final GroovyTokenId CTOR_CALL = new GroovyTokenId("CTOR_CALL", null, "default");
+    public static final GroovyTokenId CTOR_IDENT = new GroovyTokenId("CTOR_IDENT", null, "default");
+    public static final GroovyTokenId DEC = new GroovyTokenId("DEC", null, "operator");
+    public static final GroovyTokenId DIGIT = new GroovyTokenId("DIGIT", null, "number");
+    public static final GroovyTokenId DIV_ASSIGN = new GroovyTokenId("DIV_ASSIGN", null, "operator");
+    public static final GroovyTokenId DIV = new GroovyTokenId("DIV", null, "operator");
+    public static final GroovyTokenId DOLLAR = new GroovyTokenId("DOLLAR", null, "operator");
+    public static final GroovyTokenId DOT = new GroovyTokenId("DOT", null, "operator");
+    public static final GroovyTokenId DYNAMIC_MEMBER = new GroovyTokenId("DYNAMIC_MEMBER", null, "default");
+    public static final GroovyTokenId ELIST = new GroovyTokenId("ELIST", null, "default");
+    public static final GroovyTokenId EMPTY_STAT = new GroovyTokenId("EMPTY_STAT", null, "default");
+    public static final GroovyTokenId ENUM_CONSTANT_DEF = new GroovyTokenId("ENUM_CONSTANT_DEF", null, "default");
+    public static final GroovyTokenId ENUM_DEF = new GroovyTokenId("ENUM_DEF", null, "default");
+    public static final GroovyTokenId EOF = new GroovyTokenId("EOF", null, "default");
+    public static final GroovyTokenId EQUAL = new GroovyTokenId("EQUAL", null, "operator");
+    public static final GroovyTokenId ESC = new GroovyTokenId("ESC", null, "default");
+    public static final GroovyTokenId EXPONENT = new GroovyTokenId("EXPONENT", null, "number");
+    public static final GroovyTokenId EXPR = new GroovyTokenId("EXPR", null, "default");
+    public static final GroovyTokenId EXTENDS_CLAUSE = new GroovyTokenId("EXTENDS_CLAUSE", null, "default");
+    public static final GroovyTokenId FINAL = new GroovyTokenId("FINAL", null, "keyword");
+    public static final GroovyTokenId FLOAT_SUFFIX = new GroovyTokenId("FLOAT_SUFFIX", null, "number");
+    public static final GroovyTokenId FOR_CONDITION = new GroovyTokenId("FOR_CONDITION", null, "default");
+    public static final GroovyTokenId FOR_EACH_CLAUSE = new GroovyTokenId("FOR_EACH_CLAUSE", null, "keyword");
+    public static final GroovyTokenId FOR_IN_ITERABLE = new GroovyTokenId("FOR_IN_ITERABLE", null, "default");
+    public static final GroovyTokenId FOR_INIT = new GroovyTokenId("FOR_INIT", null, "default");
+    public static final GroovyTokenId FOR_ITERATOR = new GroovyTokenId("FOR_ITERATOR", null, "default");
+    public static final GroovyTokenId GE = new GroovyTokenId("GE", null, "operator");
+    public static final GroovyTokenId GT = new GroovyTokenId("GT", null, "operator");
+    public static final GroovyTokenId HEX_DIGIT = new GroovyTokenId("HEX_DIGIT", null, "number");
+    public static final GroovyTokenId IMPLEMENTS_CLAUSE = new GroovyTokenId("IMPLEMENTS_CLAUSE", null, "default");
+    public static final GroovyTokenId IMPLICIT_PARAMETERS = new GroovyTokenId("IMPLICIT_PARAMETERS", null, "default");
+    public static final GroovyTokenId IMPORT = new GroovyTokenId("IMPORT", null, "default");
+    public static final GroovyTokenId INC = new GroovyTokenId("INC", null, "operator");
+    public static final GroovyTokenId INDEX_OP = new GroovyTokenId("INDEX_OP", null, "default");
+    public static final GroovyTokenId INSTANCE_INIT = new GroovyTokenId("INSTANCE_INIT", null, "default");
+    public static final GroovyTokenId INTERFACE_DEF = new GroovyTokenId("INTERFACE_DEF", null, "default");
+    public static final GroovyTokenId LABELED_ARG = new GroovyTokenId("LABELED_ARG", null, "default");
+    public static final GroovyTokenId LABELED_STAT = new GroovyTokenId("LABELED_STAT", null, "default");
+    public static final GroovyTokenId LAND = new GroovyTokenId("LAND", null, "operator");
+    public static final GroovyTokenId LE = new GroovyTokenId("LE", null, "operator");
+    public static final GroovyTokenId LETTER = new GroovyTokenId("LETTER", null, "default");
+    public static final GroovyTokenId LIST_CONSTRUCTOR = new GroovyTokenId("LIST_CONSTRUCTOR", null, "default");
+    public static final GroovyTokenId LITERAL_as = new GroovyTokenId("LITERAL_as", null, "keyword");
+    public static final GroovyTokenId LITERAL_assert = new GroovyTokenId("LITERAL_assert", null, "keyword");
+    public static final GroovyTokenId LITERAL_boolean = new GroovyTokenId("LITERAL_boolean", null, "keyword");
+    public static final GroovyTokenId LITERAL_break = new GroovyTokenId("LITERAL_break", null, "keyword");
+    public static final GroovyTokenId LITERAL_byte = new GroovyTokenId("LITERAL_byte", null, "keyword");
+    public static final GroovyTokenId LITERAL_case = new GroovyTokenId("LITERAL_case", null, "keyword");
+    public static final GroovyTokenId LITERAL_catch = new GroovyTokenId("LITERAL_catch", null, "keyword");
+    public static final GroovyTokenId LITERAL_class = new GroovyTokenId("LITERAL_class", null, "keyword");
+    public static final GroovyTokenId LITERAL_continue = new GroovyTokenId("LITERAL_continue", null, "keyword");
+    public static final GroovyTokenId LITERAL_def = new GroovyTokenId("LITERAL_def", null, "keyword");
+    public static final GroovyTokenId LITERAL_default = new GroovyTokenId("LITERAL_default", null, "keyword");
+    public static final GroovyTokenId LITERAL_double = new GroovyTokenId("LITERAL_double", null, "keyword");
+    public static final GroovyTokenId LITERAL_else = new GroovyTokenId("LITERAL_else", null, "keyword");
+    public static final GroovyTokenId LITERAL_enum = new GroovyTokenId("LITERAL_enum", null, "keyword");
+    public static final GroovyTokenId LITERAL_extends = new GroovyTokenId("LITERAL_extends", null, "keyword");
+    public static final GroovyTokenId LITERAL_false = new GroovyTokenId("LITERAL_false", null, "keyword");
+    public static final GroovyTokenId LITERAL_finally = new GroovyTokenId("LITERAL_finally", null, "keyword");
+    public static final GroovyTokenId LITERAL_float = new GroovyTokenId("LITERAL_float", null, "keyword");
+    public static final GroovyTokenId LITERAL_for = new GroovyTokenId("LITERAL_for", null, "keyword");
+    public static final GroovyTokenId LITERAL_char = new GroovyTokenId("LITERAL_char", null, "keyword");
+    public static final GroovyTokenId LITERAL_if = new GroovyTokenId("LITERAL_if", null, "keyword");
+    public static final GroovyTokenId LITERAL_implements = new GroovyTokenId("LITERAL_implements", null, "keyword");
+    public static final GroovyTokenId LITERAL_import = new GroovyTokenId("LITERAL_import", null, "keyword");
+    public static final GroovyTokenId LITERAL_in = new GroovyTokenId("LITERAL_in", null, "keyword");
+    public static final GroovyTokenId LITERAL_instanceof = new GroovyTokenId("LITERAL_instanceof", null, "keyword");
+    public static final GroovyTokenId LITERAL_int = new GroovyTokenId("LITERAL_int", null, "keyword");
+    public static final GroovyTokenId LITERAL_interface = new GroovyTokenId("LITERAL_interface", null, "keyword");
+    public static final GroovyTokenId LITERAL_long = new GroovyTokenId("LITERAL_long", null, "keyword");
+    public static final GroovyTokenId LITERAL_native = new GroovyTokenId("LITERAL_native", null, "keyword");
+    public static final GroovyTokenId LITERAL_new = new GroovyTokenId("LITERAL_new", null, "keyword");
+    public static final GroovyTokenId LITERAL_null = new GroovyTokenId("LITERAL_null", null, "keyword");
+    public static final GroovyTokenId LITERAL_package = new GroovyTokenId("LITERAL_package", null, "keyword");
+    public static final GroovyTokenId LITERAL_private = new GroovyTokenId("LITERAL_private", null, "keyword");
+    public static final GroovyTokenId LITERAL_protected = new GroovyTokenId("LITERAL_protected", null, "keyword");
+    public static final GroovyTokenId LITERAL_public = new GroovyTokenId("LITERAL_public", null, "keyword");
+    public static final GroovyTokenId LITERAL_return = new GroovyTokenId("LITERAL_return", null, "keyword");
+    public static final GroovyTokenId LITERAL_short = new GroovyTokenId("LITERAL_short", null, "keyword");
+    public static final GroovyTokenId LITERAL_static = new GroovyTokenId("LITERAL_static", null, "keyword");
+    public static final GroovyTokenId LITERAL_super = new GroovyTokenId("LITERAL_super", null, "keyword");
+    public static final GroovyTokenId LITERAL_switch = new GroovyTokenId("LITERAL_switch", null, "keyword");
+    public static final GroovyTokenId LITERAL_synchronized = new GroovyTokenId("LITERAL_synchronized", null, "keyword");
+    public static final GroovyTokenId LITERAL_this = new GroovyTokenId("LITERAL_this", null, "keyword");
+    public static final GroovyTokenId LITERAL_threadsafe = new GroovyTokenId("LITERAL_threadsafe", null, "keyword");
+    public static final GroovyTokenId LITERAL_throw = new GroovyTokenId("LITERAL_throw", null, "keyword");
+    public static final GroovyTokenId LITERAL_throws = new GroovyTokenId("LITERAL_throws", null, "keyword");
+    public static final GroovyTokenId LITERAL_transient = new GroovyTokenId("LITERAL_transient", null, "keyword");
+    public static final GroovyTokenId LITERAL_true = new GroovyTokenId("LITERAL_true", null, "keyword");
+    public static final GroovyTokenId LITERAL_try = new GroovyTokenId("LITERAL_try", null, "keyword");
+    public static final GroovyTokenId LITERAL_void = new GroovyTokenId("LITERAL_void", null, "keyword");
+    public static final GroovyTokenId LITERAL_volatile = new GroovyTokenId("LITERAL_volatile", null, "keyword");
+    public static final GroovyTokenId LITERAL_while = new GroovyTokenId("LITERAL_while", null, "keyword");
+    public static final GroovyTokenId LNOT = new GroovyTokenId("LNOT", null, "operator");
+    public static final GroovyTokenId LOR = new GroovyTokenId("LOR", null, "operator");
+    public static final GroovyTokenId LT = new GroovyTokenId("LT", null, "operator");
+    public static final GroovyTokenId MAP_CONSTRUCTOR = new GroovyTokenId("MAP_CONSTRUCTOR", null, "default");
+    public static final GroovyTokenId MEMBER_POINTER = new GroovyTokenId("MEMBER_POINTER", null, "operator");
+    public static final GroovyTokenId METHOD_CALL = new GroovyTokenId("METHOD_CALL", null, "default");
+    public static final GroovyTokenId METHOD_DEF = new GroovyTokenId("METHOD_DEF", null, "default");
+    public static final GroovyTokenId MINUS_ASSIGN = new GroovyTokenId("MINUS_ASSIGN", null, "operator");
+    public static final GroovyTokenId MINUS = new GroovyTokenId("MINUS", null, "operator");
+    public static final GroovyTokenId MOD_ASSIGN = new GroovyTokenId("MOD_ASSIGN", null, "operator");
+    public static final GroovyTokenId MOD = new GroovyTokenId("MOD", null, "operator");
+    public static final GroovyTokenId MODIFIERS = new GroovyTokenId("MODIFIERS", null, "default");
+    public static final GroovyTokenId NLS = new GroovyTokenId("NLS", null, "default");
+    public static final GroovyTokenId NOT_EQUAL = new GroovyTokenId("NOT_EQUAL", null, "operator");
+    public static final GroovyTokenId NULL_TREE_LOOKAHEAD = new GroovyTokenId("NULL_TREE_LOOKAHEAD", null, "default");
+    public static final GroovyTokenId NUM_BIG_DECIMAL = new GroovyTokenId("NUM_BIG_DECIMAL", null, "number");
+    public static final GroovyTokenId NUM_BIG_INT = new GroovyTokenId("NUM_BIG_INT", null, "number");
+    public static final GroovyTokenId NUM_DOUBLE = new GroovyTokenId("NUM_DOUBLE", null, "number");
+    public static final GroovyTokenId NUM_FLOAT = new GroovyTokenId("NUM_FLOAT", null, "number");
+    public static final GroovyTokenId NUM_INT = new GroovyTokenId("NUM_INT", null, "number");
+    public static final GroovyTokenId NUM_LONG = new GroovyTokenId("NUM_LONG", null, "number");
+    public static final GroovyTokenId OBJBLOCK = new GroovyTokenId("OBJBLOCK", null, "default");
+    public static final GroovyTokenId ONE_NL = new GroovyTokenId("ONE_NL", null, "default");
+    public static final GroovyTokenId OPTIONAL_DOT = new GroovyTokenId("OPTIONAL_DOT", null, "operator");
+    public static final GroovyTokenId PACKAGE_DEF = new GroovyTokenId("PACKAGE_DEF", null, "default");
+    public static final GroovyTokenId PARAMETER_DEF = new GroovyTokenId("PARAMETER_DEF", null, "default");
+    public static final GroovyTokenId PARAMETERS = new GroovyTokenId("PARAMETERS", null, "default");
+    public static final GroovyTokenId PLUS_ASSIGN = new GroovyTokenId("PLUS_ASSIGN", null, "operator");
+    public static final GroovyTokenId PLUS = new GroovyTokenId("PLUS", null, "operator");
+    public static final GroovyTokenId POST_DEC = new GroovyTokenId("POST_DEC", null, "default");
+    public static final GroovyTokenId POST_INC = new GroovyTokenId("POST_INC", null, "default");
+    public static final GroovyTokenId QUESTION = new GroovyTokenId("QUESTION", null, "operator");
+    public static final GroovyTokenId RANGE_EXCLUSIVE = new GroovyTokenId("RANGE_EXCLUSIVE", null, "operator");
+    public static final GroovyTokenId RANGE_INCLUSIVE = new GroovyTokenId("RANGE_INCLUSIVE", null, "operator");
+    public static final GroovyTokenId REGEX_FIND = new GroovyTokenId("REGEX_FIND", null, "operator");
+    public static final GroovyTokenId REGEX_MATCH = new GroovyTokenId("REGEX_MATCH", null, "operator");
+    public static final GroovyTokenId REGEXP_SYMBOL = new GroovyTokenId("REGEXP_SYMBOL", null, "default");
+    public static final GroovyTokenId SELECT_SLOT = new GroovyTokenId("SELECT_SLOT", null, "default");
+    public static final GroovyTokenId SEMI = new GroovyTokenId("SEMI", null, "operator");
+    public static final GroovyTokenId SH_COMMENT = new GroovyTokenId("SH_COMMENT", null, "comment");
+    public static final GroovyTokenId SL_ASSIGN = new GroovyTokenId("SL_ASSIGN", null, "operator");
+    public static final GroovyTokenId SL_COMMENT = new GroovyTokenId("SL_COMMENT", null, "comment");
+    public static final GroovyTokenId SL = new GroovyTokenId("SL", null, "operator");
+    public static final GroovyTokenId SLIST = new GroovyTokenId("SLIST", null, "default");
+    public static final GroovyTokenId SPREAD_ARG = new GroovyTokenId("SPREAD_ARG", null, "default");
+    public static final GroovyTokenId SPREAD_DOT = new GroovyTokenId("SPREAD_DOT", null, "operator");
+    public static final GroovyTokenId SPREAD_MAP_ARG = new GroovyTokenId("SPREAD_MAP_ARG", null, "default");
+    public static final GroovyTokenId SR_ASSIGN = new GroovyTokenId("SR_ASSIGN", null, "operator");
+    public static final GroovyTokenId SR = new GroovyTokenId("SR", null, "operator");
+    public static final GroovyTokenId STAR_ASSIGN = new GroovyTokenId("STAR_ASSIGN", null, "operator");
+    public static final GroovyTokenId STAR_STAR_ASSIGN = new GroovyTokenId("STAR_STAR_ASSIGN", null, "operator");
+    public static final GroovyTokenId STAR_STAR = new GroovyTokenId("STAR_STAR", null, "operator");
+    public static final GroovyTokenId STAR = new GroovyTokenId("STAR", null, "operator");
+    public static final GroovyTokenId STATIC_IMPORT = new GroovyTokenId("STATIC_IMPORT", null, "default");
+    public static final GroovyTokenId STATIC_INIT = new GroovyTokenId("STATIC_INIT", null, "default");
+    public static final GroovyTokenId STRICTFP = new GroovyTokenId("STRICTFP", null, "default");
+    public static final GroovyTokenId STRING_CONSTRUCTOR = new GroovyTokenId("STRING_CONSTRUCTOR", null, "string");
+    public static final GroovyTokenId STRING_CTOR_END = new GroovyTokenId("STRING_CTOR_END", null, "string");
+    public static final GroovyTokenId STRING_CTOR_MIDDLE = new GroovyTokenId("STRING_CTOR_MIDDLE", null, "string");
+    public static final GroovyTokenId STRING_CTOR_START = new GroovyTokenId("STRING_CTOR_START", null, "string");
+    public static final GroovyTokenId STRING_CH = new GroovyTokenId("STRING_CH", null, "string");
+    public static final GroovyTokenId STRING_NL = new GroovyTokenId("STRING_NL", null, "string");
+    public static final GroovyTokenId SUPER_CTOR_CALL = new GroovyTokenId("SUPER_CTOR_CALL", null, "default");
+    public static final GroovyTokenId TRIPLE_DOT = new GroovyTokenId("TRIPLE_DOT", null, "operator");
+    public static final GroovyTokenId TYPE_ARGUMENT = new GroovyTokenId("TYPE_ARGUMENT", null, "default");
+    public static final GroovyTokenId TYPE_ARGUMENTS = new GroovyTokenId("TYPE_ARGUMENTS", null, "default");
+    public static final GroovyTokenId TYPE_LOWER_BOUNDS = new GroovyTokenId("TYPE_LOWER_BOUNDS", null, "default");
+    public static final GroovyTokenId TYPE_PARAMETER = new GroovyTokenId("TYPE_PARAMETER", null, "default");
+    public static final GroovyTokenId TYPE_PARAMETERS = new GroovyTokenId("TYPE_PARAMETERS", null, "default");
+    public static final GroovyTokenId TYPE_UPPER_BOUNDS = new GroovyTokenId("TYPE_UPPER_BOUNDS", null, "default");
+    public static final GroovyTokenId TYPE = new GroovyTokenId("TYPE", null, "default");
+    public static final GroovyTokenId TYPECAST = new GroovyTokenId("TYPECAST", null, "default");
+    public static final GroovyTokenId UNARY_MINUS = new GroovyTokenId("UNARY_MINUS", null, "default");
+    public static final GroovyTokenId UNARY_PLUS = new GroovyTokenId("UNARY_PLUS", null, "default");
+    public static final GroovyTokenId UNUSED_CONST = new GroovyTokenId("UNUSED_CONST", null, "default");
+    public static final GroovyTokenId UNUSED_DO = new GroovyTokenId("UNUSED_DO", null, "default");
+    public static final GroovyTokenId UNUSED_GOTO = new GroovyTokenId("UNUSED_GOTO", null, "default");
+    public static final GroovyTokenId VARIABLE_DEF = new GroovyTokenId("VARIABLE_DEF", null, "default");
+    public static final GroovyTokenId VARIABLE_PARAMETER_DEF = new GroovyTokenId("VARIABLE_PARAMETER_DEF", null, "default");
+    public static final GroovyTokenId VOCAB = new GroovyTokenId("VOCAB", null, "default");
+    public static final GroovyTokenId WILDCARD_TYPE = new GroovyTokenId("WILDCARD_TYPE", null, "default");
     
     
     // </editor-fold>
     
-    private static final Language<GsfTokenId> language =
-        new LanguageHierarchy<GsfTokenId>() {
+    private static final Language<GroovyTokenId> language =
+        new LanguageHierarchy<GroovyTokenId>() {
 
             protected String mimeType() {
                 return "text/x-groovy"; // NOI18N
             }
 
-            protected Collection<GsfTokenId> createTokenIds() {
+            protected Collection<GroovyTokenId> createTokenIds() {
                 return getUsedTokens();
             }
 
             @Override
-            protected Map<String, Collection<GsfTokenId>> createTokenCategories() {
-                Map<String, Collection<GsfTokenId>> cats = new HashMap<String, Collection<GsfTokenId>>();
+            protected Map<String, Collection<GroovyTokenId>> createTokenCategories() {
+                Map<String, Collection<GroovyTokenId>> cats = new HashMap<String, Collection<GroovyTokenId>>();
                 return cats;
             }
 
-            protected Lexer<GsfTokenId> createLexer(LexerRestartInfo<GsfTokenId> info) {
+            protected Lexer<GroovyTokenId> createLexer(LexerRestartInfo<GroovyTokenId> info) {
                 return new GroovyLexer(info);
             }
 
         }.language();
 
-    public GroovyTokenId(String name, String fixedText, String primaryCategory) {
-        super(name, fixedText, primaryCategory);
-    }
-
-    public static Language<GsfTokenId> language() {
+    public static Language<GroovyTokenId> language() {
         return language;
     }
 
-    public static List<GsfTokenId> getUsedTokens() {
-        List<GsfTokenId> types = new ArrayList<GsfTokenId>();
+    public static List<GroovyTokenId> getUsedTokens() {
+        List<GroovyTokenId> types = new ArrayList<GroovyTokenId>();
         types.add(ABSTRACT);
         types.add(ANNOTATION_ARRAY_INIT);
         types.add(ANNOTATION_DEF);
@@ -526,7 +597,7 @@ public class GroovyTokenId extends GsfTokenId {
         return types;
     }
 
-    public static GsfTokenId getTokenId(int token) {
+    public static GroovyTokenId getTokenId(int token) {
         switch (token) {
             case GroovyTokenTypes.ABSTRACT:
                     return GroovyTokenId.ABSTRACT;

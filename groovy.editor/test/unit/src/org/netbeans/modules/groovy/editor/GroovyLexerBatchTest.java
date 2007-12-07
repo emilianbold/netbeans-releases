@@ -42,7 +42,7 @@
 package org.netbeans.modules.groovy.editor;
 
 import junit.framework.TestCase;
-import org.netbeans.api.gsf.GsfTokenId;
+import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -264,7 +264,7 @@ public class GroovyLexerBatchTest extends TestCase {
         String text = sb.toString();
 
         long tm;
-        Language<GsfTokenId> language = GroovyTokenId.language();
+        Language<GroovyTokenId> language = GroovyTokenId.language();
         tm = System.currentTimeMillis();
         TokenHierarchy<?> hi = TokenHierarchy.create(text, language);
         tm = System.currentTimeMillis() - tm;

@@ -48,8 +48,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 
-import org.netbeans.api.gsf.FormattingPreferences;
-import org.netbeans.api.gsf.GsfTokenId;
+import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.api.gsf.ParserResult;
 import org.netbeans.api.lexer.Token;
@@ -90,16 +89,12 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
         this.rightMarginOverride = rightMarginOverride;
     }
     
-    // Compatibility only - remove soon
-    public void reformat(Document document, ParserResult result, FormattingPreferences preferences,
-        Caret caret) {
-        reformat(document, 0, document.getLength(), result, preferences);
+    public void reindent(Document document, int startOffset, int endOffset, ParserResult result) {
+        reindent(document, startOffset, endOffset, result, true);
     }
 
-    public void reformat(Document document, int startOffset, int endOffset, ParserResult result,
-        FormattingPreferences preferences) {
-
-        reindent(document, startOffset, endOffset, result, preferences, false);
+    public void reformat(Document document, int startOffset, int endOffset, ParserResult result) {
+        reindent(document, startOffset, endOffset, result, false);
     }
     
     public int indentSize() {
@@ -112,7 +107,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
 
     /** Compute the initial balance of brackets at the given offset. */
     private int getFormatStableStart(BaseDocument doc, int offset) {
-        TokenSequence<?extends GsfTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, offset);
+        TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, offset);
         if (ts == null) {
             return 0;
         }
@@ -126,7 +121,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
         // Look backwards to find a suitable context - a class, module or method definition
         // which we will assume is properly indented and balanced
         do {
-            Token<?extends GsfTokenId> token = ts.token();
+            Token<?extends GroovyTokenId> token = ts.token();
             TokenId id = token.id();
 
             if (id == GroovyTokenId.LITERAL_class) {
@@ -137,8 +132,8 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
         return ts.offset();
     }
     
-    private int getTokenBalanceDelta(TokenId id, Token<? extends GsfTokenId> token,
-            BaseDocument doc, TokenSequence<? extends GsfTokenId> ts, boolean includeKeywords) {
+    private int getTokenBalanceDelta(TokenId id, Token<? extends GroovyTokenId> token,
+            BaseDocument doc, TokenSequence<? extends GroovyTokenId> ts, boolean includeKeywords) {
         if (id == GroovyTokenId.IDENTIFIER) {
             // In some cases, the [ shows up as an identifier, for example in this expression:
             //  for k, v in sort{|a1, a2| a1[0].id2name <=> a2[0].id2name}
@@ -190,11 +185,11 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
                 TokenId id = token.id();
                 
                 if (id.primaryCategory().equals("groovy")) { // NOI18N
-                    TokenSequence<? extends GsfTokenId> ts = t.embedded(GroovyTokenId.language());
+                    TokenSequence<? extends GroovyTokenId> ts = t.embedded(GroovyTokenId.language());
                     ts.move(begin);
                     ts.moveNext();
                     do {
-                        Token<?extends GsfTokenId> groovyToken = ts.token();
+                        Token<?extends GroovyTokenId> groovyToken = ts.token();
                         if (groovyToken == null) {
                             break;
                         }
@@ -206,7 +201,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
 
             } while (t.moveNext() && (t.offset() < end));
         } else {
-            TokenSequence<?extends GsfTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, begin);
+            TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, begin);
             if (ts == null) {
                 return 0;
             }
@@ -218,7 +213,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
             }
 
             do {
-                Token<?extends GsfTokenId> token = ts.token();
+                Token<?extends GroovyTokenId> token = ts.token();
                 TokenId id = token.id();
                 
                 balance += getTokenBalanceDelta(id, token, doc, ts, includeKeywords);
@@ -233,7 +228,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
             throws BadLocationException {
         int pos = Utilities.getRowFirstNonWhite(doc, offset);
         if(pos != -1) {
-            Token<?extends GsfTokenId> token = LexUtilities.getToken(doc, pos);
+            Token<?extends GroovyTokenId> token = LexUtilities.getToken(doc, pos);
             if(token != null) {
                 TokenId id = token.id();
                 if(id == GroovyTokenId.BLOCK_COMMENT) {
@@ -263,7 +258,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
             // I can't look at the first position on the line, since
             // for a string array that is indented, the indentation portion
             // is recorded as a blank identifier
-            Token<?extends GsfTokenId> token = LexUtilities.getToken(doc, pos);
+            Token<?extends GroovyTokenId> token = LexUtilities.getToken(doc, pos);
 
             if (token != null) {
                 TokenId id = token.id();
@@ -280,7 +275,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
                 
                 if (id == GroovyTokenId.STRING_END || id == GroovyTokenId.QUOTED_STRING_END) {
                     // Possibly a heredoc
-                    TokenSequence<? extends GsfTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, pos);
+                    TokenSequence<? extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, pos);
                     ts.move(pos);
                     OffsetRange range = LexUtilities.findHeredocBegin(ts, token);
                     if (range != OffsetRange.NONE) {
@@ -299,7 +294,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
             }
         } else {
             // Empty line inside a string, documentation etc. literal?
-            Token<?extends GsfTokenId> token = LexUtilities.getToken(doc, offset);
+            Token<?extends GroovyTokenId> token = LexUtilities.getToken(doc, offset);
 
             if (token != null) {
                 TokenId id = token.id();
@@ -331,15 +326,15 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
      *    
      * </pre>   
      */
-    private Token<? extends GsfTokenId> getFirstToken(BaseDocument doc, int offset) throws BadLocationException {
+    private Token<? extends GroovyTokenId> getFirstToken(BaseDocument doc, int offset) throws BadLocationException {
         int lineBegin = Utilities.getRowFirstNonWhite(doc, offset);
 
         if (lineBegin != -1) {
             if (isGspDocument) {
-                TokenSequence<? extends GsfTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, lineBegin);
+                TokenSequence<? extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, lineBegin);
                 if (ts != null) {
                     ts.moveNext();
-                    Token<?extends GsfTokenId> token = ts.token();
+                    Token<?extends GroovyTokenId> token = ts.token();
                     while (token != null && token.id() == GroovyTokenId.WHITESPACE) {
                         if (!ts.moveNext()) {
                             return null;
@@ -360,7 +355,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
         int lineBegin = Utilities.getRowFirstNonWhite(doc, offset);
 
         if (lineBegin != -1) {
-            Token<?extends GsfTokenId> token = getFirstToken(doc, offset);
+            Token<?extends GroovyTokenId> token = getFirstToken(doc, offset);
             
             if (token == null) {
                 return false;
@@ -386,7 +381,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
         }
 
         
-        TokenSequence<?extends GsfTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, offset);
+        TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, offset);
 
         if (ts == null) {
             return false;
@@ -397,7 +392,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
             return false;
         }
 
-        Token<?extends GsfTokenId> token = ts.token();
+        Token<?extends GroovyTokenId> token = ts.token();
 
         if (token != null) {
             TokenId id = token.id();
@@ -448,17 +443,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
         return false;
     }
 
-    /** @todo Rewrite to handleposition inside adef to be way off.
-     * This needs to be working to pass in handing indents as well!!!
-     *  I need to 
-     */
-    public void reindent(Document document, int startOffset, int endOffset, ParserResult result,
-        FormattingPreferences preferences) {
-        reindent(document, startOffset, endOffset, result, preferences, true);
-    }
-
-    private void reindent(Document document, int startOffset, int endOffset, ParserResult result,
-        FormattingPreferences preferences, boolean indentOnly) {
+    private void reindent(Document document, int startOffset, int endOffset, ParserResult result, boolean indentOnly) {
         isGspDocument = false;//RubyUtils.isRhtmlDocument(document);
 
         try {
