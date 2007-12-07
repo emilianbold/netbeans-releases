@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.taglib;
 
 import java.io.*;
+import org.openide.util.Lookup;
 import org.xml.sax.InputSource;
 
 import org.openide.loaders.*;
@@ -53,6 +54,8 @@ import org.netbeans.api.xml.cookies.CheckXMLCookie;
 import org.netbeans.spi.xml.cookies.*;
 
 import org.netbeans.modules.web.taglib.model.Taglib;
+import org.netbeans.modules.xml.api.XmlFileEncodingQueryImpl;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 
 /** Object that provides main functionality for TLDLoader(data loader).
  * This class is final only for performance reasons,
@@ -85,7 +88,7 @@ public final class TLDDataObject extends MultiDataObject implements org.openide.
         getCookieSet().add(checkCookie);
         ValidateXMLCookie validateCookie = new ValidateXMLSupport(in);
         getCookieSet().add(validateCookie);
-        
+        getCookieSet().assign(FileEncodingQueryImplementation.class, XmlFileEncodingQueryImpl.singleton());
 	if (debug) System.out.println("====> TLDDataObject(FileObject, loader):constructor()"); // NOI18N
 
 	//
@@ -130,6 +133,11 @@ public final class TLDDataObject extends MultiDataObject implements org.openide.
      // Accessibility from TXTEditorSupport:
     org.openide.nodes.CookieSet getCookieSet0() {
         return getCookieSet();
+    }
+
+    @Override
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
     }
     
     public Taglib getTaglib() throws java.io.IOException {
