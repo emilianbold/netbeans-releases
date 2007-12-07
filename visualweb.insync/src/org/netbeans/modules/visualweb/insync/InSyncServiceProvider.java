@@ -51,7 +51,6 @@ import org.netbeans.modules.visualweb.insync.beans.BeansUnit;
 import org.netbeans.modules.visualweb.insync.faces.ElAttrUpdater;
 import org.netbeans.modules.visualweb.insync.faces.Entities;
 import org.netbeans.modules.visualweb.insync.faces.FacesPageUnit;
-import org.netbeans.modules.visualweb.insync.jsf.SourceMonitor;
 import org.netbeans.modules.visualweb.insync.live.LiveUnit;
 import org.netbeans.modules.visualweb.insync.markup.MarkupUnit;
 import org.netbeans.modules.visualweb.insync.markup.MarkupVisitor;
@@ -186,48 +185,15 @@ public class InSyncServiceProvider extends InSyncService {
 
     // XXX The three methods dealing with triggering of parsing of jsp.
     public void jspDataObjectTopComponentActivated(DataObject dobj) {
-        if (dobj == null) {
-            return;
-        }
-
-        FacesModel facesModel = FacesModelSet.getFacesModelIfAvailable(dobj.getPrimaryFile());
-
-        if (facesModel != null) {
-            SourceMonitor sm = SourceMonitor.getSourceMonitorForFacesModel(facesModel);
-            if (sm != null) { 
-                sm.activated();
-            }
-        }
+        // XXX No longer needed as SourceMonitor has been removed.
     }
 
     public void jspDataObjectTopComponentHidden(DataObject dobj) {
-        if (dobj == null) {
-            return;
-        }
-
-        FacesModel facesModel = FacesModelSet.getFacesModelIfAvailable(dobj.getPrimaryFile());
-
-        if (facesModel != null) {
-            SourceMonitor sm = SourceMonitor.getSourceMonitorForFacesModel(facesModel);
-            if (sm != null) { 
-                sm.hidden();
-            }
-        }
+        // XXX No longer needed as SourceMonitor has been removed.
     }
 
     public void jspDataObjectTopComponentShown(DataObject dobj) {
-        if (dobj == null) {
-            return;
-        }
-
-        FacesModel facesModel = FacesModelSet.getFacesModelIfAvailable(dobj.getPrimaryFile());
-
-        if (facesModel != null) {
-            SourceMonitor sm = SourceMonitor.getSourceMonitorForFacesModel(facesModel);
-            if (sm != null) { 
-                sm.shown();
-            }
-        }
+        // XXX No longer needed as SourceMonitor has been removed.
     }
 
 // <missing_designtime_api>
