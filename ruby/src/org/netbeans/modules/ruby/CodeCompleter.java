@@ -3868,7 +3868,8 @@ public class CodeCompleter implements Completable {
             if (description != null) {
                 HtmlFormatter formatter = request.formatter;
                 formatter.reset();
-                formatter.appendText(description);
+                //formatter.appendText(description);
+                formatter.appendHtml(description);
 
                 return formatter.getText();
             } else {
