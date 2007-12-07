@@ -63,18 +63,19 @@ import org.openide.util.lookup.Lookups;
  * @author Milan Kubec
  */
 public class RecentProjectsTest extends NbTestCase {
-    
-    Project[] testProjects = new Project[15];
-    String[] tpDisplayNames = new String[15];
-    URL[] tpURLs = new URL[15];
-    
+
+    private Project[] testProjects = new Project[15];
+    private String[] tpDisplayNames = new String[15];
+    private URL[] tpURLs = new URL[15];
+
     public static final ImageIcon icon = new ImageIcon(RecentProjectsTest.class.getResource("testimage.png"));
     public static final String PRJ_NAME_PREFIX = "Project";
-    
-    public RecentProjectsTest(java.lang.String testName) {
+
+    public RecentProjectsTest(String testName) {
         super(testName);
     }
-    
+
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         MockServices.setServices(TestSupport.TestProjectFactory.class);
@@ -84,75 +85,72 @@ public class RecentProjectsTest extends NbTestCase {
             String prjName = PRJ_NAME_PREFIX + (i + 1);
             FileObject p = TestSupport.createTestProject(workDirFO, prjName);
             TestSupport.TestProject tp = (TestSupport.TestProject) ProjectManager.getDefault().findProject(p);
-            tp.setLookup(Lookups.fixed(new Object[] { new TestProjectInfo(prjName) }));
+            tp.setLookup(Lookups.fixed(new TestProjectInfo(prjName)));
             testProjects[i] = tp;
-            tpDisplayNames[i] = ((ProjectInformation) ProjectUtils.getInformation(tp)).getDisplayName();
+            tpDisplayNames[i] = ProjectUtils.getInformation(tp).getDisplayName();
             tpURLs[i] = tp.getProjectDirectory().getURL();
         }
     }
-    
-    protected void tearDown() throws Exception {
-    }
-    
+
     public void testGetRecentProjectsInformation() {
-        
-        List pil;
-        
-        for (int i = 0; i < testProjects.length; i++) {
-            OpenProjectList.getDefault().open(testProjects[i], false);
+
+        List<UnloadedProjectInformation> pil;
+
+        for (Project p : testProjects) {
+            OpenProjectList.getDefault().open(p, false);
         }
-        
+
         // Close all projects in the list one by one
         for (int j = 0; j < testProjects.length; j++) {
             OpenProjectList.getDefault().close(new Project[] {testProjects[j]}, false);
             pil = RecentProjects.getDefault().getRecentProjectInformation();
             assertEquals(1, RecentProjects.getDefault().getRecentProjectInformation().size());
-            assertEquals(tpDisplayNames[j], ((UnloadedProjectInformation) pil.get(0)).getDisplayName());
-            assertEquals(tpURLs[j], ((UnloadedProjectInformation) pil.get(0)).getURL());
-            assertEquals(icon, ((UnloadedProjectInformation) pil.get(0)).getIcon());
+            assertEquals(tpDisplayNames[j], pil.get(0).getDisplayName());
+            assertEquals(tpURLs[j], pil.get(0).getURL());
+            assertEquals(icon, pil.get(0).getIcon());
             OpenProjectList.getDefault().open(testProjects[j], false);
         }
-        
+
         assertEquals(0, RecentProjects.getDefault().getRecentProjectInformation().size());
-        
+
         // Close rand number of rand modules
         OpenProjectList.getDefault().close(new Project[] {testProjects[3]}, false);
         OpenProjectList.getDefault().close(new Project[] {testProjects[4]}, false);
         OpenProjectList.getDefault().close(new Project[] {testProjects[6]}, false);
         OpenProjectList.getDefault().close(new Project[] {testProjects[10]}, false);
         OpenProjectList.getDefault().close(new Project[] {testProjects[12]}, false);
-        
+
         pil = RecentProjects.getDefault().getRecentProjectInformation();
         assertEquals(5, RecentProjects.getDefault().getRecentProjectInformation().size());
-        
-        assertEquals(tpDisplayNames[12], ((UnloadedProjectInformation) pil.get(0)).getDisplayName());
-        assertEquals(tpURLs[12], ((UnloadedProjectInformation) pil.get(0)).getURL());
-        assertEquals(icon, ((UnloadedProjectInformation) pil.get(0)).getIcon());
-        
-        assertEquals(tpDisplayNames[10], ((UnloadedProjectInformation) pil.get(1)).getDisplayName());
-        assertEquals(tpURLs[10], ((UnloadedProjectInformation) pil.get(1)).getURL());
-        assertEquals(icon, ((UnloadedProjectInformation) pil.get(1)).getIcon());
-        
-        assertEquals(tpDisplayNames[6], ((UnloadedProjectInformation) pil.get(2)).getDisplayName());
-        assertEquals(tpURLs[6], ((UnloadedProjectInformation) pil.get(2)).getURL());
-        assertEquals(icon, ((UnloadedProjectInformation) pil.get(2)).getIcon());
-        
-        assertEquals(tpDisplayNames[4], ((UnloadedProjectInformation) pil.get(3)).getDisplayName());
-        assertEquals(tpURLs[4], ((UnloadedProjectInformation) pil.get(3)).getURL());
-        assertEquals(icon, ((UnloadedProjectInformation) pil.get(3)).getIcon());
-        
-        assertEquals(tpDisplayNames[3], ((UnloadedProjectInformation) pil.get(4)).getDisplayName());
-        assertEquals(tpURLs[3], ((UnloadedProjectInformation) pil.get(4)).getURL());
-        assertEquals(icon, ((UnloadedProjectInformation) pil.get(4)).getIcon());
-        
+
+        assertEquals(tpDisplayNames[12], pil.get(0).getDisplayName());
+        assertEquals(tpURLs[12], pil.get(0).getURL());
+        assertEquals(icon, pil.get(0).getIcon());
+
+        assertEquals(tpDisplayNames[10], pil.get(1).getDisplayName());
+        assertEquals(tpURLs[10], pil.get(1).getURL());
+        assertEquals(icon, pil.get(1).getIcon());
+
+        assertEquals(tpDisplayNames[6], pil.get(2).getDisplayName());
+        assertEquals(tpURLs[6], pil.get(2).getURL());
+        assertEquals(icon, pil.get(2).getIcon());
+
+        assertEquals(tpDisplayNames[4], pil.get(3).getDisplayName());
+        assertEquals(tpURLs[4], pil.get(3).getURL());
+        assertEquals(icon, pil.get(3).getIcon());
+
+        assertEquals(tpDisplayNames[3], pil.get(4).getDisplayName());
+        assertEquals(tpURLs[3], pil.get(4).getURL());
+        assertEquals(icon, pil.get(4).getIcon());
+
         OpenProjectList.getDefault().open(testProjects[3], false);
         OpenProjectList.getDefault().open(testProjects[4], false);
         OpenProjectList.getDefault().open(testProjects[6], false);
         OpenProjectList.getDefault().open(testProjects[10], false);
         OpenProjectList.getDefault().open(testProjects[12], false);
-        
+
         assertEquals(0, RecentProjects.getDefault().getRecentProjectInformation().size());
-        
+
         // Close ten projects
         for (int k = 3; k < 13; k++) {
             OpenProjectList.getDefault().close(new Project[] {testProjects[k]}, false);
@@ -160,62 +158,62 @@ public class RecentProjectsTest extends NbTestCase {
         pil = RecentProjects.getDefault().getRecentProjectInformation();
         assertEquals(10, RecentProjects.getDefault().getRecentProjectInformation().size());
         for (int l = 0; l > 10; l++) {
-            assertEquals(tpDisplayNames[12 - l], ((UnloadedProjectInformation) pil.get(l)).getDisplayName());
-            assertEquals(tpURLs[12 - l], ((UnloadedProjectInformation) pil.get(l)).getURL());
-            assertEquals(icon, ((UnloadedProjectInformation) pil.get(l)).getIcon());
+            assertEquals(tpDisplayNames[12 - l], pil.get(l).getDisplayName());
+            assertEquals(tpURLs[12 - l], pil.get(l).getURL());
+            assertEquals(icon, pil.get(l).getIcon());
         }
         for (int m = 3; m < 13; m++) {
             OpenProjectList.getDefault().open(testProjects[m], false);
         }
-        
+
         assertEquals(0, RecentProjects.getDefault().getRecentProjectInformation().size());
-        
+
         // Open and close more than ten projects
-        for (int n = 0; n < testProjects.length; n++) {
-            OpenProjectList.getDefault().close(new Project[] {testProjects[n]}, false);
+        for (Project p : testProjects) {
+            OpenProjectList.getDefault().close(new Project[] {p}, false);
         }
         pil = RecentProjects.getDefault().getRecentProjectInformation();
         assertEquals(10, RecentProjects.getDefault().getRecentProjectInformation().size());
         for (int p = 0; p > 10; p++) {
-            assertEquals(tpDisplayNames[testProjects.length - p], ((UnloadedProjectInformation) pil.get(p)).getDisplayName());
-            assertEquals(tpURLs[testProjects.length - p], ((UnloadedProjectInformation) pil.get(p)).getURL());
-            assertEquals(icon, ((UnloadedProjectInformation) pil.get(p)).getIcon());
+            assertEquals(tpDisplayNames[testProjects.length - p], pil.get(p).getDisplayName());
+            assertEquals(tpURLs[testProjects.length - p], pil.get(p).getURL());
+            assertEquals(icon, pil.get(p).getIcon());
         }
-        for (int q = 0; q < testProjects.length; q++) {
-            OpenProjectList.getDefault().open(testProjects[q], false);
+        for (Project p : testProjects) {
+            OpenProjectList.getDefault().open(p, false);
         }
-        
+
         assertEquals(0, RecentProjects.getDefault().getRecentProjectInformation().size());
-        
+
         // close array of projects
         OpenProjectList.getDefault().close(new Project[] {testProjects[2], testProjects[5], testProjects[9], testProjects[11]}, false);
         pil = RecentProjects.getDefault().getRecentProjectInformation();
         assertEquals(4, RecentProjects.getDefault().getRecentProjectInformation().size());
-        
-        assertEquals(tpDisplayNames[11], ((UnloadedProjectInformation) pil.get(0)).getDisplayName());
-        assertEquals(tpURLs[11], ((UnloadedProjectInformation) pil.get(0)).getURL());
-        assertEquals(icon, ((UnloadedProjectInformation) pil.get(0)).getIcon());
-        
-        assertEquals(tpDisplayNames[9], ((UnloadedProjectInformation) pil.get(1)).getDisplayName());
-        assertEquals(tpURLs[9], ((UnloadedProjectInformation) pil.get(1)).getURL());
-        assertEquals(icon, ((UnloadedProjectInformation) pil.get(1)).getIcon());
-        
-        assertEquals(tpDisplayNames[5], ((UnloadedProjectInformation) pil.get(2)).getDisplayName());
-        assertEquals(tpURLs[5], ((UnloadedProjectInformation) pil.get(2)).getURL());
-        assertEquals(icon, ((UnloadedProjectInformation) pil.get(2)).getIcon());
-        
-        assertEquals(tpDisplayNames[2], ((UnloadedProjectInformation) pil.get(3)).getDisplayName());
-        assertEquals(tpURLs[2], ((UnloadedProjectInformation) pil.get(3)).getURL());
-        assertEquals(icon, ((UnloadedProjectInformation) pil.get(3)).getIcon());
-        
+
+        assertEquals(tpDisplayNames[11], pil.get(0).getDisplayName());
+        assertEquals(tpURLs[11], pil.get(0).getURL());
+        assertEquals(icon, pil.get(0).getIcon());
+
+        assertEquals(tpDisplayNames[9], pil.get(1).getDisplayName());
+        assertEquals(tpURLs[9], pil.get(1).getURL());
+        assertEquals(icon, pil.get(1).getIcon());
+
+        assertEquals(tpDisplayNames[5], pil.get(2).getDisplayName());
+        assertEquals(tpURLs[5], pil.get(2).getURL());
+        assertEquals(icon, pil.get(2).getIcon());
+
+        assertEquals(tpDisplayNames[2], pil.get(3).getDisplayName());
+        assertEquals(tpURLs[2], pil.get(3).getURL());
+        assertEquals(icon, pil.get(3).getIcon());
+
     }
-    
+
     // -------------------------------------------------------------------------
-    
+
     private static class TestProjectInfo implements ProjectInformation {
-        
+
         private String displayName;
-        
+
         public TestProjectInfo(String dname) {
             displayName = dname;
         }
@@ -233,7 +231,7 @@ public class RecentProjectsTest extends NbTestCase {
         }
         public void addPropertyChangeListener(PropertyChangeListener listener) {}
         public void removePropertyChangeListener(PropertyChangeListener listener) {}
-        
+
     }
-    
+
 }
