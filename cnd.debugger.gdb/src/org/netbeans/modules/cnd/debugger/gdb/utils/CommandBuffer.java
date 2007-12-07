@@ -93,7 +93,7 @@ public class CommandBuffer {
         synchronized (lock) {
             try {
                 state = STATE_TIMEOUT; // this will change unless we timeout
-                lock.wait(2000);
+                lock.wait(10000);
                 return toString();
             } catch (InterruptedException ex) {
             }
