@@ -1052,19 +1052,18 @@ public class FacesModel extends Model {
             opened = (!hadLiveUnit && liveUnitWrapper != null) || (!hadMarkupUnit && markupUnit != null);
         }
         
-        //If errors are found in java/jsp source, mark if for syncing
-        if(getErrors().length > 0) {
-            needSyncing = true;
-            return;
-        }
-        
         Unit unit = getTopmostUnit();
-    
         // abort creation if the units did not open
         if (unit == null) {
-            ErrorManager.getDefault().log("insync unit would not open: skipping read");  //NOI18N
-            destroy();  // set will remove this model after scan
-            return;
+            //If errors are found in java/jsp source, mark if for syncing
+            if(getErrors().length > 0) {
+                needSyncing = true;
+                return;
+            }else {            
+                ErrorManager.getDefault().log("insync unit would not open: skipping read");  //NOI18N
+                destroy();  // set will remove this model after scan
+                return;
+            }
         }
     
         // XXX - this can happen when the project is closed while syncing is in progress.
