@@ -64,7 +64,7 @@ public class ServerMgmtControllerTest extends TestCase {
     }
     
     
-    public testGetApplications() {
+    public void testGetApplications() {
         
     }
     
