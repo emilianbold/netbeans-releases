@@ -41,12 +41,9 @@
 
 package org.netbeans.modules.ruby;
 
-import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JTextArea;
 import javax.swing.text.Caret;
-import org.netbeans.api.gsf.FormattingPreferences;
 import org.netbeans.api.gsf.ParserResult;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
@@ -67,7 +64,7 @@ public class FormatterTest extends RubyTestBase {
         super(testName);
     }
 
-    public void format(String source, String reformatted, FormattingPreferences preferences) throws Exception {
+    public void format(String source, String reformatted, IndentPrefs preferences) throws Exception {
         Formatter formatter = getFormatter(preferences);
         String BEGIN = "%<%"; // NOI18N
         int startPos = source.indexOf(BEGIN);
@@ -91,7 +88,7 @@ public class FormatterTest extends RubyTestBase {
         
         //ParserResult result = parse(fo);
         ParserResult result = null;
-        formatter.reindent(doc, startPos, endPos, result, preferences);
+        formatter.reindent(doc, startPos, endPos, result);
 
         String formatted = doc.getText(0, doc.getLength());
         assertEquals(reformatted, formatted);
@@ -105,14 +102,14 @@ public class FormatterTest extends RubyTestBase {
         String before = doc.getText(0, doc.getLength());
         
         Formatter formatter = new Formatter();
-        FormattingPreferences preferences = new IndentPrefs(2,2);
+        IndentPrefs preferences = new IndentPrefs(2,2);
 
-        formatter.reindent(doc, 0, doc.getLength(), null, preferences);
+        formatter.reindent(doc, 0, doc.getLength(), null);
         String after = doc.getText(0, doc.getLength());
         assertEquals(before, after);
     }
     
-    public void insertNewline(String source, String reformatted, FormattingPreferences preferences) throws Exception {
+    public void insertNewline(String source, String reformatted, IndentPrefs preferences) throws Exception {
         Formatter formatter = getFormatter(preferences);
 
         int sourcePos = source.indexOf('^');     
@@ -139,7 +136,7 @@ public class FormatterTest extends RubyTestBase {
 
             //ParserResult result = parse(fo);
             ParserResult result = null;
-            formatter.reindent(doc, startPos, endPos, result, preferences);
+            formatter.reindent(doc, startPos, endPos, result);
 
             String formatted = doc.getText(0, doc.getLength());
             assertEquals(reformatted, formatted);
@@ -179,7 +176,7 @@ public class FormatterTest extends RubyTestBase {
     }
     
     private void reformatAll(List<FileObject> files) {
-        FormattingPreferences preferences = new IndentPrefs(2,2);
+        IndentPrefs preferences = new IndentPrefs(2,2);
         Formatter formatter = getFormatter(preferences);
         
         int fileCount = files.size();
@@ -212,7 +209,7 @@ if (fo.getName().equals("httputils") && fo.getParent().getName().equals("webrick
             ParserResult result =  null;// parse(fo);
 
             try {
-                formatter.reindent(doc, 0, doc.getLength(), result, preferences);
+                formatter.reindent(doc, 0, doc.getLength(), result);
             } catch (Exception ex) {
                 System.err.println("Exception processing " + FileUtil.getFileDisplayName(fo));
                 fail(ex.toString());

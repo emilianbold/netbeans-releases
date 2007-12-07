@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.ruby.hints.introduce;
 
+import org.netbeans.modules.ruby.ParseTreeWalker;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -55,10 +56,13 @@ import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.AstUtilities;
+import org.netbeans.modules.ruby.Formatter;
+import org.netbeans.modules.ruby.NbUtilities;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.hints.spi.Description;
 import org.netbeans.modules.ruby.hints.spi.Fix;
 import org.netbeans.modules.ruby.hints.spi.HintSeverity;
+import org.netbeans.modules.ruby.hints.spi.RuleContext;
 import org.netbeans.modules.ruby.hints.spi.SelectionRule;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -90,8 +94,11 @@ public class IntroduceHint implements SelectionRule {
     /** For test infrastructure only - a way to bypass the interactive name dialog */
     static String testName;
     
-    public void run(CompilationInfo info, int start, int end, List<Description> result,
-            Map<String, Object> context) {
+    public void run(RuleContext context, List<Description> result) {
+        CompilationInfo info = context.compilationInfo;
+        int start = context.selectionStart;
+        int end = context.selectionEnd;
+
         assert start < end;
 
         try {
@@ -106,7 +113,7 @@ public class IntroduceHint implements SelectionRule {
                 return;
             }
             
-            if (CopiedCode.getTokenBalance(doc, start, end, true) != 0) {
+            if (Formatter.getTokenBalance(doc, start, end, true, RubyUtils.isRhtmlDocument(doc)) != 0) {
                 return;
             }
             
@@ -147,7 +154,7 @@ public class IntroduceHint implements SelectionRule {
             
             // Adjust the fix range to be right around the dot so that the light bulb ends up
             // on the same line as the caret and alt-enter works
-            JTextComponent target = CopiedCode.getPaneFor(info.getFileObject());
+            JTextComponent target = NbUtilities.getPaneFor(info.getFileObject());
             if (target != null) {
                 int dot = target.getCaret().getDot();
                 if (start == dot) {

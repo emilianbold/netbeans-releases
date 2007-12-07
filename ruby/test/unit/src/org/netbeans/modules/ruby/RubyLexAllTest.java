@@ -43,7 +43,7 @@ package org.netbeans.modules.ruby;
 
 import java.util.List;
 import javax.swing.text.BadLocationException;
-import org.netbeans.api.gsf.GsfTokenId;
+import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
@@ -75,7 +75,7 @@ public class RubyLexAllTest extends RubyTestBase {
             String text = doc.getText(0, doc.getLength());
             TokenHierarchy hi = TokenHierarchy.create(text, RubyTokenId.language());
             @SuppressWarnings("unchecked")
-            TokenSequence<?extends GsfTokenId> ts = hi.tokenSequence();
+            TokenSequence<?extends RubyTokenId> ts = hi.tokenSequence();
             // Just iterate through the sequence to make sure it's okay - this throws an exception because of bug 93990
             while (ts.moveNext()) {
                 ;

@@ -66,7 +66,6 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.api.gsf.FormattingPreferences;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Settings;
@@ -307,8 +306,7 @@ public class FmtOptions {
                 doc.insertString(0, previewText, null);
 
                 Formatter formatter = new Formatter(codeStyle, rm);
-                FormattingPreferences prefs = null;  // obsolete
-                formatter.reformat(doc, 0, doc.getLength(), null, prefs);
+                formatter.reformat(doc, 0, doc.getLength(), null);
 
                 String formatted = doc.getText(0, doc.getLength());
                 pane.setText(formatted);

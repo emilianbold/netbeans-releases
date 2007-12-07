@@ -1,31 +1,31 @@
 .t.e.s.t. Heredocs
-GSF_IDENTIFIER  "x", la=2, st=3
-GSF_WHITESPACE  " ", la=1, st=RubyLexerState[spaceseen,null,EXPR_CMDARG,null,null]
+IDENTIFIER      "x", la=2, st=3
+WHITESPACE      " ", la=1, st=RubyLexerState[spaceseen,null,EXPR_CMDARG,null,null]
 NONUNARY_OP     "=", la=1, st=0
-GSF_WHITESPACE  " ", la=1, st=RubyLexerState[spaceseen,null,EXPR_BEG,null,null]
-GSF_IDENTIFIER  "method_call", la=2, st=2
-GSF_LPAREN      "(", la=1, st=RubyLexerState[commandstart,null,EXPR_BEG,null,null]
-GSF_INT_LITERAL  "50", la=1, st=1
-GSF_IDENTIFIER  ",", st=0
-GSF_WHITESPACE  " ", la=1, st=RubyLexerState[spaceseen,null,EXPR_BEG,null,null]
-GSF_STRING_BEGIN  "<<TOKEN1", la=1, st=RubyLexerState[-,null,EXPR_BEG,null,HeredocContext(count=2):end:false,term:HeredocTerm[2,TOKEN1,null,0],end:true,term:HeredocTerm[2,TOKEN1,null,0]]
-GSF_IDENTIFIER  ",", st=RubyLexerState[-,null,EXPR_BEG,null,HeredocContext(count=2):end:false,term:HeredocTerm[2,TOKEN1,null,0],end:true,term:HeredocTerm[2,TOKEN1,null,0]]
-GSF_WHITESPACE  " ", la=1, st=RubyLexerState[spaceseen,null,EXPR_BEG,null,HeredocContext(count=2):end:false,term:HeredocTerm[2,TOKEN1,null,0],end:true,term:HeredocTerm[2,TOKEN1,null,0]]
+WHITESPACE      " ", la=1, st=RubyLexerState[spaceseen,null,EXPR_BEG,null,null]
+IDENTIFIER      "method_call", la=2, st=2
+LPAREN          "(", la=1, st=RubyLexerState[commandstart,null,EXPR_BEG,null,null]
+INT_LITERAL     "50", la=1, st=1
+IDENTIFIER      ",", st=0
+WHITESPACE      " ", la=1, st=RubyLexerState[spaceseen,null,EXPR_BEG,null,null]
+STRING_BEGIN    "<<TOKEN1", la=1, st=RubyLexerState[-,null,EXPR_BEG,null,HeredocContext(count=2):end:false,term:HeredocTerm[2,TOKEN1,null,0],end:true,term:HeredocTerm[2,TOKEN1,null,0]]
+IDENTIFIER      ",", st=RubyLexerState[-,null,EXPR_BEG,null,HeredocContext(count=2):end:false,term:HeredocTerm[2,TOKEN1,null,0],end:true,term:HeredocTerm[2,TOKEN1,null,0]]
+WHITESPACE      " ", la=1, st=RubyLexerState[spaceseen,null,EXPR_BEG,null,HeredocContext(count=2):end:false,term:HeredocTerm[2,TOKEN1,null,0],end:true,term:HeredocTerm[2,TOKEN1,null,0]]
 QUOTED_STRING_BEGIN  """, st=RubyLexerState[substituting,StringTerm[func=expand,term=",paren=0,nest=0,embed=1],EXPR_BEG,StringTermState[nest=0,embed=1],HeredocContext(count=2):end:false,term:HeredocTerm[2,TOKEN1,null,0],end:true,term:HeredocTerm[2,TOKEN1,null,0]]
 QUOTED_STRING_LITERAL  "arg3", la=1, st=RubyLexerState[substituting,StringTerm[func=expand,term=",paren=0,nest=0,embed=1],EXPR_BEG,StringTermState[nest=0,embed=1],HeredocContext(count=2):end:false,term:HeredocTerm[2,TOKEN1,null,0],end:true,term:HeredocTerm[2,TOKEN1,null,0]]
 QUOTED_STRING_END  """, st=RubyLexerState[substituting,null,EXPR_END,null,HeredocContext(count=2):end:false,term:HeredocTerm[2,TOKEN1,null,0],end:true,term:HeredocTerm[2,TOKEN1,null,0]]
-GSF_IDENTIFIER  ",", st=RubyLexerState[substituting,null,EXPR_BEG,null,HeredocContext(count=2):end:false,term:HeredocTerm[2,TOKEN1,null,0],end:true,term:HeredocTerm[2,TOKEN1,null,0]]
-GSF_WHITESPACE  " ", la=1, st=RubyLexerState[substituting|spaceseen,null,EXPR_BEG,null,HeredocContext(count=2):end:false,term:HeredocTerm[2,TOKEN1,null,0],end:true,term:HeredocTerm[2,TOKEN1,null,0]]
-GSF_STRING_BEGIN  "<<TOKEN2", la=1, st=RubyLexerState[-,null,EXPR_BEG,null,HeredocContext(count=4):end:false,term:HeredocTerm[2,TOKEN1,null,0],end:true,term:HeredocTerm[2,TOKEN1,null,0],end:false,term:HeredocTerm[2,TOKEN2,null,0],end:true,term:HeredocTerm[2,TOKEN2,null,0]]
-GSF_IDENTIFIER  ",", st=RubyLexerState[-,null,EXPR_BEG,null,HeredocContext(count=4):end:false,term:HeredocTerm[2,TOKEN1,null,0],end:true,term:HeredocTerm[2,TOKEN1,null,0],end:false,term:HeredocTerm[2,TOKEN2,null,0],end:true,term:HeredocTerm[2,TOKEN2,null,0]]
-GSF_WHITESPACE  " ", la=1, st=RubyLexerState[spaceseen,null,EXPR_BEG,null,HeredocContext(count=4):end:false,term:HeredocTerm[2,TOKEN1,null,0],end:true,term:HeredocTerm[2,TOKEN1,null,0],end:false,term:HeredocTerm[2,TOKEN2,null,0],end:true,term:HeredocTerm[2,TOKEN2,null,0]]
-GSF_REGEXP_BEGIN  "/", st=RubyLexerState[regexp,StringTerm[func=escape|expand|regexp,term=/,paren=0,nest=0,embed=1],EXPR_BEG,StringTermState[nest=0,embed=1],HeredocContext(count=4):end:false,term:HeredocTerm[2,TOKEN1,null,0],end:true,term:HeredocTerm[2,TOKEN1,null,0],end:false,term:HeredocTerm[2,TOKEN2,null,0],end:true,term:HeredocTerm[2,TOKEN2,null,0]]
-GSF_REGEXP_LITERAL  "startofregexp", la=1, st=RubyLexerState[regexp,StringTerm[func=escape|expand|regexp,term=/,paren=0,nest=0,embed=1],EXPR_BEG,StringTermState[nest=0,embed=1],HeredocContext(count=4):end:false,term:HeredocTerm[2,TOKEN1,null,0],end:true,term:HeredocTerm[2,TOKEN1,null,0],end:false,term:HeredocTerm[2,TOKEN2,null,0],end:true,term:HeredocTerm[2,TOKEN2,null,0]]
-GSF_REGEXP_END  "/", la=1, st=RubyLexerState[-,null,EXPR_END,null,HeredocContext(count=4):end:false,term:HeredocTerm[2,TOKEN1,null,0],end:true,term:HeredocTerm[2,TOKEN1,null,0],end:false,term:HeredocTerm[2,TOKEN2,null,0],end:true,term:HeredocTerm[2,TOKEN2,null,0]]
-GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[commandstart,null,EXPR_BEG,null,HeredocContext(count=4):end:false,term:HeredocTerm[2,TOKEN1,null,0],end:true,term:HeredocTerm[2,TOKEN1,null,0],end:false,term:HeredocTerm[2,TOKEN2,null,0],end:true,term:HeredocTerm[2,TOKEN2,null,0]]
+IDENTIFIER      ",", st=RubyLexerState[substituting,null,EXPR_BEG,null,HeredocContext(count=2):end:false,term:HeredocTerm[2,TOKEN1,null,0],end:true,term:HeredocTerm[2,TOKEN1,null,0]]
+WHITESPACE      " ", la=1, st=RubyLexerState[substituting|spaceseen,null,EXPR_BEG,null,HeredocContext(count=2):end:false,term:HeredocTerm[2,TOKEN1,null,0],end:true,term:HeredocTerm[2,TOKEN1,null,0]]
+STRING_BEGIN    "<<TOKEN2", la=1, st=RubyLexerState[-,null,EXPR_BEG,null,HeredocContext(count=4):end:false,term:HeredocTerm[2,TOKEN1,null,0],end:true,term:HeredocTerm[2,TOKEN1,null,0],end:false,term:HeredocTerm[2,TOKEN2,null,0],end:true,term:HeredocTerm[2,TOKEN2,null,0]]
+IDENTIFIER      ",", st=RubyLexerState[-,null,EXPR_BEG,null,HeredocContext(count=4):end:false,term:HeredocTerm[2,TOKEN1,null,0],end:true,term:HeredocTerm[2,TOKEN1,null,0],end:false,term:HeredocTerm[2,TOKEN2,null,0],end:true,term:HeredocTerm[2,TOKEN2,null,0]]
+WHITESPACE      " ", la=1, st=RubyLexerState[spaceseen,null,EXPR_BEG,null,HeredocContext(count=4):end:false,term:HeredocTerm[2,TOKEN1,null,0],end:true,term:HeredocTerm[2,TOKEN1,null,0],end:false,term:HeredocTerm[2,TOKEN2,null,0],end:true,term:HeredocTerm[2,TOKEN2,null,0]]
+REGEXP_BEGIN    "/", st=RubyLexerState[regexp,StringTerm[func=escape|expand|regexp,term=/,paren=0,nest=0,embed=1],EXPR_BEG,StringTermState[nest=0,embed=1],HeredocContext(count=4):end:false,term:HeredocTerm[2,TOKEN1,null,0],end:true,term:HeredocTerm[2,TOKEN1,null,0],end:false,term:HeredocTerm[2,TOKEN2,null,0],end:true,term:HeredocTerm[2,TOKEN2,null,0]]
+REGEXP_LITERAL  "startofregexp", la=1, st=RubyLexerState[regexp,StringTerm[func=escape|expand|regexp,term=/,paren=0,nest=0,embed=1],EXPR_BEG,StringTermState[nest=0,embed=1],HeredocContext(count=4):end:false,term:HeredocTerm[2,TOKEN1,null,0],end:true,term:HeredocTerm[2,TOKEN1,null,0],end:false,term:HeredocTerm[2,TOKEN2,null,0],end:true,term:HeredocTerm[2,TOKEN2,null,0]]
+REGEXP_END      "/", la=1, st=RubyLexerState[-,null,EXPR_END,null,HeredocContext(count=4):end:false,term:HeredocTerm[2,TOKEN1,null,0],end:true,term:HeredocTerm[2,TOKEN1,null,0],end:false,term:HeredocTerm[2,TOKEN2,null,0],end:true,term:HeredocTerm[2,TOKEN2,null,0]]
+WHITESPACE      "\n", la=1, st=RubyLexerState[commandstart,null,EXPR_BEG,null,HeredocContext(count=4):end:false,term:HeredocTerm[2,TOKEN1,null,0],end:true,term:HeredocTerm[2,TOKEN1,null,0],end:false,term:HeredocTerm[2,TOKEN2,null,0],end:true,term:HeredocTerm[2,TOKEN2,null,0]]
 QUOTED_STRING_LITERAL  "This is part of the string\n", la=7, st=RubyLexerState[substituting|commandstart,HeredocTerm[2,TOKEN1,null,1],EXPR_BEG,HeredocTermState[1],HeredocContext(count=3):end:true,term:HeredocTerm[2,TOKEN1,null,1],end:false,term:HeredocTerm[2,TOKEN2,null,0],end:true,term:HeredocTerm[2,TOKEN2,null,0]]
 QUOTED_STRING_END  "TOKEN1\n", st=RubyLexerState[substituting|commandstart,null,EXPR_END,null,HeredocContext(count=2):end:false,term:HeredocTerm[2,TOKEN2,null,0],end:true,term:HeredocTerm[2,TOKEN2,null,0]]
-GSF_ERROR       "restofregexp/)", la=1, st=RubyLexerState[substituting|commandstart,null,EXPR_END,null,HeredocContext(count=1):end:true,term:HeredocTerm[2,TOKEN2,null,0]]
+ERROR           "restofregexp/)", la=1, st=RubyLexerState[substituting|commandstart,null,EXPR_END,null,HeredocContext(count=1):end:true,term:HeredocTerm[2,TOKEN2,null,0]]
 ----- EOF -----
 
 <Unnamed test>

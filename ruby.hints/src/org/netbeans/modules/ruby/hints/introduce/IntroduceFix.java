@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.ruby.hints.introduce;
 
+import org.netbeans.modules.ruby.ParseTreeWalker;
 import java.util.MissingResourceException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -60,6 +61,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
+import org.netbeans.modules.ruby.NbUtilities;
 import org.netbeans.modules.ruby.RubyIndex;
 import org.netbeans.modules.ruby.hints.spi.EditList;
 import org.netbeans.modules.ruby.hints.spi.PreviewableFix;
@@ -128,7 +130,7 @@ class IntroduceFix implements PreviewableFix {
 
         // Warp to the inserted method and show the comment
         if (commentPosition != null) {
-            JTextComponent target = CopiedCode.getPaneFor(info.getFileObject());
+            JTextComponent target = NbUtilities.getPaneFor(info.getFileObject());
             if (target != null) {
                 int offset = commentPosition.getOffset();
                 String commentText = getCommentText();
@@ -164,7 +166,7 @@ class IntroduceFix implements PreviewableFix {
             return null;
         }
 
-        String guessedName = HintUtilities.guessName(info, lexRange, astRange);
+        String guessedName = AstUtilities.guessName(info, lexRange, astRange);
         RubyIndex index = RubyIndex.get(info.getIndex());
         AstPath startPath = new AstPath(AstUtilities.getRoot(info), astRange.getStart());
         List<OffsetRange> duplicates = null;
@@ -189,9 +191,9 @@ class IntroduceFix implements PreviewableFix {
                 JButton btnCancel = new JButton(NbBundle.getMessage(IntroduceHint.class, "LBL_Cancel"));
                 Set<String> takenNames;
                 if (kind == IntroduceKind.CREATE_CONSTANT) {
-                    takenNames = HintUtilities.getUsedConstants(index, startPath);
+                    takenNames = AstUtilities.getUsedConstants(index, startPath);
                 } else {
-                    takenNames = HintUtilities.getUsedLocalNames(startPath, startPath.leaf());
+                    takenNames = AstUtilities.getUsedLocalNames(startPath, startPath.leaf());
                 }
                 IntroduceVariablePanel panel = new IntroduceVariablePanel(numDuplicates, guessedName,
                         kind == IntroduceKind.CREATE_CONSTANT, btnOk, takenNames);
@@ -214,7 +216,7 @@ class IntroduceFix implements PreviewableFix {
                 JButton btnCancel = new JButton(NbBundle.getMessage(IntroduceHint.class, "LBL_Cancel"));
                 // TODO Allow choice between inserting in constructor, in method, etc.
                 int[] initilizeIn = new int[1];
-                Set<String> takenNames = HintUtilities.getUsedFields(index, startPath);
+                Set<String> takenNames = AstUtilities.getUsedFields(index, startPath);
                 IntroduceFieldPanel panel = new IntroduceFieldPanel(guessedName, initilizeIn, numDuplicates, btnOk, takenNames);
                 String caption = NbBundle.getMessage(IntroduceHint.class, "CAP_" + getKeyExt()); //NOI18N
                 DialogDescriptor dd = new DialogDescriptor(panel, caption, true,
@@ -232,7 +234,7 @@ class IntroduceFix implements PreviewableFix {
             case CREATE_METHOD: {
                 JButton btnOk = new JButton(NbBundle.getMessage(IntroduceHint.class, "LBL_Ok"));
                 JButton btnCancel = new JButton(NbBundle.getMessage(IntroduceHint.class, "LBL_Cancel"));
-                Set<String> takenNames = HintUtilities.getUsedMethods(index, startPath);
+                Set<String> takenNames = AstUtilities.getUsedMethods(index, startPath);
                 IntroduceMethodPanel panel = new IntroduceMethodPanel("", takenNames); //NOI18N
                 panel.setOkButton( btnOk );
                 String caption = NbBundle.getMessage(IntroduceHint.class, "CAP_IntroduceMethod");
@@ -555,7 +557,7 @@ class IntroduceFix implements PreviewableFix {
             int methodAstOffset = method.getPosition().getStartOffset();
             int lexOffset = LexUtilities.getLexerOffset(info, methodAstOffset);
             if (lexOffset != -1) {
-                OffsetRange comment = HintUtilities.findRDocRange(doc, methodAstOffset);
+                OffsetRange comment = LexUtilities.findRDocRange(doc, methodAstOffset);
                 if (comment != OffsetRange.NONE) {
                     return comment.getStart();
                 }

@@ -51,6 +51,7 @@ import org.netbeans.modules.ruby.hints.spi.ErrorRule;
 import org.netbeans.modules.ruby.hints.spi.HintSeverity;
 import org.netbeans.modules.ruby.hints.spi.PreviewableFix;
 import org.netbeans.modules.ruby.hints.spi.Rule;
+import org.netbeans.modules.ruby.hints.spi.RuleContext;
 import org.netbeans.modules.ruby.hints.spi.SelectionRule;
 import org.netbeans.modules.ruby.hints.spi.UserConfigurableRule;
 import org.netbeans.spi.editor.hints.ChangeInfo;
@@ -332,9 +333,15 @@ public class RubyHintsProvider implements HintsProvider {
         List<AstRule> rules = hints.get(nodeType);
 
         if (rules != null) {
+            RuleContext context = new RuleContext();
+            context.compilationInfo = info;
+            context.node = node;
+            context.path = path;
+            context.caretOffset = caretOffset;
+            
             for (AstRule rule : rules) {
                 if (HintsSettings.isEnabled(rule)) {
-                    rule.run(info, node, path, caretOffset, result);
+                    rule.run(context, result);
                 }
             }
         }
@@ -349,11 +356,14 @@ public class RubyHintsProvider implements HintsProvider {
 
             if (rules != null) {
                 int countBefore = result.size();
+                RuleContext context = new RuleContext();
+                context.compilationInfo = info;
+                
                 for (ErrorRule rule : rules) {
                     if (!rule.appliesTo(info)) {
                         continue;
                     }
-                    rule.run(info, error, result);
+                    rule.run(context, error, result);
                 }
                 
                 return countBefore < result.size();
@@ -366,7 +376,12 @@ public class RubyHintsProvider implements HintsProvider {
     private void applyRules(CompilationInfo info, List<SelectionRule> rules, int start, int end, 
             List<Description> result) {
 
-        Map<String,Object> context = new HashMap<String,Object>();
+        RuleContext context = new RuleContext();
+        context.compilationInfo = info;
+        //context.node = node;
+        //context.path = path;
+        context.selectionStart = start;
+        context.selectionEnd = end;
         
         for (SelectionRule rule : rules) {
             if (!rule.appliesTo(info)) {
@@ -377,7 +392,7 @@ public class RubyHintsProvider implements HintsProvider {
             //    continue;
             //}
 
-            rule.run(info, start, end, result, context);
+            rule.run(context, result);
         }
     }
     

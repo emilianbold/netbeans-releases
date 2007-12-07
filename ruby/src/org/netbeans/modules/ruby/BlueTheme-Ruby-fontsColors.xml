@@ -43,37 +43,36 @@ made subject to such option by the copyright holder.
 <!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
 
 <fontscolors>
-    <fontcolor name="GSF_CLASS" foreColor="EDDD3D">
+    <fontcolor name="CLASS_VAR" foreColor="EDDD3D">
         <font style="bold+italic"/>
     </fontcolor>
     
-    <fontcolor name="GSF_INT_LITERAL" default="number"/>
-    <fontcolor name="GSF_FLOAT_LITERAL" default="number"/>
-    <fontcolor name="GSF_ANY_OPERATOR" default="8AA6C1"/>
-    <fontcolor name="GSF_INSTANCE" foreColor="EDDD3D">
+    <fontcolor name="INT_LITERAL" default="number"/>
+    <fontcolor name="FLOAT_LITERAL" default="number"/>
+    <fontcolor name="ANY_OPERATOR" default="8AA6C1"/>
+    <fontcolor name="INSTANCE_VAR" foreColor="EDDD3D">
         <font style="bold"/>
     </fontcolor>
-    <fontcolor name="GSF_GLOBAL" foreColor="EDDD3D">
+    <fontcolor name="GLOBAL_VAR" foreColor="EDDD3D">
         <font style="italic"/>
     </fontcolor>
-    <fontcolor name="GSF_STRING_LITERAL" default="string"/>
-    <fontcolor name="GSF_DOUBLE_LITERAL" default="number"/>
-    <fontcolor name="GSF_BLOCK_COMMENT" default="comment"/>
-    <fontcolor name="GSF_DOCUMENTATION" default="comment"/>
-    <fontcolor name="GSF_LONG_LITERAL" default="number"/>
-    <fontcolor name="GSF_REGEXP_LITERAL" foreColor="CA4344"/>
-    <fontcolor name="GSF_ERROR" default="error"/>
-    <fontcolor name="GSF_LINE_COMMENT" default="comment"/>
-    <fontcolor name="GSF_CONSTANT" foreColor="8AA6C1"/>
-    <fontcolor name="GSF_TYPESYMBOL" foreColor="B53B3C"/>
-    <fontcolor name="GSF_IDENTIFIER" default="identifier"/>
-    <fontcolor name="GSF_WHITESPACE" default="whitespace"/>
-    <fontcolor name="GSF_ANY_KEYWORD" default="keyword"/>
-    <fontcolor name="GSF_TODO" foreColor="ff99006b">
+    <fontcolor name="STRING_LITERAL" default="string"/>
+    <fontcolor name="DOUBLE_LITERAL" default="number"/>
+    <fontcolor name="BLOCK_COMMENT" default="comment"/>
+    <fontcolor name="DOCUMENTATION" default="comment"/>
+    <fontcolor name="LONG_LITERAL" default="number"/>
+    <fontcolor name="REGEXP_LITERAL" foreColor="CA4344"/>
+    <fontcolor name="ERROR" default="error"/>
+    <fontcolor name="LINE_COMMENT" default="comment"/>
+    <fontcolor name="CONSTANT" foreColor="8AA6C1"/>
+    <fontcolor name="TYPE_SYMBOL" foreColor="B53B3C"/>
+    <fontcolor name="IDENTIFIER" default="identifier"/>
+    <fontcolor name="WHITESPACE" default="whitespace"/>
+    <fontcolor name="ANY_KEYWORD" default="keyword"/>
+    <fontcolor name="TODO" foreColor="ff99006b">
         <font style="bold"/>
     </fontcolor>
     <fontcolor name="QUOTED_STRING_LITERAL" default="string"/>
-    <fontcolor name="GSF_CHAR_LITERAL" default="char"/>
 
     <!--"semantic" highlighting:-->
     <fontcolor name="mod-unused" waveUnderlined="ff8888"/>

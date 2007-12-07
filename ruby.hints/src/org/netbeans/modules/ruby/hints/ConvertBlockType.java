@@ -42,7 +42,6 @@ import org.jruby.ast.NodeTypes;
 import org.jruby.ast.YieldNode;
 import org.jruby.lexer.yacc.ISourcePosition;
 import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.GsfTokenId;
 import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
@@ -57,6 +56,7 @@ import org.netbeans.modules.ruby.hints.spi.EditList;
 import org.netbeans.modules.ruby.hints.spi.Fix;
 import org.netbeans.modules.ruby.hints.spi.HintSeverity;
 import org.netbeans.modules.ruby.hints.spi.PreviewableFix;
+import org.netbeans.modules.ruby.hints.spi.RuleContext;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.openide.util.Exceptions;
@@ -81,7 +81,11 @@ public class ConvertBlockType implements AstRule {
         return Collections.singleton(NodeTypes.ITERNODE);
     }
 
-    public void run(CompilationInfo info, Node node, AstPath path, int caretOffset, List<Description> result) {
+    public void run(RuleContext context, List<Description> result) {
+        Node node = context.node;
+        CompilationInfo info = context.compilationInfo;
+        int caretOffset = context.caretOffset;
+        
         assert (node.nodeId == NodeTypes.ITERNODE);
         try {
             int astOffset = node.getPosition().getStartOffset();
@@ -117,7 +121,7 @@ public class ConvertBlockType implements AstRule {
                 }
             }
 
-            Token<? extends GsfTokenId> token = LexUtilities.getToken(doc, lexOffset);
+            Token<? extends RubyTokenId> token = LexUtilities.getToken(doc, lexOffset);
             if (token == null) {
                 return;
             }
@@ -442,12 +446,12 @@ public class ConvertBlockType implements AstRule {
             findLineBreaks(node, offsetSet);
 
             // Add in ; replacements
-            TokenSequence<? extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, endOffset);
+            TokenSequence<? extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(doc, endOffset);
             if (ts != null) {
                 // Traverse sequence in reverse order such that my offset list is in decreasing order
                 ts.move(endOffset);
                 while (ts.movePrevious() && ts.offset() > startOffset) {
-                    Token<? extends GsfTokenId> token = ts.token();
+                    Token<? extends RubyTokenId> token = ts.token();
                     TokenId id = token.id();
 
                     if (id == RubyTokenId.IDENTIFIER && ";".equals(token.text().toString())) { // NOI18N
@@ -541,12 +545,12 @@ public class ConvertBlockType implements AstRule {
             boolean isDoBlock = tid == RubyTokenId.DO;
 
             // Add in ; replacements
-            TokenSequence<? extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, endOffset);
+            TokenSequence<? extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(doc, endOffset);
             if (ts != null) {
                 // Traverse sequence in reverse order such that my offset list is in decreasing order
                 ts.move(endOffset);
                 while (ts.movePrevious() && ts.offset() > startOffset) {
-                    Token<? extends GsfTokenId> token = ts.token();
+                    Token<? extends RubyTokenId> token = ts.token();
                     TokenId id = token.id();
 
                     if (id == RubyTokenId.END || id == RubyTokenId.RBRACE) {

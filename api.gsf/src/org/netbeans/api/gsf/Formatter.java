@@ -40,17 +40,13 @@
  */
 package org.netbeans.api.gsf;
 
-import javax.swing.text.Caret;
 import javax.swing.text.Document;
-
-import org.netbeans.api.gsf.ParserResult;
-
 
 /**
  * Implementations of this interface can be registered such that the formatter
  * helps indent or reformat source code, or even determine where the caret should
  * be placed on a newly created line.
- *
+ * 
  * @author Tor Norbye
  */
 public interface Formatter {
@@ -59,15 +55,14 @@ public interface Formatter {
      * You may use the provided parse tree information, if available, to guide formatting decisions.
      * The caret (if any) should be updated to the corresponding position that it was at before formatting.     * 
      */
-    void reformat(Document doc, int startOffset, int endOffset, ParserResult result, FormattingPreferences preferences);
+    void reformat(Document doc, int startOffset, int endOffset, ParserResult result);
 
     /**
      * Reindent the source code. Adjusts indentation and strips trailing whitespace but
      * does not otherwise change the code. The caret (if any) should be updated to the corresponding
      * position that it was at before formatting.
      */
-    void reindent(Document doc, int startOffset, int endOffset, ParserResult result,
-        FormattingPreferences preferences);
+    void reindent(Document doc, int startOffset, int endOffset, ParserResult result);
 
     /**
      * Return the preferred size in characters of each indentation level for this language.
@@ -87,7 +82,7 @@ public interface Formatter {
      *   foo = bar +
      *       baz
      * </pre>
-     * The hanging indent is the indentation level difference between "baz" and "foo"
+     * The hanging indent is the indentation level difference between "baz" and "foo".
      */
     int hangingIndentSize();
 }

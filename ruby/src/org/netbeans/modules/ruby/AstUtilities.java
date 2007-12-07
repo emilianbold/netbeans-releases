@@ -43,10 +43,12 @@ package org.netbeans.modules.ruby;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.swing.text.BadLocationException;
@@ -57,12 +59,14 @@ import org.jruby.ast.ArgsCatNode;
 import org.jruby.ast.ArgsNode;
 import org.jruby.ast.ArgumentNode;
 import org.jruby.ast.AssignableNode;
+import org.jruby.ast.AttrAssignNode;
 import org.jruby.ast.CallNode;
 import org.jruby.ast.ClassNode;
 import org.jruby.ast.Colon2Node;
 import org.jruby.ast.Colon3Node;
 import org.jruby.ast.ConstNode;
 import org.jruby.ast.FCallNode;
+import org.jruby.ast.IArgumentNode;
 import org.jruby.ast.IScopingNode;
 import org.jruby.ast.ListNode;
 import org.jruby.ast.LocalAsgnNode;
@@ -81,6 +85,7 @@ import org.jruby.util.ByteList;
 import org.netbeans.api.gsf.CancellableTask;
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.Modifier;
+import org.netbeans.api.gsf.NameKind;
 import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.api.gsf.ParserFile;
 import org.netbeans.api.gsf.ParserResult;
@@ -90,6 +95,8 @@ import org.netbeans.api.gsf.SourceModelFactory;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.elements.IndexedElement;
+import org.netbeans.modules.ruby.elements.IndexedField;
+import org.netbeans.modules.ruby.elements.IndexedMethod;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.spi.gsf.DefaultParseListener;
 import org.openide.cookies.EditorCookie;
@@ -1833,5 +1840,88 @@ public class AstUtilities {
         }
         
         return result;
+    }
+    
+    public static String guessName(CompilationInfo info, OffsetRange lexRange, OffsetRange astRange) {
+        String guessedName = "";
+        
+        // Try to guess the name - see if it's in a method and if so name it after the parameter
+        IndexedMethod[] methodHolder = new IndexedMethod[1];
+        @SuppressWarnings("unchecked")
+        Set<IndexedMethod>[] alternatesHolder = new Set[1];
+        int[] paramIndexHolder = new int[1];
+        int[] anchorOffsetHolder = new int[1];
+        if (!CodeCompleter.computeMethodCall(info, lexRange.getStart(), astRange.getStart(),
+                methodHolder, paramIndexHolder, anchorOffsetHolder, alternatesHolder)) {
+
+            return guessedName;
+        }
+
+        IndexedMethod targetMethod = methodHolder[0];
+        int index = paramIndexHolder[0];
+
+        List<String> params = targetMethod.getParameters();
+        if (params == null || params.size() <= index) {
+            return guessedName;
+        }
+        
+        return params.get(index);
+    }
+    
+    public static Set<String> getUsedFields(RubyIndex index, AstPath path) {
+        String fqn = AstUtilities.getFqnName(path);
+        if (fqn == null || fqn.length() == 0) {
+            return Collections.emptySet();
+        }
+        Set<IndexedField> fields = index.getInheritedFields(fqn, "", NameKind.PREFIX, false);
+        Set<String> fieldNames = new HashSet<String>();
+        for (IndexedField f : fields) {
+            fieldNames.add(f.getName());
+        }
+        
+        return fieldNames;
+    }
+    
+    public static Set<String> getUsedMethods(RubyIndex index, AstPath path) {
+        String fqn = AstUtilities.getFqnName(path);
+        if (fqn == null || fqn.length() == 0) {
+            return Collections.emptySet();
+        }
+        Set<IndexedMethod> methods = index.getInheritedMethods(fqn, "", NameKind.PREFIX);
+        Set<String> methodNames = new HashSet<String>();
+        for (IndexedMethod m : methods) {
+            methodNames.add(m.getName());
+        }
+        
+        return methodNames;
+    }
+    
+    /** @todo Implement properly */
+    public static Set<String> getUsedConstants(RubyIndex index, AstPath path) {
+        //String fqn = AstUtilities.getFqnName(path);
+        //if (fqn == null || fqn.length() == 0) {
+            return Collections.emptySet();
+        //}
+        //Set<IndexedConstant> constants = index.getInheritedConstants(fqn, "", NameKind.PREFIX);
+        //Set<String> constantNames = new HashSet<String>();
+        //for (IndexedConstant m : constants) {
+        //    constantNames.add(m.getName());
+        //}
+        //
+        //return constantNames;
+    }
+    
+    public static Set<String> getUsedLocalNames(AstPath path, Node closest) {
+        Node method = AstUtilities.findLocalScope(closest, path);
+        Map<String, Node> variables = new HashMap<String, Node>();
+        // Add locals
+        CodeCompleter.addLocals(method, variables);
+
+        List<Node> applicableBlocks = AstUtilities.getApplicableBlocks(path, false);
+        for (Node block : applicableBlocks) {
+            CodeCompleter.addDynamic(block, variables);
+        }
+        
+        return variables.keySet();
     }
 }

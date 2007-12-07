@@ -49,7 +49,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.gsf.EditorAction;
-import org.netbeans.api.gsf.GsfTokenId;
+import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
@@ -91,7 +91,7 @@ public class ReflowParagraphAction extends AbstractAction implements EditorActio
     }
 
     public void actionPerformed(ActionEvent ev) {
-        JEditorPane pane = NbUtilities.getOpenPane();
+        JTextComponent pane = NbUtilities.getOpenPane();
 
         if (pane != null) {
             actionPerformed(pane);
@@ -166,7 +166,7 @@ public class ReflowParagraphAction extends AbstractAction implements EditorActio
                 outer:
                 while (end >= start) {
                     // Search backwards from end for the first comment
-                    TokenSequence<? extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, end);
+                    TokenSequence<? extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(doc, end);
                     if (ts == null) {
                         return;
                     }
@@ -175,7 +175,7 @@ public class ReflowParagraphAction extends AbstractAction implements EditorActio
                     int offset = end;
                     while (ts.movePrevious() && ts.offset() >= start) {
                         offset = ts.offset();
-                        Token<? extends GsfTokenId> token = ts.token();
+                        Token<? extends RubyTokenId> token = ts.token();
                         if (token.id() == RubyTokenId.DOCUMENTATION || token.id() == RubyTokenId.LINE_COMMENT) {
                             OffsetRange range = findParagraph(offset);
 
@@ -202,7 +202,7 @@ public class ReflowParagraphAction extends AbstractAction implements EditorActio
                     // PENDING - Be smarter about empty lines -- do previous line for example? Or next?
                     return;
                 }
-                Token<? extends GsfTokenId> token = LexUtilities.getToken(doc, offset);
+                Token<? extends RubyTokenId> token = LexUtilities.getToken(doc, offset);
                 if (token == null) {
                     return;
                 }
@@ -250,7 +250,7 @@ public class ReflowParagraphAction extends AbstractAction implements EditorActio
 
                     offset = Utilities.getRowStart(doc, offset);
                     int lineBegin = Utilities.getRowFirstNonWhite(doc, offset);
-                    Token<? extends GsfTokenId> token = LexUtilities.getToken(doc, lineBegin);
+                    Token<? extends RubyTokenId> token = LexUtilities.getToken(doc, lineBegin);
                     if (token == null) {
                         break;
                     }
@@ -305,7 +305,7 @@ public class ReflowParagraphAction extends AbstractAction implements EditorActio
                     offset = Utilities.getRowStart(doc, offset);
                     int lineBegin = Utilities.getRowFirstNonWhite(doc, offset);
                     int lineEnd = Utilities.getRowEnd(doc, offset);
-                    Token<? extends GsfTokenId> token = LexUtilities.getToken(doc, lineBegin);
+                    Token<? extends RubyTokenId> token = LexUtilities.getToken(doc, lineBegin);
                     if (token == null) {
                         break;
                     }

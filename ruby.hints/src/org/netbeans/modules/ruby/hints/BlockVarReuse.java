@@ -35,9 +35,6 @@ import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.jruby.ast.IterNode;
-import org.jruby.ast.LocalAsgnNode;
-import org.jruby.ast.LocalVarNode;
-import org.jruby.ast.MethodDefNode;
 import org.jruby.ast.Node;
 import org.jruby.ast.NodeTypes;
 import org.jruby.ast.types.INameNode;
@@ -53,6 +50,7 @@ import org.netbeans.modules.ruby.hints.spi.EditList;
 import org.netbeans.modules.ruby.hints.spi.Fix;
 import org.netbeans.modules.ruby.hints.spi.HintSeverity;
 import org.netbeans.modules.ruby.hints.spi.PreviewableFix;
+import org.netbeans.modules.ruby.hints.spi.RuleContext;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.util.NbBundle;
 
@@ -98,7 +96,10 @@ public class BlockVarReuse implements AstRule {
         return NbBundle.getMessage(BlockVarReuse.class, "UnintentionalSideEffectDesc");
     }
 
-    public void run(CompilationInfo info, Node node, AstPath path, int caretOffset, List<Description> result) {
+    public void run(RuleContext context, List<Description> result) {
+        Node node = context.node;
+        CompilationInfo info = context.compilationInfo;
+
         if (node.nodeId == NodeTypes.ITERNODE) {
             // Check the children and see if we have a LocalAsgnNode; these are going
             // to be local variable reuses
@@ -106,7 +107,7 @@ public class BlockVarReuse implements AstRule {
             List<Node> list = node.childNodes();
 
             for (Node child : list) {
-                if (child instanceof LocalAsgnNode) {
+                if (child.nodeId == NodeTypes.LOCALASGNNODE) {
 
                     OffsetRange range = AstUtilities.getNameRange(child);
                     List<Fix> fixList = new ArrayList<Fix>(2);
@@ -180,7 +181,7 @@ public class BlockVarReuse implements AstRule {
             for (Node child : list) {
 
                 // Skip inline method defs
-                if (child instanceof MethodDefNode) {
+                if (child.nodeId == NodeTypes.DEFNNODE || child.nodeId == NodeTypes.DEFSNODE) {
                     continue;
                 }
 

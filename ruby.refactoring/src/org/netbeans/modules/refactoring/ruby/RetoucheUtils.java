@@ -49,7 +49,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -65,11 +64,11 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.gsf.GsfTokenId;
 import org.netbeans.api.gsfpath.classpath.ClassPath;
 import org.netbeans.api.gsfpath.classpath.GlobalPathRegistry;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -87,7 +86,6 @@ import org.netbeans.modules.ruby.RubyMimeResolver;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
-import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.netbeans.modules.ruby.rubyproject.RubyProject;
 import org.netbeans.spi.gsfpath.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
@@ -238,9 +236,9 @@ public class RetoucheUtils {
         Lookup lookup = MimeLookup.getLookup(MimePath.get(RubyMimeResolver.RUBY_MIME_TYPE));
         FontColorSettings settings = lookup.lookup(FontColorSettings.class);
         @SuppressWarnings("unchecked")
-        TokenSequence<GsfTokenId> tok = tokenH.tokenSequence();
+        TokenSequence<? extends TokenId> tok = tokenH.tokenSequence();
         while (tok.moveNext()) {
-            Token<GsfTokenId> token = tok.token();
+            Token<? extends TokenId> token = tok.token();
             String category = token.id().name();
             AttributeSet set = settings.getTokenFontColors(category);
             if (set == null) {

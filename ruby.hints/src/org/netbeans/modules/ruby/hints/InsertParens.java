@@ -28,7 +28,6 @@
 package org.netbeans.modules.ruby.hints;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.jruby.ast.Node;
@@ -45,6 +44,7 @@ import org.netbeans.modules.ruby.hints.spi.ErrorRule;
 import org.netbeans.modules.ruby.hints.spi.Fix;
 import org.netbeans.modules.ruby.hints.spi.HintSeverity;
 import org.netbeans.modules.ruby.hints.spi.PreviewableFix;
+import org.netbeans.modules.ruby.hints.spi.RuleContext;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.util.NbBundle;
 
@@ -70,9 +70,10 @@ public class InsertParens implements ErrorRule {
         return Collections.singleton("parenthesize argument(s) for future version");
     }
 
-    public void run(CompilationInfo info, Error error,
+    public void run(RuleContext context, Error error,
              List<Description> result) {
- 
+        CompilationInfo info = context.compilationInfo;
+
         Node root = AstUtilities.getRoot(info);
         if (root != null) {
             int offset = error.getStartPosition().getOffset();

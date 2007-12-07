@@ -43,7 +43,6 @@ package org.netbeans.modules.ruby.hints.spi;
 
 import java.util.List;
 import java.util.Set;
-import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.Error;
 
 /** 
@@ -63,7 +62,7 @@ public interface ErrorRule extends Rule {//XXX: should ErrorRule extend Rule?
 
     /** Return possible fixes for a given diagnostic report.
      */
-    public void run(CompilationInfo compilationInfo, Error error/*, Data<T> data*/,
+    public void run(RuleContext context, Error error,
              List<Description> result);
 
 }

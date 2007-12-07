@@ -61,7 +61,8 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
  * @author Miloslav Metelka
  * @version 1.00
  */
-public enum RubyStringTokenId implements TokenId {STRING_TEXT("string"),
+public enum RubyStringTokenId implements TokenId {
+    STRING_TEXT("string"),
     STRING_ESCAPE("string-escape"),
     STRING_INVALID("string-escape-invalid"),
     EMBEDDED_RUBY("string");

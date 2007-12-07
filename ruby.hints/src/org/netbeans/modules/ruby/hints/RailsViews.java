@@ -42,13 +42,13 @@ import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.ruby.Arity;
-import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.hints.spi.AstRule;
 import org.netbeans.modules.ruby.hints.spi.Description;
 import org.netbeans.modules.ruby.hints.spi.Fix;
 import org.netbeans.modules.ruby.hints.spi.HintSeverity;
+import org.netbeans.modules.ruby.hints.spi.RuleContext;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -71,7 +71,9 @@ public class RailsViews implements AstRule {
         return Collections.singleton(NodeTypes.DEFNNODE);
     }
     
-    public void run(CompilationInfo info, Node node, AstPath path, int caretOffset, List<Description> result) {
+    public void run(RuleContext context, List<Description> result) {
+        Node node = context.node;
+        CompilationInfo info = context.compilationInfo;
         
         // See if this ia an action method and see if it has a view
         FileObject file = info.getFileObject();

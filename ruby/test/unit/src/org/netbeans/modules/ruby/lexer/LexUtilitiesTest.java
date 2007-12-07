@@ -44,7 +44,7 @@ package org.netbeans.modules.ruby.lexer;
 import javax.swing.text.Document;
 import junit.framework.TestCase;
 import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.GsfTokenId;
+import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -106,8 +106,8 @@ public class LexUtilitiesTest extends RubyTestBase {
 //
 //    public void testFindHeredocEnd() {
 //        System.out.println("findHeredocEnd");
-//        TokenSequence<? extends GsfTokenId> ts = null;
-//        Token<? extends GsfTokenId> startToken = null;
+//        TokenSequence<? extends RubyTokenId> ts = null;
+//        Token<? extends RubyTokenId> startToken = null;
 //        OffsetRange expResult = null;
 //        OffsetRange result = LexUtilities.findHeredocEnd(ts, startToken);
 //        assertEquals(expResult, result);
@@ -116,8 +116,8 @@ public class LexUtilitiesTest extends RubyTestBase {
 //
 //    public void testFindHeredocBegin() {
 //        System.out.println("findHeredocBegin");
-//        TokenSequence<? extends GsfTokenId> ts = null;
-//        Token<? extends GsfTokenId> endToken = null;
+//        TokenSequence<? extends RubyTokenId> ts = null;
+//        Token<? extends RubyTokenId> endToken = null;
 //        OffsetRange expResult = null;
 //        OffsetRange result = LexUtilities.findHeredocBegin(ts, endToken);
 //        assertEquals(expResult, result);
@@ -127,7 +127,7 @@ public class LexUtilitiesTest extends RubyTestBase {
 //    public void testFindFwd() {
 //        System.out.println("findFwd");
 //        BaseDocument doc = null;
-//        TokenSequence<? extends GsfTokenId> ts = null;
+//        TokenSequence<? extends RubyTokenId> ts = null;
 //        TokenId up = null;
 //        TokenId down = null;
 //        OffsetRange expResult = null;
@@ -139,7 +139,7 @@ public class LexUtilitiesTest extends RubyTestBase {
 //    public void testFindBwd() {
 //        System.out.println("findBwd");
 //        BaseDocument doc = null;
-//        TokenSequence<? extends GsfTokenId> ts = null;
+//        TokenSequence<? extends RubyTokenId> ts = null;
 //        TokenId up = null;
 //        TokenId down = null;
 //        OffsetRange expResult = null;
@@ -151,7 +151,7 @@ public class LexUtilitiesTest extends RubyTestBase {
 //    public void testFindBegin() {
 //        System.out.println("findBegin");
 //        BaseDocument doc = null;
-//        TokenSequence<? extends GsfTokenId> ts = null;
+//        TokenSequence<? extends RubyTokenId> ts = null;
 //        OffsetRange expResult = null;
 //        OffsetRange result = LexUtilities.findBegin(doc, ts);
 //        assertEquals(expResult, result);
@@ -161,7 +161,7 @@ public class LexUtilitiesTest extends RubyTestBase {
 //    public void testFindEnd() {
 //        System.out.println("findEnd");
 //        BaseDocument doc = null;
-//        TokenSequence<? extends GsfTokenId> ts = null;
+//        TokenSequence<? extends RubyTokenId> ts = null;
 //        OffsetRange expResult = null;
 //        OffsetRange result = LexUtilities.findEnd(doc, ts);
 //        assertEquals(expResult, result);

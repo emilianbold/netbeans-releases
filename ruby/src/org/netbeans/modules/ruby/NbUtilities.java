@@ -55,6 +55,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.editor.BaseDocument;
 
 import org.openide.ErrorManager;
@@ -84,22 +85,24 @@ public class NbUtilities {
     private NbUtilities() {
     }
 
-    public static JEditorPane getOpenPane() {
-        // TODO - switch to the edtor registry!
-        Node[] arr = TopComponent.getRegistry().getActivatedNodes();
+    public static JTextComponent getOpenPane() {
+        JTextComponent pane = EditorRegistry.lastFocusedComponent();
 
-        if (arr.length > 0) {
-            EditorCookie ec = arr[0].getCookie(EditorCookie.class);
-
-            if (ec != null) {
-                JEditorPane[] openedPanes = ec.getOpenedPanes();
-
-                if ((openedPanes != null) && (openedPanes.length > 0)) {
-                    return openedPanes[0];
-                }
+        return pane;
+    }
+    
+    public static JTextComponent getPaneFor(FileObject fo) {
+        JTextComponent pane = getOpenPane();
+        if (pane != null && findFileObject(pane) == fo) { 
+            return pane;
+        }
+        
+        for (JTextComponent c : EditorRegistry.componentList()) {
+            if (findFileObject(c) == fo) {
+                return c;
             }
         }
-
+        
         return null;
     }
     

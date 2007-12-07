@@ -55,7 +55,6 @@ import org.jruby.ast.NewlineNode;
 import org.jruby.ast.Node;
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.EditorOptions;
-import org.netbeans.api.gsf.GsfTokenId;
 import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -128,7 +127,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
     /** Tokens which indicate that we're within a literal string */
     private final static TokenId[] STRING_TOKENS = // XXX What about RubyTokenId.STRING_BEGIN or QUOTED_STRING_BEGIN?
         {
-            RubyTokenId.STRING_LITERAL, RubyTokenId.QUOTED_STRING_LITERAL, RubyTokenId.CHAR_LITERAL,
+            RubyTokenId.STRING_LITERAL, RubyTokenId.QUOTED_STRING_LITERAL,
             RubyTokenId.STRING_END, RubyTokenId.QUOTED_STRING_END
         };
 
@@ -188,12 +187,12 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
         
         // Look for an unterminated heredoc string
         if (lineBegin != -1 && lineEnd != -1) {
-            TokenSequence<?extends GsfTokenId> lineTs = LexUtilities.getRubyTokenSequence(doc, offset);
+            TokenSequence<?extends RubyTokenId> lineTs = LexUtilities.getRubyTokenSequence(doc, offset);
             if (lineTs != null) {
                 lineTs.move(lineBegin);
                 StringBuilder sb = new StringBuilder();
                 while (lineTs.moveNext() && lineTs.offset() <= lineEnd) {
-                    Token<?extends GsfTokenId> token = lineTs.token();
+                    Token<?extends RubyTokenId> token = lineTs.token();
                     TokenId id = token.id();
                     
                     if (id == RubyTokenId.STRING_BEGIN) {
@@ -227,7 +226,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                             // Next token should be string contents or a string end marker
                             //boolean addEndMarker = true;
 
-                            TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, offset);
+                            TokenSequence<?extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(doc, offset);
                             ts.move(offset);
                             // XXX No, this is bogus, find a better way to detect whether the string is matched,
                             // perhaps using "find matching?"
@@ -257,7 +256,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
             }
         }
         
-        TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, offset);
+        TokenSequence<?extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(doc, offset);
 
         if (ts == null) {
             return -1;
@@ -269,7 +268,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
             return -1;
         }
 
-        Token<?extends GsfTokenId> token = ts.token();
+        Token<?extends RubyTokenId> token = ts.token();
         TokenId id = token.id();
 
         // Is it an umatched =begin token?
@@ -385,7 +384,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
             if (rowStart > 0) {                
                 int prevBegin = Utilities.getRowFirstNonWhite(doc, rowStart-1);
                 if (prevBegin != -1) {
-                    Token<? extends GsfTokenId> firstToken = LexUtilities.getToken(doc, prevBegin);
+                    Token<? extends RubyTokenId> firstToken = LexUtilities.getToken(doc, prevBegin);
                     if (firstToken.id() == RubyTokenId.LINE_COMMENT) {
                         previousLineWasComment = true;
                     }                
@@ -405,7 +404,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                 } else if (CONTINUE_COMMENTS) {
                     // See if the "continue comments" options is turned on, and this is a line that
                     // contains only a comment (after leading whitespace)
-                    Token<? extends GsfTokenId> firstToken = LexUtilities.getToken(doc, begin);
+                    Token<? extends RubyTokenId> firstToken = LexUtilities.getToken(doc, begin);
                     if (firstToken.id() == RubyTokenId.LINE_COMMENT) {
                         continueComment = true;
                     }
@@ -417,7 +416,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                     if (nextLine < doc.getLength()) {
                         int nextLineFirst = Utilities.getRowFirstNonWhite(doc, nextLine);
                         if (nextLineFirst != -1) {
-                            Token<? extends GsfTokenId> firstToken = LexUtilities.getToken(doc, nextLineFirst);
+                            Token<? extends RubyTokenId> firstToken = LexUtilities.getToken(doc, nextLineFirst);
                             if (firstToken != null && firstToken.id() == RubyTokenId.LINE_COMMENT) {
                                 continueComment = true;
                             }
@@ -539,7 +538,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                             // and if so refrain from inserting the end
                             int lineBegin = Utilities.getRowFirstNonWhite(doc, next);
 
-                            Token<?extends GsfTokenId> token =
+                            Token<?extends RubyTokenId> token =
                                 LexUtilities.getToken(doc, lineBegin);
 
                             if ((token != null) && LexUtilities.isIndentToken(token.id()) &&
@@ -650,7 +649,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
             }
         }
 
-        TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, caretOffset);
+        TokenSequence<?extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(doc, caretOffset);
 
         if (ts == null) {
             return false;
@@ -662,7 +661,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
             return false;
         }
 
-        Token<?extends GsfTokenId> token = ts.token();
+        Token<?extends RubyTokenId> token = ts.token();
         TokenId id = token.id();
         TokenId[] stringTokens = null;
         TokenId beginTokenId = null;
@@ -781,7 +780,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
     // For debugging purposes
     // Probably obsolete - see the tokenspy utility in gsf debugging tools for better help
     //private void dumpTokens(BaseDocument doc, int dot) {
-    //    TokenSequence< ?extends GsfTokenId> ts = LexUtilities.getTokenSequence(doc);
+    //    TokenSequence< ?extends RubyTokenId> ts = LexUtilities.getTokenSequence(doc);
     //
     //    System.out.println("Dumping tokens for dot=" + dot);
     //    int prevOffset = -1;
@@ -789,7 +788,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
     //        ts.moveFirst();
     //        int index = 0;
     //        do {
-    //            Token<? extends GsfTokenId> token = ts.token();
+    //            Token<? extends RubyTokenId> token = ts.token();
     //            int offset = ts.offset();
     //            String id = token.id().toString();
     //            String text = token.text().toString().replaceAll("\n", "\\\\n");
@@ -823,7 +822,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
         BaseDocument doc = (BaseDocument)document;
 
         if (REFLOW_COMMENTS) {
-            Token<?extends GsfTokenId> token = LexUtilities.getToken(doc, dotPos);
+            Token<?extends RubyTokenId> token = LexUtilities.getToken(doc, dotPos);
             if (token != null) {
                 TokenId id = token.id();
                 if (id == RubyTokenId.LINE_COMMENT || id == RubyTokenId.DOCUMENTATION) {
@@ -840,7 +839,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                 // Revert indentation iff the character at the insert position does
                 // not start a new token (e.g. the previous token that we reindented
                 // was not complete)
-                TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, dotPos);
+                TokenSequence<?extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(doc, dotPos);
 
                 if (ts != null) {
                     ts.move(dotPos);
@@ -858,7 +857,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
         switch (ch) {
         case '#': {
             // Automatically insert #{^} when typing "#" in a quoted string or regexp
-            Token<?extends GsfTokenId> token = LexUtilities.getToken(doc, dotPos);
+            Token<?extends RubyTokenId> token = LexUtilities.getToken(doc, dotPos);
             if (token == null) {
                 return true;
             }
@@ -883,14 +882,14 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
             }
 
             
-            Token<?extends GsfTokenId> token = LexUtilities.getToken(doc, dotPos);
+            Token<?extends RubyTokenId> token = LexUtilities.getToken(doc, dotPos);
             if (token == null) {
                 return true;
             }
             TokenId id = token.id();
 
             if ((ch == '{') && (id == RubyTokenId.ERROR && dotPos > 0)) {
-                Token<? extends GsfTokenId> prevToken = LexUtilities.getToken(doc, dotPos-1);
+                Token<? extends RubyTokenId> prevToken = LexUtilities.getToken(doc, dotPos-1);
                 if (prevToken != null) {
                     TokenId prevId = prevToken.id();
                     if (prevId == RubyTokenId.STRING_LITERAL || prevId == RubyTokenId.REGEXP_LITERAL) {
@@ -909,7 +908,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
             }
              
             if (ch == '}' && (id == RubyTokenId.QUOTED_STRING_LITERAL || id == RubyTokenId.REGEXP_LITERAL)) {
-                Token<? extends GsfTokenId> prevToken = LexUtilities.getToken(doc, dotPos-1);
+                Token<? extends RubyTokenId> prevToken = LexUtilities.getToken(doc, dotPos-1);
                 if (prevToken != null) {
                     TokenId prevId = prevToken.id();
                     if (prevId == RubyTokenId.EMBEDDED_RUBY) {
@@ -1007,7 +1006,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
             // Bracket matching for regular expressions has to be done AFTER the
             // character is inserted into the document such that I can use the lexer
             // to determine whether it's a division (e.g. x/y) or a regular expression (/foo/)
-            Token<?extends GsfTokenId> token = LexUtilities.getToken(doc, dotPos);
+            Token<?extends RubyTokenId> token = LexUtilities.getToken(doc, dotPos);
             if (token != null) {
                 TokenId id = token.id();
 
@@ -1032,7 +1031,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                 return false;
             }
 
-            Token<?extends GsfTokenId> token = LexUtilities.getToken(doc, dotPos);
+            Token<?extends RubyTokenId> token = LexUtilities.getToken(doc, dotPos);
             if (token == null) {
                 return true;
             }
@@ -1059,10 +1058,10 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                     boolean found = false;
                     int lineEnd = Utilities.getRowEnd(doc, dotPos);
                     if (lineEnd > dotPos+1) {
-                        TokenSequence<? extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, dotPos+1);
+                        TokenSequence<? extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(doc, dotPos+1);
                         ts.move(dotPos+1);
                         while (ts.moveNext() && ts.offset() < lineEnd) {
-                            Token<? extends GsfTokenId> t = ts.token();
+                            Token<? extends RubyTokenId> t = ts.token();
                             if (t.id() == RubyTokenId.IDENTIFIER && t.length() == 1 && "|".equals(t.text().toString())) {
                                 found = true;
                                 break;
@@ -1086,7 +1085,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
     }
     
     private boolean isBlockDefinition(BaseDocument doc, int dotPos) throws BadLocationException {
-        TokenSequence<? extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, dotPos);
+        TokenSequence<? extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(doc, dotPos);
         int lineStart = Utilities.getRowStart(doc, dotPos);
         ts.move(dotPos+1);
         while (ts.movePrevious() && ts.offset() >= lineStart) {
@@ -1107,7 +1106,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
 
     private void reindent(BaseDocument doc, int offset, TokenId id, Caret caret)
         throws BadLocationException {
-        TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, offset);
+        TokenSequence<?extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(doc, offset);
 
         if (ts != null) {
             ts.move(offset);
@@ -1116,7 +1115,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                 return;
             }
 
-            Token<?extends GsfTokenId> token = ts.token();
+            Token<?extends RubyTokenId> token = ts.token();
 
             if ((token.id() == id)) {
                 final int rowFirstNonWhite = Utilities.getRowFirstNonWhite(doc, offset);
@@ -1157,7 +1156,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
     public OffsetRange findMatching(Document document, int offset /*, boolean simpleSearch*/) {
         BaseDocument doc = (BaseDocument)document;
 
-        TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, offset);
+        TokenSequence<?extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(doc, offset);
 
         if (ts != null) {
             ts.move(offset);
@@ -1166,7 +1165,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                 return OffsetRange.NONE;
             }
 
-            Token<?extends GsfTokenId> token = ts.token();
+            Token<?extends RubyTokenId> token = ts.token();
 
             if (token == null) {
                 return OffsetRange.NONE;
@@ -1271,7 +1270,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
         switch (ch) {
         case ' ': {
         // Backspacing over "# " ? Delete the "#" too!
-            TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, dotPos);
+            TokenSequence<?extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(doc, dotPos);
             ts.move(dotPos);
             if ((ts.moveNext() || ts.movePrevious()) && (ts.offset() == dotPos-1 && ts.token().id() == RubyTokenId.LINE_COMMENT)) {
                 doc.remove(dotPos-1, 1);
@@ -1284,7 +1283,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
 
         case '{': {
             // Attempt to fix #{} in chars
-            Token<? extends GsfTokenId> token = LexUtilities.getToken(doc, dotPos-1);
+            Token<? extends RubyTokenId> token = LexUtilities.getToken(doc, dotPos-1);
             if (token != null && (token.id() == RubyTokenId.QUOTED_STRING_LITERAL || token.id() == RubyTokenId.REGEXP_LITERAL)) {
                 String s = document.getText(dotPos-1, 2);
                 if ("#}".equals(s)) {
@@ -1364,7 +1363,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
 
         boolean skipClosingBracket = false; // by default do not remove
 
-        TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, caretOffset);
+        TokenSequence<?extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(doc, caretOffset);
 
         if (ts == null) {
             return false;
@@ -1378,7 +1377,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
             return false;
         }
 
-        Token<?extends GsfTokenId> token = ts.token();
+        Token<?extends RubyTokenId> token = ts.token();
 
         // Check whether character follows the bracket is the same bracket
         if ((token != null) && (token.id() == bracketId)) {
@@ -1390,7 +1389,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
             // Skip all the brackets of the same type that follow the last one
             ts.moveNext();
 
-            Token<?extends GsfTokenId> nextToken = ts.token();
+            Token<?extends RubyTokenId> nextToken = ts.token();
 
             while ((nextToken != null) && (nextToken.id() == bracketId)) {
                 token = nextToken;
@@ -1407,7 +1406,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
             // Search would stop on an extra opening left brace if found
             int braceBalance = 0; // balance of '{' and '}'
             int bracketBalance = -1; // balance of the brackets or parenthesis
-            Token<?extends GsfTokenId> lastRBracket = token;
+            Token<?extends RubyTokenId> lastRBracket = token;
             ts.movePrevious();
             token = ts.token();
 
@@ -1584,7 +1583,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
             return false;
         }
 
-        TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, dotPos);
+        TokenSequence<?extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(doc, dotPos);
 
         if (ts == null) {
             return false;
@@ -1596,8 +1595,8 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
             return false;
         }
 
-        Token<?extends GsfTokenId> token = ts.token();
-        Token<?extends GsfTokenId> previousToken = null;
+        Token<?extends RubyTokenId> token = ts.token();
+        Token<?extends RubyTokenId> previousToken = null;
 
         if (ts.movePrevious()) {
             previousToken = ts.token();
@@ -1644,8 +1643,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                 if ((dotPos - 1) > 0) {
                     token = LexUtilities.getToken(doc, dotPos - 1);
                     // XXX TODO use language embedding to handle this
-                    insideString = (token.id() == RubyTokenId.STRING_LITERAL) ||
-                        (token.id() == RubyTokenId.CHAR_LITERAL);
+                    insideString = (token.id() == RubyTokenId.STRING_LITERAL);
                 }
             }
         }
@@ -1819,7 +1817,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                 }
             }
 
-            Token<?extends GsfTokenId> token = LexUtilities.getToken(doc, caretOffset);
+            Token<?extends RubyTokenId> token = LexUtilities.getToken(doc, caretOffset);
             
             if ((token != null) && (token.id() == RubyTokenId.LINE_COMMENT)) {
                 // First add a range for the current line
@@ -1864,7 +1862,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                     int offset = token.offset(th);
                     ranges.add(new OffsetRange(offset, offset + token.length()));
                 }
-            } else if (token != null && token.id() == GsfTokenId.DOCUMENTATION) {
+            } else if (token != null && token.id() == RubyTokenId.DOCUMENTATION) {
                 // Select the whole token block
                 TokenHierarchy<BaseDocument> th = TokenHierarchy.get(doc);
                 int begin = token.offset(th);
@@ -1914,7 +1912,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
     // UGH - this method has gotten really ugly after successive refinements based on unit tests - consider cleaning up
     public int getNextWordOffset(Document document, int offset, boolean reverse) {
         BaseDocument doc = (BaseDocument)document;
-        TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, offset);
+        TokenSequence<?extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(doc, offset);
         if (ts == null) {
             return -1;
         }
@@ -1928,7 +1926,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
             }
         }
 
-        Token<? extends GsfTokenId> token = ts.token();
+        Token<? extends RubyTokenId> token = ts.token();
         TokenId id = token.id();
 
         if (id == RubyTokenId.WHITESPACE) {

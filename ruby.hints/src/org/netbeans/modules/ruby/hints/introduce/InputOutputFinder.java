@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.ruby.hints.introduce;
 
+import org.netbeans.modules.ruby.ParseTreeVisitor;
+import org.netbeans.modules.ruby.ParseTreeWalker;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;

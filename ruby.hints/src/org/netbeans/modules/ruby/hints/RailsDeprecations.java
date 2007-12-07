@@ -49,6 +49,7 @@ import org.netbeans.modules.ruby.hints.spi.AstRule;
 import org.netbeans.modules.ruby.hints.spi.Description;
 import org.netbeans.modules.ruby.hints.spi.Fix;
 import org.netbeans.modules.ruby.hints.spi.HintSeverity;
+import org.netbeans.modules.ruby.hints.spi.RuleContext;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.util.NbBundle;
 
@@ -133,7 +134,11 @@ public class RailsDeprecations implements AstRule {
         return Collections.singleton(NodeTypes.ROOTNODE);
     }
 
-    public void run(CompilationInfo info, Node root, AstPath path, int caretOffset, List<Description> result) {
+    public void run(RuleContext context, List<Description> result) {
+        Node root = context.node;
+        CompilationInfo info = context.compilationInfo;
+        AstPath path = context.path;
+
         if (root == null) {
             return;
         }

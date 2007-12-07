@@ -44,7 +44,7 @@ package org.netbeans.modules.ruby.lexer;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
-import org.netbeans.api.gsf.GsfTokenId;
+import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.netbeans.api.gsf.annotations.NonNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -148,7 +148,7 @@ public class Call {
     @SuppressWarnings("unchecked")
     @NonNull
     public static Call getCallType(BaseDocument doc, TokenHierarchy<Document> th, int offset) {
-        TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(th, offset);
+        TokenSequence<?extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(th, offset);
 
         if (ts == null) {
             return Call.NONE;
@@ -169,7 +169,7 @@ public class Call {
             ts.movePrevious();
         }
 
-        Token<?extends GsfTokenId> token = ts.token();
+        Token<?extends RubyTokenId> token = ts.token();
 
         if (token != null) {
             TokenId id = token.id();

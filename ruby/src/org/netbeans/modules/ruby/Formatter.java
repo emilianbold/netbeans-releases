@@ -47,8 +47,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 
-import org.netbeans.api.gsf.FormattingPreferences;
-import org.netbeans.api.gsf.GsfTokenId;
+import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.api.gsf.ParserResult;
 import org.netbeans.api.lexer.Token;
@@ -92,7 +91,7 @@ end
  */
 public class Formatter implements org.netbeans.api.gsf.Formatter {
     private boolean isRhtmlDocument;
-    private CodeStyle codeStyle;
+    private final CodeStyle codeStyle;
     private int rightMarginOverride = -1;
 
     public Formatter() {
@@ -105,16 +104,12 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
         this.rightMarginOverride = rightMarginOverride;
     }
     
-    // Compatibility only - remove soon
-    public void reformat(Document document, ParserResult result, FormattingPreferences preferences,
-        Caret caret) {
-        reformat(document, 0, document.getLength(), result, preferences);
+    public void reindent(Document document, int startOffset, int endOffset, ParserResult result) {
+        reindent(document, startOffset, endOffset, result, true);
     }
 
-    public void reformat(Document document, int startOffset, int endOffset, ParserResult result,
-        FormattingPreferences preferences) {
-
-        reindent(document, startOffset, endOffset, result, preferences, false);
+    public void reformat(Document document, int startOffset, int endOffset, ParserResult result) {
+        reindent(document, startOffset, endOffset, result, false);
     }
     
     public int indentSize() {
@@ -127,7 +122,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
 
     /** Compute the initial balance of brackets at the given offset. */
     private int getFormatStableStart(BaseDocument doc, int offset) {
-        TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, offset);
+        TokenSequence<?extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(doc, offset);
         if (ts == null) {
             return 0;
         }
@@ -141,7 +136,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
         // Look backwards to find a suitable context - a class, module or method definition
         // which we will assume is properly indented and balanced
         do {
-            Token<?extends GsfTokenId> token = ts.token();
+            Token<?extends RubyTokenId> token = ts.token();
             TokenId id = token.id();
 
             if (id == RubyTokenId.CLASS || id == RubyTokenId.MODULE || id == RubyTokenId.DEF) {
@@ -152,8 +147,8 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
         return ts.offset();
     }
     
-    private int getTokenBalanceDelta(TokenId id, Token<? extends GsfTokenId> token,
-            BaseDocument doc, TokenSequence<? extends GsfTokenId> ts, boolean includeKeywords) {
+    public static int getTokenBalanceDelta(TokenId id, Token<? extends RubyTokenId> token,
+            BaseDocument doc, TokenSequence<? extends RubyTokenId> ts, boolean includeKeywords) {
         if (id == RubyTokenId.IDENTIFIER) {
             // In some cases, the [ shows up as an identifier, for example in this expression:
             //  for k, v in sort{|a1, a2| a1[0].id2name <=> a2[0].id2name}
@@ -183,10 +178,10 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
     }
     
     // TODO RHTML - there can be many discontiguous sections, I've gotta process all of them on the given line
-    private int getTokenBalance(BaseDocument doc, int begin, int end, boolean includeKeywords) {
+    public static int getTokenBalance(BaseDocument doc, int begin, int end, boolean includeKeywords, boolean rhtml) {
         int balance = 0;
 
-        if (isRhtmlDocument) {
+        if (rhtml) {
             TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
             // Probably an RHTML file - gotta process it in sections since I can have lines
             // made up of both whitespace, ruby, html and delimiters and all ruby sections
@@ -205,11 +200,11 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
                 TokenId id = token.id();
                 
                 if (id.primaryCategory().equals("ruby")) { // NOI18N
-                    TokenSequence<? extends GsfTokenId> ts = t.embedded(RubyTokenId.language());
+                    TokenSequence<? extends RubyTokenId> ts = t.embedded(RubyTokenId.language());
                     ts.move(begin);
                     ts.moveNext();
                     do {
-                        Token<?extends GsfTokenId> rubyToken = ts.token();
+                        Token<?extends RubyTokenId> rubyToken = ts.token();
                         if (rubyToken == null) {
                             break;
                         }
@@ -221,7 +216,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
 
             } while (t.moveNext() && (t.offset() < end));
         } else {
-            TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, begin);
+            TokenSequence<?extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(doc, begin);
             if (ts == null) {
                 return 0;
             }
@@ -233,7 +228,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
             }
 
             do {
-                Token<?extends GsfTokenId> token = ts.token();
+                Token<?extends RubyTokenId> token = ts.token();
                 TokenId id = token.id();
                 
                 balance += getTokenBalanceDelta(id, token, doc, ts, includeKeywords);
@@ -259,7 +254,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
             // I can't look at the first position on the line, since
             // for a string array that is indented, the indentation portion
             // is recorded as a blank identifier
-            Token<?extends GsfTokenId> token = LexUtilities.getToken(doc, pos);
+            Token<?extends RubyTokenId> token = LexUtilities.getToken(doc, pos);
 
             if (token != null) {
                 TokenId id = token.id();
@@ -276,7 +271,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
                 
                 if (id == RubyTokenId.STRING_END || id == RubyTokenId.QUOTED_STRING_END) {
                     // Possibly a heredoc
-                    TokenSequence<? extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, pos);
+                    TokenSequence<? extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(doc, pos);
                     ts.move(pos);
                     OffsetRange range = LexUtilities.findHeredocBegin(ts, token);
                     if (range != OffsetRange.NONE) {
@@ -295,7 +290,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
             }
         } else {
             // Empty line inside a string, documentation etc. literal?
-            Token<?extends GsfTokenId> token = LexUtilities.getToken(doc, offset);
+            Token<?extends RubyTokenId> token = LexUtilities.getToken(doc, offset);
 
             if (token != null) {
                 TokenId id = token.id();
@@ -327,15 +322,15 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
      *    
      * </pre>   
      */
-    private Token<? extends GsfTokenId> getFirstToken(BaseDocument doc, int offset) throws BadLocationException {
+    private Token<? extends RubyTokenId> getFirstToken(BaseDocument doc, int offset) throws BadLocationException {
         int lineBegin = Utilities.getRowFirstNonWhite(doc, offset);
 
         if (lineBegin != -1) {
             if (isRhtmlDocument) {
-                TokenSequence<? extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, lineBegin);
+                TokenSequence<? extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(doc, lineBegin);
                 if (ts != null) {
                     ts.moveNext();
-                    Token<?extends GsfTokenId> token = ts.token();
+                    Token<?extends RubyTokenId> token = ts.token();
                     while (token != null && token.id() == RubyTokenId.WHITESPACE) {
                         if (!ts.moveNext()) {
                             return null;
@@ -356,7 +351,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
         int lineBegin = Utilities.getRowFirstNonWhite(doc, offset);
 
         if (lineBegin != -1) {
-            Token<?extends GsfTokenId> token = getFirstToken(doc, offset);
+            Token<?extends RubyTokenId> token = getFirstToken(doc, offset);
             
             if (token == null) {
                 return false;
@@ -382,7 +377,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
         }
 
         
-        TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, offset);
+        TokenSequence<?extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(doc, offset);
 
         if (ts == null) {
             return false;
@@ -393,7 +388,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
             return false;
         }
 
-        Token<?extends GsfTokenId> token = ts.token();
+        Token<?extends RubyTokenId> token = ts.token();
 
         if (token != null) {
             TokenId id = token.id();
@@ -444,17 +439,8 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
         return false;
     }
 
-    /** @todo Rewrite to handleposition inside adef to be way off.
-     * This needs to be working to pass in handing indents as well!!!
-     *  I need to 
-     */
-    public void reindent(Document document, int startOffset, int endOffset, ParserResult result,
-        FormattingPreferences preferences) {
-        reindent(document, startOffset, endOffset, result, preferences, true);
-    }
-
     private void reindent(Document document, int startOffset, int endOffset, ParserResult result,
-        FormattingPreferences preferences, boolean indentOnly) {
+        boolean indentOnly) {
         isRhtmlDocument = RubyUtils.isRhtmlDocument(document);
 
         try {
@@ -648,8 +634,8 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
                 int endOfLine = Utilities.getRowEnd(doc, offset) + 1;
 
                 if (lineBegin != -1) {
-                    balance += getTokenBalance(doc, lineBegin, endOfLine, true);
-                    bracketBalance += getTokenBalance(doc, lineBegin, endOfLine, false);
+                    balance += getTokenBalance(doc, lineBegin, endOfLine, true, isRhtmlDocument);
+                    bracketBalance += getTokenBalance(doc, lineBegin, endOfLine, false, isRhtmlDocument);
                     continued = isLineContinued(doc, offset, bracketBalance);
                 }
 

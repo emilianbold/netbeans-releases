@@ -30,7 +30,6 @@ package org.netbeans.modules.gsf;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.gsf.Formatter;
-import org.netbeans.api.gsf.FormattingPreferences;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
 import org.netbeans.modules.editor.indent.spi.ReformatTask;
@@ -39,7 +38,6 @@ public class GsfReformatTask implements ReformatTask {
 
     private Context context;
     private Formatter formatter;
-    private FormattingPreferences preferences;
     
     GsfReformatTask(Context context) {
         this.context = context;
@@ -70,7 +68,7 @@ public class GsfReformatTask implements ReformatTask {
         Formatter f = getFormatter();
         
         if (f != null) {
-            f.reformat(context.document(), context.startOffset(), context.endOffset(), null, preferences);
+            f.reformat(context.document(), context.startOffset(), context.endOffset(), null);
         }
     }
 

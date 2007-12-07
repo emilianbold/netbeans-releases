@@ -56,7 +56,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.gsf.Element;
-import org.netbeans.api.gsf.GsfTokenId;
+import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -672,7 +672,7 @@ class RDocFormatter {
                     escapedText = escapedText.replace("\n", "<br>"); // NOI18N
                 }
 
-                if (t.id() == GsfTokenId.WHITESPACE) {
+                if (t.id() == RubyTokenId.WHITESPACE) {
                     sb.append(escapedText);
                 } else {
                     sb.append("<span style=\""); // NOI18N

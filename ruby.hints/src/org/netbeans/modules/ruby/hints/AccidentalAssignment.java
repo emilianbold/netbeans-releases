@@ -55,7 +55,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
-import org.netbeans.modules.ruby.hints.introduce.ParseTreeWalker;
+import org.netbeans.modules.ruby.ParseTreeWalker;
 import org.netbeans.modules.ruby.hints.spi.AstRule;
 import org.netbeans.modules.ruby.hints.spi.Description;
 import org.netbeans.modules.ruby.hints.spi.EditList;
@@ -64,8 +64,9 @@ import org.netbeans.modules.ruby.hints.spi.HintSeverity;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.util.NbBundle;
 import org.jruby.ast.types.INameNode;
-import org.netbeans.modules.ruby.hints.introduce.ParseTreeVisitor;
+import org.netbeans.modules.ruby.ParseTreeVisitor;
 import org.netbeans.modules.ruby.hints.spi.PreviewableFix;
+import org.netbeans.modules.ruby.hints.spi.RuleContext;
 
 /**
  * Identify "accidental" assignments of the form "if (a = b)" which should have been "if (a == b)"
@@ -80,8 +81,12 @@ public class AccidentalAssignment implements AstRule {
         return Collections.singleton(NodeTypes.IFNODE);
     }
 
-    public void run(CompilationInfo info, Node node, AstPath path, int caretOffset,
+    public void run(RuleContext context,
             List<Description> result) {
+        Node node = context.node;
+        AstPath path = context.path;
+        CompilationInfo info = context.compilationInfo;
+        
         IfNode ifNode = (IfNode) node;
         Node condition = ifNode.getCondition();
         if (condition != null) {

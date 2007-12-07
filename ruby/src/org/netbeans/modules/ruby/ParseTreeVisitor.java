@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,50 +31,35 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.ruby.rubyproject;
 
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import javax.swing.text.JTextComponent;
-import org.netbeans.modules.ruby.NbUtilities;
-import org.openide.util.NbBundle;
-import org.netbeans.api.gsf.EditorAction;
+package org.netbeans.modules.ruby;
+
+import org.jruby.ast.Node;
 
 /**
- * Debug the current focused test or spec (test under caret)
- *
+ * A visitor interface for visitors that want to iterate over a JRuby AST.
+ * 
  * @author Tor Norbye
  */
-public class DebugFocusedTest extends AbstractAction implements EditorAction {
-
-    public DebugFocusedTest() {
-        super(NbBundle.getMessage(DebugFocusedTest.class, "debug-focused-test")); // NOI18N
-        putValue("PopupMenuText", NbBundle.getBundle(DebugFocusedTest.class).getString("popup-debug-focused-test")); // NOI18N
-    }
-
-    public void actionPerformed(ActionEvent evt, JTextComponent target) {
-        RunFocusedTest.runTest(target, true);
-    }
-
-    public String getActionName() {
-        return "debug-focused-test";
-    }
-
-    public Class getShortDescriptionBundleClass() {
-        return DebugFocusedTest.class;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
-
-    public void actionPerformed(ActionEvent ev) {
-        JTextComponent pane = NbUtilities.getOpenPane();
-
-        if (pane != null) {
-            RunFocusedTest.runTest(pane, true);
-        }
-    }
+public interface ParseTreeVisitor {
+    /**
+     * Visit the given node. Return true iff we're "done" with this subtree, meaning that
+     * the children nodes should be skipped.
+     * 
+     * @param node The node to be visited
+     * @return True if the walk is done, false to continue
+     */
+    boolean visit(Node node);
+    /** 
+     * This method is called when visiting this node (and all its children recursively) is done.
+     * Return true iff we're done with iteration of this entire walk completely, in other words
+     * if we should abort.
+     */
+    boolean unvisit(Node node);
 }
+

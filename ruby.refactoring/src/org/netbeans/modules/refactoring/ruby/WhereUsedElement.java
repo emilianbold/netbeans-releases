@@ -57,8 +57,6 @@ import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementati
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
 import org.openide.text.PositionRef;

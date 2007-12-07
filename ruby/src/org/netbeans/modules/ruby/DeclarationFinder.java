@@ -86,7 +86,7 @@ import org.jruby.ast.types.INameNode;
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.DeclarationFinder.DeclarationLocation;
 import org.netbeans.api.gsf.Element;
-import org.netbeans.api.gsf.GsfTokenId;
+import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.netbeans.api.gsf.HtmlFormatter;
 import org.netbeans.api.gsf.NameKind;
 import org.netbeans.api.gsf.OffsetRange;
@@ -150,7 +150,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
             }
         }
         
-        TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(th, lexOffset);
+        TokenSequence<?extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(th, lexOffset);
 
         if (ts == null) {
             return OffsetRange.NONE;
@@ -183,16 +183,16 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
         Token<?> token = ts.token();
         TokenId id = token.id();
 
-        if (id == GsfTokenId.IDENTIFIER) {
+        if (id == RubyTokenId.IDENTIFIER) {
             if (token.length() == 1 && id == RubyTokenId.IDENTIFIER && token.text().toString().equals(",")) {
                 return OffsetRange.NONE;
             }
         }
 
         // TODO: Tokens.SUPER, Tokens.THIS, Tokens.SELF ...
-        if ((id == GsfTokenId.IDENTIFIER) || (id == GsfTokenId.CLASS_VAR) ||
-                (id == GsfTokenId.GLOBAL_VAR) || (id == GsfTokenId.CONSTANT) ||
-                (id == GsfTokenId.TYPE_SYMBOL) || (id == GsfTokenId.INSTANCE_VAR)) {
+        if ((id == RubyTokenId.IDENTIFIER) || (id == RubyTokenId.CLASS_VAR) ||
+                (id == RubyTokenId.GLOBAL_VAR) || (id == RubyTokenId.CONSTANT) ||
+                (id == RubyTokenId.TYPE_SYMBOL) || (id == RubyTokenId.INSTANCE_VAR)) {
             return new OffsetRange(ts.offset(), ts.offset() + token.length());
         }
 
@@ -818,7 +818,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
                     if (index != -1) {
                         // Find string
                         int nameOffset = begin+index+target.length();
-                        TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(th, nameOffset);
+                        TokenSequence<?extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(th, nameOffset);
                         if (ts == null) {
                             return null;
                         }

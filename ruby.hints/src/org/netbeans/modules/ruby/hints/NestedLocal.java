@@ -52,6 +52,7 @@ import org.netbeans.modules.ruby.hints.spi.EditList;
 import org.netbeans.modules.ruby.hints.spi.Fix;
 import org.netbeans.modules.ruby.hints.spi.HintSeverity;
 import org.netbeans.modules.ruby.hints.spi.PreviewableFix;
+import org.netbeans.modules.ruby.hints.spi.RuleContext;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.util.NbBundle;
 
@@ -95,7 +96,11 @@ public class NestedLocal implements AstRule {
         return NbBundle.getMessage(NestedLocal.class, "NestedLocalDesc");
     }
 
-    public void run(CompilationInfo info, Node node, AstPath path, int caretOffset, List<Description> result) {
+    public void run(RuleContext context, List<Description> result) {
+        Node node = context.node;
+        AstPath path = context.path;
+        CompilationInfo info = context.compilationInfo;
+
         if (node.nodeId == NodeTypes.FORNODE) {
             // Check the children and see if we have a LocalAsgnNode; tbese are the
             // loop variables which are NOT local to the for block; if found, go and see

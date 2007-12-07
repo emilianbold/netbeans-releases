@@ -43,9 +43,6 @@ package org.netbeans.modules.ruby.hints.spi;
 
 import java.util.List;
 import java.util.Set;
-import org.jruby.ast.Node;
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.modules.ruby.AstPath;
 
 /**
  * Represents a rule to be run on the source file, passing in some
@@ -65,5 +62,5 @@ public interface AstRule extends UserConfigurableRule {
      * Run the test on given CompilationUnit and return list of Errors or
      * warrnings to be shown in the editor.
      */
-    public void run(CompilationInfo compilationInfo, Node node, AstPath path, int caretOffset, List<Description> result);
+    public void run(RuleContext context, List<Description> result);
 }

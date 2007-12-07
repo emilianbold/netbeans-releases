@@ -57,6 +57,7 @@ import org.netbeans.modules.ruby.hints.spi.EditList;
 import org.netbeans.modules.ruby.hints.spi.Fix;
 import org.netbeans.modules.ruby.hints.spi.HintSeverity;
 import org.netbeans.modules.ruby.hints.spi.PreviewableFix;
+import org.netbeans.modules.ruby.hints.spi.RuleContext;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -111,7 +112,11 @@ public class AttributeIsLocal implements AstRule {
         return Collections.singleton(NodeTypes.LOCALASGNNODE);
     }
 
-    public void run(CompilationInfo info, Node node, AstPath path, int caretOffset, List<Description> result) {
+    public void run(RuleContext context, List<Description> result) {
+        Node node = context.node;
+        AstPath path = context.path;
+        CompilationInfo info = context.compilationInfo;
+        
         String name = ((INameNode)node).getName();
         AstAttributeElement element = null;
         if (attributeNames.contains(name)) {

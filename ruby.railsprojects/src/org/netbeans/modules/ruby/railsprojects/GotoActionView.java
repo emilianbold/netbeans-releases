@@ -71,6 +71,7 @@ public class GotoActionView extends AbstractAction {
             NbBundle.getBundle(GotoActionView.class).getString("editor-popup-goto-action-view")); // NOI18N
     }
     
+    // TODO - move to NbUtilities - and use the editor registry!
     private FileObject getCurrentFile() {
         Node[] activatedNodes = TopComponent.getRegistry().getActivatedNodes();
         if (activatedNodes == null || activatedNodes.length != 1) {
@@ -124,7 +125,7 @@ public class GotoActionView extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent ev) {
-        JEditorPane pane = NbUtilities.getOpenPane();
+        JTextComponent pane = NbUtilities.getOpenPane();
         FileObject fo = getCurrentFile();
         if (fo != null && pane != null) {
             actionPerformed(pane, fo);

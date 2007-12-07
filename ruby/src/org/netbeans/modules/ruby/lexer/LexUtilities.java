@@ -48,7 +48,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.gsf.CompilationInfo;
 
-import org.netbeans.api.gsf.GsfTokenId;
+import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -138,13 +138,13 @@ public class LexUtilities {
     
     /** Find the ruby token sequence (in case it's embedded in something else at the top level */
     @SuppressWarnings("unchecked")
-    public static TokenSequence<?extends GsfTokenId> getRubyTokenSequence(BaseDocument doc, int offset) {
+    public static TokenSequence<?extends RubyTokenId> getRubyTokenSequence(BaseDocument doc, int offset) {
         TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
         return getRubyTokenSequence(th, offset);
     }
     
     @SuppressWarnings("unchecked")
-    private static TokenSequence<? extends GsfTokenId> findRhtmlDelimited(TokenSequence t, int offset) {
+    private static TokenSequence<? extends RubyTokenId> findRhtmlDelimited(TokenSequence t, int offset) {
         if (t.language().mimeType().equals(RubyInstallation.RHTML_MIME_TYPE)) {
             t.move(offset);
             if (t.moveNext() && t.token() != null && 
@@ -154,7 +154,7 @@ public class LexUtilities {
                         "ruby".equals(t.token().id().primaryCategory())) { // NOI18N
                     TokenSequence<?> ets = t.embedded();
                     if (ets != null) {
-                        return (TokenSequence<? extends GsfTokenId>)ets;
+                        return (TokenSequence<? extends RubyTokenId>)ets;
                     }
                 }
             }
@@ -164,8 +164,8 @@ public class LexUtilities {
     }
     
     @SuppressWarnings("unchecked")
-    public static TokenSequence<?extends GsfTokenId> getRubyTokenSequence(TokenHierarchy<Document> th, int offset) {
-        TokenSequence<?extends GsfTokenId> ts = th.tokenSequence(RubyTokenId.language());
+    public static TokenSequence<?extends RubyTokenId> getRubyTokenSequence(TokenHierarchy<Document> th, int offset) {
+        TokenSequence<?extends RubyTokenId> ts = th.tokenSequence(RubyTokenId.language());
 
         if (ts == null) {
             // Possibly an embedding scenario such as an RHTML file
@@ -178,7 +178,7 @@ public class LexUtilities {
 
                     break;
                 } else {
-                    TokenSequence<? extends GsfTokenId> ets = findRhtmlDelimited(t, offset);
+                    TokenSequence<? extends RubyTokenId> ets = findRhtmlDelimited(t, offset);
                     if (ets != null) {
                         return ets;
                     }
@@ -194,7 +194,7 @@ public class LexUtilities {
 
                         break;
                     } else {
-                        TokenSequence<? extends GsfTokenId> ets = findRhtmlDelimited(t, offset);
+                        TokenSequence<? extends RubyTokenId> ets = findRhtmlDelimited(t, offset);
                         if (ets != null) {
                             return ets;
                         }
@@ -206,8 +206,8 @@ public class LexUtilities {
         return ts;
     }
 
-    public static Token<?extends GsfTokenId> getToken(BaseDocument doc, int offset) {
-        TokenSequence<?extends GsfTokenId> ts = getRubyTokenSequence(doc, offset);
+    public static Token<?extends RubyTokenId> getToken(BaseDocument doc, int offset) {
+        TokenSequence<?extends RubyTokenId> ts = getRubyTokenSequence(doc, offset);
 
         if (ts != null) {
             try {
@@ -226,7 +226,7 @@ public class LexUtilities {
                 return null;
             }
 
-            Token<?extends GsfTokenId> token = ts.token();
+            Token<?extends RubyTokenId> token = ts.token();
 
             return token;
         }
@@ -235,7 +235,7 @@ public class LexUtilities {
     }
 
     public static char getTokenChar(BaseDocument doc, int offset) {
-        Token<?extends GsfTokenId> token = getToken(doc, offset);
+        Token<?extends RubyTokenId> token = getToken(doc, offset);
 
         if (token != null) {
             String text = token.text().toString();
@@ -250,7 +250,7 @@ public class LexUtilities {
     }
 
     /** Search forwards in the token sequence until a token of type <code>down</code> is found */
-    public static OffsetRange findHeredocEnd(TokenSequence<?extends GsfTokenId> ts,  Token<?extends GsfTokenId> startToken) {
+    public static OffsetRange findHeredocEnd(TokenSequence<?extends RubyTokenId> ts,  Token<?extends RubyTokenId> startToken) {
         // Look for the end of the given heredoc
         String text = startToken.text().toString();
         assert text.startsWith("<<");
@@ -264,7 +264,7 @@ public class LexUtilities {
         String textn = text+"\n";
 
         while (ts.moveNext()) {
-            Token<?extends GsfTokenId> token = ts.token();
+            Token<?extends RubyTokenId> token = ts.token();
             TokenId id = token.id();
 
             if (id == RubyTokenId.STRING_END || id == RubyTokenId.QUOTED_STRING_END) {
@@ -279,7 +279,7 @@ public class LexUtilities {
     }
 
     /** Search forwards in the token sequence until a token of type <code>down</code> is found */
-    public static OffsetRange findHeredocBegin(TokenSequence<?extends GsfTokenId> ts,  Token<?extends GsfTokenId> endToken) {
+    public static OffsetRange findHeredocBegin(TokenSequence<?extends RubyTokenId> ts,  Token<?extends RubyTokenId> endToken) {
         // Look for the end of the given heredoc
         String text = endToken.text().toString();
         if (text.endsWith("\n")) {
@@ -289,7 +289,7 @@ public class LexUtilities {
         String textSQuotes = "'" + text + "'";
 
         while (ts.movePrevious()) {
-            Token<?extends GsfTokenId> token = ts.token();
+            Token<?extends RubyTokenId> token = ts.token();
             TokenId id = token.id();
 
             if (id == RubyTokenId.STRING_BEGIN || id == RubyTokenId.QUOTED_STRING_BEGIN) {
@@ -310,12 +310,12 @@ public class LexUtilities {
     }
     
     /** Search forwards in the token sequence until a token of type <code>down</code> is found */
-    public static OffsetRange findFwd(BaseDocument doc, TokenSequence<?extends GsfTokenId> ts, TokenId up,
+    public static OffsetRange findFwd(BaseDocument doc, TokenSequence<?extends RubyTokenId> ts, TokenId up,
         TokenId down) {
         int balance = 0;
 
         while (ts.moveNext()) {
-            Token<?extends GsfTokenId> token = ts.token();
+            Token<?extends RubyTokenId> token = ts.token();
             TokenId id = token.id();
             
             if (id == up) {
@@ -333,12 +333,12 @@ public class LexUtilities {
     }
 
     /** Search backwards in the token sequence until a token of type <code>up</code> is found */
-    public static OffsetRange findBwd(BaseDocument doc, TokenSequence<?extends GsfTokenId> ts, TokenId up,
+    public static OffsetRange findBwd(BaseDocument doc, TokenSequence<?extends RubyTokenId> ts, TokenId up,
         TokenId down) {
         int balance = 0;
 
         while (ts.movePrevious()) {
-            Token<?extends GsfTokenId> token = ts.token();
+            Token<?extends RubyTokenId> token = ts.token();
             TokenId id = token.id();
 
             if (id == up) {
@@ -360,11 +360,11 @@ public class LexUtilities {
      * It does not use indentation for clues since this could be wrong and be
      * precisely the reason why the user is using pair matching to see what's wrong.
      */
-    public static OffsetRange findBegin(BaseDocument doc, TokenSequence<?extends GsfTokenId> ts) {
+    public static OffsetRange findBegin(BaseDocument doc, TokenSequence<?extends RubyTokenId> ts) {
         int balance = 0;
 
         while (ts.movePrevious()) {
-            Token<?extends GsfTokenId> token = ts.token();
+            Token<?extends RubyTokenId> token = ts.token();
             TokenId id = token.id();
 
             if (isBeginToken(id, doc, ts)) {
@@ -382,11 +382,11 @@ public class LexUtilities {
         return OffsetRange.NONE;
     }
 
-    public static OffsetRange findEnd(BaseDocument doc, TokenSequence<?extends GsfTokenId> ts) {
+    public static OffsetRange findEnd(BaseDocument doc, TokenSequence<?extends RubyTokenId> ts) {
         int balance = 0;
 
         while (ts.moveNext()) {
-            Token<?extends GsfTokenId> token = ts.token();
+            Token<?extends RubyTokenId> token = ts.token();
             TokenId id = token.id();
 
             if (isBeginToken(id, doc, ts)) {
@@ -424,7 +424,7 @@ public class LexUtilities {
         try {
             int first = Utilities.getRowFirstNonWhite(doc, offset);
             if (first != -1) {
-                Token<? extends GsfTokenId> token = getToken(doc, first);
+                Token<? extends RubyTokenId> token = getToken(doc, first);
                 if (token != null) {
                     TokenId id = token.id();
                     if (id == RubyTokenId.WHILE || id == RubyTokenId.UNTIL || id == RubyTokenId.FOR) {
@@ -456,7 +456,7 @@ public class LexUtilities {
      * with a corresponding "end" token, such as "begin", "def", "module",
      * etc.
      */
-    public static boolean isBeginToken(TokenId id, BaseDocument doc, TokenSequence<?extends GsfTokenId> ts) {
+    public static boolean isBeginToken(TokenId id, BaseDocument doc, TokenSequence<?extends RubyTokenId> ts) {
         if (id == RubyTokenId.DO) {
             return isEndmatchingDo(doc, ts.offset());
         }
@@ -482,7 +482,7 @@ public class LexUtilities {
             int begin = Utilities.getRowStart(doc, offset);
             int end = upToOffset ? offset : Utilities.getRowEnd(doc, offset);
 
-            TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, begin);
+            TokenSequence<?extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(doc, begin);
             if (ts == null) {
                 return 0;
             }
@@ -496,7 +496,7 @@ public class LexUtilities {
             int balance = 0;
 
             do {
-                Token<?extends GsfTokenId> token = ts.token();
+                Token<?extends RubyTokenId> token = ts.token();
                 TokenId id = token.id();
 
                 if (isBeginToken(id, doc, ts)) {
@@ -520,7 +520,7 @@ public class LexUtilities {
             int begin = Utilities.getRowStart(doc, offset);
             int end = Utilities.getRowEnd(doc, offset);
 
-            TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, begin);
+            TokenSequence<?extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(doc, begin);
             if (ts == null) {
                 return 0;
             }
@@ -534,7 +534,7 @@ public class LexUtilities {
             int balance = 0;
 
             do {
-                Token<?extends GsfTokenId> token = ts.token();
+                Token<?extends RubyTokenId> token = ts.token();
                 TokenId id = token.id();
 
                 if (id == up) {
@@ -560,7 +560,7 @@ public class LexUtilities {
      */
     public static int getTokenBalance(BaseDocument doc, TokenId open, TokenId close, int offset)
         throws BadLocationException {
-        TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, 0);
+        TokenSequence<?extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(doc, 0);
         if (ts == null) {
             return 0;
         }
@@ -701,7 +701,7 @@ public class LexUtilities {
      */
     @SuppressWarnings("unchecked")
     public static String getStringAt(int caretOffset, TokenHierarchy<Document> th) {
-        TokenSequence<?extends GsfTokenId> ts = getRubyTokenSequence(th, caretOffset);
+        TokenSequence<?extends RubyTokenId> ts = getRubyTokenSequence(th, caretOffset);
 
         if (ts == null) {
             return null;
@@ -719,7 +719,7 @@ public class LexUtilities {
             ts.movePrevious();
         }
 
-        Token<?extends GsfTokenId> token = ts.token();
+        Token<?extends RubyTokenId> token = ts.token();
 
         if (token != null) {
             TokenId id = token.id();
@@ -789,7 +789,7 @@ public class LexUtilities {
      *     if the offset is not inside a require string.
      */
     public static int getRequireStringOffset(int caretOffset, TokenHierarchy<Document> th) {
-        TokenSequence<?extends GsfTokenId> ts = getRubyTokenSequence(th, caretOffset);
+        TokenSequence<?extends RubyTokenId> ts = getRubyTokenSequence(th, caretOffset);
 
         if (ts == null) {
             return -1;
@@ -807,7 +807,7 @@ public class LexUtilities {
             ts.movePrevious();
         }
 
-        Token<?extends GsfTokenId> token = ts.token();
+        Token<?extends RubyTokenId> token = ts.token();
 
         if (token != null) {
             TokenId id = token.id();
@@ -871,8 +871,8 @@ public class LexUtilities {
      */
     @SuppressWarnings("unchecked")
     private static int getLiteralStringOffset(int caretOffset, TokenHierarchy<Document> th,
-        GsfTokenId begin) {
-        TokenSequence<?extends GsfTokenId> ts = getRubyTokenSequence(th, caretOffset);
+        RubyTokenId begin) {
+        TokenSequence<?extends RubyTokenId> ts = getRubyTokenSequence(th, caretOffset);
 
         if (ts == null) {
             return -1;
@@ -890,7 +890,7 @@ public class LexUtilities {
             ts.movePrevious();
         }
 
-        Token<?extends GsfTokenId> token = ts.token();
+        Token<?extends RubyTokenId> token = ts.token();
 
         if (token != null) {
             TokenId id = token.id();
@@ -932,7 +932,7 @@ public class LexUtilities {
     }
 
     public static boolean isInsideQuotedString(BaseDocument doc, int offset) {
-        TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, offset);
+        TokenSequence<?extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(doc, offset);
 
         if (ts == null) {
             return false;
@@ -941,14 +941,14 @@ public class LexUtilities {
         ts.move(offset);
 
         if (ts.moveNext()) {
-            Token<?extends GsfTokenId> token = ts.token();
+            Token<?extends RubyTokenId> token = ts.token();
             TokenId id = token.id();
             if (id == RubyTokenId.QUOTED_STRING_LITERAL || id == RubyTokenId.QUOTED_STRING_END) {
                 return true;
             }
         }
         if (ts.movePrevious()) {
-            Token<?extends GsfTokenId> token = ts.token();
+            Token<?extends RubyTokenId> token = ts.token();
             TokenId id = token.id();
             if (id == RubyTokenId.QUOTED_STRING_LITERAL || id == RubyTokenId.QUOTED_STRING_BEGIN) {
                 return true;
@@ -959,7 +959,7 @@ public class LexUtilities {
     }
 
     public static boolean isInsideRegexp(BaseDocument doc, int offset) {
-        TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, offset);
+        TokenSequence<?extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(doc, offset);
 
         if (ts == null) {
             return false;
@@ -968,14 +968,14 @@ public class LexUtilities {
         ts.move(offset);
 
         if (ts.moveNext()) {
-            Token<?extends GsfTokenId> token = ts.token();
+            Token<?extends RubyTokenId> token = ts.token();
             TokenId id = token.id();
             if (id == RubyTokenId.REGEXP_LITERAL || id == RubyTokenId.REGEXP_END) {
                 return true;
             }
         }
         if (ts.movePrevious()) {
-            Token<?extends GsfTokenId> token = ts.token();
+            Token<?extends RubyTokenId> token = ts.token();
             TokenId id = token.id();
             if (id == RubyTokenId.REGEXP_LITERAL || id == RubyTokenId.REGEXP_BEGIN) {
                 return true;
@@ -989,7 +989,7 @@ public class LexUtilities {
         // Check if the caret is within a comment, and if so insert a new
         // leaf "node" which contains the comment line and then comment block
         try {
-            Token<?extends GsfTokenId> token = LexUtilities.getToken(doc, caretOffset);
+            Token<?extends RubyTokenId> token = LexUtilities.getToken(doc, caretOffset);
 
             if ((token != null) && (token.id() == RubyTokenId.LINE_COMMENT)) {
                 // First add a range for the current line
@@ -1031,7 +1031,7 @@ public class LexUtilities {
                     int offset = token.offset(th);
                     return new OffsetRange(offset, offset + token.length());
                 }
-            } else if (token != null && token.id() == GsfTokenId.DOCUMENTATION) {
+            } else if (token != null && token.id() == RubyTokenId.DOCUMENTATION) {
                 // Select the whole token block
                 TokenHierarchy<BaseDocument> th = TokenHierarchy.get(doc);
                 int begin = token.offset(th);
@@ -1105,4 +1105,131 @@ public class LexUtilities {
         return lexOffset;
     }
     
+    /**
+     * Get the rdoc documentation associated with the given node in the given document.
+     * The node must have position information that matches the source in the document.
+     */
+    public static OffsetRange findRDocRange(BaseDocument baseDoc, int methodBegin) {
+        int begin = methodBegin;
+        try {
+            if (methodBegin >= baseDoc.getLength()) {
+                return OffsetRange.NONE;
+            }
+
+            // Search to previous lines, locate comments. Once we have a non-whitespace line that isn't
+            // a comment, we're done
+
+            int offset = Utilities.getRowStart(baseDoc, methodBegin);
+            offset--;
+
+            // Skip empty and whitespace lines
+            while (offset >= 0) {
+                // Find beginning of line
+                offset = Utilities.getRowStart(baseDoc, offset);
+
+                if (!Utilities.isRowEmpty(baseDoc, offset) &&
+                        !Utilities.isRowWhite(baseDoc, offset)) {
+                    break;
+                }
+
+                offset--;
+            }
+
+            if (offset < 0) {
+                return OffsetRange.NONE;
+            }
+
+            while (offset >= 0) {
+                // Find beginning of line
+                offset = Utilities.getRowStart(baseDoc, offset);
+
+                if (Utilities.isRowEmpty(baseDoc, offset) || Utilities.isRowWhite(baseDoc, offset)) {
+                    // Empty lines not allowed within an rdoc
+                    break;
+                }
+
+                // This is a comment line we should include
+                int lineBegin = Utilities.getRowFirstNonWhite(baseDoc, offset);
+                int lineEnd = Utilities.getRowLastNonWhite(baseDoc, offset) + 1;
+                String line = baseDoc.getText(lineBegin, lineEnd - lineBegin);
+
+                // Tolerate "public", "private" and "protected" here --
+                // Test::Unit::Assertions likes to put these in front of each
+                // method.
+                if (line.startsWith("#")) {
+                    begin = lineBegin;
+                } else if (line.startsWith("=end") &&
+                        (lineBegin == Utilities.getRowStart(baseDoc, offset))) {
+                    // It could be a =begin,=end document - see scanf.rb in Ruby lib for example. Treat this differently.
+                    int docBegin = findInlineDocStart(baseDoc, offset);
+                    if (docBegin != -1) {
+                        begin = docBegin;
+                    } else {
+                        return OffsetRange.NONE;
+                    }
+                } else if (line.equals("public") || line.equals("private") ||
+                        line.equals("protected")) { // NOI18N
+                                                    // Skip newlines back up to the comment
+                    offset--;
+
+                    while (offset >= 0) {
+                        // Find beginning of line
+                        offset = Utilities.getRowStart(baseDoc, offset);
+
+                        if (!Utilities.isRowEmpty(baseDoc, offset) &&
+                                !Utilities.isRowWhite(baseDoc, offset)) {
+                            break;
+                        }
+
+                        offset--;
+                    }
+
+                    continue;
+                } else {
+                    // No longer in a comment
+                    break;
+                }
+
+                // Previous line
+                offset--;
+            }
+        } catch (BadLocationException ble) {
+            Exceptions.printStackTrace(ble);
+        }
+
+        if (methodBegin > begin) {
+            return new OffsetRange(begin, methodBegin);
+        } else {
+            return OffsetRange.NONE;
+        }
+    }
+    
+    private static int findInlineDocStart(BaseDocument baseDoc, int offset) throws BadLocationException {
+        // offset points to a line containing =end
+        // Skip the =end list
+        offset = Utilities.getRowStart(baseDoc, offset);
+        offset--;
+
+        // Search backwards in the document for the =begin (if any) and add all lines in reverse
+        // order in between.
+        while (offset >= 0) {
+            // Find beginning of line
+            offset = Utilities.getRowStart(baseDoc, offset);
+
+            // This is a comment line we should include
+            int lineBegin = offset;
+            int lineEnd = Utilities.getRowEnd(baseDoc, offset);
+            String line = baseDoc.getText(lineBegin, lineEnd - lineBegin);
+
+            if (line.startsWith("=begin")) {
+                // We're done!
+                return lineBegin;
+            }
+
+            // Previous line
+            offset--;
+        }
+        
+        return -1;
+    }
 }

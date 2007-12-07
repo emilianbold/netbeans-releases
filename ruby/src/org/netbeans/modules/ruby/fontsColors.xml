@@ -6,37 +6,36 @@
     <!-- A couple of things are not accurate yet; globals are not bold, and method calls are
          black and bold instead of green (which would be identical to fields) -->
     
-    <fontcolor name="GSF_CLASS" foreColor="ff098618">
+    <fontcolor name="CLASS_VAR" foreColor="ff098618">
         <font style="bold+italic"/>
     </fontcolor>
 
-    <fontcolor name="GSF_INT_LITERAL" default="number"/>
-    <fontcolor name="GSF_FLOAT_LITERAL" default="number"/>
-    <fontcolor name="GSF_ANY_OPERATOR" default="operator"/>
-    <fontcolor name="GSF_INSTANCE" default="field"/>
-    <fontcolor name="GSF_GLOBAL" foreColor="black">
+    <fontcolor name="INT_LITERAL" default="number"/>
+    <fontcolor name="FLOAT_LITERAL" default="number"/>
+    <fontcolor name="ANY_OPERATOR" default="operator"/>
+    <fontcolor name="INSTANCE_VAR" default="field"/>
+    <fontcolor name="GLOBAL_VAR" foreColor="black">
         <font style="italic"/>
     </fontcolor>
-    <fontcolor name="GSF_STRING_LITERAL" default="string"/>
-    <fontcolor name="GSF_DOUBLE_LITERAL" default="number"/>
-    <fontcolor name="GSF_BLOCK_COMMENT" default="comment"/>
-    <fontcolor name="GSF_DOCUMENTATION" default="comment"/>
-    <fontcolor name="GSF_LONG_LITERAL" default="number"/>
-    <fontcolor name="GSF_REGEXP_LITERAL" foreColor="9933CC"/>
-    <fontcolor name="GSF_ERROR" default="error"/>
-    <fontcolor name="GSF_LINE_COMMENT" default="comment"/>
-    <fontcolor name="GSF_CONSTANT" foreColor="black">
+    <fontcolor name="STRING_LITERAL" default="string"/>
+    <fontcolor name="DOUBLE_LITERAL" default="number"/>
+    <fontcolor name="BLOCK_COMMENT" default="comment"/>
+    <fontcolor name="DOCUMENTATION" default="comment"/>
+    <fontcolor name="LONG_LITERAL" default="number"/>
+    <fontcolor name="REGEXP_LITERAL" foreColor="9933CC"/>
+    <fontcolor name="ERROR" default="error"/>
+    <fontcolor name="LINE_COMMENT" default="comment"/>
+    <fontcolor name="CONSTANT" foreColor="black">
         <font style="italic"/>
     </fontcolor>
-    <fontcolor name="GSF_TYPESYMBOL" foreColor="2E92C7"/>
-    <fontcolor name="GSF_IDENTIFIER" default="identifier"/>
-    <fontcolor name="GSF_WHITESPACE" default="whitespace"/>
-    <fontcolor name="GSF_ANY_KEYWORD" default="keyword"/>
-    <fontcolor name="GSF_TODO" foreColor="ff99006b">
+    <fontcolor name="TYPE_SYMBOL" foreColor="2E92C7"/>
+    <fontcolor name="IDENTIFIER" default="identifier"/>
+    <fontcolor name="WHITESPACE" default="whitespace"/>
+    <fontcolor name="ANY_KEYWORD" default="keyword"/>
+    <fontcolor name="TODO" foreColor="ff99006b">
         <font style="bold"/>
     </fontcolor>
     <fontcolor name="QUOTED_STRING_LITERAL" default="string"/>
-    <fontcolor name="GSF_CHAR_LITERAL" default="char"/>
 
     <!-- This is intended for an embedded regular expression language -->
     <!--

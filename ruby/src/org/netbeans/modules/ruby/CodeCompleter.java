@@ -80,7 +80,7 @@ import org.netbeans.api.gsf.CompletionProposal;
 import org.netbeans.api.gsf.DeclarationFinder.DeclarationLocation;
 import org.netbeans.api.gsf.Element;
 import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.gsf.GsfTokenId;
+import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.netbeans.api.gsf.HtmlFormatter;
 import org.netbeans.modules.ruby.elements.IndexedField;
 import static org.netbeans.api.gsf.Index.*;
@@ -436,7 +436,7 @@ public class CodeCompleter implements Completable {
                 return doc.getText(requireStart, lexOffset - requireStart);
             }
 
-            TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(th, lexOffset);
+            TokenSequence<?extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(th, lexOffset);
 
             if (ts == null) {
                 return null;
@@ -454,7 +454,7 @@ public class CodeCompleter implements Completable {
                 ts.movePrevious();
             }
 
-            Token<?extends GsfTokenId> token = ts.token();
+            Token<?extends RubyTokenId> token = ts.token();
 
             if (token != null) {
                 TokenId id = token.id();
@@ -787,7 +787,7 @@ public class CodeCompleter implements Completable {
         TokenHierarchy<Document> th = request.th;
         NameKind kind = request.kind;
         
-        TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(th, lexOffset);
+        TokenSequence<?extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(th, lexOffset);
 
         if ((index != null) && (ts != null)) {
             ts.move(lexOffset);
@@ -803,7 +803,7 @@ public class CodeCompleter implements Completable {
                 ts.movePrevious();
             }
 
-            Token<?extends GsfTokenId> token = ts.token();
+            Token<?extends RubyTokenId> token = ts.token();
 
             if (token != null) {
                 TokenId id = token.id();
@@ -906,7 +906,7 @@ public class CodeCompleter implements Completable {
         FileObject fileObject = request.fileObject;
         Node node = request.node;
 
-        TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(th, lexOffset);
+        TokenSequence<?extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(th, lexOffset);
 
         // Look in the token stream for constructs of the type
         //   foo.x^
@@ -1103,7 +1103,7 @@ public class CodeCompleter implements Completable {
         int lexOffset = request.lexOffset;
         TokenHierarchy<Document> th = request.th;
         
-        TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(th, lexOffset);
+        TokenSequence<?extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(th, lexOffset);
 
         if ((index != null) && (ts != null)) {
             ts.move(lexOffset);
@@ -1118,7 +1118,7 @@ public class CodeCompleter implements Completable {
                 ts.movePrevious();
             }
 
-            Token<?extends GsfTokenId> token = ts.token();
+            Token<?extends RubyTokenId> token = ts.token();
 
             if (token != null) {
                 TokenId id = token.id();
@@ -1289,14 +1289,14 @@ public class CodeCompleter implements Completable {
         return false;
     }
     
-    private int callLineStart = -1;
-    private IndexedMethod callMethod;
+    private static int callLineStart = -1;
+    private static IndexedMethod callMethod;
 
     /** Compute the current method call at the given offset. Returns false if we're not in a method call. 
      * The argument index is returned in parameterIndexHolder[0] and the method being
      * called in methodHolder[0].
      */
-    boolean computeMethodCall(CompilationInfo info, int lexOffset, int astOffset,
+    static boolean computeMethodCall(CompilationInfo info, int lexOffset, int astOffset,
             IndexedMethod[] methodHolder, int[] parameterIndexHolder, int[] anchorOffsetHolder,
             Set<IndexedMethod>[] alternativesHolder) {
         try {
@@ -2648,7 +2648,7 @@ public class CodeCompleter implements Completable {
     //    }
 
     @SuppressWarnings("unchecked")
-    private void addLocals(Node node, Map<String, Node> variables) {
+    static void addLocals(Node node, Map<String, Node> variables) {
         switch (node.nodeId) {
         case NodeTypes.LOCALASGNNODE: {
             String name = ((INameNode)node).getName();
@@ -2730,7 +2730,7 @@ public class CodeCompleter implements Completable {
         }
     }
 
-    private void addDynamic(Node node, Map<String, Node> variables) {
+    static void addDynamic(Node node, Map<String, Node> variables) {
         if (node.nodeId == NodeTypes.DASGNNODE) {
             String name = ((INameNode)node).getName();
 
@@ -4220,7 +4220,7 @@ public class CodeCompleter implements Completable {
 
         if (".".equals(typedText)) { // NOI18N
             // See if we're in Ruby context
-            TokenSequence<? extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, offset);
+            TokenSequence<? extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(doc, offset);
             if (ts == null) {
                 return QueryType.NONE;
             }
@@ -4233,7 +4233,7 @@ public class CodeCompleter implements Completable {
             if (ts.offset() == offset && !ts.movePrevious()) {
                 return QueryType.NONE;
             }
-            Token<? extends GsfTokenId> token = ts.token();
+            Token<? extends RubyTokenId> token = ts.token();
             TokenId id = token.id();
             
             // ".." is a range, not dot completion
@@ -4268,7 +4268,7 @@ public class CodeCompleter implements Completable {
     }
     
     public static boolean isRubyContext(BaseDocument doc, int offset) {
-        TokenSequence<? extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, offset);
+        TokenSequence<? extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(doc, offset);
 
         if (ts == null) {
             return false;

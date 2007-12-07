@@ -49,7 +49,5 @@ import org.netbeans.api.gsf.CompilationInfo;
  * @author Tor Norbye
  */
 public interface SelectionRule extends Rule {
-
-    public void run(CompilationInfo compilationInfo, int start, int end,
-             List<Description> result, Map<String,Object> context);
+    public void run(RuleContext context, List<Description> result);
 }

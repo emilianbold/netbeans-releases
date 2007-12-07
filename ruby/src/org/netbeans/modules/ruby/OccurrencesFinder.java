@@ -86,7 +86,7 @@ import org.jruby.ast.types.INameNode;
 import org.jruby.lexer.yacc.ISourcePosition;
 import org.netbeans.api.gsf.ColoringAttributes;
 import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.GsfTokenId;
+import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.editor.BaseDocument;
@@ -207,7 +207,7 @@ public class OccurrencesFinder implements org.netbeans.api.gsf.OccurrencesFinder
                     // this case, the full def node is selected, which typically spans
                     // lines. This should trigger if you put the caret on the method definition
                     // line, unless it's in a comment there.
-                    Token<?extends GsfTokenId> token = LexUtilities.getToken(doc, caretPosition);
+                    Token<?extends RubyTokenId> token = LexUtilities.getToken(doc, caretPosition);
 
                     if (((token != null) && (token.id() != RubyTokenId.LINE_COMMENT)) &&
                             (closest instanceof MethodDefNode) &&

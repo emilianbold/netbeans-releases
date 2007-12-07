@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.ruby.hints.introduce;
 
+import org.netbeans.modules.ruby.ParseTreeVisitor;
 import java.util.ArrayList;
 import java.util.List;
 import org.jruby.ast.Node;

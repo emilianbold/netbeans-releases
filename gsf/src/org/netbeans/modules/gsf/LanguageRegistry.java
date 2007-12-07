@@ -568,7 +568,6 @@ public class LanguageRegistry implements Iterable<Language> {
         if (ref == null) {
             try {
                 popup.createData("in-place-refactoring").setAttribute("position", 680);
-                //popup.createData("generate-goto-popup");
                 FileObject gotoF = popup.getFileObject("goto");
                 if (gotoF == null) {
                     gotoF = popup.createFolder("goto");
@@ -586,7 +585,6 @@ public class LanguageRegistry implements Iterable<Language> {
                     // Should be before org-netbeans-modules-editor-NbSelectInPopupAction.instance & org-openide-actions-CutAction.instance:
                     sep.setAttribute("position", 1200);
                 }
-                // Temporary - userdir upgrade
                 if (popup.getFileObject("format") == null) {
                     popup.createData("format").setAttribute("position", 750);
                 }

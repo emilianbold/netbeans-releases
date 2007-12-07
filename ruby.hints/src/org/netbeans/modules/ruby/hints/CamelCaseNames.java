@@ -52,6 +52,7 @@ import org.netbeans.modules.ruby.hints.spi.EditList;
 import org.netbeans.modules.ruby.hints.spi.Fix;
 import org.netbeans.modules.ruby.hints.spi.HintSeverity;
 import org.netbeans.modules.ruby.hints.spi.PreviewableFix;
+import org.netbeans.modules.ruby.hints.spi.RuleContext;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.EditorCookie;
@@ -88,7 +89,10 @@ public class CamelCaseNames implements AstRule {
         return integers;
     }
     
-    public void run(CompilationInfo info, Node node, AstPath path, int caretOffset, List<Description> result) {
+    public void run(RuleContext context, List<Description> result) {
+        Node node = context.node;
+        CompilationInfo info = context.compilationInfo;
+
         String name = ((INameNode)node).getName();
 
         for (int i = 0; i < name.length(); i++) {

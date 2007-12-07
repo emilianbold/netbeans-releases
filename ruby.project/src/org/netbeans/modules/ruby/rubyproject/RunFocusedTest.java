@@ -46,7 +46,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.AbstractAction;
-import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -99,7 +98,7 @@ public class RunFocusedTest extends AbstractAction implements EditorAction {
     }
 
     public void actionPerformed(ActionEvent ev) {
-        JEditorPane pane = NbUtilities.getOpenPane();
+        JTextComponent pane = NbUtilities.getOpenPane();
 
         if (pane != null) {
             runTest(pane, false);

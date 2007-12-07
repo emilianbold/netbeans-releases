@@ -37,12 +37,12 @@ import org.jruby.ast.Node;
 import org.jruby.ast.NodeTypes;
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.OffsetRange;
-import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.hints.spi.AstRule;
 import org.netbeans.modules.ruby.hints.spi.Description;
 import org.netbeans.modules.ruby.hints.spi.Fix;
 import org.netbeans.modules.ruby.hints.spi.HintSeverity;
+import org.netbeans.modules.ruby.hints.spi.RuleContext;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.util.NbBundle;
 
@@ -63,7 +63,10 @@ public class ConstantNames implements AstRule {
         return Collections.singleton(NodeTypes.CONSTDECLNODE);
     }
     
-    public void run(CompilationInfo info, Node node, AstPath path, int caretOffset, List<Description> result) {
+    public void run(RuleContext context, List<Description> result) {
+        Node node = context.node;
+        CompilationInfo info = context.compilationInfo;
+
         assert (node.nodeId == NodeTypes.CONSTDECLNODE);
         String name = ((ConstDeclNode)node).getName();
 

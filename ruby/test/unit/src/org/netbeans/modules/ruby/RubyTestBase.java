@@ -60,7 +60,6 @@ import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.text.Document;
 import org.jruby.ast.Node;
-import org.netbeans.api.gsf.FormattingPreferences;
 import org.netbeans.api.gsf.ParseListener;
 import org.netbeans.api.gsf.ParserFile;
 import org.netbeans.api.gsf.ParserResult;
@@ -425,7 +424,7 @@ public abstract class RubyTestBase extends NbTestCase {
         assertEquals(l1.toString(), l2.toString());
     }
     
-    protected Formatter getFormatter(FormattingPreferences preferences) {
+    protected Formatter getFormatter(IndentPrefs preferences) {
         if (preferences == null) {
             preferences = new IndentPrefs(2,2);
         }

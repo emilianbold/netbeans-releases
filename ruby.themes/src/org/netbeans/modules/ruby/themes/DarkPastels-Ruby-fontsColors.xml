@@ -42,10 +42,10 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
 <fontscolors>
-    <fontcolor default="number" foreColor="ff00ff99" name="GSF_INT_LITERAL"/>
-    <fontcolor default="number" name="GSF_FLOAT_LITERAL"/>
+    <fontcolor default="number" foreColor="ff00ff99" name="INT_LITERAL"/>
+    <fontcolor default="number" name="FLOAT_LITERAL"/>
     <fontcolor name="mod-interface"/>
-    <fontcolor foreColor="ffffcc33" name="GSF_INSTANCE">
+    <fontcolor foreColor="ffffcc33" name="INSTANCE_VAR">
         <font style="bold"/>
     </fontcolor>
     <fontcolor name="mod-public"/>
@@ -56,9 +56,9 @@ made subject to such option by the copyright holder.
         <font style="bold"/>
     </fontcolor>
     <fontcolor name="mod-enum"/>
-    <fontcolor default="number" name="GSF_DOUBLE_LITERAL"/>
+    <fontcolor default="number" name="DOUBLE_LITERAL"/>
     <fontcolor default="string" name="STRING_TEXT"/>
-    <fontcolor default="number" name="GSF_LONG_LITERAL"/>
+    <fontcolor default="number" name="LONG_LITERAL"/>
     <fontcolor foreColor="ff99ffcc" name="STRING_ESCAPE">
         <font style="bold"/>
     </fontcolor>
@@ -69,13 +69,13 @@ made subject to such option by the copyright holder.
     </fontcolor>
     <fontcolor default="default" foreColor="fffafab1" name="COMMENT_LINK"/>
     <fontcolor foreColor="ff8aa6c1" name="mod-parameter"/>
-    <fontcolor default="whitespace" name="GSF_WHITESPACE"/>
-    <fontcolor default="keyword" foreColor="ff99ccff" name="GSF_ANY_KEYWORD"/>
+    <fontcolor default="whitespace" name="WHITESPACE"/>
+    <fontcolor default="keyword" foreColor="ff99ccff" name="ANY_KEYWORD"/>
     <fontcolor name="mod-package-private"/>
     <fontcolor name="mod-static">
         <font style="italic"/>
     </fontcolor>
-    <fontcolor foreColor="ff99006b" name="GSF_TODO">
+    <fontcolor foreColor="ff99006b" name="TODO">
         <font style="bold"/>
     </fontcolor>
     <fontcolor default="default" name="COMMENT_BOLD">
@@ -84,13 +84,13 @@ made subject to such option by the copyright holder.
     <fontcolor default="comment" name="COMMENT_HTMLTAG">
         <font style="bold"/>
     </fontcolor>
-    <fontcolor foreColor="ffffff66" name="GSF_CLASS">
+    <fontcolor foreColor="ffffff66" name="CLASS_VAR">
         <font style="bold+italic"/>
     </fontcolor>
     <fontcolor bgColor="ff38566f" name="mark-occurrences"/>
     <fontcolor default="comment" name="COMMENT_TEXT"/>
-    <fontcolor default="8AA6C1" name="GSF_ANY_OPERATOR"/>
-    <fontcolor foreColor="ffeddd3d" name="GSF_GLOBAL">
+    <fontcolor default="8AA6C1" name="ANY_OPERATOR"/>
+    <fontcolor foreColor="ffeddd3d" name="GLOBAL_VAR">
         <font style="italic"/>
     </fontcolor>
     <fontcolor foreColor="ffeddd3d" name="mod-field">
@@ -98,25 +98,24 @@ made subject to such option by the copyright holder.
     </fontcolor>
     <fontcolor foreColor="ff99ccff" name="mod-method"/>
     <fontcolor name="mod-protected"/>
-    <fontcolor default="string" name="GSF_STRING_LITERAL"/>
-    <fontcolor default="comment" name="GSF_BLOCK_COMMENT"/>
-    <fontcolor default="comment" name="GSF_DOCUMENTATION"/>
+    <fontcolor default="string" name="STRING_LITERAL"/>
+    <fontcolor default="comment" name="BLOCK_COMMENT"/>
+    <fontcolor default="comment" name="DOCUMENTATION"/>
     <fontcolor name="mod-local-variable"/>
     <fontcolor name="mod-private"/>
-    <fontcolor default="error" name="GSF_ERROR"/>
-    <fontcolor foreColor="ffffff66" name="GSF_REGEXP_LITERAL"/>
-    <fontcolor default="comment" name="GSF_LINE_COMMENT"/>
+    <fontcolor default="error" name="ERROR"/>
+    <fontcolor foreColor="ffffff66" name="REGEXP_LITERAL"/>
+    <fontcolor default="comment" name="LINE_COMMENT"/>
     <fontcolor name="mod-class"/>
-    <fontcolor foreColor="ff99ccff" name="GSF_CONSTANT"/>
-    <fontcolor foreColor="ffccff66" name="GSF_TYPESYMBOL"/>
+    <fontcolor foreColor="ff99ccff" name="CONSTANT"/>
+    <fontcolor foreColor="ffccff66" name="TYPE_SYMBOL"/>
     <fontcolor name="mod-unused" waveUnderlined="orange"/>
-    <fontcolor default="identifier" name="GSF_IDENTIFIER"/>
+    <fontcolor default="identifier" name="IDENTIFIER"/>
     <fontcolor foreColor="ffff006b" name="STRING_INVALID" strikeThrough="ffff006b">
         <font style="bold"/>
     </fontcolor>
     <fontcolor default="string" foreColor="ffccffcc" name="QUOTED_STRING_LITERAL"/>
     <fontcolor name="mod-abstract"/>
-    <fontcolor default="char" name="GSF_CHAR_LITERAL"/>
     <fontcolor default="default" name="COMMENT_ITALIC">
         <font style="italic"/>
     </fontcolor>

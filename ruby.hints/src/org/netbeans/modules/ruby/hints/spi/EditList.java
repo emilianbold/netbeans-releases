@@ -152,7 +152,7 @@ public class EditList {
                         position = doc.createPosition(positionOffset); // Position of the comment
                     }
                     if (edit.format) {
-                        formatter.reindent(doc, edit.offset, end, null, null);
+                        formatter.reindent(doc, edit.offset, end, null);
                     }
                 }
             }
@@ -160,7 +160,7 @@ public class EditList {
             if (format) {
                 int firstOffset = edits.get(edits.size()-1).offset;
                 lastOffset = lastPos.getOffset();
-                formatter.reindent(doc, firstOffset, lastOffset, null, null);
+                formatter.reindent(doc, firstOffset, lastOffset, null);
             }
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);

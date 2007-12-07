@@ -50,7 +50,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import javax.swing.JEditorPane;
+import javax.swing.text.JTextComponent;
 import org.netbeans.api.gsf.DeclarationFinder.DeclarationLocation;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.ruby.railsprojects.server.RailsServer;
@@ -342,7 +342,7 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
                 }
 
                 // Try to find out which view we're in
-                JEditorPane pane = NbUtilities.getOpenPane();
+                JTextComponent pane = NbUtilities.getOpenPane();
 
                 if (app != null && pane != null && pane.getCaret() != null) {
                     FileObject fo = NbUtilities.findFileObject(pane);

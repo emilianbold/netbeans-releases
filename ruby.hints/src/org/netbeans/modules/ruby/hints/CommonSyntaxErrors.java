@@ -43,6 +43,7 @@ import org.netbeans.modules.ruby.hints.spi.ErrorRule;
 import org.netbeans.modules.ruby.hints.spi.Fix;
 import org.netbeans.modules.ruby.hints.spi.HintSeverity;
 import org.netbeans.modules.ruby.hints.spi.PreviewableFix;
+import org.netbeans.modules.ruby.hints.spi.RuleContext;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -58,7 +59,9 @@ public class CommonSyntaxErrors implements ErrorRule {
         return Collections.singleton("Syntax error, unexpected '=' "); // NOI18N
     }
 
-    public void run(CompilationInfo info, Error error, List<Description> result) {
+    public void run(RuleContext context, Error error, List<Description> result) {
+        CompilationInfo info = context.compilationInfo;
+
         // See if it's a "begin"
         try {
             // TODO - if we get many codes, switch on these here!

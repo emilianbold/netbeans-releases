@@ -51,7 +51,7 @@ import org.jruby.lexer.yacc.StrTerm;
 import org.jruby.lexer.yacc.StringTerm;
 import org.jruby.lexer.yacc.SyntaxException;
 import org.jruby.parser.Tokens;
-import org.netbeans.api.gsf.GsfTokenId;
+import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
@@ -80,7 +80,7 @@ import org.openide.ErrorManager;
  *
  * @author Tor Norbye
  */
-public final class RubyLexer implements Lexer<GsfTokenId> {
+public final class RubyLexer implements Lexer<RubyTokenId> {
     /** This is still not working; I wonder if release() is called correctly at all times...*/
     private static final boolean REUSE_LEXERS = false;
     private static RubyLexer cached;
@@ -88,19 +88,19 @@ public final class RubyLexer implements Lexer<GsfTokenId> {
     private LexerSource lexerSource;
     private boolean inRegexp;
     private LexerInput input;
-    private TokenFactory<GsfTokenId> tokenFactory;
+    private TokenFactory<RubyTokenId> tokenFactory;
     private boolean substituting;
     private boolean inSymbol;
     private boolean inEmbedded;
 
-    private RubyLexer(LexerRestartInfo<GsfTokenId> info) {
+    private RubyLexer(LexerRestartInfo<RubyTokenId> info) {
         lexer = new RubyYaccLexer();
         // XXX Do something at scan time about illegal characters?
         lexer.setWarnings(new NullWarnings());
         lexer.setPreserveSpaces(true);
     }
 
-    public static synchronized RubyLexer create(LexerRestartInfo<GsfTokenId> info) {
+    public static synchronized RubyLexer create(LexerRestartInfo<RubyTokenId> info) {
         RubyLexer rubyLexer = cached;
 
         if (rubyLexer == null) {
@@ -112,7 +112,7 @@ public final class RubyLexer implements Lexer<GsfTokenId> {
         return rubyLexer;
     }
 
-    void restart(LexerRestartInfo<GsfTokenId> info) {
+    void restart(LexerRestartInfo<RubyTokenId> info) {
         inRegexp = substituting = inSymbol = inEmbedded = false;
         lexer.reset();
 
@@ -168,14 +168,14 @@ public final class RubyLexer implements Lexer<GsfTokenId> {
         return Integer.valueOf(state.getOrdinal());
     }
 
-    private Token<GsfTokenId> token(GsfTokenId id, int length) {
+    private Token<RubyTokenId> token(RubyTokenId id, int length) {
         String fixedText = id.fixedText();
 
         return (fixedText != null) ? tokenFactory.getFlyweightToken(id, fixedText)
                                    : tokenFactory.createToken(id, length);
     }
 
-    public Token<GsfTokenId> nextToken() {
+    public Token<RubyTokenId> nextToken() {
         int token = 0;
         int tokenLength = 0;
         int oldOffset = lexerSource.getOffset();
@@ -275,7 +275,7 @@ public final class RubyLexer implements Lexer<GsfTokenId> {
         }
 
         // Map to IDE types
-        GsfTokenId id = getTokenId(token, oldOffset);
+        RubyTokenId id = getTokenId(token, oldOffset);
 
         // Fix #102082
         if (inSymbol) {
@@ -299,14 +299,14 @@ public final class RubyLexer implements Lexer<GsfTokenId> {
         if (tokenLength <= 0) {
             // XXX this is not right but better than asserting in the lexer!
             // Just assign some default text attributes to unexpected text, one character at a time
-            return token(GsfTokenId.IDENTIFIER, 1);
+            return token(RubyTokenId.IDENTIFIER, 1);
         }
 
         return token(id, tokenLength);
     }
 
     /** @todo Move classification of tokens into TokenTypes into JRuby somehow */
-    private GsfTokenId getTokenId(int token, int offset) {
+    private RubyTokenId getTokenId(int token, int offset) {
         // If you add any new token types here, remember to update #getRelevantTokenTypes below
         switch (token) {
         case Tokens.tCOMMENT:
@@ -406,6 +406,7 @@ public final class RubyLexer implements Lexer<GsfTokenId> {
         case Tokens.tLBRACK:
             return RubyTokenId.LBRACKET;
 
+        case ']': 
         case Tokens.tRBRACK:
             return RubyTokenId.RBRACKET;
 

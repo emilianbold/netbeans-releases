@@ -55,11 +55,13 @@ import org.netbeans.modules.ruby.hints.spi.AstRule;
 import org.netbeans.modules.ruby.hints.spi.Description;
 import org.netbeans.modules.ruby.hints.spi.Fix;
 import org.netbeans.modules.ruby.hints.spi.HintSeverity;
+import org.netbeans.modules.ruby.hints.spi.RuleContext;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.openide.util.NbBundle;
 
 /**
- *
+ * Warn Ruby 1.9 change which disallows retry outside of the rescue-portion
+ * 
  * @author Tor Norbye
  */
 public class RetryOutsideRescue implements AstRule {
@@ -68,8 +70,11 @@ public class RetryOutsideRescue implements AstRule {
         return Collections.singleton(NodeTypes.RETRYNODE);
     }
 
-    public void run(CompilationInfo info, Node node, AstPath path, int caretOffset,
-            List<Description> result) {
+    public void run(RuleContext context, List<Description> result) {
+        Node node = context.node;
+        AstPath path = context.path;
+        CompilationInfo info = context.compilationInfo;
+
         if (!path.contains(NodeTypes.RESCUEBODYNODE)) {
             OffsetRange range = AstUtilities.getNameRange(node);
 

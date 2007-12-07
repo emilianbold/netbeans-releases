@@ -31,24 +31,17 @@ package org.netbeans.modules.refactoring.ruby;
 import java.util.Iterator;
 import javax.swing.text.Document;
 
-import org.jruby.ast.AliasNode;
 import org.jruby.ast.ArgumentNode;
 import org.jruby.ast.ClassNode;
 import org.jruby.ast.ClassVarAsgnNode;
 import org.jruby.ast.ClassVarDeclNode;
 import org.jruby.ast.ClassVarNode;
-import org.jruby.ast.Colon2Node;
-import org.jruby.ast.ConstDeclNode;
 import org.jruby.ast.ConstNode;
-import org.jruby.ast.DAsgnNode;
-import org.jruby.ast.DVarNode;
 import org.jruby.ast.GlobalAsgnNode;
 import org.jruby.ast.GlobalVarNode;
 import org.jruby.ast.IScopingNode;
 import org.jruby.ast.InstAsgnNode;
 import org.jruby.ast.InstVarNode;
-import org.jruby.ast.LocalAsgnNode;
-import org.jruby.ast.LocalVarNode;
 import org.jruby.ast.MethodDefNode;
 import org.jruby.ast.ModuleNode;
 import org.jruby.ast.Node;
@@ -205,19 +198,31 @@ public class RubyElementCtx {
 
     public ElementKind getKind() {
         if (kind == null) {
-            if (node instanceof MethodDefNode) {
+            switch (node.nodeId) {
+            case NodeTypes.DEFNNODE:
+            case NodeTypes.DEFSNODE:
                 kind = AstUtilities.isConstructorMethod((MethodDefNode)node)
                     ? ElementKind.CONSTRUCTOR : ElementKind.METHOD;
-            } else if (AstUtilities.isCall(node)) {
+                break;
+            case NodeTypes.FCALLNODE:
+            case NodeTypes.VCALLNODE:
+            case NodeTypes.CALLNODE:
                 kind = ElementKind.METHOD;
-            } else if (node instanceof ClassNode || node instanceof SClassNode) {
+                break;
+            case NodeTypes.CLASSNODE:
+            case NodeTypes.SCLASSNODE:
                 kind = ElementKind.CLASS;
-            } else if (node instanceof ModuleNode) {
+                break;
+            case NodeTypes.MODULENODE:
                 kind = ElementKind.MODULE;
-            } else if (node instanceof LocalVarNode || node instanceof LocalAsgnNode ||
-                    node instanceof DVarNode || node instanceof DAsgnNode) {
+                break;
+            case NodeTypes.LOCALVARNODE:
+            case NodeTypes.LOCALASGNNODE:
+            case NodeTypes.DVARNODE:
+            case NodeTypes.DASGNNODE:
                 kind = ElementKind.VARIABLE;
-            } else if (node instanceof ArgumentNode) {
+                break;
+            case NodeTypes.ARGUMENTNODE: {
                 AstPath path = getPath();
 
                 if (path.leafParent() instanceof MethodDefNode) {
@@ -227,7 +232,9 @@ public class RubyElementCtx {
                     // TODO - are ArgumentNodes used anywhere else?
                     kind = ElementKind.PARAMETER;
                 }
-            } else if (node instanceof SymbolNode) {
+                break;
+            }
+            case NodeTypes.SYMBOLNODE:
                 // Ugh - how do I know what it's referring to - a method? a class? a constant? etc.
                 if (Character.isUpperCase(((SymbolNode)node).getName().charAt(0))) {
                     kind = ElementKind.CLASS; // Or module? Or constants? How do we know?
@@ -235,10 +242,13 @@ public class RubyElementCtx {
                     // Or method
                     kind = ElementKind.METHOD;
                 }
-            } else if (node instanceof AliasNode) {
+                break;
+            case NodeTypes.ALIASNODE:
                 // XXX ugh - how do I know what the alias is referring to? For now just guess METHOD, the most common usage
                 kind = ElementKind.METHOD;
-            } else if (node instanceof ConstNode || node instanceof Colon2Node) {
+                break;
+            case NodeTypes.COLON2NODE:
+            case NodeTypes.CONSTNODE: {
                 Node n = getPath().leafParent();
 
                 if (n instanceof ClassNode || n instanceof SClassNode) {
@@ -256,14 +266,22 @@ public class RubyElementCtx {
                         kind = ElementKind.CONSTANT;
                     }
                 }
-            } else if (node instanceof ConstDeclNode) {
+                break;
+            }
+            case NodeTypes.CONSTDECLNODE:
                 kind = ElementKind.CONSTANT;
-            } else if (node instanceof GlobalVarNode || node instanceof GlobalAsgnNode) {
+                break;
+            case NodeTypes.GLOBALVARNODE:
+            case NodeTypes.GLOBALASGNNODE:
                 kind = ElementKind.GLOBAL;
-            } else if (node instanceof InstVarNode || node instanceof InstAsgnNode ||
-                    node instanceof ClassVarNode || node instanceof ClassVarDeclNode ||
-                    node instanceof ClassVarAsgnNode) {
+                break;
+            case NodeTypes.INSTVARNODE:
+            case NodeTypes.INSTASGNNODE:
+            case NodeTypes.CLASSVARNODE:
+            case NodeTypes.CLASSVARASGNNODE:
+            case NodeTypes.CLASSVARDECLNODE:
                 kind = ElementKind.FIELD;
+                break;
             }
         }
 

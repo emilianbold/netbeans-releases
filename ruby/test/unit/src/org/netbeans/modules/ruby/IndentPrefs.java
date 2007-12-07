@@ -27,9 +27,7 @@
  */
 package org.netbeans.modules.ruby;
 
-import org.netbeans.api.gsf.FormattingPreferences;
-
-public class IndentPrefs extends FormattingPreferences {
+public class IndentPrefs {
 
     private final int hanging;
 
