@@ -27,7 +27,7 @@
  */
 package org.netbeans.modules.groovy.grailsproject.actions;
 
-
+import java.net.MalformedURLException;
 import org.netbeans.modules.groovy.grails.api.GrailsServerState;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
@@ -37,17 +37,21 @@ import org.netbeans.modules.groovy.grails.api.GrailsServer;
 import org.netbeans.modules.groovy.grails.api.GrailsServerFactory;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
+import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputWriter;
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import org.openide.util.Exceptions;
 import java.io.InputStreamReader;
+import java.net.URL;
+import org.openide.awt.HtmlBrowser;
+import org.openide.windows.OutputListener;
 
 
-public class RunGrailsServerCommandAction extends AbstractAction {
+public class RunGrailsServerCommandAction extends AbstractAction implements OutputListener {
 
     Project prj;
     GrailsServerState serverState = null;
+    Logger LOG = Logger.getLogger(RunGrailsServerCommandAction.class.getName());
             
     public RunGrailsServerCommandAction (Project prj){
         super ("Run Application");
@@ -61,7 +65,8 @@ public class RunGrailsServerCommandAction extends AbstractAction {
         }
             
     public void actionPerformed(ActionEvent e) {
-        new PrivateSwingWorker().start();
+        new PrivateSwingWorker(this).start();
+
     }
     
     
@@ -69,12 +74,16 @@ public class RunGrailsServerCommandAction extends AbstractAction {
 
         BufferedReader procOutput;
         OutputWriter writer =  null;
-        private  final Logger LOG = Logger.getLogger(RunGrailsServerCommandAction.class.getName());
+        RunGrailsServerCommandAction parent;
 
+        public PrivateSwingWorker(RunGrailsServerCommandAction parent) {
+            this.parent = parent;
+        }
+        
         public void run() {
 
         try {
-            String errString = null;
+            String lineString = null;
             
             String tabName = "Grails Server for: " + prj.getProjectDirectory().getName();
             InputOutput io = IOProvider.getDefault().getIO(tabName, true);
@@ -90,14 +99,45 @@ public class RunGrailsServerCommandAction extends AbstractAction {
             assert procOutput != null;
             assert writer != null;
             
-            while ((errString = procOutput.readLine()) != null) {
-                writer.print(errString + "\n");
-            }
-                } catch (Exception e) {
-                    Exceptions.printStackTrace(e);
-                    LOG.log(Level.WARNING, "Could not read Process output " +e);
+                while ((lineString = procOutput.readLine()) != null) {
+                    if (lineString.contains("Browse to http:/")) {
+                        writer.println(lineString, parent);
+                        startBrowserWithUrl(lineString);
+                    } else {
+                        writer.println(lineString);
                     }
+                }
+            } catch (Exception e) {
+                LOG.log(Level.WARNING, "Could not read Process output " + e);
             }
-        }   
+        }
+    }
+
+
+    public void startBrowserWithUrl(String lineString){
+        String urlString = lineString.substring(lineString.indexOf("http://"));
+     
+        try {
+            HtmlBrowser.URLDisplayer.getDefault().showURL(new URL(urlString));
+
+        } catch (MalformedURLException ex) {
+            LOG.log(Level.WARNING, "Could not start browser " + ex.getMessage());
+
+        }
+    }
+
+
+    public void outputLineAction(OutputEvent ev) {
+        String lineString = ev.getLine();
+        startBrowserWithUrl(lineString);
+    }
+
+    public void outputLineSelected(OutputEvent ev) {
+        
+    }
+    
+    public void outputLineCleared(OutputEvent ev) {
+        
+    }
 
     }
