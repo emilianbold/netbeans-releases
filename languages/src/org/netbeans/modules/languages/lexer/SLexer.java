@@ -134,25 +134,27 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
             return createToken (index);
         ASTToken token = null;
         token = parser.read (this, input, language);
+
+        // HACK...
+        if (input.eof () && (
+                ( token != null && 
+                  "text/javascript".equals (language.getMimeType ()) &&
+                  "js_error_string".equals (token.getTypeName ())
+                ) ||
+                (token == null && "text/x-css".equals (language.getMimeType ()))
+        )) {
+            char ch = input.getString (index, index + 1).charAt (0);
+            if (ch == '\"' || ch == '\'') {
+                state = "Fukala";
+                if ("text/javascript".equals (language.getMimeType ()))
+                    return createToken (language.getTokenID ("js_string"), index);
+                else
+                    return createToken (language.getTokenID ("css_string"), index);
+            }
+        }
+        // END HACK...
         
         if (token == null) {
-            
-            // HACK...
-            if (input.eof () && (
-                    "text/javascript".equals (language.getMimeType ()) ||
-                    "text/x-css".equals (language.getMimeType ())
-            )) {
-                char ch = input.getString (index, index + 1).charAt (0);
-                if (ch == '\"' || ch == '\'') {
-                    state = "Fukala";
-                    if ("text/javascript".equals (language.getMimeType ()))
-                        return createToken (language.getTokenID ("js_string"), index);
-                    else
-                        return createToken (language.getTokenID ("css_string"), index);
-                }
-            }
-            // END HACK...
-        
             if (input.getIndex () > (index + 1))
                 input.setIndex (index + 1);
             else
@@ -160,6 +162,7 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
                 input.read ();
             return createToken (language.getTokenID (ERROR_TOKEN_TYPE_NAME), index);
         }
+        
         if (state != sstate && 
             index == input.getIndex ()
         )
