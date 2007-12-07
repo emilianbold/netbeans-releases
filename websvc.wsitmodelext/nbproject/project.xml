@@ -76,6 +76,7 @@ made subject to such option by the copyright holder.
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.websvc.wsitconf</friend>
+                <friend>org.netbeans.modules.compapp.casaeditor</friend>
                 <package>org.netbeans.modules.websvc.wsitmodelext.addressing</package>
                 <package>org.netbeans.modules.websvc.wsitmodelext.mex</package>
                 <package>org.netbeans.modules.websvc.wsitmodelext.mtom</package>
