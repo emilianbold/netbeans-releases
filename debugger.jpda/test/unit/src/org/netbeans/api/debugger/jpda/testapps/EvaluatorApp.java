@@ -817,6 +817,26 @@ public class EvaluatorApp {
         return String.valueOf(Math.min(Double.NEGATIVE_INFINITY, -100000)).intern().toLowerCase().concat(String.valueOf(Double.POSITIVE_INFINITY)).substring(1, 5);
     }
     
+    public static int testMethod10() {
+        return new Inner1().method1(ix);
+    }
+    
+    public static int testMethod11() {
+        return new Inner1.Inner1_2().method1(ix);
+    }
+    
+    public static int testMethod11b() {
+        return ((Inner1) new Inner1.Inner1_2()).method1(ix);
+    }
+    
+    public static int testMethod12() {
+        return new Inner1.Inner1_3().method1(ix);
+    }
+    
+    public static int testMethod12b() {
+        return ((Inner1) new Inner1.Inner1_3()).method1(ix);
+    }
+    
     // Constructors
     
     public static boolean testConstructor1() {
@@ -830,10 +850,67 @@ public class EvaluatorApp {
     public static int testConstructor3() {
         return new java.util.TreeSet(new Vector(Arrays.asList(new String[] { "1", "2", "3", "4", "5", "6", "7", "8", "9" }))).size();
     }
+    
+    public static int testInnerConstructor1() {
+        return new Inner1().method1(ix);
+    }
+
+    public static int testInnerConstructor2() {
+        return new EvaluatorApp.Inner1().method1(ix);
+    }
+
+    public static int testInnerConstructor3() {
+        return new org.netbeans.api.debugger.jpda.testapps.EvaluatorApp.Inner1().method1(ix);
+    }
+
+    public static int testInnerConstructor4() {
+        return new Inner1.Inner1_1().method1_1(ix);
+    }
+
+    public static int testInnerConstructor5() {
+        return new EvaluatorApp.Inner1.Inner1_1().method1_1(ix);
+    }
+
+    public static int testInnerConstructor6() {
+        return new org.netbeans.api.debugger.jpda.testapps.EvaluatorApp.Inner1.Inner1_2().method1_2(ix);
+    }
 
     // Generics
     
     public static String testParametrized1() {
         return new ArrayList<String>(Arrays.asList(new String[] {"a", "b", "c"})).get(0);
+    }
+    
+    public static class Inner1 {
+        public Inner1() {}
+        
+        public int method1(int i) {
+            return 2*i;
+        }
+        
+        public static class Inner1_1 {
+            public Inner1_1() {}
+            
+            public int method1_1(int i) {
+                return 3*i;
+            }
+        }
+        
+        public static class Inner1_2 extends Inner1 {
+            public Inner1_2() {}
+            
+            public int method1_2(int i) {
+                return 4*i;
+            }
+        }
+        
+        public static class Inner1_3 extends Inner1 {
+            public Inner1_3() {}
+            
+            @Override
+            public int method1(int i) {
+                return 5*i;
+            }
+        }
     }
 }

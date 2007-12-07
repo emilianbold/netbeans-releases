@@ -363,9 +363,9 @@ import org.openide.util.NbBundle;
         if (left instanceof ClassType) {
             ClassType classLeft = (ClassType) left;
             if (right instanceof InterfaceType) {
-                List ifaces = classLeft.allInterfaces();
-                for (Iterator i = ifaces.iterator(); i.hasNext();) {
-                    InterfaceType type = (InterfaceType) i.next();
+                List<InterfaceType> ifaces = classLeft.allInterfaces();
+                for (Iterator<InterfaceType> i = ifaces.iterator(); i.hasNext();) {
+                    InterfaceType type = i.next();
                     if (type.equals(right)) return true;
                 }
                 return false;
@@ -375,6 +375,18 @@ import org.openide.util.NbBundle;
                     if (classLeft == null) return false;
                     if (classLeft.equals(right)) return true;
                 }
+            }
+        }
+        
+        if (left instanceof InterfaceType) {
+            InterfaceType intLeft = (InterfaceType) left;
+            if (right instanceof InterfaceType) {
+                List<InterfaceType> ifaces = intLeft.superinterfaces();
+                for (Iterator<InterfaceType> i = ifaces.iterator(); i.hasNext();) {
+                    InterfaceType type = i.next();
+                    if (type.equals(right)) return true;
+                }
+                return false;
             }
         }
 
@@ -1260,7 +1272,7 @@ import org.openide.util.NbBundle;
                 throw new IllegalArgumentException("Wrong expression value: "+expression);
             case CLASS:
                 TypeElement te = (TypeElement) elm;
-                String className = te.getQualifiedName().toString();
+                String className = ElementUtilities.getBinaryName(te);
                 vm = evaluationContext.getDebugger().getVirtualMachine();
                 List<ReferenceType> classes = vm.classesByName(className);
                 if (classes.size() == 0) {
@@ -1290,8 +1302,10 @@ import org.openide.util.NbBundle;
         return null;
     }
 
+    @Override
     public Mirror visitThrow(ThrowTree arg0, EvaluationContext evaluationContext) {
-        throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
+        Assert2.error(arg0, "unsupported");
+        return null;
     }
 
     @Override
@@ -1356,7 +1370,7 @@ import org.openide.util.NbBundle;
                 return vm.mirrorOf(primValue.shortValue());
             }
         }
-        if (!instanceOf((Type) type, ((ObjectReference) expression).type())) {
+        if (!instanceOf(((ObjectReference) expression).type(), (Type) type)) {
             Assert2.error(arg0, "castError", ((ObjectReference) expression).type(), type);
         }
         return expression;
@@ -1620,8 +1634,11 @@ import org.openide.util.NbBundle;
         throw new IllegalStateException("Bad expression type: "+expression);
     }
 
+    @Override
     public Mirror visitVariable(VariableTree arg0, EvaluationContext evaluationContext) {
-        throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
+        // Variable declaration
+        Assert2.error(arg0, "unsupported");
+        return null;
     }
 
     @Override
