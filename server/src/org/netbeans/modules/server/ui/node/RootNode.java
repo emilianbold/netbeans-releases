@@ -60,7 +60,7 @@ import org.openide.util.actions.SystemAction;
 
 public final class RootNode extends AbstractNode {
 
-    private static final String SERVERS_ICON = "org/netbeans/modules/server/ui/node/resources/servers.png"; // NOI18N
+    private static final String SERVERS_ICON = "org/netbeans/modules/server/ui/resources/servers.png"; // NOI18N
 
     private static RootNode node;
 

@@ -41,10 +41,11 @@
 
 package org.netbeans.modules.server.ui.wizard;
 
-import com.sun.corba.se.spi.activation.Server;
 import java.awt.Dialog;
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,22 +60,31 @@ import org.openide.util.NbBundle;
 /**
  *
  * @author Andrei Badea
+ * @author Petr Hejl
  */
 public class AddServerInstanceWizard extends WizardDescriptor {
-    public final static String PROP_DISPLAY_NAME = "ServInstWizard_displayName"; // NOI18N
-    public final static String PROP_SERVER_INSTANCE_WIZARD = "ServInstWizard_server"; // NOI18N
 
-    private final static String PROP_AUTO_WIZARD_STYLE = "WizardPanel_autoWizardStyle"; // NOI18N
-    private final static String PROP_CONTENT_DISPLAYED = "WizardPanel_contentDisplayed"; // NOI18N
-    private final static String PROP_CONTENT_NUMBERED = "WizardPanel_contentNumbered"; // NOI18N
-    private final static String PROP_CONTENT_DATA = "WizardPanel_contentData"; // NOI18N
-    private final static String PROP_CONTENT_SELECTED_INDEX = "WizardPanel_contentSelectedIndex"; // NOI18N
-    private final static String PROP_ERROR_MESSAGE = "WizardPanel_errorMessage"; // NOI18N
+    public static final String PROP_DISPLAY_NAME = "ServInstWizard_displayName"; // NOI18N
+
+    public static final String PROP_SERVER_INSTANCE_WIZARD = "ServInstWizard_server"; // NOI18N
+
+    private static final String PROP_AUTO_WIZARD_STYLE = "WizardPanel_autoWizardStyle"; // NOI18N
+
+    private static final String PROP_CONTENT_DISPLAYED = "WizardPanel_contentDisplayed"; // NOI18N
+
+    private static final String PROP_CONTENT_NUMBERED = "WizardPanel_contentNumbered"; // NOI18N
+
+    private static final String PROP_CONTENT_DATA = "WizardPanel_contentData"; // NOI18N
+
+    private static final String PROP_CONTENT_SELECTED_INDEX = "WizardPanel_contentSelectedIndex"; // NOI18N
+
+    private static final String PROP_ERROR_MESSAGE = "WizardPanel_errorMessage"; // NOI18N
 
     private AddServerInstanceWizardIterator iterator;
+
     private ServerChooserPanel chooser;
 
-    private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.j2ee.deployment"); // NOI18N
+    private static final Logger LOGGER = Logger.getLogger(AddServerInstanceWizard.class.getName()); // NOI18N
 
     private AddServerInstanceWizard() {
         this(new AddServerInstanceWizardIterator());
@@ -97,13 +107,16 @@ public class AddServerInstanceWizard extends WizardDescriptor {
 
     public static ServerInstance showAddServerInstanceWizard() {
         AddServerInstanceWizard wizard = new AddServerInstanceWizard();
+
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizard);
         try {
-            dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddServerInstanceWizard.class, "ACSD_Add_Server_Instance"));
+            dialog.getAccessibleContext().setAccessibleDescription(
+                    NbBundle.getMessage(AddServerInstanceWizard.class, "ACSD_Add_Server_Instance"));
             dialog.setVisible(true);
         } finally {
             dialog.dispose();
         }
+
         if (wizard.getValue() == WizardDescriptor.FINISH_OPTION) {
             Set instantiatedObjects = wizard.getInstantiatedObjects();
             if (instantiatedObjects != null && instantiatedObjects.size() > 0) {
@@ -124,6 +137,7 @@ public class AddServerInstanceWizard extends WizardDescriptor {
         putProperty(PROP_ERROR_MESSAGE, message);
     }
 
+    @Override
     protected void updateState() {
         super.updateState();
 
@@ -135,26 +149,24 @@ public class AddServerInstanceWizard extends WizardDescriptor {
     }
 
     private ServerChooserPanel getChooser() {
-        if (chooser == null)
+        if (chooser == null) {
             chooser = new ServerChooserPanel();
-
+        }
         return chooser;
     }
 
     private String[] getContentData() {
-        JComponent first;
-        String[] firstContentData;
-
-        first = (JComponent)getChooser().getComponent();
-        firstContentData = (String[])first.getClientProperty(PROP_CONTENT_DATA);
+        JComponent first = (JComponent) getChooser().getComponent();
+        String[] firstContentData = (String[]) first.getClientProperty(PROP_CONTENT_DATA);
 
         if (iterator.current().equals(getChooser())) {
             return firstContentData;
         } else {
-            JComponent component = (JComponent)iterator.current().getComponent();
-            String[] componentContentData = (String[])component.getClientProperty(PROP_CONTENT_DATA);
-            if (componentContentData == null)
+            JComponent component = (JComponent) iterator.current().getComponent();
+            String[] componentContentData = (String[]) component.getClientProperty(PROP_CONTENT_DATA);
+            if (componentContentData == null) {
                 return firstContentData;
+            }
 
             String[] contentData = new String[componentContentData.length + 1];
             contentData[0] = firstContentData[0];
@@ -167,77 +179,83 @@ public class AddServerInstanceWizard extends WizardDescriptor {
         if (iterator.current().equals(getChooser())) {
             return 0;
         } else {
-            JComponent component = (JComponent)iterator.current().getComponent();
-            Integer componentIndex = (Integer)component.getClientProperty(PROP_CONTENT_SELECTED_INDEX);
-            if (componentIndex != null)
+            JComponent component = (JComponent) iterator.current().getComponent();
+            Integer componentIndex = (Integer) component.getClientProperty(PROP_CONTENT_SELECTED_INDEX);
+            if (componentIndex != null) {
                 return componentIndex.intValue() + 1;
-            else
+            } else {
                 return 1;
+            }
         }
     }
 
     private static class AddServerInstanceWizardIterator implements WizardDescriptor.InstantiatingIterator {
-        private AddServerInstanceWizard wd;
-        public boolean showingChooser;
+
+        private final Map<ServerWizard, InstantiatingIterator> iterators = new HashMap<ServerWizard, InstantiatingIterator>();
+
         private WizardDescriptor.InstantiatingIterator iterator;
-        private HashMap iterators;
+
+        private AddServerInstanceWizard wd;
+
+        public boolean showingChooser = true;
 
         public AddServerInstanceWizardIterator() {
-            showingChooser = true;
-            iterators = new HashMap();
-        }
-
-        public void addChangeListener(ChangeListener l) {
-        }
-
-        public WizardDescriptor.Panel current() {
-            if (showingChooser)
-                return wd.getChooser();
-            else
-                if (iterator != null)
-                    return iterator.current();
-                else
-                    return null;
-        }
-
-        public boolean hasNext() {
-            if (showingChooser)
-                return true;
-            else
-                if (iterator != null)
-                    return iterator.hasNext();
-                else
-                    return false;
-        }
-
-        public boolean hasPrevious() {
-            if (showingChooser)
-                return false;
-            else
-                return true;
+            super();
         }
 
         public String name() {
             return null;
         }
 
+        public WizardDescriptor.Panel current() {
+            if (showingChooser) {
+                return wd.getChooser();
+            } else {
+                if (iterator != null) {
+                    return iterator.current();
+                } else {
+                    return null;
+                }
+            }
+        }
+
+        public boolean hasNext() {
+            if (showingChooser) {
+                return true;
+            } else {
+                if (iterator != null) {
+                    return iterator.hasNext();
+                } else {
+                    return false;
+                }
+            }
+        }
+
+        public boolean hasPrevious() {
+            return !showingChooser;
+        }
+
         public void nextPanel() {
-            if (iterator == null)
+            if (iterator == null) {
                 iterator = getServerIterator();
-            else {
-                if (!showingChooser)
+            } else {
+                if (!showingChooser) {
                     iterator.nextPanel();
+                }
             }
             showingChooser = false;
         }
 
         public void previousPanel() {
-            if (iterator.hasPrevious())
+            if (iterator.hasPrevious()) {
                 iterator.previousPanel();
-            else {
+            } else {
                 showingChooser = true;
                 iterator = null;
             }
+        }
+
+        public void addChangeListener(ChangeListener l) {
         }
 
         public void removeChangeListener(ChangeListener l) {
@@ -247,16 +265,16 @@ public class AddServerInstanceWizard extends WizardDescriptor {
         }
 
         public void initialize(WizardDescriptor wizard) {
-            wd = (AddServerInstanceWizard)wizard;
+            wd = (AddServerInstanceWizard) wizard;
 
-            JComponent chooser = (JComponent)wd.getChooser().getComponent();
+            JComponent chooser = (JComponent) wd.getChooser().getComponent();
             chooser.putClientProperty(PROP_CONTENT_DATA, new String[] {
                 NbBundle.getMessage(AddServerInstanceWizard.class, "LBL_ASIW_ChooseServer"),
                 NbBundle.getMessage(AddServerInstanceWizard.class, "LBL_ASIW_Ellipsis")
             });
         }
 
-        public Set instantiate() throws java.io.IOException {
+        public Set instantiate() throws IOException {
             if (iterator != null) {
                 return iterator.instantiate();
             } else {
