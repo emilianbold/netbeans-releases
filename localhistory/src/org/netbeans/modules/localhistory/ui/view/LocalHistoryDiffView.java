@@ -158,7 +158,7 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
                         
                         File file = entry.getFile();
                         
-                        File tmpHistoryFile = File.createTempFile(file.getName(), null);
+                        File tmpHistoryFile = FileUtil.normalizeFile(File.createTempFile(file.getName(), null));
                         tmpHistoryFile.deleteOnExit();
                         FileUtils.copy(entry.getStoreFileInputStream(), tmpHistoryFile);
                         Utils.associateEncoding(file, tmpHistoryFile);                                                
