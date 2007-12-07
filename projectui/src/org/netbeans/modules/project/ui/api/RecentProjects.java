@@ -62,16 +62,12 @@ public final class RecentProjects {
      */
     public static final String PROP_RECENT_PROJECT_INFO = "RecentProjectInformation"; // NOI18N
     
-    private static RecentProjects INSTANCE;
+    private static final RecentProjects INSTANCE = new RecentProjects();
     
     private PropertyChangeSupport pch;
     
     public static RecentProjects getDefault() {
-        if (INSTANCE == null) {
-            return new RecentProjects();
-        } else {
-            return INSTANCE;
-        }
+        return INSTANCE;
     }
     
     /**
