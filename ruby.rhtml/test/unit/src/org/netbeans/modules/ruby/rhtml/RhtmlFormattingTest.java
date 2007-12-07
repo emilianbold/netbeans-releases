@@ -28,7 +28,6 @@
 package org.netbeans.modules.ruby.rhtml;
 
 import javax.swing.JEditorPane;
-import org.netbeans.api.gsf.FormattingPreferences;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
@@ -48,7 +47,7 @@ public class RhtmlFormattingTest extends RhtmlTestBase {
     }
 
     @SuppressWarnings("unchecked")
-    public String format(BaseDocument doc, int startPos, int endPos, FormattingPreferences preferences) throws Exception {
+    public String format(BaseDocument doc, int startPos, int endPos, IndentPrefs preferences) throws Exception {
         
         String text = doc.getText(0, doc.getLength());
         JEditorPane pane = getPane(text, startPos, endPos);
@@ -70,7 +69,7 @@ public class RhtmlFormattingTest extends RhtmlTestBase {
 
         //ParserResult result = parse(fo);
         ParserResult result = null;
-        formatter.reformat(doc, startPos, endPos, result, preferences);
+        formatter.reformat(doc, startPos, endPos, result);
 
         formatted = doc.getText(0, doc.getLength());
         
@@ -83,7 +82,7 @@ public class RhtmlFormattingTest extends RhtmlTestBase {
         return true;
     }
 
-    public void format(String source, String reformatted, FormattingPreferences preferences) throws Exception {
+    public void format(String source, String reformatted, IndentPrefs preferences) throws Exception {
         // Must run in AWT thread (BaseKit.install() checks for that)
         String BEGIN = "%<%"; // NOI18N
         int startPos = source.indexOf(BEGIN);
@@ -115,7 +114,7 @@ public class RhtmlFormattingTest extends RhtmlTestBase {
         BaseDocument doc = getDocument(fo);
         assertNotNull(doc);
 
-        FormattingPreferences preferences = new IndentPrefs(2,2);
+        IndentPrefs preferences = new IndentPrefs(2,2);
         String formatted = format(doc, 0, doc.getLength(), preferences);
         assertDescriptionMatches(file, formatted, false, ".formatted");
     }
