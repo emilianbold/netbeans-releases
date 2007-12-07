@@ -446,6 +446,10 @@ class LuceneIndex extends Index {
     
     
     public void getPackageNames (final String prefix, final boolean directOnly, final Set<String> result) throws IOException, InterruptedException {        
+        if (directOnly && this.rootPkgCache != null && prefix.length() == 0) {
+                result.addAll(this.rootPkgCache);
+                return;
+        }
         if (!isValid(false)) {
             return;
         }
@@ -455,35 +459,30 @@ class LuceneIndex extends Index {
         final Term pkgTerm = DocumentUtil.packageNameTerm (prefix);
         final String prefixField = pkgTerm.field();
         if (prefix.length() == 0) {                
-            if (directOnly && this.rootPkgCache != null) {
-                result.addAll(this.rootPkgCache);
+            if (directOnly) {
+                this.rootPkgCache = new HashSet<String>();
             }
-            else {
-                if (directOnly) {
-                    this.rootPkgCache = new HashSet<String>();
-                }
-                final TermEnum terms = in.terms ();
-                try {
-                    do {
-                        if (cancel.get()) {
-                            throw new InterruptedException ();
-                        }
-                        final Term currentTerm = terms.term();
-                        if (currentTerm != null && prefixField == currentTerm.field()) {
-                            String pkgName = currentTerm.text();
-                            if (directOnly) {
-                                int index = pkgName.indexOf('.',prefix.length());
-                                if (index>0) {
-                                    pkgName = pkgName.substring(0,index);
-                                }
-                                this.rootPkgCache.add(pkgName);
+            final TermEnum terms = in.terms ();
+            try {
+                do {
+                    if (cancel.get()) {
+                        throw new InterruptedException ();
+                    }
+                    final Term currentTerm = terms.term();
+                    if (currentTerm != null && prefixField == currentTerm.field()) {
+                        String pkgName = currentTerm.text();
+                        if (directOnly) {
+                            int index = pkgName.indexOf('.',prefix.length());
+                            if (index>0) {
+                                pkgName = pkgName.substring(0,index);
                             }
-                            result.add(pkgName);
+                            this.rootPkgCache.add(pkgName);
                         }
-                    } while (terms.next());
-                } finally {
-                    terms.close();
-                }
+                        result.add(pkgName);
+                    }
+                } while (terms.next());
+            } finally {
+                terms.close();
             }
         }
         else {
@@ -704,6 +703,7 @@ class LuceneIndex extends Index {
     }    
     
     public synchronized void clear () throws IOException {
+        this.rootPkgCache = null;
         this.close ();
         final String[] content = this.directory.list();
         for (String file : content) {
