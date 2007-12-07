@@ -52,6 +52,7 @@ import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import java.awt.*;
 import java.util.Iterator;
+import org.netbeans.modules.xml.wsdl.model.Service;
 
 /**
  * @author Martin Grebac
@@ -68,6 +69,8 @@ public class ClientTopComponent extends TopComponent {
     private Client client;
     private Node node;
     
+    private Service service;
+
     public ClientTopComponent(Client client, JaxWsModel jaxWsModel, WSDLModel clientWsdlModel, WSDLModel serviceWsdlModel, Node node) {
         setLayout(new BorderLayout());
         this.jaxWsModel = jaxWsModel;
@@ -83,14 +86,23 @@ public class ClientTopComponent extends TopComponent {
         return "WSITClientTopComponent";    //NOI18N
     }
 
-    private org.netbeans.modules.xml.wsdl.model.Service getService(String name, WSDLModel m) {
+    public ClientTopComponent(Service service, WSDLModel clientWsdlModel, WSDLModel serviceWsdlModel, Node node) {
+        setLayout(new BorderLayout());
+        this.service = service;
+        this.clientWsdlModel = clientWsdlModel;
+        this.serviceModel = serviceWsdlModel;
+        this.initialized = false;
+        this.node = node;
+    } 
+
+    private Service getService(String name, WSDLModel m) {
         if ((name != null) && (m != null)) {
             Collection services = m.getDefinitions().getServices();
             if (services != null) {
                 Iterator i = services.iterator();
-                org.netbeans.modules.xml.wsdl.model.Service s = null;
+                Service s = null;
                 while (i.hasNext()) {
-                    s = (org.netbeans.modules.xml.wsdl.model.Service)i.next();
+                    s = (Service)i.next();
                     if ((s != null) && ((name.equals(s.getName())) || (services.size() == 1))) {
                         return s;
                     }
@@ -109,7 +121,12 @@ public class ClientTopComponent extends TopComponent {
         ToolBarDesignEditor tb = new ToolBarDesignEditor();
         panelFactory = new ClientPanelFactory(tb, clientWsdlModel, node, serviceModel, jaxWsModel);
         
-        org.netbeans.modules.xml.wsdl.model.Service s = getService(client.getName(), clientWsdlModel); //TODO - the client name just won't work!!!
+        Service s = null;
+        if (client != null) {
+            s = getService(client.getName(), clientWsdlModel); //TODO - the client name just won't work!!!
+        } else {
+            s = service;
+        }
         if (s != null) {
             ClientView mview = new ClientView(panelFactory, clientWsdlModel, serviceModel, s);
             tb.setContentView(mview);

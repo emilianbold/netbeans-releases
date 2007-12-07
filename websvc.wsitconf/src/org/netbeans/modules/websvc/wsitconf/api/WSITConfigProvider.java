@@ -52,6 +52,7 @@ import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.wsitconf.*;
+import org.netbeans.modules.websvc.wsitconf.ui.client.ClientTopComponent;
 import org.netbeans.modules.websvc.wsitconf.ui.service.ServiceTopComponent;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
@@ -91,6 +92,11 @@ public final class WSITConfigProvider extends Object {
         return stc;
     }
     
+    public final JComponent getWSITClientConfig(org.netbeans.modules.xml.wsdl.model.Service service, WSDLModel clientModel, WSDLModel serviceModel, Node node) {
+        final ClientTopComponent ctc = new ClientTopComponent(service, clientModel, serviceModel, node);
+        return ctc;
+    } 
+          
     /**
      * Should be invoked with same parameters as WSEditor calls are invoked. Returns false if WSIT is not supported,
      * is switched off, an error happened, or WSIT security features are switched off.
