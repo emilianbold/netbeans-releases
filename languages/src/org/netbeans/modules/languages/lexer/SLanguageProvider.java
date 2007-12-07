@@ -172,7 +172,9 @@ public class SLanguageProvider extends LanguageProvider {
     static void refresh () {
         Iterator<SLanguageProvider> it = providers.keySet ().iterator ();
         while (it.hasNext()) {
-            it.next ().firePropertyChange (PROP_LANGUAGE);
+            SLanguageProvider provider = it.next ();
+            provider.firePropertyChange (PROP_LANGUAGE);
+            provider.firePropertyChange (PROP_EMBEDDED_LANGUAGE);
         }
     }
     
