@@ -45,6 +45,7 @@ import java.util.prefs.PreferenceChangeListener;
 import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition;
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Point;
 import java.awt.datatransfer.Transferable;
@@ -113,7 +114,6 @@ import org.openide.nodes.Children;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.actions.Presenter;
 import org.w3c.dom.Document;
-import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 
 
@@ -238,6 +238,8 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 
         initActivatedNodes(jspDataObject);
 
+        initDesignerPreferences();
+        
         if (jsfForm.isValid()) {
             initDesigner();
         } else {
@@ -268,6 +270,20 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         }
     } // End of DummyNode.
     
+    private void initDesignerPreferences() {
+        JsfDesignerPreferences jsfDesignerPreferences = JsfDesignerPreferences.getInstance();
+//        designer.setPageSizeWidth(jsfDesignerPreferences.getPageSizeWidth());
+//        designer.setPageSizeHeight(jsfDesignerPreferences.getPageSizeHeight());
+        designer.setPageSize(new Dimension(jsfDesignerPreferences.getPageSizeWidth(), jsfDesignerPreferences.getPageSizeHeight()));
+        designer.setGridShow(jsfDesignerPreferences.getGridShow());
+        designer.setGridSnap(jsfDesignerPreferences.getGridSnap());
+        designer.setGridWidth(jsfDesignerPreferences.getGridWidth());
+        setGridTraceWidth(jsfDesignerPreferences.getGridWidth());
+        designer.setGridHeight(jsfDesignerPreferences.getGridHeight());
+        setGridTraceHeight(jsfDesignerPreferences.getGridHeight());
+        designer.setShowDecorations(jsfDesignerPreferences.isShowDecorations());
+        designer.setDefaultFontSize(jsfDesignerPreferences.getDefaultFontSize());
+    }
     
     private void initDesigner() {
         initDesignerComponent();
@@ -2153,9 +2169,16 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
             if (!designerTC.isShowing()) {
                 return;
             }
+            
+            JsfDesignerPreferences jsfDesignerPreferences = JsfDesignerPreferences.getInstance();
 //            if(DesignerSettings.PROP_PAGE_SIZE.equals(key)) {
 //            if(Designer.PROP_PAGE_SIZE.equals(key)) {
             if(JsfDesignerPreferences.PROP_PAGE_SIZE.equals(key)) {
+//                designerTC.designer.setPageSizeWidth(jsfDesignerPreferences.getPageSizeWidth());
+//                designerTC.designer.setPageSizeHeight(jsfDesignerPreferences.getPageSizeHeight());
+                int width = jsfDesignerPreferences.getPageSizeWidth();
+                int height = jsfDesignerPreferences.getPageSizeHeight();
+                designerTC.designer.setPageSize(new Dimension(width, height));
                 // There should be a cleaner way to request the revalidation,
                 // why the standard API doesn't work?
                 // XXX #6486462 Possible NPE.
@@ -2164,37 +2187,55 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 //                if (pageBox != null) {
 //                    pageBox.redoLayout(true);
 //                }
-                designerTC.designer.redoPaneLayout(true);
-                
-                designerTC.repaint();
+                // XXX Moved to designer/../WebForm
+//                designerTC.designer.redoPaneLayout(true);
+//                designerTC.repaint();
 //            } else if (DesignerSettings.PROP_GRID_SHOW.equals(key)) {
 //            } else if (Designer.PROP_GRID_SHOW.equals(key)) {
             } else if (JsfDesignerPreferences.PROP_GRID_SHOW.equals(key)) {
-                GridHandler.getDefault().setGrid(JsfDesignerPreferences.getInstance().getGridShow());
-                designerTC.repaint();
+                boolean gridShow = jsfDesignerPreferences.getGridShow();
+//                GridHandler.getDefault().setGrid(gridShow);
+                designerTC.designer.setGridShow(gridShow);
+                // XXX Moved to designer/../WebForm
+//                designerTC.repaint();
 //            } else if (DesignerSettings.PROP_GRID_SNAP.equals(key)) {
 //            } else if (Designer.PROP_GRID_SNAP.equals(key)) {
             } else if (JsfDesignerPreferences.PROP_GRID_SNAP.equals(key)) {
-                GridHandler.getDefault().setSnap(JsfDesignerPreferences.getInstance().getGridSnap());
-                designerTC.repaint();
+                boolean gridSnap = jsfDesignerPreferences.getGridSnap();
+                designerTC.designer.setGridSnap(gridSnap);
+//                GridHandler.getDefault().setSnap(gridSnap);
+                // XXX Moved to designer/../WebForm
+//                designerTC.repaint();
 //            } else if (DesignerSettings.PROP_GRID_WIDTH.equals(key)) {
 //            } else if (Designer.PROP_GRID_WIDTH.equals(key)) {
             } else if (JsfDesignerPreferences.PROP_GRID_WIDTH.equals(key)) {
-                GridHandler.getDefault().setGridWidth(JsfDesignerPreferences.getInstance().getGridWidth());
-                designerTC.repaint();
+                int gridWidth = jsfDesignerPreferences.getGridWidth();
+                designerTC.designer.setGridWidth(gridWidth);
+//                GridHandler.getDefault().setGridWidth(gridWidth);
+                designerTC.setGridTraceWidth(gridWidth);
+                // XXX Moved to designer/../WebForm
+//                designerTC.repaint();
 //            } else if (DesignerSettings.PROP_GRID_HEIGHT.equals(key)) {
 //            } else if (Designer.PROP_GRID_HEIGHT.equals(key)) {
             } else if (JsfDesignerPreferences.PROP_GRID_HEIGHT.equals(key)) {
-                GridHandler.getDefault().setGridHeight(JsfDesignerPreferences.getInstance().getGridHeight());
-                designerTC.repaint();
+                int gridHeight = jsfDesignerPreferences.getGridHeight();
+                designerTC.designer.setGridHeight(gridHeight);
+//                GridHandler.getDefault().setGridHeight(gridHeight);
+                designerTC.setGridTraceHeight(gridHeight);
+                // XXX Moved to designer/../WebForm
+//                designerTC.repaint();
 //            } else if (DesignerSettings.PROP_DEFAULT_FONT_SIZE.equals(key)) {
 //            } else if (Designer.PROP_DEFAULT_FONT_SIZE.equals(key)) {
             } else if (JsfDesignerPreferences.PROP_DEFAULT_FONT_SIZE.equals(key)) {
+                designerTC.designer.setDefaultFontSize(jsfDesignerPreferences.getDefaultFontSize());
 //                designerTC.getWebForm().getPane().getPaneUI().resetPageBox();
-                designerTC.designer.resetPanePageBox();
-                designerTC.repaint();
+                // XXX Moved to designer/../WebForm
+//                designerTC.designer.resetPanePageBox();
+//                designerTC.repaint();
             } else if (JsfDesignerPreferences.PROP_SHOW_DECORATIONS.equals(key)) {
-                designerTC.repaint();
+                designerTC.designer.setShowDecorations(jsfDesignerPreferences.isShowDecorations());
+                // XXX Moved to designer/../WebForm
+//                designerTC.repaint();
             }
         }
     } // End of SettingsListener.
@@ -2625,6 +2666,34 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         
         revalidate();
         repaint();
+    }
+
+    // XXX Copied from GridHandler#setGridWidth.
+    private void setGridTraceWidth(int gridWidth) {
+        int i;
+        int nt;
+
+        int gridTraceWidth = gridWidth;
+
+        for (i = 2; (nt = gridWidth / i) >= 8; i++) {
+            gridTraceWidth = nt;
+        }
+        
+        designer.setGridTraceWidth(gridTraceWidth);
+    }
+    
+    // XXX Copied from GridHandler#setGridHeight;
+    private void setGridTraceHeight(int gridHeight) {
+        int i;
+        int nt;
+
+        int gridTraceHeight = gridHeight;
+
+        for (i = 2; (nt = gridHeight / i) >= 8; i++) {
+            gridTraceHeight = nt;
+        }
+        
+        designer.setGridTraceHeight(gridTraceHeight);
     }
     
     

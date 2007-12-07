@@ -126,7 +126,8 @@ public class SelectionManager {
 //    /** Set of selected objects. Contains FormObjects only. */
 //    private Set<FormObject> selected = new HashSet<FormObject>();
     
-    private final Set<SelectedComponent> selectedComponents = new HashSet<SelectedComponent>();
+//    private final Set<SelectedComponent> selectedComponents = new HashSet<SelectedComponent>();
+    private final List<SelectedComponent> selectedComponents = new ArrayList<SelectedComponent>();
 
 //    /** The "primary" selected object - e.g. you may have selected
 //        10 components, but the most recently clicked one is the
@@ -426,7 +427,9 @@ public class SelectionManager {
 
 //        selected.add(fo);
 //        leaf = fo.component;
-        selectedComponents.add(sc);
+        if (!selectedComponents.contains(sc)) {
+            selectedComponents.add(sc);
+        }
 //        leaf = component;
         leaf = sc.componentRootElement;
 
@@ -729,47 +732,60 @@ public class SelectionManager {
             selectAll(child);
         }
 
-        // We should not select the two special <br> components that are added
-        // to flow-positioned documents: the last break in the form component,
-        // and the first br in the body component. These are there to ensure that
-        // there are caret-viable lines in the document.
-        if (!webform.isGridMode()) {
-//            if ((root.getChildBeanCount() > 0) &&
-//                    ((MarkupDesignBean)root.getChildBean(0)).getElement().getTagName().equals(HtmlTag.BR.name)) {
-            if (children.length > 0 && HtmlTag.BR.name.equals(children[0].getTagName())) {
-//                removeSelected((MarkupDesignBean)root.getChildBean(0), false);
-//                removeSelected(WebForm.getDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)root.getChildBean(0)), false);
-                removeSelected(children[0], false);
-            }
-
-            // Look for last bean in the default parent
-//            MarkupDesignBean defaultBean =
-//                FacesSupport.getDesignBean(webform.getModel().getFacesUnit().getDefaultParent()
-//                                                  .getElement());
-//            MarkupDesignBean defaultBean =
-////                    WebForm.getDomProviderService().getMarkupDesignBeanForElement(webform.getModel().getFacesUnit().getDefaultParent()
-////                                                  .getElement());
-//                    WebForm.getDomProviderService().getMarkupDesignBeanForElement(
-//                        webform.getDefaultParentMarkupBeanElement());
-            
-//            Element defaultElement = webform.getDefaultParentMarkupBeanElement();
-            Element defaultElement = webform.getDefaultParentComponent();
-            
-//            if (defaultBean != null) {
-//                int n = defaultBean.getChildBeanCount();
+//        // We should not select the two special <br> components that are added
+//        // to flow-positioned documents: the last break in the form component,
+//        // and the first br in the body component. These are there to ensure that
+//        // there are caret-viable lines in the document.
+//        if (!webform.isGridMode()) {
+////            if ((root.getChildBeanCount() > 0) &&
+////                    ((MarkupDesignBean)root.getChildBean(0)).getElement().getTagName().equals(HtmlTag.BR.name)) {
+//            if (children.length > 0 && HtmlTag.BR.name.equals(children[0].getTagName())) {
+////                removeSelected((MarkupDesignBean)root.getChildBean(0), false);
+////                removeSelected(WebForm.getDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)root.getChildBean(0)), false);
+//                removeSelected(children[0], false);
+//            }
 //
-//                if ((n > 0) &&
-//                        ((MarkupDesignBean)defaultBean.getChildBean(n - 1)).getElement().getTagName()
-//                             .equals(HtmlTag.BR.name)) {
-////                    removeSelected((MarkupDesignBean)defaultBean.getChildBean(n - 1), false);
-//                    removeSelected(WebForm.getDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)defaultBean.getChildBean(n - 1)), false);
+//            // Look for last bean in the default parent
+////            MarkupDesignBean defaultBean =
+////                FacesSupport.getDesignBean(webform.getModel().getFacesUnit().getDefaultParent()
+////                                                  .getElement());
+////            MarkupDesignBean defaultBean =
+//////                    WebForm.getDomProviderService().getMarkupDesignBeanForElement(webform.getModel().getFacesUnit().getDefaultParent()
+//////                                                  .getElement());
+////                    WebForm.getDomProviderService().getMarkupDesignBeanForElement(
+////                        webform.getDefaultParentMarkupBeanElement());
+//            
+////            Element defaultElement = webform.getDefaultParentMarkupBeanElement();
+//            Element defaultElement = webform.getDefaultParentComponent();
+//            
+////            if (defaultBean != null) {
+////                int n = defaultBean.getChildBeanCount();
+////
+////                if ((n > 0) &&
+////                        ((MarkupDesignBean)defaultBean.getChildBean(n - 1)).getElement().getTagName()
+////                             .equals(HtmlTag.BR.name)) {
+//////                    removeSelected((MarkupDesignBean)defaultBean.getChildBean(n - 1), false);
+////                    removeSelected(WebForm.getDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)defaultBean.getChildBean(n - 1)), false);
+////                }
+////            }
+//            if (defaultElement != null) {
+//                Element[] defaultElementChildren = WebForm.getDomProviderService().getChildComponents(defaultElement);
+//                int n = defaultElementChildren.length;
+//                if ((n > 0) && HtmlTag.BR.name.equals(defaultElementChildren[n-1].getTagName())) {
+//                    removeSelected(defaultElementChildren[n - 1], false);
 //                }
 //            }
-            if (defaultElement != null) {
-                Element[] defaultElementChildren = WebForm.getDomProviderService().getChildComponents(defaultElement);
-                int n = defaultElementChildren.length;
-                if ((n > 0) && HtmlTag.BR.name.equals(defaultElementChildren[n-1].getTagName())) {
-                    removeSelected(defaultElementChildren[n - 1], false);
+//        }
+        if (!webform.isGridMode()) {
+            // XXX Just the same what did the original code, but without JSF specific API.
+            if (!selectedComponents.isEmpty()) {
+                Element firstSelectedComponent = selectedComponents.get(0).componentRootElement;
+                Element lastSelectedComponent = selectedComponents.get(selectedComponents.size() - 1).componentRootElement;
+                if (firstSelectedComponent != null && HtmlTag.BR.name.equals(firstSelectedComponent.getTagName())) {
+                    removeSelected(firstSelectedComponent, false);
+                }
+                if (lastSelectedComponent != null && HtmlTag.BR.name.equals(lastSelectedComponent.getTagName())) {
+                    removeSelected(lastSelectedComponent, false);
                 }
             }
         }

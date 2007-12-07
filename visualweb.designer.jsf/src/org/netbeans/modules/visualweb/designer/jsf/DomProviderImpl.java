@@ -485,16 +485,16 @@ class DomProviderImpl implements DomProvider {
 //    public boolean isNormalAndHasFacesBean(MarkupDesignBean markupDesignBean) {
 
 //    public boolean isNormalAndHasFacesBean(MarkupDesignBean markupDesignBean) {
-    public boolean isNormalAndHasFacesComponent(Element componentRootElement) {
-        MarkupDesignBean markupDesignBean = MarkupUnit.getMarkupDesignBeanForElement(componentRootElement);
-        if (markupDesignBean != null) {
-            FacesBean fb = Util.getFacesBean(markupDesignBean);
-            if ((fb != null) && !Util.isSpecialBean(markupDesignBean)) {
-                return true;
-            }
-        }
-        return false;
-    }
+//    public boolean isNormalAndHasFacesComponent(Element componentRootElement) {
+//        MarkupDesignBean markupDesignBean = MarkupUnit.getMarkupDesignBeanForElement(componentRootElement);
+//        if (markupDesignBean != null) {
+//            FacesBean fb = Util.getFacesBean(markupDesignBean);
+//            if ((fb != null) && !Util.isSpecialBean(markupDesignBean)) {
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
 
     private /*public*/ boolean canHighlightMarkupDesignBean(MarkupDesignBean markupDesignBean) {
         if (markupDesignBean == null) {
@@ -657,23 +657,23 @@ class DomProviderImpl implements DomProvider {
 //
 //        return null;
 //    }
-    // XXX Replacing the above
-    public Element getDefaultParentComponent() {
-////        LiveUnit liveUnit = getFacesModel().getLiveUnit();
-//        LiveUnit liveUnit = jsfForm.getLiveUnit();
-//        if (liveUnit != null) {
-////            MarkupBean bean = getFacesModel().getFacesUnit().getDefaultParent();
-//            MarkupBean bean = jsfForm.getFacesPageUnit().getDefaultParent();
-//
-//            if (bean != null) {
-//                DesignBean designBean = liveUnit.getDesignBean(bean);
-//                return designBean instanceof MarkupDesignBean ? getComponentRootElementForMarkupDesignBean((MarkupDesignBean)designBean) : null;
-//            }
-//        }
-//
-//        return null;
-        return jsfForm.getDefaultParentComponent();
-    }
+//    // XXX Replacing the above
+//    public Element getDefaultParentComponent() {
+//////        LiveUnit liveUnit = getFacesModel().getLiveUnit();
+////        LiveUnit liveUnit = jsfForm.getLiveUnit();
+////        if (liveUnit != null) {
+//////            MarkupBean bean = getFacesModel().getFacesUnit().getDefaultParent();
+////            MarkupBean bean = jsfForm.getFacesPageUnit().getDefaultParent();
+////
+////            if (bean != null) {
+////                DesignBean designBean = liveUnit.getDesignBean(bean);
+////                return designBean instanceof MarkupDesignBean ? getComponentRootElementForMarkupDesignBean((MarkupDesignBean)designBean) : null;
+////            }
+////        }
+////
+////        return null;
+//        return jsfForm.getDefaultParentComponent();
+//    }
 
 //    private /*public*/ Exception getRenderFailure() {
 //        FacesPageUnit facesPageUnit = getFacesModel().getFacesUnit();
@@ -805,35 +805,35 @@ class DomProviderImpl implements DomProvider {
 //        return jsfForm.isWriteLocked();
 //    }
 
-    public void readLock() {
-//        MarkupUnit markupUnit = getFacesModel().getMarkupUnit();
-        MarkupUnit markupUnit = jsfForm.getMarkupUnit();
-        if (markupUnit != null) {
-            markupUnit.readLock();
-        }
-    }
-
-    public void readUnlock() {
-//        MarkupUnit markupUnit = getFacesModel().getMarkupUnit();
-        MarkupUnit markupUnit = jsfForm.getMarkupUnit();
-        if (markupUnit != null) {
-            markupUnit.readUnlock();
-        }
-    }
-
-    public boolean isModelValid() {
-//        MarkupUnit markupUnit = getFacesModel().getMarkupUnit();
-//        if (markupUnit == null) {
-//            return false;
+//    public void readLock() {
+////        MarkupUnit markupUnit = getFacesModel().getMarkupUnit();
+//        MarkupUnit markupUnit = jsfForm.getMarkupUnit();
+//        if (markupUnit != null) {
+//            markupUnit.readLock();
 //        }
-//        return getFacesModel().isValid();
-        return jsfForm.isModelValid();
-    }
+//    }
+//
+//    public void readUnlock() {
+////        MarkupUnit markupUnit = getFacesModel().getMarkupUnit();
+//        MarkupUnit markupUnit = jsfForm.getMarkupUnit();
+//        if (markupUnit != null) {
+//            markupUnit.readUnlock();
+//        }
+//    }
+
+//    public boolean isModelValid() {
+////        MarkupUnit markupUnit = getFacesModel().getMarkupUnit();
+////        if (markupUnit == null) {
+////            return false;
+////        }
+////        return getFacesModel().isValid();
+//        return jsfForm.isModelValid();
+//    }
     
-    public boolean isModelBusted() {
-//        return getFacesModel().isBusted();
-        return jsfForm.isModelBusted();
-    }
+//    public boolean isModelBusted() {
+////        return getFacesModel().isBusted();
+//        return jsfForm.isModelBusted();
+//    }
 
 //    public void setModelActivated(boolean activated) {
 //        getFacesModel().setActivated(activated);
@@ -878,7 +878,12 @@ class DomProviderImpl implements DomProvider {
     }
 
     public int getDropType(/*DesignBean origDroppee,*/Element origDropeeComponentRootElement, Element droppeeElement, Transferable t, boolean linkOnly) {
-        MarkupDesignBean origDroppee = MarkupUnit.getMarkupDesignBeanForElement(origDropeeComponentRootElement);
+        MarkupDesignBean origDroppee;
+        if (origDropeeComponentRootElement == null && jsfForm.isGridMode()) {
+            origDroppee = jsfForm.getDefaultParentBean();
+        } else {
+            origDroppee = MarkupUnit.getMarkupDesignBeanForElement(origDropeeComponentRootElement);
+        }
         return getDndSupport().getDropType(origDroppee, droppeeElement, t, linkOnly);
     }
 
@@ -890,7 +895,12 @@ class DomProviderImpl implements DomProvider {
 
 //    public int getDropTypeForClassNames(DesignBean origDroppee, Element droppeeElement, String[] classNames, DesignBean[] beans, boolean linkOnly) {
     public int getDropTypeForComponent(/*DesignBean origDroppee,*/Element origDropeeComponentRootElement, Element droppeeElement, Element componentRootElement, boolean linkOnly) {
-        MarkupDesignBean origDroppee = MarkupUnit.getMarkupDesignBeanForElement(origDropeeComponentRootElement);
+        MarkupDesignBean origDroppee;
+        if (origDropeeComponentRootElement == null && jsfForm.isGridMode()) {
+            origDroppee = jsfForm.getDefaultParentBean();
+        } else {
+            origDroppee = MarkupUnit.getMarkupDesignBeanForElement(origDropeeComponentRootElement);
+        }
         MarkupDesignBean markupDesignBean = MarkupUnit.getMarkupDesignBeanForElement(componentRootElement);
         // XXX Like the original old code.
         String[] classNames;
@@ -1079,7 +1089,7 @@ class DomProviderImpl implements DomProvider {
 //    } // End of WriteLockImpl.
     
     
-    public DomProvider.InlineEditorSupport createInlineEditorSupport(Element componentRootElement, String propertyName) {
+    public DomProvider.InlineEditorSupport createInlineEditorSupport(Element componentRootElement, String propertyName, String xpath) {
         MarkupDesignBean markupDesignBean = MarkupUnit.getMarkupDesignBeanForElement(componentRootElement);
         if (markupDesignBean == null) {
 //            return InlineEditorSupportImpl.createDummyInlineEditorSupport();
@@ -1091,7 +1101,7 @@ class DomProviderImpl implements DomProvider {
             return null;
         }
         
-        return new InlineEditorSupportImpl(jsfForm, this, markupDesignBean, designProperty);
+        return new InlineEditorSupportImpl(jsfForm, this, markupDesignBean, designProperty, xpath);
     }
 
 //    public void dumpHtmlMarkupForNode(org.openide.nodes.Node node) {
@@ -1155,17 +1165,29 @@ class DomProviderImpl implements DomProvider {
 //    }
 
     public void importString(Designer designer, String string, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid,
-            Element droppeeElement, Element dropeeComponentRootElement, Element defaultParentComponentRootElement/*,DomProvider.CoordinateTranslator coordinateTranslator*/) {
-        DesignBean droppeeBean = MarkupUnit.getMarkupDesignBeanForElement(dropeeComponentRootElement);
-        DesignBean defaultParent = MarkupUnit.getMarkupDesignBeanForElement(defaultParentComponentRootElement);
+            Element droppeeElement, Element dropeeComponentRootElement/*, Element defaultParentComponentRootElement, DomProvider.CoordinateTranslator coordinateTranslator*/) {
+        DesignBean droppeeBean;
+        if (dropeeComponentRootElement == null && jsfForm.isGridMode()) {
+            droppeeBean = jsfForm.getDefaultParentBean();
+        } else {
+            droppeeBean = MarkupUnit.getMarkupDesignBeanForElement(dropeeComponentRootElement);
+        }
+//        DesignBean defaultParent = MarkupUnit.getMarkupDesignBeanForElement(defaultParentComponentRootElement);
+        DesignBean defaultParent = jsfForm.getDefaultParentBean();
         getDndSupport().importString(designer, string, canvasPos, documentPosNode, documentPosOffset, dimension, isGrid,
                 droppeeElement, droppeeBean, defaultParent/*, coordinateTranslator*/);
     }
 
     public boolean  importData(Designer designer, JComponent comp, Transferable t, /*Object transferData,*/ Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid,
-            Element droppeeElement, Element dropeeComponentRootElement, Element defaultParentComponentRootElement/*, DomProvider.CoordinateTranslator coordinateTranslator*/, int dropAction) {
-        DesignBean droppeeBean = MarkupUnit.getMarkupDesignBeanForElement(dropeeComponentRootElement);
-        DesignBean defaultParent = MarkupUnit.getMarkupDesignBeanForElement(defaultParentComponentRootElement);
+            Element droppeeElement, Element dropeeComponentRootElement/*, Element defaultParentComponentRootElement, DomProvider.CoordinateTranslator coordinateTranslator*/, int dropAction) {
+        DesignBean droppeeBean;
+        if (dropeeComponentRootElement == null && jsfForm.isGridMode()) {
+            droppeeBean = jsfForm.getDefaultParentBean();
+        } else {
+            droppeeBean = MarkupUnit.getMarkupDesignBeanForElement(dropeeComponentRootElement);
+        }
+//        DesignBean defaultParent = MarkupUnit.getMarkupDesignBeanForElement(defaultParentComponentRootElement);
+        DesignBean defaultParent = jsfForm.getDefaultParentBean();
         return getDndSupport().importData(designer, comp, t, /*transferData,*/ canvasPos, documentPosNode, documentPosOffset, dimension, isGrid,
                 droppeeElement, droppeeBean, defaultParent, /*coordinateTranslator,*/ dropAction);
     }
@@ -1206,10 +1228,10 @@ class DomProviderImpl implements DomProvider {
         return jsfForm.hasCachedExternalFrames();
     }
 
-    public void reuseCssStyle(DomProvider domProvider) {
-        // XXX
-        CssProvider.getEngineService().reuseCssEngineForDocument(jsfForm.getJspDom(),((DomProviderImpl)domProvider).getJsfForm().getJspDom());
-    }
+//    public void reuseCssStyle(DomProvider domProvider) {
+//        // XXX
+//        CssProvider.getEngineService().reuseCssEngineForDocument(jsfForm.getJspDom(),((DomProviderImpl)domProvider).getJsfForm().getJspDom());
+//    }
 
     public boolean isGridMode() {
         return jsfForm.isGridMode();
@@ -1443,49 +1465,49 @@ class DomProviderImpl implements DomProvider {
         return DecorationManager.getDefault().getDecoration(element);
     }
 
-    public boolean isShowDecorations() {
-        return JsfDesignerPreferences.getInstance().isShowDecorations();
-    }
+//    public boolean isShowDecorations() {
+//        return JsfDesignerPreferences.getInstance().isShowDecorations();
+//    }
+//
+//    public int getDefaultFontSize() {
+//        return JsfDesignerPreferences.getInstance().getDefaultFontSize();
+//    }
+//
+//    public int getPageSizeWidth() {
+//        return JsfDesignerPreferences.getInstance().getPageSizeWidth();
+//    }
+//
+//    public int getPageSizeHeight() {
+//        return JsfDesignerPreferences.getInstance().getPageSizeHeight();
+//    }
+//
+//    public boolean isGridShow() {
+//        return GridHandler.getDefault().isGrid();
+//    }
+//
+//    public boolean isGridSnap() {
+//        return GridHandler.getDefault().isSnap();
+//    }
+//
+//    public int getGridWidth() {
+//        return GridHandler.getDefault().getGridWidth();
+//    }
+//
+//    public int getGridHeight() {
+//        return GridHandler.getDefault().getGridHeight();
+//    }
 
-    public int getDefaultFontSize() {
-        return JsfDesignerPreferences.getInstance().getDefaultFontSize();
-    }
-
-    public int getPageSizeWidth() {
-        return JsfDesignerPreferences.getInstance().getPageSizeWidth();
-    }
-
-    public int getPageSizeHeight() {
-        return JsfDesignerPreferences.getInstance().getPageSizeHeight();
-    }
-
-    public boolean isGridShow() {
-        return GridHandler.getDefault().isGrid();
-    }
-
-    public boolean isGridSnap() {
-        return GridHandler.getDefault().isSnap();
-    }
-
-    public int getGridWidth() {
-        return GridHandler.getDefault().getGridWidth();
-    }
-
-    public int getGridHeight() {
-        return GridHandler.getDefault().getGridHeight();
-    }
-
-    public int getGridTraceWidth() {
-        return GridHandler.getDefault().getGridTraceWidth();
-    }
-
-    public int getGridTraceHeight() {
-        return GridHandler.getDefault().getGridTraceHeight();
-    }
-
-    public int getGridOffset() {
-        return GridHandler.getDefault().getGridOffset();
-    }
+//    public int getGridTraceWidth() {
+//        return GridHandler.getDefault().getGridTraceWidth();
+//    }
+//
+//    public int getGridTraceHeight() {
+//        return GridHandler.getDefault().getGridTraceHeight();
+//    }
+//
+//    public int getGridOffset() {
+//        return GridHandler.getDefault().getGridOffset();
+//    }
     
     @Override
     public String toString() {

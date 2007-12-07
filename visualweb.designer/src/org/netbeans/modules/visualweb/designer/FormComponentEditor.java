@@ -43,12 +43,10 @@ package org.netbeans.modules.visualweb.designer;
 import org.netbeans.modules.visualweb.api.designer.DomProvider;
 import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssProvider;
-import org.netbeans.modules.visualweb.designer.CssUtilities;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
@@ -59,6 +57,8 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -67,7 +67,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.MouseInputAdapter;
@@ -75,7 +74,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.JTextComponent;
 
-import org.openide.ErrorManager;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -137,30 +135,46 @@ class FormComponentEditor extends InlineEditor {
 //        this.xpath = xpath;
     }
 
-    public static FormComponentEditor get(WebForm webform, String xpath, CssBox box,
+    public static FormComponentEditor get(WebForm webform, /*String xpath,*/ CssBox box,
     Element componentRootElement,DomProvider.InlineEditorSupport inlineEditorSupport) {
-        if (xpath != null) {
-//            RaveElement sourceElement = (RaveElement)bean.getElement();
-//            RaveElement root = sourceElement.getRendered();
-//            Element sourceElement = bean.getElement();
-//            Element root = MarkupService.getRenderedElementForElement(sourceElement);
+//        if (xpath != null) {
+////            RaveElement sourceElement = (RaveElement)bean.getElement();
+////            RaveElement root = sourceElement.getRendered();
+////            Element sourceElement = bean.getElement();
+////            Element root = MarkupService.getRenderedElementForElement(sourceElement);
+//
+//            Element root = componentRootElement;
+//            if (root != null) {
+////                Node node = findPropertyNode(root, xpath);
+//                Node node = WebForm.getDomProviderService().findPropertyNode(root, xpath);
+//
+//                if ((node != null) && (node.getNodeType() == Node.ELEMENT_NODE)) {
+//                    Element element = (Element)node;
+//                    HtmlTag tag = HtmlTag.getTag(element.getTagName());
+//
+//                    if ((tag != null) && tag.isFormMemberTag()) {
+////                        CssBox b = CssBox.getBox(element);
+//                        CssBox b = webform.findCssBoxForElement(element);
+//
+//                        if (b != null) {
+//                            box = b;
+//                        }
+//                    }
+//                }
+//            }
+//        }
+        Node node = inlineEditorSupport.findXPathNodeForComponentRootElement(componentRootElement);
+        
+        if ((node != null) && (node.getNodeType() == Node.ELEMENT_NODE)) {
+            Element element = (Element)node;
+            HtmlTag tag = HtmlTag.getTag(element.getTagName());
 
-            Element root = componentRootElement;
-            if (root != null) {
-                Node node = findPropertyNode(root, xpath);
-
-                if ((node != null) && (node.getNodeType() == Node.ELEMENT_NODE)) {
-                    Element element = (Element)node;
-                    HtmlTag tag = HtmlTag.getTag(element.getTagName());
-
-                    if ((tag != null) && tag.isFormMemberTag()) {
+            if ((tag != null) && tag.isFormMemberTag()) {
 //                        CssBox b = CssBox.getBox(element);
-                        CssBox b = webform.findCssBoxForElement(element);
+                CssBox b = webform.findCssBoxForElement(element);
 
-                        if (b != null) {
-                            box = b;
-                        }
-                    }
+                if (b != null) {
+                    box = b;
                 }
             }
         }
@@ -193,18 +207,24 @@ class FormComponentEditor extends InlineEditor {
             FormComponentBox formComp = (FormComponentBox)box;
             component = formComp.getComponent();
             element = formComp.getElement();
-        } else {
-//            element = bean.getElement();
-//
-////            RaveElement xel = (RaveElement)element;
-////            if (xel.getRendered() != null) {
-////                element = xel.getRendered();
+//        } else {
+////            element = bean.getElement();
+////
+//////            RaveElement xel = (RaveElement)element;
+//////            if (xel.getRendered() != null) {
+//////                element = xel.getRendered();
+//////            }
+////            Element rendered = MarkupService.getRenderedElementForElement(element);
+////            if (rendered != null) {
+////                element = rendered;
 ////            }
-//            Element rendered = MarkupService.getRenderedElementForElement(element);
-//            if (rendered != null) {
-//                element = rendered;
-//            }
-            element = inlineEditorSupport.getRenderedElement();
+//            element = inlineEditorSupport.getRenderedElement();
+//        }
+        } else if (box instanceof CustomButtonBox) {
+            element = box.getElement();
+        } else {
+            info(new IllegalStateException("Unsupported box type used, box=" + box)); // NOI18N
+            return;
         }
 
         int width;
@@ -282,34 +302,35 @@ class FormComponentEditor extends InlineEditor {
             if (!positionAdjacent) { // For adjacent edits, use normal text field size, font, etc.
 
 
-//                DocumentFragment fragment = webform.getDomSynchronizer().createSourceFragment(bean);
-//                DocumentFragment fragment = webform.createSourceFragment(bean);
-                DocumentFragment fragment = inlineEditorSupport.createSourceFragment();
-                
-                NodeList nl = fragment.getChildNodes();
-                
-                for (int i = 0, n = nl.getLength(); i < n; i++) {
-                    Node child = nl.item(i);
-
-                    if (child.getNodeType() == Node.ELEMENT_NODE) {
-                        Element e = (Element)child;
-
-                        HtmlTag tag = HtmlTag.getTag(e.getTagName());
-
-                        if ((tag != null) && tag.isFormMemberTag()) {
-                            if (e.getAttribute(HtmlAttribute.TYPE).equals("hidden")) { // NOI18N
-
-                                continue;
-                            }
-
-                            // XXX What is this for a hack? Revise.
-                            DesignerUtils.stripDesignStyleClasses(fragment);
-                            element = e;
-
-                            break;
-                        }
-                    }
-                }
+                // XXX This seems to be redundant here. The rendered element provides all needed info.
+////                DocumentFragment fragment = webform.getDomSynchronizer().createSourceFragment(bean);
+////                DocumentFragment fragment = webform.createSourceFragment(bean);
+//                DocumentFragment fragment = inlineEditorSupport.createSourceFragment();
+//                
+//                NodeList nl = fragment.getChildNodes();
+//                
+//                for (int i = 0, n = nl.getLength(); i < n; i++) {
+//                    Node child = nl.item(i);
+//
+//                    if (child.getNodeType() == Node.ELEMENT_NODE) {
+//                        Element e = (Element)child;
+//
+//                        HtmlTag tag = HtmlTag.getTag(e.getTagName());
+//
+//                        if ((tag != null) && tag.isFormMemberTag()) {
+//                            if (e.getAttribute(HtmlAttribute.TYPE).equals("hidden")) { // NOI18N
+//
+//                                continue;
+//                            }
+//
+//                            // XXX What is this for a hack? Revise.
+//                            DesignerUtils.stripDesignStyleClasses(fragment);
+//                            element = e;
+//
+//                            break;
+//                        }
+//                    }
+//                }
 
 //                Color bg = CssLookup.getColor(element, XhtmlCss.BACKGROUND_COLOR_INDEX);
 //                Color fg = CssLookup.getColor(element, XhtmlCss.COLOR_INDEX);
@@ -692,9 +713,18 @@ class FormComponentEditor extends InlineEditor {
             try {
                 int caret = inlineTextEditor.getCaretPosition();
                 doc.insertString(caret, "\n", null);
-            } catch (BadLocationException ble) {
-                ErrorManager.getDefault().notify(ble);
+            } catch (BadLocationException ex) {
+//                ErrorManager.getDefault().notify(ble);
+                info(ex);
             }
         }
+    }
+    
+    private static Logger getLogger() {
+        return Logger.getLogger(FormComponentEditor.class.getName());
+    }
+    
+    private static void info(Exception ex) {
+        getLogger().log(Level.INFO, null, ex);
     }
 }

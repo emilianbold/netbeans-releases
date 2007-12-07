@@ -244,7 +244,9 @@ public abstract class ExternalDocumentBox extends DocumentBox implements Externa
     protected void initializeBackgroundColor() {
         WebForm frameForm = getExternalForm();
 //        if ((frameForm != null) && !frameForm.getModel().isBusted()) {
-        if (frameForm != null && !frameForm.isModelBusted()) {
+        // XXX The model validity should be checked here.
+//        if (frameForm != null && !frameForm.isModelBusted()) {
+        if (frameForm != null) {
             // Use the pointed-to document's background colors
             // etc.
 //            Element frameFormElement = frameForm.getDocument().getWebForm().getHtmlBody();
@@ -259,7 +261,9 @@ public abstract class ExternalDocumentBox extends DocumentBox implements Externa
     protected void initializeBackgroundImage() {
         WebForm frameForm = getExternalForm();
 //        if ((frameForm != null) && !frameForm.getModel().isBusted()) {
-        if (frameForm != null && !frameForm.isModelBusted()) {
+//        if (frameForm != null && !frameForm.isModelBusted()) {
+        // XXX The model validity shouldn't be checked here.
+        if (frameForm != null) {
             // Use the pointed-to document's background colors
             // etc.
 //            Element frameFormElement = frameForm.getDocument().getWebForm().getHtmlBody();
@@ -334,12 +338,13 @@ public abstract class ExternalDocumentBox extends DocumentBox implements Externa
 //            return;
 //        }
 
-        // We allow invalid forms to be shown when included in say <iframes>
-        // But should I include some note about parsing errors???
-//        if (frameForm.getModel().isBusted()) {
-        if (frameForm.isModelBusted()) {
-            return;
-        }
+        // This shouldn't be here, the model should be always valid.
+//        // We allow invalid forms to be shown when included in say <iframes>
+//        // But should I include some note about parsing errors???
+////        if (frameForm.getModel().isBusted()) {
+//        if (frameForm.isModelBusted()) {
+//            return;
+//        }
 
 //        Element body = frameForm.getDocument().getWebForm().getHtmlBody();
         Element body = frameForm.getHtmlBody();
@@ -353,7 +358,9 @@ public abstract class ExternalDocumentBox extends DocumentBox implements Externa
         CssProvider.getEngineService().setStyleParentForElement(body, element);
 //        ((RaveDocument)frameForm.getDom()).setCssEngine(webform.getDom().getCssEngine());
 //        CssProvider.getEngineService().reuseCssEngineForDocument(frameForm.getJspDom(), webform.getJspDom());
-        frameForm.reuseCssStyle(webform);
+        // XXX Reusing the jsp dom, shouldn't be here (it seem it didn't work anyway).
+//        frameForm.reuseCssStyle(webform);
+        CssProvider.getEngineService().reuseCssEngineForDocument(frameForm.getHtmlDom(), webform.getHtmlDom());
 
 //        XhtmlCssEngine engine = CssLookup.getCssEngine(body);
 //        if (engine != null) {
@@ -518,7 +525,9 @@ public abstract class ExternalDocumentBox extends DocumentBox implements Externa
      * model for the included/referenced external document. May be null.
      */
     public WebForm getExternalForm() {
-        if (frameForm == null || !frameForm.isModelValid()) {
+        // XXX Model validity shouldn't be checked here.
+//        if (frameForm == null || !frameForm.isModelValid()) {
+        if (frameForm == null) {
             frameForm = findExternalForm(super.getWebForm(), getElement());
         }
         return frameForm;

@@ -2198,7 +2198,7 @@ public class ContainerBox extends CssBox {
         final int gridHeight = webform.getGridHeight();
         final int gridTraceWidth = webform.getGridTraceWidth();
         final int gridTraceHeight = webform.getGridTraceHeight();
-        final int gridOffset = webform.getGridOffset();
+//        final int gridOffset = webform.getGridOffset();
 
         // Draw a plain grid (one dot on each gridsize boundary
         //for (int x = gridOffset; x < width; x += gridSize) {
@@ -2208,7 +2208,8 @@ public class ContainerBox extends CssBox {
         //        g.fillRect(x, y, 1, 1);
         //    }
         //}
-        int xstart = gridOffset;
+//        int xstart = gridOffset;
+        int xstart = 0;
 
         // Draw grid with smaller trace lines along the axes
         for (int xp = xstart; xp < width; xp += gridWidth) {
@@ -2219,7 +2220,8 @@ public class ContainerBox extends CssBox {
             }
         }
 
-        int ystart = gridOffset;
+//        int ystart = gridOffset;
+        int ystart = 0;
 
         // This is going to redraw all the pixels on the gridsize*gridsize
         // grid - I can count gridTrace's and skip these.  TODO.

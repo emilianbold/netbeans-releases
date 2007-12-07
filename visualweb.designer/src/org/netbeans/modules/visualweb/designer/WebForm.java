@@ -53,11 +53,9 @@ import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition.Bias;
 import org.netbeans.modules.visualweb.api.designer.DomProvider.DomRange;
 import org.netbeans.modules.visualweb.api.designer.DomProvider.InlineEditorSupport;
 import org.netbeans.modules.visualweb.api.designer.DomProviderService;
-import org.netbeans.modules.visualweb.api.designer.cssengine.StyleData;
 import org.netbeans.modules.visualweb.css2.CssBox;
 import org.netbeans.modules.visualweb.css2.ModelViewMapper;
 import org.netbeans.modules.visualweb.css2.PageBox;
-import org.netbeans.modules.visualweb.designer.ImageCache;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FontMetrics;
@@ -80,9 +78,7 @@ import org.netbeans.modules.visualweb.spi.designer.Decoration;
 
 import org.netbeans.spi.palette.PaletteController;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
-import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.UserDataHandler;
@@ -181,7 +177,19 @@ public class WebForm implements Designer {
 
     // XXX #117371 Keeping the ref to css box with intial focus mark.
     private WeakReference<CssBox> initialFocusMarkCssBoxWRef = new WeakReference<CssBox>(null);
-    
+
+//    private int pageSizeWidth;
+//    private int pageSizeHeight;
+    private final Dimension pageSize = new Dimension(0, 0);
+    private boolean gridShow;
+    private boolean gridSnap;
+    private int gridWidth;
+    private int gridHeight;
+    private int gridTraceWidth;
+    private int gridTraceHeight;
+    private boolean showDecorations;
+    private int defaultFontSize;
+
 //    private static class JspDataObjectListener implements PropertyChangeListener {
 //        private final WebForm webForm;
 //        public JspDataObjectListener(WebForm webForm) {
@@ -2006,13 +2014,13 @@ public class WebForm implements Designer {
 //        return domProvider.handleMouseClickForElement(element, clickCount);
 //    }
 
-    // XXX, Also better name needed.
-//    boolean isNormalAndHasFacesBean(MarkupDesignBean markupDesignBean) {
-//        return domProvider.isNormalAndHasFacesBean(markupDesignBean);
+//    // XXX, Also better name needed.
+////    boolean isNormalAndHasFacesBean(MarkupDesignBean markupDesignBean) {
+////        return domProvider.isNormalAndHasFacesBean(markupDesignBean);
+////    }
+//    boolean isNormalAndHasFacesComponent(Element componentRootElement) {
+//        return domProvider.isNormalAndHasFacesComponent(componentRootElement);
 //    }
-    boolean isNormalAndHasFacesComponent(Element componentRootElement) {
-        return domProvider.isNormalAndHasFacesComponent(componentRootElement);
-    }
 
 //    boolean canHighlightMarkupDesignBean(MarkupDesignBean markupDesignBean) {
 //        return domProvider.canHighlightMarkupDesignBean(markupDesignBean);
@@ -2067,9 +2075,9 @@ public class WebForm implements Designer {
 //    DesignBean getDefaultParentBean() {
 //        return domProvider.getDefaultParentBean();
 //    }
-    public Element getDefaultParentComponent() {
-        return domProvider.getDefaultParentComponent();
-    }
+//    public Element getDefaultParentComponent() {
+//        return domProvider.getDefaultParentComponent();
+//    }
 
 //    JComponent getErrorPanel() {
 //        DomProvider.ErrorPanel errorPanel = domProvider.getErrorPanel(new ErrorPanelCallbackImpl(this));
@@ -2105,17 +2113,18 @@ public class WebForm implements Designer {
 //        domProvider.writeUnlock(writeLock);
 //    }
 
-    public boolean isModelValid() {
-        return domProvider.isModelValid();
-    }
+//    public boolean isModelValid() {
+//        return domProvider.isModelValid();
+//    }
 
-    void readLock() {
-        domProvider.readLock();
-    }
-
-    void readUnlock() {
-        domProvider.readUnlock();
-    }
+    // XXX There should be no locking here, the designer is not thread safe (it should run in AWT thread only).
+//    void readLock() {
+//        domProvider.readLock();
+//    }
+//
+//    void readUnlock() {
+//        domProvider.readUnlock();
+//    }
 
 //    void setModelActivated(boolean activated) {
 //        domProvider.setModelActivated(activated);
@@ -2125,9 +2134,9 @@ public class WebForm implements Designer {
 //        return domProvider.getUndoManager();
 //    }
 
-    public boolean isModelBusted() {
-        return domProvider.isModelBusted();
-    }
+//    public boolean isModelBusted() {
+//        return domProvider.isModelBusted();
+//    }
 
 //    DesignBean[] getBeansOfType(Class clazz) {
 //        return domProvider.getBeansOfType(clazz);
@@ -2184,8 +2193,8 @@ public class WebForm implements Designer {
         return domProvider.canHighlightComponentRootElmenet(componentRootElement);
     }
 
-    InlineEditorSupport createInlineEditorSupport(Element componentRootElement, String propertyName) {
-        return domProvider.createInlineEditorSupport(componentRootElement, propertyName);
+    InlineEditorSupport createInlineEditorSupport(Element componentRootElement, String propertyName, String xpath) {
+        return domProvider.createInlineEditorSupport(componentRootElement, propertyName, xpath);
     }
 
 //    void dumpHtmlMarkupForNode(org.openide.nodes.Node node) {
@@ -2197,15 +2206,15 @@ public class WebForm implements Designer {
 //    }
 
     void importString(String string, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid,
-    Element droppeeElement, Element dropeeComponentRootElement, Element defaultParentComponentRootElement) {
+    Element droppeeElement, Element dropeeComponentRootElement/*, Element defaultParentComponentRootElement*/) {
         domProvider.importString(this, string, canvasPos, documentPosNode, documentPosOffset, dimension, isGrid,
-                droppeeElement, dropeeComponentRootElement, defaultParentComponentRootElement);
+                droppeeElement, dropeeComponentRootElement /*, defaultParentComponentRootElement*/);
     }
 
     boolean importData(JComponent comp, Transferable t, /*Object transferData,*/ Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid,
-    Element droppeeElement, Element dropeeComponentRootElement, Element defaultParentComponentRootElement, int dropAction) {
+    Element droppeeElement, Element dropeeComponentRootElement/*, Element defaultParentComponentRootElement*/, int dropAction) {
         return domProvider.importData(this, comp, t, /*transferData,*/ canvasPos, documentPosNode, documentPosOffset, dimension, isGrid,
-                droppeeElement, dropeeComponentRootElement, defaultParentComponentRootElement, dropAction);
+                droppeeElement, dropeeComponentRootElement/*, defaultParentComponentRootElement*/, dropAction);
     }
 
     // >> Designer implementation
@@ -2264,29 +2273,31 @@ public class WebForm implements Designer {
         
 //        if (!webform.getModel().isValid()) {
 //        if (!webform.isModelValid()) {
-        if (!isModelValid()) {
-            return null;
-        }
+        // XXX Model validity shouldn't controlled here.
+//        if (!isModelValid()) {
+//            return null;
+//        }
         
 //        Document doc = editor.getDocument();
-        
-        // XXX Lock insync
-//        doc.readLock();
-//        webform.getMarkup().readLock();
-//        webform.readLock();
-        readLock();
-        
-        try {
+
+        // XXX There should be no locking here, the designer is not thread safe (it should run in AWT thread only).
+//        // XXX Lock insync
+////        doc.readLock();
+////        webform.getMarkup().readLock();
+////        webform.readLock();
+//        readLock();
+//        
+//        try {
 //            return pageBox.modelToView(pos);
 //            return ModelViewMapper.modelToView(pageBox, pos);
             return ModelViewMapper.modelToView(getPane().getPageBox(), pos);
-        } finally {
-            // XXX Unlock insync
-//            doc.readUnlock();
-//            webform.getMarkup().readUnlock();
-//            webform.readUnlock();
-            readUnlock();
-        }
+//        } finally {
+//            // XXX Unlock insync
+////            doc.readUnlock();
+////            webform.getMarkup().readUnlock();
+////            webform.readUnlock();
+//            readUnlock();
+//        }
     }
     
     /**
@@ -2312,20 +2323,21 @@ public class WebForm implements Designer {
 //        WebForm webform = editor.getWebForm();
 //        webform.getMarkup().readLock();
 //        webform.readLock();
-        readLock();
-        
-        try {
+        // XXX There should be no locking here, the designer is not thread safe (it should run in AWT thread only).
+//        readLock();
+//        
+//        try {
 //            pos = ModelViewMapper.viewToModel(doc.getWebForm(), pt.x, pt.y); //, alloc, biasReturn);
             return ModelViewMapper.viewToModel(this, pt.x, pt.y); //, alloc, biasReturn);
             
             // I'm now relying on clients to do this themselves!
             //assert offs == Position.NONE || Position.isSourceNode(offs.getNode());
-        } finally {
-//            doc.readUnlock();
-//            webform.getMarkup().readUnlock();
-//            webform.readUnlock();
-            readUnlock();
-        }
+//        } finally {
+////            doc.readUnlock();
+////            webform.getMarkup().readUnlock();
+////            webform.readUnlock();
+//            readUnlock();
+//        }
         
 //        return pos;
     }
@@ -2371,12 +2383,13 @@ public class WebForm implements Designer {
         }
     }
     
-    public void reuseCssStyle(WebForm webForm) {
-        if (webForm == null) {
-            return;
-        }
-        domProvider.reuseCssStyle(webForm.domProvider);
-    }
+//    public void reuseCssStyle(WebForm webForm) {
+//        if (webForm == null) {
+//            return;
+//        }
+//        domProvider.reuseCssStyle(webForm.domProvider);
+//    }
+    
     
     
 //    private static class DomProviderListener implements DomProvider.DomProviderListener {
@@ -2824,8 +2837,11 @@ public class WebForm implements Designer {
         public boolean areLinkedToSameBean(Element oneElement, Element otherElement) {
             return false;
         }
+
+        public Node findPropertyNode(Node root, String xpaths) {
+            return null;
+        }
     } // End of DummyDomProviderService.
-    
     
 //    private static class ErrorPanelCallbackImpl implements DomProvider.ErrorPanelCallback {
 //        private final WebForm webForm;
@@ -3290,49 +3306,49 @@ public class WebForm implements Designer {
         return domProvider.getDecoration(element);
     }
     
-    public boolean isShowDecorations() {
-        return domProvider.isShowDecorations();
-    }
+//    public boolean isShowDecorations() {
+//        return domProvider.isShowDecorations();
+//    }
+//    
+//    public int getDefaultFontSize() {
+//        return domProvider.getDefaultFontSize();
+//    }
+//    
+//    public int getPageSizeWidth() {
+//        return domProvider.getPageSizeWidth();
+//    }
+//    
+//    public int getPageSizeHeight() {
+//        return domProvider.getPageSizeHeight();
+//    }
+//    
+//    public boolean isGridShow() {
+//        return domProvider.isGridShow();
+//    }
+//    
+//    public boolean isGridSnap() {
+//        return domProvider.isGridSnap();
+//    }
+//    
+//    public int getGridWidth() {
+//        return domProvider.getGridWidth();
+//    }
+//    
+//    public int getGridHeight() {
+//        return domProvider.getGridHeight();
+//    }
     
-    public int getDefaultFontSize() {
-        return domProvider.getDefaultFontSize();
-    }
+//    public int getGridTraceWidth() {
+//        return domProvider.getGridTraceWidth();
+//    }
+//    
+//    public int getGridTraceHeight() {
+//        return domProvider.getGridTraceHeight();
+//    }
     
-    public int getPageSizeWidth() {
-        return domProvider.getPageSizeWidth();
-    }
-    
-    public int getPageSizeHeight() {
-        return domProvider.getPageSizeHeight();
-    }
-    
-    public boolean isGridShow() {
-        return domProvider.isGridShow();
-    }
-    
-    public boolean isGridSnap() {
-        return domProvider.isGridSnap();
-    }
-    
-    public int getGridWidth() {
-        return domProvider.getGridWidth();
-    }
-    
-    public int getGridHeight() {
-        return domProvider.getGridHeight();
-    }
-    
-    public int getGridTraceWidth() {
-        return domProvider.getGridTraceWidth();
-    }
-    
-    public int getGridTraceHeight() {
-        return domProvider.getGridTraceHeight();
-    }
-    
-    public int getGridOffset() {
-        return domProvider.getGridOffset();
-    }
+//    public int getGridOffset() {
+//        return domProvider.getGridOffset();
+//    }
     
     /** Adjust the given mouse X position to account for insets in parent
      * components etc., such that the resulting position matches the canvas
@@ -3366,15 +3382,17 @@ public class WebForm implements Designer {
     public int snapX(int x, Box parent) {
         boolean snap = isGridSnap();
         int gridWidth = getGridWidth();
-        int gridOffset = getGridOffset();
-        return doSnapX(x, parent == null ? 0 : parent.getAbsoluteX(), snap, gridWidth, gridOffset);
+//        int gridOffset = getGridOffset();
+//        return doSnapX(x, parent == null ? 0 : parent.getAbsoluteX(), snap, gridWidth, gridOffset);
+        return doSnapX(x, parent == null ? 0 : parent.getAbsoluteX(), snap, gridWidth);
     }
     
     public int snapX(int x) {
         return snapX(x, null);
     }
     
-    private static int doSnapX(int x, int absX, boolean snap, int gridWidth, int gridOffset) {
+//    private static int doSnapX(int x, int absX, boolean snap, int gridWidth, int gridOffset) {
+    private static int doSnapX(int x, int absX, boolean snap, int gridWidth) {
 //        int root = 0; // X coordinate of positioning parent
 
 //        if (parent != null) {
@@ -3386,7 +3404,8 @@ public class WebForm implements Designer {
         x -= root;
 
         if (snap) {
-            x = (((x + gridOffset + (gridWidth / 2)) / gridWidth) * gridWidth) - gridOffset;
+//            x = (((x + gridOffset + (gridWidth / 2)) / gridWidth) * gridWidth) - gridOffset;
+            x = (((x + (gridWidth / 2)) / gridWidth) * gridWidth);
         }
 
         x += root;
@@ -3406,15 +3425,17 @@ public class WebForm implements Designer {
     public int snapY(int y, Box parent) {
         boolean snap = isGridSnap();
         int gridHeight = getGridHeight();
-        int gridOffset = getGridOffset();
-        return doSnapY(y, parent == null ? 0 : parent.getAbsoluteY(), snap, gridHeight, gridOffset);
+//        int gridOffset = getGridOffset();
+//        return doSnapY(y, parent == null ? 0 : parent.getAbsoluteY(), snap, gridHeight, gridOffset);
+        return doSnapY(y, parent == null ? 0 : parent.getAbsoluteY(), snap, gridHeight);
     }
     
     public int snapY(int y) {
         return snapY(y, null);
     }
     
-    private static int doSnapY(int y, int absY, boolean snap, int gridHeight, int gridOffset) {
+//    private static int doSnapY(int y, int absY, boolean snap, int gridHeight, int gridOffset) {
+    private static int doSnapY(int y, int absY, boolean snap, int gridHeight) {
 //        int root = 0; // Y coordinate of positioning parent
 
 //        if (parent != null) {
@@ -3426,7 +3447,8 @@ public class WebForm implements Designer {
         y -= root;
 
         if (snap) {
-            y = (((y + gridOffset + (gridHeight / 2)) / gridHeight) * gridHeight) - gridOffset;
+//            y = (((y + gridOffset + (gridHeight / 2)) / gridHeight) * gridHeight) - gridOffset;
+            y = (((y + (gridHeight / 2)) / gridHeight) * gridHeight);
         }
 
         y += root;
@@ -3440,5 +3462,125 @@ public class WebForm implements Designer {
     
     public CssBox getInitialFocusMarkCssBox() {
         return initialFocusMarkCssBoxWRef.get();
+    }
+
+//    public void setPageSizeWidth(int pageSizeWidth) {
+//        this.pageSizeWidth = pageSizeWidth;
+//    }
+//    
+//    public int getPageSizeWidth() {
+//        return pageSizeWidth;
+//    }
+//
+//    public void setPageSizeHeight(int pageSizeHeight) {
+//        this.pageSizeHeight = pageSizeHeight;
+//    }
+//    
+//    public int getPageSizeHeight() {
+//        return pageSizeHeight;
+//    }
+    public void setPageSize(Dimension pageSize) {
+        this.pageSize.setSize(pageSize);
+
+        // TODO This property should be bound, and the handler (in the designerPane) should take care of this.
+        PageBox pageBox = designerPane.getPageBox();
+        if (pageBox != null) {
+            pageBox.redoLayout(true);
+        }
+        designerPane.repaint();
+    }
+    
+    public int getPageSizeWidth() {
+        return pageSize.width;
+    }
+    
+    public int getPageSizeHeight() {
+        return pageSize.height;
+    }
+    
+    public void setGridShow(boolean gridShow) {
+        this.gridShow = gridShow;
+        
+        // TODO This property should be bound, and the handler (in the designerPane) should take care of this.
+        designerPane.repaint();
+    }
+    
+    public boolean isGridShow() {
+        return gridShow;
+    }
+
+    public void setGridSnap(boolean gridSnap) {
+        this.gridSnap = gridSnap;
+        
+        // TODO This property should be bound, and the handler (in the designerPane) should take care of this.
+        designerPane.repaint();
+    }
+    
+    public boolean isGridSnap() {
+        return gridSnap;
+    }
+
+    public void setGridWidth(int gridWidth) {
+        this.gridWidth = gridWidth;
+        
+        // TODO This property should be bound, and the handler (in the designerPane) should take care of this.
+        designerPane.repaint();
+    }
+    
+    public int getGridWidth() {
+        return gridWidth;
+    }
+
+    public void setGridHeight(int gridHeight) {
+        this.gridHeight = gridHeight;
+        
+        // TODO This property should be bound, and the handler (in the designerPane) should take care of this.
+        designerPane.repaint();
+    }
+    
+    public void setGridTraceWidth(int gridTraceWidth) {
+        this.gridTraceWidth = gridTraceWidth;
+    }
+    
+    public int getGridTraceWidth() {
+        return gridTraceWidth;
+    }
+    
+    public void setGridTraceHeight(int gridTraceHeight) {
+        this.gridTraceHeight = gridTraceHeight; 
+    }
+    
+    public int getGridTraceHeight() {
+        return gridTraceHeight;
+    }
+    
+    public int getGridHeight() {
+        return gridWidth;
+    }
+
+    public void setShowDecorations(boolean showDecorations) {
+        this.showDecorations = showDecorations;
+        
+        // TODO This property should be bound, and the handler (in the designerPane) should take care of this.
+        designerPane.repaint();
+    }
+    
+    public boolean isShowDecorations() {
+        return showDecorations;
+    }
+
+    public void setDefaultFontSize(int defaultFontSize) {
+        this.defaultFontSize = defaultFontSize;
+        
+        // TODO This property should be bound, and the handler (in the designerPane) should take care of this.
+        DesignerPaneUI designerPaneUI = designerPane.getPaneUI();
+        if (designerPaneUI != null) {
+            designerPaneUI.resetPageBox();
+        }
+        designerPane.repaint();
+    }
+    
+    public int getDefaultFontSize() {
+        return defaultFontSize;
     }
 }

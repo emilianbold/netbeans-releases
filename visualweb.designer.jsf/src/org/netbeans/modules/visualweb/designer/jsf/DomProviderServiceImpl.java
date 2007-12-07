@@ -58,7 +58,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.table.TableModel;
 import org.netbeans.modules.visualweb.api.designer.Designer;
 import org.netbeans.modules.visualweb.api.designer.DomProviderService;
-import org.netbeans.modules.visualweb.api.designer.cssengine.StyleData;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DesignContext;
@@ -81,11 +80,8 @@ import javax.faces.component.html.HtmlOutputText;
 import javax.faces.context.FacesContext;
 import org.netbeans.modules.visualweb.xhtml.Jsp_Directive_Include;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
-import org.w3c.dom.Document;
-import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -1239,4 +1235,7 @@ public class DomProviderServiceImpl implements DomProviderService {
         return oneMarkupDesignBean == MarkupUnit.getMarkupDesignBeanForElement(otherElement);
     }
 
+    public Node findPropertyNode(Node root, String xpaths) {
+        return JsfSupportUtilities.findPropertyNode(root, xpaths);
+    }
 }

@@ -320,4 +320,16 @@ public interface Designer {
     public void setPaintSizeMask(boolean paintSizeMask);
     /** Specifies whether the component paints size mask. */
     public boolean isPaintSizeMask();
+
+//    public void setPageSizeWidth(int pageSizeWidth);
+//    public void setPageSizeHeight(int pageSizeHeight);
+    public void setPageSize(Dimension pageSize);
+    public void setGridShow(boolean gridShow);
+    public void setGridSnap(boolean gridSnap);
+    public void setGridWidth(int gridWidth);
+    public void setGridHeight(int gridHeight);
+    public void setGridTraceWidth(int gridTraceWidth);
+    public void setGridTraceHeight(int gridTraceHeight);
+    public void setShowDecorations(boolean showDecorations);
+    public void setDefaultFontSize(int defaultFontSize);
 }

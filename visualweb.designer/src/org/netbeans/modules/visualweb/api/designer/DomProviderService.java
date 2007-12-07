@@ -45,9 +45,6 @@ package org.netbeans.modules.visualweb.api.designer;
 
 import java.awt.Image;
 
-import org.netbeans.modules.visualweb.api.designer.cssengine.StyleData;
-import org.openide.filesystems.FileObject;
-import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -212,4 +209,6 @@ public interface DomProviderService {
     // XXX
     public boolean areLinkedToSameBean(Element oneElement, Element otherElement);
 
+    // XXX
+    public Node findPropertyNode(Node root, String xpaths);
 }

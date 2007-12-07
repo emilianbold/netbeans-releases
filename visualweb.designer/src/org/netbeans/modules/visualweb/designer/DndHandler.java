@@ -436,7 +436,7 @@ public class DndHandler /*extends TransferHandler*/ {
         Element dropeeComponentRootElement = box == null ? null : getDropeeComponent(box);
         boolean isGrid = (!webform.isGridMode() && ((box == null) || !box.isGrid())) ? false : true;
 //        DesignBean defaultParentBean = webform.getDefaultParentBean();
-        Element defaultParentComponentRootElement = webform.getDefaultParentComponent();
+//        Element defaultParentComponentRootElement = webform.getDefaultParentComponent();
 //        return doComputeLocationForPositions(facet, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement, droppeeBean, defaultParentBean);
         
         
@@ -488,7 +488,7 @@ public class DndHandler /*extends TransferHandler*/ {
 //                /*droppeeBean,*/dropeeComponentRootElement, /*defaultParentBean*/defaultParentComponentRootElement);
 //        doImportDataDelayed(comp, t, transferData, location/*, coordinateTranslator*/);
           boolean success = webform.importData(comp, t, /*transferData,*/ canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid,
-                    droppeeElement, dropeeComponentRootElement, defaultParentComponentRootElement , /*coordinateTranslator,*/ dropAction);
+                    droppeeElement, dropeeComponentRootElement, /*defaultParentComponentRootElement, coordinateTranslator,*/ dropAction);
 
 //        } catch (Exception e) {
 //            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
@@ -851,13 +851,13 @@ public class DndHandler /*extends TransferHandler*/ {
         Element dropeeComponentRootElement = box == null ? null : getDropeeComponent(box);
         boolean isGrid = (!webform.isGridMode() && ((box == null) || !box.isGrid())) ? false : true;
 //        DesignBean defaultParentBean = webform.getDefaultParentBean();
-        Element defaultParentComponentRootElement = webform.getDefaultParentComponent();
+//        Element defaultParentComponentRootElement = webform.getDefaultParentComponent();
 //        return doComputeLocationForPositions(facet, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement, droppeeBean, defaultParentBean);
         
 //        DomProvider.Location location = WebForm.getDomProviderService().computeLocationForPositions(null, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement,
 //                /*droppeeBean,*/dropeeComponentRootElement, /*defaultParentBean*/defaultParentComponentRootElement);
 //        importString(string, location, coordinateTranslator);
-        webform.importString(string, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement, dropeeComponentRootElement, defaultParentComponentRootElement/*, coordinateTranslator*/);
+        webform.importString(string, canvasPos, documentPosNode, documentPosOffset, getDropSize(), isGrid, droppeeElement, dropeeComponentRootElement /*, defaultParentComponentRootElement, coordinateTranslator*/);
     }
     
 //    void importString(String string, DomProvider.Location location, DomProvider.CoordinateTranslator coordinateTranslator) {
@@ -1309,21 +1309,22 @@ public class DndHandler /*extends TransferHandler*/ {
 //        DesignBean origDroppee = ModelViewMapper.findMarkupDesignBean(box);
         Element origDropeeComponentRootElement = ModelViewMapper.findElement(box);
 
-//        if (webform.isGridMode() && (origDroppee == null) &&
-//                (webform.getModel().getLiveUnit() != null)) {
-//            MarkupBean bean = webform.getModel().getFacesUnit().getDefaultParent();
-//
-//            if (bean != null) {
-//                origDroppee = webform.getModel().getLiveUnit().getDesignBean(bean);
-//            }
+        // XXX Moved to methods in DomProviderImpl.
+////        if (webform.isGridMode() && (origDroppee == null) &&
+////                (webform.getModel().getLiveUnit() != null)) {
+////            MarkupBean bean = webform.getModel().getFacesUnit().getDefaultParent();
+////
+////            if (bean != null) {
+////                origDroppee = webform.getModel().getLiveUnit().getDesignBean(bean);
+////            }
+////        }
+////        if (webform.isGridMode() && (origDroppee == null)) {
+////            origDroppee = webform.getDefaultParentBean();
+////        }
+//        if (webform.isGridMode() && (origDropeeComponentRootElement == null)) {
+////            origDroppee = webform.getDefaultParentBean();
+//            origDropeeComponentRootElement = webform.getDefaultParentComponent();
 //        }
-//        if (webform.isGridMode() && (origDroppee == null)) {
-//            origDroppee = webform.getDefaultParentBean();
-//        }
-        if (webform.isGridMode() && (origDropeeComponentRootElement == null)) {
-//            origDroppee = webform.getDefaultParentBean();
-            origDropeeComponentRootElement = webform.getDefaultParentComponent();
-        }
 
 //        return origDroppee;
         return origDropeeComponentRootElement;

@@ -930,7 +930,8 @@ public class PageBox extends DocumentBox implements ChangeListener {
                 
 
                 if (df != null) {
-                    DesignerUtils.stripDesignStyleClasses(df);
+                    // XXX Moved to designer/jsf/../DesignerServiceHackImpl.
+//                    DesignerUtils.stripDesignStyleClasses(df);
 
                     // Yes - add its nodes into our box list
                     NodeList nl = df.getChildNodes();
@@ -1006,6 +1007,13 @@ public class PageBox extends DocumentBox implements ChangeListener {
 //        CssBox box = findCssBoxForComponentRootElement(
 //                WebForm.getDomProviderService().getComponentRootElementForMarkupDesignBean(bean));
         CssBox box = findCssBoxForComponentRootElement(componentRootElement);
+        // XXX This would provide the changes in the style, but don't inherit/lays out the correct sizes,
+        // Needed to be investigated (on the other hand this method is all hack).
+//        CssBox box = findCssBoxForComponentRootElement(element);
+//        if (box == null) {
+//            // XXX The new one was not found, use the old one.
+//            box = findCssBoxForComponentRootElement(componentRootElement);
+//        }
 
         Rectangle bounds;
 

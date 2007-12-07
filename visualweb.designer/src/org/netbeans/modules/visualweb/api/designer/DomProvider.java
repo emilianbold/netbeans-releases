@@ -58,7 +58,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.events.Event;
 
 
 /**
@@ -221,7 +220,7 @@ public interface DomProvider {
 
     // XXX
 //    public boolean isNormalAndHasFacesBean(MarkupDesignBean markupDesignBean);
-    public boolean isNormalAndHasFacesComponent(Element componentRootElement);
+//    public boolean isNormalAndHasFacesComponent(Element componentRootElement);
 
 //    public boolean canHighlightMarkupDesignBean(MarkupDesignBean markupDesignBean);
 
@@ -250,7 +249,7 @@ public interface DomProvider {
 //    public boolean canCreateBean(String className, DesignBean parent, Position pos);
 
 //    public DesignBean getDefaultParentBean();
-    public Element getDefaultParentComponent();
+//    public Element getDefaultParentComponent();
 
 //    // XXX
 //    public Exception getRenderFailure();
@@ -265,8 +264,8 @@ public interface DomProvider {
 
     // XXX  Bad architecture, model itself should take care of its consistency.
 //    public void syncModel();
-    public boolean isModelValid();
-    public boolean isModelBusted();
+//    public boolean isModelValid();
+//    public boolean isModelBusted();
 
 //    // XXX  Bad architecture, model itself should take care of its consistency.
 //    public boolean isSourceDirty();
@@ -297,8 +296,9 @@ public interface DomProvider {
 //    public boolean isWriteLocked();
 //    public interface WriteLock {
 //    }
-    public void readLock();
-    public void readUnlock();
+    // XXX There should be no locking here, the designer is not thread safe (it should run in AWT thread only).
+//    public void readLock();
+//    public void readUnlock();
 
 //    // XXX Get rid of this.
 //    public void setModelActivated(boolean activated);
@@ -358,15 +358,15 @@ public interface DomProvider {
 //    public void setUpdatesSuspended(Element componentRootElement, boolean suspend);
     
     // XXX TEMP How to provide the inline editing correctly.
-    public InlineEditorSupport createInlineEditorSupport(Element componentRootElement, String propertyName);
+    public InlineEditorSupport createInlineEditorSupport(Element componentRootElement, String propertyName, String xpath);
 
 //    public void dumpHtmlMarkupForNode(org.openide.nodes.Node node);
 
     public void importString(Designer designer, String string, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid,
-            Element droppeeElement, Element dropeeComponentRootElement, Element defaultParentComponentRootElement/*, DomProvider.CoordinateTranslator coordinateTranslator*/);
+            Element droppeeElement, Element dropeeComponentRootElement/*, Element defaultParentComponentRootElement, DomProvider.CoordinateTranslator coordinateTranslator*/);
 
     public boolean importData(Designer designer, JComponent comp, Transferable t, /*Object transferData,*/ Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid,
-            Element droppeeElement, Element dropeeComponentRootElement, Element defaultParentComponentRootElement/*, DomProvider.CoordinateTranslator coordinateTranslator*/, int dropAction);
+            Element droppeeElement, Element dropeeComponentRootElement/*, Element defaultParentComponentRootElement, DomProvider.CoordinateTranslator coordinateTranslator*/, int dropAction);
     
     // XXX
     public Designer[] getExternalDesigners(URL url);
@@ -380,25 +380,35 @@ public interface DomProvider {
         public void unset();
         public void setValue(String value);
         public String getName();
-        public DocumentFragment createSourceFragment();
+//        public DocumentFragment createSourceFragment();
         public String expandHtmlEntities(String value, boolean warn);
         public Element getRenderedElement();
+        public DomPosition getBeginPosition();
+        public DomPosition getEndPosition();
+        public DocumentFragment getFragment();
+        public Node getText();
         
         // XXX AttributeInlineEditor only.
+        public boolean prepareAttributeInlineEditor(boolean selectText);
+        public void cleanAttributeInlineEditor(boolean cancel);
         public String getSpecialInitValue();
-        public String getValue();
-        public String getDisplayName();
+//        public String getValue();
+//        public String getDisplayName();
 //        public Method getWriteMethod();
-        public void setViaWriteMethod(String value);
+//        public void setViaWriteMethod(String value);
         public boolean isEscaped();
-        public void handleEvent(Event e);
-        public void beanChanged();
-        public void requestChange();
-        public void clearPrerendered();
-        public boolean setPrerendered(DocumentFragment fragment);
-        public void setStyleParent(DocumentFragment fragment);
-        // XXX For now it attaches it to the source document, it should change to the rendered document.
-        public DocumentFragment renderDomFragment();
+//        public void handleEvent(Event e);
+//        public void beanChanged();
+//        public void requestChange();
+//        public void clearPrerendered();
+//        public boolean setPrerendered(DocumentFragment fragment);
+//        public void setStyleParent(DocumentFragment fragment);
+//        // XXX For now it attaches it to the source document, it should change to the rendered document.
+//        public DocumentFragment renderDomFragment();
+//        public void setEndPosition(DomPosition endPosition);
+        
+        // XXX FormComponentEditor only.
+        public Node findXPathNodeForComponentRootElement(Element componentRootElement);
     } // End of InlineEditorSupport.
     
     
@@ -605,7 +615,7 @@ public interface DomProvider {
     // Text support <<<
     ///////////////////
 
-    public void reuseCssStyle(DomProvider domProvider);
+//    public void reuseCssStyle(DomProvider domProvider);
 
     // XXX Get rid of this. There should be only rendered nodes here.
     public boolean isRenderedNode(Node node);
@@ -638,16 +648,17 @@ public interface DomProvider {
     // XXX Provider corresponding property in the designer.
     public Decoration getDecoration(Element element);
     // Preferences
-    // XXX Rather provide corresponding properties in the Designer.
-    public boolean isShowDecorations();
-    public int getDefaultFontSize();
-    public int getPageSizeWidth();
-    public int getPageSizeHeight();
-    public boolean isGridShow();
-    public boolean isGridSnap();
-    public int getGridWidth();
-    public int getGridHeight();
-    public int getGridTraceWidth();
-    public int getGridTraceHeight();
-    public int getGridOffset();
+//    // XXX Rather provide corresponding properties in the Designer.
+//    public boolean isShowDecorations();
+//    public int getDefaultFontSize();
+//    public int getPageSizeWidth();
+//    public int getPageSizeHeight();
+//    public boolean isGridShow();
+//    public boolean isGridSnap();
+//    public int getGridWidth();
+//    public int getGridHeight();
+    // XXX GridHandler?
+//    public int getGridTraceWidth();
+//    public int getGridTraceHeight();
+//    public int getGridOffset();
 }

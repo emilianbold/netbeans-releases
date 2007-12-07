@@ -281,7 +281,7 @@ public class DesignerServiceHackImpl extends DesignerServiceHack {
             }
 
 //            engine.clearComputedStyles(e, "");
-            CssProvider.getEngineService().clearComputedStylesForElement(e);
+//            CssProvider.getEngineService().clearComputedStylesForElement(e); // TEMP
             
             
             // Try to render JSF so I can process the DF before proceeding
@@ -305,6 +305,10 @@ public class DesignerServiceHackImpl extends DesignerServiceHack {
             } else {
                 df = null;
             }
+            
+//            if (df != null) {
+//                stripDesignStyleClasses(df);
+//            }
 
             Element componentRootElement = JsfSupportUtilities.getComponentRootElementForDesignBean(bean);
             
@@ -1913,4 +1917,43 @@ public class DesignerServiceHackImpl extends DesignerServiceHack {
         return renderBean;
     }
 
+    
+    // XXX Moved from designer/../DesignerUtils.
+////     Same as style set in Text renderer and in default style sheet
+//    private static final String ignoreClass = "rave-uninitialized-text"; // NOI18N
+
+    // XXX Moved from designer/../DesignerUtils.
+    /** Recursively remove the rave-uninitialized-text class attribute
+     *  from a node tree.
+     * @return True iff any nodes were actually changed
+     */
+//    private static boolean stripDesignStyleClasses(Node node) {
+//        boolean changedStyles = false;
+//        
+////        if(DEBUG) {
+////            debugLog(DesignerUtils.class.getName() + ".stripDesignStyleClasses(Node)");
+////        }
+//        if(node == null) {
+//            throw(new IllegalArgumentException("Null node."));// NOI18N
+//        }
+//        
+//        if (node.getNodeType() == Node.ELEMENT_NODE) {
+//            Element e = (Element)node;
+//            
+//            if (e.getAttribute(HtmlAttribute.CLASS).indexOf(ignoreClass) != -1) {
+//                String newClass = e.getAttribute(HtmlAttribute.CLASS).replaceAll(ignoreClass, ""); // ignore stripped out
+//                e.setAttribute(HtmlAttribute.CLASS, newClass);
+//                changedStyles = true;
+//            }
+//        }
+//        
+//        NodeList nl = node.getChildNodes();
+//        
+//        for (int i = 0, n = nl.getLength(); i < n; i++) {
+//            changedStyles |= stripDesignStyleClasses(nl.item(i)); // recurse
+//        }
+//        
+//        return changedStyles;
+//    }
+    
 }

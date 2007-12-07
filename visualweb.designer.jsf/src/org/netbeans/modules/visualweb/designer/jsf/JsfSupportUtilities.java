@@ -45,6 +45,7 @@ import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DesignContext;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
 import java.awt.Point;
+import java.util.logging.Logger;
 import org.netbeans.modules.visualweb.api.designer.Designer;
 import org.netbeans.modules.visualweb.api.designer.Designer.Box;
 import org.netbeans.modules.visualweb.api.designer.cssengine.StyleData;
@@ -60,6 +61,8 @@ import org.openide.loaders.DataObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * Utilities class for the JSF support module.
@@ -238,4 +241,134 @@ public final class JsfSupportUtilities {
         return DesigntimeIdeBridgeProvider.getDefault().getNodeRepresentation(markupDesignBean);
     }
     
+    /**
+     * Return the given node corresponding to the given xpath.
+     * NOTE: The xpath parameter may actually contain multiple xpaths
+     * separated by colons.
+     * NOTE: Only a simple subset of XPATH is supported/implemented!!
+     * I support EXACTLY the following formats:
+     *    //tagname
+     *    //tagname[@attribute='value']
+     * and
+     *    /tagname1/tagname2/.../tagnameN
+     *    /tagname1/tagname2/.../tagnameN[@attribute='value']
+     * Note - combinations of these (e.g. //foo/bar[@baz='boo']/nei are not valid yet).
+     *
+     * @todo Hook up to xalan or other XPATH parser to get this working properly
+     */
+    public static Node findPropertyNode(Node root, String xpaths) {
+        int next = 0;
+        int xpathsLength = xpaths.length();
+
+        while (next <= xpathsLength) {
+            String xpath;
+            int xpathEnd = xpaths.indexOf(':', next);
+
+            if (xpathEnd == -1) {
+                xpath = xpaths.substring(next);
+                next = xpathsLength + 1;
+            } else {
+                xpath = xpaths.substring(next, xpathEnd);
+                next = xpathEnd + 1;
+            }
+
+            // Dumb/simple parser algorithm for now
+            if (xpath.startsWith("//")) { // NOI18N
+
+                int length = xpath.length();
+                int begin = 2;
+                int end = begin;
+
+                while ((end < length) && Character.isLetter(xpath.charAt(end))) {
+                    end++;
+                }
+
+                String attributeName = null;
+                String attributeValue = null;
+                String tagName = xpath.substring(begin, end);
+
+                if ((end < length) && xpath.startsWith("[@", end)) { // NOI18N
+                    begin = end + 2;
+                    end = begin;
+
+                    while ((end < length) && Character.isLetter(xpath.charAt(end))) {
+                        end++;
+                    }
+
+                    attributeName = xpath.substring(begin, end);
+
+                    if ((end < length) && xpath.startsWith("='", end)) { // NOI18N
+                        begin = end + 2;
+                        end = begin;
+
+                        while ((end < length) && (xpath.charAt(end) != '\'')) {
+                            end++;
+                        }
+
+                        attributeValue = xpath.substring(begin, end);
+                        end++;
+                    }
+                }
+
+                //            if (end != length) {
+                //                // Looks like the xpath expession is not of the simple form used
+                //                // for most of our own components...  so do a fullblown
+                //                // xpath parse looking for the node instead...
+                //                // TODO
+                //            }
+                Element element = findElement(root, tagName, attributeName, attributeValue);
+
+                if (element != null) {
+                    return element;
+                }
+            } else {
+                info("Inline editing xpath expression not understood: " + xpath); // NOI18N
+            }
+        }
+
+        return null;
+    }
+
+    private static Element findElement(Node node, String tagName, String attribute, String value) {
+        if (node.getNodeType() == Node.ELEMENT_NODE) {
+            Element element = (Element)node;
+
+            if (element.getTagName().equals(tagName)) {
+                if (attribute != null) {
+                    if ((value == null) && element.hasAttribute(attribute)) {
+                        return element;
+                    } else if (element.getAttribute(attribute).indexOf(value) != -1) {
+                        //} else if (element.getAttribute(attribute).equals(value)) {
+                        // Match substring, not =: appropriate for class attribute only
+                        // PENDING: What is the correct xpath to express
+                        //   element e has a class attribute which INCLUDES substring foo?
+                        return element;
+                    }
+                } else {
+                    return element;
+                }
+            }
+        }
+
+        NodeList children = node.getChildNodes();
+
+        for (int i = 0, n = children.getLength(); i < n; i++) {
+            Node child = children.item(i);
+            Element element = findElement(child, tagName, attribute, value);
+
+            if (element != null) {
+                return element;
+            }
+        }
+
+        return null;
+    }
+
+    private static Logger getLogger() {
+        return Logger.getLogger(JsfSupportUtilities.class.getName());
+    }
+    
+    private static void info(String message) {
+        getLogger().info(message);
+    }
 }

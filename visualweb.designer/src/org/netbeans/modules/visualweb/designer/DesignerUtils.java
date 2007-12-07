@@ -48,11 +48,6 @@ import javax.swing.SwingUtilities;
 
 import org.openide.ErrorManager;
 import org.openide.windows.TopComponent;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import org.netbeans.modules.visualweb.designer.html.HtmlAttribute;
 
 
 // For CVS archaeology: This file used to be called com.sun.rave.css2.Utillities
@@ -73,8 +68,9 @@ public class DesignerUtils {
 //    static char[] hexdigits =
 //    { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
 
-    // Same as style set in Text renderer and in default style sheet
-    private static final String ignoreClass = "rave-uninitialized-text"; // NOI18N
+    // XXX Moved to designer/jsf/../DesignerServiceHackImpl.
+//    // Same as style set in Text renderer and in default style sheet
+//    private static final String ignoreClass = "rave-uninitialized-text"; // NOI18N
 
 //    /** Return true if the extension indicates that this is an image */
 //    public static boolean isImage(String extension) {
@@ -1041,39 +1037,40 @@ public class DesignerUtils {
 //            ErrorManager.getDefault().notify(ex);
 //        }
 //    }
-    
-    /** Recursively remove the rave-uninitialized-text class attribute
-     *  from a node tree.
-     * @return True iff any nodes were actually changed
-     */
-    public static boolean stripDesignStyleClasses(Node node) {
-        boolean changedStyles = false;
-        
-        if(DEBUG) {
-            debugLog(DesignerUtils.class.getName() + ".stripDesignStyleClasses(Node)");
-        }
-        if(node == null) {
-            throw(new IllegalArgumentException("Null node."));// NOI18N
-        }
-        
-        if (node.getNodeType() == Node.ELEMENT_NODE) {
-            Element e = (Element)node;
-            
-            if (e.getAttribute(HtmlAttribute.CLASS).indexOf(ignoreClass) != -1) {
-                String newClass = e.getAttribute(HtmlAttribute.CLASS).replaceAll(ignoreClass, ""); // ignore stripped out
-                e.setAttribute(HtmlAttribute.CLASS, newClass);
-                changedStyles = true;
-            }
-        }
-        
-        NodeList nl = node.getChildNodes();
-        
-        for (int i = 0, n = nl.getLength(); i < n; i++) {
-            changedStyles |= stripDesignStyleClasses(nl.item(i)); // recurse
-        }
-        
-        return changedStyles;
-    }
+  
+    // Moved to designer/jsf/../DesignerServiceHackImpl.
+//    /** Recursively remove the rave-uninitialized-text class attribute
+//     *  from a node tree.
+//     * @return True iff any nodes were actually changed
+//     */
+//    public static boolean stripDesignStyleClasses(Node node) {
+//        boolean changedStyles = false;
+//        
+//        if(DEBUG) {
+//            debugLog(DesignerUtils.class.getName() + ".stripDesignStyleClasses(Node)");
+//        }
+//        if(node == null) {
+//            throw(new IllegalArgumentException("Null node."));// NOI18N
+//        }
+//        
+//        if (node.getNodeType() == Node.ELEMENT_NODE) {
+//            Element e = (Element)node;
+//            
+//            if (e.getAttribute(HtmlAttribute.CLASS).indexOf(ignoreClass) != -1) {
+//                String newClass = e.getAttribute(HtmlAttribute.CLASS).replaceAll(ignoreClass, ""); // ignore stripped out
+//                e.setAttribute(HtmlAttribute.CLASS, newClass);
+//                changedStyles = true;
+//            }
+//        }
+//        
+//        NodeList nl = node.getChildNodes();
+//        
+//        for (int i = 0, n = nl.getLength(); i < n; i++) {
+//            changedStyles |= stripDesignStyleClasses(nl.item(i)); // recurse
+//        }
+//        
+//        return changedStyles;
+//    }
     
 //    /** Strip the given string to the given maximum length of
 //     * characters. If the string is not that long, just return

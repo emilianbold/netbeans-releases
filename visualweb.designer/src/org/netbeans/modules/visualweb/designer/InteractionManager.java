@@ -1550,7 +1550,8 @@ public class InteractionManager {
 //                        }
 //                    }
 //                    if (webform.isNormalAndHasFacesBean(currMarkupDesignBean)) {
-                    if (webform.isNormalAndHasFacesComponent(currComponentRootElement)) {
+//                    if (webform.isNormalAndHasFacesComponent(currComponentRootElement)) {
+                    if (currComponentRootElement != null && currComponentRootElement != pane.getPageBox()) {
                         break;
                     }
 
@@ -2733,9 +2734,10 @@ public class InteractionManager {
 
         public void mouseEntered(MouseEvent e) {
 //            if (!webform.getModel().isValid()) {
-            if (!webform.isModelValid()) {
-                return;
-            }
+            // XXX Model validty shouldn't be checked here.
+//            if (!webform.isModelValid()) {
+//                return;
+//            }
 
 //            // Check to see if a selection is potentially in effect
 //            paletteItemSelected = false;
@@ -3020,9 +3022,10 @@ public class InteractionManager {
             stopCnC();
 
 //            if (!webform.getModel().isValid()) {
-            if (!webform.isModelValid()) {
-                return;
-            }
+            // XXX Model validity shouldn't be checked here.
+//            if (!webform.isModelValid()) {
+//                return;
+//            }
 
             webform.getPane().getDndHandler().clearDropMatch();
         }
@@ -3034,9 +3037,10 @@ public class InteractionManager {
             // this is not the case here so we don't try to look at
             // the model
 //            if (!webform.getModel().isValid()) {
-            if (!webform.isModelValid()) {
-                return;
-            }
+            // XXX Model validity shouldn't be checked here.
+//            if (!webform.isModelValid()) {
+//                return;
+//            }
 
             currentPos.x = e.getX();
             currentPos.y = e.getY();

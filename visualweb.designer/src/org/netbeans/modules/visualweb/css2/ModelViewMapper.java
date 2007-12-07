@@ -2336,31 +2336,32 @@ public final class ModelViewMapper {
 //            if (markupDesignBean != null) {
 //                CssBox box = findBox(webform.getPane().getPageBox(), markupDesignBean);
         
-//            Element componentRootElement = MarkupService.getRenderedElementForElement(element);
-            Element componentRootElement = webform.getDefaultParentComponent();
-            if (componentRootElement != null) {
-                CssBox box = findBoxForComponentRootElement(webform.getPane().getPageBox(), componentRootElement);
-
-                if (box != null) {
-                    LineBox lb = findFirstLineBox(box);
-
-                    if (lb != null) {
-//                        Position pos = findFirstLineboxPosition(lb, 0, webform.getManager().getInlineEditor());
-                        DomPosition pos = findFirstLineboxPosition(lb, 0, webform.getManager().getInlineEditor());
-
-//                        if (pos != Position.NONE) {
-                        if (pos != DomPosition.NONE) {
-//                            if (pos.isRendered()) {
-//                            if (MarkupService.isRenderedNode(pos.getNode())) {
-                            if (pos.isRenderedPosition()) {
-                                return pos.getSourcePosition();
-                            } else {
-                                return pos;
-                            }
-                        }
-                    }
-                }
-            }
+        // XXX This seems to be rendundant (and JSF specific) here.
+////            Element componentRootElement = MarkupService.getRenderedElementForElement(element);
+//            Element componentRootElement = webform.getDefaultParentComponent();
+//            if (componentRootElement != null) {
+//                CssBox box = findBoxForComponentRootElement(webform.getPane().getPageBox(), componentRootElement);
+//
+//                if (box != null) {
+//                    LineBox lb = findFirstLineBox(box);
+//
+//                    if (lb != null) {
+////                        Position pos = findFirstLineboxPosition(lb, 0, webform.getManager().getInlineEditor());
+//                        DomPosition pos = findFirstLineboxPosition(lb, 0, webform.getManager().getInlineEditor());
+//
+////                        if (pos != Position.NONE) {
+//                        if (pos != DomPosition.NONE) {
+////                            if (pos.isRendered()) {
+////                            if (MarkupService.isRenderedNode(pos.getNode())) {
+//                            if (pos.isRenderedPosition()) {
+//                                return pos.getSourcePosition();
+//                            } else {
+//                                return pos;
+//                            }
+//                        }
+//                    }
+//                }
+//            }
 //        }
 
         if (webform.getPane().getPageBox() != null) {

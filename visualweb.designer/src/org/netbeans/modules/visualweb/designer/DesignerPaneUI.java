@@ -887,27 +887,29 @@ public class DesignerPaneUI extends DesignerPaneBaseUI {
 //            if (!webform.getModel().isValid()) {
 //                return;
 //            }
-            if (!webform.isModelValid()) {
-                return;
-            }
-            
-            // XXX Gotta lock using InsyncDocument instead!!!
-//            doc.readLock();
-            // XXX Why locking when painting??
-//            webform.getMarkup().readLock();
-            webform.readLock();
+            // XXX Model validity shouldn't be checked here.
+//            if (!webform.isModelValid()) {
+//                return;
+//            }
+  
+            // XXX There should be no locking here, the designer is not thread safe (it should run in AWT thread only).
+//            // XXX Gotta lock using InsyncDocument instead!!!
+////            doc.readLock();
+//            // XXX Why locking when painting??
+////            webform.getMarkup().readLock();
+//            webform.readLock();
             
             try {
                 paintSafely(g);
             } catch (Exception ex) {
                 log(ex);
-            } finally {
-                // XXX Gotta unlock using InsyncDocument instead!!!
-                // IF YOU GET HERE DURING DEBUGGING you just stepped over
-                // an assertion that failed! Check console/log.
-//                doc.readUnlock();
-//                webform.getMarkup().readUnlock();
-                webform.readUnlock();
+//            } finally {
+//                // XXX Gotta unlock using InsyncDocument instead!!!
+//                // IF YOU GET HERE DURING DEBUGGING you just stepped over
+//                // an assertion that failed! Check console/log.
+////                doc.readUnlock();
+////                webform.getMarkup().readUnlock();
+//                webform.readUnlock();
             }
         }
     }
@@ -948,13 +950,14 @@ public class DesignerPaneUI extends DesignerPaneBaseUI {
         //System.out.println("  i.left=" + i.left);
         //System.out.println("  i.right=" + i.right);
         //System.out.println("  d.width-i.left-i.right=" + (d.width-i.left-i.right));
-        // XXX Lock insync
-//        doc.readLock();
-        WebForm webform = editor.getWebForm();
-//        webform.getMarkup().readLock();
-        webform.readLock();
-        
-        try {
+        // XXX There should be no locking here, the designer is not thread safe (it should run in AWT thread only).
+//        // XXX Lock insync
+////        doc.readLock();
+//        WebForm webform = editor.getWebForm();
+////        webform.getMarkup().readLock();
+//        webform.readLock();
+//        
+//        try {
             if ((d.width > (i.left + i.right)) && (d.height > (i.top + i.bottom))) {
                 //System.out.println("SETTING SIZE first");
                 pageBox.setSize(d.width - i.left - i.right, d.height - i.top - i.bottom);
@@ -976,12 +979,12 @@ public class DesignerPaneUI extends DesignerPaneBaseUI {
                     (long)i.bottom, Integer.MAX_VALUE);
             
             //System.out.println("Newly computed preferred span: " + d);
-        } finally {
-            // XXX Unlock insync
-//            doc.readUnlock();
-//            webform.getMarkup().readUnlock();
-            webform.readUnlock();
-        }
+//        } finally {
+//            // XXX Unlock insync
+////            doc.readUnlock();
+////            webform.getMarkup().readUnlock();
+//            webform.readUnlock();
+//        }
         
         return d;
     }
@@ -1008,22 +1011,23 @@ public class DesignerPaneUI extends DesignerPaneBaseUI {
         if (pageBox == null) {
             return d;
         }
-        
-        // XXX Lock insync
-//        doc.readLock();
-        WebForm webform = editor.getWebForm();
-//        webform.getMarkup().readLock();
-        webform.readLock();
-        
-        try {
+
+        // XXX There should be no locking here, the designer is not thread safe (it should run in AWT thread only).
+//        // XXX Lock insync
+////        doc.readLock();
+//        WebForm webform = editor.getWebForm();
+////        webform.getMarkup().readLock();
+//        webform.readLock();
+//        
+//        try {
             d.width = (int)pageBox.getMinimumSpan(CssBox.X_AXIS) + i.left + i.right;
             d.height = (int)pageBox.getMinimumSpan(CssBox.Y_AXIS) + i.top + i.bottom;
-        } finally {
-            // XXX Unlock insync
-//            doc.readUnlock();
-//            webform.getMarkup().readUnlock();
-            webform.readUnlock();
-        }
+//        } finally {
+//            // XXX Unlock insync
+////            doc.readUnlock();
+////            webform.getMarkup().readUnlock();
+//            webform.readUnlock();
+//        }
         
         return d;
     }
@@ -1050,26 +1054,27 @@ public class DesignerPaneUI extends DesignerPaneBaseUI {
         if (pageBox == null) {
             return d;
         }
-        
-        // XXX Lock insync
-//        doc.readLock();
-        WebForm webform = editor.getWebForm();
-//        webform.getMarkup().readLock();
-        webform.readLock();
-        
-        try {
+
+        // XXX There should be no locking here, the designer is not thread safe (it should run in AWT thread only).
+//        // XXX Lock insync
+////        doc.readLock();
+//        WebForm webform = editor.getWebForm();
+////        webform.getMarkup().readLock();
+//        webform.readLock();
+//        
+//        try {
             d.width =
                     (int)Math.min((long)pageBox.getMaximumSpan(CssBox.X_AXIS) + (long)i.left +
                     (long)i.right, Integer.MAX_VALUE);
             d.height =
                     (int)Math.min((long)pageBox.getMaximumSpan(CssBox.Y_AXIS) + (long)i.top +
                     (long)i.bottom, Integer.MAX_VALUE);
-        } finally {
-            // XXX Unlock insync
-//            doc.readUnlock();
-//            webform.getMarkup().readUnlock();
-            webform.readUnlock();
-        }
+//        } finally {
+//            // XXX Unlock insync
+////            doc.readUnlock();
+////            webform.getMarkup().readUnlock();
+//            webform.readUnlock();
+//        }
         
         return d;
     }
@@ -1193,16 +1198,18 @@ public class DesignerPaneUI extends DesignerPaneBaseUI {
         }
         
 //        Document doc = editor.getDocument();
-        
-        // XXX Lock insync
-//        doc.readLock();
-        WebForm webform = editor.getWebForm();
-//        webform.getMarkup().readLock();
-        webform.readLock();
-        
-        try {
+
+        // XXX There should be no locking here, the designer is not thread safe (it should run in AWT thread only).
+//        // XXX Lock insync
+////        doc.readLock();
+//        WebForm webform = editor.getWebForm();
+////        webform.getMarkup().readLock();
+//        webform.readLock();
+//        
+//        try {
             if (painted) {
 //                ModelViewMapper mapper = doc.getWebForm().getMapper();
+                WebForm webform = editor.getWebForm();
                 
                 switch (direction) {
                     case SwingConstants.WEST:
@@ -1222,11 +1229,11 @@ public class DesignerPaneUI extends DesignerPaneBaseUI {
 //                return Position.NONE;
                 return DomPosition.NONE;
             }
-        } finally {
-//            doc.readUnlock();
-//            webform.getMarkup().readUnlock();
-            webform.readUnlock();
-        }
+//        } finally {
+////            doc.readUnlock();
+////            webform.getMarkup().readUnlock();
+//            webform.readUnlock();
+//        }
         
 //        return Position.NONE;
         return DomPosition.NONE;

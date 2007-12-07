@@ -59,7 +59,6 @@ import org.netbeans.modules.visualweb.api.designer.Designer.DesignerEvent;
 import org.openide.awt.MouseUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import org.netbeans.modules.visualweb.css2.CssBox;
 import org.netbeans.modules.visualweb.designer.WebForm.DefaultDesignerEvent;
@@ -110,8 +109,8 @@ public abstract class InlineEditor {
 //    protected DesignProperty property;
 //    protected Position begin;
 //    protected Position end;
-    protected DomPosition begin;
-    protected DomPosition end;
+//    protected DomPosition begin;
+//    protected DomPosition end;
 
     
     protected final DomProvider.InlineEditorSupport inlineEditorSupport;
@@ -215,7 +214,8 @@ public abstract class InlineEditor {
                     Element root = componentRootElement;
                     
                     if (root != null) {
-                        Node node = findPropertyNode(root, xpaths[i]);
+//                        Node node = findPropertyNode(root, xpaths[i]);
+                        Node node = WebForm.getDomProviderService().findPropertyNode(root, xpaths[i]);
 
                         // Is boxElement under the given node?
                         Node curr = boxElement;
@@ -259,13 +259,13 @@ public abstract class InlineEditor {
 //                return null;
 //            }
             
-            DomProvider.InlineEditorSupport inlineEditorSupport = webform.createInlineEditorSupport(
-                    componentRootElement,
-                    name);
-            if (inlineEditorSupport == null) {
-                log(new NullPointerException("Missing inline editor support, componentRootElement=" + componentRootElement + ", propertyName=" + name)); // NOI18N
-                return null;
-            }
+//            DomProvider.InlineEditorSupport inlineEditorSupport = webform.createInlineEditorSupport(
+//                    componentRootElement,
+//                    name);
+//            if (inlineEditorSupport == null) {
+//                log(new NullPointerException("Missing inline editor support, componentRootElement=" + componentRootElement + ", propertyName=" + name)); // NOI18N
+//                return null;
+//            }
             
 
             HtmlTag tag = null;
@@ -284,19 +284,26 @@ public abstract class InlineEditor {
                 }
             }
 
+            DomProvider.InlineEditorSupport inlineEditorSupport = webform.createInlineEditorSupport(componentRootElement, name, xpath);
+            if (inlineEditorSupport == null) {
+                log(new NullPointerException("Missing inline editor support, componentRootElement=" + componentRootElement + ", propertyName=" + name)); // NOI18N
+                return null;
+            }
+            
             if ((tag == null) && (box != null) && (box.getElement() != null)) {
                 tag = HtmlTag.getTag(box.getElement().getTagName());
             }
 
             if ((tag != null) && tag.isFormMemberTag()) {
-                editor = FormComponentEditor.get(webform, xpath, box, componentRootElement, /*markupBean, property,*/ inlineEditorSupport);
+//                editor = FormComponentEditor.get(webform, xpath, box, componentRootElement, /*markupBean, property,*/ inlineEditorSupport);
+                editor = FormComponentEditor.get(webform, /*xpath,*/ box, componentRootElement, /*markupBean, property,*/ inlineEditorSupport);
 
                 if (editor != null) {
                     return editor;
                 }
             }
 
-            editor = AttributeInlineEditor.get(webform, xpath, componentRootElement, /*markupBean, property,*/ inlineEditorSupport);
+            editor = AttributeInlineEditor.get(webform, /*xpath,*/ componentRootElement, /*markupBean, property,*/ inlineEditorSupport);
 
             if (editor != null) {
                 return editor;
@@ -401,128 +408,128 @@ public abstract class InlineEditor {
 //        return true;
 //    }
 
-    /**
-     * Return the given node corresponding to the given xpath.
-     * NOTE: The xpath parameter may actually contain multiple xpaths
-     * separated by colons.
-     * NOTE: Only a simple subset of XPATH is supported/implemented!!
-     * I support EXACTLY the following formats:
-     *    //tagname
-     *    //tagname[@attribute='value']
-     * and
-     *    /tagname1/tagname2/.../tagnameN
-     *    /tagname1/tagname2/.../tagnameN[@attribute='value']
-     * Note - combinations of these (e.g. //foo/bar[@baz='boo']/nei are not valid yet).
-     *
-     * @todo Hook up to xalan or other XPATH parser to get this working properly
-     */
-    protected static Node findPropertyNode(Node root, String xpaths) {
-        int next = 0;
-        int xpathsLength = xpaths.length();
-
-        while (next <= xpathsLength) {
-            String xpath;
-            int xpathEnd = xpaths.indexOf(':', next);
-
-            if (xpathEnd == -1) {
-                xpath = xpaths.substring(next);
-                next = xpathsLength + 1;
-            } else {
-                xpath = xpaths.substring(next, xpathEnd);
-                next = xpathEnd + 1;
-            }
-
-            // Dumb/simple parser algorithm for now
-            if (xpath.startsWith("//")) { // NOI18N
-
-                int length = xpath.length();
-                int begin = 2;
-                int end = begin;
-
-                while ((end < length) && Character.isLetter(xpath.charAt(end))) {
-                    end++;
-                }
-
-                String attributeName = null;
-                String attributeValue = null;
-                String tagName = xpath.substring(begin, end);
-
-                if ((end < length) && xpath.startsWith("[@", end)) { // NOI18N
-                    begin = end + 2;
-                    end = begin;
-
-                    while ((end < length) && Character.isLetter(xpath.charAt(end))) {
-                        end++;
-                    }
-
-                    attributeName = xpath.substring(begin, end);
-
-                    if ((end < length) && xpath.startsWith("='", end)) { // NOI18N
-                        begin = end + 2;
-                        end = begin;
-
-                        while ((end < length) && (xpath.charAt(end) != '\'')) {
-                            end++;
-                        }
-
-                        attributeValue = xpath.substring(begin, end);
-                        end++;
-                    }
-                }
-
-                //            if (end != length) {
-                //                // Looks like the xpath expession is not of the simple form used
-                //                // for most of our own components...  so do a fullblown
-                //                // xpath parse looking for the node instead...
-                //                // TODO
-                //            }
-                Element element = findElement(root, tagName, attributeName, attributeValue);
-
-                if (element != null) {
-                    return element;
-                }
-            } else {
-                info("Inline editing xpath expression not understood: " + xpath); // NOI18N
-            }
-        }
-
-        return null;
-    }
-
-    private static Element findElement(Node node, String tagName, String attribute, String value) {
-        if (node.getNodeType() == Node.ELEMENT_NODE) {
-            Element element = (Element)node;
-
-            if (element.getTagName().equals(tagName)) {
-                if (attribute != null) {
-                    if ((value == null) && element.hasAttribute(attribute)) {
-                        return element;
-                    } else if (element.getAttribute(attribute).indexOf(value) != -1) {
-                        //} else if (element.getAttribute(attribute).equals(value)) {
-                        // Match substring, not =: appropriate for class attribute only
-                        // PENDING: What is the correct xpath to express
-                        //   element e has a class attribute which INCLUDES substring foo?
-                        return element;
-                    }
-                } else {
-                    return element;
-                }
-            }
-        }
-
-        NodeList children = node.getChildNodes();
-
-        for (int i = 0, n = children.getLength(); i < n; i++) {
-            Node child = children.item(i);
-            Element element = findElement(child, tagName, attribute, value);
-
-            if (element != null) {
-                return element;
-            }
-        }
-
-        return null;
-    }
+//    /**
+//     * Return the given node corresponding to the given xpath.
+//     * NOTE: The xpath parameter may actually contain multiple xpaths
+//     * separated by colons.
+//     * NOTE: Only a simple subset of XPATH is supported/implemented!!
+//     * I support EXACTLY the following formats:
+//     *    //tagname
+//     *    //tagname[@attribute='value']
+//     * and
+//     *    /tagname1/tagname2/.../tagnameN
+//     *    /tagname1/tagname2/.../tagnameN[@attribute='value']
+//     * Note - combinations of these (e.g. //foo/bar[@baz='boo']/nei are not valid yet).
+//     *
+//     * @todo Hook up to xalan or other XPATH parser to get this working properly
+//     */
+//    protected static Node findPropertyNode(Node root, String xpaths) {
+//        int next = 0;
+//        int xpathsLength = xpaths.length();
+//
+//        while (next <= xpathsLength) {
+//            String xpath;
+//            int xpathEnd = xpaths.indexOf(':', next);
+//
+//            if (xpathEnd == -1) {
+//                xpath = xpaths.substring(next);
+//                next = xpathsLength + 1;
+//            } else {
+//                xpath = xpaths.substring(next, xpathEnd);
+//                next = xpathEnd + 1;
+//            }
+//
+//            // Dumb/simple parser algorithm for now
+//            if (xpath.startsWith("//")) { // NOI18N
+//
+//                int length = xpath.length();
+//                int begin = 2;
+//                int end = begin;
+//
+//                while ((end < length) && Character.isLetter(xpath.charAt(end))) {
+//                    end++;
+//                }
+//
+//                String attributeName = null;
+//                String attributeValue = null;
+//                String tagName = xpath.substring(begin, end);
+//
+//                if ((end < length) && xpath.startsWith("[@", end)) { // NOI18N
+//                    begin = end + 2;
+//                    end = begin;
+//
+//                    while ((end < length) && Character.isLetter(xpath.charAt(end))) {
+//                        end++;
+//                    }
+//
+//                    attributeName = xpath.substring(begin, end);
+//
+//                    if ((end < length) && xpath.startsWith("='", end)) { // NOI18N
+//                        begin = end + 2;
+//                        end = begin;
+//
+//                        while ((end < length) && (xpath.charAt(end) != '\'')) {
+//                            end++;
+//                        }
+//
+//                        attributeValue = xpath.substring(begin, end);
+//                        end++;
+//                    }
+//                }
+//
+//                //            if (end != length) {
+//                //                // Looks like the xpath expession is not of the simple form used
+//                //                // for most of our own components...  so do a fullblown
+//                //                // xpath parse looking for the node instead...
+//                //                // TODO
+//                //            }
+//                Element element = findElement(root, tagName, attributeName, attributeValue);
+//
+//                if (element != null) {
+//                    return element;
+//                }
+//            } else {
+//                info("Inline editing xpath expression not understood: " + xpath); // NOI18N
+//            }
+//        }
+//
+//        return null;
+//    }
+//
+//    private static Element findElement(Node node, String tagName, String attribute, String value) {
+//        if (node.getNodeType() == Node.ELEMENT_NODE) {
+//            Element element = (Element)node;
+//
+//            if (element.getTagName().equals(tagName)) {
+//                if (attribute != null) {
+//                    if ((value == null) && element.hasAttribute(attribute)) {
+//                        return element;
+//                    } else if (element.getAttribute(attribute).indexOf(value) != -1) {
+//                        //} else if (element.getAttribute(attribute).equals(value)) {
+//                        // Match substring, not =: appropriate for class attribute only
+//                        // PENDING: What is the correct xpath to express
+//                        //   element e has a class attribute which INCLUDES substring foo?
+//                        return element;
+//                    }
+//                } else {
+//                    return element;
+//                }
+//            }
+//        }
+//
+//        NodeList children = node.getChildNodes();
+//
+//        for (int i = 0, n = children.getLength(); i < n; i++) {
+//            Node child = children.item(i);
+//            Element element = findElement(child, tagName, attribute, value);
+//
+//            if (element != null) {
+//                return element;
+//            }
+//        }
+//
+//        return null;
+//    }
 
     /** Initiate inline editing.
      * @param selectText If true, select the text in the inline editing context,
@@ -572,7 +579,8 @@ public abstract class InlineEditor {
      */
 //    public Position getBegin() {
     public DomPosition getBegin() {
-        return begin;
+//        return begin;
+        return inlineEditorSupport.getBeginPosition();
     }
 
     /**
@@ -581,7 +589,8 @@ public abstract class InlineEditor {
      */
 //    public Position getEnd() {
     public DomPosition getEnd() {
-        return end;
+//        return end;
+        return inlineEditorSupport.getEndPosition();
     }
 
     /*

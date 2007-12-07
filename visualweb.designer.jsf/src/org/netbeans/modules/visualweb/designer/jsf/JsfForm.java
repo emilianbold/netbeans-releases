@@ -1713,6 +1713,11 @@ public class JsfForm {
 
     // XXX Side effect, updating errors, old code.
     public Element getHtmlBody(boolean updateErrors) {
+        // XXX Model should be valid always.
+        if (!isModelValid()) {
+            return null;
+        }
+        
         Element body = getFacesModel().getHtmlBody();
         
         // XXX #6472138 FIXME Is this correct here?
@@ -2086,7 +2091,7 @@ public class JsfForm {
         return getFacesModel().getHtmlDomFragment();
     }
     
-    private MarkupDesignBean getDefaultParentBean() {
+    /*private*/ MarkupDesignBean getDefaultParentBean() {
 //        return domProvider.getDefaultParentComponent();
 //        LiveUnit liveUnit = getFacesModel().getLiveUnit();
         LiveUnit liveUnit = getLiveUnit();
