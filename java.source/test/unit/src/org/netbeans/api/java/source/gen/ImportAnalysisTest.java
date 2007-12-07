@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -111,6 +112,9 @@ public class ImportAnalysisTest extends GeneratorTest {
         suite.addTest(new ImportAnalysisTest("testAddImportThroughMethod5"));
         suite.addTest(new ImportAnalysisTest("testDefaultPackage1"));
         suite.addTest(new ImportAnalysisTest("testImportAddedAfterThrows"));
+        suite.addTest(new ImportAnalysisTest("testImportGetterSetter"));
+        suite.addTest(new ImportAnalysisTest("testImportClashWithJavaLang"));
+        suite.addTest(new ImportAnalysisTest("testImportNoClashJavaLang"));
         return suite;
     }
 
@@ -840,6 +844,63 @@ public class ImportAnalysisTest extends GeneratorTest {
         assertFiles("testAddImportThroughMethod4.pass");
     }
 
+    public void testImportGetterSetter() throws IOException {
+        testFile = getFile(getSourceDir(), getSourcePckg() + "ImportsTest8.java");
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                ExpressionTree type = make.QualIdent(workingCopy.getElements().getTypeElement("java.awt.geom.Point2D.Double"));
+                VariableTree vt = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "test",type, null);
+                workingCopy.rewrite(clazz, make.addClassMember(clazz, vt));
+            }
+        };
+        src.runModificationTask(task).commit();
+        assertFiles("testImportGetterSetter.pass");
+    }
+    
+    public void testImportClashWithJavaLang() throws IOException {
+        testFile = getFile(getSourceDir(), getSourcePckg() + "ImportsTest9.java");
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                ExpressionTree type = make.QualIdent(workingCopy.getElements().getTypeElement("java.awt.geom.Point2D.Double"));
+                VariableTree vt = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "test",type, null);
+                workingCopy.rewrite(clazz, make.addClassMember(clazz, vt));
+            }
+        };
+        src.runModificationTask(task).commit();
+        assertFiles("testImportClashWithJavaLang.pass");
+    }
+    
+    public void testImportNoClashJavaLang() throws IOException {
+        testFile = getFile(getSourceDir(), getSourcePckg() + "ImportsTesta.java");
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                ExpressionTree type = make.QualIdent(workingCopy.getElements().getTypeElement("java.lang.Double"));
+                VariableTree vt = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "test",type, null);
+                workingCopy.rewrite(clazz, make.addClassMember(clazz, vt));
+            }
+        };
+        src.runModificationTask(task).commit();
+        assertFiles("testImportNoClashJavaLang.pass");
+    }
+    
     String getSourcePckg() {
         if ("testDefaultPackage1".equals(getName())) {
             return "";

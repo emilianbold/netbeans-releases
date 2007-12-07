@@ -42,6 +42,7 @@
 package org.netbeans.modules.java.source.pretty;
 
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.ImportTree;
@@ -88,6 +89,10 @@ public class ImportAnalysis2 {
     private PackageElement unnamedPackage;
     private PackageElement pack;
     private ASTService model;
+    private CompilationUnitTree cut; //current compilation unit
+    private Set<String> usedClassesFromJavaLangCache;
+    private Set<String> javaLangElements;
+    private PackageElement javaLang;
 
     public ImportAnalysis2(Context env) {
         elements = JavacElements.instance(env);
@@ -96,6 +101,10 @@ public class ImportAnalysis2 {
         model = ASTService.instance(env);
     }
 
+    public void setCompilationUnit(CompilationUnitTree cut) {
+        this.cut = cut;
+    }
+    
     public void setPackage(ExpressionTree packageNameTree) {
         if (packageNameTree == null) {
             //if there is no package declaration in the code, unnamedPackage should be used:
@@ -113,12 +122,22 @@ public class ImportAnalysis2 {
         imported = new HashSet<Element>();
         simpleNames2Elements = new HashMap<String, Element>();
         visibleThroughClasses = new Stack<Set<Element>>();
+        usedClassesFromJavaLangCache = null;
 
         for (ImportTree imp : importsToAdd) {
             addImport(imp, false);
         }
+        
+        javaLangElements = new HashSet<String>();
+        javaLang = elements.getPackageElement("java.lang");
+        
+        if (javaLang != null) {//might be null for broken platforms
+            for (Element e : javaLang.getEnclosedElements()) {
+                javaLangElements.add(e.getSimpleName().toString());
+            }
+        }
     }
-
+    
     public List<? extends ImportTree> getImports() {
         return imports;
     }
@@ -294,14 +313,41 @@ public class ImportAnalysis2 {
         if (imported.contains(element)) {
             return make.Identifier(element.getSimpleName());
         }
+        
+        String simpleName = element.getSimpleName().toString();
+        Element alreadyImported = simpleNames2Elements.get(simpleName);
+        
+        if(alreadyImported == null) {
+            //check also visibleThroughClasses:
+            OUTER: for (Set<Element> visible : visibleThroughClasses) {
+                for (Element e : visible) {
+                    if (e == null || e.getSimpleName() == null) continue;
+                    if (simpleName.equals(e.getSimpleName().toString())) {
+                        alreadyImported = e;
+                        break OUTER;
+                    }
+                }
+            }
+        }
 
-        Element alreadyImported = simpleNames2Elements.get(element.getSimpleName().toString());
-
-        if (alreadyImported != null && !element.equals(alreadyImported)) {
+        boolean clash = alreadyImported != null && !element.equals(alreadyImported);
+        
+        if (!clash && javaLangElements.contains(simpleName) && !element.getEnclosingElement().equals(javaLang)) {
+            //check clashes between (hidden) java.lang and the newly added element:
+            clash = getUsedClassesFromJavaLang().contains(simpleName);
+        }
+        
+        if (clash) {
             // clashing import, use FQN - no need to continue with QualIdent,
             // make MemberSelectTree
             // (see issue #111024 for details)
-            return make.MemberSelect(orig.getExpression(), orig.getIdentifier());
+            
+            //for inner classes, try to resolve import for outter class first:
+            if (element.getEnclosingElement().getKind().isClass() || element.getEnclosingElement().getKind().isInterface() && orig.getExpression().getKind() == Kind.MEMBER_SELECT) {
+                return make.MemberSelect(resolveImport((MemberSelectTree) orig.getExpression(), element.getEnclosingElement()), orig.getIdentifier());
+            } else {
+                return make.MemberSelect(orig.getExpression(), orig.getIdentifier());
+            }
         }
 
         //no creation of static imports yet, import class for fields and methods:
@@ -349,5 +395,30 @@ public class ImportAnalysis2 {
             return;
         }
         visible.addAll(e.getEnclosedElements());
+    }
+    
+    private Set<String> getUsedClassesFromJavaLang() {
+        if (usedClassesFromJavaLangCache != null) {
+            return usedClassesFromJavaLangCache;
+        }
+        
+        usedClassesFromJavaLangCache = new HashSet<String>();
+        
+        if (javaLang != null) {//might be null for broken platforms
+            new TreeScanner<Void, Void>() {
+                @Override
+                public Void visitIdentifier(IdentifierTree node, Void p) {
+                    Element e = model.getElement(node);
+                    
+                    if (e != null && javaLang.equals(e.getEnclosingElement())) {
+                        usedClassesFromJavaLangCache.add(e.getSimpleName().toString());
+                    }
+                    
+                    return null;
+                }
+            }.scan(cut, null);
+        }
+        
+        return usedClassesFromJavaLangCache;
     }
 }

@@ -477,6 +477,7 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
     protected final CompilationUnitTree rewriteChildren(CompilationUnitTree tree) {
 	ExpressionTree pid = (ExpressionTree)translate(tree.getPackageName());
         
+        importAnalysis.setCompilationUnit(tree);
         importAnalysis.setPackage(tree.getPackageName());
         importAnalysis.setImports(translate(tree.getImports()));
         
