@@ -1,0 +1,4 @@
+_child _ChildStruct
+a int
+b int
+child ChildStruct

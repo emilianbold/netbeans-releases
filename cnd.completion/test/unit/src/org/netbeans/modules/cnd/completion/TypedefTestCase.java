@@ -38,37 +38,25 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.completion;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.BaseTestSuite;
+import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionBaseTestCase;
 
 /**
  *
- * @author Vladimir Voskresensky
+ * @author Vladimir Voskresenky
  */
-public class CCCompletionTest extends BaseTestSuite {
-    
-    public CCCompletionTest() {
-        super("C/C++ Completion");
-        
-        this.addTestSuite(CheckModelTestCase.class);
-        this.addTestSuite(CCBasicCompletionTestCase.class);
-        this.addTestSuite(ClassContentTestCase.class);
-        this.addTestSuite(TemplateSpecializationTestCase.class);
-        this.addTestSuite(NamespacesTestCase.class);
-        this.addTestSuite(InheritanceTestCase.class);
-        this.addTestSuite(StaticMembersTestCase.class);
-        this.addTestSuite(FriendTestCase.class);
-        this.addTestSuite(EnumTestCase.class);
-        this.addTestSuite(LibrariesContentTestCase.class);
-        this.addTestSuite(TypedefTestCase.class);
-    }
+public class TypedefTestCase extends CompletionBaseTestCase {
 
-    public static Test suite() {
-        TestSuite suite = new CCCompletionTest();
-        return suite;
+    public TypedefTestCase(String testName) {
+        super(testName, true);
     }
+    
+    public void testTypedefMembers() throws Exception {
+        super.performTest("file.cc", 5,5,"ps.");
+    }    
+    
+    public void testTypedefInTypedef() throws Exception {
+        super.performTest("file.cc", 5,5,"ps.child.");
+    }    
 }
