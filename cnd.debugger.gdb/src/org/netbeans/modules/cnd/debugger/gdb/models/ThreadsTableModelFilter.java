@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.debugger.gdb.models;
 
 import javax.swing.JToolTip;
 import org.netbeans.spi.debugger.ui.Constants;
+import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TableModelFilter;
@@ -128,5 +129,9 @@ public class ThreadsTableModelFilter implements TableModelFilter, Constants {
      * @param l the listener to remove
      */
     public void removeModelListener(ModelListener l) {
+    }
+    
+    public void modelChanged(ModelEvent ev) {
+        System.err.println("TTMF.modelChanged: " + ev.getClass().getName());
     }
 }

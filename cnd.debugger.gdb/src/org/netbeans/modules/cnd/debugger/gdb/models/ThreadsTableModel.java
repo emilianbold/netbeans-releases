@@ -42,7 +42,6 @@
 package org.netbeans.modules.cnd.debugger.gdb.models;
 
 import javax.swing.JToolTip;
-import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.ModelListener;
@@ -83,6 +82,12 @@ public class ThreadsTableModel implements TableModel, Constants {
      * @param l the listener to add
      */
     public void addModelListener(ModelListener l) {
+//        synchronized (listeners) {
+//            listeners.add(l);
+//            if (listener == null) {
+//                listener = new Listener(this, debugger);
+//            }
+//        }
     }
 
     /** 
@@ -91,5 +96,12 @@ public class ThreadsTableModel implements TableModel, Constants {
      * @param l the listener to remove
      */
     public void removeModelListener(ModelListener l) {
+//        synchronized (listeners) {
+//            listeners.remove (l);
+//            if (listeners.size() == 0) {
+//                listener.destroy();
+//                listener = null;
+//            }
+//        }
     }
 }

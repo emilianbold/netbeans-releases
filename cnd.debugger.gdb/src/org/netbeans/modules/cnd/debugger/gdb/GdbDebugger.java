@@ -166,6 +166,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     private int currentToken = 0;
     private String currentThread = "1"; // NOI18N
+    private static final String[] noThreadInfo = new String[0];
+    private String[] threadInfo = noThreadInfo;
     private int ttToken = 0;
     private ToolTipAnnotation ttAnnotation = null;
     private Timer startupTimer = null;
@@ -241,7 +243,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 String err = cb.getError();
                 if (err != null) {
                     final String msg;
-                    if (err.toLowerCase().contains("no such process")) { // NOI18N
+                    if (err.toLowerCase().contains("no such process") || // NOI18N
+                            err.toLowerCase().contains("couldn't open /proc file for process ")) { // NOI18N
                         msg = NbBundle.getMessage(GdbDebugger.class, "ERR_NoSuchProcess"); // NOI18N
                     } else {
                         msg = NbBundle.getMessage(GdbDebugger.class, "ERR_CantAttach"); // NOI18N
@@ -330,7 +333,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             finish(false);
         }
     }
-    
+        
     private String getFullPath(String rundir, String path) {
         if (Utilities.isWindows() && Character.isLetter(path.charAt(0)) && path.charAt(1) == ':') {
             return path;
@@ -342,28 +345,35 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     }
 
     public String[] getThreadInformation() {
-        while (gdb == null) {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException ex) {
-            }
-        }
-        CommandBuffer cb = new CommandBuffer(gdb.info_threads());
-        String results = cb.postAndWait();
-        if (results.length() > 0) {
-            List<String> list = new ArrayList<String>();
-            for (String line : results.split("\\\\n")) { // NOI18N
-                if (!line.trim().startsWith("from ")) { // NOI18N
-                    list.add(line);
+        if (threadInfo == noThreadInfo) {
+            while (gdb == null) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ex) {
                 }
             }
-            return list.toArray(new String[list.size()]);
+            CommandBuffer cb = new CommandBuffer(gdb.info_threads());
+            String results = cb.postAndWait();
+            if (results.length() > 0) {
+                List<String> list = new ArrayList<String>();
+                for (String line : results.split("\\\\n")) { // NOI18N
+                    if (!line.trim().startsWith("from ")) { // NOI18N
+                        list.add(line);
+                    }
+                }
+                threadInfo = list.toArray(new String[list.size()]);
+                return threadInfo;
+            }
         }
-        return new String[0];
+        return threadInfo;
     }
 
     public int getThreadCount() {
         return 1;
+    }
+    
+    private void resetThreadInfo() {
+        threadInfo = noThreadInfo;
     }
     
     private String getProgramName(String program) {
@@ -1577,6 +1587,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
         
         log.fine("GD.stopped[" + Thread.currentThread().getName() + "]:\n"); // NOI18N
+        resetThreadInfo();
         if (reason != null) {
             setCurrentCallStackFrameNoFire(null);   // will be reset when stack updates
             if (reason.equals("exited-normally")) { // NOI18N
@@ -1776,6 +1787,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             if (Character.isDigit(tline.charAt(0))) {
                 int idx = tline.indexOf(' ');
                 if (idx > 0) {
+                    resetThreadInfo();
                     gdb.thread_select(tline.substring(0, idx));
                 }
             }
