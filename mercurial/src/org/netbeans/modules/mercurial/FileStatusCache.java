@@ -308,6 +308,14 @@ public class FileStatusCache {
     FileInformation getCachedStatus(File file) {
         File parent = file.getParentFile();
         if (parent == null) return FileStatusCache.FILE_INFORMATION_NOTMANAGED_DIRECTORY;
+        if (file.isDirectory()) {
+            if (hg.isAdministrative(file) || HgUtils.isIgnored(file)) {
+                return FileStatusCache.FILE_INFORMATION_EXCLUDED_DIRECTORY;
+            } else {
+                return FileStatusCache.FILE_INFORMATION_UPTODATE_DIRECTORY;
+            }
+        }
+
         Map<File, FileInformation> files = (Map<File, FileInformation>) turbo.readEntry(parent, FILE_STATUS_MAP);
         return files != null ? files.get(file) : null;
     }
