@@ -81,6 +81,7 @@ public final class Util {
     }
     
     
+    
     private static class TestDomProvider implements DomProvider {
 
         private final Document document;
@@ -136,28 +137,6 @@ public final class Util {
             return false;
         }
 
-        public boolean isNormalAndHasFacesComponent(Element componentRootElement) {
-            return false;
-        }
-
-        public Element getDefaultParentComponent() {
-            return bodyElement;
-        }
-
-        public boolean isModelValid() {
-            return true;
-        }
-
-        public boolean isModelBusted() {
-            return false;
-        }
-
-        public void readLock() {
-        }
-
-        public void readUnlock() {
-        }
-
         public boolean isFormComponent(Element componentRootElement) {
             return false;
         }
@@ -179,17 +158,6 @@ public final class Util {
         }
 
         public boolean moveComponent(Element componentRootElement, Node parentNode, Node before) {
-            return false;
-        }
-
-        public InlineEditorSupport createInlineEditorSupport(Element componentRootElement, String propertyName) {
-            return null;
-        }
-
-        public void importString(Designer designer, String string, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid, Element droppeeElement, Element dropeeComponentRootElement, Element defaultParentComponentRootElement) {
-        }
-
-        public boolean importData(Designer designer, JComponent comp, Transferable t, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid, Element droppeeElement, Element dropeeComponentRootElement, Element defaultParentComponentRootElement, int dropAction) {
             return false;
         }
 
@@ -229,9 +197,6 @@ public final class Util {
             return null;
         }
 
-        public void reuseCssStyle(DomProvider domProvider) {
-        }
-
         public boolean isRenderedNode(Node node) {
             return node != null && node.getOwnerDocument() == document;
         }
@@ -243,52 +208,18 @@ public final class Util {
             return null;
         }
 
-        public boolean isShowDecorations() {
+        public InlineEditorSupport createInlineEditorSupport(Element componentRootElement, String propertyName, String xpath) {
+            return null;
+        }
+
+        public void importString(Designer designer, String string, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid, Element droppeeElement, Element dropeeComponentRootElement) {
+        }
+
+        public boolean importData(Designer designer, JComponent comp, Transferable t, Point canvasPos, Node documentPosNode, int documentPosOffset, Dimension dimension, boolean isGrid, Element droppeeElement, Element dropeeComponentRootElement, int dropAction) {
             return false;
         }
 
-        public int getDefaultFontSize() {
-            return -1;
-        }
-
-        public int getPageSizeWidth() {
-            return -1;
-        }
-
-        public int getPageSizeHeight() {
-            return -1;
-        }
-
-        public boolean isGridShow() {
-            return false;
-        }
-
-        public boolean isGridSnap() {
-            return false;
-        }
-
-        public int getGridWidth() {
-            return -1;
-        }
-
-        public int getGridHeight() {
-            return -1;
-        }
-
-        public int getGridTraceWidth() {
-            return -1;
-        }
-
-        public int getGridTraceHeight() {
-            return -1;
-        }
-
-        public int getGridOffset() {
-            return -1;
-        }
-        
     } // TestDomProvider.
-    
     private static Document createTestDocument() {
         try {
             DocumentBuilder documentBuilder = MarkupService.createRaveRenderedDocumentBuilder(true);
