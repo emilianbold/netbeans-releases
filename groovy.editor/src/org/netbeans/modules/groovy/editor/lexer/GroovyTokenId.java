@@ -61,7 +61,7 @@ public class GroovyTokenId implements TokenId {
 
     public static final int ERROR_INT = 221;
 
-    // Copied from GroovyTokenId
+    // Copied from GsfTokenId
     public static final GroovyTokenId ERROR = new GroovyTokenId("GSF_ERROR", null, "error");
     public static final GroovyTokenId IDENTIFIER = new GroovyTokenId("GSF_IDENTIFIER", null, "identifier");
     public static final GroovyTokenId CLASS_VAR = new GroovyTokenId("GSF_CLASS", null, "staticfield");
