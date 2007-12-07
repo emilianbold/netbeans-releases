@@ -49,6 +49,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.modules.uihandler.api.Deactivated;
 import org.openide.modules.ModuleInfo;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -86,7 +87,12 @@ public class EnabledModulesCollector implements Deactivated {
             String[] enabledNames = new String[newEnabled.size()];
             int i = 0;
             for (ModuleInfo m : newEnabled) {
-                enabledNames[i++] = m.getCodeName();
+                SpecificationVersion specVersion = m.getSpecificationVersion();
+                if (specVersion != null){
+                    enabledNames[i++]  = m.getCodeName() + " [" + specVersion.toString() + "]";
+                }else{
+                    enabledNames[i++] = m.getCodeName();
+                }
             }
             rec.setParameters(enabledNames);
             rec.setLoggerName(uiLogger.getName());
@@ -99,7 +105,12 @@ public class EnabledModulesCollector implements Deactivated {
             String[] disabledNames = new String[newDisabled.size()];
             int i = 0;
             for (ModuleInfo m : newDisabled) {
-                disabledNames[i++] = m.getCodeName();
+                SpecificationVersion specVersion = m.getSpecificationVersion();
+                if (specVersion != null){
+                    disabledNames[i++]   = m.getCodeName() + " [" + specVersion.toString() + "]";
+                }else{
+                    disabledNames[i++] = m.getCodeName();
+                }
             }
             rec.setParameters(disabledNames);
             rec.setLoggerName(uiLogger.getName());
