@@ -46,7 +46,7 @@ made subject to such option by the copyright holder.
     <property name="nbm_alias" value="nb_ide"/>
     <property name="homepage.base" value="netbeans.org"/>
     <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
-    <property name="nb_all" value="../../../"/>
+    <property name="nb_all" location="../../.."/>
     <property name="license.file" location="${nb_all}/nbbuild/standard-nbm-license.txt"/>
 
     <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nb_all}/nbbuild/nbantext.jar"/>
