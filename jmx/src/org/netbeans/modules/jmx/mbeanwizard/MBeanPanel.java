@@ -433,7 +433,8 @@ public class MBeanPanel extends javax.swing.JPanel
             if (root.getClass().equals(JTextField.class)) {
                 JTextField rootTextField = (JTextField) root;
                 if (rootTextField.isEditable()) {
-                    mbeanNameTextField = ((JTextField) root);
+                    if(!"ComboBox.textField".equals(rootTextField.getName()))
+                        mbeanNameTextField = (rootTextField);
                 } else if (!rootTextField.getText().equals(getProjectDisplayedName())) {
                     if (projectTextField != null) {
                         createdFileTextField = ((JTextField) root);
