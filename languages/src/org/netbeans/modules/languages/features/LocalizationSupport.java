@@ -78,7 +78,10 @@ public class LocalizationSupport {
         }
         ResourceBundle bundle = languageToBundle.get (language);
         if (bundle != null)
-            return bundle.getString (text);
+            try {
+                return bundle.getString (text);
+            } catch (MissingResourceException ex) {
+            }
         return null;
     }
 }
