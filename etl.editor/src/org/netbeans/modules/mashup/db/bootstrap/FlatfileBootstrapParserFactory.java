@@ -47,7 +47,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.netbeans.modules.mashup.db.common.FlatfileDBException;
 import org.netbeans.modules.mashup.db.common.PropertyKeys;
 import org.netbeans.modules.mashup.db.model.FlatfileDBTable;
 

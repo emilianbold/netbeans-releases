@@ -70,7 +70,6 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
 import org.netbeans.modules.etl.ui.DataObjectHelper;
-import org.netbeans.modules.model.database.DBTable;
 import org.netbeans.modules.sql.framework.common.jdbc.SQLDBConnectionDefinition;
 import org.netbeans.modules.sql.framework.model.SQLConstants;
 import org.netbeans.modules.sql.framework.model.SQLDBColumn;
@@ -86,6 +85,7 @@ import org.netbeans.modules.sql.framework.ui.utils.UIUtil;
 import org.openide.util.NbBundle;
 
 import com.sun.sql.framework.utils.Logger;
+import org.netbeans.modules.sql.framework.model.DBTable;
 
 /**
  * @author Ritesh Adval
@@ -101,7 +101,7 @@ public class DBModelTreeView extends JPanel implements PropertyChangeListener {
     private IPropertySheet propSheet;
     private static DataFlavor[] mDataFlavorArray = new DataFlavor[1];
 
-    private static URL otdImgUrl = DBModelTreeView.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/otd.png");
+    private static URL rootImgUrl = DBModelTreeView.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/root.png");
 
     private static URL columnImgUrl = DBModelTreeView.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/column.png");
 
@@ -109,7 +109,7 @@ public class DBModelTreeView extends JPanel implements PropertyChangeListener {
 
     private static URL targetTableImgUrl = DBModelTreeView.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/TargetTable.png");
 
-    private static ImageIcon otdIcon;
+    private static ImageIcon rootIcon;
 
     private static ImageIcon tableIcon;
 
@@ -122,7 +122,7 @@ public class DBModelTreeView extends JPanel implements PropertyChangeListener {
     static {
         try {
             mDataFlavorArray[0] = new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType);
-            otdIcon = new ImageIcon(otdImgUrl);
+            rootIcon = new ImageIcon(rootImgUrl);
             tableIcon = new ImageIcon(tableImgUrl);
             columnIcon = new ImageIcon(columnImgUrl);
             targetTableIcon = new ImageIcon(targetTableImgUrl);
@@ -508,24 +508,24 @@ public class DBModelTreeView extends JPanel implements PropertyChangeListener {
                 Object obj = treeNode.getUserObject();
                 if (obj instanceof SQLDBModel) {
                     SQLDBModel dbModel = (SQLDBModel) obj;
-                    String otdName = dbModel.getModelName();
+                    String dbName = dbModel.getModelName();
 
                     switch (dbModel.getObjectType()) {
                         case SQLConstants.SOURCE_DBMODEL:
-                            otdName = NbBundle.getMessage(DBModelTreeView.class, "TEMPLATE_source_model_label", otdName);
+                            dbName = NbBundle.getMessage(DBModelTreeView.class, "TEMPLATE_source_model_label", dbName);
                             break;
 
                         case SQLConstants.TARGET_DBMODEL:
-                            otdName = NbBundle.getMessage(DBModelTreeView.class, "TEMPLATE_target_model_label", otdName);
+                            dbName = NbBundle.getMessage(DBModelTreeView.class, "TEMPLATE_target_model_label", dbName);
                             break;
 
                         default:
                             break;
                     }
 
-                    renderer.setText(otdName);
-                    renderer.setIcon(otdIcon);
-                    renderer.setToolTipText(otdName);
+                    renderer.setText(dbName);
+                    renderer.setIcon(rootIcon);
+                    renderer.setToolTipText(dbName);
                 } else if (obj instanceof SourceTable) {
                     renderer.setIcon(tableIcon);
                     renderer.setToolTipText(UIUtil.getTableToolTip((SQLDBTable) obj));

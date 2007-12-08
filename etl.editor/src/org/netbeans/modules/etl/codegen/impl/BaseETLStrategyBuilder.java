@@ -1,44 +1,21 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.etl.codegen.impl;
 
 import java.util.ArrayList;
@@ -57,14 +34,12 @@ import org.netbeans.modules.etl.codegen.PatternFinder;
 import org.netbeans.modules.etl.utils.MessageManager;
 import org.netbeans.modules.mashup.db.model.FlatfileDBTable;
 import org.netbeans.modules.mashup.db.model.FlatfileDefinition;
-import org.netbeans.modules.model.database.DBConnectionDefinition;
-import org.netbeans.modules.model.database.DBTable;
 import org.netbeans.modules.sql.framework.common.jdbc.SQLDBConnectionDefinition;
-import org.netbeans.modules.sql.framework.evaluators.database.DB;
-import org.netbeans.modules.sql.framework.evaluators.database.DBFactory;
-import org.netbeans.modules.sql.framework.evaluators.database.StatementContext;
-import org.netbeans.modules.sql.framework.evaluators.database.Statements;
-import org.netbeans.modules.sql.framework.evaluators.database.axion.AxionDB;
+import org.netbeans.modules.sql.framework.codegen.DB;
+import org.netbeans.modules.sql.framework.codegen.DBFactory;
+import org.netbeans.modules.sql.framework.codegen.StatementContext;
+import org.netbeans.modules.sql.framework.codegen.Statements;
+import org.netbeans.modules.sql.framework.codegen.axion.AxionDB;
 import org.netbeans.modules.sql.framework.model.SQLConstants;
 import org.netbeans.modules.sql.framework.model.SQLDBTable;
 import org.netbeans.modules.sql.framework.model.SourceTable;
@@ -77,6 +52,8 @@ import com.sun.sql.framework.jdbc.DBConnectionFactory;
 import com.sun.sql.framework.jdbc.SQLPart;
 import com.sun.sql.framework.utils.AttributeMap;
 import com.sun.sql.framework.utils.StringUtil;
+import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
+import org.netbeans.modules.sql.framework.model.DBTable;
 
 /**
  * Base class for all ETLStrategyBuilder classes.
@@ -85,6 +62,7 @@ import com.sun.sql.framework.utils.StringUtil;
  * @version $Revision$
  */
 public abstract class BaseETLStrategyBuilder implements ETLStrategyBuilder {
+
     protected static final MessageManager MSG_MGR = MessageManager.getManager("org.netbeans.modules.etl.codegen.impl");
     private static final String RUNTIME_INPUTS_MAP = "runtimeInputsMap";
 
@@ -101,7 +79,6 @@ public abstract class BaseETLStrategyBuilder implements ETLStrategyBuilder {
         }
         return props;
     }
-
     protected ETLScriptBuilderModel builderModel = null;
     protected DBConnectionFactory connFactory = DBConnectionFactory.getInstance();
     protected DBConnectionDefinition targtConDef = null;
@@ -139,7 +116,7 @@ public abstract class BaseETLStrategyBuilder implements ETLStrategyBuilder {
         insertStartDateIntoSummaryTablePart.setConnectionPoolName(ETLScriptBuilderModel.ETL_MONITOR_DB_CONN_DEF_NAME);
 
         context.setUsingFullyQualifiedTablePrefix(false);
-        insertStartDateIntoSummaryTablePart.setTableName(db.getUnescapedName(db.getEvaluatorFactory().evaluate(tt, context)));
+        insertStartDateIntoSummaryTablePart.setTableName(db.getUnescapedName(db.getGeneratorFactory().generate(tt, context)));
 
         taskNode.addStatement(insertStartDateIntoSummaryTablePart);
     }
@@ -155,7 +132,7 @@ public abstract class BaseETLStrategyBuilder implements ETLStrategyBuilder {
         SQLPart selectExecutionIdPart = stmts.getSelectExecutionIdFromSummaryTableStatement(tt, context);
         selectExecutionIdPart.setConnectionPoolName(ETLScriptBuilderModel.ETL_MONITOR_DB_CONN_DEF_NAME);
 
-        selectExecutionIdPart.setTableName(db.getUnescapedName(db.getEvaluatorFactory().evaluate(tt, context)));
+        selectExecutionIdPart.setTableName(db.getUnescapedName(db.getGeneratorFactory().generate(tt, context)));
 
         pipeline.addStatement(selectExecutionIdPart);
     }
@@ -175,7 +152,7 @@ public abstract class BaseETLStrategyBuilder implements ETLStrategyBuilder {
         SQLPart updateEndDatePart = stmts.getUpdateEndDateInSummaryTableStatement(tt, context);
         updateEndDatePart.setConnectionPoolName(ETLScriptBuilderModel.ETL_MONITOR_DB_CONN_DEF_NAME);
 
-        String tableName = db.getUnescapedName(db.getEvaluatorFactory().evaluate(tt, context));
+        String tableName = db.getUnescapedName(db.getGeneratorFactory().generate(tt, context));
         updateEndDatePart.setTableName(tableName);
         updateStats.addTableSpecificStatement(tableName, updateEndDatePart);
     }
@@ -223,7 +200,7 @@ public abstract class BaseETLStrategyBuilder implements ETLStrategyBuilder {
         StatementContext context = new StatementContext();
         context.setUsingFullyQualifiedTablePrefix(false);
         context.setUsingUniqueTableName(true);
-        final String statsTableName = statsDB.getUnescapedName(statsDB.getEvaluatorFactory().evaluate(tt, context));
+        final String statsTableName = statsDB.getUnescapedName(statsDB.getGeneratorFactory().generate(tt, context));
         transformerTask.setTableName(statsTableName);
 
         int statementType = tt.getStatementType();
@@ -246,14 +223,12 @@ public abstract class BaseETLStrategyBuilder implements ETLStrategyBuilder {
         }
 
         StatementContext tgtContext = new StatementContext();
-        if ( (this.builderModel.isConnectionDefinitionOverridesApplied()) 
-                && (PatternFinder.isInternalDBTable(tt))){
+        if ((this.builderModel.isConnectionDefinitionOverridesApplied()) && (PatternFinder.isInternalDBTable(tt))) {
             tgtContext.setUsingUniqueTableName(tt, true);
-        }        
+        }
         createTargetTableIfNotExists(tt, transformerTask, trgtConnName, targetDB, tgtContext);
         truncateTargetTableIfExists(tt, transformerTask, trgtConnName, targetDB.getStatements(), tgtContext);
 
- //RIT commented summary table and statistics related code for now       
         // Insert new execution record for target table, tt.
         addInsertNewExecutionRecordStatement(transformerTask, tt);
 
@@ -262,11 +237,11 @@ public abstract class BaseETLStrategyBuilder implements ETLStrategyBuilder {
     }
 
     protected void createCorrelatedUpdateSQLParts(TargetTable tt,
-                                                ETLTaskNode correlatedQueryExecutor,
-                                                String trgtConnName,
-                                                DB targetDB,
-                                                DB statsDB,
-                                                boolean genInsertSelect) throws BaseException {
+            ETLTaskNode correlatedQueryExecutor,
+            String trgtConnName,
+            DB targetDB,
+            DB statsDB,
+            boolean genInsertSelect) throws BaseException {
         SQLPart insertSelect = null;
         SQLPart select = null;
         SQLPart update = null;
@@ -274,7 +249,7 @@ public abstract class BaseETLStrategyBuilder implements ETLStrategyBuilder {
         StatementContext context = new StatementContext();
         context.setUsingFullyQualifiedTablePrefix(false);
         context.setUsingUniqueTableName(true);
-        final String statsTableName = statsDB.getUnescapedName(statsDB.getEvaluatorFactory().evaluate(tt, context));
+        final String statsTableName = statsDB.getUnescapedName(statsDB.getGeneratorFactory().generate(tt, context));
         correlatedQueryExecutor.setTableName(statsTableName);
 
         Map map = getCorrelatedUpdateQueries(tt, targetDB, genInsertSelect);
@@ -291,7 +266,7 @@ public abstract class BaseETLStrategyBuilder implements ETLStrategyBuilder {
         correlatedQueryExecutor.addStatement(select);
         correlatedQueryExecutor.addStatement(update);
 
-        if (genInsertSelect){
+        if (genInsertSelect) {
             insertSelect.setTableName(statsTableName);
             insertSelect.setConnectionPoolName(trgtConnName);
             correlatedQueryExecutor.addStatement(insertSelect);
@@ -301,12 +276,11 @@ public abstract class BaseETLStrategyBuilder implements ETLStrategyBuilder {
         createTargetTableIfNotExists(tt, correlatedQueryExecutor, trgtConnName, targetDB, tgtContext);
         truncateTargetTableIfExists(tt, correlatedQueryExecutor, trgtConnName, targetDB.getStatements(), tgtContext);
 
-        //RIT commented summary table and statistics related code for now       
         // Insert new execution record for target table, tt.
-//        addInsertNewExecutionRecordStatement(correlatedQueryExecutor, tt);
+        addInsertNewExecutionRecordStatement(correlatedQueryExecutor, tt);
 
         // Add query to obtain execution id assigned to new execution record.
-//        addSelectExecutionIdForNewExecutionRecordStatement(correlatedQueryExecutor, tt);
+        addSelectExecutionIdForNewExecutionRecordStatement(correlatedQueryExecutor, tt);
 
         AttributeMap attrMap = new AttributeMap();
         attrMap.put("batchSize", tt.getBatchSize() + ""); // NOI18N
@@ -326,14 +300,14 @@ public abstract class BaseETLStrategyBuilder implements ETLStrategyBuilder {
             SourceTable srcTable = (SourceTable) iter.next();
             if (isExtractionRequired(srcTable, tt)) {
                 context.setUsingTempTableName(srcTable, true);
-            }else{
+            } else {
                 useUniqueNameIfRequired(srcTable, context);
             }
         }
         context.putClientProperty(RUNTIME_INPUTS_MAP, this.builderModel.getEngine().getInputAttrMap());
         ret = stmts.getCorrelatedUpdateStatement(tt, context);
 
-        if (genInsertSelect){
+        if (genInsertSelect) {
             context.putClientProperty("useWhere", Boolean.TRUE);
             SQLPart insertSelectPart = stmts.getInsertSelectStatement(tt, context);
             ret.put(SQLPart.STMT_INSERTSELECT, insertSelectPart);
@@ -361,13 +335,12 @@ public abstract class BaseETLStrategyBuilder implements ETLStrategyBuilder {
         return defragPartStatement;
     }
 
-    protected final void useUniqueNameIfRequired(SQLDBTable table, StatementContext sc) throws BaseException{
-        if ( (this.builderModel.isConnectionDefinitionOverridesApplied()) 
-                && (PatternFinder.isInternalDBTable(table))){
+    protected final void useUniqueNameIfRequired(SQLDBTable table, StatementContext sc) throws BaseException {
+        if ((this.builderModel.isConnectionDefinitionOverridesApplied()) && (PatternFinder.isInternalDBTable(table))) {
             sc.setUsingUniqueTableName(table, true);
-        }        
+        }
     }
-    
+
     // Generate Insert Select Part
     protected SQLPart generateTransformerSQLPart(TargetTable tt, boolean useSourceFilter, DB targetDB, int statementType, List srcTblList)
             throws BaseException {
@@ -379,13 +352,13 @@ public abstract class BaseETLStrategyBuilder implements ETLStrategyBuilder {
             SourceTable srcTable = (SourceTable) iter.next();
             if (isExtractionRequired(srcTable, tt)) {
                 context.setUsingTempTableName(srcTable, true);
-            }else{
+            } else {
                 useUniqueNameIfRequired(srcTable, context);
             }
         }
 
         useUniqueNameIfRequired(tt, context);
-        
+
         SQLPart insertSelectPart;
         switch (statementType) {
             case SQLConstants.UPDATE_STATEMENT:
@@ -428,12 +401,12 @@ public abstract class BaseETLStrategyBuilder implements ETLStrategyBuilder {
             sqlPart = createSQLPart(flatfileDBTable.getDropStatementSQL(tableName), stmtType, connPoolName);
         } else if (stmtType.equals("CREATE")) {
             sqlPart = createSQLPart(flatfileDBTable.getCreateStatementSQL(staticDirectory, tableName, flatfileRuntimeFilePath, isDynamicPath,
-                createDataFileIfNotExist), stmtType, connPoolName);
+                    createDataFileIfNotExist), stmtType, connPoolName);
         }
 
         // Provide a fully-qualified filename, appending staticDirectory as the path, as
         // default value if dynamic path is true; otherwise, use just the sample filename
-        // as supplied from the OTD.
+        // as supplied from the Database.
         String defaultValue = (isDynamicPath ? staticDirectory + "/" : "") + flatfileDBTable.getFileName();
         sqlPart.setDefaultValue(defaultValue);
 
@@ -451,7 +424,7 @@ public abstract class BaseETLStrategyBuilder implements ETLStrategyBuilder {
      */
     protected String getCommentForTransformer(TargetTable targetTable) throws BaseException {
         return MSG_MGR.getString("DISPLAY_INSERT_TARGET", targetTable.getParent().getModelName(), this.builderModel.getConnectionDefinition(
-            targetTable).getDBType());
+                targetTable).getDBType());
     }
 
     /**
@@ -487,7 +460,7 @@ public abstract class BaseETLStrategyBuilder implements ETLStrategyBuilder {
         return db.getStatements();
     }
 
-    protected void getFlatfileInitSQLParts(FlatfileDefinition stcotd, InternalDBMetadata ffMetadata, boolean isAllDBTypeInternal,
+    protected void getFlatfileInitSQLParts(FlatfileDefinition ffdb, InternalDBMetadata ffMetadata, boolean isAllDBTypeInternal,
             ETLTaskNode initTask, ETLTaskNode cleanupTask, String connPoolName, SQLDBTable flatfileRuntime, boolean createDataFileIfNotExist) {
         String staticDirectory = ffMetadata.getStaticDirectory();
         boolean isDynamicFilePath = ffMetadata.isDynamicFilePath();
@@ -495,19 +468,19 @@ public abstract class BaseETLStrategyBuilder implements ETLStrategyBuilder {
         String tableName = null;
         String flatfileRuntimeFilePath = flatfileRuntime.getRuntimeArgumentName();
         String oId = flatfileRuntime.getUniqueTableName();
-        FlatfileDBTable flatfileTable = (FlatfileDBTable) stcotd.getTable(flatfileRuntime.getName());
+        FlatfileDBTable flatfileTable = (FlatfileDBTable) ffdb.getTable(flatfileRuntime.getName());
 
 //        if (isAllDBTypeInternal) {
-            tableName = oId;
+        tableName = oId;
 //        } else {
 //            tableName = flatfileTable.getName();
 //        }
 
         if (flatfileTable != null) {
             SQLPart dropPart = generateSQLPart(flatfileTable, tableName, staticDirectory, "DROP", connPoolName, flatfileRuntimeFilePath, isDynamicFilePath,
-                createDataFileIfNotExist);
+                    createDataFileIfNotExist);
             SQLPart createPart = generateSQLPart(flatfileTable, tableName, staticDirectory, "CREATE", connPoolName, flatfileRuntimeFilePath,
-                isDynamicFilePath, createDataFileIfNotExist);
+                    isDynamicFilePath, createDataFileIfNotExist);
 
             initTask.addOptionalTask(dropPart);
             initTask.addOptionalTask(createPart);
@@ -515,20 +488,20 @@ public abstract class BaseETLStrategyBuilder implements ETLStrategyBuilder {
         }
     }
 
-    protected void getFlatfileInitSQLParts(FlatfileDefinition stcotd, InternalDBMetadata internalMetadata, ETLTaskNode initTask,
+    protected void getFlatfileInitSQLParts(FlatfileDefinition ffdb, InternalDBMetadata internalMetadata, ETLTaskNode initTask,
             ETLTaskNode cleanupTask, SQLDBTable flatfileRuntime, boolean createDataFileIfNotExist) {
         String staticDirectory = internalMetadata.getStaticDirectory();
         boolean isDynamicFilePath = internalMetadata.isDynamicFilePath();
 
-        FlatfileDBTable flatfileTable = (FlatfileDBTable) stcotd.getTable(flatfileRuntime.getName());
+        FlatfileDBTable flatfileTable = (FlatfileDBTable) ffdb.getTable(flatfileRuntime.getName());
         String tableName = flatfileRuntime.getUniqueTableName();
         String flatfileRuntimeFilePath = flatfileRuntime.getRuntimeArgumentName();
 
         if (flatfileTable != null) {
             SQLPart dropPart = generateSQLPart(flatfileTable, tableName, staticDirectory, "DROP", ETLScriptBuilderModel.ETL_INSTANCE_DB_CONN_DEF_NAME,
-                flatfileRuntimeFilePath, isDynamicFilePath, createDataFileIfNotExist);
+                    flatfileRuntimeFilePath, isDynamicFilePath, createDataFileIfNotExist);
             SQLPart createPart = generateSQLPart(flatfileTable, tableName, staticDirectory, "CREATE",
-                ETLScriptBuilderModel.ETL_INSTANCE_DB_CONN_DEF_NAME, flatfileRuntimeFilePath, isDynamicFilePath, createDataFileIfNotExist);
+                    ETLScriptBuilderModel.ETL_INSTANCE_DB_CONN_DEF_NAME, flatfileRuntimeFilePath, isDynamicFilePath, createDataFileIfNotExist);
 
             initTask.addOptionalTask(dropPart);
             initTask.addOptionalTask(createPart);
@@ -537,11 +510,11 @@ public abstract class BaseETLStrategyBuilder implements ETLStrategyBuilder {
     }
 
     protected String getTargetConnName() {
-    	
-    	if(targtConDef.getDriverClass().equals("org.axiondb.jdbc.AxionDriver") &&
-    			builderModel.isConnectionDefinitionOverridesApplied()){
-    		return ETLScriptBuilderModel.ETL_INSTANCE_DB_CONN_DEF_NAME;
-    	}
+
+        if (targtConDef.getDriverClass().equals("org.axiondb.jdbc.AxionDriver") &&
+                builderModel.isConnectionDefinitionOverridesApplied()) {
+            return ETLScriptBuilderModel.ETL_INSTANCE_DB_CONN_DEF_NAME;
+        }
         return targtConDef.getName();
     }
 
@@ -553,10 +526,7 @@ public abstract class BaseETLStrategyBuilder implements ETLStrategyBuilder {
     protected String getTransformerSQL(TargetTable targetTable, DB targetDB, List srcTblList, boolean useSourceFilter) throws BaseException {
         String sql = null;
         int statementType = targetTable.getStatementType();
-        if ((targetDB.getDBType() == DB.JDBCDB)
-                && (targetTable.getSourceTableList().size() != 0)
-                && ((statementType == SQLConstants.UPDATE_STATEMENT)
-                        ||(statementType == SQLConstants.INSERT_UPDATE_STATEMENT))){
+        if ((targetDB.getDBType() == DB.JDBCDB) && (targetTable.getSourceTableList().size() != 0) && ((statementType == SQLConstants.UPDATE_STATEMENT) || (statementType == SQLConstants.INSERT_UPDATE_STATEMENT))) {
             Map map = this.getCorrelatedUpdateQueries(targetTable, targetDB, (statementType == SQLConstants.INSERT_UPDATE_STATEMENT));
             SQLPart select = (SQLPart) map.get(SQLPart.STMT_CORRELATED_SELECT);
             SQLPart update = (SQLPart) map.get(SQLPart.STMT_CORRELATED_UPDATE);
@@ -592,10 +562,7 @@ public abstract class BaseETLStrategyBuilder implements ETLStrategyBuilder {
 
     protected void populateInitTask(ETLTaskNode initTask, ETLTaskNode cleanupTask, TargetTable tTable) throws BaseException {
         DBConnectionDefinition dbCondefn = builderModel.getConnectionDefinition(tTable);
-        String tgtConnPoolName = builderModel.getConnectionDefinationName(tTable);
-        if (tgtConnPoolName == null) {
-            tgtConnPoolName = dbCondefn.getName();
-        }
+        String tgtConnPoolName = dbCondefn.getName();
 
         InternalDBMetadata tgtInternalMetadata = builderModel.getInternalMetadata(tTable);
         if (tgtInternalMetadata == null) {
@@ -622,82 +589,81 @@ public abstract class BaseETLStrategyBuilder implements ETLStrategyBuilder {
         boolean isAllDBTypeInternal = PatternFinder.isInternalDBTable(tTable) && PatternFinder.allDBTablesAreInternal(participatingTables.iterator());
 
         // For Target Table
-        FlatfileDefinition tgtOtd = ETLCodegenUtil.getStcdbObjectTypeDefinition(tTable);
-        if (tgtOtd != null && tgtInternalMetadata != null
-            && tgtInternalMetadata.getStaticDirectory() != null) {
-            getFlatfileInitSQLParts(tgtOtd, tgtInternalMetadata, isAllDBTypeInternal, initTask, cleanupTask, tgtConnPoolName, tTable, true);
+        FlatfileDefinition tgtDB = ETLCodegenUtil.getStcdbObjectTypeDefinition(tTable);
+        if (tgtDB != null && tgtInternalMetadata != null && tgtInternalMetadata.getStaticDirectory() != null) {
+            getFlatfileInitSQLParts(tgtDB, tgtInternalMetadata, isAllDBTypeInternal, initTask, cleanupTask, tgtConnPoolName, tTable, true);
         }
 
         // For all SourceTables associated with Target table
         for (Iterator it = participatingTables.iterator(); it.hasNext();) {
             SQLDBTable dbTable = (SQLDBTable) it.next();
-            FlatfileDefinition srcOtd = ETLCodegenUtil.getOtd(dbTable);
-            if(srcOtd != null) {
-	            DBConnectionDefinition srcCondefn = builderModel.getConnectionDefinition(dbTable);
-	            InternalDBMetadata srcInternalMetadata = builderModel.getInternalMetadata(dbTable);
-	            String conDefnName = getConDefnName(srcCondefn);
-	
-	            if (srcInternalMetadata != null) {
-	                if (isAllDBTypeInternal) {
-	                    conDefnName = tgtConnPoolName;
-	                }
-	                getFlatfileInitSQLParts(srcOtd, srcInternalMetadata, isAllDBTypeInternal, initTask, cleanupTask, conDefnName, dbTable, false);
-	            }
+            FlatfileDefinition srcDB = ETLCodegenUtil.getFFDefinition(dbTable);
+            if (srcDB != null) {
+                DBConnectionDefinition srcCondefn = builderModel.getConnectionDefinition(dbTable);
+                InternalDBMetadata srcInternalMetadata = builderModel.getInternalMetadata(dbTable);
+                String conDefnName = getConDefnName(srcCondefn);
+
+                if (srcInternalMetadata != null) {
+                    if (isAllDBTypeInternal) {
+                        conDefnName = tgtConnPoolName;
+                    }
+                    getFlatfileInitSQLParts(srcDB, srcInternalMetadata, isAllDBTypeInternal, initTask, cleanupTask, conDefnName, dbTable, false);
+                }
             }
         }
     }
 
     protected String getConDefnName(DBConnectionDefinition srcCondefn) {
-    	if(srcCondefn.getDriverClass().equals("org.axiondb.jdbc.AxionDriver") &&
-    			builderModel.isConnectionDefinitionOverridesApplied()){
-    		return ETLScriptBuilderModel.ETL_INSTANCE_DB_CONN_DEF_NAME;
-    	}
+        if (srcCondefn.getDriverClass().equals("org.axiondb.jdbc.AxionDriver") &&
+                builderModel.isConnectionDefinitionOverridesApplied()) {
+            return ETLScriptBuilderModel.ETL_INSTANCE_DB_CONN_DEF_NAME;
+        }
         return srcCondefn.getName();
-	}
+    }
 
-	protected void truncateTargetTableIfExists(TargetTable tt, ETLTaskNode taskNode, String trgtConnName, Statements stmts, StatementContext sc) throws BaseException {
+    protected void truncateTargetTableIfExists(TargetTable tt, ETLTaskNode taskNode, String trgtConnName, Statements stmts, StatementContext sc) throws BaseException {
         if (tt.isTruncateBeforeLoad()) {
-            truncateTableIfExists((SQLDBTable)tt, taskNode, trgtConnName, stmts, sc);
+            truncateTableIfExists((SQLDBTable) tt, taskNode, trgtConnName, stmts, sc);
         }
     }
 
-	protected void truncateTableIfExists(SQLDBTable dbt, ETLTaskNode taskNode, String trgtConnName, Statements stmts, StatementContext sc) throws BaseException {
-		SQLPart ifExists = stmts.getTableExistsStatement(dbt, sc);
-            String existsSql = (ifExists != null) ? ifExists.getSQL().trim() : null;
-            StringBuilder sqlBuffer = StringUtil.isNullString(existsSql) ? new StringBuilder(200) : new StringBuilder(existsSql);
+    protected void truncateTableIfExists(SQLDBTable dbt, ETLTaskNode taskNode, String trgtConnName, Statements stmts, StatementContext sc) throws BaseException {
+        SQLPart ifExists = stmts.getTableExistsStatement(dbt, sc);
+        String existsSql = (ifExists != null) ? ifExists.getSQL().trim() : null;
+        StringBuilder sqlBuffer = StringUtil.isNullString(existsSql) ? new StringBuilder(200) : new StringBuilder(existsSql);
 
-		SQLPart doTruncate = stmts.getTruncateStatement(dbt, sc);
-            String truncateSql = doTruncate.getSQL().trim();
-            if (!StringUtil.isNullString(truncateSql)) {
-                if (sqlBuffer.length() != 0) {
-                    sqlBuffer.append(SQLPart.STATEMENT_SEPARATOR);
-                }
-
-                sqlBuffer.append(truncateSql);
-                SQLPart truncateIfExists = new SQLPart(sqlBuffer.toString(), SQLPart.STMT_TRUNCATEBEFOREPROCESS, trgtConnName);
-                taskNode.addStatement(truncateIfExists);
-            } else {
-                truncateSql = "";
+        SQLPart doTruncate = stmts.getTruncateStatement(dbt, sc);
+        String truncateSql = doTruncate.getSQL().trim();
+        if (!StringUtil.isNullString(truncateSql)) {
+            if (sqlBuffer.length() != 0) {
+                sqlBuffer.append(SQLPart.STATEMENT_SEPARATOR);
             }
 
-            StatementContext context = new StatementContext();
-            context.putClientProperty("useWhere", Boolean.FALSE);
-		SQLPart doDelete = stmts.getDeleteStatement(dbt, context);
-            String deleteSql = doDelete.getSQL().trim();
+            sqlBuffer.append(truncateSql);
+            SQLPart truncateIfExists = new SQLPart(sqlBuffer.toString(), SQLPart.STMT_TRUNCATEBEFOREPROCESS, trgtConnName);
+            taskNode.addStatement(truncateIfExists);
+        } else {
+            truncateSql = "";
+        }
 
-            // Only add the fallback delete statement if it is not identical to the
-            // truncate statement. The delete and truncate statements are identical for
-            // those DBs which do not have a separate 'truncate' command.
-            if (!StringUtil.isNullString(deleteSql) && !deleteSql.equalsIgnoreCase(truncateSql)) {
-                sqlBuffer = StringUtil.isNullString(existsSql) ? new StringBuilder(200) : new StringBuilder(existsSql);
-                if (sqlBuffer.length() != 0) {
-                    sqlBuffer.append(SQLPart.STATEMENT_SEPARATOR);
-                }
+        StatementContext context = new StatementContext();
+        context.putClientProperty("useWhere", Boolean.FALSE);
+        SQLPart doDelete = stmts.getDeleteStatement(dbt, context);
+        String deleteSql = doDelete.getSQL().trim();
 
-                sqlBuffer.append(deleteSql);
+        // Only add the fallback delete statement if it is not identical to the
+        // truncate statement. The delete and truncate statements are identical for
+        // those DBs which do not have a separate 'truncate' command.
+        if (!StringUtil.isNullString(deleteSql) && !deleteSql.equalsIgnoreCase(truncateSql)) {
+            sqlBuffer = StringUtil.isNullString(existsSql) ? new StringBuilder(200) : new StringBuilder(existsSql);
+            if (sqlBuffer.length() != 0) {
+                sqlBuffer.append(SQLPart.STATEMENT_SEPARATOR);
+            }
 
-                SQLPart deleteIfExists = new SQLPart(sqlBuffer.toString(), SQLPart.STMT_DELETEBEFOREPROCESS, trgtConnName);
-                taskNode.addStatement(deleteIfExists);
+            sqlBuffer.append(deleteSql);
+
+            SQLPart deleteIfExists = new SQLPart(sqlBuffer.toString(), SQLPart.STMT_DELETEBEFOREPROCESS, trgtConnName);
+            taskNode.addStatement(deleteIfExists);
         }
     }
 
@@ -705,5 +671,4 @@ public abstract class BaseETLStrategyBuilder implements ETLStrategyBuilder {
         String name = dbTable.getUniqueTableName();
         dbTable.setUserDefinedTableName(name);
     }
-
 }

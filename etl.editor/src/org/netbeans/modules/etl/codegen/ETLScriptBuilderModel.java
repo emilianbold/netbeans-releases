@@ -1,42 +1,20 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
  *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.etl.codegen;
 
@@ -46,12 +24,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import org.netbeans.modules.etl.codegen.DBConnectionDefinitionTemplate;
 import org.netbeans.modules.etl.codegen.impl.InternalDBMetadata;
-import org.netbeans.modules.model.database.DBConnectionDefinition;
-import org.netbeans.modules.model.database.DBTable;
-import org.netbeans.modules.model.database.DatabaseModel;
 import org.netbeans.modules.sql.framework.common.jdbc.SQLDBConnectionDefinition;
 import org.netbeans.modules.sql.framework.common.jdbc.SQLUtils;
 import org.netbeans.modules.sql.framework.model.RuntimeDatabaseModel;
@@ -61,21 +34,22 @@ import org.netbeans.modules.sql.framework.model.SQLDBModel;
 import org.netbeans.modules.sql.framework.model.SQLDBTable;
 import org.netbeans.modules.sql.framework.model.SQLDefinition;
 import org.netbeans.modules.sql.framework.model.SQLModelObjectFactory;
-import org.netbeans.modules.sql.framework.model.SourceTable;
-import org.netbeans.modules.sql.framework.model.TargetTable;
 import org.netbeans.modules.sql.framework.ui.view.DataOutputPanel;
-
 import com.sun.etl.engine.ETLEngine;
 import com.sun.etl.engine.impl.ETLEngineImpl;
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.jdbc.DBConstants;
 import com.sun.sql.framework.utils.StringUtil;
+import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
+import org.netbeans.modules.sql.framework.model.DBTable;
+import org.netbeans.modules.sql.framework.model.DatabaseModel;
 
 /**
  * @author Girish Patil
  * @version $Revision 1.0$
  */
 public final class ETLScriptBuilderModel {
+
     // Folder under eTL working directory
     public static final String ETL_DESIGN_WORK_FOLDER = getDefaultWorkingFolder();
     // Pool name aka connection Definition name are for internal cross reference purposes.
@@ -86,23 +60,19 @@ public final class ETLScriptBuilderModel {
     public static final String ETL_MONITOR_DB_FOLDER = "mdb/";
     public static final String ETL_MONITOR_DB_NAME = DataOutputPanel.ETL_MONITOR_DB_NAME;
     private boolean connectionDefinitionOverridesApplied = false;
-
-    private List connectionDefinitions = null;
+    private List<SQLDBConnectionDefinition> connectionDefinitions = null;
     private ETLEngine engine = null;
     private SQLDBConnectionDefinition instanceDb = null;
-
     private String instanceDBFolder = ETL_DESIGN_WORK_FOLDER + ETL_INSTANCE_DB_FOLDER;
     private String instanceDBName = ETL_INSTANCE_DB_NAME;
-
     private boolean memoryMonitorDB = true;
     private SQLDBConnectionDefinition monitorDb = null;
     private String monitorDBFolder = ETL_DESIGN_WORK_FOLDER + ETL_MONITOR_DB_FOLDER;
     private String monitorDBName = ETL_MONITOR_DB_NAME;
-
-    private Map nameToOtdOidMap = null;
+    private Map<String, String> nameToDatabaseMap = null;
     private Map oidToFFMetadata = new HashMap();
-    private Map otdOidToConnectionDefintionMap = null;
-    private Map otdOidToNameMap = null;
+    private Map<String, SQLDBConnectionDefinition> databaseToConnectionDefintionMap = null;
+    private Map<String, String> dbIdToNameMap = null;
     private boolean shutdownMonitorDB = false;
     private SQLDefinition sqlDefinition = null;
     private boolean useInstanceDB = false;
@@ -110,86 +80,81 @@ public final class ETLScriptBuilderModel {
 
     private static final String getDefaultWorkingFolder() {
         String nbUsrDir = System.getProperty("netbeans.user");
-        if ((nbUsrDir == null) || ("".equals(nbUsrDir))){
-            nbUsrDir = ".." + File.separator + "usrdir" ;
+        if ((nbUsrDir == null) || ("".equals(nbUsrDir))) {
+            nbUsrDir = ".." + File.separator + "usrdir";
         }
-        return nbUsrDir + File.separator + "eTL"+ File.separator + "work/" ;
+        return nbUsrDir + File.separator + "eTL" + File.separator + "work/";
     }
 
     public void applyConnectionDefinitions() throws BaseException {
         // Get all connection definitions from SQLDefinition.
-        connectionDefinitions = new ArrayList();
-        otdOidToConnectionDefintionMap = new HashMap();
-        otdOidToNameMap = new HashMap();
-        nameToOtdOidMap = new HashMap();
+        connectionDefinitions = new ArrayList<SQLDBConnectionDefinition>();
+        databaseToConnectionDefintionMap = new HashMap<String, SQLDBConnectionDefinition>();
+        dbIdToNameMap = new HashMap<String, String>();
+        nameToDatabaseMap = new HashMap<String, String>();
 
         SQLDBConnectionDefinition dbConnDef = null;
         String key = null;
-        String qConnDefName = null;        
+        String qConnDefName = null;
 
-        List dbModels = sqlDefinition.getAllOTDs();
+        List dbModels = sqlDefinition.getAllDatabases();
         Iterator itr = dbModels.iterator();
         while (itr.hasNext()) {
             DatabaseModel dbModel = (DatabaseModel) itr.next();
             dbConnDef = SQLModelObjectFactory.getInstance().createDBConnectionDefinition(dbModel.getConnectionDefinition());
-            key = ETLCodegenUtil.getQualifiedOtdOid((SQLDBModel) dbModel);
-            //RIT since there is no otd id in alaska just pass the connection for table.
-//            qConnDefName = ETLCodegenUtil.getQualifiedConnectionDefinitionName((SQLDBModel) dbModel, dbConnDef.getName());
-//            dbConnDef.setName(qConnDefName);
-            
+            key = ETLCodegenUtil.getQualifiedObjectId((SQLDBModel) dbModel);
+
             if (key != null) {
-                otdOidToConnectionDefintionMap.put(key, dbConnDef);
+                databaseToConnectionDefintionMap.put(key, dbConnDef);
             } else {
                 key = dbConnDef.getName();
-                otdOidToConnectionDefintionMap.put(key, dbConnDef);
+                databaseToConnectionDefintionMap.put(key, dbConnDef);
             }
-            
-            otdOidToNameMap.put(key, qConnDefName);
-            nameToOtdOidMap.put(qConnDefName, key);
+
+            dbIdToNameMap.put(key, qConnDefName);
+            nameToDatabaseMap.put(qConnDefName, key);
             connectionDefinitions.add(dbConnDef);
         }
-//RIT commented monitor related code for now
         addMonitorAndInstanceConnectionDefinitions(connectionDefinitions);
         getEngine().setConnectionDefList(this.connectionDefinitions);
     }
 
     /**
-     * ConnDefName to ConnDef. Note name is may not be same as in OTD Conn Def OTD oid to
+     * ConnDefName to ConnDef. Note name is may not be same as in  Conn Def oid to
      * connDefName mapping.
      */
-    public void applyConnectionDefinitions(Map name2connectionDefMap, Map otdOid2ConnDefNameMap, Map intDbConfigParams) throws BaseException {
-        
-    	oidToFFMetadata = intDbConfigParams;
-    	
-    	nameToOtdOidMap = new HashMap();
-        connectionDefinitions = new ArrayList();
+    public void applyConnectionDefinitions(Map name2connectionDefMap, Map<String, String> connDefNameMap, Map intDbConfigParams) throws BaseException {
 
-        otdOidToConnectionDefintionMap = new HashMap();
-        otdOidToNameMap = new HashMap();
+        oidToFFMetadata = intDbConfigParams;
 
-        nameToOtdOidMap = transposeMap(otdOid2ConnDefNameMap);
-//RIT commented monitor related code for now
+        nameToDatabaseMap = new HashMap<String, String>();
+        connectionDefinitions = new ArrayList<SQLDBConnectionDefinition>();
+
+        databaseToConnectionDefintionMap = new HashMap<String, SQLDBConnectionDefinition>();
+        dbIdToNameMap = new HashMap<String, String>();
+
+        nameToDatabaseMap = transposeMap(connDefNameMap);
         addMonitorAndInstanceConnectionDefinitions(connectionDefinitions);
 
         Iterator itr = name2connectionDefMap.entrySet().iterator();
         while (itr.hasNext()) {
             Map.Entry entry = (Map.Entry) itr.next();
             String connDefName = (String) entry.getKey();
-            DBConnectionDefinition connDef = (DBConnectionDefinition) entry.getValue();
-            Object qualifiedOid = nameToOtdOidMap.get(connDefName);
+            SQLDBConnectionDefinition connDef = (SQLDBConnectionDefinition) entry.getValue();
+            String qualifiedOid = nameToDatabaseMap.get(connDefName);
 
             if (SQLUtils.getSupportedDBType(connDef.getDBType()) == DBConstants.AXION) {
                 if (qualifiedOid != null) {
-                    nameToOtdOidMap.remove(connDefName);
-                    nameToOtdOidMap.put(ETL_INSTANCE_DB_CONN_DEF_NAME, qualifiedOid);
-                    otdOid2ConnDefNameMap.remove(qualifiedOid);
-                    otdOid2ConnDefNameMap.put(qualifiedOid, ETL_INSTANCE_DB_CONN_DEF_NAME);
-                    otdOidToConnectionDefintionMap.put(qualifiedOid, instanceDb);
+                    nameToDatabaseMap.remove(connDefName);
+                    nameToDatabaseMap.put(ETL_INSTANCE_DB_CONN_DEF_NAME, qualifiedOid);
+                    connDefNameMap.remove(qualifiedOid);
+                    connDefNameMap.put(qualifiedOid, ETL_INSTANCE_DB_CONN_DEF_NAME);
+                    databaseToConnectionDefintionMap.put(qualifiedOid, instanceDb);
                 }
                 itr.remove();
             } else {
                 connectionDefinitions.add(connDef);
-                otdOidToConnectionDefintionMap.put(qualifiedOid, connDef);
+                databaseToConnectionDefintionMap.put(qualifiedOid, connDef);
             }
         }
 
@@ -215,44 +180,12 @@ public final class ETLScriptBuilderModel {
         }
     }
 
-    public String getConnectionDefinationName(TargetTable tTable) throws BaseException {
-    //RIT since there is no otd id in alaska just pass the connection for table.
-    	SQLDBModel element = (SQLDBModel) tTable.getParent();
-        if(element.getConnectionDefinition().getDriverClass().equals("org.axiondb.jdbc.AxionDriver"))
-        	return ETLScriptBuilderModel.ETL_INSTANCE_DB_CONN_DEF_NAME;
-        else
-        return null;
-        
-    }
-
     public DBConnectionDefinition getConnectionDefinition(DBTable table) throws BaseException {
-        DatabaseModel dbModel = table.getParent();
-        DBConnectionDefinition conDef = dbModel.getConnectionDefinition();
-        //RIT since there is no otd id in alaska just pass the connection for table.
-        
-//        String key = ETLCodegenUtil.getQualifiedOtdOid((SQLDBModel) dbModel);
-//
-//        if (this.otdOidToConnectionDefintionMap != null && !otdOidToConnectionDefintionMap.isEmpty()) {
-//            SQLDBConnectionDefinition poolConDef = (SQLDBConnectionDefinition) this.otdOidToConnectionDefintionMap.get(key);
-//            // TODO Check for unresolved tables at codegen validation time - this check
-//            // and exception should not be necessary if it's caught during validation
-//            if (poolConDef == null) {
-//                throw new BaseException("Connection definition not found for table " + table
-//                    + "; its OTD may not be linked or configured in Connectivity Map.");
-//            }
-//
-//            // Create a local instance with OTD path populated for use in codegen.
-//            poolConDef = SQLModelObjectFactory.getInstance().createDBConnectionDefinition(poolConDef);
-//            if (conDef instanceof SQLDBConnectionDefinition) {
-//                poolConDef.setOTDPathName(((SQLDBConnectionDefinition) conDef).getOTDPathName());
-//            }
-//            conDef = poolConDef;
-//        }
-        return conDef;
+        return table.getParent().getConnectionDefinition();
     }
 
     public DBConnectionDefinition getConnectionDefinition(String name) throws BaseException {
-        return (DBConnectionDefinition) otdOidToConnectionDefintionMap.get(name);
+        return (DBConnectionDefinition) databaseToConnectionDefintionMap.get(name);
     }
 
     public List getConnectionDefinitions() {
@@ -275,17 +208,12 @@ public final class ETLScriptBuilderModel {
     }
 
     public InternalDBMetadata getInternalMetadata(DBTable tTable) throws BaseException {
-        if (tTable instanceof SourceTable) {
-            //return (InternalDBMetadata) this.oidToFFMetadata.get(ETLCodegenUtil.resolveSourcePortName(tTable));
-        } else {
-            //return (InternalDBMetadata) this.oidToFFMetadata.get(ETLCodegenUtil.resolveTargetPortName(tTable));
-        }
-       
         SQLDBModel element = (SQLDBModel) tTable.getParent();
-        if(element.getAttribute("refKey") == null)
-        	return null;
-		String oid = (String) element.getAttribute("refKey").getAttributeValue();
-        return (InternalDBMetadata)this.oidToFFMetadata.get(oid);
+        if (element.getAttribute("refKey") == null) {
+            return null;
+        }
+        String oid = (String) element.getAttribute("refKey").getAttributeValue();
+        return (InternalDBMetadata) this.oidToFFMetadata.get(oid);
     }
 
     public String getMonitorDBFolder() {
@@ -324,7 +252,7 @@ public final class ETLScriptBuilderModel {
         this.connectionDefinitionOverridesApplied = connectionDefinitionOverridesApplied;
     }
 
-    public void setConnectionDefinitions(List connectionDefinitions) {
+    public void setConnectionDefinitions(List<SQLDBConnectionDefinition> connectionDefinitions) {
         this.connectionDefinitions = connectionDefinitions;
     }
 
@@ -352,9 +280,9 @@ public final class ETLScriptBuilderModel {
         this.monitorDBName = monitorDBName;
     }
 
-    public void setOidToFFMetadataMap(Map otdOidToMetadata) {
+    public void setOidToFFMetadataMap(Map dbToMetadata) {
         //this.oidToFFMetadata.clear();
-        //this.oidToFFMetadata.putAll(otdOidToMetadata);
+        //this.oidToFFMetadata.putAll(dbToMetadata);
     }
 
     public void setShutdownMonitorDB(boolean shutdownMonitorDB) {
@@ -374,22 +302,12 @@ public final class ETLScriptBuilderModel {
     }
 
     protected InternalDBMetadata getInternalMetadataFor(SQLDBTable table) throws BaseException {
-        //InternalDBMetadata dbm = null;
-
-        if (table != null) {
-            if (table instanceof TargetTable) {
-                //return (InternalDBMetadata) getOidToFFMetadataMap().get(ETLCodegenUtil.resolveTargetPortName(table));
-            } else {
-                //return (InternalDBMetadata) getOidToFFMetadataMap().get(ETLCodegenUtil.resolveSourcePortName(table));
-            }
-        }
-
         return (InternalDBMetadata) getOidToFFMetadataMap().get(table.getName());
     }
 
-    private void addMonitorAndInstanceConnectionDefinitions(List connDefs) throws BaseException {
+    private void addMonitorAndInstanceConnectionDefinitions(List<SQLDBConnectionDefinition> connDefs) throws BaseException {
         DBConnectionDefinitionTemplate connTemplate = new DBConnectionDefinitionTemplate();
-        HashMap args = new HashMap(1);
+        Map<String, String> args = new HashMap<String, String>(1);
 
         if (this.memoryMonitorDB) {
             monitorDb = connTemplate.getDBConnectionDefinition("AXIONMEMORYDB");
@@ -402,7 +320,7 @@ public final class ETLScriptBuilderModel {
         args.put(DBConnectionDefinitionTemplate.KEY_METADATA_DIR, monitorDBFolder);
         monitorDb.setConnectionURL(StringUtil.replace(monitorDb.getConnectionURL(), args));
         monitorDb.setName(ETL_MONITOR_DB_CONN_DEF_NAME);
-        this.otdOidToConnectionDefintionMap.put(ETL_MONITOR_DB_CONN_DEF_NAME, monitorDb);
+        this.databaseToConnectionDefintionMap.put(ETL_MONITOR_DB_CONN_DEF_NAME, monitorDb);
         connDefs.add(monitorDb);
 
         if (this.useInstanceDB) {
@@ -413,7 +331,7 @@ public final class ETLScriptBuilderModel {
             instanceDb = connTemplate.getDBConnectionDefinition("STCDBADAPTER");
             instanceDb.setConnectionURL(StringUtil.replace(instanceDb.getConnectionURL(), args));
             instanceDb.setName(ETLScriptBuilderModel.ETL_INSTANCE_DB_CONN_DEF_NAME);
-            this.otdOidToConnectionDefintionMap.put(ETLScriptBuilderModel.ETL_INSTANCE_DB_CONN_DEF_NAME, instanceDb);
+            this.databaseToConnectionDefintionMap.put(ETLScriptBuilderModel.ETL_INSTANCE_DB_CONN_DEF_NAME, instanceDb);
             connDefs.add(instanceDb);
         }
     }
@@ -422,14 +340,14 @@ public final class ETLScriptBuilderModel {
         return this.oidToFFMetadata;
     }
 
-    private Map transposeMap(Map origMap) {
-        Map trans = new HashMap();
+    private Map<String, String> transposeMap(Map origMap) {
+        Map<String, String> trans = new HashMap<String, String>();
 
         if (origMap != null) {
             Iterator itr = origMap.entrySet().iterator();
             while (itr.hasNext()) {
                 Map.Entry mapEntry = (Map.Entry) itr.next();
-                trans.put(mapEntry.getValue(), mapEntry.getKey());
+                trans.put((String) mapEntry.getValue(), (String) mapEntry.getKey());
             }
         }
         return trans;

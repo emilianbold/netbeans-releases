@@ -41,22 +41,21 @@
 package org.netbeans.modules.sql.framework.common.utils;
 
 import java.util.Comparator;
-
-import org.netbeans.modules.sql.framework.model.SQLDBColumn;
-
+import org.netbeans.modules.sql.framework.model.DBColumn;
 
 /**
  * NativeColumnOrderComparator
- * 
+ *
  * @author Ritesh Adval
  * @version $Revision$
  */
-public class NativeColumnOrderComparator implements Comparator {
+public class NativeColumnOrderComparator implements Comparator<DBColumn> {
+
     private static NativeColumnOrderComparator instance;
 
     /**
      * Gets an instance of NativeColumnOrderComparator.
-     * 
+     *
      * @return instance of NativeColumnOrderComparator.
      */
     public static NativeColumnOrderComparator getInstance() {
@@ -69,23 +68,13 @@ public class NativeColumnOrderComparator implements Comparator {
 
     /*
      * Private constructor - to get an instance, use static method getInstance().
-     * 
+     *
      * @see #getInstance()
      */
     private NativeColumnOrderComparator() {
     }
 
-    /**
-     * Compare
-     * 
-     * @param o1 object1
-     * @param o2 object2
-     * @return int
-     */
-    public int compare(Object o1, Object o2) {
-        SQLDBColumn col1 = (SQLDBColumn) o1;
-        SQLDBColumn col2 = (SQLDBColumn) o2;
-
-        return (col1.getOrdinalPosition() - col2.getOrdinalPosition());
+    public int compare(DBColumn col1, DBColumn col2) {
+        return col1.getOrdinalPosition() - col2.getOrdinalPosition();
     }
 }

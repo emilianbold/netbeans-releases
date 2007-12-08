@@ -41,7 +41,6 @@
 package org.netbeans.modules.etl.ui.view.cookies;
 
 import java.util.List;
-
 import org.netbeans.modules.etl.model.impl.ETLDefinitionImpl;
 import org.netbeans.modules.etl.ui.DataObjectHelper;
 import org.netbeans.modules.etl.ui.DataObjectProvider;
@@ -51,7 +50,6 @@ import org.netbeans.modules.etl.ui.view.wizards.ETLTableSelectionWizard;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
-
 import com.sun.sql.framework.utils.Logger;
 
 /**
@@ -62,12 +60,11 @@ import com.sun.sql.framework.utils.Logger;
  * @version $Revision$
  */
 public class SelectTablesCookie implements Node.Cookie {
-    
+
     private static final boolean DEBUG = false;
-    
     private static final String LOG_CATEGORY = SelectTablesCookie.class.getName();
-    
     private ETLDataObject dataObj;
+
     /**
      * Creates a new instance of SelectTablesCookie associated with the given
      * ProjectElement.
@@ -76,32 +73,29 @@ public class SelectTablesCookie implements Node.Cookie {
      */
     public SelectTablesCookie() {
     }
-    
+
     /**
      * Displays the table selection wizard for the current data object.
      */
     public void showDialog() {
         try {
             dataObj = DataObjectProvider.getProvider().getActiveDataObject();
-            ETLCollaborationModel collabModel = DataObjectProvider.getProvider().
-                    getActiveDataObject().getModel();
-            ETLDefinitionImpl def = collabModel.getETLDefinition();            
+            ETLCollaborationModel collabModel = DataObjectProvider.getProvider().getActiveDataObject().getModel();
+            ETLDefinitionImpl def = collabModel.getETLDefinition();
             ETLTableSelectionWizard wizard = new ETLTableSelectionWizard(def);
             DataObjectHelper.setDefaultCursor();
-            
+
             if (wizard.show()) {
                 List sources = wizard.getSelectedSourceModels();
                 List targets = wizard.getSelectedDestinationModels();
-                
+
                 // Update definition object.
                 DataObjectHelper helper = new DataObjectHelper(dataObj);
                 helper.updateTableSelections(dataObj, sources, targets);
-                
+
                 if (DEBUG) {
                     Logger.print(Logger.DEBUG, LOG_CATEGORY, "showDialog()", "Selected source tables:\n" + sources);
-                    
                     Logger.print(Logger.DEBUG, LOG_CATEGORY, "showDialog()", "Selected target tables:\n" + targets);
-                    
                     Logger.print(Logger.DEBUG, LOG_CATEGORY, "showDialog()", "New state of ETL Definition:\n" + def.toXMLString(""));
                 }
                 dataObj.getETLEditorSupport().synchDocument();
@@ -112,4 +106,3 @@ public class SelectTablesCookie implements Node.Cookie {
         }
     }
 }
-

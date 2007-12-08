@@ -11,7 +11,7 @@ package org.netbeans.modules.etl.model;
 
 /**
  *
- * @author resendes
+ * @author Ahimanikya Satapathy
  */
 public interface ETLObject {
 

@@ -1,6 +1,6 @@
 /*
  * The contents of this file are subject to the terms of the Common
- * Development
+ * Development and Distribution License (the License). You may not use this 
 The contents of this file are subject to the terms of either the GNU
 General Public License Version 2 only ("GPL") or the Common
 Development and Distribution License("CDDL") (collectively, the
@@ -21,8 +21,7 @@ your own identifying information:
 
 Contributor(s):
  *
- * Copyright 2006 Sun Microsystems, Inc. All Rights Reserved.
-
+ * Copyright 2006 Sun Microsystems, Inc. All Rights Reserved
 If you wish your version of this file to be governed by only the CDDL
 or only the GPL Version 2, indicate your decision by adding
 "[Contributor] elects to include this software in this distribution
@@ -116,6 +115,7 @@ public class OperatorChildren extends Index.ArrayChildren {
      * 
      * @return childrenNodes List<Node>
      */
+    @Override
     protected java.util.List<Node> initCollection() {
         List<Node> childrenNodes = new ArrayList<Node>( items.length );
         for( int i=0; i<items.length; i++ ) {

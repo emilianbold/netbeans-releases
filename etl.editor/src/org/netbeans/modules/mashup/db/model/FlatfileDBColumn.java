@@ -42,8 +42,7 @@ package org.netbeans.modules.mashup.db.model;
 
 import java.util.Map;
 
-import org.netbeans.modules.model.database.DBColumn;
-import org.w3c.dom.Element;
+import org.netbeans.modules.sql.framework.model.SQLDBColumn;
 
 
 /**
@@ -54,7 +53,7 @@ import org.w3c.dom.Element;
  * @author Ahimanikya Satapathy
  * @version $Revision$
  */
-public interface FlatfileDBColumn extends DBColumn {
+public interface FlatfileDBColumn extends SQLDBColumn {
 
     int getCardinalPosition();
 
@@ -87,88 +86,7 @@ public interface FlatfileDBColumn extends DBColumn {
      */
     boolean isSelected();
 
-    void parseXML(Element xmlElement);
     void setCardinalPosition(int theCardinalPosition);
-
-    /**
-     * sets the default value
-     * 
-     * @param default value to be set
-     */
-    void setDefaultValue(String defValue);
-
-    /**
-     * Sets whether this column is flagged as part of a foreign key.
-     * 
-     * @param newFlag true if this column is part of a foreign key; false otherwise
-     */
-    void setForeignKey(boolean newFlag);
-
-    /**
-     * Sets whether this column is flagged as indexed.
-     * 
-     * @param newFlag true if this column is indexed; false otherwise
-     */
-    void setIndexed(boolean newFlag);
-
-    /**
-     * Indicates whether this DBColumn references the given DBColumn in a FK -> PK
-     * relationship.
-     * 
-     * @param column PK whose relationship to this column is to be checked
-     * @return true if this column is a FK reference to column; false otherwise
-     */
-    // public boolean references(DBColumn column);
-    /**
-     * Indicates whether this DBColumn is referenced by the given DBColumn in a FK -> PK
-     * relationship.
-     * 
-     * @param column potential FK reference to be checked
-     * @return true if column is referenced as a PK by the given column, false otherwise
-     */
-    // public boolean isReferencedBy(DBColumn column);
-    /**
-     * Sets SQL type code.
-     * 
-     * @param newCode SQL code
-     * @throws FlatfileDBException if newCode is not a recognized SQL type code
-     */
-    void setJdbcType(int newType);
-
-    void setName(String theName);
-
-    /**
-     * Sets whether this column is flagged as nullable.
-     * 
-     * @param newFlag true if this column is nullable; false otherwise
-     */
-    void setNullable(boolean newFlag);
-
-    /**
-     * Sets reference to DBTable that owns this DBColumn.
-     * 
-     * @param newParent new parent of this column.
-     */
-    void setParent(FlatfileDBTable newParent);
-
-    void setPrecision(int thePrecision);
-
-    /**
-     * Sets whether this column is flagged as part of a primary key.
-     * 
-     * @param newFlag true if this column is part of a primary key; false otherwise
-     */
-    void setPrimaryKey(boolean newFlag);
-
-    void setScale(int theScale);
-
-    /**
-     * Marshall this object to XML string.
-     * 
-     * @param prefix
-     * @return XML string
-     */
-    String toXMLString(String prefix);
 
 }
 

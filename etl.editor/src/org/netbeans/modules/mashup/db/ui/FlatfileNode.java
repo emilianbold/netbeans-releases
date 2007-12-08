@@ -42,7 +42,6 @@ package org.netbeans.modules.mashup.db.ui;
 
 import java.beans.IntrospectionException;
 
-import org.netbeans.modules.mashup.db.common.FlatfileDBException;
 import org.netbeans.modules.mashup.db.ui.model.FlatfileColumn;
 import org.netbeans.modules.mashup.db.ui.model.FlatfileDatabase;
 import org.netbeans.modules.mashup.db.ui.model.FlatfileTable;
@@ -139,19 +138,19 @@ public class FlatfileNode extends BeanNode implements Comparable {
         if (model instanceof FlatfileDatabase) {
             type = DATABASE;
             super.setName(((FlatfileDatabase) model).getName());
-            setIconBase("org/netbeans/modules/mashup/db/ui/resource/images/OTD");
+            setIconBaseWithExtension("org/netbeans/modules/mashup/db/ui/resource/images/root.png");
         } else if (model instanceof FlatfileTable) {
             type = TABLE;
             super.setName(((FlatfileTable) model).getTableName());
-            setIconBase("org/netbeans/modules/mashup/db/ui/resource/images/Table");
+            setIconBaseWithExtension("org/netbeans/modules/mashup/db/ui/resource/images/Table.gif");
         } else if (model instanceof FlatfileColumn) {
             type = COLUMN;
             FlatfileColumn column = (FlatfileColumn) model;
             super.setName(column.getName());
             if (column.isNullable()) {
-                setIconBase("org/netbeans/modules/mashup/db/ui/resource/images/Column");
+                setIconBaseWithExtension("org/netbeans/modules/mashup/db/ui/resource/images/Column.gif");
             } else {
-                setIconBase("org/netbeans/modules/mashup/db/ui/resource/images/ColumnNotNull");
+                setIconBaseWithExtension("org/netbeans/modules/mashup/db/ui/resource/images/ColumnNotNull.gif");
             }
         } else {
             throw new IllegalArgumentException("Unrecognized model type:  must be FlatfileDatabase, FlatfileTable, or FlatfileColumn");
@@ -323,23 +322,6 @@ public class FlatfileNode extends BeanNode implements Comparable {
      * @param newName new table name.
      */
     public void setName(String newName) {
-        // switch (type) {
-        // case DATABASE:
-        // ((FlatfileDatabase) userObject).setName(newName);
-        // break;
-        //
-        // case COLUMN:
-        // ((FlatfileColumn) userObject).setName(newName);
-        // break;
-        //
-        // case TABLE:
-        // ((FlatfileTable) userObject).setName(newName);
-        // break;
-        //
-        // default:
-        // break;
-        // }
-
         super.setName(newName);
     }
 
@@ -349,9 +331,6 @@ public class FlatfileNode extends BeanNode implements Comparable {
      * @param isSelected sets to true if node is selected, false otherwise
      */
     public void setSelected(boolean isSelected) {
-        if (type == COLUMN) {
-            // ((FlatfileColumn) userObject).setSelected(isSelected);
-        }
         selected = isSelected;
     }
 
@@ -388,55 +367,6 @@ public class FlatfileNode extends BeanNode implements Comparable {
 
         return firstDisplayName.compareTo(secondDisplayName);
     }
-
-    // // RECOMMENDED - handle cloning specially
-    // //(so as not to invoke the overhead of FilterNode):
-    //    
-    // public Node cloneNode() {
-    // // Try to pass in similar constructor params to what you originally got:
-    // return new OTDNode();
-    // }
-    //     
-    //
-    // // Permit user to customize whole node at once (instead of per-property):
-    //    
-    // public boolean hasCustomizer() {
-    // return true;
-    // }
-    // public Component getCustomizer() {
-    // return new MyCustomizingPanel(this);
-    // }
-    //     
-    //
-    // // Permit node to be reordered (you may also want to put
-    // // MoveUpAction and MoveDownAction on the subnodes, if you can,
-    // // but ReorderAction on the parent is enough):
-    //    
-    // private class ReorderMe extends Index.Support {
-    //     
-    // public Node[] getNodes() {
-    // return OTDNode.this.getChildren().getNodes();
-    // }
-    //     
-    // public int getNodesCount() {
-    // return getNodes().length;
-    // }
-    //     
-    // // This assumes that there is exactly one child node per key.
-    // // If you are using e.g. Children.Array, you can use shortcut
-    // implementations
-    // // of the Index cookie.
-    // public void reorder(int[] perm) {
-    // // Remember: {2, 0, 1} cycles three items forwards.
-    // List old = OTDNode.this.getFlatfileChildren().myKeys;
-    // if (list.size() != perm.length) throw new IllegalArgumentException();
-    // List nue = new ArrayList(perm.length);
-    // for (int i = 0; i < perm.length; i++)
-    // nue.set(i, old.get(perm[i]));
-    // OTDNode.this.getFlatfileChildren().setKeys(nue);
-    // }
-    //     
-    // }
 
     /*
      * Initializes Action and Cookies @param nodeType nodeType

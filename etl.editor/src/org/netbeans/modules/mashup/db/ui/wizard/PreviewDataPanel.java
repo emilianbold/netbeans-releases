@@ -72,7 +72,8 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
-import com.sun.sql.framework.utils.Logger;
+//import com.sun.sql.framework.utils.Logger;
+import java.util.logging.Logger;
 import com.sun.sql.framework.utils.StringUtil;
 
 /**
@@ -174,7 +175,8 @@ public class PreviewDataPanel extends JPanel implements ActionListener {
             }
             
             String url = FlatfileDBConnectionFactory.DEFAULT_FLATFILE_JDBC_URL_PREFIX + "preview:" + metadataDir;
-            Logger.print(Logger.DEBUG, LOG_CATEGORY, "Preview URL: " + url);
+            Logger.getLogger(LOG_CATEGORY).info("Preview URL: " + url);
+            //Logger.print(Logger.DEBUG, LOG_CATEGORY, "Preview URL: " + url);
             
             conn = FlatfileDBConnectionFactory.getInstance().getConnection(url);
             Statement stmt = conn.createStatement();
@@ -182,7 +184,8 @@ public class PreviewDataPanel extends JPanel implements ActionListener {
             stmt.execute("DROP TABLE IF EXISTS " + table.getTableName());
             String create = table.getCreateStatementSQL();
             
-            Logger.print(Logger.DEBUG, LOG_CATEGORY, this, "Generated create statement: " + create);
+            Logger.getLogger(LOG_CATEGORY).info("Generated create statement: " + create);
+            //Logger.print(Logger.DEBUG, LOG_CATEGORY, this, "Generated create statement: " + create);
             stmt.execute(create);
             
             ResultSet rs = stmt.executeQuery(table.getSelectStatementSQL(ct));
@@ -191,7 +194,8 @@ public class PreviewDataPanel extends JPanel implements ActionListener {
             
             // get the count of all rows
             String countSql = "Select count(*) From " + table.getName();
-            Logger.print(Logger.DEBUG, FlatfileResulSetPanel.class.getName(), "Select count(*) statement used for total rows: \n" + countSql);
+            Logger.getLogger(FlatfileResulSetPanel.class.getName()).info( "Select count(*) statement used for total rows: \n" + countSql);
+            //Logger.print(Logger.DEBUG, FlatfileResulSetPanel.class.getName(), "Select count(*) statement used for total rows: \n" + countSql);
             
             stmt = conn.createStatement();
             ResultSet cntRs = stmt.executeQuery(countSql);
@@ -212,7 +216,8 @@ public class PreviewDataPanel extends JPanel implements ActionListener {
             try {
                 errorMsg = NbBundle.getMessage(TableDefinitionPanel.class, "ERROR_bad_preview");
             } catch (MissingResourceException mre) {
-                Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Could not locate resource string for ERROR_bad_preview.", mre);
+                Logger.getLogger(LOG_CATEGORY).info("Could not locate resource string for ERROR_bad_preview."+ mre);
+                //Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Could not locate resource string for ERROR_bad_preview.", mre);
             }
             showError("Sample file may be corrupt, or does not match specified datatypes", errorMsg, nse);
             isValid = false;
@@ -223,7 +228,8 @@ public class PreviewDataPanel extends JPanel implements ActionListener {
                 sqlExMsg = stripExceptionHeaderFromMessage(se);
                 errorMsg = NbBundle.getMessage(TableDefinitionPanel.class, "ERROR_bad_preview_sqlex", sqlExMsg);
             } catch (MissingResourceException mre) {
-                Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Could not locate resource string for ERROR_bad_preview.", mre);
+                Logger.getLogger(LOG_CATEGORY).info("Could not locate resource string for ERROR_bad_preview."+ mre);
+                //Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Could not locate resource string for ERROR_bad_preview.", mre);
             }
             showError(sqlExMsg, errorMsg, se);
             isValid = false;
@@ -269,13 +275,15 @@ public class PreviewDataPanel extends JPanel implements ActionListener {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errorMsg, NotifyDescriptor.WARNING_MESSAGE));
         }
         setEnabled(false);
-        Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, errorMsg, t);
+        Logger.getLogger(LOG_CATEGORY).info(errorMsg);
+        //Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, errorMsg, t);
     }
     
     /**
      * Overrides parent implementation to allow for addition of this instance as a
      * listener for various child components.
      */
+    @Override
     public void addNotify() {
         super.addNotify();
         if (previewBtn != null) {
@@ -294,6 +302,7 @@ public class PreviewDataPanel extends JPanel implements ActionListener {
      * Overrides parent implementation to allow for removal of this instance as a listener
      * for various child components.
      */
+    @Override
     public void removeNotify() {
         if (previewBtn != null) {
             previewBtn.removeActionListener(this);
@@ -301,6 +310,7 @@ public class PreviewDataPanel extends JPanel implements ActionListener {
         super.removeNotify();
     }
     
+    @Override
     public void setEnabled(boolean enabled) {
         if (previewBtn != null) {
             previewBtn.setEnabled(enabled);

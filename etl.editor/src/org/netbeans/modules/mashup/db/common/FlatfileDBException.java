@@ -42,7 +42,7 @@ package org.netbeans.modules.mashup.db.common;
 
 /**
  * Base class for exceptions thrown within the Flatfile Database module.
- *
+ * 
  * @author Jonathan Giron
  * @version $Revision$
  */

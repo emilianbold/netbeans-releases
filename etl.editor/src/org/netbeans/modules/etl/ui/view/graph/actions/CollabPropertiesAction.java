@@ -49,8 +49,6 @@ import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.KeyStroke;
 
-import org.netbeans.modules.etl.ui.DataObjectProvider;
-import org.netbeans.modules.etl.ui.view.ETLCollaborationTopComponent;
 import org.netbeans.modules.sql.framework.ui.graph.actions.GraphAction;
 import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
@@ -88,17 +86,9 @@ public class CollabPropertiesAction extends GraphAction {
      * @param ev event
      */
     public void actionPerformed(ActionEvent ev) {
-        ETLCollaborationTopComponent etlEditor = null;
-        try {
-            etlEditor = DataObjectProvider.getProvider().getActiveDataObject().getETLEditorTC();
-        } catch (Exception ex) {
-            // ignore
-        }
-        if (etlEditor != null) {
-           // etlEditor.showSqlDefinitionProperties();
-            if(!WindowManager.getDefault ().findTopComponent ("properties").isShowing())
-           WindowManager.getDefault ().findTopComponent ("properties").open ();
-        }
+        if(!WindowManager.getDefault().findTopComponent("properties").isShowing())
+            WindowManager.getDefault().findTopComponent("properties").open();
     }
+    
 }
 

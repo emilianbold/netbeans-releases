@@ -41,7 +41,6 @@
 package org.netbeans.modules.sql.framework.ui.view.validation;
 
 import java.util.Iterator;
-
 import org.netbeans.modules.sql.framework.model.SQLCastOperator;
 import org.netbeans.modules.sql.framework.model.SQLCondition;
 import org.netbeans.modules.sql.framework.model.SQLJoinOperator;
@@ -54,7 +53,7 @@ import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
 /**
  * Factory for creating ValidationHandler instances, depending on the object type of the object
  * being validated (as referenced in a ValidationInfo instance).
- * 
+ *
  * @author Ritesh Adval
  * @author Jonathan Giron
  */
@@ -89,7 +88,7 @@ public class ValidationHandlerFactory {
     public ValidationHandler getValidationHandler(ValidationInfo vInfo) {
         Object val = vInfo.getValidatedObject();
         higlightInvalidNode(vInfo);
-        
+
         if (val instanceof SQLCondition) {
             return getConditionValidationHandler((SQLCondition) val);
         } else if (val instanceof SQLCastOperator) {
@@ -105,11 +104,11 @@ public class ValidationHandlerFactory {
         Object parent = condition.getParent();
 
         if (parent instanceof SourceTable) {
-            vHandler = new SourceConditionValidationHandler(this.graphView, condition);
+            vHandler = new SourceConditionValidationHandler(this.graphView);
         } else if (parent instanceof TargetTable) {
-            vHandler = new TargetConditionValidationHandler(this.graphView, condition);
+            vHandler = new TargetConditionValidationHandler(this.graphView);
         } else if (parent instanceof SQLJoinOperator) {
-            vHandler = new JoinConditionValidationHandler(this.graphView, condition);
+            vHandler = new JoinConditionValidationHandler(this.graphView);
         }
 
         return vHandler;

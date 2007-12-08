@@ -124,7 +124,7 @@ public class ETLNavigatorComponent implements NavigatorPanel, NavigatorLookupHin
                 panelUI.setBorder(javax.swing.BorderFactory.createEmptyBorder(50,50,50,50));//, left, bottom, right)createTitledBorder("Navigator Panel Title"));
                 panelUI.setSize(150,150);
             }
-            //panelUI.removeAll();
+
             while(true) {
                 try {                                      
                    //panelUI = dObj.getETLEditorTC().getSatelliteView();

@@ -53,14 +53,14 @@ import org.openide.NotifyDescriptor;
 
 /**
  * Implementation of ValidationHandler interface for join conditions.
- * 
+ *
  * @author Ritesh Adval
  */
 public class JoinConditionValidationHandler implements ValidationHandler {
 
     private IGraphView graphView;
 
-    public JoinConditionValidationHandler(IGraphView gView, SQLCondition cond) {
+    public JoinConditionValidationHandler(IGraphView gView) {
         this.graphView = gView;
     }
 
@@ -70,10 +70,7 @@ public class JoinConditionValidationHandler implements ValidationHandler {
     public void editValue(Object val) {
         SQLCondition oldCondition = (SQLCondition) val;
         SQLJoinOperator join = (SQLJoinOperator) oldCondition.getParent();
-
-        ConditionBuilderView conditionView = ConditionBuilderUtil.getConditionBuilderView(join,
-            (IGraphViewContainer) graphView.getGraphViewContainer());
-
+        ConditionBuilderView conditionView = ConditionBuilderUtil.getConditionBuilderView(join, (IGraphViewContainer) graphView.getGraphViewContainer());
         DialogDescriptor dd = new DialogDescriptor(conditionView, "Edit Join Condition", true, NotifyDescriptor.OK_CANCEL_OPTION, null, null);
 
         if (DialogDisplayer.getDefault().notify(dd) == NotifyDescriptor.OK_OPTION) {
@@ -87,4 +84,3 @@ public class JoinConditionValidationHandler implements ValidationHandler {
         }
     }
 }
-

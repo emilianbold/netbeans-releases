@@ -62,6 +62,7 @@ import org.openide.util.NbBundle;
 
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.Logger;
+import org.netbeans.modules.sql.framework.model.DBTable;
 
 /**
  * This action is to create or edit join
@@ -111,7 +112,7 @@ public class JoinAction extends GraphAction {
                                                 .getActiveDataObject().getModel();
 
         if (collabModel != null) {
-            List sList = collabModel.getSQLDefinition().getJoinSources();
+            List<DBTable> sList = collabModel.getSQLDefinition().getJoinSources();
             JoinMainDialog.showJoinDialog(sList, null, etlEditor.getGraphView(), true);
 
             if (JoinMainDialog.getClosingButtonState() == JoinMainDialog.OK_BUTTON) {

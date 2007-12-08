@@ -24,7 +24,7 @@ import com.sun.sql.framework.exception.BaseException;
 
 /** 
  * JavaCC generated SQL parser. 
- * Generated from SQLConditionParser.jj ($id$).
+ * Generated from SQLConditionParser.jj
  * Do not edit this (.java) file directly, it is programmaticly generated.
  * 
  * @author Ahimanikya Satapathy

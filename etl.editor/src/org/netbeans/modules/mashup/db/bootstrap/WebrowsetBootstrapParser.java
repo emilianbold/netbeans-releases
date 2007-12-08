@@ -111,17 +111,21 @@ public class WebrowsetBootstrapParser implements FlatfileBootstrapParser {
     }
     
     private WebRowSet getWebRowset(String string) throws Exception {
-        WebRowSet wrs = new WebRowSetImpl();
-        string = StringUtil.escapeControlChars(string);
-        File f = new File(string);
-        InputStream is = null;
-        if(f.exists()) {
-            is = new FileInputStream(f);
-        } else {
-            is = new URL(string).openStream();
+        try {
+            WebRowSet wrs = new WebRowSetImpl();
+            string = StringUtil.escapeControlChars(string);
+            File f = new File(string);
+            InputStream is = null;
+            if(f.exists()) {
+                is = new FileInputStream(f);
+            } else {
+                is = new URL(string).openStream();
+            }
+            wrs.readXml(is);
+            wrs.getMetaData().getColumnCount();
+            return wrs;
+        } catch (Exception e) {
+            throw new FlatfileDBException("Unable to parse: " + string);
         }
-        wrs.readXml(is);
-        wrs.getMetaData().getColumnCount();
-        return wrs;
     }
 }

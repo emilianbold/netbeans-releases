@@ -43,7 +43,6 @@ package org.netbeans.modules.mashup.db.model.impl;
 
 import java.sql.Connection;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -57,9 +56,6 @@ import org.netbeans.modules.mashup.db.model.FlatfileDBConnectionDefinition;
 import org.netbeans.modules.mashup.db.model.FlatfileDBTable;
 import org.netbeans.modules.mashup.db.model.FlatfileDatabaseModel;
 import org.netbeans.modules.mashup.db.model.FlatfileDefinition;
-import org.netbeans.modules.model.database.DBConnectionDefinition;
-import org.netbeans.modules.model.database.DBTable;
-import org.netbeans.modules.model.database.DatabaseModel;
 import org.netbeans.modules.sql.framework.common.utils.TagParserUtility;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -67,16 +63,21 @@ import org.w3c.dom.NodeList;
 
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.Logger;
+import org.netbeans.modules.etl.model.ETLObject;
+import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
+import org.netbeans.modules.sql.framework.model.DBTable;
+import org.netbeans.modules.sql.framework.model.DatabaseModel;
+import org.netbeans.modules.sql.framework.model.impl.SQLDBModelImpl;
 
 /**
- * Flatfile OTD-specific concrete implementation of DatabaseModel interface.
+ * Flatfile DB specific concrete implementation of DatabaseModel interface.
  * 
  * @author Jonathan Giron
  * @author Girish Patil
  * @author Ahimanikya Satapathy
  * @version $Revision$
  */
-public class FlatfileDatabaseModelImpl implements FlatfileDatabaseModel, Cloneable {
+public class FlatfileDatabaseModelImpl extends SQLDBModelImpl implements FlatfileDatabaseModel, Cloneable {
 
     /** Constants used in XML tags * */
     private static final String ATTR_MAJOR_VERSION = "majorVersion";
@@ -101,7 +102,6 @@ public class FlatfileDatabaseModelImpl implements FlatfileDatabaseModel, Cloneab
      */
     private static final String FQ_TBL_NAME_SEPARATOR = ".";
 
-    /* Initial buffer size for StringBuilder used in marshalling OTDs to XML */
     private static final String LOG_CATEGORY = FlatfileDatabaseModelImpl.class.getName();
 
     private static final String QUOTE = "\"";
@@ -116,31 +116,17 @@ public class FlatfileDatabaseModelImpl implements FlatfileDatabaseModel, Cloneab
 
     private static final String XML_DOC_HEADER = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
 
-    /** Connection definition used to retrieve metadata */
-    protected FlatfileDBConnectionDefinition connectionDefinition;
-
     /** Connection name */
     protected volatile String connectionName;
 
-    /** User-supplied description */
-    protected volatile String description;
-
-    /** User-supplied name */
-    protected volatile String name;
-
-    /** Map of DBTable instances */
-    protected Map<String, FlatfileDBTable> tables;
-
-    /* Major version number of DatabaseModel/OTD metadata */
+    /* Major version number of DatabaseModel metadata */
     private transient int majorVersion = 5;
 
-    /* Micro (implementation) version number of DatabaseModel/OTD metadata */
+    /* Micro (implementation) version number of DatabaseModel metadata */
     private transient int microVersion = 0;
 
-    /* Major version number of DatabaseModel/OTD metadata */
+    /* Major version number of DatabaseModel metadata */
     private transient int minorVersion = 1;
-
-    private transient FlatfileDefinition source;
 
     /** Constructs a new default instance of FlatfileDatabaseModelImpl. */
     public FlatfileDatabaseModelImpl() {
@@ -170,7 +156,7 @@ public class FlatfileDatabaseModelImpl implements FlatfileDatabaseModel, Cloneab
      * @param modelName name of new DatabaseModel
      * @param connDef FlatfileDBConnectionDefinition for this new instance
      */
-    public FlatfileDatabaseModelImpl(String modelName, FlatfileDBConnectionDefinition connDef) {
+    public FlatfileDatabaseModelImpl(String modelName, DBConnectionDefinition connDef) {
         this();
 
         if (connDef == null) {
@@ -208,7 +194,6 @@ public class FlatfileDatabaseModelImpl implements FlatfileDatabaseModel, Cloneab
      * @return shallow copy of this ETLDataSource
      */
     public Object clone() {
-        try {
             FlatfileDatabaseModelImpl myClone = (FlatfileDatabaseModelImpl) super.clone();
 
             myClone.name = name;
@@ -221,9 +206,6 @@ public class FlatfileDatabaseModelImpl implements FlatfileDatabaseModel, Cloneab
             myClone.connectionName = connectionName;
 
             return myClone;
-        } catch (CloneNotSupportedException e) {
-            throw new InternalError(e.toString());
-        }
     }
 
     /**
@@ -271,30 +253,6 @@ public class FlatfileDatabaseModelImpl implements FlatfileDatabaseModel, Cloneab
     }
 
     /**
-     * Deletes all tables associated with this data source.
-     * 
-     * @return true if all tables were deleted successfully, false otherwise.
-     */
-    public boolean deleteAllTables() {
-        this.tables.clear();
-        return true;
-    }
-
-    /**
-     * Delete table from the ETLDataSource
-     * 
-     * @param fqTableName fully qualified name of table to be deleted.
-     * @return true if successful. false if failed.
-     */
-    public boolean deleteTable(String fqTableName) {
-        if (fqTableName != null && fqTableName.trim().length() != 0) {
-            this.tables.remove(fqTableName);
-            return true;
-        }
-        return false;
-    }
-
-    /**
      * @see java.lang.Object#equals
      */
     public boolean equals(Object refObj) {
@@ -336,21 +294,10 @@ public class FlatfileDatabaseModelImpl implements FlatfileDatabaseModel, Cloneab
 
         return result;
     }
-
-
-    /**
-     * Gets DBConnectionDefinition of the ETLDataSource object
-     * 
-     * @return ConnectionDefinition of the ETLDataSource object
-     */
-    public DBConnectionDefinition getConnectionDefinition() {
-        return connectionDefinition;
-    }
     
-    
-    public FlatfileDBConnectionDefinition getFlatfileDBConnectionDefinition(boolean download) {
+    public DBConnectionDefinition getFlatfileDBConnectionDefinition(boolean download) {
         if(download) {
-            return (FlatfileDBConnectionDefinition)getConnectionDefinition();
+            return getConnectionDefinition();
         } else {
             return connectionDefinition;
         }
@@ -506,39 +453,16 @@ public class FlatfileDatabaseModelImpl implements FlatfileDatabaseModel, Cloneab
         return DRIVER_TYPE;
     }
 
-    /**
-     * @see com.sun.jbi.ui.devtool.flatfile.db.otd.repository.FlatfileDatabaseModel#getMajorVersion
-     */
     public int getMajorVersion() {
         return majorVersion;
     }
 
-    /**
-     * @see com.sun.jbi.ui.devtool.flatfile.db.otd.repository.FlatfileDatabaseModel#getMicroVersion
-     */
     public int getMicroVersion() {
         return microVersion;
     }
 
-    /**
-     * @see com.sun.jbi.ui.devtool.flatfile.db.otd.repository.FlatfileDatabaseModel#getMinorVersion
-     */
     public int getMinorVersion() {
         return minorVersion;
-    }
-
-    /**
-     * @see org.netbeans.modules.model.database.DatabaseModel#getModelDescription
-     */
-    public String getModelDescription() {
-        return description;
-    }
-
-    /**
-     * @see org.netbeans.modules.model.database.DatabaseModel#getModelName
-     */
-    public String getModelName() {
-        return this.name;
     }
 
     /**
@@ -548,51 +472,10 @@ public class FlatfileDatabaseModelImpl implements FlatfileDatabaseModel, Cloneab
      * @return RepositoryObject hosting this object's metadata, or null if data are not
      *         held by a Object.
      */
-    public FlatfileDefinition getSource() {
+    public ETLObject getSource() {
         return source;
     }
 
-    /**
-     * @see org.netbeans.modules.model.database.DatabaseModel#getTable(String)
-     */
-    public DBTable getTable(String fqTableName) {
-        return (DBTable) this.tables.get(fqTableName);
-    }
-
-    /**
-     * @see org.netbeans.modules.model.database.DatabaseModel#getTable(String, String, String)
-     */
-    public DBTable getTable(String tableName, String schemaName, String catalogName) {
-        return getTable(getFullyQualifiedTableName(tableName, schemaName, catalogName));
-    }
-
-    /**
-     * Gets a read-only Map of table names to available DBTable instances in this model.
-     * 
-     * @return readonly Map of table names to DBTable instances
-     */
-    public Map getTableMap() {
-        return Collections.unmodifiableMap(tables);
-    }
-
-    /**
-     * @see org.netbeans.modules.model.database.DatabaseModel#getTables
-     */
-    public List getTables() {
-        List list = Collections.EMPTY_LIST;
-        Collection tableColl = tables.values();
-
-        if (tableColl.size() != 0) {
-            list = new ArrayList(tableColl.size());
-            list.addAll(tableColl);
-        }
-
-        return Collections.unmodifiableList(list);
-    }
-
-    /**
-     * @see com.sun.jbi.ui.devtool.flatfile.db.otd.repository.FlatfileDatabaseModel#getVersionString
-     */
     public String getVersionString() {
         return majorVersion + "." + minorVersion + "." + microVersion;
     }
@@ -622,13 +505,13 @@ public class FlatfileDatabaseModelImpl implements FlatfileDatabaseModel, Cloneab
      * 
      * @param xmlElement
      */
-    public void parseXML(Element xmlElement) {
+    public void parseXML(Element xmlElement) throws BaseException {
         /*
          * In order to be compliant with legacy JIBX generated XML following structure
          * needs to be maintained. <FlatfileDatabaseModel majorVersion="5" .....> <map
          * size="3"> // tables <entry key="PQ_EMPLOYEE_CSV"> <FlatfileTable
          * name="PQ_EMPLOYEE_CSV" encoding="US-ASCII .... </FlatfileTable> </entry> </map>
-         * <connectionDefinition name="otdFlatfileDB" .../> </FlatfileDatabaseModel>
+         * <connectionDefinition name="FlatfileDB" .../> </FlatfileDatabaseModel>
          * </pre>
          */
         Element tmpElement = null;
@@ -647,7 +530,7 @@ public class FlatfileDatabaseModelImpl implements FlatfileDatabaseModel, Cloneab
 
                 if (TAG_CONNECTION_DEFINITION.equals(tmpElement.getNodeName())) {
                     this.connectionDefinition = new FlatfileDBConnectionDefinitionImpl();
-                    this.connectionDefinition.parseXML(tmpElement);
+                    ((FlatfileDBConnectionDefinition)connectionDefinition).parseXML(tmpElement);
                 }
             }
         }
@@ -658,7 +541,7 @@ public class FlatfileDatabaseModelImpl implements FlatfileDatabaseModel, Cloneab
      * 
      * @param theConnectionDefinition to be set
      */
-    public void setConnectionDefinition(FlatfileDBConnectionDefinition theConnectionDefinition) {
+    public void setConnectionDefinition(DBConnectionDefinition theConnectionDefinition) {
         this.connectionDefinition = theConnectionDefinition;
     }
 
@@ -669,24 +552,6 @@ public class FlatfileDatabaseModelImpl implements FlatfileDatabaseModel, Cloneab
      */
     public void setConnectionName(String theConName) {
         this.connectionName = theConName;
-    }
-
-    /**
-     * Sets the description string of this DatabaseModel
-     * 
-     * @param newDesc new description string
-     */
-    public void setDescription(String newDesc) {
-        this.description = newDesc;
-    }
-
-    /**
-     * Setter for Model Name
-     * 
-     * @param theModelName
-     */
-    public void setModelName(String theModelName) {
-        this.name = theModelName;
     }
 
     /**
@@ -727,7 +592,7 @@ public class FlatfileDatabaseModelImpl implements FlatfileDatabaseModel, Cloneab
      * @param prefix
      * @return XML string
      */
-    public String toXMLString(String prefix) {
+    public String toXMLString(String prefix) throws BaseException {
         if (prefix == null) {
             prefix = "";
         }
@@ -807,7 +672,7 @@ public class FlatfileDatabaseModelImpl implements FlatfileDatabaseModel, Cloneab
         name = (String) atts.get(ATTR_NAME);
     }
 
-    protected void parseTablesMap(Element mapNode) {
+    protected void parseTablesMap(Element mapNode) throws BaseException {
         // All child "entry" elements under "map" element
         NodeList mapEntryNodeList = mapNode.getChildNodes();
         Element entry = null;
@@ -896,13 +761,13 @@ public class FlatfileDatabaseModelImpl implements FlatfileDatabaseModel, Cloneab
 
     private String getXMLConnectionDefition(String prefix) {
         if (this.connectionDefinition != null) {
-            return this.connectionDefinition.toXMLString(prefix);
+            return ((FlatfileDBConnectionDefinition)connectionDefinition).toXMLString(prefix);
         } else {
             return "";
         }
     }
 
-    private String getXMLTableMapEntries(String prefix) {
+    private String getXMLTableMapEntries(String prefix) throws BaseException {
         StringBuilder sb = new StringBuilder();
         FlatfileDBTable table = null;
         if ((this.tables != null) && (this.tables.size() > 0)) {
@@ -924,7 +789,7 @@ public class FlatfileDatabaseModelImpl implements FlatfileDatabaseModel, Cloneab
         return sb.toString();
     }
 
-    private String getXMLTablesMap(String prefix) {
+    private String getXMLTablesMap(String prefix) throws BaseException {
         StringBuilder sb = new StringBuilder(prefix);
         sb.append("<map size=\"");
         sb.append(this.tables.size());

@@ -18,11 +18,9 @@ accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
-
 Contributor(s):
  *
  * Copyright 2006 Sun Microsystems, Inc. All Rights Reserved.
-
 If you wish your version of this file to be governed by only the CDDL
 or only the GPL Version 2, indicate your decision by adding
 "[Contributor] elects to include this software in this distribution
@@ -44,7 +42,7 @@ package org.netbeans.modules.etl.ui.palette;
  */
 public class Category {
 
-      private String name;
+    private String name;
 
     /** Creates a new instance of Category */
     public Category() {
@@ -59,8 +57,8 @@ public class Category {
     }
 
     /**
-     * 
-     * @param name 
+     *
+     * @param name
      */
     public void setName(String name) {
         this.name = name;

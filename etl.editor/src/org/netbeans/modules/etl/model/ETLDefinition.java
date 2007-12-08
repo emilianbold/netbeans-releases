@@ -43,22 +43,22 @@ package org.netbeans.modules.etl.model;
 
 import java.util.Collection;
 import java.util.List;
-
-import org.netbeans.modules.model.database.DatabaseModel;
 import org.netbeans.modules.sql.framework.model.RuntimeDatabaseModel;
 import org.netbeans.modules.sql.framework.model.SQLDefinition;
 import org.netbeans.modules.sql.framework.model.SQLObject;
 import org.netbeans.modules.sql.framework.model.SQLObjectListener;
 import org.w3c.dom.Element;
-
 import com.sun.sql.framework.exception.BaseException;
-import org.netbeans.modules.sql.framework.model.SourceTable;
+import org.netbeans.modules.sql.framework.model.DBTable;
+import org.netbeans.modules.sql.framework.model.DatabaseModel;
+import org.netbeans.modules.sql.framework.model.SQLDBModel;
+import org.netbeans.modules.sql.framework.model.ValidationInfo;
 
 /**
  * @author Ritesh Adval
+ * @author Ahimanikya Satapathy
  * @version $Revision$
- * 
- * TODO: Sync with external metadata change. 
+ *
  */
 public interface ETLDefinition {
 
@@ -83,14 +83,14 @@ public interface ETLDefinition {
      *
      * @return Collection, possibly empty, of all SQLObjects
      */
-    public Collection getAllObjects();
+    public Collection<SQLObject> getAllObjects();
 
     /**
-     * Gets the List of OTDs
+     * Gets the List of Databases
      *
      * @return java.util.List for this
      */
-    public List getAllOTDs();
+    public List<SQLDBModel> getAllDatabases();
 
     /**
      * Getter for DatabaseModel
@@ -99,10 +99,6 @@ public interface ETLDefinition {
      * @return DatabaseModel for given Model Name
      */
     public DatabaseModel getDatabaseModel(String modelName);
-    
-    public DatabaseModel getSourceTable();
-    
-    public DatabaseModel getTargetTable();
 
     /**
      * Gets display name.
@@ -136,14 +132,14 @@ public interface ETLDefinition {
      *
      * @return List, possibly empty, of source DatabaseModels
      */
-    public List getSourceDatabaseModels();
+    public List<SQLDBModel> getSourceDatabaseModels();
 
     /**
      * Gets the List of SourceTables
      *
      * @return List, possibly empty, of SourceTables
      */
-    public List getSourceTables();
+    public List<DBTable> getSourceTables();
 
     /**
      * get the sql definition
@@ -157,14 +153,14 @@ public interface ETLDefinition {
      *
      * @return List, possibly empty, of target DatabaseModels
      */
-    public List getTargetDatabaseModels();
+    public List<SQLDBModel> getTargetDatabaseModels();
 
     /**
      * Gets the List of TargetTables
      *
      * @return List, possibly empty, of TargetTables
      */
-    public List getTargetTables();
+    public List<DBTable> getTargetTables();
 
     /**
      * get the version
@@ -230,6 +226,5 @@ public interface ETLDefinition {
      *
      * @return Map of invalid input object as keys and reason as value
      */
-    public List validate();
+    public List<ValidationInfo> validate();
 }
-

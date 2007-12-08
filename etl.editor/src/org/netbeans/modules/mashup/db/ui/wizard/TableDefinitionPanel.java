@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.mashup.db.ui.wizard;
 
-import com.sun.sql.framework.exception.BaseException;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -48,7 +47,6 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -82,7 +80,6 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
-import org.netbeans.modules.mashup.db.common.FlatfileDBConnectionFactory;
 import org.netbeans.modules.mashup.db.common.PropertyKeys;
 import org.netbeans.modules.mashup.db.common.SQLUtils;
 import org.netbeans.modules.mashup.db.model.FlatfileDBTable;
@@ -94,8 +91,6 @@ import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-import java.sql.Connection;
-import java.sql.Statement;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;

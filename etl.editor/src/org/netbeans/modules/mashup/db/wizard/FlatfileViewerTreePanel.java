@@ -47,18 +47,14 @@ import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.netbeans.modules.jdbc.builder.DBMetaData;
-import org.netbeans.modules.jdbc.builder.Table;
-import org.netbeans.modules.jdbc.builder.TableColumn;
+import org.netbeans.modules.sql.framework.model.DBMetaDataFactory;
 import org.netbeans.modules.mashup.db.common.Property;
-import org.netbeans.modules.mashup.db.model.FlatfileDBColumn;
-import org.netbeans.modules.mashup.db.model.FlatfileDBConnectionDefinition;
 import org.netbeans.modules.mashup.db.model.FlatfileDBTable;
 import org.netbeans.modules.mashup.db.model.FlatfileDatabaseModel;
-import org.netbeans.modules.mashup.db.model.impl.FlatfileDBColumnImpl;
 import org.netbeans.modules.mashup.db.model.impl.FlatfileDBTableImpl;
 import org.netbeans.modules.mashup.db.ui.wizard.PreviewDatabaseVisualPanel;
 import org.netbeans.modules.mashup.tables.wizard.MashupTableWizardIterator;
+import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
@@ -160,10 +156,9 @@ public class FlatfileViewerTreePanel implements WizardDescriptor.Panel {
     }
     
     private FlatfileDatabaseModel addDBTables(FlatfileDatabaseModel model) {
-        DBMetaData dbMeta = new DBMetaData();
+        DBMetaDataFactory dbMeta = new DBMetaDataFactory();
         Connection conn = null;
         String catalog = null;
-        String schema = null;
         String[][] tableList = null;
         String[] types = {"TABLE"};
         try {
@@ -180,16 +175,16 @@ public class FlatfileViewerTreePanel implements WizardDescriptor.Panel {
         return model;
     }
     
-    private FlatfileDatabaseModel createTable(String[][] tableList, FlatfileDatabaseModel model, DBMetaData meta) {
+    private FlatfileDatabaseModel createTable(String[][] tableList, FlatfileDatabaseModel model, DBMetaDataFactory meta) throws Exception {
         String[] currTable = null;
         FlatfileDBTable dbTable = null;
-        FlatfileDBConnectionDefinition def = model.getFlatfileDBConnectionDefinition(true);
+        DBConnectionDefinition def = model.getFlatfileDBConnectionDefinition(true);
         if (tableList != null) {
             for(int i = 0; i < tableList.length; i ++) {
                 currTable = tableList[i];
-                dbTable = new FlatfileDBTableImpl(currTable[DBMetaData.NAME],
-                        currTable[DBMetaData.SCHEMA], currTable[DBMetaData.CATALOG]);
-                dbTable = addTableColumns(meta, dbTable);
+                dbTable = new FlatfileDBTableImpl(currTable[DBMetaDataFactory.NAME],
+                        currTable[DBMetaDataFactory.SCHEMA], currTable[DBMetaDataFactory.CATALOG]);
+                meta.populateColumns(dbTable);
                 HashMap map = getTableMetaData(def, dbTable);
                 dbTable.setProperties(map);
                 model.addTable(dbTable);
@@ -198,39 +193,18 @@ public class FlatfileViewerTreePanel implements WizardDescriptor.Panel {
         return model;
     }
     
-    private FlatfileDBTable addTableColumns(DBMetaData dbMeta, FlatfileDBTable dbTable) {
-        Table tbl = null;
-        try {
-            tbl = dbMeta.getTableMetaData(dbTable.getCatalog(),
-                    dbTable.getSchema(), dbTable.getName(), "TABLE");
-        } catch (Exception ex) {
-            //ignore
-        }
-        TableColumn[] cols = tbl.getColumns();
-        TableColumn tc = null;
-        FlatfileDBColumn ffColumn = null;
-        for (int j = 0; j < cols.length; j++) {
-            tc = cols[j];
-            ffColumn = new FlatfileDBColumnImpl(tc.getName(), tc
-                    .getSqlTypeCode(), tc.getNumericScale(), tc
-                    .getNumericPrecision(), tc
-                    .getIsPrimaryKey(), tc.getIsForeignKey(),
-                    false /* isIndexed */, tc.getIsNullable());
-            dbTable.addColumn(ffColumn);
-        }
-        return dbTable;
-    }
-    
-    private HashMap getTableMetaData(FlatfileDBConnectionDefinition condef, FlatfileDBTable element) {
-        HashMap map = new HashMap();
+    private HashMap getTableMetaData(DBConnectionDefinition condef, FlatfileDBTable element) {
+        HashMap<String, Property> map = new HashMap<String, Property>();
         Connection conn = null;
+        Statement stmt =  null;
+        ResultSet rs = null;
         try {
             conn = DriverManager.getConnection(condef.getConnectionURL());
-            Statement stmt = conn.createStatement();
+            stmt = conn.createStatement();
             String query = "select PROPERTY_NAME, PROPERTY_VALUE from AXION_TABLE_PROPERTIES "
                     + "where TABLE_NAME = '" + element.getName() + "' ORDER BY PROPERTY_NAME";
             stmt.execute(query);
-            ResultSet rs = stmt.getResultSet();
+            rs = stmt.getResultSet();
             while (rs.next()) {
                 rs.getMetaData().getColumnCount();
                 String value1 = rs.getString(1);
@@ -256,10 +230,21 @@ public class FlatfileViewerTreePanel implements WizardDescriptor.Panel {
                 }
             }
         } catch (Exception e) {
-            //ignore            
+            e.printStackTrace();         
         } finally {
             try {
-                conn.createStatement().execute("shutdown");
+                rs.close();
+            } catch (Exception ex) {
+                //ignore
+            }
+
+            try {
+                stmt.close();
+            } catch (Exception ex) {
+                //ignore
+            }
+            
+            try {
                 conn.close();
             } catch (Exception ex) {
                 //ignore

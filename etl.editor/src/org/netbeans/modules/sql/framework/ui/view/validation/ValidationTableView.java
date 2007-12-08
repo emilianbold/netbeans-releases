@@ -50,7 +50,6 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -61,7 +60,6 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
-
 import org.netbeans.modules.sql.framework.model.ValidationInfo;
 import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
 import org.netbeans.modules.sql.framework.ui.view.ButtonTableHeader;
@@ -74,38 +72,33 @@ import org.netbeans.modules.sql.framework.ui.view.SortableTableModel;
 public class ValidationTableView extends JPanel {
 
     private static URL warningImgUrl = ValidationTableView.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/Warning.png");
-
     private static URL errorImgUrl = ValidationTableView.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/Error.png");
-
+    private static URL infoImgUrl = ValidationTableView.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/information.png");
     private static ImageIcon errorImg;
-
     private static ImageIcon warningImg;
-
+    private static ImageIcon infoImg;
     private JTable table;
-
     private IGraphView graphView;
-
     private TableCellRenderer cellRenderer;
-
     private String maxLengthStr = "THIS IS MAX LENGTH STRING";
-
     static {
         errorImg = new ImageIcon(errorImgUrl);
         warningImg = new ImageIcon(warningImgUrl);
+        infoImg = new ImageIcon(infoImgUrl);
     }
+
 
     public ValidationTableView(IGraphView gView) {
         this.graphView = gView;
-
         initGui();
     }
 
     private void initGui() {
         this.setLayout(new BorderLayout());
-
+        
         ValidationTableModel model = new ValidationTableModel(Collections.EMPTY_LIST);
         SortableTableModel sortModel = new SortableTableModel(model);
-
+        
         table = new JTable(sortModel);
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         table.getSelectionModel().addListSelectionListener(new TableListSelectionListener());
@@ -138,7 +131,7 @@ public class ValidationTableView extends JPanel {
         SortableTableModel sortModel = new SortableTableModel(model);
         table.setModel(sortModel);
 
-        //      set icon column size
+        // set icon column size
         TableColumn column1 = table.getColumnModel().getColumn(0);
         column1.setResizable(false);
         column1.setMinWidth(30);
@@ -158,7 +151,6 @@ public class ValidationTableView extends JPanel {
                 maxLengthStr = vInfo.getDescription();
             }
         }
-
     }
 
     private void setDescriptionColumnWidth(int width) {
@@ -175,9 +167,11 @@ public class ValidationTableView extends JPanel {
     }
 
     class TableMouseAdapter extends MouseAdapter {
+
         /**
          * Invoked when a mouse button has been pressed on a component.
          */
+        @Override
         public void mousePressed(MouseEvent e) {
             int row = table.getSelectedRow();
             SortableTableModel sortModel = (SortableTableModel) table.getModel();
@@ -188,7 +182,7 @@ public class ValidationTableView extends JPanel {
             ValidationHandler vHandler = factory.getValidationHandler(vInfo);
 
             if (e.getClickCount() == 2) {
-                Object validatedObject = vInfo.getValidatedObject(); 
+                Object validatedObject = vInfo.getValidatedObject();
                 if (vHandler != null && validatedObject != null) {
                     vHandler.editValue(validatedObject);
                 }
@@ -200,7 +194,7 @@ public class ValidationTableView extends JPanel {
 
         /**
          * Returns the default table cell renderer.
-         * 
+         *
          * @param tbl the <code>JTable</code>
          * @param value the value to assign to the cell at <code>[row, column]</code>
          * @param isSelected true if cell is selected
@@ -209,28 +203,30 @@ public class ValidationTableView extends JPanel {
          * @param column the column of the cell to render
          * @return the default table cell renderer
          */
+        @Override
         public Component getTableCellRendererComponent(JTable tbl, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             JLabel label = null;
 
             if (value instanceof Integer) {
                 int type = ((Integer) value).intValue();
-
                 if (type == ValidationInfo.VALIDATION_WARNING) {
                     label = new JLabel(warningImg);
                     label.setToolTipText("Warning");
-                } else {
+                } else if(type == ValidationInfo.VALIDATION_INFO){
+                    label = new JLabel(infoImg);
+                    label.setToolTipText("Information");
+                }else {
                     label = new JLabel(errorImg);
                     label.setToolTipText("Error");
                 }
                 return label;
             }
             label = (JLabel) super.getTableCellRendererComponent(tbl, value, isSelected, hasFocus, row, column);
-
             label.setToolTipText(value.toString());
             return label;
-
         }
 
+        @Override
         public void paint(Graphics g) {
             FontMetrics fm = g.getFontMetrics();
             if (fm != null) {
@@ -239,7 +235,6 @@ public class ValidationTableView extends JPanel {
 
             super.paint(g);
         }
-
     }
 
     class TableListSelectionListener implements ListSelectionListener {
@@ -262,4 +257,3 @@ public class ValidationTableView extends JPanel {
         }
     }
 }
-

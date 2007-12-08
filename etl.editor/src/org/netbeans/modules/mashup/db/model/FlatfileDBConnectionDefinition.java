@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.mashup.db.model;
 
-import org.netbeans.modules.model.database.DBConnectionDefinition;
+import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 import org.w3c.dom.Element;
 
 

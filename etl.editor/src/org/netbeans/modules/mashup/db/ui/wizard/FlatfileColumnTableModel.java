@@ -207,7 +207,7 @@ public class FlatfileColumnTableModel extends RowEntryTableModel {
         public Object getValue(int index) {
             switch (index) {
                 case COLUMN_ID:
-                    return new Integer(column.getOrdinalPosition());
+                    return new Integer(column.getCardinalPosition());
 
                 case COLUMN_PRECLENGTH:
                     return new Integer(column.getPrecision());

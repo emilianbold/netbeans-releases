@@ -41,25 +41,14 @@
 
 package org.netbeans.modules.sql.framework.common.jdbc;
 
-import java.util.Properties;
-
-import org.netbeans.modules.model.database.DBConnectionDefinition;
-
+import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 
 /**
  * Extension of DBConnectionDefinition
- * 
- * @author $Author$
- * @version $Revision$
  */
-
 public interface SQLDBConnectionDefinition extends DBConnectionDefinition, Cloneable , Comparable{
    
-    public Properties getConnectionProperties();
-
     public String getJNDIPath();
-
-    public String getOTDPathName();
 
     public void setConnectionURL(String url);
 
@@ -70,8 +59,6 @@ public interface SQLDBConnectionDefinition extends DBConnectionDefinition, Clone
     public void setJNDIPath(String path);
 
     public void setName(String name);
-
-    public void setOTDPathName(String path);
 
     public void setPassword(String password);
 

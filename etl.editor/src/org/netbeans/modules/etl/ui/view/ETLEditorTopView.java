@@ -48,7 +48,6 @@ import org.openide.util.NbBundle;
 import org.netbeans.modules.etl.codegen.ETLProcessFlowGeneratorFactory;
 import org.netbeans.modules.etl.codegen.ETLStrategyBuilder;
 import org.netbeans.modules.etl.codegen.ETLStrategyBuilderContext;
-import org.netbeans.modules.etl.ui.DataObjectHelper;
 import org.netbeans.modules.etl.ui.view.graph.actions.CollabPropertiesAction;
 import org.netbeans.modules.etl.ui.view.graph.actions.EditDbModelAction;
 import org.netbeans.modules.etl.ui.view.graph.actions.JoinAction;
@@ -67,8 +66,6 @@ import org.netbeans.modules.sql.framework.ui.graph.actions.AutoLayoutAction;
 import org.netbeans.modules.sql.framework.ui.graph.actions.CollapseAllAction;
 import org.netbeans.modules.sql.framework.ui.graph.actions.ExpandAllAction;
 import org.netbeans.modules.sql.framework.ui.graph.actions.GraphAction;
-import org.netbeans.modules.sql.framework.ui.graph.actions.RedoAction;
-import org.netbeans.modules.sql.framework.ui.graph.actions.UndoAction;
 import org.netbeans.modules.sql.framework.ui.graph.actions.ZoomAction;
 import org.netbeans.modules.sql.framework.ui.model.CollabSQLUIModel;
 import org.netbeans.modules.sql.framework.ui.view.BasicTopView;
@@ -76,6 +73,7 @@ import org.netbeans.modules.sql.framework.ui.view.SQLStatementPanel;
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.Logger;
 import com.sun.sql.framework.utils.StringUtil;
+import org.netbeans.modules.etl.ui.view.graph.actions.RefreshMetadataAction;
 import org.netbeans.modules.sql.framework.ui.graph.actions.ZoomInAction;
 import org.netbeans.modules.sql.framework.ui.graph.actions.ZoomOutAction;
 /**
@@ -88,8 +86,8 @@ public class ETLEditorTopView extends BasicTopView {
     public static final String OPERATOR_FOLDER = "ETLOperators";
     
     private ETLCollaborationTopComponent etlView;
-    private UndoAction undoAction;
-    private RedoAction redoAction;
+    //private UndoAction undoAction;
+    //private RedoAction redoAction;
     
     /**
      * Creates a new instance of ETLEditorTopView.
@@ -98,7 +96,7 @@ public class ETLEditorTopView extends BasicTopView {
      * @param etlTopComp ETLCollaborationTopComponent which will host this view
      */
     public ETLEditorTopView(CollabSQLUIModel model, ETLCollaborationTopComponent etlTopComp) {
-        super(DataObjectHelper.getPropertyViewManager(), model);
+        super(model);
         this.etlView = etlTopComp;
     }
 
@@ -108,7 +106,7 @@ public class ETLEditorTopView extends BasicTopView {
      * @param model CollabSQLUIModelImpl containing collab model info
      */    
     public ETLEditorTopView(CollabSQLUIModel model) {
-        super(DataObjectHelper.getPropertyViewManager(), model);
+        super(model);
     }
     
     /**
@@ -116,6 +114,7 @@ public class ETLEditorTopView extends BasicTopView {
      *
      * @return boolean - true/false
      */
+    @Override
     public boolean canEdit() {
         return etlView.canEdit();
     }
@@ -126,6 +125,7 @@ public class ETLEditorTopView extends BasicTopView {
      * @param command - command
      * @param args - arguments
      */
+    @Override
     public Object[] execute(String command, Object[] args) {
         if (command.equals(ICommand.ADD_RUNTIME_CMD)) {
             Integer tableType = (Integer) args[0];
@@ -144,36 +144,35 @@ public class ETLEditorTopView extends BasicTopView {
      */
     public List getGraphActions() {
         ArrayList actions = new ArrayList();
-        
-//        // undo action are not static (because they are used in condition builder also) so
-//        // we create it using constructor 
-//          if ((undoAction == null) || (redoAction == null) ) {
-//            synchronized (this) {
-//                if ((undoAction == null) || (redoAction == null) ) {
-//                    undoAction = new UndoAction();
-//                    redoAction = new RedoAction();
-//                }
-//            }
-//        }
-//
-//        //FOR RIGHT CLICK......
-//        if ((undoAction == null) || (redoAction == null)) {
-//            synchronized (this) {
-//                if ((undoAction == null) || (redoAction == null) ) {
-//                    undoAction.setEnabled(true);
-//                    redoAction.setEnabled(true);
-//                }
-//            }
-//        }
-//        actions.add(undoAction);
-//        actions.add(redoAction);
-        //null is used for seperator
-//        actions.add(null);
+        //        // undo action are not static (because they are used in condition builder also) so
+        //        // we create it using constructor 
+        //          if ((undoAction == null) || (redoAction == null) ) {
+        //            synchronized (this) {
+        //                if ((undoAction == null) || (redoAction == null) ) {
+        //                    undoAction = new UndoAction();
+        //                    redoAction = new RedoAction();
+        //                }
+        //            }
+        //        }
+        //
+        //        //FOR RIGHT CLICK......
+        //        if ((undoAction == null) || (redoAction == null)) {
+        //            synchronized (this) {
+        //                if ((undoAction == null) || (redoAction == null) ) {
+        //                    undoAction.setEnabled(true);
+        //                    redoAction.setEnabled(true);
+        //                }
+        //            }
+        //        }
+        //        actions.add(undoAction);
+        //        actions.add(redoAction);
+        //        //null is used for seperator
+        //        actions.add(null);
         
         actions.add(GraphAction.getAction(ExpandAllAction.class));
         actions.add(GraphAction.getAction(CollapseAllAction.class));
         actions.add(GraphAction.getAction(ToggleOutputAction.class));
-        
+        actions.add(GraphAction.getAction(RefreshMetadataAction.class));
         actions.add(GraphAction.getAction(SelectTableAction.class));
         
         //null is used for seperator
@@ -186,7 +185,7 @@ public class ETLEditorTopView extends BasicTopView {
        
         //null is used for seperator
         actions.add(null);
-          
+        
         actions.add(GraphAction.getAction(ZoomInAction.class));
         actions.add(GraphAction.getAction(ZoomOutAction.class));
         //actions.add(GraphAction.getAction(ZoomAction.class));
@@ -196,10 +195,10 @@ public class ETLEditorTopView extends BasicTopView {
         actions.add(GraphAction.getAction(AutoLayoutAction.class));
         actions.add(GraphAction.getAction(ValidationAction.class));
         actions.add(GraphAction.getAction(TestRunAction.class));
-//        actions.add(GraphAction.getAction(PrintAction.class));
-        
+        // actions.add(GraphAction.getAction(PrintAction.class));
         //null is used for seperator
-        actions.add(null);        
+        actions.add(null);
+        
         actions.add(GraphAction.getAction(CollabPropertiesAction.class));
         
         return actions;
@@ -221,24 +220,25 @@ public class ETLEditorTopView extends BasicTopView {
      */
     public List getToolBarActions() {
         ArrayList actions = new ArrayList();
-//        // undo action are not static (because they are used in condition builder also) so
-//        // we create it using constructor 
-//        if ((undoAction == null) || (redoAction == null) ) {
-//            synchronized (this) {
-//                if ((undoAction == null) || (redoAction == null) ) {
-//                    undoAction = new UndoAction();
-//                    redoAction = new RedoAction();
-//                }
-//            }
-//        }
-//         
-//        actions.add(undoAction);
-//        actions.add(redoAction);
-//        actions.add(null);
+        //        // undo action are not static (because they are used in condition builder also) so
+        //        // we create it using constructor 
+        //        if ((undoAction == null) || (redoAction == null) ) {
+        //            synchronized (this) {
+        //                if ((undoAction == null) || (redoAction == null) ) {
+        //                    undoAction = new UndoAction();
+        //                    redoAction = new RedoAction();
+        //                }
+        //            }
+        //        }
+        //         
+        //        actions.add(undoAction);
+        //        actions.add(redoAction);
+        //        actions.add(null);
         
         actions.add(GraphAction.getAction(ExpandAllAction.class));
         actions.add(GraphAction.getAction(CollapseAllAction.class));
         actions.add(GraphAction.getAction(ToggleOutputAction.class));
+        actions.add(GraphAction.getAction(RefreshMetadataAction.class));
         actions.add(GraphAction.getAction(SelectTableAction.class));
       
         // null is used for seperator
@@ -249,14 +249,14 @@ public class ETLEditorTopView extends BasicTopView {
         actions.add(GraphAction.getAction(RuntimeOutputAction.class));
         // null is used for seperator
         actions.add(null);
-        
+       
         actions.add(GraphAction.getAction(ZoomInAction.class));
         actions.add(GraphAction.getAction(ZoomOutAction.class));
         actions.add(GraphAction.getAction(ZoomAction.class));
         // null is used for seperator
         actions.add(null);
         actions.add(GraphAction.getAction(AutoLayoutAction.class));
-//        actions.add(GraphAction.getAction(PrintAction.class));
+        // actions.add(GraphAction.getAction(PrintAction.class));
         actions.add(GraphAction.getAction(ValidationAction.class));
         actions.add(GraphAction.getAction(TestRunAction.class));
         return actions;
@@ -267,10 +267,12 @@ public class ETLEditorTopView extends BasicTopView {
      *
      * @param obj SQLObject whose SQL statement is to be displayed
      */
+    @Override
     protected void showSql(SQLObject obj) {
         if (obj.getObjectType() == SQLConstants.TARGET_TABLE) {
             SQLStatementPanel statementPanel = super.getOrCreateSQLStatementPanel(obj);
             SQLStatementPanel.ShowSQLWorkerThread showSqlThread = statementPanel.new ShowSQLWorkerThread() {
+                @Override
                 public Object construct() {
                     TargetTable targetTable = null;
                     try {

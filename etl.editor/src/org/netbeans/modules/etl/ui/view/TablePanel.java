@@ -68,8 +68,7 @@ import javax.swing.table.TableColumn;
 
 import org.netbeans.modules.etl.ui.DataObjectProvider;
 import org.netbeans.modules.etl.ui.model.impl.ETLCollaborationModel;
-import org.netbeans.modules.model.database.DBColumn;
-import org.netbeans.modules.model.database.DatabaseModel;
+import org.netbeans.modules.sql.framework.model.DBColumn;
 import org.netbeans.modules.sql.framework.common.jdbc.SQLUtils;
 import org.netbeans.modules.sql.framework.model.RuntimeDatabaseModel;
 import org.netbeans.modules.sql.framework.model.RuntimeOutput;
@@ -87,6 +86,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
 import com.sun.sql.framework.exception.BaseException;
+import org.netbeans.modules.sql.framework.model.DatabaseModel;
 
 /**
  * This class is used to define columns for input and output table
@@ -858,6 +858,7 @@ public class TablePanel extends JPanel {
 
     private void initGui() {
         // set layout
+
         this.setLayout(new BorderLayout());
         // create a panel to hold jtable at CENTER of this component
         JPanel tableColumnPanel = new JPanel();

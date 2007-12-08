@@ -9,7 +9,6 @@
 
 package org.netbeans.modules.etl.ui.view;
 
-import com.sun.sql.framework.exception.BaseException;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
@@ -38,7 +37,6 @@ import org.w3c.dom.Element;
 
 import org.netbeans.modules.etl.ui.DataObjectHelper;
 import org.netbeans.modules.etl.ui.ETLDataObject;
-import org.netbeans.modules.model.database.DBTable;
 import org.netbeans.modules.sql.framework.common.jdbc.SQLDBConnectionDefinition;
 import org.netbeans.modules.sql.framework.model.SQLConstants;
 import org.netbeans.modules.sql.framework.model.SQLDBColumn;
@@ -56,6 +54,7 @@ import org.openide.util.NbBundle;
 
 import com.sun.sql.framework.utils.XmlUtil;
 import com.sun.sql.framework.utils.Logger;
+import org.netbeans.modules.sql.framework.model.DBTable;
 
 
 /**
@@ -107,7 +106,7 @@ public class ConfigParamsTreeView extends JPanel implements PropertyChangeListen
     
     private final String ETL_CONNECTION_ATTR_8 = "dataDir";
     
-    private static URL otdImgUrl = ConfigParamsTreeView.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/otd.png");
+    private static URL rootImgUrl = ConfigParamsTreeView.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/root.png");
     
     private static URL columnImgUrl = ConfigParamsTreeView.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/column.png");
     
@@ -115,7 +114,7 @@ public class ConfigParamsTreeView extends JPanel implements PropertyChangeListen
     
     private static URL targetTableImgUrl = ConfigParamsTreeView.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/TargetTable.png");
     
-    private static ImageIcon otdIcon;
+    private static ImageIcon rootIcon;
     
     private static ImageIcon tableIcon;
     
@@ -126,7 +125,7 @@ public class ConfigParamsTreeView extends JPanel implements PropertyChangeListen
     private IPropertyGroup pGroup;
     
     static {
-        otdIcon = new ImageIcon(otdImgUrl);
+        rootIcon = new ImageIcon(rootImgUrl);
         tableIcon = new ImageIcon(tableImgUrl);
         columnIcon = new ImageIcon(columnImgUrl);
         targetTableIcon = new ImageIcon(targetTableImgUrl);
@@ -516,22 +515,22 @@ public class ConfigParamsTreeView extends JPanel implements PropertyChangeListen
                 Object obj = treeNode.getUserObject();
                 if (obj instanceof SQLDBModel) {
                     SQLDBModel dbModel = (SQLDBModel) obj;
-                    String otdName = dbModel.getModelName();
+                    String dbName = dbModel.getModelName();
                     switch (dbModel.getObjectType()) {
                         case SQLConstants.SOURCE_DBMODEL:
-                            otdName = NbBundle.getMessage(ConfigParamsTreeView.class, "TEMPLATE_source_model_label", otdName);
+                            dbName = NbBundle.getMessage(ConfigParamsTreeView.class, "TEMPLATE_source_model_label", dbName);
                             break;
                             
                         case SQLConstants.TARGET_DBMODEL:
-                            otdName = NbBundle.getMessage(ConfigParamsTreeView.class, "TEMPLATE_target_model_label", otdName);
+                            dbName = NbBundle.getMessage(ConfigParamsTreeView.class, "TEMPLATE_target_model_label", dbName);
                             break;
                             
                         default:
                             break;
                     }
-                    renderer.setText(otdName);
-                    renderer.setIcon(otdIcon);
-                    renderer.setToolTipText(otdName);
+                    renderer.setText(dbName);
+                    renderer.setIcon(rootIcon);
+                    renderer.setToolTipText(dbName);
                 } else if (obj instanceof SourceTable) {
                     renderer.setIcon(tableIcon);
                     renderer.setToolTipText(UIUtil.getTableToolTip((SQLDBTable) obj));

@@ -9,7 +9,6 @@
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
-
 If you wish your version of this file to be governed by only the CDDL
 or only the GPL Version 2, indicate your decision by adding
 "[Contributor] elects to include this software in this distribution
@@ -20,7 +19,6 @@ to extend the choice of license to its licensees as provided above.
 However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
-
 If you wish your version of this file to be governed by only the CDDL
 or only the GPL Version 2, indicate your decision by adding
 "[Contributor] elects to include this software in this distribution
@@ -32,24 +30,14 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
  */
-
-/*
- * Copyright 2005 Sun Microsystems, Inc. All rights reserved.
- * SUN PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- *
- * $Id$
- */
-
 package org.netbeans.modules.etl.ui;
 
 import java.awt.EventQueue;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Enumeration;
-
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
-
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
@@ -77,59 +65,36 @@ import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
-
 import com.sun.sql.framework.exception.BaseException;
-
-
 
 /**
  *
- * @author Jeri Lockhart
- * @author Todd Fast, todd.fast@sun.com
+ * @author Ahimanikya Satapathy
  */
-public class ETLEditorSupport extends DataEditorSupport
-implements  OpenCookie, EditCookie,
-    EditorCookie.Observable, LineCookie, CloseCookie, PrintCookie  {
-    
-    
-    /**
-     *
-     *
-     */
+public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, EditCookie, EditorCookie.Observable, LineCookie, CloseCookie, PrintCookie {
+
+
     public ETLEditorSupport(ETLDataObject sobj) {
         super(sobj, new ETLEditorEnv(sobj));
         setMIMEType(ETLDataLoader.MIME_TYPE);
     }
-    
-    
-    /**
-     *
-     *
-     */
+
     public ETLEditorEnv getEnv() {
-        return (ETLEditorEnv)env;
+        return (ETLEditorEnv) env;
     }
-    
-    
-    /**
-     *
-     *
-     */
+
     @Override
     protected Pane createPane() {
-        multiviewTC = ETLMultiViewFactory.createMultiView(
-                (ETLDataObject)getDataObject());
+        multiviewTC = ETLMultiViewFactory.createMultiView((ETLDataObject) getDataObject());
         multiviewTC.setName(getDataObject().getPrimaryFile().getNameExt());
-        
-        Mode editorMode = WindowManager.getDefault().findMode(
-                ETLEditorSupport.EDITOR_MODE);
+
+        Mode editorMode = WindowManager.getDefault().findMode(ETLEditorSupport.EDITOR_MODE);
         if (editorMode != null) {
             editorMode.dockInto(multiviewTC);
         }
-        return (Pane)multiviewTC;
+        return (Pane) multiviewTC;
     }
-    
-    
+
     /**
      * This is called by the multiview elements whenever they are created
      * (and given a observer knowing their multiview TopComponent). It is
@@ -141,7 +106,7 @@ implements  OpenCookie, EditCookie,
      */
     public void setTopComponent(TopComponent mvtc) {
         this.multiviewTC = mvtc;
-        
+
         // Force the title to update so the * left over from when the
         // modified data object was discarded is removed from the title.
         // It is okay for this to be invoked multiple times.
@@ -154,41 +119,32 @@ implements  OpenCookie, EditCookie,
             });
         }
     }
-    
-    
-    
-    
-    /**
-     *
-     *
-     */
+
     public static boolean isLastView(TopComponent tc) {
-        
-        if (!(tc instanceof CloneableTopComponent))
+
+        if (!(tc instanceof CloneableTopComponent)) {
             return false;
-        
+        }
         boolean oneOrLess = true;
-        Enumeration en =
-            ((CloneableTopComponent)tc).getReference().getComponents();
+        Enumeration en = ((CloneableTopComponent) tc).getReference().getComponents();
         if (en.hasMoreElements()) {
             en.nextElement();
-            if (en.hasMoreElements())
+            if (en.hasMoreElements()) {
                 oneOrLess = false;
+            }
         }
-        
+
         return oneOrLess;
     }
-    
-    
+
     @Override
     protected void updateTitles() {
         // This method is invoked by DataEditorSupport.DataNodeListener
         // whenever the DataNode displayName property is changed. It is
         // also called when the CloneableEditorSupport is (un)modified.
-        
         // Let the superclass handle the CloneableEditor instances.
         super.updateTitles();
-        
+
         // We need to get the title updated on the MultiViewTopComponent.
         EventQueue.invokeLater(new Runnable() {
             public void run() {
@@ -202,8 +158,7 @@ implements  OpenCookie, EditCookie,
             }
         });
     }
-    
-    
+
     /**
      * Returns the UndoRedo.Manager instance managed by this editor support.
      *
@@ -212,11 +167,12 @@ implements  OpenCookie, EditCookie,
     public UndoRedo.Manager getUndoManager() {
         return super.getUndoRedo();
     }
-    
+
     @Override
     protected Task reloadDocument() {
         Task task = super.reloadDocument();
         EventQueue.invokeLater(new Runnable() {
+
             public void run() {
                 // Remove the undo listener only if columns view is showing.
                 if (multiviewTC != null) {
@@ -224,8 +180,7 @@ implements  OpenCookie, EditCookie,
                     if (mvh != null) {
                         MultiViewPerspective mvp = mvh.getSelectedPerspective();
                         if (mvp != null) {
-                            if (mvp.preferredID().contains(
-                                    ETLEditorViewMultiViewDesc.PREFERRED_ID)) {
+                            if (mvp.preferredID().contains(ETLEditorViewMultiViewDesc.PREFERRED_ID)) {
                                 Document doc = getDocument();
                                 UndoRedo.Manager urm = getUndoRedo();
                                 if (doc != null && urm != null) {
@@ -239,11 +194,7 @@ implements  OpenCookie, EditCookie,
         });
         return task;
     }
-    
-   
-    
-    
-    
+
     /**
      * Have the schema model sync with the document.
      */
@@ -252,28 +203,27 @@ implements  OpenCookie, EditCookie,
         // which indicates that we are switching from the source view.
         // Update the tree with the modified text.
         try {
-//            getWSDLDocument().sync();
-            //TODO: remove ETLMainModel 
-            ETLDataObject etlDataObject = ((ETLDataObject)getDataObject());
-//            DataObjectProvider.getProvider().setActiveDataObject(etlDataObject);
+            ETLDataObject etlDataObject = (ETLDataObject) getDataObject();
             ETLCollaborationModel collabModel = etlDataObject.getModel();
             collabModel.getUndoManager().discardAllEdits();
-            
+
             openDocument();
             String defnContent = getDocument().getText(0, getDocument().getLength());
             collabModel.reLoad(defnContent);
             // is below required?
             collabModel.setReloaded(true);
             populateCanvas(etlDataObject, collabModel);
+            // Validate the collabModel
+            //etlDataObject.getETLEditorTC().doValidation();
+
             isFirstTime = false;
         } catch (Throwable ioe) {
             // The document cannot be parsed
             NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(ETLEditorSupport.class, "MSG_NotWellformedEtl"), NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(nd);
         }
-        
     }
-    
+
     /**
      * Populates eTL editor canvas using information from given ETLCollaborationModel.
      *
@@ -283,134 +233,104 @@ implements  OpenCookie, EditCookie,
      */
     private void populateCanvas(final ETLDataObject etlDataObject, final ETLCollaborationModel collabModel) throws BaseException {
         Runnable run = new Runnable() {
+
             public void run() {
                 try {
                     etlDataObject.getETLEditorTC().getGraphView().clearAll();
                     collabModel.restoreUIState();
-                } catch(Exception ex) {
+                } catch (Exception ex) {
                     ErrorManager.getDefault().notify(ex);
                 }
             }
         };
-        
-        SwingUtilities.invokeLater(run);
 
+        SwingUtilities.invokeLater(run);
     }
-    
+
     public void synchDocument() {
         //syn source view
         //TODO: rit we should create etl defininition model based on swing document
         // and there add document listeber to keeep model in synch with text editing.
-        //all update model incrementally 
+        //all update model incrementally
         try {
-             ETLDataObject etlDataObject = (ETLDataObject) getDataObject();
-//             DataObjectProvider.getProvider().setActiveDataObject(etlDataObject);
-             String content = etlDataObject.getETLDefinition().toXMLString("");
-             Document doc = getDocument();
-             if(doc != null) {
+            ETLDataObject etlDataObject = (ETLDataObject) getDataObject();
+            String content = etlDataObject.getETLDefinition().toXMLString("");
+            Document doc = getDocument();
+            if (doc != null) {
                 doc.remove(0, getDocument().getLength());
                 doc.insertString(0, content, null);
-             }
-             etlDataObject.getModel().setDirty(false);
+            }
+            etlDataObject.getModel().setDirty(false);
         } catch (Exception ex) {
             ErrorManager.getDefault().notify(ex);
         }
     }
-    
-    ////////////////////////////////////////////////////////////////////////////
-    // Inner class
-    ////////////////////////////////////////////////////////////////////////////
-    
-    /**
+
+/**
      * Env class extends SchemaEditorSupport.Env.
      * overrides findSchemaEditorSupport
      *
      */
     protected static class ETLEditorEnv extends DataEditorSupport.Env {
-        
-        static final long serialVersionUID =1099957785497677206L;
-        
+
+        static final long serialVersionUID = 1099957785497677206L;
+
         public ETLEditorEnv(ETLDataObject obj) {
             super(obj);
         }
-        
+
         public CloneableEditorSupport findTextEditorSupport() {
             return getETLDataObject().getETLEditorSupport();
         }
-        
-        public ETLDataObject getETLDataObject(){
+
+        public ETLDataObject getETLDataObject() {
             return (ETLDataObject) getDataObject();
         }
-        
+
         @Override
         protected FileObject getFile() {
             return getDataObject().getPrimaryFile();
         }
-        
+
         @Override
         protected FileLock takeLock() throws IOException {
             return getDataObject().getPrimaryFile().lock();
         }
     }
-    
-    
-    
-    
-    ////////////////////////////////////////////////////////////////////////////
-    // Inner class
-    ////////////////////////////////////////////////////////////////////////////
-    
-    /**
+
+   /**
      * Implementation of CloseOperationHandler for multiview. Ensures both
      * column view and xml editor are correctly closed, data saved, etc. Holds
      * a reference to Schema DataObject only - to be serializable with the
      * multiview TopComponent without problems.
      */
-    public static class CloseHandler extends Object
-    implements CloseOperationHandler, Serializable {
-        /**
-         *
-         *
-         */
+    public static class CloseHandler extends Object implements CloseOperationHandler, Serializable {
+
         private CloseHandler() {
             super();
         }
-        
-        /**
-         *
-         *
-         */
+
         public CloseHandler(DataObject schemaDO) {
             dataObject = schemaDO;
         }
-        
-        /**
-         *
-         *
-         */
+
         private ETLEditorSupport getETLEditorSupport() {
-            return dataObject != null &&
-            dataObject instanceof ETLDataObject ?
-                    ((ETLDataObject)dataObject).getETLEditorSupport() : null;
+            return dataObject != null && dataObject instanceof ETLDataObject ? ((ETLDataObject) dataObject).getETLEditorSupport() : null;
         }
-        
-        /**
-         *
-         *
-         */
+
         public boolean resolveCloseOperation(CloseOperationState[] elements) {
             ETLEditorSupport etlEditor = getETLEditorSupport();
             if (etlEditor != null) {
                 // This handles saving the document.
                 boolean close = etlEditor.canClose();
                 if (close) {
-                    if(dataObject.isValid()) {
+                    if (dataObject.isValid()) {
                         // In case user discarded edits, need to reload.
                         if (dataObject.isModified()) {
                             // In case user discarded edits, need to reload.
                             etlEditor.reloadDocument().waitFinished();
                         }
-                        
+
                         etlEditor.syncModel();
                         // Need to properly close the support, too.
                         etlEditor.notifyClosed();
@@ -420,28 +340,10 @@ implements  OpenCookie, EditCookie,
             }
             return true;
         }
-        
-        private static final long serialVersionUID =-3838395157610633251L;
-        
+        private static final long serialVersionUID = -3838395157610633251L;
         private DataObject dataObject;
     }
-    
-    
-  
-    
-    ////////////////////////////////////////////////////////////////////////////
-    // Class members
-    ////////////////////////////////////////////////////////////////////////////
-    
-    /** Set of opened WSDLEditorSupport instances (text or colView opened) */
-//  private static Set opened = Collections.synchronizedSet(new HashSet());
-    
-    
-    
-    ////////////////////////////////////////////////////////////////////////////
-    // Instance members
-    ////////////////////////////////////////////////////////////////////////////
-    
+
     /**
      * The embracing multiview TopComponent (holds the ColumnView and
      * schema xml editor) - we remeber the last active TopComponent

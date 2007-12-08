@@ -122,9 +122,6 @@ public class ParseContentPanel implements PropertyChangeListener, VetoableChange
     /* Descriptor for parse properties; generates JComponent */
     private IPropertySheet propertySheet;
     
-    /* PropertyViewManager instance for rendering of parse properties. */
-    private static PropertyViewManager pvMgr;
-    
     private int currentIndex = -1;
     
     private Component component;
@@ -135,9 +132,6 @@ public class ParseContentPanel implements PropertyChangeListener, VetoableChange
     public ParseContentPanel() {
     }
     
-    /**
-     * @see com.sun.jbi.ui.devtool.flatfile.db.otd.ui.wizard.NestedWizardPanel.Content#canAdvance
-     */
     private boolean canAdvance() {
         if (parseErrors != null) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(parseErrors.trim(), NotifyDescriptor.WARNING_MESSAGE));
@@ -234,6 +228,7 @@ public class ParseContentPanel implements PropertyChangeListener, VetoableChange
             }
             
             currentPropertyMap = Property.createKeyValueMapFrom(currentTable.getProperties());
+            
             propertySheet = pvMgr.getPropertySheet(currentPropertyMap, currentTable.getParserType());
             
             propertySheet.getPropertyGroup("Default").addPropertyChangeListener(this);
@@ -271,14 +266,9 @@ public class ParseContentPanel implements PropertyChangeListener, VetoableChange
      * @see PropertyViewManager
      */
     private static PropertyViewManager getPropertyViewManager() {
-        if (pvMgr == null) {
-            InputStream stream = ParseContentPanel.class.getClassLoader().getResourceAsStream(
-                    "org/netbeans/modules/mashup/db/ui/resource/parse_properties.xml");
-            
-            pvMgr = new PropertyViewManager(stream, new FlatfileDBResourceManager());
-        }
-        
-        return pvMgr;
+        InputStream stream = ParseContentPanel.class.getClassLoader().getResourceAsStream(
+                "org/netbeans/modules/mashup/db/ui/resource/parse_properties.xml");
+        return new PropertyViewManager(stream, new FlatfileDBResourceManager());
     }
     
     /**

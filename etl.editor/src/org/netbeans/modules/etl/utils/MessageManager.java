@@ -60,13 +60,13 @@ import java.util.ResourceBundle;
  * the classpath.
  * <p>
  * Please see the documentation for java.util.ResourceBundle for more information.
- * 
+ *
  * @author sseshachala
  * @version :$Revision$
  */
-
 public class MessageManager {
-    private static HashMap managers = new HashMap();
+
+    private static HashMap<String, MessageManager> managers = new HashMap<String, MessageManager>();
 
     public static synchronized MessageManager getManager(java.lang.Class theClass) {
         return getManager(theClass.getPackage().getName());
@@ -75,40 +75,36 @@ public class MessageManager {
     /**
      * Get the MessageManager for a particular package. If a manager for a package already
      * exists, it will be reused, else a new MessageManager will be created and returned.
-     * 
+     *
      * @param packageName for which the MessageManager needs to be picked
      * @return MessageManager For the given packageName
      */
-
     public static synchronized MessageManager getManager(String packageName) {
         if (managers != null) {
-            MessageManager mgr = (MessageManager) managers.get(packageName);
+            MessageManager mgr = managers.get(packageName);
             if (mgr == null) {
                 mgr = new MessageManager(packageName);
                 managers.put(packageName, mgr);
             }
             return mgr;
         }
-        managers = new HashMap();
+        managers = new HashMap<String, MessageManager>();
         MessageManager mgr = new MessageManager(packageName);
         managers.put(packageName, mgr);
         return mgr;
     }
-
     /**
      * The ResourceBundle for this MessageManager.
      */
-
     private ResourceBundle bundle;
 
     /**
      * Creates a new MessageManager for a given package. This is a private method and all
      * access to it is arbitrated by the static getManager method call so that only one
      * MessageManager per package will be created.
-     * 
+     *
      * @param packageName Name of package to create MessageManager for.
      */
-
     private MessageManager(String packageName) {
         String bundleName = packageName + ".";
         bundleName = bundleName + "LocalStrings";
@@ -117,11 +113,10 @@ public class MessageManager {
 
     /**
      * Get a string from the underlying resource bundle.
-     * 
+     *
      * @param key for which msg needs to retrieved from HashMap
      * @return String The MessageFormat for given Key
      */
-
     public synchronized String getString(String key) {
         if (key == null) {
             String msg = "key is null";
@@ -147,52 +142,49 @@ public class MessageManager {
     /**
      * Get a string from the underlying resource bundle and format it with the given
      * object argument. This argument can of course be a String object.
-     * 
+     *
      * @param key For which String needs to be displayed
      * @param arg That is the result for Info, ERR or Exception
      * @return String MessageString for given Key
      */
-
     public synchronized String getString(String key, Object arg) {
-        Object[] args = new Object[] { arg};
+        Object[] args = new Object[]{arg};
         return getString(key, args);
     }
 
     /**
      * Get a string from the underlying resource bundle and format it with the given
      * object arguments. These arguments can of course be String objects.
-     * 
+     *
      * @param key For which Message needs to be constructed
      * @param arg1 used for message construction
      * @param arg2 used for message construction
      * @return String Message String for the given key
      */
-
     public String getString(String key, Object arg1, Object arg2) {
-        Object[] args = new Object[] { arg1, arg2};
+        Object[] args = new Object[]{arg1, arg2};
         return getString(key, args);
     }
 
     /**
      * Get a string from the underlying resource bundle and format it with the given
      * object arguments. These arguments can of course be String objects.
-     * 
+     *
      * @param key For which Message needs to be constructed
      * @param arg1 Used for messageConstruction
      * @param arg2 Used for message construction
      * @param arg3 used for message construction
      * @return String for given key and args.
      */
-
     public String getString(String key, Object arg1, Object arg2, Object arg3) {
-        Object[] args = new Object[] { arg1, arg2, arg3};
+        Object[] args = new Object[]{arg1, arg2, arg3};
         return getString(key, args);
     }
 
     /**
      * Get a string from the underlying resource bundle and format it with the given
      * object arguments. These arguments can of course be String objects.
-     * 
+     *
      * @param key For which Message needs to be constructed
      * @param arg1 Used for messageConstruction
      * @param arg2 Used for messageConstruction
@@ -200,16 +192,15 @@ public class MessageManager {
      * @param arg4 Used for messageConstruction
      * @return String MessageString for the given String And Args
      */
-
     public String getString(String key, Object arg1, Object arg2, Object arg3, Object arg4) {
-        Object[] args = new Object[] { arg1, arg2, arg3, arg4};
+        Object[] args = new Object[]{arg1, arg2, arg3, arg4};
         return getString(key, args);
     }
 
     /**
      * Get a string from the underlying resource bundle and format it with the given set
      * of arguments.
-     * 
+     *
      * @param key For which MessageFormat needs to be picked for a key
      * @param args This contains the arguments
      * @return String Message Format for given key and arguments
@@ -219,11 +210,11 @@ public class MessageManager {
         String value = getString(key);
 
         try {
-            Object nonNullArgs[] = args;
+            Object[] nonNullArgs = args;
             for (int i = 0; i < args.length; i++) {
                 if (args[i] == null) {
                     if (nonNullArgs == args) {
-                        nonNullArgs = (Object[]) args.clone();
+                        nonNullArgs = args.clone();
                     }
                     nonNullArgs[i] = "null";
                 }
@@ -241,6 +232,4 @@ public class MessageManager {
 
         return iString;
     }
-
 }
-

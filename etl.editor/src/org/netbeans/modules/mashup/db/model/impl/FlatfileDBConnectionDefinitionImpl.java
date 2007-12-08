@@ -40,10 +40,12 @@
  */
 package org.netbeans.modules.mashup.db.model.impl;
 
+import com.sun.sql.framework.jdbc.DBConnectionParameters;
 import java.util.Map;
-
 import org.netbeans.modules.mashup.db.model.FlatfileDBConnectionDefinition;
+
 import org.netbeans.modules.sql.framework.common.utils.TagParserUtility;
+import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 import org.w3c.dom.Element;
 
 
@@ -54,7 +56,7 @@ import org.w3c.dom.Element;
  * @author Girish Patil
  * @version $Revision$
  */
-public class FlatfileDBConnectionDefinitionImpl implements FlatfileDBConnectionDefinition {
+public class FlatfileDBConnectionDefinitionImpl extends DBConnectionParameters implements FlatfileDBConnectionDefinition {
     /** Constants used in XML tags * */
     private static final String ATTR_DRIVER_CLASS = "driverClass";
     private static final String ATTR_NAME = "name";
@@ -68,23 +70,9 @@ public class FlatfileDBConnectionDefinitionImpl implements FlatfileDBConnectionD
     /* JDBC driver class name for Axion */
     private static final String AXION_DRIVER = "org.axiondb.jdbc.AxionDriver";
 
-    /* User-supplied connection name */
-    private String name;
-
-    /* JDBC driver name */
-    private String driverClass;
-
     /* JDBC URL */
     private String url;
 
-    /* Username for authentication */
-    private String userName;
-
-    /* Password for authentication */
-    private String password;
-
-    /* User-supplied description (optional) for this connection */
-    private String description;
 
     /** Creates a new default instance of FlatfileDBConnectionDefinitionImpl. */
     public FlatfileDBConnectionDefinitionImpl() {
@@ -129,7 +117,7 @@ public class FlatfileDBConnectionDefinitionImpl implements FlatfileDBConnectionD
      * 
      * @param connectionDefn DBConnectionDefinition to be copied
      */
-    public FlatfileDBConnectionDefinitionImpl(FlatfileDBConnectionDefinition connectionDefn) {
+    public FlatfileDBConnectionDefinitionImpl(DBConnectionDefinition connectionDefn) {
         if (connectionDefn == null) {
             throw new IllegalArgumentException("Must supply non-null DBConnectionDefinition instance for connectionDefn param.");
         }
@@ -142,21 +130,14 @@ public class FlatfileDBConnectionDefinitionImpl implements FlatfileDBConnectionD
     /**
      * @see org.netbeans.modules.model.database.DBConnectionDefinition#getConnectionURL()
      */
+    @Override
     public String getConnectionURL() {
         return url;
     }
 
+    @Override
     public void setConnectionURL(String aUrl) {
         url = aUrl;
-    }
-
-    /**
-     * Gets user-defined description, if any, for this DBConnectionDefinition.
-     * 
-     * @return user-defined description, possibly null if none was defined
-     */
-    public String getDescription() {
-        return description;
     }
 
     public String getUrl() {
@@ -164,45 +145,9 @@ public class FlatfileDBConnectionDefinitionImpl implements FlatfileDBConnectionD
     }
 
     /**
-     * @see org.netbeans.modules.model.database.DBConnectionDefinition#getDriverClass
-     */
-    public String getDriverClass() {
-        return AXION_DRIVER;
-    }
-
-    /**
-     * @see org.netbeans.modules.model.database.DBConnectionDefinition#getName
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * Sets new name for this DBConnectionDefinition.
-     * 
-     * @param newName new name for DBConnectionDefinition
-     */
-    public void setName(String newName) {
-        name = newName;
-    }
-
-    /**
-     * @see org.netbeans.modules.model.database.DBConnectionDefinition#getUserName
-     */
-    public String getUserName() {
-        return userName;
-    }
-
-    /**
-     * @see org.netbeans.modules.model.database.DBConnectionDefinition#getPassword
-     */
-    public String getPassword() {
-        return password;
-    }
-
-    /**
      * @see org.netbeans.modules.model.database.DBConnectionDefinition#getDBType
      */
+    @Override
     public String getDBType() {
         return "Internal";
     }
@@ -214,7 +159,7 @@ public class FlatfileDBConnectionDefinitionImpl implements FlatfileDBConnectionD
      * @param source DBConnectionDefinition whose contents are to be copied into this
      *        instance
      */
-    public synchronized void copyFrom(FlatfileDBConnectionDefinitionImpl source) {
+    public synchronized void copyFrom(DBConnectionDefinition source) {
         if (source == null) {
             throw new IllegalArgumentException("Must supply non-null ref for source.");
         } else if (source == this) {
@@ -235,6 +180,7 @@ public class FlatfileDBConnectionDefinitionImpl implements FlatfileDBConnectionD
      * @param o Object to compare for equality against this instance.
      * @return true if o is equivalent to this, false otherwise
      */
+    @Override
     public boolean equals(Object o) {
         // Check for reflexivity.
         if (this == o) {
@@ -272,6 +218,7 @@ public class FlatfileDBConnectionDefinitionImpl implements FlatfileDBConnectionD
      * 
      * @return computed hash code
      */
+    @Override
     public int hashCode() {
         int hashCode = 0;
 
@@ -285,6 +232,7 @@ public class FlatfileDBConnectionDefinitionImpl implements FlatfileDBConnectionD
         return hashCode;
     }
 
+    @Override
     public void parseXML(Element xmlElement) {
         Map attrs = TagParserUtility.getNodeAttributes(xmlElement);
 
@@ -295,6 +243,7 @@ public class FlatfileDBConnectionDefinitionImpl implements FlatfileDBConnectionD
         this.password = (String) attrs.get(ATTR_PASSWORD);
     }
 
+    @Override
     public String toXMLString(String prefix) {
         StringBuilder sb = new StringBuilder();
         sb.append(prefix);

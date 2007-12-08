@@ -49,11 +49,11 @@ import java.util.UUID;
 import org.netbeans.modules.etl.model.ETLObject;
 import org.netbeans.modules.etl.model.impl.ETLObjectImpl;
 import org.netbeans.modules.mashup.db.model.impl.FlatfileDatabaseModelImpl;
-import org.netbeans.modules.model.database.DBConnectionDefinition;
-import org.netbeans.modules.model.database.DBTable;
-import org.netbeans.modules.model.database.JDBCConnectionProvider;
 import org.netbeans.modules.sql.framework.common.utils.FlatfileDBMarker;
 import org.netbeans.modules.sql.framework.common.utils.FlatfileDBTableMarker;
+import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
+import org.netbeans.modules.sql.framework.model.DBTable;
+import org.netbeans.modules.sql.framework.model.JDBCConnectionProvider;
 
 
 /**
@@ -202,9 +202,9 @@ public class FlatfileDefinition extends ETLObjectImpl implements ETLObject, Flat
     }
 
     /**
-     * Gets the Table marker for a given otdName
+     * Gets the Table marker for a given dbName
      * 
-     * @param otdName to be used to get Table
+     * @param dbName to be used to get Table
      * @return FlatfileDBTableMarker
      */
     public FlatfileDBTableMarker getFlatfileDBTableMarker(String tableName) {
@@ -242,7 +242,7 @@ public class FlatfileDefinition extends ETLObjectImpl implements ETLObject, Flat
             return modelImpl.getJDBCDriverClassNames();
         }
 
-        throw new Exception("Could not create DatabaseModel implementation for FlatfileDB OTD");
+        throw new Exception("Could not create DatabaseModel implementation for FlatfileDB Database");
     }
 
     /**
@@ -257,7 +257,7 @@ public class FlatfileDefinition extends ETLObjectImpl implements ETLObject, Flat
             return modelImpl.getJDBCDriverClassName();
         }
 
-        throw new Exception("Could not create DatabaseModel implementation for FlatfileDB OTD");
+        throw new Exception("Could not create DatabaseModel implementation for FlatfileDB Database");
     }
 
     /**
@@ -272,7 +272,7 @@ public class FlatfileDefinition extends ETLObjectImpl implements ETLObject, Flat
             return modelImpl.getJDBCDriverType();
         }
 
-        throw new Exception("Could not create DatabaseModel implementation for FlatfileDB OTD");
+        throw new Exception("Could not create DatabaseModel implementation for FlatfileDB Database");
     }
 
     /**
@@ -287,7 +287,7 @@ public class FlatfileDefinition extends ETLObjectImpl implements ETLObject, Flat
             return modelImpl.getJDBCDriverTypes(className);
         }
 
-        throw new Exception("Could not create DatabaseModel implementation for FlatfileDB OTD");
+        throw new Exception("Could not create DatabaseModel implementation for FlatfileDB Database");
     }
 
     /**
@@ -302,7 +302,7 @@ public class FlatfileDefinition extends ETLObjectImpl implements ETLObject, Flat
             return modelImpl.getJDBCConnection();
         }
 
-        throw new Exception("Could not create DatabaseModel implementation for FlatfileDB OTD");
+        throw new Exception("Could not create DatabaseModel implementation for FlatfileDB Database");
 
     }
 
@@ -318,7 +318,7 @@ public class FlatfileDefinition extends ETLObjectImpl implements ETLObject, Flat
             return modelImpl.getJDBCConnection(cl);
         }
 
-        throw new Exception("Could not create DatabaseModel implementation for FlatfileDB OTD");
+        throw new Exception("Could not create DatabaseModel implementation for FlatfileDB Database");
     }
 
     /**
@@ -337,7 +337,7 @@ public class FlatfileDefinition extends ETLObjectImpl implements ETLObject, Flat
             return modelImpl.getJDBCConnection(connProps);
         }
 
-        throw new Exception("Could not create DatabaseModel implementation for FlatfileDB OTD");
+        throw new Exception("Could not create DatabaseModel implementation for FlatfileDB Database");
     }
 
     /**
@@ -357,7 +357,7 @@ public class FlatfileDefinition extends ETLObjectImpl implements ETLObject, Flat
             return modelImpl.getJDBCConnection(connProps, cl);
         }
 
-        throw new Exception("Could not create DatabaseModel implementation for FlatfileDB OTD");
+        throw new Exception("Could not create DatabaseModel implementation for FlatfileDB Database");
     }
 
     /**
@@ -373,7 +373,7 @@ public class FlatfileDefinition extends ETLObjectImpl implements ETLObject, Flat
             return modelImpl.getJDBCConnection(jdbcUrl, uid, passwd);
         }
 
-        throw new Exception("Could not create DatabaseModel implementation for FlatfileDB OTD");
+        throw new Exception("Could not create DatabaseModel implementation for FlatfileDB Database");
     }
 
     /**
@@ -389,7 +389,7 @@ public class FlatfileDefinition extends ETLObjectImpl implements ETLObject, Flat
             return modelImpl.getJDBCConnection(jdbcUrl, uid, passwd, cl);
         }
 
-        throw new Exception("Could not create DatabaseModel implementation for FlatfileDB OTD");
+        throw new Exception("Could not create DatabaseModel implementation for FlatfileDB Database");
     }
 }
 

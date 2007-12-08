@@ -56,7 +56,7 @@ import org.openide.util.NbBundle;
 /**
  * Handles request to edit a source table condition as referenced by a validation error
  * message.
- * 
+ *
  * @author Ritesh Adval
  * @version $Revision$
  */
@@ -67,17 +67,17 @@ public class SourceConditionValidationHandler implements ValidationHandler {
     /**
      * Constructs a new instance of SourceConditionValidationHandler, referencing the
      * given IGraphView instance and SQLCondition.
-     * 
+     *
      * @param gView IGraphView instance in which target table is displayed
      * @param cond SQLCOndition to be edited
      */
-    public SourceConditionValidationHandler(IGraphView gView, SQLCondition cond) {
+    public SourceConditionValidationHandler(IGraphView gView) {
         this.graphView = gView;
     }
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.netbeans.modules.sql.framework.ui.view.validation.ValidationHandler#editValue(java.lang.Object)
      */
     public void editValue(Object val) {
@@ -118,4 +118,3 @@ public class SourceConditionValidationHandler implements ValidationHandler {
         }
     }
 }
-

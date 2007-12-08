@@ -10,7 +10,6 @@ import org.netbeans.modules.etl.ui.DataObjectProvider;
 import org.netbeans.modules.etl.ui.view.ETLCollaborationTopComponent;
 import org.netbeans.modules.sql.framework.ui.graph.actions.GraphAction;
 import org.netbeans.modules.sql.framework.ui.utils.AxionExternalConnectionProvider;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 import com.sun.sql.framework.utils.Logger;

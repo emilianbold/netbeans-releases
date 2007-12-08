@@ -85,24 +85,24 @@ public class SQLUtils {
     /** Undefined jdbc type */
     public static final int JDBCSQL_TYPE_UNDEFINED = -65535;
 
-    private static HashMap dataTypePrecedenceMap = new HashMap();
+    private static HashMap<Integer, Integer> dataTypePrecedenceMap = new HashMap<Integer, Integer>();
 
-    private static Map dbIdNameMap = new TreeMap();
-    private static Map dbNameIdMap = new TreeMap();
+    private static Map<Integer,String> dbIdNameMap = new TreeMap<Integer,String>();
+    private static Map<String, Integer> dbNameIdMap = new TreeMap<String, Integer>();
     
-    private static Map JDBC_SQL_MAP = new HashMap();
+    private static Map<String, String> JDBC_SQL_MAP = new HashMap<String, String>();
 
-    private static Map SQL_JDBC_MAP = new HashMap();
+    private static Map<String, String> SQL_JDBC_MAP = new HashMap<String, String>();
 
-    private static final List SUPPORTED_DATE_FORMATS = new ArrayList();
+    private static final List<String> SUPPORTED_DATE_FORMATS = new ArrayList<String>();
 
-    private static final List SUPPORTED_DATE_PARTS = new ArrayList();
+    private static final List<String> SUPPORTED_DATE_PARTS = new ArrayList<String>();
 
-    private static final List SUPPORTED_INTERVAL_TYPES = new ArrayList();
+    private static final List<String> SUPPORTED_INTERVAL_TYPES = new ArrayList<String>();
 
-    private static final List SUPPORTED_LITERAL_JDBC_TYPES = new ArrayList();
+    private static final List<String> SUPPORTED_LITERAL_JDBC_TYPES = new ArrayList<String>();
 
-    private static final List SUPPORTED_CAST_JDBC_TYPES = new ArrayList();
+    private static final List<String> SUPPORTED_CAST_JDBC_TYPES = new ArrayList<String>();
 
     static {
         dbNameIdMap.put(DBConstants.ANSI92_STR, new Integer(DBConstants.ANSI92));
@@ -114,6 +114,9 @@ public class SQLUtils {
         dbNameIdMap.put(DBConstants.DB2V8_STR, new Integer(DBConstants.DB2V8));
         dbNameIdMap.put(DBConstants.DB2V5_STR, new Integer(DBConstants.DB2V5));
         dbNameIdMap.put(DBConstants.SYBASE_STR, new Integer(DBConstants.SYBASE));
+        dbNameIdMap.put(DBConstants.MYSQL_STR, new Integer(DBConstants.MYSQL));
+        dbNameIdMap.put(DBConstants.DERBY_STR, new Integer(DBConstants.DERBY));
+        dbNameIdMap.put(DBConstants.POSTGRES_STR, new Integer(DBConstants.POSTGRESQL));
     }
     
     static {
@@ -126,6 +129,10 @@ public class SQLUtils {
         dbIdNameMap.put(new Integer(DBConstants.DB2V8), DBConstants.DB2V8_STR);
         dbIdNameMap.put(new Integer(DBConstants.DB2V5), DBConstants.DB2V5_STR);
         dbIdNameMap.put(new Integer(DBConstants.SYBASE), DBConstants.SYBASE_STR);
+        dbIdNameMap.put(new Integer(DBConstants.DERBY), DBConstants.DERBY_STR);
+        dbIdNameMap.put(new Integer(DBConstants.MYSQL), DBConstants.MYSQL_STR);
+        dbIdNameMap.put(new Integer(DBConstants.POSTGRESQL), DBConstants.POSTGRES_STR);
+        
     }
 
     static {
@@ -332,14 +339,14 @@ public class SQLUtils {
      * @param paramList
      * @return preparedStatement string
      */
-    public static String createPreparedStatement(String rawSql, Map attrMap, List paramList) {
+    public static String createPreparedStatement(String rawSql, Map attrMap, List<String> paramList) {
         Iterator iter = attrMap.values().iterator();
         if (!iter.hasNext()) {
             return rawSql;
         }
 
         if (paramList != null) {
-            List orderedSymbolList = SQLUtils.getOrderedSymbolList(rawSql, attrMap);
+            List<String> orderedSymbolList = SQLUtils.getOrderedSymbolList(rawSql, attrMap);
             paramList.clear();
             paramList.addAll(orderedSymbolList);
         }
@@ -376,7 +383,7 @@ public class SQLUtils {
      * @param paramList ordered list of above appearing in the statement
      * @return preparedStatement string with binding parameter (?) for each occurence of the symbols.
      */
-    public static String createPreparedStatement(String rawSql, final List symbols, List orderedSymbols) {
+    public static String createPreparedStatement(String rawSql, final List symbols, List<String> orderedSymbols) {
         String  symbol = null;
         boolean noMore = false;
         Iterator iter = symbols.iterator();
@@ -385,7 +392,7 @@ public class SQLUtils {
         }
 
         if (orderedSymbols != null) {
-            List orderedSymbolList = SQLUtils.getOrderedSymbolList(rawSql, symbols);
+            List<String> orderedSymbolList = SQLUtils.getOrderedSymbolList(rawSql, symbols);
             orderedSymbols.clear();
             orderedSymbols.addAll(orderedSymbolList);
         }
@@ -583,8 +590,8 @@ public class SQLUtils {
      */
     public static int getResultantDataType(int dataType1, int dataType2) {
 
-        Integer dPrecedence1 = (Integer) dataTypePrecedenceMap.get(new Integer(dataType1));
-        Integer dPrecedence2 = (Integer) dataTypePrecedenceMap.get(new Integer(dataType1));
+        Integer dPrecedence1 = dataTypePrecedenceMap.get(new Integer(dataType1));
+        Integer dPrecedence2 = dataTypePrecedenceMap.get(new Integer(dataType1));
 
         int retDataType;
 
@@ -642,8 +649,8 @@ public class SQLUtils {
      * 
      * @return List of standard SQL datatypes.
      */
-    public static List getStdSqlTypes() {
-        return new ArrayList(JDBC_SQL_MAP.keySet());
+    public static List<String> getStdSqlTypes() {
+        return new ArrayList<String>(JDBC_SQL_MAP.keySet());
     }
 
     public static List getSupportedDateParts() {
@@ -663,7 +670,7 @@ public class SQLUtils {
             normalizedName = DBConstants.DB2V7_STR;
         }
 
-        Integer dbType = (Integer) dbNameIdMap.get(normalizedName);
+        Integer dbType = dbNameIdMap.get(normalizedName);
         if (dbType != null) {
             return dbType.intValue();
         }
@@ -672,7 +679,7 @@ public class SQLUtils {
     }
     
     public static String getSupportedDBType(int dbType) {
-        String dbName = (String) dbIdNameMap.get(new Integer(dbType));
+        String dbName = dbIdNameMap.get(new Integer(dbType));
         if (dbName != null) {
             return dbName;
         }
@@ -780,6 +787,7 @@ public class SQLUtils {
                             ps.setTimestamp(index, new java.sql.Timestamp(ts));
                         } catch (java.sql.SQLException e) {
                             ps.setDate(index, new java.sql.Date(ts));
+
                         }
                         break;
 
@@ -802,7 +810,7 @@ public class SQLUtils {
 
 
     public static Map getRuntimeInputNameValueMap(Map attribMap){
-        Map values = new HashMap();
+        Map<String, Object> values = new HashMap<String, Object>();
         RuntimeAttribute ra = null;
         int jdbcType = 0;
         Object valueObj = null;
@@ -980,8 +988,8 @@ public class SQLUtils {
      * @param attrMap
      * @return
      */
-    private static List getOrderedSymbolList(String rawSql, final List symbolList) {
-        Map map = new TreeMap();
+    private static List<String> getOrderedSymbolList(String rawSql, final List symbolList) {
+        Map<Integer, String> map = new TreeMap<Integer, String>();
         String symbolName = null;
 
         if ((rawSql != null) && (symbolList != null)) {
@@ -1006,7 +1014,7 @@ public class SQLUtils {
             }
         }
 
-        return new ArrayList(map.values());
+        return new ArrayList<String>(map.values());
     }
 
     /**
@@ -1017,8 +1025,8 @@ public class SQLUtils {
      * @param attrMap
      * @return
      */
-    private static List getOrderedSymbolList(String rawSql, Map attrMap) {
-        Map map = new TreeMap();
+    private static List<String> getOrderedSymbolList(String rawSql, Map attrMap) {
+        Map<Integer, String> map = new TreeMap<Integer, String>();
 
         if ((rawSql != null) && (attrMap != null)) {
             Iterator iter = attrMap.values().iterator();
@@ -1044,7 +1052,7 @@ public class SQLUtils {
             }
         }
 
-        return new ArrayList(map.values());
+        return new ArrayList<String>(map.values());
     }
 
     /* Private no-arg constructor; this class should not be instantiable. */

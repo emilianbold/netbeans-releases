@@ -43,9 +43,8 @@ package org.netbeans.modules.mashup.db.model;
 import java.io.File;
 import java.util.Map;
 
-import org.netbeans.modules.model.database.DBTable;
 import org.netbeans.modules.sql.framework.common.utils.FlatfileDBTableMarker;
-import org.w3c.dom.Element;
+import org.netbeans.modules.sql.framework.model.SQLDBTable;
 
 
 /**
@@ -56,7 +55,7 @@ import org.w3c.dom.Element;
  * @author Ahimanikya Satapathy
  * @version $Revision$
  */
-public interface FlatfileDBTable extends DBTable, FlatfileDBTableMarker {
+public interface FlatfileDBTable extends SQLDBTable, FlatfileDBTableMarker {
 
     public static final String PROP_CREATE_IF_NOT_EXIST = "CREATE_IF_NOT_EXIST";
 
@@ -65,14 +64,6 @@ public interface FlatfileDBTable extends DBTable, FlatfileDBTableMarker {
 
     /* Constant: prefix of names for wizard-only properties */
     public static final String PROP_WIZARD = "WIZARD"; // NOI18N
-
-    /**
-     * Adds a DBColumn instance to this table.
-     * 
-     * @param theColumn column to be added.
-     * @return true if successful. false if failed.
-     */
-    boolean addColumn(FlatfileDBColumn theColumn);
 
     /**
      * Clone a deep copy of DBTable.
@@ -91,15 +82,6 @@ public interface FlatfileDBTable extends DBTable, FlatfileDBTableMarker {
      *         is the same. 1 if the column name is greater than obj to be compared.
      */
     int compareTo(Object refObj);
-
-    /**
-     * Performs deep copy of contents of given DBTable. We deep copy (that is, the method
-     * clones all child objects such as columns) because columns have a parent-child
-     * relationship that must be preserved internally.
-     * 
-     * @param source DBTable providing contents to be copied.
-     */
-    void copyFrom(DBTable source);
 
     /**
      * Performs deep copy of contents of given FlatfileDBTable. We deep copy (that is, the
@@ -127,21 +109,6 @@ public interface FlatfileDBTable extends DBTable, FlatfileDBTableMarker {
      */
     FlatfileDBColumn createColumn(String columnName, int jdbcType, int scale, int precision, boolean isPK, boolean isFK, boolean isIndexed,
             boolean nullable);
-
-    /**
-     * Deletes all columns associated with this table.
-     * 
-     * @return true if all columns were deleted successfully, false otherwise.
-     */
-    boolean deleteAllColumns();
-
-    /**
-     * Deletes DBColumn, if any, associated with the given name from this table.
-     * 
-     * @param columnName column name to be removed.
-     * @return true if successful. false if failed.
-     */
-    boolean deleteColumn(String columnName);
 
     /**
      * Overrides default implementation to return value based on memberwise comparison.
@@ -234,7 +201,6 @@ public interface FlatfileDBTable extends DBTable, FlatfileDBTableMarker {
      */
     int hashCode();
 
-    void parseXML(Element xmlElement);
     /**
      * Sets description text for this instance.
      * 
@@ -264,23 +230,6 @@ public interface FlatfileDBTable extends DBTable, FlatfileDBTableMarker {
      */
     void setLocalFilePath(File localFile);
 
-    /*
-     * Setters and non-API helper methods for this implementation.
-     */
-    /**
-     * Sets table name to new value.
-     * 
-     * @param newName new value for table name
-     */
-    void setName(String newName);
-
-    /**
-     * Sets parent DatabaseModel to the given reference.
-     * 
-     * @param newParent new DatabaseModel parent
-     */
-    void setParent(FlatfileDatabaseModel newParent);
-
     void setParseType(String type);
 
     void setProperties(Map newProps);
@@ -294,14 +243,6 @@ public interface FlatfileDBTable extends DBTable, FlatfileDBTableMarker {
      * @return table name.
      */
     String toString();
-
-    /**
-     * Marshall this object to XML string.
-     * 
-     * @param prefix
-     * @return XML string
-     */
-    String toXMLString(String prefix);
 
     void updateProperties(Map newProps);
 }

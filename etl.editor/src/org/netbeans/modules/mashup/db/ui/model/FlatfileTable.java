@@ -44,13 +44,13 @@ import java.util.List;
 
 import org.netbeans.modules.mashup.db.common.PropertyKeys;
 import org.netbeans.modules.mashup.db.model.FlatfileDBTable;
-import org.netbeans.modules.model.database.DBColumn;
-import org.netbeans.modules.model.database.ForeignKey;
-import org.netbeans.modules.model.database.Index;
-import org.netbeans.modules.model.database.PrimaryKey;
+import org.netbeans.modules.sql.framework.model.DBColumn;
 import org.openide.util.NbBundle;
 
 import com.sun.sql.framework.utils.StringUtil;
+import org.netbeans.modules.sql.framework.model.ForeignKey;
+import org.netbeans.modules.sql.framework.model.Index;
+import org.netbeans.modules.sql.framework.model.PrimaryKey;
 
 /**
  * Abstract bean wrapper for FlatfileDBTable instances to expose common read-only

@@ -1,65 +1,39 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
  *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.etl.codegen;
 
 import java.util.Iterator;
 import java.util.List;
-
 import org.netbeans.modules.etl.codegen.impl.OnePassETLStrategyBuilderImpl;
 import org.netbeans.modules.etl.codegen.impl.PipelinedStrategyBuilderImpl;
 import org.netbeans.modules.etl.codegen.impl.SimpleETLStrategyBuilderImpl;
 import org.netbeans.modules.etl.codegen.impl.StagingStrategyBuilder;
 import org.netbeans.modules.etl.codegen.impl.ValidatingStrategyBuilderImpl;
-import org.netbeans.modules.model.database.DBConnectionDefinition;
-import org.netbeans.modules.model.database.DBTable;
-import org.netbeans.modules.sql.framework.common.jdbc.SQLUtils;
 import org.netbeans.modules.sql.framework.model.SQLConstants;
 import org.netbeans.modules.sql.framework.model.SQLDefinition;
 import org.netbeans.modules.sql.framework.model.TargetTable;
 import org.netbeans.modules.sql.framework.model.visitors.SQLValidationVisitor;
 import org.openide.util.NbBundle;
-
 import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.jdbc.DBConstants;
 import com.sun.sql.framework.utils.StringUtil;
+import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
+import org.netbeans.modules.sql.framework.model.DBTable;
 
 /**
  * Factory for ETLStrategyBuilder. Based a matching pattern I will create an appropriate
@@ -83,6 +57,7 @@ public class PatternFinder {
         }
         return true;
     }
+
     public static ETLStrategyBuilder createETLStrategyBuilder(TargetTable tt, ETLScriptBuilderModel model) throws BaseException {
         // Optimization: Depending on the pattern decide which strategy to use
         List sourceTables = tt.getSourceTableList();
@@ -100,7 +75,7 @@ public class PatternFinder {
                 throw new BaseException(desc);
             }
 
-            if (PatternFinder.isSourceAndTargetAreInternalButDifferentOtd(definition)) {
+            if (PatternFinder.isSourceAndTargetAreInternalButDifferent(definition)) {
                 String desc = NbBundle.getMessage(SQLValidationVisitor.class, "MSG_Staging_mode_not_allowed");
                 throw new BaseException(desc);
             }
@@ -123,8 +98,7 @@ public class PatternFinder {
             } else if (isSourceTargetFromSameDB(sourceTables, tt, model)) {
                 // If Source(s) and Target are both from the same DB
                 builder = new SimpleETLStrategyBuilderImpl(model);
-            } else if (isSameDBTables(sourceTables.iterator(), model) && tt.getStatementType() == SQLConstants.INSERT_STATEMENT
-                && (!tt.getJoinCondition().isConditionDefined()) && (!tt.getFilterCondition().isConditionDefined())) {
+            } else if (isSameDBTables(sourceTables.iterator(), model) && tt.getStatementType() == SQLConstants.INSERT_STATEMENT && (!tt.getJoinCondition().isConditionDefined()) && (!tt.getFilterCondition().isConditionDefined())) {
                 // If all source table are from same DB and statement type is Insert
                 //builder = new OnePassETLStrategyBuilderImpl();
                 builder = new OnePassETLStrategyBuilderImpl(model);
@@ -167,9 +141,8 @@ public class PatternFinder {
 
     public static boolean isInternalDBConnection(DBConnectionDefinition dbConnDef) {
         boolean ret = false;
-        int dbType = -1;
         if (dbConnDef != null) {
-           if (dbConnDef.getDBType().equalsIgnoreCase("AXION") || dbConnDef.getDBType().equalsIgnoreCase("Internal") ) {
+            if (dbConnDef.getDBType().equalsIgnoreCase("AXION") || dbConnDef.getDBType().equalsIgnoreCase("Internal")) {
                 ret = true;
             }
         }
@@ -187,14 +160,14 @@ public class PatternFinder {
     /**
      * @param sqlDefinition
      * @return true only if Target is internal and All its source are also internal but
-     *         belong to OTD other than Target Table's.
+     *         belong to database other than Target Table's.
      * @throws BaseException
      */
-    public static boolean isSourceAndTargetAreInternalButDifferentOtd(SQLDefinition sqlDefinition) throws BaseException {
+    public static boolean isSourceAndTargetAreInternalButDifferent(SQLDefinition sqlDefinition) throws BaseException {
         boolean ret = false;
         boolean internalTargetTableFound = false;
         boolean allSourcesInternal = false;
-        boolean otdDifferent = false;
+        boolean dbDifferent = false;
 
         List targetTables = sqlDefinition.getTargetTables();
         Iterator ttIter = targetTables.iterator();
@@ -212,7 +185,7 @@ public class PatternFinder {
             if (isInternalDBConnection(tgtConnDef)) {
                 internalTargetTableFound = true;
                 allSourcesInternal = true;
-                otdDifferent = false;
+                dbDifferent = false;
 
                 srcIter = tt.getSourceTableList().iterator();
                 while (srcIter.hasNext()) {
@@ -220,7 +193,7 @@ public class PatternFinder {
                     srcConnDef = srcTable.getParent().getConnectionDefinition();
                     if (isInternalDBConnection(srcConnDef)) {
                         if (!isIdenticalDBConDef(srcConnDef, tgtConnDef)) {
-                            otdDifferent = true;
+                            dbDifferent = true;
                         }
                     } else {
                         allSourcesInternal = false;
@@ -228,7 +201,7 @@ public class PatternFinder {
                     }
                 }
 
-                if (internalTargetTableFound && allSourcesInternal && otdDifferent) {
+                if (internalTargetTableFound && allSourcesInternal && dbDifferent) {
                     ret = true;
                     break;
                 }
@@ -258,8 +231,7 @@ public class PatternFinder {
         boolean identical = false;
 
         if (c1 != null && c2 != null) {
-            identical = StringUtil.isIdenticalIgnoreCase(ignoreOptional(c1.getConnectionURL()), ignoreOptional(c2.getConnectionURL()))
-                && StringUtil.isIdentical(c1.getUserName(), c2.getUserName()) && StringUtil.isIdentical(c1.getPassword(), c2.getPassword());
+            identical = StringUtil.isIdenticalIgnoreCase(ignoreOptional(c1.getConnectionURL()), ignoreOptional(c2.getConnectionURL())) && StringUtil.isIdentical(c1.getUserName(), c2.getUserName()) && StringUtil.isIdentical(c1.getPassword(), c2.getPassword());
         }
         return identical;
     }

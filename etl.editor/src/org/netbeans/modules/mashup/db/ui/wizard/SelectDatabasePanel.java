@@ -1,12 +1,10 @@
 package org.netbeans.modules.mashup.db.ui.wizard;
 
-import com.sun.sql.framework.exception.BaseException;
 import java.awt.Component;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
 
-import org.netbeans.modules.mashup.db.common.FlatfileDBConnectionFactory;
 import org.netbeans.modules.mashup.db.model.FlatfileDBConnectionDefinition;
 import org.netbeans.modules.mashup.db.model.FlatfileDBTable;
 import org.netbeans.modules.mashup.db.model.FlatfileDatabaseModel;

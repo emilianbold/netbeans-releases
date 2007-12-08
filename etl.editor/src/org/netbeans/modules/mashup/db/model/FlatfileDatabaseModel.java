@@ -41,11 +41,9 @@
 package org.netbeans.modules.mashup.db.model;
 
 import java.util.Map;
-
-import org.netbeans.modules.model.database.DBTable;
-import org.netbeans.modules.model.database.DatabaseModel;
-import org.netbeans.modules.model.database.JDBCConnectionProvider;
-import org.w3c.dom.Element;
+import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
+import org.netbeans.modules.sql.framework.model.JDBCConnectionProvider;
+import org.netbeans.modules.sql.framework.model.SQLDBModel;
 
 
 /**
@@ -58,7 +56,7 @@ import org.w3c.dom.Element;
  * @author Ahimanikya Satapathy
  * @version $Revision$
  */
-public interface FlatfileDatabaseModel extends DatabaseModel, JDBCConnectionProvider {
+public interface FlatfileDatabaseModel extends SQLDBModel, JDBCConnectionProvider {
 
     /**
      * Adds new SourceTable to the model.
@@ -75,42 +73,12 @@ public interface FlatfileDatabaseModel extends DatabaseModel, JDBCConnectionProv
     Object clone();
 
     /**
-     * Copies member values from those contained in the given DatabaseModel instance.
-     */
-    void copyFrom(DatabaseModel src);
-
-    /**
      * Copies member values from those contained in the given FlatfileDatabaseModel
      * instance.
      * 
      * @param src DatabaseModel whose contents are to be copied into this instance
      */
     void copyFrom(FlatfileDatabaseModel src);
-
-    /**
-     * Create DBTable instance with the given table, schema, and catalog names.
-     * 
-     * @param tableName table name of new table
-     * @param schemaName schema name of new table
-     * @param catalogName catalog name of new table
-     * @return an instance of ETLTable if successful, null if failed.
-     */
-    DBTable createTable(String tableName, String schemaName, String catalogName);
-
-    /**
-     * Deletes all tables associated with this data source.
-     * 
-     * @return true if all tables were deleted successfully, false otherwise.
-     */
-    boolean deleteAllTables();
-
-    /**
-     * Delete table from the ETLDataSource
-     * 
-     * @param fqTableName fully qualified name of table to be deleted.
-     * @return true if successful. false if failed.
-     */
-    boolean deleteTable(String fqTableName);
 
     /**
      * @see java.lang.Object#equals
@@ -142,37 +110,18 @@ public interface FlatfileDatabaseModel extends DatabaseModel, JDBCConnectionProv
      */
     FlatfileDBTable getFileMatchingTableName(String tableName);
 
-    FlatfileDBConnectionDefinition getFlatfileDBConnectionDefinition(boolean download);
+    DBConnectionDefinition getFlatfileDBConnectionDefinition(boolean download);
 
     Map getFlatfileTablePropertyMap(String flatfileName);
 
     Map getFlatfileTablePropertyMaps();
 
-    /**
-     * @see com.sun.jbi.ui.devtool.flatfile.db.otd.repository.FlatfileDatabaseModel#getMajorVersion
-     */
     int getMajorVersion();
 
-    /**
-     * @see com.sun.jbi.ui.devtool.flatfile.db.otd.repository.FlatfileDatabaseModel#getMicroVersion
-     */
     int getMicroVersion();
 
-    /**
-     * @see com.sun.jbi.ui.devtool.flatfile.db.otd.repository.FlatfileDatabaseModel#getMinorVersion
-     */
     int getMinorVersion();
 
-    /**
-     * Gets a read-only Map of table names to available DBTable instances in this model.
-     * 
-     * @return readonly Map of table names to DBTable instances
-     */
-    Map getTableMap();
-
-    /**
-     * @see com.sun.jbi.ui.devtool.flatfile.db.otd.repository.FlatfileDatabaseModel#getVersionString
-     */
     String getVersionString();
 
     /**
@@ -185,18 +134,11 @@ public interface FlatfileDatabaseModel extends DatabaseModel, JDBCConnectionProv
     int hashCode();
 
     /**
-     * Unmarshal this object from XML element.
-     * 
-     * @param xmlElement
-     */
-    void parseXML(Element xmlElement);
-
-    /**
      * Setter for FlatfileDBConnectionDefinition
      * 
      * @param theConnectionDefinition to be set
      */
-    void setConnectionDefinition(FlatfileDBConnectionDefinition theConnectionDefinition);
+    void setConnectionDefinition(DBConnectionDefinition theConnectionDefinition);
 
     /**
      * Sets the Connection Name associated with connection name
@@ -206,24 +148,10 @@ public interface FlatfileDatabaseModel extends DatabaseModel, JDBCConnectionProv
     void setConnectionName(String theConName);
 
     /**
-     * Sets the description string of this DatabaseModel
-     * 
-     * @param newDesc new description string
-     */
-    void setDescription(String newDesc);
-
-    /**
-     * Setter for Model Name
-     * 
-     * @param theModelName
-     */
-    void setModelName(String theModelName);
-
-    /**
      * Sets repository object, if any, providing underlying data for this DatabaseModel
      * implementation.
      * 
-     * @param obj StcdbObjectTypeDefinition hosting this object's metadata, or null if data are not
+     * @param obj FlatfileDefinition hosting this object's metadata, or null if data are not
      *        held by a StcdbObjectTypeDefinition.
      */
     void setSource(FlatfileDefinition obj);
@@ -242,14 +170,6 @@ public interface FlatfileDatabaseModel extends DatabaseModel, JDBCConnectionProv
      * @return model name.
      */
     String toString();
-
-    /**
-     * Marshall this object to XML string.
-     * 
-     * @param prefix
-     * @return XML string
-     */
-    String toXMLString(String prefix);
 
 }
 

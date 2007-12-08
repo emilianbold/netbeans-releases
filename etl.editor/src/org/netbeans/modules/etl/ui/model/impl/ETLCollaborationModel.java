@@ -50,13 +50,11 @@ import org.netbeans.modules.etl.ui.ETLDataObject;
 import org.netbeans.modules.sql.framework.common.utils.XmlUtil;
 import org.netbeans.modules.sql.framework.ui.model.CollabSQLUIModel;
 import org.netbeans.modules.sql.framework.ui.model.impl.CollabSQLUIModelImpl;
-import org.w3c.dom.Element;
 
 /**
  * This class represents a model for GUI collaboration objects
  *
  * @author Ritesh Adval
- * @version $Revision$
  */
 
 public class ETLCollaborationModel extends CollabSQLUIModelImpl implements CollabSQLUIModel {
@@ -124,6 +122,7 @@ public class ETLCollaborationModel extends CollabSQLUIModelImpl implements Colla
         reLoad(this.eTLXml);
     }
     
+    @Override
     public void reLoad(String etlDefinitionXml) throws BaseException {
         this.eTLXml = etlDefinitionXml;
         

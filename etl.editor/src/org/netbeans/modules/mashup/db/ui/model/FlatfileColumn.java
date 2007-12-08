@@ -43,10 +43,10 @@ package org.netbeans.modules.mashup.db.ui.model;
 import java.util.Map;
 
 import org.netbeans.modules.mashup.db.model.FlatfileDBColumn;
-import org.netbeans.modules.model.database.DBTable;
 import org.openide.util.NbBundle;
 
 import com.sun.sql.framework.utils.StringUtil;
+import org.netbeans.modules.sql.framework.model.DBTable;
 
 /**
  * @author Jonathan Giron

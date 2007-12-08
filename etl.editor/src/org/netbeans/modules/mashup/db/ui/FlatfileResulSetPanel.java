@@ -127,7 +127,7 @@ public class FlatfileResulSetPanel extends JPanel implements ActionListener, Pro
                 Object obj = node.getUserObject();
                 if (obj instanceof FlatfileTable) {
                     FlatfileTable table = (FlatfileTable) obj;
-                    conn = otd.getJDBCConnection();
+                    conn = db.getJDBCConnection();
                     stmt = conn.createStatement();
                     String selectSQL = table.getSelectStatementSQL(ct);
                     Logger.print(Logger.DEBUG, FlatfileResulSetPanel.class.getName(), selectSQL);
@@ -179,7 +179,6 @@ public class FlatfileResulSetPanel extends JPanel implements ActionListener, Pro
                 recordCount.setEnabled(true);
                 
                 if (stmt != null) {
-                    stmt.execute("shutdown");
                     stmt.close();
                 }
                 
@@ -201,18 +200,17 @@ public class FlatfileResulSetPanel extends JPanel implements ActionListener, Pro
     
     private static final String CMD_SHOW_DATA = "Show Data"; // NOI18N
     
-    public static Icon getOTDIcon() {
+    public static Icon getDbIcon() {
         Icon icon = null;
         try {
-            icon = new ImageIcon(Utilities.loadImage("org/netbeans/modules/mashup/db/ui/resource/images/OTD.png"));
-            ;
+            icon = new ImageIcon(Utilities.loadImage("org/netbeans/modules/mashup/db/ui/resource/images/root.png"));
         } catch (Exception ex) {
             // Log exception
         }
         return icon;
     }
     
-    private FlatfileDefinition otd = null;
+    private FlatfileDefinition db = null;
     private JTextField recordCount;
     private ResultSetTablePanel recordViewer;
     private JButton showDataBtn;
@@ -220,9 +218,9 @@ public class FlatfileResulSetPanel extends JPanel implements ActionListener, Pro
     
     private FlatfileTreeTableView treeView = null;
     
-    public FlatfileResulSetPanel(FlatfileDefinition otdInstance) {
+    public FlatfileResulSetPanel(FlatfileDefinition dbInstance) {
         super();
-        otd = otdInstance;
+        db = dbInstance;
         
         this.setBorder(BorderFactory.createTitledBorder("Selected Table Content"));
         this.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));

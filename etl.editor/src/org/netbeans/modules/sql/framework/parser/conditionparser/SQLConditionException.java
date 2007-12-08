@@ -45,7 +45,6 @@ import com.sun.sql.framework.exception.BaseException;
 
 /**
  * @author Ritesh Adval
- * @version $Revision$
  */
 public class SQLConditionException extends BaseException {
 

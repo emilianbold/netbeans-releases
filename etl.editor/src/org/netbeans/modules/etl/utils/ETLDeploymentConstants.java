@@ -47,6 +47,8 @@ package org.netbeans.modules.etl.utils;
  * @author Sudhi seshachala
  * @version $Revision$
  */
+
+//TODO: XXXX Need to clean this XXXX
 public class ETLDeploymentConstants {
 
     public static String AXION_URL_PREFIX = "jdbc:axiondb:";

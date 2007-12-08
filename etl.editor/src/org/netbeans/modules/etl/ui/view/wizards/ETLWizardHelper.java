@@ -30,21 +30,21 @@ public class ETLWizardHelper {
     }
     
      /**
-     * Gets List of destination OTDs as selected by user.
+     * Gets List of destination Databases as selected by user.
      * 
-     * @return List (possibly empty) of selected destination OTDs
+     * @return List (possibly empty) of selected destination Databases
      */
-    public List getSelectedDestinationOtds() {
-        return getSelectedOtdsOfType(ETLCollaborationWizard.TARGET_DB, this.mDescriptor);
+    public List getSelectedDestinationDb() {
+        return getSelectedDbOfType(ETLCollaborationWizard.TARGET_DB, this.mDescriptor);
     }
 
     /**
-     * Gets List of source OTDs as selected by user.
+     * Gets List of source Databases as selected by user.
      * 
-     * @return List (possibly empty) of selected source OTDs
+     * @return List (possibly empty) of selected source Databases
      */
-    public List getSelectedSourceOtds() {
-        return getSelectedOtdsOfType(ETLCollaborationWizard.SOURCE_DB, this.mDescriptor);
+    public List getSelectedSourceDb() {
+        return getSelectedDbOfType(ETLCollaborationWizard.SOURCE_DB, this.mDescriptor);
     }
     
     public SQLJoinView getSQLJoinView() {
@@ -55,7 +55,7 @@ public class ETLWizardHelper {
         return (List) this.mDescriptor.getProperty(ETLCollaborationWizard.JOIN_VIEW_VISIBLE_COLUMNS);
     }
     
-    private static List getSelectedOtdsOfType(String typeKey, WizardDescriptor descriptor) {
+    private static List getSelectedDbOfType(String typeKey, WizardDescriptor descriptor) {
         List selections = Collections.EMPTY_LIST;
         if (descriptor != null && typeKey != null) {
             selections = (List) descriptor.getProperty(typeKey);

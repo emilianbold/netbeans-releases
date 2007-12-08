@@ -42,12 +42,18 @@ package org.netbeans.modules.sql.framework.ui.view.validation;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.net.URL;
 import java.util.List;
-
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
-
+import javax.swing.JToolBar;
+import org.netbeans.modules.sql.framework.model.SQLObject;
 import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
+import org.netbeans.modules.sql.framework.ui.view.IGraphViewContainer;
 
 
 /**
@@ -56,16 +62,17 @@ import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
 public class SQLValidationView extends JPanel {
 
     private static final String TABLE_VIEW = "table_view";
-
     private static final String TEXT_VIEW = "text_view";
-
     private ValidationTableView vTableView;
-
     private JTextArea textArea;
-
     private JPanel cardPanel;
-
     private IGraphView graphView;
+    private JPanel left;
+    private JToolBar verticalBar;
+    private JButton refreshButton;
+    private ActionListener aListener;
+    private SQLObject sqlObj;
+    private IGraphViewContainer sqlView;
 
     public SQLValidationView(IGraphView gView) {
         this.graphView = gView;
@@ -75,9 +82,33 @@ public class SQLValidationView extends JPanel {
     private void initGui() {
         this.setLayout(new BorderLayout());
 
+        //Adding vertical toolbar
+        left = new JPanel();
+        left.setLayout(new BorderLayout());
+        verticalBar = new JToolBar(JToolBar.VERTICAL);
+        verticalBar.setFloatable(false);
+        if (verticalBar != null)
+            left.add(verticalBar, BorderLayout.WEST);
+
+        //add refresh button
+        URL url = getClass().getResource("/org/netbeans/modules/sql/framework/ui/resources/images/rerun.png");
+        refreshButton = new JButton(new ImageIcon(url));
+        refreshButton.setToolTipText("Refresh");
+        refreshButton.addActionListener(aListener);
+        verticalBar.add(refreshButton);
+        ActionListener aListener = new ActionListener() {
+
+                    public void actionPerformed(ActionEvent e) {
+                        Object src = e.getSource();
+                        if (src.equals(refreshButton)) {
+                            validate();
+                        }
+                    }
+                };
         cardPanel = new JPanel();
         cardPanel.setLayout(new CardLayout());
         this.add(cardPanel, BorderLayout.CENTER);
+        this.add(left, BorderLayout.WEST);
 
         //add table panel
         vTableView = new ValidationTableView(this.graphView);
@@ -86,7 +117,6 @@ public class SQLValidationView extends JPanel {
         //add text panel
         textArea = new JTextArea();
         cardPanel.add(textArea, TEXT_VIEW);
-
     }
 
     public void setValidationInfos(List vInfos) {
@@ -108,4 +138,3 @@ public class SQLValidationView extends JPanel {
         cl.show(cardPanel, TEXT_VIEW);
     }
 }
-

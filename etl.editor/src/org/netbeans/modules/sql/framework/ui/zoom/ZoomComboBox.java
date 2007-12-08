@@ -48,10 +48,8 @@ import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Vector;
-
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
-
 import org.netbeans.modules.etl.ui.DataObjectProvider;
 import org.netbeans.modules.etl.ui.view.ETLCollaborationTopComponent;
 import org.openide.windows.TopComponent;
@@ -61,59 +59,51 @@ import org.openide.windows.TopComponent;
  * @author Ritesh Adval
  */
 public class ZoomComboBox extends JPanel implements PropertyChangeListener {
-    
+
     private ZoomSupport zoomableComponent;
     private JComboBox zoomBox;
     private double lastValue;
     private static final Dimension COMBO_BOX_SIZE = new Dimension(60, 20);
     private static final Dimension ZOOM_PANEL_SIZE = new Dimension(70, 25);
-    
+
     /** Creates a new instance of ZoomComboBox */
     public ZoomComboBox() {
         this.setLayout(new FlowLayout(java.awt.FlowLayout.LEFT));
-        
+
         zoomBox = new JComboBox(initializeValues());
         zoomBox.setSelectedIndex(4);
-        
+
         zoomBox.addItemListener(new ZoomFactorItemListener());
-        
+
         zoomBox.setPreferredSize(COMBO_BOX_SIZE);
         zoomBox.setSize(COMBO_BOX_SIZE);
         this.add(zoomBox);
         this.setMaximumSize(ZOOM_PANEL_SIZE);
-        
+
         TopComponent.getRegistry().addPropertyChangeListener(this);
-        
     }
-    
+
+    private void createZoomValue(Vector<ZoomComboBox.ZoomValues> v, String str, double val) {
+        ZoomValues zoomVal = new ZoomValues(str, val);
+        v.add(zoomVal);
+    }
+
     private Vector initializeValues() {
-        Vector vec = new Vector();
-        ZoomValues val1 = new ZoomValues("400%", 4.0);
-        vec.add(val1);
-        ZoomValues val2 = new ZoomValues("300%", 3.0);
-        vec.add(val2);
-        ZoomValues val3 = new ZoomValues("200%", 2.0);
-        vec.add(val3);
-        ZoomValues val4 = new ZoomValues("150%", 1.5);
-        vec.add(val4);
-        ZoomValues val5 = new ZoomValues("100%", 1.0);
-        vec.add(val5);
-        ZoomValues val6 = new ZoomValues("75%", .75);
-        vec.add(val6);
-        ZoomValues val7 = new ZoomValues("66%", .66);
-        vec.add(val7);
-        ZoomValues val8 = new ZoomValues("50%", .50);
-        vec.add(val8);
-        ZoomValues val9 = new ZoomValues("33%", .33);
-        vec.add(val9);
-        ZoomValues val10 = new ZoomValues("25%", .25);
-        vec.add(val10);
-        ZoomValues val11 = new ZoomValues("Fit", 1.0);
-        vec.add(val11);
-        
+        Vector<ZoomValues> vec = new Vector<ZoomValues>();
+        createZoomValue(vec, "400%", 4.0);
+        createZoomValue(vec, "300%", 3.0);
+        createZoomValue(vec, "200%", 2.0);
+        createZoomValue(vec, "150%", 1.5);
+        createZoomValue(vec, "100%", 1.0);
+        createZoomValue(vec, "75%", .75);
+        createZoomValue(vec, "66%", .66);
+        createZoomValue(vec, "50%", .50);
+        createZoomValue(vec, "33%", .33);
+        createZoomValue(vec, "25%", .25);
+        createZoomValue(vec, "Fit", 1.0);
         return vec;
     }
-    
+
     /**
      * This method gets called when a bound property is changed.
      *
@@ -123,9 +113,9 @@ public class ZoomComboBox extends JPanel implements PropertyChangeListener {
     public void propertyChange(PropertyChangeEvent evt) {
         zoomBox.setEnabled(true);
     }
-    
+
     class ZoomFactorItemListener implements ItemListener {
-        
+
         /**
          * Invoked when an item has been selected or deselected by the user. The code
          * written for this method performs the operations that need to occur when an item
@@ -136,7 +126,7 @@ public class ZoomComboBox extends JPanel implements PropertyChangeListener {
             if (zoomableComponent != null && val.getValue() != lastValue) {
                 zoomableComponent.setZoomFactor(val.getValue());
             }
-            
+
             lastValue = val.getValue();
             ETLCollaborationTopComponent topComp = null;
             try {
@@ -147,23 +137,24 @@ public class ZoomComboBox extends JPanel implements PropertyChangeListener {
             }
         }
     }
-    
+
     class ZoomValues {
+
         private String displayValue;
         private double value;
-        
+
         ZoomValues(String displayValue, double value) {
             this.displayValue = displayValue;
             this.value = value;
         }
-        
+
+        @Override
         public String toString() {
             return displayValue;
         }
-        
+
         public double getValue() {
             return this.value;
         }
     }
 }
-

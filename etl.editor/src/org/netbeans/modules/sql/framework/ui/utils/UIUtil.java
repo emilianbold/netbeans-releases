@@ -58,9 +58,7 @@ import javax.swing.JRootPane;
 import javax.swing.KeyStroke;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.model.database.DBColumn;
-import org.netbeans.modules.model.database.DBTable;
-import org.netbeans.modules.model.database.ForeignKey;
+import org.netbeans.modules.sql.framework.model.DBColumn;
 import org.netbeans.modules.sql.framework.model.SQLConstants;
 import org.netbeans.modules.sql.framework.model.SQLDBColumn;
 import org.netbeans.modules.sql.framework.model.SQLDBTable;
@@ -70,11 +68,12 @@ import org.netbeans.modules.sql.framework.model.TargetTable;
 import org.netbeans.modules.sql.framework.model.utils.SQLObjectUtil;
 
 import com.sun.sql.framework.utils.StringUtil;
+import org.netbeans.modules.sql.framework.model.DBTable;
+import org.netbeans.modules.sql.framework.model.ForeignKey;
 /**
 * Provides UI-related facilities.
 *
 * @author Wei Han, Ritesh Adval, Jonathan Giron
-* @version $Revision$
 */
 
 public abstract class UIUtil {
@@ -199,7 +198,7 @@ public abstract class UIUtil {
        return strBuf.toString();
    }
 
-   private static String getForeignKeyString(DBColumn column) {
+   public static String getForeignKeyString(DBColumn column) {
        String refString = column.getName() + " --> ";
        StringBuilder str = new StringBuilder(refString);
        DBTable table = column.getParent();
@@ -302,9 +301,15 @@ public abstract class UIUtil {
            strBuf.append("</b> </td> </tr>");
        }
 
-       strBuf.append("<tr> <td>&nbsp;Connection URL </td> <td> &nbsp; : &nbsp; <b>");
-       strBuf.append(table.getParent().getModelName()).append("</b> </td> </tr>");
-
+       strBuf.append("<tr> <td>&nbsp; ConnectionURL </td> <td> &nbsp; : &nbsp; <b>");
+       
+       String URL = table.getParent().getModelName();
+       if (URL.length() > 40) {
+           strBuf.append("...").append(URL.substring(URL.length() - 40));
+       } else {
+           strBuf.append(URL).append("</b> </td> </tr>");
+       }
+       
        strBuf.append("<tr> <td>&nbsp; DB Type </td> <td> &nbsp; : &nbsp; <b>");
        strBuf.append(table.getParent().getConnectionDefinition().getDBType()).append("</b> </td> </tr>");
 

@@ -150,6 +150,8 @@ public class FlatfileTreeTableModel extends NodeTreeModel {
                         ffTable = new DelimitedFlatfile(table);
                     } else if (PropertyKeys.FIXEDWIDTH.equalsIgnoreCase(fileType)) {
                         ffTable = new FixedWidthFlatfile(table);
+                    }  else {
+                        ffTable = new FlatfileTable(table) {};
                     }
 
                     if (ffTable != null) {

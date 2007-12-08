@@ -1,6 +1,6 @@
 /*
  * The contents of this file are subject to the terms of the Common
- * Development
+ * Development and Distribution License (the License). You may not use this
 The contents of this file are subject to the terms of either the GNU
 General Public License Version 2 only ("GPL") or the Common
 Development and Distribution License("CDDL") (collectively, the
@@ -18,11 +18,9 @@ accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
-
 Contributor(s):
  *
- * Copyright 2006 Sun Microsystems, Inc. All Rights Reserved.
-
+ * Copyright 2006 Sun Microsystems, Inc. All Rights Reserved
 If you wish your version of this file to be governed by only the CDDL
 or only the GPL Version 2, indicate your decision by adding
 "[Contributor] elects to include this software in this distribution
@@ -38,9 +36,6 @@ made subject to such option by the copyright holder.
 
 package org.netbeans.modules.etl.ui.palette;
 
-import java.awt.Image;
-import java.util.Vector;
-
 /**
  *
  * @author nithya
@@ -49,32 +44,32 @@ public class Operator {
 
     private Integer number;
     private String category;
-    private String title;
+    //private String title;
     private String image;
     private String name;
 
     /** Creates a new instance of Instrument */
     public Operator() {
     }
-    
+
     /**
-     * 
+     *
      * @return name
      */
     public String getName() {
         return this.name;
     }
-    
+
     /**
-     * 
-     * @param name 
+     *
+     * @param name
      */
     public void setName(String name) {
         this.name = name;
     }
 
     /**
-     * 
+     *
      * @return number
      */
     public Integer getNumber() {
@@ -82,15 +77,15 @@ public class Operator {
     }
 
     /**
-     * 
-     * @param number 
+     *
+     * @param number
      */
     public void setNumber(Integer number) {
         this.number = number;
     }
 
     /**
-     * 
+     *
      * @return category
      */
     public String getCategory() {
@@ -98,15 +93,15 @@ public class Operator {
     }
 
     /**
-     * 
-     * @param category 
+     *
+     * @param category
      */
     public void setCategory(String category) {
         this.category = category;
     }
 
     /**
-     * 
+     *
      * @return image
      */
     public String getImage() {
@@ -114,11 +109,10 @@ public class Operator {
     }
 
     /**
-     * 
-     * @param image 
+     *
+     * @param image
      */
     public void setImage(String image) {
         this.image = image;
     }
-
 }

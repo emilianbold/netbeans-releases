@@ -21,7 +21,6 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-import org.netbeans.modules.etl.model.impl.ETLDefinitionImpl;
 import org.netbeans.modules.etl.ui.model.impl.ETLCollaborationModel;
 import org.netbeans.modules.etl.ui.view.ETLCollaborationTopComponent;
 import org.netbeans.modules.etl.ui.view.property.ETLResourceManager;
@@ -47,7 +46,7 @@ import org.openide.WizardDescriptor;
 import org.openide.windows.WindowManager;
 
 import com.sun.sql.framework.exception.BaseException;
-import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
+import java.io.IOException;
 
 /**
  *
@@ -58,8 +57,6 @@ public class DataObjectHelper {
     private static ETLDataObject mDataObject;
     
     private static PropertyViewManager pvMgr;
-    
-    private static DataObjectHelper manager;
     
     /** Creates a new instance of DataObjectHelper */
     public DataObjectHelper(ETLDataObject dataObject) {
@@ -75,15 +72,14 @@ public class DataObjectHelper {
         mDataObject = mObj;
         ETLWizardHelper wHelper = new ETLWizardHelper(descriptor);
         
-        List sourceOTDList = wHelper.getSelectedSourceOtds();
-        List destinationOTDList = wHelper.getSelectedDestinationOtds();
+        List sourceDbList = wHelper.getSelectedSourceDb();
+        List destinationDbList = wHelper.getSelectedDestinationDb();
         SQLJoinView joinView = wHelper.getSQLJoinView();
         List jVisibleColumns = wHelper.getTableColumnNodes();
-        ETLDefinitionImpl repModel = (ETLDefinitionImpl) mObj.getETLDefinition();
         
         // for now we need to have an editor top component so that table can be added to
         // it
-        final ETLCollaborationTopComponent etlEditor = this.mDataObject.getETLEditorTC();
+        final ETLCollaborationTopComponent etlEditor = mDataObject.getETLEditorTC();
         ETLCollaborationModel collabModel = mObj.getModel();
         
         // first add join view
@@ -95,12 +91,12 @@ public class DataObjectHelper {
             establishRuntimeInputs(collabModel, joinView.getSourceTables());
         }
        
-        if (sourceOTDList != null) {
-            addDestinationOTDs(sourceOTDList, collabModel);
+        if (sourceDbList != null) {
+            addDestinationDb(sourceDbList, collabModel);
         }
         
-        if (destinationOTDList != null) {
-            addDestinationOTDs(destinationOTDList, collabModel);
+        if (destinationDbList != null) {
+            addDestinationDb(destinationDbList, collabModel);
         }
         establishRuntimeOutputs(mObj);
         //make sure editor document has etl content when first time created
@@ -110,41 +106,14 @@ public class DataObjectHelper {
             editorSupport.getDocument().remove(0, editorSupport.getDocument().getLength());
             editorSupport.getDocument().insertString(0, content, null);
         } catch(Exception ex) {
-            ErrorManager.getDefault().notify(ex);
+            //ErrorManager.getDefault().notify(ex);
         }
     }
     
-    public void initializeETLDataObject(WizardDescriptor descriptor, ETLCollaborationModel collabModel, IGraphView graphView) throws Exception {
-        ETLWizardHelper wHelper = new ETLWizardHelper(descriptor);
-        
-        List sourceOTDList = wHelper.getSelectedSourceOtds();
-        List destinationOTDList = wHelper.getSelectedDestinationOtds();
-        SQLJoinView joinView = wHelper.getSQLJoinView();
-        List jVisibleColumns = wHelper.getTableColumnNodes();     
-        
-        // first add join view
-        if (joinView != null) {
-            JoinUtility.handleNewJoinCreation(joinView, jVisibleColumns, graphView);
-            
-            // WT #67643: Ensure that flatfile tables in join views have filename runtime
-            // inputs.
-            establishRuntimeInputs(collabModel, joinView.getSourceTables());
-        }
-        
-        if (sourceOTDList != null) {
-            addDestinationOTDs(sourceOTDList, collabModel);
-        }
-        
-        if (destinationOTDList != null) {
-            addDestinationOTDs(destinationOTDList, collabModel);
-        }
-        establishRuntimeOutputs(collabModel.getSQLDefinition());
-    }    
-    
-    private static void addDestinationOTDs(List otds, ETLCollaborationModel collabModel)
+    private static void addDestinationDb(List db, ETLCollaborationModel collabModel)
     throws BaseException {
-        for (int i = 0; i < otds.size(); i++) {
-            SQLDBModel dbModel = (SQLDBModel) otds.get(i);
+        for (int i = 0; i < db.size(); i++) {
+            SQLDBModel dbModel = (SQLDBModel) db.get(i);
             
             // Add database model only if at least one table in it was selected by user
             if (dbModel.getTables().size() == 0) {
@@ -192,23 +161,23 @@ public class DataObjectHelper {
      *
      * @param dObj etldataobject(representing an eTL Collaboration) whose table
      *        selections are to be updated
-     * @param sourceOtds List of source table OTDs to be added to <code>element</code>
-     * @param targetOtds List of target table OTDs to be added to <code>element</code>
+     * @param sourcedb List of source table Databases to be added to <code>element</code>
+     * @param targetdb List of target table Databases to be added to <code>element</code>
      * @throws Exception if error occurs during update
      */
-    public void updateTableSelections(ETLDataObject dObj, List sourceOtds, List targetOtds) throws Exception {
+    public void updateTableSelections(ETLDataObject dObj, List sourceDb, List targetDb) throws Exception {
         ETLCollaborationModel collabModel = null;
         collabModel = dObj.getModel();
         if (collabModel == null) {
             return;
         }
         
-        if (sourceOtds != null) {
-            addDestinationOTDs(sourceOtds, collabModel);
+        if (sourceDb != null) {
+            addDestinationDb(sourceDb, collabModel);
         }
         
-        if (targetOtds != null) {
-            addDestinationOTDs(targetOtds, collabModel);
+        if (targetDb != null) {
+            addDestinationDb(targetDb, collabModel);
         }
     }
     
@@ -218,9 +187,20 @@ public class DataObjectHelper {
      * @return instance of PropertyViewManager
      */
     public static PropertyViewManager getPropertyViewManager() {
+        InputStream stream = null;
         if (pvMgr == null) {
-            InputStream stream = DataObjectHelper.class.getClassLoader().getResourceAsStream("org/netbeans/modules/etl/ui/resources/etl_properties.xml");
-            pvMgr = new PropertyViewManager(stream, new ETLResourceManager());
+            try {
+                stream = DataObjectHelper.class.getClassLoader().getResourceAsStream("org/netbeans/modules/etl/ui/resources/etl_properties.xml");
+                pvMgr = new PropertyViewManager(stream, new ETLResourceManager());
+            } finally {
+                if (stream != null) {
+                    try {
+                        stream.close();
+                    } catch (IOException ignore) {
+                        // ignore
+                    }
+                }
+            }
         }
         return pvMgr;
     }

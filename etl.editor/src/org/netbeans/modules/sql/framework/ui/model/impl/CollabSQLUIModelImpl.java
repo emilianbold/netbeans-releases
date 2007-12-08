@@ -49,8 +49,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.netbeans.modules.model.database.DBColumn;
-import org.netbeans.modules.model.database.DBTable;
+import org.netbeans.modules.sql.framework.model.DBColumn;
 import org.netbeans.modules.sql.framework.common.utils.XmlUtil;
 import org.netbeans.modules.sql.framework.model.GUIInfo;
 import org.netbeans.modules.sql.framework.model.RuntimeDatabaseModel;
@@ -83,12 +82,12 @@ import org.netbeans.modules.sql.framework.ui.model.CollabSQLUIModel;
 
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.Logger;
+import org.netbeans.modules.sql.framework.model.DBTable;
 
 /**
  * Concrete implementation of SQLBuilderModel for use in representing SQL object models.
  * 
  * @author Ritesh Adval
- * @version $Revision$
  */
 public class CollabSQLUIModelImpl extends AbstractSQLModel implements CollabSQLUIModel  {
 

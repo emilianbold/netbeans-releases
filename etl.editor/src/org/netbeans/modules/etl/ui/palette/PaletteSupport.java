@@ -18,11 +18,9 @@ accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
-
 Contributor(s):
  *
- * Copyright 2006 Sun Microsystems, Inc. All Rights Reserved.
-
+ * Copyright 2006 Sun Microsystems, Inc. All Rights Reserved
 If you wish your version of this file to be governed by only the CDDL
 or only the GPL Version 2, indicate your decision by adding
 "[Contributor] elects to include this software in this distribution
@@ -35,7 +33,6 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
  *
  */
-
 package org.netbeans.modules.etl.ui.palette;
 
 import java.awt.Point;
@@ -58,98 +55,104 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.datatransfer.ExTransferable;
 
+/**
+ *
+ * @author nithya
+ */
 public class PaletteSupport {
-    
+
     public static final String MASHUP_DATA_FLAVOR = DataFlavor.javaJVMLocalObjectMimeType;
-    
     private static PaletteController controller;
-    
     private static IGraphView graphView;
-    
-    private static ETLCollaborationTopComponent topComp;
-    
-    public PaletteSupport(ETLCollaborationTopComponent tc) {
-        PaletteSupport.topComp = tc;
+
+    public PaletteSupport() {
     }
-    
+
     /**
-     * 
-     * @return 
+     *
+     * @return
      */
-    public static PaletteController createPalette() throws IOException {
-        controller =  PaletteFactory.createPalette("ETLOperators", new ETLAction(),
-                null, new ETLDnDHandler());
+    public static PaletteController createPalette(final ETLCollaborationTopComponent topC) throws IOException {
+        controller = PaletteFactory.createPalette("ETLOperators", new ETLAction(), null, new ETLDnDHandler());
         controller.addPropertyChangeListener(new PropertyChangeListener() {
 
+            // FIXME: There should be a better way to do this.
+            ETLCollaborationTopComponent tc = topC;
             public void propertyChange(PropertyChangeEvent evt) {
-                if(PaletteController.PROP_SELECTED_ITEM.equals(evt.getPropertyName())){
+                if (PaletteController.PROP_SELECTED_ITEM.equals(evt.getPropertyName())) {
                     Lookup selItem = controller.getSelectedItem();
-                    graphView = topComp.getGraphView();
-                    if(null != selItem ){
+
+                    graphView = tc.getGraphView();
+                    if (null != selItem) {
                         Node selNode = selItem.lookup(Node.class);
-                        if(null != selNode ){
+                        if (null != selNode) {
                             IOperatorXmlInfo opXmlInfo = OperatorXmlInfoModel.getInstance("ETLOperators").findOperatorXmlInfo(selNode.getName());
                             graphView.setXMLInfo(opXmlInfo);
                         }
                     }
                 }
             }
-});
-            return controller;
+        });
+        return controller;
     }
-    
+
     public static class ETLAction extends PaletteActions {
+
         /**
-         * 
-         * @return 
+         *
+         * @return
          */
         public Action[] getImportActions() {
             return null;
         }
+
         /**
-         * 
-         * @return 
+         *
+         * @return
          */
         public Action[] getCustomPaletteActions() {
             return null;
         }
+
         /**
-         * 
-         * @param lookup 
-         * @return 
+         *
+         * @param lookup
+         * @return
          */
         public Action[] getCustomCategoryActions(Lookup lookup) {
             return null;
         }
+
         /**
-         * 
-         * @param lookup 
-         * @return 
+         *
+         * @param lookup
+         * @return
          */
         public Action[] getCustomItemActions(Lookup lookup) {
             return null;
         }
+
         /**
-         * 
-         * @param lookup 
-         * @return 
+         *
+         * @param lookup
+         * @return
          */
-        public Action getPreferredAction(Lookup lookup){
-           return  new PreferredAction(lookup);
+        public Action getPreferredAction(Lookup lookup) {
+            return new PreferredAction(lookup);
         }
     }
-    
-    
-    public static class PreferredAction implements Action{
-        
+
+    public static class PreferredAction implements Action {
+
         private IOperatorXmlInfo opXmlInfo = null;
-        
-        public PreferredAction(Lookup lookup){            
-            Node node = lookup.lookup(Node.class);            
-            if ( null != node){
-               opXmlInfo = OperatorXmlInfoModel.getInstance("ETLOperators").findOperatorXmlInfo(node.getName());
-               graphView.setXMLInfo(opXmlInfo);
-            }   
+
+        // FIXME: There should be a better way to do this.
+        public PreferredAction(Lookup lookup) {
+            Node node = lookup.lookup(Node.class);
+            if (null != node) {
+                opXmlInfo = OperatorXmlInfoModel.getInstance("ETLOperators").findOperatorXmlInfo(node.getName());
+                graphView.setXMLInfo(opXmlInfo);
+            }
         }
 
         public Object getValue(String key) {
@@ -169,23 +172,23 @@ public class PaletteSupport {
         }
 
         public void addPropertyChangeListener(PropertyChangeListener listener) {
-            throw new UnsupportedOperationException("Not supported yet.");               
-    }
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
 
         public void removePropertyChangeListener(PropertyChangeListener listener) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
-        public void actionPerformed(ActionEvent e) {  
+        public void actionPerformed(ActionEvent e) {
             Point viewCoord = new Point();
-             if (graphView.getGraphController() != null) {                  
-                    graphView.getGraphController().handleNodeAdded(opXmlInfo, viewCoord);
-                }
+            if (graphView.getGraphController() != null) {
+                graphView.getGraphController().handleNodeAdded(opXmlInfo, viewCoord);
+            }
         }
     }
-    
+
     private static class ETLDnDHandler extends DragAndDropHandler {
-      
+
         public void customize(ExTransferable exTransferable, Lookup lookupobj) {
             final Node node = lookupobj.lookup(Node.class);
             DataFlavor flv = null;
@@ -194,13 +197,12 @@ public class PaletteSupport {
             } catch (ClassNotFoundException ex) {
                 ex.printStackTrace();
             }
-            exTransferable.put(new ExTransferable.Single(flv) {                
+            exTransferable.put(new ExTransferable.Single(flv) {
+
                 protected Object getData() throws IOException, UnsupportedFlavorException {
                     return node;
-                }                
+                }
             });
         }
-       
-        
     }
-    }
+}

@@ -67,11 +67,11 @@ public class ETLCollaborationWizardTransferFinishPanel extends ETLCollaborationW
      * @param title String to be displayed as title of this panel
      * @param dsList List of DatabaseModels used to populate datasource panel
      * @param destColl Collection of DBTables used to populate table panel
-     * @param sourceOTD true if this panel displays available selections for source OTDs;
-     *        false if it displays available destination OTDsl
+     * @param sourceDb true if this panel displays available selections for source Databases;
+     *        false if it displays available destination Databases
      */
-    public ETLCollaborationWizardTransferFinishPanel(String title, List dsList, Collection destColl, boolean sourceOTD) {
-        super(title, dsList, destColl, sourceOTD);
+    public ETLCollaborationWizardTransferFinishPanel(String title, List dsList, Collection destColl, boolean sourceDb) {
+        super(title, dsList, destColl, sourceDb);
         this.setPreferredSize(new Dimension(575, 425));
         this.setSize(575, 425);
     }
@@ -83,12 +83,12 @@ public class ETLCollaborationWizardTransferFinishPanel extends ETLCollaborationW
      * @param title String to be displayed as title of this panel
      * @param dsList List of DatabaseModels used to populate datasource panel
      * @param destColl Collection of DBTables used to populate table panel
-     * @param sourceOTD true if this panel displays available selections for source OTDs;
-     *        false if it displays available destination OTDsl
+     * @param sourceDb true if this panel displays available selections for source Databases;
+     *        false if it displays available destination Databases
      * @param enableNext true if Next button should always be enabled for this panel.
      */
-    public ETLCollaborationWizardTransferFinishPanel(String title, List dsList, Collection destColl, boolean sourceOTD, boolean enableNext) {
-        super(title, dsList, destColl, sourceOTD);
+    public ETLCollaborationWizardTransferFinishPanel(String title, List dsList, Collection destColl, boolean sourceDb, boolean enableNext) {
+        super(title, dsList, destColl, sourceDb);
         this.enableNext = enableNext;
         this.setPreferredSize(new Dimension(575, 425));
         this.setSize(575, 425);

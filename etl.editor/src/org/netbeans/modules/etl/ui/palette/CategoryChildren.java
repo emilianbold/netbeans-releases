@@ -18,11 +18,9 @@ accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
-
 Contributor(s):
  *
- * Copyright 2006 Sun Microsystems, Inc. All Rights Reserved.
-
+ * Copyright 2006 Sun Microsystems, Inc. All Rights Reserved
 If you wish your version of this file to be governed by only the CDDL
 or only the GPL Version 2, indicate your decision by adding
 "[Contributor] elects to include this software in this distribution
@@ -47,28 +45,23 @@ import org.openide.nodes.Node;
  */
 public class CategoryChildren extends Children.Keys {
 
-    private String[] Categories = new String[]{
-        "String Operators",
-        "Date Operators",
-        "Cleansing Operators",
-        "Relational Operators",
-        "SQL Operators",
-        "Function Operators"
-        /*"Mashup Operators"*/};
+    private String[] Categories = new String[]{"String Operators", "Date Operators", "Cleansing Operators", "Relational Operators", "SQL Operators", "Function Operators"};
 
     public CategoryChildren() {
     }
 
     /**
-     * 
-     * @param key 
+     *
+     * @param key
      * @return nodes Node[]
      */
     protected Node[] createNodes(Object key) {
         Category obj = (Category) key;
-        return new Node[] { new CategoryNode(obj) };
+        return new Node[]{new CategoryNode(obj)};
     }
 
+    @SuppressWarnings(value = "unchecked")
+    @Override
     protected void addNotify() {
         super.addNotify();
         Category[] objs = new Category[Categories.length];
@@ -79,5 +72,4 @@ public class CategoryChildren extends Children.Keys {
         }
         setKeys(objs);
     }
-
 }

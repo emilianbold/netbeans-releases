@@ -160,8 +160,8 @@ public class ETLCollaborationWizardJoinPanel extends JPanel implements WizardDes
     public void readSettings(Object settings) {
         this.joinMainPanel.setDividerLocation(210);
         Set sTables = new HashSet();
-        List sourceOtds = etlCWizard.getSelectedSourceOtds();
-        Iterator it = sourceOtds.iterator();
+        List sourceDb = etlCWizard.getSelectedSourceDb();
+        Iterator it = sourceDb.iterator();
         
         while (it.hasNext()) {
             SQLDBModel dbModel = (SQLDBModel) it.next();
@@ -238,8 +238,8 @@ public class ETLCollaborationWizardJoinPanel extends JPanel implements WizardDes
                 // Mark any tables associated with the current join view as selected and
                 // editable.
                 List joinSourceTables = joinView.getSourceTables();
-                List sourceOtds = (List) wizard.getProperty(ETLCollaborationWizard.SOURCE_DB);
-                Iterator it = sourceOtds.iterator();
+                List sourceDb = (List) wizard.getProperty(ETLCollaborationWizard.SOURCE_DB);
+                Iterator it = sourceDb.iterator();
                 while (it.hasNext()) {
                     SQLDBModel dbModel = (SQLDBModel) it.next();
                     Iterator sIt = joinSourceTables.iterator();
@@ -264,8 +264,8 @@ public class ETLCollaborationWizardJoinPanel extends JPanel implements WizardDes
 
                 // NOW MARK TABLES WHICH ARE IN JOIN VIEW AS UNSELECTED AND UNEDITABLE
                 List joinSourceTables = joinView.getSourceTables();
-                List sourceOtds = (List) wizard.getProperty(ETLCollaborationWizard.SOURCE_DB);
-                Iterator it = sourceOtds.iterator();
+                List sourceDb = (List) wizard.getProperty(ETLCollaborationWizard.SOURCE_DB);
+                Iterator it = sourceDb.iterator();
                 while (it.hasNext()) {
                     SQLDBModel dbModel = (SQLDBModel) it.next();
                     Iterator sIt = joinSourceTables.iterator();

@@ -51,7 +51,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.undo.UndoManager;
 import javax.swing.undo.UndoableEditSupport;
 
-import org.netbeans.modules.model.database.DBTable;
 import org.netbeans.modules.sql.framework.model.SQLCanvasObject;
 import org.netbeans.modules.sql.framework.model.SQLConnectableObject;
 import org.netbeans.modules.sql.framework.model.SQLInputObject;
@@ -73,6 +72,7 @@ import org.netbeans.modules.sql.framework.ui.undo.SQLUndoManager;
 
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.Logger;
+import org.netbeans.modules.sql.framework.model.DBTable;
 
 /**
  * @author Ritesh Adval
@@ -82,10 +82,10 @@ public abstract class AbstractSQLModel implements SQLObjectListener, SQLUIModel 
 
     protected UndoableEditSupport editSupport = new UndoableEditSupport();
     protected boolean isDirty = false;
-    protected List listeners = new ArrayList();
+    protected List<SQLDataListener> listeners = new ArrayList<SQLDataListener>();
     protected SQLUndoManager undoManager = new SQLUndoManager();
 
-    private List javaOperatorList = new ArrayList();
+    private List<SQLOperator> javaOperatorList = new ArrayList<SQLOperator>();
 
     protected AbstractSQLModel() {
         UndoableEditSupport editSupt = this.getUndoEditSupport();

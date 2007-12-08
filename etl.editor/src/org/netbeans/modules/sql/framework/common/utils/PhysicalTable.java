@@ -43,29 +43,27 @@ package org.netbeans.modules.sql.framework.common.utils;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import org.netbeans.modules.model.database.DBConnectionDefinition;
-import org.netbeans.modules.model.database.DBTable;
-import org.netbeans.modules.model.database.DatabaseModel;
-
 import com.sun.sql.framework.utils.Logger;
+import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
+import org.netbeans.modules.sql.framework.model.DBTable;
+import org.netbeans.modules.sql.framework.model.DatabaseModel;
 
 /**
  * Class representing Physical table such that for any two instances t1 and t2 if
  * (t1.equals(t2)) then both instances represents the same physical table.
- * 
+ *
  * @author Girish Patil
  * @version $Revision$
  */
 public class PhysicalTable {
-    private static boolean SKIP_CONNECTION_URL = false;
 
+    private static boolean SKIP_CONNECTION_URL = false;
     //Preferably one of the two should be true to assert two tables are equal.
-    private static boolean SKIP_OTD_NAME = true;
+    private static boolean SKIP_DB_NAME = true;
 
     /**
      * Creates new instance of PhysicalTable for given DBTable.
-     * 
+     *
      * @param sqlTable
      * @return
      */
@@ -79,7 +77,7 @@ public class PhysicalTable {
 
             DatabaseModel dbModel = sqlTable.getParent();
             if (dbModel != null) {
-                pt.setOtdName(dbModel.getModelName());
+                pt.setDbName(dbModel.getModelName());
                 DBConnectionDefinition dbConnDef = dbModel.getConnectionDefinition();
                 if (dbConnDef != null) {
                     pt.setConnectionUrl(dbConnDef.getConnectionURL());
@@ -92,20 +90,18 @@ public class PhysicalTable {
 
     /**
      * Returns list of PhysicalTable given given list of DBTable.
-     * 
+     *
      * @param sqlTable
      * @return
      */
-    public static List getPhysicalTableList(List dbTableList) {
-        List ptList = null;
+    public static List<PhysicalTable> getPhysicalTableList(List<DBTable> dbTableList) {
+        List<PhysicalTable> ptList = null;
         PhysicalTable pt = null;
         DBTable sqlTable;
         if (dbTableList != null) {
-            Iterator itr = dbTableList.iterator();
-            ptList = new ArrayList();
-
-            while (itr.hasNext()) {
-                sqlTable = (DBTable) itr.next();
+            ptList = new ArrayList<PhysicalTable>();
+            for (Iterator<DBTable> itr = dbTableList.iterator(); itr.hasNext();) {
+                sqlTable = itr.next();
 
                 pt = new PhysicalTable();
                 pt.setCatalog(sqlTable.getCatalog());
@@ -114,7 +110,7 @@ public class PhysicalTable {
 
                 DatabaseModel dbModel = sqlTable.getParent();
                 if (dbModel != null) {
-                    pt.setOtdName(dbModel.getModelName());
+                    pt.setDbName(dbModel.getModelName());
                     DBConnectionDefinition dbConnDef = dbModel.getConnectionDefinition();
                     if (dbConnDef != null) {
                         pt.setConnectionUrl(dbConnDef.getConnectionURL());
@@ -129,10 +125,10 @@ public class PhysicalTable {
     private String mCatalog;
     private String mConnectionUrl;
     private String mName;
-
-    private String mOtdName;
+    private String mDbName;
     private String mSchema;
 
+    @Override
     public boolean equals(Object other) {
         boolean eql = true;
         PhysicalTable otherTable = null;
@@ -184,14 +180,14 @@ public class PhysicalTable {
             }
         }
 
-        //Check OtdName
-        if (eql && (!SKIP_OTD_NAME)) {
-            if ((this.mOtdName == null) || blank.equals(mOtdName)) {
-                if (!((otherTable.getOtdName() == null) || blank.equals(otherTable.getOtdName()))) {
+        //Check DbName
+        if (eql && (!SKIP_DB_NAME)) {
+            if ((this.mDbName == null) || blank.equals(mDbName)) {
+                if (!((otherTable.getDbName() == null) || blank.equals(otherTable.getDbName()))) {
                     eql = false;
                 }
             } else {
-                if (!this.mOtdName.equals(otherTable.getOtdName())) {
+                if (!this.mDbName.equals(otherTable.getDbName())) {
                     eql = false;
                 }
             }
@@ -211,6 +207,17 @@ public class PhysicalTable {
         }
 
         return eql;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 53 * hash + (this.mCatalog != null ? this.mCatalog.hashCode() : 0);
+        hash = 53 * hash + (this.mConnectionUrl != null ? this.mConnectionUrl.hashCode() : 0);
+        hash = 53 * hash + (this.mName != null ? this.mName.hashCode() : 0);
+        hash = 53 * hash + (this.mDbName != null ? this.mDbName.hashCode() : 0);
+        hash = 53 * hash + (this.mSchema != null ? this.mSchema.hashCode() : 0);
+        return hash;
     }
 
     /**
@@ -235,10 +242,10 @@ public class PhysicalTable {
     }
 
     /**
-     * @return Returns the otdName.
+     * @return Returns the dbName.
      */
-    public String getOtdName() {
-        return mOtdName;
+    public String getDbName() {
+        return mDbName;
     }
 
     /**
@@ -270,10 +277,10 @@ public class PhysicalTable {
     }
 
     /**
-     * @param otdName The otdName to set.
+     * @param dbName The dbName to set.
      */
-    public void setOtdName(String otdName) {
-        this.mOtdName = otdName;
+    public void setDbName(String dbName) {
+        this.mDbName = dbName;
     }
 
     /**
@@ -282,6 +289,4 @@ public class PhysicalTable {
     public void setSchema(String schema) {
         this.mSchema = schema;
     }
-
 }
-

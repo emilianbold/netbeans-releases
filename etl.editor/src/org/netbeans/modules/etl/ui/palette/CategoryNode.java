@@ -1,6 +1,6 @@
 /*
  * The contents of this file are subject to the terms of the Common
- * Development
+ * Development and Distribution License (the License). You may not use this
 The contents of this file are subject to the terms of either the GNU
 General Public License Version 2 only ("GPL") or the Common
 Development and Distribution License("CDDL") (collectively, the
@@ -18,11 +18,9 @@ accompanied this code. If applicable, add the following below the
 License Header, with the fields enclosed by brackets [] replaced by
 your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
-
 Contributor(s):
  *
- * Copyright 2006 Sun Microsystems, Inc. All Rights Reserved.
-
+ * Copyright 2006 Sun Microsystems, Inc. All Rights Reserved
 If you wish your version of this file to be governed by only the CDDL
 or only the GPL Version 2, indicate your decision by adding
 "[Contributor] elects to include this software in this distribution
@@ -48,8 +46,8 @@ import org.openide.util.lookup.Lookups;
 public class CategoryNode extends AbstractNode {
 
     /** Creates a new instance of CategoryNode */
-    public CategoryNode( Category category ) {
-        super( new OperatorChildren(category), Lookups.singleton(category) );
+    public CategoryNode(Category category) {
+        super(new OperatorChildren(category), Lookups.singleton(category));
         setDisplayName(category.getName());
     }
 }

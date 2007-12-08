@@ -78,28 +78,22 @@ import javax.swing.table.TableModel;
 
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
-import org.netbeans.modules.jdbc.builder.DBMetaData;
-import org.netbeans.modules.jdbc.builder.ForeignKeyColumn;
-import org.netbeans.modules.jdbc.builder.KeyColumn;
-import org.netbeans.modules.jdbc.builder.Table;
-import org.netbeans.modules.jdbc.builder.TableColumn;
-import org.netbeans.modules.model.database.DBConnectionDefinition;
-import org.netbeans.modules.model.database.DatabaseModel;
+import org.netbeans.modules.sql.framework.model.DBMetaDataFactory;
 import org.netbeans.modules.sql.framework.model.SQLConstants;
 import org.netbeans.modules.sql.framework.model.SQLDBModel;
 import org.netbeans.modules.sql.framework.model.SQLDBTable;
 import org.netbeans.modules.sql.framework.model.SQLModelObjectFactory;
-import org.netbeans.modules.sql.framework.model.impl.ForeignKeyImpl;
-import org.netbeans.modules.sql.framework.model.impl.PrimaryKeyImpl;
-import org.netbeans.modules.sql.framework.model.impl.SourceColumnImpl;
 import org.netbeans.modules.sql.framework.model.impl.SourceTableImpl;
-import org.netbeans.modules.sql.framework.model.impl.TargetColumnImpl;
 import org.netbeans.modules.sql.framework.model.impl.TargetTableImpl;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
 import com.sun.sql.framework.utils.Logger;
+import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
+import org.netbeans.modules.sql.framework.model.DBTable;
+import org.netbeans.modules.sql.framework.model.DatabaseModel;
+import org.netbeans.modules.sql.framework.model.impl.AbstractDBTable;
 
 /**
  * Implements a two-list transfer panel with bulk add/remove capability.
@@ -177,7 +171,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
      */
     class ListTransferModel {
         
-        private HashSet changeListeners;
+        private HashSet<ChangeListener> changeListeners;
         // Dropdown of schemas for a selected connection (source)
         private DefaultComboBoxModel dest;
         
@@ -215,12 +209,17 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
             schemaTables = new DefaultListModel();
             nameToModelMap = new HashMap<String, SQLDBTable>();
             
-            selectedTableModel = new DefaultTableModel(new Object[][]{}, tableHeaders ) { public boolean isCellEditable(int row, int col) { return false; } };
+            selectedTableModel = new DefaultTableModel(new Object[][]{}, tableHeaders) {
+                @Override
+                public boolean isCellEditable(int row, int col) {
+                    return false;
+                }
+            };
             
             setSourceList(srcColl);
             setDestinationList(dstColl);
             
-            changeListeners = new HashSet();
+            changeListeners = new HashSet<ChangeListener>();
         }
         
         
@@ -318,13 +317,13 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
          * @return List of current destination list contents
          */
         public List getSelectedTablesList() {
-            ArrayList dstList = new ArrayList();
+            ArrayList<SQLDBTable> dstList = new ArrayList<SQLDBTable>();
             synchronized (this.selectedTableModel) {
                 for (int i = 0; i < selectedTableModel.getRowCount(); i++) {
                     String tableName = (String) selectedTableModel.getValueAt(i, 0);
                     String schemaName = (String) selectedTableModel.getValueAt(i, 1);
                     String key = schemaName + "." + tableName;
-                    SQLDBTable tableModel = (SQLDBTable) this.nameToModelMap.get(key);
+                    SQLDBTable tableModel = this.nameToModelMap.get(key);
                     if (tableModel != null) {
                         dstList.add(tableModel);
                     }
@@ -395,7 +394,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
          * @return List of current source list contents
          */
         public List getSourceList() {
-            ArrayList srcList = new ArrayList();
+            ArrayList<Object> srcList = new ArrayList<Object>();
             
             synchronized (source) {
                 source.trimToSize();
@@ -533,6 +532,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
             setText(protoString.toString());
         }
         
+        @Override
         public Component getListCellRendererComponent(JList list,
                 Object value,
                 int index,
@@ -614,28 +614,28 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
     public static final String TIP_REMOVE_ALL = "Remove all items";
     
     /**
-     * Indicates whether OTDs in the given List have enough selected tables to allow for
+     * Indicates whether Databases in the given List have enough selected tables to allow for
      * creation of a join from among the set of tables.
      *
      * @return true if number of selected tables is sufficient to create a join; false
      *         otherwise
      */
-    static boolean hasEnoughTablesForJoin(List otds) {
-        return (getSelectedTableCount(otds) >= 2);
+    static boolean hasEnoughTablesForJoin(List db) {
+        return (getSelectedTableCount(db) >= 2);
     }
     
     /**
-     * Counts number of selected tables in the given List of OTDs.
+     * Counts number of selected tables in the given List of Databases.
      *
-     * @param srcOtds List of OTDs to iterate through
-     * @return count of selected tables in <code>srcOtds</code>
+     * @param srcDb List of Databases to iterate through
+     * @return count of selected tables in <code>srcDb</code>
      */
-    private static int getSelectedTableCount(List otds) {
+    private static int getSelectedTableCount(List db) {
         int selected = 0;
         
-        Iterator otdIter = otds.iterator();
-        while (otdIter.hasNext()) {
-            SQLDBModel dbModel = (SQLDBModel) otdIter.next();
+        Iterator dbIter = db.iterator();
+        while (dbIter.hasNext()) {
+            SQLDBModel dbModel = (SQLDBModel) dbIter.next();
             Iterator tblIter = dbModel.getTables().iterator();
             while (tblIter.hasNext()) {
                 if (((SQLDBTable) tblIter.next()).isSelected()) {
@@ -648,12 +648,12 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
     }
     
     private static List getTableNames(ListModel dest) {
-        ArrayList tabNameList = new ArrayList();
+        ArrayList<DBTable> tabNameList = new ArrayList<DBTable>();
         for (int i = 0; i < dest.getSize(); i++) {
-            DatabaseModel otd = (DatabaseModel) dest.getElementAt(i);
-            if (otd != null) {
+            DatabaseModel db = (DatabaseModel) dest.getElementAt(i);
+            if (db != null) {
                 
-                tabNameList.addAll(otd.getTables());
+                tabNameList.addAll(db.getTables());
             }
         }
         return tabNameList;
@@ -701,6 +701,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
         });
         schemaTablesList.setName("schemaTables");
         schemaTablesList.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 if(evt.getClickCount() == 2 && evt.getSource() instanceof JList ) {
                     moveSelectedTables();
@@ -801,7 +802,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
     private boolean isSource;
     
     /* Set <ChangeListeners> */
-    private final Set listeners = new HashSet(1);
+    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
     
     private ListTransferModel listModel;
     
@@ -826,17 +827,17 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
      * @param title String to be displayed as title of this panel
      * @param dsList List of DatabaseModels used to populate datasource panel
      * @param destColl Collection of selected DatabaseModels
-     * @param sourceOTD true if this panel displays available selections for source OTDs;
-     *        false if it displays available destination OTDs
+     * @param sourceDb true if this panel displays available selections for source Databases;
+     *        false if it displays available destination Databases
      */
-    public ETLCollaborationWizardTransferPanel(String title, List dsList, Collection destColl, boolean sourceOTD) {
+    public ETLCollaborationWizardTransferPanel(String title, List dsList, Collection destColl, boolean sourceDb) {
         this();
         nameToConnMap = new HashMap<String, DatabaseConnection>();
         if (title != null && title.trim().length() != 0) {
             setName(title);
         }
         
-        this.isSource = sourceOTD;
+        this.isSource = sourceDb;
         listModel = new ListTransferModel(dsList, destColl);
         String largestString = listModel.getPrototypeCell();
         
@@ -850,6 +851,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
         sourceList = new JList(listModel.getSourceModel());
         sourceList.addMouseListener(new MouseAdapter() {
             
+            @Override
             public void mouseClicked(MouseEvent e) {
                 ((DefaultComboBoxModel) listModel.getDestinationModel()).removeAllElements();
                 schemaTablesList.setListData(new Vector());
@@ -858,7 +860,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
                 // assigning the conn to the placeholder for current selected
                 // connection
                 selectedConnection = conn;
-                DBMetaData meta = new DBMetaData();
+                DBMetaDataFactory meta = new DBMetaDataFactory();
                 try {
                     ConnectionManager.getDefault().showConnectionDialog(selectedConnection);
                     meta.connectDB(selectedConnection.getJDBCConnection());
@@ -897,30 +899,20 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
     }
     
     private List getSelectedDBModels(boolean isSource) throws Exception {
-        Object ffTable = null;
-        String tableDisplayString = null;
+        AbstractDBTable newTable = null;
         String connName = null;
-        String ttype = "TABLE";
         HashMap<String, SQLDBModel> nameToDBModelMap = new HashMap<String, SQLDBModel>();
-        List dbModels = new ArrayList();
+        List<SQLDBModel> dbModels = new ArrayList<SQLDBModel>();
         List tableList = this.listModel.getSelectedTablesList();
         if (tableList != null) {
             for (int i = 0; i < tableList.size(); i++) {
-                if (isSource) {
-                    ffTable = (SourceTableImpl) tableList.get(i);
-                    tableDisplayString = ((SourceTableImpl)ffTable).getQualifiedName();
-                    connName = this.listModel.getConnectionNameForTable(tableDisplayString, ((SourceTableImpl)ffTable).getSchema());
-                } else {
-                    ffTable = (TargetTableImpl) tableList.get(i);
-                    tableDisplayString = ((TargetTableImpl)ffTable).getQualifiedName();
-                    connName = this.listModel.getConnectionNameForTable(tableDisplayString, ((TargetTableImpl)ffTable).getSchema());
-                }
-                
+                newTable = (AbstractDBTable) tableList.get(i);
+                connName = this.listModel.getConnectionNameForTable(newTable.getQualifiedName(), newTable.getSchema());
                 DatabaseConnection conn = this.nameToConnMap.get(connName);
                 if( conn != null ) {
                     
                     // Add all tables to database
-                    DBMetaData meta = new DBMetaData();
+                    DBMetaDataFactory meta = new DBMetaDataFactory();
                     try {
                         meta.connectDB(conn.getJDBCConnection());
                         
@@ -935,92 +927,11 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
                             populateModel(model, conn, meta);
                             nameToDBModelMap.put(connName, model);
                         }
-                        Table t = null;
-                        if(ffTable instanceof SourceTableImpl) {
-                            t = meta.getTableMetaData(((SourceTableImpl)ffTable).getCatalog(),
-                                    ((SourceTableImpl)ffTable).getSchema(), ((SourceTableImpl)ffTable).getName(), ttype);
-                        } else {
-                            t = meta.getTableMetaData(((TargetTableImpl)ffTable).getCatalog(),
-                                    ((TargetTableImpl)ffTable).getSchema(), ((TargetTableImpl)ffTable).getName(), ttype);
-                        }
-                        meta.checkForeignKeys(t);
-                        meta.checkPrimaryKeys(t);
                         
-                        TableColumn[] cols = t.getColumns();
-                        TableColumn tc = null; 
-                        List pks = t.getPrimaryKeyColumnList();
-                        List pkCols = new ArrayList();
-                        Iterator it = pks.iterator();
-                        while(it.hasNext()) {
-                            KeyColumn kc = (KeyColumn)it.next();
-                            pkCols.add(kc.getColumnName());
-                        }
-                        if(pks.size()!=0) {
-                            PrimaryKeyImpl pkImpl = new PrimaryKeyImpl(((KeyColumn)t.getPrimaryKeyColumnList().get(0)).getName(), pkCols, true);                                                        
-                            if(ffTable instanceof SourceTableImpl) {
-                                ((SourceTableImpl)ffTable).setPrimaryKey(pkImpl);
-                            } else {    
-                                ((TargetTableImpl)ffTable).setPrimaryKey(pkImpl);
-                            }
-                        }                   
-                        List fkList = t.getForeignKeyColumnList();
-                        it = fkList.iterator();
-                        while(it.hasNext()) {
-                            ForeignKeyColumn fkCol = (ForeignKeyColumn)it.next();
-                            ForeignKeyImpl fkImpl = new ForeignKeyImpl((SQLDBTable)ffTable, fkCol.getName(), fkCol.getImportKeyName(),
-                                    fkCol.getImportTableName(), fkCol.getImportSchemaName(), fkCol.getImportCatalogName(), fkCol.getUpdateRule(),
-                                    fkCol.getDeleteRule(), fkCol.getDeferrability());                                          
-                            List fkColumns = new ArrayList();
-                            fkColumns.add(fkCol.getColumnName());
-                            String catalog = fkCol.getImportCatalogName();
-                            if (catalog == null) {
-                                catalog = "";
-                            }
-                            String schema = fkCol.getImportSchemaName();                            
-                            if(schema == null) {
-                                schema = "";
-                            }
-                            pks = meta.getPrimaryKeys(catalog, schema, fkCol.getImportTableName());
-                            List pkColumns = new ArrayList();
-                            Iterator pksIt = pks.iterator();
-                            while(pksIt.hasNext()) {
-                                KeyColumn kc = (KeyColumn)pksIt.next();
-                                pkColumns.add(kc.getColumnName());
-                            }
-                            fkImpl.setColumnNames(fkColumns, pkColumns);
-                            if(ffTable instanceof SourceTableImpl) {
-                                ((SourceTableImpl)ffTable).addForeignKey(fkImpl);
-                            } else {
-                                ((TargetTableImpl)ffTable).addForeignKey(fkImpl);
-                            }
-                        }                        
-                        for (int j = 0; j < cols.length; j++) {
-                            tc = cols[j];
-                            if (isSource) {
-                                SourceColumnImpl ffColumn = new SourceColumnImpl(tc.getName(), tc
-                                        .getSqlTypeCode(), tc.getNumericScale(), tc
-                                        .getNumericPrecision(), tc
-                                        .getIsPrimaryKey(), tc.getIsForeignKey(),
-                                        false /* isIndexed */, tc.getIsNullable());                                
-                                ((SourceTableImpl)ffTable).addColumn(ffColumn);
-                            } else {
-                                TargetColumnImpl ffColumn = new TargetColumnImpl(tc.getName(), tc
-                                        .getSqlTypeCode(), tc.getNumericScale(), tc
-                                        .getNumericPrecision(), tc
-                                        .getIsPrimaryKey(), tc.getIsForeignKey(),
-                                        false /* isIndexed */, tc.getIsNullable());                                
-                                ((TargetTableImpl)ffTable).addColumn(ffColumn);
-                            }
-                        }
-                        if(ffTable instanceof SourceTableImpl) {
-                            ((SourceTableImpl)ffTable).setEditable(true);
-                            ((SourceTableImpl)ffTable).setSelected(true);
-                            model.addTable((SourceTableImpl)ffTable);
-                        } else {
-                            ((TargetTableImpl)ffTable).setEditable(true);
-                            ((TargetTableImpl)ffTable).setSelected(true);
-                            model.addTable((TargetTableImpl)ffTable);
-                        }
+                        meta.populateColumns(newTable);
+                        newTable.setEditable(true);
+                        newTable.setSelected(true);
+                        model.addTable(newTable);
                     } catch (Exception e) {
                         throw e;
                     }
@@ -1035,7 +946,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
         return dbModels;
     }
     
-    private SQLDBModel populateModel(SQLDBModel model, DatabaseConnection conn, DBMetaData meta) {
+    private SQLDBModel populateModel(SQLDBModel model, DatabaseConnection conn, DBMetaDataFactory meta) {
         DBConnectionDefinition def = null;
         try {
             def = SQLModelObjectFactory.getInstance().createDBConnectionDefinition(conn.getDisplayName(),
@@ -1081,7 +992,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
     } //end actionPerformed
     
     private void populateTableList(String schemaName) {
-        DBMetaData dbMeta = new DBMetaData();
+        DBMetaDataFactory dbMeta = new DBMetaDataFactory();
         try {
             if (ETLCollaborationWizardTransferPanel.this.selectedConnection == null) {
                 Logger.print(Logger.INFO, LOG_CATEGORY, null, "selectedConn is null");
@@ -1092,16 +1003,16 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
                 String[][] tableList = dbMeta.getTablesAndViews("", schemaName, "", false);
                 SQLDBTable aTable = null;
                 String[] currTable = null;
-                Vector tableNameList = new Vector();
+                Vector<SQLDBTable> tableNameList = new Vector<SQLDBTable>();
                 if (tableList != null) {
                     for (int i = 0; i < tableList.length; i++) {
                         currTable = tableList[i];
                         if (isSource) {
-                            aTable = new SourceTableImpl(currTable[DBMetaData.NAME],
-                                    currTable[DBMetaData.SCHEMA], currTable[DBMetaData.CATALOG]);                            
+                            aTable = new SourceTableImpl(currTable[DBMetaDataFactory.NAME],
+                                    currTable[DBMetaDataFactory.SCHEMA], currTable[DBMetaDataFactory.CATALOG]);                            
                         } else {
-                            aTable = new TargetTableImpl(currTable[DBMetaData.NAME],
-                                    currTable[DBMetaData.SCHEMA], currTable[DBMetaData.CATALOG]);
+                            aTable = new TargetTableImpl(currTable[DBMetaDataFactory.NAME],
+                                    currTable[DBMetaDataFactory.SCHEMA], currTable[DBMetaDataFactory.CATALOG]);
                         }
                         tableNameList.add(aTable);
                     }
@@ -1210,7 +1121,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
         Iterator it;
         
         synchronized (listeners) {
-            it = new HashSet(listeners).iterator();
+            it = new HashSet<ChangeListener>(listeners).iterator();
         }
         
         ChangeEvent ev = new ChangeEvent(this);
@@ -1241,7 +1152,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
      *
      * @return ListTransferModel
      */
-    public synchronized ListTransferModel getModel() {
+    synchronized ListTransferModel getModel() {
         return listModel;
     }
     
@@ -1261,6 +1172,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
     /**
      * @see org.openide.WizardDescriptor.Panel#isValid
      */
+    @Override
     public boolean isValid() {
         return true;
     }
@@ -1386,24 +1298,8 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
      * Called whenever the value of the selection changes.
      *
      * @param e the event that characterizes the change.
-	 * To be included in the TODO list-to be implemented
      */
     public void valueChanged(ListSelectionEvent e) {
-     //   Object src = e.getSource();
-
-        // Enforce mutually exclusive focus between source and destination
-        // lists.
-//        if (sourceList.equals(src)) {
-       //     if (!destList.isSelectionEmpty()) {
-       //         destList.clearSelection();
-       //     }
-       // } else if (destList.equals(src)) {
-         //   if (!sourceList.isSelectionEmpty()) {
-         //       sourceList.clearSelection();
-         //   }
-       // } else {
-            // TODO Log unhandled ListSelectionEvent as DEBUG message.
-        // }
     }
     
     /**

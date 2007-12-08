@@ -128,12 +128,16 @@ public class WebBootstrapParser implements FlatfileBootstrapParser {
     }
     
     public boolean acceptable(FlatfileDBTable table) throws FlatfileDBException {
-        try {
-            getElement(table.getProperty(PropertyKeys.URL), 1);
-        } catch (Exception ex) {
-            return false;
+        String url = table.getProperty(PropertyKeys.URL).toLowerCase();
+        if(url.startsWith("http://") || url.startsWith("https://") || url.startsWith("ftp://") || url.endsWith(".html") || url.endsWith(".htm")){
+            try{
+                getElement(table.getProperty(PropertyKeys.URL), 1);
+            } catch(Exception e){
+                return false;
+            }
+            return true;
         }
-        return true;
+        return false;
     }
     
     private FlatfileDBColumn[] getColumns(FlatfileDBTable table) {

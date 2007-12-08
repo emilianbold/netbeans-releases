@@ -41,7 +41,6 @@
 package org.netbeans.modules.mashup.db.ui.wizard;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.util.MissingResourceException;
 
 import javax.swing.JPanel;
@@ -49,7 +48,6 @@ import javax.swing.JPanel;
 import org.netbeans.modules.mashup.db.model.FlatfileDatabaseModel;
 import org.netbeans.modules.mashup.db.ui.FlatfileTreeTableView;
 import org.netbeans.modules.mashup.db.ui.model.FlatfileTreeTableModel;
-import org.netbeans.modules.mashup.db.wizard.FlatfileViewerTreePanel;
 import org.openide.util.NbBundle;
 
 
@@ -85,7 +83,7 @@ public class PreviewDatabaseVisualPanel extends JPanel {
         setLayout(new BorderLayout());
 
         try {
-            setName(NbBundle.getMessage(PreviewDatabaseVisualPanel.class, "TITLE_configureotd"));
+            setName(NbBundle.getMessage(PreviewDatabaseVisualPanel.class, "TITLE_configure_ffdb"));
         } catch (MissingResourceException e) {
             setName("*** Preview Flatfile Database ***");
         }
@@ -103,7 +101,7 @@ public class PreviewDatabaseVisualPanel extends JPanel {
         setLayout(new BorderLayout());
 
         try {
-            setName(NbBundle.getMessage(PreviewDatabaseVisualPanel.class, "TITLE_configureotd"));
+            setName(NbBundle.getMessage(PreviewDatabaseVisualPanel.class, "TITLE_configure_ffdb"));
         } catch (MissingResourceException e) {
             setName("*** Preview Flatfile Database ***");
         }

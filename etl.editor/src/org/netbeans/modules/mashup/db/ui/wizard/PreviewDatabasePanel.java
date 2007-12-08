@@ -44,13 +44,11 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Iterator;
 import java.util.List;
 
 import org.netbeans.modules.mashup.db.common.FlatfileDBConnectionFactory;
-import org.netbeans.modules.mashup.db.model.FlatfileDBConnectionDefinition;
 import org.netbeans.modules.mashup.db.model.FlatfileDBTable;
 import org.netbeans.modules.mashup.db.model.FlatfileDatabaseModel;
 import org.netbeans.modules.mashup.tables.wizard.MashupTableWizardIterator;
@@ -60,6 +58,7 @@ import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
 import com.sun.sql.framework.exception.BaseException;
+import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 
 /**
  * Wizard panel to select tables and columns to be included in an Flatfile DB instance.
@@ -101,23 +100,14 @@ public class PreviewDatabasePanel extends AbstractWizardPanel implements
         return null;
     }
     
-    /**
-     * @see com.sun.jbi.ui.devtool.flatfile.db.otd.ui.wizard.AbstractWizardPanel#getStepLabel
-     */
     public String getStepLabel() {
-        return NbBundle.getMessage(PreviewDatabasePanel.class, "STEP_configureotd");
+        return NbBundle.getMessage(PreviewDatabasePanel.class, "STEP_configure_ffdb");
     }
     
-    /**
-     * @see com.sun.jbi.ui.devtool.flatfile.db.otd.ui.wizard.AbstractWizardPanel#getTitle
-     */
     public String getTitle() {
         return (component != null) ? component.getName() : "*** Preview Flat File Database ***";
     }
     
-    /**
-     * @see com.sun.jbi.ui.devtool.flatfile.db.otd.ui.wizard.AbstractWizardPanel#getTitle
-     */
     public boolean isValid() {
         return component.hasValidData();
     }
@@ -152,7 +142,7 @@ public class PreviewDatabasePanel extends AbstractWizardPanel implements
                 Statement stmt = null;
                 try {
                     FlatfileDatabaseModel model = component.getModel();
-                    FlatfileDBConnectionDefinition def = model.getFlatfileDBConnectionDefinition(true);
+                    DBConnectionDefinition def = model.getFlatfileDBConnectionDefinition(true);
                     conn = FlatfileDBConnectionFactory.getInstance().getConnection(def.getConnectionURL());
                     List tables = model.getTables();
                     Iterator it = tables.iterator();

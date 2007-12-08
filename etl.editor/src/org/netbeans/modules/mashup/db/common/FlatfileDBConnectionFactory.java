@@ -91,13 +91,13 @@ public class FlatfileDBConnectionFactory {
              Facing problem when connection used by other modules like ETL Engine. */
             
             // WT #67399: if class loader is not specified, use the class loader
-            // associated with flatfile db otd module to avoid instantiating Axion classes
+            // associated with flatfile db module to avoid instantiating Axion classes
             // which are associated with eBAM.
-//            if (cl == null) {
-//                cl = FlatfileDBConnectionFactory.class.getClassLoader();
-//            }
-//
-//            Thread.currentThread().setContextClassLoader(cl);
+            //            if (cl == null) {
+            //                cl = FlatfileDBConnectionFactory.class.getClassLoader();
+            //            }
+            //
+            //            Thread.currentThread().setContextClassLoader(cl);
             registerDriver();
             
             if (props != null) {
@@ -128,11 +128,11 @@ public class FlatfileDBConnectionFactory {
             // WT #67399: if class loader is not specified, use the class loader
             // associated with flatfile db module to avoid instantiating Axion classes
             // which are associated with eBAM.
-//            if (cl == null) {
-//                cl = FlatfileDBConnectionFactory.class.getClassLoader();
-//            }
-            
+            //            if (cl == null) {
+            //                cl = FlatfileDBConnectionFactory.class.getClassLoader();
+            //            }
             //Thread.currentThread().setContextClassLoader(cl);
+            
             Driver drv = registerDriver();
             Properties prop = new Properties();
             prop.setProperty("user", uid);

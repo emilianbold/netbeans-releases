@@ -40,10 +40,10 @@
  */
 package org.netbeans.modules.mashup.db.model.impl;
 
+import com.sun.sql.framework.exception.BaseException;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -58,13 +58,7 @@ import org.netbeans.modules.mashup.db.common.Property;
 import org.netbeans.modules.mashup.db.common.PropertyKeys;
 import org.netbeans.modules.mashup.db.model.FlatfileDBColumn;
 import org.netbeans.modules.mashup.db.model.FlatfileDBTable;
-import org.netbeans.modules.mashup.db.model.FlatfileDatabaseModel;
-import org.netbeans.modules.model.database.DBColumn;
-import org.netbeans.modules.model.database.DBTable;
-import org.netbeans.modules.model.database.DatabaseModel;
-import org.netbeans.modules.model.database.ForeignKey;
-import org.netbeans.modules.model.database.Index;
-import org.netbeans.modules.model.database.PrimaryKey;
+import org.netbeans.modules.sql.framework.model.DBColumn;
 import org.netbeans.modules.sql.framework.common.utils.TagParserUtility;
 import org.netbeans.modules.sql.framework.model.impl.PrimaryKeyImpl;
 import org.w3c.dom.Element;
@@ -73,6 +67,9 @@ import org.w3c.dom.NodeList;
 
 import com.sun.sql.framework.utils.Logger;
 import com.sun.sql.framework.utils.StringUtil;
+import org.netbeans.modules.sql.framework.model.DBTable;
+import org.netbeans.modules.sql.framework.model.SQLDBColumn;
+import org.netbeans.modules.sql.framework.model.impl.AbstractDBTable;
 
 /**
  * Reference implementation for interface org.netbeans.modules.etl.model.DBTable
@@ -82,16 +79,7 @@ import com.sun.sql.framework.utils.StringUtil;
  * @author Ahimanikya Satapathy
  * @version $Revision$
  */
-public class FlatfileDBTableImpl implements FlatfileDBTable, Cloneable, Comparable {
-    static class StringComparator implements Comparator {
-        public int compare(Object o1, Object o2) {
-            if (o1 instanceof String && o2 instanceof String) {
-                return ((String) o1).compareTo((String) o2);
-            }
-            throw new ClassCastException("StringComparator cannot compare non-String objects.");
-        }
-    }
-    
+public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTable, Cloneable, Comparable {
     /** Constants used in XML tags * */
     private static final String ATTR_ENCODING = "encoding";
     private static final String ATTR_FILE_NAME = "fileName";
@@ -135,18 +123,6 @@ public class FlatfileDBTableImpl implements FlatfileDBTable, Cloneable, Comparab
         WIZARD_ONLY_PROPERTIES.add("FIELDCOUNT");
     }
     
-    /** Map of column metadata. */
-    protected Map columns;
-    
-    /** user-defined description */
-    protected String description;
-    
-    /** table name. */
-    protected String name;
-    
-    /** FlatfileDatabaseModelImpl instance that "owns" this table. */
-    protected FlatfileDatabaseModel parent;
-    
     /* Encoding of file contents, e.g., utf-8, cp500, etc. */
     private String encoding = "";
     
@@ -161,11 +137,10 @@ public class FlatfileDBTableImpl implements FlatfileDBTable, Cloneable, Comparab
     /* Parse configurator for this flatfile */
     private Map properties;
     
-    private PrimaryKey  pk = null;
-    
     /* No-arg constructor; initializes Collections-related member variables. */
     public FlatfileDBTableImpl() {
-        columns = new LinkedHashMap();
+        super();
+        columns = new LinkedHashMap<String, DBColumn>();
         properties = new HashMap();
     }
     
@@ -229,7 +204,7 @@ public class FlatfileDBTableImpl implements FlatfileDBTable, Cloneable, Comparab
      * @param ignoreDupCols ignore or throw exception when column with same name being added.
      * @return true if successful. false if failed.
      */
-    private boolean addColumn(FlatfileDBColumn theColumn, boolean ignoreDupCols) {
+    private boolean addColumn(SQLDBColumn theColumn, boolean ignoreDupCols) {
         if (theColumn != null) {
             if ((!ignoreDupCols) && (columns.containsKey(theColumn.getName()))) {
                 throw new IllegalArgumentException("Column " + theColumn.getName() + " already exist.");
@@ -249,7 +224,7 @@ public class FlatfileDBTableImpl implements FlatfileDBTable, Cloneable, Comparab
      * @return true if successful. false if failed.
      */
     
-    public boolean addColumn(FlatfileDBColumn theColumn) {
+    public boolean addColumn(SQLDBColumn theColumn) {
         return addColumn(theColumn, false);
     }
     
@@ -289,8 +264,8 @@ public class FlatfileDBTableImpl implements FlatfileDBTable, Cloneable, Comparab
             return 0;
         }
         
-        String refName = (parent != null) ? parent.getFullyQualifiedTableName((DBTable) refObj) : ((DBTable) refObj).getName();
-        String myName = (parent != null) ? parent.getFullyQualifiedTableName(this) : name;
+        String refName = (parentDBModel != null) ? parentDBModel.getFullyQualifiedTableName((DBTable) refObj) : ((DBTable) refObj).getName();
+        String myName = (parentDBModel != null) ? parentDBModel.getFullyQualifiedTableName(this) : name;
         return (myName != null) ? myName.compareTo(refName) : (refName != null) ? 1 : -1;
     }
     
@@ -357,30 +332,6 @@ public class FlatfileDBTableImpl implements FlatfileDBTable, Cloneable, Comparab
     }
     
     /**
-     * Deletes all columns associated with this table.
-     *
-     * @return true if all columns were deleted successfully, false otherwise.
-     */
-    public boolean deleteAllColumns() {
-        this.columns.clear();
-        return false;
-    }
-    
-    /**
-     * Deletes DBColumn, if any, associated with the given name from this table.
-     *
-     * @param columnName column name to be removed.
-     * @return true if successful. false if failed.
-     */
-    public boolean deleteColumn(String columnName) {
-        if (columnName != null && columnName.trim().length() != 0) {
-            FlatfileDBColumn dbColumn = (FlatfileDBColumn) columns.remove(columnName);
-            return (dbColumn != null);
-        }
-        return false;
-    }
-    
-    /**
      * Overrides default implementation to return value based on memberwise comparison.
      *
      * @param obj Object against which we compare this instance
@@ -431,34 +382,6 @@ public class FlatfileDBTableImpl implements FlatfileDBTable, Cloneable, Comparab
     }
     
     /**
-     * Gets the DBColumn, if any, associated with the given name
-     *
-     * @param columnName column name
-     * @return DBColumn associated with columnName, or null if none exists
-     */
-    public DBColumn getColumn(String columnName) {
-        return (DBColumn) this.columns.get(columnName);
-    }
-    
-    /**
-     * @see org.netbeans.modules.model.database.DBTable#getColumnList
-     */
-    public List getColumnList() {
-        List list = new ArrayList();
-        list.addAll(this.columns.values());
-        
-        Collections.sort(list);
-        return list;
-    }
-    
-    /**
-     * @see org.netbeans.modules.model.database.DBTable#getColumns
-     */
-    public Map getColumns() {
-        return this.columns;
-    }
-    
-    /**
      * Gets the Create Statement SQL for creating table for a flat file
      *
      * @return SQL for this Flatfile with getTableName()
@@ -480,8 +403,8 @@ public class FlatfileDBTableImpl implements FlatfileDBTable, Cloneable, Comparab
             tableName = name;
         }
         
-        List pkList = new ArrayList();
-        SortedSet fields = new TreeSet(this.columns.values());
+        List<String> pkList = new ArrayList<String>();
+        //SortedSet fields = new TreeSet(this.columns.values());
         Iterator it = this.columns.values().iterator();
         StringBuilder buffer = new StringBuilder(100);
         buffer.append("CREATE EXTERNAL TABLE \"").append(tableName).append("\" ("); // NOI18N
@@ -549,13 +472,6 @@ public class FlatfileDBTableImpl implements FlatfileDBTable, Cloneable, Comparab
             Logger.print(Logger.ERROR, LOG_CATEGORY, "Failed to set the file path", e);
         }
         return sql;
-    }
-    
-    /**
-     * @see org.netbeans.modules.model.database.DBTable#getDescription
-     */
-    public String getDescription() {
-        return this.description;
     }
     
     public String getDropStatementSQL() {
@@ -652,54 +568,12 @@ public class FlatfileDBTableImpl implements FlatfileDBTable, Cloneable, Comparab
     }
     
     /**
-     * @see org.netbeans.modules.model.database.DBTable#getForeignKey(String)
-     */
-    public ForeignKey getForeignKey(String fkName) {
-        return null;
-    }
-    
-    /**
-     * @see org.netbeans.modules.model.database.DBTable#getForeignKeys
-     */
-    public List getForeignKeys() {
-        return Collections.EMPTY_LIST;
-    }
-    
-    /**
-     * @see org.netbeans.modules.model.database.DBTable#getIndex
-     */
-    public Index getIndex(String indexName) {
-        return null;
-    }
-    
-    /**
-     * @see org.netbeans.modules.model.database.DBTable#getIndexes
-     */
-    public List getIndexes() {
-        return Collections.EMPTY_LIST;
-    }
-    
-    /**
      * Gets local path to sample file.
      *
      * @return path (in local workstation file system) to file, excluding the filename.
      */
     public String getLocalFilePath() {
         return localPath;
-    }
-    
-    /**
-     * @see org.netbeans.modules.model.database.DBTable#getName
-     */
-    public synchronized String getName() {
-        return this.name;
-    }
-    
-    /**
-     * @see org.netbeans.modules.model.database.DBTable#getParent
-     */
-    public DatabaseModel getParent() {
-        return this.parent;
     }
     
     /**
@@ -714,16 +588,6 @@ public class FlatfileDBTableImpl implements FlatfileDBTable, Cloneable, Comparab
         return parserType;
     }
     
-    /**
-     * @see org.netbeans.modules.model.database.DBTable#getPrimaryKey
-     */
-    public PrimaryKey getPrimaryKey() {
-        return this.pk;
-    }
-    
-    /**
-     * @see com.sun.jbi.ui.devtool.flatfile.db.otd.repository.FlatfileDBTable#getProperties
-     */
     public Map getProperties() {
         return (properties != null) ? properties : Collections.EMPTY_MAP;
     }
@@ -737,20 +601,6 @@ public class FlatfileDBTableImpl implements FlatfileDBTable, Cloneable, Comparab
     public String getProperty(String key) {
         Property aProp = (Property) properties.get(key);
         return (aProp != null) ? (aProp.getValue() != null) ? aProp.getValue().toString() : null : null;
-    }
-    
-    /**
-     * @see org.netbeans.modules.model.database.DBTable#getReferencedTables
-     */
-    public Set getReferencedTables() {
-        return Collections.EMPTY_SET;
-    }
-    
-    /**
-     * @see org.netbeans.modules.model.database.DBTable#getReferenceFor
-     */
-    public ForeignKey getReferenceFor(DBTable target) {
-        return null;
     }
     
     /**
@@ -826,7 +676,7 @@ public class FlatfileDBTableImpl implements FlatfileDBTable, Cloneable, Comparab
         return myHash;
     }
     
-    public void parseXML(Element xmlElement) {
+    public void parseXML(Element xmlElement) throws BaseException {
         // In order to be compliant with lagacy JIBX generated XML, following structure
         // needs to be adhered to.
         // <pre>
@@ -858,28 +708,12 @@ public class FlatfileDBTableImpl implements FlatfileDBTable, Cloneable, Comparab
     
     /**
      *Set defaults for any new property added in the UI property sheet
-     *for flatfile OTD creation
+     *for flatfile db creation
      **/
     private void upgradeProperties() {
         if( !properties.containsKey(PropertyKeys.TRIMWHITESPACE) ) {
             setOrPutProperty(PropertyKeys.TRIMWHITESPACE,"true");
         }
-    }
-    
-    /**
-     * @see org.netbeans.modules.model.database.DBTable#references
-     */
-    public boolean references(DBTable pkTarget) {
-        return false;
-    }
-    
-    /**
-     * Sets description text for this instance.
-     *
-     * @param newDesc new descriptive text
-     */
-    public void setDescription(String newDesc) {
-        this.description = newDesc;
     }
     
     /**
@@ -911,33 +745,12 @@ public class FlatfileDBTableImpl implements FlatfileDBTable, Cloneable, Comparab
         localPath = (localFile.isFile()) ? localFile.getParentFile().getAbsolutePath() : localFile.getAbsolutePath();
     }
     
-    /*
-     * Setters and non-API helper methods for this implementation.
-     */
-    /**
-     * Sets table name to new value.
-     *
-     * @param newName new value for table name
-     */
-    public void setName(String newName) {
-        name = newName;
-    }
-    
     public void setOrPutProperty(String key, Object value) {
         if (value!= null && !setProperty(key, value)) {
             Property prop = new Property(key, value.getClass(), true);
             prop.setValue(value);
             properties.put(key, prop);
         }
-    }
-    
-    /**
-     * Sets parent DatabaseModel to the given reference.
-     *
-     * @param newParent new DatabaseModel parent
-     */
-    public void setParent(FlatfileDatabaseModel newParent) {
-        this.parent = newParent;
     }
     
     /**
@@ -980,10 +793,10 @@ public class FlatfileDBTableImpl implements FlatfileDBTable, Cloneable, Comparab
     public String toString() {
         StringBuilder buf = new StringBuilder(50);
         
-        if (parent != null) {
-            buf.append(parent.getModelName());
+        if (parentDBModel != null) {
+            buf.append(parentDBModel.getModelName());
             buf.append(":");
-            buf.append(parent.getFullyQualifiedTableName(this));
+            buf.append(parentDBModel.getFullyQualifiedTableName(this));
         } else {
             buf.append(getName());
         }
@@ -997,7 +810,7 @@ public class FlatfileDBTableImpl implements FlatfileDBTable, Cloneable, Comparab
      * @param prefix
      * @return XML string
      */
-    public String toXMLString(String prefix) {
+    public String toXMLString(String prefix) throws BaseException {
         StringBuilder sb = new StringBuilder();
         if (prefix == null) {
             prefix = "";
@@ -1051,7 +864,7 @@ public class FlatfileDBTableImpl implements FlatfileDBTable, Cloneable, Comparab
         }
     }
     
-    protected void parseColumns(Element mapNode) {
+    protected void parseColumns(Element mapNode) throws BaseException {
         NodeList entryNodeList = mapNode.getElementsByTagName("entry");
         NodeList columnNodeList = null;
         Element entry = null;
@@ -1111,7 +924,7 @@ public class FlatfileDBTableImpl implements FlatfileDBTable, Cloneable, Comparab
         
         sb.append(ATTR_PARENT);
         sb.append(EQUAL_START_QUOTE);
-        sb.append(this.parent.getModelName());
+        sb.append(this.parentDBModel.getModelName());
         sb.append("\"");
         return sb.toString();
     }
@@ -1140,7 +953,7 @@ public class FlatfileDBTableImpl implements FlatfileDBTable, Cloneable, Comparab
         return fullpath.toString().trim();
     }
     
-    private String getXMLColumnMap(String prefix) {
+    private String getXMLColumnMap(String prefix) throws BaseException {
         StringBuilder sb = new StringBuilder(prefix);
         sb.append("<map size=\"");
         sb.append(this.columns.size());
@@ -1151,7 +964,7 @@ public class FlatfileDBTableImpl implements FlatfileDBTable, Cloneable, Comparab
         return sb.toString();
     }
     
-    private String getXMLColumnMapEntries(String prefix) {
+    private String getXMLColumnMapEntries(String prefix) throws BaseException {
         StringBuilder sb = new StringBuilder();
         FlatfileDBColumn column = null;
         if ((this.columns != null) && (this.columns.size() > 0)) {
@@ -1219,7 +1032,19 @@ public class FlatfileDBTableImpl implements FlatfileDBTable, Cloneable, Comparab
         }
         
         if (pkList.size() > 0){
-            this.pk = new PrimaryKeyImpl("pk" + this.name, pkList, true);
+            this.primaryKey = new PrimaryKeyImpl("pk" + this.name, pkList);
         }
+    }
+
+    public String toXMLString(String prefix, boolean tableOnly) throws BaseException {
+        return toXMLString(prefix, true);
+    }
+
+    protected String getElementTagName() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    protected void parseChildren(NodeList childNodeList) throws BaseException {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

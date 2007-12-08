@@ -45,9 +45,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.netbeans.modules.etl.model.ETLDefinition;
-import org.netbeans.modules.model.database.DatabaseModel;
 import org.netbeans.modules.sql.framework.common.utils.TagParserUtility;
 import org.netbeans.modules.sql.framework.model.RuntimeDatabaseModel;
 import org.netbeans.modules.sql.framework.model.SQLConstants;
@@ -56,41 +54,37 @@ import org.netbeans.modules.sql.framework.model.SQLFrameworkParentObject;
 import org.netbeans.modules.sql.framework.model.SQLModelObjectFactory;
 import org.netbeans.modules.sql.framework.model.SQLObject;
 import org.netbeans.modules.sql.framework.model.SQLObjectListener;
-import org.netbeans.modules.sql.framework.model.SourceTable;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.Attribute;
+import org.netbeans.modules.sql.framework.model.DBTable;
+import org.netbeans.modules.sql.framework.model.DatabaseModel;
+import org.netbeans.modules.sql.framework.model.SQLDBModel;
+import org.netbeans.modules.sql.framework.model.ValidationInfo;
 
 /**
  * Root container for holding ETL model objects.
  *
  * @author Jonathan Giron
  * @author Ritesh Adval
+ * @author Ahimanikya Satapathy
  * @version $Revision$
  */
 public class ETLDefinitionImpl implements ETLDefinition, Serializable {
 
     /** Attribute name: displayName */
     public static final String ATTR_DISPLAYNAME = "displayName";
-
     /** Attribute name: displayName */
     public static final String ATTR_REFID = "refId";
-
     /** Document version */
-    public static final String DOC_VERSION = "6.0";
-
+    public static final String DOC_VERSION = "5.2";
     /** XML formatting constant: indent prefix */
     public static final String INDENT = "    ";
-
     /** TAG_DEFINITION is the tag for an ETL definition */
     public static final String TAG_DEFINITION = "etlDefinition";
-
     private static final String ATTR_VERSION = "version";
-
-    private Map attributes = new HashMap();
-
+    private Map<String, Attribute> attributes = new HashMap<String, Attribute>();
     private SQLDefinition sqlDefinition;
 
     /**
@@ -113,7 +107,7 @@ public class ETLDefinitionImpl implements ETLDefinition, Serializable {
     public ETLDefinitionImpl(Element xmlElement, SQLFrameworkParentObject parent) throws BaseException {
         this(xmlElement, parent, false);
     }
-    
+
     /**
      * Creates a new instance of ETLDefinitionImpl, parsing the given DOM Element to
      * retrieve its contents, and optionally preserving the parsed version information.
@@ -129,7 +123,6 @@ public class ETLDefinitionImpl implements ETLDefinition, Serializable {
         init();
         sqlDefinition.setSQLFrameworkParentObject(parent);
         parseXML(xmlElement); // parseXML checks for old version
-        
         if (!preserveVersion) {
             this.setVersion(DOC_VERSION); // after parsing set the version
         }
@@ -171,17 +164,17 @@ public class ETLDefinitionImpl implements ETLDefinition, Serializable {
      *
      * @return Collection, possibly empty, of all SQLObjects
      */
-    public Collection getAllObjects() {
+    public Collection<SQLObject> getAllObjects() {
         return this.sqlDefinition.getAllObjects();
     }
 
     /**
-     * Gets the List of OTDs
+     * Gets the List of Databases
      *
      * @return java.util.List for this
      */
-    public List getAllOTDs() {
-        return this.sqlDefinition.getAllOTDs();
+    public List<SQLDBModel> getAllDatabases() {
+        return this.sqlDefinition.getAllDatabases();
     }
 
     /**
@@ -191,13 +184,13 @@ public class ETLDefinitionImpl implements ETLDefinition, Serializable {
      * @return Attribute instance associated with attrName, or null if none exists
      */
     public Attribute getAttribute(String attrName) {
-        return (Attribute) attributes.get(attrName);
+        return attributes.get(attrName);
     }
 
     /**
      * @see SQLObject#getAttributeNames
      */
-    public Collection getAttributeNames() {
+    public Collection<String> getAttributeNames() {
         return attributes.keySet();
     }
 
@@ -216,7 +209,7 @@ public class ETLDefinitionImpl implements ETLDefinition, Serializable {
      * @return DatabaseModel for given Model Name
      */
     public DatabaseModel getDatabaseModel(String modelName) {
-        java.util.List list = sqlDefinition.getAllOTDs();
+        java.util.List list = sqlDefinition.getAllDatabases();
         java.util.Iterator it = list.iterator();
         while (it.hasNext()) {
             SQLObject sqlObj = (SQLObject) it.next();
@@ -246,7 +239,7 @@ public class ETLDefinitionImpl implements ETLDefinition, Serializable {
      */
     public Integer getExecutionStrategyCode() {
         return this.sqlDefinition.getExecutionStrategyCode();
-    }    
+    }
 
     /**
      * get the parent repository object
@@ -271,7 +264,7 @@ public class ETLDefinitionImpl implements ETLDefinition, Serializable {
      *
      * @return List, possibly empty, of source DatabaseModels
      */
-    public List getSourceDatabaseModels() {
+    public List<SQLDBModel> getSourceDatabaseModels() {
         return this.sqlDefinition.getSourceDatabaseModels();
     }
 
@@ -280,7 +273,7 @@ public class ETLDefinitionImpl implements ETLDefinition, Serializable {
      *
      * @return List, possibly empty, of SourceTables
      */
-    public List getSourceTables() {
+    public List<DBTable> getSourceTables() {
         return this.sqlDefinition.getSourceTables();
     }
 
@@ -308,7 +301,7 @@ public class ETLDefinitionImpl implements ETLDefinition, Serializable {
      *
      * @return List, possibly empty, of target DatabaseModels
      */
-    public List getTargetDatabaseModels() {
+    public List<SQLDBModel> getTargetDatabaseModels() {
         return this.sqlDefinition.getTargetDatabaseModels();
     }
 
@@ -317,7 +310,7 @@ public class ETLDefinitionImpl implements ETLDefinition, Serializable {
      *
      * @return List, possibly empty, of TargetTables
      */
-    public List getTargetTables() {
+    public List<DBTable> getTargetTables() {
         return this.sqlDefinition.getTargetTables();
     }
 
@@ -413,7 +406,7 @@ public class ETLDefinitionImpl implements ETLDefinition, Serializable {
     public void setExecutionStrategyCode(Integer code) {
         sqlDefinition.setExecutionStrategyCode(code);
     }
-    
+
     /**
      * set the parent repository object
      *
@@ -460,16 +453,16 @@ public class ETLDefinitionImpl implements ETLDefinition, Serializable {
      * validate the definition starting from the target tables.
      * @return Map of invalid input object as keys and reason as value
      */
-    public List validate() {
+    public List<ValidationInfo> validate() {
         return this.sqlDefinition.validate();
     }
 
     /**
-     * Applies whatever rules are appropriate to migrate the current object model to the 
+     * Applies whatever rules are appropriate to migrate the current object model to the
      * current version of ETLDefinition as implemented by the concrete class.
-     * 
+     *
      * @throws BaseException if error occurs during migration
-     */    
+     */
     public void migrateFromOlderVersions() throws BaseException {
         sqlDefinition.migrateFromOlderVersions();
     }
@@ -477,38 +470,4 @@ public class ETLDefinitionImpl implements ETLDefinition, Serializable {
     protected void init() {
         sqlDefinition = SQLModelObjectFactory.getInstance().createSQLDefinition();
     }
-
-    public DatabaseModel getSourceTable() {
-        java.util.List list = sqlDefinition.getAllOTDs();
-        java.util.Iterator it = list.iterator();
-        while (it.hasNext()) {
-            SQLObject sqlObj = (SQLObject) it.next();
-            int type = sqlObj.getObjectType();
-            if (type == SQLConstants.SOURCE_DBMODEL) {
-                DatabaseModel dbModel = (DatabaseModel) sqlObj;
-                if (dbModel != null) {
-                    return  (DatabaseModel) dbModel;
-                }
-            }
-        }
-        return null;
-    }
-
-    public DatabaseModel getTargetTable() {
-         java.util.List list = sqlDefinition.getAllOTDs();
-        java.util.Iterator it = list.iterator();
-        while (it.hasNext()) {
-            SQLObject sqlObj = (SQLObject) it.next();
-            int type = sqlObj.getObjectType();
-            if (type == SQLConstants.TARGET_DBMODEL) {
-                DatabaseModel dbModel = (DatabaseModel) sqlObj;
-                if (dbModel != null) {
-                    return  (DatabaseModel) dbModel;
-                }
-            }
-        }
-        return null;
-    }
-    
 }
-

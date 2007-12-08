@@ -41,24 +41,23 @@
 package org.netbeans.modules.etl.model.impl;
 
 import java.util.UUID;
-
 import org.netbeans.modules.etl.model.ETLObject;
 
 
 /**
  * This class implements ETLObject implements some base functionalies
- * 
- * @author Sudhendra Seshachala
+ *
+ * @author Ahimanikya Satapathy
  * @version $Revision$
  */
 public class ETLObjectImpl implements ETLObject {
-    
-	private String name;
-	private String id;
-	
-	/**
+
+    private String name;
+    private String id;
+
+    /**
      * Constructs an instance.
-     * 
+     *
      * @param name the name
      */
     public ETLObjectImpl(String name) {
@@ -67,30 +66,30 @@ public class ETLObjectImpl implements ETLObject {
 
     /**
      * Constructs an instance.
-     * 
+     *
      * @param id id
      * @param name name
      */
-    public ETLObjectImpl(String id, String name)  {
+    public ETLObjectImpl(String id, String name) {
         if (null != name) {
             setName(name);
         }
 
         if ((null == id) || (id.trim().length() == 0)) {
-            id = ( "{" + UUID.randomUUID().toString() + "}");
+            id = ("{" + UUID.randomUUID().toString() + "}");
         } else {
             setOID(id);
         }
-
     }
 
     /**
      * Overrides default implementation to correctly compare ETLObjectImpl instances.
-     * 
+     *
      * @param obj Object to be compared
      * @return true if objects are functionally identical, as defined in the method; false
      *         otherwise
      */
+    @Override
     public boolean equals(Object obj) {
         if (obj == null) {
             return false;
@@ -108,28 +107,28 @@ public class ETLObjectImpl implements ETLObject {
         if (null != getName()) {
             return getName().equals(that.getName());
         }
- 
+
         return false;
     }
-
 
     /**
      * @see org.netbeans.modules.etl.model.ETLObject#getName
      */
-    public String getName()  {
+    public String getName() {
         return this.name;
     }
 
     /**
      * @see org.netbeans.modules.etl.model.ETLObject#getOID
      */
-    public String getObjectId()  {
+    public String getObjectId() {
         return this.id;
     }
 
-   /**
+    /**
      * @see java.lang.Object#hashCode
      */
+    @Override
     public int hashCode() {
         return super.hashCode();
     }
@@ -137,23 +136,22 @@ public class ETLObjectImpl implements ETLObject {
     /**
      * @see org.netbeans.modules.etl.model.ETLObject#setName
      */
-    public void setName(String value)  {
+    public void setName(String value) {
         this.name = value;
     }
 
     /**
      * @see org.netbeans.modules.etl.model.ETLObject#setOID
      */
-    public void setOID(String value)  {
+    public void setOID(String value) {
         this.id = value;
     }
 
     /**
      * @return a string
      */
+    @Override
     public String toString() {
         return this.name;
     }
-
 }
-

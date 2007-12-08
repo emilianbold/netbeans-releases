@@ -41,9 +41,7 @@
 package org.netbeans.modules.sql.framework.ui.view.validation;
 
 import java.util.List;
-
 import javax.swing.table.AbstractTableModel;
-
 import org.netbeans.modules.sql.framework.model.ValidationInfo;
 
 
@@ -51,9 +49,9 @@ import org.netbeans.modules.sql.framework.model.ValidationInfo;
  * @author Ritesh Adval
  */
 public class ValidationTableModel extends AbstractTableModel {
-    private List dataList;
 
-    private static final String[] columnNames = { "", "Description"};
+    private List dataList;
+    private static final String[] columnNames = {"Type", "Description"};
 
     public ValidationTableModel(List vInfos) {
         this.dataList = vInfos;
@@ -61,7 +59,7 @@ public class ValidationTableModel extends AbstractTableModel {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see javax.swing.table.TableModel#getColumnCount()
      */
     public int getColumnCount() {
@@ -70,7 +68,7 @@ public class ValidationTableModel extends AbstractTableModel {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see javax.swing.table.TableModel#getRowCount()
      */
     public int getRowCount() {
@@ -79,7 +77,7 @@ public class ValidationTableModel extends AbstractTableModel {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see javax.swing.table.TableModel#getValueAt(int, int)
      */
     public Object getValueAt(int rowIndex, int columnIndex) {
@@ -90,12 +88,12 @@ public class ValidationTableModel extends AbstractTableModel {
                 return new Integer(vInfo.getValidationType());
             case 1:
                 return vInfo.getDescription();
-
         }
 
         return "";
     }
 
+    @Override
     public Class getColumnClass(int columnIndex) {
         if (columnIndex == 0) {
             return Integer.class;
@@ -104,6 +102,7 @@ public class ValidationTableModel extends AbstractTableModel {
         return String.class;
     }
 
+    @Override
     public String getColumnName(int column) {
         return columnNames[column];
     }
@@ -112,4 +111,3 @@ public class ValidationTableModel extends AbstractTableModel {
         return (ValidationInfo) this.dataList.get(row);
     }
 }
-

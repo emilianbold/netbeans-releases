@@ -129,7 +129,7 @@ public class ETLCollaborationWizard extends ETLWizard {
          * @see org.openide.WizardDescriptor.Iterator#nextPanel
          */
         public void nextPanel() {
-            if ( current().equals(sourceTableSelectionPanel) ) { // Currently in source OTDs panel.
+            if ( current().equals(sourceTableSelectionPanel) ) { // Currently in source Database panel.
                 ETLCollaborationWizardTransferPanel xferPanel = (ETLCollaborationWizardTransferPanel) current();
                 
                 // Skip join panel if we don't have two or more tables selected,
@@ -307,7 +307,7 @@ public class ETLCollaborationWizard extends ETLWizard {
                         public void run() {
                             etlDataObj.initialize(descriptor);
                             if (etlDataObj.getNodeDelegate() != null) {
-                                OpenCookie openCookie = (OpenCookie) etlDataObj.getNodeDelegate().getCookie(OpenCookie.class);
+                                OpenCookie openCookie = etlDataObj.getNodeDelegate().getCookie(OpenCookie.class);
                                 openCookie.open();
                             }
                         }
@@ -331,8 +331,8 @@ public class ETLCollaborationWizard extends ETLWizard {
     /** Key name used to reference collaboration name in wizard context. */
     public static final String COLLABORATION_NAME = "collaboration_name";
     
-    /** Key name used to reference List of destination OTDs in wizard context. */
-    public static final String TARGET_DB = "destination_otds";
+    /** Key name used to reference List of destination Database in wizard context. */
+    public static final String TARGET_DB = "destination_dbs";
     
     /** Key name used to reference List of destination tables in wizard context. */
     public static final String DESTINATION_TABLES = "destination_tables";
@@ -349,8 +349,8 @@ public class ETLCollaborationWizard extends ETLWizard {
     /** Key name used to reference Collection of runtime input args in wizard context. */
     public static final String RUNTIME_INPUTS = "runtime_inputs";
     
-    /** Key name used to reference List of source OTDs in wizard context. */
-    public static final String SOURCE_DB = "source_otds";
+    /** Key name used to reference List of source Database in wizard context. */
+    public static final String SOURCE_DB = "source_dbs";
     
     public static final int SOURCE_PANEL_INDEX = 2;
     
@@ -394,21 +394,21 @@ public class ETLCollaborationWizard extends ETLWizard {
     }
     
     /**
-     * Gets List of destination OTDs as selected by user.
+     * Gets List of destination Databases as selected by user.
      *
-     * @return List (possibly empty) of selected destination OTDs
+     * @return List (possibly empty) of selected destination Databases
      */
-    public List getSelectedDestinationOtds() {
-        return getSelectedOtdsOfType(ETLCollaborationWizard.TARGET_DB);
+    public List getSelectedDestinationDb() {
+        return getSelectedDbOfType(ETLCollaborationWizard.TARGET_DB);
     }
     
     /**
-     * Gets List of source OTDs as selected by user.
+     * Gets List of source Databases as selected by user.
      *
-     * @return List (possibly empty) of selected source OTDs
+     * @return List (possibly empty) of selected source Databases
      */
-    public List getSelectedSourceOtds() {
-        return getSelectedOtdsOfType(ETLCollaborationWizard.SOURCE_DB);
+    public List getSelectedSourceDb() {
+        return getSelectedDbOfType(ETLCollaborationWizard.SOURCE_DB);
     }
     
     public SQLJoinView getSQLJoinView() {
@@ -451,7 +451,7 @@ public class ETLCollaborationWizard extends ETLWizard {
         return NbBundle.getMessage(ETLCollaborationWizard.class, "TITLE_dlg_new_collab");
     }
     
-    private List getSelectedOtdsOfType(String typeKey) {
+    private List getSelectedDbOfType(String typeKey) {
         return (List) descriptor.getProperty(typeKey);
     }
     
