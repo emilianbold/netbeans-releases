@@ -92,7 +92,6 @@ public class PortArea extends JGoArea {
         super();
         this.setSelectable(false);
         this.setResizable(false);
-        this.setGrabChildSelection(false);
 
         if (arrowPort) {
             initializeArrowPort();

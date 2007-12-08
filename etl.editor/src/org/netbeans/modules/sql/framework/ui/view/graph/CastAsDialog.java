@@ -149,6 +149,8 @@ public class CastAsDialog extends JDialog implements ActionListener {
         }
     }
 
+    @SuppressWarnings("deprecation")
+    @Override
     public void show() {
         pack();
         // this.setResizable(false);

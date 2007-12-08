@@ -76,7 +76,7 @@ public class ToolBarItemArea extends CanvasArea {
     /** Creates a new instance of ToolBarItemArea */
     public ToolBarItemArea() {
 
-        this.setGrabChildSelection(true);
+        this.setPickableBackground(false);
         rect = new JGoRectangle();
         rect = new JGoRectangle();
         rect.setSelectable(false);

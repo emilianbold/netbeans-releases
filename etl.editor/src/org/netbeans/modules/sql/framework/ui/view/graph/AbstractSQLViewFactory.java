@@ -114,13 +114,15 @@ public abstract class AbstractSQLViewFactory implements IOperatorManager {
      * @return toolbar actions
      */
     public abstract List getToolBarActions();
+
     /**
      * call this to setup relation between graph view, graph view container, toolbar,
      * controller and model
      */
+
     IGraphView graphView = null;
 
-    public void setUp() {
+     public void setUp() {
         IGraphController controller = createGraphController();
         SQLUIModel model = getSQLModel();
 
@@ -172,6 +174,7 @@ public abstract class AbstractSQLViewFactory implements IOperatorManager {
             }
         }
     }
+
 
     /**
      * Show the operator palette dialog, initially displaying the category panel

@@ -167,7 +167,6 @@ public class SQLCaseArea extends BasicListArea {
 
         // Case-when does not grab child selections; this is to allow case areas to be
         // selectable
-        this.setGrabChildSelection(false);
 
         if (titleImage == null) {
             titleImage = new ImageIcon(caseUrl);

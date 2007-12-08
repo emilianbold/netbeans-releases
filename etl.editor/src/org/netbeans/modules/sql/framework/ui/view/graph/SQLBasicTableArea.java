@@ -64,9 +64,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 
-import org.netbeans.modules.model.database.DBColumn;
-import org.netbeans.modules.model.database.DBTable;
-import org.netbeans.modules.model.database.ForeignKey;
+import org.netbeans.modules.sql.framework.model.DBColumn;
 import org.netbeans.modules.sql.framework.common.utils.XmlUtil;
 import org.netbeans.modules.sql.framework.model.SQLCondition;
 import org.netbeans.modules.sql.framework.model.SQLConstants;
@@ -93,10 +91,13 @@ import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
 
 import com.nwoods.jgo.JGoBrush;
+import com.nwoods.jgo.JGoLink;
 import com.nwoods.jgo.JGoPort;
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.Logger;
 import com.sun.sql.framework.utils.StringUtil;
+import org.netbeans.modules.sql.framework.model.DBTable;
+import org.netbeans.modules.sql.framework.model.ForeignKey;
 
 /**
  * This class represents the table rendered on the canvas. It implements custom rendering
@@ -106,8 +107,6 @@ import com.sun.sql.framework.utils.StringUtil;
  * @author Jonathan Giron
  */
 public abstract class SQLBasicTableArea extends BasicTableArea implements IGraphNode {
-
-    static final String RCS_ID = "$Id$";
 
     /* log4j logger category */
     private static final String LOG_CATEGORY = SQLBasicTableArea.class.getName();
@@ -132,7 +131,7 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
         super();
         this.setSelectable(true);
         this.setResizable(true);
-        this.setGrabChildSelection(true);
+        this.setPickableBackground(true);
         setTitleToolBarGap(0);
         setToolBarTableGap(0);
     }
@@ -451,15 +450,15 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
         setDataObject(obj);
     }
 
-    public void addColumns(List columnList) {
+    public void addColumns(List<SQLDBColumn> columnList) {
         boolean added = false;
 
         SQLTableArea tableArea1 = (SQLTableArea) this.getTableArea();
         MetaTableModel model = (MetaTableModel) tableArea1.getModel();
 
-        Iterator it = columnList.iterator();
+        Iterator<SQLDBColumn> it = columnList.iterator();
         while (it.hasNext()) {
-            SQLDBColumn column = (SQLDBColumn) it.next();
+            SQLDBColumn column = it.next();
             if (!model.containsColumn(column)) {
                 model.addColumn(column);
                 added = true;
@@ -737,8 +736,9 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
      *
      * @return list of input links
      */
-    public List getAllLinks() {
-        ArrayList list = new ArrayList();
+    @Override
+    public List<JGoLink> getAllLinks() {
+        ArrayList<JGoLink> list = new ArrayList<JGoLink>();
         IGraphPort port = null;
         SQLTableArea tabArea = (SQLTableArea) this.getTableArea();
         MetaTableModel model = (MetaTableModel) tabArea.getModel();

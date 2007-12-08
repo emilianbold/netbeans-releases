@@ -64,9 +64,6 @@ import com.nwoods.jgo.JGoText;
  */
 public class OperatorGraphNode extends BasicCanvasArea {
 
-    /* RCS id */
-    static final String RCS_ID = "$Id$";
-
     private static final GradientBrush BRUSH_TITLE = new GradientBrush(new Color(221, 221, 255), // light
                                                                                                     // magenta
         new Color(160, 186, 213)); // navy
@@ -100,7 +97,7 @@ public class OperatorGraphNode extends BasicCanvasArea {
 
         this.setResizable(false);
         this.setSelectable(true);
-        this.setGrabChildSelection(true);
+        this.setPickableBackground(true);
 
         // RJR - remove setting of fieldlist which was causing a NPE
     }

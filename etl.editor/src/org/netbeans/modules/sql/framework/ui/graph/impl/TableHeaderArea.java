@@ -71,7 +71,6 @@ public class TableHeaderArea extends CanvasArea {
         this.setSelectable(false);
         this.setResizable(false);
         this.setDraggable(true);
-        this.setGrabChildSelection(false);
 
         rect = new JGoRectangle();
         rect.setSelectable(false);

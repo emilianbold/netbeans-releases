@@ -71,7 +71,8 @@ public class BasicListArea extends BasicCanvasArea {
      * @param title title
      */
     public BasicListArea(String title) {
-        this.setGrabChildSelection(true);
+        this.setPickableBackground(true);
+        this.setSelectable(true);
         titleArea = new TitleArea(title);
         titleArea.setBrush(BRUSH_TITLE);
 

@@ -5,9 +5,6 @@ import java.util.List;
 
 import javax.swing.undo.UndoManager;
 
-/*import com.sun.jbi.ui.devtool.sql.framework.ui.graph.actions.RedoAction;
-import com.sun.jbi.ui.devtool.sql.framework.ui.graph.actions.UndoAction;*/
-import org.netbeans.modules.etl.ui.ETLEditorViewMultiViewElement;
 import org.netbeans.modules.sql.framework.ui.graph.IGraphController;
 import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
 import org.netbeans.modules.sql.framework.ui.graph.IOperatorXmlInfoModel;
@@ -18,12 +15,10 @@ import org.netbeans.modules.sql.framework.ui.graph.actions.ExpandAllAction;
 import org.netbeans.modules.sql.framework.ui.graph.actions.GraphAction;
 import org.netbeans.modules.sql.framework.ui.graph.actions.ZoomAction;
 import org.netbeans.modules.sql.framework.ui.graph.impl.OperatorXmlInfoModel;
+import org.netbeans.modules.sql.framework.ui.graph.view.impl.SQLToolBar;
 import org.netbeans.modules.sql.framework.ui.model.SQLUIModel;
 import org.netbeans.modules.sql.framework.ui.undo.SQLUndoManager;
 import org.netbeans.modules.sql.framework.ui.view.IGraphViewContainer;
-import org.openide.actions.UndoAction;
-import org.openide.actions.RedoAction;
-import org.openide.util.actions.SystemAction;
 
 public final class BasicSQLViewFactory extends AbstractSQLViewFactory {
     private IOperatorXmlInfoModel operatorModel;
@@ -34,10 +29,6 @@ public final class BasicSQLViewFactory extends AbstractSQLViewFactory {
     private List graphActions;
     private List toolBarActions;
 
-    public BasicSQLViewFactory(SQLUIModel model, IGraphViewContainer gContainer) {
-        this(model, gContainer, null, null);
-    }
-
     public BasicSQLViewFactory(SQLUIModel model, IGraphViewContainer gContainer, List gActions, List tActions) {
         this.sqlModel = model;
         this.gViewContainer = gContainer;
@@ -47,7 +38,7 @@ public final class BasicSQLViewFactory extends AbstractSQLViewFactory {
         // This has to be created only once
         operatorModel = OperatorXmlInfoModel.getInstance(this.gViewContainer.getOperatorFolder());
         this.toolbarType = IOperatorXmlInfoModel.CATEGORY_TRANSFORM;
-        super.setToolBar();
+        super.setUp();
     }
 
     /**
@@ -56,18 +47,19 @@ public final class BasicSQLViewFactory extends AbstractSQLViewFactory {
      * @return graph view
      */
     public IGraphView createGraphView() {
-        SQLGraphView graphView = new SQLGraphView();
-        this.gView = graphView;
+        SQLGraphView gv = new SQLGraphView();
+        this.gView = gv;
         BasicGraphFactory graphFactory = new BasicGraphFactory(this.gViewContainer.getOperatorFolder());
-        graphView.setGraphFactory(graphFactory);
+        gv.setGraphFactory(graphFactory);
         //set up model
-        sqlModel.addSQLDataListener(graphView);
+        sqlModel.addSQLDataListener(gv);
+        
         UndoManager undoManager = sqlModel.getUndoManager();
         if (undoManager instanceof SQLUndoManager) {
-            ((SQLUndoManager) undoManager).addUndoableEditListener(graphView);
+            ((SQLUndoManager) undoManager).addUndoableEditListener(gv);
         }
 
-        return graphView;
+        return gv;
     }
 
     /**
@@ -75,10 +67,12 @@ public final class BasicSQLViewFactory extends AbstractSQLViewFactory {
      * 
      * @return tool bar
      */
+    // XXX: Already created in Editor Multiview Element 
     public IToolBar createToolBar() {
-        //toolBar = new SQLToolBar(this);
-        //return toolBar;
-        return (IToolBar)ETLEditorViewMultiViewElement.getToolBar();
+        if(toolBar == null){
+            toolBar = new SQLToolBar(this);
+        }
+        return toolBar;
     }
 
     /**

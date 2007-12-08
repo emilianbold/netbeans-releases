@@ -40,28 +40,28 @@
  */
 package org.netbeans.modules.sql.framework.ui.view.join;
 
+import com.nwoods.jgo.JGoLink;
 import java.awt.Color;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.netbeans.modules.sql.framework.model.SQLJoinTable;
 import org.netbeans.modules.sql.framework.model.SourceTable;
 import org.netbeans.modules.sql.framework.ui.graph.IGraphPort;
 import org.netbeans.modules.sql.framework.ui.graph.impl.BasicCanvasArea;
 import org.netbeans.modules.sql.framework.ui.graph.impl.BasicCellArea;
-
 import com.nwoods.jgo.JGoPen;
 import com.nwoods.jgo.JGoRectangle;
 import com.nwoods.jgo.JGoText;
 
 /**
  * This class represents a one cell level representation of a table
- * 
+ *
  * @author radval
  */
 public class TableGraphNode extends BasicCanvasArea {
+
     protected JGoRectangle columnRect;
     private BasicCellArea numberArea;
     private BasicCellArea cellArea;
@@ -71,9 +71,7 @@ public class TableGraphNode extends BasicCanvasArea {
         super();
         this.setResizable(false);
         this.setSelectable(false);
-        this.setGrabChildSelection(false);
         this.setUpdateGuiInfo(false);
-
     }
 
     public TableGraphNode(SQLJoinTable table) {
@@ -139,23 +137,24 @@ public class TableGraphNode extends BasicCanvasArea {
         //this is a hack to add 1 in width to forec this to repaint and all its children
         //so that BasicCellArea can draw a bounding rect around it
         this.setSize(this.getMinimumWidth(), this.getMinimumHeight());
-
     }
 
     /**
      * get the minimum height
-     * 
+     *
      * @return min height
      */
+    @Override
     public int getMinimumHeight() {
         return cellArea.getMinimumHeight();
     }
 
     /**
      * get the minimum width
-     * 
+     *
      * @return min width
      */
+    @Override
     public int getMinimumWidth() {
         return cellArea.getMinimumWidth() + numberArea.getMinimumWidth();
     }
@@ -163,6 +162,7 @@ public class TableGraphNode extends BasicCanvasArea {
     /**
      * Lays out this area's child objects.
      */
+    @Override
     public void layoutChildren() {
         Rectangle rect = this.getBoundingRect();
         numberArea.setBoundingRect(rect.x, rect.y, numberArea.getMinimumWidth(), rect.height);
@@ -171,10 +171,11 @@ public class TableGraphNode extends BasicCanvasArea {
 
     /**
      * get output graph port , given a field name
-     * 
+     *
      * @param fieldName field name
      * @return graph port
      */
+    @Override
     public IGraphPort getOutputGraphPort(String fieldName) {
         if (cellArea != null) {
             return cellArea.getRightGraphPort();
@@ -184,10 +185,11 @@ public class TableGraphNode extends BasicCanvasArea {
 
     /**
      * Gets field name associated with the given port
-     * 
+     *
      * @param graphPort graph port
      * @return field name
      */
+    @Override
     public String getFieldName(IGraphPort graphPort) {
         SQLJoinTable joinTable = (SQLJoinTable) this.getDataObject();
         SourceTable sourceTable = joinTable.getSourceTable();
@@ -201,11 +203,12 @@ public class TableGraphNode extends BasicCanvasArea {
 
     /**
      * Gets a list of all input and output links
-     * 
+     *
      * @return list of input links
      */
-    public List getAllLinks() {
-        ArrayList list = new ArrayList();
+    @Override
+    public List<JGoLink> getAllLinks() {
+        ArrayList<JGoLink> list = new ArrayList<JGoLink>();
         if (cellArea != null) {
             IGraphPort port = cellArea.getRightGraphPort();
             addLinks(port, list);
@@ -219,4 +222,3 @@ public class TableGraphNode extends BasicCanvasArea {
         this.setSize(this.getMinimumWidth(), this.getMinimumHeight());
     }
 }
-

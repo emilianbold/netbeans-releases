@@ -71,7 +71,6 @@ public class HeaderCellArea extends CanvasArea {
         super();
         this.setSelectable(false);
         this.setResizable(false);
-        this.setGrabChildSelection(false);
 
         text = new BasicText(columnName);
         text.setSelectable(false);

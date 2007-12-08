@@ -82,7 +82,6 @@ public class CanvasArea extends JGoArea implements ICanvasInterface {
         //children
         this.setSelectable(false);
         this.setResizable(false);
-        this.setGrabChildSelection(false);
     }
 
     /**
@@ -99,6 +98,7 @@ public class CanvasArea extends JGoArea implements ICanvasInterface {
      * 
      * @return tooltip text
      */
+    @Override
     public String getToolTipText() {
         return toolTip;
     }
@@ -142,6 +142,7 @@ public class CanvasArea extends JGoArea implements ICanvasInterface {
      * 
      * @param prevRect previous bounds rectangle
      */
+    @Override
     protected void geometryChange(Rectangle prevRect) {
         // handle any size changes by repositioning all the items
         if (prevRect.width != getWidth() || prevRect.height != getHeight()) {
@@ -227,7 +228,7 @@ public class CanvasArea extends JGoArea implements ICanvasInterface {
      * @param gPort port
      * @param list list
      */
-    protected void addLinks(IGraphPort gPort, List list) {
+    protected void addLinks(IGraphPort gPort, List<JGoLink> list) {
         if (gPort == null) {
             return;
         }

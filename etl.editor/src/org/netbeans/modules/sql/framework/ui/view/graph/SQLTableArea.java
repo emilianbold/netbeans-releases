@@ -47,8 +47,7 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 
-import org.netbeans.modules.model.database.DBColumn;
-import org.netbeans.modules.model.database.DBTable;
+import org.netbeans.modules.sql.framework.model.DBColumn;
 import org.netbeans.modules.sql.framework.model.SQLConnectableObject;
 import org.netbeans.modules.sql.framework.model.SQLDBColumn;
 import org.netbeans.modules.sql.framework.ui.graph.IGraphNode;
@@ -67,6 +66,7 @@ import com.nwoods.jgo.JGoPort;
 import com.nwoods.jgo.JGoText;
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.Logger;
+import org.netbeans.modules.sql.framework.model.DBTable;
 
 /**
  * 
@@ -77,8 +77,6 @@ public class SQLTableArea extends TableArea implements TableModelListener {
 
     /* log4j logger category */
     private static final String LOG_CATEGORY = SQLTableArea.class.getName();
-
-    static final String RCS_ID = "$Id$";
 
     private TableModel dataModel;
 
@@ -232,6 +230,7 @@ public class SQLTableArea extends TableArea implements TableModelListener {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void deleteLinks(int firstRow, int lastRow) {
         //before removing rows we need to find if port
         //we are removing has any links and if so we should remove them
@@ -272,6 +271,7 @@ public class SQLTableArea extends TableArea implements TableModelListener {
                 BasicCellArea cell = cArea.getCellAt(j);
                 if (cell != null) {
                     cell.setText(rowVal.getName());
+                    cell.setToolTipText(UIUtil.getColumnToolTip((SQLDBColumn)rowVal));
                 }
             }
         }

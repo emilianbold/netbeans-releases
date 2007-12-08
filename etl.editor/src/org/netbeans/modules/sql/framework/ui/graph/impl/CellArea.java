@@ -80,7 +80,6 @@ public class CellArea extends CanvasArea implements PropertyChangeListener {
         this.setResizable(false);
         this.setDraggable(true);
         this.set4ResizeHandles(false);
-        this.setGrabChildSelection(false);
 
     }
 

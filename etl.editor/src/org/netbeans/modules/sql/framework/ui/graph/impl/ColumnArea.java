@@ -100,7 +100,6 @@ public class ColumnArea extends CanvasArea {
         
         this.setSelectable(false);
         this.setResizable(false);
-        this.setGrabChildSelection(false);
         
         //set the insets around column
         this.insets = TableConstants.COLUMN_INSETS;
@@ -461,16 +460,16 @@ public class ColumnArea extends CanvasArea {
             layoutChildren();
         }
     }
-    
+
     /**
      * Paints this area.
-     *
+     * 
      * @param g Graphics2D
      * @param view view
      */
     public void paint(Graphics2D g, JGoView view) {
         super.paint(g, view);
-        
+
         int penwidth = 0;
         if (getLinePen() != null) {
             penwidth = getLinePen().getWidth();
@@ -483,19 +482,19 @@ public class ColumnArea extends CanvasArea {
             return; // not yet initialized
         }
         Insets insets1 = getInsets();
-        
+
         int rectleft = r.getLeft();
         int recttop = r.getTop();
         int rectwidth = r.getWidth();
         int rectheight = r.getHeight();
-        
+
         int top = recttop + insets1.top;
         int height = rectheight - insets1.top - insets1.bottom;
-        
+
         int limit = 0;
-        
+
         limit = height;
-        
+
         int s = 0; // height/width of visible items so far
         for (int i = getFirstVisibleRow(); i < getLastVisibleRow(); i++) {
             BasicCellArea cell = (BasicCellArea) cells.get(i);
@@ -507,13 +506,13 @@ public class ColumnArea extends CanvasArea {
             }
             s += sep;
         }
-        
+
     }
-    
+
     /**
      * Overrides parent to handle the changes in the geometry of this area. We will lay
      * out all the cell again.
-     *
+     * 
      * @param prevRect previous rectangle bounds
      */
     protected void geometryChange(Rectangle prevRect) {
@@ -524,16 +523,16 @@ public class ColumnArea extends CanvasArea {
                 Rectangle thisRect = getBoundingRect();
                 getRect().setBoundingRect(thisRect);
             }
-            
+
             // then we can lay out all the other parts
             layoutChildren();
-            
+
         } else {
             super.geometryChange(prevRect);
         }
-        
+
     }
-    
+
     /**
      * Lays out all of this children of this column area.
      */
@@ -542,57 +541,57 @@ public class ColumnArea extends CanvasArea {
         if (r == null) {
             return;
         } // not yet initialized
-        
+
         //get the bounding rectangle of this column area
         int x = r.getLeft() + insets.left;
         int y = r.getTop() + insets.top;
         int width = r.getWidth() - insets.left - insets.right;
         int height = r.getHeight() - insets.top - insets.bottom;
-        
+
         // remember last visible row index
         lastVisibleRow = getFirstVisibleRow();
-        
+
         int cellWidth = width;
-        
+
         // calculate the top of next cell
         int nextCellDeltaTop = 0;
-        
+
         Iterator it = cells.iterator();
-        
+
         // row count
         int cnt = 0;
-        
+
         while (it.hasNext()) {
             BasicCellArea cell = (BasicCellArea) it.next();
-            
+
             if (cnt < getFirstVisibleRow()) {
                 cell.setVisible(false);
-                
+
                 cnt++;
                 continue;
             }
-            
+
             //if cell is going out of the height of this area then we
             //mark it invisible
             if (nextCellDeltaTop + cell.getHeight() > height) {
                 cell.setVisible(false);
-                
+
             } else {
                 cell.setVisible(true);
                 lastVisibleRow = cnt;
                 cell.setBoundingRect(x, y + nextCellDeltaTop, cellWidth, cell.getHeight());
             }
-            
+
             //calcualte the top for next cell
             nextCellDeltaTop += cell.getHeight() + getVerticalSpacing();
-            
+
             cnt++;
         }
     }
-    
+
     /**
      * Sets the alignment of text in this column area to the given characteristic.
-     *
+     * 
      * @param align desired alignment characteristic; one of
      *        <UL>
      *        <LI>JGoText.ALIGN_LEFT

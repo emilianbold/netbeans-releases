@@ -78,6 +78,7 @@ import org.openide.NotifyDescriptor;
 import com.nwoods.jgo.JGoArea;
 import com.nwoods.jgo.JGoBrush;
 import com.nwoods.jgo.JGoImage;
+import com.nwoods.jgo.JGoLink;
 import com.nwoods.jgo.JGoObject;
 import com.nwoods.jgo.JGoPen;
 import com.nwoods.jgo.JGoPort;
@@ -99,7 +100,7 @@ public class JoinPreviewGraphNode extends BasicCanvasArea {
 
     private int cbAreaHeight;
 
-    private Vector joinTypes;
+    private Vector<JoinType> joinTypes;
 
     private BasicComboBoxArea cbArea;
 
@@ -123,9 +124,9 @@ public class JoinPreviewGraphNode extends BasicCanvasArea {
     }
 
     private void initGUI() {
-        this.setSelectable(false);
+        this.setSelectable(true);
         this.setResizable(false);
-        this.setGrabChildSelection(true);
+        this.setPickableBackground(false);
         this.setUpdateGuiInfo(false);
 
         //add bounding rectangle
@@ -146,7 +147,6 @@ public class JoinPreviewGraphNode extends BasicCanvasArea {
         bottomArea = new JoinBottomArea();
         bottomArea.setSelectable(false);
         bottomArea.setResizable(false);
-        bottomArea.setGrabChildSelection(false);
         addObjectAtHead(bottomArea);
 
         //add output port if any
@@ -158,6 +158,7 @@ public class JoinPreviewGraphNode extends BasicCanvasArea {
         this.setSize(this.getMaximumWidth(), this.getMaximumHeight());
     }
 
+    @Override
     public void setDataObject(Object obj) {
         super.setDataObject(obj);
         SQLJoinOperator op = (SQLJoinOperator) obj;
@@ -195,6 +196,7 @@ public class JoinPreviewGraphNode extends BasicCanvasArea {
     /**
      * layout the children of this cell area
      */
+    @Override
     public void layoutChildren() {
         int rectleft = getLeft();
         int recttop = getTop();
@@ -231,6 +233,7 @@ public class JoinPreviewGraphNode extends BasicCanvasArea {
      * 
      * @return minimum height
      */
+    @Override
     public int getMaximumHeight() {
         int minHeight = 0;
 
@@ -247,6 +250,7 @@ public class JoinPreviewGraphNode extends BasicCanvasArea {
         return minHeight;
     }
 
+    @Override
     public int getMaximumWidth() {
         int maxWidth = 0;
 
@@ -279,7 +283,6 @@ public class JoinPreviewGraphNode extends BasicCanvasArea {
             JGoArea leftRightArea = new JGoArea();
             leftRightArea.setSelectable(false);
             leftRightArea.setResizable(false);
-            leftRightArea.setGrabChildSelection(false);
 
             leftArea.setSpotLocation(JGoObject.Left, leftRightArea, JGoObject.Left);
             rightArea.setSpotLocation(JGoObject.TopLeft, leftArea, JGoObject.BottomLeft);
@@ -323,10 +326,10 @@ public class JoinPreviewGraphNode extends BasicCanvasArea {
         private CellArea cell;
 
         JoinConditionArea() {
-            this.setSelectable(false);
+            this.setSelectable(true);
             this.setResizable(false);
             this.setDraggable(true);
-            this.setGrabChildSelection(true);
+            this.setPickableBackground(false);
 
             rect = new JGoRectangle();
             rect.setPen(JGoPen.makeStockPen(Color.lightGray));
@@ -359,6 +362,7 @@ public class JoinPreviewGraphNode extends BasicCanvasArea {
         /**
          * layout the children of this cell area
          */
+        @Override
         public void layoutChildren() {
             Rectangle rectangle = this.getBoundingRect();
             rect.setBoundingRect(rectangle);
@@ -367,10 +371,12 @@ public class JoinPreviewGraphNode extends BasicCanvasArea {
             cell.setSpotLocation(JGoObject.TopLeft, imageArea, JGoObject.BottomLeft);
         }
 
+        @Override
         public boolean doMouseClick(int modifiers, java.awt.Point dc, java.awt.Point vc, JGoView aView) {
             return doMouseDblClick(modifiers, dc, vc, aView);
         }
 
+        @Override
         public boolean doMouseDblClick(int modifiers, java.awt.Point dc, java.awt.Point vc, JGoView aView) {
             SQLJoinOperator join = (SQLJoinOperator) JoinPreviewGraphNode.this.getDataObject();
             if (join != null && mainSQLGraphView != null) {
@@ -483,6 +489,7 @@ public class JoinPreviewGraphNode extends BasicCanvasArea {
         /**
          * layout the children of this cell area
          */
+        @Override
         public void layoutChildren() {
             Rectangle rectangle = this.getBoundingRect();
             img.setSpotLocation(JGoObject.Center, this, JGoObject.Center);
@@ -500,7 +507,6 @@ public class JoinPreviewGraphNode extends BasicCanvasArea {
             this.setSelectable(false);
             this.setResizable(false);
             this.setDraggable(true);
-            this.setGrabChildSelection(false);
 
             //add port which will be hidden
             port = new GraphPort();
@@ -526,6 +532,7 @@ public class JoinPreviewGraphNode extends BasicCanvasArea {
         /**
          * layout the children of this cell area
          */
+        @Override
         public void layoutChildren() {
             Rectangle rectangle = this.getBoundingRect();
             //rect.setBoundingRect(rectangle);
@@ -544,6 +551,7 @@ public class JoinPreviewGraphNode extends BasicCanvasArea {
      * @param iGraphPort port
      * @return field name
      */
+    @Override
     public String getFieldName(IGraphPort iGraphPort) {
         IGraphPort graphPort;
         String fieldName = null;
@@ -580,6 +588,7 @@ public class JoinPreviewGraphNode extends BasicCanvasArea {
      * @param str name of the field name
      * @return port
      */
+    @Override
     public IGraphPort getInputGraphPort(String str) {
         IGraphPort graphPort = null;
 
@@ -598,6 +607,7 @@ public class JoinPreviewGraphNode extends BasicCanvasArea {
      * @param str field name
      * @return port
      */
+    @Override
     public IGraphPort getOutputGraphPort(String str) {
         IGraphPort graphPort = null;
         //there is only one output graph port so no need to look on str
@@ -611,8 +621,9 @@ public class JoinPreviewGraphNode extends BasicCanvasArea {
      * 
      * @return list of input links
      */
+    @Override
     public List getAllLinks() {
-        ArrayList list = new ArrayList();
+        ArrayList<JGoLink> list = new ArrayList<JGoLink>();
         IGraphPort port = null;
         port = this.bottomArea.getLeftGraphPort();
         addLinks(port, list);
@@ -642,6 +653,7 @@ public class JoinPreviewGraphNode extends BasicCanvasArea {
             return this.joinType;
         }
 
+        @Override
         public String toString() {
             return this.strJoinType;
         }
@@ -666,7 +678,7 @@ public class JoinPreviewGraphNode extends BasicCanvasArea {
 
     public void addJoinTypeComboBox() {
         //add join type
-        joinTypes = new Vector();
+        joinTypes = new Vector<JoinType>();
         JoinType jt1 = new JoinType(SQLConstants.INNER_JOIN, "Inner");
         joinTypes.add(jt1);
         JoinType jt2 = new JoinType(SQLConstants.LEFT_OUTER_JOIN, "Left Outer");

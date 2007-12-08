@@ -79,7 +79,6 @@ public class ParenthesisCheckBoxArea extends CanvasArea {
     ParenthesisCheckBoxArea() {
         this.setSelectable(false);
         this.setResizable(false);
-        this.setGrabChildSelection(false);
 
         //add the bounding display rectangle
         rect = new JGoRectangle();

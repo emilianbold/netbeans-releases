@@ -98,7 +98,6 @@ public class ColumnPortArea extends CanvasArea {
         super();
         this.setSelectable(false);
         this.setResizable(false);
-        this.setGrabChildSelection(false);
 
         this.rect = new JGoRectangle();
         rect.setSelectable(false);

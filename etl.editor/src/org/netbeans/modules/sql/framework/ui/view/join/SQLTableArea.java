@@ -42,13 +42,10 @@ package org.netbeans.modules.sql.framework.ui.view.join;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
-
-import org.netbeans.modules.model.database.DBColumn;
-import org.netbeans.modules.model.database.DBTable;
+import org.netbeans.modules.sql.framework.model.DBColumn;
 import org.netbeans.modules.sql.framework.model.SQLConnectableObject;
 import org.netbeans.modules.sql.framework.model.SQLDBColumn;
 import org.netbeans.modules.sql.framework.ui.graph.IGraphNode;
@@ -62,31 +59,31 @@ import org.netbeans.modules.sql.framework.ui.graph.impl.TableConstants;
 import org.netbeans.modules.sql.framework.ui.utils.UIUtil;
 import org.netbeans.modules.sql.framework.ui.view.graph.MetaTableModel;
 import org.netbeans.modules.sql.framework.ui.view.graph.SQLBasicTableArea;
-
 import com.nwoods.jgo.JGoLink;
 import com.nwoods.jgo.JGoListPosition;
 import com.nwoods.jgo.JGoPort;
 import com.nwoods.jgo.JGoText;
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.Logger;
+import org.netbeans.modules.sql.framework.model.DBTable;
+
 
 /**
- * 
+ *
  * @author Ritesh Adval
  * @version $Revision$
  */
 public class SQLTableArea extends TableArea implements TableModelListener {
+         /**
+   
 
     /* log4j logger category */
     private static final String LOG_CATEGORY = SQLTableArea.class.getName();
-
-    static final String RCS_ID = "$Id$";
-
     private TableModel dataModel;
 
     /**
      * Creates a new instance of SQLTableArea
-     * 
+     *
      * @param tType type of the table
      * @param table table
      */
@@ -104,15 +101,12 @@ public class SQLTableArea extends TableArea implements TableModelListener {
                     case TableConstants.INPUT_TABLE:
                         column.setTextAlignment(JGoText.ALIGN_RIGHT);
                         break;
-
                     case TableConstants.OUTPUT_TABLE:
                         column.setTextAlignment(JGoText.ALIGN_LEFT);
                         break;
-                        
                     case TableConstants.NO_PORT_TABLE:
                         column.setTextAlignment(JGoText.ALIGN_LEFT);
                         break;
-
                     case TableConstants.INPUT_OUTPUT_TABLE:
                     default:
                         column.setTextAlignment(JGoText.ALIGN_CENTER);
@@ -124,7 +118,7 @@ public class SQLTableArea extends TableArea implements TableModelListener {
 
     /**
      * Creates a new instance of SQLTableArea
-     * 
+     *
      * @param myType type of the table
      * @param myDataModel associated table model
      */
@@ -143,7 +137,7 @@ public class SQLTableArea extends TableArea implements TableModelListener {
 
     /**
      * set the table model
-     * 
+     *
      * @param dataModel table model
      */
     public void setModel(TableModel dataModel) {
@@ -165,7 +159,7 @@ public class SQLTableArea extends TableArea implements TableModelListener {
 
     /**
      * get the table model
-     * 
+     *
      * @return table model
      */
     public TableModel getModel() {
@@ -190,7 +184,7 @@ public class SQLTableArea extends TableArea implements TableModelListener {
     /**
      * This fine grain notification tells listeners the exact range of cells, rows, or
      * columns that changed.
-     * 
+     *
      * @param e table model event
      */
     public void tableChanged(TableModelEvent e) {
@@ -219,7 +213,6 @@ public class SQLTableArea extends TableArea implements TableModelListener {
                 addItem(j, i, rowVal.getName(), UIUtil.getColumnToolTip(rowVal));
             }
         }
-
     }
 
     private void deleteRow(int firstRow, int lastRow) {
@@ -227,9 +220,7 @@ public class SQLTableArea extends TableArea implements TableModelListener {
         deleteLinks(firstRow, lastRow);
         for (int i = 0; i < columnCount; i++) {
             for (int j = firstRow; j <= lastRow; j++) {
-
                 this.removeItem(j, i);
-
             }
         }
     }
@@ -237,7 +228,7 @@ public class SQLTableArea extends TableArea implements TableModelListener {
     private void deleteLinks(int firstRow, int lastRow) {
         //before removing rows we need to find if port
         //we are removing has any links and if so we should remove them
-        ArrayList links = new ArrayList();
+        ArrayList<JGoLink> links = new ArrayList<JGoLink>();
 
         for (int k = firstRow; k <= lastRow; k++) {
             IGraphPort port = this.getLeftGraphPort(k);
@@ -322,11 +313,9 @@ public class SQLTableArea extends TableArea implements TableModelListener {
             //first try to remove column refs
             removeColumnReference(column);
         } catch (BaseException ex) {
-            Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "makeColumnInVisible",
-                "Error making column invisible, unable to remove column references." + column.getName(), ex);
-
+            Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "makeColumnInVisible", "Error making column invisible, unable to remove column references." + column.getName(), ex);
+         // mLogger.errorNoloc(mLoc.t("PRSR099: Error making column invisible, unable to remove column references." + column.getName()), ex);
             throw ex;
-
         }
 
         int columnCount = dataModel.getColumnCount();
@@ -387,4 +376,3 @@ public class SQLTableArea extends TableArea implements TableModelListener {
         }
     }
 }
-

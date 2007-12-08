@@ -56,7 +56,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-
 import javax.swing.BorderFactory;
 import javax.swing.ButtonModel;
 import javax.swing.DefaultButtonModel;
@@ -73,7 +72,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-
 import org.netbeans.modules.sql.framework.model.SQLJoinView;
 import org.netbeans.modules.sql.framework.model.SourceTable;
 import org.netbeans.modules.sql.framework.model.TargetTable;
@@ -82,107 +80,88 @@ import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
 import org.netbeans.modules.sql.framework.ui.model.CollabSQLUIModel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.Logger;
+import org.netbeans.modules.sql.framework.model.DBTable;
+import org.netbeans.modules.sql.framework.model.SQLDBTable;
 
 /**
- * @author radval A Basic implementation of list transfer panel
+ * A Basic implementation of list transfer panel
+ * @author radval
  */
-
 public class ListTransferPanel extends JPanel implements ActionListener, ListSelectionListener {
-    
+
     private static final String LOG_CATEGORY = ListTransferPanel.class.getName();
-    
     /** Label indicating that all elements should be moved. */
     public static final String LBL_ALL = "ALL";
-    
     /** Indicates addition of item(s). */
     public static final String LBL_ADD = ">";
-    
     /** Tooltip to describe addition of selected item(s). */
     public static final String TIP_ADD = "Add to selected items";
-    
     /** Indicates removal of item(s). */
     public static final String LBL_REMOVE = "<";
-    
     /** Tooltip to describe addition of selected item(s). */
     public static final String TIP_REMOVE = "Remove from selected items";
-    
     /** Indicates addition of all source items. */
     public static final String LBL_ADD_ALL = LBL_ALL + " " + LBL_ADD;
-    
     /** Tooltip to describe addition of all source items. */
     public static final String TIP_ADD_ALL = "Add all items";
-    
     /** Indicates removal of all destination items. */
     public static final String LBL_REMOVE_ALL = LBL_REMOVE + " " + LBL_ALL;
-    
     /** Tooltip to describe removal of all destination items. */
     public static final String TIP_REMOVE_ALL = "Remove all items";
-    
     /** Describes source list and user task. */
-    public static final String LBL_SOURCE_MSG = "Select OTD's from the list:";
-    
+    public static final String LBL_SOURCE_MSG = "Select Connection from the list:";
     /** Describes destination list */
-    public static final String LBL_DEST_MSG = "Selected OTD's:";
-    
+    public static final String LBL_DEST_MSG = "Selected Connections:";
     /** Minimum number of visible items in lists */
     public static final int MINIMUM_VISIBLE = 5;
-    
     /** Maximum number of visible items in lists */
     public static final int MAXIMUM_VISIBLE = 10;
-    
     /* Set <ChangeListeners> */
-    private final Set listeners = new HashSet(1);
-    
+    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
     private JList sourceList;
     private JList destList;
-    
     private JButton upButton;
     private JButton downButton;
-    
     private JLabel srcLabel;
     private JLabel destLabel;
-    
     private String srcLabelStr;
     private String destLabelStr;
-    
     private Collection srcCollection;
     private Collection destCollection;
-    
     private ListTransferModel listModel;
-    
     private JoinMainPanel jmPanel;
-    
-    private ArrayList newTables = new ArrayList();
-    
+    private ArrayList<SourceTable> newTables = new ArrayList<SourceTable>();
+
     public ListTransferPanel(JoinMainPanel jMainPanel, String sLabelStr, String dLabelStr, Collection sCollection, Collection dCollection) {
-        
+
         this.jmPanel = jMainPanel;
         this.srcLabelStr = sLabelStr;
         this.destLabelStr = dLabelStr;
         this.srcCollection = sCollection;
         this.destCollection = dCollection;
-        
+
         initGui();
     }
-    
+
     private void initGui() {
         listModel = new ListTransferModel(srcCollection, destCollection);
         String largestString = listModel.getPrototypeCell();
-        
+
         if (largestString.length() < srcLabelStr.length()) {
             largestString = srcLabelStr;
         } else if (largestString.length() < destLabelStr.length()) {
             largestString = destLabelStr;
         }
-        
+
         int visibleCt = Math.min(Math.max(MINIMUM_VISIBLE, listModel.getMaximumListSize()), MAXIMUM_VISIBLE);
-        
+
         sourceList = new JList(listModel.getSourceModel());
         sourceList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         sourceList.addMouseListener(new MouseAdapter() {
+
+            @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2 && e.getSource() instanceof JList) {
                     JList list = (JList) e.getSource();
@@ -195,10 +174,12 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
         sourceList.addListSelectionListener(this);
         sourceList.setPrototypeCellValue(largestString);
         sourceList.setVisibleRowCount(visibleCt);
-        
+
         destList = new JList(listModel.getDestinationModel());
         destList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         destList.addMouseListener(new MouseAdapter() {
+
+            @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2 && e.getSource() instanceof JList) {
                     JList list = (JList) e.getSource();
@@ -213,79 +194,79 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
         destList.addListSelectionListener(this);
         destList.setPrototypeCellValue(largestString);
         destList.setVisibleRowCount(visibleCt);
-        
+
         JPanel searchPanel = new JPanel();
         searchPanel.setLayout(new BorderLayout());
         srcLabel = new JLabel(srcLabelStr);
         srcLabel.setLabelFor(sourceList);
-        
+
         searchPanel.add(srcLabel, BorderLayout.NORTH);
-        
+
         JScrollPane sourcepane = new JScrollPane(sourceList);
         JScrollPane destpane = new JScrollPane(destList);
         JPanel buttonPanel = new JPanel();
-        
+
         JButton addButton = new JButton(LBL_ADD);
         addButton.setModel(listModel.getAddButtonModel());
         addButton.setToolTipText(TIP_ADD);
-        
+
         JButton removeButton = new JButton(LBL_REMOVE);
         removeButton.setModel(listModel.getRemoveButtonModel());
         removeButton.setToolTipText(TIP_REMOVE);
-        
+
         JButton removeAllButton = new JButton(LBL_REMOVE_ALL);
         removeAllButton.setModel(listModel.getRemoveAllButtonModel());
         removeAllButton.setToolTipText(TIP_REMOVE_ALL);
-        
+
         JButton addAllButton = new JButton(LBL_ADD_ALL);
         addAllButton.setModel(listModel.getAddAllButtonModel());
         addAllButton.setToolTipText(TIP_ADD_ALL);
-        
+
         addButton.setMargin(new Insets(2, 18, 2, 18));
         removeButton.setMargin(new Insets(2, 18, 2, 18));
         removeAllButton.setMargin(new Insets(2, 15, 2, 15));
         addAllButton.setMargin(new Insets(2, 15, 2, 15));
-        
+
         buttonPanel.setLayout(new GridLayout(6, 1));
-        
+
         buttonPanel.add(new JPanel());
         buttonPanel.add(addButton);
         buttonPanel.add(removeButton);
         buttonPanel.add(new JPanel());
         buttonPanel.add(removeAllButton);
         buttonPanel.add(addAllButton);
-        
+
         addButton.addActionListener(this);
         removeButton.addActionListener(this);
         removeAllButton.addActionListener(this);
         addAllButton.addActionListener(this);
-        
+
         JPanel sourcePanel = new JPanel();
         sourcePanel.setLayout(new BorderLayout());
         sourcePanel.add(searchPanel, BorderLayout.NORTH);
         sourcePanel.add(sourcepane, BorderLayout.CENTER);
         sourcePanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
-        
+
         JPanel ctrPanel = new JPanel();
         ctrPanel.add(buttonPanel);
         ctrPanel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
-        
+
         JPanel destPanel = new JPanel();
         destLabel = new JLabel(destLabelStr);
         // destLabel.setDisplayedMnemonic('o');
         destLabel.setLabelFor(destList);
-        
+
         destPanel.setLayout(new BorderLayout());
         destPanel.add(destLabel, BorderLayout.NORTH);
         destPanel.add(destpane, BorderLayout.CENTER);
         destPanel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 10));
-        
+
         JPanel listPanel = new JPanel();
-        
+
         GridBagLayout gridbag = new GridBagLayout();
         GridBagConstraints c = new GridBagConstraints();
         listPanel.setLayout(gridbag);
-        
+
         // allocate half of the resized space to sourcePanel
         c.fill = GridBagConstraints.BOTH;
         c.gridx = 0;
@@ -293,7 +274,7 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
         c.weightx = 1.0;
         c.weighty = 1.0;
         listPanel.add(sourcePanel, c);
-        
+
         // make ctrPanel non resizeable
         c.fill = GridBagConstraints.NONE;
         c.gridx = 1;
@@ -301,7 +282,7 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
         c.weightx = 0.0;
         c.weighty = 0.0;
         listPanel.add(ctrPanel, c);
-        
+
         // allocate half of the resized space to destPanel
         c.fill = GridBagConstraints.BOTH;
         c.gridx = 2;
@@ -309,22 +290,22 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
         c.weightx = 1.0;
         c.weighty = 1.0;
         listPanel.add(destPanel, c);
-        
+
         // add updown button panel
         // initialize up and down target list button panel
         JPanel upDownButtonPanel = new JPanel();
         upDownButtonPanel.setLayout(new GridBagLayout());
         GridBagConstraints buttonPanelC = new GridBagConstraints();
-        
+
         JPanel upDownPanel = new JPanel();
         upDownPanel.setBorder(BorderFactory.createEmptyBorder(16, 0, 0, 0));
-        
+
         buttonPanelC.weightx = 1.0;
         buttonPanelC.weighty = 0.0;
         buttonPanelC.fill = GridBagConstraints.NONE;
         buttonPanelC.gridwidth = GridBagConstraints.REMAINDER;
         upDownButtonPanel.add(upDownPanel, buttonPanelC);
-        
+
         upDownPanel.setLayout(new GridBagLayout());
         GridBagConstraints buttonC = new GridBagConstraints();
         buttonC.weightx = 1.0;
@@ -332,21 +313,21 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
         buttonC.fill = GridBagConstraints.NONE;
         buttonC.gridwidth = GridBagConstraints.REMAINDER;
         buttonC.insets = new Insets(0, 0, 5, 0);
-        
+
         upButton = new JButton(new ImageIcon(ListTransferPanel.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/up.png")));
         upButton.setPreferredSize(new Dimension(20, 20));
-        
+
         downButton = new JButton(new ImageIcon(ListTransferPanel.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/down.png")));
         downButton.setPreferredSize(new Dimension(20, 20));
-        
+
         // add button action listener
         upButton.addActionListener(this);
         downButton.addActionListener(this);
-        
+
         // JPanel bPanel = new JPanel();
         upDownPanel.add(upButton, buttonC);
         upDownPanel.add(downButton, buttonC);
-        
+
         // add a dummy panel
         JPanel dummpyPanel2 = new JPanel();
         buttonPanelC.weightx = 1.0;
@@ -354,26 +335,25 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
         buttonPanelC.fill = GridBagConstraints.BOTH;
         buttonPanelC.gridwidth = GridBagConstraints.REMAINDER;
         upDownButtonPanel.add(dummpyPanel2, buttonPanelC);
-        
+
         c.fill = GridBagConstraints.BOTH;
         c.gridx = 3;
         c.gridy = 0;
         c.weightx = 0.0;
         c.weighty = 0.0;
         listPanel.add(upDownButtonPanel, c);
-        
+
         setLayout(new BorderLayout());
         add(listPanel, BorderLayout.CENTER);
-        
     }
-    
+
     public void reset() {
         this.setSourceList(new ArrayList());
         this.setDestinationList(new ArrayList());
         this.enableButton(true);
         newTables.clear();
     }
-    
+
     /**
      * set the source list cell renderer
      *
@@ -382,7 +362,7 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
     public void setSourceListCellRenderer(ListCellRenderer cellRenderer) {
         this.sourceList.setCellRenderer(cellRenderer);
     }
-    
+
     /**
      * set the target list cell renderer
      *
@@ -391,11 +371,11 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
     public void setDestinationListCellRenderer(ListCellRenderer cellRenderer) {
         this.destList.setCellRenderer(cellRenderer);
     }
-    
+
     public ListTransferModel getListTransferModel() {
         return this.listModel;
     }
-    
+
     /**
      * set the source list
      *
@@ -405,7 +385,7 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
         listModel.setSourceList(sList);
         this.sourceList.setModel(listModel.getSourceModel());
     }
-    
+
     /**
      * set the destination list
      *
@@ -415,15 +395,15 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
         listModel.setDestinationList(dList);
         this.destList.setModel(listModel.getDestinationModel());
     }
-    
+
     public JList getSourceJList() {
         return this.sourceList;
     }
-    
+
     public JList getDestinationJList() {
         return this.destList;
     }
-    
+
     /**
      * Gets copy of current contents of source list
      *
@@ -432,36 +412,36 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
     public List getSourceList() {
         return listModel.getSourceList();
     }
-    
+
     /**
      * Gets copy of current contents of destination list
      *
      * @return List of current destination list contents
      */
-    public List getDestinationList() {
+    public List<DBTable> getDestinationList() {
         return listModel.getDestinationList();
     }
-    
+
     public void addToDestination(Object item) {
         DefaultListModel dModel = listModel.getDestinationModel();
         dModel.addElement(item);
     }
-    
+
     public void removeFromDestination(Object item) {
         DefaultListModel dModel = listModel.getDestinationModel();
         dModel.removeElement(item);
     }
-    
+
     public void addToSource(Object item) {
         DefaultListModel sModel = listModel.getSourceModel();
         sModel.addElement(item);
     }
-    
+
     public void removeFromSource(Object item) {
         DefaultListModel sModel = listModel.getSourceModel();
         sModel.removeElement(item);
     }
-    
+
     /**
      * Add a ChangeListener to this model.
      *
@@ -474,7 +454,7 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
             }
         }
     }
-    
+
     /**
      * Remove a ChangeListener from this model.
      *
@@ -487,24 +467,24 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
             }
         }
     }
-    
+
     /**
      * Fires a ChangeEvent to all interested listeners to indicate a state change in one
      * or more UI components.
      */
     public void fireChangeEvent() {
-        Iterator it;
-        
+        Iterator<ChangeListener> it;
+
         synchronized (listeners) {
-            it = new HashSet(listeners).iterator();
+            it = new HashSet<ChangeListener>(listeners).iterator();
         }
-        
+
         ChangeEvent ev = new ChangeEvent(this);
         while (it.hasNext()) {
-            ((ChangeListener) it.next()).stateChanged(ev);
+            it.next().stateChanged(ev);
         }
     }
-    
+
     /**
      * Invoked whenever one of the transfer buttons is clicked.
      *
@@ -512,7 +492,7 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
      */
     public void actionPerformed(ActionEvent e) {
         String cmd = e.getActionCommand();
-        
+
         if (LBL_ADD.equals(cmd)) {
             int[] indices = sourceList.getSelectedIndices();
             Object[] selections = sourceList.getSelectedValues();
@@ -544,7 +524,7 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
             System.err.println("Unknown cmd: " + cmd);
         }
     }
-    
+
     private boolean isRemoveAllowed(Object[] selections) {
         IGraphView graphView = this.jmPanel.getMainGraphView();
         // if graph view is null then it means this is used in collaboraiton creation
@@ -553,18 +533,17 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
         if (graphView == null) {
             return true;
         }
-        
+
         SQLJoinView joinView = this.jmPanel.getInitialSQLJoinView();
         JoinViewGraphNode joinViewNode = (JoinViewGraphNode) graphView.findGraphNode(joinView);
         CollabSQLUIModel sqlModel = (CollabSQLUIModel) graphView.getGraphModel();
-        
+
         // no join view exist
         if (joinViewNode != null) {
             for (int i = 0; i < selections.length; i++) {
                 SourceTable sTable = (SourceTable) selections[i];
                 if (joinViewNode.isTableColumnMapped(sTable)) {
-                    NotifyDescriptor d = new NotifyDescriptor.Confirmation("Table " + sTable.getName()
-                    + " has some mappings defined which will be lost. Do you really want to remove this table?", NotifyDescriptor.WARNING_MESSAGE);
+                    NotifyDescriptor d = new NotifyDescriptor.Confirmation("Table " + sTable.getName() + " has some mappings defined which will be lost. Do you really want to remove this table?", NotifyDescriptor.WARNING_MESSAGE);
                     Object response = DialogDisplayer.getDefault().notify(d);
                     if (!response.equals(NotifyDescriptor.OK_OPTION)) {
                         return false;
@@ -572,15 +551,14 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
                 }
             }
         }
-        
-        NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
-                "You may lose some user defined conditions in some joins. Do you really want to remove the table?", NotifyDescriptor.WARNING_MESSAGE);
-        
+
+        NotifyDescriptor nd = new NotifyDescriptor.Confirmation("You may lose some user defined conditions in some joins. Do you really want to remove the table?", NotifyDescriptor.WARNING_MESSAGE);
+
         Object response = DialogDisplayer.getDefault().notify(nd);
         if (!response.equals(NotifyDescriptor.OK_OPTION)) {
             return false;
         }
-        
+
         SourceTable sTable = null;
         try {
             // We need to remove the table from definition if this table was added using
@@ -594,23 +572,20 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
                     newTables.remove(sTable);
                 }
             }
-            
         } catch (BaseException ex) {
             String tableName = sTable != null ? sTable.getName() : "";
-            
-            Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "isRemoveAllowed", "Error Occured while removing the table " + tableName
-                    + " which user has added using more table dialog", ex);
-            
-            NotifyDescriptor d = new NotifyDescriptor.Message("Table " + tableName
-                    + " which was added using more table dialog, can not be deleted from the model.", NotifyDescriptor.INFORMATION_MESSAGE);
+
+            Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "isRemoveAllowed", "Error Occured while removing the table " + tableName + " which user has added using more table dialog", ex);
+
+            NotifyDescriptor d = new NotifyDescriptor.Message("Table " + tableName + " which was added using more table dialog, can not be deleted from the model.", NotifyDescriptor.INFORMATION_MESSAGE);
             DialogDisplayer.getDefault().notify(d);
-            
+
             return false;
         }
-        
+
         return true;
     }
-    
+
     private boolean isAddAllowed(Object[] selections) {
         IGraphView graphView = this.jmPanel.getMainGraphView();
         SQLJoinView joinView = this.jmPanel.getInitialSQLJoinView();
@@ -621,7 +596,7 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
             return true;
         }
         CollabSQLUIModel sqlModel = (CollabSQLUIModel) graphView.getGraphModel();
-        
+
         // check if tables which we are trying to add are mapped to different target
         // tables
         // than the one which are already in join view
@@ -634,23 +609,22 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
                 break;
             }
         }
-        
+
         if (joinViewMappedTable != null) {
             for (int i = 0; i < selections.length; i++) {
                 SourceTable sTable = (SourceTable) selections[i];
                 TargetTable mappedTable = SQLObjectUtil.getMappedTargetTable(sTable, sqlModel.getSQLDefinition().getTargetTables());
                 if (mappedTable != null && !mappedTable.equals(joinViewMappedTable)) {
-                    NotifyDescriptor d = new NotifyDescriptor.Message("Table " + sTable.getName()
-                    + " has some mappings defined to a different target table, so it can not be added", NotifyDescriptor.INFORMATION_MESSAGE);
+                    NotifyDescriptor d = new NotifyDescriptor.Message("Table " + sTable.getName() + " has some mappings defined to a different target table, so it can not be added", NotifyDescriptor.INFORMATION_MESSAGE);
                     DialogDisplayer.getDefault().notify(d);
                     return false;
                 }
             }
         }
-        
+
         TargetTable previousMappedTable = null;
         SourceTable previousSourceTable = null;
-        
+
         for (int i = 0; i < selections.length; i++) {
             SourceTable sTable = (SourceTable) selections[i];
             TargetTable mappedTable = SQLObjectUtil.getMappedTargetTable(sTable, sqlModel.getSQLDefinition().getTargetTables());
@@ -659,8 +633,7 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
                     SQLJoinView mappedTableJoinView = mappedTable.getJoinView();
                     // a target table may
                     if (mappedTableJoinView != null && !joinView.equals(mappedTableJoinView)) {
-                        NotifyDescriptor d = new NotifyDescriptor.Message("Table " + sTable.getName()
-                        + " has some mappings defined to a different target table, so it can not be added", NotifyDescriptor.INFORMATION_MESSAGE);
+                        NotifyDescriptor d = new NotifyDescriptor.Message("Table " + sTable.getName() + " has some mappings defined to a different target table, so it can not be added", NotifyDescriptor.INFORMATION_MESSAGE);
                         DialogDisplayer.getDefault().notify(d);
                         return false;
                     }
@@ -669,20 +642,19 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
                 // check if two tables which we are trying to add are mapped to two
                 // different target tables
                 if (previousMappedTable != null && previousSourceTable != null && !previousMappedTable.equals(mappedTable)) {
-                    NotifyDescriptor d = new NotifyDescriptor.Message("Table " + sTable.getName() + " and Table " + previousSourceTable.getName()
-                    + " are mapped to different target table, so these can not be added", NotifyDescriptor.INFORMATION_MESSAGE);
+                    NotifyDescriptor d = new NotifyDescriptor.Message("Table " + sTable.getName() + " and Table " + previousSourceTable.getName() + " are mapped to different target table, so these can not be added", NotifyDescriptor.INFORMATION_MESSAGE);
                     DialogDisplayer.getDefault().notify(d);
                     return false;
                 }
-                
+
                 previousMappedTable = mappedTable;
                 previousSourceTable = sTable;
             }
         }
-        
+
         SourceTable sTable = null;
         try {
-            
+
             // We need to add the table if it is not definition(meaning this table is
             // selected in more table dialog) , because if user
             // uses this table column in join condition then it will not have an id
@@ -697,23 +669,20 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
                     newTables.add(sTable);
                 }
             }
-            
         } catch (BaseException ex) {
             String tableName = sTable != null ? sTable.getName() : "";
-            
-            Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "isAddAllowed", "Error Occured while adding the table " + tableName
-                    + " to model, which user has added using more table dialog", ex);
-            
-            NotifyDescriptor d = new NotifyDescriptor.Message("Table " + tableName
-                    + " which was added using more table dialog, can not be added to the model.", NotifyDescriptor.ERROR_MESSAGE);
+
+            Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "isAddAllowed", "Error Occured while adding the table " + tableName + " to model, which user has added using more table dialog", ex);
+
+            NotifyDescriptor d = new NotifyDescriptor.Message("Table " + tableName + " which was added using more table dialog, can not be added to the model.", NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(d);
-            
+
             return false;
         }
-        
+
         return true;
     }
-    
+
     /**
      * Called whenever the value of the selection changes.
      *
@@ -721,7 +690,7 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
      */
     public void valueChanged(ListSelectionEvent e) {
         Object src = e.getSource();
-        
+
         // Enforce mutually exclusive focus between source and destination
         // lists.
         if (sourceList.equals(src)) {
@@ -737,8 +706,8 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
         }
         listModel.updateButtonState();
     }
-    
-    /**
+
+/**
      * Container for ListModels associated with source and destination lists of a list
      * transfer panel. Holds ButtonModels for controls that indicate selected addition and
      * bulk addition to destination list and selected removal and bulk removal of items
@@ -749,19 +718,17 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
      * @version $Revision$
      */
     public class ListTransferModel {
+
         private DefaultListModel source;
         private DefaultListModel dest;
         private ButtonModel addButtonModel;
         private ButtonModel addAllButtonModel;
         private ButtonModel removeButtonModel;
         private ButtonModel removeAllButtonModel;
-        
-        private HashSet changeListeners;
-        
+        private HashSet<ChangeListener> changeListeners;
         private String listPrototype;
-        
         private boolean enableButton = true;
-        
+
         /**
          * Creates a new instance of ListTransferModel, using the data in the given
          * collections to initially populate the source and destination lists.
@@ -770,27 +737,27 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
          * @param dstColl Collection used to populate destination list
          */
         public ListTransferModel(Collection srcColl, Collection dstColl) {
-            
+
             if (srcColl == null || dstColl == null) {
                 throw new IllegalArgumentException("Must supply non-null collections for srcColl and dstColl");
             }
-            
+
             listPrototype = "";
-            
+
             source = new DefaultListModel();
             dest = new DefaultListModel();
-            
+
             addButtonModel = new DefaultButtonModel();
             addAllButtonModel = new DefaultButtonModel();
             removeButtonModel = new DefaultButtonModel();
             removeAllButtonModel = new DefaultButtonModel();
-            
+
             setSourceList(srcColl);
             setDestinationList(dstColl);
-            
-            changeListeners = new HashSet();
+
+            changeListeners = new HashSet<ChangeListener>();
         }
-        
+
         /**
          * @see org.openide.WizardDescriptor.Panel#addChangeListener
          */
@@ -799,7 +766,7 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
                 changeListeners.add(l);
             }
         }
-        
+
         /**
          * @see org.openide.WizardDescriptor.Panel#removeChangeListener
          */
@@ -808,7 +775,7 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
                 changeListeners.remove(l);
             }
         }
-        
+
         /**
          * Gets ListModel associated with source list.
          *
@@ -817,7 +784,7 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
         public DefaultListModel getSourceModel() {
             return source;
         }
-        
+
         /**
          * Sets source list to include contents of given list. Clears current contents
          * before adding items from newList.
@@ -829,14 +796,14 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
             if (newList == null) {
                 throw new IllegalArgumentException("Must supply non-null Collection for newList");
             }
-            
+
             if (source == null) {
                 source = new DefaultListModel();
             }
-            
+
             synchronized (source) {
                 source.clear();
-                
+
                 Iterator it = newList.iterator();
                 while (it.hasNext()) {
                     Object o = it.next();
@@ -846,28 +813,28 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
                     }
                 }
             }
-            
+
             updateButtonState();
         }
-        
+
         /**
          * Gets copy of current contents of source list
          *
          * @return List of current source list contents
          */
         public List getSourceList() {
-            ArrayList srcList = new ArrayList();
-            
+            ArrayList<Object> srcList = new ArrayList<Object>();
+
             synchronized (source) {
                 source.trimToSize();
                 for (int i = 0; i < source.size(); i++) {
                     srcList.add(source.get(i));
                 }
             }
-            
+
             return srcList;
         }
-        
+
         /**
          * Gets ListModel associated with destination list.
          *
@@ -876,7 +843,7 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
         public DefaultListModel getDestinationModel() {
             return dest;
         }
-        
+
         /**
          * Sets destination list to include contents of given list. Clears current
          * contents before adding items from newList.
@@ -888,14 +855,14 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
             if (newList == null) {
                 throw new IllegalArgumentException("Must supply non-null Collection for newList");
             }
-            
+
             if (dest == null) {
                 dest = new DefaultListModel();
             }
-            
+
             synchronized (dest) {
                 dest.clear();
-                
+
                 Iterator it = newList.iterator();
                 while (it.hasNext()) {
                     Object o = it.next();
@@ -905,28 +872,28 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
                     }
                 }
             }
-            
+
             updateButtonState();
         }
-        
+
         /**
          * Gets copy of current contents of destination list
          *
          * @return List of current destination list contents
          */
-        public List getDestinationList() {
-            ArrayList dstList = new ArrayList();
-            
+        public List<DBTable> getDestinationList() {
+            ArrayList<DBTable> dstList = new ArrayList<DBTable>();
+
             synchronized (dest) {
                 dest.trimToSize();
                 for (int i = 0; i < dest.size(); i++) {
-                    dstList.add(dest.get(i));
+                    dstList.add((SQLDBTable)dest.get(i));
                 }
             }
-            
+
             return dstList;
         }
-        
+
         /**
          * Moves indicated items from source to destination list.
          *
@@ -944,19 +911,18 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
                         source.removeElement(element);
                         fireTransferEvent(dest, element, index, TransferEvent.ADDED);
                     }
-                    
+
                     updateButtonState();
                 }
-                
+
                 // fire change event so that next button can be enabled as we add new
                 // rows in table
                 fireChangeEvent();
-                
             }
-            
+
             updateButtonState();
         }
-        
+
         /**
          * Gets ButtonModel associated with add button action.
          *
@@ -965,7 +931,7 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
         public ButtonModel getAddButtonModel() {
             return addButtonModel;
         }
-        
+
         /**
          * Moves all remaining items from source to destination list.
          */
@@ -982,14 +948,14 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
                     source.removeAllElements();
                 }
             }
-            
+
             updateButtonState();
-            
+
             // fire change event so that next button can be enabled as we add new rows in
             // table
             fireChangeEvent();
         }
-        
+
         /**
          * Gets ButtonModel associated with add all button action.
          *
@@ -998,7 +964,7 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
         public ButtonModel getAddAllButtonModel() {
             return addAllButtonModel;
         }
-        
+
         /**
          * Moves indicated items from destination to source list.
          *
@@ -1018,14 +984,14 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
                     }
                 }
             }
-            
+
             updateButtonState();
-            
+
             // fire change event so that next button can be enabled as we remove new rows
             // in table
             fireChangeEvent();
         }
-        
+
         /**
          * Gets ButtonModel associated with remove button action.
          *
@@ -1034,7 +1000,7 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
         public ButtonModel getRemoveButtonModel() {
             return removeButtonModel;
         }
-        
+
         /**
          * Moves all remaining items from destination to source list.
          */
@@ -1042,13 +1008,13 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
             synchronized (dest) {
                 synchronized (source) {
                     int size = dest.getSize();
-                    ArrayList removed = new ArrayList();
+                    ArrayList<Object> removed = new ArrayList<Object>();
                     for (int i = 0; i < size; i++) {
                         Object element = dest.elementAt(i);
                         source.addElement(element);
                         removed.add(element);
                     }
-                    
+
                     for (int i = 0; i < size; i++) {
                         Object element = removed.get(i);
                         dest.removeElement(element);
@@ -1056,14 +1022,14 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
                     }
                 }
             }
-            
+
             updateButtonState();
-            
+
             // fire change event so that next button can be enabled as we remove new rows
             // in table
             fireChangeEvent();
         }
-        
+
         /**
          * Gets ButtonModel associated with remove all button action
          *
@@ -1072,7 +1038,7 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
         public ButtonModel getRemoveAllButtonModel() {
             return removeAllButtonModel;
         }
-        
+
         /**
          * Updates button states
          */
@@ -1080,22 +1046,22 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
             if (!enableButton) {
                 return;
             }
-            
+
             boolean canAddAll = !source.isEmpty();
             boolean canRemoveAll = !dest.isEmpty();
-            
+
             boolean srcSelected = (sourceList != null) && !sourceList.isSelectionEmpty();
             boolean destSelected = (destList != null) && !destList.isSelectionEmpty();
-            
+
             boolean canAdd = canAddAll & srcSelected;
             boolean canRemove = canRemoveAll & destSelected;
-            
+
             addButtonModel.setEnabled(canAdd);
             addAllButtonModel.setEnabled(canAddAll);
             removeButtonModel.setEnabled(canRemove);
             removeAllButtonModel.setEnabled(canRemoveAll);
         }
-        
+
         public void enableButton(boolean enable) {
             this.enableButton = enable;
             addButtonModel.setEnabled(enable);
@@ -1103,7 +1069,7 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
             removeButtonModel.setEnabled(enable);
             removeAllButtonModel.setEnabled(enable);
         }
-        
+
         /**
          * Returns index of source item matching the given string.
          *
@@ -1115,14 +1081,14 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
             if (startFrom < 0 || startFrom > source.size()) {
                 startFrom = 0;
             }
-            
+
             if (searchStr != null && searchStr.trim().length() != 0) {
                 return source.indexOf(searchStr, startFrom);
             }
-            
+
             return -1;
         }
-        
+
         /**
          * Gets prototype String that has the largest width of an item in either list.
          *
@@ -1131,7 +1097,7 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
         public String getPrototypeCell() {
             return listPrototype;
         }
-        
+
         /**
          * Gets maximum number of items expected in either the source or destination list.
          *
@@ -1140,7 +1106,7 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
         public int getMaximumListSize() {
             return source.size() + dest.size();
         }
-        
+
         private void fireTransferEvent(Object src, Object item, int index, int type) {
             if (src != null && item != null) {
                 TransferEvent e = new TransferEvent(src, item, index, type);
@@ -1154,8 +1120,8 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
             }
         }
     }
-    
-    /**
+
+/**
      * Extends ChangeEvent to convey information on an item being transferred to or from
      * the source of the event.
      *
@@ -1163,16 +1129,15 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
      * @version $Revision$
      */
     public static class TransferEvent extends ChangeEvent {
+
         /** Indicates addition of an item to the source of the event */
         public static final int ADDED = 0;
-        
         /** Indicates removal of an item from the source of the event */
         public static final int REMOVED = 1;
-        
         private Object item;
         private int type;
         private int idx;
-        
+
         /**
          * Create a new TransferEvent instance with the given source, item and type.
          *
@@ -1187,7 +1152,7 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
             this.item = item;
             this.type = type;
         }
-        
+
         /**
          * Create a new TransferEvent instance with the given source, item and type.
          *
@@ -1203,7 +1168,7 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
             this.idx = index;
             this.type = type;
         }
-        
+
         /**
          * Gets item that was transferred.
          *
@@ -1212,11 +1177,11 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
         public Object getItem() {
             return item;
         }
-        
+
         public int getItemIndex() {
             return idx;
         }
-        
+
         /**
          * Gets type of transfer event.
          *
@@ -1226,43 +1191,38 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
             return type;
         }
     }
-    
+
     public void enableButton(boolean enable) {
         // this.listModel.enableButton(enable);
     }
-    
+
     // remove tables which were added using more table dialog, when user cancel join edit
     // or first time creation
     public void removeMoreTablesOnCancel() {
         IGraphView graphView = this.jmPanel.getMainGraphView();
-        if(graphView != null) {
+        if (graphView != null) {
             CollabSQLUIModel sqlModel = (CollabSQLUIModel) graphView.getGraphModel();
             SourceTable sTable = null;
-            
+
             try {
                 // We need to remove the table from definition if this table was added using
                 // more table dialog.
                 for (int i = 0; i < newTables.size(); i++) {
-                    sTable = (SourceTable) newTables.get(i);
+                    sTable = newTables.get(i);
                     // if its a new table selected using more table dialog then
                     // we need to add this to sql model
                     sqlModel.removeObject(sTable);
                 }
-                
             } catch (BaseException ex) {
                 String tableName = sTable != null ? sTable.getName() : "";
-                
-                Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "removeMoreTablesOnCancel", "Error Occured while removing the table " + tableName
-                        + " which user has added using more table dialog", ex);
-                
-                NotifyDescriptor d = new NotifyDescriptor.Message("Table " + tableName
-                        + " which was added using more table dialog, can not be deleted from the model.", NotifyDescriptor.INFORMATION_MESSAGE);
+
+                Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "removeMoreTablesOnCancel", "Error Occured while removing the table " + tableName + " which user has added using more table dialog", ex);
+
+                NotifyDescriptor d = new NotifyDescriptor.Message("Table " + tableName + " which was added using more table dialog, can not be deleted from the model.", NotifyDescriptor.INFORMATION_MESSAGE);
                 DialogDisplayer.getDefault().notify(d);
-                
             }
         }
     }
-    
 //    private boolean existsIn(Collection collection, SQLObject obj) {
 //        if (collection == null || obj == null) {
 //            return false;
@@ -1281,4 +1241,3 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
 //        return exists;
 //    }
 }
-

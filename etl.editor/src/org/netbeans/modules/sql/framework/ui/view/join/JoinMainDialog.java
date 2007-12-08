@@ -61,6 +61,8 @@ import javax.swing.JSeparator;
 import javax.swing.ListModel;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
+import org.netbeans.modules.sql.framework.model.DBTable;
+import org.netbeans.modules.sql.framework.model.SQLDBTable;
 
 import org.netbeans.modules.sql.framework.model.SQLJoinView;
 import org.netbeans.modules.sql.framework.model.SourceTable;
@@ -157,7 +159,7 @@ public class JoinMainDialog extends JDialog {
 
     }
 
-    public static void showJoinDialog(Collection sList, Collection tList, IGraphView view, boolean enableButton) {
+    public static void showJoinDialog(Collection<DBTable> sList, Collection<DBTable> tList, IGraphView view, boolean enableButton) {
         graphView = view;
         if (dlg == null) {
             dlg = new JoinMainDialog();
@@ -265,6 +267,7 @@ public class JoinMainDialog extends JDialog {
         /**
          * Invoked when a window has been closed.
          */
+        @Override
         public void windowClosing(WindowEvent e) {
             buttonState = CANCEL_BUTTON;
             handleCancel();

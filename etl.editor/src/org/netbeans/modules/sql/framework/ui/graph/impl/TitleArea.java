@@ -120,7 +120,6 @@ public class TitleArea extends CanvasArea {
     public TitleArea(String titleStr) {
         this.setSelectable(false);
         this.setResizable(false);
-        this.setGrabChildSelection(false);
 
         // add the bounding display rectangle
         rect = new InsetsRectangle();
@@ -484,9 +483,9 @@ public class TitleArea extends CanvasArea {
 
         public ImageArea(URL imgUrl) {
             super();
-            this.setSelectable(false);
+            this.setSelectable(true);
             this.setResizable(false);
-            this.setGrabChildSelection(true);
+            this.setPickableBackground(false);
 
             image = new JGoImage();
             image.loadImage(imgUrl, true);

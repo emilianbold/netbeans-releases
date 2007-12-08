@@ -59,8 +59,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 
-import org.netbeans.modules.model.database.DBTable;
-import org.netbeans.modules.model.database.DBTableCookie;
 import org.netbeans.modules.sql.framework.common.utils.TagParserUtility;
 import org.netbeans.modules.sql.framework.model.GUIInfo;
 import org.netbeans.modules.sql.framework.model.SQLCanvasObject;
@@ -92,6 +90,8 @@ import org.openide.windows.WindowManager;
 
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.Logger;
+import org.netbeans.modules.sql.framework.model.DBTable;
+import org.netbeans.modules.sql.framework.model.DBTableCookie;
 
 /**
  * @author Ritesh Adval
@@ -157,7 +157,7 @@ public class SQLGraphController implements IGraphController {
                         DialogDescriptor dlgDesc = new DialogDescriptor(selectorPnl, dlgTitle, true, NotifyDescriptor.OK_CANCEL_OPTION,
                             NotifyDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
                         Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
-                        dlg.show();
+                        dlg.setVisible(true);
 
                         if (NotifyDescriptor.OK_OPTION == dlgDesc.getValue()) {
                             tableTypeSelected = selectorPnl.getSelectedType();
@@ -379,6 +379,7 @@ public class SQLGraphController implements IGraphController {
      * @param xmlInfo IOperatorXmlInfo
      * @param dropLocation dropLocation
      */
+    @SuppressWarnings("fallthrough")
     public void handleNodeAdded(IOperatorXmlInfo xmlInfo, Point dropLocation) {
         if (!isEditAllowed()) {
             return;
@@ -608,6 +609,7 @@ public class SQLGraphController implements IGraphController {
             return target.isSelected() ? SQLConstants.TARGET_TABLE : SQLConstants.SOURCE_TABLE;
         }
 
+        @Override
         public void addNotify() {
             super.addNotify();
 

@@ -52,9 +52,6 @@ import com.nwoods.jgo.JGoText;
  */
 public class OperatorGraphFieldNode extends BasicCellArea.Highlightable implements IGraphFieldNode {
 
-    /* RCS id */
-    static final String RCS_ID = "$Id$";
-
     private String name;
 
     /**

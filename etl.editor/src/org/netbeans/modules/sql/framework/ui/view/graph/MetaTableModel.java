@@ -47,9 +47,9 @@ import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
 
-import org.netbeans.modules.model.database.DBColumn;
-import org.netbeans.modules.model.database.DBTable;
+import org.netbeans.modules.sql.framework.model.DBColumn;
 import org.netbeans.modules.sql.framework.common.utils.NativeColumnOrderComparator;
+import org.netbeans.modules.sql.framework.model.DBTable;
 import org.netbeans.modules.sql.framework.model.SQLDBColumn;
 
 
@@ -60,8 +60,6 @@ import org.netbeans.modules.sql.framework.model.SQLDBColumn;
  * @version $Revision$
  */
 public class MetaTableModel extends AbstractTableModel {
-
-    static final String RCS_ID = "$Id$";
 
     /**
      * Description of the column names This should come from some config file
@@ -209,6 +207,21 @@ public class MetaTableModel extends AbstractTableModel {
         }
 
         if (row != -1) {
+            this.fireTableRowsUpdated(row, row);
+        }
+    }
+   public void updateColumn(String newColName, SQLDBColumn newCol) {
+        int row = -1;
+        for (int i = 0; i < columns.size(); i++) {
+            SQLDBColumn oldCol = (SQLDBColumn)columns.get(i);
+            if (oldCol.getName().equals((newColName))) {
+                row = i;
+                break;
+            }
+        }
+
+        if (row != -1) {
+            columns.set(row, newCol);
             this.fireTableRowsUpdated(row, row);
         }
     }

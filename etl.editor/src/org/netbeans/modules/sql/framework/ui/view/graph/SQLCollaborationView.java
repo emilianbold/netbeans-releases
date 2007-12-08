@@ -122,6 +122,7 @@ public class SQLCollaborationView extends JPanel implements SQLDataListener {
         graphView.objectDeleted(evt);
     }
 
+    @Override
     public void requestFocus() {
         super.requestFocus();
         //This should have focus so that user can delete selected objects which

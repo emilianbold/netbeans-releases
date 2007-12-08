@@ -183,8 +183,6 @@ public class TableArea extends CanvasArea implements IGraphInterface, ICanvasInt
         // for now do not allow it to be resizeable
         this.setResizable(false);
 
-        this.setGrabChildSelection(false);
-
         // initialize top left and right corner display rectangle
         topLeftCornerRect = new JGoRectangle();
         topLeftCornerRect.setSelectable(false);

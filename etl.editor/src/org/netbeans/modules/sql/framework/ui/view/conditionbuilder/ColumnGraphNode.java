@@ -74,7 +74,7 @@ public class ColumnGraphNode extends BasicCanvasArea {
 
         this.setResizable(false);
         this.setSelectable(true);
-        this.setGrabChildSelection(true);
+        this.setPickableBackground(true);
 
     }
 

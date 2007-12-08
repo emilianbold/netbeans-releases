@@ -78,6 +78,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 import com.sun.sql.framework.utils.Logger;
+import org.netbeans.modules.sql.framework.model.DBTable;
 
 /**
  * This is the main join configuration view, where user selects table to join and can see
@@ -102,7 +103,7 @@ public class JoinMainPanel extends JPanel {
 
     private Collection sources = new ArrayList();
 
-    private Collection targets = new ArrayList();
+    private Collection<DBTable> targets = new ArrayList<DBTable>();
 
     private URL tableImgUrl = getClass().getResource("/org/netbeans/modules/sql/framework/ui/resources/images/SourceTable.png");
 
@@ -224,8 +225,8 @@ public class JoinMainPanel extends JPanel {
         bottomTabPane.add(tableColumnPanel);
     }
 
-    private List getJoinSourceTables() {
-        List tables = new ArrayList();
+    private List<DBTable> getJoinSourceTables() {
+        List<DBTable> tables = new ArrayList<DBTable>();
 
         if (this.copiedJoinView != null) {
             SQLJoinOperator op = this.copiedJoinView.getRootJoin();
@@ -239,7 +240,7 @@ public class JoinMainPanel extends JPanel {
         return tables;
     }
 
-    public void setTargetList(Collection tList) {
+    public void setTargetList(Collection<DBTable> tList) {
         if (tList != null) {
             this.targets = tList;
             listPanel.enableButton(false);
@@ -290,7 +291,7 @@ public class JoinMainPanel extends JPanel {
         if (!refreshPreview) {
             return;
         }
-        List currentList = listPanel.getDestinationList();
+        List<DBTable> currentList = listPanel.getDestinationList();
 
         if (isReordering) {
             previewPanel.refresh(currentList);
@@ -311,8 +312,8 @@ public class JoinMainPanel extends JPanel {
 
     private void removeTable(SourceTable sTable, int index) {
         previewPanel.removeTable(sTable);
-        List currentList = listPanel.getDestinationList();
-        ArrayList sTables = new ArrayList();
+        List<DBTable> currentList = listPanel.getDestinationList();
+        ArrayList<Object> sTables = new ArrayList<Object>();
         // index is in the index of already removed table
         // if index is zero then we want to recreate all the joins again
         // other wise we will preserver joins created among tables before index
@@ -347,6 +348,7 @@ public class JoinMainPanel extends JPanel {
          * @see ListSelectionModel
          * @see ListModel
          */
+        @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 
             JLabel renderer = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
@@ -380,6 +382,7 @@ public class JoinMainPanel extends JPanel {
          * @see ListSelectionModel
          * @see ListModel
          */
+        @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 
             JLabel renderer = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
@@ -433,7 +436,7 @@ public class JoinMainPanel extends JPanel {
 
         ListModel model = destList.getModel();
 
-        ArrayList newOrderedList = new ArrayList();
+        ArrayList<Object> newOrderedList = new ArrayList<Object>();
 
         int cumulativeElmCount = 0;
 
@@ -498,7 +501,7 @@ public class JoinMainPanel extends JPanel {
             return;
         }
 
-        ArrayList newOrderedList = new ArrayList();
+        ArrayList<Object> newOrderedList = new ArrayList<Object>();
 
         int cumulativeElmCount = 0;
 
@@ -610,7 +613,7 @@ public class JoinMainPanel extends JPanel {
 
             this.targets = getJoinSourceTables();
             this.previewPanel.setSQLJoinView(this.copiedJoinView);
-            tableColumnPanel.setTables(new ArrayList(targets));
+            tableColumnPanel.setTables(new ArrayList<DBTable>(targets));
 
             // setDestinationList will again refresh preview which we don't want
             refreshPreview = false;
@@ -631,13 +634,13 @@ public class JoinMainPanel extends JPanel {
         try {
             this.initialJoinView = jView;
             this.copiedJoinView = (SQLJoinView) jView.cloneSQLObject();
-            this.targets = new ArrayList();
-            List joinSources = getJoinSourceTables();
+            this.targets = new ArrayList<DBTable>();
+            List<DBTable> joinSources = getJoinSourceTables();
             this.targets.addAll(joinSources);
             this.targets.add(sTable);
 
             this.previewPanel.setSQLJoinView(this.copiedJoinView);
-            tableColumnPanel.setTables(new ArrayList(targets));
+            tableColumnPanel.setTables(new ArrayList<DBTable>(targets));
 
             // setDestinationList will again refresh preview which we don't want for
             // the tables of exsting join view

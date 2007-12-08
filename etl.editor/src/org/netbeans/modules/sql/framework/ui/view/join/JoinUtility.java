@@ -1,7 +1,42 @@
 /*
- * JoinUtility.java
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Created on February 2, 2004, 11:27 PM
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
  */
 
 package org.netbeans.modules.sql.framework.ui.view.join;
@@ -11,7 +46,6 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
-
 import org.netbeans.modules.sql.framework.model.SQLCanvasObject;
 import org.netbeans.modules.sql.framework.model.SQLCondition;
 import org.netbeans.modules.sql.framework.model.SQLConnectableObject;
@@ -37,9 +71,9 @@ import org.netbeans.modules.sql.framework.ui.model.SQLUIModel;
 import org.netbeans.modules.sql.framework.ui.view.TableColumnNode;
 import org.netbeans.modules.sql.framework.ui.view.graph.SQLBasicTableArea;
 import org.netbeans.modules.sql.framework.ui.view.graph.SQLGraphView;
-
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.Logger;
+import org.netbeans.modules.sql.framework.model.DBTable;
 
 /**
  * @author radval
@@ -52,8 +86,7 @@ public class JoinUtility {
     private JoinUtility() {
     }
 
-    public static void editJoinView(SQLJoinView oldJView, SQLJoinView modifiedJoinView, List joinSources, List tableNodes, IGraphView gView)
-            throws BaseException {
+    public static void editJoinView(SQLJoinView oldJView, SQLJoinView modifiedJoinView, List joinSources, List tableNodes, IGraphView gView) throws BaseException {
         //first remove tables which are no longer in modified join
         removeOldTables(oldJView, modifiedJoinView, gView);
         //then refresh join graph view in the canvas, remove columns which are unchecked
@@ -80,16 +113,15 @@ public class JoinUtility {
                 }
             }
         }
-
     }
 
     private static void adjustColumnVisiblity(SQLJoinView oldJoinView, SQLJoinView modifiedJoinView, List joinSources, List tableNodes, IGraphView gView) throws BaseException {
         JoinViewGraphNode jGraphView = (JoinViewGraphNode) gView.findGraphNode(oldJoinView);
         CollabSQLUIModel sqlModel = (CollabSQLUIModel) gView.getGraphModel();
-        if(!oldJoinView.equals(modifiedJoinView)) {
+        if (!oldJoinView.equals(modifiedJoinView)) {
             sqlModel.setDirty(true);
         }
-        
+
         if (jGraphView == null) {
             return;
         }
@@ -100,7 +132,7 @@ public class JoinUtility {
             while (it.hasNext()) {
                 SourceTable sTable = (SourceTable) it.next();
                 sTable.setUsedInJoin(true);
-                ArrayList invisibleColumns = new ArrayList();
+                ArrayList<SQLDBColumn> invisibleColumns = new ArrayList<SQLDBColumn>();
 
                 List columns = sTable.getColumnList();
                 Iterator cIt = columns.iterator();
@@ -121,8 +153,7 @@ public class JoinUtility {
                                 jGraphView.removeColumn(column);
                             }
                         } catch (BaseException ex) {
-                            Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "adjustColumnVisiblity", "can not remove column " + column.getName()
-                                + " from joinview table.", ex);
+                            Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "adjustColumnVisiblity", "can not remove column " + column.getName() + " from joinview table.", ex);
 
                             throw ex;
                         }
@@ -138,7 +169,6 @@ public class JoinUtility {
                 if (!sqlModel.exists(sTable)) {
                     sTable.setUsedInJoin(true);
                     sqlModel.addObject(sTable);
-
                 }
 
                 //is table newly added to join view
@@ -168,12 +198,10 @@ public class JoinUtility {
             }
 
             jGraphView.setSize(jGraphView.getMaximumWidth(), jGraphView.getMaximumHeight());
-
         } catch (BaseException ex) {
             Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "adjustColumnVisiblity", "can not adjust column visibility for joinview. ", ex);
             throw ex;
         }
-
     }
 
     private static boolean isColumnVisible(SQLDBColumn column, List tableNodes) {
@@ -195,7 +223,7 @@ public class JoinUtility {
 
     public static void handleNewJoinCreation(SQLJoinView newJoin, List tableNodes, IGraphView gView) throws BaseException {
         CollabSQLUIModel sqlModel = (CollabSQLUIModel) gView.getGraphModel();
-        ArrayList allOldLinks = new ArrayList();
+        ArrayList<LinkInfo> allOldLinks = new ArrayList<LinkInfo>();
 
         Iterator tIt = newJoin.getSourceTables().iterator();
         while (tIt.hasNext()) {
@@ -208,7 +236,7 @@ public class JoinUtility {
             }
 
             SQLBasicTableArea node = (SQLBasicTableArea) gView.findGraphNode(sTable);
-            List linkInfos = new ArrayList();
+            List<LinkInfo> linkInfos = new ArrayList<LinkInfo>();
             Iterator it = sTable.getColumnList().iterator();
 
             while (it.hasNext()) {
@@ -236,7 +264,6 @@ public class JoinUtility {
                 //remove table node as it is now part of join view
                 gView.removeNode(node);
             }
-
         }
         //create join view in the canvas
         sqlModel.addObject(newJoin);
@@ -246,8 +273,8 @@ public class JoinUtility {
         sqlModel.setDirty(true);
     }
 
-    private static List transferTableLinksToJoinView(List links) {
-        ArrayList linkInfos = new ArrayList();
+    private static List<LinkInfo> transferTableLinksToJoinView(List links) {
+        ArrayList<LinkInfo> linkInfos = new ArrayList<LinkInfo>();
 
         IGraphNode srcGraphNode = null;
         IGraphNode destGraphNode = null;
@@ -268,7 +295,6 @@ public class JoinUtility {
             SQLCanvasObject srcObj = (SQLCanvasObject) srcGraphNode.getDataObject();
             SQLConnectableObject destObj = (SQLConnectableObject) destGraphNode.getDataObject();
             linkInfos.add(new LinkInfo(srcObj, destObj, sParam, dParam));
-
         }
 
         return linkInfos;
@@ -290,12 +316,12 @@ public class JoinUtility {
 
     public static void handleAutoJoins(SQLJoinTable jTable, boolean addTable, JoinBuilderSQLUIModel model) throws BaseException {
         //this list keep track of all joins created so far.
-        ArrayList allObjectList = new ArrayList();
+        ArrayList<SQLObject> allObjectList = new ArrayList<SQLObject>();
         if (addTable) {
             allObjectList.add(jTable);
         }
 
-        ArrayList tablesSoFar = new ArrayList();
+        ArrayList<SQLObject> tablesSoFar = new ArrayList<SQLObject>();
 
         SQLJoinView joinView = model.getSQLJoinView();
         tablesSoFar.addAll(joinView.getSQLJoinTables());
@@ -322,7 +348,7 @@ public class JoinUtility {
             //add join to model before calling addInput on it since add Input
             //keep tracks of storing root join information, so join needs to have
             //ad id which is set if we add the join first
-            ArrayList newJoin = new ArrayList();
+            ArrayList<SQLJoinOperator> newJoin = new ArrayList<SQLJoinOperator>();
             newJoin.add(join);
             addObjects(newJoin, model);
 
@@ -373,9 +399,9 @@ public class JoinUtility {
 
     public static void handleAutoJoins(List joinTables, SQLUIModel model) throws BaseException {
         //this list keep track of all joins created so far.
-        ArrayList allObjectList = new ArrayList();
+        ArrayList<SQLObject> allObjectList = new ArrayList<SQLObject>();
 
-        ArrayList tablesSoFar = new ArrayList();
+        ArrayList<SQLObject> tablesSoFar = new ArrayList<SQLObject>();
 
         //then add all the joinTables
         Iterator it = joinTables.iterator();
@@ -399,7 +425,7 @@ public class JoinUtility {
             //add join to model before calling addInput on it since add Input
             //keep tracks of storing root join information, so join needs to have
             //ad id which is set if we add the join first
-            ArrayList newJoin = new ArrayList();
+            ArrayList<SQLJoinOperator> newJoin = new ArrayList<SQLJoinOperator>();
             newJoin.add(join);
             addObjects(newJoin, model);
 
@@ -437,7 +463,6 @@ public class JoinUtility {
                 }
                 SQLObjectUtil.migrateJoinCondition(previousPredicate, joinCondition);
                 join.setJoinConditionType(SQLJoinOperator.SYSTEM_DEFINED_CONDITION);
-
             }
 
             tablesSoFar.add(obj);
@@ -454,8 +479,8 @@ public class JoinUtility {
         }
     }
 
-    public static List getJoinSourceTables(SQLJoinOperator op) {
-        ArrayList tables = new ArrayList();
+    public static List<DBTable> getJoinSourceTables(SQLJoinOperator op) {
+        ArrayList<DBTable> tables = new ArrayList<DBTable>();
 
         SQLInputObject leftInObj = op.getInput(SQLJoinOperator.LEFT);
         SQLObject leftObj = leftInObj.getSQLObject();
@@ -485,8 +510,8 @@ public class JoinUtility {
         return tables;
     }
 
-    public static List getJoinTables(SQLJoinOperator op) {
-        ArrayList tables = new ArrayList();
+    public static List<SQLJoinTable> getJoinTables(SQLJoinOperator op) {
+        ArrayList<SQLJoinTable> tables = new ArrayList<SQLJoinTable>();
 
         SQLInputObject leftInObj = op.getInput(SQLJoinOperator.LEFT);
         SQLObject leftObj = leftInObj.getSQLObject();
@@ -515,4 +540,3 @@ public class JoinUtility {
         return tables;
     }
 }
-

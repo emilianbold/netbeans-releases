@@ -95,10 +95,10 @@ public class LiteralDialog extends JDialog implements ActionListener {
     private static final String CMD_CANCEL = "cancel"; //NOI18N
 
     static {
-        List types = SQLLiteral.VALID_TYPE_NAMES;
+        List<String> types = SQLLiteral.VALID_TYPE_NAMES;
 
         // Now populated DISPLAY_NAMES with contents of the restricted list.
-        DISPLAY_NAMES = (String[]) types.toArray(new String[types.size()]);
+        DISPLAY_NAMES = types.toArray(new String[types.size()]);
     }
 
     /* Holds available SQL types */
@@ -235,6 +235,8 @@ public class LiteralDialog extends JDialog implements ActionListener {
     }
     
 
+    @Override
+    @SuppressWarnings("deprecation")
     public void show() {
         pack();
         this.setResizable(false);
@@ -369,6 +371,7 @@ public class LiteralDialog extends JDialog implements ActionListener {
         //FIXME: Uncomment the following line if date literals are supported.
         // mTypesBox.addItemListener(new FormatTypesChangeListener());
         this.addWindowListener(new WindowAdapter() {
+            @Override
             public void windowClosing(WindowEvent e) {
                 mIsCanceled = true;
             }
@@ -452,6 +455,7 @@ public class LiteralDialog extends JDialog implements ActionListener {
     //        }
     //    }
     class ButtonKeyAdapter extends KeyAdapter {
+        @Override
         public void keyPressed(KeyEvent evt) {
             if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
                 buttonActionPerformed(evt.getSource());

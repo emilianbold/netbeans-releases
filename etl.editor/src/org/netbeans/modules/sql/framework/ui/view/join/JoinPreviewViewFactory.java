@@ -7,9 +7,7 @@
 package org.netbeans.modules.sql.framework.ui.view.join;
 
 import java.util.List;
-
 import javax.swing.undo.UndoManager;
-
 import org.netbeans.modules.sql.framework.ui.graph.IGraphController;
 import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
 import org.netbeans.modules.sql.framework.ui.graph.IOperatorXmlInfoModel;
@@ -41,7 +39,7 @@ public class JoinPreviewViewFactory extends AbstractSQLViewFactory {
 
     /**
      * create a graph view
-     * 
+     *
      * @return graph view
      */
     public IGraphView createGraphView() {
@@ -61,7 +59,7 @@ public class JoinPreviewViewFactory extends AbstractSQLViewFactory {
 
     /**
      * create a tool bar
-     * 
+     *
      * @return tool bar
      */
     public IToolBar createToolBar() {
@@ -70,7 +68,7 @@ public class JoinPreviewViewFactory extends AbstractSQLViewFactory {
 
     /**
      * create a graph controller
-     * 
+     *
      * @return
      */
     public IGraphController createGraphController() {
@@ -80,7 +78,7 @@ public class JoinPreviewViewFactory extends AbstractSQLViewFactory {
 
     /**
      * get sql model
-     * 
+     *
      * @return sql model
      */
     public SQLUIModel getSQLModel() {
@@ -89,7 +87,7 @@ public class JoinPreviewViewFactory extends AbstractSQLViewFactory {
 
     /**
      * get graph view container
-     * 
+     *
      * @return graph view container
      */
     public Object getGraphViewContainer() {
@@ -98,7 +96,7 @@ public class JoinPreviewViewFactory extends AbstractSQLViewFactory {
 
     /**
      * get graph view pop up actions
-     * 
+     *
      * @return actions
      */
     public List getGraphActions() {
@@ -107,7 +105,7 @@ public class JoinPreviewViewFactory extends AbstractSQLViewFactory {
 
     /**
      * return toolbar actions
-     * 
+     *
      * @return toolbar actions
      */
     public List getToolBarActions() {
@@ -116,7 +114,7 @@ public class JoinPreviewViewFactory extends AbstractSQLViewFactory {
 
     /**
      * get operator xml info model which is defined in netbeans layer.xml file
-     * 
+     *
      * @return operator xml info model
      */
     public IOperatorXmlInfoModel getOperatorXmlInfoModel() {
@@ -126,7 +124,7 @@ public class JoinPreviewViewFactory extends AbstractSQLViewFactory {
     //to be removed
     /**
      * Gets operator model currently associated with this manager.
-     * 
+     *
      * @return current instance of IOperatorXmlInfoModel
      */
     public IOperatorXmlInfoModel getModel() {
@@ -135,7 +133,7 @@ public class JoinPreviewViewFactory extends AbstractSQLViewFactory {
 
     /**
      * Gets operator view (toolbar) currently associated with this manager.
-     * 
+     *
      * @return current instance of IToolBar
      */
     public IToolBar getOperatorView() {
@@ -144,12 +142,10 @@ public class JoinPreviewViewFactory extends AbstractSQLViewFactory {
 
     /**
      * Gets graph view currently associated with this manager.
-     * 
+     *
      * @return current instance of IGraphView
      */
     public IGraphView getGraphView() {
         return this.gView;
     }
-
 }
-

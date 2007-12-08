@@ -123,10 +123,9 @@ public class ListArea extends CanvasArea {
         vScrollBar.setSelectable(false);
         addObjectAtTail(vScrollBar);
 
-        //this.setSelectable(false);
+        this.setSelectable(false);
         this.setResizable(false);
         this.setDraggable(true);
-        this.setGrabChildSelection(false);
 
         //set the insets around column
         //this.insets = new Insets(1, 5, 0, 10);

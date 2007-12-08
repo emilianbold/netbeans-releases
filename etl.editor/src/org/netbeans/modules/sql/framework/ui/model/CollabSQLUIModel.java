@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.sql.framework.ui.model;
 
-import org.netbeans.modules.model.database.DBTable;
 import org.netbeans.modules.sql.framework.model.RuntimeDatabaseModel;
 import org.netbeans.modules.sql.framework.model.SQLDefinition;
 import org.netbeans.modules.sql.framework.model.SQLJoinView;
@@ -48,6 +47,7 @@ import org.netbeans.modules.sql.framework.model.SourceColumn;
 import org.netbeans.modules.sql.framework.model.SourceTable;
 
 import com.sun.sql.framework.exception.BaseException;
+import org.netbeans.modules.sql.framework.model.DBTable;
 
 public interface CollabSQLUIModel extends SQLUIModel {
 

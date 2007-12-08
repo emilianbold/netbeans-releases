@@ -77,7 +77,6 @@ public class ToolBarArea extends CanvasArea {
 
         this.setResizable(false);
         this.setSelectable(false);
-        this.setGrabChildSelection(false);
     }
 
     /**

@@ -40,12 +40,11 @@
  */
 package org.netbeans.modules.sql.framework.ui.view.join;
 
+import com.nwoods.jgo.JGoLink;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import org.netbeans.modules.sql.framework.model.SQLDBTable;
 import org.netbeans.modules.sql.framework.model.SQLJoinView;
 import org.netbeans.modules.sql.framework.model.SourceTable;
 import org.netbeans.modules.sql.framework.ui.graph.IGraphNode;
@@ -53,7 +52,6 @@ import org.netbeans.modules.sql.framework.ui.view.graph.SQLSourceTableArea;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
-
 import com.sun.sql.framework.exception.BaseException;
 
 /**
@@ -61,35 +59,35 @@ import com.sun.sql.framework.exception.BaseException;
  * @version $Revision$
  */
 public class SQLJoinTableArea extends SQLSourceTableArea {
-    
+
     /** Creates a new instance of SQLJoinTableArea
      * @param table
      */
     public SQLJoinTableArea(SourceTable table) {
         super(table);
     }
-    
+
+    @Override
     public void setShowHeader(boolean show) {
         super.setShowHeader(show);
     }
-    
+
+    @Override
     protected void Remove_ActionPerformed(ActionEvent e) {
         SourceTable sTable = (SourceTable) this.getDataObject();
         JoinViewGraphNode joinViewNode = (JoinViewGraphNode) this.getParent();
         if (joinViewNode != null && sTable != null) {
             SQLJoinView joinView = (SQLJoinView) joinViewNode.getDataObject();
-            
+
             if (joinView.getSourceTables().size() <= 2) {
-                NotifyDescriptor d = new NotifyDescriptor.Message(NbBundle.getMessage(SQLJoinTableArea.class, "ERROR_msg_join_remove_minimum_tables",
-                        sTable.getName()), NotifyDescriptor.INFORMATION_MESSAGE);
+                NotifyDescriptor d = new NotifyDescriptor.Message(NbBundle.getMessage(SQLJoinTableArea.class, "ERROR_msg_join_remove_minimum_tables", sTable.getName()), NotifyDescriptor.INFORMATION_MESSAGE);
                 DialogDisplayer.getDefault().notify(d);
                 return;
             }
-            
+
             try {
                 if (joinViewNode.isTableColumnMapped(sTable)) {
-                    NotifyDescriptor d = new NotifyDescriptor.Confirmation(NbBundle.getMessage(SQLJoinTableArea.class, "MSG_join_remove_is_mapped",
-                            sTable.getName()), NotifyDescriptor.WARNING_MESSAGE);
+                    NotifyDescriptor d = new NotifyDescriptor.Confirmation(NbBundle.getMessage(SQLJoinTableArea.class, "MSG_join_remove_is_mapped", sTable.getName()), NotifyDescriptor.WARNING_MESSAGE);
                     Object response = DialogDisplayer.getDefault().notify(d);
                     if (response.equals(NotifyDescriptor.OK_OPTION)) {
                         joinViewNode.removeTable(sTable);
@@ -103,7 +101,7 @@ public class SQLJoinTableArea extends SQLSourceTableArea {
             }
         }
     }
-    
+
     /**
      * Extends parent implementation to signal this table's enclosing join view that it
      * should also update itself.
@@ -111,6 +109,7 @@ public class SQLJoinTableArea extends SQLSourceTableArea {
      * @param e ActionEvent to be handled
      * @return true if column visibilities were updated; false otherwise
      */
+    @Override
     protected boolean selectVisibleColumnsActionPerformed(ActionEvent e) {
         boolean response = super.selectVisibleColumnsActionPerformed(e);
         if (response) {
@@ -121,39 +120,41 @@ public class SQLJoinTableArea extends SQLSourceTableArea {
                 joinNode.layoutChildren();
             }
         }
-        
+
         return response;
     }
-    
+
     /**
      * Gets the parent node.
      *
      * @return parent
      */
+    @Override
     public IGraphNode getParentGraphNode() {
         return (IGraphNode) this.getParent();
     }
-    
-    
+
     /**
      * is this node can be deleted
      *
      * @return true if node can be deleted
      */
+    @Override
     public boolean isDeleteAllowed() {
         Remove_ActionPerformed(null);
         return false;
     }
-    
+
     /**
      * get a list of all input and output links
      *
      * @return list of input links
      */
-    public List getAllLinks() {
-        ArrayList links = new ArrayList();
+    @Override
+    public List<JGoLink> getAllLinks() {
+        ArrayList<JGoLink> links = new ArrayList<JGoLink>();
         links.addAll(super.getAllLinks());
-        
+
         JoinViewGraphNode joinNode = (JoinViewGraphNode) this.getParentGraphNode();
         if (joinNode != null) {
             Iterator it = joinNode.getAllTableAreas().iterator();
@@ -164,12 +165,11 @@ public class SQLJoinTableArea extends SQLSourceTableArea {
                 }
             }
         }
-        
+
         return links;
     }
-    
-    public List getTableLinks() {
+
+    public List<JGoLink> getTableLinks() {
         return super.getAllLinks();
     }
 }
-

@@ -45,7 +45,6 @@ import java.awt.Point;
 import javax.swing.undo.UndoManager;
 import javax.swing.undo.UndoableEditSupport;
 
-import org.netbeans.modules.model.database.DBTable;
 import org.netbeans.modules.sql.framework.model.SQLCanvasObject;
 import org.netbeans.modules.sql.framework.model.SQLConnectableObject;
 import org.netbeans.modules.sql.framework.model.SQLObject;
@@ -57,6 +56,7 @@ import org.netbeans.modules.sql.framework.ui.event.SQLDataListener;
 import org.netbeans.modules.sql.framework.ui.event.SQLLinkEvent;
 
 import com.sun.sql.framework.exception.BaseException;
+import org.netbeans.modules.sql.framework.model.DBTable;
 
 public interface SQLUIModel {
 

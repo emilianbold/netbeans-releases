@@ -41,12 +41,12 @@
 
 package org.netbeans.modules.sql.framework.ui.view.graph;
 
+import com.sun.sql.framework.exception.DBSQLException;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
@@ -77,20 +77,18 @@ import org.netbeans.modules.sql.framework.ui.view.TableSelectionPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 
 import com.nwoods.jgo.JGoBrush;
 import com.nwoods.jgo.JGoView;
-import java.awt.Container;
-import java.beans.PropertyChangeListener;
-import java.util.logging.Logger;
-import org.netbeans.modules.etl.ui.ETLNode;
-import org.netbeans.modules.etl.ui.property.SourceTableNode;
+import javax.swing.JOptionPane;
 import org.netbeans.modules.etl.ui.view.ETLCollaborationTopComponent;
-import org.openide.ErrorManager;
-import org.openide.nodes.Node;
-import org.openide.windows.TopComponent;
+import org.netbeans.modules.sql.framework.model.SQLJoinView;
+import org.netbeans.modules.sql.framework.model.visitors.SQLDBSynchronizationVisitor;
+import org.netbeans.modules.sql.framework.ui.view.BasicTopView;
+import org.netbeans.modules.sql.framework.ui.view.join.JoinViewGraphNode;
 import org.openide.windows.WindowManager;
 
 /**
@@ -113,6 +111,7 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
     
     private static URL propertiesUrl = SQLSourceTableArea.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/properties.png");
     
+    private static URL synchroniseImgUrl = SQLSourceTableArea.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/refresh.png");
     private static final Color DEFAULT_BG_COLOR = new Color(204, 213, 241);
     
     private static final Color DEFAULT_BG_COLOR_DARK = new Color(165, 193, 249); // new Color(249, 224, 127);
@@ -131,6 +130,7 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
     
     private JMenuItem dataFilterMapItem;
     
+    private JMenuItem synchroniseItem;
     private transient ETLCollaborationTopComponent designView;
     
     
@@ -168,7 +168,9 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
         
         // Fit to size
         addSelectVisibleColumnsPopUpMenu(aListener);
-        
+        synchroniseItem = new JMenuItem("Refresh Metadata", new ImageIcon(synchroniseImgUrl));
+        synchroniseItem.addActionListener(aListener);
+        popUpMenu.add(synchroniseItem);
         // Define data filtering action
         popUpMenu.addSeparator();
         dataFilterMapItem = new JMenuItem("Extraction Condition...", new ImageIcon(dataFilterImgUrl));
@@ -222,6 +224,8 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
                 performAutoMap(e);
             } else if (source == dataValidationMapItem) {
                 DataValidation_ActionPerformed(e);
+            } else if (source == synchroniseItem) {
+                synchroniseItem_ActionPerformed(e);
             } else if (source == dataFilterMapItem) {
                 showDataFilter_ActionPerformed(e);
             } else {
@@ -252,6 +256,42 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
         this.getGraphView().execute(ICommand.DATA_EXTRACTION, args);
     }
     
+        private void synchroniseItem_ActionPerformed(ActionEvent e) {
+        IGraphView gView = this.getGraphView();
+        CollabSQLUIModel sqlModel = (CollabSQLUIModel) gView.getGraphModel();
+
+        String dlgMsg = NbBundle.getMessage(SQLBasicTableArea.class, "MSG_dlg_refresh_metadata");
+        String dlgTitle = NbBundle.getMessage(SQLBasicTableArea.class, "TITLE_dlg_refresh_metadata");
+        int response = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), dlgMsg, dlgTitle, JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+
+        if (JOptionPane.OK_OPTION == response) {
+            try {
+                SQLDBTable tbl = (SQLDBTable) SQLSourceTableArea.this.getDataObject();
+                SQLDBSynchronizationVisitor visitView = new SQLDBSynchronizationVisitor();
+
+                SQLTableArea tableArea1 = (SQLTableArea) this.getTableArea();
+                MetaTableModel model = (MetaTableModel) tableArea1.getModel();
+                visitView.mergeCollabTableWithDatabaseTable(tbl, model);
+                if (!visitView.infoList.isEmpty()) {
+                    tableArea1.layoutChildren();
+                    SQLJoinView jView = sqlModel.getJoinView((SourceTable) tbl);
+                    if (jView != null) {
+                        JoinViewGraphNode jViewGraph = (JoinViewGraphNode) gView.findGraphNode(jView);
+                        jViewGraph.layoutChildren();
+                        jViewGraph.setHeight(jViewGraph.getMaximumHeight());
+                    }
+                    // Mark collab as needing to be persisted.
+                    sqlModel.setDirty(true);
+                }
+                BasicTopView gvMgr = (BasicTopView) gView.getGraphViewContainer();
+                gvMgr.showRefreshMetadataInfo(visitView.infoList);
+            } catch (DBSQLException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
     private void performAutoMap(ActionEvent e) {
         IGraphView gView = this.getGraphView();
         CollabSQLUIModel sqlModel = (CollabSQLUIModel) gView.getGraphModel();
@@ -341,14 +381,6 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
     }
     
     public boolean doMouseClick(int modifiers, Point dc, Point vc, JGoView view1) {
-        Node node = null;
-        if(node != null){
-            if (node instanceof SourceTableNode) {
-                WindowManager.getDefault().getRegistry().getActivated().
-                        setActivatedNodes(new Node[]{new SourceTableNode((SourceTable)node)});
-              // java.util.logging.Logger.getLogger(SQLSourceTableArea.class.getName()).info("ETLNewPropertySheet  in MouseClick in Property Sheet ------------ "+node.getName());
-            }
-        }
         IGraphView gView = this.getGraphView();
         CollabSQLUIModel sqlModel = (CollabSQLUIModel) gView.getGraphModel();
         if (sqlModel != null) {

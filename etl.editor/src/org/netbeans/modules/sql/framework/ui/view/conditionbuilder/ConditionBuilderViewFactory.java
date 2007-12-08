@@ -89,7 +89,7 @@ public class ConditionBuilderViewFactory extends AbstractSQLViewFactory {
         this.operatorModel = OperatorXmlInfoModel.getInstance(this.gViewContainer.getOperatorFolder());
         this.toolbarType = toolBarType;
 
-        super.setSQLToolBar();       
+        super.setSQLToolBar();
     }
 
     /**

@@ -138,7 +138,6 @@ public class BasicCellArea extends CanvasArea implements PropertyChangeListener,
         this.setSelectable(false);
         this.setResizable(false);
         this.setDraggable(true);
-        this.setGrabChildSelection(false);
 
         rect = new JGoRectangle();
         rect.setPen(DEFAULT_PEN);

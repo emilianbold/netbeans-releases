@@ -71,6 +71,7 @@ import org.netbeans.modules.sql.framework.ui.view.validation.SQLValidationView;
 import org.openide.util.NbBundle;
 
 import com.sun.sql.framework.utils.Logger;
+import org.netbeans.modules.sql.framework.ui.view.SQLOutputConditionView;
 
 /**
  * @author Ritesh Adval
@@ -120,8 +121,7 @@ public class ConditionBuilderRightPanel extends JPanel implements IOutputViewCon
     private ConditionGraphView graphView;
     private JSplitPane hSplitPane;
     private ConditionBuilderSQLUiModel model;
-    private SQLOutputView outputView;
-
+    private SQLOutputConditionView outputView;
     private JSplitPane splitPane;
 
     private HashMap sqlViewMap = new HashMap();
@@ -269,7 +269,7 @@ public class ConditionBuilderRightPanel extends JPanel implements IOutputViewCon
         Dimension d = this.getSize();
         int divLocation = d.height * 3 / 5;
         splitPane.setDividerLocation(divLocation);
-        outputView.showView(c);
+        outputView.addComponent(c);
     }
 
     /**
@@ -337,8 +337,7 @@ public class ConditionBuilderRightPanel extends JPanel implements IOutputViewCon
 
         // Let the tree tabbed pane as left component
         hSplitPane.setLeftComponent(tableTreeView);
-
-        outputView = new SQLOutputView(this);
+        outputView = new SQLOutputConditionView(this);
         splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 
         model = new ConditionBuilderSQLUIModelImpl(cond);
@@ -357,10 +356,6 @@ public class ConditionBuilderRightPanel extends JPanel implements IOutputViewCon
         validationView.setName(name);
 
         BasicToolBar tlBar = (BasicToolBar) viewFactory.getOperatorView();
-        try {
-            this.add(tlBar, BorderLayout.NORTH);
-        } catch(Exception Ex) {
-            //ignore
-        }
+        this.add(tlBar, BorderLayout.NORTH);
     }
 }

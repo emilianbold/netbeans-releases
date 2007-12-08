@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.sql.framework.ui.view.graph;
 
+import com.sun.sql.framework.exception.DBSQLException;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -55,9 +56,16 @@ import org.netbeans.modules.sql.framework.model.SQLObject;
 import org.netbeans.modules.sql.framework.model.TargetTable;
 import org.netbeans.modules.sql.framework.ui.graph.ICommand;
 import org.netbeans.modules.sql.framework.ui.graph.impl.GradientBrush;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 import com.nwoods.jgo.JGoBrush;
+import javax.swing.JOptionPane;
+import org.netbeans.modules.sql.framework.model.SQLDBTable;
+import org.netbeans.modules.sql.framework.model.visitors.SQLDBSynchronizationVisitor;
+import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
+import org.netbeans.modules.sql.framework.ui.model.CollabSQLUIModel;
+import org.netbeans.modules.sql.framework.ui.view.BasicTopView;
 import org.openide.windows.WindowManager;
 
 
@@ -77,6 +85,7 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
     
     private static URL showRejectionDataImgUrl = SQLBasicTableArea.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/showRejectedData.png");
     
+     private static URL synchroniseImgUrl = SQLSourceTableArea.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/refresh.png");
     private static URL targetTableConditionImgUrl = SQLBasicTableArea.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/targetTableCondition.png");
     private static URL dataFilterImgUrl = SQLSourceTableArea.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/filter16.gif");
     
@@ -92,6 +101,7 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
     private JMenuItem editJoinConditionItem;
     private JMenuItem editFilterConditionItem;
     private JMenuItem propertiesItem;
+    private JMenuItem synchroniseItem;
     
     /**
      * Creates a new instance of SQLTargetTableArea
@@ -138,6 +148,9 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
         
         // Select Columns
         addSelectVisibleColumnsPopUpMenu(aListener);
+        synchroniseItem = new JMenuItem("Refresh Metadata", new ImageIcon(synchroniseImgUrl));
+        synchroniseItem.addActionListener(aListener);
+        popUpMenu.add(synchroniseItem);
         popUpMenu.addSeparator();
         
         // TODO: show join condition only if source table exist (Delete, Static Insert/Update does not require Join Condition)
@@ -189,6 +202,8 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
                 ShowTargetJoinCondition_ActionPerformed(e);
             }else if (source == editFilterConditionItem) {
                 ShowTargetFilterCondition_ActionPerformed(e);
+            }else if (source == synchroniseItem) {
+                synchroniseItem_ActionPerformed(e);
             }  else {
                 handleCommonActions(e);
             }
@@ -228,6 +243,40 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
         this.getGraphView().execute(ICommand.SHOW_TARGET_FILTER_CONDITION_CMD, args);
     }
     
+     private void synchroniseItem_ActionPerformed(ActionEvent e) {
+        IGraphView gView = this.getGraphView();
+
+        String dlgMsg = NbBundle.getMessage(SQLBasicTableArea.class, "MSG_dlg_refresh_metadata");
+        String dlgTitle = NbBundle.getMessage(SQLBasicTableArea.class, "TITLE_dlg_refresh_metadata");
+        int response = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), dlgMsg, dlgTitle, JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+
+        if (JOptionPane.OK_OPTION == response) {
+            try {
+
+                SQLDBTable tbl = (SQLDBTable) SQLTargetTableArea.this.getDataObject();
+                SQLDBSynchronizationVisitor visitView = new SQLDBSynchronizationVisitor();
+
+                SQLTableArea tableArea1 = (SQLTableArea) this.getTableArea();
+                MetaTableModel model = (MetaTableModel) tableArea1.getModel();
+                visitView.mergeCollabTableWithDatabaseTable(tbl, model);
+                if (!visitView.infoList.isEmpty()) {
+                    tableArea1.layoutChildren();
+                    tableArea1.setHeight(tableArea1.getMaximumHeight());
+                    // Mark collab as needing to be persisted.
+                    Object graphModel = getGraphView().getGraphModel();
+                    if (graphModel instanceof CollabSQLUIModel) {
+                        ((CollabSQLUIModel) graphModel).setDirty(true);
+                    }
+                }
+                BasicTopView gvMgr = (BasicTopView) gView.getGraphViewContainer();
+                gvMgr.showRefreshMetadataInfo(visitView.infoList);
+            } catch (DBSQLException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
     /**
      * Sets the data object
      *

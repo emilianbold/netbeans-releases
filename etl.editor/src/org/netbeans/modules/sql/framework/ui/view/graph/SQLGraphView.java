@@ -296,11 +296,13 @@ public class SQLGraphView extends GraphView implements SQLDataListener, Undoable
         if (destObj instanceof TargetTable) {
             SQLTargetTableArea tt = (SQLTargetTableArea)findGraphNode(destObj);
             SQLInputObject inputObj = destObj.getInput(destParam);
+            if(inputObj != null){
             TargetColumn tCol = (TargetColumn) inputObj.getSQLObject();
             if ((tCol != null) && (tCol.isPrimaryKey())) {
                 tt.setConditionIcons();
             }
         }
+    }
     }
     
     private SQLCanvasObject getTopSQLCanvasObject(SQLObject sqlObj) {

@@ -8,7 +8,6 @@ package org.netbeans.modules.sql.framework.ui.view.join;
 
 import java.awt.Point;
 import java.util.List;
-
 import org.netbeans.modules.sql.framework.model.SQLCanvasObject;
 import org.netbeans.modules.sql.framework.model.SQLConstants;
 import org.netbeans.modules.sql.framework.model.SQLJoinOperator;
@@ -20,15 +19,13 @@ import org.netbeans.modules.sql.framework.ui.view.graph.AbstractGraphFactory;
 
 /**
  * This is the graph factory for join preview graph panel
- * 
+ *
  * @author radval
  */
 public class JoinPreviewGraphFactory extends AbstractGraphFactory {
 
     private Point sourceTableLoc = new Point(50, 50);
-
     private List jSources;
-
     private IGraphView mainSQLGraphView;
 
     /** Creates a new instance of JoinPreviewGraphFactory */
@@ -38,7 +35,7 @@ public class JoinPreviewGraphFactory extends AbstractGraphFactory {
 
     /**
      * factory method for creating instance of IGraphNode given an SQLObject
-     * 
+     *
      * @param canvasObj sql object to be represented in the graph
      * @return an instance of IGraphNode
      */
@@ -79,9 +76,7 @@ public class JoinPreviewGraphFactory extends AbstractGraphFactory {
         return graphNode;
     }
 
-    public void setJoinSources(List joinSources) {
+    public void setJoinSources(List<SQLJoinTable> joinSources) {
         this.jSources = joinSources;
     }
-
 }
-
