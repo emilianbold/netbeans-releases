@@ -175,14 +175,19 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
             return ((JRootPane)container).getContentPane();
 
         Container containerDelegate = (Container) container;
-        Method m = getContainerDelegateMethod();
-        if (m != null) {
-            try {
-                containerDelegate =
-                    (Container) m.invoke(container, new Object[0]);
-            }
-            catch (Exception ex) {
-                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+        // Do not attempt to find container delegate if the classes
+        // don't match. This can happen when ViewConverter was used.
+        // Happens for JApplet, for example.
+        if (getBeanClass().isAssignableFrom(container.getClass())) {
+            Method m = getContainerDelegateMethod();
+            if (m != null) {
+                try {
+                    containerDelegate =
+                        (Container) m.invoke(container, new Object[0]);
+                }
+                catch (Exception ex) {
+                    org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
+                }
             }
         }
         return containerDelegate;
