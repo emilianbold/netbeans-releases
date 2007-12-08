@@ -153,11 +153,6 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         public void name(ElementKind kind, boolean start) {
             // No special formatting for names
         }
-
-        @Override
-        public void parameters(boolean start) {
-            // No special formatting for parameters
-        }
     }
 }    
     
