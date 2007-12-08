@@ -1,3 +1,8 @@
+package org.netbeans.modules.visualweb.jsfsupport.converter;
+
+import com.sun.rave.faces.converter.CalendarConverter;
+import org.netbeans.junit.NbTestCase;
+
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
@@ -37,15 +42,8 @@
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.visualweb.jsfsupport.converter;
-
-import com.sun.rave.faces.converter.CalendarConverter;
-
-import javax.faces.context.FacesContext;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.visualweb.insync.InsyncTestBase;
-import org.netbeans.modules.visualweb.insync.models.FacesModelSet;
-import org.netbeans.modules.visualweb.jsfsupport.container.FacesContainer;
 
 /**
  * A Test based on NbTestCase. It is a NetBeans extension to JUnit TestCase
@@ -56,9 +54,8 @@ import org.netbeans.modules.visualweb.jsfsupport.container.FacesContainer;
  * More details here http://xtest.netbeans.org/NbJUnit/NbJUnit-overview.html.
  * 
  * @author dongmeic
- * @author mbohm
  */
-public class CalendarConverterTest extends InsyncTestBase {
+public class CalendarConverterTest extends NbTestCase {
 
     private CalendarConverter calendarConverter1;
 
@@ -99,10 +96,6 @@ public class CalendarConverterTest extends InsyncTestBase {
     // Add test methods here, they have to start with 'test'.
     /** Test case 1. */
     public void test1() {
-        FacesModelSet instance = createFacesModelSet();
-        FacesContainer container = instance.getFacesContainer();
-        FacesContext fc = container.getFacesContext();
-        assertNotNull(fc);
     }
 
     /** Test case 2. */
