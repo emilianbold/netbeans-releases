@@ -42,10 +42,6 @@ package org.netbeans.modules.sql.framework.model;
 
 import java.util.List;
 
-import org.netbeans.modules.model.database.DBColumn;
-import org.netbeans.modules.model.database.DBConnectionDefinition;
-import org.netbeans.modules.model.database.DBTable;
-import org.netbeans.modules.model.database.DatabaseModel;
 import org.netbeans.modules.sql.framework.common.jdbc.SQLDBConnectionDefinition;
 import org.w3c.dom.Element;
 

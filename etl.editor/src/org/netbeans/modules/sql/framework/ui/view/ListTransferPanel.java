@@ -544,7 +544,7 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
     public static final String LBL_ADD_ALL = LBL_ALL + " " + LBL_ADD;
 
     /** Describes destination list */
-    public static final String LBL_DEST_MSG = "Selected OTD's:";
+    public static final String LBL_DEST_MSG = "Selected Databases:";
 
     /** Indicates removal of item(s). */
     public static final String LBL_REMOVE = "<";
@@ -553,7 +553,7 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
     public static final String LBL_REMOVE_ALL = LBL_REMOVE + " " + LBL_ALL;
 
     /** Describes source list and user task. */
-    public static final String LBL_SOURCE_MSG = "Select OTD's from the list:";
+    public static final String LBL_SOURCE_MSG = "Select Db's from the list:";
 
     /** Maximum number of visible items in lists */
     public static final int MAXIMUM_VISIBLE = 10;

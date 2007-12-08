@@ -42,18 +42,23 @@ package org.netbeans.modules.sql.framework.model.impl;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
-import org.netbeans.modules.model.database.DBColumn;
-import org.netbeans.modules.model.database.DBTable;
-import org.netbeans.modules.model.database.ForeignKey;
-import org.netbeans.modules.model.database.PrimaryKey;
+import org.netbeans.modules.sql.framework.model.DBColumn;
 import org.w3c.dom.Element;
 
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.StringUtil;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.ResourceBundle;
+import org.netbeans.modules.sql.framework.model.DBTable;
+import org.netbeans.modules.sql.framework.model.ForeignKey;
+import org.netbeans.modules.sql.framework.model.PrimaryKey;
 
 /**
  * Implements ForeignKey interface.
@@ -63,123 +68,39 @@ import com.sun.sql.framework.utils.StringUtil;
  */
 public class ForeignKeyImpl implements Cloneable, ForeignKey {
 
-    /**
-     * Object wrapper to bind the name and sequence ID of a table column participating in
-     * a foreign key, along with its associated primary key column.
-     */
-    public static class Column implements Comparable {
-        private String name;
-        private String pkColumnName;
-
-        private int sequence;
-
-        /**
-         * Constructs a new instance of Column with the given name, sequence, and
-         * associated primary key column
-         * 
-         * @param colName name of new Column
-         * @param colSequence one-based value indicating this column's sequential order
-         * @param pkColName name of PK column associated wtih this new (FK) Column
-         *        instance in a composite key; should be 1 if this column is the only one
-         *        in the PK
-         */
-        public Column(String colName, int colSequence, String pkColName) {
-            if (colName == null || colName.trim().length() == 0) {
-                throw new IllegalArgumentException("Must supply non-empty String value for parameter colName.");
-            }
-
-            if (pkColName == null || pkColName.trim().length() == 0) {
-                throw new IllegalArgumentException("Must supply non-empty String value for parameter pkColName.");
-            }
-
-            if (colSequence <= 0) {
-                throw new IllegalArgumentException("Must supply positive integer value for parameter colSequence.");
-            }
-
-            name = colName.trim();
-            sequence = colSequence;
-
-            pkColumnName = pkColName.trim();
-        }
-
-        /**
-         * Compares this object with the specified object for order. Returns a negative
-         * integer, zero, or a positive integer as this object is less than, equal to, or
-         * greater than the specified object.
-         * <p>
-         * Note: this class has a natural ordering that is inconsistent with equals.
-         * 
-         * @param o the Object to be compared.
-         * @return a negative integer, zero, or a positive integer as this object is less
-         *         than, equal to, or greater than the specified object.
-         */
-        public int compareTo(Object o) {
-            return (this.sequence - ((Column) o).sequence);
-        }
-
-        /**
-         * Gets name of this Column.
-         * 
-         * @return column name
-         */
-        public String getName() {
-            return name;
-        }
-
-        /**
-         * Gets name of associated Primary Key column.
-         * 
-         * @return name of associated PK column
-         */
-        public String getPKColumnName() {
-            return pkColumnName;
-        }
-
-        /**
-         * Gets sequence of this Column within its containing PK.
-         * 
-         * @return this column's sequence relative to other columns in the containing PK.
-         */
-        public int getSequence() {
-            return sequence;
-        }
-    }
-
     /** Document element tag name for marshalling out this object to XML */
     public static final String ELEMENT_TAG = "foreignKey"; // NOI18N
-
     /** Name of attribute used for marshalling out FK column names to XML */
     public static final String FK_COLUMNS_ATTR = "fkColumns"; // NOI18N
-
     /** Name of attribute used for marshalling out FK name to XML */
     public static final String FK_NAME_ATTR = "name"; // NOI18N
-
     /** Name of attribute used for marshalling out catalog name of PK table to XML */
     public static final String PK_CATALOG_ATTR = "pkCatalog"; // NOI18N
-
     /** Name of attribute used for marshalling out PK column names to XML */
     public static final String PK_COLUMNS_ATTR = "pkColumns"; // NOI18N
-
     /** Name of attribute used for marshalling out deferrability rule to XML */
     public static final String PK_DEFER_ATTR = "deferRule"; // NOI18N
-
     /** Name of attribute used for marshalling out delete rule to XML */
     public static final String PK_DELETE_ATTR = "deleteRule"; // NOI18N
-
     /** Name of attribute used for marshalling out PK name to XML */
     public static final String PK_NAME_ATTR = "pkName"; // NOI18N
-
     /** Name of attribute used for marshalling out schema name of PK table to XML */
     public static final String PK_SCHEMA_ATTR = "pkSchema"; // NOI18N
-
     /** Name of attribute used for marshalling out PK table name to XML */
     public static final String PK_TABLE_ATTR = "pkTable"; // NOI18N
-
     /** Name of attribute used for marshalling out update rule to XML */
     public static final String PK_UPDATE_ATTR = "updateRule"; // NOI18N
-
-    /** RCS ID */
-    static final String RCS_ID = "$Id$";
+    
+    private static final String RS_PK_NAME = "PK_NAME"; // NOI18N
+    private static final String RS_PKCATALOG_NAME = "PKTABLE_CAT"; // NOI18N
+    private static final String RS_PKSCHEMA_NAME = "PKTABLE_SCHEM"; // NOI18N
+    private static final String RS_PKTABLE_NAME = "PKTABLE_NAME"; // NOI18N
+    private static final String RS_PKCOLUMN_NAME = "PKCOLUMN_NAME"; // NOI18N
+    private static final String RS_FK_NAME = "FK_NAME"; // NOI18N
+    private static final String RS_FKCOLUMN_NAME = "FKCOLUMN_NAME"; // NOI18N
+    private static final String RS_UPDATE_RULE = "UPDATE_RULE"; // NOI18N
+    private static final String RS_DELETE_RULE = "DELETE_RULE"; // NOI18N
+    private static final String RS_DEFERRABILITY = "DEFERRABILITY"; // NOI18N
 
     /*
      * deferrability cascade rule; holds constant value as defined in
@@ -194,7 +115,8 @@ public class ForeignKeyImpl implements Cloneable, ForeignKey {
     private transient Element element;
 
     /* List of column names for this foreign key in key sequence order. */
-    private List fkColumnNames = new ArrayList();
+    // TODO: Should it be a list ? -- Ahi
+    private List<String> fkColumnNames = new ArrayList<String>();
 
     /* Name of this key; may be null */
     private String fkName;
@@ -208,7 +130,7 @@ public class ForeignKeyImpl implements Cloneable, ForeignKey {
     /*
      * List of column names of corresponding primary key columns, in key sequence order.
      */
-    private List pkColumnNames = new ArrayList();
+    private List<String> pkColumnNames = new ArrayList<String>();
 
     /* Name of corresponding primary key; may be null */
     private String pkName;
@@ -221,7 +143,64 @@ public class ForeignKeyImpl implements Cloneable, ForeignKey {
 
     /* update cascade rule; holds constant value as defined in java.sql.DatabaseMetaData */
     private int updateRule;
+    
+    /**
+     * Creates a List of ForeignKeyColumn instances from the given ResultSet.
+     *
+     * @param rs ResultSet containing foreign key metadata as obtained from 
+     * DatabaseMetaData
+     * @return List of ForeignKeyColumn instances based from metadata in rs
+     *
+     * @throws SQLException if SQL error occurs while reading in data from
+     * given ResultSet
+     */    
+    public static Map<String, ForeignKey> createForeignKeyColumnMap(DBTable table, ResultSet rs) 
+            throws SQLException {
+        if (rs == null) {
+            Locale locale = Locale.getDefault();
+            ResourceBundle cMessages = ResourceBundle.getBundle("org/netbeans/modules/sql/framework/model/impl/Bundle", locale); // NO i18n
+            throw new IllegalArgumentException(
+                cMessages.getString("ERROR_NULL_RS")+"(ERROR_NULL_RS)");
+        }
+        
+        Map<String, ForeignKey> fkColumns = new HashMap<String, ForeignKey>();
+        while (rs.next()) {
+            ForeignKeyImpl fk = (ForeignKeyImpl)fkColumns.get(rs.getString(RS_FK_NAME));
+            if(fk != null){
+                fk.addColumnNames(rs);
+            } else {
+                fk = new ForeignKeyImpl(rs);
+                fk.setParent(table);
+                fkColumns.put(fk.getName(), fk);
+            }
+        }
+        return fkColumns;
+    }
+    
+     private ForeignKeyImpl(ResultSet rs) throws SQLException {
+        if (rs == null) {
+            Locale locale = Locale.getDefault();
+            ResourceBundle cMessages = ResourceBundle.getBundle("org/netbeans/modules/sql/framework/model/impl/Bundle", locale); // NO i18n            
+            throw new IllegalArgumentException(
+                cMessages.getString("ERROR_VALID_RS")+"(ERROR_VALID_RS)");
+        }
+        
+        //parent = fkTable;
+        fkName = rs.getString(RS_FK_NAME);
+        pkName = rs.getString(RS_PK_NAME);
 
+        pkTable = rs.getString(RS_PKTABLE_NAME);
+        pkSchema = rs.getString(RS_PKSCHEMA_NAME);
+        pkCatalog = rs.getString(RS_PKCATALOG_NAME);
+        addColumnNames(rs);
+
+        //rs.getShort(RS_SEQUENCE_NUM)
+
+        updateRule = rs.getShort(RS_UPDATE_RULE);
+        deleteRule = rs.getShort(RS_DELETE_RULE);
+        deferrability = rs.getShort(RS_DEFERRABILITY);
+    }
+     
     /**
      * Creates a new instance of ForeignKey with the given key name and referencing the
      * column names in the given List.
@@ -283,16 +262,30 @@ public class ForeignKeyImpl implements Cloneable, ForeignKey {
         copyFrom(src);
     }
 
+    public void addColumnNames(ResultSet rs) throws SQLException {
+
+        String pkColName = rs.getString(RS_PKCOLUMN_NAME);
+        if (!StringUtil.isNullString(pkColName)) {
+            pkColumnNames.add(pkColName);
+        }
+
+        String fkColName = rs.getString(RS_FKCOLUMN_NAME);
+        if (!StringUtil.isNullString(pkColName)) {
+            fkColumnNames.add(fkColName);
+        }
+    }
+
     /**
      * Create a clone of this PrimaryKeyImpl.
      * 
      * @return cloned copy of DBColumn.
      */
+    @Override
     public Object clone() {
         try {
             ForeignKeyImpl impl = (ForeignKeyImpl) super.clone();
-            impl.pkColumnNames = new ArrayList(this.pkColumnNames);
-            impl.fkColumnNames = new ArrayList(this.fkColumnNames);
+            impl.pkColumnNames = new ArrayList<String>(this.pkColumnNames);
+            impl.fkColumnNames = new ArrayList<String>(this.fkColumnNames);
 
             return impl;
         } catch (CloneNotSupportedException e) {
@@ -320,6 +313,7 @@ public class ForeignKeyImpl implements Cloneable, ForeignKey {
      * @param refObj Object against which we compare this instance
      * @return true if refObj is functionally identical to this instance; false otherwise
      */
+    @Override
     public boolean equals(Object refObj) {
         if (this == refObj) {
             return true;
@@ -332,19 +326,12 @@ public class ForeignKeyImpl implements Cloneable, ForeignKey {
         ForeignKeyImpl ref = (ForeignKeyImpl) refObj;
 
         boolean result = (fkName != null) ? fkName.equals(ref.fkName) : (ref.fkName == null);
-
         result &= (pkName != null) ? pkName.equals(ref.pkName) : (ref.pkName == null);
-
         result &= (pkTable != null) ? pkTable.equals(ref.pkTable) : (ref.pkTable == null);
-
         result &= (pkSchema != null) ? pkSchema.equals(ref.pkSchema) : (ref.pkSchema == null);
-
         result &= (pkCatalog != null) ? pkCatalog.equals(ref.pkCatalog) : (ref.pkCatalog == null);
-
         result &= (updateRule == ref.updateRule) && (deleteRule == ref.deleteRule) && (deferrability == ref.deferrability);
-
         result &= (pkColumnNames != null) ? pkColumnNames.equals(ref.pkColumnNames) : (ref.pkColumnNames != null);
-
         result &= (fkColumnNames != null) ? fkColumnNames.equals(ref.fkColumnNames) : (ref.fkColumnNames != null);
 
         return result;
@@ -361,13 +348,13 @@ public class ForeignKeyImpl implements Cloneable, ForeignKey {
      * @see org.netbeans.modules.model.database.ForeignKey#getColumnName
      */
     public String getColumnName(int iColumn) {
-        return (String) fkColumnNames.get(iColumn);
+        return fkColumnNames.get(iColumn);
     }
 
     /**
      * @see org.netbeans.modules.model.database.ForeignKey#getColumnNames
      */
-    public List getColumnNames() {
+    public List<String> getColumnNames() {
         return Collections.unmodifiableList(fkColumnNames);
     }
 
@@ -393,7 +380,7 @@ public class ForeignKeyImpl implements Cloneable, ForeignKey {
         while (it.hasNext()) {
             String colName = (String) it.next();
             if (colName.equals(fkColumnName.trim())) {
-                return (String) pkColumnNames.get(it.previousIndex());
+                return pkColumnNames.get(it.previousIndex());
             }
         }
 
@@ -424,7 +411,7 @@ public class ForeignKeyImpl implements Cloneable, ForeignKey {
     /**
      * @see org.netbeans.modules.model.database.ForeignKey#getPKColumnNames
      */
-    public List getPKColumnNames() {
+    public List<String> getPKColumnNames() {
         return Collections.unmodifiableList(pkColumnNames);
     }
 
@@ -474,6 +461,7 @@ public class ForeignKeyImpl implements Cloneable, ForeignKey {
      * @return hash code for this object
      * @see java.lang.Object#hashCode
      */
+    @Override
     public int hashCode() {
         int myHash = (fkName != null) ? fkName.hashCode() : 0;
 
@@ -481,9 +469,7 @@ public class ForeignKeyImpl implements Cloneable, ForeignKey {
         myHash += (pkTable != null) ? pkTable.hashCode() : 0;
         myHash += (pkSchema != null) ? pkSchema.hashCode() : 0;
         myHash += (pkCatalog != null) ? pkCatalog.hashCode() : 0;
-
         myHash += updateRule + deleteRule + deferrability;
-
         myHash += (fkColumnNames != null) ? fkColumnNames.hashCode() : 0;
         myHash += (pkColumnNames != null) ? pkColumnNames.hashCode() : 0;
 
@@ -496,6 +482,7 @@ public class ForeignKeyImpl implements Cloneable, ForeignKey {
      * @exception BaseException thrown while parsing XML, or if member variable element is
      *            null
      */
+    @SuppressWarnings("unchecked")
     public void parseXML() throws BaseException {
         if (this.element == null) {
             throw new BaseException("No <" + ELEMENT_TAG + "> element found.");
@@ -503,11 +490,9 @@ public class ForeignKeyImpl implements Cloneable, ForeignKey {
 
         this.fkName = element.getAttribute(FK_NAME_ATTR);
         this.pkName = element.getAttribute(PK_NAME_ATTR);
-
         this.pkTable = element.getAttribute(PK_TABLE_ATTR);
         this.pkSchema = element.getAttribute(PK_SCHEMA_ATTR);
         this.pkCatalog = element.getAttribute(PK_CATALOG_ATTR);
-
         String val = element.getAttribute(PK_UPDATE_ATTR);
         try {
             updateRule = Integer.parseInt(val);
@@ -551,7 +536,7 @@ public class ForeignKeyImpl implements Cloneable, ForeignKey {
             return false;
         }
 
-        List targetColNames = pk.getColumnNames();
+        List<String> targetColNames = pk.getColumnNames();
         DBTable targetTable = pk.getParent();
 
         return references(targetTable) && targetColNames.containsAll(pkColumnNames) && pkColumnNames.containsAll(targetColNames);
@@ -572,60 +557,9 @@ public class ForeignKeyImpl implements Cloneable, ForeignKey {
         }          
         
         boolean tableMatches = (pkTableName != null) ? pkTableName.equals(pkTable) : (pkTable == null);
-
         boolean schemaMatches = (pkSchemaName != null) ? pkSchemaName.equals(pkSchema) : (pkSchema == null);
-
         boolean catalogMatches = (pkCatalogName != null) ? pkCatalogName.equals(pkCatalog) : (pkCatalog == null);
-
         return tableMatches && schemaMatches && catalogMatches;
-    }
-
-    /**
-     * Sets names of columns participating in this ForeignKeyImpl, using the given array
-     * of ForeignKeyImpl.Column instances.
-     * 
-     * @param columns array of ForeignKeyImpl.Columns, each of which contains the name of
-     *        the foreign key column, its (one-based) position in a composite key, and its
-     *        corresponding primary key column.
-     * @see org.netbeans.modules.sql.framework.model.impl.ForeignKeyImpl.Column
-     */
-    public void setColumnNames(Column[] columns) {
-        fkColumnNames.clear();
-        pkColumnNames.clear();
-
-        if (columns == null) {
-            return;
-        }
-
-        for (int i = 0; i < columns.length; i++) {
-            Column col = columns[i];
-            fkColumnNames.add(col.getName());
-            pkColumnNames.add(col.getPKColumnName());
-        }
-    }
-
-    /**
-     * Sets names of columns participating in this ForeignKeyImpl, using the given List of
-     * ForeignKeyImpl.Column instances.
-     * 
-     * @param columns List of ForeignKeyImpl.Column instances, each of which contains the
-     *        name of the foreign key column, its (one-based) position in a composite key,
-     *        and its corresponding primary key column.
-     * @see org.netbeans.modules.sql.framework.model.impl.ForeignKeyImpl.Column
-     */
-    public void setColumnNames(List columns) {
-        fkColumnNames.clear();
-        pkColumnNames.clear();
-
-        if (columns == null) {
-            return;
-        }
-
-        for (Iterator it = columns.iterator(); it.hasNext();) {
-            Column col = (Column) it.next();
-            fkColumnNames.add(col.getName());
-            pkColumnNames.add(col.getPKColumnName());
-        }
     }
 
     /**

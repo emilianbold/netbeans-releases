@@ -41,14 +41,12 @@
 package org.netbeans.modules.sql.framework.ui.view.property;
 
 import java.beans.PropertyEditor;
-
 import org.netbeans.modules.sql.framework.model.SQLCondition;
 import org.netbeans.modules.sql.framework.model.SourceTable;
 import org.netbeans.modules.sql.framework.ui.view.ConditionPropertyEditor;
 import org.netbeans.modules.sql.framework.ui.view.IGraphViewContainer;
 import org.netbeans.modules.sql.framework.ui.view.graph.SQLBasicTableArea;
 import org.openide.nodes.Node;
-
 import com.sun.sql.framework.exception.BaseException;
 
 /**
@@ -66,6 +64,7 @@ public class SourceTableProperties extends TableProperties {
         initializeProperties(table);
     }
 
+    @Override
     public PropertyEditor getCustomEditor(Node.Property property) {
         if (property.getName().equals("extractionCondition")) {
             ConditionPropertyEditor f = new ConditionPropertyEditor(editor, table);
@@ -86,7 +85,7 @@ public class SourceTableProperties extends TableProperties {
 
     /**
      * Gets data extraction condition.
-     * 
+     *
      * @return
      */
     public SQLCondition getExtractionCondition() {
@@ -95,7 +94,7 @@ public class SourceTableProperties extends TableProperties {
 
     /**
      * Gets data validation condition.
-     * 
+     *
      * @return
      */
     public SQLCondition getValidationCondition() {
@@ -104,7 +103,7 @@ public class SourceTableProperties extends TableProperties {
 
     /**
      * get the extraction conidition text
-     * 
+     *
      * @return sql condition
      */
     public String getExtractionConditionText() {
@@ -113,7 +112,7 @@ public class SourceTableProperties extends TableProperties {
 
     /**
      * get the validation conidition text
-     * 
+     *
      * @return sql condition
      */
     public String getValitionConditionText() {
@@ -126,16 +125,16 @@ public class SourceTableProperties extends TableProperties {
 
     /**
      * get whether to Drop Staging table before extraction
-     * 
+     *
      * @return whether to drop Staging table
      */
     public boolean isDropStagingTable() {
         return table.isDropStagingTable();
     }
-    
+
     /**
      * get whether to truncate Staging table before extraction
-     * 
+     *
      * @return whether to drop Staging table
      */
     public boolean isTruncateStagingTable() {
@@ -144,7 +143,7 @@ public class SourceTableProperties extends TableProperties {
 
     /**
      * check if distinct rows of a column needs to be selected
-     * 
+     *
      * @return distinct
      */
     public boolean isSelectDistinct() {
@@ -158,17 +157,17 @@ public class SourceTableProperties extends TableProperties {
 
     /**
      * Drop Staging table before extraction
-     * 
+     *
      * @param dropTable whether to drop staging table
      */
     public void setDropStagingTable(boolean dropTable) {
         table.setDropStagingTable(dropTable);
         setDirty(true);
     }
-    
+
     /**
      * Truncate Staging table before extraction
-     * 
+     *
      * @param truncateTable whether to truncate staging table
      */
     public void setTruncateStagingTable(boolean truncateTable) {
@@ -190,7 +189,7 @@ public class SourceTableProperties extends TableProperties {
 
     /**
      * set the extraction condition text
-     * 
+     *
      * @param cond extraction condition text
      */
     public void setExtractionConditionText(String cond) {
@@ -199,7 +198,7 @@ public class SourceTableProperties extends TableProperties {
 
     /**
      * set the validation condition text
-     * 
+     *
      * @param cond extraction condition text
      */
     public void setValidationConditionText(String cond) {
@@ -213,12 +212,11 @@ public class SourceTableProperties extends TableProperties {
 
     /**
      * set wehether to select distinct rows of a column
-     * 
+     *
      * @param distinct distinct
      */
     public void setSelectDistinct(boolean distinct) {
         table.setSelectDistinct(distinct);
         setDirty(true);
     }
-
 }

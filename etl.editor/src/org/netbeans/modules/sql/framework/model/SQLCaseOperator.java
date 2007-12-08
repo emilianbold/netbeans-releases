@@ -101,7 +101,7 @@ public interface SQLCaseOperator extends SQLConnectableObject, SQLCanvasObject {
      */
     public int getWhenCount();
 
-    public List getWhenList();
+    public List<SQLWhen> getWhenList();
 
     /**
      * removeSQLWhen removes an SQLWhen object to the when list.

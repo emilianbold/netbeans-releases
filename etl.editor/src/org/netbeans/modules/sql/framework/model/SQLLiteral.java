@@ -62,7 +62,7 @@ public interface SQLLiteral extends SQLObject {
 
     public static final List VALID_INTERVAL_TYPES = Collections.unmodifiableList(SQLUtils.getSupportedIntervalTypes());
 
-    public static final List VALID_TYPE_NAMES = Collections.unmodifiableList(SQLUtils.getSupportedLiteralTypes());
+    public static final List<String> VALID_TYPE_NAMES = Collections.unmodifiableList(SQLUtils.getSupportedLiteralTypes());
 
     /* System constant : basically an unqoted varchar */
     public static final int VARCHAR_UNQUOTED = 3345336;

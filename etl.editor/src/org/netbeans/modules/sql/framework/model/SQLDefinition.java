@@ -1,17 +1,4 @@
 /*
-
- * The contents of this file are subject to the terms of the Common Development
- * and Distribution License (the License). You may not use this file except in
- * compliance with the License.
- *
- * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
- * or http://www.netbeans.org/cddl.txt.
- *
- * When distributing Covered Code, include this CDDL Header Notice in each file
- * and include the License file at http://www.netbeans.org/cddl.txt.
- * If applicable, add the following below the CDDL Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
-
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
@@ -36,7 +23,6 @@
  *
  * Contributor(s):
  *
-
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -56,59 +42,30 @@ package org.netbeans.modules.sql.framework.model;
 
 import java.util.List;
 import java.util.Map;
-
-import org.netbeans.modules.model.database.DBTable;
 import org.netbeans.modules.sql.framework.model.visitors.SQLVisitedObject;
-
 import com.sun.sql.framework.exception.BaseException;
 
 /**
  * Root container interface for holding SQL model objects.
  *
  * @author Sudhi Seshachala
+ * @author Ahimanikya Satapathy
  * @version $Revision$
  */
 public interface SQLDefinition extends SQLContainerObject, SQLVisitedObject {
+
     public static final String ATTR_CONTAINS_JAVA_OPERATORS = "containsJavaOperators";
-    /** Attribute name: displayName */
     public static final String ATTR_DISPLAYNAME = "displayName";
     public static final String ATTR_EXECUTION_STRATEGY_CODE = "executionStrategyCode";
-
-    public static final String ATTR_RESPONSE_TYPE = "responsetype";
-
-    public static final String ATTR_EXTRACTION_TYPE_CODE = "extractionTypeCode";
-
     public static final String ATTR_VERSION = "version";
-
-    //Extraction Type codes
-    public static final int EXTRACTION_TYPE_CONDITIONAL = 0;
-
-    public static final int EXTRACTION_TYPE_DEFAULT = EXTRACTION_TYPE_CONDITIONAL;
-
-    public static final int EXTRACTION_TYPE_FULL = 1;
-    
-    public static final String STR_EXTRACTION_TYPE_CONDITIONAL = "ConditionalExtraction";
-
-    public static final String STR_EXTRACTION_TYPE_FULL = "FullExtraction";
-
     // Execution Strategy codes
     public static final int EXECUTION_STRATEGY_BEST_FIT = 0;
-
     public static final int EXECUTION_STRATEGY_DEFAULT = EXECUTION_STRATEGY_BEST_FIT;
-
     public static final int EXECUTION_STRATEGY_PIPELINE = 1;
-
     public static final int EXECUTION_STRATEGY_STAGING = 2;
-
-
-    /** WebRowset */
-    public static final int WEB_ROWSET = 10;
-
-    /** RelationalMap */
-    public static final int RELATIONAL_MAP = 20;
-    
-    public static final int JSON = 30;
-    // --------------------- End of Response Types --------------------------
+    //Response TYPES
+    public static final int EXECUTION_STRATEGY_WEBBROWSET = 1;
+    public static final int EXECUTION_STRATEGY_RELATIONALMAP = 2;
     /** XML formatting constant: indent prefix */
     public static final String INDENT = "    ";
 
@@ -130,11 +87,11 @@ public interface SQLDefinition extends SQLContainerObject, SQLVisitedObject {
     public String generateId();
 
     /**
-     * Gets the List of OTDs
+     * Gets the List of Databases
      *
      * @return java.util.List for this
      */
-    public List getAllOTDs();
+    public List<SQLDBModel> getAllDatabases();
 
     /**
      * set the condition text
@@ -145,12 +102,6 @@ public interface SQLDefinition extends SQLContainerObject, SQLVisitedObject {
 
     public Object getAttributeValue(String attrName);
 
-       /**
-     * Gets extraction type code set.
-     * 
-     * @return
-     */
-    public Integer getExtractionTypeCode();
     /**
      * Gets display name.
      *
@@ -178,7 +129,7 @@ public interface SQLDefinition extends SQLContainerObject, SQLVisitedObject {
      *
      * @return list of join sources
      */
-    public List getJoinSources();
+    public List<DBTable> getJoinSources();
 
     /**
      * Gets the Root SQLJoinOperator object, if any, from the given List
@@ -187,7 +138,7 @@ public interface SQLDefinition extends SQLContainerObject, SQLVisitedObject {
      * @return SQLObject root join
      * @throws BaseException if error occurs while resolving root join
      */
-    public SQLObject getRootJoin(List sourceTables) throws BaseException;
+    public SQLObject getRootJoin(List<DBTable> sourceTables) throws BaseException;
 
     /**
      * get runtime db model
@@ -201,21 +152,21 @@ public interface SQLDefinition extends SQLContainerObject, SQLVisitedObject {
      *
      * @return List, possibly empty, of SourceColumns
      */
-    public List getSourceColumns();
+    public List<DBColumn> getSourceColumns();
 
     /**
      * Gets a List of target DatabaseModels
      *
      * @return List, possibly empty, of source DatabaseModels
      */
-    public List getSourceDatabaseModels();
+    public List<SQLDBModel> getSourceDatabaseModels();
 
     /**
      * Gets the List of SourceTables
      *
      * @return List, possibly empty, of SourceTables
      */
-    public List getSourceTables();
+    public List<DBTable> getSourceTables();
 
     public SQLFrameworkParentObject getSQLFrameworkParentObject();
 
@@ -232,21 +183,21 @@ public interface SQLDefinition extends SQLContainerObject, SQLVisitedObject {
      *
      * @return List, possibly empty, of TargetColumns
      */
-    public List getTargetColumns();
+    public List<DBColumn> getTargetColumns();
 
     /**
      * Gets a List of target DatabaseModels
      *
      * @return List, possibly empty, of target DatabaseModels
      */
-    public List getTargetDatabaseModels();
+    public List<SQLDBModel> getTargetDatabaseModels();
 
     /**
      * Gets the List of TargetTables
      *
      * @return List, possibly empty, of TargetTables
      */
-    public List getTargetTables();
+    public List<DBTable> getTargetTables();
 
     /**
      * Indicates whether this model has data validation conditions.
@@ -283,13 +234,13 @@ public interface SQLDefinition extends SQLContainerObject, SQLVisitedObject {
      * Override Catalog names in proper DatabaseModel
      * @param overrideMapMap
      */
-    public void overrideCatalogNamesForOtd(Map overrideMapMap);
+    public void overrideCatalogNamesForDb(Map overrideMapMap);
 
     /**
      * Override Schema names in proper DatabaseModel
      * @param overrideMapMap
      */
-    public void overrideSchemaNamesForOtd(Map overrideMapMap);
+    public void overrideSchemaNamesForDb(Map overrideMapMap);
 
     /**
      * remove sql object listener
@@ -328,12 +279,6 @@ public interface SQLDefinition extends SQLContainerObject, SQLVisitedObject {
      * @param code
      */
     public void setExecutionStrategyCode(Integer code);
-      /**
-     * Sets the extraction type.
-     * 
-     * @param code
-     */
-    public void setExtractionTypeCode(Integer code);
 
     public void setSQLFrameworkParentObject(SQLFrameworkParentObject newParent);
 
@@ -344,18 +289,13 @@ public interface SQLDefinition extends SQLContainerObject, SQLVisitedObject {
      *
      * @return Map of invalid input object as keys and reason as value
      */
-    public List validate();
+    public List<ValidationInfo> validate();
 
     /**
-     * Validate OTD synchronization. Identify any eTL Collaboration element which has been
-     * deleted or modified in OTD.
+     * Validate Database synchronization. Identify any eTL Collaboration element which has been
+     * deleted or modified in Database.
      *
      * @return Map of invalid object as keys and reason as value
      */
-    public List validateOtdSynchronization();    
-     
-    public String getResponseTypeStr();    
-     public void setResponseTypeStr(String text);
-
-   
+    public List<ValidationInfo> validateDbSynchronization();
 }

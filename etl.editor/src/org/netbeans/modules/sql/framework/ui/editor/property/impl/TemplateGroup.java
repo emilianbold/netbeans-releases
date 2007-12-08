@@ -57,7 +57,7 @@ import org.netbeans.modules.sql.framework.ui.editor.property.ITemplateGroup;
 public class TemplateGroup implements ITemplateGroup {
 
     private String displayName;
-    private HashMap templateMap = new HashMap();
+    private HashMap<String, ITemplate> templateMap = new HashMap<String, ITemplate>();
     private String toolTip;
 
     /** Creates a new instance of TemplateGroup */

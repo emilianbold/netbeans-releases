@@ -51,15 +51,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.netbeans.modules.model.database.DBColumn;
-import org.netbeans.modules.model.database.DBTable;
-import org.netbeans.modules.model.database.DatabaseModel;
-import org.netbeans.modules.model.database.ForeignKey;
-import org.netbeans.modules.model.database.Index;
-import org.netbeans.modules.model.database.PrimaryKey;
+import org.netbeans.modules.sql.framework.model.DBColumn;
 import org.netbeans.modules.sql.framework.common.utils.NativeColumnOrderComparator;
 import org.netbeans.modules.sql.framework.model.GUIInfo;
-import org.netbeans.modules.sql.framework.model.SQLCanvasObject;
 import org.netbeans.modules.sql.framework.model.SQLDBColumn;
 import org.netbeans.modules.sql.framework.model.SQLDBModel;
 import org.netbeans.modules.sql.framework.model.SQLDBTable;
@@ -68,6 +62,12 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import com.sun.sql.framework.exception.BaseException;
+import java.util.LinkedHashMap;
+import org.netbeans.modules.sql.framework.model.DBTable;
+import org.netbeans.modules.sql.framework.model.DatabaseModel;
+import org.netbeans.modules.sql.framework.model.ForeignKey;
+import org.netbeans.modules.sql.framework.model.Index;
+import org.netbeans.modules.sql.framework.model.PrimaryKey;
 
 /**
  * Abstract implementation for org.netbeans.modules.model.database.DBTable and SQLObject interfaces.
@@ -144,7 +144,7 @@ public abstract class AbstractDBTable extends AbstractSQLObject implements SQLDB
     protected String catalog;
 
     /** Map of column metadata. */
-    protected Map columns;
+    protected Map<String, DBColumn> columns;
 
     /** User-defined description. */
     protected String description;
@@ -152,13 +152,13 @@ public abstract class AbstractDBTable extends AbstractSQLObject implements SQLDB
     protected boolean editable = true;
 
     /** Map of names to ForeignKey instances for this table; may be empty. */
-    protected Map foreignKeys;
+    protected Map<String, ForeignKey> foreignKeys;
 
     /** Contains UI state information */
     protected GUIInfo guiInfo;
 
     /** Map of names to Index instances for this table; may be empty. */
-    protected Map indexes;
+    protected Map<String, Index> indexes;
 
     /** Table name as supplied by data source. */
     protected String name;
@@ -181,12 +181,10 @@ public abstract class AbstractDBTable extends AbstractSQLObject implements SQLDB
 
     /** No-arg constructor; initializes Collections-related member variables. */
     protected AbstractDBTable() {
-        columns = new HashMap();
-        foreignKeys = new HashMap();
-        indexes = new HashMap();
-
+        columns = new LinkedHashMap<String, DBColumn>();
+        foreignKeys = new HashMap<String, ForeignKey>();
+        indexes = new HashMap<String, Index>();
         guiInfo = new GUIInfo();
-
         setDefaultAttributes();
     }
 
@@ -382,6 +380,7 @@ public abstract class AbstractDBTable extends AbstractSQLObject implements SQLDB
      * @return true if obj is functionally identical to this SQLTable instance; false
      *         otherwise
      */
+    @Override
     public boolean equals(Object obj) {
         boolean result = false;
 
@@ -410,17 +409,17 @@ public abstract class AbstractDBTable extends AbstractSQLObject implements SQLDB
             DBTable aTable = (DBTable) obj;
             String aTableName = aTable.getName();
             DatabaseModel aTableParent = aTable.getParent();
-            Map aTableColumns = aTable.getColumns();
+            Map<String, DBColumn> aTableColumns = aTable.getColumns();
             PrimaryKey aTablePK = aTable.getPrimaryKey();
-            List aTableFKs = aTable.getForeignKeys();
-            List aTableIdxs = aTable.getIndexes();
+            List<ForeignKey> aTableFKs = aTable.getForeignKeys();
+            List<Index> aTableIdxs = aTable.getIndexes();
 
             result &= (aTableName != null && name != null && name.equals(aTableName))
                 && (parentDBModel != null && aTableParent != null && parentDBModel.equals(aTableParent));
 
             if (columns != null && aTableColumns != null) {
-                Set objCols = aTableColumns.keySet();
-                Set myCols = columns.keySet();
+                Set<String> objCols = aTableColumns.keySet();
+                Set<String> myCols = columns.keySet();
 
                 // Must be identical (no subsetting), hence the pair of tests.
                 result &= myCols.containsAll(objCols) && objCols.containsAll(myCols);
@@ -431,7 +430,7 @@ public abstract class AbstractDBTable extends AbstractSQLObject implements SQLDB
             result &= (primaryKey != null) ? primaryKey.equals(aTablePK) : aTablePK == null;
 
             if (foreignKeys != null && aTableFKs != null) {
-                Collection myFKs = foreignKeys.values();
+                Collection<ForeignKey> myFKs = foreignKeys.values();
                 // Must be identical (no subsetting), hence the pair of tests.
                 result &= myFKs.containsAll(aTableFKs) && aTableFKs.containsAll(myFKs);
             } else if (!(foreignKeys == null && aTableFKs == null)) {
@@ -439,7 +438,7 @@ public abstract class AbstractDBTable extends AbstractSQLObject implements SQLDB
             }
 
             if (indexes != null && aTableIdxs != null) {
-                Collection myIdxs = indexes.values();
+                Collection<Index> myIdxs = indexes.values();
                 // Must be identical (no subsetting), hence the pair of tests.
                 result &= myIdxs.containsAll(aTableIdxs) && aTableIdxs.containsAll(myIdxs);
             } else if (!(indexes == null && aTableIdxs == null)) {
@@ -476,7 +475,8 @@ public abstract class AbstractDBTable extends AbstractSQLObject implements SQLDB
      * 
      * @return List of child SQLObjects
      */
-    public List getChildSQLObjects() {
+    @Override
+    public List<DBColumn> getChildSQLObjects() {
         return this.getColumnList();
     }
 
@@ -487,14 +487,14 @@ public abstract class AbstractDBTable extends AbstractSQLObject implements SQLDB
      * @return DBColumn associated with columnName, or null if none exists
      */
     public DBColumn getColumn(String columnName) {
-        return (DBColumn) columns.get(columnName);
+        return columns.get(columnName);
     }
 
     /**
      * @see org.netbeans.modules.model.database.DBTable#getColumnList
      */
-    public List getColumnList() {
-        List list = new ArrayList();
+    public List<DBColumn> getColumnList() {
+        List<DBColumn> list = new ArrayList<DBColumn>();
         list.addAll(columns.values());
         Collections.sort(list, NativeColumnOrderComparator.getInstance());
 
@@ -504,7 +504,7 @@ public abstract class AbstractDBTable extends AbstractSQLObject implements SQLDB
     /**
      * @see org.netbeans.modules.model.database.DBTable#getColumns
      */
-    public Map getColumns() {
+    public Map<String, DBColumn> getColumns() {
         return columns;
     }
 
@@ -520,6 +520,7 @@ public abstract class AbstractDBTable extends AbstractSQLObject implements SQLDB
      * 
      * @return display name
      */
+    @Override
     public String getDisplayName() {
         return this.getQualifiedName();
     }
@@ -539,14 +540,14 @@ public abstract class AbstractDBTable extends AbstractSQLObject implements SQLDB
      * @see org.netbeans.modules.model.database.DBTable#getForeignKey(java.lang.String)
      */
     public ForeignKey getForeignKey(String fkName) {
-        return (ForeignKey) foreignKeys.get(fkName);
+        return foreignKeys.get(fkName);
     }
 
     /**
      * @see org.netbeans.modules.model.database.DBTable#getForeignKeys
      */
-    public List getForeignKeys() {
-        return new ArrayList(foreignKeys.values());
+    public List<ForeignKey> getForeignKeys() {
+        return new ArrayList<ForeignKey>(foreignKeys.values());
     }
 
     /**
@@ -592,14 +593,14 @@ public abstract class AbstractDBTable extends AbstractSQLObject implements SQLDB
      * @see org.netbeans.modules.model.database.DBTable#getIndex
      */
     public Index getIndex(String indexName) {
-        return (Index) indexes.get(indexName);
+        return indexes.get(indexName);
     }
 
     /**
      * @see org.netbeans.modules.model.database.DBTable#getIndexes
      */
-    public List getIndexes() {
-        return new ArrayList(indexes.values());
+    public List<Index> getIndexes() {
+        return new ArrayList<Index>(indexes.values());
     }
 
     /**
@@ -667,11 +668,10 @@ public abstract class AbstractDBTable extends AbstractSQLObject implements SQLDB
      * @see org.netbeans.modules.model.database.DBTable#getReferencedTables
      */
     public Set getReferencedTables() {
-        Set tables = Collections.EMPTY_SET;
         List keys = getForeignKeys();
+        Set<DBTable> tables = new HashSet<DBTable>(keys.size());
 
         if (keys.size() != 0) {
-            tables = new HashSet(keys.size());
             Iterator iter = keys.iterator();
             while (iter.hasNext()) {
                 ForeignKeyImpl fk = (ForeignKeyImpl) iter.next();
@@ -683,7 +683,7 @@ public abstract class AbstractDBTable extends AbstractSQLObject implements SQLDB
 
             if (tables.size() == 0) {
                 tables.clear();
-                tables = Collections.EMPTY_SET;
+                tables = Collections.emptySet();
             }
         }
 
@@ -787,6 +787,7 @@ public abstract class AbstractDBTable extends AbstractSQLObject implements SQLDB
      * @return hash code for this object
      * @see java.lang.Object#hashCode
      */
+    @Override
     public int hashCode() {
         int myHash = super.hashCode();
         myHash = (name != null) ? name.hashCode() : 0;
@@ -871,6 +872,7 @@ public abstract class AbstractDBTable extends AbstractSQLObject implements SQLDB
      * @exception BaseException thrown while parsing XML, or if member variable element is
      *            null
      */
+    @Override
     public void parseXML(Element tableElement) throws BaseException {
         if (tableElement == null) {
             throw new BaseException("Null ref for tableElement.");
@@ -935,7 +937,7 @@ public abstract class AbstractDBTable extends AbstractSQLObject implements SQLDB
      * @param theColumns Map of columns to be substituted
      * @return true if successful. false if failed.
      */
-    public boolean setAllColumns(Map theColumns) {
+    public boolean setAllColumns(Map<String, DBColumn> theColumns) {
         columns.clear();
         if (theColumns != null) {
             columns.putAll(theColumns);
@@ -1025,6 +1027,10 @@ public abstract class AbstractDBTable extends AbstractSQLObject implements SQLDB
         primaryKey = newPk;
         return true;
     }
+    
+    public void setForeignKeyMap(Map<String, ForeignKey> fkMap){
+        foreignKeys = fkMap;
+    }
 
     /**
      * Sets schema name to new value.
@@ -1091,6 +1097,7 @@ public abstract class AbstractDBTable extends AbstractSQLObject implements SQLDB
      * 
      * @return qualified table name.
      */
+    @Override
     public String toString() {
         return getQualifiedName();
     }
@@ -1098,6 +1105,7 @@ public abstract class AbstractDBTable extends AbstractSQLObject implements SQLDB
     /**
      * @see SQLObject#toXMLString
      */
+    @Override
     public String toXMLString(String prefix) throws BaseException {
         return toXMLString(prefix, false);
     }
@@ -1110,7 +1118,9 @@ public abstract class AbstractDBTable extends AbstractSQLObject implements SQLDB
      * @return XML representation of the table metadata.
      * @exception BaseException - exception
      */
-    public abstract String toXMLString(String prefix, boolean tableOnly) throws BaseException;
+     public String toXMLString(String prefix, boolean tableOnly) throws BaseException {
+            throw new UnsupportedOperationException("Not supported yet.");
+     }
 
     /**
      * Perform deep copy of columns.
@@ -1162,7 +1172,9 @@ public abstract class AbstractDBTable extends AbstractSQLObject implements SQLDB
      * 
      * @return String representing element tag for this class
      */
-    protected abstract String getElementTagName();
+     protected String getElementTagName() {
+        throw new UnsupportedOperationException("Not supported yet.");
+     }
 
     /**
      * Parses node elements to extract child components to various collections (columns,
@@ -1171,9 +1183,11 @@ public abstract class AbstractDBTable extends AbstractSQLObject implements SQLDB
      * @param childNodeList Nodes to be unmarshalled
      * @throws BaseException if error occurs while parsing
      */
-    protected abstract void parseChildren(NodeList childNodeList) throws BaseException;
+     protected void parseChildren(NodeList childNodeList) throws BaseException {
+            throw new UnsupportedOperationException("Not supported yet.");
+     }
 
-    /**
+         /**
      * Sets default values for attributes defined in this abstract class.
      */
     protected void setDefaultAttributes() {

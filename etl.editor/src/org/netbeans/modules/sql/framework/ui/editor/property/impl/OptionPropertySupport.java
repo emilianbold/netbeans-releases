@@ -57,7 +57,7 @@ public class OptionPropertySupport extends BasicPropertySupport implements IOpti
 
     private int defaultOption = 0;
 
-    private ArrayList optionList = new ArrayList();
+    private ArrayList<IElement> optionList = new ArrayList<IElement>();
 
     public OptionPropertySupport() {
         super();
@@ -73,6 +73,7 @@ public class OptionPropertySupport extends BasicPropertySupport implements IOpti
      * 
      * @param element element to add
      */
+    @Override
     public void add(IElement element) {
         element.setParent(this);
         optionList.add(element);
@@ -115,6 +116,7 @@ public class OptionPropertySupport extends BasicPropertySupport implements IOpti
      * 
      * @return property editor
      */
+    @Override
     public void setEditorClass(String editorClass) {
         super.setEditorClass(editorClass);
         if (this.getPropertyEditor() instanceof OptionListEditor) {
@@ -127,6 +129,7 @@ public class OptionPropertySupport extends BasicPropertySupport implements IOpti
      * 
      * @param customizer customizer
      */
+    @Override
     public void setPropertyCustomizer(IPropertyCustomizer customizer) {
         super.setPropertyCustomizer(customizer);
         if (customizer == null) {
@@ -142,6 +145,7 @@ public class OptionPropertySupport extends BasicPropertySupport implements IOpti
 
     // override set value to handle Integer options; if optionProperty type is integer we
     // want to convert passed String optiong value to integer
+    @Override
     public void setValue(Object obj) throws java.lang.IllegalAccessException, java.lang.IllegalArgumentException,
             java.lang.reflect.InvocationTargetException {
         if (this.getValueType() == Integer.class && obj instanceof String) {

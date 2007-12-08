@@ -52,7 +52,7 @@ import org.netbeans.modules.sql.framework.model.SQLConstants;
 import org.netbeans.modules.sql.framework.model.SQLInputObject;
 import org.netbeans.modules.sql.framework.model.SQLObject;
 import org.netbeans.modules.sql.framework.model.SQLWhen;
-import org.netbeans.modules.sql.framework.model.utils.EvaluatorUtil;
+import org.netbeans.modules.sql.framework.model.utils.GeneratorUtil;
 import org.netbeans.modules.sql.framework.model.visitors.SQLVisitor;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Element;
@@ -340,7 +340,7 @@ public class SQLCaseOperatorImpl extends SQLConnectableObjectImpl implements SQL
      */
     public String toString() {
         try {
-            return EvaluatorUtil.getInstance().getEvaluatedString(this);
+            return GeneratorUtil.getInstance().getEvaluatedString(this);
         } catch (BaseException ignore) {
             return "Unknown";
         }

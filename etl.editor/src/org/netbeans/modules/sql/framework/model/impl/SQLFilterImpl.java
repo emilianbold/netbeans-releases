@@ -46,7 +46,7 @@ import org.netbeans.modules.sql.framework.model.SQLDefinition;
 import org.netbeans.modules.sql.framework.model.SQLFilter;
 import org.netbeans.modules.sql.framework.model.SQLInputObject;
 import org.netbeans.modules.sql.framework.model.SQLObject;
-import org.netbeans.modules.sql.framework.model.utils.EvaluatorUtil;
+import org.netbeans.modules.sql.framework.model.utils.GeneratorUtil;
 import org.netbeans.modules.sql.framework.model.visitors.SQLVisitor;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -443,7 +443,7 @@ public class SQLFilterImpl extends SQLConnectableObjectImpl implements SQLFilter
      */
     public String toString() {
         try {
-            return EvaluatorUtil.getInstance().getEvaluatedString(this);
+            return GeneratorUtil.getInstance().getEvaluatedString(this);
         } catch (BaseException ignore) {
             return "Unknown";
         }

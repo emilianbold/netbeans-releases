@@ -66,7 +66,7 @@ public interface ITemplate extends INode {
      * 
      * @return map of property groups
      */
-    public List getPropertyGroupList();
+    public List<IPropertyGroup>  getPropertyGroupList();
 
     public void setName(String name);
 

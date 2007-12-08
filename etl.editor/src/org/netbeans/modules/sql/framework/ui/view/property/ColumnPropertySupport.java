@@ -48,10 +48,11 @@ import java.util.Vector;
  * @author Ritesh Adval
  */
 public class ColumnPropertySupport {
-    private Vector pkVec;
 
-    ColumnPropertySupport(List list) {
-        pkVec = new Vector(list);
+    private Vector<String> pkVec;
+
+    ColumnPropertySupport(List<String> list) {
+        pkVec = new Vector<String>(list);
     }
 
     public void add(String pk) {
@@ -81,4 +82,3 @@ public class ColumnPropertySupport {
         return strBuf.toString();
     }
 }
-

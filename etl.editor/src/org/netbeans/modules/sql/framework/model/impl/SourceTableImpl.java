@@ -47,8 +47,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
-import org.netbeans.modules.model.database.DBColumn;
-import org.netbeans.modules.model.database.DBTable;
+import org.netbeans.modules.sql.framework.model.DBColumn;
 import org.netbeans.modules.sql.framework.common.utils.TagParserUtility;
 import org.netbeans.modules.sql.framework.model.GUIInfo;
 import org.netbeans.modules.sql.framework.model.SQLCondition;
@@ -67,6 +66,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.sun.sql.framework.exception.BaseException;
+import org.netbeans.modules.sql.framework.model.DBTable;
 import org.netbeans.modules.sql.framework.model.SQLGroupBy;
 
 /**
@@ -82,7 +82,7 @@ public class SourceTableImpl extends AbstractDBTable implements SourceTable {
     static final String LOG_CATEGORY = AbstractDBTable.class.getName();
     
     private static final String ATTR_BATCHSIZE = "batchSize";
-    public static final String ATTR_EXTRACTION_TYPE_CODE = "extractionTypeCode";
+    
     private static final String ATTR_DROP_STAGING_TABLE = "deleteTemporaryTable";
     
     private static final String ATTR_FULLY_QUALIFIED_NAME = "fullyQualifiedName";
@@ -710,7 +710,7 @@ public class SourceTableImpl extends AbstractDBTable implements SourceTable {
             setSelectDistinct(false);
         }
         
-        if (this.getAttributeObject(SourceTableImpl.ATTR_BATCHSIZE) == null) {
+        if (this.getAttributeObject(ATTR_BATCHSIZE) == null) {
             setBatchSize(5000);
         }
         
@@ -833,7 +833,7 @@ public class SourceTableImpl extends AbstractDBTable implements SourceTable {
     }
             
     public void setBatchSize(Integer newsize) {
-         this.setAttribute(ATTR_BATCHSIZE,newsize.intValue());
+         this.setAttribute(ATTR_BATCHSIZE,newsize);
     }
     
     public void setUsingFullyQualifiedName(boolean usesFullName) {
@@ -843,35 +843,5 @@ public class SourceTableImpl extends AbstractDBTable implements SourceTable {
     public void setUsingFullyQualifiedName(Boolean usesFullName) {
         this.setAttribute(ATTR_FULLY_QUALIFIED_NAME,usesFullName);
     }
-
-
-    public int getExtractionStmtType() {
-        Integer sType = (Integer) this.getAttributeObject(ATTR_EXTRACTION_TYPE_CODE);
-        if (sType != null) {
-            return sType.intValue();
-        }
-
-        return SQLDefinition.EXTRACTION_TYPE_CONDITIONAL;
-    }
-
-    public void setStrExtractionStmtType(String stType) {
-           if (stType.equals(SQLDefinition.STR_EXTRACTION_TYPE_CONDITIONAL)) {
-            this.setExtractionStmtType(SQLDefinition.EXTRACTION_TYPE_CONDITIONAL);
-        } else if (stType.equals(SQLDefinition.STR_EXTRACTION_TYPE_FULL)) {
-            this.setExtractionStmtType(SQLDefinition.EXTRACTION_TYPE_FULL);
-        }
-    }
-    
-        public void setExtractionStmtType(int sType) {
-        this.setAttribute(ATTR_EXTRACTION_TYPE_CODE, new Integer(sType));
-    }
-
-    public String getStrExtractionStmtType() {
-           if (this.getExtractionStmtType() == SQLDefinition.EXTRACTION_TYPE_CONDITIONAL) {
-            return SQLDefinition.STR_EXTRACTION_TYPE_CONDITIONAL;
-        } else if (this.getExtractionStmtType() == SQLDefinition.EXTRACTION_TYPE_FULL) {
-            return SQLDefinition.STR_EXTRACTION_TYPE_FULL;
-        } 
-        return null;
-    }
+  
 }

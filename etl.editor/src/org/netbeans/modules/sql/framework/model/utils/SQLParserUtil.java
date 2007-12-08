@@ -44,7 +44,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import org.netbeans.modules.model.database.DatabaseModel;
 import org.netbeans.modules.sql.framework.model.ColumnRef;
 import org.netbeans.modules.sql.framework.model.RuntimeDatabaseModel;
 import org.netbeans.modules.sql.framework.model.RuntimeInput;
@@ -55,6 +54,7 @@ import org.netbeans.modules.sql.framework.model.SQLModelObjectFactory;
 import org.netbeans.modules.sql.framework.model.SQLObject;
 
 import com.sun.sql.framework.exception.BaseException;
+import org.netbeans.modules.sql.framework.model.DatabaseModel;
 
 /**
  * @author Ritesh Adval
@@ -91,7 +91,7 @@ public class SQLParserUtil {
         String tableName = getTableName(fullName);
         String columnName = getColumnName(fullName);
 
-        if (tableName != null && columnName != null) {
+        if (tableName != null && columnName != null && def != null) {
             SQLDBTable table = getTable(def.getSourceTables(), tableName);
             if (table != null) {
                 column = getColumn(table.getColumnList(), columnName);

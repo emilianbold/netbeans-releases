@@ -48,7 +48,7 @@ import org.netbeans.modules.sql.framework.model.SQLConstants;
 import org.netbeans.modules.sql.framework.model.SQLDBColumn;
 import org.netbeans.modules.sql.framework.model.SQLDefinition;
 import org.netbeans.modules.sql.framework.model.SQLObject;
-import org.netbeans.modules.sql.framework.model.utils.EvaluatorUtil;
+import org.netbeans.modules.sql.framework.model.utils.GeneratorUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -296,7 +296,7 @@ public class ColumnRefImpl extends AbstractSQLObject implements ColumnRef {
         if (columnRef != null) {
             String cName = columnRef.getName();
             try {
-                EvaluatorUtil eval = EvaluatorUtil.getInstance();
+                GeneratorUtil eval = GeneratorUtil.getInstance();
                 eval.setTableAliasUsed(true);
                 cName = eval.getEvaluatedString(this);
                 eval.setTableAliasUsed(false);

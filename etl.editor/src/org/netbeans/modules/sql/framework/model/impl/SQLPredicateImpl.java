@@ -44,7 +44,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.netbeans.modules.sql.framework.common.utils.TagParserUtility;
-import org.netbeans.modules.sql.framework.evaluators.database.SQLOperatorFactory;
+import org.netbeans.modules.sql.framework.codegen.SQLOperatorFactory;
 import org.netbeans.modules.sql.framework.model.SQLConstants;
 import org.netbeans.modules.sql.framework.model.SQLInputObject;
 import org.netbeans.modules.sql.framework.model.SQLLiteral;
@@ -53,7 +53,7 @@ import org.netbeans.modules.sql.framework.model.SQLOperator;
 import org.netbeans.modules.sql.framework.model.SQLOperatorArg;
 import org.netbeans.modules.sql.framework.model.SQLOperatorDefinition;
 import org.netbeans.modules.sql.framework.model.SQLPredicate;
-import org.netbeans.modules.sql.framework.model.utils.EvaluatorUtil;
+import org.netbeans.modules.sql.framework.model.utils.GeneratorUtil;
 import org.netbeans.modules.sql.framework.model.utils.OperatorUtil;
 import org.netbeans.modules.sql.framework.model.visitors.SQLVisitor;
 import org.netbeans.modules.sql.framework.ui.graph.IOperatorField;
@@ -497,7 +497,7 @@ public class SQLPredicateImpl extends SQLConnectableObjectImpl implements SQLPre
         String str = super.toString();
 
         try {
-            EvaluatorUtil eval = EvaluatorUtil.getInstance();
+            GeneratorUtil eval = GeneratorUtil.getInstance();
             eval.setTableAliasUsed(true);
             str = eval.getEvaluatedString(this);
             eval.setTableAliasUsed(false);

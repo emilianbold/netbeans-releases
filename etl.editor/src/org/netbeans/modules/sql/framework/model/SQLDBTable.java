@@ -40,15 +40,10 @@
  */
 package org.netbeans.modules.sql.framework.model;
 
-import org.netbeans.modules.model.database.DBTable;
 
 /**
  * Extension of DBTable
- * 
- * @author $Author$
- * @version $Revision$
  */
-
 public interface SQLDBTable extends DBTable, SQLCanvasObject, SQLObject {
 
     /** Constant for table metadata name tag.* */

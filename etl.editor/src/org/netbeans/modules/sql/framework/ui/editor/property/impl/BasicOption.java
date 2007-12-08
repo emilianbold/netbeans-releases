@@ -51,11 +51,9 @@ import org.netbeans.modules.sql.framework.ui.editor.property.IOption;
 public class BasicOption implements IOption {
 
     private String displayName;
-
     private String name;
     private INode parent;
     private String toolTip;
-
     private String value;
 
     /** Creates a new instance of GUIOption */
@@ -69,7 +67,7 @@ public class BasicOption implements IOption {
 
     /**
      * get the display name of of element
-     * 
+     *
      * @return display name
      */
     public String getDisplayName() {
@@ -86,7 +84,7 @@ public class BasicOption implements IOption {
 
     /**
      * get the parent element
-     * 
+     *
      * @return parent
      */
     public INode getParent() {
@@ -95,7 +93,7 @@ public class BasicOption implements IOption {
 
     /**
      * get the tooltip of of element
-     * 
+     *
      * @return tooltip
      */
     public String getToolTip() {
@@ -108,7 +106,7 @@ public class BasicOption implements IOption {
 
     /**
      * set the display name of the element
-     * 
+     *
      * @param dName display name
      */
     public void setDisplayName(String dName) {
@@ -128,7 +126,7 @@ public class BasicOption implements IOption {
 
     /**
      * set the tooltip of the element
-     * 
+     *
      * @param tTip tool tip
      */
     public void setToolTip(String tTip) {
@@ -139,8 +137,8 @@ public class BasicOption implements IOption {
         this.value = val;
     }
 
+    @Override
     public String toString() {
         return this.getDisplayName();
     }
 }
-

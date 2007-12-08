@@ -147,6 +147,7 @@ public class SQLToolBar extends BasicToolBar {
     /**
      * @see java.swing.JToolBar#getMinimumSize
      */
+    @Override
     public Dimension getMinimumSize() {
         return new Dimension(0, 0);
     }
@@ -192,6 +193,7 @@ public class SQLToolBar extends BasicToolBar {
     /**
      * Initializes contents of the toolbar.
      */
+    @Override
     public void initializeToolBar() {
         // Remove all old toolbar components
         this.removeAll();
@@ -199,18 +201,6 @@ public class SQLToolBar extends BasicToolBar {
 
         // Add any custom components first
         super.initializeToolBar();
-
-        // Add SQL operators
-       /* Node node = model.getRootNode();
-        Children children = node.getChildren();
-        Node[] nodes = children.getNodes();
-
-        for (int i = 0; i < nodes.length; i++) {
-            IOperatorXmlInfoCategory catNode = (IOperatorXmlInfoCategory) nodes[i];
-            if (shouldDisplay(catNode.getToolbarType())) {
-                createOperatorCategories(catNode);
-            }
-        }*/
     }
     
   public void initializeSQLToolBar() {
@@ -243,6 +233,7 @@ public class SQLToolBar extends BasicToolBar {
         }
     }
 
+    @Override
     public void setEnabled(boolean enable) {
         if (this.isEnabled() == enable) {
             return;

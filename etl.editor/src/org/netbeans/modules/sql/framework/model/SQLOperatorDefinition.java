@@ -118,7 +118,7 @@ public interface SQLOperatorDefinition extends Cloneable {
      *
      * @param args List
      */
-    public void setArgList(List args);
+    public void setArgList(List<SQLOperatorArg> args);
     /**
      * Gets the SQL type of the argument, if any, associated with the given index.
      * 

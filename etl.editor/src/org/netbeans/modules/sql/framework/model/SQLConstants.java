@@ -66,10 +66,10 @@ public class SQLConstants {
     /** int constant for predicate object type */
     public static final int PREDICATE = 10005;
 
-    /** int constant for source otd object type */
+    /** int constant for source database object type */
     public static final int SOURCE_DBMODEL = 10006;
 
-    /** int constant for destination otd object type */
+    /** int constant for destination database object type */
     public static final int TARGET_DBMODEL = 10007;
 
     /** int constant for source table object type */
@@ -169,18 +169,8 @@ public class SQLConstants {
 
     /** Full Outer Join */
     public static final int FULL_OUTER_JOIN = 4;
-     // --------------------- End of Join Types --------------------------
-     /** WebRowset */
-    public static final int WEB_ROWSET = 10;
 
-    /** RelationalMap */
-    public static final int RELATIONAL_MAP = 20;
-    
-    /** JSON */
-    
-    public static final int JSON = 30;
- // --------------------- End of Response Types --------------------------
-   
+    // --------------------- End of Join Types --------------------------
 
     // --------------------- Start of Operator Type Names --------------------------
 
@@ -361,16 +351,16 @@ public class SQLConstants {
     /**
      * constants for statement type in target table
      */
-    public static final String STR_INSERT_STATEMENT = "Insert";
+    public static final String STR_INSERT_STATEMENT = "insert";
 
     /** insert and update statement using merge syntax */
-    public static final String STR_INSERT_UPDATE_STATEMENT = "Insert/Update";
+    public static final String STR_INSERT_UPDATE_STATEMENT = "insert_update";
 
     /** update statement by set column syntax */
-    public static final String STR_UPDATE_STATEMENT = "Update";
+    public static final String STR_UPDATE_STATEMENT = "update";
 
     /** delete statement */
-    public static final String STR_DELETE_STATEMENT = "Delete";
+    public static final String STR_DELETE_STATEMENT = "delete";
 
     public static final String EXTRACTION_FULL = "full";
 

@@ -67,6 +67,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 import com.sun.sql.framework.utils.Logger;
+import org.netbeans.modules.sql.framework.model.SQLJoinOperator;
 
 /**
  * @author Ritesh Adval
@@ -103,6 +104,26 @@ public class ConditionPropertyEditor extends PropertyEditorSupport implements IP
         	return ConditionBuilderUtil.getFilterConditionBuilderView((TargetTable) table, editor);
         }
     }
+    
+    public static class JoinConditionEditor extends ConditionPropertyEditor {
+        private SQLJoinOperator joinOp;
+        public JoinConditionEditor(IGraphViewContainer editor, SQLJoinOperator joinOp) {
+            super(editor, null);
+            this.joinOp = joinOp;
+        }
+        
+        public Component getCustomEditor() {
+            return ConditionBuilderUtil.getConditionBuilderView(joinOp, editor);
+        }
+
+        protected Component getCustomEditorForSource() {
+        	throw new UnsupportedOperationException("not supported ");
+        }
+
+        protected Component getCustomEditorForTarget() {
+        	throw new UnsupportedOperationException("not supported ");
+        }
+    }
 
     /* log4j logger category */
     private static final String LOG_CATEGORY = ConditionPropertyEditor.class.getName();
@@ -110,7 +131,6 @@ public class ConditionPropertyEditor extends PropertyEditorSupport implements IP
     protected ConditionBuilderView cView;
     protected IGraphViewContainer editor;
     protected SQLDBTable table;
-
     private SQLCondition conditionContainer;
     private PropertyChangeSupport iPropertyChange = new PropertyChangeSupport(this);
     private IProperty property;
@@ -120,7 +140,7 @@ public class ConditionPropertyEditor extends PropertyEditorSupport implements IP
         this.editor = editor;
         this.table = table;
     }
-
+    
     /**
      * Register a listener for the PropertyChange event. The class will fire a
      * PropertyChange value whenever the value is updated.

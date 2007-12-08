@@ -49,14 +49,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.netbeans.modules.model.database.DBColumn;
-import org.netbeans.modules.model.database.DBTable;
+import org.netbeans.modules.sql.framework.model.DBColumn;
 import org.netbeans.modules.sql.framework.common.utils.TagParserUtility;
-import org.netbeans.modules.sql.framework.evaluators.database.AbstractEvaluatorFactory;
-import org.netbeans.modules.sql.framework.evaluators.database.DB;
-import org.netbeans.modules.sql.framework.evaluators.database.DBFactory;
-import org.netbeans.modules.sql.framework.evaluators.database.SQLOperatorFactory;
-import org.netbeans.modules.sql.framework.evaluators.database.StatementContext;
+import org.netbeans.modules.sql.framework.codegen.AbstractGeneratorFactory;
+import org.netbeans.modules.sql.framework.codegen.DB;
+import org.netbeans.modules.sql.framework.codegen.DBFactory;
+import org.netbeans.modules.sql.framework.codegen.SQLOperatorFactory;
+import org.netbeans.modules.sql.framework.codegen.StatementContext;
 import org.netbeans.modules.sql.framework.model.GUIInfo;
 import org.netbeans.modules.sql.framework.model.SQLCaseOperator;
 import org.netbeans.modules.sql.framework.model.SQLCondition;
@@ -84,6 +83,7 @@ import org.w3c.dom.NodeList;
 
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.Logger;
+import org.netbeans.modules.sql.framework.model.DBTable;
 
 /**
  * Concrete implementation of TargetTable and SQLConnectableObject classes / interfaces,
@@ -711,11 +711,11 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
 
                 if (pred != null) {
                     DB db = DBFactory.getInstance().getDatabase(DB.BASEDB);
-                    AbstractEvaluatorFactory evalFactory = db.getEvaluatorFactory();
+                    AbstractGeneratorFactory genFactory = db.getGeneratorFactory();
                     StatementContext stmtContext = new StatementContext();
                     stmtContext.setUseSourceTableAliasName(true);
                     stmtContext.setUseTargetTableAliasName(true);
-                    this.setJoinConditionText(evalFactory.evaluate(pred, stmtContext));
+                    this.setJoinConditionText(genFactory.generate(pred, stmtContext));
                 } else {
                     this.setJoinConditionText("");
                 }
@@ -802,7 +802,6 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
     public void setCreateTargetTable(Boolean create) {
         this.setAttribute(ATTR_CREATE_TARGET_TABLE, create);
     }
-    
 
     /**
      * @see org.netbeans.modules.sql.framework.model.SourceTable#setSQLGroupBy(org.netbeans.modules.sql.framework.model.SQLGroupBy)
@@ -1195,9 +1194,6 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
         
         filterCondition = SQLModelObjectFactory.getInstance().createSQLCondition(FILTER_CONDITION);
         setFilterCondition(filterCondition);
-        
-        havingCondition = SQLModelObjectFactory.getInstance().createSQLCondition(HAVING_CONDITION);
-        setFilterCondition(havingCondition);
     }
 
 	public SQLCondition getFilterCondition() {
@@ -1215,32 +1211,10 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
 
         return filterCondition;
 	}
-        
-       public SQLCondition getHavingCondition(){
-               // if there are no objects in graph then populate graph with the objects
-        // obtained from sql text
-        Collection objC = havingCondition.getAllObjects();
-        if (objC == null || objC.size() == 0) {
-            SQLDefinition def = SQLObjectUtil.getAncestralSQLDefinition(this);
-            try {
-                ConditionUtil.populateCondition(havingCondition, def, this.getHavingConditionText());
-            } catch (Exception ex) {
-                // ignore this if filterCondition typed by user is invalid
-            }
-        }
-
-        return havingCondition;
-        }
-   
 
 	public String getFilterConditionText() {
 		return filterCondition.getConditionText();
 	}
-        
-        public String getHavingConditionText() {
-		return havingCondition.getConditionText();
-	}
-
 
 	public void setFilterCondition(SQLCondition cond) {
 		this.filterCondition = cond;
@@ -1255,12 +1229,15 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
 		filterCondition.setConditionText(cond);
 	}
 
-
+    public SQLCondition getHavingCondition(){
+        return havingCondition;
+    }
+   
     public void setHavingCondition(SQLCondition having) {
         this.havingCondition = having;
         if (this.havingCondition != null) {
             this.havingCondition.setParent(this);
-            this.havingCondition.setDisplayName(TargetTable.HAVING_CONDITION);
+            this.havingCondition.setDisplayName(HAVING_CONDITION);
         }
     }
 
@@ -1269,7 +1246,7 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
     }
             
     public void setBatchSize(Integer newsize) {
-         this.setAttribute(ATTR_BATCHSIZE,newsize.intValue());
+         this.setAttribute(ATTR_BATCHSIZE,newsize);
     }
     
      public void setUsingFullyQualifiedName(boolean usesFullName) {

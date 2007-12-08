@@ -49,16 +49,17 @@ import java.util.List;
  * @version $Revision$
  */
 public class OptionListEditor extends PropertyEditorSupport {
+
     List optionList;
     private OptionPropertySupport optionS;
     private String[] tags;
-
     private Object value = "ddd";
 
     public OptionListEditor() {
         super();
     }
 
+    @Override
     public String getAsText() {
         try {
             String optionVal = "" + optionS.getValue();
@@ -75,7 +76,6 @@ public class OptionListEditor extends PropertyEditorSupport {
             }
 
             return optionVal;
-
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -105,6 +105,7 @@ public class OptionListEditor extends PropertyEditorSupport {
         return null;
     }
 
+    @Override
     public String[] getTags() {
         tags = new String[optionList.size()];
         for (int i = 0; i < optionList.size(); i++) {
@@ -115,14 +116,16 @@ public class OptionListEditor extends PropertyEditorSupport {
         return tags;
     }
 
+    @Override
     public Object getValue() {
         return value;
     }
 
+    @Override
     public void setAsText(String text) {
         BasicOption option = null;
 
-        try {                        
+        try {
             option = getOptionForDisplayName(text);
             if (option != null) {
                 optionS.setValue(option.getValue());
@@ -131,9 +134,8 @@ public class OptionListEditor extends PropertyEditorSupport {
                 optionS.setValue(text);
                 setValue(text);
             }
-
         } catch (Exception ex) {
-            // log this exception
+            ex.printStackTrace();
         }
     }
 
@@ -146,9 +148,8 @@ public class OptionListEditor extends PropertyEditorSupport {
         optionList = optionS.getOptions();
     }
 
+    @Override
     public void setValue(Object val) {
         this.value = val;
     }
-
 }
-

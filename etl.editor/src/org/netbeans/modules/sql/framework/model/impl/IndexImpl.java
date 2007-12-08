@@ -45,13 +45,18 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.netbeans.modules.model.database.DBColumn;
-import org.netbeans.modules.model.database.DBTable;
-import org.netbeans.modules.model.database.Index;
+import org.netbeans.modules.sql.framework.model.DBColumn;
 import org.w3c.dom.Element;
 
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.StringUtil;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Locale;
+import java.util.ResourceBundle;
+import org.netbeans.modules.sql.framework.model.DBTable;
+import org.netbeans.modules.sql.framework.model.Index;
 
 /**
  * Implements Index interface.
@@ -153,14 +158,11 @@ public class IndexImpl implements Cloneable, Index {
     /** Name of attribute used for marshalling out uniqueness flag to XML */
     public static final String UNIQUE_ATTR = "unique"; // NOI18N
 
-    /** RCS ID */
-    static final String RCS_ID = "$Id$";
-
     /* Indicates number of unique values in index */
     private int cardinality;
 
     /* List of column names in key sequence order. */
-    private List columnNames;
+    private List<String> columnNames;
 
     /* (optional) DOM element used to construct this instance of Index */
     private transient Element element;
@@ -179,6 +181,75 @@ public class IndexImpl implements Cloneable, Index {
 
     /* Indicates whether index is unique */
     private boolean unique = false;
+
+    private static final String
+        RS_INDEX_NAME = "INDEX_NAME"; // NOI18N
+    
+    private static final String
+        RS_COLUMN_NAME = "COLUMN_NAME"; // NOI18N
+        
+    private static final String
+        RS_NON_UNIQUE = "NON_UNIQUE"; // NOI18N
+    
+    private static final String
+        RS_TYPE = "TYPE"; // NOI18N
+    
+    private static final String
+        RS_ORDINAL = "ORDINAL_POSITION"; // NOI18N
+    
+    private static final String
+        RS_ASC_OR_DESC = "ASC_OR_DESC"; // NOI18N
+    
+    private static final String
+        RS_CARDINALITY = "CARDINALITY"; // NOI18N
+    
+        /**
+     * Creates a List of IndexColumn instances from the given ResultSet.
+     *
+     * @param rs ResultSet containing index metadata as obtained from 
+     * DatabaseMetaData
+     * @return List of IndexColumn instances based from metadata in rs'
+     *
+     * @throws SQLException if SQL error occurs while reading in data from
+     * given ResultSet
+     */
+    public static List<IndexImpl> createIndexList(ResultSet rs) throws SQLException {
+        List<IndexImpl> indices = Collections.emptyList();
+        
+        if (rs != null && rs.next()) {
+            indices = new ArrayList<IndexImpl>();
+            do {
+                IndexImpl newIndex = new IndexImpl(rs);
+                
+                // Ignore statistics indexes as they are relevant only to the
+                // DB which sourced this metadata.
+                if (newIndex.getType() != DatabaseMetaData.tableIndexStatistic) {
+                    indices.add(newIndex);
+                }
+            } while (rs.next());
+        }
+        
+        return indices;
+    }
+
+    IndexImpl(ResultSet rs) throws SQLException {
+        if (rs == null) {
+            Locale locale = Locale.getDefault();
+            ResourceBundle cMessages = ResourceBundle.getBundle("org/netbeans/modules/sql/framework/model/impl/Bundle", locale); // NO i18n            
+            throw new IllegalArgumentException(
+                cMessages.getString("ERROR_VALID_RS")+"(ERROR_VALID_RS)"); // NOI18N
+        }
+        
+        name = rs.getString(RS_INDEX_NAME);
+        //columnName = rs.getString(RS_COLUMN_NAME);
+        
+        unique = !(rs.getBoolean(RS_NON_UNIQUE));
+        type = rs.getShort(RS_TYPE);
+        
+        //ordinalPosition = rs.getShort(RS_ORDINAL);
+        sortSequence = rs.getString(RS_ASC_OR_DESC);
+        cardinality = rs.getInt(RS_CARDINALITY);
+    }
 
     /**
      * Creates a new instance of IndexImpl, using the given keyElement as a source for
@@ -264,7 +335,7 @@ public class IndexImpl implements Cloneable, Index {
     /* Private no-arg constructor */
     private IndexImpl() {
         name = null;
-        columnNames = new ArrayList();
+        columnNames = new ArrayList<String>();
     }
 
     /**
@@ -272,10 +343,11 @@ public class IndexImpl implements Cloneable, Index {
      * 
      * @return cloned copy of DBColumn.
      */
+    @Override
     public Object clone() {
         try {
             IndexImpl impl = (IndexImpl) super.clone();
-            impl.columnNames = new ArrayList(this.columnNames);
+            impl.columnNames = new ArrayList<String>(this.columnNames);
 
             return impl;
         } catch (CloneNotSupportedException e) {
@@ -303,6 +375,7 @@ public class IndexImpl implements Cloneable, Index {
      * @param refObj Object against which we compare this instance
      * @return true if refObj is functionally identical to this instance; false otherwise
      */
+    @Override
     public boolean equals(Object refObj) {
         if (this == refObj) {
             return true;
@@ -343,13 +416,13 @@ public class IndexImpl implements Cloneable, Index {
      * @see org.netbeans.modules.model.database.Index#getColumnName
      */
     public String getColumnName(int iColumn) {
-        return (String) columnNames.get(iColumn);
+        return columnNames.get(iColumn);
     }
 
     /**
      * @see org.netbeans.modules.model.database.Index#getColumnNames
      */
-    public List getColumnNames() {
+    public List<String> getColumnNames() {
         return Collections.unmodifiableList(columnNames);
     }
 
@@ -415,6 +488,7 @@ public class IndexImpl implements Cloneable, Index {
      * @return hash code for this object
      * @see java.lang.Object#hashCode
      */
+    @Override
     public int hashCode() {
         int myHash = (name != null) ? name.hashCode() : 0;
         myHash += (columnNames != null) ? columnNames.hashCode() : 0;
@@ -485,7 +559,7 @@ public class IndexImpl implements Cloneable, Index {
      * @param isStringList true if List contains column names as Strings, false if List
      *        contains Index.Column objects.
      */
-    public void setColumnNames(List indexColumnNames, boolean isStringList) {
+    public void setColumnNames(List<String> indexColumnNames, boolean isStringList) {
         if (isStringList) {
             columnNames.addAll(indexColumnNames);
         } else {
@@ -568,7 +642,7 @@ public class IndexImpl implements Cloneable, Index {
                 if (i != 0) {
                     buf.append(",");
                 }
-                buf.append(((String) columnNames.get(i)).trim());
+                buf.append((columnNames.get(i)).trim());
             }
             buf.append("\" ");
         }

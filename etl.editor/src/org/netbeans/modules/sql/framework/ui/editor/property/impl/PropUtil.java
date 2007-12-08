@@ -80,6 +80,7 @@ public class PropUtil {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private static void setInitialPropertyValues(Map map, Map customizerMap, Node.PropertySet pSet) {
         Node.Property[] properties = pSet.getProperties();
         for (int i = 0; i < properties.length; i++) {
@@ -91,12 +92,12 @@ public class PropUtil {
                     setPropertyCustomizer(customizerMap, p);
                     property.setValue(value);
                 } catch (Exception ex) {
-
                 }
             }
         }
     }
 
+    @SuppressWarnings("unchecked")
     private static void setInitialPropertyValues(Object bean, Map customizerMap, Node.PropertySet pSet) {
         Node.Property[] properties = pSet.getProperties();
         for (int i = 0; i < properties.length; i++) {
@@ -104,7 +105,6 @@ public class PropUtil {
             try {
                 IProperty p = (IProperty) property;
                 setPropertyCustomizer(customizerMap, p);
-
                 property.setValue(TemplateFactory.invokeGetter(bean, property.getName(), null, null));
 
                 // check if property has a custom editor if so get it from the bean
@@ -140,7 +140,7 @@ public class PropUtil {
             }
         }
     }
-
+    
     private static void setPropertyCustomizer(Map customizerMap, IProperty property) {
         if (customizerMap == null) {
             return;

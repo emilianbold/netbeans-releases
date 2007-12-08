@@ -48,13 +48,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.netbeans.modules.model.database.DBTable;
 import org.netbeans.modules.sql.framework.model.RuntimeInput;
 import org.netbeans.modules.sql.framework.model.SQLConstants;
 import org.netbeans.modules.sql.framework.model.SQLDBColumn;
 
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.RuntimeAttribute;
+import org.netbeans.modules.sql.framework.model.DBTable;
 
 /**
  * @author radval
@@ -62,7 +62,7 @@ import com.sun.sql.framework.utils.RuntimeAttribute;
 public class RuntimeInputImpl extends SourceTableImpl implements RuntimeInput {
 
     /** Array of Strings reprsenting available SQL datatypes */
-    protected static final List VALID_TYPE_NAMES = new ArrayList();
+    protected static final List<String> VALID_TYPE_NAMES = new ArrayList<String>();
 
     static {
 
@@ -94,7 +94,7 @@ public class RuntimeInputImpl extends SourceTableImpl implements RuntimeInput {
     }
 
     public Map getRuntimeAttributeMap() {
-        Map inputAttrs = new HashMap();
+        Map<String, RuntimeAttribute> inputAttrs = new HashMap<String, RuntimeAttribute>();
 
         Iterator attrIter = getColumnList().iterator();
         while (attrIter.hasNext()) {
@@ -124,6 +124,7 @@ public class RuntimeInputImpl extends SourceTableImpl implements RuntimeInput {
      * @return XML string
      * @throws BaseException - exception
      */
+    @Override
     public String toXMLString(String prefix, boolean tableOnly) throws BaseException {
         StringBuilder xml = new StringBuilder(INIT_XMLBUF_SIZE);
 
@@ -158,6 +159,7 @@ public class RuntimeInputImpl extends SourceTableImpl implements RuntimeInput {
      * 
      * @return String representing element tag for this class
      */
+    @Override
     protected String getElementTagName() {
         return TAG_RUNTIME_INPUT;
     }

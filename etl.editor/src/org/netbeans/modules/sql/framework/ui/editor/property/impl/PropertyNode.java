@@ -38,20 +38,22 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.sql.framework.ui.editor.property.impl;
 
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import org.netbeans.modules.sql.framework.ui.editor.property.IProperty;
 import org.netbeans.modules.sql.framework.ui.editor.property.IPropertyGroup;
 import org.netbeans.modules.sql.framework.ui.editor.property.ITemplate;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
+import org.openide.nodes.Sheet.Set;
 
 
 /**
@@ -60,7 +62,7 @@ import org.openide.nodes.Sheet;
  */
 public class PropertyNode extends AbstractNode {
 
-    private ArrayList propertySets = new ArrayList();
+    private ArrayList<Node.PropertySet> propertySets = new ArrayList<Node.PropertySet>();
     private ITemplate template;
 
     /** Creates a new instance of PropertyNode */
@@ -81,11 +83,13 @@ public class PropertyNode extends AbstractNode {
         return template.getPropertyGroup(groupName);
     }
 
+    @Override
     public Node.PropertySet[] getPropertySets() {
         Node.PropertySet[] typePropertySet = new Node.PropertySet[propertySets.size()];
-        return (Node.PropertySet[]) propertySets.toArray(typePropertySet);
+        return propertySets.toArray(typePropertySet);
     }
 
+    @SuppressWarnings("unchecked")
     void initializePropertySheet() {
         List list = template.getPropertyGroupList();
         Collections.sort(list);
@@ -94,7 +98,6 @@ public class PropertyNode extends AbstractNode {
 
         while (it.hasNext()) {
             IPropertyGroup pg = (IPropertyGroup) it.next();
-
             List properties = pg.getProperties();
             Collections.sort(properties);
 
@@ -109,5 +112,15 @@ public class PropertyNode extends AbstractNode {
         }
     }
 
+    public void addPropertyChangeSupport(PropertyChangeListener l) {
+        if (l != null) {
+            for (int i = 0; i < propertySets.size(); i++) {
+                Sheet.Set set = (Set) propertySets.get(i);
+                Node.Property[] properties = set.getProperties();
+                IProperty p = (IProperty) properties[0];
+                ((PropertyGroup) p.getParent()).addPropertyChangeListener(l);
+            }
+        }
+    }
 }
 

@@ -45,10 +45,8 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.Writer;
-
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -58,7 +56,8 @@ import org.xml.sax.helpers.DefaultHandler;
  * @version $Revision$
  */
 public class TemplateParser extends DefaultHandler {
-    static private Writer out;
+
+    private static Writer out;
     private TemplateFactory factory;
 
     public TemplateParser() {
@@ -69,15 +68,16 @@ public class TemplateParser extends DefaultHandler {
         init(stream);
     }
 
-    public void characters(char buf[], int offset, int len) throws SAXException {
+    @Override
+    public void characters(char[] buf, int offset, int len) throws SAXException {
         String s = new String(buf, offset, len);
         showData(s);
     }
-
     // ===========================================================
     // Methods in SAX DocumentHandler
     // ===========================================================
 
+    @Override
     public void endDocument() throws SAXException {
         try {
             newLine();
@@ -88,6 +88,7 @@ public class TemplateParser extends DefaultHandler {
     }
 
     // SAX 2.0
+    @Override
     public void endElement(String uri, String localName, String qName) throws SAXException {
         showData("</" + qName + ">");
         if (factory != null) {
@@ -95,12 +96,14 @@ public class TemplateParser extends DefaultHandler {
         }
     }
 
+    @Override
     public void startDocument() throws SAXException {
         showData("<?xml version='1.0' encoding='UTF-8'?>");
         newLine();
     }
 
     // SAX 2.0
+    @Override
     public void startElement(String uri, String localName, String qName, Attributes attrs) throws SAXException {
         showData("<" + qName);
         if (attrs != null) {
@@ -133,7 +136,6 @@ public class TemplateParser extends DefaultHandler {
             t.printStackTrace();
         }
     }
-
     // ===========================================================
     // Helpers Methods
     // ===========================================================
@@ -159,4 +161,3 @@ public class TemplateParser extends DefaultHandler {
         }
     }
 }
-

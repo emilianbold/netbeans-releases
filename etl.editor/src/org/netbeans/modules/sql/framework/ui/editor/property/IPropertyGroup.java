@@ -85,7 +85,7 @@ public interface IPropertyGroup extends INode {
      * 
      * @return all the properties in this group
      */
-    public List getProperties();
+    public List<IProperty> getProperties();
 
     /**
      * is valid value

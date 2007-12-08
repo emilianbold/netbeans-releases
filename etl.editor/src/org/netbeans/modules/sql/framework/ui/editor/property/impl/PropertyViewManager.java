@@ -40,18 +40,14 @@
  */
 package org.netbeans.modules.sql.framework.ui.editor.property.impl;
 
-import java.awt.Dialog;
 import java.beans.PropertyEditorManager;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
+import org.netbeans.modules.etl.ui.view.property.ETLResourceManager;
 
 import org.netbeans.modules.sql.framework.ui.editor.property.IPropertySheet;
 import org.netbeans.modules.sql.framework.ui.editor.property.IResource;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.explorer.propertysheet.PropertySheet;
-import org.openide.nodes.Node;
 
 
 /**
@@ -73,15 +69,20 @@ public class PropertyViewManager {
         tMgr = new TemplateManager(in, resource);
     }
 
-    /**
-     * get a property node for a given template name
-     * 
-     * @return node
-     */
-    public PropertyNode getNodeForTemplateName(String templateName) {
-        return tMgr.getNodeForTemplateName(templateName);
+    public PropertyNode getPropertyNodeForTemplateName(String templateName, Map customizerMap, Object bean) throws IllegalArgumentException {
+        PropertyNode pNode = tMgr.getNodeForTemplateName(templateName);
+        if (pNode == null) {
+            throw new IllegalArgumentException("Can not load template for template " + templateName);
+        }
+        
+        if(bean instanceof Map){
+            PropUtil.setInitialPropertyValues((Map)bean, customizerMap, pNode);
+        } else {
+            PropUtil.setInitialPropertyValues(bean, customizerMap, pNode);
+        }
+        return pNode;
     }
-
+    
     /**
      * get IPropertySheet which has gui property panels
      * 
@@ -91,13 +92,8 @@ public class PropertyViewManager {
      * @param templateName name of the template in xml descriptor
      */
     public IPropertySheet getPropertySheet(Map map, Map customizerMap, String templateName) {
-        PropertyNode pNode = tMgr.getNodeForTemplateName(templateName);
-        if (pNode == null) {
-            throw new IllegalArgumentException("Can not load template for template " + templateName);
-        }
-        PropUtil.setInitialPropertyValues(map, customizerMap, pNode);
-        BasicPropertySheet sheet = new BasicPropertySheet(pNode);
-        return sheet;
+        PropertyNode pNode = getPropertyNodeForTemplateName(templateName, customizerMap, map);
+        return new BasicPropertySheet(pNode);
     }
 
     /**
@@ -129,92 +125,26 @@ public class PropertyViewManager {
      * @param templateName name of the template in xml descriptor
      */
     public IPropertySheet getPropertySheet(Object bean, String templateName) {
-        PropertyNode pNode = tMgr.getNodeForTemplateName(templateName);
-        if (pNode == null) {
-            throw new IllegalArgumentException("Can not load template for template " + templateName);
-        }
-        PropUtil.setInitialPropertyValues(bean, null, pNode);
-        BasicPropertySheet sheet = new BasicPropertySheet(bean, pNode);
-        return sheet;
+        PropertyNode pNode = getPropertyNodeForTemplateName(templateName, null, bean);
+        return new BasicPropertySheet(bean, pNode);
     }
 
-    /**
-     * show a property sheet dialog with ok and cancel button which reflect on given bean
-     * for property values and set property value on the given bean Property will be
-     * sorted by name. This the only diff between this and showNBDialog method
-     * 
-     * @param bean bean to whose properties are reflected and a property sheet is created
-     * @param templateName name of the template in xml descriptor
-     * @param isModal if true the sheet dialog will be modal
-     */
-    public void showDialog(Object bean, String templateName, boolean isModal) {
-        PropertyNode pNode = tMgr.getNodeForTemplateName(templateName);
-        if (pNode == null) {
-            throw new IllegalArgumentException("Cannot load template for template " + templateName);
-        }
-
-        PropertySheet pSheet = new PropertySheet();
-        PropUtil.setInitialPropertyValues(bean, null, pNode);
-        // remove the tool bar from netbeans property dialog
-        pSheet.add(new javax.swing.JLabel(""), java.awt.BorderLayout.NORTH);
-        pSheet.setNodes(new Node[] { pNode});
-        launchDialog(bean, pNode, pSheet, isModal);
-    }
-
-    /**
-     * show a property sheet dialog with ok and cancel button which reflect on given bean
-     * for property values and set property value on the given bean
-     * 
-     * @param bean bean to whose properties are reflected and a property sheet is created
-     * @param customizerMap map of property name as key and IPropertyCustomizer as value
-     * @param templateName name of the template in xml descriptor
-     * @param isModal if true the sheet dialog will be modal
-     */
-    public void showNBDialog(Object bean, Map customizerMap, String templateName, boolean isModal) {
-        PropertyNode pNode = tMgr.getNodeForTemplateName(templateName);
-        if (pNode == null) {
-            throw new IllegalArgumentException("Can not load template for template " + templateName);
-        }
-
-        PropertySheet pSheet = new PropertySheet();
-        // do not show tab view if there is only one tab
-        pSheet.putClientProperty("TabPolicy", "HideWhenAlone");
-        PropUtil.setInitialPropertyValues(bean, customizerMap, pNode);
-        // set sorting mode to unsorted so that we get properties sorted as defined by
-        // position attribute in xml
+    public static PropertyViewManager getPropertyViewManager() {
+        InputStream stream = null;
+        PropertyViewManager pvMgr = null;
         try {
-            pSheet.setSortingMode(PropertySheet.UNSORTED);
-        } catch (Exception ex) {
+            stream = PropertyViewManager.class.getClassLoader().getResourceAsStream("org/netbeans/modules/etl/ui/resources/etl_properties.xml");
+            pvMgr = new PropertyViewManager(stream, new ETLResourceManager());
+        } finally {
+            if (stream != null) {
+                try {
+                    stream.close();
+                } catch (IOException ignore) {
+                    // ignore
+                }
+            }
         }
-
-        pSheet.setNodes(new Node[] { pNode});
-        launchDialog(bean, pNode, pSheet, isModal);
-    }
-
-    /**
-     * show a property sheet dialog with ok and cancel button which reflect on given bean
-     * for property values and set property value on the given bean
-     * 
-     * @param bean bean to whose properties are reflected and a property sheet is created
-     * @param templateName name of the template in xml descriptor
-     * @param isModal if true the sheet dialog will be modal
-     */
-    public void showNBDialog(Object bean, String templateName, boolean isModal) {
-        showNBDialog(bean, null, templateName, isModal);
-    }
-
-    private void launchDialog(Object bean, PropertyNode pNode, PropertySheet innerPane, boolean isModal) {
-        DialogDescriptor dd = new DialogDescriptor(innerPane, "Properties", isModal, null);
-        Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
-        dlg.pack();
-        dlg.setSize(350, 400);
-
-        dlg.setVisible(true);
-
-        // User clicked ok so we need to save the information
-        if (dd.getValue() == NotifyDescriptor.OK_OPTION) {
-            PropUtil.setModifiedPropertyValues(bean, pNode);
-        }
+        return pvMgr;
     }
 }
 

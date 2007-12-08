@@ -43,21 +43,23 @@ package org.netbeans.modules.sql.framework.ui.editor.property.impl;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
+import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import java.util.Vector;
-
+import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.ListModel;
+import org.openide.explorer.propertysheet.ExPropertyEditor;
+import org.openide.explorer.propertysheet.InplaceEditor;
+import org.openide.explorer.propertysheet.PropertyEnv;
+import org.openide.explorer.propertysheet.PropertyModel;
 
-import org.openide.explorer.propertysheet.editors.EnhancedPropertyEditor;
 
 /**
  * @author Ritesh Adval
@@ -70,6 +72,7 @@ public class DefaultPropertyEditor {
      * for use in a bean property sheet.
      */
     public static class ListEditor extends PropertyEditorSupport {
+
         JList list;
         JPanel panel;
         JScrollPane sPane;
@@ -93,100 +96,121 @@ public class DefaultPropertyEditor {
             sPane.setPreferredSize(new Dimension(300, 150));
         }
 
+        @Override
         public Component getCustomEditor() {
             return sPane;
         }
 
+        @Override
         public boolean supportsCustomEditor() {
             return true;
         }
     }
 
-    public static class PasswordTextEditor extends PropertyEditorSupport implements EnhancedPropertyEditor {
-        class PasswordActionListener implements ActionListener {
+    public static class PasswordTextEditor extends PropertyEditorSupport implements ExPropertyEditor, InplaceEditor.Factory {
 
-            /**
-             * Invoked when an action occurs.
-             */
-            public void actionPerformed(ActionEvent e) {
-                setValue(new String(passField.getPassword()));
-                passField.getFocusCycleRootAncestor().requestFocus();
-                passField.requestFocus();
+        private InplaceEditor ed = null;
+
+        public InplaceEditor getInplaceEditor() {
+            if (ed == null) {
+                ed = new InplacePassword();
             }
+            return ed;
         }
 
-        class PasswordFocusAdapter extends FocusAdapter {
-            public void focusLost(FocusEvent e) {
-                setValue(new String(passField.getPassword()));
-            }
+        public void attachEnv(PropertyEnv env) {
+            env.registerInplaceEditorFactory(this);
         }
 
-        private JPasswordField passField;
-
-        public PasswordTextEditor() {
-            super();
-            this.passField = new JPasswordField();
-            this.passField.addFocusListener(new PasswordFocusAdapter());
-            this.passField.addActionListener(new PasswordActionListener());
-        }
-
+        @Override
         public String getAsText() {
             return getEncPassword((String) this.getValue());
         }
 
-        /**
-         * Returns inplace custom editor
-         * 
-         * @return - inplace custom editor
-         */
-        public Component getInPlaceCustomEditor() {
-            String value = (String) this.getValue();
-            if (value != null) {
-                passField.setText(value);
-            }
-            return passField;
-        }
-
-        /**
-         * If has inplace costom editor
-         * 
-         * @return - true/false
-         */
-        public boolean hasInPlaceCustomEditor() {
-            return true;
-        }
-
-        public boolean supportsCustomEditor() {
-            return false;
-        }
-
-        /**
-         * Test for support of editing of tagged values. Must also accept custom strings,
-         * otherwise you may may specify a standard property editor accepting only tagged
-         * values.
-         * 
-         * @return <code>true</code> if supported
-         */
-        public boolean supportsEditingTaggedValues() {
-            return false;
-        }
-
         private String getEncPassword(String val) {
             StringBuilder buf = new StringBuilder(30);
-
             for (int i = 0; i < val.length(); i++) {
                 buf.append('*');
             }
-
             return buf.toString();
         }
     }
 
-    /**
+    private static class InplacePassword implements InplaceEditor {
+
+        private JPasswordField passField = new JPasswordField();
+        private PropertyEditor editor = null;
+
+        public void connect(PropertyEditor propertyEditor, PropertyEnv env) {
+            editor = propertyEditor;
+            reset();
+        }
+
+        public JComponent getComponent() {
+            return passField;
+        }
+
+        public void clear() {
+            //avoid memory leaks:
+            editor = null;
+            model = null;
+        }
+
+        public Object getValue() {
+            return new String(passField.getPassword());
+        }
+
+        public void setValue(Object value) {
+            passField.setText((String) value);
+        }
+
+        public boolean supportsTextEntry() {
+            return true;
+        }
+
+        public void reset() {
+            String value = (String) editor.getValue();
+            if (value != null) {
+                passField.setText(value);
+            }
+        }
+
+        public KeyStroke[] getKeyStrokes() {
+            return new KeyStroke[0];
+        }
+
+        public PropertyEditor getPropertyEditor() {
+            return editor;
+        }
+
+        public PropertyModel getPropertyModel() {
+            return model;
+        }
+        private PropertyModel model;
+
+        public void setPropertyModel(PropertyModel propertyModel) {
+            this.model = propertyModel;
+        }
+
+        public boolean isKnownComponent(Component component) {
+            return component == passField || passField.isAncestorOf(component);
+        }
+
+        public void addActionListener(ActionListener actionListener) {
+            //do nothing - not needed for this component
+        }
+
+        public void removeActionListener(ActionListener actionListener) {
+            //do nothing - not needed for this component
+        }
+    }
+
+/**
      * Concrete implementation of PropertyEditorSupport to provide a single-line textfield
      * widget (with no custom editor) for use in a bean property sheet.
      */
     public static class SingleLineTextEditor extends PropertyEditorSupport {
+
         private JTextField tf;
 
         public SingleLineTextEditor() {
@@ -194,10 +218,12 @@ public class DefaultPropertyEditor {
             tf = new JTextField();
         }
 
+        @Override
         public Component getCustomEditor() {
             return tf;
         }
 
+        @Override
         public boolean supportsCustomEditor() {
             return false;
         }
@@ -207,4 +233,3 @@ public class DefaultPropertyEditor {
     public DefaultPropertyEditor() {
     }
 }
-

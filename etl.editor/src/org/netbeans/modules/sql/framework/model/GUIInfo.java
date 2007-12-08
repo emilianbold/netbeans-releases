@@ -90,9 +90,6 @@ public class GUIInfo implements Cloneable {
     /* Log4J category string */
     static String logCategory = GUIInfo.class.getName();
 
-    /** RCS id */
-    static final String RCS_ID = "$Id$";
-
     /* Log4J category string */
     private static final String LOG_CATEGORY = GUIInfo.class.getName();
 

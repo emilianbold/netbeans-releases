@@ -81,9 +81,9 @@ public interface SQLJoinView extends SQLContainerObject, SQLCanvasObject, SQLVis
      */
     public SQLJoinOperator getRootJoin();
 
-    public List getSourceTables();
+    public List<DBTable> getSourceTables();
 
-    public Collection getSQLJoinTables();
+    public Collection<SQLJoinTable> getSQLJoinTables();
     
     /**
      * get report group by object

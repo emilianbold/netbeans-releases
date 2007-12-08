@@ -66,7 +66,7 @@ public class PropertyGroup implements IPropertyGroup, Comparable {
     private String name;
     private INode parent;
     private int position;
-    private List propertyList = new ArrayList();
+    private List<IProperty> propertyList = new ArrayList<IProperty>();
 
     private PropertyChangeSupport pSupport = new PropertyChangeSupport(this);
 
@@ -217,7 +217,7 @@ public class PropertyGroup implements IPropertyGroup, Comparable {
      * 
      * @return all the properties in this group
      */
-    public List getProperties() {
+    public List<IProperty> getProperties() {
         return propertyList;
     }
 

@@ -44,11 +44,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.netbeans.modules.etl.model.ETLObject;
-import org.netbeans.modules.model.database.DBConnectionDefinition;
-import org.netbeans.modules.model.database.DBTable;
-import org.netbeans.modules.model.database.DatabaseModel;
-import org.netbeans.modules.sql.framework.common.jdbc.SQLDBConnectionDefinition;
-
 import com.sun.sql.framework.exception.BaseException;
 
 /**
@@ -68,7 +63,7 @@ public interface SQLDBModel extends DatabaseModel, SQLObject {
     public static final String PROJECTPATH = "projectPath";
     /** String constant for reference ID. */
     public static final String REFID = "refId";
-    /** String constant for OTD reference key ID. */
+    /** String constant for Database reference key ID. */
     public static final String REFKEY = "refKey";
     /** String constant indicating source type */
     public static final String STRTYPE_SOURCE = "source";
@@ -161,7 +156,7 @@ public interface SQLDBModel extends DatabaseModel, SQLObject {
      * 
      * @return ConnectionDefinition of the SQLDataSource object
      */
-    public SQLDBConnectionDefinition getETLDBConnectionDefinition() throws BaseException;
+    public DBConnectionDefinition getETLDBConnectionDefinition() throws BaseException;
 
     /**
      * Gets SQLObject, if any, having the given object ID.
@@ -189,12 +184,7 @@ public interface SQLDBModel extends DatabaseModel, SQLObject {
      */
     public int hashCode();
 
-    /**
-     * Return true if org.netbeans.modules.model.database.JDBCConnectionProvider instance is available.
-     * 
-     * @return
-     */
-    public boolean hasJDBCConnectionProvider();
+
 
     public void overrideCatalogNames(Map catalogOverride);
 

@@ -47,7 +47,7 @@ import java.util.Map;
 
 import org.netbeans.modules.sql.framework.common.utils.TagParserUtility;
 import org.netbeans.modules.sql.framework.common.utils.XmlUtil;
-import org.netbeans.modules.sql.framework.evaluators.database.SQLOperatorFactory;
+import org.netbeans.modules.sql.framework.codegen.SQLOperatorFactory;
 import org.netbeans.modules.sql.framework.model.utils.OperatorUtil;
 import org.netbeans.modules.sql.framework.ui.graph.IOperatorField;
 import org.netbeans.modules.sql.framework.ui.graph.IOperatorXmlInfo;

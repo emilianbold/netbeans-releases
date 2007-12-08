@@ -40,9 +40,6 @@
  */
 package org.netbeans.modules.sql.framework.model;
 
-import org.netbeans.modules.model.database.DBColumn;
-import org.netbeans.modules.model.database.DBTable;
-
 /**
  * Extension of DBColumn
  * 

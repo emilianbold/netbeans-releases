@@ -57,8 +57,8 @@ import org.netbeans.modules.sql.framework.ui.utils.UIUtil;
 
 
 /**
- * Extension of DefaultMutableTreeNode which represents an OTD, table or column for
- * purposes of configuring its properties in the Flatfile OTD wizard.
+ * Extension of DefaultMutableTreeNode which represents a Database, table or column for
+ * purposes of configuring its properties in the Flatfile Database wizard.
  * 
  * @author Jonathan Giron
  * @version $Revision$
@@ -78,14 +78,11 @@ public class TableColumnNode extends DefaultMutableTreeNode implements Comparabl
         }
     }
 
-    /* RCS id */
-    static final String RCS_ID = "$Id$";
-
     /* Constant: indicates field node type */
     private static final int COLUMN = 1;
 
     /* Constant: indicates folder node type */
-    private static final int OTD = -1;
+    private static final int DB = -1;
 
     /* Constant: indicates flatfile node type */
     private static final int TABLE = 0;
@@ -130,7 +127,7 @@ public class TableColumnNode extends DefaultMutableTreeNode implements Comparabl
         super(model);
 
         if (model instanceof SQLDBModel) {
-            type = OTD;
+            type = DB;
             toolTip = ((SQLDBModel) model).getDisplayName();
         } else if (model instanceof SQLDBTable) {
             type = TABLE;
@@ -169,8 +166,8 @@ public class TableColumnNode extends DefaultMutableTreeNode implements Comparabl
 
         TableColumnNode aNode = (TableColumnNode) o;
         switch (type) {
-            case OTD:
-                if (aNode.type == OTD) {
+            case DB:
+                if (aNode.type == DB) {
                     return compareDisplayNames(this, aNode);
                 } else if (aNode.type == TABLE) {
                     return -1;
@@ -181,7 +178,7 @@ public class TableColumnNode extends DefaultMutableTreeNode implements Comparabl
             case TABLE:
                 if (aNode.type == TABLE) {
                     return compareDisplayNames(this, aNode);
-                } else if (aNode.type == OTD) {
+                } else if (aNode.type == DB) {
                     return 1;
                 } else if (aNode.type == COLUMN) {
                     return -1;
@@ -190,7 +187,7 @@ public class TableColumnNode extends DefaultMutableTreeNode implements Comparabl
             case COLUMN:
                 if (aNode.type == COLUMN) {
                     return compareDisplayNames(this, aNode);
-                } else if (aNode.type == OTD) {
+                } else if (aNode.type == DB) {
                     return 1;
                 } else if (aNode.type == TABLE) {
                     return 1;
@@ -211,8 +208,8 @@ public class TableColumnNode extends DefaultMutableTreeNode implements Comparabl
         Image myImage = null;
 
         switch (type) {
-            case OTD:
-                imgPath = "/org/netbeans/modules/sql/framework/ui/resources/images/otd.png";
+            case DB:
+                imgPath = "/org/netbeans/modules/sql/framework/ui/resources/images/root.png";
                 break;
 
             case TABLE:

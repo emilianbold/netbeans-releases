@@ -43,14 +43,12 @@ package org.netbeans.modules.sql.framework.ui.editor.property.impl;
 
 import java.beans.PropertyEditor;
 import java.beans.PropertyVetoException;
-
 import org.netbeans.modules.sql.framework.ui.editor.property.IElement;
 import org.netbeans.modules.sql.framework.ui.editor.property.INode;
 import org.netbeans.modules.sql.framework.ui.editor.property.IProperty;
 import org.netbeans.modules.sql.framework.ui.editor.property.IPropertyCustomizer;
 import org.netbeans.modules.sql.framework.ui.editor.property.IPropertyEditor;
 import org.openide.nodes.Node;
-
 
 /**
  * @author Ritesh Adval
@@ -65,13 +63,10 @@ public class BasicPropertySupport extends Node.Property implements IProperty, Co
     private boolean isDefault;
     private INode parent;
     private int position;
-
     private boolean readOnly = false;
     private boolean required;
-
     private String type;
     private Object val = null;
-
     private Class valueType;
 
     public BasicPropertySupport() {
@@ -79,6 +74,7 @@ public class BasicPropertySupport extends Node.Property implements IProperty, Co
     }
 
     /** Creates a new instance of GUIPropertySupport */
+    @SuppressWarnings(value = "unchecked")
     public BasicPropertySupport(Class valueType) {
         super(valueType);
         this.valueType = valueType;
@@ -90,11 +86,10 @@ public class BasicPropertySupport extends Node.Property implements IProperty, Co
 
     /**
      * add a element in the node
-     * 
+     *
      * @param element element to add
      */
     public void add(IElement element) {
-
     }
 
     public boolean canRead() {
@@ -131,7 +126,7 @@ public class BasicPropertySupport extends Node.Property implements IProperty, Co
      * that implements the <tt>Comparable</tt> interface and violates this condition
      * should clearly indicate this fact. The recommended language is "Note: this class
      * has a natural ordering that is inconsistent with equals."
-     * 
+     *
      * @param o the Object to be compared.
      * @return a negative integer, zero, or a positive integer as this object is less
      *         than, equal to, or greater than the specified object.
@@ -144,28 +139,17 @@ public class BasicPropertySupport extends Node.Property implements IProperty, Co
         }
 
         IProperty property = (IProperty) o;
-
         if (this.getPosition() < property.getPosition()) {
             return -1;
         } else if (this.getPosition() > property.getPosition()) {
             return 1;
         }
-
         return 0;
     }
 
     /**
-     * get the name of the property
-     * 
-     * @return property name
-     */
-    public String getDisplayName() {
-        return super.getDisplayName();
-    }
-
-    /**
      * get the group to which this property belongs
-     * 
+     *
      * @return group to which property belongs
      */
     public String getGroup() {
@@ -173,17 +157,8 @@ public class BasicPropertySupport extends Node.Property implements IProperty, Co
     }
 
     /**
-     * get the name of the property
-     * 
-     * @return property name
-     */
-    public String getName() {
-        return super.getName();
-    }
-
-    /**
      * get the parent element
-     * 
+     *
      * @return parent
      */
     public INode getParent() {
@@ -192,7 +167,7 @@ public class BasicPropertySupport extends Node.Property implements IProperty, Co
 
     /**
      * get the position where this property should appear in the property sheet gui
-     * 
+     *
      * @return position
      */
     public int getPosition() {
@@ -201,25 +176,24 @@ public class BasicPropertySupport extends Node.Property implements IProperty, Co
 
     /**
      * get the property customizer
-     * 
+     *
      * @return property customizer
      */
     public IPropertyCustomizer getPropertyCustomizer() {
         return this.customizer;
     }
 
+    @Override
     public PropertyEditor getPropertyEditor() {
         if (this.editor != null) {
             return this.editor;
         }
-
-        PropertyEditor pE = java.beans.PropertyEditorManager.findEditor(getValueType());
-        return pE;
+        return java.beans.PropertyEditorManager.findEditor(getValueType());
     }
 
     /**
      * get the tooltip of of element
-     * 
+     *
      * @return tooltip
      */
     public String getToolTip() {
@@ -228,7 +202,7 @@ public class BasicPropertySupport extends Node.Property implements IProperty, Co
 
     /**
      * get the gui type of this property
-     * 
+     *
      * @return gui type
      */
     public String getType() {
@@ -241,16 +215,17 @@ public class BasicPropertySupport extends Node.Property implements IProperty, Co
 
     /**
      * get the type of value of this property
-     * 
+     *
      * @return property value type
      */
+    @Override
     public Class getValueType() {
         return valueType;
     }
 
     /**
      * does this property has a custom editor
-     * 
+     *
      * @return whether property has a custom editor
      */
     public boolean isCustomEditor() {
@@ -259,7 +234,7 @@ public class BasicPropertySupport extends Node.Property implements IProperty, Co
 
     /**
      * Does this property has a default value
-     * 
+     *
      * @returrn whether property has a default value
      */
     public boolean isDefault() {
@@ -268,7 +243,7 @@ public class BasicPropertySupport extends Node.Property implements IProperty, Co
 
     /**
      * Is this property read only, if readonly then gui can not edit this property
-     * 
+     *
      * @return whether this property is read only
      */
     public boolean isReadOnly() {
@@ -277,7 +252,7 @@ public class BasicPropertySupport extends Node.Property implements IProperty, Co
 
     /**
      * Is this property require if yes then this property should always have a vaule
-     * 
+     *
      * @return whether this property is required
      */
     public boolean isRequired() {
@@ -286,7 +261,7 @@ public class BasicPropertySupport extends Node.Property implements IProperty, Co
 
     /**
      * is this value valid
-     * 
+     *
      * @return value if valid
      */
     public boolean isValid() {
@@ -301,7 +276,7 @@ public class BasicPropertySupport extends Node.Property implements IProperty, Co
 
     /**
      * deos this property has a custom editor
-     * 
+     *
      * @param editor whether property has a custom editor
      */
     public void setCustomEditor(String editor) {
@@ -310,7 +285,7 @@ public class BasicPropertySupport extends Node.Property implements IProperty, Co
 
     /**
      * Does this property has a default value
-     * 
+     *
      * @returrn whether property has a default value
      */
     public void setDefault(boolean def) {
@@ -319,7 +294,7 @@ public class BasicPropertySupport extends Node.Property implements IProperty, Co
 
     /**
      * Does this property has a default value
-     * 
+     *
      * @returrn whether property has a default value
      */
     public void setDefault(String def) {
@@ -327,17 +302,8 @@ public class BasicPropertySupport extends Node.Property implements IProperty, Co
     }
 
     /**
-     * set the name of the property
-     * 
-     * @return property name
-     */
-    public void setDisplayName(String name) {
-        super.setDisplayName(name);
-    }
-
-    /**
      * set the optional property editor which can be used to edit this property
-     * 
+     *
      * @return property editor
      */
     public void setEditorClass(String editorClass) {
@@ -358,20 +324,11 @@ public class BasicPropertySupport extends Node.Property implements IProperty, Co
 
     /**
      * set the group to which this property belongs
-     * 
+     *
      * @return group to which property belongs
      */
     public void setGroup(String group) {
         this.group = group;
-    }
-
-    /**
-     * set the name of the property
-     * 
-     * @return property name
-     */
-    public void setName(String name) {
-        super.setName(name);
     }
 
     /**
@@ -390,7 +347,7 @@ public class BasicPropertySupport extends Node.Property implements IProperty, Co
 
     /**
      * set the position where this property should appear in the property sheet gui
-     * 
+     *
      * @return position
      */
     public void setPosition(String position) {
@@ -399,7 +356,7 @@ public class BasicPropertySupport extends Node.Property implements IProperty, Co
 
     /**
      * set the property customizer
-     * 
+     *
      * @param customizer customizer
      */
     public void setPropertyCustomizer(IPropertyCustomizer customizer) {
@@ -415,7 +372,7 @@ public class BasicPropertySupport extends Node.Property implements IProperty, Co
 
     /**
      * set the optional property editor which can be used to edit this property
-     * 
+     *
      * @return property editor
      */
     public void setPropertyEditor(PropertyEditor editor) {
@@ -427,7 +384,7 @@ public class BasicPropertySupport extends Node.Property implements IProperty, Co
 
     /**
      * Is this property read only, if readonly then gui can not edit this property
-     * 
+     *
      * @return whether this property is read only
      */
     public void setReadOnly(boolean readOnly) {
@@ -436,7 +393,7 @@ public class BasicPropertySupport extends Node.Property implements IProperty, Co
 
     /**
      * Is this property read only, if readonly then gui can not edit this property
-     * 
+     *
      * @return whether this property is read only
      */
     public void setReadOnly(String readOnly) {
@@ -445,7 +402,7 @@ public class BasicPropertySupport extends Node.Property implements IProperty, Co
 
     /**
      * Is this property require if yes then this property should always have a vaule
-     * 
+     *
      * @return whether this property is required
      */
     public void setRequired(boolean required) {
@@ -454,7 +411,7 @@ public class BasicPropertySupport extends Node.Property implements IProperty, Co
 
     /**
      * Is this property require if yes then this property should always have a vaule
-     * 
+     *
      * @return whether this property is required
      */
     public void setRequired(String required) {
@@ -463,7 +420,7 @@ public class BasicPropertySupport extends Node.Property implements IProperty, Co
 
     /**
      * set the tooltip of the element
-     * 
+     *
      * @param tTip tool tip
      */
     public void setToolTip(String tTip) {
@@ -472,34 +429,34 @@ public class BasicPropertySupport extends Node.Property implements IProperty, Co
 
     /**
      * get the gui type of this property
-     * 
+     *
      * @return gui type
      */
     public void setType(String type) {
         this.type = type;
     }
 
-    public void setValue(Object obj) throws java.lang.IllegalAccessException, java.lang.IllegalArgumentException,
-            java.lang.reflect.InvocationTargetException {
+    public void setValue(Object obj) throws java.lang.IllegalAccessException, java.lang.IllegalArgumentException, java.lang.reflect.InvocationTargetException {
         Object oldVal = this.getValue();
         try {
             // first fire vetoable change event
             ((PropertyGroup) this.getParent()).fireVetoableChangeEvent(this.getName(), oldVal, obj);
             // then fire VALID_STATE event
             ((PropertyGroup) this.getParent()).firePropertyChangeEvent();
-
         } catch (PropertyVetoException ex) {
             return;
         }
         val = obj;
 
         // then fire value change
-        ((PropertyGroup) this.getParent()).firePropertyChangeEvent(this.getName(), oldVal, obj);
+        if (!isReadOnly()) {
+            ((PropertyGroup) this.getParent()).firePropertyChangeEvent(this.getName(), oldVal, obj);
+        }
     }
 
     /**
      * set the type of value of this property
-     * 
+     *
      * @return property value type
      */
     public void setValueType(String vType) {
@@ -510,4 +467,3 @@ public class BasicPropertySupport extends Node.Property implements IProperty, Co
         }
     }
 }
-

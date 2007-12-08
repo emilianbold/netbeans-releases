@@ -41,7 +41,6 @@
 package org.netbeans.modules.sql.framework.ui.view.property;
 
 import java.beans.PropertyEditor;
-
 import org.netbeans.modules.sql.framework.model.SQLCondition;
 import org.netbeans.modules.sql.framework.model.SQLGroupBy;
 import org.netbeans.modules.sql.framework.model.TargetTable;
@@ -50,13 +49,13 @@ import org.netbeans.modules.sql.framework.ui.view.GroupByPropertyEditor;
 import org.netbeans.modules.sql.framework.ui.view.IGraphViewContainer;
 import org.netbeans.modules.sql.framework.ui.view.graph.SQLBasicTableArea;
 import org.openide.nodes.Node;
-
 import com.sun.sql.framework.exception.BaseException;
 
 /**
  * @author Ritesh Adval
  */
 public class TargetTableProperties extends TableProperties {
+
     private TargetTable table;
 
     public TargetTableProperties(IGraphViewContainer editor, SQLBasicTableArea gNode, TargetTable table) {
@@ -73,13 +72,13 @@ public class TargetTableProperties extends TableProperties {
 
     /**
      * get condition text
-     * 
+     *
      * @return sql condition
      */
     public String getJoinConditionText() {
         return this.table.getJoinConditionText();
     }
-    
+
     public SQLCondition getFilterCondition() {
         SQLCondition joinCond = table.getFilterCondition();
         return joinCond;
@@ -87,13 +86,14 @@ public class TargetTableProperties extends TableProperties {
 
     /**
      * get condition text
-     * 
+     *
      * @return sql condition
      */
     public String getFilterConditionText() {
         return this.table.getFilterConditionText();
     }
 
+    @Override
     public PropertyEditor getCustomEditor(Node.Property property) {
         if (property.getName().equals("joinCondition")) {
             ConditionPropertyEditor f = new ConditionPropertyEditor(editor, table);
@@ -116,7 +116,7 @@ public class TargetTableProperties extends TableProperties {
 
     /**
      * get report group by object
-     * 
+     *
      * @return SQLGroupBy
      */
     public SQLGroupBy getSQLGroupBy() {
@@ -125,7 +125,7 @@ public class TargetTableProperties extends TableProperties {
 
     /**
      * get string representation of statement type
-     * 
+     *
      * @return statement type
      */
     public String getStrStatementType() {
@@ -134,7 +134,7 @@ public class TargetTableProperties extends TableProperties {
 
     /**
      * get whether to create target table
-     * 
+     *
      * @return whether to create target table
      */
     public boolean isCreateTargetTable() {
@@ -144,7 +144,7 @@ public class TargetTableProperties extends TableProperties {
     /**
      * Indicates whether contents of target table should be truncated before loading new
      * data.
-     * 
+     *
      * @return true if contents should be truncated; false otherwise
      */
     public boolean isTruncateBeforeLoad() {
@@ -159,14 +159,13 @@ public class TargetTableProperties extends TableProperties {
 
     /**
      * set the condition text
-     * 
+     *
      * @param cond sql condition
      */
     public void setJoinConditionText(String cond) {
         this.table.setJoinConditionText(cond);
     }
-    
-    
+
     public void setFilterCondition(SQLCondition filter) throws BaseException {
         table.setFilterCondition(filter);
         gNode.setConditionIcons();
@@ -175,7 +174,7 @@ public class TargetTableProperties extends TableProperties {
 
     /**
      * set the condition text
-     * 
+     *
      * @param cond sql condition
      */
     public void setFilterConditionText(String cond) {
@@ -184,7 +183,7 @@ public class TargetTableProperties extends TableProperties {
 
     /**
      * set whether to create target table if does not exist
-     * 
+     *
      * @param create whether to create target table
      */
     public void setCreateTargetTable(boolean create) {
@@ -194,7 +193,7 @@ public class TargetTableProperties extends TableProperties {
 
     /**
      * set group by object
-     * 
+     *
      * @param groupBy - SQLGroupBy
      */
     public void setSQLGroupBy(SQLGroupBy groupBy) {
@@ -209,7 +208,7 @@ public class TargetTableProperties extends TableProperties {
 
     /**
      * Sets whether contents of target table should be truncated before loading new data.
-     * 
+     *
      * @param flag true if contents should be truncated; false otherwise
      */
     public void setTruncateBeforeLoad(boolean flag) {

@@ -44,7 +44,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.netbeans.modules.sql.framework.common.utils.TagParserUtility;
-import org.netbeans.modules.sql.framework.evaluators.database.SQLOperatorFactory;
+import org.netbeans.modules.sql.framework.codegen.SQLOperatorFactory;
 import org.netbeans.modules.sql.framework.model.GUIInfo;
 import org.netbeans.modules.sql.framework.model.SQLConstants;
 import org.netbeans.modules.sql.framework.model.SQLGenericOperator;
@@ -54,7 +54,7 @@ import org.netbeans.modules.sql.framework.model.SQLObject;
 import org.netbeans.modules.sql.framework.model.SQLOperator;
 import org.netbeans.modules.sql.framework.model.SQLOperatorArg;
 import org.netbeans.modules.sql.framework.model.SQLOperatorDefinition;
-import org.netbeans.modules.sql.framework.model.utils.EvaluatorUtil;
+import org.netbeans.modules.sql.framework.model.utils.GeneratorUtil;
 import org.netbeans.modules.sql.framework.model.utils.OperatorUtil;
 import org.netbeans.modules.sql.framework.model.visitors.SQLVisitor;
 import org.netbeans.modules.sql.framework.ui.graph.IOperatorField;
@@ -590,7 +590,7 @@ public class SQLGenericOperatorImpl extends SQLConnectableObjectImpl implements 
 
     public String toString() {
         try {
-            return EvaluatorUtil.getInstance().getEvaluatedString(this);
+            return GeneratorUtil.getInstance().getEvaluatedString(this);
         } catch (BaseException ignore) {
             return "Unknown";
         }

@@ -42,10 +42,7 @@ package org.netbeans.modules.sql.framework.model.impl;
 
 import java.util.List;
 
-import org.netbeans.modules.model.database.DBColumn;
-import org.netbeans.modules.model.database.DBConnectionDefinition;
-import org.netbeans.modules.model.database.DBTable;
-import org.netbeans.modules.model.database.DatabaseModel;
+import org.netbeans.modules.sql.framework.model.DBColumn;
 import org.netbeans.modules.sql.framework.common.jdbc.SQLDBConnectionDefinition;
 import org.netbeans.modules.sql.framework.model.ColumnRef;
 import org.netbeans.modules.sql.framework.model.RuntimeDatabaseModel;
@@ -74,6 +71,9 @@ import org.netbeans.modules.sql.framework.model.VisibleSQLPredicate;
 import org.w3c.dom.Element;
 
 import com.sun.sql.framework.exception.BaseException;
+import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
+import org.netbeans.modules.sql.framework.model.DBTable;
+import org.netbeans.modules.sql.framework.model.DatabaseModel;
 
 /**
  * Object factory

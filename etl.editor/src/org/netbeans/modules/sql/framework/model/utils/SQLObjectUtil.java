@@ -41,7 +41,6 @@
 package org.netbeans.modules.sql.framework.model.utils;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -52,11 +51,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.netbeans.modules.jdbc.builder.DBMetaData;
-import org.netbeans.modules.model.database.DBTable;
-import org.netbeans.modules.model.database.ForeignKey;
-import org.netbeans.modules.model.database.PrimaryKey;
-import org.netbeans.modules.sql.framework.common.jdbc.SQLDBConnectionDefinition;
+import org.netbeans.modules.sql.framework.model.DBMetaDataFactory;
 import org.netbeans.modules.sql.framework.common.utils.DBExplorerConnectionUtil;
 import org.netbeans.modules.sql.framework.common.utils.FlatfileDBMarker;
 import org.netbeans.modules.sql.framework.common.utils.FlatfileDBTableMarker;
@@ -89,8 +84,11 @@ import org.netbeans.modules.sql.framework.ui.model.CollabSQLUIModel;
 
 
 import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.exception.DBSQLException;
 import com.sun.sql.framework.utils.Logger;
+import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
+import org.netbeans.modules.sql.framework.model.DBTable;
+import org.netbeans.modules.sql.framework.model.ForeignKey;
+import org.netbeans.modules.sql.framework.model.PrimaryKey;
 
 /**
  * @author Ritesh Adval
@@ -108,7 +106,7 @@ public class SQLObjectUtil {
         Object repObj = dbModel.getSource();
         
         if (repObj instanceof FlatfileDBMarker ||
-                dbModel.getETLDBConnectionDefinition().getDBType().equals(DBMetaData.AXION)) {
+                dbModel.getETLDBConnectionDefinition().getDBType().equals(DBMetaDataFactory.AXION)) {
             // set the flatfile location name for this table
             sTable.setFlatFileLocationRuntimeInputName(generateFFRuntimeInputName(FILE_LOC, sTable));
             RuntimeDatabaseModel rtDBModel = getOrCreateRuntimeModel(sqlDefn);
@@ -146,7 +144,7 @@ public class SQLObjectUtil {
     }
     
     public static SourceColumn createRuntimeInputArg(SQLDBTable sTable,
-            String ffArgName, SQLDBConnectionDefinition connDef) {
+            String ffArgName, DBConnectionDefinition connDef) {
         SourceColumn srcColumn = SQLModelObjectFactory.getInstance().createSourceColumn(
                 ffArgName, java.sql.Types.VARCHAR, 0, 0, true);
         srcColumn.setEditable(false); // the name is not editable
@@ -157,7 +155,7 @@ public class SQLObjectUtil {
         return srcColumn;
     }
     
-    private static String getFileNameFromDB(SQLDBTable sTable, SQLDBConnectionDefinition conDef) {
+    private static String getFileNameFromDB(SQLDBTable sTable, DBConnectionDefinition conDef) {
         String fileName = "";
         Connection conn = null;
         try {

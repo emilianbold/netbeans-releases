@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.sql.framework.model.impl;
 
-import org.netbeans.modules.model.database.DBColumn;
+import org.netbeans.modules.sql.framework.model.DBColumn;
 import org.netbeans.modules.sql.framework.common.utils.TagParserUtility;
 import org.netbeans.modules.sql.framework.model.SQLConstants;
 import org.netbeans.modules.sql.framework.model.SQLDBModel;

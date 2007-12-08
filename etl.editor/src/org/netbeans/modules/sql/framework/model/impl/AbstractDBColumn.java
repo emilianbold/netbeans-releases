@@ -40,8 +40,7 @@
  */
 package org.netbeans.modules.sql.framework.model.impl;
 
-import org.netbeans.modules.model.database.DBColumn;
-import org.netbeans.modules.model.database.DBTable;
+import org.netbeans.modules.sql.framework.model.DBColumn;
 import org.netbeans.modules.sql.framework.common.jdbc.SQLUtils;
 import org.netbeans.modules.sql.framework.common.utils.XmlUtil;
 import org.netbeans.modules.sql.framework.model.SQLConstants;
@@ -50,12 +49,13 @@ import org.netbeans.modules.sql.framework.model.SQLDBModel;
 import org.netbeans.modules.sql.framework.model.SQLDBTable;
 import org.netbeans.modules.sql.framework.model.SQLDefinition;
 import org.netbeans.modules.sql.framework.model.SQLObject;
-import org.netbeans.modules.sql.framework.model.utils.EvaluatorUtil;
+import org.netbeans.modules.sql.framework.model.utils.GeneratorUtil;
 import org.w3c.dom.Element;
 
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.Logger;
 import com.sun.sql.framework.utils.StringUtil;
+import org.netbeans.modules.sql.framework.model.DBTable;
 
 /**
  * Abstract implementation for org.netbeans.modules.model.database.DBColumn and SQLObject interfaces.
@@ -692,7 +692,7 @@ public abstract class AbstractDBColumn extends AbstractSQLObject implements SQLD
     public String toString() {
         String cName = "Unknown";
         try {
-            EvaluatorUtil eval = EvaluatorUtil.getInstance();
+            GeneratorUtil eval = GeneratorUtil.getInstance();
             eval.setTableAliasUsed(true);
             cName = eval.getEvaluatedString(this);
             eval.setTableAliasUsed(false);

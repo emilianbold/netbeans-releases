@@ -48,10 +48,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.netbeans.modules.model.database.DBColumn;
-import org.netbeans.modules.model.database.DBTable;
-import org.netbeans.modules.model.database.ForeignKey;
-import org.netbeans.modules.model.database.Index;
+import org.netbeans.modules.sql.framework.model.DBColumn;
+import org.netbeans.modules.sql.framework.model.DBTable;
+import org.netbeans.modules.sql.framework.model.ForeignKey;
+import org.netbeans.modules.sql.framework.model.Index;
 import org.netbeans.modules.sql.framework.model.SQLDBTable;
 import org.netbeans.modules.sql.framework.ui.editor.property.impl.DefaultPropertyEditor;
 import org.netbeans.modules.sql.framework.ui.view.BasicTopView;
@@ -127,8 +127,8 @@ public class TableProperties {
         return table.getDisplayName();
     }
 
-    private List getForeignKeyList(DBTable tbl, DBColumn column) {
-        ArrayList optionList = new ArrayList();
+    private List<String> getForeignKeyList(DBTable tbl, DBColumn column) {
+        ArrayList<String> optionList = new ArrayList<String>();
         String refString = column.getName() + " --> ";
 
         List list = tbl.getForeignKeys();
@@ -186,18 +186,18 @@ public class TableProperties {
     }
 
     /**
-     * Gets the current OTD-derived schema name.
+     * Gets the current database-derived schema name.
      * 
-     * @return current schema name as supplied by OTD.
+     * @return current schema name as supplied by Database.
      */
     public String getSchema() {
         return table.getSchema();
     }
 
     /**
-     * Gets the current OTD-derived catalog name.
+     * Gets the current Database-derived catalog name.
      * 
-     * @return current catalog name as supplied by OTD.
+     * @return current catalog name as supplied by Database.
      */
     public String getCatalog() {
         return table.getCatalog();
@@ -264,10 +264,10 @@ public class TableProperties {
      */
     protected void initializeProperties(SQLDBTable tbl) {
         this.table = tbl;
-        ArrayList pkList = new ArrayList();
-        ArrayList fkList = new ArrayList();
-        ArrayList idxList = new ArrayList();
-        Set indexedUniqueCols = new HashSet();
+        ArrayList<String> pkList = new ArrayList<String>();
+        ArrayList<String> fkList = new ArrayList<String>();
+        ArrayList<String> idxList = new ArrayList<String>();
+        Set<String> indexedUniqueCols = new HashSet<String>();
 
         List columnList = table.getColumnList();
         Iterator it = columnList.iterator();
@@ -284,7 +284,7 @@ public class TableProperties {
 
             //get fk options
             if (fk) {
-                List fkListForColumn = getForeignKeyList(table, column);
+                List<String> fkListForColumn = getForeignKeyList(table, column);
                 if (fkListForColumn.size() > 0) {
                     fkList.addAll(fkListForColumn);
                 }
@@ -314,7 +314,8 @@ public class TableProperties {
         pKeys = new ColumnPropertySupport(pkList);
         fKeys = new ColumnPropertySupport(fkList);
         indices = new ColumnPropertySupport(idxList);
-        uniqueCols = new ColumnPropertySupport(new ArrayList(indexedUniqueCols));
+        List<String> ndxCols = new ArrayList<String>(indexedUniqueCols);
+        uniqueCols = new ColumnPropertySupport(ndxCols);
         
     }
 

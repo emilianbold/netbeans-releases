@@ -43,13 +43,14 @@ package org.netbeans.modules.sql.framework.model;
 
 /**
  * @author Ritesh Adval
- * @version $Revision$
  */
 public interface ValidationInfo {
 
     public static final int VALIDATION_ERROR = 1;
 
     public static final int VALIDATION_WARNING = 2;
+    
+    public static final int VALIDATION_INFO = 3;
 
     public String getDescription();
 

@@ -82,7 +82,7 @@ public interface SQLJoinOperator extends SQLConnectableObject, SQLCanvasObject {
      *
      * @return list of all participating SourceTables for this join
      */
-    public List getAllSourceTables();
+    public List<SourceTable> getAllSourceTables();
     
     /**
      * get join condition

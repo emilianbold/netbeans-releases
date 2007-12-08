@@ -54,9 +54,12 @@ import javax.swing.JTree;
 import javax.swing.ToolTipManager;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+import org.netbeans.modules.sql.framework.model.DBColumn;
 
 import org.netbeans.modules.sql.framework.common.utils.NativeColumnOrderComparator;
+import org.netbeans.modules.sql.framework.model.DBTable;
 import org.netbeans.modules.sql.framework.model.SQLDBColumn;
 import org.netbeans.modules.sql.framework.model.SQLDBTable;
 
@@ -67,7 +70,7 @@ import org.netbeans.modules.sql.framework.model.SQLDBTable;
  */
 public class TableColumnTreePanel extends JPanel {
 
-    private Comparator columnComparator = null;
+    private Comparator<DBColumn> columnComparator = null;
 
     private DefaultMutableTreeNode rootNode;
 
@@ -76,20 +79,20 @@ public class TableColumnTreePanel extends JPanel {
     private JTree tree;
 
     /**
-     * Creates a new instance of TableTreeView using the given List of OTDs and showing
-     * all components (OTDs, tables, and columns).
+     * Creates a new instance of TableTreeView using the given List of Databases and showing
+     * all components (Databases, tables, and columns).
      *
-     * @param otdList List containing OTDs to display
+     * @param dbList List containing Databases to display
      */
     public TableColumnTreePanel(List tableList) {
         this(tableList, false);
     }
 
     /**
-     * Creates a new instance of TableTreeView using the given List of OTDs and showing
-     * all components (OTDs, tables, and columns).
+     * Creates a new instance of TableTreeView using the given List of Databases and showing
+     * all components (Db, tables, and columns).
      *
-     * @param otdList List containing OTDs to display
+     * @param DbList List containing Databases to display
      * @param useColumnOrdinalPosition true if columns should be sorted based on their
      *        ordinal position; false to sort by column name (ascending)
      */
@@ -108,8 +111,8 @@ public class TableColumnTreePanel extends JPanel {
      *
      * @return List (possibly empty) of user-selected items
      */
-    public List getSelectedItems() {
-        List itemList = new ArrayList();
+    public List<DBColumn> getSelectedItems() {
+        List<DBColumn> itemList = new ArrayList<DBColumn>();
 
         TreePath[] paths = tree.getSelectionPaths();
         if (paths != null) {
@@ -118,22 +121,19 @@ public class TableColumnTreePanel extends JPanel {
                 if (obj instanceof SQLDBColumn) {
                     SQLDBColumn column = (SQLDBColumn) obj;
                     if (column.isVisible()) {
-                        itemList.add(obj);
+                        itemList.add((SQLDBColumn) obj);
                     }
                 }
             }
         }
-
         return itemList;
     }
 
-    public List getTableColumnNodes() {
-        ArrayList tableNodes = new ArrayList();
-
+    public List<TreeNode> getTableColumnNodes() {
+        List<TreeNode> tableNodes = new ArrayList<TreeNode>();
         for (int i = 0; i < rootNode.getChildCount(); i++) {
             tableNodes.add(rootNode.getChildAt(i));
         }
-
         return tableNodes;
     }
 
@@ -149,14 +149,14 @@ public class TableColumnTreePanel extends JPanel {
         }
     }
 
-    public void setTables(List tbls) {
+    public void setTables(List<DBTable> tbls) {
         this.tables = tbls;
         DefaultTreeModel treeModel = createTreeModel();
         tree.setModel(treeModel);
     }
 
-    private void createColumnNodes(SQLDBTable table, DefaultMutableTreeNode parentNode) {
-        List columnList = new ArrayList(table.getColumnList());
+    private void createColumnNodes(DBTable table, DefaultMutableTreeNode parentNode) {
+        List<DBColumn> columnList = new ArrayList<DBColumn>(table.getColumnList());
         Collections.sort(columnList, columnComparator);
         Iterator it = columnList.iterator();
         while (it.hasNext()) {

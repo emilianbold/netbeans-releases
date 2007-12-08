@@ -49,8 +49,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import org.netbeans.modules.sql.framework.common.utils.TagParserUtility;
-import org.netbeans.modules.sql.framework.evaluators.database.OperatorInstance;
-import org.netbeans.modules.sql.framework.evaluators.database.SQLOperatorFactory;
+import org.netbeans.modules.sql.framework.codegen.OperatorInstance;
+import org.netbeans.modules.sql.framework.codegen.SQLOperatorFactory;
 import org.netbeans.modules.sql.framework.model.SQLConstants;
 import org.netbeans.modules.sql.framework.model.SQLGenericOperator;
 import org.netbeans.modules.sql.framework.model.SQLInputObject;

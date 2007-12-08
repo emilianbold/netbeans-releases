@@ -59,7 +59,7 @@ public class Template implements ITemplate {
     private String displayName;
     private String name;
     private INode parent;
-    private ArrayList propertyGroupList = new ArrayList();
+    private ArrayList<IPropertyGroup> propertyGroupList = new ArrayList<IPropertyGroup>();
 
     private String toolTip;
 
@@ -123,7 +123,7 @@ public class Template implements ITemplate {
         return null;
     }
 
-    public List getPropertyGroupList() {
+    public List<IPropertyGroup>  getPropertyGroupList() {
         return propertyGroupList;
     }
 

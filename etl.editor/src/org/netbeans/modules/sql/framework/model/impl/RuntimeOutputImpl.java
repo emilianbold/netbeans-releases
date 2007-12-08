@@ -44,7 +44,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.netbeans.modules.model.database.DBTable;
 import org.netbeans.modules.sql.framework.model.RuntimeOutput;
 import org.netbeans.modules.sql.framework.model.SQLCondition;
 import org.netbeans.modules.sql.framework.model.SQLConstants;
@@ -55,6 +54,7 @@ import org.netbeans.modules.sql.framework.model.TargetColumn;
 
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.RuntimeAttribute;
+import org.netbeans.modules.sql.framework.model.DBTable;
 
 /**
  * @author radval
@@ -79,7 +79,7 @@ public class RuntimeOutputImpl extends TargetTableImpl implements RuntimeOutput 
     }
 
     public Map getRuntimeAttributeMap() {
-        Map inputAttrs = new HashMap();
+        Map<String, RuntimeAttribute> inputAttrs = new HashMap<String, RuntimeAttribute>();
 
         Iterator attrIter = getColumnList().iterator();
         while (attrIter.hasNext()) {
@@ -118,6 +118,7 @@ public class RuntimeOutputImpl extends TargetTableImpl implements RuntimeOutput 
      * @return XML representation of the table metadata.
      * @exception BaseException - exception
      */
+    @Override
     public String toXMLString(String prefix, boolean tableOnly) throws BaseException {
         StringBuilder xml = new StringBuilder(INIT_XMLBUF_SIZE);
 
@@ -152,6 +153,7 @@ public class RuntimeOutputImpl extends TargetTableImpl implements RuntimeOutput 
      * 
      * @return String representing element tag for this class
      */
+    @Override
     protected String getElementTagName() {
         return TAG_RUNTIME_OUTPUT;
     }
@@ -161,10 +163,12 @@ public class RuntimeOutputImpl extends TargetTableImpl implements RuntimeOutput 
         this.setName(TAG_RUNTIME_OUTPUT);
     }
 
+    @Override
     public void setHavingCondition(SQLCondition cond) {
       
     }
 
+    @Override
     public void setBatchSize(Integer newsize) {
        this.setAttribute(ATTR_BATCHSIZE,newsize);
     }

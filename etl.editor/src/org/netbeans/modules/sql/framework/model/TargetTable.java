@@ -56,8 +56,6 @@ public interface TargetTable extends SQLDBTable, SQLConnectableObject {
     
     public static final String FILTER_CONDITION = "filterCondition";
     
-    public static final String HAVING_CONDITION = "havingCondition";
-    
     /**
      * get the target table join condition
      * 
@@ -72,12 +70,7 @@ public interface TargetTable extends SQLDBTable, SQLConnectableObject {
      */
     public String getJoinConditionText();
     
-      /**
-     * get the target table groupby condition
-     * 
-     * @return target table groupby conidiotn
-     */
-    public SQLCondition getHavingCondition();
+    
     /**
      * get the target table filter condition
      * 
@@ -85,7 +78,6 @@ public interface TargetTable extends SQLDBTable, SQLConnectableObject {
      */
     public SQLCondition getFilterCondition();
 
-    
     /**
      * get filter condition text
      * 
@@ -104,7 +96,7 @@ public interface TargetTable extends SQLDBTable, SQLConnectableObject {
      * 
      * @return list of mapped columns
      */
-    public List getMappedColumns();
+    public List<TargetColumn> getMappedColumns();
 
     /**
      * Gets the Source Table List
@@ -112,7 +104,7 @@ public interface TargetTable extends SQLDBTable, SQLConnectableObject {
      * @return List All source tables
      * @exception BaseException thrown while getting Source Table List
      */
-    public List getSourceTableList() throws BaseException;
+    public List<DBTable> getSourceTableList() throws BaseException;
 
     /**
      * get report group by object
@@ -164,12 +156,7 @@ public interface TargetTable extends SQLDBTable, SQLConnectableObject {
      * @param cond target table join condition
      */
     public void setJoinCondition(SQLCondition cond);
-   /**
-     * set the target table group-by condition
-     * 
-     * @param cond target table group-by condition
-     */
-    public void setHavingCondition(SQLCondition cond);
+
     /**
      * set the join condition text
      * 

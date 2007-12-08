@@ -47,7 +47,7 @@ import org.netbeans.modules.sql.framework.common.jdbc.SQLUtils;
 import org.netbeans.modules.sql.framework.model.SQLConstants;
 import org.netbeans.modules.sql.framework.model.SQLLiteral;
 import org.netbeans.modules.sql.framework.model.VisibleSQLLiteral;
-import org.netbeans.modules.sql.framework.model.utils.EvaluatorUtil;
+import org.netbeans.modules.sql.framework.model.utils.GeneratorUtil;
 
 import com.sun.sql.framework.exception.BaseException;
 
@@ -185,7 +185,7 @@ public class SQLLiteralImpl extends AbstractSQLObject implements SQLLiteral {
 
     public String toString() {
         try {
-            return EvaluatorUtil.getInstance().getEvaluatedString(this);
+            return GeneratorUtil.getInstance().getEvaluatedString(this);
         } catch (BaseException ignore) {
             return "Unknown";
         }

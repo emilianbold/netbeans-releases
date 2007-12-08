@@ -91,8 +91,8 @@ public class BasicPropertySheet extends JPanel implements IPropertySheet {
      * 
      * @return list of IProperty objects
      */
-    public List getProperties() {
-        ArrayList list = new ArrayList();
+    public List<IProperty> getProperties() {
+        ArrayList<IProperty> list = new ArrayList<IProperty>();
 
         Node.PropertySet[] pSets = pNode.getPropertySets();
         for (int i = 0; i < pSets.length; i++) {
@@ -152,12 +152,11 @@ public class BasicPropertySheet extends JPanel implements IPropertySheet {
      */
     public void setBean(Object bean, Node node) {
         this.pNode = (PropertyNode) node;
-        // set initialze value from bean to noe
-        setBean(bean);
+        setBean(bean); // set initialze value from bean to noe
         init();
     }
 
-    private void addPropertyValues(HashMap map, Node.PropertySet pSet) {
+    private void addPropertyValues(HashMap<String, Object> map, Node.PropertySet pSet) {
         Node.Property[] properties = pSet.getProperties();
         for (int i = 0; i < properties.length; i++) {
             Node.Property property = properties[i];
@@ -169,14 +168,14 @@ public class BasicPropertySheet extends JPanel implements IPropertySheet {
             try {
                 map.put(property.getName(), property.getValue());
             } catch (Exception ex) {
-                ex.printStackTrace();
+                ex.printStackTrace(); // XXX: use logger
             }
         }
     }
 
-    private HashMap getPropertyValues(PropertyNode pNode1) {
-        HashMap map = new HashMap();
-        Node.PropertySet[] pSets = pNode1.getPropertySets();
+    private HashMap<String, Object> getPropertyValues(PropertyNode node) {
+        HashMap<String, Object> map = new HashMap<String, Object>();
+        Node.PropertySet[] pSets = node.getPropertySets();
         for (int i = 0; i < pSets.length; i++) {
             Node.PropertySet pSet = pSets[i];
             addPropertyValues(map, pSet);

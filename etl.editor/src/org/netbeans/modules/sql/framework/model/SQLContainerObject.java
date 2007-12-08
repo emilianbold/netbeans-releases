@@ -42,9 +42,7 @@
 package org.netbeans.modules.sql.framework.model;
 
 import java.util.Collection;
-
 import org.w3c.dom.Element;
-
 import com.sun.sql.framework.exception.BaseException;
 
 /**
@@ -54,7 +52,7 @@ public interface SQLContainerObject {
 
     /**
      * Adds given SQLObject instance to this SQLDefinition.
-     * 
+     *
      * @param newObject new instance to add
      * @throws BaseException if add fails or instance implements an unrecognized object
      *         type.
@@ -63,7 +61,7 @@ public interface SQLContainerObject {
 
     /**
      * Adds SQLObject to list of object references to be resolved in a second pass.
-     * 
+     *
      * @param sqlObj to be added
      * @param element DOM Element of SQLObject to be resolved later
      */
@@ -72,7 +70,7 @@ public interface SQLContainerObject {
     /**
      * all sql objects are cloneable
      * @return cloned sql object
-     * @throws java.lang.CloneNotSupportedException 
+     * @throws java.lang.CloneNotSupportedException
      */
     public Object cloneSQLObject() throws CloneNotSupportedException;
 
@@ -82,7 +80,7 @@ public interface SQLContainerObject {
      * returned SQLObject instance with this instance, the calling method should call
      * addSQLObject(SQLObject) which will ensure the parent-child relationship is
      * preserved.
-     * 
+     *
      * @param objTag objTag of object to create
      * @return new SQLObject instance
      * @throws BaseException if error occurs during creation
@@ -96,7 +94,7 @@ public interface SQLContainerObject {
      * returned SQLObject instance with this instance, the calling method should call
      * addSQLObject(SQLObject) which will ensure the parent-child relationship is
      * preserved.
-     * 
+     *
      * @param className className of object to create
      * @return new SQLObject instance
      * @throws BaseException if error occurs during creation
@@ -106,14 +104,14 @@ public interface SQLContainerObject {
 
     /**
      * Gets the Collection of active SQLObjects.
-     * 
+     *
      * @return Collection of current SQLObjects in this SQLDefinition instance.
      */
-    public Collection getAllObjects();
+    public Collection<SQLObject> getAllObjects();
 
     /**
      * Gets associated SQLObject instance, if any, with the given object ID.
-     * 
+     *
      * @param objectId ID of SQLObject instance to be retrieved
      * @param type type of object to retrieve
      * @return associated SQLObject instance, or null if no such instance exists
@@ -122,7 +120,7 @@ public interface SQLContainerObject {
 
     /**
      * Gets a Collection of SQLObjects, if any, with the given type
-     * 
+     *
      * @param type SQLObject type to retrieve
      * @return Collection (possibly empty) of SQLObjects with the given type
      */
@@ -130,7 +128,7 @@ public interface SQLContainerObject {
 
     /**
      * Gets parent object, if any, that owns this SQLDefinition instance.
-     * 
+     *
      * @return parent object
      */
     public Object getParent();
@@ -138,7 +136,7 @@ public interface SQLContainerObject {
     /**
      * Parses the XML content, if any, using the given Element as a source for
      * reconstituting the member variables and collections of this instance.
-     * 
+     *
      * @param xmlElement DOM element containing XML marshalled version of a SQLDefinition
      *        instance
      * @throws BaseException thrown while parsing XML, or if xmlElement is null
@@ -152,7 +150,7 @@ public interface SQLContainerObject {
 
     /**
      * Removes the given object from SQLDefinition
-     * 
+     *
      * @param sqlObj to be removed
      * @throws BaseException while removing
      */
@@ -160,7 +158,7 @@ public interface SQLContainerObject {
 
     /**
      * Removes SQLObjects passed.
-     * 
+     *
      * @param sqlObjs Collection of SQLObjects to be removed
      * @throws BaseException while removing
      */
@@ -168,18 +166,17 @@ public interface SQLContainerObject {
 
     /**
      * Sets parent object, if any, that owns this SQLDefinition instance.
-     * 
+     *
      * @param newParent new parent object
      */
     public void setParent(Object newParent);
 
     /**
      * Returns the XML representation of collabSegment.
-     * 
+     *
      * @param prefix the xml.
      * @return Returns the XML representation of colabSegment.
-     * @throws com.sun.sql.framework.exception.BaseException 
+     * @throws com.sun.sql.framework.exception.BaseException
      */
     public String toXMLString(String prefix) throws BaseException;
 }
-

@@ -42,7 +42,6 @@
 package org.netbeans.modules.sql.framework.ui.editor.property.impl;
 
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -60,7 +59,6 @@ public class TemplateManager {
 
     private static final String LOG_CATEGORY = TemplateManager.class.getName();
 
-    private HashMap nodeMap = new HashMap();
     private IResource rManager;
     private ITemplateGroup tg;
 
@@ -74,7 +72,6 @@ public class TemplateManager {
     public TemplateManager(InputStream in, IResource resource) {
         rManager = resource;
         TemplateFactory fac = new TemplateFactory(rManager);
-
         init(new TemplateParser(in, fac), fac);
     }
 
@@ -85,31 +82,17 @@ public class TemplateManager {
      * @return associated PropertyNode instance, or null if none exists
      */
     public PropertyNode getNodeForTemplateName(String templateName) {
-        return (PropertyNode) nodeMap.get(templateName);
-    }
-
-    /**
-     * Gets ITemplateGroup instance managed by this instance.
-     * 
-     * @return associated ITemplateGroup instance
-     */
-    public ITemplateGroup getTemplateGroup() {
-        return tg;
-    }
-
-    /*
-     * Creates PropertyNode instances from internal TemplateGroup reference.
-     */
-    private void createNodes() {
         Map map = tg.getTemplates();
         Iterator it = map.keySet().iterator();
-
         while (it.hasNext()) {
             String name = (String) it.next();
-            ITemplate template = (ITemplate) map.get(name);
-            PropertyNode node = new PropertyNode(template);
-            nodeMap.put(name, node);
+            if(name.equals(templateName)){
+                ITemplate template = (ITemplate) map.get(name);
+                PropertyNode node = new PropertyNode(template);
+                return node;
+            }
         }
+        return null;
     }
 
     /*
@@ -121,9 +104,7 @@ public class TemplateManager {
         if (parser == null) {
             Logger.print(Logger.DEBUG, LOG_CATEGORY, "init(TemplateParser)", "TemplateParser is null");
         }
-
         tg = fac.getTemplateGroup();
-        createNodes();
     }
 
 }

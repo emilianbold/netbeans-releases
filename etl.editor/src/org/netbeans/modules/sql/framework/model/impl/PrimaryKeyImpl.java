@@ -42,124 +42,65 @@ package org.netbeans.modules.sql.framework.model.impl;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
-
-import org.netbeans.modules.model.database.DBColumn;
-import org.netbeans.modules.model.database.DBTable;
-import org.netbeans.modules.model.database.ForeignKey;
-import org.netbeans.modules.model.database.PrimaryKey;
+import org.netbeans.modules.sql.framework.model.DBColumn;
 import org.w3c.dom.Element;
-
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.StringUtil;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Locale;
+import java.util.ResourceBundle;
+import org.netbeans.modules.sql.framework.model.DBTable;
+import org.netbeans.modules.sql.framework.model.ForeignKey;
+import org.netbeans.modules.sql.framework.model.PrimaryKey;
 
 /**
  * Implements PrimaryKey interface.
- * 
+ *
  * @author Jonathan Giron
  * @version $Revision$
  */
 public class PrimaryKeyImpl implements Cloneable, PrimaryKey {
-    /**
-     * Object wrapper to bind the name and sequence ID of a table column participating in
-     * a primary key.
-     */
-    public static class Column implements Comparable {
-        private String name;
-        private int sequence;
-
-        /**
-         * Constructs a new instance of Column using the given DBColumn and sequence.
-         * 
-         * @param col DBColumn from which to obtain column metadata
-         * @param colSequence one-based value indicating this column's sequential order in
-         *        a composite key; should be 1 if this column is the only one in the PK
-         */
-        public Column(DBColumn col, int colSequence) {
-            this(col.getName(), colSequence);
-        }
-
-        /**
-         * Constructs a new instance of Column with the given name and sequence.
-         * 
-         * @param colName name of new Column
-         * @param colSequence one-based value indicating this column's sequential order in
-         *        a composite key; should be 1 if this column is the only one in the PK
-         */
-        public Column(String colName, int colSequence) {
-            if (colName == null || colName.trim().length() == 0) {
-                throw new IllegalArgumentException("Must supply non-empty String value for parameter colName.");
-            }
-
-            if (colSequence <= 0) {
-                throw new IllegalArgumentException("Must supply positive integer value for parameter colSequence.");
-            }
-
-            name = colName;
-            sequence = colSequence;
-        }
-
-        /**
-         * Compares this object with the specified object for order. Returns a negative
-         * integer, zero, or a positive integer as this object is less than, equal to, or
-         * greater than the specified object.
-         * <p>
-         * Note: this class has a natural ordering that is inconsistent with equals.
-         * 
-         * @param o the Object to be compared.
-         * @return a negative integer, zero, or a positive integer as this object is less
-         *         than, equal to, or greater than the specified object.
-         */
-        public int compareTo(Object o) {
-            return (this.sequence - ((Column) o).sequence);
-        }
-
-        /**
-         * Gets name of this Column.
-         * 
-         * @return column name
-         */
-        public String getName() {
-            return name;
-        }
-
-        /**
-         * Gets sequence of this Column within its containing PK.
-         * 
-         * @return this column's sequence relative to other columns in the containing PK.
-         */
-        public int getSequence() {
-            return sequence;
-        }
-    }
 
     /** Name of attribute used for marshalling out PK column names to XML */
     public static final String COLUMNS_ATTR = "columns"; // NOI18N
-
     /** Document element tag name for marshalling out this object to XML */
     public static final String ELEMENT_TAG = "primaryKey"; // NOI18N
-
     /** Name of attribute used for marshalling out primary key name to XML */
     public static final String NAME_ATTR = "name"; // NOI18N
-
+    /**DatabaseMetaData ResultSet column name used to decode name of associated primary key     */
+    protected static final String RS_KEY_NAME = "PK_NAME"; // NOI18N
+    private static final String RS_COLUMN_NAME = "COLUMN_NAME"; // NOI18N
+    /** DatabaseMetaData ResultSet column name used to decode key sequence number*/
+    protected static final String RS_SEQUENCE_NUM = "KEY_SEQ";
     /* List of column names in key sequence order. */
-    private List columnNames;
-
+    private List<String> columnNames;
     /* (optional) DOM element used to construct this instance of PrimaryKey */
     private transient Element element;
-
     /* Name of this key; may be null */
     private String name;
-
     /* DBTable to which this PK belongs */
     private DBTable parent;
+
+    public PrimaryKeyImpl(ResultSet rs) throws SQLException {
+        this();
+        if (rs == null) {
+            Locale locale = Locale.getDefault();
+            ResourceBundle cMessages = ResourceBundle.getBundle("org/netbeans/modules/sql/framework/model/impl/Bundle", locale); // NO i18n
+            throw new IllegalArgumentException(cMessages.getString("ERROR_VALID_RS") + "(ERROR_VALID_RS)"); // NO i18n
+        }
+        
+        while (rs.next()) {
+            columnNames.add(rs.getString(RS_COLUMN_NAME));
+        } 
+    }
 
     /**
      * Creates a new instance of PrimaryKeyImpl, using the keyElement as a source for
      * reconstituting its contents. Caller must invoke parseXml() after this constructor
      * returns in order to unmarshal and reconstitute the instance object.
-     * 
+     *
      * @param keyElement DOM element containing XML marshalled version of a PrimaryKeyImpl
      *        instance
      */
@@ -171,23 +112,21 @@ public class PrimaryKeyImpl implements Cloneable, PrimaryKey {
     /**
      * Creates a new instance of PrimaryKeyImpl, cloning the contents of the given
      * PrimaryKey implementation instance.
-     * 
+     *
      * @param src PrimaryKey to be cloned
      */
     public PrimaryKeyImpl(PrimaryKey src) {
         this();
-
         if (src == null) {
             throw new IllegalArgumentException("Must supply non-null PrimaryKey instance for src.");
         }
-
         copyFrom(src);
     }
 
     /**
      * Creates a new instance of PrimaryKey with the given key name and referencing the
      * column names in the given List.
-     * 
+     *
      * @param keyName name, if any, of this PrimaryKey
      * @param keyColumnNames List of Column objects, or column names in key sequence
      *        order, depending on state of isStringList
@@ -195,36 +134,27 @@ public class PrimaryKeyImpl implements Cloneable, PrimaryKey {
      *        order, false if it contains Column objects which need to be sorted in key
      *        sequence order.
      */
-    public PrimaryKeyImpl(String keyName, List keyColumnNames, boolean isStringList) {
+    public PrimaryKeyImpl(String keyName, List<String> keyColumnNames) {
         this();
         name = keyName;
-
-        if (isStringList) {
-            columnNames.addAll(keyColumnNames);
-        } else {
-            Collections.sort(keyColumnNames);
-            Iterator iter = keyColumnNames.iterator();
-            while (iter.hasNext()) {
-                Column col = (Column) iter.next();
-                columnNames.add(col.getName());
-            }
-        }
+        columnNames.addAll(keyColumnNames);
     }
 
     private PrimaryKeyImpl() {
         name = null;
-        columnNames = new ArrayList();
+        columnNames = new ArrayList<String>();
     }
 
     /**
      * Create a clone of this PrimaryKeyImpl.
-     * 
+     *
      * @return cloned copy of DBColumn.
      */
+    @Override
     public Object clone() {
         try {
             PrimaryKeyImpl impl = (PrimaryKeyImpl) super.clone();
-            impl.columnNames = new ArrayList(this.columnNames);
+            impl.columnNames = new ArrayList<String>(this.columnNames);
             return impl;
         } catch (CloneNotSupportedException e) {
             throw new InternalError(e.toString());
@@ -247,10 +177,11 @@ public class PrimaryKeyImpl implements Cloneable, PrimaryKey {
 
     /**
      * Overrides default implementation to return value based on memberwise comparison.
-     * 
+     *
      * @param refObj Object against which we compare this instance
      * @return true if refObj is functionally identical to this instance; false otherwise
      */
+    @Override
     public boolean equals(Object refObj) {
         if (this == refObj) {
             return true;
@@ -261,11 +192,8 @@ public class PrimaryKeyImpl implements Cloneable, PrimaryKey {
         }
 
         PrimaryKeyImpl ref = (PrimaryKeyImpl) refObj;
-
-        boolean result = (name != null) ? name.equals(ref.name) : (ref.name == null);
-
+        boolean result = (getName() != null) ? name.equals(ref.name) : (ref.name == null);
         result &= (columnNames != null) ? columnNames.equals(ref.columnNames) : (ref.columnNames != null);
-
         return result;
     }
 
@@ -279,7 +207,7 @@ public class PrimaryKeyImpl implements Cloneable, PrimaryKey {
     /**
      * @see org.netbeans.modules.model.database.PrimaryKey#getColumnNames
      */
-    public List getColumnNames() {
+    public List<String> getColumnNames() {
         return Collections.unmodifiableList(columnNames);
     }
 
@@ -287,13 +215,16 @@ public class PrimaryKeyImpl implements Cloneable, PrimaryKey {
      * @see org.netbeans.modules.model.database.PrimaryKey#getDBColumnName
      */
     public String getDBColumnName(int iColumn) {
-        return (String) columnNames.get(iColumn);
+        return columnNames.get(iColumn);
     }
 
     /**
      * @see org.netbeans.modules.model.database.PrimaryKey#getName
      */
     public String getName() {
+        if(name == null && parent != null){
+            name = "PK_" + parent.getName();
+        }
         return name;
     }
 
@@ -325,12 +256,13 @@ public class PrimaryKeyImpl implements Cloneable, PrimaryKey {
     /**
      * Overrides default implementation to compute hashCode value for those members used
      * in equals() for comparison.
-     * 
+     *
      * @return hash code for this object
      * @see java.lang.Object#hashCode
      */
+    @Override
     public int hashCode() {
-        int myHash = (name != null) ? name.hashCode() : 0;
+        int myHash = (getName() != null) ? name.hashCode() : 0;
         myHash += (columnNames != null) ? columnNames.hashCode() : 0;
 
         return myHash;
@@ -345,10 +277,11 @@ public class PrimaryKeyImpl implements Cloneable, PrimaryKey {
 
     /**
      * Parses the XML content, if any, represented by the DOM element member variable.
-     * 
+     *
      * @exception BaseException thrown while parsing XML, or if member variable element is
      *            null
      */
+    @SuppressWarnings("unchecked")
     public void parseXML() throws BaseException {
         if (this.element == null) {
             throw new BaseException("No <" + ELEMENT_TAG + "> element found.");
@@ -360,10 +293,22 @@ public class PrimaryKeyImpl implements Cloneable, PrimaryKey {
         columnNames.addAll(StringUtil.createStringListFrom(colNames));
     }
 
+    @Override
+    public String toString() {
+        StringBuilder buf = new StringBuilder(100);
+        for (int i = 0; i < columnNames.size(); i++) {
+            if (i != 0) {
+                buf.append(",");
+            }
+            buf.append((columnNames.get(i)).trim());
+        }
+        return buf.toString();
+    }
+
     /**
      * Replaces the current List of column names with the contents of the given String
      * array.
-     * 
+     *
      * @param newColNames array of names to supplant current list of column names
      */
     public void setColumnNames(String[] newColNames) {
@@ -380,7 +325,7 @@ public class PrimaryKeyImpl implements Cloneable, PrimaryKey {
     /**
      * Writes contents of this PrimaryKeyImpl instance out as an XML element, using the
      * default prefix.
-     * 
+     *
      * @return String containing XML representation of this PrimaryKeyImpl instance
      */
     public synchronized String toXMLString() {
@@ -390,7 +335,7 @@ public class PrimaryKeyImpl implements Cloneable, PrimaryKey {
     /**
      * Writes contents of this PrimaryKeyImpl instance out as an XML element, using the
      * given prefix String.
-     * 
+     *
      * @param prefix String used to prefix each new line of the XML output
      * @return String containing XML representation of this PrimaryKeyImpl instance
      */
@@ -412,7 +357,7 @@ public class PrimaryKeyImpl implements Cloneable, PrimaryKey {
                 if (i != 0) {
                     buf.append(",");
                 }
-                buf.append(((String) columnNames.get(i)).trim());
+                buf.append((columnNames.get(i)).trim());
             }
             buf.append("\" ");
         }
@@ -424,7 +369,7 @@ public class PrimaryKeyImpl implements Cloneable, PrimaryKey {
 
     /**
      * Sets reference to DBTable that owns this primary key.
-     * 
+     *
      * @param newParent new parent of this primary key.
      */
     void setParent(DBTable newParent) {
@@ -443,4 +388,3 @@ public class PrimaryKeyImpl implements Cloneable, PrimaryKey {
         columnNames.addAll(src.getColumnNames());
     }
 }
-

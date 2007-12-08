@@ -306,6 +306,8 @@ public class SQLToolBarMenu extends JToggleButton {
             });
         }
 
+        @SuppressWarnings("deprecation")
+        @Override
         public void hide() {
             super.hide();
             if (mToolBar.getActiveMenu() == SQLToolBarMenu.this) {
@@ -423,6 +425,7 @@ public class SQLToolBarMenu extends JToggleButton {
         };
 
         private MouseMotionListener mButtonFocusListener = new MouseMotionAdapter() {
+            @Override
             public void mouseMoved(MouseEvent e) {
                 if (e.getSource() instanceof Component) {
                     ((Component) e.getSource()).requestFocus();
@@ -430,6 +433,8 @@ public class SQLToolBarMenu extends JToggleButton {
             }
         };
 
+        @SuppressWarnings("deprecation")
+        @Override
         public void show() {
             super.show();
             if (mButtonList.getComponentCount() > 0) {

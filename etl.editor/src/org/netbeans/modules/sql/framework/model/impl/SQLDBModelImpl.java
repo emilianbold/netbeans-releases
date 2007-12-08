@@ -63,10 +63,6 @@ import org.netbeans.modules.mashup.db.model.FlatfileDefinition;
 import org.netbeans.modules.mashup.db.model.impl.FlatfileDBConnectionDefinitionImpl;
 import org.netbeans.modules.mashup.db.model.impl.FlatfileDBTableImpl;
 import org.netbeans.modules.mashup.db.model.impl.FlatfileDatabaseModelImpl;
-import org.netbeans.modules.model.database.DBConnectionDefinition;
-import org.netbeans.modules.model.database.DBTable;
-import org.netbeans.modules.model.database.DatabaseModel;
-import org.netbeans.modules.model.database.JDBCConnectionProvider;
 import org.netbeans.modules.sql.framework.common.jdbc.SQLDBConnectionDefinition;
 import org.netbeans.modules.sql.framework.model.SQLConstants;
 import org.netbeans.modules.sql.framework.model.SQLDBModel;
@@ -83,6 +79,9 @@ import org.w3c.dom.NodeList;
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.jdbc.DBConnectionParameters;
 import com.sun.sql.framework.utils.Logger;
+import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
+import org.netbeans.modules.sql.framework.model.DBTable;
+import org.netbeans.modules.sql.framework.model.DatabaseModel;
 
 /**
  * SQLBuilder-specific concrete implementation of DatabaseModel interface.
@@ -94,7 +93,7 @@ public class SQLDBModelImpl extends AbstractSQLObject implements Cloneable, SQLD
     
     private static java.util.logging.Logger logger = java.util.logging.Logger.getLogger(SQLDBModelImpl.class.getName());
     
-    /** Initial buffer size for StringBuilder used in marshaling OTDs to XML */
+    /** Initial buffer size for StringBuilder used in marshaling Databases to XML */
     protected static final int INIT_XMLBUF_SIZE = 1000;
     
         /*
@@ -106,11 +105,11 @@ public class SQLDBModelImpl extends AbstractSQLObject implements Cloneable, SQLD
     /* String to use in prefixing each line of a generated XML document */
     private static final String INDENT = "\t";
     
-    /* Initial buffer size for StringBuilder used in marshaling OTDs to XML */
+    /* Initial buffer size for StringBuilder used in marshaling Databases to XML */
     private static final String LOG_CATEGORY = SQLDBModelImpl.class.getName();
     
     /** Connection definition used to retrieve metadata */
-    protected SQLDBConnectionDefinition connectionDefinition;
+    protected DBConnectionDefinition connectionDefinition;
     
     /** User-supplied description */
     protected volatile String description;
@@ -123,7 +122,7 @@ public class SQLDBModelImpl extends AbstractSQLObject implements Cloneable, SQLD
     
     private transient SQLFrameworkParentObject mParent;
     
-    /* OTD that supplied metadata for this DatabaseModel instance. */
+    /* Database that supplied metadata for this DatabaseModel instance. */
     protected transient ETLObject source;
     
     /** Constructs a new default instance of SQLDBModelImpl. */
@@ -318,9 +317,9 @@ public class SQLDBModelImpl extends AbstractSQLObject implements Cloneable, SQLD
             
             // if (src instanceof JDBCConnectionProvider) {
             // try {
-            // String otdPath = ProjectUtil.getProjectPath((ProjectElement) src,
+            // String dBPath = ProjectUtil.getProjectPath((ProjectElement) src,
             // true);
-            // connectionDefinition.setOTDPathName(otdPath);
+            // connectionDefinition.setDbPathName(dBPath);
             //
             // if (src instanceof ProjectElement){
             // displayName = ((ProjectElement) src).getName();
@@ -332,9 +331,9 @@ public class SQLDBModelImpl extends AbstractSQLObject implements Cloneable, SQLD
             // ETLObject repObj = src.getSource();
             // if (repObj instanceof JDBCConnectionProvider) {
             // try {
-            // String otdPath = ProjectUtil.getProjectPath((ProjectElement)
+            // String dBPath = ProjectUtil.getProjectPath((ProjectElement)
             // repObj, true);
-            // connectionDefinition.setOTDPathName(otdPath);
+            // connectionDefinition.setDBPathName(dBPath);
             // } catch (Exception ex) {
             // // Log the exception.
             // }
@@ -509,7 +508,7 @@ public class SQLDBModelImpl extends AbstractSQLObject implements Cloneable, SQLD
      *
      * @return ConnectionDefinition of the SQLDataSource object
      */
-    public SQLDBConnectionDefinition getETLDBConnectionDefinition() throws BaseException {
+    public DBConnectionDefinition getETLDBConnectionDefinition() throws BaseException {
         if (connectionDefinition == null) {
             Logger.print(Logger.DEBUG, LOG_CATEGORY, this,
                     "Lazy loading connection definition for DB model " + getDisplayName());
@@ -592,22 +591,6 @@ public class SQLDBModelImpl extends AbstractSQLObject implements Cloneable, SQLD
      */
     public String getHeader() {
         return "";
-    }
-    
-    /**
-     * Returns instance implementing
-     * org.netbeans.modules.model.database.JDBCConnectionProvider else returns null.
-     *
-     * @return
-     */
-    public JDBCConnectionProvider getJDBCConnectionProvider() {
-        JDBCConnectionProvider ret = null;
-        
-        if ((source != null) && (source instanceof JDBCConnectionProvider)) {
-            ret = (JDBCConnectionProvider) source;
-        }
-        
-        return ret;
     }
     
     /**
@@ -751,25 +734,6 @@ public class SQLDBModelImpl extends AbstractSQLObject implements Cloneable, SQLD
         return myHash;
     }
     
-    /**
-     * Return true if org.netbeans.modules.model.database.JDBCConnectionProvider instance is
-     * available.
-     *
-     * @return
-     */
-    public boolean hasJDBCConnectionProvider() {
-        boolean ret = false;
-        
-        if (source == null) {
-            source = getSource();
-        }
-        
-        if ((source != null) && (source instanceof JDBCConnectionProvider)) {
-            ret = true;
-        }
-        return ret;
-    }
-    
     public void overrideCatalogNames(Map catalogOverride) {
         List tbls = getTables();
         Iterator itr = tbls.iterator();
@@ -835,18 +799,7 @@ public class SQLDBModelImpl extends AbstractSQLObject implements Cloneable, SQLD
         name = dbElement.getAttribute(NAME);
         
         String typeStr = dbElement.getAttribute(TYPE);
-        // sourceOtdRefId = dbElement.getAttribute(REFID);
-        // sourceOtdProjectPath = dbElement.getAttribute(PROJECTPATH);
-        
-        // if (parentObject instanceof SQLDefinition &&
-        // !StringUtil.isNullString(sourceOtdRefId) &&
-        // !StringUtil.isNullString(sourceOtdProjectPath)) {
-        // source = ProjectUtil.getOTDFor(sourceOtdRefId, sourceOtdProjectPath);
-        // if (source instanceof DatabaseModel) {
-        // setSource(source);
-        // }
-        // }
-        
+       
         NodeList childNodeList = null;
         
         if (STRTYPE_TARGET.equals(typeStr)) {
@@ -911,16 +864,6 @@ public class SQLDBModelImpl extends AbstractSQLObject implements Cloneable, SQLD
      *            held by a ETLObject.
      */
     public void setSource(ETLObject obj) {
-        // if (getRefKey() == null && mParent != null && obj != null) {
-        // try {
-        // DatabaseModel dbModel = (DatabaseModel) obj;
-        // setRefKey(this.mParent.addDatabaseModel(dbModel,
-        // this.getObjectType()));
-        // } catch (BaseException ignore) {
-        // Logger.printThrowable(Logger.DEBUG, LOG_CATEGORY, "", "", ignore);
-        // }
-        // }
-        
         source = obj;
     }
     
@@ -1166,8 +1109,8 @@ public class SQLDBModelImpl extends AbstractSQLObject implements Cloneable, SQLD
     }
     
     private String getXMLConnectionDefition() {
-        if (this.connectionDefinition != null) {
-            return this.connectionDefinition.toXMLString();
+        if (connectionDefinition != null && connectionDefinition instanceof SQLDBConnectionDefinition) {
+            return ((SQLDBConnectionDefinition)connectionDefinition).toXMLString();
         } else {
             return "";
         }

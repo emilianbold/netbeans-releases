@@ -48,11 +48,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
 import org.axiondb.AxionException;
 import org.axiondb.parser.AxionDateTimeFormatParser;
-import org.netbeans.modules.model.database.DBColumn;
-import org.netbeans.modules.model.database.Index;
+import org.netbeans.modules.sql.framework.model.DBColumn;
 import org.netbeans.modules.sql.framework.common.jdbc.SQLUtils;
 import org.netbeans.modules.sql.framework.common.utils.PhysicalTable;
 import org.netbeans.modules.sql.framework.model.ColumnRef;
@@ -83,11 +81,11 @@ import org.netbeans.modules.sql.framework.model.impl.SQLCustomOperatorImpl;
 import org.netbeans.modules.sql.framework.model.impl.ValidationInfoImpl;
 import org.netbeans.modules.sql.framework.model.utils.SQLObjectUtil;
 import org.openide.util.NbBundle;
-
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.jdbc.DBConstants;
 import com.sun.sql.framework.utils.Logger;
 import com.sun.sql.framework.utils.StringUtil;
+import org.netbeans.modules.sql.framework.model.Index;
 
 /**
  * @author Ritesh Adval
@@ -95,27 +93,24 @@ import com.sun.sql.framework.utils.StringUtil;
  */
 public class SQLValidationVisitor implements SQLVisitor {
 
-    private static final HashSet DATE_FORMAT_OPS = new HashSet();
+    private static final HashSet<String> DATE_FORMAT_OPS = new HashSet<String>();
     static {
         DATE_FORMAT_OPS.add("isvaliddatetime");
         DATE_FORMAT_OPS.add("chartodate");
         DATE_FORMAT_OPS.add("datetochar");
     }
-
     private static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
-
     private static final String LOG_CATEGORY = SQLValidationVisitor.class.getName();
+    private List<ValidationInfo> validationInfoList = new ArrayList<ValidationInfo>();
 
-    private List validationInfoList = new ArrayList();
-
-    public List getValidationInfoList() {
+    public List<ValidationInfo> getValidationInfoList() {
         return this.validationInfoList;
     }
 
     /**
      * Indicates whether the given List of ValidationInfo instances contains at least one
      * validation error.
-     * 
+     *
      * @param valInfoList Collection of ValidationInfo instances to be evaluated.
      * @return true if at least one item in <code>valInfoList</code> is an error.
      */
@@ -143,7 +138,7 @@ public class SQLValidationVisitor implements SQLVisitor {
         if (extCondition != null) {
             if (!extCondition.isValid()) {
                 String desc = buildErrorMessageWithObjectIdentifier(sourceTable.getQualifiedName(), "ERROR_extraction_condition_invalid");
-                ValidationInfoImpl validationInfo = new ValidationInfoImpl(extCondition, desc, ValidationInfo.VALIDATION_ERROR);
+                ValidationInfo validationInfo = new ValidationInfoImpl(extCondition, desc, ValidationInfo.VALIDATION_ERROR);
                 validationInfoList.add(validationInfo);
             } else {
                 visit(extCondition);
@@ -152,13 +147,12 @@ public class SQLValidationVisitor implements SQLVisitor {
 
         // FIXME: This condition when reported and user tries to
         // edit it by double clicking then extraction condition content is shown
-
         // validate data validation condition
         SQLCondition dataValidationCondition = sourceTable.getDataValidationCondition();
         if (dataValidationCondition != null) {
             if (!dataValidationCondition.isValid()) {
                 String desc = buildErrorMessageWithObjectIdentifier(sourceTable.getQualifiedName(), "ERROR_datavalidation_condition_invalid");
-                ValidationInfoImpl validationInfo = new ValidationInfoImpl(dataValidationCondition, desc, ValidationInfo.VALIDATION_ERROR);
+                ValidationInfo validationInfo = new ValidationInfoImpl(dataValidationCondition, desc, ValidationInfo.VALIDATION_ERROR);
                 validationInfoList.add(validationInfo);
             } else {
                 visit(dataValidationCondition);
@@ -180,7 +174,7 @@ public class SQLValidationVisitor implements SQLVisitor {
         // error.
         if (!condition.isValid()) {
             String error = NbBundle.getMessage(SQLValidationVisitor.class, "ERROR_condition_invalid");
-            ValidationInfoImpl info = new ValidationInfoImpl(null, error, ValidationInfo.VALIDATION_ERROR);
+            ValidationInfo info = new ValidationInfoImpl(null, error, ValidationInfo.VALIDATION_ERROR);
             validationInfoList.add(info);
         }
 
@@ -194,14 +188,14 @@ public class SQLValidationVisitor implements SQLVisitor {
         Iterator it = definition.getTargetTables().iterator();
         boolean oracleTableGroupByUse = false;
         final int execStrategy = definition.getExecutionStrategyCode().intValue();
-        if (( execStrategy == SQLDefinition.EXECUTION_STRATEGY_STAGING) && definition.requiresPipelineProcess()) {
+        if ((execStrategy == SQLDefinition.EXECUTION_STRATEGY_STAGING) && definition.requiresPipelineProcess()) {
             String desc = NbBundle.getMessage(SQLValidationVisitor.class, "MSG_Staging_mode_not_allowed");
             ValidationInfo validationInfo = new ValidationInfoImpl(definition, desc, ValidationInfo.VALIDATION_ERROR);
             validationInfoList.add(validationInfo);
         }
 
-        List srcTables = new ArrayList();
-        List trgtTables = new ArrayList();
+        List<PhysicalTable> srcTables = new ArrayList<PhysicalTable>();
+        List<PhysicalTable> trgtTables = new ArrayList<PhysicalTable>();
         while (it.hasNext()) {
             TargetTable targetTable = (TargetTable) it.next();
             final String identifier = targetTable.getQualifiedName();
@@ -214,12 +208,10 @@ public class SQLValidationVisitor implements SQLVisitor {
             boolean oracleSourceTable = false;
 
             // Check for Unknown DB and UPDATE and MERGE statement usage.
-            if (jdbcEway){
-                if ((stmtType == SQLConstants.INSERT_UPDATE_STATEMENT) &&
-                    ((execStrategy == SQLDefinition.EXECUTION_STRATEGY_BEST_FIT) ||
-                     (execStrategy == SQLDefinition.EXECUTION_STRATEGY_STAGING) )) {
+            if (jdbcEway) {
+                if ((stmtType == SQLConstants.INSERT_UPDATE_STATEMENT) && ((execStrategy == SQLDefinition.EXECUTION_STRATEGY_BEST_FIT) || (execStrategy == SQLDefinition.EXECUTION_STRATEGY_STAGING))) {
                     String desc = buildErrorMessageWithObjectIdentifier(identifier, "WARN_merge_may_not_be_supported");
-                    ValidationInfoImpl validationInfo = new ValidationInfoImpl(targetTable, desc, ValidationInfo.VALIDATION_WARNING);
+                    ValidationInfo validationInfo = new ValidationInfoImpl(targetTable, desc, ValidationInfo.VALIDATION_WARNING);
                     validationInfoList.add(validationInfo);
                 }
             }
@@ -235,8 +227,7 @@ public class SQLValidationVisitor implements SQLVisitor {
                 validationInfoList.add(validationInfo);
             }
 
-            if ((targetTable.getJoinCondition() != null)
-                 && (targetTable.getJoinCondition().isConditionDefined())) {
+            if ((targetTable.getJoinCondition() != null) && (targetTable.getJoinCondition().isConditionDefined())) {
                 dbType = targetTable.getParent().getConnectionDefinition().getDBType();
                 dbType = (dbType != null) ? dbType.toUpperCase() : "";
                 if (dbType.indexOf(DBConstants.ORACLE_STR) >= 0) {
@@ -244,27 +235,27 @@ public class SQLValidationVisitor implements SQLVisitor {
                 }
             }
 
-           try {
-               Iterator srcItr = targetTable.getSourceTableList().iterator();
-               SourceTable srcTbl = null;
-               while (srcItr.hasNext()){
-                   srcTbl = (SourceTable) srcItr.next();
-                   dbType = srcTbl.getParent().getConnectionDefinition().getDBType();
-                   dbType = (dbType != null) ? dbType.toUpperCase() : "";
-                   if (dbType.indexOf(DBConstants.ORACLE_STR) >= 0) {
-                       oracleSourceTable = true;
-                       break;
-                   }
-               }
-           }catch (BaseException ex){
-               // ignore
-           }
+            try {
+                Iterator srcItr = targetTable.getSourceTableList().iterator();
+                SourceTable srcTbl = null;
+                while (srcItr.hasNext()) {
+                    srcTbl = (SourceTable) srcItr.next();
+                    dbType = srcTbl.getParent().getConnectionDefinition().getDBType();
+                    dbType = (dbType != null) ? dbType.toUpperCase() : "";
+                    if (dbType.indexOf(DBConstants.ORACLE_STR) >= 0) {
+                        oracleSourceTable = true;
+                        break;
+                    }
+                }
+            } catch (BaseException ex) {
+                // ignore
+            }
 
-           if ((targetTable.getSQLGroupBy() != null) && (targetTable.getSQLGroupBy().getColumns().size() > 0)){
-               if (oracleTargetTableWithCondition || oracleSourceTable){
-                   oracleTableGroupByUse = true;
-               }
-           }
+            if ((targetTable.getSQLGroupBy() != null) && (targetTable.getSQLGroupBy().getColumns().size() > 0)) {
+                if (oracleTargetTableWithCondition || oracleSourceTable) {
+                    oracleTableGroupByUse = true;
+                }
+            }
         }
 
         for (it = trgtTables.iterator(); it.hasNext();) {
@@ -281,8 +272,7 @@ public class SQLValidationVisitor implements SQLVisitor {
         // Since we use Oracle forward only ResultSet to avoid OutOfMemoryError,
         // as its scroll-able result set caches data at the client VM.
         // Pipeline GROUP BY processing needs scroll-able result set.
-        if ((definition.requiresPipelineProcess() || (definition.getExecutionStrategyCode().intValue() == SQLDefinition.EXECUTION_STRATEGY_PIPELINE))
-                && (oracleTableGroupByUse)) {
+        if ((definition.requiresPipelineProcess() || (definition.getExecutionStrategyCode().intValue() == SQLDefinition.EXECUTION_STRATEGY_PIPELINE)) && (oracleTableGroupByUse)) {
             String desc = NbBundle.getMessage(SQLValidationVisitor.class, "ERROR_can_not_use_ora_grp_by_in_pipeline");
             ValidationInfo validationInfo = new ValidationInfoImpl(definition, desc, ValidationInfo.VALIDATION_ERROR);
             validationInfoList.add(validationInfo);
@@ -293,20 +283,18 @@ public class SQLValidationVisitor implements SQLVisitor {
         visitExpression(filter, true);
 
         if (!filter.isValid()) {
-            String descriptor = NbBundle.getMessage(SQLValidationVisitor.class, "FORMAT_parenthesis_following", filter.getDisplayName(),
-                filter.toString());
+            String descriptor = NbBundle.getMessage(SQLValidationVisitor.class, "FORMAT_parenthesis_following", filter.getDisplayName(), filter.toString());
             String message = buildErrorMessageWithObjectIdentifier(descriptor, "ERROR_predicate_invalid");
-            ValidationInfoImpl expValidationInfo = new ValidationInfoImpl(filter, message, ValidationInfo.VALIDATION_ERROR);
+            ValidationInfo expValidationInfo = new ValidationInfoImpl(filter, message, ValidationInfo.VALIDATION_ERROR);
             validationInfoList.add(expValidationInfo);
         }
 
         // Check if the next SQLFilter clause, if any, has a prefix.
         if (filter.getNextFilter() != null && StringUtil.isNullString(filter.getNextFilter().getPrefix())) {
-            String descriptor = NbBundle.getMessage(SQLValidationVisitor.class, "FORMAT_parenthesis_following",
-                filter.getNextFilter().getDisplayName(), filter.toString());
+            String descriptor = NbBundle.getMessage(SQLValidationVisitor.class, "FORMAT_parenthesis_following", filter.getNextFilter().getDisplayName(), filter.toString());
             String message = buildErrorMessageWithObjectIdentifier(descriptor, "ERROR_predicate_missing_prefix");
 
-            ValidationInfoImpl expValidationInfo = new ValidationInfoImpl(filter, message, ValidationInfo.VALIDATION_ERROR);
+            ValidationInfo expValidationInfo = new ValidationInfoImpl(filter, message, ValidationInfo.VALIDATION_ERROR);
             validationInfoList.add(expValidationInfo);
         }
     }
@@ -314,7 +302,7 @@ public class SQLValidationVisitor implements SQLVisitor {
     public void visit(SQLGenericOperator operator) {
         if (operator.hasVariableArgs() && operator.getInputObjectMap().size() == 0) {
             String desc = buildErrorMessageWithObjectIdentifier(operator.getDisplayName(), "ERROR_input_not_linked");
-            ValidationInfoImpl expValidationInfo = new ValidationInfoImpl(operator, desc, ValidationInfo.VALIDATION_ERROR);
+            ValidationInfo expValidationInfo = new ValidationInfoImpl(operator, desc, ValidationInfo.VALIDATION_ERROR);
             validationInfoList.add(expValidationInfo);
         } else {
             visitExpression(operator, true);
@@ -340,22 +328,22 @@ public class SQLValidationVisitor implements SQLVisitor {
     public void visit(SQLWhen when) {
     }
 
-    private boolean isJdbcOrUnknownDB(String dbType, String jdbcUrl){
+    private boolean isJdbcOrUnknownDB(String dbType, String jdbcUrl) {
         boolean unknownDB = true;
-        if (dbType != null){
+        if (dbType != null) {
             dbType = dbType.toUpperCase();
-            for (int i = 0; i < DBConstants.SUPPORTED_DB_TYPE_STRINGS.length; i++){
-                if ((dbType.indexOf(DBConstants.SUPPORTED_DB_TYPE_STRINGS[i])) > -1){
+            for (int i = 0; i < DBConstants.SUPPORTED_DB_TYPE_STRINGS.length; i++) {
+                if ((dbType.indexOf(DBConstants.SUPPORTED_DB_TYPE_STRINGS[i])) > -1) {
                     unknownDB = false;
                     break;
                 }
             }
 
             // Now check whether connecting to known DB thru JDBC eWay
-            if ((unknownDB) && (jdbcUrl != null)){
+            if ((unknownDB) && (jdbcUrl != null)) {
                 jdbcUrl = jdbcUrl.toLowerCase();
-                for (int i = 0; i < DBConstants.SUPPORTED_DB_URL_PREFIXES.length; i++){
-                    if ((jdbcUrl.indexOf(DBConstants.SUPPORTED_DB_URL_PREFIXES[i])) > -1){
+                for (int i = 0; i < DBConstants.SUPPORTED_DB_URL_PREFIXES.length; i++) {
+                    if ((jdbcUrl.indexOf(DBConstants.SUPPORTED_DB_URL_PREFIXES[i])) > -1) {
                         unknownDB = false;
                         break;
                     }
@@ -369,14 +357,14 @@ public class SQLValidationVisitor implements SQLVisitor {
         final String identifier = targetTable.getQualifiedName();
         final int stmtType = targetTable.getStatementType();
 
-        Collection uniqueIndexColumns = new HashSet();
-        List indexes = targetTable.getIndexes();
+        Collection<String> uniqueIndexColumns = new HashSet<String>();
+        List<Index> indexes = targetTable.getIndexes();
         Index index = null;
 
         if (indexes != null) {
-            Iterator indexItr = indexes.iterator();
+            Iterator<Index> indexItr = indexes.iterator();
             while (indexItr.hasNext()) {
-                index = (Index) indexItr.next();
+                index = indexItr.next();
                 if (index.isUnique()) {
                     uniqueIndexColumns.addAll(index.getColumnNames());
                 }
@@ -391,7 +379,7 @@ public class SQLValidationVisitor implements SQLVisitor {
         if (stmtType != SQLConstants.DELETE_STATEMENT) {
             if (nonNullColumns == 0) {
                 String desc = buildErrorMessageWithObjectIdentifier(identifier, "ERROR_targettable_not_mapped");
-                ValidationInfoImpl validationInfo = new ValidationInfoImpl(targetTable, desc, ValidationInfo.VALIDATION_ERROR);
+                ValidationInfo validationInfo = new ValidationInfoImpl(targetTable, desc, ValidationInfo.VALIDATION_ERROR);
                 validationInfoList.add(validationInfo);
             }
         }
@@ -402,16 +390,14 @@ public class SQLValidationVisitor implements SQLVisitor {
             joinView.visit(this);
         }
         validateSourceTableCondition(targetTable);
-        
+
         // validate truncate before load option
         if (targetTable.isTruncateBeforeLoad()) {
             if (stmtType == SQLConstants.INSERT_STATEMENT) {
-                ValidationInfoImpl validationInfo = new ValidationInfoImpl(targetTable, "Target table " + targetTable.getFullyQualifiedName()
-                    + " will be truncated before loading, use this option if you want to refresh the data", ValidationInfo.VALIDATION_WARNING);
+                ValidationInfo validationInfo = new ValidationInfoImpl(targetTable, "Target table " + targetTable.getFullyQualifiedName() + " will be truncated before loading, use this option if you want to refresh the data", ValidationInfo.VALIDATION_WARNING);
                 validationInfoList.add(validationInfo);
             } else {
-                ValidationInfoImpl validationInfo = new ValidationInfoImpl(targetTable, "Can't truncate target table " + targetTable.getFullyQualifiedName()
-                    + " for the selected statement type -> " + targetTable.getStrStatementType(), ValidationInfo.VALIDATION_ERROR);
+                ValidationInfo validationInfo = new ValidationInfoImpl(targetTable, "Can't truncate target table " + targetTable.getFullyQualifiedName() + " for the selected statement type -> " + targetTable.getStrStatementType(), ValidationInfo.VALIDATION_ERROR);
                 validationInfoList.add(validationInfo);
             }
         }
@@ -486,13 +472,13 @@ public class SQLValidationVisitor implements SQLVisitor {
                                 foundOnePKMatch = true;
                             } else if (sLeft.isPrimaryKey() && !sRight.isPrimaryKey()) {
                                 errorKey = "ERROR_join_column_not_pk";
-                                objectNames = new Object[] { sRight.toString()};
+                                objectNames = new Object[]{sRight.toString()};
                             } else if (!sLeft.isPrimaryKey() && sRight.isPrimaryKey()) {
                                 errorKey = "ERROR_join_column_not_pk";
-                                objectNames = new Object[] { sLeft.toString()};
+                                objectNames = new Object[]{sLeft.toString()};
                             } else {
                                 errorKey = "ERROR_join_columns_not_pks";
-                                objectNames = new Object[] { sLeft.toString(), sRight.toString()};
+                                objectNames = new Object[]{sLeft.toString(), sRight.toString()};
                             }
 
                             if (errorKey != null) {
@@ -518,13 +504,12 @@ public class SQLValidationVisitor implements SQLVisitor {
             }
         } catch (BaseException ex) {
             Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "validate", "Error while validating SQLJoinOperator " + operator.getDisplayName(), ex);
-
         }
     }
 
     private int findColumnErrors(TargetTable targetTable, final String identifier, int stmtType, Collection uniqueIndexColumns) {
         int nonNullColumns = 0;
-        List columnErrors = new ArrayList(5);
+        List<ValidationInfo> columnErrors = new ArrayList<ValidationInfo>(5);
         Iterator iter = targetTable.getColumns().values().iterator();
         while (iter.hasNext()) {
             TargetColumn col = (TargetColumn) iter.next();
@@ -535,24 +520,20 @@ public class SQLValidationVisitor implements SQLVisitor {
                 case SQLConstants.DELETE_STATEMENT:
                     // Columns must not be linked for delete statement.
                     if (obj != null) {
-                        String desc = buildErrorMessageWithObjectIdentifiers(identifier, "ERROR_input_link_prohibited_delete",
-                            new Object[] { argName});
+                        String desc = buildErrorMessageWithObjectIdentifiers(identifier, "ERROR_input_link_prohibited_delete", new Object[]{argName});
                         columnErrors.add(new ValidationInfoImpl(targetTable, desc, ValidationInfo.VALIDATION_ERROR));
                     }
                     break;
-
                 case SQLConstants.UPDATE_STATEMENT:
                     // PK and not null columns don't need to be linked for update
                     // statement.
                     break;
-
                 default:
                     if ((col.isPrimaryKey() || !col.isNullable()) && obj == null) {
-                        String desc = buildErrorMessageWithObjectIdentifiers(identifier, "WARNING_input_link_needed_pknotnull",
-                            new Object[] { argName});
+                        String desc = buildErrorMessageWithObjectIdentifiers(identifier, "WARNING_input_link_needed_pknotnull", new Object[]{argName});
                         columnErrors.add(new ValidationInfoImpl(targetTable, desc, ValidationInfo.VALIDATION_WARNING));
                     } else if (uniqueIndexColumns.contains(col.getName()) && (obj == null)) {
-                        String desc = buildErrorMessageWithObjectIdentifiers(identifier, "WARNING_input_link_needed_unique", new Object[] { argName});
+                        String desc = buildErrorMessageWithObjectIdentifiers(identifier, "WARNING_input_link_needed_unique", new Object[]{argName});
                         columnErrors.add(new ValidationInfoImpl(targetTable, desc, ValidationInfo.VALIDATION_WARNING));
                     }
 
@@ -586,7 +567,7 @@ public class SQLValidationVisitor implements SQLVisitor {
     /**
      * Gets the first column, if any, associated with a source table that is referenced as
      * an input within the given SQLObject.
-     * 
+     *
      * @param sqlObj SQLObject whose inputs are to be traversed
      * @return first SourceColumn input encountered, or null if none are encountered
      */
@@ -626,13 +607,13 @@ public class SQLValidationVisitor implements SQLVisitor {
     /**
      * Indicates whether the given String represents a valid operator for a join
      * predicate.
-     * 
+     *
      * @param op String representing operator to be tested
      * @return true if join operator is valid, false otherwise
      */
     private boolean isValidJoinOperator(String op) {
         // We currently only support equijoins.
-        return (op != null && op.trim().equalsIgnoreCase("="));
+        return op != null && op.trim().equalsIgnoreCase("=");
     }
 
     private void validate(Collection allObjects, List expObjects) {
@@ -644,12 +625,12 @@ public class SQLValidationVisitor implements SQLVisitor {
         while (it.hasNext()) {
             sqlObject = (SQLObject) it.next();
 
-            if ((sqlObject.getObjectType() == SQLConstants.COLUMN_REF)) {
+            if (sqlObject.getObjectType() == SQLConstants.COLUMN_REF) {
                 column = ((ColumnRef) sqlObject).getColumn();
 
                 if ((column.getObjectType() == SQLConstants.SOURCE_COLUMN) && !(((SQLDBColumn) column).isVisible())) {
                     desc = NbBundle.getMessage(SQLValidationVisitor.class, "MSG_Column_Used_Not_Visible", sqlObject.getDisplayName());
-                    ValidationInfoImpl validationInfo = new ValidationInfoImpl(sqlObject.getParentObject(), desc, ValidationInfo.VALIDATION_ERROR);
+                    ValidationInfo validationInfo = new ValidationInfoImpl(sqlObject.getParentObject(), desc, ValidationInfo.VALIDATION_ERROR);
                     validationInfoList.add(validationInfo);
                 }
             }
@@ -658,13 +639,13 @@ public class SQLValidationVisitor implements SQLVisitor {
                 exprObj = (SQLConnectableObject) sqlObject;
                 SQLValidationVisitor vVisitor = new SQLValidationVisitor();
                 vVisitor.visitExpression(exprObj, false);
-                List vInfos = vVisitor.getValidationInfoList();
+                List<ValidationInfo> vInfos = vVisitor.getValidationInfoList();
                 if (vInfos.size() > 0) {
                     validationInfoList.addAll(vInfos);
                 }
             } else if (!isObjectMappedToExpression(sqlObject, expObjects)) {
-                desc = NbBundle.getMessage(SQLValidationVisitor.class, "ERROR_not_mapped_to_expression", new Object[] { sqlObject.getDisplayName()});
-                ValidationInfoImpl validationInfo = new ValidationInfoImpl(sqlObject, desc, ValidationInfo.VALIDATION_ERROR);
+                desc = NbBundle.getMessage(SQLValidationVisitor.class, "ERROR_not_mapped_to_expression", new Object[]{sqlObject.getDisplayName()});
+                ValidationInfo validationInfo = new ValidationInfoImpl(sqlObject, desc, ValidationInfo.VALIDATION_ERROR);
 
                 validationInfoList.add(validationInfo);
             }
@@ -687,7 +668,7 @@ public class SQLValidationVisitor implements SQLVisitor {
             try {
                 formatParser.parseDateTimeFormatToJava(value);
             } catch (AxionException e) {
-                String message = buildErrorMessageWithObjectIdentifiers(op.getDisplayName(), "ERROR_dateformat_invalid", new Object[] { value});
+                String message = buildErrorMessageWithObjectIdentifiers(op.getDisplayName(), "ERROR_dateformat_invalid", new Object[]{value});
                 errorInfo = new ValidationInfoImpl(op, message, validationType);
             }
         }
@@ -715,10 +696,8 @@ public class SQLValidationVisitor implements SQLVisitor {
             switch (stmtType) {
                 case SQLConstants.INSERT_STATEMENT:
                     break;
-
                 default:
-                    ValidationInfoImpl validationInfo = new ValidationInfoImpl(targetTable, "Defined GroupBy/Having clause will not be used :: "
-                        + targetTable.getSQLGroupBy().toString(), ValidationInfo.VALIDATION_WARNING);
+                    ValidationInfo validationInfo = new ValidationInfoImpl(targetTable, "Defined GroupBy/Having clause will not be used :: " + targetTable.getSQLGroupBy().toString(), ValidationInfo.VALIDATION_WARNING);
                     validationInfoList.add(validationInfo);
             }
         }
@@ -736,7 +715,7 @@ public class SQLValidationVisitor implements SQLVisitor {
             if (having != null) {
                 if (!having.isValid()) {
                     String desc = buildErrorMessageWithObjectIdentifier(having.getDisplayName(), "ERROR_condition_invalid");
-                    ValidationInfoImpl validationInfo = new ValidationInfoImpl(having, desc, ValidationInfo.VALIDATION_ERROR);
+                    ValidationInfo validationInfo = new ValidationInfoImpl(having, desc, ValidationInfo.VALIDATION_ERROR);
                     validationInfoList.add(validationInfo);
                 } else {
                     visit(having);
@@ -752,14 +731,12 @@ public class SQLValidationVisitor implements SQLVisitor {
             for (Iterator iter = groupByNodes.iterator(); iter.hasNext();) {
                 SQLObject sqlObj = (SQLObject) iter.next();
                 if (sqlObj instanceof TargetColumn) {
-                    TargetColumn col = ((TargetColumn) sqlObj);
+                    TargetColumn col = (TargetColumn) sqlObj;
                     if (col.getValue() == null) {
-                        ValidationInfoImpl validationInfo = new ValidationInfoImpl(targetTable, "Selected group by target coulmn not mapped: " + col,
-                            ValidationInfo.VALIDATION_ERROR);
+                        ValidationInfoImpl validationInfo = new ValidationInfoImpl(targetTable, "Selected group by target coulmn not mapped: " + col, ValidationInfo.VALIDATION_ERROR);
                         validationInfoList.add(validationInfo);
                     } else if (SQLObjectUtil.isAggregateFunctionMapped(col.getValue())) {
-                        ValidationInfoImpl validationInfo = new ValidationInfoImpl(targetTable, "Group By clause can't contain agrregate function: "
-                            + col + "->" + col.getValue(), ValidationInfo.VALIDATION_ERROR);
+                        ValidationInfoImpl validationInfo = new ValidationInfoImpl(targetTable, "Group By clause can't contain agrregate function: " + col + "->" + col.getValue(), ValidationInfo.VALIDATION_ERROR);
                         validationInfoList.add(validationInfo);
                     }
                 }
@@ -770,7 +747,7 @@ public class SQLValidationVisitor implements SQLVisitor {
     /**
      * Validates whether the given SQLInputObject is an appropriate input for the argument
      * as referenced by the given String for the given SQLConnectableObject.
-     * 
+     *
      * @param op SQLConnectableObject whose input as referenced by <code>argName</code>
      *        is to be validated
      * @param argName name of input argument to be validated
@@ -789,19 +766,17 @@ public class SQLValidationVisitor implements SQLVisitor {
         int compatibility = op.isInputCompatible(argName, sqlObj);
         switch (compatibility) {
             case SQLConstants.TYPE_CHECK_INCOMPATIBLE:
-                desc = buildErrorMessageWithObjectIdentifiers(identifier, "ERROR_datatype_incompatible", new Object[] { displayName});
+                desc = buildErrorMessageWithObjectIdentifiers(identifier, "ERROR_datatype_incompatible", new Object[]{displayName});
                 break;
-
             case SQLConstants.TYPE_CHECK_DOWNCAST_WARNING:
             case SQLConstants.TYPE_CHECK_UNKNOWN:
                 String datatype = SQLUtils.getStdSqlType(sqlObj.getJdbcType());
                 if (datatype == null) {
                     datatype = "unknown";
                 }
-                desc = buildErrorMessageWithObjectIdentifiers(identifier, "WARNING_datatype_downcast_unknown", new Object[] { datatype, displayName});
+                desc = buildErrorMessageWithObjectIdentifiers(identifier, "WARNING_datatype_downcast_unknown", new Object[]{datatype, displayName});
                 validationType = ValidationInfo.VALIDATION_WARNING;
                 break;
-
             case SQLConstants.TYPE_CHECK_COMPATIBLE:
             case SQLConstants.TYPE_CHECK_SAME:
             default:
@@ -824,12 +799,10 @@ public class SQLValidationVisitor implements SQLVisitor {
                 case Types.CHAR:
                 case Types.NUMERIC:
                     if (castPrecision > colPrecision) {
-                        String castError = buildErrorMessageWithObjectIdentifiers(identifier, "ERROR_datatype_castexceedsprecision", new Object[] {
-                                new Integer(castPrecision), displayName, new Integer(colPrecision)});
+                        String castError = buildErrorMessageWithObjectIdentifiers(identifier, "ERROR_datatype_castexceedsprecision", new Object[]{new Integer(castPrecision), displayName, new Integer(colPrecision)});
                         expValidationInfo = new ValidationInfoImpl(castOp, castError, validationType);
                     }
                     break;
-
                 default:
                     break;
             }
@@ -847,8 +820,7 @@ public class SQLValidationVisitor implements SQLVisitor {
                 sTable.visit(this);
             }
         } catch (BaseException ex) {
-            Logger.printThrowable(Logger.ERROR, SQLValidationVisitor.class.getName(), "validate",
-                "Could not find source tables for this target table " + targetTable.getName(), ex);
+            Logger.printThrowable(Logger.ERROR, SQLValidationVisitor.class.getName(), "validate", "Could not find source tables for this target table " + targetTable.getName(), ex);
         }
     }
 
@@ -902,7 +874,6 @@ public class SQLValidationVisitor implements SQLVisitor {
                     }
                 }
                 break;
-
             default:
                 break;
         }
@@ -918,7 +889,7 @@ public class SQLValidationVisitor implements SQLVisitor {
                 validateTargetConditionForTargetColumnUsage(joinCondition);
             }
         }
-        
+
         // do target table filter condition validation
         SQLCondition filterCondition = targetTable.getFilterCondition();
         if (filterCondition != null) {
@@ -941,13 +912,13 @@ public class SQLValidationVisitor implements SQLVisitor {
             ValidationInfo expValidationInfo = null;
 
             if (obj == null) {
-                String desc = buildErrorMessageWithObjectIdentifiers(identifier, "ERROR_object_not_linked", new Object[] { obj.getDisplayName()});
+                String desc = buildErrorMessageWithObjectIdentifiers(identifier, "ERROR_object_not_linked", new Object[]{obj.getDisplayName()});
                 expValidationInfo = new ValidationInfoImpl(operator, desc, ValidationInfo.VALIDATION_ERROR);
             }
 
             SQLObject sqlObj = obj.getSQLObject();
             if (sqlObj == null) {
-                String desc = buildErrorMessageWithObjectIdentifiers(identifier, "ERROR_object_not_linked", new Object[] { obj.getDisplayName()});
+                String desc = buildErrorMessageWithObjectIdentifiers(identifier, "ERROR_object_not_linked", new Object[]{obj.getDisplayName()});
                 expValidationInfo = new ValidationInfoImpl(operator, desc, ValidationInfo.VALIDATION_ERROR);
             } else {
                 expValidationInfo = (sqlObj instanceof SQLCustomOperatorImpl) ? null : validateInputDataType(operator, argName, obj.getDisplayName(), sqlObj);

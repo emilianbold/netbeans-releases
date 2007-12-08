@@ -76,7 +76,7 @@ public class SQLOperatorInfoVisitor {
     // TODO Add flag to warn when Hex operator is being used on SQLServer or Sybase.
 
     private boolean validate = false;
-    private List validationInfoList = new ArrayList();
+    private List<ValidationInfo> validationInfoList = new ArrayList<ValidationInfo>();
 
     public SQLOperatorInfoVisitor() {
     }
@@ -85,7 +85,7 @@ public class SQLOperatorInfoVisitor {
         this.validate = true;
     }
 
-    public List getValidationInfoList() {
+    public List<ValidationInfo> getValidationInfoList() {
         return this.validationInfoList;
     }
 

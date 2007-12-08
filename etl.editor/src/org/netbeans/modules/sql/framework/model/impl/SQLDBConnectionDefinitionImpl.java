@@ -40,13 +40,13 @@
  */
 package org.netbeans.modules.sql.framework.model.impl;
 
-import org.netbeans.modules.model.database.DBConnectionDefinition;
 import org.netbeans.modules.sql.framework.common.jdbc.SQLDBConnectionDefinition;
 import org.w3c.dom.Element;
 
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.jdbc.DBConnectionParameters;
 import com.sun.sql.framework.utils.StringUtil;
+import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 
 /**
  * This class implements DBConnectionDefnition
@@ -130,6 +130,7 @@ public class SQLDBConnectionDefinitionImpl extends DBConnectionParameters implem
      * 
      * @return clone of this object
      */
+    @Override
     public Object clone() {
         try {
             return super.clone();
@@ -181,7 +182,6 @@ public class SQLDBConnectionDefinitionImpl extends DBConnectionParameters implem
             return;
         }
         this.copyFrom((DBConnectionDefinition) source);
-        setOTDPathName(source.getOTDPathName());
         setJNDIPath(source.getJNDIPath());
     }
 
@@ -191,6 +191,7 @@ public class SQLDBConnectionDefinitionImpl extends DBConnectionParameters implem
      * @param refObj SQLColumn to be compared.
      * @return true if the object is identical. false if it is not.
      */
+    @Override
     public boolean equals(Object refObj) {
         if (!(refObj instanceof SQLDBConnectionDefinitionImpl)) {
             return false;
@@ -207,6 +208,11 @@ public class SQLDBConnectionDefinitionImpl extends DBConnectionParameters implem
 
         return result;
     }
+    
+    @Override
+    public int hashCode(){
+        return super.hashCode();
+    }
 
     /**
      * Indicates whether contents of given DBConnectionDefinition implementer are
@@ -219,7 +225,8 @@ public class SQLDBConnectionDefinitionImpl extends DBConnectionParameters implem
         boolean identical = false;
 
         if (def != null) {
-            identical = StringUtil.isIdentical(jdbcUrl, def.getConnectionURL()) && StringUtil.isIdentical(userName, def.getUserName())
+            identical = StringUtil.isIdentical(jdbcUrl, def.getConnectionURL()) 
+                && StringUtil.isIdentical(userName, def.getUserName())
                 && StringUtil.isIdentical(password, def.getPassword());
         }
 
@@ -237,8 +244,9 @@ public class SQLDBConnectionDefinitionImpl extends DBConnectionParameters implem
         boolean identical = false;
 
         if (def != null) {
-            identical = StringUtil.isIdentical(jdbcUrl, def.getConnectionURL()) && StringUtil.isIdentical(userName, def.getUserName())
-                && StringUtil.isIdentical(password, def.getPassword()) && StringUtil.isIdentical(otdPathName, def.getOTDPathName(), true)
+            identical = StringUtil.isIdentical(jdbcUrl, def.getConnectionURL()) 
+                && StringUtil.isIdentical(userName, def.getUserName())
+                && StringUtil.isIdentical(password, def.getPassword()) 
                 && StringUtil.isIdentical(dsJndiPath, def.getJNDIPath(), true);
         }
 
