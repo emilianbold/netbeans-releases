@@ -176,9 +176,7 @@ class ChooseLibraryWizardPanel implements WizardDescriptor.Panel {
     // ---------
 
     static class LibrarySelector extends JPanel {
-
-        JList list;
-        List<Library> libList;
+        private JList list;
 
         LibrarySelector() {
             list = new JList();
@@ -222,7 +220,7 @@ class ChooseLibraryWizardPanel implements WizardDescriptor.Panel {
 
         void updateLibraryList() {
             Library[] libraries = LibraryManager.getDefault().getLibraries();
-            libList = new ArrayList<Library>(libraries.length);
+            List<Library> libList = new ArrayList<Library>(libraries.length);
             for (int i=0; i < libraries.length; i++) {
                 if (libraries[i].getType().equals("j2se")) { // NOI18N
                     libList.add(libraries[i]);
@@ -234,10 +232,11 @@ class ChooseLibraryWizardPanel implements WizardDescriptor.Panel {
                 }
             });
 
-            list.setModel(new AbstractListModel() {
-                public int getSize() { return libList.size(); }
-                public Object getElementAt(int i) { return libList.get(i); }
-            });
+            DefaultListModel model = new DefaultListModel();
+            for (Library lib : libList) {
+                model.addElement(lib);
+            }
+            list.setModel(model);
         }
 
         @Override
