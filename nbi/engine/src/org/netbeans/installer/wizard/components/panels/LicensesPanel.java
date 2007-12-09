@@ -76,6 +76,12 @@ public class LicensesPanel extends WizardPanel {
                 DEFAULT_ACCEPT_CHECKBOX_TEXT);
         setProperty(ERROR_CANNOT_GET_LOGIC_PROPERTY,
                 DEFAULT_ERROR_CANNOT_GET_LOGIC);
+        setProperty(APPEND_LICENSE_FORMAT_PROPERTY, 
+                DEFAULT_APPEND_LICENSE_FORMAT);
+        setProperty(SINGLE_PRODUCT_LICENSE_FORMAT_PROPERTY,
+                DEFAULT_SINGLE_PRODUCT_LICENSE_FORMAT);
+        setProperty(OVERALL_LICENSE_FORMAT_PROPERTY, 
+                DEFAULT_OVERALL_LICENSE_FORMAT);
     }
     
     @Override
@@ -162,30 +168,32 @@ public class LicensesPanel extends WizardPanel {
                     everythingAccepted = false;
                 }
                 final String licenseValue = SystemUtils.resolveString(
-                        System.getProperty(OVERALL_LICENSE_RESOURCE_PROPERTY));                
-                text.append(SystemUtils.resolveString(
-                        "$R{" + licenseValue + "}"));
+                        System.getProperty(OVERALL_LICENSE_RESOURCE_PROPERTY));
+                final String license = SystemUtils.resolveString("$R{" + licenseValue + "}");
+                final String format = component.getProperty(OVERALL_LICENSE_FORMAT_PROPERTY);
+                text.append(StringUtils.format(format, license));
             } else {
+                final String format = (currentProducts.size() == 1) ? 
+                    component.getProperty(SINGLE_PRODUCT_LICENSE_FORMAT_PROPERTY) :
+                    component.getProperty(APPEND_LICENSE_FORMAT_PROPERTY);
+                
                 for (Product product: currentProducts) {
                     if (!acceptedProducts.contains(product)) {
                         everythingAccepted = false;
                     }
-                    
-                    text.append("-------------------------------------------------");
-                    text.append(StringUtils.CRLF);
-                    text.append(product.getDisplayName() + ":");
-                    text.append(StringUtils.CRLFCRLF);
                     try {
                         Text license = product.getLogic().getLicense();
                         if(license!=null) {
-                            text.append(license.getText());
+                            text.append(
+                                    StringUtils.format(format, 
+                                    product.getDisplayName(),
+                                    license.getText()));                            
                         }
                     } catch (InitializationException e) {
                         ErrorManager.notifyError(
                                 component.getProperty(ERROR_CANNOT_GET_LOGIC_PROPERTY),
                                 e);
-                    }
-                    text.append(StringUtils.CRLFCRLF);
+                    }                    
                 }
             }
             licensePane.setText(text);
@@ -261,14 +269,27 @@ public class LicensesPanel extends WizardPanel {
             "error.cannot.get.logic";//NOI18N
     public static final String OVERALL_LICENSE_RESOURCE_PROPERTY =
             "nbi.overall.license.resource";//NOI18N
-    
+    public static final String APPEND_LICENSE_FORMAT_PROPERTY =
+            "append.license.format";//NOI18N
+    public static final String OVERALL_LICENSE_FORMAT_PROPERTY =
+            "overall.license.format";//NOI18N
+    public static final String SINGLE_PRODUCT_LICENSE_FORMAT_PROPERTY =
+            "single.product.license.format";//NOI18N
     public static final String DEFAULT_TITLE =
             ResourceUtils.getString(LicensesPanel.class,
             "LP.title"); // NOI18N
     public static final String DEFAULT_DESCRIPTION =
             ResourceUtils.getString(LicensesPanel.class,
             "LP.description"); // NOI18N
-    
+    public static final String DEFAULT_APPEND_LICENSE_FORMAT =
+            ResourceUtils.getString(LicensesPanel.class,
+            "LP.append.license.format"); // NOI18N
+    public static final String DEFAULT_OVERALL_LICENSE_FORMAT =
+            ResourceUtils.getString(LicensesPanel.class,
+            "LP.overall.license.format"); // NOI18N
+    public static final String DEFAULT_SINGLE_PRODUCT_LICENSE_FORMAT =
+            ResourceUtils.getString(LicensesPanel.class,
+            "LP.single.product.license.format"); // NOI18N
     public static final String DEFAULT_ACCEPT_CHECKBOX_TEXT =
             ResourceUtils.getString(LicensesPanel.class,
             "LP.accept.checkbox.text"); // NOI18N
