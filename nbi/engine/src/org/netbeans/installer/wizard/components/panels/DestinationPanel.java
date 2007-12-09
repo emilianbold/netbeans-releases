@@ -86,6 +86,16 @@ public class DestinationPanel extends ErrorMessagePanel {
                 DEFAULT_ERROR_NOT_VALID);
         setProperty(ERROR_CONTAINS_EXCLAMATION_PROPERTY,
                 DEFAULT_ERROR_CONTAINS_EXCLAMATION);
+        setProperty(ERROR_CONTAINS_SEMICOLON_PROPERTY,
+                DEFAULT_ERROR_CONTAINS_SEMICOLON);
+        setProperty(ERROR_CONTAINS_COLON_PROPERTY,
+                DEFAULT_ERROR_CONTAINS_COLON);
+        setProperty(ERROR_CONTAINS_AMPERSAND_PROPERTY,
+                DEFAULT_ERROR_CONTAINS_AMPERSAND);
+        setProperty(ERROR_CONTAINS_WRONG_CHAR_PROPERTY,
+                DEFAULT_ERROR_CONTAINS_WRONG_CHAR);
+        setProperty(ERROR_MATCHES_PROHIBITED_REGEXP,
+                DEFAULT_ERROR_MATCHES_PROHIBITIED_REGEXP);
         setProperty(ERROR_CANNOT_CANONIZE_PROPERTY,
                 DEFAULT_ERROR_CANNOT_CANONIZE);
         setProperty(ERROR_NOT_ABSOLUTE_PROPERTY,
@@ -127,7 +137,7 @@ public class DestinationPanel extends ErrorMessagePanel {
             
             this.component = component;
         }
-        
+        @Override
         public SwingUi getSwingUi(SwingContainer container) {
             if (swingUi == null) {
                 swingUi = new DestinationPanelSwingUi(component, container);
@@ -265,11 +275,40 @@ public class DestinationPanel extends ErrorMessagePanel {
                             filePath);
                 }
                 
-                if (product.getLogic().prohibitExclamation() &&
-                        file.getAbsolutePath().contains("!")) {
-                    return StringUtils.format(
-                            component.getProperty(ERROR_CONTAINS_EXCLAMATION_PROPERTY),
-                            filePath);
+                final String[] prohibitedParts = product.getLogic().getProhibitedInstallationPathParts();
+                if (prohibitedParts != null) {
+                    for (String s : prohibitedParts) {
+                        if (s != null && s.length() > 0) {
+                            String prop = null;
+                            if (s.length() == 1) { // character
+                                if (file.getAbsolutePath().contains(s)) {
+                                    if (s.equals("!")) {
+                                        prop = ERROR_CONTAINS_EXCLAMATION_PROPERTY;
+                                    } else if (s.equals(";")) {
+                                        prop = ERROR_CONTAINS_SEMICOLON_PROPERTY;
+                                    } else if (s.equals(":")) {
+                                        prop = ERROR_CONTAINS_COLON_PROPERTY;
+                                    } else if (s.equals("&")) {
+                                        prop = ERROR_CONTAINS_AMPERSAND_PROPERTY;
+                                    } else {
+                                        // no user-friendly description for all other chars at this moment 
+                                        // can be easily extended later
+                                        prop = ERROR_CONTAINS_WRONG_CHAR_PROPERTY;
+                                    }
+                                }
+                            } else {// check if path matches regexp..
+                                if (file.getAbsolutePath().matches(s)) {
+                                    prop = ERROR_MATCHES_PROHIBITED_REGEXP;
+                                }
+                            }
+                            if (prop != null) {
+                                return StringUtils.format(
+                                        component.getProperty(prop),
+                                        filePath,
+                                        s);
+                            }
+                        }
+                    }
                 }
                 
                 if (!file.equals(file.getAbsoluteFile())) {
@@ -484,6 +523,16 @@ public class DestinationPanel extends ErrorMessagePanel {
             "error.not.valid"; // NOI18N
     public static final String ERROR_CONTAINS_EXCLAMATION_PROPERTY =
             "error.contains.exclamation"; // NOI18N
+    public static final String ERROR_CONTAINS_SEMICOLON_PROPERTY =
+            "error.contains.semicolon"; // NOI18N
+    public static final String ERROR_CONTAINS_COLON_PROPERTY =
+            "error.contains.colon"; // NOI18N
+    public static final String ERROR_CONTAINS_AMPERSAND_PROPERTY =
+            "error.contains.ampersand"; // NOI18N
+    public static final String ERROR_CONTAINS_WRONG_CHAR_PROPERTY =
+            "error.contains.wrong.char"; // NOI18N
+    public static final String ERROR_MATCHES_PROHIBITED_REGEXP =
+            "error.matches.prohibited.regexp";//NOI18N
     public static final String ERROR_NOT_ABSOLUTE_PROPERTY =
             "error.not.absolute"; // NOI18N
     public static final String ERROR_CANNOT_CANONIZE_PROPERTY =
@@ -514,6 +563,21 @@ public class DestinationPanel extends ErrorMessagePanel {
     public static final String DEFAULT_ERROR_CONTAINS_EXCLAMATION =
             ResourceUtils.getString(DestinationPanel.class,
             "DP.error.contains.exclamation"); // NOI18N
+    public static final String DEFAULT_ERROR_CONTAINS_SEMICOLON =
+            ResourceUtils.getString(DestinationPanel.class,
+            "DP.error.contains.semicolon"); // NOI18N
+    public static final String DEFAULT_ERROR_CONTAINS_COLON =
+            ResourceUtils.getString(DestinationPanel.class,
+            "DP.error.contains.colon"); // NOI18N
+    public static final String DEFAULT_ERROR_CONTAINS_AMPERSAND =
+            ResourceUtils.getString(DestinationPanel.class,
+            "DP.error.contains.ampersand"); // NOI18N
+    public static final String DEFAULT_ERROR_CONTAINS_WRONG_CHAR =
+            ResourceUtils.getString(DestinationPanel.class,
+            "DP.error.contains.wrong.char"); // NOI18N
+    public static final String DEFAULT_ERROR_MATCHES_PROHIBITIED_REGEXP =
+            ResourceUtils.getString(DestinationPanel.class,
+            "DP.error.matches.prohibited.regexp"); // NOI18N
     public static final String DEFAULT_ERROR_NOT_ABSOLUTE =
             ResourceUtils.getString(DestinationPanel.class,
             "DP.error.not.absolute"); // NOI18N

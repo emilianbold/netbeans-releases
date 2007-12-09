@@ -197,8 +197,21 @@ public abstract class ProductConfigurationLogic {
         return false;
     }
     
+    /**
+     * @deprecated Use <code>getProhibitedInstallationPathParts</code> instead.
+     */
+    @Deprecated
     public boolean prohibitExclamation() {
         return true;
+    }
+    /**
+     * Get the array of strings with each element deprecating the specific paths.<br><br>
+     * One char length elements are treated as the single deprecated char.<br>    String.contains() is used for the check.<br><br>
+     * Two and more chars length elements are treated as the regexp patterns.<br>    String.matches() is used for the check<br><br>
+     * @return Array of prohibited path parts. 
+     */
+    public String [] getProhibitedInstallationPathParts() {
+        return new String [] {"!", File.pathSeparator};
     }
     
     public String getExecutable() {
