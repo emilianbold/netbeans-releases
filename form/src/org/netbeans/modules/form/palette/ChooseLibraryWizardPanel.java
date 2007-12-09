@@ -68,12 +68,7 @@ class ChooseLibraryWizardPanel implements WizardDescriptor.Panel {
 
     private LibrarySelector librarySelector;
 
-//    private AddToPaletteWizard wizard;
-
     private EventListenerList listenerList;
-
-    // ----------
-    // WizardDescriptor.Panel implementation
 
     public java.awt.Component getComponent() {
         if (librarySelector == null) {
@@ -92,18 +87,12 @@ class ChooseLibraryWizardPanel implements WizardDescriptor.Panel {
                     }
                 });
 
-//            librarySelector.list.addActionListener(new ActionListener() {
-//                public void actionPerformed(ActionEvent ev) {
-//                    wizard.stepToNext();
-//                }
-//            });
         }
 
         return librarySelector;
     }
 
     public org.openide.util.HelpCtx getHelp() {
-        // PENDING
         return new org.openide.util.HelpCtx("beans.adding"); // NOI18N
     }
 
@@ -113,7 +102,6 @@ class ChooseLibraryWizardPanel implements WizardDescriptor.Panel {
     }
 
     public void readSettings(Object settings) {
-//        wizard = (AddToPaletteWizard) settings;
     }
 
     public void storeSettings(Object settings) {
@@ -170,8 +158,6 @@ class ChooseLibraryWizardPanel implements WizardDescriptor.Panel {
             listenerList.remove(ChangeListener.class, listener);
     }
 
-    // -------
-
     void fireStateChanged() {
         if (listenerList == null)
             return;
@@ -213,16 +199,6 @@ class ChooseLibraryWizardPanel implements WizardDescriptor.Panel {
             gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
             add(label1, gridBagConstraints);
 
-//            JButton button1 = new JButton();
-//            org.openide.awt.Mnemonics.setLocalizedText(
-//                button1, PaletteUtils.getBundleString("CTL_LibrariesManager")); // NOI18N
-//            gridBagConstraints = new java.awt.GridBagConstraints();
-//            gridBagConstraints.gridx = 2;
-//            gridBagConstraints.gridy = 2;
-//            gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
-//            gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-//            add(button1, gridBagConstraints);
-
             JScrollPane scrollpane1 = new javax.swing.JScrollPane();
             scrollpane1.setViewportView(list);
             gridBagConstraints = new java.awt.GridBagConstraints();
@@ -234,16 +210,6 @@ class ChooseLibraryWizardPanel implements WizardDescriptor.Panel {
             gridBagConstraints.weighty = 1.0;
             add(scrollpane1, gridBagConstraints);
 
-//            button1.addActionListener(new ActionListener() {
-//                public void actionPerformed(ActionEvent ev) {
-//                    Library lib = null;
-//                    Object[] selected = list.getSelectedValues();
-//                    if (selected.length > 0)
-//                        lib = (Library) selected[0];
-//                    if (LibrariesCustomizer.showCustomizer(lib))
-//                        updateLibraryList();
-//                }
-//            });
         }
 
         Library[] getSelectedLibraries() {
