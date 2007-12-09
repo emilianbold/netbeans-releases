@@ -257,9 +257,16 @@ class ChooseLibraryWizardPanel implements WizardDescriptor.Panel {
         void updateLibraryList() {
             Library[] libraries = LibraryManager.getDefault().getLibraries();
             libList = new ArrayList<Library>(libraries.length);
-            for (int i=0; i < libraries.length; i++)
-                if (libraries[i].getType().equals("j2se")) // NOI18N
+            for (int i=0; i < libraries.length; i++) {
+                if (libraries[i].getType().equals("j2se")) { // NOI18N
                     libList.add(libraries[i]);
+                }
+            }
+            Collections.sort(libList, new Comparator<Library>() {
+                public int compare(Library lib1, Library lib2) {
+                    return lib1.getDisplayName().compareTo(lib2.getDisplayName());
+                }
+            });
 
             list.setModel(new AbstractListModel() {
                 public int getSize() { return libList.size(); }
