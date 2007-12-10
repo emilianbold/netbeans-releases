@@ -169,7 +169,16 @@ public class NbUtilities {
 
                 try {
                     String text = doc.getText(0, doc.getLength());
+                    int caretDelta = search.indexOf('^');
+                    if (caretDelta != -1) {
+                        search = search.substring(0, caretDelta) + search.substring(caretDelta+1);
+                    } else {
+                        caretDelta = 0;
+                    }
                     offset = text.indexOf(search);
+                    if (offset != -1) {
+                        offset += caretDelta;
+                    }
                 } catch (BadLocationException ble) {
                     Exceptions.printStackTrace(ble);
                 }
