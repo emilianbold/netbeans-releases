@@ -92,9 +92,9 @@ public class LevelOfDetailsWidget extends Widget {
                 gr.setComposite(AlphaComposite.getInstance (AlphaComposite.SRC_OVER, (float) diff));
             }
         } else if (softMaximalZoom < zoom  &&  zoom < hardMaximalZoom) {
-            double diff = softMaximalZoom - hardMaximalZoom;
+            double diff = hardMaximalZoom - softMaximalZoom;
             if (diff > 0.0) {
-                diff = (zoom - hardMaximalZoom) / diff;
+                diff = (hardMaximalZoom - zoom) / diff;
                 previousComposite = gr.getComposite();
                 gr.setComposite(AlphaComposite.getInstance (AlphaComposite.SRC_OVER, (float) diff));
             }
