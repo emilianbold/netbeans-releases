@@ -560,7 +560,7 @@ public class ProviderUtil {
      * @throws InvalidPersistenceXmlException if the given <code>project</code> had an existing
      * invalid persitence.xml file.
      */
-    public static PUDataObject getPUDataObject(Project project) throws InvalidPersistenceXmlException{
+    public static synchronized PUDataObject getPUDataObject(Project project) throws InvalidPersistenceXmlException{
         Parameters.notNull("project", project); //NO18N
         
         FileObject puFileObject = getDDFile(project);
