@@ -71,7 +71,7 @@ public class RubyMimeResolver extends MIMEResolver {
         if (ext.equalsIgnoreCase("rb") || ext.equalsIgnoreCase("mab") || // NOI18N
                 ext.equalsIgnoreCase("gemspec") || ext.equalsIgnoreCase("rake") || // NOI18N
                 ext.equalsIgnoreCase("builder") || ext.equalsIgnoreCase("rxml") || // NOI18N
-                ext.equalsIgnoreCase("rjs") || ext.equalsIgnoreCase("rjs")) { // NOI18N
+                ext.equalsIgnoreCase("rjs") || ext.equalsIgnoreCase("rbw")) { // NOI18N
             
             return RUBY_MIME_TYPE;
         }
