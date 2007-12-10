@@ -45,10 +45,15 @@ import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URL;
 import java.util.Collection;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -76,13 +81,16 @@ import org.openide.util.WeakListeners;
  */
 public final class JavaNode extends DataNode implements ChangeListener {
 
+    static final boolean SHOW_MAIN_CLASS_BADGE = Boolean.getBoolean("org.netbeans.modules.java.JavaNode.enableExecutableBadge"); // NOI18N
+    
     /** generated Serialized Version UID */
     private static final long serialVersionUID = -7396485743899766258L;
 
     private static final String JAVA_ICON_BASE = "org/netbeans/modules/java/resources/class.png"; // NOI18N
+    private static final String JAVA_ICON_BASE_MAIN = "org/netbeans/modules/java/resources/main-class.gif"; // NOI18N
     private static final String CLASS_ICON_BASE = "org/netbeans/modules/java/resources/clazz.gif"; // NOI18N
 
-    private static final Image NEEDS_COMPILE = Utilities.loadImage("org/netbeans/modules/java/resources/needs-compile.png");
+    private static final Image NEEDS_COMPILE = Utilities.loadImage("org/netbeans/modules/java/resources/needs-compile.png"); // NOI18N
     
     private Status status;
     private final AtomicBoolean isCompiled;
@@ -90,7 +98,7 @@ public final class JavaNode extends DataNode implements ChangeListener {
     /** Create a node for the Java data object using the default children.
     * @param jdo the data object to represent
     */
-    public JavaNode (DataObject jdo, boolean isJavaSource) {
+    public JavaNode (final DataObject jdo, boolean isJavaSource) {
         super (jdo, Children.LEAF);
         this.setIconBaseWithExtension(isJavaSource ? JAVA_ICON_BASE : CLASS_ICON_BASE);
         if (isJavaSource) {            
@@ -105,15 +113,34 @@ public final class JavaNode extends DataNode implements ChangeListener {
                                 synchronized (JavaNode.this) {
                                     status = null;
                                     WORKER.post(new BuildStatusTask(JavaNode.this));
+                                    
+                                    if (SHOW_MAIN_CLASS_BADGE) {
+                                        registerNode(jdo, JavaNode.this);
+                                    }
                                 }
                             }
                         });
                     }
                 }
             });
+            
+            if (SHOW_MAIN_CLASS_BADGE) {
+                registerNode(jdo, this);
+            }
         } else {
             this.isCompiled = null;
         }
+    }
+    
+    private static synchronized void registerNode(DataObject od, JavaNode node) {
+        isExecutable(od.getPrimaryFile());
+        Collection<Reference<JavaNode>> nodes = file2Nodes.get(od.getPrimaryFile());
+
+        if (nodes == null) {
+            file2Nodes.put(od.getPrimaryFile(), nodes = new LinkedList<Reference<JavaNode>>());
+        }
+
+        nodes.add(new WeakReference<JavaNode>(node));
     }
     
     public void setName(String name) {
@@ -302,6 +329,35 @@ public final class JavaNode extends DataNode implements ChangeListener {
             if (newIsCompiled != oldIsCompiled) {
                 node.fireIconChange();
                 node.fireOpenedIconChange();
+            }
+        }
+    }
+    
+    private static final Map<FileObject, Boolean> file2Executable = new WeakHashMap<FileObject, Boolean>();
+    private static final Map<FileObject, Collection<Reference<JavaNode>>> file2Nodes = new WeakHashMap<FileObject, Collection<Reference<JavaNode>>>();
+    
+    private static synchronized boolean isExecutable(FileObject file) {
+        if (!file2Executable.containsKey(file)) {
+            file2Executable.put(file, Boolean.FALSE);
+            IsMainResolver.FactoryImpl.get().addFile(file);
+            return false;
+        }
+        
+        return file2Executable.get(file) == Boolean.TRUE;
+    }
+    
+    static synchronized void setExecutable(FileObject file, boolean executable) {
+        boolean old = isExecutable(file);
+        
+        file2Executable.put(file, executable);
+        
+        if (old != executable && file2Nodes.get(file) != null) {
+            for (Reference<JavaNode> nodes : file2Nodes.get(file)) {
+                JavaNode n = nodes.get();
+                
+                if (n != null) {
+                    n.setIconBaseWithExtension(executable ? JAVA_ICON_BASE_MAIN : JAVA_ICON_BASE);
+                }
             }
         }
     }
