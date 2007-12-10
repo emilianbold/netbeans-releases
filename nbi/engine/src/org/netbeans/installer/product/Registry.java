@@ -85,6 +85,7 @@ import org.netbeans.installer.utils.helper.ExecutionMode;
 import org.netbeans.installer.utils.helper.Feature;
 import org.netbeans.installer.utils.helper.FinishHandler;
 import org.netbeans.installer.utils.helper.NbiProperties;
+import org.netbeans.installer.utils.helper.PropertyContainer;
 import org.netbeans.installer.utils.helper.Version;
 import org.netbeans.installer.utils.progress.CompositeProgress;
 import org.netbeans.installer.utils.progress.Progress;
@@ -96,7 +97,7 @@ import org.xml.sax.SAXException;
  *
  * @author Kirill Sorokin
  */
-public class Registry {
+public class Registry implements PropertyContainer {
     /////////////////////////////////////////////////////////////////////////////////
     // Static
     private static Registry instance;
