@@ -312,7 +312,7 @@ public final class UiUtils {
                             // if something wrong happens we should fall back to the default
                             // cross-platform look and feel which is assumed to be working
                             // correctly
-                            LogManager.log("... Throwable caught", e);
+                            LogManager.log("... could not activate defined L&F, initializing cross-platfrom one", e);
                             if (e instanceof InternalError) {
                                 System.err.println(e.getMessage());
                             } else if (e instanceof ExceptionInInitializerError) {
@@ -322,8 +322,7 @@ public final class UiUtils {
                                         (cause instanceof HeadlessException)) {
                                     System.err.println(cause.getMessage());
                                 }
-                            }
-                            LogManager.log("... could not activate defined L&F, initializing cross-platfrom one", e);
+                            }                            
                             
                             className = UIManager.getCrossPlatformLookAndFeelClassName();
                             LogManager.log("... cross-platform L&F class-name : " + className);
