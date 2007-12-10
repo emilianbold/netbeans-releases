@@ -43,8 +43,6 @@ package org.netbeans.modules.j2ee.common.ui;
 
 import java.awt.Component;
 import java.awt.Dialog;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.Iterator;
 import java.util.Set;
 import javax.swing.AbstractListModel;
@@ -55,18 +53,20 @@ import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 import org.netbeans.api.db.explorer.ConnectionListener;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
 /**
  * Displays a list of data sources for which database connections are not registered and helps the user to register
@@ -78,6 +78,7 @@ public final class MissingDatabaseConnectionWarning extends JPanel {
     private final Border scrollPaneBorder;
     private Project project;
     private RequestProcessor.Task task = null;
+    private DataSourceListListener dsListListener;
     
     private MissingDatabaseConnectionWarning(Project project) {
         initComponents();
@@ -93,6 +94,10 @@ public final class MissingDatabaseConnectionWarning extends JPanel {
         if ((datasourceList.isSelectionEmpty()) && (datasourceList.getModel().getSize() > 0)) {
             datasourceList.setSelectedIndex(0);
         }
+        
+        // Listen for changes to the list of data sources
+        dsListListener = new DataSourceListListener();
+        datasourceList.getModel().addListDataListener(WeakListeners.create(ListDataListener.class, dsListListener, datasourceList.getModel()));
     }
     
     /**
@@ -306,14 +311,9 @@ public final class MissingDatabaseConnectionWarning extends JPanel {
             datasources = BrokenDatasourceSupport.getBrokenDatasources(project);
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    fireContentsChanged(this, 0, datasources.size());
+                    fireContentsChanged(datasourceList.getModel(), 0, datasources.size());
                 }
-            });
-            
-            if (datasources.isEmpty()) {
-                jButtonAddConnection.setEnabled(false);
-                removeConnectionListener();
-            }
+            });                        
         }
         
         // Listen for any connections changed in DB Explorer and refresh model accordingly
@@ -329,6 +329,14 @@ public final class MissingDatabaseConnectionWarning extends JPanel {
         private void removeConnectionListener() {
             ConnectionManager.getDefault().removeConnectionListener(this);
         }
+        
+        private void disableAddConnectionButton() {
+            jButtonAddConnection.setEnabled(false);     
+        }     
+        
+        private void removeListDataListener() {
+            removeListDataListener(dsListListener);
+        }                
     }
     
     private static final class DatasourceRenderer extends JLabel implements ListCellRenderer {
@@ -390,4 +398,31 @@ public final class MissingDatabaseConnectionWarning extends JPanel {
         
         return null;
     }        
+    
+    /**
+     * Listen for list contents changed events and if the list's contents are empty then 
+     * we're done, so clean up and disable the Add Connection button
+     **/
+    private static class DataSourceListListener implements ListDataListener {
+        
+        public void contentsChanged(ListDataEvent e) {
+            DatasourceListModel dsListModel = (DatasourceListModel) e.getSource();
+
+            if (dsListModel.getSize() == 0) {
+                dsListModel.removeConnectionListener();
+                dsListModel.disableAddConnectionButton();
+                dsListModel.removeListDataListener();
+            }
+        }
+
+        public void intervalAdded(ListDataEvent e) {
+            // unused   
+        }
+
+        public void intervalRemoved(ListDataEvent e) {
+            // unused
+        }
+        
+    }
+
 }
