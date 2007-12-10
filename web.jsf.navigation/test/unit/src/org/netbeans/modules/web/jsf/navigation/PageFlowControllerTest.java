@@ -126,21 +126,7 @@ public class PageFlowControllerTest extends NbTestCase implements TestServices {
         System.out.println("Check PageFlowController Memory Size.");
         assertSize("PageFlowController MemorySize:", 3000000, controller);
     }
-/* This test is not ready but will be valueable when it is. */
-//    public void testCloseProjectMemoryLeakFinder() throws IOException {
-//        System.out.println("Close Project Memory Leak Finder");
-//
-//        tu.closeProject();
-//        WeakReference<PageFlowView> refView = new WeakReference<PageFlowView>(view);
-//        WeakReference<PageFlowController> refController = new WeakReference<PageFlowController>(controller);
-//        WeakReference<PageFlowScene> refScene = new WeakReference<PageFlowScene>(scene);
-//        controller = null;
-//        scene = null;
-//        view = null;
-//        assertGC("Controller should now no longer exist.", refController);
-//        assertGC("PageFlowView should now no longer exist.", refView);
-//        assertGC("Scene should now no longer exist.", refScene);
-//    }
+
 
     /**
      * Test of setShowNoWebFolderDialog method, of class PageFlowController.

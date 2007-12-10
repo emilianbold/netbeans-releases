@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.web.jsf.navigation;
 
+import java.awt.EventQueue;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -108,7 +109,9 @@ public class PageFlowTestUtility {
     private void destroyProject() throws IOException {
         saveFacesModel();
         closeFacesModel(); //This gets rid of all the views.. Not sure though why closing the project does not call componentClosing.
-        closeProject(project);
+        if( project != null ){
+            closeProject(project);
+        }
     }
 
     public File getWorkDir() throws IOException {
