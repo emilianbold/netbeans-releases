@@ -842,7 +842,7 @@ public class MetaComponentCreator {
                 LayoutSupportManager laysup = newMetaCont.getLayoutSupport();
                 knownLayout = laysup.prepareLayoutDelegate(false, false);
 
-                if ((knownLayout && !laysup.isDedicated() && formModel.isFreeDesignDefaultLayout())
+                if ((knownLayout && !laysup.isDedicated() && !laysup.isSpecialLayout() && formModel.isFreeDesignDefaultLayout())
                     || (!knownLayout && SwingLayoutBuilder.isRelevantContainer(laysup.getPrimaryContainerDelegate())))
                 {   // general containers should use the new layout support when created
                     newMetaCont.setOldLayoutSupport(false);

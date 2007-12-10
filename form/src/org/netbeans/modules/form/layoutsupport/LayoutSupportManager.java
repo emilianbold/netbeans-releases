@@ -253,6 +253,12 @@ public final class LayoutSupportManager implements LayoutSupportContext {
                || layoutDelegate instanceof UnknownLayoutSupport;
     }
 
+    public boolean isSpecialLayout() {
+        // Every standard layout manager has its own layout delegate.
+        // Hence, the DefaultLayoutSupport is used by special layout managers only.
+        return layoutDelegate instanceof DefaultLayoutSupport;
+    }
+
     // copy layout delegate from another container
     public void copyLayoutDelegateFrom(
                     LayoutSupportManager sourceLayoutSupport,
