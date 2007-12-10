@@ -273,7 +273,14 @@ public final class UiUtils {
                             UIManager.getInstalledLookAndFeels();
                             LogManager.log("... set specified L&F");
                             UIManager.setLookAndFeel(className);
-                            LogManager.log("... check headless");
+                            LogManager.log("... check headless");                            
+                            if (GraphicsEnvironment.isHeadless()) {
+                                HeadlessException e = new HeadlessException();
+                                System.err.println(e.getMessage());
+                                throw new InitializationException(
+                                        ResourceUtils.getString(UiUtils.class, 
+                                        RESOURCE_FAILED_TO_INIT_UI), e);
+                            }
                             if (SystemUtils.isWindows()) {
                                 // workaround for the issue with further using JFileChooser
                                 // in case of missing system icons
@@ -297,13 +304,6 @@ public final class UiUtils {
                                 new JProgressBar().getMaximumSize();
                                 
                                 LogManager.log("... all UI checks done");
-                            }
-                            if (GraphicsEnvironment.isHeadless()) {
-                                HeadlessException e = new HeadlessException();
-                                System.err.println(e.getMessage());
-                                throw new InitializationException(
-                                        ResourceUtils.getString(UiUtils.class, 
-                                        RESOURCE_FAILED_TO_INIT_UI), e);
                             }
                             LogManager.log("... L&F is set");
                         } catch (Throwable e) {
@@ -330,10 +330,16 @@ public final class UiUtils {
                             
                             UIManager.setLookAndFeel(className);
                             
-                            // this exception would be thrown only if cross-platform LAF is successfully installed
-                            throw new InitializationException(
+                            if(System.getProperty(LAF_CLASS_NAME_PROPERTY)!=null) {
+                                // Throw exception only if user specified custom L&F, 
+                                // otherwise just go to initialization of cross-platfrom L&F 
+                                //     (Exception e is already logged above)
+                                // See also http://www.netbeans.org/issues/show_bug.cgi?id=122557                                
+                                // This exception would be thrown only if cross-platform LAF is successfully installed
+                                throw new InitializationException(
                                     ResourceUtils.getString(UiUtils.class, 
                                     RESOURCE_FAILED_TO_ACTIVATE_DEFINED_LAF), e);
+                            }                            
                         }
                     } catch (NoClassDefFoundError e) {
                         throw new InitializationException(
