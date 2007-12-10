@@ -46,7 +46,8 @@ made subject to such option by the copyright holder.
                 xmlns:xalan="http://xml.apache.org/xslt"
                 xmlns:archiveproject="http://www.netbeans.org/ns/archive-project/1"
                 xmlns:projdeps="http://www.netbeans.org/ns/ant-project-references/1"
-                exclude-result-prefixes="xalan p projdeps">
+                xmlns:projdeps2="http://www.netbeans.org/ns/ant-project-references/1"
+                exclude-result-prefixes="xalan p projdeps projdeps2">
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
     <xsl:template match="/">
 

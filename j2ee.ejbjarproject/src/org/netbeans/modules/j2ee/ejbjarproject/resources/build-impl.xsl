@@ -48,7 +48,8 @@ made subject to such option by the copyright holder.
                 xmlns:ejbjarproject2="http://www.netbeans.org/ns/j2ee-ejbjarproject/2"
                 xmlns:ejbjarproject3="http://www.netbeans.org/ns/j2ee-ejbjarproject/3"
                 xmlns:projdeps="http://www.netbeans.org/ns/ant-project-references/1"
-                exclude-result-prefixes="xalan p projdeps">
+                xmlns:projdeps2="http://www.netbeans.org/ns/ant-project-references/2"
+                exclude-result-prefixes="xalan p projdeps projdeps2">
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
 
     <xsl:template match="/">
@@ -1363,6 +1364,75 @@ to simulate
                     <xsl:attribute name="unless">no.deps</xsl:attribute>
                 </xsl:otherwise>
             </xsl:choose>
+            
+            <xsl:variable name="references2" select="/p:project/p:configuration/projdeps2:references"/>
+            <xsl:for-each select="$references2/projdeps2:reference[not($type) or projdeps2:artifact-type = $type]">
+                <xsl:variable name="subproj" select="projdeps2:foreign-project"/>
+                <xsl:variable name="subtarget">
+                    <xsl:choose>
+                        <xsl:when test="$type">
+                            <xsl:value-of select="projdeps2:target"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:value-of select="projdeps2:clean-target"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </xsl:variable>
+                <xsl:variable name="script" select="projdeps2:script"/>
+                <!-- Distinguish build of a dependent project as standalone module or as a part of an ear -->
+                <xsl:choose>
+                    <xsl:when test="$ear">
+                        <xsl:choose>
+                            <!-- call standart target if the artifact type is jar (java libraries) -->
+                            <xsl:when test="$subtarget = 'jar'">
+                                <xsl:choose>
+                                    <xsl:when test="projdeps2:properties">
+                                        <ant target="{$subtarget}" inheritall="false" antfile="{$script}">
+                                            <xsl:for-each select="projdeps2:properties/projdeps2:property">
+                                                <property name="{@name}" value="{.}"/>
+                                            </xsl:for-each>
+                                        </ant>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <ant target="{$subtarget}" inheritall="false" antfile="{$script}"/>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <xsl:choose>
+                                    <xsl:when test="projdeps2:properties">
+                                        <ant target="dist-ear" inheritall="false" antfile="{$script}">
+                                            <xsl:for-each select="projdeps2:properties/projdeps2:property">
+                                                <property name="{@name}" value="{.}"/>
+                                            </xsl:for-each>
+                                            <property name="dist.ear.dir" location="${{build.dir}}"/>
+                                        </ant>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        <ant target="dist-ear" inheritall="false" antfile="{$script}">
+                                            <property name="dist.ear.dir" location="${{build.dir}}"/>
+                                        </ant>
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <xsl:choose>
+                            <xsl:when test="projdeps2:properties">
+                                <ant target="{$subtarget}" inheritall="false" antfile="{$script}">
+                                    <xsl:for-each select="projdeps2:properties/projdeps2:property">
+                                        <property name="{@name}" value="{.}"/>
+                                    </xsl:for-each>
+                                </ant>
+                            </xsl:when>
+                            <xsl:otherwise>
+                                <ant target="{$subtarget}" inheritall="false" antfile="{$script}"/>
+                            </xsl:otherwise>
+                        </xsl:choose>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </xsl:for-each>
             
             <xsl:variable name="references" select="/p:project/p:configuration/projdeps:references"/>
             <xsl:for-each select="$references/projdeps:reference[not($type) or projdeps:artifact-type = $type]">

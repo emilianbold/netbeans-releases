@@ -47,7 +47,8 @@ made subject to such option by the copyright holder.
                 xmlns:ear="http://www.netbeans.org/ns/j2ee-earproject/1"
                 xmlns:ear2="http://www.netbeans.org/ns/j2ee-earproject/2"
                 xmlns:projdeps="http://www.netbeans.org/ns/ant-project-references/1"
-                exclude-result-prefixes="xalan p ear projdeps">
+                xmlns:projdeps2="http://www.netbeans.org/ns/ant-project-references/2"
+                exclude-result-prefixes="xalan p ear projdeps projdeps2">
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
     <xsl:template match="/">
 
@@ -582,6 +583,26 @@ to simulate
                     <property name="dist.ear.dir" location="${{build.dir}}"/>
                 </ant>
             </xsl:for-each>
+            <xsl:variable name="references2" select="/p:project/p:configuration/projdeps2:references"/>
+            <xsl:for-each select="$references2/projdeps2:reference[not($type) or projdeps2:artifact-type = $type]">
+                <xsl:variable name="subtarget">
+                    <xsl:choose>
+                        <xsl:when test="$type">
+                            <xsl:value-of select="projdeps2:target"/>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:value-of select="projdeps2:clean-target"/>
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </xsl:variable>
+                <xsl:variable name="script" select="projdeps2:script"/>
+                <ant target="{$subtarget}" inheritall="false" antfile="{$script}">
+                    <property name="dist.ear.dir" location="${{build.dir}}"/>
+                    <xsl:for-each select="projdeps2:properties/projdeps2:property">
+                        <property name="{@name}" value="{.}"/>
+                    </xsl:for-each>
+                </ant>
+            </xsl:for-each>
         </target>
     </xsl:template>
 
@@ -597,46 +618,16 @@ to simulate
         <xsl:variable name="name" select="/p:project/p:configuration/ear2:data/ear2:name"/>
         <xsl:for-each select="$references/projdeps:reference[not($type) or (projdeps:artifact-type = $type and projdeps:id = $id)]">
             <xsl:variable name="subprojname" select="projdeps:foreign-project"/>
-            <xsl:variable name="script" select="projdeps:script"/>
-            <target name="run-{$subprojname}" depends="-tool-{$subprojname},-java-{$subprojname}"/>
-            <target name="-tool-{$subprojname}" unless="j2ee.clientName" if="j2ee.appclient.mainclass.args" depends="-as-retrieve-option-workaround">
-                <java fork="true" classname="${{j2ee.appclient.tool.mainclass}}">
-                    <xsl:if test="/p:project/p:configuration/ear2:data/ear2:explicit-platform">
-                        <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
-                    </xsl:if>
-                    <jvmarg line="${{j2ee.appclient.tool.jvmoptions}}"/>
-                    <jvmarg line="${{j2ee.appclient.jvmoptions.param}}"/>
-                    <arg line="${{j2ee.appclient.tool.args}}"/>
-                    <arg line="-client ${{client.jar}}"/>
-                    <arg line="${{j2ee.appclient.mainclass.tool.param}}"/>
-                    <arg line="${{application.args.param}}"/>
-                    <classpath>
-                        <path path="${{j2ee.platform.classpath}}:${{j2ee.appclient.tool.runtime}}"/>
-                    </classpath>
-                    <syspropertyset>
-                        <propertyref prefix="run-sys-prop."/>
-                        <mapper type="glob" from="run-sys-prop.*" to="*"/>
-                    </syspropertyset>
-                </java>
-            </target>
-            <target name="-java-{$subprojname}" if="j2ee.clientName" unless="j2ee.appclient.mainclass.args">
-                <java fork="true" classname="${{main.class}}">
-                    <xsl:if test="/p:project/p:configuration/ear2:data/ear2:explicit-platform">
-                        <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
-                    </xsl:if>
-                    <jvmarg line="${{j2ee.appclient.tool.jvmoptions}}"/>
-                    <jvmarg line="-Dj2ee.clientName=${{app.client}}"/>
-                    <jvmarg line="${{j2ee.appclient.jvmoptions.param}}"/>
-                    <arg line="${{application.args.param}}"/>
-                    <classpath>
-                        <path path="${{jar.content.additional}}:${{j2ee.platform.classpath}}:${{j2ee.appclient.tool.runtime}}"/>
-                    </classpath>
-                    <syspropertyset>
-                        <propertyref prefix="run-sys-prop."/>
-                        <mapper type="glob" from="run-sys-prop.*" to="*"/>
-                    </syspropertyset>
-                </java>
-            </target>
+            <xsl:call-template name="runTargets">
+                <xsl:with-param name="subprojname" select="$subprojname"/>
+            </xsl:call-template>
+        </xsl:for-each>
+        <xsl:variable name="references2" select="/p:project/p:configuration/projdeps2:references"/>
+        <xsl:for-each select="$references2/projdeps2:reference[not($type) or (projdeps2:artifact-type = $type and projdeps2:id = $id)]">
+            <xsl:variable name="subprojname" select="projdeps2:foreign-project"/>
+            <xsl:call-template name="runTargets">
+                <xsl:with-param name="subprojname" select="$subprojname"/>
+            </xsl:call-template>
         </xsl:for-each>
         
         <!--
@@ -650,6 +641,49 @@ to simulate
             <property name="client.jar" value="${{dist.dir}}/{$name}Client.jar"/>
             <sleep seconds="3"/>
             <copy file="${{wa.copy.client.jar.from}}/{$name}/{$name}Client.jar" todir="${{dist.dir}}"/>                
+        </target>
+    </xsl:template>
+
+    <xsl:template name="runTargets">
+        <xsl:param name="subprojname"/>
+        <target name="run-{$subprojname}" depends="-tool-{$subprojname},-java-{$subprojname}"/>
+        <target name="-tool-{$subprojname}" unless="j2ee.clientName" if="j2ee.appclient.mainclass.args" depends="-as-retrieve-option-workaround">
+            <java fork="true" classname="${{j2ee.appclient.tool.mainclass}}">
+                <xsl:if test="/p:project/p:configuration/ear2:data/ear2:explicit-platform">
+                    <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
+                </xsl:if>
+                <jvmarg line="${{j2ee.appclient.tool.jvmoptions}}"/>
+                <jvmarg line="${{j2ee.appclient.jvmoptions.param}}"/>
+                <arg line="${{j2ee.appclient.tool.args}}"/>
+                <arg line="-client ${{client.jar}}"/>
+                <arg line="${{j2ee.appclient.mainclass.tool.param}}"/>
+                <arg line="${{application.args.param}}"/>
+                <classpath>
+                    <path path="${{j2ee.platform.classpath}}:${{j2ee.appclient.tool.runtime}}"/>
+                </classpath>
+                <syspropertyset>
+                    <propertyref prefix="run-sys-prop."/>
+                    <mapper type="glob" from="run-sys-prop.*" to="*"/>
+                </syspropertyset>
+            </java>
+        </target>
+        <target name="-java-{$subprojname}" if="j2ee.clientName" unless="j2ee.appclient.mainclass.args">
+            <java fork="true" classname="${{main.class}}">
+                <xsl:if test="/p:project/p:configuration/ear2:data/ear2:explicit-platform">
+                    <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
+                </xsl:if>
+                <jvmarg line="${{j2ee.appclient.tool.jvmoptions}}"/>
+                <jvmarg line="-Dj2ee.clientName=${{app.client}}"/>
+                <jvmarg line="${{j2ee.appclient.jvmoptions.param}}"/>
+                <arg line="${{application.args.param}}"/>
+                <classpath>
+                    <path path="${{jar.content.additional}}:${{j2ee.platform.classpath}}:${{j2ee.appclient.tool.runtime}}"/>
+                </classpath>
+                <syspropertyset>
+                    <propertyref prefix="run-sys-prop."/>
+                    <mapper type="glob" from="run-sys-prop.*" to="*"/>
+                </syspropertyset>
+            </java>
         </target>
     </xsl:template>
 
@@ -742,7 +776,17 @@ to simulate
         <xsl:variable name="name" select="/p:project/p:configuration/ear2:data/ear2:name"/>
         <xsl:for-each select="$references/projdeps:reference[not($type) or (projdeps:artifact-type = $type and projdeps:id = $id)]">
             <xsl:variable name="subprojname" select="projdeps:foreign-project"/>
-            <xsl:variable name="script" select="projdeps:script"/>
+            <target name="debug-{$subprojname}" depends="-debug-tool-{$subprojname},-debug-java-{$subprojname}"/>
+            <target name="-debug-tool-{$subprojname}" unless="j2ee.clientName" if="j2ee.appclient.mainclass.args" depends="init,-as-retrieve-option-workaround">
+                <ear2:debug-appclient mainclass="${{j2ee.appclient.tool.mainclass}}" args="-client ${{client.jar}} ${{j2ee.appclient.tool.args}} ${{j2ee.appclient.mainclass.tool.param}} ${{application.args.param}}"/>
+            </target>
+            <target name="-debug-java-{$subprojname}" if="j2ee.clientName" unless="j2ee.appclient.mainclass.args">
+                <ear2:debug-appclient mainclass="${{main.class}}" args="${{application.args.param}}" classpath="${{jar.content.additional}}"/>
+            </target>
+        </xsl:for-each>
+        <xsl:variable name="references2" select="/p:project/p:configuration/projdeps2:references"/>
+        <xsl:for-each select="$references2/projdeps2:reference[not($type) or (projdeps2:artifact-type = $type and projdeps2:id = $id)]">
+            <xsl:variable name="subprojname" select="projdeps2:foreign-project"/>
             <target name="debug-{$subprojname}" depends="-debug-tool-{$subprojname},-debug-java-{$subprojname}"/>
             <target name="-debug-tool-{$subprojname}" unless="j2ee.clientName" if="j2ee.appclient.mainclass.args" depends="init,-as-retrieve-option-workaround">
                 <ear2:debug-appclient mainclass="${{j2ee.appclient.tool.mainclass}}" args="-client ${{client.jar}} ${{j2ee.appclient.tool.args}} ${{j2ee.appclient.mainclass.tool.param}} ${{application.args.param}}"/>
@@ -798,6 +842,12 @@ to simulate
             <xsl:variable name="subproj" select="projdeps:foreign-project"/>
             <xsl:variable name="script" select="projdeps:script"/>
             <ant target="-run-deploy-am" inheritall="false" antfile="${{project.{$subproj}}}/{$script}">
+            </ant>
+        </xsl:for-each>
+        <xsl:variable name="references2" select="/p:project/p:configuration/projdeps2:references"/>
+        <xsl:for-each select="$references2/projdeps2:reference[(projdeps2:id='dist-ear') or (projdeps2:id='j2ee-module-car')]">
+            <xsl:variable name="script" select="projdeps2:script"/>
+            <ant target="-run-deploy-am" inheritall="false" antfile="{$script}">
             </ant>
         </xsl:for-each>
     </xsl:template>
