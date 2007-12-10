@@ -163,7 +163,11 @@ final class ProcessList implements Runnable {
                 alist.add("/bin/ps"); // NOI18N
                 alist.add("-a"); // NOI18N
                 alist.add("-o"); // NOI18N
-                alist.add("user,pid,ppid,stime,time,args"); // NOI18N
+                if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+                    alist.add("user,pid,ppid,stime,time,command"); // NOI18N
+                } else {
+                    alist.add("user,pid,ppid,stime,time,args"); // NOI18N
+                }
                 ptype = PTYPE_STD;
             } else {
                 if (new File("/usr/bin/ps").exists()) { // NOI18N

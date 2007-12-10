@@ -132,6 +132,10 @@ public class CommandBuffer {
         return null;
     }
     
+    public boolean attachTimedOut() {
+        return state == STATE_TIMEOUT;
+    }
+    
     public void dispose() {
         map.remove(token);
     }

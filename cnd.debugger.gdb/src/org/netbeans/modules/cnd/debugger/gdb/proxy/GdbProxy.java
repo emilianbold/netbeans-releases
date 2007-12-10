@@ -201,6 +201,10 @@ public class GdbProxy implements GdbMiDefinitions {
     public int info_threads() {
         return engine.sendCommand(MI_CMD_INFO_THREADS);
     }
+    
+    public int info_files() {
+        return engine.sendCommand("info files");
+    }
 
     /** Set the current thread */
     public int thread_select(String id) {
