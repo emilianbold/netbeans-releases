@@ -320,6 +320,11 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
 
         public ElementJavadoc getJavaDoc() {
             if (javaDoc == null) {
+                if (fileObject == null) {
+                    // Probably no source filem - so cannot get Javadoc
+                    return null;
+                }
+                
                 JavaSource javaSource = JavaSource.forFileObject(fileObject);
 
                 if (javaSource != null) {
