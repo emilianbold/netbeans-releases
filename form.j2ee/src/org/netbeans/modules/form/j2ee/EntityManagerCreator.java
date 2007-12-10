@@ -127,7 +127,7 @@ class EntityManagerCreator implements CreationDescriptor.Creator {
         Object unitName = props[0].getJavaInitializationString();
         
         StringBuilder sb = new StringBuilder();
-        sb.append("javax.persistence.Persistence.createEntityManagerFactory("); // NOI18N
+        sb.append("java.beans.Beans.isDesignTime() ? null : javax.persistence.Persistence.createEntityManagerFactory("); // NOI18N
         sb.append(unitName).append(").createEntityManager()"); // NOI18N
         return sb.toString();
     }

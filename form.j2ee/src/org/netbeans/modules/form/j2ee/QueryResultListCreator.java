@@ -153,6 +153,7 @@ class QueryResultListCreator implements CreationDescriptor.Creator {
         }
 
         StringBuilder sb = new StringBuilder();
+        sb.append("java.beans.Beans.isDesignTime() ? java.util.Collections.emptyList() : "); // NOI18N
         boolean observable = Boolean.TRUE.equals(observableValue);
         if (observable) {
             sb.append("org.jdesktop.observablecollections.ObservableCollections.observableList("); // NOI18N

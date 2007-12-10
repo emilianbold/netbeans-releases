@@ -149,6 +149,7 @@ class QueryCreator implements CreationDescriptor.Creator {
         }
 
         StringBuilder sb = new StringBuilder();
+        sb.append("java.beans.Beans.isDesignTime() ? null : "); // NOI18N
         if ("null".equals("" + entityManager)) { // NOI18N
             sb.append("((javax.persistence.EntityManager)null)");  // NOI18N
         } else {
