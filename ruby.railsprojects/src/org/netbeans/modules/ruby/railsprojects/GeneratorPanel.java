@@ -342,7 +342,9 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
 
         // Add in the builtins first (since they provide some more specific
         // UI configuration for known generators (labelling the arguments etc.)
-        List<Generator> builtins = Generator.getBuiltinGenerators();
+        String railsVersion = RubyInstallation.getInstance().getVersion("rails"); // NOI18N
+        
+        List<Generator> builtins = Generator.getBuiltinGenerators(railsVersion);
         for (Generator builtin : builtins) {
             if (!added.contains(builtin.getName())) {
                 generators.add(builtin);
@@ -351,9 +353,8 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
         }
 
         if (gemDir != null) {
-            String version = RubyInstallation.getInstance().getVersion("rails"); // NOI18N
-            if (version != null) {
-                File railsDir = new File(gemDir, "rails" + "-" + version); // NOI18N
+            if (railsVersion != null) {
+                File railsDir = new File(gemDir, "rails" + "-" + railsVersion); // NOI18N
                 assert railsDir.exists();
                 FileObject railsInstall = FileUtil.toFileObject(railsDir);
                 assert railsInstall != null;

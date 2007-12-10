@@ -68,8 +68,10 @@ public class Generator {
     public static Generator MIGRATION = new Generator("migration", null, 1); // NOI18N
     public static Generator MODEL = new Generator("model", null, 1); // NOI18N
     public static Generator PLUGIN = new Generator("plugin", null, 1); // NOI18N
-    public static Generator SCAFFOLD =
+    public static Generator SCAFFOLD_ONE =
         new Generator("scaffold", null, "ModelName", "ScaffControllerName", "ScaffoldActions", 1); // NOI18N
+    public static Generator SCAFFOLD_TWO =
+        new Generator("scaffold", null, "ModelName", "ScaffoldAttrs", null, 1); // NOI18N
     public static Generator SESSION_MIGRATION = new Generator("session_migration", null, 1); // NOI18N
     public static Generator WEB_SERVICE =
         new Generator("web_service", null, null, "ApiMethods", null, 1); // NOI18N
@@ -98,7 +100,8 @@ public class Generator {
     }
     
     /** Add in the "known" or builtin generators. */
-    static List<Generator> getBuiltinGenerators() {
+    static List<Generator> getBuiltinGenerators(String railsVersion) {
+        boolean isRailsOne = railsVersion != null && railsVersion.startsWith("1."); // NOI18N
         List<Generator> list = new ArrayList<Generator>();
         list.add(CONTROLLER);
         list.add(INTEGRATION_TEST);
@@ -106,10 +109,16 @@ public class Generator {
         list.add(MIGRATION);
         list.add(MAILER);
         list.add(PLUGIN);
-        list.add(SCAFFOLD);
+        if (isRailsOne) {
+            list.add(SCAFFOLD_ONE);
+        } else {
+            list.add(SCAFFOLD_TWO);
+        }
         list.add(SESSION_MIGRATION);
-        list.add(WEB_SERVICE);
-        // TODO - missing scaffold_resource!
+        if (isRailsOne) {
+            list.add(WEB_SERVICE);
+            // TODO - missing scaffold_resource!
+        }
         
         return list;
     }
