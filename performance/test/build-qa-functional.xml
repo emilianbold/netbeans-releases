@@ -63,7 +63,7 @@ made subject to such option by the copyright holder.
     
     <target name="ide_command_line_suffix">
         <!--  Repeat performance test more than once -->
-        <property name="xtest.ide.commandline.suffix" value="-J-Dcom.sun.aas.installRoot=${j2ee.appserver.path} -J-Dorg.netbeans.performance.repeat=4 -J-Dorg.netbeans.performance.memory.usage.log=true"/>
+        <property name="xtest.ide.commandline.suffix" value="-J-Dcom.sun.aas.installRoot=${j2ee.appserver.path} -J-Dorg.netbeans.performance.repeat=4 -J-Dorg.netbeans.performance.memory.usage.log=true -J-Dnetbeans.javacore.noscan=true"/>
     </target>
     
     <!-- ========= -->
