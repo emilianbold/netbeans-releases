@@ -32,20 +32,15 @@
 package org.netbeans.modules.web.jsf.navigation;
 
 import java.awt.BorderLayout;
-import java.awt.EventQueue;
 import java.awt.Image;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -57,10 +52,10 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.api.visual.model.StateModel;
 import org.netbeans.api.visual.vmd.VMDConnectionWidget;
 import org.netbeans.api.visual.vmd.VMDNodeWidget;
 import org.netbeans.api.visual.vmd.VMDPinWidget;
-import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.editor.JSFConfigEditorContext;
 import org.netbeans.modules.web.jsf.navigation.JSFPageFlowMultiviewDescriptor.PageFlowElement;
@@ -98,7 +93,6 @@ public class PageFlowView extends TopComponent implements Lookup.Provider {
     private PageFlowScene scene;
     private PageFlowController pfc;
     private PageFlowSceneData sceneData;
-    private BlockingQueue<Runnable> runnables = new LinkedBlockingQueue<Runnable>();
     private ThreadPoolExecutor executor;
     private static final Logger LOG = Logger.getLogger("org.netbeans.web.jsf.navigation");
     private static final String ACN_PAGEVIEW_TC = NbBundle.getMessage(PageFlowView.class, "ACN_PageView_TC");
@@ -117,7 +111,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider {
 
         setFocusable(true);
 
-        executor = new ThreadPoolExecutor(1, 1, 60, TimeUnit.SECONDS, runnables);
+
         LOG.finest("Create Executor Thread");
 
         getAccessibleContext().setAccessibleDescription(ACDS_PAGEVIEW_TC);
@@ -213,7 +207,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider {
         getScene().destoryPageFlowScene();
         setScene(null);
         sceneData = null;
-        runnables.clear();
+//        runnables.clear();
         context = null;
         pfc.destroy();
         pfc = null;
@@ -380,13 +374,22 @@ public class PageFlowView extends TopComponent implements Lookup.Provider {
             widget.setPreferredLocation(data.getPoint());
             widget.setMinimized(data.isMinimized());
         }
-
-        //        widget.getAccessibleContext().setAccessibleDescription(ACDS_PAGE);
-//        widget.getAccessibleContext().setAccessibleDescription(ACN_PAGE);
         getScene().addPin(pageNode, new Pin(pageNode));
-        runPinSetup(pageNode, widget);
+        
+        /* Now we want to runPinSetup on demand */
+        //runPinSetup(pageNode, widget);
         selectPageFlowSceneElement(pageNode);
         return widget;
+    }
+    
+    
+    
+    public final class VMDNodeWidgetListener implements StateModel.Listener {
+
+        public void stateChanged() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        
     }
 
     private void selectPageFlowSceneElement(PageFlowSceneElement element) {
@@ -395,96 +398,6 @@ public class PageFlowView extends TopComponent implements Lookup.Provider {
         getScene().setSelectedObjects(selectedSet);
     }
 
-    /* This method was put into place to gather all the pin data for a given page.
-     * Although it may seem non-sensical for a non-jsp page, a vwp-page may need
-     * more processing time to determine it's compoenents.  To prevent further delay
-     * in the drawing of the Page Flow Editor, I have added an executor in which
-     * it will run and get the conent items in the background.
-     * For the background process to start startBackgroundPinAddingProcess() must be called.
-     * If you no longer need the page to complete loading, you can call the clear equivalent.
-     **/
-    private void runPinSetup(Page page, VMDNodeWidget widget) {
-        final WeakReference<Page> pageRef = new WeakReference<Page>(page);
-        final WeakReference<VMDNodeWidget> widgetRef = new WeakReference<VMDNodeWidget>(widget);
-        LOG.entering(PageFlowView.class.getName(), "runPinSetup");
-        final LabelWidget loadingWidget = new LabelWidget(getScene(), "Loading...");
-        widget.addChild(loadingWidget);
-        runnables.add(new Runnable() {
-
-                    public void run() {
-                        /* This is called in redrawPins and edges setupPinsInNode(pageNode);*/
-                        /* Need to do updateNodeWidgetActions after setupPinInNode because this is when the model is set. */
-                        LOG.finest("    PFE: Inside Thread: " + java.util.Calendar.getInstance().getTime());
-                        //Page page = pageRef.get();
-                        if( pageRef.get() == null || widgetRef.get() == null ){
-                            LOG.finest("    PFE: runPinSetup will not completed because the page is now null.  It may have been removed to reset graph.");
-                            return;
-                        }
-                        if (!pageRef.get().isDataNode()) {
-                            EventQueue.invokeLater(new Runnable() {
-
-                                        public void run() {
-                                            if (getScene() != null) {
-                                                widgetRef.get().removeChild(loadingWidget);
-                                                getScene().validate();
-                                            }
-                                        }
-                                    });
-                            return;
-                        }
-                        final java.util.Collection<org.netbeans.modules.web.jsf.navigation.Pin> newPinNodes = pageRef.get().getPinNodes();
-
-                        LOG.finest("    PFE: Completed Nodes Setup: " + java.util.Calendar.getInstance().getTime());
-
-                        try {
-                            EventQueue.invokeAndWait(new java.lang.Runnable() {
-
-                                        public void run() {
-
-                                            LOG.finest("    PFE: Starting Redraw: " + java.util.Calendar.getInstance().getTime());
-                                            Collection<NavigationCaseEdge> redrawCaseNodes = new ArrayList<NavigationCaseEdge>();
-                                            Collection<Pin> pinNodes = new ArrayList<Pin>(getScene().getPins());
-
-                                            widgetRef.get().removeChild(loadingWidget);
-                                            for (Pin pin : pinNodes) {
-                                                if (pin.getPage() == pageRef.get()) {
-                                                    assert pin.getPage().getDisplayName().equals(pageRef.get().getDisplayName());
-                                                    java.util.Collection<NavigationCaseEdge> caseNodes = getScene().findPinEdges(pin, true, false);
-                                                    redrawCaseNodes.addAll(caseNodes);
-                                                    if (!pin.isDefault()) {
-                                                        getScene().removePin(pin);
-                                                    }
-                                                }
-                                            }
-                                            if (newPinNodes.size() > 0) {
-                                                for (org.netbeans.modules.web.jsf.navigation.Pin pinNode : newPinNodes) {
-                                                    createPin(pageRef.get(), pinNode);
-                                                }
-                                            }
-                                            for (org.netbeans.modules.web.jsf.navigation.NavigationCaseEdge caseNode : redrawCaseNodes) {
-                                                setEdgeSourcePin(caseNode, pageRef.get());
-                                            }
-                                            getScene().updateNodeWidgetActions(pageRef.get());
-                                            getScene().validate();
-                                            LOG.finest("    PFE: Ending Redraw: " + java.util.Calendar.getInstance().getTime());
-                                        }
-                                    });
-                        } catch (InterruptedException ex) {
-                            Exceptions.printStackTrace(ex);
-                        } catch (InvocationTargetException ex) {
-                    if (getScene() == null )  {
-                                /* It is okay suppress this exception because it is expected if the scene is deleted (closed)
-                         * before the page has finished loading. 
-                         */
-                                LOG.finer("Scene is has been closed before page has finished loading.:" + ex);
-                            } else {
-                                Exceptions.printStackTrace(ex);
-                            }
-                        }
-                    }
-                });
-        LOG.exiting(PageFlowView.class.getName(), "runPinSetup");
-    }
 
     private void setupPinsInNode(Page pageNode) {
         Collection<Pin> pinNodes = pageNode.getPinNodes();
@@ -550,7 +463,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider {
      * Sets the source or "from" pin.  This can either be a pages default pin (in otherwords
      * it is simply navigable from that page) or from another pin (ie button).
      */
-    private void setEdgeSourcePin(NavigationCaseEdge navCaseNode, Page fromPageNode) {
+    public void setEdgeSourcePin(NavigationCaseEdge navCaseNode, Page fromPageNode) {
         Pin sourcePin = getScene().getDefaultPin(fromPageNode);
         Collection<Pin> pinNodes = getScene().getPins();
         for (Pin pin : pinNodes) {
@@ -871,18 +784,18 @@ public class PageFlowView extends TopComponent implements Lookup.Provider {
      * Start the background process for loading on the inner page (pin)
      * information.
      */
-    protected void startBackgroundPinAddingProcess() {
-        executor.prestartAllCoreThreads();
-    }
+//    protected void startBackgroundPinAddingProcess() {
+//        executor.prestartAllCoreThreads();
+//    }
 
     /*
      * Prevent any Runners that have not completed from running.  This is important
      * when the scope is being changed and we no longer want the pages to continue
      * loading.
      */
-    protected void clearBackgroundPinAddingProcess() {
-        executor.purge();
-    }
+//    protected void clearBackgroundPinAddingProcess() {
+//        executor.purge();
+//    }
     private WeakReference<PageFlowElement> multiviewRef;
 
     public PageFlowElement getMultiview() {

@@ -193,7 +193,7 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
                 properties.open();
             }
             tc.registerListeners();
-            tc.startBackgroundPinAddingProcess();
+//            tc.startBackgroundPinAddingProcess();
             LOG.finest("PageFlowEditor componentOpened");
         }
 

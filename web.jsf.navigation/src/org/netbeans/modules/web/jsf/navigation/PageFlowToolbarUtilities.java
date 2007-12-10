@@ -201,7 +201,7 @@ public class PageFlowToolbarUtilities {
                     setCurrentScope(getScope(newScope));
                     //As we are setting the current scope, we should update the controller and update the scene.  But what happens with setup?
                     /* We don't want the background process to continue adding pins to the pages */
-                    view.clearBackgroundPinAddingProcess();
+//                    view.clearBackgroundPinAddingProcess();
 
                     /* You don't want to override the data you just stored */
                     view.getPageFlowController().setupGraphNoSaveData();

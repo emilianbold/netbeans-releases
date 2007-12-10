@@ -272,7 +272,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
      */
     protected Widget attachNodeWidget(Page page) {
         assert page != null;
-        VMDNodeWidget nodeWidget = new VMDNodeWidget(this, scheme);
+        VMDNodeWidget nodeWidget = new PFENodeWidget(this, scheme);
         String displayName = page.getDisplayName();
         nodeWidget.setNodeName(displayName);
 
@@ -284,8 +284,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
         header.getActions().addAction(createWidgetHoverAction());
 
         LabelWidget lblWidget = nodeWidget.getNodeNameWidget();
-
-        lblWidget.getActions().addAction(ActionFactory.createInplaceEditorAction(new PageNodeTextFieldInplaceEditor(nodeWidget)));
+         lblWidget.getActions().addAction(ActionFactory.createInplaceEditorAction(new PageNodeTextFieldInplaceEditor(nodeWidget)));
 
         mainLayer.addChild(nodeWidget);
         //updateNodeActions(nodeWidget);
