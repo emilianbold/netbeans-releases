@@ -415,7 +415,10 @@ public class Reformatter implements ReformatTask {
                 if (mods != null) {
                     if (scan(mods, p)) {
                         indent += continuationIndentSize;
-                        space();
+                        if (cs.placeNewLineAfterModifiers())
+                            newline();
+                        else
+                            space();
                     } else if (afterAnnotation) {
                         blankLines();
                         afterAnnotation = false;
@@ -618,9 +621,15 @@ public class Reformatter implements ReformatTask {
             ModifiersTree mods = node.getModifiers();
             if (mods != null) {
                 if (scan(mods, p)) {
-                    if (!insideFor)
+                    if (!insideFor) {
                         indent += continuationIndentSize;
-                    space();
+                        if (cs.placeNewLineAfterModifiers())
+                            newline();
+                        else
+                            space();
+                    } else {
+                        space();
+                    }
                 } else if (afterAnnotation) {
                     if (parent.getKind() == Tree.Kind.CLASS || parent.getKind() == Tree.Kind.BLOCK) {
                         blankLines();
@@ -681,7 +690,10 @@ public class Reformatter implements ReformatTask {
             if (mods != null) {
                 if (scan(mods, p)) {
                     indent += continuationIndentSize;
-                    space();
+                    if (cs.placeNewLineAfterModifiers())
+                        newline();
+                    else
+                        space();
                 } else {
                     blankLines();
                 }
