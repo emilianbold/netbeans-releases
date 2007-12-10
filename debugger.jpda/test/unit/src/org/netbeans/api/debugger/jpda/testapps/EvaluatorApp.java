@@ -711,6 +711,25 @@ public class EvaluatorApp {
         return llx = llxcopy;
     }
     
+    public static boolean testOp36a() {
+        return (new Thread() instanceof Runnable);
+    }
+    
+    public static boolean testOp36b() {
+        return (System.out instanceof Runnable);
+    }
+    
+    public static boolean testOp36c() {
+        return (Runtime.getRuntime() instanceof java.lang.Iterable);
+    }
+    
+    public static boolean testOp36d() {
+        return (Runtime.getRuntime() instanceof Runtime);
+    }
+    
+    public static boolean testOp36e() {
+        return (Runtime.getRuntime() instanceof Object);
+    }
     
     
     // Test operand priorities
@@ -837,6 +856,54 @@ public class EvaluatorApp {
         return ((Inner1) new Inner1.Inner1_3()).method1(ix);
     }
     
+    public static float testAutobox1() {
+        return methodAutobox(ix, llx, 1000);
+    }
+    
+    public static float testAutobox2() {
+        return methodAutobox(new Integer(ix), (long) ix, 1.4f);
+    }
+    
+    public static float testAutobox3() {
+        return methodAutobox(new Short((short)10), lx, new Double(1.4));
+    }
+    
+    public static double testAutobox4() {
+        return new Float[] { methodAutobox(4, new Long(lx), new Float(1.4)), 15f, new Float(1.5) }[0].doubleValue();
+    }
+    
+    public static float testAutobox5() {
+        return new float[] { methodAutobox2(4, new Long(lx), new Float(1.4)), 15f, new Float(1.5) }[0];
+    }
+    
+    public static String testConversion1() {
+        return "a"+10;
+    }
+    
+    public static String testConversion2() {
+        return "a"+10.6+'x'+new Long(1111111111111111111l);
+    }
+    
+    public static String testConversion3() {
+        return 10.6+'x'+new Long(1111111111111111111l)+"a";
+    }
+    
+    public static String testConversion4() {
+        return null+" a";
+    }
+    
+    public static double testConversion5() {
+        return 10.6+'x'+new Long(1111111111111111111l);
+    }
+    
+    public static double testConversion6() {
+        return 1 + 1.7 + 4.5f;
+    }
+    
+    public static float testConversion7() {
+        return new Integer(123) + new Float(1.222222222) + new Long(999999999999999999l);
+    }
+    
     // Constructors
     
     public static boolean testConstructor1() {
@@ -879,6 +946,15 @@ public class EvaluatorApp {
     
     public static String testParametrized1() {
         return new ArrayList<String>(Arrays.asList(new String[] {"a", "b", "c"})).get(0);
+    }
+    
+    
+    public static float methodAutobox(int i, Long l, double d) {
+        return ((float) (d / l)) * i;
+    }
+    
+    public static Float methodAutobox2(Integer i, long l, double d) {
+        return new Float(((d / l)) * i);
     }
     
     public static class Inner1 {

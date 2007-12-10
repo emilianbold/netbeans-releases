@@ -71,8 +71,10 @@ import com.sun.jdi.Mirror;
 import com.sun.jdi.NativeMethodException;
 import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.ObjectReference;
+import com.sun.jdi.PrimitiveType;
 import com.sun.jdi.PrimitiveValue;
 import com.sun.jdi.ReferenceType;
+import com.sun.jdi.ShortType;
 import com.sun.jdi.ShortValue;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.StringReference;
@@ -134,6 +136,7 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -155,6 +158,7 @@ import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.modules.debugger.jpda.expr.EvaluationContext.VariableInfo;
 import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -553,6 +557,12 @@ import org.openide.util.NbBundle;
         Mirror right = arg0.getRightOperand().accept(this, evaluationContext);
         VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
         Tree.Kind kind = arg0.getKind();
+        if (left instanceof ObjectReference) {
+            left = unboxIfCan(arg0, (ObjectReference) left, evaluationContext);
+        }
+        if (right instanceof ObjectReference) {
+            right = unboxIfCan(arg0, (ObjectReference) right, evaluationContext);
+        }
         if ((left instanceof BooleanValue) && (right instanceof BooleanValue)) {
             boolean op1 = ((BooleanValue) left).booleanValue();
             boolean op2 = ((BooleanValue) right).booleanValue();
@@ -746,12 +756,17 @@ import org.openide.util.NbBundle;
         if (((left == null || left instanceof StringReference) && (right == null || right instanceof StringReference))
             && kind == Tree.Kind.PLUS) {
             String s1 = (left == null) ? null : ((StringReference) left).value();
-            String s2 = (left == null) ? null : ((StringReference) right).value();
+            String s2 = (right == null) ? null : ((StringReference) right).value();
             switch (kind) {
                 case PLUS:
                     return vm.mirrorOf(s1 + s2);
                 default: throw new IllegalStateException("Unhandled binary tree: "+arg0);
             }
+        }
+        if ((left instanceof StringReference || right instanceof StringReference) && kind == Tree.Kind.PLUS) {
+            String s1 = (left instanceof StringReference) ? ((StringReference) left).value() : toString(arg0, left, evaluationContext);
+            String s2 = (right instanceof StringReference) ? ((StringReference) right).value() : toString(arg0, right, evaluationContext);
+            return vm.mirrorOf(s1 + s2);
         }
         switch (kind) {
             case EQUAL_TO:
@@ -980,7 +995,7 @@ import org.openide.util.NbBundle;
             StringReference str = vm.mirrorOf((String) value);
             ClassType strClass = (ClassType) vm.classesByName("java.lang.String").get(0);
             try {
-                List<? extends Value> args = Collections.emptyList();
+                List<Value> args = Collections.emptyList();
                 return invokeMethod(arg0, strClass.methodsByName("intern").get(0),
                                     false, strClass, str, args, evaluationContext);
             } catch (Exception ex) {
@@ -1069,6 +1084,7 @@ import org.openide.util.NbBundle;
         }
         int depth = 1;
         ArrayReference array = getArrayType(arg0, type, depth).newInstance(n);
+        autoboxElements(arg0, type, elements, evaluationContext);
         try {
             array.setValues(elements);
         } catch (InvalidTypeException ex) {
@@ -1241,7 +1257,7 @@ import org.openide.util.NbBundle;
                 VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
                 StringReference constantNameRef = vm.mirrorOf(constantName);
                 Value enumValue = invokeMethod(arg0, valueOfMethod, true, (ClassType) enumType, null,
-                             Collections.singletonList(constantNameRef), evaluationContext);
+                             Collections.singletonList((Value) constantNameRef), evaluationContext);
                 return enumValue;
             case FIELD:
                 ve = (VariableElement) elm;
@@ -1271,6 +1287,7 @@ import org.openide.util.NbBundle;
                 }
                 throw new IllegalArgumentException("Wrong expression value: "+expression);
             case CLASS:
+            case INTERFACE:
                 TypeElement te = (TypeElement) elm;
                 String className = ElementUtilities.getBinaryName(te);
                 vm = evaluationContext.getDebugger().getVirtualMachine();
@@ -1402,8 +1419,10 @@ import org.openide.util.NbBundle;
         }
     }
 
+    @Override
     public Mirror visitTypeParameter(TypeParameterTree arg0, EvaluationContext evaluationContext) {
-        throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
+        Assert2.error(arg0, "unsupported");
+        return null;
     }
 
     @Override
@@ -1647,8 +1666,10 @@ import org.openide.util.NbBundle;
         return null;
     }
 
+    @Override
     public Mirror visitWildcard(WildcardTree arg0, EvaluationContext evaluationContext) {
-        throw new UnsupportedOperationException("Not supported yet."+" Tree = '"+arg0+"'");
+        Assert2.error(arg0, "unsupported");
+        return null;
     }
 
     @Override
@@ -1656,7 +1677,7 @@ import org.openide.util.NbBundle;
         Assert2.error(arg0, "unsupported");
         return null;
     }
-    
+
     private void setToMirror(Tree var, Value value, EvaluationContext evaluationContext) {
         VariableInfo varInfo = evaluationContext.getVariables().get(var);
         if (varInfo == null) {
@@ -1680,7 +1701,7 @@ import org.openide.util.NbBundle;
     }
     
     private Value invokeMethod(Tree arg0, Method method, boolean isStatic, ClassType type,
-                               ObjectReference objectReference, List<? extends Value> argVals,
+                               ObjectReference objectReference, List<Value> argVals,
                                EvaluationContext evaluationContext) {
         if (!evaluationContext.canInvokeMethods()) {
             Assert2.error(arg0, "calleeException", new UnsupportedOperationException(), evaluationContext);
@@ -1692,6 +1713,7 @@ import org.openide.util.NbBundle;
             }
             evaluationContext.methodToBeInvoked();
             Value value;
+            autoboxArguments(method.argumentTypes(), argVals, evaluationThread);
             if (isStatic) {
                 value = type.invokeMethod(evaluationThread, method, argVals,
                                           ObjectReference.INVOKE_SINGLE_THREADED);
@@ -1734,6 +1756,317 @@ import org.openide.util.NbBundle;
                 ieex.initCause(itsex);
                 throw new IllegalStateException(ieex);
             }
+        }
+    }
+    
+    /**
+     * Auto-boxes or un-boxes arguments of a method.
+     */
+    private static void autoboxArguments(List<Type> types, List<Value> argVals,
+                                         ThreadReference evaluationThread) throws InvalidTypeException,
+                                                                                  ClassNotLoadedException,
+                                                                                  IncompatibleThreadStateException,
+                                                                                  InvocationException {
+        if (types.size() != argVals.size()) {
+            return ;
+        }
+        int n = types.size();
+        for (int i = 0; i < n; i++) {
+            Type t = types.get(i);
+            Value v = argVals.get(i);
+            if (v instanceof ObjectReference && t instanceof PrimitiveType) {
+                argVals.set(i, unbox((ObjectReference) v, (PrimitiveType) t, evaluationThread));
+            }
+            if (v instanceof PrimitiveValue && t instanceof ReferenceType) {
+                argVals.set(i, box((PrimitiveValue) v, (ReferenceType) t, evaluationThread));
+            }
+        }
+    }
+    
+    /**
+     * Auto-boxes or un-boxes elements of an array.
+     */
+    private void autoboxElements(Tree arg0, Type type, List<Value> elements,
+                                 EvaluationContext evaluationContext) {
+        boolean methodCalled = false;
+        ThreadReference evaluationThread = null;
+        try {
+            if (type instanceof PrimitiveType) {
+                for (int i = 0; i < elements.size(); i++) {
+                    Value v = elements.get(i);
+                    if (v instanceof ObjectReference) {
+                        if (!methodCalled) {
+                            if (!evaluationContext.canInvokeMethods()) {
+                                Assert2.error(arg0, "calleeException", new UnsupportedOperationException(), evaluationContext);
+                            }
+                            evaluationThread = evaluationContext.getFrame().thread();
+                            if (loggerMethod.isLoggable(Level.FINE)) {
+                                loggerMethod.fine("STARTED : Unbox "+v+" in thread "+evaluationThread);
+                            }
+                            evaluationContext.methodToBeInvoked();
+                            methodCalled = true;
+                        }
+                        elements.set(i, unbox((ObjectReference) v, (PrimitiveType) type, evaluationThread));
+                    }
+                }
+            } else if (type instanceof ReferenceType) {
+                for (int i = 0; i < elements.size(); i++) {
+                    Value v = elements.get(i);
+                    if (v instanceof PrimitiveValue) {
+                        if (!methodCalled) {
+                            if (!evaluationContext.canInvokeMethods()) {
+                                Assert2.error(arg0, "calleeException", new UnsupportedOperationException(), evaluationContext);
+                            }
+                            evaluationThread = evaluationContext.getFrame().thread();
+                            if (loggerMethod.isLoggable(Level.FINE)) {
+                                loggerMethod.fine("STARTED : Autobox "+v+" in thread "+evaluationThread);
+                            }
+                            evaluationContext.methodToBeInvoked();
+                            methodCalled = true;
+                        }
+                        elements.set(i, box((PrimitiveValue) v, (ReferenceType) type, evaluationThread));
+                    }
+                }
+            }
+        } catch (InvalidTypeException itex) {
+            throw new IllegalStateException(new InvalidExpressionException (itex));
+        } catch (ClassNotLoadedException cnlex) {
+            throw new IllegalStateException(new InvalidExpressionException (cnlex));
+        } catch (IncompatibleThreadStateException itsex) {
+            InvalidExpressionException ieex = new InvalidExpressionException (itsex);
+            ieex.initCause(itsex);
+            throw new IllegalStateException(ieex);
+        } catch (InvocationException iex) {
+            InvalidExpressionException ieex = new InvalidExpressionException (iex);
+            ieex.initCause(iex);
+            throw new IllegalStateException(ieex);
+        } catch (UnsupportedOperationException uoex) {
+            InvalidExpressionException ieex = new InvalidExpressionException (uoex);
+            ieex.initCause(uoex);
+            throw new IllegalStateException(ieex);
+        } catch (ObjectCollectedException ocex) {
+            throw new IllegalStateException(new InvalidExpressionException(NbBundle.getMessage(
+                Evaluator.class, "CTL_EvalError_collected")));
+        } finally {
+            if (methodCalled) {
+                if (loggerMethod.isLoggable(Level.FINE)) {
+                    loggerMethod.fine("FINISHED: Autobox/unbox in thread "+evaluationThread);
+                }
+                try {
+                    evaluationContext.methodInvokeDone();
+                } catch (IncompatibleThreadStateException itsex) {
+                    InvalidExpressionException ieex = new InvalidExpressionException (itsex);
+                    ieex.initCause(itsex);
+                    throw new IllegalStateException(ieex);
+                }
+            }
+        }
+    }
+    
+    private static void unboxMethodToBeCalled(Tree arg0, Mirror v, EvaluationContext evaluationContext) {
+        if (!evaluationContext.canInvokeMethods()) {
+            Assert2.error(arg0, "calleeException", new UnsupportedOperationException(), evaluationContext);
+        }
+        if (loggerMethod.isLoggable(Level.FINE)) {
+            loggerMethod.fine("STARTED : Unbox "+v+" in thread "+evaluationContext.getFrame().thread());
+        }
+        evaluationContext.methodToBeInvoked();
+    }
+    
+    private static Mirror unboxIfCan(Tree arg0, ObjectReference r, EvaluationContext evaluationContext) {
+        String name = ((ReferenceType) r.type()).name();
+        boolean methodCalled = false;
+        try {
+            if (name.equals(Boolean.class.getName())) {
+                unboxMethodToBeCalled(arg0, r, evaluationContext);
+                methodCalled = true;
+                return invokeUnboxingMethod(r, "booleanValue", evaluationContext.getFrame().thread());
+            }
+            if (name.equals(Byte.class.getName())) {
+                unboxMethodToBeCalled(arg0, r, evaluationContext);
+                methodCalled = true;
+                return invokeUnboxingMethod(r, "byteValue", evaluationContext.getFrame().thread());
+            }
+            if (name.equals(Character.class.getName())) {
+                unboxMethodToBeCalled(arg0, r, evaluationContext);
+                methodCalled = true;
+                return invokeUnboxingMethod(r, "charValue", evaluationContext.getFrame().thread());
+            }
+            if (name.equals(Short.class.getName())) {
+                unboxMethodToBeCalled(arg0, r, evaluationContext);
+                methodCalled = true;
+                return invokeUnboxingMethod(r, "shortValue", evaluationContext.getFrame().thread());
+            }
+            if (name.equals(Integer.class.getName())) {
+                unboxMethodToBeCalled(arg0, r, evaluationContext);
+                methodCalled = true;
+                return invokeUnboxingMethod(r, "intValue", evaluationContext.getFrame().thread());
+            }
+            if (name.equals(Long.class.getName())) {
+                unboxMethodToBeCalled(arg0, r, evaluationContext);
+                methodCalled = true;
+                return invokeUnboxingMethod(r, "longValue", evaluationContext.getFrame().thread());
+            }
+            if (name.equals(Float.class.getName())) {
+                unboxMethodToBeCalled(arg0, r, evaluationContext);
+                methodCalled = true;
+                return invokeUnboxingMethod(r, "floatValue", evaluationContext.getFrame().thread());
+            }
+            if (name.equals(Double.class.getName())) {
+                unboxMethodToBeCalled(arg0, r, evaluationContext);
+                methodCalled = true;
+                return invokeUnboxingMethod(r, "doubleValue", evaluationContext.getFrame().thread());
+            }
+            return r;
+        } catch (InvalidTypeException itex) {
+            throw new IllegalStateException(new InvalidExpressionException (itex));
+        } catch (ClassNotLoadedException cnlex) {
+            throw new IllegalStateException(new InvalidExpressionException (cnlex));
+        } catch (IncompatibleThreadStateException itsex) {
+            InvalidExpressionException ieex = new InvalidExpressionException (itsex);
+            ieex.initCause(itsex);
+            throw new IllegalStateException(ieex);
+        } catch (InvocationException iex) {
+            InvalidExpressionException ieex = new InvalidExpressionException (iex);
+            ieex.initCause(iex);
+            throw new IllegalStateException(ieex);
+        } catch (UnsupportedOperationException uoex) {
+            InvalidExpressionException ieex = new InvalidExpressionException (uoex);
+            ieex.initCause(uoex);
+            throw new IllegalStateException(ieex);
+        } catch (ObjectCollectedException ocex) {
+            throw new IllegalStateException(new InvalidExpressionException(NbBundle.getMessage(
+                Evaluator.class, "CTL_EvalError_collected")));
+        } finally {
+            if (methodCalled) {
+                if (loggerMethod.isLoggable(Level.FINE)) {
+                    loggerMethod.fine("FINISHED: unbox in thread "+evaluationContext.getFrame().thread());
+                }
+                try {
+                    evaluationContext.methodInvokeDone();
+                } catch (IncompatibleThreadStateException itsex) {
+                    InvalidExpressionException ieex = new InvalidExpressionException (itsex);
+                    ieex.initCause(itsex);
+                    throw new IllegalStateException(ieex);
+                }
+            }
+        }
+    }
+
+    private static PrimitiveValue unbox(ObjectReference val, PrimitiveType type,
+                                        ThreadReference thread) throws InvalidTypeException,
+                                                                       ClassNotLoadedException,
+                                                                       IncompatibleThreadStateException,
+                                                                       InvocationException {
+        if (type instanceof BooleanType) return invokeUnboxingMethod(val, "booleanValue", thread);
+        if (type instanceof ByteType) return invokeUnboxingMethod(val, "byteValue", thread);
+        if (type instanceof CharType) return invokeUnboxingMethod(val, "charValue", thread);
+        if (type instanceof ShortType) return invokeUnboxingMethod(val, "shortValue", thread);
+        if (type instanceof IntegerType) return invokeUnboxingMethod(val, "intValue", thread);
+        if (type instanceof LongType) return invokeUnboxingMethod(val, "longValue", thread);
+        if (type instanceof FloatType) return invokeUnboxingMethod(val, "floatValue", thread);
+        if (type instanceof DoubleType) return invokeUnboxingMethod(val, "doubleValue", thread);
+        throw new RuntimeException("Invalid type while unboxing: " + type.signature());    // never happens
+    }
+    
+    private static ObjectReference box(PrimitiveValue v, ReferenceType type,
+                                       ThreadReference thread) throws InvalidTypeException,
+                                                                      ClassNotLoadedException,
+                                                                      IncompatibleThreadStateException,
+                                                                      InvocationException {
+        try {
+            Method constructor = null;
+            List<Method> methods = type.methodsByName("<init>");
+            String signature = "("+v.type().signature()+")";
+            for (Method method : methods) {
+                if (!method.isAbstract() && egualMethodSignatures(method.signature(), signature)) {
+                    constructor = method;
+                }
+            }
+            if (constructor == null) {
+                throw new RuntimeException("No constructor "+type+" "+signature);
+            }
+            return ((ClassType) type).newInstance(thread, constructor, Arrays.asList(new Value[] { v }), ObjectReference.INVOKE_SINGLE_THREADED);
+        } catch (InvalidTypeException itex) {
+            throw itex;
+        } catch (ClassNotLoadedException cnlex) {
+            throw cnlex;
+        } catch (IncompatibleThreadStateException itsex) {
+            throw itsex;
+        } catch (InvocationException iex) {
+            throw iex;
+        } catch (Exception e) {
+            // this should never happen, indicates an internal error
+            throw new RuntimeException("Unexpected exception while invoking boxing method", e);
+        }
+    }
+
+    private static PrimitiveValue invokeUnboxingMethod(ObjectReference reference, String methodName,
+                                                       ThreadReference thread) throws InvalidTypeException,
+                                                                                      ClassNotLoadedException,
+                                                                                      IncompatibleThreadStateException,
+                                                                                      InvocationException {
+        Method toCall = (Method) reference.referenceType().methodsByName(methodName).get(0);
+        try {
+            return (PrimitiveValue) reference.invokeMethod(thread, toCall, new ArrayList<Value>(0), ObjectReference.INVOKE_SINGLE_THREADED);
+        } catch (InvalidTypeException itex) {
+            throw itex;
+        } catch (ClassNotLoadedException cnlex) {
+            throw cnlex;
+        } catch (IncompatibleThreadStateException itsex) {
+            throw itsex;
+        } catch (InvocationException iex) {
+            throw iex;
+        } catch (Exception e) {
+            // this should never happen, indicates an internal error
+            throw new RuntimeException("Unexpected exception while invoking unboxing method", e);
+        }
+    }
+
+    private String toString(Tree arg0, Mirror v, EvaluationContext evaluationContext) {
+        if (v instanceof PrimitiveValue) {
+            PrimitiveValue pv = (PrimitiveValue) v;
+            PrimitiveType t = (PrimitiveType) pv.type();
+            if (t instanceof ByteType) {
+                return Byte.toString(pv.byteValue());
+            }
+            if (t instanceof BooleanType) {
+                return Boolean.toString(pv.booleanValue());
+            }
+            if (t instanceof CharType) {
+                return Character.toString(pv.charValue());
+            }
+            if (t instanceof ShortType) {
+                return Short.toString(pv.shortValue());
+            }
+            if (t instanceof IntegerType) {
+                return Integer.toString(pv.intValue());
+            }
+            if (t instanceof LongType) {
+                return Long.toString(pv.longValue());
+            }
+            if (t instanceof FloatType) {
+                return Float.toString(pv.floatValue());
+            }
+            if (t instanceof DoubleType) {
+                return Double.toString(pv.doubleValue());
+            }
+            throw new IllegalStateException("Unknown primitive type: "+t);
+        }
+        if (v == null) {
+            return ""+null;
+        }
+        ObjectReference ov = (ObjectReference) v;
+        // Call toString() method:
+        List<? extends TypeMirror> typeArguments = Collections.emptyList();
+        Method method = getConcreteMethod((ReferenceType) ov.type(), "toString", typeArguments);
+        ((ClassType) ov.type()).methodsByName("toString");
+        List<Value> argVals = Collections.emptyList();
+        Value sv = invokeMethod(arg0, method, false, null, ov, argVals, evaluationContext);
+        if (sv instanceof StringReference) {
+            return ((StringReference) sv).value();
+        } else {
+            throw new IllegalStateException("Result of toString() call on "+ov+" is not a String, but: "+sv);
         }
     }
 
