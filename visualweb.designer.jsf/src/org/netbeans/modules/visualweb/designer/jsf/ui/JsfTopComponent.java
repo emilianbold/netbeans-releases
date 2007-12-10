@@ -87,7 +87,6 @@ import org.netbeans.modules.visualweb.api.designer.Designer;
 import org.netbeans.modules.visualweb.api.designer.Designer.Box;
 import org.netbeans.modules.visualweb.api.designer.Designer.DesignerListener;
 import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
-import org.netbeans.modules.visualweb.designer.jsf.GridHandler;
 import org.netbeans.modules.visualweb.designer.jsf.JsfDesignerPreferences;
 import org.netbeans.spi.navigator.NavigatorLookupHint;
 import org.netbeans.spi.navigator.NavigatorLookupPanelsPolicy;
