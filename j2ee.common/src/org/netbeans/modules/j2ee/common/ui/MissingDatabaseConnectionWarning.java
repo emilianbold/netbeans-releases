@@ -43,6 +43,8 @@ package org.netbeans.modules.j2ee.common.ui;
 
 import java.awt.Component;
 import java.awt.Dialog;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Iterator;
 import java.util.Set;
 import javax.swing.AbstractListModel;
@@ -53,8 +55,8 @@ import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
-import javax.swing.event.ListDataEvent;
-import javax.swing.event.ListDataListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.db.explorer.ConnectionListener;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.JDBCDriver;
@@ -247,14 +249,13 @@ public final class MissingDatabaseConnectionWarning extends JPanel {
     // End of variables declaration//GEN-END:variables
     
     
-    private final class DatasourceListModel extends AbstractListModel implements Runnable, ConnectionListener, ListDataListener {
+    private final class DatasourceListModel extends AbstractListModel implements Runnable, ConnectionListener {
         private final RequestProcessor BROKEN_DATASOURCE_RP = new RequestProcessor("WebLogicalViewProvider.BROKEN_DATASOURCE_RP"); //NOI18N
         private Set<Datasource> datasources;
         
         public DatasourceListModel() {          
-            datasources = BrokenDatasourceSupport.getBrokenDatasources(project);            
-            addConnectionListener();              
-            addListDataListener(this);
+            datasources = BrokenDatasourceSupport.getBrokenDatasources(project);
+            addConnectionListener();
         }
         
         public synchronized int getSize() {
@@ -306,8 +307,13 @@ public final class MissingDatabaseConnectionWarning extends JPanel {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     fireContentsChanged(this, 0, datasources.size());
-                }                
-            });                                  
+                }
+            });
+            
+            if (datasources.isEmpty()) {
+                jButtonAddConnection.setEnabled(false);
+                removeConnectionListener();
+            }
         }
         
         // Listen for any connections changed in DB Explorer and refresh model accordingly
@@ -319,34 +325,9 @@ public final class MissingDatabaseConnectionWarning extends JPanel {
         private void addConnectionListener() {
             ConnectionManager.getDefault().addConnectionListener(this);
         }
-                
+        
         private void removeConnectionListener() {
             ConnectionManager.getDefault().removeConnectionListener(this);
-        }
-
-        // ListDataListener methods to implement
-        public void intervalAdded(ListDataEvent e) {
-            // unused
-        }
-
-        public void intervalRemoved(ListDataEvent e) {
-            cleanup();
-        }
-        
-        public void contentsChanged(ListDataEvent e) {
-            cleanup();
-        }
-        
-        private void cleanup() {
-            // If the list of data (datasources) is empty then we're done.  Remove listeners
-            // and disable the Add Connection button.
-            // Otherwise if the list is not empty then listeners are still needed.
-            // Note: if list is not empty the project node will remain badged
-            if (datasources.isEmpty()) {
-                removeConnectionListener();
-                removeListDataListener(this);
-                jButtonAddConnection.setEnabled(false);                
-            }
         }
     }
     
