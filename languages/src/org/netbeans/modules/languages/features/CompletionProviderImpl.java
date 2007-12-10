@@ -345,8 +345,8 @@ public class CompletionProviderImpl implements CompletionProvider {
                 parserManager.addListener (new ParserManagerListener () {
                     public void parsed (State state, ASTNode ast) {
                         //S ystem.out.println("CodeCompletion: parsed " + state);
-                        if (resultSet.isFinished ()) return;
                         parserManager.removeListener (this);
+                        if (resultSet.isFinished ()) return;
                         addParserTags (ast, resultSet, language);
                         resultSet.finish ();
                     }
