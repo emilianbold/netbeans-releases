@@ -50,7 +50,7 @@
 #include "Main.h"
 
 const DWORD NUMBER_OF_HELP_ARGUMENTS = 10;
-
+const DWORD READ_WRITE_BUFSIZE = 65536;
 const WCHAR * outputFileArg       = L"--output";
 const WCHAR * javaArg             = L"--javahome";
 const WCHAR * debugArg            = L"--verbose";
@@ -367,7 +367,7 @@ void findSuitableJava(LauncherProperties * props) {
         }
         
         if(props->java!=NULL) {
-            writeMessageA(props, OUTPUT_LEVEL_NORMAL, 1, "Compatible jvm is found on the system", 1);
+            writeMessageA(props, OUTPUT_LEVEL_NORMAL, 1, "Compatible jvm was found on the system", 1);
             printJavaProperties(props, props->java);
         } else {
             writeMessageA(props, OUTPUT_LEVEL_NORMAL, 1, "No compatible jvm was found on the system", 1);
@@ -458,19 +458,19 @@ void resolveString(LauncherProperties * props, WCHAR ** result) {
     do {
         FREE(tmp);
         tmp = appendStringW(NULL, *result);
-        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... step 1 : ", 0);
-        writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, *result, 1);
+        //writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... step 1 : ", 0);
+        //writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, *result, 1);
         resolveLauncherProperties(props, result);
-        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... step 2 : ", 0);
-        writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, *result, 1);
+        //writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... step 2 : ", 0);
+        //writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, *result, 1);
         resolveLauncherStringProperty(props, result);
-        writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... step 3 : ", 0);
-        writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, *result, 1);
+        //writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... step 3 : ", 0);
+        //writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, *result, 1);
     } while(wcscmp(tmp, *result)!=0);
     
     FREE(tmp);
     
-    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, ".... final : ", 0);
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, ".... resolved : ", 0);
     writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, *result, 1);
 }
 
@@ -621,15 +621,11 @@ void setAdditionalArguments(LauncherProperties * props) {
         writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... finished parsing parameters", 1);
     }
 }
-void appendCommandLineArgument( WCHAR ** command, const WCHAR * arg) {
-    if(wcsstr(arg, L" ")) {
-        *command = appendStringW(*command, L"\"");
-        *command = appendStringW(*command, arg);
-        *command = appendStringW(*command, L"\"");
-    } else {
-        *command = appendStringW(*command, arg);
-    }
-    *command = appendStringW(*command, L" ");
+void appendCommandLineArgument( WCHAR ** command, const WCHAR * arg) {    
+    WCHAR * escapedString = escapeString(arg);
+    *command = appendStringW(*command, escapedString);
+    FREE(escapedString);
+    *command = appendStringW(*command, L" ");    
 }
 
 void setLauncherCommand(LauncherProperties *props) {
@@ -683,7 +679,7 @@ void executeMainClass(LauncherProperties * props) {
                 props->exitCode = props->status;
             } else {
                 char * s = DWORDtoCHAR(props->exitCode);
-                writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... main class has finished his work. Exit code is ", 0);
+                writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "... main class has finished its work. Exit code is ", 0);
                 writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, s, 1);
                 FREE(s);
             }
@@ -815,7 +811,7 @@ LauncherProperties * createLauncherProperties() {
     props->outputLevel  = argumentExists(props, debugArg, 1) ? OUTPUT_LEVEL_DEBUG : OUTPUT_LEVEL_NORMAL;
     props->stdoutHandle = GetStdHandle(STD_OUTPUT_HANDLE);
     props->stderrHandle = GetStdHandle(STD_ERROR_HANDLE);
-    props->bufsize = 65536;
+    props->bufsize = READ_WRITE_BUFSIZE;
     props->restOfBytes = createSizedString();
     props->I18N_PROPERTIES_NUMBER = 0;
     props->i18nMessages = NULL;

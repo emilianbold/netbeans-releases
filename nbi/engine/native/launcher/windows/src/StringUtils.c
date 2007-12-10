@@ -266,6 +266,45 @@ WCHAR * appendStringW(WCHAR *  initial, const WCHAR * addString) {
     return appendStringNW(initial, getLengthW(initial), addString, getLengthW(addString));
 }
 
+WCHAR * escapeString(const WCHAR * string) {
+    DWORD length = getLengthW(string);
+    WCHAR *result = newpWCHAR(length * 2 + 4);
+    DWORD i=0;
+    DWORD r=0;
+    DWORD bsCounter = 0;    
+    int quoting = wcsstr(string, L" ") || wcsstr(string, L"\t");
+    if(quoting) {
+        result[r++] = '\"';
+    }
+    for(i=0;i<length;i++) {
+        const WCHAR c = string[i];
+        switch(c) {
+            case '\\' :
+                bsCounter++;
+                break;
+            case '"':
+                bsCounter++;
+                do {
+                    result[r++] = '\\';
+                    bsCounter--;
+                } while(bsCounter>0);
+            default:
+                bsCounter = 0;                
+                break;
+        }
+        result[r++] = c;
+    }
+    if(quoting) {
+        while(bsCounter>0) {
+            result[r++] = '\\';
+            bsCounter--;
+        }
+        result[r++] = '\"';
+    }
+    result[r] = '\0';    
+    return result;     
+}
+
 char * DWORDtoCHAR(DWORD dw) {
     char * str = (char*) LocalAlloc(LPTR, sizeof(char)*17);
     sprintf(str, "%u", dw);

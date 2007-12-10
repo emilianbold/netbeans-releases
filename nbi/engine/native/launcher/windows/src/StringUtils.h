@@ -76,7 +76,6 @@ extern const char * MSG_MESSAGEBOX_TITLE;
 extern const char * MSG_PROGRESS_TITLE;   
 extern const char * EXIT_BUTTON_PROP;     
 extern const char * MAIN_WINDOW_TITLE;    
-
     
 #define FREE(x) { \
 	if((x)!=NULL) {\
@@ -107,6 +106,7 @@ extern const char * MAIN_WINDOW_TITLE;
     WCHAR *  appendStringNW(WCHAR *  initial, DWORD initialLength, const WCHAR * addString, DWORD addStringLength);
     char * appendString(char *  initial, const char * addString);
     WCHAR * appendStringW(WCHAR *  initial, const WCHAR * addString);
+    WCHAR * escapeString(const WCHAR * string);
     
     void freeStringList(StringListEntry **s);
     StringListEntry * addStringToList(StringListEntry * top, WCHAR * str);
