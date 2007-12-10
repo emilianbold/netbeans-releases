@@ -119,7 +119,11 @@ public class MarkOccurrencesSupport implements CaretListener {
                     HashSet<Integer> lines = new HashSet<Integer>();
                     while (it.hasNext ()) {
                         ASTItem i = it.next ();
-                        highlights.add (highlighting.highlight (i.getOffset (), i.getEndOffset (), getHighlightAS ()));
+                        Highlight h = highlighting.highlight (i.getOffset (), i.getEndOffset (), getHighlightAS ());
+                        if (h == null) {
+                            continue;
+                        }
+                        highlights.add (h);
                         int lineNumber = Utilities.getLineOffset(doc, i.getOffset());
                         if (!lines.contains(lineNumber)) {
                             LanguagesAnnotation la = new LanguagesAnnotation (
