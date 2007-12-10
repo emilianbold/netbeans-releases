@@ -229,6 +229,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
         // that we're running without any bundle, hence not filtering is required;
         // additionally, we should not be suggesting to install tomcat by default,
         // thus we should correct it's initial status
+        Product bundledJdkProductSkip = null;
         if (bundledRegistry.getNodes().size() > 1) {
             for (Product product: defaultRegistry.getProducts()) {
                 if (bundledRegistry.getProduct(
@@ -254,6 +255,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                             product.setVisible(false);
                             setProperty(JDK_INSTALLED_TEXT_PROPERTY,
                                     StringUtils.format(DEFAULT_JDK_INSTALLED_TEXT, product.getDisplayName()));
+                            bundledJdkProductSkip = product;                            
                         } else {
                             // do not allow installation under non-admin user on windows
                             try {
@@ -262,6 +264,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                                     product.setVisible(false);
                                     setProperty(JDK_UNSUFFICIENT_PERMISSIONS_PROPERTY,
                                             DEFAULT_JDK_UNSUFFICIENT_PERMISSIONS_TEXT);
+                                    bundledJdkProductSkip = product;
                                 }
                             } catch (NativeException e){
                                 LogManager.log(e);
@@ -273,11 +276,29 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                         setProperty(JDK_INSTALLED_TEXT_PROPERTY,
                                 StringUtils.format(DEFAULT_JDK_INSTALLED_TEXT,
                                 product.getDisplayName()));
+                        bundledJdkProductSkip = product;
                     }
                 }
             }
         }
-        
+        final List <Product> toInstall = defaultRegistry.getProductsToInstall();
+        if (bundledJdkProductSkip != null) {            
+            if (toInstall.isEmpty()) {
+                if (getProperty(JDK_INSTALLED_TEXT_PROPERTY) != null) {
+                    setProperty(JDK_EVERYTHING_INSTALLED_TEXT_PROPERTY,
+                            StringUtils.format(DEFAULT_JDK_EVERYTHING_INSTALLED_TEXT,
+                            bundledJdkProductSkip.getDisplayName()));
+                } else if (getProperty(JDK_UNSUFFICIENT_PERMISSIONS_PROPERTY) != null) {
+                    setProperty(JDK_EVERYTHING_INSTALLED_UNSUFFICIENT_PERMISSIONS_TEXT_PROPERTY,
+                            StringUtils.format(DEFAULT_JDK_EVERYTHING_INSTALLED_UNSUFFICIENT_PERMISSIONS_TEXT,
+                            bundledJdkProductSkip.getDisplayName()));
+                }
+            } 
+        }
+        if(toInstall.size()==1 && toInstall.get(0).getUid().equals("jdk")) { // install only JDK
+                setProperty(JDK_NETBEANS_INSTALLED_TEXT_PROPERTY, 
+                        DEFAULT_JDK_NETBEANS_INSTALLED_TEXT);
+        }
         registriesFiltered = true;
     }
     
@@ -374,7 +395,16 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             StringBuilder detailsText = new StringBuilder(
                     panel.getProperty(WELCOME_TEXT_OPENTAG_PROPERTY));
             boolean warningIcon = false;
-            if(panel.getProperty(JDK_INSTALLED_TEXT_PROPERTY)!=null) {
+            if(panel.getProperty(JDK_EVERYTHING_INSTALLED_TEXT_PROPERTY)!=null) {
+                detailsText.append(panel.getProperty(JDK_EVERYTHING_INSTALLED_TEXT_PROPERTY));
+                warningIcon = true;
+            } else if(panel.getProperty(JDK_EVERYTHING_INSTALLED_UNSUFFICIENT_PERMISSIONS_TEXT_PROPERTY)!=null) {
+                detailsText.append(panel.getProperty(JDK_EVERYTHING_INSTALLED_UNSUFFICIENT_PERMISSIONS_TEXT_PROPERTY));
+                warningIcon = true;
+            } else if(panel.getProperty(JDK_NETBEANS_INSTALLED_TEXT_PROPERTY)!=null) {
+                detailsText.append(panel.getProperty(JDK_NETBEANS_INSTALLED_TEXT_PROPERTY));
+                warningIcon = true;
+            } else if(panel.getProperty(JDK_INSTALLED_TEXT_PROPERTY)!=null) {
                 detailsText.append(panel.getProperty(JDK_INSTALLED_TEXT_PROPERTY));
                 warningIcon = true;
             } else if(panel.getProperty(JDK_UNSUFFICIENT_PERMISSIONS_PROPERTY)!=null) {
@@ -862,9 +892,15 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             "installation.size.label.text"; // NOI18N
     
     public static final String JDK_INSTALLED_TEXT_PROPERTY =
-            "jdk.already.installed.text";
+            "jdk.already.installed.text";//NOI18N
+    public static final String JDK_EVERYTHING_INSTALLED_TEXT_PROPERTY =
+            "jdk.everything.installed.text";//NOI18N
+    public static final String JDK_EVERYTHING_INSTALLED_UNSUFFICIENT_PERMISSIONS_TEXT_PROPERTY = 
+            "jdk.everything.installed.unsufficient.permissions.text";//NOI18N
+    public static final String JDK_NETBEANS_INSTALLED_TEXT_PROPERTY = 
+            "jdk.netbeans.installed.text";//NOI18N
     public static final String JDK_UNSUFFICIENT_PERMISSIONS_PROPERTY =
-            "jdk.unsufficient.permissions";
+            "jdk.unsufficient.permissions";//NOI18N
     
     public static final String DEFAULT_TEXT_PANE_CONTENT_TYPE =
             ResourceUtils.getString(NbWelcomePanel.class,
@@ -906,6 +942,15 @@ public class NbWelcomePanel extends ErrorMessagePanel {
     public static final String DEFAULT_JDK_INSTALLED_TEXT =
             ResourceUtils.getString(NbWelcomePanel.class,
             "NWP.jdk.installed.text"); // NOI18N
+    public static final String DEFAULT_JDK_EVERYTHING_INSTALLED_TEXT =
+            ResourceUtils.getString(NbWelcomePanel.class,
+            "NWP.jdk.everything.installed.text"); // NOI18N
+    public static final String DEFAULT_JDK_EVERYTHING_INSTALLED_UNSUFFICIENT_PERMISSIONS_TEXT = 
+            ResourceUtils.getString(NbWelcomePanel.class,
+            "NWP.jdk.everything.installed.admin.warning.text"); // NOI18N
+    public static final String DEFAULT_JDK_NETBEANS_INSTALLED_TEXT = 
+            ResourceUtils.getString(NbWelcomePanel.class,
+            "NWP.jdk.netbeans.installed.text");//NOI18N
     public static final String DEFAULT_JDK_UNSUFFICIENT_PERMISSIONS_TEXT =
             ResourceUtils.getString(NbWelcomePanel.class,
             "NWP.welcome.admin.warning.text");//NOI18N
