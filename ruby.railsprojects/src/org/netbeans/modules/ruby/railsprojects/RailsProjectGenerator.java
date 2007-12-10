@@ -86,7 +86,7 @@ import org.w3c.dom.Element;
 public class RailsProjectGenerator {
     
     public static final RegexpOutputRecognizer RAILS_GENERATOR =
-        new RegexpOutputRecognizer("^   (   create|    force|identical|     skip)\\s+([\\w|/]+\\.(rb|mab|rjs|rxml|rake|erb|builder|rhtml|yml|js|html|cgi|fcgi|txt|png|gif|css))\\s*$", // NOI18N
+        new RegexpOutputRecognizer("^   (   create|    force|identical|     skip)\\s+([\\w|/]+\\.\\S+)\\s*$", // NOI18N
             2, -1, -1);
 
     private RailsProjectGenerator() {}

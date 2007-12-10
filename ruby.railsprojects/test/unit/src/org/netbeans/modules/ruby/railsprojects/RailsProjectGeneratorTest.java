@@ -124,7 +124,7 @@ public class RailsProjectGeneratorTest extends TestCase {
         RegexpOutputRecognizer recognizer = RailsProjectGenerator.RAILS_GENERATOR;
         FileLocation location;
 
-        String[] extensions = new String[] {"rb", "mab", "rjs", "rxml", "rake", "erb", "builder", "rhtml", "yml", "js", "html", "cgi", "fcgi", "txt", "png", "gif", "css"};
+        String[] extensions = new String[] { "html.erb", "rb", "mab", "rjs", "rxml", "rake", "erb", "builder", "rhtml", "yml", "js", "erb", "html", "cgi", "fcgi", "txt", "png", "gif", "css"};
         for (String ext : extensions) {
             String s = "      create  app/helpers/application_helper." + ext;
             location = recognizer.processLine(s);
@@ -142,7 +142,9 @@ public class RailsProjectGeneratorTest extends TestCase {
         assertNull(recognizer.processLine("\"       force  app/controllers/foo_controller.rb\""));
         assertNull(recognizer.processLine("       Force  app/controllers/foo_controller.rb"));
         assertNull(recognizer.processLine(""));
-        assertNull(recognizer.processLine("foo.rb"));
+        assertNull(recognizer.processLine("foo.rb"));        
+        assertNull(recognizer.processLine("      *******************************************************************"));
+        assertNull(recognizer.processLine("      * config.breakpoint_server has been deprecated and has no effect. *"));
     }
 
 }
