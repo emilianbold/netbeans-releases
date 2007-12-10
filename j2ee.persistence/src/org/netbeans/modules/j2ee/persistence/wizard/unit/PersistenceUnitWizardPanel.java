@@ -66,7 +66,7 @@ public abstract class PersistenceUnitWizardPanel extends JPanel {
     public static final String IS_VALID = "PersistenceUnitWizardPanel_isValid"; //NOI18N
 
     protected PersistenceUnitWizardPanel(Project project) {
-        Parameters.notNull("project", project); //NO18N
+        Parameters.notNull("project", project); //NOI18N
         this.project = project;
     }
 
@@ -107,7 +107,7 @@ public abstract class PersistenceUnitWizardPanel extends JPanel {
      * is unique.
      */ 
     protected final String getCandidateName(){
-        String candidateNameBase = ProjectUtils.getInformation(project).getName() + "PU"; //NO18N
+        String candidateNameBase = ProjectUtils.getInformation(project).getName() + "PU"; //NOI18N
         try {
             if (!ProviderUtil.persistenceExists(project)) {
                 return candidateNameBase;
@@ -125,7 +125,7 @@ public abstract class PersistenceUnitWizardPanel extends JPanel {
         } catch (InvalidPersistenceXmlException ipex) {
             // just log, the user is notified about invalid persistence.xml when 
             // the panel is validated
-            LOG.log(Level.FINE, "Invalid persistence.xml found", ipex); //NO18N
+            LOG.log(Level.FINE, "Invalid persistence.xml found", ipex); //NOI18N
         }
         return candidateNameBase;
     }

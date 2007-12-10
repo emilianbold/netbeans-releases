@@ -236,7 +236,7 @@ public class RelatedCMPWizard extends WizardDescriptor.ArrayIterator<WizardDescr
             } catch (InvalidPersistenceXmlException ipx){
                 // just log for debugging purposes, at this point the user has
                 // already been warned about an invalid persistence.xml
-                Logger.getLogger(RelatedCMPWizard.class.getName()).log(Level.FINE, "Invalid persistence.xml: " + ipx.getPath(), ipx); //NO18N
+                Logger.getLogger(RelatedCMPWizard.class.getName()).log(Level.FINE, "Invalid persistence.xml: " + ipx.getPath(), ipx); //NOI18N
             }
         }
         

@@ -246,7 +246,7 @@ public class PersistenceLibrarySupport  {
      */ 
     public static boolean containsService(LibraryImplementation library, String serviceName) {
         String serviceRelativePath = "META-INF/services/" + serviceName; //NOI18N
-        return containsPath(library.getContent("classpath"), serviceRelativePath); //NO18N
+        return containsPath(library.getContent("classpath"), serviceRelativePath); //NOI18N
     }
     
     private static boolean containsPath(List<URL> roots, String relativePath) {
@@ -255,7 +255,7 @@ public class PersistenceLibrarySupport  {
     }
     
     private static ClassPath getLibraryClassPath(Library library) {
-        List<URL> urls = library.getContent("classpath"); //NO18N
+        List<URL> urls = library.getContent("classpath"); //NOI18N
         URL[] result = urls.toArray(new URL[urls.size()]);
         for (int i = 0; i < result.length; i++){
             // see #101982
@@ -293,7 +293,7 @@ public class PersistenceLibrarySupport  {
         for (Library each : LibraryManager.getDefault().getLibraries()){
             ClassPath cp = getLibraryClassPath(each);
             Provider provider = extractProvider(cp);
-            if (provider != null && containsClass(cp, "javax.persistence.EntityManager")){ //NO18N
+            if (provider != null && containsClass(cp, "javax.persistence.EntityManager")){ //NOI18N
                 providerLibs.add(new ProviderLibrary(each, cp, provider));
             }
         }

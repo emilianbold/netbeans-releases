@@ -156,7 +156,7 @@ public class ProviderUtil {
      */ 
     public static DatabaseConnection getConnection(PersistenceUnit pu) {
         
-        Parameters.notNull("pu", pu); //NO18N
+        Parameters.notNull("pu", pu); //NOI18N
         
         if (pu.getProperties() == null){
             return null;
@@ -249,9 +249,9 @@ public class ProviderUtil {
     public static void setProvider(PersistenceUnit persistenceUnit, Provider provider,
             DatabaseConnection connection, String tableGenerationStrategy){
         
-        Parameters.notNull("persistenceUnit", persistenceUnit); //NO18N
-        Parameters.notNull("connection", connection); //NO18N
-        Parameters.notNull("provider", provider); //NO18N
+        Parameters.notNull("persistenceUnit", persistenceUnit); //NOI18N
+        Parameters.notNull("connection", connection); //NOI18N
+        Parameters.notNull("provider", provider); //NOI18N
         
         removeProviderProperties(persistenceUnit);
         persistenceUnit.setProvider(provider.getProviderClass());
@@ -268,7 +268,7 @@ public class ProviderUtil {
      * properties are to be removed; must not be null.
      */
     public static void removeProviderProperties(PersistenceUnit persistenceUnit){
-        Parameters.notNull("persistenceUnit", persistenceUnit); //NO18N
+        Parameters.notNull("persistenceUnit", persistenceUnit); //NOI18N
         
         Provider old = getProvider(persistenceUnit);
         Property[] properties = getProperties(persistenceUnit);
@@ -340,8 +340,8 @@ public class ProviderUtil {
      */
     public static void setDatabaseConnection(PersistenceUnit persistenceUnit, DatabaseConnection connection){
         
-        Parameters.notNull("persistenceUnit", persistenceUnit); //NO18N
-        Parameters.notNull("connection", connection); //NO18N
+        Parameters.notNull("persistenceUnit", persistenceUnit); //NOI18N
+        Parameters.notNull("connection", connection); //NOI18N
         
         Provider provider = getProvider(persistenceUnit);
         Property[] properties = getProperties(persistenceUnit);
@@ -429,7 +429,7 @@ public class ProviderUtil {
      * provider can be resolved <code>DEFAULT_PROVIDER</code> will be returned.
      */
     public static Provider getProvider(PersistenceUnit persistenceUnit){
-        Parameters.notNull("persistenceUnit", persistenceUnit); //NO18N
+        Parameters.notNull("persistenceUnit", persistenceUnit); //NOI18N
         
         for (Provider each : getAllProviders()){
             if(each.getProviderClass().equals(persistenceUnit.getProvider())){
@@ -533,7 +533,7 @@ public class ProviderUtil {
      * an invalid persistence.xml file.
      */
     public static PUDataObject getPUDataObject(FileObject fo) throws InvalidPersistenceXmlException{
-        Parameters.notNull("fo", fo); //NO18N
+        Parameters.notNull("fo", fo); //NOI18N
 
         DataObject dataObject = null;
         try {
@@ -561,7 +561,7 @@ public class ProviderUtil {
      * invalid persitence.xml file.
      */
     public static synchronized PUDataObject getPUDataObject(Project project) throws InvalidPersistenceXmlException{
-        Parameters.notNull("project", project); //NO18N
+        Parameters.notNull("project", project); //NOI18N
         
         FileObject puFileObject = getDDFile(project);
         if (puFileObject == null) {
@@ -609,7 +609,7 @@ public class ProviderUtil {
      *  invalid persistence.xml file.
      */
     public static boolean persistenceExists(Project project) throws InvalidPersistenceXmlException{
-       Parameters.notNull("project", project); //NO18N
+       Parameters.notNull("project", project); //NOI18N
         
         if (getDDFile(project) == null){
             return false;
@@ -653,8 +653,8 @@ public class ProviderUtil {
      */
     public static boolean makePortableIfPossible(Project project, PersistenceUnit persistenceUnit){
         
-        Parameters.notNull("project", project); //NO18N
-        Parameters.notNull("persistenceUnit", persistenceUnit); //NO18N
+        Parameters.notNull("project", project); //NOI18N
+        Parameters.notNull("persistenceUnit", persistenceUnit); //NOI18N
         
         if (Util.isJavaSE(project)){
             return false;

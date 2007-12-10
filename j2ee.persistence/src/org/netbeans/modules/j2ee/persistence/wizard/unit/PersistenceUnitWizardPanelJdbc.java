@@ -178,7 +178,7 @@ public class PersistenceUnitWizardPanelJdbc extends PersistenceUnitWizardPanel{
                 return false;
             }
         } catch (InvalidPersistenceXmlException ipx){
-            setErrorMessage(NbBundle.getMessage(PersistenceUnitWizardDescriptor.class,"ERR_InvalidPersistenceXml", ipx.getPath())); //NO18N
+            setErrorMessage(NbBundle.getMessage(PersistenceUnitWizardDescriptor.class,"ERR_InvalidPersistenceXml", ipx.getPath())); //NOI18N
             return false;
         }
         return true;

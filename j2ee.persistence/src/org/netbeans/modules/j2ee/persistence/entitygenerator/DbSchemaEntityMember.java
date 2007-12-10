@@ -102,19 +102,19 @@ class DbSchemaEntityMember extends EntityMember {
      */ 
     private String getRespectiveNonPrimitiveType(){
         String type = getMemberType();
-        if ("int".equals(type)){//NO18N
+        if ("int".equals(type)){//NOI18N
             return Integer.class.getName();
-        } else if ("long".equals(type)){//NO18N
+        } else if ("long".equals(type)){//NOI18N
             return Long.class.getName();
-        } else if ("short".equals(type)){//NO18N
+        } else if ("short".equals(type)){//NOI18N
             return Short.class.getName();
-        } else if ("byte".equals(type)){//NO18N
+        } else if ("byte".equals(type)){//NOI18N
             return Byte.class.getName();
-        } else if ("double".equals(type)){//NO18N
+        } else if ("double".equals(type)){//NOI18N
             return Double.class.getName();
-        } else if ("float".equals(type)){//NO18N
+        } else if ("float".equals(type)){//NOI18N
             return Float.class.getName();
-        } else if ("char".equals(type)){//NO18N
+        } else if ("char".equals(type)){//NOI18N
             return Character.class.getName();
         }
         return sqlType.getFirstNonPrimitiveType();

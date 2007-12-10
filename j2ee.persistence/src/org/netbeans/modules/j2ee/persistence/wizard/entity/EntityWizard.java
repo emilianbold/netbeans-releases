@@ -140,7 +140,7 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
         } catch (InvalidPersistenceXmlException ipx){
             // just log for debugging purposes, at this point the user has
             // already been warned about an invalid persistence.xml
-            Logger.getLogger(EntityWizard.class.getName()).log(Level.FINE, "Invalid persistence.xml: " + ipx.getPath(), ipx); //NO18N
+            Logger.getLogger(EntityWizard.class.getName()).log(Level.FINE, "Invalid persistence.xml: " + ipx.getPath(), ipx); //NOI18N
         }
         
         return Collections.singleton(result);
@@ -240,7 +240,7 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
                 ClassTree modifiedClazz = genUtils.ensureNoArgConstructor(clazz);
                 TreeMaker make = workingCopy.getTreeMaker();
                 
-                String idFieldName = "id"; // NO18N
+                String idFieldName = "id"; // NOI18N
                 TypeMirror type = workingCopy.getTreeUtilities().parseType(primaryKeyClassName, typeElement);
                 Tree typeTree = make.Type(type);
                 
@@ -249,14 +249,14 @@ public final class EntityWizard implements WizardDescriptor.InstantiatingIterato
                 serialVersionUIDModifiers.add(Modifier.STATIC);
                 serialVersionUIDModifiers.add(Modifier.FINAL);
                 
-                VariableTree serialVersionUID = make.Variable(make.Modifiers(serialVersionUIDModifiers), "serialVersionUID", genUtils.createType("long", typeElement), make.Literal(Long.valueOf("1"))); //NO18N
+                VariableTree serialVersionUID = make.Variable(make.Modifiers(serialVersionUIDModifiers), "serialVersionUID", genUtils.createType("long", typeElement), make.Literal(Long.valueOf("1"))); //NOI18N
                 VariableTree idField = make.Variable(genUtils.createModifiers(Modifier.PRIVATE), idFieldName, typeTree, null);
                 ModifiersTree idMethodModifiers = genUtils.createModifiers(Modifier.PUBLIC);
                 MethodTree idGetter = genUtils.createPropertyGetterMethod(idMethodModifiers, idFieldName, typeTree);
                 MethodTree idSetter = genUtils.createPropertySetterMethod(idMethodModifiers, idFieldName, typeTree);
-                AnnotationTree idAnnotation = genUtils.createAnnotation("javax.persistence.Id"); //NO18N
-                ExpressionTree generationStrategy = genUtils.createAnnotationArgument("strategy", "javax.persistence.GenerationType", "AUTO"); //NO18N
-                AnnotationTree generatedValueAnnotation = genUtils.createAnnotation("javax.persistence.GeneratedValue", Collections.singletonList(generationStrategy)); //NO18N
+                AnnotationTree idAnnotation = genUtils.createAnnotation("javax.persistence.Id"); //NOI18N
+                ExpressionTree generationStrategy = genUtils.createAnnotationArgument("strategy", "javax.persistence.GenerationType", "AUTO"); //NOI18N
+                AnnotationTree generatedValueAnnotation = genUtils.createAnnotation("javax.persistence.GeneratedValue", Collections.singletonList(generationStrategy)); //NOI18N
                 
                 if (isAccessProperty){
                     idField = genUtils.addAnnotation(idField, idAnnotation);

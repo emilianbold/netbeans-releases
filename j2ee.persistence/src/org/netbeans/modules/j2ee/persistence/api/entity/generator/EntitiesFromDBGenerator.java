@@ -106,11 +106,11 @@ public final class EntitiesFromDBGenerator {
             String packageName, SourceGroup location, DatabaseConnection connection,
             Project project, PersistenceUnit persistenceUnit) {
         
-        Parameters.notNull("project", project); //NO18N
-        Parameters.notNull("tableNames", tableNames); //NO18N
-        Parameters.notNull("packageName", packageName); //NO18N
-        Parameters.notNull("location", location); //NO18N
-        Parameters.notNull("connection", connection); //NO18N
+        Parameters.notNull("project", project); //NOI18N
+        Parameters.notNull("tableNames", tableNames); //NOI18N
+        Parameters.notNull("packageName", packageName); //NOI18N
+        Parameters.notNull("location", location); //NOI18N
+        Parameters.notNull("connection", connection); //NOI18N
         
         this.tableNames = tableNames;
         this.generateNamedQueries = generateNamedQueries;
@@ -191,7 +191,7 @@ public final class EntitiesFromDBGenerator {
         ConnectionProvider connectionProvider = getConnectionProvider();
         SchemaElementImpl impl = new SchemaElementImpl(connectionProvider);
         schemaElement = new SchemaElement(impl);
-        schemaElement.setName(DBIdentifier.create("schema")); // NO18N
+        schemaElement.setName(DBIdentifier.create("schema")); // NOI18N
         impl.initTables(connectionProvider, new LinkedList(tableNames), new LinkedList(), true);
         
         return schemaElement;

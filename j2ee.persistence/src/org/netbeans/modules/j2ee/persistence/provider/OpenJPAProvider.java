@@ -38,7 +38,7 @@ import org.openide.util.NbBundle;
 class OpenJPAProvider extends Provider{
 
     public OpenJPAProvider() {
-        super("org.apache.openjpa.persistence.PersistenceProviderImpl"); //NO18N
+        super("org.apache.openjpa.persistence.PersistenceProviderImpl"); //NOI18N
     }
 
     public String getDisplayName() {

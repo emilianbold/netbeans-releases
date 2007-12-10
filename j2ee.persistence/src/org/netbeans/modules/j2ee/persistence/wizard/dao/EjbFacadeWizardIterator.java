@@ -109,12 +109,12 @@ import org.openide.util.NbBundle;
     
     private static final String WIZARD_PANEL_CONTENT_DATA = "WizardPanel_contentData"; // NOI18N
 
-    private static final String FACADE_SUFFIX = "Facade"; //NO18N
-    private static final String FACADE_REMOTE_SUFFIX = FACADE_SUFFIX + "Remote"; //NO18N
-    private static final String FACADE_LOCAL_SUFFIX = FACADE_SUFFIX + "Local"; //NO18N
-    private static final String EJB_LOCAL = "javax.ejb.Local"; //NO18N
-    private static final String EJB_REMOTE = "javax.ejb.Remote"; //NO18N
-    private static final String EJB_STATELESS = "javax.ejb.Stateless"; //NO18N
+    private static final String FACADE_SUFFIX = "Facade"; //NOI18N
+    private static final String FACADE_REMOTE_SUFFIX = FACADE_SUFFIX + "Remote"; //NOI18N
+    private static final String FACADE_LOCAL_SUFFIX = FACADE_SUFFIX + "Local"; //NOI18N
+    private static final String EJB_LOCAL = "javax.ejb.Local"; //NOI18N
+    private static final String EJB_REMOTE = "javax.ejb.Remote"; //NOI18N
+    private static final String EJB_STATELESS = "javax.ejb.Stateless"; //NOI18N
 
     private int index;
     private WizardDescriptor wizard;
@@ -152,7 +152,7 @@ import org.openide.util.NbBundle;
             } catch (InvalidPersistenceXmlException ipx) {
                 // just log for debugging purposes, at this point the user has
                 // already been warned about an invalid persistence.xml
-                Logger.getLogger(EjbFacadeWizardIterator.class.getName()).log(Level.FINE, "Invalid persistence.xml: " + ipx.getPath(), ipx); //NO18N
+                Logger.getLogger(EjbFacadeWizardIterator.class.getName()).log(Level.FINE, "Invalid persistence.xml: " + ipx.getPath(), ipx); //NOI18N
             }
         }
         
@@ -265,37 +265,37 @@ import org.openide.util.NbBundle;
     private List<GenerationOptions> getMethodOptions(String entityFQN, String variableName){
 
         GenerationOptions createOptions = new GenerationOptions();
-        createOptions.setMethodName("create"); //NO18N
+        createOptions.setMethodName("create"); //NOI18N
         createOptions.setOperation(GenerationOptions.Operation.PERSIST);
-        createOptions.setReturnType("void");//NO18N
+        createOptions.setReturnType("void");//NOI18N
         createOptions.setParameterName(variableName);
         createOptions.setParameterType(entityFQN);
 
         GenerationOptions editOptions = new GenerationOptions();
-        editOptions.setMethodName("edit");//NO18N
+        editOptions.setMethodName("edit");//NOI18N
         editOptions.setOperation(GenerationOptions.Operation.MERGE);
-        editOptions.setReturnType("void");//NO18N
+        editOptions.setReturnType("void");//NOI18N
         editOptions.setParameterName(variableName);
         editOptions.setParameterType(entityFQN);
 
         GenerationOptions destroyOptions = new GenerationOptions();
-        destroyOptions.setMethodName("remove");//NO18N
+        destroyOptions.setMethodName("remove");//NOI18N
         destroyOptions.setOperation(GenerationOptions.Operation.REMOVE);
-        destroyOptions.setReturnType("void");//NO18N
+        destroyOptions.setReturnType("void");//NOI18N
         destroyOptions.setParameterName(variableName);
         destroyOptions.setParameterType(entityFQN);
 
         GenerationOptions findOptions = new GenerationOptions();
-        findOptions.setMethodName("find");//NO18N
+        findOptions.setMethodName("find");//NOI18N
         findOptions.setOperation(GenerationOptions.Operation.FIND);
-        findOptions.setReturnType(entityFQN);//NO18N
-        findOptions.setParameterName("id");//NO18N
-        findOptions.setParameterType("Object");//NO18N
+        findOptions.setReturnType(entityFQN);//NOI18N
+        findOptions.setParameterName("id");//NOI18N
+        findOptions.setParameterType("Object");//NOI18N
 
         GenerationOptions findAllOptions = new GenerationOptions();
-        findAllOptions.setMethodName("findAll");//NO18N
+        findAllOptions.setMethodName("findAll");//NOI18N
         findAllOptions.setOperation(GenerationOptions.Operation.FIND_ALL);
-        findAllOptions.setReturnType("java.util.List<" + entityFQN + ">");//NO18N
+        findAllOptions.setReturnType("java.util.List<" + entityFQN + ">");//NOI18N
         findAllOptions.setQueryAttribute(getEntityName(entityFQN));
         
         return Arrays.<GenerationOptions>asList(createOptions, editOptions, destroyOptions, findOptions, findAllOptions);
@@ -339,7 +339,7 @@ import org.openide.util.NbBundle;
     }
     
     String getUniqueClassName(String candidateName, FileObject targetFolder){
-        return FileUtil.findFreeFileName(targetFolder, candidateName, "java"); //NO18N
+        return FileUtil.findFreeFileName(targetFolder, candidateName, "java"); //NOI18N
     }
     
     /**

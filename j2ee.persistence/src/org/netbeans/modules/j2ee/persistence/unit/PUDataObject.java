@@ -85,7 +85,7 @@ import org.openide.util.NbBundle;
 public class PUDataObject extends XmlMultiViewDataObject {
     
     public static final String HELP_ID_DESIGN_PERSISTENCE_UNIT
-            = "persistence_multiview_design_persistenceUnitNode";  // NO18N
+            = "persistence_multiview_design_persistenceUnitNode";  // NOI18N
     private ModelSynchronizer modelSynchronizer;
     /**
      * Update delay for model synchronizer.
@@ -93,13 +93,13 @@ public class PUDataObject extends XmlMultiViewDataObject {
     public static final int UPDATE_DELAY = 200;
     private static final int TYPE_TOOLBAR = 0;
     private Persistence persistence;
-    private static final String DESIGN_VIEW_ID = "persistence_multiview_design"; // NO18N
+    private static final String DESIGN_VIEW_ID = "persistence_multiview_design"; // NOI18N
     private static final Logger LOG = Logger.getLogger(PUDataObject.class.getName());
     
     /**
      * The property name for the event fired when a persistence unit was added or removed.
      */ 
-    static final String PERSISTENCE_UNIT_ADDED_OR_REMOVED = "persistence_unit_added_or_removed"; //NO18N
+    static final String PERSISTENCE_UNIT_ADDED_OR_REMOVED = "persistence_unit_added_or_removed"; //NOI18N
 
     /**
      * Creates a new instance of PUDataObject.
@@ -161,7 +161,7 @@ public class PUDataObject extends XmlMultiViewDataObject {
                         persistence.merge(newPersistence, BaseBean.MERGE_UPDATE);
                     } catch (IllegalArgumentException iae) {
                         // see #104180
-                        LOG.log(Level.FINE, "IAE thrown during merge, see #104180.", iae); //NO18N
+                        LOG.log(Level.FINE, "IAE thrown during merge, see #104180.", iae); //NOI18N
                         return false;
                     }
                 }

@@ -143,8 +143,8 @@ public final class EntityManagerGenerator {
     public FileObject generate(final GenerationOptions options, 
             final Class<? extends EntityManagerGenerationStrategy> strategyClass) throws IOException{
     
-        Parameters.notNull("options", options); //NO18N
-        Parameters.notNull("strategyClass", strategyClass); //NO18N
+        Parameters.notNull("options", options); //NOI18N
+        Parameters.notNull("strategyClass", strategyClass); //NOI18N
         
         Task task = new Task<WorkingCopy>() {
             

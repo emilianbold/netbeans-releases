@@ -82,7 +82,7 @@ public class PersistenceUnitPanelFactory implements InnerPanelFactory, PropertyC
      */ 
     public SectionInnerPanel createInnerPanel(Object key) {
         if (!(key instanceof PersistenceUnit)) {
-            throw new IllegalArgumentException("The given key must be an instance of PersistenceUnit"); //NO18N
+            throw new IllegalArgumentException("The given key must be an instance of PersistenceUnit"); //NOI18N
         }
         PersistenceUnit punit = (PersistenceUnit) key;
         PersistenceUnitPanel panel = cache.get(punit);

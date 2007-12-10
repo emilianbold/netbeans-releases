@@ -308,7 +308,7 @@ public class Util {
             } else {
                 PersistenceUnitWizardPanelJdbc puJdbc = (PersistenceUnitWizardPanelJdbc) panel;
                 punit = ProviderUtil.buildPersistenceUnit(puJdbc.getPersistenceUnitName(), puJdbc.getSelectedProvider(), puJdbc.getPersistenceConnection());
-                punit.setTransactionType("RESOURCE_LOCAL"); //NO18N
+                punit.setTransactionType("RESOURCE_LOCAL"); //NOI18N
                 if (puJdbc.getPersistenceLibrary() != null){
                     addLibraryToProject(project, puJdbc.getPersistenceLibrary());
                 }

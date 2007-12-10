@@ -211,7 +211,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             } catch (InvalidPersistenceXmlException ipx){
                 // just log for debugging purposes, at this point the user has
                 // already been warned about an invalid persistence.xml
-                Logger.getLogger(JavaPersistenceGenerator.class.getName()).log(Level.FINE, "Invalid persistence.xml: " + ipx.getPath(), ipx); //NO18N
+                Logger.getLogger(JavaPersistenceGenerator.class.getName()).log(Level.FINE, "Invalid persistence.xml: " + ipx.getPath(), ipx); //NOI18N
             }
         }
 
@@ -863,7 +863,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
 
                 TreeMaker make = copy.getTreeMaker();
                 VariableTree serialVersionUID = make.Variable(make.Modifiers(serialVersionUIDModifiers), 
-                        "serialVersionUID", genUtils.createType("long", typeElement), make.Literal(Long.valueOf("1"))); //NO18N
+                        "serialVersionUID", genUtils.createType("long", typeElement), make.Literal(Long.valueOf("1"))); //NOI18N
                 
                 return serialVersionUID;
             }

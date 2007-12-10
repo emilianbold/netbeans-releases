@@ -76,17 +76,17 @@ import org.openide.util.Parameters;
  */
 abstract class EntityManagerGenerationStrategySupport implements EntityManagerGenerationStrategy{
     
-    protected static final String ENTITY_MANAGER_FQN = "javax.persistence.EntityManager"; //NO18N
-    protected static final String ENTITY_MANAGER_FACTORY_FQN = "javax.persistence.EntityManagerFactory"; //NO18N
-    protected static final String USER_TX_FQN = "javax.transaction.UserTransaction"; //NO18N
-    protected static final String PERSISTENCE_CONTEXT_FQN = "javax.persistence.PersistenceContext"; //NO18N
-    protected static final String PERSISTENCE_UNIT_FQN = "javax.persistence.PersistenceUnit"; //NO18N
-    protected static final String POST_CONSTRUCT_FQN = "javax.annotation.PostConstruct"; //NO18N
-    protected static final String PRE_DESTROY_FQN = "javax.annotation.PreDestroy"; //NO18N
-    protected static final String RESOURCE_FQN = "javax.annotation.Resource"; //NO18N
+    protected static final String ENTITY_MANAGER_FQN = "javax.persistence.EntityManager"; //NOI18N
+    protected static final String ENTITY_MANAGER_FACTORY_FQN = "javax.persistence.EntityManagerFactory"; //NOI18N
+    protected static final String USER_TX_FQN = "javax.transaction.UserTransaction"; //NOI18N
+    protected static final String PERSISTENCE_CONTEXT_FQN = "javax.persistence.PersistenceContext"; //NOI18N
+    protected static final String PERSISTENCE_UNIT_FQN = "javax.persistence.PersistenceUnit"; //NOI18N
+    protected static final String POST_CONSTRUCT_FQN = "javax.annotation.PostConstruct"; //NOI18N
+    protected static final String PRE_DESTROY_FQN = "javax.annotation.PreDestroy"; //NOI18N
+    protected static final String RESOURCE_FQN = "javax.annotation.Resource"; //NOI18N
     
-    protected static final String ENTITY_MANAGER_DEFAULT_NAME = "em"; //NO18N
-    protected static final String ENTITY_MANAGER_FACTORY_DEFAULT_NAME = "emf"; //NO18N
+    protected static final String ENTITY_MANAGER_DEFAULT_NAME = "em"; //NOI18N
+    protected static final String ENTITY_MANAGER_FACTORY_DEFAULT_NAME = "emf"; //NOI18N
     
     private TreeMaker treeMaker;
     private ClassTree classTree;
@@ -114,7 +114,7 @@ abstract class EntityManagerGenerationStrategySupport implements EntityManagerGe
     }
     
     protected Tree getReturnTypeTree(){
-        if (getGenerationOptions().getReturnType() == null || "void".equals(getGenerationOptions().getReturnType())){ //NO18N
+        if (getGenerationOptions().getReturnType() == null || "void".equals(getGenerationOptions().getReturnType())){ //NOI18N
             return getTreeMaker().PrimitiveType(TypeKind.VOID);
         }
         return getGenUtils().createType(getGenerationOptions().getReturnType(), getClassElement());
@@ -162,7 +162,7 @@ abstract class EntityManagerGenerationStrategySupport implements EntityManagerGe
      */
     protected VariableTree getField(final String fieldTypeFqn){
         
-        Parameters.notEmpty("fieldTypeFqn", fieldTypeFqn); //NO18N
+        Parameters.notEmpty("fieldTypeFqn", fieldTypeFqn); //NOI18N
         
         for (Tree member : getClassTree().getMembers()){
             if (Tree.Kind.VARIABLE == member.getKind()){
@@ -186,7 +186,7 @@ abstract class EntityManagerGenerationStrategySupport implements EntityManagerGe
      */
     protected Element getAnnotation(final String annotationTypeFqn){
         
-        Parameters.notEmpty("annotationTypeFqn", annotationTypeFqn); //NO18N
+        Parameters.notEmpty("annotationTypeFqn", annotationTypeFqn); //NOI18N
         
         TypeElement annotationType = asTypeElement(annotationTypeFqn);
         TypeElement classElement = getClassElement();
@@ -226,7 +226,7 @@ abstract class EntityManagerGenerationStrategySupport implements EntityManagerGe
     
     private TypeElement asTypeElement(String fqn){
         TypeElement result = getWorkingCopy().getElements().getTypeElement(fqn);
-        assert result != null : "Could not get TypeElement for " + fqn; //NO18N
+        assert result != null : "Could not get TypeElement for " + fqn; //NOI18N
         return result;
     }
     
@@ -235,7 +235,7 @@ abstract class EntityManagerGenerationStrategySupport implements EntityManagerGe
     }
     
     protected String getEmInitCode(FieldInfo em, FieldInfo emf){
-        String text = "javax.persistence.EntityManager {0} = {1}.createEntityManager();\n"; //NO18N
+        String text = "javax.persistence.EntityManager {0} = {1}.createEntityManager();\n"; //NOI18N
         return MessageFormat.format(text, em.getName(), emf.getName());
     }
     
@@ -260,7 +260,7 @@ abstract class EntityManagerGenerationStrategySupport implements EntityManagerGe
                 Collections.<Modifier>singleton(Modifier.PRIVATE),
                 Collections.<AnnotationTree>singletonList(getGenUtils().createAnnotation(RESOURCE_FQN))
                 ),
-                "utx", //NO18N
+                "utx", //NOI18N
                 getTreeMaker().Identifier(USER_TX_FQN),
                 null);
     }
@@ -273,7 +273,7 @@ abstract class EntityManagerGenerationStrategySupport implements EntityManagerGe
                 getTreeMaker().MethodInvocation(
                 Collections.<ExpressionTree>emptyList(),
                 getTreeMaker().MemberSelect(
-                getTypeTree("javax.persistence.Persistence"), "createEntityManagerFactory"), // NO18N
+                getTypeTree("javax.persistence.Persistence"), "createEntityManagerFactory"), // NOI18N
                 Collections.<ExpressionTree>singletonList(getTreeMaker().Literal(getPersistenceUnitName()))
                 )
                 );
@@ -306,7 +306,7 @@ abstract class EntityManagerGenerationStrategySupport implements EntityManagerGe
             case EMF:
                 existingEmf = getField(ENTITY_MANAGER_FACTORY_FQN);
                 assert existingEmf != null : "EntityManagerFactory does not exist in the class";
-                expressionTree = getTreeMaker().Literal(existingEmf.getName().toString() + ".createEntityManager();"); //NO18N
+                expressionTree = getTreeMaker().Literal(existingEmf.getName().toString() + ".createEntityManager();"); //NOI18N
                 break;
                 
             case INIT:
@@ -326,7 +326,7 @@ abstract class EntityManagerGenerationStrategySupport implements EntityManagerGe
                         Collections.<TypeParameterTree>emptyList(),
                         Collections.<VariableTree>emptyList(),
                         Collections.<ExpressionTree>emptyList(),
-                        "{ " + ENTITY_MANAGER_DEFAULT_NAME + " = " + emfName + ".createEntityManager(); }", //NO18N
+                        "{ " + ENTITY_MANAGER_DEFAULT_NAME + " = " + emfName + ".createEntityManager(); }", //NOI18N
                         null
                         );
                 
