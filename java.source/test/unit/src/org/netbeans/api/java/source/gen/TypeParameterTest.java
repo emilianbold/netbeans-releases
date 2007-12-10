@@ -253,6 +253,40 @@ public class TypeParameterTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
     
+    public void XtestRemoveTypeParameter123732() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class MyList<Ex> {\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class MyList {\n" +
+            "}\n";
+        JavaSource src = getJavaSource(testFile);
+        
+        Task task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                ClassTree nue = make.Class(clazz.getModifiers(), clazz.getSimpleName(), Collections.<TypeParameterTree>emptyList(), clazz.getExtendsClause(), clazz.getImplementsClause(), clazz.getMembers());
+                // name
+                workingCopy.rewrite(clazz, nue);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
     String getGoldenPckg() {
         return "";
     }
