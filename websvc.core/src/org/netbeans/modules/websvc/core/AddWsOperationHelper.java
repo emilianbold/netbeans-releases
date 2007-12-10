@@ -243,14 +243,16 @@ public class AddWsOperationHelper {
                             if (Kind.PRIMITIVE_TYPE == method.getReturnType().getKind()) {
                                 PrimitiveTypeTree primitiveType = (PrimitiveTypeTree)method.getReturnType();
                                 if (TypeKind.VOID == primitiveType.getPrimitiveTypeKind()) {
-                                    isOneWay = true;
-                                    TypeElement oneWayAn = workingCopy.getElements().getTypeElement("javax.jws.Oneway"); //NOI18N
-                                    AnnotationTree oneWayAnnotation = make.Annotation(
-                                            make.QualIdent(oneWayAn),
-                                            Collections.<ExpressionTree>emptyList()
-                                            );
+                                    if (method.getThrows().size() == 0) {
+                                        isOneWay = true;
+                                        TypeElement oneWayAn = workingCopy.getElements().getTypeElement("javax.jws.Oneway"); //NOI18N
+                                        AnnotationTree oneWayAnnotation = make.Annotation(
+                                                make.QualIdent(oneWayAn),
+                                                Collections.<ExpressionTree>emptyList()
+                                                );
 
-                                        modifiersTree = make.addModifiersAnnotation(modifiersTree, oneWayAnnotation);
+                                            modifiersTree = make.addModifiersAnnotation(modifiersTree, oneWayAnnotation);
+                                    }
                                 }
                             }
                             if (!methodName.equals(operationName)) {
