@@ -157,6 +157,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
 
             if (lmInstance != null) {
                 metaLayout = new MetaLayout(this, lmInstance);
+                deriveChangedPropertiesFromInstance(metaLayout);
             }
         }
         else metaLayout = null;
@@ -188,6 +189,9 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
                 }
             }
         }
+    }
+    
+    protected void deriveChangedPropertiesFromInstance(MetaLayout metaLayout) {
     }
 
     /** States whether this support class is dedicted to some special container.

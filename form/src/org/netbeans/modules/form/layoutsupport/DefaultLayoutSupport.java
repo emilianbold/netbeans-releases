@@ -42,6 +42,9 @@
 package org.netbeans.modules.form.layoutsupport;
 
 import java.awt.*;
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.modules.form.RADProperty;
 
 /**
  * This class is used internally to provide default support for any layout
@@ -79,6 +82,45 @@ class DefaultLayoutSupport extends AbstractLayoutSupport {
                                            index);
         }
         catch (RuntimeException ex) { // just ignore
+            ex.printStackTrace();
+        }
+    }
+
+    /**
+     * Derives changed properties from the instance in the meta layout.
+     * The instance in the meta layout is the default instance from
+     * the container. This can differ from the default instance of the layout class.
+     * For example, VerticalLayout in SwingX library has gap property.
+     * The default value of this property is 0, but the default value
+     * of gap property of layout obtained from the default instance
+     * of JXTaskContainer is 14.
+     * 
+     * @param metaLayout information about the layout.
+     */
+    @Override
+    protected void deriveChangedPropertiesFromInstance(MetaLayout metaLayout) {
+        Map<String,Object> map = new HashMap<String,Object>();
+        for (RADProperty prop : metaLayout.getAllBeanProperties()) {
+            if (prop.canRead() && prop.canWrite()) {
+                try {
+                    map.put(prop.getName(), prop.getValue());
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+        try {
+            metaLayout.setInstance(createDefaultLayoutInstance());
+            for (RADProperty prop : metaLayout.getAllBeanProperties()) {
+                if (prop.canRead() && prop.canWrite() && map.containsKey(prop.getName())) {
+                    try {
+                        prop.setValue(map.get(prop.getName()));
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
