@@ -59,11 +59,6 @@ public class ServiceProviderSelectorPanel extends javax.swing.JPanel {
         super();
         
         initComponents();
-
-        this.setSpUrl(spUrl);
-        this.setCertAlias(certAlias);
-        this.setTokenType(tokenType);
-        this.setKeyType(keyType);
         
         certAliasTextField.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         certAliasLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
@@ -84,6 +79,12 @@ public class ServiceProviderSelectorPanel extends javax.swing.JPanel {
         keyTypeCombo.removeAllItems();
         keyTypeCombo.addItem(ComboConstants.ISSUED_KEYTYPE_PUBLIC);
         keyTypeCombo.addItem(ComboConstants.ISSUED_KEYTYPE_SYMMETRIC);
+        
+        this.setSpUrl(spUrl);
+        this.setCertAlias(certAlias);
+        this.setTokenType(tokenType);
+        this.setKeyType(keyType);
+
         inSync = false;
     }
 
@@ -114,7 +115,7 @@ public class ServiceProviderSelectorPanel extends javax.swing.JPanel {
     }
 
     public String getKeyType() {
-        return (String)tokenTypeCombo.getSelectedItem();
+        return (String)keyTypeCombo.getSelectedItem();
     }
 
     public void setKeyType(String keyType) {

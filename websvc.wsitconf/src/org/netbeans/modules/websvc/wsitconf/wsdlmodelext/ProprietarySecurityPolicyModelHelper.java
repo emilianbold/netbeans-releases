@@ -194,7 +194,15 @@ public class ProprietarySecurityPolicyModelHelper {
         if (sp != null) {
             List<KeyType> elems = sp.getExtensibilityElements(KeyType.class);
             if ((elems != null) && !(elems.isEmpty())) {
-                return elems.get(0).getKeyType();
+                String kType = elems.get(0).getKeyType();
+                if (kType != null) {
+                    if (ComboConstants.ISSUED_KEYTYPE_PUBLIC_POLICYSTR.equals(kType)) {
+                        return ComboConstants.ISSUED_KEYTYPE_PUBLIC;
+                    }
+                    if (ComboConstants.ISSUED_KEYTYPE_SYMMETRIC_POLICYSTR.equals(kType)) {
+                        return ComboConstants.ISSUED_KEYTYPE_SYMMETRIC;
+                    }
+                }
             }
         }
         return null;
@@ -822,6 +830,7 @@ public class ProprietarySecurityPolicyModelHelper {
             CertAlias calias = (CertAlias)wcf.create(sp, ProprietaryTrustServiceQName.CERTALIAS.getQName());
             sp.addExtensibilityElement(calias);
             calias.setCertAlias(spe.getCertAlias());
+            
             TokenType ttype = (TokenType)wcf.create(sp, ProprietaryTrustServiceQName.TOKENTYPE.getQName());
             sp.addExtensibilityElement(ttype);
 
@@ -835,6 +844,18 @@ public class ProprietarySecurityPolicyModelHelper {
                 tTypePolicyStr = ComboConstants.ISSUED_TOKENTYPE_SAML10_POLICYSTR;
             }            
             ttype.setTokenType(tTypePolicyStr);
+            
+            KeyType ktype = (KeyType)wcf.create(sp, ProprietaryTrustServiceQName.KEYTYPE.getQName());
+            sp.addExtensibilityElement(ktype);
+
+            String kTypePolicyStr = ComboConstants.ISSUED_KEYTYPE_PUBLIC_POLICYSTR;
+            
+            String kTypeShort = spe.getKeyType();
+            if (ComboConstants.ISSUED_KEYTYPE_SYMMETRIC.equals(kTypeShort)) {
+                kTypePolicyStr = ComboConstants.ISSUED_KEYTYPE_SYMMETRIC_POLICYSTR;
+            }
+            ktype.setKeyType(kTypePolicyStr);
+            
         } finally {
             if (!isTransaction) {
                 model.endTransaction();

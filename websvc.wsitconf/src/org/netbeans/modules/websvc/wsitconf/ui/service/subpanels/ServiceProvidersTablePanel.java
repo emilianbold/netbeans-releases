@@ -76,6 +76,7 @@ public class ServiceProvidersTablePanel extends DefaultTablePanel {
     private Map<String, ServiceProviderElement> addedProviders;
     private RemoveActionListener removeActionListener;
     private AddActionListener addActionListener;
+    private EditActionListener editActionListener;
     
     /**
      * Creates a new instance of ServiceProvidersTablePanel
@@ -85,10 +86,15 @@ public class ServiceProvidersTablePanel extends DefaultTablePanel {
         this.stsConfig = stsConfig;
         this.tablemodel = tablemodel;
         
-        this.editButton.setVisible(false); //TODO - can't edit an entry yet
+        this.editButton.setVisible(true);
 
         addedProviders = new HashMap<String, ServiceProviderElement>();
         
+        editActionListener = new EditActionListener();
+        ActionListener editListener = WeakListeners.create(ActionListener.class,
+                editActionListener, editButton);
+        editButton.addActionListener(editListener);
+
         addActionListener = new AddActionListener();
         ActionListener addListener = WeakListeners.create(ActionListener.class,
                 addActionListener, addButton);
@@ -100,10 +106,6 @@ public class ServiceProvidersTablePanel extends DefaultTablePanel {
         removeButton.addActionListener(removeListener);
     }
 
-    public Map<String, ServiceProviderElement> getAddedProviders(){
-        return addedProviders;
-    }
-    
     public List getChildren(){
         return tablemodel.getChildren();
     }
@@ -155,6 +157,44 @@ public class ServiceProvidersTablePanel extends DefaultTablePanel {
                     addedProviders.put(url, spe);
                     ServiceProvidersTablePanel.this.tablemodel.addRow(spe);
                     ProprietarySecurityPolicyModelHelper.addSTSServiceProvider(stsConfig, spe);
+                }
+            }
+        }
+    }
+    
+    class EditActionListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+
+            int row = getTable().getSelectedRow();
+            if (row == -1) return;
+            ServiceProviderElement speOld = (ServiceProviderElement)getTable().getValueAt(row, 0);
+            ServiceProviderSelectorPanel spPanel = new ServiceProviderSelectorPanel(speOld.getEndpoint(), 
+                    speOld.getCertAlias(), 
+                    speOld.getTokenType(), 
+                    speOld.getKeyType());
+            
+            DialogDescriptor dd = new DialogDescriptor(
+                    spPanel, 
+                    NbBundle.getMessage(ServiceProvidersTablePanel.class, "LBL_SelectSProvider_Title"),  //NOI18N
+                    true, 
+                    DialogDescriptor.OK_CANCEL_OPTION, 
+                    DialogDescriptor.CANCEL_OPTION, 
+                    DialogDescriptor.DEFAULT_ALIGN,
+                    new HelpCtx(ServiceProviderSelectorPanel.class),
+                    null);
+
+            if (DialogDisplayer.getDefault().notify(dd).equals(DialogDescriptor.OK_OPTION)) {
+                if (spPanel != null) {
+                    String url = spPanel.getSpUrl();
+                    String alias = spPanel.getCertAlias();
+                    String ttype = spPanel.getTokenType();
+                    String ktype = spPanel.getKeyType();
+                    ServiceProviderElement speNew = new ServiceProviderElement(url, alias, ttype, ktype);
+                    addedProviders.put(url, speNew);
+                    ServiceProvidersTablePanel.this.tablemodel.removeRow(row);
+                    ServiceProvidersTablePanel.this.tablemodel.addRow(speNew);
+                    ProprietarySecurityPolicyModelHelper.removeSTSServiceProvider(stsConfig, speNew);
+                    ProprietarySecurityPolicyModelHelper.addSTSServiceProvider(stsConfig, speNew);
                 }
             }
         }
