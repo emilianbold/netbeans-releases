@@ -219,7 +219,7 @@ public class PageFlowController {
         if (fcl != null && myWebFolder != null) {
             try {
                 FileSystem fileSystem = myWebFolder.getFileSystem();
-                myWebFolder.getFileSystem().removeFileChangeListener(fcl);
+                fileSystem.removeFileChangeListener(fcl);
                 fcl = null;
             } catch (FileStateInvalidException ex) {
                 Exceptions.printStackTrace(ex);
