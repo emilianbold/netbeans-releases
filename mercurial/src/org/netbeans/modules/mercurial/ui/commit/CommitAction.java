@@ -319,6 +319,8 @@ public class CommitAction extends AbstractAction {
         List<File> commitCandidates = new ArrayList<File>();
         Iterator<HgFileNode> it = commitFiles.keySet().iterator();
 
+        List<String> excPaths = new ArrayList<String>();
+        List<String> incPaths = new ArrayList<String>();
         while (it.hasNext()) {
              if (support.isCanceled()) {
                  return;
@@ -330,11 +332,22 @@ public class CommitAction extends AbstractAction {
                      addCandidates.add(node.getFile()); 
                  }
                  commitCandidates.add(node.getFile()); 
+                 incPaths.add(node.getFile().getAbsolutePath());
+             }else{
+                 excPaths.add(node.getFile().getAbsolutePath());                
              }
         }
         if (support.isCanceled()) {
             return;
         }
+            
+        if (!excPaths.isEmpty()) {
+            HgModuleConfig.getDefault().addExclusionPaths(excPaths);
+        }
+        if (!incPaths.isEmpty()) {
+            HgModuleConfig.getDefault().removeExclusionPaths(incPaths);
+        }
+        
         try {
             HgUtils.outputMercurialTabInRed(
                     NbBundle.getMessage(CommitAction.class,
