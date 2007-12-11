@@ -100,4 +100,14 @@ Contributor(s):
             </file>
         </folder>
    </folder>     
+
+    <folder name="OptionsDialog"> 
+        <folder name="CPlusPlus">
+            <file name="SemanticHighlightingOptionsPanelController.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.highlight.semantic.options.SemanticHighlightingOptionsPanelController"/>
+                <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                <attr name="position" intvalue="500"/>
+            </file>
+        </folder>     
+    </folder>
 </filesystem>

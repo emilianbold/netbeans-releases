@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.highlight.semantic;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -52,12 +53,12 @@ import javax.swing.text.Document;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.settings.FontColorSettings;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.model.tasks.CaretAwareCsmFileTaskFactory;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
+import org.netbeans.modules.cnd.highlight.semantic.options.SemanticHighlightingOptions;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
@@ -75,15 +76,14 @@ public class MarkOccurrencesHighlighter extends HighlighterBase {
 
     private static AttributeSet defaultColors;
     private final static String COLORS = "cc-highlighting-mark-occurences"; // NOI18N
-    private final WeakReference<BaseDocument> weakDoc;
     private WeakReference<CsmFile> weakFile;
     private List<Annotation> annotations = new ArrayList<Annotation>();
 
-    private BaseDocument getDocument() {
-        return weakDoc != null ? weakDoc.get() : null;
-    }
-    
     public static OffsetsBag getHighlightsBag(Document doc) {
+        if (doc == null) {
+            return null;
+        }
+        
         OffsetsBag bag = (OffsetsBag) doc.getProperty(MarkOccurrencesHighlighter.class);
         
         if (bag == null) {
@@ -123,8 +123,8 @@ public class MarkOccurrencesHighlighter extends HighlighterBase {
     }
     
     private void clean() {
-        getHighlightsBag(getDocument()).clear();
         if (getDocument()!=null) {
+            getHighlightsBag(getDocument()).clear();
             for (Annotation annotation : annotations){
                 if (annotation != null) {
                     NbDocument.removeAnnotation((StyledDocument)getDocument(), annotation);
@@ -136,29 +136,41 @@ public class MarkOccurrencesHighlighter extends HighlighterBase {
 
     public MarkOccurrencesHighlighter(Document doc) {
         super(doc);
-        if (doc instanceof BaseDocument) {
-            weakDoc = new WeakReference<BaseDocument>((BaseDocument) doc);
-        } else {
-            weakDoc = null;
-        }
     }
 
     // Runnable
     public void run() {
+        System.err.println("MarkOccurrencesHighlighter.run()");
+        if (!SemanticHighlightingOptions.getEnableMarkOccurences()) {
+            clean();
+            return;
+        }
+        Collection<CsmReference> out = getOccurences();
+        if (out == null) {
+            if (SemanticHighlightingOptions.getKeepMarks()) {
+                return;
+            }
+            out = Collections.<CsmReference>emptyList();
+        }
         clean();
+        for (CsmReference csmReference : out) {
+            getHighlightsBag(getDocument()).addHighlight(csmReference.getStartOffset(), csmReference.getEndOffset(), defaultColors);
+            addAnnotation(csmReference.getStartOffset());
+        }
+    }
+    
+    private Collection<CsmReference> getOccurences() {
+        Collection<CsmReference> out = null;
         CsmFile file = getCsmFile();
         if (file != null && file.isParsed() && getDocument() != null ) {
             FileObject fo = CsmUtilities.getFileObject(file);
             assert fo != null;
             CsmReference ref = CsmReferenceResolver.getDefault().findReference(file, CaretAwareCsmFileTaskFactory.getLastPosition(fo));
             if (ref!=null && ref.getReferencedObject()!=null) {
-                Collection<CsmReference> out = CsmReferenceRepository.getDefault().getReferences(ref.getReferencedObject(), file, true);
-                for (CsmReference csmReference : out) {
-                    getHighlightsBag(getDocument()).addHighlight(csmReference.getStartOffset(), csmReference.getEndOffset(), defaultColors);
-                    addAnnotation(csmReference.getStartOffset());
-                }
+                out = CsmReferenceRepository.getDefault().getReferences(ref.getReferencedObject(), file, true);
             }
         }
+        return out;
     }
     
     @Override
@@ -195,5 +207,4 @@ public class MarkOccurrencesHighlighter extends HighlighterBase {
             return NbBundle.getMessage(MarkOccurrencesHighlighter.class, "CppParserMarkOccurencesAnnotation");
         }
     }
-    
 }

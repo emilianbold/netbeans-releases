@@ -38,71 +38,54 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.highlight.semantic;
 
-import java.lang.ref.WeakReference;
-import javax.swing.text.Document;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.api.editor.settings.FontColorSettings;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
+package org.netbeans.modules.cnd.highlight.semantic.options;
+
+
+
+import java.beans.PropertyChangeListener;
+import javax.swing.JComponent;
+import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
-import org.openide.util.WeakListeners;
 
-/**
- *
- * @author Sergey Grinev
- */
-public abstract class HighlighterBase implements LookupListener, Runnable {
+public final class SemanticHighlightingOptionsPanelController extends OptionsPanelController {
 
-    private final String mime;
-    private final OffsetsBag bag;
-    private final WeakReference<BaseDocument> weakDoc;
+    private SemanticHighlightingOptionsPanel panel = new SemanticHighlightingOptionsPanel();
 
-    public HighlighterBase(Document doc) {
-        bag = new OffsetsBag(doc);
-        mime = (String) doc.getProperty("mimeType"); //NOI18N
-        Lookup lookup = MimeLookup.getLookup(MimePath.get(mime));
-        Lookup.Result<FontColorSettings> result =
-                lookup.lookup(new Lookup.Template<FontColorSettings>(FontColorSettings.class));
-        result.addLookupListener(WeakListeners.create(LookupListener.class, this, null));
-        result.allInstances();
+    public void update() {
+        panel.update();
+}
 
-        if (doc instanceof BaseDocument) {
-            weakDoc = new WeakReference<BaseDocument>((BaseDocument) doc);
-        } else {
-            weakDoc = null;
-        }
-
-        updateFontColors();
-    }
-
-    protected BaseDocument getDocument() {
-        return weakDoc != null ? weakDoc.get() : null;
-    }
-
-    public OffsetsBag getHighlightsBag() {
-        return bag;
-    }
-
-    // LookupListener
-    public void resultChanged(LookupEvent ev) {
-        updateFontColors();
-        run();
+    public void applyChanges() {
+        panel.applyChanges();
     }
     
-    public void updateFontColors() {
-        Lookup lookup = MimeLookup.getLookup(MimePath.get(mime));
-        FontColorSettings fcs = lookup.lookup(FontColorSettings.class);
-        initFontColors(fcs);
+    public void cancel() {
+        panel.cancel();
+    }
+    
+    public boolean isValid() {
+        return true; //panel.dataValid();
+    }
+    
+    public boolean isChanged() {
+        return panel.isChanged();
+    }
+    
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("netbeans.optionsDialog.advanced.formEditor"); // NOI18N
+    }
+    
+    public JComponent getComponent(Lookup masterLookup) {
+        return panel;
     }
 
-    protected abstract void initFontColors(FontColorSettings fcs);
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        panel.addPropertyChangeListener(l);
+    }
 
-    protected boolean isCancelled() {
-        return Thread.interrupted();
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        panel.removePropertyChangeListener(l);
     }
 }

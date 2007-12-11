@@ -41,11 +41,8 @@
 package org.netbeans.modules.cnd.highlight.semantic;
 
 import org.netbeans.modules.cnd.highlight.semantic.ifdef.*;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 import javax.swing.text.StyleConstants;
@@ -76,7 +73,6 @@ import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
  */
 public class SemanticHighlighter extends HighlighterBase  {
 
-    private final WeakReference<BaseDocument> weakDoc;
     private final static String COLORS_INACTIVE = "cc-highlighting-inactive"; // NOI18N
     private final static String COLORS_MACRO = "cc-highlighting-macros-user"; // NOI18N
     private final static String COLORS_SYSMACRO = "cc-highlighting-macros-system"; // NOI18N
@@ -95,13 +91,6 @@ public class SemanticHighlighter extends HighlighterBase  {
 
     public SemanticHighlighter(Document doc) {
         super(doc);
-
-        if (doc instanceof BaseDocument) {
-            weakDoc = new WeakReference<BaseDocument>((BaseDocument) doc);
-            //((BaseDocument) doc).addDocumentListener(this);
-        } else {
-            weakDoc = null;
-        }
     }
 
     protected void initFontColors(FontColorSettings fcs) {
@@ -135,7 +124,7 @@ public class SemanticHighlighter extends HighlighterBase  {
     }*/
 
     private void update() {
-        BaseDocument doc = weakDoc.get();
+        BaseDocument doc = getDocument();
         if (doc != null) {
             OffsetsBag newBag = new OffsetsBag(doc);
             newBag.clear();

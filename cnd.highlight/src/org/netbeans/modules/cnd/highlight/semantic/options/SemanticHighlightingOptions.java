@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,41 +31,51 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.highlight.semantic;
 
-import org.netbeans.modules.cnd.highlight.semantic.options.SemanticHighlightingOptions;
-import org.netbeans.modules.cnd.model.tasks.CaretAwareCsmFileTaskFactory;
-import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Exceptions;
+package org.netbeans.modules.cnd.highlight.semantic.options;
+
+import java.util.prefs.Preferences;
+import org.openide.util.NbPreferences;
+import org.openide.util.SharedClassObject;
 
 /**
  *
  * @author Sergey Grinev
  */
-public class MarkOccurrencesHighlighterFactory extends CaretAwareCsmFileTaskFactory {
+public class SemanticHighlightingOptions {
 
-    @Override
-    protected Runnable createTask(final FileObject fo) {
-        MarkOccurrencesHighlighter moh = null;
-        if (SemanticHighlightingOptions.getEnableMarkOccurences()) {
-            try {
-                DataObject dobj = DataObject.find(fo);
-                EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);
-                moh = new MarkOccurrencesHighlighter(ec.getDocument());
-            } catch (DataObjectNotFoundException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        return moh != null ? moh : new Runnable() {
+    private SemanticHighlightingOptions() {}
 
-            public void run() {
-            // do nothing
-            }
-            };
+    private static final Preferences preferences = NbPreferences.forModule(SemanticHighlightingOptions.class);
+    private static final String ENABLE_MARK_OCCURENCES = "EnableMarkOccurrences";
+    private static final String KEEP_MARKS = "KeepMarks";
+    
+    private static boolean getOption(String key, boolean defaultValue) {
+        return preferences.getBoolean(key, defaultValue);
+    }
 
+    private static void setOption(String key, boolean value) {
+        preferences.putBoolean(key, value);
+    }
+    
+    public static boolean getEnableMarkOccurences() {
+        return getOption(ENABLE_MARK_OCCURENCES, false);
+    }
+
+    public static void setEnableMarkOccurences(boolean value) {
+        setOption(ENABLE_MARK_OCCURENCES, value);
+    }
+
+    public static boolean getKeepMarks() {
+        return getOption(KEEP_MARKS, true);
+    }
+
+    public static void setKeepMarks(boolean value) {
+        setOption(KEEP_MARKS, value);
     }
 }

@@ -213,7 +213,7 @@ public class HighlightProvider implements CsmModelListener, CsmProgressListener,
             addAnnotations((BaseDocument)doc, file);
             // one more point to make a global scheduler
             // todo: optimize to check dependency between changed file and updated one
-            CppHighlightsLayerFactory.getInactiveCodeHighlighter(doc).scheduleUpdate();
+            CppHighlightsLayerFactory.getInactiveCodeHighlighter(doc).run();
         }
     }
 
