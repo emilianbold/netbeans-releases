@@ -104,11 +104,32 @@ is the proper place.
         <apidef name="devmodules">J2EE Module Development API</apidef>
         <!-- org.netbeans.modules.j2ee.deployment.common -->
         <apidef name="common">J2EE Server Common API</apidef>
+        <!-- org.netbeans.modules.j2ee.deployment.profiler -->
+        <apidef name="profiler">J2EE Server Common API</apidef>        
     </apidefs>
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="fixedProfilerAPIConstants">
+	    <api name="profiler"/>
+	    <summary>
+                Fixing state constants to be real (final) constants.
+	    </summary>
+	    <version major="1" minor="36"/>
+	    <date day="11" month="12" year="2007"/>
+	    <author login="phejl"/>
+	    <compatibility binary="incompatible" source="incompatible" semantic="incompatible" addition="no"/>
+	    <description>
+                <p>
+                    State constants used in the profiler API were not constants
+                    in real - they were just public static variables. This change
+                    makes them final.
+                </p>
+	    </description>
+	    <class package="org.netbeans.modules.j2ee.deployment.profiler.api" name="ProfilerSupport"/>
+	    <issue number="122430"/>
+	</change>
         <change id="createInstanceProperties">
 	    <api name="j2eeserver"/>
 	    <summary>
