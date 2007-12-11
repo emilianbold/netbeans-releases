@@ -822,7 +822,6 @@ public class Reformatter implements ReformatTask {
                 } else {
                     afterAnnotation = false;
                     ret = true;
-                    col += tokens.token().length();
                 }
             }
             return ret;
