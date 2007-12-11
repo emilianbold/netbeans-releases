@@ -485,7 +485,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
             }
             
             if( item.id() == HTMLTokenId.DECLARATION || item.id() == HTMLTokenId.SGML_COMMENT ) {
-                while( item.id() != HTMLTokenId.DECLARATION || !item.text().toString().startsWith( "<!" ) && ts.movePrevious()) { // NOI18N
+                while((item.id() != HTMLTokenId.DECLARATION || !item.text().toString().startsWith( "<!" )) && ts.movePrevious()) { // NOI18N
                     item = ts.token();
                 }
                 return getNextElement(  item.offset(hi) ); // from start of Commment
