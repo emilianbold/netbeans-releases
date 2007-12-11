@@ -221,6 +221,8 @@ public class FormEditor {
         mainWin.getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         mainWin.getGlassPane().setVisible(true);
 
+        preCreationUpdate();
+
         // load form data and report errors
         try {
             loadFormData();
@@ -606,6 +608,25 @@ public class FormEditor {
     boolean needPostCreationUpdate() {
         return Boolean.TRUE.equals(formDataObject.getPrimaryFile().getAttribute("justCreatedByNewWizard")); // NOI18N
         // see o.n.m.f.w.TemplateWizardIterator.instantiate()
+    }
+
+    private void preCreationUpdate() {
+        FileObject fob = formDataObject.getPrimaryFile();
+        Object libName = fob.getAttribute("requiredLibrary"); // NOI18N
+        if (libName != null) {
+            Object className = fob.getAttribute("requiredClass"); // NOI18N
+            if ((className == null) || !ClassPathUtils.isOnClassPath(fob, className.toString())) {
+                try {
+                    ClassPathUtils.updateProject(fob, new ClassSource(
+                            (className == null) ? null : className.toString(),
+                            new String[] { ClassSource.LIBRARY_SOURCE },
+                            new String[] { libName.toString() })
+                    );
+                } catch (IOException ioex) {
+                    Logger.getLogger(FormEditor.class.getName()).log(Level.INFO, ioex.getLocalizedMessage(), ioex);
+                }
+            }
+        }
     }
 
     /**

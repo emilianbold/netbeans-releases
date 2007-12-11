@@ -46,6 +46,8 @@ import java.net.*;
 import java.util.*;
 import java.text.MessageFormat;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.ErrorManager;
 import org.openide.filesystems.*;
 import org.openide.util.Lookup;
@@ -330,7 +332,11 @@ public class ClassPathUtils {
             }
             else if (ClassSource.LIBRARY_SOURCE.equals(type)) {
                 Library lib = LibraryManager.getDefault().getLibrary(name);
-                ProjectClassPathModifier.addLibraries(new Library[] {lib}, fileInProject, ClassPath.COMPILE);
+                if (lib == null) {
+                    Logger.getLogger(ClassPathUtils.class.getName()).log(Level.INFO, "Library " + name + " not found!"); // NOI18N
+                } else {
+                    ProjectClassPathModifier.addLibraries(new Library[] {lib}, fileInProject, ClassPath.COMPILE);
+                } 
             }
             else if (ClassSource.PROJECT_SOURCE.equals(type)) {
                 File jarFile = new File(name);
