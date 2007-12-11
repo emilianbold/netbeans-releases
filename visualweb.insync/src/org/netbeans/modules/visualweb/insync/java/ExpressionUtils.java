@@ -42,15 +42,12 @@
 package org.netbeans.modules.visualweb.insync.java;
 
 import com.sun.source.tree.AssignmentTree;
-import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
 import java.lang.reflect.Array;
@@ -225,6 +222,6 @@ public class ExpressionUtils {
     public static String getArgumentSource(CompilationInfo cinfo, ExpressionTree exprTree) {
         long end = cinfo.getTrees().getSourcePositions().getEndPosition(cinfo.getCompilationUnit(), exprTree);
         long start = cinfo.getTrees().getSourcePositions().getStartPosition(cinfo.getCompilationUnit(), exprTree);
-        return cinfo.getText().substring((int)start, (int)end-1);
+        return cinfo.getText().substring((int)start, (int)end);
     }    
 }
