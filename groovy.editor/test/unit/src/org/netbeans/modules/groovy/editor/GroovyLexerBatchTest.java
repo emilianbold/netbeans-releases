@@ -53,9 +53,8 @@ import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 /**
  * Test groovy lexer
  * 
- * @todo testGstringsWithoutNewLine and testGstringsBeforeNewLine should take 
- * care about last token in same way
- *
+ * @todo ${...} inside strings
+ * 
  * @author Martin Adamek
  */
 public class GroovyLexerBatchTest extends TestCase {
@@ -101,9 +100,29 @@ public class GroovyLexerBatchTest extends TestCase {
     }
     
     public void testGstringsWithoutNewLine() {
-        String text = "def s = \"H $name\"";
+        String text = "def name = 'foo'; def s = \"H $name\"";
         TokenHierarchy<?> hi = TokenHierarchy.create(text,GroovyTokenId.language());
         TokenSequence<?> ts = hi.tokenSequence();
+
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.LITERAL_def, "def", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.WHITESPACE, " ", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.IDENTIFIER, "name", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.WHITESPACE, " ", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.ASSIGN, "=", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.WHITESPACE, " ", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.STRING_LITERAL, "'foo'", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.SEMI, ";", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.WHITESPACE, " ", -1);
+
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.LITERAL_def, "def", -1);
         assertTrue(ts.moveNext());
@@ -117,15 +136,36 @@ public class GroovyLexerBatchTest extends TestCase {
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.WHITESPACE, " ", -1);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.STRING_LITERAL, "\"H $name", -1); // this should be same in both tests
+        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.STRING_LITERAL, "\"H $", -1); // this should be same in both tests
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.STRING_LITERAL, "name", -1);
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.STRING_LITERAL, "\"", -1);
     }
     
     public void testGstringsBeforeNewLine(){
-        String text = "def s = \"H $name\"\n\n";
+        String text = "def name = 'foo'; def s = \"H $name\"\n\n";
         TokenHierarchy<?> hi = TokenHierarchy.create(text,GroovyTokenId.language());
         TokenSequence<?> ts = hi.tokenSequence();
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.LITERAL_def, "def", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.WHITESPACE, " ", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.IDENTIFIER, "name", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.WHITESPACE, " ", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.ASSIGN, "=", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.WHITESPACE, " ", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.STRING_LITERAL, "'foo'", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.SEMI, ";", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.WHITESPACE, " ", -1);
+
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.LITERAL_def, "def", -1);
         assertTrue(ts.moveNext());
@@ -139,7 +179,11 @@ public class GroovyLexerBatchTest extends TestCase {
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.WHITESPACE, " ", -1);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.STRING_LITERAL, "\"H $name\"", -1);
+        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.STRING_LITERAL, "\"H $", -1); // this should be same in both tests
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.STRING_LITERAL, "name", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.STRING_LITERAL, "\"", -1);
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.NLS, "\n", -1);
         assertTrue(ts.moveNext());

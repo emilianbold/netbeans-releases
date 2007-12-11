@@ -27,6 +27,15 @@
                     </folder>
                 </folder>
 
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="coloring.xml" url="fontsColors.xml">
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+
             </folder>
         </folder>
     </folder>
@@ -45,6 +54,11 @@
                 <file name="language.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.GsfLanguage"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.GroovyLanguage"/>
+                </file>
+                
+                <file name="parser.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.Parser"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.parser.GroovyParser"/>
                 </file>
                 
                 <file name="formatter.instance">

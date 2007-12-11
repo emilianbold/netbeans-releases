@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.codehaus.groovy.antlr.parser.GroovyTokenTypes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.spi.lexer.LanguageHierarchy;
@@ -53,13 +54,17 @@ import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /**
- * @todo check ERROR_INT definition
- * 
  * @author Martin Adamek
  */
 public class GroovyTokenId implements TokenId {
 
-    public static final int ERROR_INT = 221;
+
+    public static final GroovyTokenId QUOTED_STRING_LITERAL = new GroovyTokenId("QUOTED_STRING_LITERAL", null, "string");
+    public static final GroovyTokenId QUOTED_STRING_END = new GroovyTokenId("QUOTED_STRING_END", null, "string");
+    public static final GroovyTokenId QUOTED_STRING_BEGIN = new GroovyTokenId("QUOTED_STRING_BEGIN", null, "string");
+    public static final GroovyTokenId EMBEDDED_GROOVY = new GroovyTokenId("EMBEDDED_GROOVY", null, "default");
+    
+    public static TokenId NONUNARY_OP;
 
     // Copied from GsfTokenId
     public static final GroovyTokenId ERROR = new GroovyTokenId("GSF_ERROR", null, "error");
@@ -135,15 +140,6 @@ public class GroovyTokenId implements TokenId {
         return getClass().getName() + ":" + name + ":" + ordinal;
     }
     
-    
-    
-    public static final GroovyTokenId QUOTED_STRING_LITERAL = new GroovyTokenId("QUOTED_STRING_LITERAL", null, "string");
-    public static final GroovyTokenId QUOTED_STRING_END = new GroovyTokenId("QUOTED_STRING_END", null, "string");
-    public static final GroovyTokenId QUOTED_STRING_BEGIN = new GroovyTokenId("QUOTED_STRING_BEGIN", null, "string");
-    public static final GroovyTokenId EMBEDDED_GROOVY = new GroovyTokenId("EMBEDDED_GROOVY", null, "default");
-    
-    public static TokenId NONUNARY_OP;
-
     // <editor-fold defaultstate="collapsed" desc="Tokens">
     public static final GroovyTokenId ABSTRACT = new GroovyTokenId("ABSTRACT", null, "keyword");
     public static final GroovyTokenId ANNOTATION_ARRAY_INIT = new GroovyTokenId("ANNOTATION_ARRAY_INIT", null, "annotation");
@@ -645,9 +641,9 @@ public class GroovyTokenId implements TokenId {
                     return GroovyTokenId.CASE_GROUP;
             case GroovyTokenTypes.CLASS_DEF:
                     return GroovyTokenId.CLASS_DEF;
-            case GroovyTokenTypes.CLOSED_BLOCK:
+            case GroovyTokenTypes.CLOSABLE_BLOCK:
                     return GroovyTokenId.CLOSED_BLOCK;
-            case GroovyTokenTypes.CLOSURE_OP:
+            case GroovyTokenTypes.CLOSURE_LIST:
                     return GroovyTokenId.CLOSURE_OP;
             case GroovyTokenTypes.COLON:
                     return GroovyTokenId.COLON;
@@ -1023,9 +1019,6 @@ public class GroovyTokenId implements TokenId {
                     return GroovyTokenId.WILDCARD_TYPE;
             case GroovyTokenTypes.WS:
                     return GroovyTokenId.WHITESPACE;
-            // added manually
-            case ERROR_INT:
-                    return GroovyTokenId.ERROR;
             default:
                 return GroovyTokenId.IDENTIFIER;
         }
