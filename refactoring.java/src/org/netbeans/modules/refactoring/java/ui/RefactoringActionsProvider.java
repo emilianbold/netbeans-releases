@@ -134,6 +134,19 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                     }
                 }
             };
+        } else if (nodeHandle(lookup)) {
+            task = new TreePathHandleTask(new HashSet(lookup.lookupAll(Node.class))) {
+
+                @Override
+                protected RefactoringUI createRefactoringUI(Collection<TreePathHandle> handles, CompilationInfo cinfo) {
+                    if (renameFile) {
+                        return new RenameRefactoringUI(handles.iterator().next().getFileObject(), handles.iterator().next(), cinfo);
+                    } else {
+                        return new RenameRefactoringUI(handles.iterator().next(), cinfo);
+                    }
+                }
+                
+            };
         } else {
             task = new NodeToFileObjectTask(new HashSet(lookup.lookupAll(Node.class))) {
                 @Override
@@ -168,7 +181,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
      */
     @Override
     public boolean canRename(Lookup lookup) {
-        Set<? extends Node> nodes = new HashSet(lookup.lookupAll(Node.class));
+        Collection<? extends Node> nodes = new HashSet(lookup.lookupAll(Node.class));
         if (nodes.size() != 1) {
             return false;
         }
@@ -210,7 +223,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
 //                }
 //            };
 //        } else {
-            task = new NodeToFileObjectTask(lookup.lookupAll(Node.class)) {
+            task = new NodeToFileObjectTask(new HashSet(lookup.lookupAll(Node.class))) {
                 @Override
                 protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handle) {
                     return new CopyClassRefactoringUI(selectedElements[0], getTarget(lookup), getPaste(lookup));
@@ -225,7 +238,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
      */
     @Override
     public boolean canCopy(Lookup lookup) {
-        Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
+        Collection<? extends Node> nodes = new HashSet(lookup.lookupAll(Node.class));
         if (nodes.size() != 1) {
             return false;
         }
@@ -261,7 +274,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
 
     @Override
     public boolean canFindUsages(Lookup lookup) {
-        Set<? extends Node> nodes = new HashSet(lookup.lookupAll(Node.class));
+        Collection<? extends Node> nodes = new HashSet(lookup.lookupAll(Node.class));
         if (nodes.size() != 1) {
             return false;
         }
@@ -287,6 +300,15 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                     return new WhereUsedQueryUI(selectedElement, info);
                 }
             };
+        } else if (nodeHandle(lookup)) {
+            task = new TreePathHandleTask(new HashSet(lookup.lookupAll(Node.class))) {
+
+                @Override
+                protected RefactoringUI createRefactoringUI(Collection<TreePathHandle> handles, CompilationInfo cinfo) {
+                    return new WhereUsedQueryUI(handles.iterator().next(), cinfo);
+                }
+                
+            };
         } else {
             task = new NodeToElementTask(new HashSet(lookup.lookupAll(Node.class))) {
                 protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement, CompilationInfo info) {
@@ -305,8 +327,11 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
 
     @Override
     public boolean canDelete(Lookup lookup) {
-        Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
+        Collection<? extends Node> nodes = new HashSet(lookup.lookupAll(Node.class));
         for (Node n:nodes) {
+            if (n.getLookup().lookup(TreePathHandle.class) != null) {
+                return true;
+            }
             DataObject dob = n.getCookie(DataObject.class);
             if (dob==null)
                 return false;
@@ -340,12 +365,30 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                     return new SafeDeleteUI(new TreePathHandle[]{selectedElement}, info);
                 }
             };
+        } else if (nodeHandle(lookup)) {
+            task = new TreePathHandleTask(new HashSet(lookup.lookupAll(Node.class))) {
+
+                @Override
+                protected RefactoringUI createRefactoringUI(Collection<TreePathHandle> handles, CompilationInfo cinfo) {
+                    if (renameFile) {
+                        FileObject[] files = new FileObject[handles.size()];
+                        int i=0;
+                        for (TreePathHandle handle:handles) {
+                            files[i++] = handle.getFileObject();
+                        }
+                        return new SafeDeleteUI(files, handles, b);
+                    } else {
+                        return new SafeDeleteUI(handles.toArray(new TreePathHandle[handles.size()]), cinfo);
+                    }
+                }
+                
+            };
         } else {
-            task = new NodeToFileObjectTask(lookup.lookupAll(Node.class)) {
+            task = new NodeToFileObjectTask(new HashSet(lookup.lookupAll(Node.class))) {
                 @Override
                 protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
-                    return new SafeDeleteUI(selectedElements, handles, b);
-                }
+                        return new SafeDeleteUI(selectedElements, handles, b);
+                    }
                 
             };
         }
@@ -395,7 +438,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
      */
     @Override
     public boolean canMove(Lookup lookup) {
-        Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
+        Collection<? extends Node> nodes = new HashSet(lookup.lookupAll(Node.class));
         ExplorerContext drop = lookup.lookup(ExplorerContext.class);
         FileObject fo = getTarget(lookup);
         if (fo != null) {
@@ -494,7 +537,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 }
             };
         } else {
-            task = new NodeToFileObjectTask(lookup.lookupAll(Node.class)) {
+            task = new NodeToFileObjectTask(new HashSet(lookup.lookupAll(Node.class))) {
                 @Override
                 protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
                     PasteType paste = getPaste(lookup);
@@ -523,6 +566,61 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         RetoucheUtils.invokeAfterScanFinished(task, getActionName(RefactoringActionsFactory.renameAction()));
     }    
 
+    public static abstract class TreePathHandleTask implements Runnable, CancellableTask<CompilationController> {
+        public CompilationInfo cinfo;
+        private Collection<TreePathHandle> handles = new ArrayList<TreePathHandle>();
+        private TreePathHandle current;
+        boolean renameFile;
+     
+        public TreePathHandleTask(Collection<? extends Node> nodes) {
+            for (Node n:nodes) {
+                TreePathHandle temp = n.getLookup().lookup(TreePathHandle.class);
+                if (temp!=null) {
+                    handles.add(temp);
+                }
+            }
+        }
+        
+        public void cancel() {
+        }
+        
+        public void run(CompilationController info) throws Exception {
+            cinfo=info;
+            Element el = current.resolveElement(cinfo);
+            if (el!=null && el instanceof TypeElement && !((TypeElement)el).getNestingKind().isNested()) {
+                if (info.getFileObject().getName().equals(el.getSimpleName().toString())) {
+                    renameFile = true;
+                }
+            }
+        }
+        
+        public void run() {
+            for (TreePathHandle handle:handles) {
+                FileObject f = handle.getFileObject();
+                current = handle;
+                JavaSource source = JavaSource.forFileObject(f);
+                assert source != null;
+                try {
+                    source.runUserActionTask(this, false);
+                } catch (IllegalArgumentException ex) {
+                    ex.printStackTrace();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+
+            TopComponent activetc = TopComponent.getRegistry().getActivated();
+
+            RefactoringUI ui = createRefactoringUI(handles, cinfo);
+            if (ui!=null) {
+                UI.openRefactoringUI(ui, activetc);
+            } else {
+                JOptionPane.showMessageDialog(null,NbBundle.getMessage(RefactoringActionsProvider.class, "ERR_CannotRenameKeyword"));
+            }
+        }
+
+        protected abstract RefactoringUI createRefactoringUI(Collection<TreePathHandle> handles, CompilationInfo info);
+    }    
     
     public static abstract class TextComponentTask implements Runnable, CancellableTask<CompilationController> {
         private JTextComponent textC;
@@ -603,42 +701,19 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         
         public final void run() {
             DataObject o = node.getCookie(DataObject.class);
-            if (o != null) {
-                JavaSource source = JavaSource.forFileObject(o.getPrimaryFile());
-                assert source != null;
-                try {
-                    source.runUserActionTask(this, false);
-                } catch (IllegalArgumentException ex) {
-                    ex.printStackTrace();
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
-            } else {
-                final TreePathHandle tph = node.getLookup().lookup(TreePathHandle.class);
-                if (tph != null) {
-                    JavaSource source = JavaSource.forFileObject(tph.getFileObject());
-                    assert source != null;
-                    try {
-                        source.runUserActionTask(new CancellableTask<CompilationController>() {
-
-                            public void cancel() {
-                            }
-
-                            public void run(CompilationController parameter) throws Exception {
-                                ui = createRefactoringUI(tph, parameter);
-                            }
-                            }, false);
-                    } catch (IllegalArgumentException ex) {
-                        ex.printStackTrace();
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    }
-                }
+            JavaSource source = JavaSource.forFileObject(o.getPrimaryFile());
+            assert source != null;
+            try {
+                source.runUserActionTask(this, false);
+            } catch (IllegalArgumentException ex) {
+                ex.printStackTrace();
+            } catch (IOException ex) {
+                ex.printStackTrace();
             }
-            if (ui != null) {
+            if (ui!=null) {
                 UI.openRefactoringUI(ui);
             } else {
-                JOptionPane.showMessageDialog(null, NbBundle.getMessage(RefactoringActionsProvider.class, "ERR_NoTypeDecls"));
+                JOptionPane.showMessageDialog(null,NbBundle.getMessage(RefactoringActionsProvider.class, "ERR_NoTypeDecls"));
             }
         }
         protected abstract RefactoringUI createRefactoringUI(TreePathHandle selectedElement, CompilationInfo info);
@@ -706,30 +781,6 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                     }
                     
                     pkg[i++] = node.getLookup().lookup(NonRecursiveFolder.class);
-                } else {
-                    TreePathHandle tph = node.getLookup().lookup(TreePathHandle.class);
-                    if (tph!=null) {
-                        fobs[i] = tph.getFileObject();
-                        handles.add(tph);
-                        JavaSource source = JavaSource.forFileObject(fobs[i++]);
-                        assert source != null;
-                        try {
-                            source.runUserActionTask(new CancellableTask<CompilationController>() {
-                                public void cancel() {
-                                }
-
-                                public void run(CompilationController parameter) throws Exception {
-                                    cinfo=new WeakReference<CompilationInfo>(parameter);
-                                }
-                                
-                            }, false);
-                        } catch (IllegalArgumentException ex) {
-                            ex.printStackTrace();
-                        } catch (IOException ex) {
-                            ex.printStackTrace();
-                        }
-                        
-                    }
                 }
             }
             RefactoringUI ui = createRefactoringUI(fobs, handles);
@@ -749,6 +800,15 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             if (activetc instanceof CloneableEditorSupport.Pane) {
                 return true;
             }
+        }
+        return false;
+    }
+
+    static boolean nodeHandle(Lookup lookup) {
+        Node n = lookup.lookup(Node.class);
+        if (n!=null) {
+            if (n.getLookup().lookup(TreePathHandle.class)!=null)
+                return true;
         }
         return false;
     }
