@@ -104,7 +104,7 @@ public class HgUtils {
     
     // IGNORE SUPPORT HG: following file patterns are added to {Hg repos}/.hgignore and Hg will ignore any files
     // that match these patterns, reporting "I"status for them // NOI18N
-    private static final String [] HG_IGNORE_FILES = { "\\.orig$", "\\.rej$"}; // NOI18N
+    private static final String [] HG_IGNORE_FILES = { "\\.orig$", "\\.orig\\..*$", "\\.chg\\..*$", "\\.rej$"}; // NOI18N
     
     private static final String FILENAME_HGIGNORE = ".hgignore"; // NOI18N
 
