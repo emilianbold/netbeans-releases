@@ -228,4 +228,12 @@ public class ErrorHintsProviderTest extends NbTestCase {
         performTest("TestShortErrorsNewClass");
     }
     
+    public void XtestTestShortErrorsNewClass2() throws Exception {
+        performTest("TestShortErrorsNewClass2");
+    }
+    
+    public void testTestShortErrorsPrivateAccess() throws Exception {
+        performTest("TestShortErrorsPrivateAccess");
+    }
+    
 }

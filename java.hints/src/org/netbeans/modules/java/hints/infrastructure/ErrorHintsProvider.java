@@ -67,6 +67,7 @@ import org.openide.loaders.DataObject;
 import org.openide.text.Line;
 import com.sun.source.util.TreePath;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -258,8 +259,11 @@ public final class ErrorHintsProvider implements CancellableTask<CompilationInfo
     
     private static final Set<String> UNDERLINE_IDENTIFIER = new HashSet<String>(Arrays.asList(
             "compiler.err.local.var.accessed.from.icls.needs.final",
-            "compiler.err.var.might.not.have.been.initialized"
+            "compiler.err.var.might.not.have.been.initialized",
+            "compiler.err.report.access"
     ));
+    
+    private static final Set<JavaTokenId> WHITESPACE = EnumSet.of(JavaTokenId.BLOCK_COMMENT, JavaTokenId.JAVADOC_COMMENT, JavaTokenId.LINE_COMMENT, JavaTokenId.WHITESPACE);
     
     private int[] handlePossibleMethodInvocation(CompilationInfo info, Diagnostic d, final Document doc, int startOffset, int endOffset) throws IOException {
         int pos = (int) getPrefferedPosition(info, d);
@@ -331,6 +335,18 @@ public final class ErrorHintsProvider implements CancellableTask<CompilationInfo
             
             if (ts.moveNext() && diff >= 0 && diff < ts.token().length()) {
                 Token<JavaTokenId> t = ts.token();
+                
+                if (t.id() == JavaTokenId.DOT) {
+                    while (ts.moveNext() && WHITESPACE.contains(ts.token().id()))
+                        ;
+                    t = ts.token();
+                }
+                
+                if (t.id() == JavaTokenId.NEW) {
+                    while (ts.moveNext() && WHITESPACE.contains(ts.token().id()))
+                        ;
+                    t = ts.token();
+                }
                 
                 if (t.id() == JavaTokenId.IDENTIFIER) {
                     int[] span = translatePositions(info, new int[] {ts.offset(), ts.offset() + t.length()});
