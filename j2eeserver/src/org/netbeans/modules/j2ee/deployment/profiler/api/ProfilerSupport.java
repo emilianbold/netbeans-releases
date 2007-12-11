@@ -54,30 +54,30 @@ public final class ProfilerSupport {
     /**
      * The Profiler agent isn't running.
      */
-    public static int STATE_INACTIVE  = 0;
+    public static final int STATE_INACTIVE  = 0;
 
     /**
      * The Profiler agent is starting to STATE_BLOCKING or STATE_RUNNING state,
      * target JVM isn't running.
      */
-    public static int STATE_STARTING  = 1;
+    public static final int STATE_STARTING  = 1;
     
     /**
      * The Profiler agent is running and ready for the Profiler to connect, target
      * JVM is blocked.
      */
-    public static int STATE_BLOCKING  = 2;
+    public static final int STATE_BLOCKING  = 2;
     
     /**
      * The Profiler agent is running and ready for the Profiler to connect, target
      * JVM is running.
      */
-    public static int STATE_RUNNING   = 3;
+    public static final int STATE_RUNNING   = 3;
     
     /**
      * The Profiler agent is running and connected to Profiler, target JVM is running.
      */
-    public static int STATE_PROFILING = 4;
+    public static final int STATE_PROFILING = 4;
     
     /**
      * Returns the current state of a Profiler registered into Lookup.
