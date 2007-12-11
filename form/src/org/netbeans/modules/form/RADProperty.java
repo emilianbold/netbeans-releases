@@ -175,15 +175,6 @@ public class RADProperty extends FormProperty {
     }
 
     @Override
-    public void setValue(Object value) throws IllegalAccessException,
-                                              IllegalArgumentException,
-                                              InvocationTargetException {
-        super.setValue(value);
-
-        component.debugChangedValues(); // do we need this??
-    }
-
-    @Override
     protected Object getRealValue(Object value) {
         Object realValue = super.getRealValue(value);
 

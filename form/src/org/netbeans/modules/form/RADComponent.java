@@ -1531,15 +1531,9 @@ public class RADComponent {
         }
     }
 
-    // -----------------------------------------------------------------------------
-    // Debug methods
-
     @Override
     public String toString() {
         return super.toString() + ", name: "+getName()+", class: "+getBeanClass()+", beaninfo: "+getBeanInfo() + ", instance: "+getBeanInstance(); // NOI18N
-    }
-
-    public void debugChangedValues() {
     }
 
     // ----------
