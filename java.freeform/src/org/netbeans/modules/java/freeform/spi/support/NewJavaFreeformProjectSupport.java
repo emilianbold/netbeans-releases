@@ -44,6 +44,7 @@ package org.netbeans.modules.java.freeform.spi.support;
 import java.io.IOException;
 import org.netbeans.modules.java.freeform.ui.ClasspathWizardPanel;
 import org.netbeans.modules.java.freeform.ui.NewJ2SEFreeformProjectWizardIterator;
+import org.netbeans.modules.java.freeform.ui.OutputWizardPanel;
 import org.netbeans.modules.java.freeform.ui.ProjectModel;
 import org.netbeans.modules.java.freeform.ui.SourceFoldersPanel;
 import org.netbeans.modules.java.freeform.ui.SourceFoldersWizardPanel;
@@ -87,7 +88,7 @@ public class NewJavaFreeformProjectSupport {
      * Panel gathers info about Java source folders and their classpath.
      */
     public static WizardDescriptor.Panel[] createJavaPanels() {
-        return new WizardDescriptor.Panel[]{new SourceFoldersWizardPanel(), new ClasspathWizardPanel()};
+        return new WizardDescriptor.Panel[]{new SourceFoldersWizardPanel(), new ClasspathWizardPanel(), new OutputWizardPanel() };
     }
 
     /**

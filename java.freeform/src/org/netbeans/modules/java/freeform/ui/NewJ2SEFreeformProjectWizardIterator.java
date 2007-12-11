@@ -90,6 +90,7 @@ public class NewJ2SEFreeformProjectWizardIterator implements WizardDescriptor.Pr
                 NewFreeformProjectSupport.createTargetMappingWizardPanel(new ArrayList<TargetDescriptor>()), // NOI18N
                 new SourceFoldersWizardPanel(),
                 new ClasspathWizardPanel(),
+                new OutputWizardPanel(),
             };
     }
     
