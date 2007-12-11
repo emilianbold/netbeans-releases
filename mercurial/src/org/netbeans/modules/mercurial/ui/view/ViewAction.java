@@ -66,6 +66,7 @@ import org.openide.util.Utilities;
 public class ViewAction extends AbstractAction {
     
     private final VCSContext context;
+    private static final String HG_SCRIPTS_DIR = "scripts";
 
     public ViewAction(String name, VCSContext context) {
         this.context = context;
@@ -100,6 +101,8 @@ public class ViewAction extends AbstractAction {
                 File f = new File(HgCommand.HG_HGK_PATH_SOLARIS10, hgkCommand);
                 if(f.exists() && f.isFile()) 
                     bHgkFound = true;
+            }else if(Utilities.isWindows()){
+                bHgkFound = HgUtils.isInUserPath(HG_SCRIPTS_DIR + File.separator + hgkCommand);                    
             }
             boolean bHgkPropExists = HgConfigFiles.getInstance().containsProperty(
                             HgConfigFiles.HG_EXTENSIONS, HgConfigFiles.HG_EXTENSIONS_HGK);
