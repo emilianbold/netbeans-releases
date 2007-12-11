@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,10 +42,6 @@
 package org.netbeans.modules.gsf;
 
 import java.io.IOException;
-import java.io.ObjectInput;
-import org.netbeans.api.gsfpath.classpath.ClassPath;
-import org.netbeans.modules.gsf.Language;
-//import org.netbeans.spi.palette.PaletteController;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
@@ -65,10 +61,6 @@ import org.openide.nodes.Node.Cookie;
 import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
-import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.CloneableOpenSupport;
 
 public class GsfDataObject extends MultiDataObject {
@@ -119,14 +111,14 @@ public class GsfDataObject extends MultiDataObject {
         DataObject retValue = super.handleCreateFromTemplate(df, name);
         FileObject fo = retValue.getPrimaryFile ();
         assert fo != null;
-        ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
-        String pkgName;
-        if (cp != null) {
-            pkgName = cp.getResourceName(fo.getParent(),'.',false);
-        }
-        else {
-            pkgName = "";   //NOI18N
-        }
+//        ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+//        String pkgName;
+//        if (cp != null) {
+//            pkgName = cp.getResourceName(fo.getParent(),'.',false);
+//        }
+//        else {
+//            pkgName = "";   //NOI18N
+//        }
 //        renameJDO (retValue, pkgName, name, this.getPrimaryFile().getName());
         return retValue;
     }            
@@ -197,7 +189,7 @@ public class GsfDataObject extends MultiDataObject {
         }
         
         
-        protected boolean notifyModified() {
+        protected @Override boolean notifyModified() {
             if (!super.notifyModified())
                 return false;
             ((Environment)this.env).addSaveCookie();
