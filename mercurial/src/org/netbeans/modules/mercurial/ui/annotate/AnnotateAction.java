@@ -168,7 +168,7 @@ public class AnnotateAction extends AbstractAction {
         AnnotateLine [] lines = toAnnotateLines(list);
         ab.annotationLines(file, Arrays.asList(lines));
         try {
-             list = HgCommand.doLog(repository, file);
+             list = HgCommand.doLogShort(repository, file);
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);

@@ -120,7 +120,8 @@ public class HgCommand {
     
     private static final String HG_LOG_CMD = "log"; // NOI18N
     private static final String HG_LOG_LIMIT_CMD = "-l 1"; // NOI18N
-    private static final String HG_LOG_TEMPLATE_CMD = "--template={rev}\\n{desc}\\n{date|hgdate}\\n{node|short}\\n"; // NOI18N
+    private static final String HG_LOG_TEMPLATE_SHORT_CMD = "--template={rev}\\n{desc|firstline}\\n{date|hgdate}\\n{node|short}\\n"; // NOI18N
+    private static final String HG_LOG_TEMPLATE_LONG_CMD = "--template={rev}\\n{desc}\\n{date|hgdate}\\n{node|short}\\n"; // NOI18N
     private static final String HG_CSET_TEMPLATE_CMD = "--template={rev}:{node|short}\\n"; // NOI18N
     private static final String HG_REV_TEMPLATE_CMD = "--template={rev}\\n"; // NOI18N
     private static final String HG_CSET_TARGET_TEMPLATE_CMD = "--template={rev} ({node|short})\\n"; // NOI18N
@@ -666,14 +667,37 @@ public class HgCommand {
     }
     
     /**
-     * Retrives the log information for the specified file.
+     * Retrives the log information with just first line of commit message for the specified file.
      *
      * @param File repository of the mercurial repository's root directory
      * @param File of file which revision history is to be retrieved.
      * @return List<String> list of the log entries for the specified file.
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static List<String> doLog(File repository, File file) throws HgException {
+     public static List<String> doLogShort(File repository, File file) throws HgException {
+        return doLog(repository, file, HG_LOG_TEMPLATE_SHORT_CMD);
+     }
+     
+     /**
+     * Retrives the log information with the full commit message for the specified file.
+     *
+     * @param File repository of the mercurial repository's root directory
+     * @param File of file which revision history is to be retrieved.
+     * @return List<String> list of the log entries for the specified file.
+     * @throws org.netbeans.modules.mercurial.HgException
+     */
+     public static List<String> doLogLong(File repository, File file) throws HgException {
+        return doLog(repository, file, HG_LOG_TEMPLATE_LONG_CMD);
+     }
+     /**
+     * Retrives the log information for the specified file, as defined by the LOG_TEMPLATE.
+     *
+     * @param File repository of the mercurial repository's root directory
+     * @param File of file which revision history is to be retrieved.
+     * @return List<String> list of the log entries for the specified file.
+     * @throws org.netbeans.modules.mercurial.HgException
+     */
+    public static List<String> doLog(File repository, File file, String LOG_TEMPLATE) throws HgException {
         if (repository == null ) return null;
         
         List<String> command = new ArrayList<String>();
@@ -685,7 +709,7 @@ public class HgCommand {
         }
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
-        command.add(HG_LOG_TEMPLATE_CMD);
+        command.add(LOG_TEMPLATE);
         command.add(file.getAbsolutePath());
 
         List<String> list = exec(command);
