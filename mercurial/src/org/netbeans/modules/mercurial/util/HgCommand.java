@@ -62,6 +62,7 @@ import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.mercurial.HgModuleConfig;
+import org.netbeans.modules.mercurial.config.HgConfigFiles;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Utilities;
@@ -81,6 +82,8 @@ public class HgCommand {
     private static final String HG_OPT_REPOSITORY = "--repository"; // NOI18N
     private static final String HG_OPT_BUNDLE = "--bundle"; // NOI18N
     private static final String HG_OPT_CWD_CMD = "--cwd"; // NOI18N
+    private static final String HG_OPT_USERNAME = "--user"; // NOI18N
+    
     private static final String HG_OPT_FOLLOW = "--follow"; // NOI18N
     private static final String HG_STATUS_FLAG_ALL_CMD = "-marduicC"; // NOI18N
     private static final String HG_FLAG_REV_CMD = "--rev"; // NOI18N
@@ -938,6 +941,19 @@ public class HgCommand {
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
 
+        String projectUserName = new HgConfigFiles(repository).getUserName(false);
+        String globalUsername = HgConfigFiles.getInstance().getUserName();
+        String username = null;
+        if(projectUserName != null && projectUserName.length() > 0)
+            username = projectUserName;
+        else if (globalUsername != null && globalUsername.length() > 0)
+           username = globalUsername;
+    
+        if(username != null ){
+            command.add(HG_OPT_USERNAME);
+            command.add(username);
+        }
+        
         File tempfile = null;
         
         try {
