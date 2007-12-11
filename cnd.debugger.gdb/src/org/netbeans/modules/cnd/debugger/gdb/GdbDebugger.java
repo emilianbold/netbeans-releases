@@ -87,6 +87,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
+import org.netbeans.modules.cnd.settings.CppSettings;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.openide.DialogDisplayer;
@@ -237,6 +238,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             gdb.gdb_version();
             gdb.environment_directory(runDirectory);
             gdb.gdb_show("language"); // NOI18N
+            gdb.set("print repeat", Integer.toString(CppSettings.getDefault().getArrayRepeatThreshold()));
             if (pae.getID() == DEBUG_ATTACH) {
                 programPID = (Long) lookupProvider.lookupFirst(null, Long.class);
                 CommandBuffer cb = new CommandBuffer(gdb.target_attach(Long.toString(programPID)));

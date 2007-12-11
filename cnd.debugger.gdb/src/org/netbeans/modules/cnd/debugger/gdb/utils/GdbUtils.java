@@ -717,7 +717,7 @@ public class GdbUtils {
             } else {
                 frag = s.substring(idx, pos);
             }
-            if (frag.contains("<repeats ") && frag.contains(" times>")) { // NOI18N
+            if (frag.startsWith("<repeats ") && frag.contains(" times>")) { // NOI18N
                 return true;
             }
         }

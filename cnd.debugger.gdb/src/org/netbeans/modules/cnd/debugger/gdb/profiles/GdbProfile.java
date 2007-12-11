@@ -45,7 +45,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.actions.BuildToolsAction;
 
@@ -67,6 +66,7 @@ public class GdbProfile implements ConfigurationAuxObject {
     public static final String GDB_PROFILE_ID = "gdbdebugger"; // NOI18N
     
     public static final String PROP_GDB_COMMAND = "gdb_command"; // NOI18N
+    public static final String PROP_ARRAY_REPEAT_THRESHOLD = "array_repeat_threshold"; // NOI18N
 
     private PropertyChangeSupport pcs = null;
 
@@ -183,6 +183,14 @@ public class GdbProfile implements ConfigurationAuxObject {
         }
     }
     
+    public int getArrayRepeatThreshold() {
+        return CppSettings.getDefault().getArrayRepeatThreshold(); 
+    }
+    
+    public void setArrayRepeatThreshold(int arrayRepeatThreshold) {
+        CppSettings.getDefault().setArrayRepeatThreshold(arrayRepeatThreshold);
+    }
+    
     /**
      *  Adds property change listener.
      *  @param l new listener.
@@ -246,6 +254,7 @@ public class GdbProfile implements ConfigurationAuxObject {
     /**
      * Clone itself to an identical (deep) copy.
      */
+    @Override
     public Object clone() {
 	GdbProfile p = new GdbProfile();
 
@@ -261,6 +270,7 @@ public class GdbProfile implements ConfigurationAuxObject {
 	set.setDisplayName(NbBundle.getMessage(GdbProfile.class, "LBL_GENERAL")); // NOI18N
 	set.setShortDescription(NbBundle.getMessage(GdbProfile.class, "HINT_GENERAL")); // NOI18N
 	set.put(new GdbCommandNodeProp());
+        set.put(new ArrayRepeatThresholdNodeProp());
 	sheet.put(set);
 	return sheet;
     }
@@ -279,6 +289,25 @@ public class GdbProfile implements ConfigurationAuxObject {
         
         public void setValue(Object v) {
             setGdbCommand((String)v);
+        }
+    }
+    
+    private class ArrayRepeatThresholdNodeProp extends PropertySupport {
+        public ArrayRepeatThresholdNodeProp() {
+            super(PROP_ARRAY_REPEAT_THRESHOLD, Integer.class,
+                    NbBundle.getMessage(GdbProfile.class, "LBL_ArrayRepeatThreshold"), // NOI18N
+                    NbBundle.getMessage(GdbProfile.class, "HINT_ArrayRepeatThreshold"), // NOI18N
+                    true, true);
+        }
+        
+        public Object getValue() {
+            return getArrayRepeatThreshold();
+        }
+        
+        public void setValue(Object v) {
+            if (v instanceof Integer) {
+                setArrayRepeatThreshold(((Integer) v).intValue());
+            }
         }
     }
 }

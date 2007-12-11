@@ -53,6 +53,7 @@ import org.openide.util.Utilities;
  */
 public class CppSettingsBeanInfo extends SimpleBeanInfo {
 
+    @Override
     public BeanDescriptor getBeanDescriptor() {
         BeanDescriptor bdesc = new BeanDescriptor(CppSettings.class);
         bdesc.setDisplayName(CppSettings.getString("OPTION_CPP_SETTINGS_NAME")); // NOI18N
@@ -65,6 +66,7 @@ public class CppSettingsBeanInfo extends SimpleBeanInfo {
      *
      *  @return array of properties
      */
+    @Override
     public PropertyDescriptor[] getPropertyDescriptors() {
 
 	int i = 0;
@@ -88,6 +90,7 @@ public class CppSettingsBeanInfo extends SimpleBeanInfo {
 		new PropertyDescriptor(CppSettings.PROP_C_REQUIRED, CppSettings.class),
 		new PropertyDescriptor(CppSettings.PROP_CPP_REQUIRED, CppSettings.class),
 		new PropertyDescriptor(CppSettings.PROP_FORTRAN_REQUIRED, CppSettings.class),
+		new PropertyDescriptor(CppSettings.PROP_ARRAY_REPEAT_THRESHOLD, CppSettings.class),
 	    };
 
 	    desc[i].setDisplayName(CppSettings.getString( "PROP_REPLACEABLE_STRINGS"));	    //NOI18N
@@ -121,6 +124,7 @@ public class CppSettingsBeanInfo extends SimpleBeanInfo {
     /*
      *  There currently are no icons for CCF. This is just a place holder.
      */
+    @Override
     public Image getIcon(int type) {
 	// XXX this icon is wrong
 	return Utilities.loadImage("org/netbeans/modules/cnd/loaders/CCSrcIcon.gif"); //NOI18N

@@ -583,7 +583,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
                         ((rt.startsWith("char") && rt.substring(4).trim().startsWith("[")) || // NOI18N
                          (rt.startsWith("unsigned char") && rt.substring(13).trim().startsWith("[")))) { // NOI18N
                     // gdb puts them in string
-                    count += parseCharArray(var, var.name, t, v.substring(1, v.length() - 1));
+                    count += parseCharArray(var, var.name, t, v);
                 } else if (var.derefValue != null) {
                     if (var.type.endsWith(" **") && // NOI18N
                             isCharString(var.type.substring(0, var.type.length() - 1))) {
@@ -787,36 +787,91 @@ public class AbstractVariable implements LocalVariable, Customizer {
     }
     
     private int parseCharArray(AbstractVariable var, String basename, String type, String value) {
-        int start = type.indexOf('[');
-        int end = type.indexOf(']');
-        int vidx = 1;
+        String frag;
+        int count = 0;
+        int idx = 0;
+        int pos;
+        
+        while (idx < value.length()) {
+            if (value.substring(idx).startsWith("\\\"")) { // NOI18N
+                pos = value.indexOf("\\\",", idx);
+                if (pos > 0) {
+                    frag = value.substring(idx + 2, pos);
+                    count += parseCharArrayFragment(var, basename, type, frag);
+                    idx += frag.length() + 4;
+                }
+            } else if (value.charAt(idx) == ' ' || value.charAt(idx) == ',') {
+                idx++;
+            } else {
+                pos = GdbUtils.findNextComma(value, idx);
+                if (pos > 0) {
+                    frag = value.substring(idx, pos);
+                } else {
+                    frag = value.substring(idx);
+                }
+                count += parseRepeatArrayFragment(var, basename, type, frag);
+                idx += frag.length();
+            }
+        }
+        return count;
+    }
+    
+    private int parseRepeatArrayFragment(AbstractVariable var, String basename, String type, String value) {
+        String t = type.substring(0, type.indexOf('[')).trim();
+        int count;
+        int idx = var.fields.length;
+        int pos = value.indexOf(' ');
+        String val = value.substring(0, pos);
+        int pos1 = value.indexOf("<repeats ");
+        int pos2 = value.indexOf(" times>");
         
         try {
-            int count = Integer.parseInt(type.substring(start + 1, end));
-            for (int i = 0; i < count; i++) {
-                String val;
-                if (vidx < (value.length() - 2) && value.substring(vidx, vidx + 2).equals("\\\\")) { // NOI18N
-                    char ch = value.charAt(vidx + 2);
-                    if (Character.isDigit(ch)) {
-                        val = '\\' + value.substring(vidx + 2, vidx + 5);
-                        vidx += 5;
-                    } else {
-                        val = '\\' + value.substring(vidx + 2, vidx + 3);
-                        vidx += 3;
-                    }
-                } else if (value.charAt(vidx) == '\\') { // we're done...
-                    val = "\\000"; // NOI18N
-                } else {
-                    val = value.substring(vidx, vidx + 1);
-                    vidx++;
-                }
-                var.addField(new AbstractField(var, basename + "[" + i + "]", // NOI18N
-                    type.substring(0, start).trim(), '\'' + val + '\''));
-            }
-            return count;
-        } catch (NumberFormatException nfe) {
+            count = Integer.parseInt(value.substring(pos1 + 9, pos2));
+        } catch (Exception ex) {
+            return 0;
         }
-        return 0;
+        
+        while (--count >=0) {
+            var.addField(new AbstractField(var, basename + "[" + idx++ + "]", // NOI18N
+                t, '\'' + val + '\''));
+        }
+        return 0;   
+    }
+    
+    private int parseCharArrayFragment(AbstractVariable var, String basename, String type, String value) {
+        String t = type.substring(0, type.indexOf('[')).trim();
+        int vidx = 0;
+        int count = value.length();
+        int idx = var.fields.length;
+        
+        while (vidx < count) {
+            String val;
+            if (vidx < (count - 2) && value.substring(vidx, vidx + 2).equals("\\\\")) { // NOI18N
+                char ch = value.charAt(vidx + 2);
+                if (Character.isDigit(ch)) {
+                    val = '\\' + value.substring(vidx + 2, vidx + 5);
+                    vidx += 5;
+                } else {
+                    val = '\\' + value.substring(vidx + 2, vidx + 3);
+                    vidx += 3;
+                }
+            } else if (charAt(value, vidx) == '\\') { // we're done...
+                val = "\\000"; // NOI18N
+            } else {
+                val = value.substring(vidx, vidx + 1);
+                vidx++;
+            }
+            var.addField(new AbstractField(var, basename + "[" + idx++ + "]", // NOI18N
+                t, '\'' + val + '\''));
+        }
+        return count;
+    }
+    private char charAt(String info, int idx) {
+        try {
+            return info.charAt(idx);
+        } catch (StringIndexOutOfBoundsException e) {
+            return 0;
+        }
     }
     
     private int parseArray(AbstractVariable var, String basename, String type, String value) {

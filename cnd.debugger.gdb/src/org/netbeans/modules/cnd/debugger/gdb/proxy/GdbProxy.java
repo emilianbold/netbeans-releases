@@ -457,6 +457,15 @@ public class GdbProxy implements GdbMiDefinitions {
     public int stack_list_frames() {
         return engine.sendCommand(MI_CMD_STACK_LIST_FRAMES);
     }
+    
+    public int set(String command, String value) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("set "); // NOI18N
+        sb.append(command);
+        sb.append(' ');
+        sb.append(value);
+        return engine.sendCommand(sb.toString());
+    }
 
     /**
      * Send "set new-console" to the debugger

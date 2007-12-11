@@ -42,16 +42,12 @@
 package org.netbeans.modules.cnd.debugger.gdb.profiles.ui;
 
 import java.util.ResourceBundle;
-
 import org.openide.util.NbBundle;
 import org.openide.nodes.Sheet;
-
 import org.netbeans.api.project.Project;
-
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
-
 import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
 
 public class ProfileNodeProvider {
@@ -59,24 +55,17 @@ public class ProfileNodeProvider {
     private ResourceBundle bundle;
 
     public CustomizerNode createDebugNode() {
-
-	CustomizerNode debugRootNode = new CndProfileGeneralCustomizerNode(
-		    "Debug", // NOI18N
-		    getString("Debug"), // NOI18N
-		    null);
-
-	return debugRootNode;
+	return new CndProfileGeneralCustomizerNode("Debug", getString("Debug"),null); // NOI18N
     }
 
     class CndProfileGeneralCustomizerNode extends CustomizerNode {
 
-	public CndProfileGeneralCustomizerNode(String name, String displayName,
-		    CustomizerNode[] children) {
+	public CndProfileGeneralCustomizerNode(String name, String displayName, CustomizerNode[] children) {
 	    super(name, displayName, children);
 	}
 
-	public Sheet getSheet(Project project,
-		    ConfigurationDescriptor configurationDescriptor,
+        @Override
+	public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor,
 		    Configuration configuration) {
 	    GdbProfile profile = (GdbProfile) configuration.getAuxObject(GdbProfile.GDB_PROFILE_ID);
 	    return profile == null ? null : profile.getSheet();

@@ -51,13 +51,13 @@ import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoderStream;
 import org.netbeans.modules.cnd.api.xml.VersionException;
-import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
 
 class GdbProfileXMLCodec extends XMLDecoder implements XMLEncoder {
 
-    private final static int thisversion = 1;
+    private final static int thisversion = 2;
 
     private final static String GDB_COMMAND_ELEMENT = "gdb_command"; // NOI18N
+    private final static String ARRAY_REPEAT_THRESHOLD_ELEMENT = "array_repeat_threshold"; // NOI18N
 
     private GdbProfile profile;		// we decode into
 
@@ -93,7 +93,12 @@ class GdbProfileXMLCodec extends XMLDecoder implements XMLEncoder {
     public void endElement(String element, String currentText) {
     	if (element.equals(GDB_COMMAND_ELEMENT)) {
 	    profile.setGdbCommand(currentText);
-	}
+	} else if (element.equals(ARRAY_REPEAT_THRESHOLD_ELEMENT)) {
+            try {
+                profile.setArrayRepeatThreshold(Integer.parseInt(currentText));
+            } catch (NumberFormatException ex) {
+            }
+        }
     }
 
     // intrface XMLEncoder
@@ -104,6 +109,7 @@ class GdbProfileXMLCodec extends XMLDecoder implements XMLEncoder {
     private static void encode(XMLEncoderStream xes, GdbProfile profile) {
 	xes.elementOpen(GdbProfile.GDB_PROFILE_ID, getVersion());
 	xes.element(GDB_COMMAND_ELEMENT, profile.getGdbCommand());
+        xes.element(ARRAY_REPEAT_THRESHOLD_ELEMENT, Integer.toString(profile.getArrayRepeatThreshold()));
 	xes.elementClose(GdbProfile.GDB_PROFILE_ID);
     }
 }

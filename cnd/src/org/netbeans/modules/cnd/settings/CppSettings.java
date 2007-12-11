@@ -90,6 +90,7 @@ public class CppSettings extends SharedClassObject {
     public static final String PROP_C_REQUIRED = "cRequired"; // NOI18N
     public static final String PROP_CPP_REQUIRED = "cppRequired"; // NOI18N
     public static final String PROP_FORTRAN_REQUIRED = "fortranRequired"; // NOI18N
+    public static final String PROP_ARRAY_REPEAT_THRESHOLD = "arrayRepeatThreshold"; // NOI18N
     
     /** The resource bundle for the form editor */
     public static ResourceBundle bundle;
@@ -99,6 +100,7 @@ public class CppSettings extends SharedClassObject {
     private static CppSettings cppSettings = null;
 
     /** Initialize each property */
+    @Override
     protected void initialize() {
 	super.initialize();
 //        if (Boolean.getBoolean("netbeans.cnd.enable_fortran")) { // NOI18N
@@ -194,9 +196,8 @@ public class CppSettings extends SharedClassObject {
      * @returns Path to the make program
      */
     public String getMakePath() {
-        //String path = (String) getProperty(PROP_MAKE_PATH);
-        String path = getPreferences().get(PROP_MAKE_PATH, null);
-        if (path == null) {
+        String p = getPreferences().get(PROP_MAKE_PATH, null);
+        if (p == null) {
             //String name = (String) getProperty(PROP_MAKE_NAME);
             String name = getPreferences().get(PROP_MAKE_NAME, null);
             if (name != null) {
@@ -205,11 +206,11 @@ public class CppSettings extends SharedClassObject {
                     String d = tok.nextToken();
                     File file = new File(d, name);
                     if (file.exists()) {
-                        path = file.getAbsolutePath();
-                        //putProperty(PROP_MAKE_PATH, path, true); 
-                        getPreferences().put(PROP_MAKE_PATH, path);
-                        firePropertyChange(PROP_MAKE_PATH, null, path);
-                        return path;
+                        p = file.getAbsolutePath();
+                        //putProperty(PROP_MAKE_PATH, p, true); 
+                        getPreferences().put(PROP_MAKE_PATH, p);
+                        firePropertyChange(PROP_MAKE_PATH, null, p);
+                        return p;
                     }
                 }
             }
@@ -221,7 +222,7 @@ public class CppSettings extends SharedClassObject {
                 return "/usr/bin/make"; // NOI18N
             }
         } else {
-            return path;
+            return p;
         }
     }
     
@@ -268,15 +269,15 @@ public class CppSettings extends SharedClassObject {
     
     public String getGdbPath() {
         //String path = (String) getProperty(PROP_GDB_PATH);
-        String path = getPreferences().get(PROP_GDB_PATH, null);
-        if (path == null) {
+        String p = getPreferences().get(PROP_GDB_PATH, null);
+        if (p == null) {
             if (Utilities.isWindows()) {
                 return "C:\\Cygwin\\bin\\gdb.exe"; // NOI18N
             } else {
                 return "/usr/bin/gdb"; // NOI18N
             }
         } else {
-            return path;
+            return p;
         }
     }
     
@@ -520,6 +521,18 @@ public class CppSettings extends SharedClassObject {
         boolean oldValue = isFortranRequired();
         getPreferences().putBoolean(PROP_FORTRAN_REQUIRED, enabled);
         firePropertyChange(PROP_FORTRAN_REQUIRED, new Boolean(oldValue), new Boolean(enabled));
+    }
+    
+    public int getArrayRepeatThreshold() {
+        return getPreferences().getInt(PROP_ARRAY_REPEAT_THRESHOLD, 10);
+    }
+    
+    public void setArrayRepeatThreshold(int arrayRepeatThreshold) {
+        int art = getArrayRepeatThreshold();
+        if (art != arrayRepeatThreshold) {
+            getPreferences().putInt(PROP_ARRAY_REPEAT_THRESHOLD, arrayRepeatThreshold);
+            firePropertyChange(PROP_ARRAY_REPEAT_THRESHOLD, art, arrayRepeatThreshold);
+        }
     }
 
     /**
