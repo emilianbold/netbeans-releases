@@ -97,7 +97,7 @@ public final class MissingDatabaseConnectionWarning extends JPanel {
         
         // Listen for changes to the list of data sources
         dsListListener = new DataSourceListListener();
-        datasourceList.getModel().addListDataListener(WeakListeners.create(ListDataListener.class, dsListListener, datasourceList.getModel()));
+        datasourceList.getModel().addListDataListener(dsListListener);
     }
     
     /**
