@@ -34,7 +34,6 @@ All Rights Reserved.
     
     <target name="compile">
         <delete file="src/META-INF/netbeans-location.properties"/>
-        <ant dir="../external"/>
         <javac debug="${build.compiler.debug}" deprecation="${build.compiler.deprecation}" destdir="src" srcdir="src">
             <classpath refid="cp"/>
         </javac>
