@@ -57,6 +57,7 @@ import org.openide.util.NbBundle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.midp.components.general.ClassCode.CodeClassComponentDependencyPresenter;
 
 /**
  * @author David Kaspar
@@ -124,7 +125,8 @@ public final class ClassCD extends ComponentDescriptor {
             // codegen
             new ClassCode.ClassCodeReferencePresenter (),
             new ClassCode.CodeLazyInitPresenter (),
-            new ClassCode.CodeClassNamePresenter ()
+            new ClassCode.CodeClassNamePresenter (),
+            new CodeClassComponentDependencyPresenter()
         );
     }
 
