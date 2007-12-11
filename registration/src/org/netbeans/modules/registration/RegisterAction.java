@@ -85,10 +85,10 @@ public class RegisterAction extends CallableSystemAction implements ActionListen
     
     public void showDialog () {
         DialogDescriptor descriptor = new DialogDescriptor(
-            new Label("TEST"),
+            new ReminderPanel(),
             NbBundle.getMessage(RegisterAction.class, "Register_title"),
             true,
-                new Object[] {registerNow, registerLater, registerNever},
+                new Object[] {registerNow, registerNever, registerLater},
                 null,
                 DialogDescriptor.DEFAULT_ALIGN,
                 null,
