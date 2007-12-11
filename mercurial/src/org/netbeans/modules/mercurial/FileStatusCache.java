@@ -452,7 +452,7 @@ public class FileStatusCache {
         FileInformation current = files.get(file);  
         if (FileStatusCache.equivalent(fi, current))  {
             if (FileStatusCache.equivalent(FILE_INFORMATION_NEWLOCALLY, fi)) {
-                if (SharabilityQuery.getSharability(file) == SharabilityQuery.NOT_SHARABLE) {
+                if (HgUtils.isIgnored(file)) {
                     Mercurial.LOG.log(Level.FINE, "refreshFileStatus() file: {0} was LocallyNew but is NotSharable", file.getAbsolutePath()); // NOI18N
                     fi = FILE_INFORMATION_EXCLUDED;
                  } else {
@@ -467,7 +467,7 @@ public class FileStatusCache {
                 Mercurial.LOG.log(Level.FINE, "refreshFileStatus() file: {0} was LocallyNew but is Excluded", file.getAbsolutePath()); // NOI18N
                 return;
             } else if (current == null) {
-                if (SharabilityQuery.getSharability(file) == SharabilityQuery.NOT_SHARABLE) {
+                if (HgUtils.isIgnored(file)) {
                     Mercurial.LOG.log(Level.FINE, "refreshFileStatus() file: {0} was LocallyNew but current is null and is not NotSharable", file.getAbsolutePath()); // NOI18N
                     fi = FILE_INFORMATION_EXCLUDED;
                  }

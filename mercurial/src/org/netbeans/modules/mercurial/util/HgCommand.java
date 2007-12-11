@@ -1501,7 +1501,7 @@ public class HgCommand {
         if(list == null || list.isEmpty())
             return new FileInformation(FileInformation.STATUS_UNKNOWN,null, false);
         
-        if(SharabilityQuery.getSharability(new File(cwd)) == SharabilityQuery.NOT_SHARABLE){
+        if(HgUtils.isIgnored(new File(cwd))){
             Mercurial.LOG.log(Level.FINE, "getSingleStatus(): Excluded File - StatusLine: {0} Status: EXCLUDED  RepoPath:{2} cwd:{3}", // NOI18N
                     new Object[] {list.get(0), filename, repository.getAbsolutePath(), cwd} );
             return new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED,null, false);
