@@ -1374,6 +1374,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         doc.remove(offset, len);
                     if (semiPosition != null)
                         doc.insertString(semiPosition.getOffset(), ";", null); //NOI18N
+                    else if (params.isEmpty() && "(".equals(toAdd)) //NOI18N
+                        c.setCaretPosition(c.getCaretPosition() - 1);
                 } catch (BadLocationException e) {
                     // Can't update
                 } finally {
@@ -1894,7 +1896,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 position = doc.createPosition(offset + text.indexOf('(') + 1);
                 if (semiPosition != null)
                     doc.insertString(semiPosition.getOffset(), ";", null); //NOI18N
-                else if (!isAbstract && params.isEmpty() && "()".equals(text.trim())) //NOI18N
+                else if (!isAbstract && params.isEmpty() && "(".equals(toAdd)) //NOI18N
                     c.setCaretPosition(c.getCaretPosition() - 1);
             } catch (BadLocationException e) {
             } finally {
@@ -2072,7 +2074,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 position = doc.createPosition(offset);
                 if (semiPosition != null)
                     doc.insertString(semiPosition.getOffset(), ";", null); //NOI18N
-                else if (!isAbstract && "()".equals(text.trim())) //NOI18N
+                else if (!isAbstract && "(".equals(toAdd)) //NOI18N
                     c.setCaretPosition(c.getCaretPosition() - 1);
             } catch (BadLocationException e) {
             } finally {
