@@ -230,11 +230,11 @@ public abstract class FormProperty extends Node.Property {
                     try {
                         setTargetValue(value);
                     } catch (IllegalAccessException iaex) {
-                        ex[1] = iaex;
+                        ex[0] = iaex;
                     } catch (IllegalArgumentException argex) {
-                        ex[1] = argex;
+                        ex[0] = argex;
                     } catch (InvocationTargetException itex) {
-                        ex[1] = itex;
+                        ex[0] = itex;
                     }
                 }
             });
