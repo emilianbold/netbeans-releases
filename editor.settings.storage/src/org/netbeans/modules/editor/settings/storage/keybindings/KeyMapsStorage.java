@@ -41,16 +41,12 @@
 
 package org.netbeans.modules.editor.settings.storage.keybindings;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.KeyStroke;
@@ -58,8 +54,8 @@ import org.netbeans.api.editor.settings.MultiKeyBinding;
 import org.netbeans.modules.editor.settings.storage.spi.StorageDescription;
 import org.netbeans.modules.editor.settings.storage.spi.StorageReader;
 import org.netbeans.modules.editor.settings.storage.spi.StorageWriter;
+import org.netbeans.modules.editor.settings.storage.spi.support.StorageSupport;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -163,7 +159,7 @@ public final class KeyMapsStorage implements StorageDescription<Collection<KeySt
                         }
                     }
                     
-                    KeyStroke[] shortcut = stringToKeyStrokes(key);
+                    KeyStroke[] shortcut = StorageSupport.stringToKeyStrokes(key, true);
                     String remove = attributes.getValue(A_REMOVE);
                     
                     if (Boolean.valueOf(remove)) {
@@ -173,7 +169,6 @@ public final class KeyMapsStorage implements StorageDescription<Collection<KeySt
                         if (actionName != null) {
                             MultiKeyBinding mkb = new MultiKeyBinding(shortcut, actionName);
                             keyMap.put(Arrays.asList(shortcut), mkb);
-//                            System.out.println("!!! adding: '" + key + "' -> '" + actionName + "'");
                         } else {
                             LOG.warning("Ignoring keybinding '" + key + "' with no action name."); //NOI18N
                         }
@@ -199,11 +194,11 @@ public final class KeyMapsStorage implements StorageDescription<Collection<KeySt
                 root.appendChild(bind);
 
                 bind.setAttribute(A_ACTION_NAME, mkb.getActionName());
-                bind.setAttribute(A_KEY, keyStrokesToString(mkb.getKeyStrokeList()));
+                bind.setAttribute(A_KEY, StorageSupport.keyStrokesToString(mkb.getKeyStrokeList(), true));
             }
 
             for(Collection<KeyStroke> keyStrokes : getRemoved()) {
-                String shortcut = keyStrokesToString(keyStrokes);
+                String shortcut = StorageSupport.keyStrokesToString(keyStrokes, true);
                 Element bind = doc.createElement(E_BIND);
                 root.appendChild(bind);
 
@@ -215,36 +210,4 @@ public final class KeyMapsStorage implements StorageDescription<Collection<KeySt
         }        
     } // End of KeyMapsWriter class
     
-    private static String keyStrokesToString(Collection<KeyStroke> keys) {
-        StringBuilder sb = new StringBuilder();
-
-        Iterator<KeyStroke> it = keys.iterator();
-        if (it.hasNext()) {
-            sb.append(Utilities.keyToString(it.next()));
-            while (it.hasNext()) {
-                sb.append('$'); //NOI18N
-                sb.append(Utilities.keyToString(it.next()));
-            }
-        }
-
-        return sb.toString();
-    }
-    
-    private static KeyStroke[] stringToKeyStrokes(String key) {
-        List<KeyStroke> result = new ArrayList<KeyStroke>();
-        
-        for (StringTokenizer st = new StringTokenizer(key, "$"); st.hasMoreTokens(); ) { //NOI18N
-            String ks = st.nextToken().trim();
-            KeyStroke keyStroke = Utilities.stringToKey(ks);
-            if (keyStroke != null) {
-                result.add(keyStroke);
-            } else {
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("no key stroke for:" + ks); //NOI18N
-                }
-            }
-        }
-        
-        return result.toArray(new KeyStroke[result.size()]);
-    }
 }

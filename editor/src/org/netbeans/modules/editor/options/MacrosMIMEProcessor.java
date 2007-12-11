@@ -41,12 +41,11 @@
 
 package org.netbeans.modules.editor.options;
 
-import org.openide.loaders.XMLDataObject;
-
 /** XML Processor for Macros settings
  *
  *  @author  Martin Roskanin
  *  @since 08/2001
+ * @deprecated Use Editor Settings Storage API instead.
  */
 public class MacrosMIMEProcessor extends MIMEProcessor{
 

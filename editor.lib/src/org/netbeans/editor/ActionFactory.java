@@ -757,6 +757,9 @@ public class ActionFactory {
         }
     }
 
+    /**
+     * @deprecated Without any replacement. This action is not used anymore.
+     */
     public static class RunMacroAction extends BaseAction {
 
         static final long serialVersionUID =1L;
@@ -880,7 +883,7 @@ public class ActionFactory {
                 runningActions.remove( macroName );
             }
         }
-    }
+    } // End of RunMacroAction class
     
     /**
      * @deprecated Without any replacement. This action is not used anymore.

@@ -1029,29 +1029,31 @@ public class BaseOptions extends OptionSupport {
         LINE_HEIGHT_CORRECTION_PROP);
     }
     
-    /** Gets Map of default Macros as they are stored in
-     *  MIMEFolder/Defaults/macros.xml */
+    /**
+     * The same as <code>getMacroMap()</code>.
+     * @deprecated Without any replacement.
+     */
     public Map getDefaultMacrosMap(){
-        loadDefaultMacros();
-        return defaultMacrosMap;
+        return getMacroMap();
     }
-    
-    /** Loads default abbreviations from MIMEFolder/Defaults/macros.xml and
-     *  stores them to defaultMacrosMap */
-    private void loadDefaultMacros(){
-        if (defaultMacrosMap!=null) return;
-        MIMEOptionFolder mimeFolder = getMIMEFolder();
-        if (mimeFolder == null) return;
-
-        MIMEOptionFolder mof = mimeFolder.getFolder(OptionUtilities.DEFAULT_FOLDER);
-        if (mof == null) return;
-        
-        MIMEOptionFile file = mof.getFile(MacrosMIMEProcessor.class, false);
-        if ((file!=null) && (!file.isLoaded())) {
-            file.loadSettings(false);
-            defaultMacrosMap = new HashMap(file.getAllProperties());
-        }
-    }
+  
+// XXX: remove
+//    /** Loads default abbreviations from MIMEFolder/Defaults/macros.xml and
+//     *  stores them to defaultMacrosMap */
+//    private void loadDefaultMacros(){
+//        if (defaultMacrosMap!=null) return;
+//        MIMEOptionFolder mimeFolder = getMIMEFolder();
+//        if (mimeFolder == null) return;
+//
+//        MIMEOptionFolder mof = mimeFolder.getFolder(OptionUtilities.DEFAULT_FOLDER);
+//        if (mof == null) return;
+//        
+//        MIMEOptionFile file = mof.getFile(MacrosMIMEProcessor.class, false);
+//        if ((file!=null) && (!file.isLoaded())) {
+//            file.loadSettings(false);
+//            defaultMacrosMap = new HashMap(file.getAllProperties());
+//        }
+//    }
 
 // XXX:  not needed in netbeans, but we may want to put it back to keep setMacroMap
 //       backwards compatible
@@ -1103,61 +1105,79 @@ public class BaseOptions extends OptionSupport {
 //        }
 //    }
     
-    /** Gets Macro Map */
+    /** 
+     * @return The map of macro names (<code>String</code>) and the associated macro code (<code>String</code>).
+     *   The <code>null</code> key entry has value of <code>List&lt;? extends MultiKeyBinding&gt;</code>.
+     * @deprecated Without any replacement.
+     */
+    @SuppressWarnings("unchecked")
     public Map getMacroMap() {
-        loadDefaultMacros();
-        loadSettings(MacrosMIMEProcessor.class);
-        Map settingsMap = (Map)super.getSettingValue(SettingsNames.MACRO_MAP);
+        Map<String, String> settingsMap = (Map<String, String>)super.getSettingValue(SettingsNames.MACRO_MAP);
         Map ret = (settingsMap == null) ? new HashMap() : new HashMap(settingsMap);
         ret.put(null, getKBList());
         return ret;
     }
     
-    /** Saves macro settings to XML file. 
-     *  (This is used especially for record macro action.)*/
+    /** 
+     * @deprecated Without any replacement.
+     */
     public void setMacroDiffMap(Map diffMap){
-        if ((diffMap != null) && (diffMap.size()>0)){
-            updateSettings(MacrosMIMEProcessor.class, diffMap);
-        }
+// XXX: try harder to preseve backwards compatibility of this method
+//        if ((diffMap != null) && (diffMap.size()>0)){
+//            updateSettings(MacrosMIMEProcessor.class, diffMap);
+//        }
     }
     
     /** 
-     * Sets new macro map to initializer map and if saveToXML is true,
-     * then new settings will be saved to XML file.
+     * Sets new macros.
      * 
      * <p>WARNING: This method no longer saves macro shortcuts. Use Editor Settings
      * Storage API to update shortcuts for your macros.
+     * 
+     * @param macros The map with macro names mapped to macro code.
+     * @param saveToXML Ignored.
+     * 
+     * @deprecated Without any replacement.
      */
-    public void setMacroMap(Map map, boolean saveToXML) {
-        Map diffMap = null;
-        List kb = new ArrayList();
-        if (map.containsKey(null)){
-            kb.addAll((List)map.get(null));
-            map.remove(null);
-        }
-        if (saveToXML){
-            // we are going to save the diff-ed changes to XML, all default
-            // properties have to be available
-            loadDefaultMacros();
-            diffMap = OptionUtilities.getMapDiff(getMacroMap(),map,true);
-            if (diffMap.containsKey(null)) diffMap.remove(null);
-            if (diffMap.size()>0){
-                // settings has changed, write changed settings to XML file
-// XXX: does not work
-//                processMacroKeyBindings(diffMap,kb);
-                updateSettings(MacrosMIMEProcessor.class, diffMap);
-            }
+    public void setMacroMap(final Map macros, boolean saveToXML) {
+        if (macros != null) {
+            Settings.update(new Runnable() {
+                public void run() {
+                    BaseOptions.super.setSettingValue(SettingsNames.MACRO_MAP, macros);
+                }
+            });
         }
         
-        super.setSettingValue(SettingsNames.MACRO_MAP, map);
+//        Map diffMap = null;
+//        List kb = new ArrayList();
+//        if (map.containsKey(null)){
+//            kb.addAll((List)map.get(null));
+//            map.remove(null);
+//        }
+//        if (saveToXML){
+//            // we are going to save the diff-ed changes to XML, all default
+//            // properties have to be available
+//            loadDefaultMacros();
+//            diffMap = OptionUtilities.getMapDiff(getMacroMap(),map,true);
+//            if (diffMap.containsKey(null)) diffMap.remove(null);
+//            if (diffMap.size()>0){
+//                // settings has changed, write changed settings to XML file
+//// XXX: does not work
+////                processMacroKeyBindings(diffMap,kb);
+//                updateSettings(MacrosMIMEProcessor.class, diffMap);
+//            }
+//        }
+//        
+//        super.setSettingValue(SettingsNames.MACRO_MAP, map);
     }
     
     /** 
-     * Sets new macros map and save the diff-ed changes to XML file. Calls
-     * <code>setMacroMap(map, true)</code>.
+     * Sets new macros. This method calls <code>setMacroMap(map, true)</code>.
+     * @param macros The map with macro names mapped to macro code.
+     * @deprecated Without any replacement.
      */
-    public void setMacroMap(Map map) {
-        setMacroMap(map, true);
+    public void setMacroMap(Map macros) {
+        setMacroMap(macros, true);
     }
     
     public Insets getMargin() {
@@ -1637,7 +1657,8 @@ public class BaseOptions extends OptionSupport {
     private void updateSettings(Class processor, Map settings, boolean useRequestProcessorForSaving){
         if (processor == FontsColorsMIMEProcessor.class ||
             processor == KeyBindingsMIMEProcessor.class ||
-            processor == AbbrevsMIMEProcessor.class
+            processor == AbbrevsMIMEProcessor.class ||
+            processor == MacrosMIMEProcessor.class
         ) {
             return;
         }
@@ -1680,8 +1701,9 @@ public class BaseOptions extends OptionSupport {
     
     private boolean isTheSame(String settingName, Object newValue){
         if (settingName == null ||
-        settingName.equals(NbEditorDocument.INDENT_ENGINE) ||
-        settingName.equals(NbEditorDocument.FORMATTER) ){
+            settingName.equals(NbEditorDocument.INDENT_ENGINE) ||
+            settingName.equals(NbEditorDocument.FORMATTER)
+        ) {
             return true;
         }
         Object oldValue = getSettingValue(settingName);
@@ -1727,7 +1749,6 @@ public class BaseOptions extends OptionSupport {
                 LOG.fine("Loading " + getClass() + "; mimeType='" + getCTImpl() + "'"); //NOI18N
             }
 
-            getMacroMap();
             loadSettings(PropertiesMIMEProcessor.class);
 
             if (LOG.isLoggable(Level.FINE)) {

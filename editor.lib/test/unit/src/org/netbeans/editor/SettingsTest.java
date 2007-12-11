@@ -57,6 +57,10 @@ public class SettingsTest extends NbTestCase {
                 getClass().getClassLoader().getResource(
                     "org/netbeans/modules/editor/settings/storage/layer.xml"),
                 getClass().getClassLoader().getResource(
+                    "org/netbeans/lib/editor/codetemplates/resources/layer.xml"),
+                getClass().getClassLoader().getResource(
+                    "org/netbeans/modules/editor/macros/layer.xml"),
+                getClass().getClassLoader().getResource(
                     "org/netbeans/core/resources/mf-layer.xml"), // for MIMEResolverImpl to work
             },
             getWorkDir(),
@@ -110,8 +114,33 @@ public class SettingsTest extends NbTestCase {
         assertEquals("Wrong code-text", "Hello World!", (String) v);
     }
     
+    public void testMacrosBridgeRead() {
+        Object value = Settings.getValue(MyKit.class, SettingsNames.MACRO_MAP);
+        assertNotNull("Macros map should not be null", value);
+        assertTrue("Wrong type", value instanceof Map);
+        
+        Map map = (Map) value;
+        assertEquals("Wrong number of macros map", 2, map.size());
+        
+        // check all keybindings
+        Object v1 = map.get(null);
+        assertNotNull("Value for 'null' key should not be null", value);
+        assertTrue("Wrong 'null' value type", v1 instanceof List);
+
+        // check the actual macro
+        Object v2 = map.get("MyMacro");
+        assertNotNull("Can't find 'MyMacro' macro", v2);
+        assertTrue("Wrong type of macro code", v2 instanceof String);
+        assertEquals("Wrong macro code", "caret-down caret-up", (String) v2);
+    }
+    
     public void testNoEventsWhenInitializing() {
         Settings.addInitializer(new MyInitializer());
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException ie) {
+            
+        }
         try {
             MyListener listener = new MyListener();
             Settings.addSettingsChangeListener(listener);

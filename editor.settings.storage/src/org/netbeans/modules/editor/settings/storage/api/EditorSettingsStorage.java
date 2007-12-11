@@ -54,16 +54,24 @@ import org.netbeans.modules.editor.settings.storage.spi.StorageDescription;
 public final class EditorSettingsStorage <K extends Object, V extends Object> {
 
     public static <K extends Object, V extends Object> EditorSettingsStorage<K, V> get(String settingsTypeId) {
+        EditorSettingsStorage<K, V> ess = EditorSettingsStorage.<K, V>find(settingsTypeId);
+        assert ess != null : "Invalid settings type Id: '" + settingsTypeId + "'"; //NOI18N
+        return ess;
+    }
+    
+   @SuppressWarnings("unchecked")
+    public static <K extends Object, V extends Object> EditorSettingsStorage<K, V> find(String settingsTypeId) {
         synchronized (cache) {
+            EditorSettingsStorage<K, V> ess = null;
             StorageDescription<K, V> sd = SettingsType.<K, V>find(settingsTypeId);
-            assert sd != null : "Invalid settings type Id: '" + settingsTypeId + "'"; //NOI18N
             
-            @SuppressWarnings("unchecked")
-            EditorSettingsStorage<K, V> ess = cache.get(sd);
-            if (ess == null) {
-                ess = new EditorSettingsStorage<K, V>(new StorageImpl<K, V>(sd));
-                cache.put(sd, ess);
-            }
+            if (sd != null) {
+                ess = cache.get(sd);
+                if (ess == null) {
+                    ess = new EditorSettingsStorage<K, V>(new StorageImpl<K, V>(sd));
+                    cache.put(sd, ess);
+                }
+            }            
             
             return ess;
         }

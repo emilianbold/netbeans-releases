@@ -243,19 +243,31 @@ public final class StorageImpl <K extends Object, V extends Object> {
             // Perform the operation
             final String settingFileName = SettingsType.getLocator(storageDescription).getWritableFileName(
                 mimePath.getPath(), profile, null, defaults);
-
+            
             sfs.runAtomicAction(new FileSystem.AtomicAction() {
                 public void run() throws IOException {
-                    FileObject f = FileUtil.createData(baseFolder, settingFileName);
-                    StorageWriter<K, V> writer = storageDescription.createWriter(f);
-                    writer.setAdded(added);
-                    writer.setRemoved(removed.keySet());
-                    Utils.save(f, writer);
-                    if (LOG.isLoggable(Level.FINE)) {
-                        LOG.fine("Saving '" + storageDescription.getId() + "' to: '" + f.getPath() + "'"); //NOI18N
+                    if (added.size() > 0 || removed.size() > 0) {
+                        FileObject f = FileUtil.createData(baseFolder, settingFileName);
+                        StorageWriter<K, V> writer = storageDescription.createWriter(f);
+                        writer.setAdded(added);
+                        writer.setRemoved(removed.keySet());
+                        Utils.save(f, writer);
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.fine("Saving '" + storageDescription.getId() + "' to: '" + f.getPath() + "'"); //NOI18N
+                        }
+                    } else {
+                        FileObject f = baseFolder.getFileObject(settingFileName);
+                        if (f != null) {
+                            f.delete();
+                            if (LOG.isLoggable(Level.FINE)) {
+                                LOG.fine("Saving '" + storageDescription.getId() + 
+                                    "', no changes from defaults therefore deleting: '" + f.getPath() + "'"); //NOI18N
+                            }
+                        }
                     }
                 }
             });
+            
             return false;
         }
     }

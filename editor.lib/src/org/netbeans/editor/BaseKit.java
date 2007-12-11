@@ -883,16 +883,11 @@ public class BaseKit extends DefaultEditorKit {
         return (Action[])l.toArray(new Action[l.size()]);
     }
     
+    /**
+     * @deprecated Without any replacement. 
+     */
     protected Action[] getMacroActions() {
-        Class kitClass = this.getClass();
-        Map macroMap = (Map)Settings.getValue( kitClass, SettingsNames.MACRO_MAP);
-        if( macroMap == null ) return null;
-        List actions = new ArrayList();
-        for( Iterator it = macroMap.keySet().iterator(); it.hasNext(); ) {
-            String macroName = (String)it.next();
-            actions.add( new ActionFactory.RunMacroAction( macroName ) );
-        }
-        return (Action[])actions.toArray( new Action[ actions.size() ] );
+        return new Action[0];
     }                               
 
     /** Get actions associated with this kit. createActions() is called
@@ -912,11 +907,6 @@ public class BaseKit extends DefaultEditorKit {
                 if (customActions != null) {
                     updateActionSettings(customActions, null, thisClass);
                     actionMap.putAll(actionsToMap(customActions));
-                }
-                Action[] macroActions = getMacroActions();
-                if (macroActions != null) {
-                    updateActionSettings(macroActions, null, thisClass);
-                    actionMap.putAll(actionsToMap(macroActions));
                 }
 
                 // store for later use

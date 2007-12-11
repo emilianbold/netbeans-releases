@@ -64,6 +64,7 @@ made subject to such option by the copyright holder.
                 <project>../../apisupport/timers</project>
                 <project>../../autoupdate/services</project>
                 <project>../../autoupdate/ui</project>
+                <project>../../beans</project>
                 <project>../../classfile</project>
                 <project>../../cnd/antlr</project>
                 <project>../../cnd/apt</project>
@@ -153,6 +154,7 @@ made subject to such option by the copyright holder.
                 <project>../../editor/kit</project>
                 <project>../../editor/lib</project>
                 <project>../../editor/lib2</project>
+                <project>../../editor/macros</project>
                 <project>../../editor/mimelookup</project>
                 <project>../../editor/mimelookup/impl</project>
                 <project>../../editor/options</project>
@@ -231,6 +233,7 @@ made subject to such option by the copyright holder.
                 <project>../../image</project>
                 <project>../../j2ee/archiveproject</project>
                 <project>../../j2ee/clientproject</project>
+                <project>../../j2ee/core/utilities</project>
                 <project>../../j2ee/ddapi</project>
                 <project>../../j2ee/ddloaders</project>
                 <project>../../j2ee/debug</project>
@@ -563,6 +566,7 @@ made subject to such option by the copyright holder.
                 <project>../../websvc/kit</project>
                 <project>../../websvc/manager</project>
                 <project>../../websvc/serviceapi</project>
+                <project>../../websvc/utilities</project>
                 <project>../../websvc/websvcapi</project>
                 <project>../../websvc/websvcddapi</project>
                 <project>../../websvc/wsitconf</project>

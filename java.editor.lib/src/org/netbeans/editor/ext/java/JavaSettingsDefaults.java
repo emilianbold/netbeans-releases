@@ -131,12 +131,10 @@ public class JavaSettingsDefaults extends ExtSettingsDefaults {
         return new MultiKeyBinding[0];
     }
     
+    /**
+     * @deprecated Without any replacement.
+     */
     public static Map getJavaMacroMap() {
-        Map javaMacroMap = new HashMap();
-        javaMacroMap.put( "debug-var", "select-identifier copy-to-clipboard " + // NOI18N
-                "caret-up caret-end-line insert-break \"System.err.println(\\\"\"" + 
-                "paste-from-clipboard \" = \\\" + \" paste-from-clipboard \" );" ); // NOI18N
-        
-        return javaMacroMap;
+        return Collections.EMPTY_MAP;
     }
 }

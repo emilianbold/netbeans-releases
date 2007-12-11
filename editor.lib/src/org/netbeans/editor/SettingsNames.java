@@ -109,7 +109,10 @@ public class SettingsNames {
      * Element ::= Action | '"' Text '"'
      * Action ::= ( ( ( char - ( S | '\' ) ) | '\\' | ( '\' S ) )+
      * Text ::= ( ( char - ( '"' | '\' ) ) | ( '\"' | '\\' ) )*
-    */
+     * 
+     * @deprecated Not supported anymore. There is no public API for accessing
+     *   editor macros.
+     */
     public static final String MACRO_MAP = "macro-map"; // NOI18N
 
     /** Map of the action abbreviations. The second string (value) is

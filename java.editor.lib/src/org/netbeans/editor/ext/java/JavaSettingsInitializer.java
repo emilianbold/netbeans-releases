@@ -88,8 +88,6 @@ public class JavaSettingsInitializer extends Settings.AbstractInitializer {
                 }
             );
 
-            settingsMap.put(SettingsNames.MACRO_MAP, JavaSettingsDefaults.getJavaMacroMap());
-
             settingsMap.put(ExtSettingsNames.CARET_SIMPLE_MATCH_BRACE,
                             JavaSettingsDefaults.defaultCaretSimpleMatchBrace);
 

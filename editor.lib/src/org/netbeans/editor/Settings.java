@@ -726,6 +726,9 @@ public class Settings {
             if (!emptyMap.containsKey(SettingsNames.KEY_BINDING_LIST)) {
                 emptyMap.put(SettingsNames.KEY_BINDING_LIST, S2ML_BRIDGE);
             }
+            if (!emptyMap.containsKey(SettingsNames.MACRO_MAP)) {
+                emptyMap.put(SettingsNames.MACRO_MAP, S2ML_BRIDGE);
+            }
             
             kitMap = emptyMap;
             
@@ -1188,6 +1191,49 @@ public class Settings {
         }
     } // End of TrackingResult class
 
+    // ----------------------------------------------------------
+    // Macros to Editor Settings API
+    // ----------------------------------------------------------
+
+    // XXX: rewrite this to not use reflection. It will require dependency on editor/macros
+    // and editor/settings/storage. It should also liste on changes fired from EditorSettingsStorage
+    // and call fireSettingsChange(null, SettingsName.MACRO_MAP, null, null). Should be done
+    // after the Settings & co. is factored out to its own deprecated module so that we don't
+    // introduce additional dependencies in editor/lib.
+    private static Map<String, String> findMacros(Class kitClass) {
+        Map macros = new HashMap();
+        
+        String mimeType = BaseKit.kitsTracker_FindMimeType(kitClass);
+        if (mimeType != null) {
+            ClassLoader classLoader = Lookup.getDefault().lookup(ClassLoader.class);
+            try {
+                Class essClass = classLoader.loadClass("org.netbeans.modules.editor.settings.storage.api.EditorSettingsStorage"); //NOI18N
+                Method findMethod = essClass.getDeclaredMethod("find", String.class); //NOI18N
+                Object macrosEss = findMethod.invoke(null, "Macros"); //NOI18N
+
+                if (macrosEss != null) {
+                    Class mdClass = classLoader.loadClass("org.netbeans.modules.editor.macros.storage.MacroDescription"); //NOI18N
+                    Method getCodeMethod = mdClass.getDeclaredMethod("getCode"); //NOI18N
+
+                    Method loadMethod = essClass.getDeclaredMethod("load", MimePath.class, String.class, Boolean.TYPE); //NOI18N
+                    Map macroDescriptions = (Map) loadMethod.invoke(macrosEss, MimePath.parse(mimeType), null, false);
+                    for(Object key : macroDescriptions.keySet()) {
+                        String macroName = (String) key;
+                        Object macroDescription = macroDescriptions.get(key);
+
+                        String macroCode = (String) getCodeMethod.invoke(macroDescription);
+                        macros.put(macroName, macroCode);
+                    }
+                }
+            } catch (Exception e) {
+                // ignore
+            }
+        }
+        
+        macros.put(null, findKeyBindings(kitClass));
+        return macros;
+    }
+
     private static final SettingsToMimeLookupBridge S2ML_BRIDGE = new SettingsToMimeLookupBridge();
     
     private static final class SettingsToMimeLookupBridge implements Evaluator {
@@ -1197,6 +1243,9 @@ public class Settings {
             }
             if (SettingsNames.KEY_BINDING_LIST.equals(settingName)) {
                 return findKeyBindings(kitClass);
+            }
+            if (SettingsNames.MACRO_MAP.equals(settingName)) {
+                return findMacros(kitClass);
             }
             return null;
         }

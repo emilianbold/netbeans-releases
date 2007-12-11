@@ -105,6 +105,21 @@ is the proper place.
 
     <changes>
         <change>
+            <summary>Added StorageSupport.stringToKeyStrokes and keyStrokesToString</summary>
+            <version major="1" minor="16"/>
+            <date day="6" month="12" year="2007"/>
+            <author login="vstejskal"/>
+            <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no" />
+            <description>
+            <p>
+                Two methods were added for the benefit of keymaps and macros
+                storage implementations. The added methods are - 
+                <code>StorageSupport.stringToKeyStrokes</code> and
+                <code>StorageSupport.keyStrokesToString</code>.
+            </p>
+            </description>
+        </change>
+        <change>
             <summary>Moving code templates storage to editor/codetemplates</summary>
             <version major="1" minor="12"/>
             <date day="28" month="11" year="2007"/>

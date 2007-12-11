@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE editor-macros PUBLIC "-//NetBeans//DTD Editor Macros settings 1.1//EN" "http://www.netbeans.org/dtds/EditorMacros-1_1.dtd">
+
+<editor-macros>
+    <macro name="MyMacro">
+        <code><![CDATA[caret-down caret-up]]></code>
+    </macro>
+</editor-macros>

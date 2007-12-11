@@ -163,6 +163,14 @@ made subject to such option by the copyright holder.
                         <code-name-base>org.openide.modules</code-name-base>
                         <recursive/>
                     </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.editor.macros</code-name-base>
+                        <recursive/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.editor.codetemplates</code-name-base>
+                        <recursive/>
+                    </test-dependency>
                 </test-type>
                 <test-type>
                     <name>qa-functional</name>

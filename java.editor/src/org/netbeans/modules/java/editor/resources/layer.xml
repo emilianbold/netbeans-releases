@@ -154,6 +154,12 @@ made subject to such option by the copyright holder.
                     </folder>
                 </folder>
                 
+                <folder name="Macros">
+                    <folder name="Defaults">
+                        <file name="org-netbeans-modules-editor-java-macros.xml" url="DefaultMacros.xml"/>
+                    </folder>
+                </folder>
+                
                 <folder name="SideBar">
                     <file name="org-netbeans-modules-editor-java-NbJavaCodeFoldingSideBarFactory.instance">
                         <attr name="position" intvalue="1500"/>
@@ -166,9 +172,6 @@ made subject to such option by the copyright holder.
                 </folder>
                 
                 <file name="Settings.settings" url="JavaOptions.settings"/>
-                <folder name="Defaults">
-                    <file name="macros.xml" url="DefaultMacros.xml"/>
-                </folder>
                 
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.editor.java.JavaKit"/>

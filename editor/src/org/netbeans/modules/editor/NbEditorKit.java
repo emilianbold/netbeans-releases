@@ -180,7 +180,6 @@ public class NbEditorKit extends ExtKit {
     protected Action[] createActions() {
         Action[] nbEditorActions = new Action[] {
                                        new NbBuildPopupMenuAction(),
-                                       new NbStopMacroRecordingAction(),
                                        nbUndoActionDef,
                                        nbRedoActionDef,
                                        new NbBuildToolTipAction(),
@@ -484,6 +483,9 @@ public class NbEditorKit extends ExtKit {
 
     }
 
+    /**
+     * @deprecated Without any replacement.
+     */
     public class NbStopMacroRecordingAction extends ActionFactory.StopMacroRecordingAction {
         
         private BaseOptions bo;
@@ -543,7 +545,7 @@ public class NbEditorKit extends ExtKit {
             
         }
         
-    }
+    } // End of NbStopMacroRecordingAction class
         
     public static class NbUndoAction extends ActionFactory.UndoAction {
 
