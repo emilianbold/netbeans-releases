@@ -335,9 +335,23 @@ public class RubyIndexerTest extends RubyTestBase {
     public void testMigration11() throws Exception {
         checkIndexer("testfiles/migrate/001_create_products_renamed.rb");
     }
+
+    public void testRails20Migrations() throws Exception {
+        checkIndexer("testfiles/migrate/100_rails20_migrations.rb");
+    }
+    
+    public void testRails20Migrations2() throws Exception {
+        checkIndexer("testfiles/migrate/101_rails20_migrations.rb");
+    }
+    
+    public void testRails20Migrations3() throws Exception {
+        checkIndexer("testfiles/migrate/102_rails20_migrations.rb");
+    }
+    
     public void testSchemaDepot() throws Exception {
         checkIndexer("testfiles/migrate/schemas/depot/db/schema.rb");
     }
+
     public void testSchemaMephisto() throws Exception {
         checkIndexer("testfiles/migrate/schemas/mephisto/db/schema.rb");
     }

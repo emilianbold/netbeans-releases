@@ -42,6 +42,7 @@ package org.netbeans.modules.ruby;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -109,6 +110,12 @@ public class RubyIndexer implements Indexer {
     static final String FIELD_INCLUDES = "includes"; //NOI18N
     static final String FIELD_EXTEND_WITH = "extendWith"; //NOI18N
 
+    // Rails 2.0 shorthand migrations; see http://dev.rubyonrails.org/changeset/6667?new_path=trunk
+    final private static String[] FIXED_COLUMN_TYPES = new String[] {  
+        // MUST BE SORTED - this array is binary searched!
+        "binary", "boolean", "date", "datetime",  "decimal", "float", "integer", // NOI18N
+        "string", "text", "time", "timestamp" }; // NOI18N
+    
     /**
      * A method definition. This is all compressed into a single line to make
      * Lucene searching faster (I initially tried having a separate document
@@ -219,14 +226,22 @@ public class RubyIndexer implements Indexer {
         //  }
 
         TreeAnalyzer analyzer = new TreeAnalyzer(index, r);
-            analyzer.analyze();
+        analyzer.analyze();
     }
 
     public boolean isIndexable(ParserFile file) {
         //return file.getExtension().equalsIgnoreCase("rb");
         return file.getNameExt().endsWith(".rb");
     }
+    
+    public String getIndexVersion() {
+        return "6.100"; // NOI18N
+    }
 
+    public String getIndexerName() {
+        return "ruby"; // NOI18N
+    }
+    
     private static int getModifiersFlag(Set<Modifier> modifiers) {
         int flags = modifiers.contains(Modifier.STATIC) ? IndexedMethod.STATIC : 0;
         if (modifiers.contains(Modifier.PRIVATE)) {
@@ -735,6 +750,66 @@ public class RubyIndexer implements Indexer {
                     }
 
                     return;
+                } else if ("timestamps".equals(name)) { // NOI18N
+                    List childNodes = node.childNodes();
+                    if (childNodes.size() >= 1) {
+                        Node child = (Node)childNodes.get(0);
+                        if (child.nodeId != NodeTypes.DVARNODE) {
+                            // Not a call on the block var corresponding to the table 
+                            // Later, validate more closely that we're making a call
+                            // on the actual block variable passed in from the create_table call!
+                            return;
+                        }
+                        
+                        // Insert timestamp codes
+                        //    column(:created_at, :datetime)
+                        //    column(:updated_at, :datetime)
+                        List<String> list = items.get(currentTable);
+                        if (list == null) {
+                            list = new ArrayList<String>();
+                            items.put(currentTable, list);
+                        }
+                        list.add("created_at;datetime"); // NOI18N
+                        list.add("updated_at;datetime"); // NOI18N
+                    }
+                 } else {
+                    // Rails 2.0 shorthand migrations; see http://dev.rubyonrails.org/changeset/6667?new_path=trunk
+                    int columnTypeIndex = Arrays.binarySearch(FIXED_COLUMN_TYPES, name);
+                    if (columnTypeIndex >= 0 && columnTypeIndex < FIXED_COLUMN_TYPES.length) {
+                        String columnType = FIXED_COLUMN_TYPES[columnTypeIndex];
+                        List childNodes = node.childNodes();
+                        if (childNodes.size() >= 2) {
+                            Node child = (Node)childNodes.get(0);
+                            if (child.nodeId != NodeTypes.DVARNODE) {
+                                // Not a call on the block var corresponding to the table 
+                                // Later, validate more closely that we're making a call
+                                // on the actual block variable passed in from the create_table call!
+                                return;
+                            }
+
+                            child = (Node)childNodes.get(1);
+                            List<Node> args = child.childNodes();
+                            for (Node n : args) {
+                                if (n.nodeId == NodeTypes.SYMBOLNODE || n.nodeId == NodeTypes.STRNODE) {
+                                    String columnName = getString(n);
+                                    
+                                    List<String> list = items.get(currentTable);
+                                    if (list == null) {
+                                        list = new ArrayList<String>();
+                                        items.put(currentTable, list);
+                                    }
+                                    StringBuilder sb = new StringBuilder();
+                                    sb.append(columnName);
+                                    sb.append(';');
+                                    sb.append(columnType);
+                                    list.add(sb.toString());
+                                }
+                            }
+                        }
+
+                        return;
+                    
+                    }
                 }
             }
 
