@@ -2138,7 +2138,9 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                     FormModelEvent ev = events[i];
                     if (ev.isModifying())
                         modifying = true;
-                    if (ev.getChangeType() == FormModelEvent.COMPONENT_ADDED) {
+                    if ((ev.getChangeType() == FormModelEvent.COMPONENT_ADDED)
+                            || (ev.getChangeType() == FormModelEvent.COMPONENT_PROPERTY_CHANGED)
+                            || (ev.getChangeType() == FormModelEvent.BINDING_PROPERTY_CHANGED)) {
                         lafBlock = true;
                         break;
                     }

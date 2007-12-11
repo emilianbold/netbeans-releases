@@ -642,7 +642,11 @@ public class FormEditor {
             // make sure no upgrade warning is shown
             formModel.setMaxVersionLevel(FormModel.LATEST_VERSION);
             // switch to resources if needed
-            getResourceSupport().prepareNewForm();
+            FormLAF.executeWithLookAndFeel(formModel, new Runnable() {
+                public void run() {
+                    getResourceSupport().prepareNewForm();
+                }
+            });
             // make sure layout code generation type is detected
             formModel.getSettings().getLayoutCodeTarget();
             // hack: regenerate code immediately

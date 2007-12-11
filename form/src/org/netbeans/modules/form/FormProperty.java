@@ -221,6 +221,37 @@ public abstract class FormProperty extends Node.Property {
                                                       IllegalArgumentException,
                                                       InvocationTargetException;
 
+    private void setTargetValueInLAFBlock(final Object value)
+            throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        if (!FormLAF.inLAFBlock() && (propertyContext.getFormModel() != null)) {
+            final Exception[] ex = new Exception[1];
+            FormLAF.executeWithLookAndFeel(propertyContext.getFormModel(), new Runnable() {
+                public void run() {
+                    try {
+                        setTargetValue(value);
+                    } catch (IllegalAccessException iaex) {
+                        ex[1] = iaex;
+                    } catch (IllegalArgumentException argex) {
+                        ex[1] = argex;
+                    } catch (InvocationTargetException itex) {
+                        ex[1] = itex;
+                    }
+                }
+            });
+            if (ex[0] != null) {
+                if (ex[0] instanceof IllegalArgumentException) {
+                    throw new IllegalArgumentException(ex[0]);
+                } else if (ex[0] instanceof InvocationTargetException) {
+                    throw new InvocationTargetException(ex[0]);
+                } else if (ex[0] instanceof IllegalAccessException) {
+                    throw (IllegalAccessException)ex[0];
+                }
+            }
+        } else {
+            setTargetValue(value);
+        }
+    }
+
     /** Gets the value of the property.
      * 
      * @throws java.lang.IllegalAccessException when there is an access problem.
@@ -319,10 +350,10 @@ public abstract class FormProperty extends Node.Property {
 
             // set the real value to the target object
             if (realValue != FormDesignValue.IGNORED_VALUE) {
-                setTargetValue(realValue);
+                setTargetValueInLAFBlock(realValue);
             }
             else if (valueSet && defValue != BeanSupport.NO_VALUE) {
-                setTargetValue(defValue);
+                setTargetValueInLAFBlock(defValue);
             }
 
             if (canReadFromTarget()) {
@@ -445,11 +476,11 @@ public abstract class FormProperty extends Node.Property {
             try {
                 // set the default real value to the target
                 if (realValue != FormDesignValue.IGNORED_VALUE) {
-                    setTargetValue(realValue);
+                    setTargetValueInLAFBlock(realValue);
 //                    lastRealValue = realValue;
                 }
                 else if (defValue != BeanSupport.NO_VALUE) {
-                    setTargetValue(defValue);
+                    setTargetValueInLAFBlock(defValue);
 //                    lastRealValue = defValue;
                 }
 //                else if (isExternalChangeMonitoring())
@@ -488,7 +519,7 @@ public abstract class FormProperty extends Node.Property {
                 Object realValue = getRealValue(propertyValue);
 
                 if (realValue != FormDesignValue.IGNORED_VALUE) {
-                    setTargetValue(realValue);
+                    setTargetValueInLAFBlock(realValue);
                     lastRealValue = realValue;
                 }
                 else if (isExternalChangeMonitoring())
