@@ -51,6 +51,7 @@ import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.ErrorCollector;
+import org.codehaus.groovy.control.Phases;
 import org.codehaus.groovy.control.messages.SimpleMessage;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.syntax.SyntaxException;
@@ -76,6 +77,8 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
+ * @todo class referencing
+ * 
  * @author Martin Adamek
  */
 public class GroovyParser implements Parser {
@@ -137,8 +140,7 @@ public class GroovyParser implements Parser {
         
         FileObject fo = context.file.getFileObject();
 
-        ClassLoader parentClassLoader = this.getClass().getClassLoader();
-        GroovyClassLoader classLoader = new GroovyClassLoader(parentClassLoader);
+        GroovyClassLoader classLoader = new GroovyClassLoader();
 
         CompilerConfiguration configuration = new CompilerConfiguration();
         CompilationUnit compilationUnit = new CompilationUnit(configuration, null, classLoader);
@@ -146,8 +148,8 @@ public class GroovyParser implements Parser {
         compilationUnit.addSource(fileName, inputStream);
 
         try {
-//            compilationUnit.compile(Phases.SEMANTIC_ANALYSIS); // which phase should be used?
-            compilationUnit.compile(); // which phase should be used?
+            compilationUnit.compile(Phases.SEMANTIC_ANALYSIS); // which phase should be used?
+//            compilationUnit.compile(); // which phase should be used?
         } catch (Exception e) {
         }
 
@@ -203,9 +205,11 @@ public class GroovyParser implements Parser {
                 for (Object object : errors) {
                     if (object instanceof SyntaxErrorMessage) {
                         SyntaxException ex = ((SyntaxErrorMessage)object).getCause();
-                        int startOffset = AstUtilities.getOffset(context.source, ex.getStartLine(), ex.getStartColumn());
-                        int endOffset = AstUtilities.getOffset(context.source, ex.getLine(), ex.getEndColumn());
-                        notifyError(context, null, Severity.ERROR, ex.getMessage(), null, startOffset, endOffset);
+                        if (ex.getMessage().indexOf("unable to resolve class") == -1) { // NOI18N
+                            int startOffset = AstUtilities.getOffset(context.source, ex.getStartLine(), ex.getStartColumn());
+                            int endOffset = AstUtilities.getOffset(context.source, ex.getLine(), ex.getEndColumn());
+                            notifyError(context, null, Severity.ERROR, ex.getMessage(), null, startOffset, endOffset);
+                        }
                     } else if (object instanceof SimpleMessage) {
                         String message = ((SimpleMessage)object).getMessage();
                         notifyError(context, null, Severity.ERROR, message, null, -1);
