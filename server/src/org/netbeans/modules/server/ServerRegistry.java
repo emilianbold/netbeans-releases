@@ -76,7 +76,7 @@ public final class ServerRegistry {
         return registry;
     }
 
-    public Collection<? extends ServerInstanceProvider> getTypes() {
+    public Collection<? extends ServerInstanceProvider> getProviders() {
         return result.allInstances();
     }
 

@@ -52,5 +52,15 @@ made subject to such option by the copyright holder.
             </file>
        </folder>
     </folder>
+    
+    <folder name="Menu">
+        <folder name="Tools">
+            <file name="ServerManagerAction2.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.server.ui.manager.ServerManagerAction"/>
+                <attr name="position" intvalue="900"/>
+            </file>
+            </folder>
+    </folder>
+    
     <folder name="Servers"/>
 </filesystem>

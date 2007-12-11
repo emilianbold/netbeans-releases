@@ -114,7 +114,7 @@ public final class RootNode extends AbstractNode {
                 }
 
                 types.clear();
-                types.addAll(((ServerRegistry) e.getSource()).getTypes());
+                types.addAll(((ServerRegistry) e.getSource()).getProviders());
                 for (ServerInstanceProvider type : types) {
                     type.addChangeListener(this);
                 }
@@ -136,7 +136,7 @@ public final class RootNode extends AbstractNode {
             List<ServerInstance> fresh = new ArrayList<ServerInstance>();
 
             ServerRegistry registry = ServerRegistry.getInstance();
-            for (ServerInstanceProvider type : registry.getTypes()) {
+            for (ServerInstanceProvider type : registry.getProviders()) {
                 fresh.addAll(type.getInstances());
             }
             Collections.sort(fresh, COMPARATOR);

@@ -52,6 +52,8 @@ public abstract class ServerInstanceProvider {
 
     private final CopyOnWriteArrayList<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
 
+    // TODO category of the server
+
     public abstract List<ServerInstance> getInstances();
 
     public final void addChangeListener(ChangeListener listener) {
