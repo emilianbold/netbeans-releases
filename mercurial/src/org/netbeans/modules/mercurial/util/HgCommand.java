@@ -1662,6 +1662,20 @@ public class HgCommand {
      * @throws org.netbeans.modules.mercurial.HgException
      */
     public static List<String> doExport(File repository, String revStr, String outputFileName)  throws HgException {
+        // Ensure that parent directory of target exists, creating if necessary
+        File fileTarget = new File (outputFileName);
+        File parentTarget = fileTarget.getParentFile();
+        try {
+            if (!parentTarget.mkdir()) {
+                if (!parentTarget.isDirectory()) {
+                    Mercurial.LOG.log(Level.WARNING, "File.mkdir() failed for : " + parentTarget.getAbsolutePath()); // NOI18N
+                    throw (new HgException (NbBundle.getMessage(HgCommand.class, "MSG_UNABLE_TO_CREATE_PARENT_DIR"))); // NOI18N
+                }
+            }
+        } catch (SecurityException e) {
+            Mercurial.LOG.log(Level.WARNING, "File.mkdir() for : " + parentTarget.getAbsolutePath() + " threw SecurityException " + e.getMessage()); // NOI18N
+            throw (new HgException (NbBundle.getMessage(HgCommand.class, "MSG_UNABLE_TO_CREATE_PARENT_DIR"))); // NOI18N
+        }
         List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
