@@ -75,7 +75,7 @@ public class EvaluationException2 extends RuntimeException {
         try {
             return getMessageImpl();
         } catch (Exception e) {
-            return message = formatMessage("CTL_EvalError_unknownInternalError", null);
+            return message = formatMessage("CTL_EvalError_unknownInternalError", new String[] {e.getMessage()});
         }
     }
 
@@ -131,11 +131,11 @@ public class EvaluationException2 extends RuntimeException {
         else if (reason.equals("argumentsBadSyntax"))
             msgParams = new String [] { params[0].toString() };
         else if (reason.equals("ambigousMethod"))
-            msgParams = new String [] { ((Identifier)params[0]).typeContext.name(),  ((Identifier)params[0]).identifier };
+            msgParams = new String [] { params[0].toString(),  params[1].toString() };
         else if (reason.equals("noSuchMethod"))
             msgParams = new String [] { (String) params[0], (String) params[1] };
         else if (reason.equals("callException"))
-            msgParams = new String [] { ((Identifier)params[1]).typeContext.name(),  ((Identifier)params[1]).identifier, params[0].toString() };
+            msgParams = new String [] { params[1].toString(), params[0].toString() };
         else if (reason.equals("calleeException"))
             msgParams = new String [] { ((Identifier)params[1]).typeContext.name(),  ((Identifier)params[1]).identifier,
                                         ((InvocationException)(params[0])).exception().toString() };
@@ -148,7 +148,7 @@ public class EvaluationException2 extends RuntimeException {
         else if (reason.equals("arrayIndexOutOfBounds"))
             msgParams = new String [] { params[1].toString(), Integer.toString(((ArrayReference)params[0]).length() - 1) };
         else if (reason.equals("unknownVariable"))
-            msgParams = new String [] { ((Identifier)params[0]).identifier };
+            msgParams = new String [] { params[0].toString() };
         else if (reason.equals("integerLiteralTooBig"))
             msgParams = new String [] { params[0].toString() };
         else if (reason.equals("badFormatOfIntegerLiteral"))
@@ -170,9 +170,11 @@ public class EvaluationException2 extends RuntimeException {
             msgParams = new String[] { node.toString() };
         else if (reason.equals("unknownField"))
             msgParams = new String [] { params[0].toString() };
+        else if (reason.equals("unknownOuterClass"))
+            msgParams = new String [] { params[0].toString() };
         else {
+            msgParams = new String [] { reason };
             reason = "unknownInternalError";
-            msgParams = null;
         }
 
         message = formatMessage("CTL_EvalError_" + reason, msgParams);

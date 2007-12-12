@@ -44,6 +44,8 @@ package org.netbeans.api.debugger.jpda.testapps;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 /**
@@ -77,6 +79,11 @@ public class EvaluatorApp {
     private static byte     btx = 127;
     private static enum     e { ONE, TWO, THREE }
     
+    private int     ci = 1234;
+    private long    cl = 12345678901234l;
+    private double  cd = 1243.4312;
+    private Map     cm = new HashMap();
+    
     public EvaluatorApp() {
     }
 
@@ -85,11 +92,13 @@ public class EvaluatorApp {
     ************************************************************************************************** */
     public static void main(String[] args) {
         EvaluatorApp app = new EvaluatorApp(); // LBREAKPOINT
-        app.instanceMethod();
+        app.instanceMethod(args, llxcopy);
     }
 
-    private void instanceMethod() {
-        int instance = 0; // LBREAKPOINT
+    private void instanceMethod(String[] args, long lparam) {
+        int instance = 0;
+        Runtime lvar = Runtime.getRuntime();
+        instance = instance + 2; // LBREAKPOINT
     }
     
     // TEST METHODS
@@ -949,6 +958,57 @@ public class EvaluatorApp {
     }
     
     
+    
+    // TEST Instance methods
+    
+    public int testClassVar1() {
+        return ci;
+    }
+    
+    public double testClassVar2() {
+        return cd;
+    }
+    
+    public Map testClassVar3() {
+        return cm;
+    }
+    
+    public EvaluatorApp testThis1() {
+        return this;
+    }
+    
+    public EvaluatorApp testThis2() {
+        return EvaluatorApp.this;
+    }
+    
+    public Object testInner1() {
+        return new InnerI1().f1;
+    }
+    
+    public String testInner2() {
+        return new InnerI1().getString();
+    }
+    
+    public String testInner3() {
+        return new InnerI2().methodToOverride();
+    }
+    
+    public String testInner4() {
+        return new InnerI2().methodNotToOverride();
+    }
+    
+    
+    
+    
+    
+    public String methodToOverride() {
+        return "Orig";
+    }
+    
+    public String methodNotToOverride() {
+        return "Orig not override";
+    }
+    
     public static float methodAutobox(int i, Long l, double d) {
         return ((float) (d / l)) * i;
     }
@@ -988,5 +1048,23 @@ public class EvaluatorApp {
                 return 5*i;
             }
         }
+    }
+    
+    public class InnerI1 {
+        Object f1 = new String("Field");
+        public InnerI1() {}
+        
+        public String getString() {
+            return "1234";
+        }
+    }
+    
+    public class InnerI2 extends EvaluatorApp {
+        
+        @Override
+        public String methodToOverride() {
+            return "Overriden";
+        }
+        
     }
 }

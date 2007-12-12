@@ -106,8 +106,40 @@ public class EvaluatorTest extends NbTestCase {
             if (te != null) {
                 throw te;
             }
-            checkEvalFails ("this");
+            //checkEvalFails ("this");
             checkEvalFails ("NoSuchClass.class");
+        } finally {
+            support.doFinish ();
+        }
+    }
+    
+    public void testInstanceEvaluation() throws Exception {
+        try {
+            Utils.BreakPositions bp = Utils.getBreakPositions(System.getProperty ("test.dir.src")+
+                                      "org/netbeans/api/debugger/jpda/testapps/EvaluatorApp.java");
+            LineBreakpoint lb = bp.getLineBreakpoints().get(1);
+            DebuggerManager.getDebuggerManager ().addBreakpoint (lb);
+            support.doContinue();
+            support.waitState (JPDADebugger.STATE_STOPPED);
+            
+            List<Method> methods = getMethods(false);
+            AssertionFailedError te = null;
+            AssertionFailedError ex = null;
+            for (Method m : methods) {
+                try {
+                    checkEval (m);
+                } catch (AssertionFailedError e) {
+                    if (te == null) {
+                        te = ex = e;
+                    } else {
+                        ex.initCause(e);
+                        ex = e;
+                    }
+                }
+            }
+            if (te != null) {
+                throw te;
+            }
         } finally {
             support.doFinish ();
         }
@@ -173,12 +205,21 @@ public class EvaluatorTest extends NbTestCase {
             Method m = null;
             String line;
             while ((line = r.readLine()) != null) {
+                line = line.trim();
+                if (line.startsWith("*")) continue;
                 if (m != null) {
                     int rt = line.indexOf("return");
-                    if (rt < 0) {
+                    if (rt != 0) {
                         continue;
                     }
-                    String expression = line.substring(rt+7, line.lastIndexOf(';'));
+                    String expression;
+                    try {
+                        expression = line.substring(rt+7, line.lastIndexOf(';'));
+                    } catch (RuntimeException rex) {
+                        System.err.println("line = '"+line+"', rt = "+rt+", lastIndexOf(';') = "+line.lastIndexOf(';'));
+                        rex.printStackTrace();
+                        throw rex;
+                    }
                     expression = expression.trim();
                     m.setExpression(expression);
                     methods.add(m);
@@ -188,7 +229,7 @@ public class EvaluatorTest extends NbTestCase {
                 if (line.indexOf(" test") < 0 || line.indexOf("()") < 0) {
                     continue;
                 }
-                if (staticMethods && line.indexOf("static") < 0) {
+                if (staticMethods != line.indexOf("static") >= 0) {
                     continue;
                 }
                 String name = line.substring(line.indexOf("test"), line.indexOf("()"));

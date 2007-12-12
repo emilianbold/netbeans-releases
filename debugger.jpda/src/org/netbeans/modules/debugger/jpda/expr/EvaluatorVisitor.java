@@ -263,8 +263,12 @@ import org.openide.util.NbBundle;
     }*/
 
     private static Method getConcreteMethod(ReferenceType type, String methodName, List<? extends TypeMirror> typeArguments) {
+        return getConcreteMethod(type, methodName, null, typeArguments);
+    }
+    
+    private static Method getConcreteMethod(ReferenceType type, String methodName, String firstParamSignature, List<? extends TypeMirror> typeArguments) {
         List<Method> methods = type.methodsByName(methodName);
-        String signature = createSignature(typeArguments);
+        String signature = createSignature(firstParamSignature, typeArguments);
         for (Method method : methods) {
             if (!method.isAbstract() && egualMethodSignatures(method.signature(), signature)) {
                 return method;
@@ -281,8 +285,11 @@ import org.openide.util.NbBundle;
         return s1.equals(s2);
     }
     
-    private static String createSignature(List<? extends TypeMirror> typeArguments) {
+    private static String createSignature(String firstParamSignature, List<? extends TypeMirror> typeArguments) {
         StringBuilder signature = new StringBuilder("(");
+        if (firstParamSignature != null) {
+            signature.append(firstParamSignature);
+        }
         for (TypeMirror param : typeArguments) {
             String paramType = getTypeName(param);//getSimpleName().toString();
             signature.append(getSignature(paramType));
@@ -882,6 +889,9 @@ import org.openide.util.NbBundle;
             case FIELD:
                 ve = (VariableElement) elm;
                 String fieldName = ve.getSimpleName().toString();
+                if (fieldName.equals("this")) {
+                    return evaluationContext.getFrame().thisObject();
+                }
                 Field field = evaluationContext.getFrame().location().declaringType().fieldByName(fieldName);
                 if (field == null) {
                     Assert2.error(arg0, "unknownVariable", fieldName);
@@ -1186,14 +1196,26 @@ import org.openide.util.NbBundle;
             }
             argVals.add((Value) argValue);
         }
+        List<? extends TypeMirror> argTypes = ((ExecutableType) cType).getParameterTypes();
+        String firstParamSignature = null;
+        ObjectReference thisObject = evaluationContext.getFrame().thisObject();
+        if (thisObject != null) {
+            List<ReferenceType> nestedTypes = ((ReferenceType) thisObject.type()).nestedTypes();
+            for (ReferenceType nested : nestedTypes) {
+                if (nested.equals(classType)) {
+                    argVals.add(0, thisObject);
+                    firstParamSignature = thisObject.type().signature();
+                }
+            }
+        }
         try {
             if (loggerMethod.isLoggable(Level.FINE)) {
                 loggerMethod.fine("STARTED : "+classType+"."+"<init>"+" ("+argVals+") in thread "+evaluationContext.getFrame().thread());
             }
             evaluationContext.methodToBeInvoked();
-            Method constructorMethod = getConcreteMethod(classType, "<init>", ((ExecutableType) cType).getParameterTypes());
+            Method constructorMethod = getConcreteMethod(classType, "<init>", firstParamSignature, argTypes);
             if (constructorMethod == null) {
-                Assert2.error(arg0, "noSuchMethod", "<init>", classType);
+                Assert2.error(arg0, "noSuchMethod", "<init>", classType.name());
             }
             return classType.newInstance(evaluationContext.getFrame().thread(),
                                          constructorMethod,
@@ -1264,9 +1286,27 @@ import org.openide.util.NbBundle;
                 String fieldName = ve.getSimpleName().toString();
                 Mirror expression = arg0.getExpression().accept(this, evaluationContext);
                 if (expression instanceof ClassType) {
-                    Field f = ((ClassType) expression).fieldByName(fieldName);
+                    ClassType clazz = (ClassType) expression;
+                    if (fieldName.equals("this")) {
+                        ObjectReference thisObject = evaluationContext.getFrame().thisObject();
+                        while (thisObject != null && !((ReferenceType) thisObject.type()).equals(clazz)) {
+                            ReferenceType thisClass = (ReferenceType) thisObject.type();
+                            Field outerThisField = thisClass.fieldByName("this$0");
+                            if (outerThisField != null) {
+                                thisObject = (ObjectReference) thisObject.getValue(outerThisField);
+                            } else {
+                                thisObject = null;
+                            }
+                        }
+                        if (thisObject == null) {
+                            Assert2.error(arg0, "unknownOuterClass", clazz.name());
+                        } else {
+                            return thisObject;
+                        }
+                    }
+                    Field f = clazz.fieldByName(fieldName);
                     if (f != null) {
-                        return ((ClassType) expression).getValue(f);
+                        return clazz.getValue(f);
                     } else {
                         Assert2.error(arg0, "unknownField", fieldName);
                         return null;
