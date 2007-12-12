@@ -91,8 +91,8 @@ public class EnabledModulesCollectorTest extends NbTestCase {
         assertEquals("UI_DISABLED_MODULES", rec.get(1).getMessage());
         assertEquals("one enabled", 1, rec.get(0).getParameters().length);
         assertEquals("one disabled", 1, rec.get(1).getParameters().length);
-        assertEquals("the one enabled", MyModule.INSTANCE.getCodeNameBase(), rec.get(0).getParameters()[0]);
-        assertEquals("the one disabled", MyModule2.INSTANCE2.getCodeNameBase(), rec.get(1).getParameters()[0]);
+        assertEquals("the one enabled", MyModule.INSTANCE.getCodeNameBase()+" ["+MyModule.INSTANCE.getSpecificationVersion().toString()+"]", rec.get(0).getParameters()[0]);
+        assertEquals("the one disabled", MyModule2.INSTANCE2.getCodeNameBase()+" ["+MyModule2.INSTANCE2.getSpecificationVersion().toString()+"]", rec.get(1).getParameters()[0]);
 
         assertNotNull("Localized msg0", rec.get(0).getResourceBundle().getString(rec.get(0).getMessage()));
         assertNotNull("Localized msg1", rec.get(1).getResourceBundle().getString(rec.get(1).getMessage()));
