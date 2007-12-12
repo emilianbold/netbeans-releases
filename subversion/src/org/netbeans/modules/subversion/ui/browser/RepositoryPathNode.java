@@ -275,17 +275,13 @@ public class RepositoryPathNode extends AbstractNode {
             }
             
             RepositoryPathEntry entry = (RepositoryPathEntry) key;                        
-            Node node = this.findChild(entry.getRepositoryFile().getName());
-            if(node != null) {
-                return null;
-            }
             
             // reuse nodes 
             if(previousNodes != null) {
                 for(Node n : previousNodes) {
                     if(n instanceof RepositoryPathNode) {
                         if(((RepositoryPathNode)n).entry.getRepositoryFile().getName().equals(entry.getRepositoryFile().getName())) {
-                            return new Node[] {n};
+                            return null; 
                         }
                     }
                 }
@@ -310,7 +306,7 @@ public class RepositoryPathNode extends AbstractNode {
                             return;
                         }
 
-                        Collection<RepositoryPathEntry> entries = getPreviousNodeEntries();
+                        Collection<RepositoryPathEntry> previousEntries = getPreviousNodeEntries();
                         if(listedEntries == null) {
                             // is not a folder in the repository
                             RepositoryPathNode node = (RepositoryPathNode) getNode();
@@ -324,8 +320,8 @@ public class RepositoryPathNode extends AbstractNode {
                             Collection<RepositoryPathEntry> accepptedEntries = new ArrayList<RepositoryPathEntry>();
                             for(RepositoryPathEntry listedEntry : listedEntries) {
                                 boolean found = false;
-                                for(RepositoryPathEntry entry : entries) {
-                                    if(entry.getRepositoryFile().getName().equals(listedEntry.getRepositoryFile().getName())) {
+                                for(RepositoryPathEntry previousEntry : previousEntries) {
+                                    if(previousEntry.getRepositoryFile().getName().equals(listedEntry.getRepositoryFile().getName())) {
                                         found = true;
                                         break;
                                     }
@@ -334,9 +330,9 @@ public class RepositoryPathNode extends AbstractNode {
                                     accepptedEntries.add(listedEntry);
                                 }
                             }
-                            entries.addAll(accepptedEntries);        
+                            previousEntries.addAll(accepptedEntries);        
                         }
-                        setKeys(entries);                            
+                        setKeys(previousEntries);                            
                         
                     } catch (SVNClientException ex) {
                         Collection entries = getPreviousNodeEntries();
