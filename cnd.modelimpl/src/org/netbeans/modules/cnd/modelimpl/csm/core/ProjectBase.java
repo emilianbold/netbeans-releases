@@ -547,6 +547,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 validator = new ProjectSettingsValidator(this);
                 validator.restoreSettings();
             }
+            projectRoots.fixFolder(nativeProject.getProjectRoot());
+            for(String root : nativeProject.getSourceRoots()) {
+                projectRoots.fixFolder(root);
+            }
             projectRoots.addSources(sources);
             projectRoots.addSources(headers);
             projectRoots.addSources(excluded);

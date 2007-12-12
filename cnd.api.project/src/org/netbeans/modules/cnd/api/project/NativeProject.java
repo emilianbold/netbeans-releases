@@ -57,6 +57,13 @@ public interface NativeProject {
      */
     public String getProjectRoot();
 
+    
+     /**
+     * Returns file paths to source roots
+     * @return file paths to source roots
+     */
+    public List<String> getSourceRoots();
+
     /**
      * Returns the display name of the project
      * @return display name of the project

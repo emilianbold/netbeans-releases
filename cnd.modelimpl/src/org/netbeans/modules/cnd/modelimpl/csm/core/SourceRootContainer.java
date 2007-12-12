@@ -64,7 +64,9 @@ public class SourceRootContainer {
     }
     
     public void fixFolder(String path){
-        projectRoots.put(path,new Integer(Integer.MAX_VALUE/2));
+        if (path != null) {
+            projectRoots.put(path,new Integer(Integer.MAX_VALUE/2));
+        }
     }
     
     public void addSources(List<NativeFileItem> items){

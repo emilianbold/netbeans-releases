@@ -150,6 +150,10 @@ public final class NativeProjectProvider {
         public Object getProject() {
             return null;
         }
+
+        public List<String> getSourceRoots() {
+            return Collections.<String>emptyList();
+        }
                 
         public String getProjectRoot() {
             return this.projectRoot;

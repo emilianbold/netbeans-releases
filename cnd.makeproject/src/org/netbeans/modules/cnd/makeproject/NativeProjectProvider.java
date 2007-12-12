@@ -71,8 +71,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.OptionsConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.VectorConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
@@ -119,6 +117,16 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
 
     public Object getProject() {
         return this.project;
+    }
+
+    public List<String> getSourceRoots() {
+	MakeConfigurationDescriptor descriptor = getMakeConfigurationDescriptor();
+	if (descriptor != null) {
+            List<String> res = new ArrayList<String>(1);
+            res.add(descriptor.getBaseDir());
+            return res;
+	}
+	return Collections.<String>emptyList();
     }
     
     public String getProjectRoot() {
