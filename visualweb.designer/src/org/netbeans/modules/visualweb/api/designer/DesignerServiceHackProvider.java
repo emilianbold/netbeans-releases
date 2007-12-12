@@ -145,9 +145,9 @@ public final class DesignerServiceHackProvider {
 //        DesignerServiceHackProviderImpl.destroyWebFormForFileObject(fo);
 //    }
 
-    public static void copyBoxForElement(Element fromElement, Element toElement) {
-        DesignerServiceHackProviderImpl.copyBoxForElement(fromElement, toElement);
-    }
+//    public static void copyBoxForElement(Element fromElement, Element toElement) {
+//        DesignerServiceHackProviderImpl.copyBoxForElement(fromElement, toElement);
+//    }
 
 //    public static FileObject getContextFileForFragmentFile(FileObject fragmentFile) {
 //        return DesignerServiceHackProviderImpl.getContextFileForFragmentFile(fragmentFile);

@@ -1056,13 +1056,13 @@ public final class DesignerServiceHackProviderImpl /*extends DesignerServiceHack
 //    }
 
     
-    public static void copyBoxForElement(Element fromElement, Element toElement) {
-        WebForm[] webForms = WebForm.findAllWebFormsForElement(toElement);
-        for (WebForm webForm : webForms) {
-//            CssBox.copyBoxForElement(fromElement, toElement);
-            webForm.copyBoxForElement(fromElement, toElement);
-        }
-    }
+//    public static void copyBoxForElement(Element fromElement, Element toElement) {
+//        WebForm[] webForms = WebForm.findAllWebFormsForElement(toElement);
+//        for (WebForm webForm : webForms) {
+////            CssBox.copyBoxForElement(fromElement, toElement);
+//            webForm.copyBoxForElement(fromElement, toElement);
+//        }
+//    }
 
 // <missing designtime api>
 

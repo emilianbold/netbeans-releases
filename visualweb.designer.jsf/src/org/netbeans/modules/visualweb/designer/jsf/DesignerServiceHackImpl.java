@@ -1458,7 +1458,11 @@ public class DesignerServiceHackImpl extends DesignerServiceHack {
     
     public void copyBoxForElement(Element fromElement, Element toElement) {
 //        CssBox.copyBoxForElement(fromElement, toElement);
-        DesignerServiceHackProvider.copyBoxForElement(fromElement, toElement);
+//        DesignerServiceHackProvider.copyBoxForElement(fromElement, toElement);
+        Designer[] designers = JsfForm.findDesignersForElement(toElement);
+        for (Designer designer : designers) {
+            designer.copyBoxForElement(fromElement, toElement);
+        }
     }
 
 // <missing designtime api>

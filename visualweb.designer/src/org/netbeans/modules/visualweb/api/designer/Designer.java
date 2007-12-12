@@ -332,4 +332,7 @@ public interface Designer {
     public void setGridTraceHeight(int gridTraceHeight);
     public void setShowDecorations(boolean showDecorations);
     public void setDefaultFontSize(int defaultFontSize);
+    
+    
+    public void copyBoxForElement(Element fromElement, Element toElement);
 }

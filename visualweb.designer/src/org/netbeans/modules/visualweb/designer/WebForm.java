@@ -456,16 +456,16 @@ public class WebForm implements Designer {
 //        }
 //    }
     
-    public static WebForm[] findAllWebFormsForElement(Element element) {
-        Designer[] designers = getDomProviderService().findDesignersForElement(element);
-        List<WebForm> webForms = new ArrayList<WebForm>();
-        for (Designer designer : designers) {
-            if (designer instanceof WebForm) {
-                webForms.add((WebForm)designer);
-            }
-        }
-        return webForms.toArray(new WebForm[webForms.size()]);
-    }
+//    public static WebForm[] findAllWebFormsForElement(Element element) {
+//        Designer[] designers = getDomProviderService().findDesignersForElement(element);
+//        List<WebForm> webForms = new ArrayList<WebForm>();
+//        for (Designer designer : designers) {
+//            if (designer instanceof WebForm) {
+//                webForms.add((WebForm)designer);
+//            }
+//        }
+//        return webForms.toArray(new WebForm[webForms.size()]);
+//    }
     
     public static WebForm findWebFormForElement(Element element) {
         Designer[] designers = getDomProviderService().findDesignersForElement(element);
