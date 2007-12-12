@@ -44,16 +44,18 @@ package org.netbeans.modules.groovy.grailsproject;
 import org.netbeans.modules.groovy.grails.api.GrailsServerState;
 import org.netbeans.modules.groovy.grailsproject.ui.GrailsLogicalViewProvider;
 import org.netbeans.modules.groovy.grailsproject.ui.GrailsProjectCustomizerProvider;
-import org.netbeans.modules.groovy.grailsproject.ui.TemplatesImpl;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.groovy.grailsproject.classpath.ClassPathProviderImpl;
+import org.netbeans.modules.groovy.grailsproject.classpath.SourceRoots;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
@@ -67,6 +69,9 @@ public final class GrailsProject implements Project {
     private final FileObject projectDir;
     private final ProjectState projectState;
     private final LogicalViewProvider logicalView;
+    private final ClassPathProviderImpl cpProvider;
+    private SourceRoots sourceRoots;
+    private SourceRoots testRoots;
 
     private Lookup lookup;
 
@@ -74,6 +79,7 @@ public final class GrailsProject implements Project {
         this.projectDir = projectDir;
         this.projectState = projectState;
         this.logicalView = new GrailsLogicalViewProvider(this);
+        this.cpProvider = new ClassPathProviderImpl(getSourceRoots(), getTestSourceRoots(), FileUtil.toFile(projectDir));
     }
 
     public FileObject getProjectDirectory() {
@@ -91,10 +97,25 @@ public final class GrailsProject implements Project {
                 new GrailsProjectCustomizerProvider(this),
                 new GrailsProjectDeleteImplementation(this),
                 // new TemplatesImpl(),
-                logicalView //Logical view of project implementation
+                logicalView, //Logical view of project implementation
+                cpProvider
             );
         }
         return lookup;
+    }
+
+    public synchronized SourceRoots getSourceRoots() {        
+        if (this.sourceRoots == null) { //Local caching, no project metadata access
+            this.sourceRoots = new SourceRoots(projectDir); //NOI18N
+        }
+        return this.sourceRoots;
+    }
+    
+    public synchronized SourceRoots getTestSourceRoots() {
+        if (this.testRoots == null) { //Local caching, no project metadata access
+            this.testRoots = new SourceRoots(projectDir); //NOI18N
+        }
+        return this.testRoots;
     }
 
     private final class Info implements ProjectInformation {
