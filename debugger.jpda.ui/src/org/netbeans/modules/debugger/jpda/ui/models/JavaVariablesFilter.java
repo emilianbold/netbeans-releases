@@ -243,73 +243,8 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
      */
     public int getChildrenCount (TreeModel original, Variable variable) 
     throws UnknownTypeException {
-
-        String type = variable.getType();
-
-        if (isToArrayType (type)) {
-            ObjectVariable ov = (ObjectVariable) variable;
-            try {
-                ov = (ObjectVariable) ov.invokeMethod (
-                    "toArray",
-                    "()[Ljava/lang/Object;",
-                    new Variable [0]
-                );
-                if (ov == null) {
-                    return 0;
-                }
-                return original.getChildrenCount(ov);
-            } catch (NoSuchMethodException e) {
-                Field elementData = ov.getField("elementData");
-                if (elementData != null) {
-                    return original.getChildrenCount(elementData);
-                } else {
-                    ErrorManager.getDefault().notify(e);
-                }
-            } catch (InvalidExpressionException e) {
-                // Not a supported operation (e.g. J2ME, see #45543)
-                // Or missing context or any other reason
-                Logger.getLogger(JavaVariablesFilter.class.getName()).fine("invokeMethod(toArray) "+e.getLocalizedMessage());
-                return original.getChildrenCount(variable);
-            }
-        } else if (isMapMapType (type)) {
-            try {
-                ObjectVariable ov = (ObjectVariable) variable;
-                ov = (ObjectVariable) ov.invokeMethod (
-                    "entrySet",
-                    "()Ljava/util/Set;",
-                    new Variable [0]
-                );
-                if (ov == null) {
-                    return 0;
-                }
-                ov = (ObjectVariable) ov.invokeMethod (
-                    "toArray",
-                    "()[Ljava/lang/Object;",
-                    new Variable [0]
-                );
-                if (ov == null) {
-                    return 0;
-                }
-                return original.getChildrenCount(ov);
-            } catch (InvalidExpressionException e) {
-                // Not a supported operation (e.g. J2ME, see #45543)
-                // Or missing context or any other reason
-                Logger.getLogger(JavaVariablesFilter.class.getName()).fine("invokeMethod(entrySet) "+e.getLocalizedMessage());
-                return original.getChildrenCount(variable);
-            } catch (NoSuchMethodException e) {
-                ErrorManager.getDefault().notify(e);
-            }
-        }
-        else if (isMapEntryType(type)) {
-            return 2;
-        }
-        else if ("java.beans.PropertyChangeSupport".equals(type)) {
-            return getChildren (original, variable, 0, 0).length;
-        }
-        else if ("java.lang.ref.WeakReference".equals(type)) {
-            return 1;
-        }
-        return original.getChildrenCount(variable);
+        
+        return Integer.MAX_VALUE;
     }
 
     /**
