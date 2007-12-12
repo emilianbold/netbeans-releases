@@ -220,8 +220,7 @@ IfStatement = "if" "(" Expression ")" Statement ["else" Statement];
 DoStatement = "do" Statement "while" "(" Expression ")" [";"];
 WhileStatement = "while" "(" Expression ")" Statement;
 ForStatement = 
-    "for" "(" [AssignmentExpression] [";" [Expression] ";" [Expression]] ")" Statement |
-    "for" "(" "var" VariableDeclarationNoIn (
+    "for" "(" ["var"] VariableDeclarationNoIn (
         ("," VariableDeclarationNoIn)* ";" [Expression] ";" [Expression] |
         "in" Expression
     ) ")" Statement;
