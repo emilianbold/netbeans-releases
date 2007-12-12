@@ -44,11 +44,8 @@ package org.netbeans.modules.cnd.loaders;
 
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.MultiDataObject.Entry;
-import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 
-import org.netbeans.modules.cnd.execution.BinaryExecSupport;
 
 
 /** Represents a .h header object in the Repository */
@@ -59,13 +56,6 @@ public class HDataObject extends CndDataObject {
 
     public HDataObject(FileObject pf, HDataLoader loader) throws DataObjectExistsException {
 	super(pf, loader);
-
-    	CookieSet cookies = getCookieSet();
-	Entry primary = getPrimaryEntry();
-
-	cookies.add(new CppEditorSupport(primary.getDataObject()));
-	// For Run to Cursor; see comment under getCookie below
-	cookies.add(new BinaryExecSupport(getPrimaryEntry()));
     }
   
     protected Node createNodeDelegate() {

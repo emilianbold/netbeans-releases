@@ -56,9 +56,10 @@ import org.openide.nodes.Node;
 import org.openide.nodes.CookieSet;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-
 import org.netbeans.modules.cnd.execution.BinaryExecSupport;
+import org.openide.nodes.CookieSet.Factory;
 import org.openide.nodes.Node.Cookie;
+import org.openide.util.Lookup;
 
 /**
  *  Abstract superclass of a C/C++/Fortran DataObject.
@@ -67,6 +68,8 @@ public abstract class CndDataObject extends MultiDataObject {
 
     /** Serial version number */
     static final long serialVersionUID = -6788084224129713370L;
+    private CppEditorSupport cppEditorSupport;
+    private BinaryExecSupport binaryExecSupport;
 
     public CndDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
 	super(pf, loader);
@@ -79,12 +82,33 @@ public abstract class CndDataObject extends MultiDataObject {
      */
     protected void init() {
 	CookieSet cookies = getCookieSet();
-	Entry primary = getPrimaryEntry();
-
-	cookies.add(new CppEditorSupport(primary.getDataObject()));
-	cookies.add(new BinaryExecSupport(primary));
+	//cookies.add(new CppEditorSupport(primary.getDataObject()));
+        cookies.add(CppEditorSupport.class, new Factory() {
+            public <T extends Cookie> T createCookie(Class<T> klass) {
+                return klass.cast(createCppEditorSupport());
+            }
+        });
+	//cookies.add(new BinaryExecSupport(primary));
+        cookies.add(BinaryExecSupport.class, new Factory() {
+            public <T extends Cookie> T createCookie(Class<T> klass) {
+                return klass.cast(createBinaryExecSupport());
+            }
+        });
     }
 
+    private synchronized CppEditorSupport createCppEditorSupport() {
+        if (cppEditorSupport == null) {
+            cppEditorSupport = new CppEditorSupport(getPrimaryEntry().getDataObject());
+        }
+        return cppEditorSupport;
+    }
+
+    private synchronized BinaryExecSupport createBinaryExecSupport() {
+        if (binaryExecSupport == null) {
+            binaryExecSupport = new BinaryExecSupport(getPrimaryEntry());
+        }
+        return binaryExecSupport;
+    }
 
     /**
      *  The DeleteList is the list of suffixes which should be deleted during

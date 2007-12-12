@@ -67,7 +67,7 @@ import org.netbeans.editor.BaseDocument;
 import javax.swing.text.Position;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.cnd.highlight.CppHighlightsLayerFactory;
-import org.openide.cookies.EditorCookie;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.text.Annotation;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -222,18 +222,18 @@ public class HighlightProvider implements CsmModelListener, CsmProgressListener,
         if (dao == null) {
             return null;
         }
-        EditorCookie editor = dao.getCookie(EditorCookie.class);
-        return editor != null ? editor.getDocument() : null;
-//        for (JTextComponent component : EditorRegistry.componentList()) {
-//            if (component.isShowing()) {
-//                Document doc = component.getDocument();
-//                DataObject found = NbEditorUtilities.getDataObject(doc);
-//                if (dao.equals(found)) {
-//                    return doc;
-//                }
-//            }
-//        }
-//        return null;
+//        EditorCookie editor = dao.getCookie(EditorCookie.class);
+//        return editor != null ? editor.getDocument() : null;
+        for (JTextComponent component : EditorRegistry.componentList()) {
+            if (component.isShowing()) {
+                Document doc = component.getDocument();
+                DataObject found = NbEditorUtilities.getDataObject(doc);
+                if (dao.equals(found)) {
+                    return doc;
+                }
+            }
+        }
+        return null;
     }
     
     private void checkClosed(){
