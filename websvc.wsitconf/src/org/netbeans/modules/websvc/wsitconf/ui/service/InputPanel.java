@@ -53,7 +53,6 @@ import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
 import org.netbeans.modules.xml.multiview.ui.SectionVisualTheme;
 import org.netbeans.modules.xml.wsdl.model.Binding;
-import org.netbeans.modules.xml.wsdl.model.BindingInput;
 import org.netbeans.modules.xml.wsdl.model.BindingOperation;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
@@ -63,16 +62,17 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 
 import javax.swing.*;
+import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.PolicyModelHelper;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Martin Grebac
  */
-public class InputPanel extends SectionInnerPanel {
+public class InputPanel<T extends WSDLComponent> extends SectionInnerPanel {
 
     private WSDLModel model;
-    private BindingInput input;
+    private T input;
     private BindingOperation operation;
     private Binding binding;
     private UndoManager undoManager;
@@ -83,7 +83,7 @@ public class InputPanel extends SectionInnerPanel {
 
     private WSDLComponent tokenElement = null;
     
-    public InputPanel(SectionView view, BindingInput input, UndoManager undoManager) {
+    public InputPanel(SectionView view, T input, UndoManager undoManager) {
         super(view);
         this.model = input.getModel();
         this.input = input;
@@ -247,7 +247,10 @@ public class InputPanel extends SectionInnerPanel {
                 
         tokenCombo.setEnabled(securityEnabled && !secConversation && !bindingScopeTokenPresent);
         tokenComboLabel.setEnabled(securityEnabled && !secConversation && !bindingScopeTokenPresent);
+        
+        targetOverrideChBox.setEnabled(securityEnabled && !isSSL && !PolicyModelHelper.isSharedPolicy(input));
         targetsButton.setEnabled(securityEnabled && !isSSL);
+
         boolean tokenSelected = !ComboConstants.NONE.equals((String)tokenCombo.getSelectedItem());
         signedChBox.setEnabled(securityEnabled && tokenSelected && !secConversation && !bindingScopeTokenPresent);
         endorsingChBox.setEnabled(securityEnabled && tokenSelected && 
@@ -267,6 +270,7 @@ public class InputPanel extends SectionInnerPanel {
         targetsButton = new javax.swing.JButton();
         signedChBox = new javax.swing.JCheckBox();
         endorsingChBox = new javax.swing.JCheckBox();
+        targetOverrideChBox = new javax.swing.JCheckBox();
 
         tokenComboLabel.setLabelFor(tokenCombo);
         org.openide.awt.Mnemonics.setLocalizedText(tokenComboLabel, org.openide.util.NbBundle.getMessage(InputPanel.class, "LBL_tokenComboLabel")); // NOI18N
@@ -286,6 +290,8 @@ public class InputPanel extends SectionInnerPanel {
         org.openide.awt.Mnemonics.setLocalizedText(endorsingChBox, org.openide.util.NbBundle.getMessage(InputPanel.class, "LBL_Token_Endorsing")); // NOI18N
         endorsingChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
+        org.openide.awt.Mnemonics.setLocalizedText(targetOverrideChBox, org.openide.util.NbBundle.getMessage(InputPanel.class, "LBL_OverrideTargetDefaults")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -294,16 +300,21 @@ public class InputPanel extends SectionInnerPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(10, 10, 10)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(signedChBox)
-                            .add(endorsingChBox)))
-                    .add(layout.createSequentialGroup()
                         .add(tokenComboLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(tokenCombo, 0, 138, Short.MAX_VALUE))
-                    .add(targetsButton))
-                .addContainerGap())
+                        .add(tokenCombo, 0, 278, Short.MAX_VALUE)
+                        .addContainerGap())
+                    .add(layout.createSequentialGroup()
+                        .add(12, 12, 12)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(endorsingChBox)
+                            .add(signedChBox))
+                        .add(216, 216, 216))
+                    .add(layout.createSequentialGroup()
+                        .add(targetOverrideChBox)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(targetsButton)
+                        .addContainerGap())))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -317,8 +328,10 @@ public class InputPanel extends SectionInnerPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(endorsingChBox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(targetsButton)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(targetOverrideChBox)
+                    .add(targetsButton))
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -348,6 +361,7 @@ public class InputPanel extends SectionInnerPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox endorsingChBox;
     private javax.swing.JCheckBox signedChBox;
+    private javax.swing.JCheckBox targetOverrideChBox;
     private javax.swing.JButton targetsButton;
     private javax.swing.JComboBox tokenCombo;
     private javax.swing.JLabel tokenComboLabel;

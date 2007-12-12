@@ -94,8 +94,8 @@ public class SAMLAuthorizationOverSSLProfile extends ProfileBase
      * Called when the profile is selected in the combo box.
      */
     @Override
-    public void profileSelected(WSDLComponent component) {
-        ProfilesModelHelper.setSecurityProfile(component, getDisplayName());
+    public void profileSelected(WSDLComponent component, boolean updateServiceUrl) {
+        ProfilesModelHelper.setSecurityProfile(component, getDisplayName(), updateServiceUrl);
     }
 
     /**

@@ -52,6 +52,7 @@ import org.netbeans.modules.xml.wsdl.model.BindingFault;
 import org.netbeans.modules.xml.wsdl.model.BindingInput;
 import org.netbeans.modules.xml.wsdl.model.BindingOperation;
 import org.netbeans.modules.xml.wsdl.model.BindingOutput;
+import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.openide.nodes.Node;
 
 /**
@@ -90,13 +91,8 @@ public class ServicePanelFactory implements org.netbeans.modules.xml.multiview.u
             BindingInput i = (BindingInput)key;
             return new InputPanel((SectionView) editor.getContentView(), i, undoManager);
         }
-        if (key instanceof BindingOutput) {
-            BindingOutput o = (BindingOutput)key;
-            return new OutputPanel((SectionView) editor.getContentView(), o, undoManager);
-        }
-        if (key instanceof BindingFault) {
-            BindingFault f = (BindingFault)key;
-            return new FaultPanel((SectionView) editor.getContentView(), f, undoManager);
+        if ((key instanceof BindingOutput) || (key instanceof BindingFault)) {
+            return new GenericElementPanel((SectionView) editor.getContentView(),(WSDLComponent) key, undoManager);
         }
         return null;
     }

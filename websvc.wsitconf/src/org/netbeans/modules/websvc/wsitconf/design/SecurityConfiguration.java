@@ -222,7 +222,7 @@ public class SecurityConfiguration implements WSConfiguration {
 
                         // default profile with the easiest setup
                         SecurityProfile secProf = SecurityProfileRegistry.getDefault().getProfile(ComboConstants.PROF_MUTUALCERT);
-                        secProf.profileSelected(binding);
+                        secProf.profileSelected(binding, true);
                         if (secProf instanceof SecureConversationFeature) {
                             ((SecureConversationFeature)secProf).enableSecureConversation(binding, true);
                         }

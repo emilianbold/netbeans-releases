@@ -43,6 +43,7 @@ package org.netbeans.modules.websvc.wsitconf.wsdlmodelext;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -61,7 +62,6 @@ import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityProfileRegistry;
 import org.netbeans.modules.websvc.wsitconf.spi.features.ClientDefaultsFeature;
 import org.netbeans.modules.websvc.wsitconf.spi.features.ServiceDefaultsFeature;
-import org.netbeans.modules.websvc.wsitmodelext.policy.PolicyQName;
 import org.netbeans.modules.websvc.wsitmodelext.security.BootstrapPolicy;
 import org.netbeans.modules.websvc.wsitmodelext.security.SecurityPolicyQName;
 import org.netbeans.modules.websvc.wsitmodelext.security.TrustElement;
@@ -72,6 +72,7 @@ import org.netbeans.modules.websvc.wsitmodelext.addressing.Address;
 import org.netbeans.modules.websvc.wsitmodelext.addressing.Address10;
 import org.netbeans.modules.websvc.wsitmodelext.policy.All;
 import org.netbeans.modules.websvc.wsitmodelext.policy.Policy;
+import org.netbeans.modules.websvc.wsitmodelext.policy.PolicyQName;
 import org.netbeans.modules.websvc.wsitmodelext.security.AsymmetricBinding;
 import org.netbeans.modules.websvc.wsitmodelext.security.SymmetricBinding;
 import org.netbeans.modules.websvc.wsitmodelext.security.TransportBinding;
@@ -295,7 +296,16 @@ public class ProfilesModelHelper {
         return ComboConstants.PROF_GENERIC;
     }
 
-    private static void updateServiceUrl(WSDLComponent c) {
+    private static void updateServiceUrl(WSDLComponent c, boolean toHttps) {
+        
+        String from, to;
+        if (toHttps) {
+            from = "http:";     //NOI18N
+            to = "https:";      //NOI18N
+        } else {
+            from = "https:";    //NOI18N
+            to = "http:";       //NOI18N
+        }
         if (c instanceof Binding) {
             Collection<Service> services = c.getModel().getDefinitions().getServices();
             for (Service s : services) {
@@ -307,7 +317,7 @@ public class ProfilesModelHelper {
                            for (Address a : addresses) {
                                String addr = a.getAddress();
                                if (addr != null) {
-                                   a.setAddress(addr.replaceFirst("http:", "https:")); //NOI18N
+                                   a.setAddress(addr.replaceFirst(from, to));
                                }
                            }
                        }
@@ -316,7 +326,7 @@ public class ProfilesModelHelper {
                            for (Address10 a : addresses10) {
                                String addr = a.getAddress();
                                if (addr != null) {
-                                   a.setAddress(addr.replaceFirst("http:", "https:")); //NOI18N
+                                   a.setAddress(addr.replaceFirst(from, to));
                                }
                            }
                        }
@@ -325,7 +335,7 @@ public class ProfilesModelHelper {
                            for (SOAPAddress a : soapAddresses) {
                                String addr = a.getLocation();
                                if (addr != null) {
-                                   a.setLocation(addr.replaceFirst("http:", "https:")); //NOI18N
+                                   a.setLocation(addr.replaceFirst(from, to));
                                }
                            }
                        }
@@ -335,9 +345,48 @@ public class ProfilesModelHelper {
         }
     }
 
+    public static boolean isServiceUrlHttps(Binding binding) {     
+        Collection<Service> services = binding.getModel().getDefinitions().getServices();
+        for (Service s : services) {
+            Collection<Port> ports = s.getPorts();                
+            for (Port p : ports) {
+               if (p.getBinding().references(binding)) {
+                   List<Address> addresses = p.getExtensibilityElements(Address.class);
+                   if ((addresses != null) && (!addresses.isEmpty())) {
+                       for (Address a : addresses) {
+                           String addr = a.getAddress();
+                           if ((addr != null) && (addr.contains("https:"))) {
+                               return true;
+                           }
+                       }
+                   }
+                   List<Address10> addresses10 = p.getExtensibilityElements(Address10.class);
+                   if ((addresses10 != null) && (!addresses10.isEmpty())) {
+                       for (Address10 a : addresses10) {
+                           String addr = a.getAddress();
+                           if ((addr != null) && (addr.contains("https:"))) {
+                               return true;
+                           }
+                       }
+                   }
+                   List<SOAPAddress> soapAddresses = p.getExtensibilityElements(SOAPAddress.class);
+                   if ((soapAddresses != null) && (!soapAddresses.isEmpty())) {
+                       for (SOAPAddress a : soapAddresses) {
+                           String addr = a.getLocation();
+                           if ((addr != null) && (addr.contains("https:"))) {
+                               return true;
+                           }
+                       }
+                   }
+               }
+            }
+        }
+        return false;
+    }
+    
     /** Sets security profile on Binding or BindingOperation
      */
-    public static void setSecurityProfile(WSDLComponent c, String profile, String oldProfile) {
+    public static void setSecurityProfile(WSDLComponent c, String profile, String oldProfile, boolean updateServiceUrl) {
         assert (c != null);
         assert (profile != null);
         assert ((c instanceof BindingOperation) || (c instanceof Binding));
@@ -348,7 +397,7 @@ public class ProfilesModelHelper {
         if (oldP != null) {
             oldP.profileDeselected(c);
         }
-        newP.profileSelected(c);
+        newP.profileSelected(c, updateServiceUrl);
     }
     
     public static boolean isServiceDefaultSetupSupported(String profile) {
@@ -393,7 +442,7 @@ public class ProfilesModelHelper {
     
     /** Sets security profile on Binding or BindingOperation
      */
-    public static void setSecurityProfile(WSDLComponent c, String profile) {
+    public static void setSecurityProfile(WSDLComponent c, String profile, boolean updateServiceUrl) {
         WSDLModel model = c.getModel();
         
         boolean isTransaction = model.isIntransaction();
@@ -413,8 +462,6 @@ public class ProfilesModelHelper {
                 SecurityPolicyModelHelper.enableWss(c, false);
                 SecurityPolicyModelHelper.disableTrust10(c);
                 SecurityTokensModelHelper.removeSupportingTokens(c);
-                setMessageLevelSecurityProfilePolicies(c, profile);
-                updateServiceUrl(c);
             } else if (ComboConstants.PROF_MSGAUTHSSL.equals(profile)) { // Profile #2
                 WSDLComponent bt = SecurityPolicyModelHelper.setSecurityBindingType(c, ComboConstants.TRANSPORT);
                 SecurityTokensModelHelper.setTokenType(bt, ComboConstants.TRANSPORT, ComboConstants.HTTPS);
@@ -426,8 +473,6 @@ public class ProfilesModelHelper {
                 SecurityPolicyModelHelper.enableMustSupportRefKeyIdentifier(wss, true);
                 SecurityTokensModelHelper.removeSupportingTokens(c);
                 SecurityTokensModelHelper.setSupportingTokens(c, ComboConstants.USERNAME, SecurityTokensModelHelper.SIGNED_SUPPORTING);
-                setMessageLevelSecurityProfilePolicies(c, profile);
-                updateServiceUrl(c);
             } else if (ComboConstants.PROF_SAMLSSL.equals(profile)) {   // Profile #3
                 WSDLComponent bt = SecurityPolicyModelHelper.setSecurityBindingType(c, ComboConstants.TRANSPORT);
                 SecurityTokensModelHelper.setTokenType(bt, ComboConstants.TRANSPORT, ComboConstants.HTTPS);
@@ -439,8 +484,6 @@ public class ProfilesModelHelper {
                 SecurityPolicyModelHelper.enableMustSupportRefKeyIdentifier(wss, true);
                 SecurityTokensModelHelper.removeSupportingTokens(c);
                 SecurityTokensModelHelper.setSupportingTokens(c, ComboConstants.SAML, SecurityTokensModelHelper.SIGNED_SUPPORTING);
-                setMessageLevelSecurityProfilePolicies(c, profile);
-                updateServiceUrl(c);
             } else if (ComboConstants.PROF_USERNAME.equals(profile)) {   // Profile #4
                 WSDLComponent bt = SecurityPolicyModelHelper.setSecurityBindingType(c, ComboConstants.SYMMETRIC);
                 WSDLComponent tokenType = SecurityTokensModelHelper.setTokenType(bt, ComboConstants.PROTECTION, ComboConstants.X509);
@@ -458,7 +501,6 @@ public class ProfilesModelHelper {
                 SecurityPolicyModelHelper.enableMustSupportRefEncryptedKey(wss, true);
                 SecurityTokensModelHelper.removeSupportingTokens(c);
                 SecurityTokensModelHelper.setSupportingTokens(c, ComboConstants.USERNAME, SecurityTokensModelHelper.SIGNED_SUPPORTING);
-                setMessageLevelSecurityProfilePolicies(c, profile);
             } else if (ComboConstants.PROF_MUTUALCERT.equals(profile)) {         // #5
                 WSDLComponent bt = SecurityPolicyModelHelper.setSecurityBindingType(c, ComboConstants.ASYMMETRIC);
                 WSDLComponent tokenType = SecurityTokensModelHelper.setTokenType(bt, ComboConstants.INITIATOR, ComboConstants.X509);
@@ -474,7 +516,6 @@ public class ProfilesModelHelper {
                 SecurityPolicyModelHelper.enableMustSupportRefKeyIdentifier(wss, true);
                 SecurityPolicyModelHelper.enableMustSupportRefIssuerSerial(wss, true);
                 SecurityTokensModelHelper.removeSupportingTokens(c);
-                setMessageLevelSecurityProfilePolicies(c, profile);
             } else if (ComboConstants.PROF_ENDORSCERT.equals(profile)) {               //#6
                 WSDLComponent bt = SecurityPolicyModelHelper.setSecurityBindingType(c, ComboConstants.SYMMETRIC);
                 WSDLComponent tokenType = SecurityTokensModelHelper.setTokenType(bt, ComboConstants.PROTECTION, ComboConstants.X509);
@@ -494,7 +535,6 @@ public class ProfilesModelHelper {
                 //endorsing supporting token
                 SecurityTokensModelHelper.removeSupportingTokens(c);
                 tokenType = SecurityTokensModelHelper.setSupportingTokens(c, ComboConstants.X509, SecurityTokensModelHelper.ENDORSING);
-                setMessageLevelSecurityProfilePolicies(c, profile);
             } else if (ComboConstants.PROF_SAMLSENDER.equals(profile)) {        //#7
                 WSDLComponent bt = SecurityPolicyModelHelper.setSecurityBindingType(c, ComboConstants.ASYMMETRIC);
                 WSDLComponent tokenType = SecurityTokensModelHelper.setTokenType(bt, ComboConstants.INITIATOR, ComboConstants.X509);
@@ -512,7 +552,6 @@ public class ProfilesModelHelper {
                 SecurityPolicyModelHelper.enableMustSupportRefIssuerSerial(wss, true);
                 SecurityTokensModelHelper.removeSupportingTokens(c);
                 SecurityTokensModelHelper.setSupportingTokens(c, ComboConstants.SAML, SecurityTokensModelHelper.SIGNED_SUPPORTING);
-                setMessageLevelSecurityProfilePolicies(c, profile);
             } else if (ComboConstants.PROF_SAMLHOLDER.equals(profile)) {        // #8
                 WSDLComponent bt = SecurityPolicyModelHelper.setSecurityBindingType(c, ComboConstants.ASYMMETRIC);
                 WSDLComponent tokenType = SecurityTokensModelHelper.setTokenType(bt, ComboConstants.INITIATOR, ComboConstants.SAML);
@@ -529,7 +568,6 @@ public class ProfilesModelHelper {
                 SecurityPolicyModelHelper.enableMustSupportRefKeyIdentifier(wss, true);
                 SecurityPolicyModelHelper.enableMustSupportRefIssuerSerial(wss, true);
                 SecurityTokensModelHelper.removeSupportingTokens(c);
-                setMessageLevelSecurityProfilePolicies(c, profile);
             } else if (ComboConstants.PROF_KERBEROS.equals(profile)) {          //#9
                 WSDLComponent bt = SecurityPolicyModelHelper.setSecurityBindingType(c, ComboConstants.SYMMETRIC);
                 WSDLComponent tokenType = SecurityTokensModelHelper.setTokenType(bt, ComboConstants.PROTECTION, ComboConstants.KERBEROS);
@@ -546,7 +584,6 @@ public class ProfilesModelHelper {
                 SecurityPolicyModelHelper.enableMustSupportRefThumbprint(wss, true);
                 SecurityPolicyModelHelper.enableMustSupportRefEncryptedKey(wss, true);
                 SecurityTokensModelHelper.removeSupportingTokens(c);
-                setMessageLevelSecurityProfilePolicies(c, profile);
             } else if (ComboConstants.PROF_STSISSUED.equals(profile)) {         //#10
                 WSDLComponent bt = SecurityPolicyModelHelper.setSecurityBindingType(c, ComboConstants.SYMMETRIC);
                 WSDLComponent tokenType = SecurityTokensModelHelper.setTokenType(bt, ComboConstants.PROTECTION, ComboConstants.ISSUED);
@@ -567,7 +604,6 @@ public class ProfilesModelHelper {
                 SecurityPolicyModelHelper.enableRequireClientEntropy(trust, true);
                 SecurityPolicyModelHelper.enableRequireServerEntropy(trust, true);
                 SecurityTokensModelHelper.removeSupportingTokens(c);
-                setMessageLevelSecurityProfilePolicies(c, profile);
             } else if (ComboConstants.PROF_STSISSUEDCERT.equals(profile)) {     //#11
                 WSDLComponent bt = SecurityPolicyModelHelper.setSecurityBindingType(c, ComboConstants.ASYMMETRIC);
                 WSDLComponent tokenType = SecurityTokensModelHelper.setTokenType(bt, ComboConstants.INITIATOR, ComboConstants.ISSUED);
@@ -590,7 +626,6 @@ public class ProfilesModelHelper {
                 SecurityPolicyModelHelper.enableRequireClientEntropy(trust, true);
                 SecurityPolicyModelHelper.enableRequireServerEntropy(trust, true);
                 SecurityTokensModelHelper.removeSupportingTokens(c);
-                setMessageLevelSecurityProfilePolicies(c, profile);
             } else if (ComboConstants.PROF_STSISSUEDENDORSE.equals(profile)) {  //#12
                 WSDLComponent bt = SecurityPolicyModelHelper.setSecurityBindingType(c, ComboConstants.SYMMETRIC);
                 WSDLComponent tokenType = SecurityTokensModelHelper.setTokenType(bt, ComboConstants.PROTECTION, ComboConstants.X509);
@@ -614,7 +649,10 @@ public class ProfilesModelHelper {
                 //endorsing supporting token
                 SecurityTokensModelHelper.removeSupportingTokens(c);
                 tokenType = SecurityTokensModelHelper.setSupportingTokens(c, ComboConstants.ISSUED, SecurityTokensModelHelper.ENDORSING);
-                setMessageLevelSecurityProfilePolicies(c, profile);
+            }
+            setMessageLevelSecurityProfilePolicies(c, profile);
+            if (updateServiceUrl) {
+                updateServiceUrl(c, isSSLProfile(profile));
             }
         } finally {
             if (!isTransaction) {
@@ -761,11 +799,34 @@ public class ProfilesModelHelper {
         
         if (c instanceof Binding) {
             Collection<BindingOperation> ops = ((Binding)c).getBindingOperations();
-            for (BindingOperation o : ops) {
-                if (!SecurityPolicyModelHelper.isSecurityEnabled(o)) {
-                    setMessageLevelSecurityProfilePolicies(o, profile);
+            Iterator<BindingOperation> i = null;
+            if ((ops != null) && (ops.size() > 0)) {
+                i = ops.iterator();
+                BindingOperation bOp = i.next();
+                setMessageLevelSecurityProfilePolicies(bOp, profile);
+                BindingInput inputB = bOp.getBindingInput();
+                BindingOutput outputB = bOp.getBindingOutput();
+//                BindingFault faultPolicy = bOp.getBindingFaults().;
+                String inputPolicyUri = null;
+                if (inputB != null) {
+                    inputPolicyUri = PolicyModelHelper.getPolicyUriForElement(inputB);
                 }
-            }
+                String outputPolicyUri = null;
+                if (outputB != null) {
+                    outputPolicyUri = PolicyModelHelper.getPolicyUriForElement(outputB);
+                }
+                while (i.hasNext()) {
+                    BindingOperation op = i.next();
+                    if (inputB != null) {
+                        inputB = op.getBindingInput();
+                        PolicyModelHelper.attachPolicyToElement(inputPolicyUri, inputB);
+                    }
+                    if (outputB != null) {
+                        outputB = op.getBindingOutput();
+                        PolicyModelHelper.attachPolicyToElement(outputPolicyUri, outputB);
+                    }
+                }
+            }            
         } else {
             setMessageLevelSecurityProfilePolicies((BindingOperation)c, profile);
         }
@@ -790,8 +851,8 @@ public class ProfilesModelHelper {
         }
 
         try {
-            if (input != null) PolicyModelHelper.removePolicyForElement(input);
-            if (output != null) PolicyModelHelper.removePolicyForElement(output);
+            //if (input != null) return;//PolicyModelHelper.removePolicyForElement(input);
+            //if (output != null) return;//PolicyModelHelper.removePolicyForElement(output);
 
             // Profile #1
             if (ComboConstants.PROF_TRANSPORT.equals(profile)) {

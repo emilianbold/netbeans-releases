@@ -78,6 +78,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityCheckerRegistry;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
+import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.PolicyModelHelper;
 import org.openide.util.NbBundle;
 
 /**
@@ -103,7 +104,9 @@ public class ServicePanel extends SectionInnerPanel {
 
     private final Color RED = new java.awt.Color(255, 0, 0);
     private final Color REGULAR;
-            
+
+    private boolean updateServiceUrl = true;
+    
     public ServicePanel(SectionView view, Node node, Project p, Binding binding, UndoManager undoManager, JaxWsModel jaxwsmodel) {
         super(view);
         this.model = binding.getModel();
@@ -126,6 +129,12 @@ public class ServicePanel extends SectionInnerPanel {
             }
         } else {
             isFromJava = false;
+        }
+        
+        if ((!isFromJava) && 
+            (PolicyModelHelper.getPolicyUriForElement(binding) == null) &&
+            (ProfilesModelHelper.isServiceUrlHttps(binding))) {
+                updateServiceUrl = false; 
         }
         
         mtomChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
@@ -232,7 +241,6 @@ public class ServicePanel extends SectionInnerPanel {
                 if (!(RMModelHelper.isRMEnabled(binding))) {
                     RMModelHelper.enableRM(binding);
                     if (securityChBox.isSelected() && !ProfilesModelHelper.isSCEnabled(binding)) {
-                        String profile = (String) profileCombo.getSelectedItem();
                         ProfilesModelHelper.enableSecureConversation(binding, true);
                     }
                 }
@@ -342,7 +350,7 @@ public class ServicePanel extends SectionInnerPanel {
             doNotSync = true;
             try {
                 String profile = (String) profileCombo.getSelectedItem();
-                ProfilesModelHelper.setSecurityProfile(binding, profile, oldProfile);
+                ProfilesModelHelper.setSecurityProfile(binding, profile, oldProfile, updateServiceUrl);
                 if (devDefaultsChBox.isSelected()) {
                     ProfilesModelHelper.setServiceDefaults(profile, binding, project);
                     if (ProfilesModelHelper.isSSLProfile(profile) && !ProfilesModelHelper.isSSLProfile(oldProfile)) {

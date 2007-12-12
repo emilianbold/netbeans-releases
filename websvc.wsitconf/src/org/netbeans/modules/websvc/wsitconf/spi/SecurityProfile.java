@@ -78,7 +78,7 @@ public abstract class SecurityProfile {
      * Called when the profile is selected in the combo box.
      * @param component 
      */
-    public abstract void profileSelected(WSDLComponent component);
+    public abstract void profileSelected(WSDLComponent component, boolean updateServiceURL);
 
     /**
      * Called when there's another profile selected, or security is disabled at all.

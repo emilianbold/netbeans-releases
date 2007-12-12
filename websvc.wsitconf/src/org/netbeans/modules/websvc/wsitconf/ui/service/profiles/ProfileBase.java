@@ -55,11 +55,12 @@ public abstract class ProfileBase extends SecurityProfile {
         SecurityPolicyModelHelper.disableSecurity(component, false);
     }
 
-    public void profileSelected(WSDLComponent component) {
-        ProfilesModelHelper.setSecurityProfile(component, getDisplayName());
+    public void profileSelected(WSDLComponent component, boolean updateServiceUrl) {
+        ProfilesModelHelper.setSecurityProfile(component, getDisplayName(), updateServiceUrl);
         boolean isRM = RMModelHelper.isRMEnabled(component);
         if (isRM) {
             ProfilesModelHelper.enableSecureConversation(component, true);
         }
     }
+
 }
