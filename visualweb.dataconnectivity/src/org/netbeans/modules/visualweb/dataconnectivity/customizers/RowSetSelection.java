@@ -118,7 +118,7 @@ public class RowSetSelection extends javax.swing.JPanel {
      * Create the thing.  No UI is created by this constructor.
      * Rather, we just search for rowsets and dataproviders.
      */
-    public RowSetSelection( DesignContext currentContext, String tableName, String dataSrcName, String user, String url, String command ) {
+    public RowSetSelection( DesignContext currentContext, String tableName, String dataSrcName, String user, String url, String command) {
 
         this.curContext = currentContext ;
         this.tableName = tableName ;
@@ -169,15 +169,11 @@ public class RowSetSelection extends javax.swing.JPanel {
     ArrayList cBeans_request = new ArrayList() ;
     ArrayList cBeans_session = new ArrayList() ;
     ArrayList cBeans_application = new ArrayList() ;
+    ArrayList<DesignBean> alRowSets = new ArrayList<DesignBean>(); 
     private void findRowSets() {
 
 
-        String thisScope = (String)curContext.getContextData(Constants.ContextData.SCOPE) ;
-
-        if ( compareScopes(thisScope, SCOPE_PAGE) == -99 ) {
-            // if thisScope is unkown, set to PAGE.
-            thisScope= SCOPE_PAGE ;
-        }
+        String thisScope = (String)curContext.getContextData(Constants.ContextData.SCOPE) ;  
 
         //DesignContext[] contexts = curContext.getProject().getDesignContexts() ;
  	DesignContext[] contexts = getDesignContexts(curContext);
@@ -186,7 +182,7 @@ public class RowSetSelection extends javax.swing.JPanel {
             String cScope = (String)contexts[i].getContextData(Constants.ContextData.SCOPE) ;
             Log.log("RSS:  examining " + contexts[i].getDisplayName() + " , " + cScope ) ;
             if ( compareScopes(thisScope,  cScope) < 0 ) {
-                // ignore if "lower" scope.
+                // ignore if "same" scope.
                 continue ;
             }
             if ( SCOPE_PAGE.equals(thisScope) && contexts[i] != curContext ) {
@@ -195,16 +191,21 @@ public class RowSetSelection extends javax.swing.JPanel {
             }
             if ( SCOPE_REQUEST.equals(thisScope) && SCOPE_REQUEST.equals(cScope) ) {
                 // If request Scope, loop context is also request
-                if ( contexts[i] != curContext && ! isRequestBean(contexts[i] ) ) {
+                if ( contexts[i] != curContext &&  (contexts[i].getDisplayName().indexOf("RequestBean") < 0) ) {
                     // ignore if REQUEST and (not self or not RequestBean)
                     continue ;
                 }
-                if ( contexts[i] == curContext && ! isRequestBean(contexts[i])) {
+                if ( contexts[i] == curContext && contexts[i].getDisplayName().indexOf("RequestBean") < 0) {
                     cBeans_thisPage.add(curContext) ;
                 }
             }
-            DesignBean[] rowsets = contexts[i].getBeansOfType( CachedRowSetX.class ) ;
-            for ( int j = 0 ; j < rowsets.length ; j++ ) {
+            DesignBean[] rowsets = contexts[i].getBeansOfType( CachedRowSetX.class ) ;                       
+            for ( int j = 0 ; j < rowsets.length ; j++ ) {                    
+                if (alRowSets.contains(rowsets[j])) {
+                    continue;
+                }
+
+                alRowSets.add(rowsets[j]);               
                 int matchVal = compareRowSet( rowsets[j]) ;
                 if ( Log.isLoggable() ) {
                     Log.log( "RSS: " + contexts[i].getDisplayName() + "." + rowsets[j].getInstanceName()+ " match="+matchVal) ;
@@ -216,14 +217,20 @@ public class RowSetSelection extends javax.swing.JPanel {
                 }
             }
 
-            // add non-page "create" contexts
-            if ( isRequestBean(contexts[i])) {
-                cBeans_request.add(contexts[i]) ;
-            } else if ( compareScopes(cScope,SCOPE_SESSION) == 0 ) {
-                cBeans_session.add(contexts[i]) ;
-            } else if ( compareScopes(cScope,SCOPE_APPLICATION) == 0 ) {
-                cBeans_application.add(contexts[i]) ;
-            }
+            // add non-page "create" contexts            
+            if ( contexts[i].getDisplayName().indexOf("RequestBean") >= 0) {      
+                if (!cBeans_request.contains(contexts[i])) {
+                    cBeans_request.add(contexts[i]);
+                }
+            } else if (contexts[i].getDisplayName().indexOf("SessionBean") >= 0) {
+                if (!cBeans_session.contains(contexts[i])) {
+                    cBeans_session.add(contexts[i]);
+                }
+            } else if (contexts[i].getDisplayName().indexOf("ApplicationBean") >= 0) {
+                if (!cBeans_application.contains(contexts[i])) {
+                    cBeans_application.add(contexts[i]);
+                }
+            }             
         }
     }
     public boolean hasMatchingRowSets() {
@@ -567,20 +574,6 @@ public class RowSetSelection extends javax.swing.JPanel {
 
     public JComponent makeCommandColumn(String text ) {
         return new RowSetSelectionQuery( text ) ;
-    }
-
-
-    /***
-     * Determine if it's a request bean.
-     * TODO EA HACK:  just look for "RequestBean" in the name
-     */
-    private static boolean isRequestBean(DesignContext context) {
-        if ( SCOPE_REQUEST.equals(context.getContextData(Constants.ContextData.SCOPE))) {
-            if ( context.getDisplayName().indexOf("RequestBean") >= 0) {
-                return true ;
-            }
-        }
-        return false ;
     }
 
     private static final String SCOPE_PAGE = "page" ; // ??unused??
