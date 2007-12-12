@@ -82,7 +82,7 @@ public class AddServerInstanceWizard extends WizardDescriptor {
 
     private AddServerInstanceWizardIterator iterator;
 
-    private ServerChooserPanel chooser;
+    private ServerWizardPanel chooser;
 
     private static final Logger LOGGER = Logger.getLogger(AddServerInstanceWizard.class.getName()); // NOI18N
 
@@ -148,9 +148,9 @@ public class AddServerInstanceWizard extends WizardDescriptor {
         }
     }
 
-    private ServerChooserPanel getChooser() {
+    private ServerWizardPanel getChooser() {
         if (chooser == null) {
-            chooser = new ServerChooserPanel();
+            chooser = new ServerWizardPanel();
         }
         return chooser;
     }

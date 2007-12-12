@@ -48,10 +48,14 @@ import org.openide.nodes.Node;
  */
 public abstract class ServerInstance {
 
+    public abstract String getDisplayName();
+
     public abstract Node getNode();
 
     public abstract JComponent getCustomizer();
 
-    public abstract String getDisplayName();
+    public abstract boolean isRemovable();
+
+    public abstract void remove();
 
 }
