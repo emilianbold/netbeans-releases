@@ -41,15 +41,16 @@
 
 package gui;
 
-/*
+
 import gui.action.CreateRubyProject;
+/*
 import gui.action.EditorMenuPopup;
 import gui.action.OpenRubyProject;
 import gui.action.ScriptingExpandFolder;
 import gui.action.ScriptingNodePopup;
 import gui.action.ScriptingProjectNodePopup;
 import gui.action.TypingInScriptingEditor;
- * */
+*/
 import org.netbeans.junit.NbTestSuite;
 
 /**
@@ -59,9 +60,10 @@ import org.netbeans.junit.NbTestSuite;
 public class ScriptingMeasureActions {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        /*
+
         suite.addTest(new CreateRubyProject("testCreateRubyProject","Create Ruby project"));
         suite.addTest(new CreateRubyProject("testCreateRubyOnRailsProject","Create Ruby on Rails project"));
+        /*        
         
         suite.addTest(new OpenRubyProject("testOpenRubyProject","Open Ruby Project"));
         suite.addTest(new OpenRubyProject("testOpenRailsProject","Open Ruby on Rails Project"));
