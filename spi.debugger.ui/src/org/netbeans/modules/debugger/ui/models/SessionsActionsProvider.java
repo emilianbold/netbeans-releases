@@ -53,6 +53,7 @@ import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -60,14 +61,27 @@ import org.openide.util.NbBundle;
  */
 public class SessionsActionsProvider implements NodeActionsProvider {
     
-    private static final Action FINISH_ALL_ACTION = new AbstractAction 
+    private RequestProcessor sessionActionsRP;
+    
+    private synchronized RequestProcessor getSessionActionsRP() {
+        if (sessionActionsRP == null) {
+            sessionActionsRP = new RequestProcessor("SessionsActionsProvider", 1, true);
+        }
+        return sessionActionsRP;
+    }
+    
+    private final Action FINISH_ALL_ACTION = new AbstractAction 
         (NbBundle.getBundle(SessionsActionsProvider.class).getString("CTL_SessionAction_FinishAll_Label")) {
             public void actionPerformed (ActionEvent e) {
-                Session[] ss = DebuggerManager.getDebuggerManager ().
-                    getSessions ();
-                int i, k = ss.length;
-                for (i = 0; i < k; i++)
-                    ss [i].kill ();
+                getSessionActionsRP().post(new Runnable() {
+                    public void run() {
+                        Session[] ss = DebuggerManager.getDebuggerManager ().
+                            getSessions ();
+                        int i, k = ss.length;
+                        for (i = 0; i < k; i++)
+                            ss [i].kill ();
+                    }
+                });
             }
     };
     private Action MAKE_CURRENT_ACTION = Models.createAction (
@@ -85,16 +99,20 @@ public class SessionsActionsProvider implements NodeActionsProvider {
         },
         Models.MULTISELECTION_TYPE_EXACTLY_ONE
     );
-    private static final Action FINISH_ACTION = Models.createAction (
+    private final Action FINISH_ACTION = Models.createAction (
         NbBundle.getBundle(SessionsActionsProvider.class).getString("CTL_SessionAction_Finish_Label"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
                 return true;
             }
-            public void perform (Object[] nodes) {
-                int i, k = nodes.length;
-                for (i = 0; i < k; i++)
-                    ((Session) nodes [i]).kill ();
+            public void perform (final Object[] nodes) {
+                getSessionActionsRP().post(new Runnable() {
+                    public void run() {
+                        int i, k = nodes.length;
+                        for (i = 0; i < k; i++)
+                            ((Session) nodes [i]).kill ();
+                    }
+                });
             }
         },
         Models.MULTISELECTION_TYPE_ANY
