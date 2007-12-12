@@ -45,6 +45,7 @@ import java.awt.event.KeyEvent;
 
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
+import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.Action.Shortcut;
 import org.netbeans.jellytools.actions.OpenAction;
@@ -104,7 +105,7 @@ public class PageUpPageDownInEditor extends org.netbeans.performance.test.utilit
         // scroll to the place where we start
         if (pgup)
             // press CTRL+END
-            new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_END, KeyEvent.CTRL_MASK)).perform(editorOperator);
+            new Action(null, null, new Shortcut(KeyEvent.VK_END, KeyEvent.CTRL_MASK)).perform(editorOperator);
         else
             // go to the first line
             editorOperator.setCaretPositionToLine(1);
