@@ -122,8 +122,11 @@ public class IntroduceHint implements SelectionRule {
                 return;
             }
             OffsetRange lexOffsets = adjustOffsets(info, doc, start, end);
-            OffsetRange astOffsets = AstUtilities.getAstOffsets(info, lexOffsets);
+            if (lexOffsets == OffsetRange.NONE) {
+                return;
+            }
 
+            OffsetRange astOffsets = AstUtilities.getAstOffsets(info, lexOffsets);
             if (astOffsets == OffsetRange.NONE) {
                 return;
             }
@@ -255,6 +258,10 @@ public class IntroduceHint implements SelectionRule {
         adjustedStart = Math.min(adjustedStart, doc.getLength());
         adjustedEnd = Math.min(adjustedEnd, doc.getLength());
         
+        if (adjustedEnd <= adjustedStart) {
+            return OffsetRange.NONE;
+        }
+
         return new OffsetRange(adjustedStart, adjustedEnd);
     }
     
