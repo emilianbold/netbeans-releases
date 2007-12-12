@@ -80,8 +80,8 @@ public class NewWebFreeFormNameStepOperator extends WizardOperator {
                 "Templates/JSP_Servlet");
         projectWizard.selectCategory(web);
         String webFreeForm = Bundle.getStringTrimmed(
-                "org.netbeans.modules.web.freeform.ui.Bundle",
-                "TXT_NewWebFreeformProjectWizardIterator_NewProjectWizardTitle");
+                "org.netbeans.modules.web.freeform.resources.Bundle",
+                "Templates/Project/Web/webfreeform.xml");
         projectWizard.selectProject(webFreeForm);
         projectWizard.next();
         return new NewWebFreeFormNameStepOperator();
@@ -377,6 +377,7 @@ public class NewWebFreeFormNameStepOperator extends WizardOperator {
     /**
      * Performs verification of NewWebFreeFormNameStepOperator by accessing all its components.
      */
+    @Override
     public void verify() {
         lblBuildScript();
         lblProjectName();
