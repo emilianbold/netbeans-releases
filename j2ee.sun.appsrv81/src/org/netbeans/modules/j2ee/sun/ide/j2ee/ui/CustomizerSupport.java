@@ -56,6 +56,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.StringTokenizer;
 import javax.swing.AbstractListModel;
 import javax.swing.JButton;
@@ -701,7 +702,7 @@ public final class CustomizerSupport {
             if (index <= 0 || index==name.length()-1) {
                 return false;
             }
-            String extension = name.substring (index+1).toUpperCase();
+            String extension = name.substring (index+1).toUpperCase(Locale.ENGLISH);
             return this.extensions.contains(extension);
         }
 
