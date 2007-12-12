@@ -63,7 +63,7 @@ import org.tigris.subversion.svnclientadapter.*;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
 
 /**
- * Central part of CVS status management, deduces and caches statuses of files under version control.
+ * Central part of Subversion status management, deduces and caches statuses of files under version control.
  * 
  * @author Maros Sandor
  */
