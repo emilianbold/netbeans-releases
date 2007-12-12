@@ -41,17 +41,13 @@
 
 package org.netbeans.modules.editor.macros.storage.ui;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Vector;
+import java.awt.event.KeyEvent;
+import java.lang.ref.WeakReference;
+import javax.swing.KeyStroke;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.options.keymap.KeymapViewModel;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 
 public class MacrosModelTest extends NbTestCase {
     
@@ -86,113 +82,84 @@ public class MacrosModelTest extends NbTestCase {
         Lookup.getDefault().lookup(ModuleInfo.class);
     }
 
-    /* XXX does not compile against new API:
     public void testAddMacro () {
-        FileObject f2 = Repository.getDefault().getDefaultFileSystem().findResource("Editors/text/x-java/Settings.settings");
-        assertNotNull("No java base options file", f2);
-        
-        FileObject f1 = Repository.getDefault().getDefaultFileSystem().findResource("Services/MIMEResolver/org-netbeans-modules-editor-settings-storage-mime-resolver.xml");
-        assertNotNull("No mime resolver definition file", f1);
-        
-        FileObject f = Repository.getDefault().getDefaultFileSystem().findResource("Editors/text/x-java/FontsColors/NetBeans/Defaults/org-netbeans-modules-editor-java-token-colorings.xml");
-        assertNotNull("No java tokens colorings", f);
-        assertEquals("Wrong coloring settings file mime type", "text/x-nbeditor-fontcolorsettings", f.getMIMEType());
-        
+
         // 1) init model
-        MacrosModel model = new MacrosModel (
-            Lookups.singleton (new KeymapViewModel ())
-        );
-        Iterator it = model.getMacroNames ().iterator ();
-        Map macros = readMacros (model);
-        Vector original = clone (model.getShortcutsTableModel ().getDataVector ());
+        MacrosModel model = MacrosModel.get();
+        model.load();
+        int originalMacrosCount = model.getAllMacros().size();
         
         // 2) do some changes
-        model.addMacro ("testName", "testValue");
-        model.setShortcut (getIndex (model, "testName"), "Alt+Shift+H");
-        model.addMacro ("testName2", "testValue2");
-        model.setShortcut (getIndex (model, "testName2"), "Alt+Shift+R");
-        
-        // 3) test changes
-        assertFalse (original.equals (model.getShortcutsTableModel ().getDataVector ()));
-        assertEquals (original.size () + 2, model.getShortcutsTableModel ().getDataVector ().size ());
-        assertEquals (original.size () + 2, model.getMacroNames ().size ());
-        assertEquals ("testValue", model.getMacroText ("testName"));
-        assertEquals ("testValue2", model.getMacroText ("testName2"));
-        assertEquals ("Alt+Shift+H", getShortcut (model, "testName"));
-        assertEquals ("Alt+Shift+R", getShortcut (model, "testName2"));
-        
-        model.applyChanges ();
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException ie) {
-            // ignore
+        {
+            MacrosModel.Macro macro1 = model.createMacro(MimePath.EMPTY, "testName");
+            macro1.setCode("testValue");
+            macro1.setShortcut("Alt+Shift+H");
+        }
+        {
+            MacrosModel.Macro macro2 = model.createMacro(MimePath.EMPTY, "testName2");
+            macro2.setCode("testValue2");
+            macro2.setShortcut("Alt+Shift+R");
         }
         
         // 3) test changes
-        assertFalse (original.equals (model.getShortcutsTableModel ().getDataVector ()));
-        assertEquals (original.size () + 2, model.getShortcutsTableModel ().getDataVector ().size ());
-        assertEquals (original.size () + 2, model.getMacroNames ().size ());
-        assertEquals ("testValue", model.getMacroText ("testName"));
-        assertEquals ("testValue2", model.getMacroText ("testName2"));
-        assertEquals ("Alt+Shift+H", getShortcut (model, "testName"));
-        assertEquals ("Alt+Shift+R", getShortcut (model, "testName2"));
+        assertEquals ("Wrong number of macros", originalMacrosCount + 2, model.getAllMacros().size());
+        {
+            MacrosModel.Macro macro = macroByName(model, "testName");
+            assertNotNull("Cant find macro 'testName'", macro);
+            assertEquals("Wrong macro.code value", "testValue", macro.getCode());
+            assertEquals("Wrong number of shortcuts", 1, macro.getShortcuts().size());
+            assertEquals("Wrong macro action name", "macro-testName", macro.getShortcuts().get(0).getActionName());
+            assertEquals("Wrong number of keystrokes", 1, macro.getShortcuts().get(0).getKeyStrokeCount());
+            assertEquals("Wrong shortcut", KeyStroke.getKeyStroke(KeyEvent.VK_H, KeyEvent.SHIFT_DOWN_MASK | KeyEvent.ALT_DOWN_MASK), macro.getShortcuts().get(0).getKeyStrokeList().get(0));
+        }
+        {
+            MacrosModel.Macro macro = macroByName(model, "testName2");
+            assertNotNull("Cant find macro 'testName2'", macro);
+            assertEquals("Wrong macro.code value", "testValue2", macro.getCode());
+            assertEquals("Wrong number of shortcuts", 1, macro.getShortcuts().size());
+            assertEquals("Wrong macro action name", "macro-testName2", macro.getShortcuts().get(0).getActionName());
+            assertEquals("Wrong number of keystrokes", 1, macro.getShortcuts().get(0).getKeyStrokeCount());
+            assertEquals("Wrong shortcut", KeyStroke.getKeyStroke(KeyEvent.VK_R, KeyEvent.SHIFT_DOWN_MASK | KeyEvent.ALT_DOWN_MASK), macro.getShortcuts().get(0).getKeyStrokeList().get(0));
+        }
         
-        model = new MacrosModel (
-            Lookups.singleton (new KeymapViewModel ())
-        );
+        model.save();
         
-        // 3) test changes
-        assertFalse (original.equals (model.getShortcutsTableModel ().getDataVector ()));
-        assertEquals (original.size () + 2, model.getShortcutsTableModel ().getDataVector ().size ());
-        assertEquals (original.size () + 2, model.getMacroNames ().size ());
-        assertEquals ("testValue", model.getMacroText ("testName"));
-        assertEquals ("testValue2", model.getMacroText ("testName2"));
-        assertEquals ("Alt+Shift+H", getShortcut (model, "testName"));
-        assertEquals ("Alt+Shift+R", getShortcut (model, "testName2"));
+        // Discard the model
+        WeakReference<MacrosModel> ref = new WeakReference<MacrosModel>(model);
+        model = null;
+        assertGC("The shared instance of MacrosModel was not GCed", ref);
+        
+        model = MacrosModel.get();
+        model.load();
+        
+        // 4) test the changes again
+        assertEquals ("Wrong number of macros", originalMacrosCount + 2, model.getAllMacros().size());
+        {
+            MacrosModel.Macro macro = macroByName(model, "testName");
+            assertNotNull("Cant find macro 'testName'", macro);
+            assertEquals("Wrong macro.code value", "testValue", macro.getCode());
+            assertEquals("Wrong number of shortcuts", 1, macro.getShortcuts().size());
+            assertEquals("Wrong macro action name", "macro-testName", macro.getShortcuts().get(0).getActionName());
+            assertEquals("Wrong number of keystrokes", 1, macro.getShortcuts().get(0).getKeyStrokeCount());
+            assertEquals("Wrong shortcut", KeyStroke.getKeyStroke(KeyEvent.VK_H, KeyEvent.SHIFT_DOWN_MASK | KeyEvent.ALT_DOWN_MASK), macro.getShortcuts().get(0).getKeyStrokeList().get(0));
+        }
+        {
+            MacrosModel.Macro macro = macroByName(model, "testName2");
+            assertNotNull("Cant find macro 'testName2'", macro);
+            assertEquals("Wrong macro.code value", "testValue2", macro.getCode());
+            assertEquals("Wrong number of shortcuts", 1, macro.getShortcuts().size());
+            assertEquals("Wrong macro action name", "macro-testName2", macro.getShortcuts().get(0).getActionName());
+            assertEquals("Wrong number of keystrokes", 1, macro.getShortcuts().get(0).getKeyStrokeCount());
+            assertEquals("Wrong shortcut", KeyStroke.getKeyStroke(KeyEvent.VK_R, KeyEvent.SHIFT_DOWN_MASK | KeyEvent.ALT_DOWN_MASK), macro.getShortcuts().get(0).getKeyStrokeList().get(0));
+        }
     }
-    
-    private String getShortcut (MacrosModel model, String macroName) {
-        Iterator it = model.getShortcutsTableModel ().getDataVector ().
-            iterator ();
-        while (it.hasNext ()) {
-            Vector line = (Vector) it.next ();
-            if (line.get (0).equals (macroName))
-                return (String) line.get (1);
+
+    private static MacrosModel.Macro macroByName(MacrosModel model, String macroName) {
+        for(MacrosModel.Macro macro : model.getAllMacros()) {
+            if (macro.getName().equals(macroName)) {
+                return macro;
+            }
         }
         return null;
     }
-    
-    private Vector clone (Vector v) {
-        Iterator it = v.iterator ();
-        Vector result = new Vector ();
-        while (it.hasNext ()) {
-            Vector line = (Vector) it.next ();
-           result.add (line.clone ());
-        }
-        return result;
-    }
-    
-    private int getIndex (MacrosModel model, String macroName) {
-        Vector data = model.getShortcutsTableModel ().getDataVector ();
-        int i, k = data.size ();
-        for (i = 0; i < k; i++) {
-            Vector line = (Vector) data.get (i);
-            if (macroName.equals (line.get (0))) return i;
-        }
-        return -1;
-    }
-    
-    private Map readMacros (MacrosModel model) {
-        Iterator it = model.getMacroNames ().iterator ();
-        Map macros = new HashMap ();
-        while (it.hasNext ()) {
-            String macroName = (String) it.next ();
-            macros.put (
-                macroName,
-                model.getMacroText (macroName)
-            );
-        }
-        return macros;
-    }
-     */
 }
