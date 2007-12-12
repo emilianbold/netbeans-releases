@@ -41,6 +41,7 @@
 
 package gui;
 
+/*
 import gui.action.CreateRubyProject;
 import gui.action.EditorMenuPopup;
 import gui.action.OpenRubyProject;
@@ -48,6 +49,7 @@ import gui.action.ScriptingExpandFolder;
 import gui.action.ScriptingNodePopup;
 import gui.action.ScriptingProjectNodePopup;
 import gui.action.TypingInScriptingEditor;
+ * */
 import org.netbeans.junit.NbTestSuite;
 
 /**
