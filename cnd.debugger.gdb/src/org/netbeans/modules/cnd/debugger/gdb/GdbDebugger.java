@@ -238,7 +238,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             gdb.gdb_version();
             gdb.environment_directory(runDirectory);
             gdb.gdb_show("language"); // NOI18N
-            gdb.set("print repeat", Integer.toString(CppSettings.getDefault().getArrayRepeatThreshold()));
+            gdb.set("print repeat",  // NOI18N
+                    Integer.toString(CppSettings.getDefault().getArrayRepeatThreshold()));
             if (pae.getID() == DEBUG_ATTACH) {
                 programPID = (Long) lookupProvider.lookupFirst(null, Long.class);
                 CommandBuffer cb = new CommandBuffer(gdb.target_attach(Long.toString(programPID)));

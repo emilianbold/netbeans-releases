@@ -112,7 +112,14 @@ public class VariablesTableModel implements TableModel, Constants {
             } else if (columnID.equals(LOCALS_VALUE_COLUMN_ID) || columnID.equals(WATCH_VALUE_COLUMN_ID)) {
                 if (row instanceof AbstractVariable) {
                     AbstractVariable var = (AbstractVariable) row;
-                    return GdbUtils.isPointer(var.getType()) ? false : var.getFieldsCount() != 0;
+                    if (GdbUtils.isPointer(var.getType())) {
+                        return false;
+                    } else if (var.getType().length() == 0 && var.getValue().equals("...")) { // NOI18N
+                        // a truncated array...
+                        return true;
+                    } else {
+                        return var.getFieldsCount() != 0;
+                    }
                 } else {
                     return true;
                 }

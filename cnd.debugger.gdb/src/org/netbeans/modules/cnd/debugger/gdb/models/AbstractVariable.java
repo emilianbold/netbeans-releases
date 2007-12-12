@@ -791,14 +791,37 @@ public class AbstractVariable implements LocalVariable, Customizer {
         int count = 0;
         int idx = 0;
         int pos;
+        boolean truncated = false;
         
         while (idx < value.length()) {
             if (value.substring(idx).startsWith("\\\"")) { // NOI18N
-                pos = value.indexOf("\\\",", idx);
-                if (pos > 0) {
+                pos = value.indexOf("\\\",", idx); // NOI18N
+                if (pos >= 0) {
                     frag = value.substring(idx + 2, pos);
-                    count += parseCharArrayFragment(var, basename, type, frag);
                     idx += frag.length() + 4;
+                } else {
+                    // Reached the end of the string...
+                    if (value.endsWith("\\\"...")) { // NOI18N
+                        frag = value.substring(idx + 2, value.length() - 5);
+                        truncated = true;
+                    } else {
+                        frag = value.substring(idx + 2, value.length() - 2);
+                    }
+                    idx = value.length(); // stop iterating...
+                }
+                count += parseCharArrayFragment(var, basename, type, frag);
+                if (truncated) {
+                    String high;
+                    try {
+                        high = type.substring(type.indexOf("[") + 1, type.indexOf("]")); // NOI18N
+                        int xx = Integer.parseInt(high);
+                    } catch (Exception ex) {
+                        high = "..."; // NOI18N
+                    }
+                    
+                    var.addField(new AbstractField(var, basename +
+                            "[" + var.fields.length + "-" + high + "]", // NOI18N
+                            "", "...")); // NOI18N
                 }
             } else if (value.charAt(idx) == ' ' || value.charAt(idx) == ',') {
                 idx++;
@@ -822,8 +845,8 @@ public class AbstractVariable implements LocalVariable, Customizer {
         int idx = var.fields.length;
         int pos = value.indexOf(' ');
         String val = value.substring(0, pos);
-        int pos1 = value.indexOf("<repeats ");
-        int pos2 = value.indexOf(" times>");
+        int pos1 = value.indexOf("<repeats "); // NOI18N
+        int pos2 = value.indexOf(" times>"); // NOI18N
         
         try {
             count = Integer.parseInt(value.substring(pos1 + 9, pos2));

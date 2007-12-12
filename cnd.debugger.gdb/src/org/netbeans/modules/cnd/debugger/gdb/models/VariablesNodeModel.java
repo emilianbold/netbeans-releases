@@ -156,7 +156,12 @@ public class VariablesNodeModel implements NodeModel {
         if (o == TreeModel.ROOT) {
             return LC_LocalsModelColumnNameDesc;
         } else if (o instanceof Field) {
-            return "(" + ((Field) o).getType() + ") " + ((Field) o).getValue(); // NOI18N
+            Field f = (Field) o;
+            if (f.getType().length() == 0 && f.getValue().equals("...")) { // NOI18N
+                return NbBundle.getMessage(VariablesNodeModel.class, "LBL_TruncatedByGdb"); // NOI18N
+            } else {
+                return "(" + ((Field) o).getType() + ") " + ((Field) o).getValue(); // NOI18N
+            }
         } else if (o instanceof LocalVariable) {
             return "(" + ((LocalVariable) o).getType() + ") " + ((LocalVariable) o).getValue(); // NOI18N
         }

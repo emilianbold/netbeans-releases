@@ -203,7 +203,7 @@ public class GdbProxy implements GdbMiDefinitions {
     }
     
     public int info_files() {
-        return engine.sendCommand("info files");
+        return engine.sendCommand("info files"); // NOI18N
     }
 
     /** Set the current thread */
