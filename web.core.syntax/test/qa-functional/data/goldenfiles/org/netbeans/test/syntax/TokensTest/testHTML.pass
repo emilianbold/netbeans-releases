@@ -488,7 +488,7 @@ js_whitespace:
         
 js_identifier:alert
 js_operator:(
-s_string:'Message'
+js_string:'Message'
 js_operator:)
 js_separator:;
 js_whitespace:
