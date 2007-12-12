@@ -53,47 +53,25 @@ import javax.swing.text.JTextComponent;
 import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
 
-/**A {@link JavaSourceTaskFactorySupport} that registers tasks to all files that are
- * opened in the editor and are visible. This factory also listens on the caret on
- * opened and visible JTextComponents and reschedules the tasks as necessary.
- *
- * The tasks may access current caret position using {@link #getLastPosition} method.
- * 
- * @author Jan Lahoda
- */
 public abstract class CaretAwareCsmFileTaskFactory extends CsmFileTaskFactory {
     
     private static final int DEFAULT_RESCHEDULE_TIMEOUT = 300;
-    private static final RequestProcessor WORKER = new RequestProcessor("CaretAwareCsmFileTaskFactory worker");
+    private static final RequestProcessor WORKER = new RequestProcessor("CaretAwareCsmFileTaskFactory worker"); //NOI18N
     
     private int timeout;
     private String[] supportedMimeTypes;
     
-    /**Construct the CaretAwareJavaSourceTaskFactory with given {@link Phase} and {@link Priority}.
-     *
-     * @param phase phase to use for tasks created by {@link #createTask}
-     * @param priority priority to use for tasks created by {@link #createTask}
-     */
     public CaretAwareCsmFileTaskFactory() {
         this((String[]) null);
     }
     
-    /**Construct the CaretAwareJavaSourceTaskFactory with given {@link Phase} and {@link Priority}.
-     *
-     * @param phase phase to use for tasks created by {@link #createTask}
-     * @param priority priority to use for tasks created by {@link #createTask}
-     * @param supportedMimeTypes a list of mime types on which the tasks created by this factory should be run
-     * @since 0.21
-     */
     public CaretAwareCsmFileTaskFactory(String... supportedMimeTypes) {
         super();
-        //XXX: weak, or something like this:
         OpenedEditors.getDefault().addChangeListener(new ChangeListenerImpl());
         this.timeout = DEFAULT_RESCHEDULE_TIMEOUT;
         this.supportedMimeTypes = supportedMimeTypes != null ? supportedMimeTypes.clone() : null;
     }
     
-    /**@inheritDoc*/
     public List<FileObject> getFileObjects() {
         List<FileObject> files = OpenedEditors.filterSupportedMIMETypes(OpenedEditors.getDefault().getVisibleEditorsFiles(), supportedMimeTypes);
 
@@ -103,11 +81,6 @@ public abstract class CaretAwareCsmFileTaskFactory extends CsmFileTaskFactory {
     private Map<JTextComponent, ComponentListener> component2Listener = new HashMap<JTextComponent, ComponentListener>();
     private static Map<FileObject, Integer> file2LastPosition = new WeakHashMap<FileObject, Integer>();
     
-    /**Returns current caret position in current {@link JTextComponent} for a given file.
-     *
-     * @param file file from which the position should be found
-     * @return caret position in the current {@link JTextComponent} for a given file.
-     */
     public synchronized static int getLastPosition(FileObject file) {
         if (file == null) {
             throw new NullPointerException("Cannot pass null file!");

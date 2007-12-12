@@ -159,7 +159,7 @@ public abstract class CsmFileTaskFactory {
         scheduler.rescheduleTask(source, task);
     }
     
-    private static RequestProcessor WORKER = new RequestProcessor("CsmFileTaskFactory", 1);
+    private static RequestProcessor WORKER = new RequestProcessor("CsmFileTaskFactory", 1); //NOI18N
 
     static {
         CsmFileTaskFactoryManager.ACCESSOR = new CsmFileTaskFactoryManager.Accessor() {
@@ -180,10 +180,13 @@ public abstract class CsmFileTaskFactory {
             List<TaskPair> taskPairs = csmFile2task.get(js);
             if (taskPairs == null) {
                 taskPairs = new ArrayList<TaskPair>();
+                csmFile2task.put(js, taskPairs); 
             }
             RequestProcessor.Task rpTask = RequestProcessor.getDefault().create(task, true);
             taskPairs.add(new TaskPair(task, rpTask));
-            csmFile2task.put(js, taskPairs); // do we need this?
+            if (js.isParsed()) {
+                reschedule(rpTask);
+            }
         }
 
         public void removeParseCompletionTask(CsmFile js, Runnable task) {
@@ -196,21 +199,23 @@ public abstract class CsmFileTaskFactory {
                     break;
                 }
             }
-            csmFile2task.put(js, taskPairs); // do we need this?*/
+            if (taskPairs.isEmpty()) {
+                csmFile2task.remove(js);
+            }
+            //csmFile2task.put(js, taskPairs); // do we need this?*/
         }
         
         public void rescheduleTask(CsmFile js, Runnable task) {
             List<TaskPair> taskPairs = csmFile2task.get(js);
             for (TaskPair taskPair : taskPairs) {
                 if (taskPair.task == task) {
-                    reschedule(js, taskPair.rpTask);
+                    reschedule(taskPair.rpTask);
                     break;
                 }
             }
         }
         
-        private void reschedule(CsmFile js, RequestProcessor.Task rpTask) {
-            System.err.println("rescheduleTask for " + js.getAbsolutePath());
+        private void reschedule(RequestProcessor.Task rpTask) {
             rpTask.cancel();
             rpTask.run();
         }
@@ -219,16 +224,12 @@ public abstract class CsmFileTaskFactory {
             List<TaskPair> tasks = csmFile2task.get(file);
             if (tasks != null) {
                 for (TaskPair taskPair : tasks) {
-                    reschedule(file, taskPair.rpTask);
+                    reschedule(taskPair.rpTask);
                 }
 
             }
         }
-        //private final Map<CsmFile, List<Runnable>> csmFile2task = new HashMap<CsmFile, List<Runnable>>();
         private final Map<CsmFile, List<TaskPair>> csmFile2task = new HashMap<CsmFile, List<TaskPair>>();
-        // temp map before task and rptask would be merged
-        //private final Map<Runnable, RequestProcessor.Task> task2rpTask = new HashMap<Runnable, RequestProcessor.Task>();
-        //private final Map<RequestProcessor.Task, Runnable> rpTask2task = new HashMap<RequestProcessor.Task, Runnable>();
         
         private final class TaskPair {
 
