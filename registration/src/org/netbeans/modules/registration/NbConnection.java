@@ -47,22 +47,15 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.net.ssl.HttpsURLConnection;
 import javax.swing.SwingUtilities;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.SharedClassObject;
@@ -122,7 +115,7 @@ class NbConnection {
     
     private static void checkStatus () {
         LOG.log(Level.FINE,"checkStatus");
-        File dir = NbInstaller.getServiceTagDirHome();
+        File dir = NbServiceTagSupport.getServiceTagDirHome();
         File statusFile = new File(dir,STATUS_FILE);
         if (statusFile.exists()) {
             //Status file exists, check its content
@@ -177,7 +170,7 @@ class NbConnection {
         if (value != null) {
             status.setStatus(value);
         }
-        File dir = NbInstaller.getServiceTagDirHome();
+        File dir = NbServiceTagSupport.getServiceTagDirHome();
         File statusFile = new File(dir,STATUS_FILE);
         
         BufferedOutputStream out = null;
@@ -199,7 +192,7 @@ class NbConnection {
         }
         if (StatusData.STATUS_REGISTERED.equals(status.getStatus())) {
             try {
-                NbConnection.register(NbInstaller.getRegistrationData());
+                NbConnection.register(NbServiceTagSupport.getRegistrationData());
             } catch (IOException ex) {
                 LOG.log(Level.INFO,
                 "Error: Cannot register product", ex);
@@ -207,59 +200,6 @@ class NbConnection {
         }
     }
     
-    /**
-     * Returns a URL for JDK registration interfacing with the Sun Connection
-     * registration relay service in this form:
-     *   <registration-url>/<registry_urn>?product=jdk&locale=<locale-lang>
-     *
-     * The <registration-url> can be overridden by an environment 
-     * variable or a system property.
-     *
-     * 1) "servicetag.register.testing" system property to switch to the
-     *    Sun Connection registration sandbox testing.
-     * 2) "servicetag.registration.url" system property to override 
-     *    the URL
-     * 3) Default production URL
-     *
-     */
-    static URL getRegistrationURL(String registrationURN) {
-        String url;
-        url = SANDBOX_TESTING_URL;
-        //url = NB_REGISTRATION_URL;
-
-        // trim whitespaces 
-        url = url.trim(); 
-        if (url.length() == 0) {
-            throw new InternalError("Empty registration url set");
-        }
-
-        // Add the registry_urn in the URL's query
-        String registerURL = rewriteURL(url, registrationURN);
-        try {
-            return new URL(registerURL);
-        } catch (MalformedURLException ex) {
-            // should never reach here
-            InternalError x = 
-                new InternalError(ex.getMessage());
-            x.initCause(ex);
-            throw x;               
-        }
-    }
-    
-    private static String rewriteURL(String url, String registryURN) {
-        StringBuilder sb = new StringBuilder(url.trim());
-        int len = sb.length();
-        if (sb.charAt(len-1) != '/') {
-            sb.append('/');
-        }
-        sb.append(registryURN);
-        sb.append("?");
-        sb.append("product=jdk");
-        sb.append("&");
-        sb.append("locale=").append(Locale.getDefault().getLanguage());
-        return sb.toString();
-    }
-
     /**
      * Registers all products in the given product registry.  If it fails
      * to post the service tag registry, open the browser with the offline 
@@ -273,10 +213,10 @@ class NbConnection {
     static void register(RegistrationData regData) throws IOException {
         // Gets the URL for SunConnection registration relay service
         LOG.log(Level.FINE,"Product registration");
-        URL url = getRegistrationURL(regData.getRegistrationURN());
+        URL url = NbConnectionSupport.getRegistrationURL(regData.getRegistrationURN());
 
         // Post the Product Registry to Sun Connection
-        boolean succeed = postRegistrationData(url, regData);
+        boolean succeed = NbConnectionSupport.postRegistrationData(url, regData);
         if (succeed) {
             // service tags posted successfully
             // now prompt for registration
@@ -310,56 +250,14 @@ class NbConnection {
             HtmlBrowser.URLDisplayer.getDefault().showURL(url);
         }
     }
-
-    /**
-     * POST service tag registry to Sun Connection
-     * @param loc the URL of the webapp to handle the POST request
-     * @param streg the Service Tag registry
-     * @return true if posting succeeds; otherwise, false.
-     */
-    private static boolean postRegistrationData(URL url, 
-                                                RegistrationData registration) {
-        try {
-            HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
-            con.setDoInput(true);
-            con.setDoOutput(true);
-            con.setUseCaches(false);
-            con.setAllowUserInteraction(false);
-            con.setRequestMethod("POST");
-
-            con.setRequestProperty("Content-Type", "text/xml;charset=\"utf-8\"");
-            con.connect();
-            
-            LOG.log(Level.FINE,"POSTing registration data at " + url);
-            OutputStream out = con.getOutputStream();
-            registration.storeToXML(out);
-            LOG.log(Level.FINE,"Registration data: " + registration.toString());
-            out.flush();
-            out.close();
-
-            int returnCode = con.getResponseCode();
-            LOG.log(Level.FINE,"POST return status = " + returnCode);
-            printReturnData(con, returnCode);
-            return (returnCode == HttpURLConnection.HTTP_OK);
-        } catch (MalformedURLException me) {
-            // should never reach here
-            InternalError x = new InternalError("Error in registering: " + me.getMessage());
-            x.initCause(me);
-            throw x;
-        } catch (Exception ioe) {
-            // IOException and UnknownHostException
-            LOG.log(Level.FINE,"Post registration data failed:",ioe);
-            return false;
-        }
-    }
-
+    
     /**
      * Opens the offline registratioin page in the browser.
      * 
      */
     private static void openOfflineRegisterPage()
             throws IOException {
-        File registerPage = NbInstaller.getRegistrationHtmlPage();
+        File registerPage = NbServiceTagSupport.getRegistrationHtmlPage();
         if (BrowserSupport.isSupported()) {
             try {
                 BrowserSupport.browse(registerPage.toURI());
@@ -380,27 +278,5 @@ class NbConnection {
             HtmlBrowser.URLDisplayer.getDefault().showURL(registerPage.toURI().toURL());
         }
     }
-
-    private static void printReturnData(HttpURLConnection con, int returnCode)
-            throws IOException {
-        BufferedReader reader = null;
-        try {
-            if (returnCode < 400) {
-                reader = new BufferedReader(
-                             new InputStreamReader(con.getInputStream()));
-            } else {
-                reader = new BufferedReader(
-                             new InputStreamReader(con.getErrorStream()));
-            }
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                sb.append(line).append("\n");
-            }
-        } finally {
-            if (reader != null) {
-                reader.close();
-            }
-        }
-    }
+    
 }
