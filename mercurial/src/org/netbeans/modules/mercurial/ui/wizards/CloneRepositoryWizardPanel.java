@@ -283,11 +283,17 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
                     // Note: valid repository returns con.getContentLength() = -1
                     // so no way to reliably test if this url exists, without using hg
                     if (con != null){
-                        if (con.getResponseCode() != HttpURLConnection.HTTP_OK){
+                        String userInfo = uri.getUserInfo();
+                        boolean bNoUserAndOrPasswordInURL = userInfo == null;
+                        // If username or username:password is in the URL the con.getResponseCode() returns -1 and this check would fail
+                        if (bNoUserAndOrPasswordInURL && con.getResponseCode() != HttpURLConnection.HTTP_OK){
                             invalidMsg = NbBundle.getMessage(CloneRepositoryWizardPanel.class,
                                     "MSG_Progress_Clone_CannotAccess_Err");
                             con.disconnect();
                             return;
+                        }else if (userInfo != null){
+                            Mercurial.LOG.log(Level.FINE, 
+                                "RepositoryStepProgressSupport.perform(): UserInfo - {0}", new Object[]{userInfo}); // NOI18N
                         }
                         con.disconnect();
                     }

@@ -92,7 +92,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
     public final static int FLAG_SHOW_PROXY             = 64;    
     
     private final static String LOCAL_URL_HELP          = "file:///repository_path";              // NOI18N
-    private final static String HTTP_URL_HELP           = "http://hostname/repository_path";      // NOI18N
+    private final static String HTTP_URL_HELP           = "http://[username[:password]@]hostname/repository_path";      // NOI18N
     private final static String HTTPS_URL_HELP          = "https://hostname/repository_path";     // NOI18N
     private final static String STATIC_HTTP_URL_HELP    = "static-http://hostname/repository_path";       // NOI18N
     private final static String SSH_URL_HELP        = "ssh://hostname/repository_path";   // NOI18N   
