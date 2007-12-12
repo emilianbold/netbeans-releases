@@ -42,9 +42,13 @@
 package org.netbeans.modules.groovy.editor.parser;
 
 import groovy.lang.GroovyClassLoader;
+import groovy.lang.GroovyClassLoader;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.codehaus.groovy.ast.CompileUnit;
 import org.codehaus.groovy.ast.ModuleNode;
@@ -55,6 +59,7 @@ import org.codehaus.groovy.control.Phases;
 import org.codehaus.groovy.control.messages.SimpleMessage;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.syntax.SyntaxException;
+import org.codehaus.groovy.tools.javac.JavaAwareCompilationUnit;
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.Element;
 import org.netbeans.api.gsf.ElementHandle;
@@ -68,12 +73,16 @@ import org.netbeans.api.gsf.PositionManager;
 import org.netbeans.api.gsf.SemanticAnalyzer;
 import org.netbeans.api.gsf.Severity;
 import org.netbeans.api.gsf.SourceFileReader;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.groovy.editor.AstNodeAdapter;
 import org.netbeans.modules.groovy.editor.AstUtilities;
 import org.netbeans.modules.groovy.editor.elements.AstRootElement;
 import org.netbeans.spi.gsf.DefaultError;
 import org.netbeans.spi.gsf.DefaultPosition;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -139,17 +148,19 @@ public class GroovyParser implements Parser {
         }
         
         FileObject fo = context.file.getFileObject();
-
-        GroovyClassLoader classLoader = new GroovyClassLoader();
-
+        ClassPath cp = ClassPathSupport.createProxyClassPath(
+                ClassPath.getClassPath(fo, ClassPath.COMPILE),
+                ClassPath.getClassPath(fo, ClassPath.SOURCE)
+                );
         CompilerConfiguration configuration = new CompilerConfiguration();
+        ClassLoader parentLoader = cp == null ? null : cp.getClassLoader(true);
+        GroovyClassLoader classLoader = new GroovyClassLoader(parentLoader, configuration);
         CompilationUnit compilationUnit = new CompilationUnit(configuration, null, classLoader);
         InputStream inputStream = new ByteArrayInputStream(context.source.getBytes());
         compilationUnit.addSource(fileName, inputStream);
 
         try {
             compilationUnit.compile(Phases.SEMANTIC_ANALYSIS); // which phase should be used?
-//            compilationUnit.compile(); // which phase should be used?
         } catch (Exception e) {
         }
 
@@ -205,11 +216,9 @@ public class GroovyParser implements Parser {
                 for (Object object : errors) {
                     if (object instanceof SyntaxErrorMessage) {
                         SyntaxException ex = ((SyntaxErrorMessage)object).getCause();
-                        if (ex.getMessage().indexOf("unable to resolve class") == -1) { // NOI18N
                             int startOffset = AstUtilities.getOffset(context.source, ex.getStartLine(), ex.getStartColumn());
                             int endOffset = AstUtilities.getOffset(context.source, ex.getLine(), ex.getEndColumn());
                             notifyError(context, null, Severity.ERROR, ex.getMessage(), null, startOffset, endOffset);
-                        }
                     } else if (object instanceof SimpleMessage) {
                         String message = ((SimpleMessage)object).getMessage();
                         notifyError(context, null, Severity.ERROR, message, null, -1);
