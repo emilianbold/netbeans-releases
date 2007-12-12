@@ -928,4 +928,29 @@ public class SvnUtils {
             }
         }
     }    
+    
+    public static <T> boolean equals(List<T> l1, List<T> l2) {           
+        
+        if(l1 == null && l2 == null) {
+            return true;
+        }
+        
+        if( (l1 == null && l2 != null && l2.size() > 0) ||
+            (l2 == null && l1 != null && l1.size() > 0) ) 
+        {
+            return false;
+        }
+
+        if(l1.size() != l2.size()) {
+            return false;
+        }        
+        
+        for(T t : l1) {
+            if(!l2.contains(t)) {
+                return false;
+            }
+        }
+        
+        return true;        
+    }    
 }

@@ -59,6 +59,7 @@ import org.netbeans.modules.subversion.SvnModuleConfig;
 import java.util.regex.Pattern;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.subversion.ui.wizards.URLPatternWizard;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -138,19 +139,30 @@ public class AnnotationSettings implements ActionListener, TableModelListener, L
     void update() {
         reset(SvnModuleConfig.getDefault().getAnnotationExpresions());
     }
+       
+    boolean isChanged() {                
+        List<AnnotationExpression> storedExpressions = SvnModuleConfig.getDefault().getAnnotationExpresions();
+        List<AnnotationExpression> expressions = getAnnotationExpressions();                
+        return !SvnUtils.equals(storedExpressions, expressions);
+    }
+    
+    void applyChanges() {                                         
+        List<AnnotationExpression> exps = getAnnotationExpressions();
+        SvnModuleConfig.getDefault().setAnnotationExpresions(exps);        
+    }    
 
-    void applyChanges() {                                 
+    private List<AnnotationExpression> getAnnotationExpressions() {
         TableModel model = panel.expresionsTable.getModel();
-        List<AnnotationExpression> exps = new ArrayList<AnnotationExpression>(model.getRowCount());        
+        List<AnnotationExpression> exps = new ArrayList<AnnotationExpression>(model.getRowCount());
         for (int r = 0; r < model.getRowCount(); r++) {
             String urlExp = (String) model.getValueAt(r, 0);
-            if(urlExp.trim().equals("")) {
+            if (urlExp.trim().equals("")) {
                 continue;
             }
-            String annotationExp = (String) model.getValueAt(r, 1);            
+            String annotationExp = (String) model.getValueAt(r, 1);
             exps.add(new AnnotationExpression(urlExp, annotationExp));
         }
-        SvnModuleConfig.getDefault().setAnnotationExpresions(exps);        
+        return exps;
     }    
     
     public void actionPerformed(ActionEvent evt) {

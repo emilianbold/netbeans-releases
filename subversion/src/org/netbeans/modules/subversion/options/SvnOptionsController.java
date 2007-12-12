@@ -99,8 +99,7 @@ public final class SvnOptionsController extends OptionsPanelController implement
         
     }
     
-    public void applyChanges() {
-                                 
+    public void applyChanges() {                                 
         // executable
         SvnModuleConfig.getDefault().setExecutableBinaryPath(panel.executablePathTextField.getText());                
         SvnModuleConfig.getDefault().setAnnotationFormat(panel.annotationTextField.getText());            
@@ -122,10 +121,13 @@ public final class SvnOptionsController extends OptionsPanelController implement
         return true;
     }
     
-    public boolean isChanged() {
-        return false; // NOI18N // XXX
+    public boolean isChanged() {        
+        return !panel.executablePathTextField.getText().equals(SvnModuleConfig.getDefault().getExecutableBinaryPath()) || 
+               !panel.annotationTextField.getText().equals(SvnModuleConfig.getDefault().getAnnotationFormat()) || 
+               repository.isChanged() || 
+               annotationSettings.isChanged();
     }
-    
+        
     public org.openide.util.HelpCtx getHelpCtx() {
         return new org.openide.util.HelpCtx(getClass());
     }
@@ -182,7 +184,8 @@ public final class SvnOptionsController extends OptionsPanelController implement
     private void onManageLabelsClick() {     
         String labelFormat = panel.annotationTextField.getText().replaceAll(" ", "");        
         annotationSettings.show(labelFormat != null && labelFormat.indexOf("{folder}") > -1);                
-    }            
+    }
+    
     private class LabelVariable {
         private String description;
         private String variable;

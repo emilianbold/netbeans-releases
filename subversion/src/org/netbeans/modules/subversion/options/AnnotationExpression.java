@@ -64,7 +64,32 @@ public class AnnotationExpression {
     }
     public String getAnnotationExp() {
         return annotationExp;
-    }        
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final AnnotationExpression other = (AnnotationExpression) obj;
+        if (this.urlExp != other.urlExp && (this.urlExp == null || !this.urlExp.equals(other.urlExp))) {
+            return false;
+        }
+        if (this.annotationExp != other.annotationExp && (this.annotationExp == null || !this.annotationExp.equals(other.annotationExp))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        return hash;
+    }
+    
     public Pattern getUrlPatern() {
         return urlPattern;
     }

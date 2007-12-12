@@ -72,6 +72,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
+import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -216,6 +217,12 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
 
     public void storeRecentUrls() {
         SvnModuleConfig.getDefault().setRecentUrls(getRecentUrls());
+    }
+    
+    public boolean isChanged() {
+        List<RepositoryConnection> connections = getRecentUrls();
+        List<RepositoryConnection> storedConnections = SvnModuleConfig.getDefault().getRecentUrls();        
+        return !SvnUtils.equals(connections, storedConnections);
     }
     
     private List<RepositoryConnection> getRecentUrls() {
