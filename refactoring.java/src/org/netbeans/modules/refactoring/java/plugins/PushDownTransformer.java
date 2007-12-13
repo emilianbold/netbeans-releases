@@ -64,10 +64,10 @@ public class PushDownTransformer extends RefactoringVisitor {
     private Problem problem;
  
     public Problem getProblem() {
-		return problem;
-	}
+        return problem;
+    }
 
-	public PushDownTransformer(MemberInfo<ElementHandle<? extends Element>> members[]) {
+    public PushDownTransformer(MemberInfo<ElementHandle<? extends Element>> members[]) {
         this.members = members;
     }
 
