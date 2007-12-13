@@ -118,8 +118,8 @@ public class ImportProjectAction extends CallableSystemAction {
                         DialogDisplayer.getDefault().notify(d);
                     }
                     // open created projects when importing finished
-                    OpenProjects.getDefault().open(importer.getProjects(), true);
                     if (importer.getProjects().length > 0) {
+                        OpenProjects.getDefault().open(importer.getProjects(), true);
                         OpenProjects.getDefault().setMainProject(importer.getProjects()[0]);
                     }
                 }
