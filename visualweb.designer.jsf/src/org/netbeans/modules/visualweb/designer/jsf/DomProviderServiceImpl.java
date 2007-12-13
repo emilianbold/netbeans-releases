@@ -150,10 +150,10 @@ public class DomProviderServiceImpl implements DomProviderService {
         return JsfForm.findDesignersForElement(element);
     }
     
-    public Designer[] findDesignersForNode(org.openide.nodes.Node node) {
-        DesignBean bean = (DesignBean)node.getLookup().lookup(DesignBean.class);
-        return bean == null ? new Designer[0] : JsfForm.findDesignersForDesignContext(bean.getDesignContext());
-    }
+//    public Designer[] findDesignersForNode(org.openide.nodes.Node node) {
+//        DesignBean bean = (DesignBean)node.getLookup().lookup(DesignBean.class);
+//        return bean == null ? new Designer[0] : JsfForm.findDesignersForDesignContext(bean.getDesignContext());
+//    }
 
 //    public MarkupDesignBean getMarkupDesignBeanForComponentRootElement(Element element, Element parentBoxElement) {
 //        if (element == null) {

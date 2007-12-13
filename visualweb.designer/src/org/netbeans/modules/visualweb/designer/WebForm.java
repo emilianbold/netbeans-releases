@@ -476,14 +476,14 @@ public class WebForm implements Designer {
         }
     }
     
-    public static WebForm findWebFormForNode(org.openide.nodes.Node node) {
-        Designer[] designers = getDomProviderService().findDesignersForNode(node);
-        if (designers.length > 0 && designers[0] instanceof WebForm) {
-            return (WebForm)designers[0];
-        } else {
-            return null;
-        }
-    }
+//    public static WebForm findWebFormForNode(org.openide.nodes.Node node) {
+//        Designer[] designers = getDomProviderService().findDesignersForNode(node);
+//        if (designers.length > 0 && designers[0] instanceof WebForm) {
+//            return (WebForm)designers[0];
+//        } else {
+//            return null;
+//        }
+//    }
     
 //    public static WebForm getWebFormForDataObject(DataObject jsfJspDataObject) {
 //        Designer[] designers = getDomProviderService().getDesignersForDataObject(jsfJspDataObject);
@@ -2808,9 +2808,9 @@ public class WebForm implements Designer {
 //            return null;
 //        }
 
-        public Designer[] findDesignersForNode(org.openide.nodes.Node node) {
-            return new Designer[0];
-        }
+//        public Designer[] findDesignersForNode(org.openide.nodes.Node node) {
+//            return new Designer[0];
+//        }
 
         public Element getComponentRootElementForElement(Element element) {
             return null;
