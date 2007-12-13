@@ -61,10 +61,15 @@ public class SourceRoots {
     
     public FileObject[] getRoots() {
         return new FileObject[] {
+            projectRoot.getFileObject("src/java"), // NOI18N
+            projectRoot.getFileObject("src/groovy"), // NOI18N
+            projectRoot.getFileObject("grails-app/conf"), // NOI18N
             projectRoot.getFileObject("grails-app/controllers"), // NOI18N
             projectRoot.getFileObject("grails-app/domain"), // NOI18N
-            projectRoot.getFileObject("src/groovy"), // NOI18N
-            projectRoot.getFileObject("src/java") // NOI18N
+            projectRoot.getFileObject("grails-app/services"), // NOI18N
+            projectRoot.getFileObject("grails-app/taglib"), // NOI18N
+            projectRoot.getFileObject("test/integration"), // NOI18N
+            projectRoot.getFileObject("test/unit") // NOI18N
         };
     }
     
