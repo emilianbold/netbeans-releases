@@ -242,6 +242,9 @@ import org.openide.util.NbBundle;
             } else {
                 objectReference = evaluationContext.getFrame().thisObject();
             }
+            if (objectReference == null) {
+                Assert2.error(arg0, "methodCallOnNull", methodName);
+            }
             type = (ClassType) objectReference.referenceType();
         }
         Method method = getConcreteMethod(type, methodName, execTypeMirror.getParameterTypes());
@@ -1324,6 +1327,9 @@ import org.openide.util.NbBundle;
                         Assert2.error(arg0, "unknownField", fieldName);
                         return null;
                     }
+                }
+                if (expression == null) {
+                    Assert2.error(arg0, "fieldOnNull", fieldName);
                 }
                 throw new IllegalArgumentException("Wrong expression value: "+expression);
             case CLASS:
