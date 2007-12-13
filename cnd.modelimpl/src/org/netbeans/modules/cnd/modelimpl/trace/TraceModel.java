@@ -374,7 +374,7 @@ public class TraceModel extends TraceModelBase {
 	}
 	return true;
     }
-	
+
     private void test(String[] args) {
 	try {
 	    processArguments(args);
@@ -1108,6 +1108,7 @@ public class TraceModel extends TraceModelBase {
         tracer.setPrintStream(out);
         processArguments(args);
         doTest();
+        initDataObjects();
     }
     
     private TestResult test(NativeFileItem item)

@@ -56,3 +56,7 @@ namespace AliasS2 = S1::S2;
 void aliases() {
      //
 }
+
+void innerNS3Func() {
+     //
+}

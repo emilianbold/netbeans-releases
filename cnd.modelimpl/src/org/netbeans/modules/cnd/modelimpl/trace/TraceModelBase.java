@@ -20,14 +20,23 @@ import java.io.File;
 import java.util.*;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /**
@@ -62,6 +71,9 @@ public class TraceModelBase {
     private boolean pathsRelCurFile = false;
     
     public TraceModelBase() {
+        Logger openideLogger = Logger.getLogger("org.openide.loaders");
+        // reduce log level to prevent unnecessary messages in tests
+        openideLogger.setLevel(Level.SEVERE);
 	RepositoryUtils.cleanCashes();
 	model = (ModelImpl) CsmModelAccessor.getModel(); // new ModelImpl(true);
 	if (model == null) {
@@ -513,6 +525,24 @@ public class TraceModelBase {
 	setUseCppSysDefines(set);
 	setUseCppSysIncludes(set);
     }
-    
-    
+        
+    protected final void initDataObjects() {
+        ProjectBase prj = getProject();
+        if (prj != null) {
+            Collection<CsmFile> allFiles = prj.getAllFiles();
+            for (CsmFile csmFile : allFiles) {
+                if (csmFile instanceof FileImpl) {
+                    try {
+                        FileImpl impl = (FileImpl) csmFile;
+                        NativeFileItem item = impl.getNativeFileItem();
+                        FileObject fo = item == null ? null : FileUtil.toFileObject(item.getFile());
+                        DataObject dobj = fo == null ? null : DataObject.find(fo);
+                        NativeProjectProvider.registerItemInDataObject(dobj, item);
+                    } catch (DataObjectNotFoundException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+        }
+    }
 }
