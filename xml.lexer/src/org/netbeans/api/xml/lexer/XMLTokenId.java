@@ -77,7 +77,7 @@ public enum XMLTokenId implements TokenId {
     /** End of line */
     EOL("xml-EOL"),
     /* PI start delimiter <sample><b>&lt;?</b>target content of pi ?></sample> */
-    PI_START("xml-pi-start"),    
+    PI_START("xml-pi-start"),
     /* PI target <sample>&lt;?<b>target</b> content of pi ?></sample> */
     PI_TARGET("xml-pi-target"),
     /* PI conetnt <sample>&lt;?target <b>content of pi </b>?></sample> */

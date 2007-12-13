@@ -3,8 +3,7 @@
 
 
 <filesystem>
-    <!-- XML Lexer not stable enought, uncomment and readd to manifest when most serious bugs fixed -->
-    <!--<folder name="Editors">
+    <folder name="Editors">
         <folder name="text">
             <folder name="xml">
                 <file name="language.instance">
@@ -13,5 +12,5 @@
                 </file>
             </folder>
         </folder>
-    </folder>-->
+    </folder>
 </filesystem>
