@@ -59,10 +59,13 @@ import org.netbeans.modules.cnd.api.model.CsmConstructor;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
 
@@ -308,6 +311,29 @@ abstract public class CsmCompletion extends Completion {
 
     public static CsmType createType(CsmClassifier cls, int arrayDepth) {
         return new BaseType(cls, 0, false, arrayDepth);
+    }
+
+    /** returns type for dereferenced object
+     * @param obj
+     * @return
+     */
+    public static CsmType getObjectType(CsmObject obj) {
+        CsmType type = null;
+        if (CsmKindUtilities.isClassifier(obj)) {
+            type = CsmCompletion.getType((CsmClassifier)obj, 0);
+        } else if (CsmKindUtilities.isConstructor((CsmFunction)obj)) {
+            CsmClassifier cls = ((CsmConstructor)obj).getContainingClass();
+            type = CsmCompletion.getType(cls, 0);                  
+        } else if (CsmKindUtilities.isFunction(obj)) {
+            type = ((CsmFunction)obj).getReturnType();
+        } else if (CsmKindUtilities.isVariable(obj)) {
+            type = ((CsmVariable)obj).getType();
+        } else if (CsmKindUtilities.isEnumerator(obj)) {
+            type = INT_TYPE;
+        } else {
+            type = null;
+        }
+        return type;
     }
 
     /** Create new type or get the existing one from the cache. The cache holds
