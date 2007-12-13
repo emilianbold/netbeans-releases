@@ -55,7 +55,6 @@ import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.Tool;
-import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
@@ -86,10 +85,15 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         setItem(item);
         excluded = new BooleanConfiguration(null, false);
         // Compilers
-        customToolConfiguration = new CustomToolConfiguration();
-        cCompilerConfiguration = new CCompilerConfiguration(((MakeConfiguration)configuration).getBaseDir(), item.getFolder().getFolderConfiguration(configuration).getCCompilerConfiguration());
-        ccCompilerConfiguration = new CCCompilerConfiguration(((MakeConfiguration)configuration).getBaseDir(), item.getFolder().getFolderConfiguration(configuration).getCCCompilerConfiguration());
-        fortranCompilerConfiguration = new FortranCompilerConfiguration(((MakeConfiguration)configuration).getBaseDir(), ((MakeConfiguration)configuration).getFortranCompilerConfiguration());
+        //customToolConfiguration = new CustomToolConfiguration();
+        //cCompilerConfiguration = new CCompilerConfiguration(((MakeConfiguration)configuration).getBaseDir(), item.getFolder().getFolderConfiguration(configuration).getCCompilerConfiguration());
+        //ccCompilerConfiguration = new CCCompilerConfiguration(((MakeConfiguration)configuration).getBaseDir(), item.getFolder().getFolderConfiguration(configuration).getCCCompilerConfiguration());
+        //fortranCompilerConfiguration = new FortranCompilerConfiguration(((MakeConfiguration)configuration).getBaseDir(), ((MakeConfiguration)configuration).getFortranCompilerConfiguration());
+        
+        // This is side effect of lazy configuration. We should init folder configuration
+        // TODO: remove folder initialization. Folder should be responsible for it
+        item.getFolder().getFolderConfiguration(configuration);
+
         clearChanged();
     }
     
@@ -100,14 +104,15 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     }
     
     public BasicCompilerConfiguration getCompilerConfiguration() {
-        if (getTool() == Tool.CCompiler)
-            return cCompilerConfiguration;
-        else if (getTool() == Tool.CCCompiler)
-            return ccCompilerConfiguration;
-        else if (getTool() == Tool.FortranCompiler)
-            return fortranCompilerConfiguration;
-        else
+        if (getTool() == Tool.CCompiler) {
+            return getCCompilerConfiguration();
+        } else if (getTool() == Tool.CCCompiler) {
+            return getCCCompilerConfiguration();
+        } else if (getTool() == Tool.FortranCompiler) {
+            return getFortranCompilerConfiguration();
+        } else {
             assert false;
+        }
         return null;
     }
     
@@ -172,7 +177,10 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         this.customToolConfiguration = customToolConfiguration;
     }
     
-    public CustomToolConfiguration getCustomToolConfiguration() {
+    public synchronized CustomToolConfiguration getCustomToolConfiguration() {
+        if (customToolConfiguration == null) {
+            customToolConfiguration = new CustomToolConfiguration();
+        }
         return customToolConfiguration;
     }
     
@@ -181,7 +189,10 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         this.cCompilerConfiguration = cCompilerConfiguration;
     }
     
-    public CCompilerConfiguration getCCompilerConfiguration() {
+    public synchronized CCompilerConfiguration getCCompilerConfiguration() {
+        if (cCompilerConfiguration == null) {
+            cCompilerConfiguration = new CCompilerConfiguration(((MakeConfiguration)configuration).getBaseDir(), item.getFolder().getFolderConfiguration(configuration).getCCompilerConfiguration());
+        }
         return cCompilerConfiguration;
     }
     
@@ -190,7 +201,10 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         this.ccCompilerConfiguration = ccCompilerConfiguration;
     }
     
-    public CCCompilerConfiguration getCCCompilerConfiguration() {
+    public synchronized CCCompilerConfiguration getCCCompilerConfiguration() {
+        if (ccCompilerConfiguration == null) {
+            ccCompilerConfiguration = new CCCompilerConfiguration(((MakeConfiguration)configuration).getBaseDir(), item.getFolder().getFolderConfiguration(configuration).getCCCompilerConfiguration());
+        }
         return ccCompilerConfiguration;
     }
     
@@ -199,7 +213,10 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         this.fortranCompilerConfiguration = fortranCompilerConfiguration;
     }
     
-    public FortranCompilerConfiguration getFortranCompilerConfiguration() {
+    public synchronized FortranCompilerConfiguration getFortranCompilerConfiguration() {
+        if (fortranCompilerConfiguration == null) {
+            fortranCompilerConfiguration = new FortranCompilerConfiguration(((MakeConfiguration)configuration).getBaseDir(), ((MakeConfiguration)configuration).getFortranCompilerConfiguration());
+        }
         return fortranCompilerConfiguration;
     }
     
@@ -283,12 +300,13 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         return copy;
     }
     
+    @Override
     public Object clone() {
         ItemConfiguration i = new ItemConfiguration(getConfiguration(), getItem());
         
         i.setExcluded((BooleanConfiguration)getExcluded().clone());
         i.setTool(getTool());
-        
+
         i.setCustomToolConfiguration((CustomToolConfiguration)getCustomToolConfiguration().clone());
         i.setCCompilerConfiguration((CCompilerConfiguration)getCCompilerConfiguration().clone());
         i.setCCCompilerConfiguration((CCCompilerConfiguration)getCCCompilerConfiguration().clone());
@@ -351,6 +369,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
             super(Integer.class);
         }
         
+        @Override
         public String getName() {
             return getString("ToolTxt1");
         }
@@ -372,6 +391,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
             return true;
         }
         
+        @Override
         public PropertyEditor getPropertyEditor() {
             return new ToolEditor();
         }
@@ -379,20 +399,24 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     
     private class ToolEditor extends PropertyEditorSupport {
         
+        @Override
         public String getJavaInitializationString() {
             return getAsText();
         }
         
+        @Override
         public String getAsText() {
             int val = ((Integer)getValue()).intValue();
             CompilerSet set = CompilerSetManager.getDefault().getCompilerSet(((MakeConfiguration)configuration).getCompilerSet().getValue());
             return set.getTool(val).getGenericName();
         }
         
+        @Override
         public void setAsText(String text) throws java.lang.IllegalArgumentException {
             setValue(text);
         }
         
+        @Override
         public String[] getTags() {
             return getToolNames();
         }
@@ -414,6 +438,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     }
     
     
+    @Override
     public String toString() {
         return getItem().getPath();
     }
