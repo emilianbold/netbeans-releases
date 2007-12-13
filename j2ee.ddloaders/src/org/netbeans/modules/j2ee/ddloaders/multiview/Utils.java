@@ -355,6 +355,12 @@ public class Utils {
      */
      public static void openEditorFor(FileObject ejbJarFile, final String ejbClass) {
         EjbJar ejbModule = EjbJar.getEjbJar(ejbJarFile);
+         // see #123848
+         if (ejbModule == null) {
+             displaySourceNotFoundDialog();
+             return;
+         }
+       
         MetadataModel<EjbJarMetadata> ejbModel = ejbModule.getMetadataModel();
         try {
             FileObject classFo = ejbModel.runReadAction(new MetadataModelAction<EjbJarMetadata, FileObject>() {
@@ -381,8 +387,7 @@ public class Utils {
             if (!handle.isEmpty()) {
                 ElementOpen.open(classFo, handle.get(0));
             } else {
-                 DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(NbBundle.getMessage(Utils.class, "MSG_sourceNotFound")));
+                displaySourceNotFoundDialog();
             }
 
         } catch (MetadataModelException ex) {
@@ -390,6 +395,12 @@ public class Utils {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+
+    private static void displaySourceNotFoundDialog() {
+        DialogDisplayer.getDefault().notify(
+                new NotifyDescriptor.Message(NbBundle.getMessage(Utils.class, "MSG_sourceNotFound")));
+
     }
 
     /**
