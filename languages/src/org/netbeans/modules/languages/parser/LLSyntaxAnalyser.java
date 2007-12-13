@@ -710,6 +710,8 @@ public class LLSyntaxAnalyser {
                     else
                     if (type.contains ("keyword"))
                         message = "keyword expected";
+                    else
+                        message = type + " expected";
                 }
             } else
             if (input.eof ())

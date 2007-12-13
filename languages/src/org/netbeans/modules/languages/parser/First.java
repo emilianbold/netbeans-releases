@@ -124,7 +124,7 @@ class First {
 //                                                                                //S ystem.out.println("Follow (" + followCount + "):\n" + printFollow ());
 //        int followCount2 = optimizeFollow ();
 //                                                                                //S ystem.out.println("\n\n\nFollow2 (" + followCount + ":" + followCount2 + "):\n" + printFollow ());
-        
+        int maxDepth = 3;
         maps = new F [language.getNTCount ()];
         
         Iterator<String> it = ntToIndexes.keySet ().iterator ();
@@ -134,8 +134,9 @@ class First {
             int ntid = language.getNTID (nt);
             maps [ntid] = firstForNT;
             List<Integer> indexes = ntToIndexes.get (nt);
-            for (int depthLimit = 1; depthLimit <= 4; depthLimit++) {
+            for (int depthLimit = 1; depthLimit <= maxDepth; depthLimit++) {
                 boolean changed = false;
+//                System.out.println("nt: " + nt + " depth: " + depthLimit);
                 Iterator<Integer> it3 = indexes.iterator ();
                 while (it3.hasNext ()) {
                     int ruleIndex = it3.next ();
@@ -162,6 +163,11 @@ class First {
                     );
                 }
                 if (!changed) break;
+//                if (depthLimit == maxDepth) {
+//                    Thread.dumpStack();
+//                    System.out.println (firstForNT);
+//                    throw new ParseException ("Can not resolve first set for " + nt + ".\n Conflicting input: " + findConflict (firstForNT, depthLimit));
+//                }
             }
             //AnalyserAnalyser.printF (f, null);
         }
@@ -388,7 +394,7 @@ class First {
     }
     
     private F s (F m) {
-        if (m.amp.size () < 2) {
+        if (m.amp == null || m.amp.size () < 2) {
             F f = new F ();
             f.amp = m.amp;
             return f;
@@ -492,6 +498,45 @@ class First {
                 list.add (new int[] {r, it2.next ()});
         }
         return list;
+    }
+
+    private String findConflict (F f, int depth) {
+        if (f.amp == null || f.amp.size () < 2) return null;
+        if (depth == 0) return "";
+        if (f.ff [0] != null && f.ff [0].f != null) {
+            String result = findConflict (f.ff [0].f, depth - 1);
+            if (result != null)
+                return "EOF " + result;
+        }
+        if (f.ff [0] != null && f.ff [0].map != null) {
+            Iterator<String> it = f.ff [0].map.keySet ().iterator ();
+            while (it.hasNext ()) {
+                String identifier = it.next ();
+                F newF = f.ff [0].map.get (identifier);
+                String result = findConflict (newF, depth - 1);
+                if (result != null)
+                    return "\"" + identifier + "\" "+ result;
+            }
+        }
+        for (int i = 1; i < f.ff.length; i++) {
+            if (f.ff [i] == null) continue;
+            if (f.ff [i].f != null) {
+                String result = findConflict (f.ff [i].f, depth - 1);
+                if (result != null)
+                    return "<" + language.getTokenType (i) + "> "+ result;
+            }
+            if (f.ff [i].map != null) {
+                Iterator<String> it = f.ff [i].map.keySet ().iterator ();
+                while (it.hasNext ()) {
+                    String identifier = it.next ();
+                    F newF = f.ff [i].map.get (identifier);
+                    String result = findConflict (newF, depth - 1);
+                    if (result != null)
+                        return "<" + language.getTokenType (i) + ",\"" + identifier + "\"> "+ result;
+                }
+            }
+        }
+        return null;
     }
     
     
