@@ -262,10 +262,10 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
                             createSeparator(
                                     toolbarDefault,
                                     "Separator-before-comment",
-                                    3000 // can tune to whatever; want after stop-macro-recording
+                                    30000 // can tune to whatever; want after stop-macro-recording
                             );
-                            FileUtil.createData(toolbarDefault, "comment").setAttribute("position", 3100);
-                            FileUtil.createData(toolbarDefault, "uncomment").setAttribute("position", 3200);
+                            FileUtil.createData(toolbarDefault, "comment").setAttribute("position", 31000);
+                            FileUtil.createData(toolbarDefault, "uncomment").setAttribute("position", 32000);
 
                             if (root.getFileObject("Keybindings/NetBeans/Defaults/keybindings.xml") == null) {
                                 InputStream is = getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/languages/resources/DefaultKeyBindings.xml");
