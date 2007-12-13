@@ -50,7 +50,6 @@ import org.netbeans.api.gsf.Completable;
 import org.netbeans.api.gsf.Parser;
 import org.netbeans.api.gsf.Element;
 import org.netbeans.api.gsf.ElementHandle;
-import org.netbeans.api.gsf.ElementKind;
 import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.napi.gsfret.source.UiUtils;
 import org.netbeans.modules.gsf.Language;
@@ -136,35 +135,12 @@ public class GsfCompletionDoc implements CompletionDocumentation {
             } catch (MalformedURLException mue) {
                 Exceptions.printStackTrace(mue);
             }
-        } else if (link.indexOf("#") != -1) {
-            final Parser parser = language.getParser();
-            if (link.startsWith("#")) {
-                // Put the current class etc. in front of the method call if necessary
-                Element surrounding = parser.resolveHandle(null, elementHandle);
-                if (surrounding != null && surrounding.getKind() != ElementKind.KEYWORD) {
-                    String name = surrounding.getName();
-                    ElementKind kind = surrounding.getKind();
-                    if (!(kind == ElementKind.CLASS || kind == ElementKind.MODULE)) {
-                        String in = surrounding.getIn();
-                        if (in != null && in.length() > 0) {
-                            name = in;
-                        } else if (name != null) {
-                            int index = name.indexOf('#');
-                            if (index > 0) {
-                                name = name.substring(0, index);
-                            }
-                        }
-                    }
-                    if (name != null) {
-                        link = name + link;
-                    }
-                }
-            }
-            ElementHandle handle = new ElementHandle.UrlHandle(link);
-            final Element resolved = parser.resolveHandle(null, handle);
-            return new GsfCompletionDoc(controller, handle, null);
         }
         
+        ElementHandle handle = language.getCompletionProvider().resolveLink(link, elementHandle);
+        if (handle != null) {
+            return new GsfCompletionDoc(controller, handle, null);
+        }
         return null;
     }
 

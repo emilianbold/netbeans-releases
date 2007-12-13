@@ -3121,6 +3121,37 @@ public class CodeCompleter implements Completable {
         return html;
     }
 
+    public ElementHandle resolveLink(String link, ElementHandle elementHandle) {
+        if (link.indexOf("#") != -1) {
+            final RubyParser parser = new RubyParser();
+            if (link.startsWith("#")) {
+                // Put the current class etc. in front of the method call if necessary
+                Element surrounding = parser.resolveHandle(null, elementHandle);
+                if (surrounding != null && surrounding.getKind() != ElementKind.KEYWORD) {
+                    String name = surrounding.getName();
+                    ElementKind kind = surrounding.getKind();
+                    if (!(kind == ElementKind.CLASS || kind == ElementKind.MODULE)) {
+                        String in = surrounding.getIn();
+                        if (in != null && in.length() > 0) {
+                            name = in;
+                        } else if (name != null) {
+                            int index = name.indexOf('#');
+                            if (index > 0) {
+                                name = name.substring(0, index);
+                            }
+                        }
+                    }
+                    if (name != null) {
+                        link = name + link;
+                    }
+                }
+            }
+            return new ElementHandle.UrlHandle(link);
+        }
+        
+        return null;
+    }
+    
     public Set<String> getApplicableTemplates(CompilationInfo info, int selectionBegin,
         int selectionEnd) {
 

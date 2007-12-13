@@ -45,10 +45,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.text.JTextComponent;
 
-import org.netbeans.api.gsf.CompilationInfo;
-import org.netbeans.api.gsf.CompletionProposal;
-import org.netbeans.api.gsf.Element;
-import org.netbeans.api.gsf.HtmlFormatter;
+import org.netbeans.api.gsf.annotations.CheckForNull;
 import org.netbeans.api.gsf.annotations.NonNull;
 
 
@@ -91,6 +88,19 @@ public interface Completable {
      *  by the complete method)
      */
     String document(@NonNull CompilationInfo info, @NonNull Element element);
+    
+    /**
+     * Resolve a link that was written into the HTML returned by {@link #document}.
+     *
+     * @param link The link, which can be in any format chosen by the {@link #document} method.
+     *   However, links starting with www or standard URL format (http://, etc.)
+     *   will automatically be handled by the browser, so avoid this format.
+     * @param originalHandle The handle to the documentation item where the link was generated.
+     * @return An ElementHandle that will be passed in to {@link #document} to
+     *   compute the new documentation to be warped to.
+     */
+    @CheckForNull
+    ElementHandle resolveLink(@NonNull String link, ElementHandle originalHandle);
 
     /**
      * Compute the prefix to be used for completion at the given caretOffset
