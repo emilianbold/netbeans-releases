@@ -1035,7 +1035,14 @@ public class DesignerServiceHackImpl extends DesignerServiceHack {
                     new NullPointerException("There is no element in markup design bean=" + bean)); // NOI18N
             return null;
         }
-        return DesignerServiceHackProvider.getTableInfo(componentRootElement);
+//        return DesignerServiceHackProvider.getTableInfo(componentRootElement);
+        Designer[] designers = JsfForm.findDesignersForElement(componentRootElement);
+        Designer designer = designers.length > 0 ? designers[0] : null;
+        if (designer == null) {
+            return null;
+        }
+        Box box = designer.findBoxForComponentRootElement(componentRootElement);
+        return  DesignerServiceHackProvider.isTableBox(box) ? box : null;
     }
 
     public Element getCellElement(Object tableInfo, int row, int column) {

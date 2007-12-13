@@ -653,30 +653,34 @@ public final class DesignerServiceHackProviderImpl /*extends DesignerServiceHack
     private static class FakeDocument extends DocumentImpl {
     } // End of FakeDocument.
 
-//    public static Object getTableInfo(MarkupDesignBean bean) {
-    public static Object getTableInfo(Element componentRootElement) {
-//        assert bean.getElement() != null;
-
-//        Element element = bean.getElement();
-//        if (element == null) {
-//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-//                    new NullPointerException("There is no element in markup design bean=" + bean)); // NOI18N
+////    public static Object getTableInfo(MarkupDesignBean bean) {
+//    public static Object getTableInfo(Element componentRootElement) {
+////        assert bean.getElement() != null;
+//
+////        Element element = bean.getElement();
+////        if (element == null) {
+////            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+////                    new NullPointerException("There is no element in markup design bean=" + bean)); // NOI18N
+////            return null;
+////        }
+//        
+//        WebForm webForm = WebForm.findWebFormForElement(componentRootElement);
+//        if (webForm == null) {
 //            return null;
 //        }
-        
-        WebForm webForm = WebForm.findWebFormForElement(componentRootElement);
-        if (webForm == null) {
-            return null;
-        }
-        
-//        CssBox box = CssBox.getBox(bean.getElement());
-        CssBox box = webForm.findCssBoxForElement(componentRootElement);
-
-        if (box instanceof TableBox) {
-            return box;
-        }
-
-        return null;
+//        
+////        CssBox box = CssBox.getBox(bean.getElement());
+//        CssBox box = webForm.findCssBoxForElement(componentRootElement);
+//
+//        if (box instanceof TableBox) {
+//            return box;
+//        }
+//
+//        return null;
+//    }
+    // XXX
+    public static boolean isTableBox(Object box) {
+        return box instanceof TableBox;
     }
 
     public static org.w3c.dom.Element getCellElement(Object tableInfo, int row, int column) {

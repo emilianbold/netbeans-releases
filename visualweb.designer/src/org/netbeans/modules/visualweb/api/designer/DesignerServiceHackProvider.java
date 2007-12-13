@@ -98,8 +98,12 @@ public final class DesignerServiceHackProvider {
 //    }
 
 //    public static Object getTableInfo(MarkupDesignBean bean) {
-    public static Object getTableInfo(Element componentRootElement) {
-        return DesignerServiceHackProviderImpl.getTableInfo(componentRootElement);
+//    public static Object getTableInfo(Element componentRootElement) {
+//        return DesignerServiceHackProviderImpl.getTableInfo(componentRootElement);
+//    }
+    // XXX
+    public static boolean isTableBox(Object box) {
+        return DesignerServiceHackProviderImpl.isTableBox(box);
     }
 
     public static Element getCellElement(Object tableInfo, int row, int column) {
