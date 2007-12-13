@@ -49,6 +49,8 @@ import org.openide.filesystems.FileObject;
 import org.netbeans.editor.*;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
@@ -243,9 +245,15 @@ public class CompletionTestPerformer {
     
     private static void saveDocument(DataObject file) throws IOException { //!!!WARNING: if this exception is thrown, the test may be locked (the file in editor may be modified, but not saved. problems with IDE finishing are supposed in this case).
         SaveCookie sc = file.getCookie(SaveCookie.class);
-        
         if (sc != null) {
             sc.save();
         }
+        CsmFile csmFile = CsmUtilities.getCsmFile(file, false);
+        assert csmFile != null : "Must be csmFile for data object " + file;
+        CsmProject prj = csmFile.getProject();
+        assert prj != null : "Must be project for csm file " + csmFile;
+        prj.waitParse();
+        assert csmFile.isParsed() : " file must be parsed";
+        assert prj.isStable(null) : " full project must be parsed";
     }
 }
