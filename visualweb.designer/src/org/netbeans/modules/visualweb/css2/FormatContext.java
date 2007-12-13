@@ -316,7 +316,14 @@ public class FormatContext {
             int yb = y;
 
             while (yBox != closest) {
-                yb += yBox.getY();
+                // XXX #123611 Another case of fatal painting error.
+//                yb += yBox.getY();
+                int yPos = yBox.getY();
+                if (yPos == CssBox.UNINITIALIZED || yPos == CssBox.AUTO) {
+//                    break;
+                } else {
+                    yb += yBox.getY();
+                }
                 //yBox = yBox.getParent();
                 yBox = yBox.getPositionedBy();
                 // XXX TODO add in margins?
@@ -325,7 +332,15 @@ public class FormatContext {
             int yf = 0;
 
             while (floatParent != closest) {
-                yf += floatParent.getY();
+                // XXX #123611 Another case of fatal painting error.
+//                yf += floatParent.getY();
+                int yPos = floatParent.getY();
+                if (yPos == CssBox.UNINITIALIZED || yPos == CssBox.AUTO) {
+//                    break;
+                } else {
+                    yb += floatParent.getY();
+                }
+                
                 //floatParent = floatParent.getParent();
                 floatParent = floatParent.getPositionedBy();
                 // XXX TODO add in margins?
