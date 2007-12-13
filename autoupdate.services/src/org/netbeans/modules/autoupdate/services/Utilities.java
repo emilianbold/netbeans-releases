@@ -73,6 +73,7 @@ import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.core.startup.Main;
 import org.netbeans.core.startup.TopLogging;
+import org.netbeans.modules.autoupdate.updateprovider.DummyModuleInfo;
 import org.netbeans.spi.autoupdate.KeyStoreProvider;
 import org.netbeans.spi.autoupdate.UpdateItem;
 import org.netbeans.updater.ModuleDeactivator;
@@ -571,7 +572,7 @@ public class Utilities {
                 if (!installedModules.containsAll (mInfos)) {
                     requiredElements.add(el);
                     installedModules.add(takeModuleInfo(el));
-        }
+                }
             }
         }
         // check dependencies of extended modules as well
@@ -605,8 +606,24 @@ public class Utilities {
             extendedModules.addAll (infos);
             final Set<Dependency> brokenDeps = DependencyChecker.findBrokenDependencies (deps, extendedModules);
             retval = findRequiredModules (brokenDeps, extendedModules);
+            
             // go up and find affected modules
             retval = findAffectedModules (retval);
+            
+            // #123871: Cannot enforce update hidden module via provides/requires dependency
+            Collection<Dependency> primaryAndRequiredElementDeps = new HashSet<Dependency> (deps);
+            for (UpdateElement reqEl : retval) {
+                UpdateElementImpl reqElImpl = Trampoline.API.impl (reqEl);
+                primaryAndRequiredElementDeps.addAll (((ModuleUpdateElementImpl) reqElImpl).getModuleInfo ().getDependencies ());
+            }
+            Collection<Dependency> byToken = takeRecommendsRequiresNeeds (primaryAndRequiredElementDeps);
+            if (! byToken.isEmpty ()) {
+                retval.addAll (checkUpdateTokenProvider (byToken));
+            }
+            // go up and find affected modules again
+            retval = findAffectedModules (retval);
+            // end of #123871
+            
             break;
         case STANDALONE_MODULE :
         case FEATURE :
@@ -619,6 +636,18 @@ public class Utilities {
             assert false : "Not implement for type " + el.getType () + " of UpdateElement " + el;
         }
         return retval;
+    }
+    
+    private static Collection<UpdateElement> checkUpdateTokenProvider (Collection<Dependency> deps) {
+        Collection<UpdateElement> elems = new HashSet<UpdateElement> ();
+        for (Dependency dep : deps) {
+            Collection<ModuleInfo> noModules = Collections.emptySet ();
+            UpdateElement el = findRequiredModule (dep, noModules);
+            if (el != null) {
+                elems.add (el);
+            }
+        }
+        return elems;
     }
     
     private static Collection<Module> getAffectedModules (UpdateElement element, Collection<String> tooAffected) {
@@ -704,6 +733,22 @@ public class Utilities {
         for (Dependency dep : deps) {
             if (Dependency.TYPE_RECOMMENDS != dep.getType ()) {
                 res.add (dep);
+            }
+        }
+        return res;
+    }
+    
+    private static Set<Dependency> takeRecommendsRequiresNeeds (Collection<Dependency> deps) {
+        Set<Dependency> res = new HashSet<Dependency> ();
+        for (Dependency dep : deps) {
+            switch (dep.getType ()) {
+                case Dependency.TYPE_REQUIRES :
+                case Dependency.TYPE_NEEDS :
+                case Dependency.TYPE_RECOMMENDS :
+                    if (! DummyModuleInfo.TOKEN_MODULE_FORMAT.equals (dep.getName ())) {
+                        res.add (dep);
+                    }
+                    break;
             }
         }
         return res;

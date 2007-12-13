@@ -51,7 +51,9 @@ import org.openide.modules.SpecificationVersion;
  * Used for purposes of comparisons to real modules and updates and so on.
  * @author Jesse Glick
  */
-final class DummyModuleInfo extends ModuleInfo {
+public final class DummyModuleInfo extends ModuleInfo {
+    
+    public static final String TOKEN_MODULE_FORMAT = "org.openide.modules.ModuleFormat1"; // NOI18N
     
 //    private static AutomaticDependencies autoDepsHandler = null;
 //    
@@ -112,7 +114,7 @@ final class DummyModuleInfo extends ModuleInfo {
 //        getAutoDepsHandler().refineDependencies(cnb, deps); // #29577
         String providesS = attr.getValue("OpenIDE-Module-Provides"); // NOI18N
         if (cnb.equals ("org.openide.modules")) { // NOI18N
-            providesS = providesS == null ? "org.openide.modules.ModuleFormat1" : providesS + ", org.openide.modules.ModuleFormat1"; // NOI18N
+            providesS = providesS == null ? TOKEN_MODULE_FORMAT : providesS + ", " + TOKEN_MODULE_FORMAT; // NOI18N
         }
         if (providesS == null) {
             provides = new String[0];

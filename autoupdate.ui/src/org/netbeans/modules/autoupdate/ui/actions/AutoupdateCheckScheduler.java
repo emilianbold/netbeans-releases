@@ -182,12 +182,12 @@ public class AutoupdateCheckScheduler {
             err.log (Level.FINE, "findUpdateElements(" + type + ") doesn't find any elements.");
             return null;
         }
-        OperationContainer<InstallSupport> oc = handleUpdates ?
-            OperationContainer.createForUpdate () :
-            OperationContainer.createForInstall ();
         Collection<UpdateElement> updates = new HashSet<UpdateElement> ();
         for (UnitCategory cat : cats) {
             for (Unit u : cat.getUnits ()) {
+                OperationContainer<InstallSupport> oc = handleUpdates ?
+                    OperationContainer.createForUpdate () :
+                    OperationContainer.createForInstall ();
                 UpdateElement element = handleUpdates ?
                     ((Unit.Update) u).getRelevantElement () :
                     ((Unit.Available) u).getRelevantElement ();
