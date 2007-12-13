@@ -104,7 +104,6 @@ public class ModelSupport implements PropertyChangeListener {
     
     private ModelSupport() {
         modifiedListener = new FileChangeListener();
-        DataObject.getRegistry().addChangeListener(modifiedListener);
     }
     
     public static ModelSupport instance() {
@@ -629,6 +628,10 @@ public class ModelSupport implements PropertyChangeListener {
         }
     }
 
+    public void startup() {
+        DataObject.getRegistry().addChangeListener(modifiedListener);
+    }
+    
     public void shutdown() {
         DataObject.getRegistry().removeChangeListener(modifiedListener);
     }

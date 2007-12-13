@@ -81,9 +81,7 @@ import org.openide.util.RequestProcessor;
 public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startupable, CsmModelAccessor.CsmModelEx {
 
     public ModelImpl() {
-        if( ! isStandalone() ) {
-            ModelSupport.instance().init(this);
-        }
+        ModelSupport.instance().init(this);
     }
     
     public static boolean isStandalone() {
@@ -516,7 +514,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
         
         ParserThreadManager.instance().startup(isStandalone());
 	RepositoryUtils.startup();
-	
+	ModelSupport.instance().startup();
 	//if( ! isStandalone() ) {
 	//    for( NativeProject nativeProject : ModelSupport.instance().getNativeProjects() ) {
 	//    	addProject(nativeProject, nativeProject.getProjectDisplayName());
