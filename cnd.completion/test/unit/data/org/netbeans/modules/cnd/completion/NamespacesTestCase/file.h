@@ -26,7 +26,17 @@ namespace S3 {
                     static S5Class* stS5ClassFun();
                     static S5Class* pPtrS5Class;
                     static S5Class  s5Class;
-            };
+                protected:
+                    void s5ClassFunProt();
+                    static S5Class* stS5ClassFunProt();
+                    static S5Class* pPtrS5ClassProt;
+                    static S5Class  s5ClassProt;
+                private:
+                    void s5ClassFunPriv();
+                    static S5Class* stS5ClassFunPriv();
+                    static S5Class* pPtrS5ClassPriv;
+                    static S5Class  s5ClassPriv;            
+                };
         }
         S5::S5Class* S4Fun() {
         }

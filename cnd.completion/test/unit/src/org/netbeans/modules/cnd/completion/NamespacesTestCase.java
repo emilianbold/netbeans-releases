@@ -89,28 +89,28 @@ public class NamespacesTestCase extends CompletionBaseTestCase {
         super.performTest("file.cc", 57, 5, "AliasS2::");
     }
 
-//    public void testInnerNSElems1() throws Exception {
-//        // IZ#123420: no completion for deep lucene namespaces
-//        super.performTest("file.cc", 61, 5, "S3::S4::");        
-//    }
-//    
-//    public void testInnerNSElems2() throws Exception {
-//        // IZ#123420: no completion for deep lucene namespaces
-//        super.performTest("file.cc", 61, 5, "S3::S4::S5::");        
-//    }
-//
-//    public void testInnerNSFunc1() throws Exception {
-//        // IZ#123420: no completion for deep lucene namespaces
-//        super.performTest("file.cc", 61, 5, "S3::S4::S4Class::");
-//    }
-//    
-//    public void testInnerNSFunc2() throws Exception {
-//        // IZ#123420: no completion for deep lucene namespaces
-//        super.performTest("file.cc", 61, 5, "S3::S4::S5::S5Class::");
-//    }
-//    
-//    public void testInnerNSFunc3() throws Exception {
-//        // IZ#123420: no completion for deep lucene namespaces
-//        super.performTest("file.cc", 61, 5, "S3::S4::S5::S5Class::pPtrS5Class->");
-//    }
+    public void testInnerNSElems1() throws Exception {
+        // IZ#123420: no completion for deep lucene namespaces
+        super.performTest("file.cc", 61, 5, "S3::S4::");        
+    }
+    
+    public void testInnerNSElems2() throws Exception {
+        // IZ#123420: no completion for deep lucene namespaces
+        super.performTest("file.cc", 61, 5, "S3::S4::S5::");        
+    }
+
+    public void testInnerNSFunc1() throws Exception {
+        // IZ#123420: no completion for deep lucene namespaces
+        super.performTest("file.cc", 61, 5, "S3::S4::S4Class::");
+    }
+    
+    public void testInnerNSFunc2() throws Exception {
+        // IZ#123420: no completion for deep lucene namespaces
+        super.performTest("file.cc", 61, 5, "S3::S4::S5::S5Class::");
+    }
+    
+    public void testInnerNSFunc3() throws Exception {
+        // IZ#123420: no completion for deep lucene namespaces
+        super.performTest("file.cc", 61, 5, "S3::S4::S5::S5Class::pPtrS5Class->");
+    }
 }

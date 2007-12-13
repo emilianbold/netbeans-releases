@@ -1,0 +1,4 @@
+pPtrS5Class S5Class*
+s5Class S5Class
+s5ClassFun() void
+stS5ClassFun() S5Class*
