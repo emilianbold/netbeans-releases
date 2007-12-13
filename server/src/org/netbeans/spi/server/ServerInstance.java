@@ -43,19 +43,53 @@ import javax.swing.JComponent;
 import org.openide.nodes.Node;
 
 /**
+ * The representation of the single instance.
  *
  * @author Petr Hejl
  */
 public abstract class ServerInstance {
 
+    /**
+     * Returns the display name of the instance.
+     *
+     * @return the display name of the instance
+     */
     public abstract String getDisplayName();
 
+    /**
+     * Returns the display name of the server type to which this instance belongs.
+     *
+     * @return the display name of the server type to which this instance belongs
+     */
+    public abstract String getServerDisplayName();
+
+    /**
+     * Returns the node representing the instance.
+     *
+     * @return the node representing the instance, may return <code>null</code>
+     */
     public abstract Node getNode();
 
+    /**
+     * Returns the component allowing the customization of the instance.
+     *
+     * @return the component allowing the customization of the instance,
+     *             may return <code>null</code>
+     */
     public abstract JComponent getCustomizer();
 
+    /**
+     * Returns <code>true</code> if the instance can be removed by
+     * {@link #remove()}. Otherwise returns <code>false</code>.
+     *
+     * @return <code>true</code> if the instance can be removed
+     */
     public abstract boolean isRemovable();
 
+    /**
+     * Removes the instance. No {@link ServerInstanceProvider} should return
+     * this instance once it is removed.
+     */
     public abstract void remove();
 
 }

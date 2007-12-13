@@ -39,41 +39,35 @@
 
 package org.netbeans.spi.server;
 
-import java.util.List;
-import javax.swing.event.ChangeListener;
+import org.openide.WizardDescriptor.InstantiatingIterator;
 
 /**
- * Provides the known server instances. Any registered listener must be
- * notified when instance is added or removed during the life of the provider.
- * <p>
- * Note you can use {@link org.openide.util.ChangeSupport} for implementation
- * of listener logic.
+ * Provides the iterator and display name for addition of the new instance of
+ * the server. Implementation of this class must be registered in
+ * <i>Servers</i> folder in the system filesystem.
  *
  * @author Petr Hejl
  */
-public interface ServerInstanceProvider {
+public interface ServerWizardProvider {
 
     /**
-     * Returns the list of known server instances.
+     * Returns the display name of the wizard. Usually same as the server name.
      *
-     * @return the list of known server instances
+     * @return the display name of the wizard
      */
-    List<ServerInstance> getInstances();
+    String getDisplayName();
 
     /**
-     * Adds a change listener to the provider. The listener must be notified
-     * any time instance is added or removed.
+     * Returns the iterator for adding the instance. {@link InstantiatingIterator#instantiate()}
+     * should return the {@link ServerInstance} created by the wizard.
+     * <p>
+     * Note that if the instance created by the wizard should be mentioned by
+     * the infrastructure (as you usually want this to happen),
+     * {@link ServerInstanceProvider} must fire change events on all registered
+     * listeners.
      *
-     * @param listener listener to add, <code>null</code> is allowed (but it si noop then)
+     * @return iterator for adding the server instance
      */
-    void addChangeListener(ChangeListener listener);
-
-    /**
-     * Removes the previously added listener. No more events will be fired on
-     * the listener.
-     *
-     * @param listener listener to remove, <code>null</code> is allowed (but it si noop then)
-     */
-    void removeChangeListener(ChangeListener listener);
+    InstantiatingIterator getInstantiatingIterator();
 
 }

@@ -56,7 +56,7 @@ import javax.swing.event.ListDataListener;
 import org.netbeans.modules.server.ServerRegistry;
 import org.netbeans.spi.server.ServerInstance;
 import org.netbeans.spi.server.ServerInstanceProvider;
-import org.netbeans.spi.server.ServerWizard;
+import org.netbeans.spi.server.ServerWizardProvider;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
@@ -69,7 +69,7 @@ public class ServerWizardVisual extends javax.swing.JPanel {
 
     private final CopyOnWriteArrayList<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
 
-    private final Map<ServerWizard, String> displayNames = new HashMap<ServerWizard, String>();
+    private final Map<ServerWizardProvider, String> displayNames = new HashMap<ServerWizardProvider, String>();
 
     private AddServerInstanceWizard wizard;
 
@@ -192,7 +192,7 @@ public class ServerWizardVisual extends javax.swing.JPanel {
         }
     }
 
-    private String generateDisplayName(ServerWizard server) {
+    private String generateDisplayName(ServerWizardProvider server) {
         String name;
         int count = 0;
 
@@ -208,7 +208,7 @@ public class ServerWizardVisual extends javax.swing.JPanel {
         return name;
     }
 
-    private void fillDisplayName(ServerWizard server) {
+    private void fillDisplayName(ServerWizardProvider server) {
         String name = (String) displayNames.get(server);
         if (name == null) {
             name = generateDisplayName(server);
@@ -293,7 +293,7 @@ public class ServerWizardVisual extends javax.swing.JPanel {
 
 private void serverListBoxValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_serverListBoxValueChanged
        if (!evt.getValueIsAdjusting()) {
-           ServerWizard server = ((WizardAdapter) serverListBox.getSelectedValue()).getServerInstanceWizard();
+           ServerWizardProvider server = ((WizardAdapter) serverListBox.getSelectedValue()).getServerInstanceWizard();
            if (server != null) {
                fillDisplayName(server);
            }
@@ -321,8 +321,8 @@ private void serverListBoxValueChanged(javax.swing.event.ListSelectionEvent evt)
         private final List<WizardAdapter> serverWizards = new ArrayList<WizardAdapter>();
 
         public WizardListModel() {
-            for (ServerWizard wizard
-                    : Lookups.forPath(ServerRegistry.SERVERS_PATH).lookupAll(ServerWizard.class)) {
+            for (ServerWizardProvider wizard
+                    : Lookups.forPath(ServerRegistry.SERVERS_PATH).lookupAll(ServerWizardProvider.class)) {
                 // TODO prefer glassfish ;)
                 serverWizards.add(new WizardAdapter(wizard));
             }
@@ -348,13 +348,13 @@ private void serverListBoxValueChanged(javax.swing.event.ListSelectionEvent evt)
 
     private static class WizardAdapter implements Comparable<WizardAdapter> {
 
-        private final ServerWizard serverInstanceWizard;
+        private final ServerWizardProvider serverInstanceWizard;
 
-        public WizardAdapter(ServerWizard serverInstanceWizard) {
+        public WizardAdapter(ServerWizardProvider serverInstanceWizard) {
             this.serverInstanceWizard = serverInstanceWizard;
         }
 
-        public ServerWizard getServerInstanceWizard() {
+        public ServerWizardProvider getServerInstanceWizard() {
             return serverInstanceWizard;
         }
 

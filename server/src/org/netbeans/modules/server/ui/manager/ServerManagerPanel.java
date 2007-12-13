@@ -329,7 +329,7 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
             if (aNode instanceof ServerNode) {
                 serverInstance = ((ServerNode)aNode).getServerInstance();
                 serverName.setText(serverInstance.getDisplayName());
-//                serverType.setText(serverInstance.getServer().getDisplayName());
+                serverType.setText(serverInstance.getServerDisplayName());
                 if (!serverInstance.isRemovable()) {
                     removeButton.setEnabled(false);
                 } else {
@@ -619,7 +619,8 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
             }
             categories.put(J2EE_SERVERS_CATEGORY, j2eeServers);
             List keys = new ArrayList(categories.values());
-            Collections.sort(keys);
+            // TODO sort by display name
+            //Collections.sort(keys);
             this.setKeys(keys);
         }
     }

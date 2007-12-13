@@ -52,7 +52,7 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.spi.server.ServerInstance;
-import org.netbeans.spi.server.ServerWizard;
+import org.netbeans.spi.server.ServerWizardProvider;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
@@ -191,7 +191,7 @@ public class AddServerInstanceWizard extends WizardDescriptor {
 
     private static class AddServerInstanceWizardIterator implements WizardDescriptor.InstantiatingIterator {
 
-        private final Map<ServerWizard, InstantiatingIterator> iterators = new HashMap<ServerWizard, InstantiatingIterator>();
+        private final Map<ServerWizardProvider, InstantiatingIterator> iterators = new HashMap<ServerWizardProvider, InstantiatingIterator>();
 
         private WizardDescriptor.InstantiatingIterator iterator;
 
@@ -283,7 +283,7 @@ public class AddServerInstanceWizard extends WizardDescriptor {
         }
 
         private WizardDescriptor.InstantiatingIterator getServerIterator() {
-            ServerWizard server = getSelectedWizard();
+            ServerWizardProvider server = getSelectedWizard();
             if (server == null) {
                 return null;
             }
@@ -294,14 +294,14 @@ public class AddServerInstanceWizard extends WizardDescriptor {
             }
 
 
-            iterator = server.create();
+            iterator = server.getInstantiatingIterator();
             iterator.initialize(wd);
             iterators.put(server, iterator);
             return iterator;
         }
 
-        public ServerWizard getSelectedWizard() {
-            return (ServerWizard) wd.getProperty(PROP_SERVER_INSTANCE_WIZARD);
+        public ServerWizardProvider getSelectedWizard() {
+            return (ServerWizardProvider) wd.getProperty(PROP_SERVER_INSTANCE_WIZARD);
         }
     }
 }
