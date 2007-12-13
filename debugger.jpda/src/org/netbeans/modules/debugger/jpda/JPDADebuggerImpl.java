@@ -690,7 +690,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 final List<EventRequest>[] disabledBreakpoints =
                         new List[] { null };
                 final JPDAThreadImpl[] resumedThread = new JPDAThreadImpl[] { null };
-                boolean useNewEvaluator = Boolean.getBoolean("debugger.evaluator2");
+                boolean useNewEvaluator = !Boolean.getBoolean("debugger.evaluatorOld");
                 EvaluationContext context;
                 if (useNewEvaluator) {
                     Expression2 expression2 = Expression2.parse(expression.getExpression(), expression.getLanguage());
@@ -841,7 +841,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     }
                 }
                 l = disableAllBreakpoints ();
-                return org.netbeans.modules.debugger.jpda.expr.Evaluator.
+                return org.netbeans.modules.debugger.jpda.expr.TreeEvaluator.
                     invokeVirtual (
                         reference,
                         method,

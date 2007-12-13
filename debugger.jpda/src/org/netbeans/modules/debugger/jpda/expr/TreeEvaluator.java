@@ -41,20 +41,27 @@
 
 package org.netbeans.modules.debugger.jpda.expr;
 
-import com.sun.jdi.AbsentInformationException;
+import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.IncompatibleThreadStateException;
+import com.sun.jdi.InvalidTypeException;
+import com.sun.jdi.InvocationException;
 import com.sun.jdi.Location;
+import com.sun.jdi.Method;
 import com.sun.jdi.Mirror;
+import com.sun.jdi.ObjectCollectedException;
+import com.sun.jdi.ObjectReference;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
-import com.sun.source.tree.Tree;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 
 import org.netbeans.modules.debugger.jpda.EditorContextBridge;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -71,6 +78,8 @@ public class TreeEvaluator {
     private int frameIndex;
     private String currentPackage;
     private Operators operators;
+    
+    private static final Logger loggerMethod = Logger.getLogger("org.netbeans.modules.debugger.jpda.invokeMethod"); // NOI18N
     
     TreeEvaluator(Expression2 expression, EvaluationContext context) {
         this.expression = expression;
@@ -140,4 +149,48 @@ public class TreeEvaluator {
         return -1;
     }
 
+    public static Value invokeVirtual (
+        ObjectReference objectReference, 
+        Method method, 
+        ThreadReference evaluationThread, 
+        List<Value> args
+     ) throws InvalidExpressionException {
+        
+        try {
+            if (loggerMethod.isLoggable(Level.FINE)) {
+                loggerMethod.fine("STARTED : "+objectReference+"."+method+" ("+args+") in thread "+evaluationThread);
+            }
+            Value value =
+                    objectReference.invokeMethod(evaluationThread, method,
+                                                 args,
+                                                 ObjectReference.INVOKE_SINGLE_THREADED);
+            if (loggerMethod.isLoggable(Level.FINE)) {
+                loggerMethod.fine("   return = "+value);
+            }
+            return value;
+        } catch (InvalidTypeException itex) {
+            throw new InvalidExpressionException (itex);
+        } catch (ClassNotLoadedException cnlex) {
+            throw new InvalidExpressionException (cnlex);
+        } catch (IncompatibleThreadStateException itsex) {
+            InvalidExpressionException ieex = new InvalidExpressionException (itsex);
+            ieex.initCause(itsex);
+            throw ieex;
+        } catch (InvocationException iex) {
+            InvalidExpressionException ieex = new InvalidExpressionException (iex);
+            ieex.initCause(iex);
+            throw ieex;
+        } catch (UnsupportedOperationException uoex) {
+            InvalidExpressionException ieex = new InvalidExpressionException (uoex);
+            ieex.initCause(uoex);
+            throw ieex;
+        } catch (ObjectCollectedException ocex) {
+            throw new InvalidExpressionException(NbBundle.getMessage(
+                TreeEvaluator.class, "CTL_EvalError_collected"));
+        } finally {
+            if (loggerMethod.isLoggable(Level.FINE)) {
+                loggerMethod.fine("FINISHED: "+objectReference+"."+method+" ("+args+") in thread "+evaluationThread);
+            }
+        }
+    }
 }
