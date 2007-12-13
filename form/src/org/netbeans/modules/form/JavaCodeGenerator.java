@@ -2169,7 +2169,7 @@ class JavaCodeGenerator extends CodeGenerator {
 	prop.getCurrentEditor().setValue(value);
 	BeanPropertyEditor beanPropertyEditor = (BeanPropertyEditor) prop.getCurrentEditor();	    		    
 	properties = (FormProperty[]) beanPropertyEditor.getProperties();	    
-        if ((properties == null) || (properties.length == 0)) return;
+        if (properties == null) return;
 
 	CreationDescriptor.Creator creator = getPropertyCreator(propertyType, properties);
 	java.util.List<FormProperty> creatorProperties = getCreatorProperties(creator, properties);
