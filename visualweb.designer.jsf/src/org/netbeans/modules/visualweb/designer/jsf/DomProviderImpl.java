@@ -869,12 +869,13 @@ class DomProviderImpl implements DomProvider {
 //    }
 
     public boolean isFormComponent(Element componentRootElement) {
-        MarkupDesignBean bean = MarkupUnit.getMarkupDesignBeanForElement(componentRootElement);
-        if (bean == null) {
-            return false;
-        }
-//        return Util.isFormBean(getFacesModel(), bean);
-        return jsfForm.isFormDesignBean(bean);
+//        MarkupDesignBean bean = MarkupUnit.getMarkupDesignBeanForElement(componentRootElement);
+//        if (bean == null) {
+//            return false;
+//        }
+////        return Util.isFormBean(getFacesModel(), bean);
+//        return jsfForm.isFormDesignBean(bean);
+        return jsfForm.isFormComponent(componentRootElement);
     }
 
     public int getDropType(/*DesignBean origDroppee,*/Element origDropeeComponentRootElement, Element droppeeElement, Transferable t, boolean linkOnly) {

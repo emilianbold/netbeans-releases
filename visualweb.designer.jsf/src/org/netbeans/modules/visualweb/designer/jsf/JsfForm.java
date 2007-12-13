@@ -602,7 +602,7 @@ public class JsfForm {
         return findJsfFormForFacesModel(facesModel);
     }
     
-    /*private*/ static JsfForm findJsfForm(Element element) {
+    public /*private*/ static JsfForm findJsfForm(Element element) {
         MarkupDesignBean markupDesignBean = MarkupUnit.getMarkupDesignBeanForElement(element);
         if (markupDesignBean == null) {
             return null;
@@ -1816,7 +1816,7 @@ public class JsfForm {
 //        domProvider.deleteComponent(componentRootElement);
 //    }
 
-    DomDocumentImpl getDomDocumentImpl() {
+    public DomDocumentImpl getDomDocumentImpl() {
         return domDocumentImpl;
     }
     
@@ -2879,6 +2879,15 @@ public class JsfForm {
     
     DesignBean findParent(String className, DesignBean droppee, Node parentNode, boolean searchUp) {
         return Util.findParent(className, droppee, parentNode, searchUp, getFacesModel());
+    }
+    
+    public boolean isFormComponent(Element componentRootElement) {
+        MarkupDesignBean bean = MarkupUnit.getMarkupDesignBeanForElement(componentRootElement);
+        if (bean == null) {
+            return false;
+        }
+//        return Util.isFormBean(getFacesModel(), bean);
+        return isFormDesignBean(bean);
     }
     
     boolean isFormDesignBean(DesignBean designBean) {

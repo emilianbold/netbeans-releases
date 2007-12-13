@@ -623,11 +623,12 @@ public class DomProviderServiceImpl implements DomProviderService {
     }
 
     public boolean isTrayComponent(Element componentRootElement) {
-        MarkupDesignBean markupDesignBean = MarkupUnit.getMarkupDesignBeanForElement(componentRootElement);
-        if (markupDesignBean == null) {
-            return false;
-        }
-        return LiveUnit.isTrayBean(markupDesignBean);
+//        MarkupDesignBean markupDesignBean = MarkupUnit.getMarkupDesignBeanForElement(componentRootElement);
+//        if (markupDesignBean == null) {
+//            return false;
+//        }
+//        return LiveUnit.isTrayBean(markupDesignBean);
+        return JsfSupportUtilities.isTrayComponent(componentRootElement);
     }
 
     public boolean isCssPositionable(Element componentRootElement) {

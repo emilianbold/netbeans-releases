@@ -53,6 +53,8 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-visualweb-designer-jsf-action-SelectParentAction.instance"/>
             <file name="org-netbeans-modules-visualweb-designer-jsf-action-TargetResolutionAction.instance"/>
             <file name="org-netbeans-modules-visualweb-designer-jsf-action-VirtualFormsSupportAction.instance"/>
+            <file name="org-netbeans-modules-visualweb-designer-jsf-action-BringToFrontAction.instance"/>
+            <file name="org-netbeans-modules-visualweb-designer-jsf-action-SendToBackAction.instance"/>
         </folder>
     </folder>
     
@@ -61,14 +63,38 @@ made subject to such option by the copyright holder.
         <folder name="application">
             <folder name="x-designtime">
                 <folder name="Actions">
+                    <file name="JSFSupportSeparator1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="500"/>
+                    </file>
+                    
                     <file name="org-netbeans-modules-visualweb-designer-jsf-action-InlineEditAction.shadow">
                         <attr name="originalFile" stringvalue="/Actions/JSFSupport/org-netbeans-modules-visualweb-designer-jsf-action-InlineEditAction.instance"/>
                         <attr name="position" intvalue="600"/>
                     </file>
                     
+                    <file name="JSFSupportSeparator2.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1800"/>
+                    </file>
+                    
                     <file name="org-netbeans-modules-visualweb-designer-jsf-action-AlignAction.shadow">
                         <attr name="originalFile" stringvalue="/Actions/JSFSupport/org-netbeans-modules-visualweb-designer-jsf-action-AlignAction.instance"/>
                         <attr name="position" intvalue="1900"/>
+                    </file>
+                    
+                    <file name="org-netbeans-modules-visualweb-designer-jsf-action-BringToFrontAction.shadow">
+                        <attr name="originalFile" stringvalue="/Actions/JSFSupport/org-netbeans-modules-visualweb-designer-jsf-action-BringToFrontAction.instance"/>
+                        <attr name="position" intvalue="2000"/>
+                    </file>
+                    <file name="org-netbeans-modules-visualweb-designer-jsf-action-SendToBackAction.shadow">
+                        <attr name="originalFile" stringvalue="/Actions/JSFSupport/org-netbeans-modules-visualweb-designer-jsf-action-SendToBackAction.instance"/>
+                        <attr name="position" intvalue="2100"/>
+                    </file>
+                    
+                    <file name="JSFSupportSeparator3.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="3100"/>
                     </file>
                     
                     <file name="org-netbeans-modules-visualweb-designer-jsf-action-RefreshAction.shadow">
@@ -89,21 +115,50 @@ made subject to such option by the copyright holder.
         <folder name="application">
             <folder name="x-designer">
                 <folder name="Popup">
+                    <file name="JSFSupportSeparator1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="600"/>
+                    </file>
+                    
                     <file name="org-netbeans-modules-visualweb-designer-jsf-action-InlineEditAction.shadow">
                         <attr name="originalFile" stringvalue="/Actions/JSFSupport/org-netbeans-modules-visualweb-designer-jsf-action-InlineEditAction.instance"/>
                         <attr name="position" intvalue="700"/>
                     </file>
                     
+                    <file name="JSFSupportSeparator2.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="800"/>
+                    </file>
+
                     <file name="org-netbeans-modules-visualweb-designer-jsf-action-SelectParentAction.shadow">
                         <attr name="originalFile" stringvalue="/Actions/JSFSupport/org-netbeans-modules-visualweb-designer-jsf-action-SelectParentAction.instance"/>
                         <attr name="position" intvalue="900"/>
                     </file>
                     
+                    <file name="JSFSupportSeparator3.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1800"/>
+                    </file>
+
                     <file name="org-netbeans-modules-visualweb-designer-jsf-action-AlignAction.shadow">
                         <attr name="originalFile" stringvalue="/Actions/JSFSupport/org-netbeans-modules-visualweb-designer-jsf-action-AlignAction.instance"/>
                         <attr name="position" intvalue="1900"/>
                     </file>
                     
+                    <file name="org-netbeans-modules-visualweb-designer-jsf-action-BringToFrontAction.shadow">
+                        <attr name="originalFile" stringvalue="/Actions/JSFSupport/org-netbeans-modules-visualweb-designer-jsf-action-BringToFrontAction.instance"/>
+                        <attr name="position" intvalue="2000"/>
+                    </file>
+                    <file name="org-netbeans-modules-visualweb-designer-jsf-action-SendToBackAction.shadow">
+                        <attr name="originalFile" stringvalue="/Actions/JSFSupport/org-netbeans-modules-visualweb-designer-jsf-action-SendToBackAction.instance"/>
+                        <attr name="position" intvalue="2100"/>
+                    </file>
+
+                    <file name="JSFSupportSeparator4.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="3100"/>
+                    </file>
+
                     <file name="org-netbeans-modules-visualweb-designer-jsf-action-RefreshAction.shadow">
                         <attr name="originalFile" stringvalue="/Actions/JSFSupport/org-netbeans-modules-visualweb-designer-jsf-action-RefreshAction.instance"/>
                         <attr name="position" intvalue="3200"/>
@@ -112,7 +167,7 @@ made subject to such option by the copyright holder.
                         <attr name="originalFile" stringvalue="/Actions/JSFSupport/org-netbeans-modules-visualweb-designer-jsf-action-TargetResolutionAction.instance"/>
                         <attr name="position" intvalue="3300"/>
                     </file>
-                    </folder>
+                </folder>
                 
                 <folder name="Toolbars">
                     <folder name="Default">

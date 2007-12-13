@@ -53,6 +53,7 @@ import org.netbeans.modules.visualweb.api.designtime.idebridge.DesigntimeIdeBrid
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import org.netbeans.modules.visualweb.designer.jsf.ui.JsfMultiViewElement;
 import org.netbeans.modules.visualweb.insync.Util;
+import org.netbeans.modules.visualweb.insync.live.LiveUnit;
 import org.netbeans.modules.visualweb.insync.markup.MarkupUnit;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
 import org.openide.ErrorManager;
@@ -363,6 +364,15 @@ public final class JsfSupportUtilities {
 
         return null;
     }
+    
+    public static boolean isTrayComponent(Element componentRootElement) {
+        MarkupDesignBean markupDesignBean = MarkupUnit.getMarkupDesignBeanForElement(componentRootElement);
+        if (markupDesignBean == null) {
+            return false;
+        }
+        return LiveUnit.isTrayBean(markupDesignBean);
+    }
+    
 
     private static Logger getLogger() {
         return Logger.getLogger(JsfSupportUtilities.class.getName());
