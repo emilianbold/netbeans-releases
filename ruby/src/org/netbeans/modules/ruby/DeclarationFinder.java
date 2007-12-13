@@ -2304,9 +2304,9 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
 
         public DeclarationLocation getLocation() {
             Node node = AstUtilities.getForeignNode(element, null);
-            int line = node != null ? node.getPosition().getStartOffset() : -1;
+            int lineOffset = node != null ? node.getPosition().getStartOffset() : -1;
             DeclarationLocation loc = new DeclarationLocation(element.getFileObject(),
-                line, element);
+                lineOffset, element);
 
             return loc;
         }
