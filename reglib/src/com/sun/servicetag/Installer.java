@@ -133,10 +133,10 @@ public class Installer {
             return createServiceTag(source);
         } finally {
             if (cleanup) {
-                if (regXmlFile != null) {
+                if (regXmlFile.exists()) {
                     regXmlFile.delete();
                 }
-                if (serviceTagFile != null) {
+                if (serviceTagFile.exists()) {
                     serviceTagFile.delete();
                 }
             }
@@ -185,6 +185,15 @@ public class Installer {
      */
     private static synchronized void writeRegistrationXml() 
             throws IOException {
+        if (!svcTagDir.exists()) {
+            // This check is for NetBeans or other products that
+            // bundles this com.sun.servicetag implementation for 
+            // pre-6u5 release.
+            if (!svcTagDir.mkdir()) {
+                throw new IOException("Failed to create directory: " + svcTagDir);
+            }
+        }
+
         // regenerate the new offline registration page
         deleteRegistrationHtmlPage();
         getRegistrationHtmlPage();
@@ -398,12 +407,12 @@ public class Installer {
             registration = null; 
         } finally {
             // Delete the registration.xml and servicetag files if exists
-            if (regXmlFile != null && regXmlFile.exists()) {
+            if (regXmlFile.exists()) {
                 if (!regXmlFile.delete()) {
                     throw new IOException("Failed to delete " + regXmlFile);
                 } 
             } 
-            if (serviceTagFile != null && serviceTagFile.exists()) {
+            if (serviceTagFile.exists()) {
                 if (!serviceTagFile.delete()) {
                     throw new IOException("Failed to delete " + serviceTagFile);
                 } 
@@ -440,7 +449,7 @@ public class Installer {
     private static void writeInstalledUrns() throws IOException {
         // if the Registry is not supported, 
         // remove the servicetag file
-        if (!Registry.isSupported() && serviceTagFile != null) {
+        if (!Registry.isSupported() && serviceTagFile.exists()) {
             serviceTagFile.delete();
             return;
         }
@@ -793,8 +802,7 @@ public class Installer {
                 }
     
                 br = new BufferedReader(new InputStreamReader(in, "UTF-8"));
-                pw = new PrintWriter(new OutputStreamWriter(
-                         new FileOutputStream(f), "UTF-8"));
+                pw = new PrintWriter(f, "UTF-8");
                 String line = null;
                 while ((line = br.readLine()) != null) {
                     String output = line;

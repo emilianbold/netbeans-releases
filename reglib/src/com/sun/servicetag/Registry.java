@@ -242,7 +242,7 @@ public class Registry {
                 }
             default: 
                 throw new IOException("stclient exits with error" +
-                     " (" + exitValue + ") " + output); 
+                     " (" + exitValue + ")\n" + output); 
         }
     }
 
@@ -556,8 +556,7 @@ public class Registry {
                     }
                 }
             } else {
-                throw new IOException("Error occurs when finding " +
-                    productURN + " (" + p.exitValue() + ": " + output + ")"); 
+                checkReturnError(p.exitValue(), output, null);
             }
             return instances;
         } finally {

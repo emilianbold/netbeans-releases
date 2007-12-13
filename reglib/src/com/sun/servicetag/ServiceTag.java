@@ -95,6 +95,18 @@ public class ServiceTag {
     private int installerUID;
     private Date timestamp;
 
+    // Service Tag Field Lengths (defined in sthelper.h)
+    // Since the constants defined in sthelper.h includes the null-terminated 
+    // character, so minus 1 from the sthelper.h defined values.
+    private final int MAX_URN_LEN             = 256 - 1;
+    private final int MAX_PRODUCT_NAME_LEN    = 256 - 1;
+    private final int MAX_PRODUCT_VERSION_LEN = 64 - 1;
+    private final int MAX_PRODUCT_PARENT_LEN  = 256 - 1;
+    private final int MAX_PRODUCT_VENDOR_LEN  = 64 - 1;
+    private final int MAX_PLATFORM_ARCH_LEN   = 64 - 1;
+    private final int MAX_CONTAINER_LEN       = 64 - 1;
+    private final int MAX_SOURCE_LEN          = 64 - 1;
+
     // private constructors
     private ServiceTag() {
     }
@@ -387,6 +399,10 @@ public class ServiceTag {
         if (instanceURN == null) {
             throw new NullPointerException("Parameter instanceURN cannot be null");
         }
+        if (instanceURN.length() > MAX_URN_LEN) {
+            throw new IllegalArgumentException("instanceURN \"" + instanceURN +
+                "\" exceeds maximum length " + MAX_URN_LEN);
+        }
         this.instanceURN = instanceURN;
     }
     
@@ -395,7 +411,11 @@ public class ServiceTag {
             throw new NullPointerException("Parameter productName cannot be null");
         }
         if (productName.length() == 0) {
-            throw new IllegalArgumentException("Missing product name");
+            throw new IllegalArgumentException("product name cannot be empty");
+        }
+        if (productName.length() > MAX_PRODUCT_NAME_LEN) {
+            throw new IllegalArgumentException("productName \"" + productName +
+                "\" exceeds maximum length " + MAX_PRODUCT_NAME_LEN);
         }
         this.productName = productName;
     }
@@ -406,7 +426,12 @@ public class ServiceTag {
         }
         
         if (productVersion.length() == 0) {
-            throw new IllegalArgumentException("Missing product version");
+            throw new IllegalArgumentException("product version cannot be empty");
+        }
+        if (productVersion.length() > MAX_PRODUCT_VERSION_LEN) {
+            throw new IllegalArgumentException("productVersion \"" + 
+                productVersion + "\" exceeds maximum length " + 
+                MAX_PRODUCT_VERSION_LEN);
         }
         this.productVersion = productVersion;
     }
@@ -416,7 +441,11 @@ public class ServiceTag {
             throw new NullPointerException("Parameter productURN cannot be null");
         }
         if (productURN.length() == 0) {
-            throw new IllegalArgumentException("Missing product URN");
+            throw new IllegalArgumentException("product URN cannot be empty");
+        }
+        if (productURN.length() > MAX_URN_LEN) {
+            throw new IllegalArgumentException("productURN \"" + productURN +
+                "\" exceeds maximum length " + MAX_URN_LEN);
         }
         this.productURN = productURN;
     }
@@ -426,6 +455,11 @@ public class ServiceTag {
             throw new NullPointerException("Parameter productParentURN cannot be null");
         }
         // optional field - can be empty
+        if (productParentURN.length() > MAX_URN_LEN) {
+            throw new IllegalArgumentException("productParentURN \"" + 
+                productParentURN + "\" exceeds maximum length " + 
+                MAX_URN_LEN);
+        }
         this.productParentURN = productParentURN;
     }
 
@@ -434,7 +468,12 @@ public class ServiceTag {
             throw new NullPointerException("Parameter productParent cannot be null");
         }
         if (productParent.length() == 0) {
-            throw new IllegalArgumentException("Missing product parent");
+            throw new IllegalArgumentException("product parent cannot be empty");
+        }
+        if (productParent.length() > MAX_PRODUCT_PARENT_LEN) {
+            throw new IllegalArgumentException("productParent \"" + 
+                productParent + "\" exceeds maximum length " + 
+                MAX_PRODUCT_PARENT_LEN);
         }
         this.productParent = productParent;
     }
@@ -442,6 +481,11 @@ public class ServiceTag {
     void setProductDefinedInstanceID(String productDefinedInstanceID) {
         if (productDefinedInstanceID == null) {
             throw new NullPointerException("Parameter productDefinedInstanceID cannot be null");
+        }
+        if (productDefinedInstanceID.length() > MAX_URN_LEN) {
+            throw new IllegalArgumentException("productDefinedInstanceID \"" + 
+                productDefinedInstanceID + "\" exceeds maximum length " + 
+                MAX_URN_LEN);
         }
         // optional field - can be empty
         this.productDefinedInstanceID = productDefinedInstanceID;
@@ -452,7 +496,12 @@ public class ServiceTag {
             throw new NullPointerException("Parameter productVendor cannot be null");
         }
         if (productVendor.length() == 0) {
-            throw new IllegalArgumentException("Missing product vendor");
+            throw new IllegalArgumentException("product vendor cannot be empty");
+        }
+        if (productVendor.length() > MAX_PRODUCT_VENDOR_LEN) {
+            throw new IllegalArgumentException("productVendor \"" + 
+                productVendor + "\" exceeds maximum length " + 
+                MAX_PRODUCT_VENDOR_LEN);
         }
         this.productVendor = productVendor;
     }
@@ -462,7 +511,12 @@ public class ServiceTag {
             throw new NullPointerException("Parameter platformArch cannot be null");
         }
         if (platformArch.length() == 0) {
-            throw new IllegalArgumentException("Missing platform architecture");
+            throw new IllegalArgumentException("platform architecture cannot be empty");
+        }
+        if (platformArch.length() > MAX_PLATFORM_ARCH_LEN) {
+            throw new IllegalArgumentException("platformArch \"" + 
+                platformArch + "\" exceeds maximum length " + 
+                MAX_PLATFORM_ARCH_LEN);
         }
         this.platformArch = platformArch;
     }
@@ -477,7 +531,12 @@ public class ServiceTag {
             throw new NullPointerException("Parameter container cannot be null");
         }
         if (container.length() == 0) {
-            throw new IllegalArgumentException("Missing container");
+            throw new IllegalArgumentException("container cannot be empty");
+        }
+        if (container.length() > MAX_CONTAINER_LEN) {
+            throw new IllegalArgumentException("container \"" + 
+                container + "\" exceeds maximum length " + 
+                MAX_CONTAINER_LEN);
         }
         this.container = container;
     }
@@ -487,7 +546,11 @@ public class ServiceTag {
             throw new NullPointerException("Parameter source cannot be null");
         }
         if (source.length() == 0) {
-            throw new IllegalArgumentException("Missing source");
+            throw new IllegalArgumentException("source cannot be empty");
+        }
+        if (source.length() > MAX_SOURCE_LEN) {
+            throw new IllegalArgumentException("source \"" + source +
+                "\" exceeds maximum length " + MAX_SOURCE_LEN);
         }
         this.source = source;
     }
