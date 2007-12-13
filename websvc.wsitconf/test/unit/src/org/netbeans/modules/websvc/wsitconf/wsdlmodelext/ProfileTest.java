@@ -103,7 +103,7 @@ public class ProfileTest extends NbTestCase {
             String profile = profiles[i];
 
             //default profile set
-            // XXX no longer compiles: ProfilesModelHelper.setSecurityProfile(b, profile);
+            ProfilesModelHelper.setSecurityProfile(b, profile, false);
 
             File profDefaultFile = new File(getWorkDirPath() + File.separator + i + profile + ".wsdl");
             TestUtil.dumpToFile(model.getBaseDocument(), profDefaultFile);
