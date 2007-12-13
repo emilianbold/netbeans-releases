@@ -23,15 +23,6 @@
                         <specification-version>1.25</specification-version>
                     </run-dependency>
                 </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.xml.text</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>2</release-version>
-                        <specification-version>1.14</specification-version>
-                    </run-dependency>
-                </dependency>
             </module-dependencies>
             <public-packages>
                 <package>org.netbeans.api.xml.lexer</package>
