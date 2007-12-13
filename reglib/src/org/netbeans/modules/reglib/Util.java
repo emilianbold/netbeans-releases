@@ -65,7 +65,7 @@ class Util {
     
     static void loadProperties () {
         //Extract image from jar
-        String resource = "/org/netbeans/modules/registration/Bundle.properties";
+        String resource = "/org/netbeans/modules/reglib/Bundle.properties";
         InputStream in = Util.class.getResourceAsStream(resource);
         try {
             stProps.load(in);

@@ -649,7 +649,7 @@ public class NbServiceTagSupport {
      * Returns the File object of the offline registration page localized
      * for the default locale in the $HOME/.netbeans-registration/$NB_VERSION.
      */
-    public static File getRegistrationHtmlPage() throws IOException {
+    public static File getRegistrationHtmlPage(String product) throws IOException {
         if (!inited) {
             init();
         }
@@ -660,7 +660,7 @@ public class NbServiceTagSupport {
         File f = new File(parent, REGISTRATION_HTML_NAME + ".html");
         if (!f.exists()) {
             // Generate the localized version of the offline registration Page
-            generateRegisterHtml(parent);
+            generateRegisterHtml(parent,product);
         }
 
         String name = REGISTRATION_HTML_NAME;
@@ -751,13 +751,13 @@ public class NbServiceTagSupport {
     private static final String REGISTRATION_PAYLOAD_KEY = "@@REGISTRATION_PAYLOAD@@";
 
     @SuppressWarnings("unchecked")
-    private static void generateRegisterHtml(File parent) throws IOException {
+    private static void generateRegisterHtml(File parent, String product) throws IOException {
         RegistrationData regData = getRegistrationData();
         String registerURL = NbConnectionSupport.getRegistrationURL(
-                                 regData.getRegistrationURN()).toString();
+            regData.getRegistrationURN(), product).toString();
         
         //Extract image from jar
-        String resource = "/org/netbeans/modules/registration/resources/nb_header.png";
+        String resource = "/org/netbeans/modules/reglib/resources/nb_header.png";
         File img = new File(svcTagDirHome, "nb_header.png");
         String headerImageSrc = img.getCanonicalPath();       
         InputStream in = NbServiceTagSupport.class.getResourceAsStream(resource);

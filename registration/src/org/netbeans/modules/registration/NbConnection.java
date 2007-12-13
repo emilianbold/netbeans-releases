@@ -113,10 +113,11 @@ class NbConnection {
     }
     
     private static void checkStatus () {
-        LOG.log(Level.FINE,"checkStatus");
+        LOG.log(Level.FINE,"Check status");
         File dir = NbServiceTagSupport.getServiceTagDirHome();
         File statusFile = new File(dir,STATUS_FILE);
         if (statusFile.exists()) {
+            LOG.log(Level.FINE,"Load status from:" + statusFile);
             //Status file exists, check its content
             BufferedInputStream in = null;
             try {
@@ -163,7 +164,7 @@ class NbConnection {
      * If user selects Register registration is started
      * @param value User choice in reminder dialog
      */
-    static void updateStatus (String value) {
+    static void updateStatus (String value, String product) {
         LOG.log(Level.FINE,"updateStatus status:" + value);
         //Ignore null value ie. do not change status if null is passed
         if (value != null) {
@@ -191,7 +192,7 @@ class NbConnection {
         }
         if (StatusData.STATUS_REGISTERED.equals(status.getStatus())) {
             try {
-                NbConnection.register(NbServiceTagSupport.getRegistrationData());
+                NbConnection.register(NbServiceTagSupport.getRegistrationData(), product);
             } catch (IOException ex) {
                 LOG.log(Level.INFO,
                 "Error: Cannot register product", ex);
@@ -209,20 +210,22 @@ class NbConnection {
      *
      * @throws IOException if I/O error occurs in this operation
      */
-    static void register(RegistrationData regData) throws IOException {
+    static void register(RegistrationData regData, String product) throws IOException {
         // Gets the URL for SunConnection registration relay service
         LOG.log(Level.FINE,"Product registration");
-        URL url = NbConnectionSupport.getRegistrationURL(regData.getRegistrationURN());
+        URL url = NbConnectionSupport.getRegistrationURL(regData.getRegistrationURN(), product);
 
         // Post the Product Registry to Sun Connection
+        LOG.log(Level.FINE,"POST registration data to:" + url);
         boolean succeed = NbConnectionSupport.postRegistrationData(url, regData);
         if (succeed) {
             // service tags posted successfully
             // now prompt for registration
+            LOG.log(Level.FINE,"Open browser with:" + url);
             openBrowser(url);
         } else {
             // open browser with the offline registration page
-            openOfflineRegisterPage();
+            openOfflineRegisterPage(product);
         }
     }
 
@@ -254,9 +257,9 @@ class NbConnection {
      * Opens the offline registratioin page in the browser.
      * 
      */
-    private static void openOfflineRegisterPage()
+    private static void openOfflineRegisterPage (String product)
             throws IOException {
-        File registerPage = NbServiceTagSupport.getRegistrationHtmlPage();
+        File registerPage = NbServiceTagSupport.getRegistrationHtmlPage(product);
         if (BrowserSupport.isSupported()) {
             try {
                 BrowserSupport.browse(registerPage.toURI());

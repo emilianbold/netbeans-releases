@@ -95,7 +95,7 @@ public class NbConnectionSupport {
      * 3) Default production URL
      *
      */
-    public static URL getRegistrationURL(String registrationURN) {        
+    public static URL getRegistrationURL(String registrationURN, String product) {
         String url = System.getProperty("nb.registration.host");
         System.out.println("url:" + url);
         if (url == null) {
@@ -110,7 +110,7 @@ public class NbConnectionSupport {
         }
 
         // Add the registry_urn in the URL's query
-        String registerURL = rewriteURL(url, registrationURN);
+        String registerURL = rewriteURL(url, registrationURN, product);
         try {
             return new URL(registerURL);
         } catch (MalformedURLException ex) {
@@ -122,7 +122,7 @@ public class NbConnectionSupport {
         }
     }
     
-    private static String rewriteURL(String url, String registryURN) {
+    private static String rewriteURL(String url, String registryURN, String product) {
         StringBuilder sb = new StringBuilder(url.trim());
         int len = sb.length();
         if (sb.charAt(len-1) != '/') {
@@ -130,7 +130,7 @@ public class NbConnectionSupport {
         }
         sb.append(registryURN);
         sb.append("?");
-        sb.append("product=jdk");
+        sb.append("product=" + product);
         sb.append("&");
         sb.append("locale=").append(Locale.getDefault().getLanguage());
         return sb.toString();

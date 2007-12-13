@@ -81,7 +81,7 @@ import javax.xml.transform.stream.StreamResult;
 class StatusDocument {
 
     private static final String STATUS_DATA_SCHEMA =
-            "/org/netbeans/modules/registration/resources/status.xsd";
+            "/org/netbeans/modules/reglib/resources/status.xsd";
     private static final String STATUS_DATA_VERSION = "1.0";
     final static String ST_NODE_REGISTRATION_STATUS = "registration_status";
     final static String ST_ATTR_REGISTRATION_STATUS_VERSION = "version";

@@ -60,6 +60,8 @@ public class NbInstaller extends ModuleInstall {
     
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.registration.NbInstaller"); // NOI18N
     
+    public static String PRODUCT_ID = "nb";
+    
     private static boolean moduleEnabled = true;
     
     @Override
@@ -96,7 +98,7 @@ public class NbInstaller extends ModuleInstall {
             NbServiceTagSupport.createNbServiceTag("NetBeans IDE 6.0");
             //NbServiceTagSupport.createGfServiceTag("NetBeans IDE 6.0");
             //NbServiceTagSupport.createJdkServiceTag("NetBeans IDE 6.0");
-            NbServiceTagSupport.getRegistrationHtmlPage();
+            NbServiceTagSupport.getRegistrationHtmlPage(PRODUCT_ID);
             NbConnection.init();
         } catch (IOException ex) {
             LOG.log(Level.INFO,"Error: Cannot create service tag:",ex);
