@@ -577,11 +577,13 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
     }
     
     private J2eePlatform getJ2eePlatform(){
-        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
-        if(provider != null){
-            String serverInstanceID = provider.getServerInstanceID();
-            if(serverInstanceID != null && serverInstanceID.length() > 0) {
-                return Deployment.getDefault().getJ2eePlatform(serverInstanceID);
+        if (project != null) {
+            J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
+            if(provider != null){
+                String serverInstanceID = provider.getServerInstanceID();
+                if(serverInstanceID != null && serverInstanceID.length() > 0) {
+                    return Deployment.getDefault().getJ2eePlatform(serverInstanceID);
+                }
             }
         }
         return null;
