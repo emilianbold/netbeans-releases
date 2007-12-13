@@ -209,7 +209,7 @@ public class ClassFileUtil {
     public static String encodeClassNameOrArray (TypeElement td) {
         assert td != null;
         CharSequence qname = td.getQualifiedName();
-        if (qname != null && "Array".contentEquals(qname) && td.getEnclosingElement().asType().getKind() == TypeKind.NONE) {     //NOI18N
+        if (qname != null && td.getEnclosingElement().asType().getKind() == TypeKind.NONE && "Array".equals(qname.toString())) {     //NOI18N
             return "[";  //NOI18N
         }
         else {

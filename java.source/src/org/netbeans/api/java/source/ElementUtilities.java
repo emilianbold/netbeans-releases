@@ -265,7 +265,7 @@ public final class ElementUtilities {
      */
     public Iterable<? extends Element> getLocalMembersAndVars(Scope scope, ElementAcceptor acceptor) {
         ArrayList<Element> members = new ArrayList<Element>();
-        HashMap<String, ArrayList<Element>> hiders = new HashMap<String, ArrayList<Element>>();
+        HashMap<CharSequence, ArrayList<Element>> hiders = new HashMap<CharSequence, ArrayList<Element>>();
         Elements elements = JavacElements.instance(ctx);
         Types types = JavacTypes.instance(ctx);
         TypeElement cls;
@@ -273,7 +273,7 @@ public final class ElementUtilities {
             if ((cls = scope.getEnclosingClass()) != null) {
                 for (Element local : scope.getLocalElements())
                     if (acceptor == null || acceptor.accept(local, null)) {
-                        String name = local.getSimpleName().toString();
+                        CharSequence name = local.getSimpleName();
                         ArrayList<Element> h = hiders.get(name);
                         if (!isHidden(local, h, types)) {
                             members.add(local);
@@ -287,7 +287,7 @@ public final class ElementUtilities {
                 TypeMirror type = cls.asType();
                 for (Element member : elements.getAllMembers(cls)) {
                     if (acceptor == null || acceptor.accept(member, type)) {
-                        String name = member.getSimpleName().toString();
+                        CharSequence name = member.getSimpleName();
                         ArrayList<Element> h = hiders.get(name);
                         if (!isHidden(member, h, types)) {
                             members.add(member);
@@ -303,7 +303,7 @@ public final class ElementUtilities {
                 for (Element local : scope.getLocalElements()) {
                     if (!local.getKind().isClass() && !local.getKind().isInterface() &&
                         (acceptor == null || acceptor.accept(local, local.getEnclosingElement().asType()))) {
-                        String name = local.getSimpleName().toString();
+                        CharSequence name = local.getSimpleName();
                         ArrayList<Element> h = hiders.get(name);
                         if (!isHidden(local, h, types)) {
                             members.add(local);
@@ -325,12 +325,12 @@ public final class ElementUtilities {
      */
     public Iterable<? extends Element> getLocalVars(Scope scope, ElementAcceptor acceptor) {
         ArrayList<Element> members = new ArrayList<Element>();
-        HashMap<String, ArrayList<Element>> hiders = new HashMap<String, ArrayList<Element>>();
+        HashMap<CharSequence, ArrayList<Element>> hiders = new HashMap<CharSequence, ArrayList<Element>>();
         Types types = JavacTypes.instance(ctx);
         while(scope != null && scope.getEnclosingClass() != null) {
             for (Element local : scope.getLocalElements())
                 if (acceptor == null || acceptor.accept(local, null)) {
-                    String name = local.getSimpleName().toString();
+                    CharSequence name = local.getSimpleName();
                     ArrayList<Element> h = hiders.get(name);
                     if (!isHidden(local, h, types)) {
                         members.add(local);
@@ -355,7 +355,7 @@ public final class ElementUtilities {
      */
     public Iterable<? extends TypeElement> getGlobalTypes(ElementAcceptor acceptor) {
         HashSet<TypeElement> members = new HashSet<TypeElement>();
-        HashMap<String, ArrayList<Element>> hiders = new HashMap<String, ArrayList<Element>>();
+        HashMap<CharSequence, ArrayList<Element>> hiders = new HashMap<CharSequence, ArrayList<Element>>();
         Trees trees = JavacTrees.instance(ctx);
         Types types = JavacTypes.instance(ctx);
         for (CompilationUnitTree unit : Collections.singletonList(info.getCompilationUnit())) {
@@ -364,7 +364,7 @@ public final class ElementUtilities {
             while (scope != null && scope instanceof JavacScope && !((JavacScope)scope).isStarImportScope()) {
                 for (Element local : scope.getLocalElements())
                     if (local.getKind().isClass() || local.getKind().isInterface()) {
-                        String name = local.getSimpleName().toString();
+                        CharSequence name = local.getSimpleName();
                         ArrayList<Element> h = hiders.get(name);
                         if (!isHidden(local, h, types)) {
                             if (acceptor == null || acceptor.accept(local, null))
@@ -381,7 +381,7 @@ public final class ElementUtilities {
             Element element = trees.getElement(path);
             if (element != null && element.getKind() == ElementKind.PACKAGE) {
                 for (Element member : element.getEnclosedElements()) {
-                    String name = member.getSimpleName().toString();
+                    CharSequence name = member.getSimpleName();
                     ArrayList<Element> h = hiders.get(name);
                     if (!isHidden(member, h, types)) {
                         if (acceptor == null || acceptor.accept(member, null))
@@ -397,7 +397,7 @@ public final class ElementUtilities {
             while (scope != null) {
                 for (Element local : scope.getLocalElements())
                     if (local.getKind().isClass() || local.getKind().isInterface()) {
-                        String name = local.getSimpleName().toString();
+                        CharSequence name = local.getSimpleName();
                         ArrayList<Element> h = hiders.get(name);
                         if (!isHidden(local, h, types)) {
                             if (acceptor == null || acceptor.accept(local, null))
