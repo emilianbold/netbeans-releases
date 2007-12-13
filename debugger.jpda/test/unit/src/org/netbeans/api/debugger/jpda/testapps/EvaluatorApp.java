@@ -973,6 +973,16 @@ public class EvaluatorApp {
         return cm;
     }
     
+    public int testLocalVar1() {
+        int instance = 0;
+        return instance;
+    }
+    
+    public Runtime testLocalVar2() {
+        Runtime lvar = Runtime.getRuntime();
+        return lvar;
+    }
+    
     public EvaluatorApp testThis1() {
         return this;
     }
@@ -995,6 +1005,14 @@ public class EvaluatorApp {
     
     public String testInner4() {
         return new InnerI2().methodNotToOverride();
+    }
+    
+    public String testInner5() {
+        return ((EvaluatorApp) new InnerI2()).methodToOverride();
+    }
+    
+    public String testInner6() {
+        return ((EvaluatorApp) new InnerI2()).methodNotToOverride();
     }
     
     
