@@ -109,14 +109,21 @@ public class EntityRename implements JPARefactoring{
         
     }
     
+    private MetadataModel<EntityMappingsMetadata> getEntityMappingsModel(){
+        PersistenceScope scope = getPersistenceScope();
+        // XXX should retrieve the model for each PU (see the javadoc of the 
+        // the scope#getEMM(String) method), but it is currently not supported
+        // by the persistence scope implementations.
+        return scope != null ? scope.getEntityMappingsModel(null) : null;
+    }
+
     public Problem prepare(RefactoringElementsBag refactoringElementsBag) {
         
-        PersistenceScope scope = getPersistenceScope();
-        if (scope == null){
+        MetadataModel<EntityMappingsMetadata> emModel = getEntityMappingsModel();
+        if (emModel == null){
             return null;
         }
         
-        MetadataModel<EntityMappingsMetadata> emModel = scope.getEntityMappingsModel(null);
         EntityAssociationResolver resolver = new EntityAssociationResolver(treePathHandle, emModel);
         try{
             List<EntityAnnotationReference> references = resolver.resolveReferences();
