@@ -92,7 +92,7 @@ public class LazyTypeCompletionItem extends JavaCompletionItem implements LazyCo
         int idx = name.lastIndexOf('.'); //NOI18N
         this.simpleName = idx > -1 ? name.substring(idx + 1) : name;
         this.pkgName = idx > -1 ? name.substring(0, idx) : ""; //NOI18N
-        this.sortText = new ClassSortText(this.simpleName, this.pkgName);
+        this.sortText = this.simpleName + Utilities.getImportanceLevel(this.pkgName) + "#" + this.pkgName; //NOI18N
     }
     
     public boolean accept() {
