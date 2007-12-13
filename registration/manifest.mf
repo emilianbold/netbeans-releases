@@ -1,4 +1,5 @@
 Manifest-Version: 1.0
+AutoUpdate-Show-In-Client: true
 OpenIDE-Module: org.netbeans.modules.registration
 OpenIDE-Module-Install: org/netbeans/modules/registration/NbInstaller.class
 OpenIDE-Module-Layer: org/netbeans/modules/registration/resources/layer.xml
