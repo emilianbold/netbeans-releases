@@ -231,7 +231,7 @@ public final class UiUtils {
                         Parser parser = language.getParser();
                         ParserResult pr = info.getParserResult();
                         Element file = pr.getRoot();
-                        if (file != null) {
+                        //if (file != null) {
                             try {
                                 OffsetRange range = parser.getPositionManager().getOffsetRange(file, el);
  
@@ -241,7 +241,7 @@ public final class UiUtils {
                             } catch (IllegalArgumentException iae) {
                                 result[0] = new DeclarationLocation(fileObject, 0);
                             }
-                        }
+                        //}
                     } else {
                         // The element is not in the parse tree for this parse job; it is
                         // probably something like an indexed element
