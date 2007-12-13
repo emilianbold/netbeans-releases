@@ -73,21 +73,25 @@ public class RenameTransformer extends RefactoringVisitor {
     public Tree visitCompilationUnit(CompilationUnitTree node, Element p) {
         if (renameInComments) {
             String originalName = getOldSimpleName(p);
-            TokenSequence<JavaTokenId> ts = workingCopy.getTokenHierarchy().tokenSequence(JavaTokenId.language());
-            
-            while (ts.moveNext()) {
-                Token t = ts.token();
-                
-                if (t.id() == JavaTokenId.BLOCK_COMMENT || t.id() == JavaTokenId.LINE_COMMENT || t.id() == JavaTokenId.JAVADOC_COMMENT) {
-                    int index = -1;
-                    String text = t.text().toString();
-                            
-                    while ((index = text.indexOf(originalName, index + 1)) != (-1)) {
-                        if (index > 0 && Character.isJavaIdentifierPart(text.charAt(index - 1)))
-                            continue;
-                        if ((index + originalName.length() < text.length()) && Character.isJavaIdentifierPart(text.charAt(index + originalName.length())))
-                            continue;
-                        workingCopy.rewriteInComment(ts.offset() + index, originalName.length(), newName);
+            if (originalName!=null) {
+                TokenSequence<JavaTokenId> ts = workingCopy.getTokenHierarchy().tokenSequence(JavaTokenId.language());
+
+                while (ts.moveNext()) {
+                    Token t = ts.token();
+
+                    if (t.id() == JavaTokenId.BLOCK_COMMENT || t.id() == JavaTokenId.LINE_COMMENT || t.id() == JavaTokenId.JAVADOC_COMMENT) {
+                        int index = -1;
+                        String text = t.text().toString();
+
+                        while ((index = text.indexOf(originalName, index + 1)) != (-1)) {
+                            if (index > 0 && Character.isJavaIdentifierPart(text.charAt(index - 1))) {
+                                continue;
+                            }
+                            if ((index + originalName.length() < text.length()) && Character.isJavaIdentifierPart(text.charAt(index + originalName.length()))) {
+                                continue;
+                            }
+                            workingCopy.rewriteInComment(ts.offset() + index, originalName.length(), newName);
+                        }
                     }
                 }
             }
