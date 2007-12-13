@@ -53,11 +53,13 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.InnerToOuterRefactoring;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.ToPhaseException;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -221,6 +223,13 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
             }
         return super.visitClass(classTree, element);
     }
+    
+    private Problem problem;
+
+    public Problem getProblem() {
+        return problem;
+    }
+    
 
     @Override
     public Tree visitMemberSelect(MemberSelectTree memberSelect, Element element) {
@@ -235,9 +244,13 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
                 MemberSelectTree m = make.MemberSelect(((MemberSelectTree) ex).getExpression(),refactoring.getClassName());
                 rewrite(memberSelect,m);
             }
-        } else if (isThisReferenceToOuter()&& !"class".equals(memberSelect.getIdentifier().toString()) && refactoring.getReferenceName()!=null) { //NOI18N
-            MemberSelectTree m = make.MemberSelect(make.Identifier(refactoring.getReferenceName()), memberSelect.getIdentifier());
-            rewrite(memberSelect, m);
+        } else if (isThisReferenceToOuter()&& !"class".equals(memberSelect.getIdentifier().toString())) { //NOI18N
+            if (refactoring.getReferenceName()!=null) {
+                MemberSelectTree m = make.MemberSelect(make.Identifier(refactoring.getReferenceName()), memberSelect.getIdentifier());
+                rewrite(memberSelect, m);
+            } else {
+                problem = MoveTransformer.createProblem(problem, true, NbBundle.getMessage(PushDownTransformer.class, "ERR_InnerToOuter_UseDeclareField", memberSelect));
+            }
         }
         
         return super.visitMemberSelect(memberSelect, element);

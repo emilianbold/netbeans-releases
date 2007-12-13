@@ -212,11 +212,10 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
     public Problem prepare(RefactoringElementsBag refactoringElements) {
         Set<FileObject> a = getRelevantFiles();
         fireProgressListenerStart(ProgressEvent.START, a.size());
-       
-        
-        TransformTask transform = new TransformTask(new InnerToOuterTransformer(refactoring), refactoring.getSourceType());
+        final InnerToOuterTransformer innerToOuter = new InnerToOuterTransformer(refactoring);
+        TransformTask transform = new TransformTask(innerToOuter, refactoring.getSourceType());
         createAndAddElements(a, transform, refactoringElements, refactoring);
         fireProgressListenerStop();
-        return null;
+        return innerToOuter.getProblem();
     }
 }
