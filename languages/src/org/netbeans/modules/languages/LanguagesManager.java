@@ -203,17 +203,15 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
         }
     }
     
-    private static void initLanguage (Language l) {
+    private static void initLanguage (final Language l) {
         try {
-            
-            FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
+            final FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
             final FileObject root = fs.findResource ("Editors/" + l.getMimeType ());
-
-            // init old options
-            if (root.getFileObject ("Settings.settings") == null)
-                fs.runAtomicAction (new AtomicAction () {
-                    public void run () {
-                        try {
+            fs.runAtomicAction (new AtomicAction () {
+                public void run () {
+                    try {
+                        // init old options
+                        if (root.getFileObject ("Settings.settings") == null) {
                             InputStream is = getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/languages/resources/LanguagesOptions.settings");
                             try {
                                 FileObject fo = root.createData("Settings.settings");
@@ -226,57 +224,50 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
                             } finally {
                                 is.close();
                             }
-                        } catch (IOException ex) {
-                            Utils.notify (ex);
                         }
-                    }
-                });
 
-            // init code folding bar
-            if (root.getFileObject ("SideBar/org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance") == null &&
-                l.getFeatureList ().getFeatures ("FOLD").size () > 0
-            ) {
-                FileUtil.createData (root, "FoldManager/org-netbeans-modules-languages-features-LanguagesFoldManager$Factory.instance");
-                FileUtil.createData(root, "SideBar/org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance").
-                        // Can tune position to whatever seems right; at least put after org-netbeans-editor-GlyphGutter.instance:
-                        setAttribute("position", 1000);
-            }
+                        // init code folding bar
+                        if (root.getFileObject ("SideBar/org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance") == null &&
+                            l.getFeatureList ().getFeatures ("FOLD").size () > 0
+                        ) {
+                            FileUtil.createData (root, "FoldManager/org-netbeans-modules-languages-features-LanguagesFoldManager$Factory.instance");
+                            FileUtil.createData(root, "SideBar/org-netbeans-modules-languages-features-CodeFoldingSideBarFactory.instance").
+                                    // Can tune position to whatever seems right; at least put after org-netbeans-editor-GlyphGutter.instance:
+                                    setAttribute("position", 1000);
+                        }
 
-            // init error stripe
-            if (root.getFileObject ("UpToDateStatusProvider/org-netbeans-modules-languages-features-UpToDateStatusProviderFactoryImpl.instance") == null
-                //l.supportsCodeFolding ()  does not work if you first open language without folding than no languages will have foding.
-            )
-                FileUtil.createData (root, "UpToDateStatusProvider/org-netbeans-modules-languages-features-UpToDateStatusProviderFactoryImpl.instance");
+                        // init error stripe
+                        if (root.getFileObject ("UpToDateStatusProvider/org-netbeans-modules-languages-features-UpToDateStatusProviderFactoryImpl.instance") == null
+                            //l.supportsCodeFolding ()  does not work if you first open language without folding than no languages will have foding.
+                        )
+                            FileUtil.createData (root, "UpToDateStatusProvider/org-netbeans-modules-languages-features-UpToDateStatusProviderFactoryImpl.instance");
 
-                
-            initPopupMenu (root, l);
 
-            // init navigator
-            if (l.getFeatureList ().getFeatures ("NAVIGATOR").size () > 0) {
-                String foldFileName = "Navigator/Panels/" + l.getMimeType () + 
-                    "/org-netbeans-modules-languages-features-LanguagesNavigator.instance";
-                if (fs.findResource (foldFileName) == null)
-                    FileUtil.createData (fs.getRoot (), foldFileName);
-            }
+                        initPopupMenu (root, l);
 
-            // init tooltips
-            FileUtil.createData (root, "ToolTips/org-netbeans-modules-languages-features-ToolTipAnnotation.instance");
+                        // init navigator
+                        if (l.getFeatureList ().getFeatures ("NAVIGATOR").size () > 0) {
+                            String foldFileName = "Navigator/Panels/" + l.getMimeType () + 
+                                "/org-netbeans-modules-languages-features-LanguagesNavigator.instance";
+                            if (fs.findResource (foldFileName) == null)
+                                FileUtil.createData (fs.getRoot (), foldFileName);
+                        }
 
-            if (l.getFeatureList ().getFeature ("COMMENT_LINE") != null) {
-                // init editor toolbar
-                FileObject toolbarDefault = FileUtil.createFolder (root, "Toolbars/Default");
-                createSeparator(
-                        toolbarDefault,
-                        "Separator-before-comment",
-                        3000 // can tune to whatever; want after stop-macro-recording
-                );
-                FileUtil.createData(toolbarDefault, "comment").setAttribute("position", 3100);
-                FileUtil.createData(toolbarDefault, "uncomment").setAttribute("position", 3200);
-                
-                if (root.getFileObject("Keybindings/NetBeans/Defaults/keybindings.xml") == null) {
-                    fs.runAtomicAction (new AtomicAction () {
-                        public void run () {
-                            try {
+                        // init tooltips
+                        FileUtil.createData (root, "ToolTips/org-netbeans-modules-languages-features-ToolTipAnnotation.instance");
+
+                        if (l.getFeatureList ().getFeature ("COMMENT_LINE") != null) {
+                            // init editor toolbar
+                            FileObject toolbarDefault = FileUtil.createFolder (root, "Toolbars/Default");
+                            createSeparator(
+                                    toolbarDefault,
+                                    "Separator-before-comment",
+                                    3000 // can tune to whatever; want after stop-macro-recording
+                            );
+                            FileUtil.createData(toolbarDefault, "comment").setAttribute("position", 3100);
+                            FileUtil.createData(toolbarDefault, "uncomment").setAttribute("position", 3200);
+
+                            if (root.getFileObject("Keybindings/NetBeans/Defaults/keybindings.xml") == null) {
                                 InputStream is = getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/languages/resources/DefaultKeyBindings.xml");
                                 try {
                                     FileObject bindings = FileUtil.createData(root, "Keybindings/NetBeans/Defaults/keybindings.xml");
@@ -289,13 +280,13 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
                                 } finally {
                                     is.close();
                                 }
-                            } catch (IOException ex) {
-                                Utils.notify (ex);
                             }
                         }
-                    });
+                    } catch (IOException ex) {
+                        Utils.notify (ex);
+                    }
                 }
-            }
+            });
         } catch (IOException ex) {
             Utils.notify (ex);
         }
