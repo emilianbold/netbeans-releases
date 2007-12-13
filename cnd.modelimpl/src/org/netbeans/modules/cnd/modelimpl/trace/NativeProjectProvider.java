@@ -288,7 +288,7 @@ public final class NativeProjectProvider {
         return dobj;
     }
         
-    private static void registerItemInDataObject(DataObject obj, NativeFileItem item) {
+    /*package*/ static void registerItemInDataObject(DataObject obj, NativeFileItem item) {
         if (obj != null) {
             NativeFileItemSet set = obj.getLookup().lookup(NativeFileItemSet.class);
             if (set == null) {
