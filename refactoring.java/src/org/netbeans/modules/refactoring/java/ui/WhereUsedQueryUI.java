@@ -227,7 +227,7 @@ public class WhereUsedQueryUI implements RefactoringUI {
 
 
     public String getName() {
-        return new MessageFormat(NbBundle.getMessage(WhereUsedPanel.class, "LBL_WhereUsed")).format (
+        return new MessageFormat(NbBundle.getMessage(WhereUsedPanel.class, "LBL_UsagesOf")).format (
                     new Object[] {name}
                 );
     }
