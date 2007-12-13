@@ -98,9 +98,9 @@ public class NbInstaller extends ModuleInstall {
         }
         
         try {
-            //createNbServiceTag("NetBeans IDE");
-            NbServiceTagSupport.createGfServiceTag("NetBeans IDE");
-            //createJdkServiceTag("NetBeans IDE");
+            NbServiceTagSupport.createNbServiceTag("NetBeans IDE 6.0");
+            //NbServiceTagSupport.createGfServiceTag("NetBeans IDE 6.0");
+            //NbServiceTagSupport.createJdkServiceTag("NetBeans IDE 6.0");
             NbServiceTagSupport.getRegistrationHtmlPage();
             NbConnection.init();
         } catch (IOException ex) {
