@@ -28,6 +28,7 @@
 
 package org.netbeans.modules.groovy.grails;
 
+import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grails.api.GrailsServer;
 import org.openide.execution.ExecutionEngine;
 import org.openide.execution.ExecutorTask;
@@ -52,6 +53,7 @@ public class ExternalGrailsServer implements GrailsServer{
     GrailsServerRunnable gsr;
     String cwdName;
     ExecutionEngine engine = ExecutionEngine.getDefault();
+    Project prj;
     
     private  final Logger LOG = Logger.getLogger(ExternalGrailsServer.class.getName());
     
@@ -75,13 +77,45 @@ public class ExternalGrailsServer implements GrailsServer{
         return checkForGrailsExecutable(new File(grailsBase));
         }
     
+    String prependOption(){
+        if (prj == null) {
+            return "";
+        }
+        
+        String retVal = "";
+        
+        GrailsProjectConfig prjConfig = new GrailsProjectConfig(prj);
+        
+        if (prjConfig != null){
+            String port = prjConfig.getPort();
+            
+            if(port != null && ! port.equals("")){
+                if(port.matches("\\d+")){ 
+                    retVal = " -Dserver.port=" + port + " ";
+                } else {
+                    LOG.log(Level.WARNING, "This seems to be no number: " + port);
+                    }
+            }
+            
+            String env = prjConfig.getEnv();
+            
+            if(env != null && ! env.equals("")){
+                retVal = retVal + " -Dgrails.env=" + env + " ";
+            }
+            
+        }
+        return retVal;    
+        }
     
     public Process runCommand(Project prj, String cmd, InputOutput io, String dirName) {
+        
+        this.prj = prj;
         
         if(prj != null) {
             cwdName = File.separator + prj.getProjectDirectory().getPath();
             }
-                
+        
+    
         if(cmd.startsWith("create-app")) {
             // in this case we don't have a Project yet, therefore i should be null
             assert prj == null;
@@ -92,7 +126,7 @@ public class ExternalGrailsServer implements GrailsServer{
             String workDir = dirName.substring(0, lastSlash);
             String newDir  = dirName.substring(lastSlash + 1);
             
-            gsr = new GrailsServerRunnable(outputReady, workDir, "create-app " + newDir);
+            gsr = new GrailsServerRunnable(outputReady, workDir, prependOption() + "create-app " + newDir);
             new Thread(gsr).start();
 
             waitForOutput();
@@ -104,7 +138,7 @@ public class ExternalGrailsServer implements GrailsServer{
 
             assert io ==  null;
             
-            gsr = new GrailsServerRunnable(outputReady, cwdName, cmd);
+            gsr = new GrailsServerRunnable(outputReady, cwdName, prependOption() + cmd);
             new Thread(gsr).start();
 
             waitForOutput();
@@ -113,7 +147,7 @@ public class ExternalGrailsServer implements GrailsServer{
 
             String tabName = "Grails Server for: " + prj.getProjectDirectory().getName();
 
-            gsr = new GrailsServerRunnable(outputReady, cwdName, cmd);
+            gsr = new GrailsServerRunnable(outputReady, cwdName, prependOption() + cmd);
             ExecutorTask exTask = engine.execute(tabName, gsr, io);
 
             waitForOutput();
@@ -131,7 +165,7 @@ public class ExternalGrailsServer implements GrailsServer{
         }
         else if(cmd.startsWith("shell")) {
 
-            gsr = new GrailsServerRunnable(outputReady, cwdName, cmd);
+            gsr = new GrailsServerRunnable(outputReady, cwdName, prependOption() + cmd);
             new Thread(gsr).start();
 
             waitForOutput();
@@ -153,4 +187,5 @@ public class ExternalGrailsServer implements GrailsServer{
                     }
         
         }
+
 }

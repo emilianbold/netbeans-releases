@@ -28,6 +28,8 @@
 package org.netbeans.modules.groovy.grails.settings;
 
 import java.util.prefs.Preferences;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.openide.util.NbPreferences;
 
 /**
@@ -38,6 +40,8 @@ public class Settings {
 
     private static Settings instance = null;
     private static final String GRAILS_HOME_KEY = "grailsHome";
+    private static final String GRAILS_PORT_KEY = "grailsPrj-Port-";
+    private static final String GRAILS_ENV_KEY = "grailsPrj-Env-";
     
     protected Settings () {}
     
@@ -48,7 +52,6 @@ public class Settings {
         
         return instance;
     }
-    
     
     private Preferences getPreferences() {
         return NbPreferences.forModule( Settings.class );
@@ -61,5 +64,52 @@ public class Settings {
     public void setGrailsBase(String path) {
         getPreferences().put(GRAILS_HOME_KEY, path);
         }
-
+    
+    String getProjectName(Project prj){
+        assert prj != null;
+        
+        ProjectInformation info = prj.getLookup().lookup(ProjectInformation.class);
+        assert info != null;
+        return info.getName();
+    }            
+    
+    String getPortKey(Project prj){
+        assert prj != null;
+        return GRAILS_PORT_KEY+getProjectName(prj);
+    }
+    
+    String getEnvKey(Project prj){
+        assert prj != null;
+        return GRAILS_ENV_KEY+getProjectName(prj);
+    }
+    
+    public String getPortForProject(Project prj){
+        assert prj != null;
+        return getPreferences().get(getPortKey(prj), null);
+        }
+    
+    public void setPortForProject(Project prj, String port){
+        assert prj != null;
+        assert port != null;
+        
+        getPreferences().put(getPortKey(prj), port);
+        
+    }
+    
+    public String getEnvForProject(Project prj){
+        assert prj != null;
+        return getPreferences().get(getEnvKey(prj), null);
+        }
+    
+    public void setEnvForProject(Project prj, String env){
+        assert prj != null;
+        assert env != null;
+        
+        getPreferences().put(getEnvKey(prj), env);
+        
+    }
+    
+    
+    
+    
 }

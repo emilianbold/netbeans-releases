@@ -48,11 +48,6 @@ final class GrailsRuntimePanel extends javax.swing.JPanel {
         chooseDir = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
         linkLabel = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
-        jCheckBox1 = new javax.swing.JCheckBox();
-        jLabel4 = new javax.swing.JLabel();
-        jTextField2 = new javax.swing.JTextField();
         jLabel5 = new javax.swing.JLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(chooseDir, org.openide.util.NbBundle.getMessage(GrailsRuntimePanel.class, "LBL_Choose")); // NOI18N
@@ -77,20 +72,6 @@ final class GrailsRuntimePanel extends javax.swing.JPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(GrailsRuntimePanel.class, "GrailsRuntimePanel.jLabel3.text")); // NOI18N
-
-        jTextField1.setText(org.openide.util.NbBundle.getMessage(GrailsRuntimePanel.class, "GrailsRuntimePanel.jTextField1.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox1, org.openide.util.NbBundle.getMessage(GrailsRuntimePanel.class, "GrailsRuntimePanel.jCheckBox1.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(GrailsRuntimePanel.class, "GrailsRuntimePanel.jLabel4.text")); // NOI18N
-
-        jTextField2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jTextField2ActionPerformed(evt);
-            }
-        });
-
         org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(GrailsRuntimePanel.class, "GrailsRuntimePanel.jLabel5.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -98,9 +79,7 @@ final class GrailsRuntimePanel extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel5)
-                    .add(jLabel4))
+                .add(jLabel5)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
@@ -109,18 +88,9 @@ final class GrailsRuntimePanel extends javax.swing.JPanel {
                         .add(linkLabel)
                         .addContainerGap())
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(layout.createSequentialGroup()
-                                .add(jTextField2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 235, Short.MAX_VALUE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(jLabel3)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 47, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                            .add(grailsHomeLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 331, Short.MAX_VALUE))
+                        .add(grailsHomeLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(chooseDir)
-                            .add(jCheckBox1)))))
+                        .add(chooseDir))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -133,14 +103,7 @@ final class GrailsRuntimePanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel2)
                     .add(linkLabel))
-                .add(16, 16, 16)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel4)
-                    .add(jTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel3)
-                    .add(jTextField2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jCheckBox1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(56, 56, 56))
+                .add(24, 24, 24))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -179,10 +142,6 @@ final class GrailsRuntimePanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_linkLabelMousePressed
 
-    private void jTextField2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField2ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jTextField2ActionPerformed
-
     void load() {
 
         grailsHomeLocation.setText(settings.getGrailsBase());
@@ -209,13 +168,8 @@ final class GrailsRuntimePanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton chooseDir;
     private javax.swing.JTextField grailsHomeLocation;
-    private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
-    private javax.swing.JTextField jTextField1;
-    private javax.swing.JTextField jTextField2;
     private javax.swing.JLabel linkLabel;
     // End of variables declaration//GEN-END:variables
 

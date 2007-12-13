@@ -21,6 +21,17 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  * 
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ * 
  * Contributor(s):
  * 
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
@@ -28,45 +39,36 @@
 
 package org.netbeans.modules.groovy.grails.api;
 
-import org.openide.util.Task;
-import org.openide.util.TaskListener;
-import org.openide.execution.ExecutorTask;
-import java.util.logging.Logger;
-import java.util.logging.Level;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.groovy.grails.settings.Settings;
+
 
 /**
  *
  * @author schmidtm
  */
-public class GrailsServerState implements TaskListener{
-    private boolean running = false;
-    private ExecutorTask exTask;
-    private  final Logger LOG = Logger.getLogger(GrailsServerState.class.getName());
+public class GrailsProjectConfig {
+    Project prj;
+    Settings settings = Settings.getInstance();
+
+    public GrailsProjectConfig(Project prj) {
+        this.prj = prj;
+    }
     
-    public GrailsServerState (){
+    public String getPort() {
+        return settings.getPortForProject(prj);
         }
-
-    public boolean isRunning() {
-        return running;
-    }
-
-    public void setRunning(boolean running) {
-        this.running = running;
-        LOG.log(Level.FINEST, "setRunning() called: " + running );
-    }
-
-    public void taskFinished(Task task) {
-        // running = false;
-        LOG.log(Level.FINEST, "taskFinished() called");
-    }
-
-    public ExecutorTask getExTask() {
-        return exTask;
-    }
-
-    public void setExTask(ExecutorTask exTask) {
-        this.exTask = exTask;
-    }
+    public void setPort(String port){
+        assert port != null;
+        settings.setPortForProject(prj, port);
+        }
     
+    public String getEnv() {
+        return settings.getEnvForProject(prj);
+        }
+    public void setEnv(String env){
+        assert env != null;
+        settings.setEnvForProject(prj, env);
+        }
     
 }

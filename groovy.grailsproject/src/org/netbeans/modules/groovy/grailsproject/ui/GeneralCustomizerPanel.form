@@ -17,11 +17,13 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="activeGrailsEnvironmentLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="projectFolderLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="grailsServerPortLabel" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="grailsServerPort" pref="315" max="32767" attributes="0"/>
                   <Component id="projectFolderTextField" alignment="0" pref="315" max="32767" attributes="1"/>
                   <Component id="grailsEnvChooser" alignment="0" pref="315" max="32767" attributes="1"/>
               </Group>
@@ -37,18 +39,24 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="activeGrailsEnvironmentLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="grailsEnvChooser" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="grailsServerPortLabel" min="-2" max="-2" attributes="0"/>
+                  <Component id="grailsServerPort" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace pref="42" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
   </Layout>
   <SubComponents>
-    <Component class="javax.swing.JLabel" name="jLabel1">
+    <Component class="javax.swing.JLabel" name="activeGrailsEnvironmentLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/groovy/grailsproject/ui/Bundle.properties" key="GeneralCustomizerPanel.jLabel1.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/groovy/grailsproject/ui/Bundle.properties" key="GeneralCustomizerPanel.activeGrailsEnvironmentLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
@@ -85,6 +93,20 @@
         <Property name="editable" type="boolean" value="false"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/groovy/grailsproject/ui/Bundle.properties" key="GeneralCustomizerPanel.projectFolderTextField.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="grailsServerPortLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/groovy/grailsproject/ui/Bundle.properties" key="GeneralCustomizerPanel.grailsServerPortLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="grailsServerPort">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/groovy/grailsproject/ui/Bundle.properties" key="GeneralCustomizerPanel.grailsServerPort.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>

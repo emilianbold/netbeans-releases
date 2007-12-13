@@ -6,22 +6,49 @@
 
 package org.netbeans.modules.groovy.grailsproject.ui;
 
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import javax.swing.event.DocumentEvent;
 import org.netbeans.api.project.Project;
 import java.io.File;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.Document;
+import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 
 /**
  *
  * @author  schmidtm
  */
-public class GeneralCustomizerPanel extends javax.swing.JPanel {
-    Project project;
+public class GeneralCustomizerPanel extends javax.swing.JPanel implements DocumentListener, ItemListener {
+    GrailsProjectConfig prjConfig;
     
     /** Creates new form GeneralCustomizerPanel */
-    public GeneralCustomizerPanel(Project project) {
-        this.project = project;
+    public GeneralCustomizerPanel(Project prj) {
+        prjConfig = new GrailsProjectConfig(prj);
         initComponents();
+        projectFolderTextField.setText(File.separator + prj.getProjectDirectory().getPath());
+        
+        grailsServerPort.getDocument().addDocumentListener( this );
+        grailsServerPort.setText(prjConfig.getPort());
+        
+        // Here we define the indexes for the default enviroments as this:
+        // 0 : "Development", 
+        // 1 : "Production", 
+        // 2 : "Test"
+        
         grailsEnvChooser.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Development", "Production", "Test" }));
-        projectFolderTextField.setText(File.separator + project.getProjectDirectory().getPath());
+        
+        String env = prjConfig.getEnv();
+        int idx = 0;
+        
+        if(env != null) {
+            if       (env.equals("Development")) { idx = 0; } 
+            else if  (env.equals("Production"))  { idx = 1; }
+            else if  (env.equals("Test"))        { idx = 2; }
+        }
+        
+        grailsEnvChooser.setSelectedIndex(idx);
+        grailsEnvChooser.addItemListener(this);
     }
     
     /** This method is called from within the constructor to
@@ -32,12 +59,14 @@ public class GeneralCustomizerPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
+        activeGrailsEnvironmentLabel = new javax.swing.JLabel();
         grailsEnvChooser = new javax.swing.JComboBox();
         projectFolderLabel = new javax.swing.JLabel();
         projectFolderTextField = new javax.swing.JTextField();
+        grailsServerPortLabel = new javax.swing.JLabel();
+        grailsServerPort = new javax.swing.JTextField();
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(GeneralCustomizerPanel.class, "GeneralCustomizerPanel.jLabel1.text")); // NOI18N
+        activeGrailsEnvironmentLabel.setText(org.openide.util.NbBundle.getMessage(GeneralCustomizerPanel.class, "GeneralCustomizerPanel.activeGrailsEnvironmentLabel.text")); // NOI18N
 
         grailsEnvChooser.setMaximumRowCount(3);
         grailsEnvChooser.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
@@ -52,16 +81,22 @@ public class GeneralCustomizerPanel extends javax.swing.JPanel {
         projectFolderTextField.setEditable(false);
         projectFolderTextField.setText(org.openide.util.NbBundle.getMessage(GeneralCustomizerPanel.class, "GeneralCustomizerPanel.projectFolderTextField.text")); // NOI18N
 
+        grailsServerPortLabel.setText(org.openide.util.NbBundle.getMessage(GeneralCustomizerPanel.class, "GeneralCustomizerPanel.grailsServerPortLabel.text")); // NOI18N
+
+        grailsServerPort.setText(org.openide.util.NbBundle.getMessage(GeneralCustomizerPanel.class, "GeneralCustomizerPanel.grailsServerPort.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel1)
-                    .add(projectFolderLabel))
+                    .add(activeGrailsEnvironmentLabel)
+                    .add(projectFolderLabel)
+                    .add(grailsServerPortLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(grailsServerPort, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE)
                     .add(projectFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 315, Short.MAX_VALUE)
                     .add(grailsEnvChooser, 0, 315, Short.MAX_VALUE)))
         );
@@ -73,8 +108,13 @@ public class GeneralCustomizerPanel extends javax.swing.JPanel {
                     .add(projectFolderTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel1)
-                    .add(grailsEnvChooser, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                    .add(activeGrailsEnvironmentLabel)
+                    .add(grailsEnvChooser, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(grailsServerPortLabel)
+                    .add(grailsServerPort, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(42, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -84,10 +124,41 @@ public class GeneralCustomizerPanel extends javax.swing.JPanel {
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel activeGrailsEnvironmentLabel;
     private javax.swing.JComboBox grailsEnvChooser;
-    private javax.swing.JLabel jLabel1;
+    private javax.swing.JTextField grailsServerPort;
+    private javax.swing.JLabel grailsServerPortLabel;
     private javax.swing.JLabel projectFolderLabel;
     private javax.swing.JTextField projectFolderTextField;
     // End of variables declaration//GEN-END:variables
+
+    public void insertUpdate(DocumentEvent e) {
+        updateTexts(e);
+    }
+
+    public void removeUpdate(DocumentEvent e) {
+        updateTexts(e);
+    }
+
+    public void changedUpdate(DocumentEvent e) {
+        updateTexts(e);
+    }
+    
+    private void updateTexts( DocumentEvent e ) {
+        
+        Document doc = e.getDocument();
+                
+        if ( doc == grailsServerPort.getDocument() ) {
+            prjConfig.setPort(grailsServerPort.getText());
+            }
+
+            
+        }
+
+    public void itemStateChanged(ItemEvent e) {
+        
+        prjConfig.setEnv((String)e.getItem());
+        
+    }
     
 }
