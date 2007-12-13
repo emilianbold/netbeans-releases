@@ -68,71 +68,6 @@ public class WebModuleExtenderBridgeTest extends NbTestCase {
 
     public void testBasic() {
 
-        class PanelImpl implements FrameworkConfigurationPanel {
-
-            private ChangeSupport changeSupport = new ChangeSupport(this);
-            private WizardDescriptor wizard;
-            private boolean forcedInvalid;
-
-            public void enableComponents(boolean enable) {
-            }
-
-            public void addChangeListener(ChangeListener l) {
-                changeSupport.addChangeListener(l);
-            }
-
-            public Component getComponent() {
-                return new JPanel();
-            }
-
-            public HelpCtx getHelp() {
-                return new HelpCtx("help me");
-            }
-
-            public boolean isValid() {
-                boolean valid = "foo".equals(wizard.getProperty("prop")) && !forcedInvalid;
-                wizard.putProperty("WizardPanel_errorMessage", valid ? " " : "Not valid");
-                return valid;
-            }
-
-            public void readSettings(Object settings) {
-                wizard = (WizardDescriptor) settings;
-            }
-
-            public void removeChangeListener(ChangeListener l) {
-                changeSupport.removeChangeListener(l);
-            }
-
-            public void storeSettings(Object settings) {
-            }
-
-            void forceInvalid(boolean value) {
-                forcedInvalid = value;
-                changeSupport.fireChange();
-            }
-        }
-
-        class FrameworkImpl extends AbstractFrameworkImpl {
-
-            private PanelImpl panel;
-            private boolean extendCalled;
-
-            public FrameworkImpl(PanelImpl panel) {
-                this.panel = panel;
-            }
-
-            @Override
-            public FrameworkConfigurationPanel getConfigurationPanel(WebModule wm) {
-                return panel;
-            }
-
-            @Override
-            public Set extend(WebModule wm) {
-                extendCalled = true;
-                return new HashSet();
-            }
-        }
-
         PanelImpl panel = new PanelImpl();
         FrameworkImpl framework = new FrameworkImpl(panel);
         WebModuleExtender extender = framework.createWebModuleExtender(webModule, controller);
@@ -168,11 +103,76 @@ public class WebModuleExtenderBridgeTest extends NbTestCase {
         assertTrue(framework.extendCalled);
     }
 
-    @SuppressWarnings("deprecation")
-    private static abstract class AbstractFrameworkImpl extends WebFrameworkProvider {
+    public void testConfigurationPanelCanBeNullIssue121712() {
+        FrameworkImpl framework = new FrameworkImpl(null);
+        WebModuleExtender extender = framework.createWebModuleExtender(webModule, controller);
+        extender.update(); // should not throw NPE
+    }
 
-        AbstractFrameworkImpl() {
+    private static final class PanelImpl implements FrameworkConfigurationPanel {
+
+        private final ChangeSupport changeSupport = new ChangeSupport(this);
+        private WizardDescriptor wizard;
+        private boolean forcedInvalid;
+
+        public void enableComponents(boolean enable) {
+        }
+
+        public void addChangeListener(ChangeListener l) {
+            changeSupport.addChangeListener(l);
+        }
+
+        public Component getComponent() {
+            return new JPanel();
+        }
+
+        public HelpCtx getHelp() {
+            return new HelpCtx("help me");
+        }
+
+        public boolean isValid() {
+            boolean valid = "foo".equals(wizard.getProperty("prop")) && !forcedInvalid;
+            wizard.putProperty("WizardPanel_errorMessage", valid ? " " : "Not valid");
+            return valid;
+        }
+
+        public void readSettings(Object settings) {
+            wizard = (WizardDescriptor) settings;
+        }
+
+        public void removeChangeListener(ChangeListener l) {
+            changeSupport.removeChangeListener(l);
+        }
+
+        public void storeSettings(Object settings) {
+        }
+
+        void forceInvalid(boolean value) {
+            forcedInvalid = value;
+            changeSupport.fireChange();
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    private static final class FrameworkImpl extends WebFrameworkProvider {
+
+        private final PanelImpl panel;
+        private boolean extendCalled;
+
+        public FrameworkImpl(PanelImpl panel) {
             super("name", "description");
+            this.panel = panel;
+        }
+
+        @Override
+        public FrameworkConfigurationPanel getConfigurationPanel(WebModule wm) {
+            return panel;
+        }
+
+        @Override
+        public Set extend(WebModule wm) {
+            extendCalled = true;
+            return new HashSet();
         }
 
         public File[] getConfigurationFiles(WebModule wm) {

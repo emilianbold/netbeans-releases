@@ -73,13 +73,14 @@ public class WebModuleExtenderBridge extends WebModuleExtender {
         this.framework = framework;
         this.webModule = webModule;
         this.controller = controller;
-        configPanel = framework.getConfigurationPanel(webModule);
+        FrameworkConfigurationPanel tmpPanel = framework.getConfigurationPanel(webModule);
+        configPanel = (tmpPanel != null) ? tmpPanel : new EmptyConfigPanel();
         // we don't want to send configPanel to the wizard descriptor in order to
-        // keep full control over the methods called on configPanel, 
+        // keep full control over the methods called on configPanel,
         // so we create a special panel for the wizard
         @SuppressWarnings("unchecked") // NOI18N
-        WizardDescriptor tmp = new WizardDescriptor(new WizardDescriptor.Panel[] { new EmptyPanel() });
-        wizard = tmp;
+        WizardDescriptor tmpWizard = new WizardDescriptor(new WizardDescriptor.Panel[] { new EmptyPanel() });
+        wizard = tmpWizard;
     }
 
     /**
@@ -141,12 +142,12 @@ public class WebModuleExtenderBridge extends WebModuleExtender {
         configPanel.readSettings(wizard);
     }
 
-    private final static class EmptyPanel implements WizardDescriptor.Panel {
+    private static class EmptyPanel implements WizardDescriptor.Panel {
 
         private JPanel component;
 
         public void addChangeListener(ChangeListener l) {
-                    }
+        }
 
         public Component getComponent() {
             if (component == null) {
@@ -170,6 +171,21 @@ public class WebModuleExtenderBridge extends WebModuleExtender {
         }
 
         public void storeSettings(Object settings) {
+        }
+    }
+
+    /**
+     * An empty framework configuration panel to which WebModuleExtenderBridge will delegate
+     * when the framework doesn't have a framework configuration panel.
+     */
+    private final static class EmptyConfigPanel extends EmptyPanel implements FrameworkConfigurationPanel {
+
+        @Override
+        public Component getComponent() {
+            return null;
+        }
+
+        public void enableComponents(boolean enable) {
         }
     }
 }
