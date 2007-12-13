@@ -107,7 +107,7 @@ class TableSheetCell extends AbstractCellEditor implements TableModelListener, P
     //
 
     /** Default header renderer */
-    private TableCellRenderer headerRenderer = (new JTableHeader()).getDefaultRenderer();
+    private TableCellRenderer headerRenderer = new JTable().getTableHeader().getDefaultRenderer();
 
     /** Null panel is used if cell value is null */
     private NullPanel nullPanel;
@@ -401,7 +401,7 @@ class TableSheetCell extends AbstractCellEditor implements TableModelListener, P
     }
     
     void updateUI() {
-        headerRenderer = (new JTableHeader()).getDefaultRenderer();
+        headerRenderer = new JTable().getTableHeader().getDefaultRenderer();
     }
 
     private static String getString(String key) {
