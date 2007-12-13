@@ -95,6 +95,9 @@ made subject to such option by the copyright holder.
         </folder>
         <folder name="org-netbeans-modules-j2ee-ejbjarproject">
             <folder name="Nodes">
+                <file name="org-netbeans-modules-websvc-jaxrpc-nodes-JaxRpcNodeFactory.instance">
+                    <attr name="position" intvalue="160"/>
+                </file>
                 <file name="org-netbeans-modules-websvc-jaxrpc-nodes-JaxRpcWebServiceNodeFactory.instance">
                     <attr name="position" intvalue="150"/>
                 </file>
