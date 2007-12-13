@@ -77,11 +77,6 @@ import org.openide.windows.WindowManager;
  */
 class NbConnection {
     
-    private static String NB_REGISTRATION_URL =
-       "https://inventory.sun.com/RegistrationWeb/register";
-    private static String SANDBOX_TESTING_URL =
-       "https://connection-tst.sun.com/RegistrationWeb/register";
-    
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.registration.NbConnection"); // NOI18N
     
     private static final String STATUS_FILE = "status.xml";
