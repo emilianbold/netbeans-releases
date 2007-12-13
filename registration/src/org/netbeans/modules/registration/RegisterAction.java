@@ -42,10 +42,10 @@
 package org.netbeans.modules.registration;
 
 import java.awt.Dialog;
-import java.awt.Label;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JButton;
+import org.netbeans.modules.reglib.StatusData;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;

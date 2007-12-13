@@ -41,15 +41,10 @@
 
 package org.netbeans.modules.registration;
 
-import com.sun.servicetag.RegistrationData;
-import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openide.modules.InstalledFileLocator;
+import org.netbeans.modules.reglib.NbServiceTagSupport;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
