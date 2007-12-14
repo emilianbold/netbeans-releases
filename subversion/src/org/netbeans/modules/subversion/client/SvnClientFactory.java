@@ -199,7 +199,7 @@ public class SvnClientFactory {
                 return new SvnClientCallback(repositoryUrl, handledExceptions);
             }
         };
-        ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "svnClientAdapter running on javahl");
+        Subversion.LOG.info("svnClientAdapter running on javahl");
     }
     
     /*
@@ -216,7 +216,7 @@ public class SvnClientFactory {
                 return new SvnClientCallback(repositoryUrl, handledExceptions);
             }
         };
-        ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "svnClientAdapter running on javasvn");
+        Subversion.LOG.info("svnClientAdapter running on javasvn");
     }
     */    
     
@@ -234,7 +234,7 @@ public class SvnClientFactory {
                 return null;
             }            
         };       
-        ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "svnClientAdapter running on commandline client");        
+        Subversion.LOG.info("svnClientAdapter running on commandline client");        
     }                 
     
     private void setupComandlineFatory() throws SVNClientException {

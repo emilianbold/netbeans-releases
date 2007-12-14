@@ -60,6 +60,7 @@ import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -70,6 +71,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import javax.swing.JButton;
 import org.netbeans.modules.subversion.Diagnostics;
+import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.config.CertificateFile;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
@@ -286,7 +288,7 @@ public class SvnClientExceptionHandler {
             } catch (MalformedURLException e) {
                 // something went wrong. 
                 // ignore and try to fallback on the url from client
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Subversion.LOG.log(Level.INFO, e.getMessage(), e);                
             }    
         }                 
         if(url == null) {
@@ -497,9 +499,9 @@ public class SvnClientExceptionHandler {
             }
             return ret;
         } catch (CertificateEncodingException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not happen
+            Subversion.LOG.log(Level.INFO, ex.getMessage(), ex); // should not happen
         } catch (NoSuchAlgorithmException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not happen
+            Subversion.LOG.log(Level.INFO, ex.getMessage(), ex); // should not happen
         }                       
         return ""; // NOI18N
     }
@@ -667,7 +669,7 @@ public class SvnClientExceptionHandler {
             cancelledAction();
             return;
         }                 
-        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        Subversion.LOG.log(Level.INFO, ex.getMessage(), ex);
         if( annotate ) {
             String msg = getCustomizedMessage(ex);
             if(msg == null) {
@@ -687,7 +689,7 @@ public class SvnClientExceptionHandler {
              ( protocol.startsWith("http") && SvnClientExceptionHandler.isReportOf200(e.getMessage())              ) ||
              ( ( protocol.startsWith("file") || protocol.startsWith("svn+") ) && SvnClientExceptionHandler.isFileNotFoundInRevision(e.getMessage()) ) ) 
         {            
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);    // keep track
+            Subversion.LOG.log(Level.INFO, e.getMessage(), e);    // keep track
             annotate(NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_ErrorFileNotFoundInRevision", new String[] {revision.toString()} )); // NOI18N                      
             return true;
         } 
@@ -745,7 +747,7 @@ public class SvnClientExceptionHandler {
     }
 
     static void handleInvalidKeyException(InvalidKeyException ike) {
-        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ike);
+        Subversion.LOG.log(Level.INFO, ike.getMessage(), ike);
         String msg = NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_InvalidKeyException"); // NOI18N
         annotate(msg);
     }
