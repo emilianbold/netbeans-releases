@@ -572,8 +572,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String PKG_COLOR = "<font color=#808080>"; //NOI18N
         private static ImageIcon icon;
         
-        protected ElementHandle<TypeElement> elementHandle;
-        private TypeMirrorHandle<DeclaredType> typeHandle;
+        protected TypeMirrorHandle<DeclaredType> typeHandle;
         private int dim;
         private boolean isDeprecated;
         private boolean insideNew;
@@ -586,14 +585,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         
         private ClassItem(TypeElement elem, DeclaredType type, int dim, int substitutionOffset, boolean displayPkgName, boolean isDeprecated, boolean insideNew, boolean smartType) {
             super(substitutionOffset);
-            TypeMirror elemType = elem.asType();
-            if (elemType.getKind() == TypeKind.ERROR) {
-                this.elementHandle = null;
-                this.typeHandle = TypeMirrorHandle.create((DeclaredType)elemType);
-            } else {
-                this.elementHandle = ElementHandle.create(elem);
-                this.typeHandle = TypeMirrorHandle.create(type);
-            }
+            this.typeHandle = TypeMirrorHandle.create(type);
             this.dim = dim;
             this.isDeprecated = isDeprecated;
             this.insideNew = insideNew;
@@ -602,7 +594,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
             this.typeName = Utilities.getTypeName(type, false).toString();
             if (displayPkgName) {
                 this.enclName = Utilities.getElementName(elem.getEnclosingElement(), true).toString();
-                this.sortText = new ClassSortText(this.simpleName, this.enclName);
+                this.sortText = this.simpleName + Utilities.getImportanceLevel(this.enclName) + "#" + this.enclName; //NOI18N
+
             } else {
                 this.enclName = null;
                 this.sortText = this.simpleName;
@@ -626,7 +619,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
     
         public CompletionTask createDocumentationTask() {
-            return JavaCompletionProvider.createDocTask(elementHandle);
+            return JavaCompletionProvider.createDocTask(ElementHandle.from(typeHandle));
         }
 
         protected ImageIcon getIcon(){
@@ -707,7 +700,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     public void run(CompilationController controller) throws IOException {
                         controller.toPhase(Phase.RESOLVED);
                         DeclaredType type = typeHandle.resolve(controller);
-                        TypeElement elem = elementHandle != null ? elementHandle.resolve(controller) : (TypeElement)type.asElement();
+                        TypeElement elem = (TypeElement)type.asElement();
                         boolean asTemplate = false;
                         StringBuilder sb = new StringBuilder();
                         int cnt = 1;
@@ -2362,13 +2355,13 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
                     public void run(CompilationController controller) throws IOException {
                         controller.toPhase(JavaSource.Phase.RESOLVED);
-                        TypeElement elem = elementHandle.resolve(controller);
+                        DeclaredType type = typeHandle.resolve(controller);
                         // Update the text
                         doc.atomicLock();
                         try {
                             Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
                             TreePath tp = controller.getTreeUtilities().pathFor(offset);
-                            text.insert(0, "@" + AutoImport.resolveImport(controller, tp, controller.getTypes().getDeclaredType(elem))); //NOI18N
+                            text.insert(0, "@" + AutoImport.resolveImport(controller, tp, type)); //NOI18N
                             String textToReplace = doc.getText(offset, finalLen);
                             if (textToReplace.contentEquals(text)) return;
                             doc.remove(offset, finalLen);
@@ -3034,36 +3027,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
             this.fullTypeName = fullTypeName;
             this.typeName = typeName;
             this.name = name;
-        }
-    }
-    
-    static class ClassSortText implements CharSequence {
-
-        private String name;
-        private String pkgName;
-        private String text;
-        
-        public ClassSortText(String name, String pkgName) {
-            this.name = name + "#"; //NOI18N
-            this.pkgName = pkgName;
-        }
-
-        public int length() {
-            return name.length() + pkgName.length() + 3;
-        }
-
-        public char charAt(int index) {
-            return index < name.length() ? name.charAt(index) : getText().charAt(index);
-        }
-
-        public CharSequence subSequence(int start, int end) {
-            return getText().subSequence(start, end);
-        }
-        
-        private String getText() {
-            if (text == null)
-                text = name + Utilities.getImportanceLevel(pkgName) + "#" + pkgName; //NOI18N
-            return text;
         }
     }
 }
