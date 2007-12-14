@@ -250,6 +250,7 @@ public class DesignTimeDataSource implements DataSource, ContextPersistance, Run
         for (int i=0; i<dbConns.length; i++)
             if (url.equalsIgnoreCase(dbConns[i].getDatabaseURL())) {
                 dbConn = dbConns[i];
+                url = dbConns[i].getDatabaseURL();
                 break;
             }
 
