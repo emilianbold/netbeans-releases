@@ -58,6 +58,8 @@ function TestSupport() {
     this.childrenContent = '';
     this.currentXmlHttpReq = '';
     this.tcStr = '';
+    this.prettyContent = '';
+    this.colSize = "100";
     
     this.expand = new Image();
     this.expand.src = "expand.gif";
@@ -192,7 +194,8 @@ TestSupport.prototype = {
         str += "  <option value='application/json'>application/json</option>";
         str += "  <option value='text/xml'>text/xml</option>";
         str += "  <option value='text/plain'>text/plain</option>";
-        str += "  <option value='text/html'>text/html</option>";    
+        str += "  <option value='text/html'>text/html</option>";
+        str += "  <option value='image/*'>image/*</option>"; 
         str += "</select>";
         str += "&nbsp;&nbsp;<input value='MSG_TEST_RESBEANS_AddParamButton' type='button' onclick='ts.addParam()'>";
         str += "<br/><br/>";
@@ -358,7 +361,7 @@ TestSupport.prototype = {
             }
         }
         if(mName == 'PUT' || mName == 'POST')
-            str += "<span class=bld>Content:</span>: <br><textarea id='blobParam' name='params' rows='6' cols='70'>MSG_TEST_RESBEANS_Insert</textarea><br/>";       
+            str += "<span class=bld>Content:</span>: <br><textarea id='blobParam' name='params' rows='6' cols="+this.colSize+">MSG_TEST_RESBEANS_Insert</textarea><br/>";       
         if(str != "")
             str = "<span class=bld>MSG_TEST_RESBEANS_ResourceInputs</span><br><br><div class='ml20'>"+str+"</div><br/>";
         return str;
@@ -502,16 +505,43 @@ TestSupport.prototype = {
         ts.updateContent(c);
     },
     
-    createIFrame : function (url) {
-        var c = '<iframe src="'+url+'" class="frame" width="600" height="400" align="left">'+
+    createIFrameForUrl : function (url) {
+        var c = '<iframe id="iFrame_" src="'+url+'" class="frame" width="600" height="400" align="left">'+
             '<p>See <a href="'+url+'">"'+url+'"</a>.</p>'+
             '</iframe>';
         return c;
     },
     
+    createIFrameForContent : function (content) {
+        var iframe;
+        if (document.createElement && (iframe =
+            document.createElement('iframe'))) {
+            iframe.name = iframe.id = 'iFrame_';
+            iframe.width = 600;
+            iframe.height = 400;
+            iframe.src = 'about:blank';
+            document.getElementById('rawContent').appendChild(iframe);
+        }
+        if (iframe) {
+            var iframeDoc;
+            if (iframe.contentDocument) {
+                iframeDoc = iframe.contentDocument;
+            }
+            else if (iframe.contentWindow) {
+                iframeDoc = iframe.contentWindow.document;
+            }
+            else if (window.frames[iframe.name]) {
+                iframeDoc = window.frames[iframe.name].document;
+            }
+            if (iframeDoc) {
+                iframeDoc.open();
+                iframeDoc.write(content);
+                iframeDoc.close();
+            }
+        }
+    },
+    
     showViews : function (name) {
-        if(name == 'raw' && this.currentMethod == 'GET' && this.currentMimeType == 'text/html')
-            this.updatepage('rawContent', this.createIFrame(this.currentValidUrl));
         var tableNode = document.getElementById('tableContent').style;
         var rawNode = document.getElementById('rawContent').style;
         var headerNode = document.getElementById('headerInfo').style;
@@ -563,9 +593,9 @@ TestSupport.prototype = {
         var nodisp = ' class="nodisp" ';
         var rawViewStyle = ' ';
         var headerViewStyle = nodisp;
-        var rawContent = 'Received:\n'+xmlHttpReq.responseText+'\n';
+        var rawContent = 'Received:\n'+this.printPretty(xmlHttpReq.responseText)+'\n';
         if(param != null && param != undefined)
-            rawContent = 'Sent:\n'+param + '\n\n' + rawContent;
+            rawContent = 'Sent:\n'+this.printPretty(param) + '\n\n' + rawContent;
         var prev = document.getElementById('monitorText');
         var cURL = this.currentValidUrl;
         var s = 'Request: ' + this.currentMethod + ' ' + cURL + 
@@ -622,23 +652,101 @@ TestSupport.prototype = {
                     '<div id="headerInfo"'+headerViewStyle+'>'+this.getHeaderAsTable(this.currentXmlHttpReq)+'</div>'+
                     '<div id="tableContent"'+tableViewStyle+'>'+tableContent+'</div>'+
                     '<div id="rawContent"'+rawViewStyle+'>'+
-                        '<textarea rows=15 cols=72 align=left readonly>'+rawContent+'</textarea></div>'+ 
+                        '<textarea rows=15 cols='+this.colSize+' align=left readonly>'+this.printPretty(rawContent)+'</textarea></div>'+ 
                     '<div id="monitorContent"'+monitorViewStyle+'>'+
-                        '<textarea id="monitorText" rows=15 cols=72 align=left readonly>'+this.currMonitorText+'</textarea></div>');
+                        '<textarea id="monitorText" rows=15 cols='+this.colSize+' align=left readonly>'+this.currMonitorText+'</textarea></div>');
                 if(showRaw) {
                     if(content.length > 7 && content.substring(0, 7) == "http://")
                         this.currentValidUrl = content;
+                    if(this.currentMethod == 'GET' && this.currentMimeType == 'text/html') {
+                        this.updatepage('rawContent', '');
+                        this.createIFrameForContent(content);
+                    } else {
+                        this.updatepage('rawContent', this.createIFrameForUrl(this.currentValidUrl));
+                    }
                     this.showViews('raw');
                 } else {
                     this.showViews('table');
                 }
             } catch( e ) {
                 ts.debug('updateContent() err name: [' + e.name + '] message: [' + e.message+"]");
-                var c = this.createIFrame(this.currentValidUrl);
+                var c = this.createIFrameForUrl(this.currentValidUrl);
                 this.updatepage('result', '<span class=bld>MSG_TEST_RESBEANS_Content</span> '+c);
                 this.updatepage('resultheaders', '<span class=bld>MSG_TEST_RESBEANS_ResponseHeaders</span> '+this.getHeaderAsTable(this.currentXmlHttpReq));                    
             }  
         }
+    },
+    
+    printPretty : function(content) {
+        if(content.indexOf("<?xml ") != -1) {
+            var doc2 = this.xhr.loadXml(content);
+            if(doc2 != null && doc2.documentElement.nodeName == 'parsererror')
+                return content;
+            prettyContent = "";
+            this.prettyPrint(doc2);
+            return prettyContent;
+        }
+        return content;
+    },
+    
+    prettyPrint : function (/*Node*/ node) {
+       printIndented(node, 0);
+
+       function printIndented(/*Node*/ node, /*int*/ indent) {
+         if(node.nodeValue != null) {
+             prettyContent += node.nodeValue;
+         } else {
+             var nd = getIndent(indent);
+             prettyContent += nd + getContent(node, true);
+             if(node.childNodes != null && node.childNodes.length > 0) {
+                 for (var i = 0; i < node.childNodes.length; ++i) {
+                   printIndented(node.childNodes[i], indent+2);
+                 }
+                 if(node.childNodes[0].nodeValue == null)
+                    prettyContent += nd + getContent(node, false);
+                 else
+                    prettyContent += getContent(node, false);
+             }
+         }
+       }
+       
+       function getContent(/*Node*/ n, start) {
+         var c = '';
+         if(n.nodeValue == null) {//DOM Elements only
+            if(n.nodeName == '#document') {
+                if(start)
+                    c += '<?xml version="1.0" encoding="UTF-8"?>    ';
+            } else {
+                if(start) {
+                    c += '<'+n.nodeName;
+                    if(n.attributes != null && n.attributes.length > 0) {
+                        for (var i = 0; i < n.attributes.length; ++i) {
+                           var attr = n.attributes[i];
+                           c += ' ' + attr.nodeName + '="' + attr.nodeValue+'"';
+                        }
+                    }
+                    c += '>';
+                } else {
+                    c += '</'+n.nodeName+'>';
+                }
+            }
+         } else {
+            if(start)
+                c += n.nodeValue;
+         }
+         return c;
+       }
+
+       function getIndent(/*int*/ indent) {
+         var s = "";
+         if(indent < 0)
+             return s;
+         while (indent) {
+           s+=' ';
+           --indent; 
+         }
+         return "\n"+s;
+       }
     },
 
     getTab : function (id, style) {
@@ -689,7 +797,7 @@ TestSupport.prototype = {
             str += "</tr>";
         }    
         if(count == 0)
-            str = "<textarea rows=15 cols=72 align=left readonly>MSG_TEST_RESBEANS_NoHeaders</textarea>";
+            str = "<textarea rows=15 cols="+this.colSize+" align=left readonly>MSG_TEST_RESBEANS_NoHeaders</textarea>";
         else
             str += "</tbody></table>";
         return str;
