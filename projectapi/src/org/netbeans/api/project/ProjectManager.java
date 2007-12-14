@@ -51,6 +51,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation;
 import org.netbeans.modules.projectapi.TimedWeakReference;
@@ -67,6 +68,7 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
+import org.openide.util.NbBundle;
 import org.openide.util.Union2;
 import org.openide.util.WeakSet;
 
@@ -85,6 +87,8 @@ public final class ProjectManager {
     // XXX change listeners?
     
     private static final Logger LOG = Logger.getLogger(ProjectManager.class.getName());
+    /** logger for timers/counters */
+    private static final Logger TIMERS = Logger.getLogger("TIMER.projects"); // NOI18N
     
     private static final Lookup.Result<ProjectFactory> factories =
         Lookup.getDefault().lookupResult(ProjectFactory.class);
@@ -347,7 +351,11 @@ public final class ProjectManager {
         for (ProjectFactory factory : factories.allInstances()) {
             Project p = factory.loadProject(dir, state);
             if (p != null) {
-                Logger.getLogger("TIMER").log(Level.FINE, "Project: {0}", p);
+                if (TIMERS.isLoggable(Level.FINE)) {
+                    LogRecord rec = new LogRecord(Level.FINE, "Project"); // NOI18N
+                    rec.setParameters(new Object[] { p });
+                    TIMERS.log(rec);
+                }
                 proj2Factory.put(p, factory);
                 state.attach(p);
                 return p;

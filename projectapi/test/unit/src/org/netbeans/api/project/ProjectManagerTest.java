@@ -49,6 +49,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
+import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.projectapi.TimedWeakReference;
 import org.openide.filesystems.FileObject;
@@ -116,10 +117,14 @@ public class ProjectManagerTest extends NbTestCase {
     
     public void testFindProject() throws Exception {
         Project p = null;
+        CharSequence log = Log.enable("TIMER", Level.FINE);
         try {
             p = pm.findProject(goodproject);
         } catch (IOException e) {
             fail("Should not fail to load goodproject: " + e);
+        }
+        if (log.toString().indexOf("Project") < 0) {
+            fail("Shall log a message to timers/counters:\n" + log);
         }
         assertNotNull("Should have recognized goodproject", p);
         assertEquals("Correct project directory set", goodproject, p.getProjectDirectory());
@@ -454,7 +459,7 @@ public class ProjectManagerTest extends NbTestCase {
         
         FileObject p4 = scratch.createFolder("p4");
         FileObject p4TestProject = p4.createFolder("testproject");
-        
+
         Project project4 = pm.findProject(p4);
         
         assertNotNull("project4 is recognized", project4);

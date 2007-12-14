@@ -49,14 +49,19 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.WeakHashMap;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
 
 /** Collects log messages.
@@ -183,6 +188,39 @@ public final class Log extends Handler {
     public static void controlFlow(Logger listenTo, Logger reportTo, String order, int timeout) {
         ControlFlow.registerSwitches(listenTo, reportTo, order, timeout);
     }
+    
+    /** Starts to listen on given log and collect parameters of messages that
+     * were send to it. This is supposed to be called at the begining of a test,
+     * to get messages from the programs that use 
+     * <a href="http://wiki.netbeans.org/wiki/view/FitnessViaTimersCounters">timers/counters</a>
+     * infrastructure. At the end one should call {@link assertInstances}.
+     * 
+     * 
+     * @param log logger to listen on, if null, it uses the standard timers/counters one
+     * @param msg name of messages to collect, if null, all messages will be recorded
+     * @param level level of messages to record
+     * @since 1.44
+     */
+    public static void enableInstances(Logger log, String msg, Level level) {
+        if (log == null) {
+            log = Logger.getLogger("TIMER"); // NOI18N
+        }
+        
+        log.addHandler(new InstancesHandler(msg, level));
+        
+        if (log.getLevel() == null || log.getLevel().intValue() > level.intValue()) {
+            log.setLevel(level);
+        }
+    }
+
+    /** Assert to verify that all collected instances via {@link enableInstances} 
+     * can disappear. Uses {@link NbTestCase#assertGC} on each of them. 
+     * 
+     * @param msg message to display in case of potential failure
+     */
+    public static void assertInstances(String msg) {
+        InstancesHandler.assertGC(msg);
+    }
 
 
 
@@ -299,4 +337,84 @@ public final class Log extends Handler {
 
         return ex;
     }
+        
+        
+    private static class InstancesHandler extends Handler {
+        private static final Map<Object,String> instances = Collections.synchronizedMap(new WeakHashMap<Object,String>());
+        private static int cnt;
+        
+        
+        private final String msg;
+        
+        public InstancesHandler(String msg, Level level) {
+            setLevel(level);
+            this.msg = msg;
+        }
+
+        @Override
+        public void publish(LogRecord record) {
+            Object[] param = record.getParameters();
+            if (param == null) {
+                return;
+            }
+            if (msg != null && !msg.equals(record.getMessage())) {
+                return;
+            }
+            cnt++;
+            for (Object o : param) {
+                instances.put(o, record.getMessage());
+            }
+        }
+
+        @Override
+        public void flush() {
+        }
+
+        @Override
+        public void close() throws SecurityException {
+        }
+        
+        public static void assertGC(String msg) {
+            if (cnt == 0) {
+                Assert.fail("No objects to track reported: " + cnt);
+            }
+            // start from scratch
+            cnt = 0;
+            
+            AssertionFailedError t = null;
+            
+            List<Reference> refs = new ArrayList<Reference>();
+            List<String> txts = new ArrayList<String>();
+            int count = 0;
+            synchronized (instances) {
+                for (Map.Entry<Object, String> entry : instances.entrySet()) {
+                    refs.add(new WeakReference<Object>(entry.getKey()));
+                    txts.add(entry.getValue());
+                    count++;
+                }
+                instances.clear();
+            }
+            
+            for (int i = 0; i < count; i++) {
+                Reference<?> r = refs.get(i);
+                try {
+                    NbTestCase.assertGC(msg + " " + txts.get(i), r);
+                } catch (AssertionFailedError ex) {
+                    if (t == null) {
+                        t = ex;
+                    } else {
+                        Throwable last = t;
+                        while (last.getCause() != null) {
+                            last = last.getCause();
+                        }
+                        last.initCause(ex);
+                    }
+                }
+            }
+            if (t != null) {
+                throw t;
+            }
+        }
+        
+    } // end of InstancesHandler
 }

@@ -55,6 +55,23 @@ made subject to such option by the copyright holder.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="CollectData">
+        <api name="nbjunit"/>
+        <summary>Support for Garbage Collecting of Log Message Arguments</summary>
+        <version major="1" minor="44"/>
+        <date day="14" month="12" year="2006"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Methods <code>enableInstances</code> and 
+                <code>assertInstances</code> added to <code>Log</code> class to
+                simplify writing memory leaks tests integrated with
+                <a href="http://wiki.netbeans.org/wiki/view/FitnessViaTimersCounters">timers/counters</a> infastructure.
+            </p>
+        </description>
+        <class package="org.netbeans.junit" name="Log"/>
+    </change>
     <change id="PreferencesForTests">
         <api name="nbjunit"/>
         <summary>Default implementation of Preferences isn't used for running tests anymore</summary>
