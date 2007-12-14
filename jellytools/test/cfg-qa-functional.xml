@@ -60,6 +60,7 @@ made subject to such option by the copyright holder.
                 <include name="**/NewProjectWizardOperatorTest.class"/>
                 <include name="**/NewProjectNameLocationStepOperatorTest.class"/>
                 <exclude name="**/NewProjectNameLocationStepOperatorTest.class/testWebApplication"/>
+                <include name="**/PluginsOperatorTest.class"/>
                 <include name="**/QuestionDialogOperatorTest.class"/>
                 <include name="**/SaveAsTemplateOperatorTest.class"/>
                 <include name="**/WizardOperatorTest.class"/>
