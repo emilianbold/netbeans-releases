@@ -88,8 +88,6 @@ public class NbServiceTagSupport {
     
     private static final String REG_FILE = "registration.xml";
     
-    private static final String KEY_ENABLED = "nb.registration.enabled";
-    
     /** Dir in home dir */
     private static File svcTagDirHome;
     
