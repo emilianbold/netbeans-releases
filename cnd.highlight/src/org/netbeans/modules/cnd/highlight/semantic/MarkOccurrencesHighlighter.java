@@ -77,7 +77,7 @@ public class MarkOccurrencesHighlighter extends HighlighterBase {
     private static AttributeSet defaultColors;
     private final static String COLORS = "cc-highlighting-mark-occurences"; // NOI18N
     private WeakReference<CsmFile> weakFile;
-    private List<Annotation> annotations = new ArrayList<Annotation>();
+    //private List<Annotation> annotations = new ArrayList<Annotation>();
 
     public static OffsetsBag getHighlightsBag(Document doc) {
         if (doc == null) {
@@ -125,22 +125,27 @@ public class MarkOccurrencesHighlighter extends HighlighterBase {
     private void clean() {
         if (getDocument()!=null) {
             getHighlightsBag(getDocument()).clear();
-            for (Annotation annotation : annotations){
+            /*for (Annotation annotation : annotations){
                 if (annotation != null) {
                     NbDocument.removeAnnotation((StyledDocument)getDocument(), annotation);
                 }
-            }            
+            }   */         
         }
-        annotations.clear();
+        //annotations.clear();
+    }
+
+    public MarkOccurrencesHighlighter(Document doc, Runnable runMe) {
+        super(doc, runMe);
     }
 
     public MarkOccurrencesHighlighter(Document doc) {
         super(doc);
     }
 
+
     // Runnable
     public void run() {
-        System.err.println("MarkOccurrencesHighlighter.run()");
+        //System.err.println("MarkOccurrencesHighlighter.run()");
         if (!SemanticHighlightingOptions.getEnableMarkOccurences()) {
             clean();
             return;
@@ -155,7 +160,7 @@ public class MarkOccurrencesHighlighter extends HighlighterBase {
         clean();
         for (CsmReference csmReference : out) {
             getHighlightsBag(getDocument()).addHighlight(csmReference.getStartOffset(), csmReference.getEndOffset(), defaultColors);
-            addAnnotation(csmReference.getStartOffset());
+           // addAnnotation(csmReference.getStartOffset());
         }
     }
     
@@ -179,7 +184,7 @@ public class MarkOccurrencesHighlighter extends HighlighterBase {
     }
 
     // annotations stuff
-    private void addAnnotation(int offset) {
+    /*private void addAnnotation(int offset) {
         Annotation ann = new OccurenceAnnotation(offset);
         NbDocument.addAnnotation((StyledDocument)getDocument(), new OccurencePosition(offset), -1, ann);
         annotations.add(ann);
@@ -206,5 +211,5 @@ public class MarkOccurrencesHighlighter extends HighlighterBase {
         public String getShortDescription() {
             return NbBundle.getMessage(MarkOccurrencesHighlighter.class, "CppParserMarkOccurencesAnnotation");
         }
-    }
+    }*/
 }

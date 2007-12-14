@@ -55,6 +55,10 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
         initComponents();
         cbKeepMarks.addActionListener(this);
         setName("TAB_SemanticHighlightingTab"); // NOI18N (used as a pattern...)
+        if (!SemanticHighlightingOptions.SEMANTIC_ADVANCED) {
+            cbClassFields.setVisible(false);
+            cbFunctionNames.setVisible(false);
+        }
     }
 
     // for OptionsPanelSupport
@@ -63,12 +67,20 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
     void applyChanges() {
         SemanticHighlightingOptions.setEnableMarkOccurences(cbMarkOccurrences.isSelected());
         SemanticHighlightingOptions.setKeepMarks(cbKeepMarks.isSelected());
+        SemanticHighlightingOptions.setEnableMacros(cbMacros.isSelected());
+        SemanticHighlightingOptions.setDifferSystemMacros(cbSysMacro.isSelected());
+        SemanticHighlightingOptions.setEnableClassFields(cbClassFields.isSelected());
+        SemanticHighlightingOptions.setEnableFunctionNames(cbFunctionNames.isSelected());
         isChanged = false;
     }
 
     void update() {
         cbMarkOccurrences.setSelected(SemanticHighlightingOptions.getEnableMarkOccurences());
         cbKeepMarks.setSelected(SemanticHighlightingOptions.getKeepMarks());
+        cbMacros.setSelected(SemanticHighlightingOptions.getEnableMacros());
+        cbSysMacro.setSelected(SemanticHighlightingOptions.getDifferSystemMacros());
+        cbClassFields.setSelected(SemanticHighlightingOptions.getEnableClassFields());
+        cbFunctionNames.setSelected(SemanticHighlightingOptions.getEnableFunctionNames());
         updateValidation();
     }
     
@@ -86,6 +98,7 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
     
     private void updateValidation() {
         cbKeepMarks.setEnabled(cbMarkOccurrences.isSelected());
+        cbSysMacro.setEnabled(cbMacros.isSelected());
     }
 
     /** This method is called from within the constructor to
@@ -98,6 +111,10 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
 
         cbKeepMarks = new javax.swing.JCheckBox();
         cbMarkOccurrences = new javax.swing.JCheckBox();
+        cbMacros = new javax.swing.JCheckBox();
+        cbClassFields = new javax.swing.JCheckBox();
+        cbFunctionNames = new javax.swing.JCheckBox();
+        cbSysMacro = new javax.swing.JCheckBox();
 
         cbKeepMarks.setText(getString("KeepMarks"));
 
@@ -107,6 +124,19 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
                 cbMarkOccurrencesActionPerformed(evt);
             }
         });
+
+        cbMacros.setText(getString("EnableMacros"));
+        cbMacros.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbMacrosActionPerformed(evt);
+            }
+        });
+
+        cbClassFields.setText(getString("ShowClassFields"));
+
+        cbFunctionNames.setText(getString("ShowFunctionNames"));
+
+        cbSysMacro.setText(getString("DifferSystemMacros"));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -119,7 +149,19 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
                         .add(cbKeepMarks))
                     .add(layout.createSequentialGroup()
                         .addContainerGap()
-                        .add(cbMarkOccurrences)))
+                        .add(cbMarkOccurrences))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .add(21, 21, 21)
+                                .add(cbSysMacro))
+                            .add(cbMacros)))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(cbClassFields)
+                            .add(cbFunctionNames))))
                 .addContainerGap(283, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -129,20 +171,35 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
                 .add(cbMarkOccurrences)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(cbKeepMarks)
-                .addContainerGap(238, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(cbMacros)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(cbSysMacro)
+                .add(18, 18, 18)
+                .add(cbClassFields)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(cbFunctionNames)
+                .addContainerGap(112, Short.MAX_VALUE))
         );
 
         cbMarkOccurrences.getAccessibleContext().setAccessibleName(getString("EnableMarkOccurrences_AccessibleName"));
     }// </editor-fold>//GEN-END:initComponents
 
     private void cbMarkOccurrencesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbMarkOccurrencesActionPerformed
-        this.actionPerformed(null);
         updateValidation();
     }//GEN-LAST:event_cbMarkOccurrencesActionPerformed
+
+    private void cbMacrosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbMacrosActionPerformed
+        updateValidation();
+    }//GEN-LAST:event_cbMacrosActionPerformed
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox cbClassFields;
+    private javax.swing.JCheckBox cbFunctionNames;
     private javax.swing.JCheckBox cbKeepMarks;
+    private javax.swing.JCheckBox cbMacros;
     private javax.swing.JCheckBox cbMarkOccurrences;
+    private javax.swing.JCheckBox cbSysMacro;
     // End of variables declaration//GEN-END:variables
 
     private static String getString(String key) {

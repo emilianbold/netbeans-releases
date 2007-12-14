@@ -61,8 +61,10 @@ public abstract class HighlighterBase implements LookupListener, Runnable {
     private final String mime;
     private final OffsetsBag bag;
     private final WeakReference<BaseDocument> weakDoc;
+    private final Runnable runMe;
 
-    public HighlighterBase(Document doc) {
+    public HighlighterBase(Document doc, Runnable runMe) {
+        this.runMe = runMe == null ? this : runMe;
         bag = new OffsetsBag(doc);
         mime = (String) doc.getProperty("mimeType"); //NOI18N
         Lookup lookup = MimeLookup.getLookup(MimePath.get(mime));
@@ -79,6 +81,11 @@ public abstract class HighlighterBase implements LookupListener, Runnable {
 
         updateFontColors();
     }
+    
+    public HighlighterBase(Document doc) {
+        this(doc, null);
+    }
+
 
     protected BaseDocument getDocument() {
         return weakDoc != null ? weakDoc.get() : null;
@@ -91,7 +98,7 @@ public abstract class HighlighterBase implements LookupListener, Runnable {
     // LookupListener
     public void resultChanged(LookupEvent ev) {
         updateFontColors();
-        run();
+        runMe.run();
     }
     
     public void updateFontColors() {

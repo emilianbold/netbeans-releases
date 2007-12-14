@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.highlight.semantic.HighlighterBase;
+import org.netbeans.modules.cnd.highlight.semantic.options.SemanticHighlightingOptions;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 
@@ -71,7 +72,7 @@ import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
  *
  * @author Sergey Grinev
  */
-public class SemanticHighlighter extends HighlighterBase  {
+public class SemanticHighlighter extends HighlighterBase {
 
     private final static String COLORS_INACTIVE = "cc-highlighting-inactive"; // NOI18N
     private final static String COLORS_MACRO = "cc-highlighting-macros-user"; // NOI18N
@@ -82,7 +83,6 @@ public class SemanticHighlighter extends HighlighterBase  {
     private AttributeSet sysMacroColors; //= AttributesUtilities.createImmutable(StyleConstants.Foreground, new Color(150, 105, 0));
     private AttributeSet fieldsColors; //= AttributesUtilities.createImmutable(StyleConstants.Foreground, new Color(175, 175, 0));
     private AttributeSet functionsColors = AttributesUtilities.createImmutable(StyleConstants.Bold, Boolean.TRUE);
-    public static final boolean USE_MORE_SEMANTIC = Boolean.getBoolean("cnd.semantic.advanced"); // NOI18N
     private final AttributeSet cleanUp = AttributesUtilities.createImmutable(
             StyleConstants.Underline, null,
             StyleConstants.StrikeThrough, null,
@@ -95,33 +95,22 @@ public class SemanticHighlighter extends HighlighterBase  {
 
     protected void initFontColors(FontColorSettings fcs) {
         inactiveColors = AttributesUtilities.createComposite(fcs.getTokenFontColors(COLORS_INACTIVE), cleanUp);
-        if (USE_MORE_SEMANTIC) {
-            macroColors = AttributesUtilities.createComposite(fcs.getTokenFontColors(COLORS_MACRO), cleanUp);
-            sysMacroColors = AttributesUtilities.createComposite(fcs.getTokenFontColors(COLORS_SYSMACRO), cleanUp);
+        macroColors = AttributesUtilities.createComposite(fcs.getTokenFontColors(COLORS_MACRO), cleanUp);
+        sysMacroColors = AttributesUtilities.createComposite(fcs.getTokenFontColors(COLORS_SYSMACRO), cleanUp);
+        if (SemanticHighlightingOptions.SEMANTIC_ADVANCED) {
             fieldsColors = AttributesUtilities.createComposite(fcs.getTokenFontColors(COLORS_FIELDS), cleanUp);
         }
     }
 
     public static OffsetsBag getHighlightsBag(Document doc) {
         OffsetsBag bag = (OffsetsBag) doc.getProperty(SemanticHighlighter.class);
-        
+
         if (bag == null) {
             doc.putProperty(SemanticHighlighter.class, bag = new OffsetsBag(doc));
         }
-        
+
         return bag;
     }
-
-/*    public void insertUpdate(DocumentEvent e) {
-        scheduleUpdate();
-    }
-
-    public void removeUpdate(DocumentEvent e) {
-        scheduleUpdate();
-    }
-
-    public void changedUpdate(DocumentEvent e) {
-    }*/
 
     private void update() {
         BaseDocument doc = getDocument();
@@ -135,18 +124,24 @@ public class SemanticHighlighter extends HighlighterBase  {
                 }
 
                 // All highlighting would be stationed here till we'll have general csmfileAction infrastructure
-
-                for (CsmReference block : getMacroBlocks(csmFile)) {
-                    CsmMacro macro = (CsmMacro) block.getReferencedObject();
-                    newBag.addHighlight(block.getStartOffset(), block.getEndOffset(), macro == null || !macro.isSystem() ? macroColors : sysMacroColors);
+                if (SemanticHighlightingOptions.getEnableMacros()) {
+                    boolean diffSystem = SemanticHighlightingOptions.getDifferSystemMacros();
+                    for (CsmReference block : getMacroBlocks(csmFile)) {
+                        CsmMacro macro = (CsmMacro) block.getReferencedObject();
+                        newBag.addHighlight(block.getStartOffset(), block.getEndOffset(), !diffSystem || macro == null || !macro.isSystem() ? macroColors : sysMacroColors);
+                    }
                 }
 
-                for (CsmOffsetable block : getFieldsBlocks(csmFile)) {
-                    newBag.addHighlight(block.getStartOffset(), block.getEndOffset(), fieldsColors);
+                if (SemanticHighlightingOptions.getEnableClassFields()) {
+                    for (CsmOffsetable block : getFieldsBlocks(csmFile)) {
+                        newBag.addHighlight(block.getStartOffset(), block.getEndOffset(), fieldsColors);
+                    }
                 }
 
-                for (CsmOffsetable block : getFunctionNames(csmFile)) {
-                    newBag.addHighlight(block.getStartOffset(), block.getEndOffset(), functionsColors);
+                if (SemanticHighlightingOptions.getEnableFunctionNames()) {
+                    for (CsmOffsetable block : getFunctionNames(csmFile)) {
+                        newBag.addHighlight(block.getStartOffset(), block.getEndOffset(), functionsColors);
+                    }
                 }
             }
             getHighlightsBag(doc).setHighlights(newBag);
