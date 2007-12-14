@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.timers;
 
+import java.text.MessageFormat;
+import java.util.MissingResourceException;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -78,28 +80,41 @@ public class Install extends  ModuleInstall {
     
         public void publish(LogRecord rec) {
             String message = rec.getMessage();
+            if (rec.getResourceBundle() != null) {
+                try {
+                    message = rec.getResourceBundle().getString(rec.getMessage());
+                    if (rec.getParameters() != null) {
+                        message = MessageFormat.format(message, rec.getParameters());
+                    }
+                } catch (MissingResourceException ex) {
+                    Logger.getAnonymousLogger().log(Level.INFO, null, ex);
+                }
+            }
+        
             Object[] args = rec.getParameters();
             if (args == null || args[0] == null) return;
             
             if (args.length == 1) { // simplified instance logging
                 TimesCollectorPeer.getDefault().reportReference(
-                        INSTANCES, message, message, args[0]);
+                        INSTANCES, rec.getMessage(), message, args[0]);
                 return;
             }
             
-            if (args.length != 2) return;
+            if (args.length < 2) {
+                return;
+            }
             
             Object key = args[0];
 
             if (args[1] instanceof Number) { // time
                 TimesCollectorPeer.getDefault().reportTime(
-                        key, message, message, ((Number)args[1]).longValue());
+                        key, rec.getMessage(), message, ((Number)args[1]).longValue());
             } else if (args[1] instanceof Boolean) { // start/stop logic
                 // XXX - start/stop support
             } else {
                 String txt = message.startsWith("[M]") ? message : "[M] " + message;
                 TimesCollectorPeer.getDefault().reportReference(
-                        key, message, txt, args[1]);
+                        key, rec.getMessage(), txt, args[1]);
             }
         }
     

@@ -158,6 +158,10 @@ made subject to such option by the copyright holder.
              <li>The number of live instances registered using the same "key" is shown in the Timers component.</li>
          </ol>
      </usecase>
+     <usecase name="Using Logger" id="LoggerInstanceCount">
+         It is possible to use this API without direct dependency on it
+         via the <a href="http://wiki.netbeans.org/wiki/view/FitnessViaTimersCounters">Timers/Counters Log Interface</a>.
+     </usecase>
  </answer>
 
 

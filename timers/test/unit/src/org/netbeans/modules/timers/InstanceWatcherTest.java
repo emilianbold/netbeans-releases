@@ -52,7 +52,7 @@ import org.netbeans.junit.NbTestCase;
 public class InstanceWatcherTest extends NbTestCase {
 
     public InstanceWatcherTest(String testName) {
-        super(testName);
+    super(testName);
     }
 
     public void testFiring() throws Exception {
