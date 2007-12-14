@@ -51,6 +51,7 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.ruby.railsprojects.RailsProjectCreateData;
 import org.netbeans.modules.ruby.railsprojects.RailsProjectGenerator;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -146,8 +147,8 @@ public class NewRailsProjectWizardIterator implements WizardDescriptor.ProgressI
         Boolean jdbc = (Boolean)wiz.getProperty(JDBC_WN); // NOI18N
         Boolean deploy = (Boolean)wiz.getProperty(GOLDSPIKE_WN); // NOI18N
         
-        h = RailsProjectGenerator.createProject(dirF, name, type == TYPE_APP, database, 
-                jdbc == Boolean.TRUE, deploy == Boolean.TRUE);
+        RailsProjectCreateData data = new RailsProjectCreateData(dirF, name, type == TYPE_APP, database, jdbc, deploy);
+        h = RailsProjectGenerator.createProject(data);
         handle.progress (2);
 
 //        if (mainClass != null && mainClass.length () > 0) {

@@ -94,21 +94,17 @@ public class RailsProjectGenerator {
     /**
      * Create a new empty Rails project.
      * 
-     * @param dir the top-level directory (need not yet exist but if it does it must be empty)
-     * @param name the name for the project
-     * @param create whether to generate base directory structure or not (use
-     *        false for existing application)
+     * @param data the data needed for creating the project.
      * @return the helper object permitting it to be further customized
      * @throws IOException in case something went wrong
      */
-    public static RakeProjectHelper createProject(File dir, String name, boolean create, 
-            String database, boolean jdbc, boolean deploy) throws IOException {
-        FileObject dirFO = FileUtil.createFolder(dir);
+    public static RakeProjectHelper createProject(RailsProjectCreateData data) throws IOException {
+        FileObject dirFO = FileUtil.createFolder(data.getDir());
         boolean createJavaDb = false;
         boolean createJdbc = false;
         
         // Run Rails to generate the appliation skeleton
-        if (create) {
+        if (data.isCreate()) {
             FileObject rails = FileUtil.toFileObject(new File(RubyInstallation.getInstance().getRails()));
             boolean runThroughRuby = rails != null ? RubyUtils.isRubyFile(rails) : false;
 
@@ -116,26 +112,26 @@ public class RailsProjectGenerator {
             String displayName = NbBundle.getMessage(RailsProjectGenerator.class, "GenerateRails");
 
             String railsDbArg = null;
-            if (database != null) {
-                if (database.equals(PanelOptionsVisual.JAVA_DB)) {
+            if (data.getDatabase() != null) {
+                if (data.getDatabase().equals(PanelOptionsVisual.JAVA_DB)) {
                     createJavaDb = true;
-                } else if (database.equals(PanelOptionsVisual.JDBC)) {
+                } else if (data.getDatabase().equals(PanelOptionsVisual.JDBC)) {
                     createJdbc = true;
                 } else {
-                    railsDbArg = "--database=" + database;
+                    railsDbArg = "--database=" + data.getDatabase();
                 }
             }
-            File pwd = dir.getParentFile();
+            File pwd = data.getDir().getParentFile();
             if (runThroughRuby) {
                 desc = new ExecutionDescriptor(displayName, pwd,
                     RubyInstallation.getInstance().getRails());
                 if (railsDbArg != null) {
-                    desc.additionalArgs(name, railsDbArg);
+                    desc.additionalArgs(data.getName(), railsDbArg);
                 } else {
-                    desc.additionalArgs(name);
+                    desc.additionalArgs(data.getName());
                 }
             } else {
-                desc = new ExecutionDescriptor(displayName, pwd, name);
+                desc = new ExecutionDescriptor(displayName, pwd, data.getName());
                 if (railsDbArg != null) {
                     desc.additionalArgs(railsDbArg);
                 }
@@ -157,7 +153,7 @@ public class RailsProjectGenerator {
             
             // Precreate a spec directory if it doesn't exist such that my source root will work
             if (RubyInstallation.getInstance().getVersion("rspec") != null) { // NOI18N
-                File spec = new File(dir, "spec"); // NOI18N
+                File spec = new File(data.getDir(), "spec"); // NOI18N
                 if (!spec.exists()) {
                     spec.mkdirs();
                 }
@@ -166,7 +162,7 @@ public class RailsProjectGenerator {
             dirFO.getFileSystem().refresh(true);
 
             // TODO - only do this if not creating from existing app?
-            if (jdbc) {
+            if (data.isJdbc()) {
                 insertActiveJdbcHook(dirFO);
             }
             
@@ -177,7 +173,7 @@ public class RailsProjectGenerator {
             }
         }
 
-        RakeProjectHelper h = createProject(dirFO, name/*, "app", "test", mainClass, manifestFile, false*/); //NOI18N
+        RakeProjectHelper h = createProject(dirFO, data.getName()/*, "app", "test", mainClass, manifestFile, false*/); //NOI18N
         Project p = ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
         
@@ -191,7 +187,7 @@ public class RailsProjectGenerator {
         //}
         
         // Install goldspike if the user wants Rails deployment
-        if (deploy) {
+        if (data.isDeploy()) {
             InstalledFileLocator locator = InstalledFileLocator.getDefault();
             File goldspikeFile = locator.locate("goldspike-1.3.zip", "org.netbeans.modules.ruby.railsprojects", false);
             if (goldspikeFile != null) {

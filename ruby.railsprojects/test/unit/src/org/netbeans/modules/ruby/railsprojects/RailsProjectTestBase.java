@@ -62,7 +62,8 @@ public class RailsProjectTestBase extends RubyTestBase {
     
     protected RailsProject createTestProject(String projectName, String... paths) throws Exception {
         File prjDirF = new File(getWorkDir(), projectName);
-        RailsProjectGenerator.createProject(prjDirF, projectName, false, null, false, false);
+        RailsProjectCreateData data = new RailsProjectCreateData(prjDirF, projectName, false, null, false, false);
+        RailsProjectGenerator.createProject(data);
         RubyTestBase.createFiles(prjDirF, paths);
         RailsProject project = (RailsProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(prjDirF));
         assertNotNull(project);
