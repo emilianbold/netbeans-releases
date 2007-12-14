@@ -97,7 +97,6 @@ public class NbConnectionSupport {
      */
     public static URL getRegistrationURL(String registrationURN, String product) {
         String url = System.getProperty("nb.registration.host");
-        System.out.println("url:" + url);
         if (url == null) {
             url = SANDBOX_TESTING_URL;
         }

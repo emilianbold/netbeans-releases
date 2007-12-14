@@ -136,10 +136,12 @@ public class NbServiceTagSupport {
         
         //This return platfomX dir but we need install dir
         File f = new File(System.getProperty("netbeans.home"));
+        
         nbInstallDir = f.getParentFile();
-        System.out.println("nbInstallDir:" + nbInstallDir);
+        LOG.log(Level.FINE,"NetBeans install dir is:" + nbInstallDir);
+        
         nbClusterDir = new File(nbInstallDir,NB_CLUSTER);
-        System.out.println("nbClusterDir:" + nbClusterDir);
+        LOG.log(Level.FINE,"nb cluster dir is:" + nbClusterDir);
         
         svcTagDirNb = new File(nbClusterDir.getPath() + File.separator + ST_DIR);
         svcTagDirHome = new File(USER_HOME + File.separator + ".netbeans-registration"
@@ -785,7 +787,7 @@ public class NbServiceTagSupport {
         String lineSep = System.getProperty("line.separator");
         String payload = xml.replaceAll("\"", "%22").replaceAll(lineSep, " ");
 
-        String resourceFilename = "/org/netbeans/modules/registration/resources/register";
+        String resourceFilename = "/org/netbeans/modules/reglib/resources/register";
         for (Locale locale : supportedLocales) {
             String name = REGISTRATION_HTML_NAME;
             resource = resourceFilename;
