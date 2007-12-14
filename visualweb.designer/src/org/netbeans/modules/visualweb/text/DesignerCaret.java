@@ -65,6 +65,7 @@ import javax.swing.Timer;
 import javax.swing.TransferHandler;
 import javax.swing.UIManager;
 
+import org.netbeans.modules.visualweb.api.designer.DomProvider.DomDocument;
 import org.netbeans.modules.visualweb.api.designer.DomProvider.DomDocumentEvent;
 import org.netbeans.modules.visualweb.api.designer.DomProvider.DomDocumentListener;
 import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition;
@@ -77,6 +78,7 @@ import org.netbeans.modules.visualweb.text.actions.SelectWordAction;
 
 import org.openide.ErrorManager;
 
+import org.openide.util.WeakListeners;
 import org.w3c.dom.Node;
 
 
@@ -631,7 +633,11 @@ import org.w3c.dom.Node;
         
 //        c.getDocument().addDomDocumentListener(handler);
 //        c.getWebForm().getDocument().addDomDocumentListener(handler);
-        c.getWebForm().getDomDocument().addDomDocumentListener(handler);
+        // XXX #123003 Another memory leak via the listener (missing call to deinstall), using weak listener instead.
+//        c.getWebForm().getDomDocument().addDomDocumentListener(handler);
+        DomDocument domDocument = c.getWebForm().getDomDocument();
+        DomDocumentListener weakListener = WeakListeners.create(DomDocumentListener.class, handler, domDocument);
+        domDocument.addDomDocumentListener(weakListener);
 
         // if the component already has focus, it won't
         // be notified.
@@ -660,7 +666,7 @@ import org.w3c.dom.Node;
         
 //        c.getDocument().removeDomDocumentListener(handler);
 //        c.getWebForm().getDocument().removeDomDocumentListener(handler);
-        c.getWebForm().getDomDocument().removeDomDocumentListener(handler);
+//        c.getWebForm().getDomDocument().removeDomDocumentListener(handler);
 
         synchronized (this) {
             component = null;
