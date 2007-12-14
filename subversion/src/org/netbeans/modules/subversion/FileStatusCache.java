@@ -564,7 +564,7 @@ public class FileStatusCache implements ISVNNotifyListener {
             }
         } catch (SVNClientException e) {
             // no or damaged entries
-            //ErrorManager.getDefault().annotate(e, "Can not status " + dir.getAbsolutePath() + ", guessing it...");  // NOI18N
+            //LOG.getDefault().annotate(e, "Can not status " + dir.getAbsolutePath() + ", guessing it...");  // NOI18N
             SvnClientExceptionHandler.notifyException(e, false, false);
         }
 

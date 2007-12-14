@@ -49,6 +49,7 @@ import org.openide.ErrorManager;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.Level;
 
 /**
  * Storage of file attributes with shortcut to retrieve all stored values.
@@ -183,7 +184,7 @@ class DiskMapTurboProvider implements TurboProvider {
         } catch (EOFException e) {
             // reached EOF, no entry for this key
         } catch (Exception e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Subversion.LOG.log(Level.INFO, e.getMessage(), e);
             readFailed = true;
         } finally {
             if (dis != null) try { dis.close(); } catch (IOException e) {}

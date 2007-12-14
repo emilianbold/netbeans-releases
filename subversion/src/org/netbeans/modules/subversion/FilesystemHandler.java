@@ -45,16 +45,13 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.subversion.util.FileUtils;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.subversion.client.SvnClient;
-import org.openide.ErrorManager;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;   
-import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.util.Utils;
-import org.openide.util.Exceptions;
 import org.tigris.subversion.svnclientadapter.*;
 
 /**
@@ -135,7 +132,7 @@ class FilesystemHandler extends VCSInterceptor {
     public void doMove(final File from, final File to) throws IOException {        
         if (SwingUtilities.isEventDispatchThread()) {
             
-            Logger.getLogger("org.netbeans.modules.subversion").log(Level.INFO, "Warning: launching external process in AWT", new Exception().fillInStackTrace());
+            Subversion.LOG.log(Level.INFO, "Warning: launching external process in AWT", new Exception().fillInStackTrace());
             final Throwable innerT[] = new Throwable[1];
             Runnable outOfAwt = new Runnable() {
                 public void run() {
@@ -177,7 +174,7 @@ class FilesystemHandler extends VCSInterceptor {
                 File parent = to.getParentFile();
                 if (parent != null) {
                     if (from.equals(to)) {
-                        ErrorManager.getDefault().log(ErrorManager.WARNING, "Wrong (identity) rename event for " + from.getAbsolutePath()); // NOI18N
+                        Subversion.LOG.warning( "Wrong (identity) rename event for " + from.getAbsolutePath());                        
                     }
                     cache.onNotify(from, null); // as if there were an event
                 }

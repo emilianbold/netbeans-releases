@@ -50,10 +50,10 @@ import org.openide.filesystems.FileObject;
 import java.io.*;
 import java.util.*;
 
+import java.util.logging.Level;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
-import org.openide.ErrorManager;
 
 /**
  * Hides folders that have 'Localy removed' status.
@@ -80,7 +80,7 @@ public class SubversionVisibilityQuery implements VisibilityQueryImplementation,
         try {
             return cache.getStatus(file).getStatus() != FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY;
         } catch (Exception e) {
-            ErrorManager.getDefault().notify(ErrorManager.ERROR, e);
+            Subversion.LOG.log(Level.SEVERE, e.getMessage(), e);
             return true;
         }        
     }

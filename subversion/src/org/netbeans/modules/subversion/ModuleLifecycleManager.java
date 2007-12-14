@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.subversion;
 
-import org.openide.ErrorManager;
 import org.openide.xml.XMLUtil;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -60,6 +59,7 @@ import java.io.OutputStream;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.ByteArrayInputStream;
+import java.util.logging.Level;
 
 /**
  * Handles module events distributed by NetBeans module
@@ -125,7 +125,7 @@ public final class ModuleLifecycleManager extends ModuleInstall implements Error
                         
                         XMLUtil.write(document, os, "UTF-8"); // NOI18N
                     } catch (Exception e) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                        Subversion.LOG.log(Level.INFO, e.getMessage(), e);                        
                     } finally {
                         if (os != null) try { os.close(); } catch (IOException ex) {}
                         if (lock != null) lock.releaseLock();
@@ -157,14 +157,14 @@ public final class ModuleLifecycleManager extends ModuleInstall implements Error
     }
     
     public void error(SAXParseException exception) {
-        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exception);
+        Subversion.LOG.log(Level.INFO, exception.getMessage(), exception);
     }
 
     public void fatalError(SAXParseException exception) {
-        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exception);
+        Subversion.LOG.log(Level.INFO, exception.getMessage(), exception);
     }
 
     public void warning(SAXParseException exception) {
-        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exception);
+        Subversion.LOG.log(Level.INFO, exception.getMessage(), exception);
     }
 }

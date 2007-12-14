@@ -99,10 +99,11 @@ public class Subversion {
     private SvnClient noUrlClientWithoutListeners;
     private SvnClient noUrlClientWithListeners;
     private List<ISVNNotifyListener> svnNotifyListeners;
-    
-    
+        
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
+    public static final Logger LOG = Logger.getLogger("org.netbeans.modules.subversion");
+    
     public static synchronized Subversion getInstance() {
         if (instance == null) {
             instance = new Subversion();
@@ -517,7 +518,7 @@ public class Subversion {
             if (original == null) throw new IOException("Unable to get BASE revision of " + workingCopy);
             org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(new FileOutputStream(originalFile), new FileInputStream(original));
         } catch (IOException e) {
-            Logger.getLogger(Subversion.class.getName()).log(Level.INFO, "Unable to get original file", e);
+            LOG.log(Level.INFO, "Unable to get original file", e);
         }
     }
 }
