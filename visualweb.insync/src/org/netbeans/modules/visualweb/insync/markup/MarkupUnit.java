@@ -116,6 +116,7 @@ public class MarkupUnit extends SourceUnit implements org.w3c.dom.events.EventLi
     /** For JSP/JSF page -> rendered DOM document. */
     private Document renderedDocument;
     HashMap namespaces = new HashMap();  // namespace URI => prefix mapping
+    Map<String, String> namespaceUriMap = new HashMap<String, String>();  // prefix ==> namespace URI mapping
     URI baseURI;
     URL base;
     private boolean supportCss;
@@ -135,6 +136,7 @@ public class MarkupUnit extends SourceUnit implements org.w3c.dom.events.EventLi
 
     public void destroy() {
         namespaces.clear();
+        namespaceUriMap.clear();
         base = null;
         baseURI = null;
 //        XhtmlCssEngine engine = CssEngineServiceProvider.getDefault().getCssEngine(sourceDocument);
@@ -237,6 +239,7 @@ public class MarkupUnit extends SourceUnit implements org.w3c.dom.events.EventLi
             if (element == sourceDocument.getDocumentElement() && attr.startsWith("xmlns:")) {
                 String prefix = attr.substring(6);
                 namespaces.put(value, prefix);
+                namespaceUriMap.put(prefix, value);
             }
         }
     }
@@ -326,6 +329,10 @@ public class MarkupUnit extends SourceUnit implements org.w3c.dom.events.EventLi
         }
         if (text != null)
             elem.appendChild(elem.getOwnerDocument().createTextNode(text));
+    }
+
+    public String findTaglibUri(String prefix) {
+       return namespaceUriMap.get(prefix);   
     }
 
 
@@ -541,6 +548,7 @@ public class MarkupUnit extends SourceUnit implements org.w3c.dom.events.EventLi
                 if (attr.getName().startsWith("xmlns:")) {
                     String prefix = attr.getName().substring(6);
                     namespaces.put(attr.getValue(), prefix);
+                    namespaceUriMap.put(prefix, attr.getValue());
                 }
             }
         }

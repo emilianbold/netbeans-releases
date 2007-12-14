@@ -269,10 +269,10 @@ public class FacesPageUnit extends FacesUnit implements PropertyChangeListener {
         super.scan();  // make sure class & other base java stuff are retrieved first
         // Now go through and find or create our JSP elements
         document = pgunit.getSourceDom();
-        if (isPage())
-            ensurePageStructure();
-        else
-            ensureFragmentStructure();
+//        if (isPage())
+//            ensurePageStructure();
+//        else
+//            ensureFragmentStructure();
     }
 
     /**
@@ -375,6 +375,8 @@ public class FacesPageUnit extends FacesUnit implements PropertyChangeListener {
      * Bind all markup beans to their element and take care of parenting. Creates the HtmlBean
      * instances for HTML and other fake beans on the fly
      */
+    
+    // This is a horrible O(N2) algorithm, need to change it - Winston
     protected void bindMarkupBeans(Element e) {
         MarkupBean mbean = getMarkupBean(e);
         if (mbean == null) {
@@ -385,9 +387,23 @@ public class FacesPageUnit extends FacesUnit implements PropertyChangeListener {
                     mbean = new HtmlBean(this, bi, e.getTagName(), e);
                     beans.add(mbean);
                 }
-            }
-            else {
-                //!CQ TODO: missing java entry: this is where we could re-inject it
+            } else {
+                // OK, there are no bindings in the Java, create designbean from tag
+                String tagName = e.getLocalName();
+                String name = e.getAttribute(FacesBean.ID_ATTR);
+                String tagLibUri = pgunit.findTaglibUri(e.getPrefix());
+                // Get the bean class via TLD using JSF Designtime container
+                type = container.findComponentClass(tagName, tagLibUri);
+                assert Trace.trace("insync.faces", "FU.bindMarkupBeans type:" + type + 
+                        " tag:" + tagName + " tagLibUri:" + tagLibUri);                
+                BeanInfo bi = getBeanInfo(type);
+                mbean = new FacesBean(this, bi, name, e);
+                // snag the form bean as it goes by for later use as the default parent
+                if (defaultParent == null && tagName.equals(HtmlTag.FORM.name)) {
+                    defaultParent = mbean;
+                }               
+                mbean.setInserted(true);
+                beans.add(mbean);
             }
         }
         if (mbean != null) {
@@ -411,9 +427,11 @@ public class FacesPageUnit extends FacesUnit implements PropertyChangeListener {
     protected void bind() {
         // with a new document, we'll need to recompute our defaultParent
         defaultParent = null;
-        super.bind();
+
         // scan our markup document to wire up the bean tree to match the DOM
         bindMarkupBeans(document.getDocumentElement());
+        
+        super.bind();
 
         // Find a suitable default parent for null-parented creations
         // first try finding the first form-compatible bean
@@ -522,34 +540,11 @@ public class FacesPageUnit extends FacesUnit implements PropertyChangeListener {
      * @see org.netbeans.modules.visualweb.insync.beans.BeansUnit#newBoundBean(java.beans.BeanInfo, java.lang.String, org.netbeans.modules.visualweb.insync.java.Field, org.netbeans.modules.visualweb.insync.java.Method, org.netbeans.modules.visualweb.insync.java.Method)
      */
     protected Bean newBoundBean(BeanInfo bi, String name, List<String> typeNames) {
-        // Determine the source tag for this bean and thus if it is faces
         String tag = getBeanTagName(bi);
-        String tlUri = getBeanTaglibUri(bi);
-        String tlPre = getBeanTaglibPrefix(bi);
-        String type = bi.getBeanDescriptor().getBeanClass().getName();
-        assert Trace.trace("insync.faces", "FU.newBoundBean type:" + type + " tag:" + tag
-                                           + " tlUri:" + tlUri);
-
-        // if not a faces bean to bind, return new regular bean
+        // Determine the source tag for this bean and if not a faces bean to 
+        // bind, delegate it to super class
         if (tag == null)
             return super.newBoundBean(bi, name, typeNames);
-
-        // locate source element in page dom (bound using field name), injecting a replacement if
-        // lost
-        String binding = getCompBinding(name);
-        Element element = findCompElement(binding);
-        if (element != null) {
-            assert Trace.trace("insync.faces", "FU.newBoundBean binding:" + binding + " elem:" + element);
-
-            FacesBean fbean = new FacesBean(this, bi, name, element);
-            fbean.setBindingProperties();
-
-            // snag the form bean as it goes by for later use as the default parent
-            if (defaultParent == null && tag.equals(HtmlTag.FORM.name)) {
-                defaultParent = fbean;
-            }
-            return fbean;
-        }
         return null;
     }
 
@@ -621,8 +616,12 @@ public class FacesPageUnit extends FacesUnit implements PropertyChangeListener {
         else {
             FacesBean fbean = new FacesBean(this, bi, name, mparent, element);
             //fbean.insertEntry(null);  // this bean's Java source position doesn't matter
-            beansToAdd.add(fbean);
-            fbean.setBindingProperties();
+            
+            //Do not insert the binding for Faces Beans to the java source
+            //beansToAdd.add(fbean);
+            // Also do not set the binding 
+            //fbean.setBindingProperties();
+            
             bean = fbean;
         }
 
@@ -974,16 +973,14 @@ public class FacesPageUnit extends FacesUnit implements PropertyChangeListener {
     }
 
     /**
-     * Return the child element with a given binding attr within the page
+     * Return the child element with a given id attr within the page
      *
-     * @param binding The binding attrribute string.
+     * @param id The id attrribute string.
      * @return The matching component element if found.
      */
-    public Element findCompElement(String binding) {
-        if (!binding.startsWith("#"))
-            binding = "#{" + binding + "}";
+    public Element findCompElement(String id) {
         return MarkupUnit.getDescendantElementByAttr(document.getDocumentElement(), "*",
-                                                     FacesBean.BINDING_ATTR, binding);
+                                                     FacesBean.ID_ATTR, id);
     }
 
     /**
@@ -1335,7 +1332,7 @@ public class FacesPageUnit extends FacesUnit implements PropertyChangeListener {
 
                         renderNode(child, bkidmap, rw, lu);
                     }
-                }
+               }
             }
             catch (Exception e) {
                 Trace.trace("insync.faces", "error in encodeChildren: resetting");

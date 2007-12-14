@@ -237,6 +237,16 @@ public abstract class MarkupBean extends Bean {
         else if (!attr.getValue().equals(value))
             attr.setValue(value);
     }
+    
+    /**
+     * Returns a attribute identified by name.
+     *
+     * @param name
+     * @return value
+     */
+    public Attr getAttr(String name) {
+        return element.getAttributeNode(name);
+    }    
 
     /*
      * @see org.netbeans.modules.visualweb.insync.beans.Bean#getElement()

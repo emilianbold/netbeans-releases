@@ -99,7 +99,7 @@ public class FacesBean extends MarkupBean {
      */
     FacesBean(FacesPageUnit unit, BeanInfo beanInfo, String name, MarkupBean parent, Element element) {
         super(unit, beanInfo, name, parent, element);
-
+        setProperty(ID_ATTR, null, getName());
         // our DOM parent must be a facet tag if it is not our faces parent
         if (parent != null && parent.element != element.getParentNode() &&
             parent.element.getNodeType() == Node.ELEMENT_NODE) {
@@ -188,23 +188,24 @@ public class FacesBean extends MarkupBean {
     /**
      * Directly set the markup=>java bean binding attribute(s)
      */
-    void setBindingProperties() {
+    void setBindingProperty() {
         String binding = getCompBinding();
         setAttr(BINDING_ATTR, binding);  // not a real property--just set the attr
-        setProperty(ID_ATTR, null, getName());
     }
-
+    
     /**
      * Directly set the markup=>java bean binding attribute(s) and also the live instances
      * @param liveBean
      */
-    void setBindingPropertiesLive(DesignBean liveBean) {
-        String binding = getCompBinding();
-        setAttr(BINDING_ATTR, binding);  // not a real property--just set the attr
-        updateBindingLive(liveBean.getInstance());
-        liveBean.getProperty(ID_ATTR).setValue(getName());
+    void setBindingPropertyLive(DesignBean liveBean) {
+        //Update the bindings only if the binding already exists for the bean
+        if(getAttr(BINDING_ATTR) != null) {
+            String binding = getCompBinding();
+            setAttr(BINDING_ATTR, binding);  // not a real property--just set the attr
+            updateBindingLive(liveBean.getInstance());
+        }
     }
-
+    
     /**
      * Set the name of this bean, making sure also to set the binding attr
      * @see org.netbeans.modules.visualweb.insync.beans.Bean#setName(java.lang.String, boolean, com.sun.rave.designtime.DesignBean)
@@ -212,8 +213,10 @@ public class FacesBean extends MarkupBean {
     public String setName(String name, boolean autoNumber, DesignBean liveBean) {
         String oldname = getName();
         String newname = super.setName(name, autoNumber, liveBean);
-        if (newname != null && !newname.equals(oldname))
-            setBindingPropertiesLive(liveBean);
+        if (newname != null && !newname.equals(oldname)) {
+            setBindingPropertyLive(liveBean);
+            liveBean.getProperty(ID_ATTR).setValue(getName());
+        }
         return newname;
     }
 
@@ -298,4 +301,14 @@ public class FacesBean extends MarkupBean {
         return super.newCreatedEventSet(esd);
     }
 
+    /*
+     * @see org.netbeans.modules.visualweb.insync.beans.Bean#newCreatedProperty(java.beans.PropertyDescriptor)
+     */
+    protected Property newCreatedProperty(PropertyDescriptor pd) {
+         if (!isMarkupProperty(pd)) {
+             unit.addBean(getBeanInfo(), getName());
+             setBindingProperty();
+         }
+         return super.newCreatedProperty(pd);
+     }    
 }

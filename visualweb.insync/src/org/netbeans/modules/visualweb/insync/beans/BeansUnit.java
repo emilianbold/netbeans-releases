@@ -211,6 +211,7 @@ public class BeansUnit implements Unit {
         scan();
         if (getState().isBusted())
             return false;
+        beans.clear();
         bind();
         syncedSinceConstructed = true;
         return true;
@@ -498,7 +499,6 @@ public class BeansUnit implements Unit {
      * Run a second parent-child wiring pass
      */
     protected void bindBeans() {
-        beans.clear();
         HashMap<String, List<String>> props = javaClass.getPropertiesNameAndTypes();
         for(String key : props.keySet()) {
             Bean bean = bindBean(key, props.get(key));
@@ -755,6 +755,18 @@ public class BeansUnit implements Unit {
 
         return b;
     }
+    
+    /**
+     * Create and add a new bean
+     *
+     * @param beanInfo  The definition of the bean to create
+     * @param name  The instance name for the new bean
+     * @return The newly created bean
+     */
+    public final Bean addBean(BeanInfo beanInfo, String name) {
+        Bean b = newCreatedBean(beanInfo, null, name, null, null);
+        return b;
+    }    
 
     /**
      *
