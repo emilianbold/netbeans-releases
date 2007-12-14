@@ -146,9 +146,9 @@ public class DomProviderServiceImpl implements DomProviderService {
 //        return JsfForm.findDesignersForDesignContext(designContext);
 //    }
 
-    public Designer[] findDesignersForElement(Element element) {
-        return JsfForm.findDesignersForElement(element);
-    }
+//    public Designer[] findDesignersForElement(Element element) {
+//        return JsfForm.findDesignersForElement(element);
+//    }
     
 //    public Designer[] findDesignersForNode(org.openide.nodes.Node node) {
 //        DesignBean bean = (DesignBean)node.getLookup().lookup(DesignBean.class);

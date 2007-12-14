@@ -467,14 +467,14 @@ public class WebForm implements Designer {
 //        return webForms.toArray(new WebForm[webForms.size()]);
 //    }
     
-    public static WebForm findWebFormForElement(Element element) {
-        Designer[] designers = getDomProviderService().findDesignersForElement(element);
-        if (designers.length > 0 && designers[0] instanceof WebForm) {
-            return (WebForm)designers[0];
-        } else {
-            return null;
-        }
-    }
+//    public static WebForm findWebFormForElement(Element element) {
+//        Designer[] designers = getDomProviderService().findDesignersForElement(element);
+//        if (designers.length > 0 && designers[0] instanceof WebForm) {
+//            return (WebForm)designers[0];
+//        } else {
+//            return null;
+//        }
+//    }
     
 //    public static WebForm findWebFormForNode(org.openide.nodes.Node node) {
 //        Designer[] designers = getDomProviderService().findDesignersForNode(node);
@@ -2579,9 +2579,9 @@ public class WebForm implements Designer {
 //            return new Designer[0];
 //        }
 
-        public Designer[] findDesignersForElement(Element element) {
-            return new Designer[0];
-        }
+//        public Designer[] findDesignersForElement(Element element) {
+//            return new Designer[0];
+//        }
 
 //        public MarkupDesignBean getMarkupDesignBeanForComponentRootElement(Element element, Element parentBoxElement) {
 //            return null;

@@ -81,8 +81,8 @@ public interface DomProviderService {
 //    public Designer[] findDesignersForFileObject(FileObject jsfJspFileObject);
 //    /** Just retrieves existing <code>Designer</code>s for specified <code>DesignContext</code>. */
 //    public Designer[] findDesignersForDesignContext(DesignContext designContext);
-    /** Just retrieves existing <code>Designer</code>s for specified <code>Element</code>. */
-    public Designer[] findDesignersForElement(Element element);
+//    /** Just retrieves existing <code>Designer</code>s for specified <code>Element</code>. */
+//    public Designer[] findDesignersForElement(Element element);
 //    /** Just retrieves existing <code>Designer</code>s for specified <code>org.openide.nodes.Node</code>. */
 //    public Designer[] findDesignersForNode(org.openide.nodes.Node node);
 
