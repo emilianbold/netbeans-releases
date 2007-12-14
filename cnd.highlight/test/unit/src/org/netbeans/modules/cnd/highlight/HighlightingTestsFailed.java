@@ -38,31 +38,26 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.highlight;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
+import org.netbeans.modules.cnd.highlight.semantic.ClassFieldsTest;
 import org.netbeans.modules.cnd.test.BaseTestSuite;
-import org.netbeans.modules.cnd.highlight.semantic.InactiveCodeTest;
-import org.netbeans.modules.cnd.highlight.semantic.MacroUsagesTest;
 
 /**
  *
-* @author Sergey Grinev
+ * @author Sergey Grinev
  */
-public class HighlightingTests extends BaseTestSuite {
-    
-    public HighlightingTests() {
-        super("Code Highlighting"); // NOI18N
-        
-        addTestSuite(InactiveCodeTest.class);
-        addTestSuite(MacroUsagesTest.class);
+public class HighlightingTestsFailed extends BaseTestSuite {
+
+    public HighlightingTestsFailed() {
+        super("Highlighting tests failed");
+        addTestSuite(ClassFieldsTest.Failed.class);
     }
 
     public static Test suite() {
-        TestSuite suite = new HighlightingTests();
+        TestSuite suite = new HighlightingTestsFailed();
         return suite;
     }
-    
 }

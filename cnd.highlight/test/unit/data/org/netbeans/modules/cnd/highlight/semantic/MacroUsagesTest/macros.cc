@@ -39,30 +39,31 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.highlight;
-
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.BaseTestSuite;
-import org.netbeans.modules.cnd.highlight.semantic.InactiveCodeTest;
-import org.netbeans.modules.cnd.highlight.semantic.MacroUsagesTest;
-
-/**
- *
-* @author Sergey Grinev
- */
-public class HighlightingTests extends BaseTestSuite {
-    
-    public HighlightingTests() {
-        super("Code Highlighting"); // NOI18N
+#ifndef NODEF
+HI
+#endif
+H2
         
-        addTestSuite(InactiveCodeTest.class);
-        addTestSuite(MacroUsagesTest.class);
-    }
+#define INT int        
+#define HI cout << "hi";
+#define H2 HI HI int x; HI
 
-    public static Test suite() {
-        TestSuite suite = new HighlightingTests();
-        return suite;
-    }
-    
+#ifndef W1
+HI
+#endif
+H2
+H23
+        
+#define FOUR 4
+        
+#if FOUR > 5
+        HI    
+#elseif FOUR+FOUR > 7
+        HI
+#else
+        H2
+#endif
+        
+INT main(INT argc, char**argv) {
+    H2
 }

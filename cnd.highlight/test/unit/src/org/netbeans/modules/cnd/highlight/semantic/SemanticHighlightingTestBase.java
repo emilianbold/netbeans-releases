@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -39,30 +39,36 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.highlight;
+package org.netbeans.modules.cnd.highlight.semantic;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.BaseTestSuite;
-import org.netbeans.modules.cnd.highlight.semantic.InactiveCodeTest;
-import org.netbeans.modules.cnd.highlight.semantic.MacroUsagesTest;
+import java.io.File;
+import java.util.List;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
 
 /**
  *
-* @author Sergey Grinev
+ * @author sg155630
  */
-public class HighlightingTests extends BaseTestSuite {
+public abstract class SemanticHighlightingTestBase  extends TraceModelTestBase {
     
-    public HighlightingTests() {
-        super("Code Highlighting"); // NOI18N
-        
-        addTestSuite(InactiveCodeTest.class);
-        addTestSuite(MacroUsagesTest.class);
-    }
-
-    public static Test suite() {
-        TestSuite suite = new HighlightingTests();
-        return suite;
+    public SemanticHighlightingTestBase(String name) {
+        super(name);
     }
     
+    protected abstract List<? extends CsmOffsetable> getBlocks(FileImpl testFile);
+    
+    protected @Override void postTest(String[] args) {
+        FileImpl file = getFileImpl(new File(args[0]));
+        List<? extends CsmOffsetable> out = getBlocks(file);
+        assert out != null;
+        int i = 1;
+        for (CsmOffsetable b : out) {
+            System.out.println( "Block " + (i++) + ": Lines " +
+                    file.getLineColumn(b.getStartOffset())[0] + "-" + file.getLineColumn(b.getEndOffset())[0] +
+                    "\tOffsets " +
+                    b.getStartOffset() + "-" + b.getEndOffset());
+        }
+    }
 }

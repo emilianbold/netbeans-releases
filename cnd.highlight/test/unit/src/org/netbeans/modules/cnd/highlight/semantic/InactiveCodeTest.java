@@ -39,30 +39,34 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.highlight;
+package org.netbeans.modules.cnd.highlight.semantic;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.BaseTestSuite;
-import org.netbeans.modules.cnd.highlight.semantic.InactiveCodeTest;
-import org.netbeans.modules.cnd.highlight.semantic.MacroUsagesTest;
+import java.util.List;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.highlight.semantic.SemanticHighlighter;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 
 /**
  *
-* @author Sergey Grinev
+ * @author Sergey Grinev
  */
-public class HighlightingTests extends BaseTestSuite {
-    
-    public HighlightingTests() {
-        super("Code Highlighting"); // NOI18N
-        
-        addTestSuite(InactiveCodeTest.class);
-        addTestSuite(MacroUsagesTest.class);
+public class InactiveCodeTest extends SemanticHighlightingTestBase {
+
+    public InactiveCodeTest(String testName) {
+        super(testName);
     }
 
-    public static Test suite() {
-        TestSuite suite = new HighlightingTests();
-        return suite;
+    public void testElifCluster() throws Exception {
+        String source = "elif.cc"; // NOI18N
+        performTest(source, source + ".dat", source + ".err"); // NOI18N
     }
-    
+
+    public void testDefines() throws Exception {
+        String source = "defines.c"; // NOI18N
+        performTest(source, source + ".dat", source + ".err"); // NOI18N
+    }
+
+    protected List<CsmOffsetable> getBlocks(FileImpl testFile) {
+        return SemanticHighlighter.getInactiveCodeBlocks(testFile);
+    }
 }
