@@ -50,7 +50,7 @@ made subject to such option by the copyright holder.
 <filesystem>
     <folder name="J2EE">
         <folder name="DeploymentPlugins">
-            <folder name="WebSphere6">
+            <folder name="WebSphere60">
                 <!--
                 The additional deployment information supplied to NetBeans,
                 Currently we define only two things: the web module's
@@ -64,8 +64,8 @@ made subject to such option by the copyright holder.
                 interface, it will be used as the main entry point for the
                 plugin
                 -->
-                <file name="Factory.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.websphere6.WSDeploymentFactory.create"/>
+                <file name="Factory60.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.websphere6.WSDeploymentFactory.create60"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.websphere6.WSDeploymentFactory"/>
                     <attr name="instanceOf" stringvalue="javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
                 </file>
@@ -107,8 +107,8 @@ made subject to such option by the copyright holder.
                 server, getting a custom wizard for instance registration, 
                 etc.
                 -->
-                <file name="OptionalFactory.instance">
-                    <attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.websphere6.optional.WSOptionalDeploymentManagerFactory"/>
+                <file name="OptionalFactory60.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.websphere6.optional.WSOptionalDeploymentManagerFactory.create60"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.websphere6.optional.WSOptionalDeploymentManagerFactory"/>
                     <!-- Dileep attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.OptionalDeploymentManagerFactory"/ -->
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory"/>
@@ -128,25 +128,68 @@ made subject to such option by the copyright holder.
                 grouped by module type
                 -->
                 <folder name="DeploymentFileNames">
+                    <folder name="WAR">                        
+                        <file name="WEB-INF\ibm-web-bnd.xmi"/>
+                        <file name="WEB-INF\ibm-web-ext.xmi"/>                         
+                    </folder>
                     <folder name="EAR">
                         <!--<file name="META-INF\WebSphere6.dpf"/>-->
-                        <file name="ibm-application-bnd.xmi"/>
-                        <file name="ibm-application-ext.xmi"/>
-
+                        <file name="META-INF\ibm-application-bnd.xmi"/>
+                        <file name="META-INF\ibm-application-ext.xmi"/>
                     </folder>
-                    <folder name="EJB">
-                        <!--                        <file name="META-INF\WebSphere6.dpf"/> -->
-                        <file name="ibm-ejb-jar-bnd.xmi"/>
-                        <file name="ibm-ejb-jar-ext.xmi"/>
-                    </folder>
-                    <folder name="WAR">
-                        <file name="WEB-INF\ibm-web-bnd.xmi"/>
-                        <file name="WEB-INF\ibm-web-ext.xmi"/> 
+                    <folder name="EJB">                      
+                        <file name="META-INF\ibm-ejb-jar-bnd.xmi"/>
+                        <file name="META-INF\ibm-ejb-jar-ext.xmi"/>
                     </folder>
                 </folder>
             </folder>
-        </folder>
-    </folder>              
+            <folder name="WebSphere61">
+                <file name="Descriptor" url="nbdep.xml"/>
+                <file name="Factory61.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.websphere6.WSDeploymentFactory.create61"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.websphere6.WSDeploymentFactory"/>
+                    <attr name="instanceOf" stringvalue="javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
+                </file>
+                <file name="RegistryNodeFactory.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.websphere6.ui.nodes.WSRegistryNodeFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.RegistryNodeFactory"/>
+                </file> 
+                <file name="J2eePlatformFactory.instance">
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.websphere6.j2ee.WSJ2eePlatformFactory"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.websphere6.j2ee.WSJ2eePlatformFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory"/>
+                </file>      
+                <file name="OptionalFactory61.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.websphere6.optional.WSOptionalDeploymentManagerFactory.create61"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.websphere6.optional.WSOptionalDeploymentManagerFactory"/>
+                    <!-- Dileep attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.OptionalDeploymentManagerFactory"/ -->
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory"/>
+                </file>
+                <file name="ConfigurationSupportImpl.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.websphere6.config.ConfigurationSupportImpl"/>                    
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.ConfigurationSupport"/>
+                </file>
+                <file name="WSModuleConfigurationFactory.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.websphere6.config.WSModuleConfigurationFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory"/>
+                </file>
+                <folder name="DeploymentFileNames">
+                    <folder name="WAR">                        
+                        <file name="WEB-INF\ibm-web-bnd.xmi"/>
+                        <file name="WEB-INF\ibm-web-ext.xmi"/>                         
+                    </folder>
+                    <folder name="EAR">                        
+                        <file name="META-INF\ibm-application-bnd.xmi"/>
+                        <file name="META-INF\ibm-application-ext.xmi"/>
+                    </folder>
+                    <folder name="EJB">                      
+                        <file name="META-INF\ibm-ejb-jar-bnd.xmi"/>
+                        <file name="META-INF\ibm-ejb-jar-ext.xmi"/>
+                    </folder>
+                </folder>
+            </folder>
+       </folder> 
+    </folder> 
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-appbnd+xml">

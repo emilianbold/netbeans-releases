@@ -41,14 +41,22 @@
 package org.netbeans.modules.j2ee.websphere6;
 
 import java.io.*;
-
-import javax.enterprise.deploy.spi.*;
-import javax.enterprise.deploy.spi.factories.*;
-import javax.enterprise.deploy.spi.exceptions.*;
+import javax.enterprise.deploy.shared.factories.DeploymentFactoryManager;
+import javax.enterprise.deploy.spi.DeploymentManager;
+import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
+import javax.enterprise.deploy.spi.factories.DeploymentFactory;
+import org.openide.util.NbBundle;
+import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 
 import org.openide.util.NbBundle;
-
+import org.openide.util.NbPreferences;
 import org.netbeans.modules.j2ee.websphere6.util.WSDebug;
+import org.netbeans.modules.j2ee.websphere6.WSClassLoader;
+import org.netbeans.modules.j2ee.websphere6.WSDeploymentManager.WsVersion;
+
 
 /**
  * The main entry point to the plugin. Keeps the required static data for the
@@ -73,26 +81,47 @@ public class WSDeploymentFactory implements DeploymentFactory {
     public static final String USERNAME_ATTR = "username";
     public static final String PASSWORD_ATTR = "password";
     public static final String DEFAULT_HOST_PORT_ATTR="defaultHostPort";
+
+    public final WsVersion version;
     
     /**
      * The singleton instance of the factory
      */
-    private static WSDeploymentFactory instance;
+    private static WSDeploymentFactory instance60;
+    private static WSDeploymentFactory instance61;
+
+    private WSClassLoader loader;
+
+    private HashMap<String, DeploymentFactory> factories = new HashMap<String, DeploymentFactory>();
+    private HashMap<String, DeploymentManager> managers = new HashMap<String, DeploymentManager>();
+
+    private WSDeploymentFactory(WsVersion version) {
+        this.version = version;
+    }
     
     /**
-     * The singleton factory method
-     * 
-     * @return the singleton instance of the factory
+     * Factory method to create DeploymentFactory for WAS 6.0
      */
-    public static synchronized DeploymentFactory create() {
-        // if the instance is not initialized yet - create it
-        if (instance == null) {
-            instance = new WSDeploymentFactory();
+    public static synchronized WSDeploymentFactory create60() {
+        if (instance60 == null) {
+            instance60 = new WSDeploymentFactory(WsVersion.WS_60);
+            DeploymentFactoryManager.getInstance().registerDeploymentFactory(instance60);
         }
-        
-        // return the instance
-        return instance;
+        return instance60;
     }
+
+    /**
+     * Factory method to create DeploymentFactory for WAS 6.1
+     */
+    public static synchronized WSDeploymentFactory create61() {
+	 if (instance61 == null) {
+            instance61 = new WSDeploymentFactory(WsVersion.WS_61);
+            DeploymentFactoryManager.getInstance().registerDeploymentFactory(instance61);
+        }
+        return instance61;
+    }
+
+
     
     ////////////////////////////////////////////////////////////////////////////
     // DeploymentFactory implementation
@@ -107,10 +136,15 @@ public class WSDeploymentFactory implements DeploymentFactory {
         if (WSDebug.isEnabled()) // debug output
             WSDebug.notify("getDeploymentManager(" + uri + ", " +      // NOI18N
                     username + ", " + password + ")");                 // NOI18N
+ 
+        DeploymentManager manager = managers.get(uri);
         
+        if (null == manager) {
+            manager = new WSDeploymentManager(uri);
+            managers.put(uri, manager);
+        }
         
-        // return a new deployment manager
-        return new WSDeploymentManager(uri, username, password);
+        return manager; 
     }
     
     /**
@@ -125,8 +159,59 @@ public class WSDeploymentFactory implements DeploymentFactory {
                     ")");                                              // NOI18N
       
         // return a new deployment manager
-        return new WSDeploymentManager(uri);
+        return getDeploymentManager(uri,null,null);
     }
+        
+   public DeploymentFactory getWSDeploymentFactory(String uri) {
+        if (WSDebug.isEnabled())
+            System.out.println("getWSDeploymentFactory");
+
+        DeploymentFactory factory = factories.get(uri);
+
+        if (null == factory) {
+            InstanceProperties ip = InstanceProperties.getInstanceProperties(uri);
+
+            String serverRoot = null;
+            String domainRoot = null;
+            if (null != ip) {
+                serverRoot = ip.getProperty(SERVER_ROOT_ATTR);
+                domainRoot = ip.getProperty(DOMAIN_ROOT_ATTR);
+            }
+
+            if (null == serverRoot)
+                serverRoot = NbPreferences.forModule(WSDeploymentFactory.class).get(SERVER_ROOT_ATTR, "");
+
+            if (null == domainRoot)
+                domainRoot = NbPreferences.forModule(WSDeploymentFactory.class).get(DOMAIN_ROOT_ATTR, "");
+            
+            if (WSDebug.isEnabled())
+                System.out.println("loadDeplomentFactory: serverRoot=" + serverRoot);
+
+            loader = WSClassLoader.getInstance(serverRoot,domainRoot);
+            loader.updateLoader();
+
+            try {
+                 factory = (DeploymentFactory) loader.loadClass(
+                        "com.ibm.ws.management.application.j2ee." +    // NOI18N
+                        "deploy.spi.factories.DeploymentFactoryImpl"). // NOI18N
+                        newInstance();
+            } catch (ClassNotFoundException e) {
+                Logger.getLogger("global").log(Level.SEVERE, null, e);
+            } catch (InstantiationException e) {
+                Logger.getLogger("global").log(Level.SEVERE, null, e);
+            } catch (IllegalAccessException e) {
+                Logger.getLogger("global").log(Level.SEVERE, null, e);
+            } finally {
+                loader.restoreLoader();
+            }
+
+            factories.put(uri, factory);
+        }
+
+        return factory;
+    }
+
+
     
     /**
      * Tells whether this deployment factory is capable to handle the server
@@ -162,7 +247,14 @@ public class WSDeploymentFactory implements DeploymentFactory {
         if (WSDebug.isEnabled()) // debug output
             WSDebug.notify("getDisplayName()");                        // NOI18N
         
-        return NbBundle.getMessage(WSDeploymentFactory.class, 
-                "TXT_displayName");                                    // NOI18N
+	switch (version) {
+            case WS_60:
+        	return NbBundle.getMessage(WSDeploymentFactory.class, 
+                "TXT_displayName60");                                    // NOI18N
+            case WS_61:
+	    default:
+        	return NbBundle.getMessage(WSDeploymentFactory.class, 
+                "TXT_displayName61");                                    // NOI18N
+	}
     }
 }

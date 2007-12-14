@@ -52,6 +52,7 @@ import org.netbeans.modules.j2ee.websphere6.util.WSDebug;
  * thread's context classloader before any operation on WS classes is called.
  *
  * @author Kirill Sorokin
+ * @author Arathi
  */
 public class WSClassLoader extends URLClassLoader {
 
@@ -108,27 +109,58 @@ public class WSClassLoader extends URLClassLoader {
     private WSClassLoader(String serverRoot, String domainRoot) {
         // we have to isolate the loader from the netbeans main loader in order
         // to avoid conflicts with SOAP classes implementations
+        
         super(new URL[0], Thread.currentThread().getContextClassLoader());
+        
+        System.out.println("serverRoot:" + serverRoot);
+        System.out.println("domainRoot:" + domainRoot);
         
         // save the instance variables
         this.serverRoot = serverRoot;
         this.domainRoot = domainRoot;
         
-        // add the required directories to the class path
-        File[] directories = new File[] {
-            new File(serverRoot + "/lib/"),                            // NOI18N
-            new File(serverRoot + "/java/jre/lib/"),                   // NOI18N
-            new File(serverRoot + "/java/jre/lib/ext/"),                // NOI18N
-            new File(serverRoot + "/lib/WMQ/java/lib/"),
-            new File(serverRoot + "/cloudscape/lib/"),
-            new File(serverRoot + "/cloudscape/lib/locales/"),
-            new File(serverRoot + "/cloudscape/lib/otherjars/"),
-            new File(serverRoot + "/deploytool/itp/"),
-            new File(serverRoot + "/deploytool/itp/plugins/"),
-            new File(serverRoot + "/installedChannels/"),
-            new File(serverRoot + "/etc/"),
-            new File(serverRoot + "/optionalLibraries/Apache/Struts/1.1/")
-        };
+        // following is to identify whether it is 6.0 or 6.1
+        // 6.0 has cloudscape dir and 6.1 has derby
+        String dbDir = "derby";
+
+        if ((new File(serverRoot + File.separator + "cloudscape").exists())) {
+            dbDir = "cloudscape";
+        }             
+       
+        // add the required directories to the class path 
+        File[] directories = null;
+
+        if (dbDir.equals("cloudscape")) {
+            directories = new File[]{
+                    new File(serverRoot + "/lib/"), // NOI18N
+                    new File(serverRoot + "/java/jre/lib/"), // NOI18N
+                    new File(serverRoot + "/java/jre/lib/ext/"), // NOI18N
+                    new File(serverRoot + "/lib/WMQ/java/lib/"),
+                    new File(serverRoot + "/cloudscape/lib/"),
+                    new File(serverRoot + "/cloudscape/lib/locales/"),
+                    new File(serverRoot + "/cloudscape/lib/otherjars/"),
+                    new File(serverRoot + "/deploytool/itp/"),
+                    new File(serverRoot + "/deploytool/itp/plugins/"),
+                    new File(serverRoot + "/installedChannels/"),
+                    new File(serverRoot + "/etc/"),
+                    new File(serverRoot + "/optionalLibraries/Apache/Struts/1.1/")};
+        } else {
+            directories = new File[]{
+                    new File(serverRoot + "/lib/"), // NOI18N
+                    new File(serverRoot + "/java/jre/lib/"), // NOI18N
+                    new File(serverRoot + "/java/jre/lib/ext/"), // NOI18N
+                    //added endorsed for 6.1
+                    new File(serverRoot + "/java/jre/lib/endorsed//"),
+                    new File(serverRoot + "/lib/WMQ/java/lib/"),
+                    new File(serverRoot + "/derby/lib/"),
+                    new File(serverRoot + "/derby/lib/locales/"),
+                    new File(serverRoot + "/deploytool/itp/"),
+                    new File(serverRoot + "/deploytool/itp/plugins/"),
+                    //added plugins
+                    new File(serverRoot + "/plugins/"),
+                    new File(serverRoot + "/etc/"),
+                    new File(serverRoot + "/optionalLibraries/Apache/Struts/1.1/")};
+        }
         
         // for each directory add all the .jar files to the class path
         // and finally add the directory itself

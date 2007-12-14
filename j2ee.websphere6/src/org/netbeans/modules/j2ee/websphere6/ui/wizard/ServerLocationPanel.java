@@ -61,6 +61,7 @@ import org.openide.util.*;
  * phase.
  *
  * @author Kirill Sorokin
+ * @author Arathi
  */
 public class ServerLocationPanel extends JPanel
         implements WizardDescriptor.Panel {
@@ -306,13 +307,24 @@ public class ServerLocationPanel extends JPanel
     private static boolean isValidServerRoot(String path) {
         // set the child directories/files that should be present and validate
         // the directory as the server's installation one
+        
+	// This is for WAS 6.1
+        String dbDir = "derby";
+        String jsr88Jar = "plugins/com.ibm.ws.runtime_6.1.0.jar";                                 
+        
+	// This is for WAS 6.0
+        if ((new File(path + File.separator + "cloudscape").exists())) {
+            dbDir = "cloudscape";
+	    jsr88Jar = "lib/wjmxapp.jar";
+	}
+            
         String[] children = {
             "bin",                                             // NOI18N
-            "cloudscape",                                      // NOI18N
+            dbDir,                                             // NOI18N
             "profiles",                                        // NOI18N
             "properties/wsadmin.properties",                   // NOI18N
             "lib/j2ee.jar",                                    // NOI18N
-            "lib/wjmxapp.jar"                                  // NOI18N
+            jsr88Jar                                  // NOI18N
         };
         return hasChildren(path, children);
     }
