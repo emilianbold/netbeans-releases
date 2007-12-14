@@ -75,7 +75,10 @@ final class PropertyDialogManager implements VetoableChangeListener, ActionListe
     /* JST: Made package private because PropertyPanel should be used instead. */
 
     /** Listener to editor property changes. */
-    private PropertyChangeListener listener;
+    private PropertyChangeListener editorListener;
+    
+    /** Listener to help ctx changes. */
+    private PropertyChangeListener componentListener;
 
     /** Cache for reverting on cancel. */
     private Object oldValue;
@@ -285,6 +288,7 @@ final class PropertyDialogManager implements VetoableChangeListener, ActionListe
             new WindowAdapter() {
                 /** Ensure that values are reverted when user cancelles dialog
                  * by clicking on x image */
+                @Override
                 public void windowClosing(WindowEvent e) {
                     if ((editor != null) && !(component instanceof Window)) {
                         // if someone provides a window (s)he has to handle
@@ -302,6 +306,7 @@ final class PropertyDialogManager implements VetoableChangeListener, ActionListe
                 }
 
                 /** Remove property listener on window close */
+                @Override
                 public void windowClosed(WindowEvent e) {
                     if (component instanceof Window) {
                         // in this case we have to do similar thing as we do
@@ -330,8 +335,12 @@ final class PropertyDialogManager implements VetoableChangeListener, ActionListe
                         }
                     }
 
-                    if (listener != null) {
-                        editor.removePropertyChangeListener(listener);
+                    if (editorListener != null) {
+                        editor.removePropertyChangeListener(editorListener);
+                    }
+                    
+                    if (componentListener != null) {
+                        component.removePropertyChangeListener(componentListener);
                     }
 
                     dialog.removeWindowListener(this);
@@ -350,7 +359,7 @@ final class PropertyDialogManager implements VetoableChangeListener, ActionListe
 
             lastValueFromEditor = editor.getValue();
             editor.addPropertyChangeListener(
-                listener = new PropertyChangeListener() {
+                editorListener = new PropertyChangeListener() {
                         /** Notify displayer about property change in editor */
                         public void propertyChange(PropertyChangeEvent e) {
                             changed = true;
@@ -391,7 +400,7 @@ final class PropertyDialogManager implements VetoableChangeListener, ActionListe
             }
 
             component.addPropertyChangeListener(
-                listener = new PropertyChangeListener() {
+                componentListener = new PropertyChangeListener() {
                         /** forward possible help context change in custom editor */
                         public void propertyChange(PropertyChangeEvent e) {
                             if (DialogDescriptor.PROP_HELP_CTX.equals(e.getPropertyName())) {
