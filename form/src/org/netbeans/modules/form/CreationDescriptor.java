@@ -123,7 +123,11 @@ public class CreationDescriptor {
                                        Object[] defParams)
     throws NoSuchMethodException // if some constructor is not found
     {   
-        setDescribedClass(descClass);        
+        if (getDescribedClass() == null) {
+            setDescribedClass(descClass);
+        } else if (getDescribedClass() != descClass) {
+            throw new IllegalArgumentException();
+        }
         if (constrParamTypes != null && constrParamTypes.length > 0) {
             
             for (int i=0; i < constrParamTypes.length; i++)
@@ -143,8 +147,12 @@ public class CreationDescriptor {
                                   CreationFactory.PropertyParameters[] propertyParameters,   
                                   Object[] defParams)
     throws NoSuchMethodException // if some method is not found
-    {                               
-        setDescribedClass(descClass);
+    {
+        if (getDescribedClass() == null) {
+            setDescribedClass(descClass);
+        } else if (getDescribedClass() != descClass) {
+            throw new IllegalArgumentException();
+        }
         
         if (constrParamTypes != null && constrParamTypes.length > 0) {
             
@@ -180,14 +188,12 @@ public class CreationDescriptor {
         this.defaultParams = defaultParams;
     }
 
-    private void setDescribedClass(Class descClass) throws IllegalArgumentException {
-        if(describedClass==null){
+    protected void setDescribedClass(Class descClass) throws IllegalArgumentException {
+        if (describedClass==null) {
             describedClass = descClass;
-        } else if (describedClass!=descClass) {
-            throw new IllegalArgumentException();
-        }        
+        }
     }
-    
+
     public CreationDescriptor(Class descClass) {
 //        throws NoSuchMethodException // if public empty constructor doesn't exist
         describedClass = descClass;

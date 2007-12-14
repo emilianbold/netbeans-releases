@@ -135,6 +135,9 @@ public class CreationFactory {
             createDefaultDescriptors();
             cd = getRegistry().get(cls.getName());
         }
+        if (cd != null) {
+            cd.setDescribedClass(cls);
+        }
         return cd;
     }
 
