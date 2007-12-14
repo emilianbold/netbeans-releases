@@ -458,9 +458,9 @@ public class GdbProxy implements GdbMiDefinitions {
         return engine.sendCommand(MI_CMD_STACK_LIST_FRAMES);
     }
     
-    public int set(String command, String value) {
+    public int gdb_set(String command, String value) {
         StringBuilder sb = new StringBuilder();
-        sb.append("set "); // NOI18N
+        sb.append("-gdb-set "); // NOI18N
         sb.append(command);
         sb.append(' ');
         sb.append(value);

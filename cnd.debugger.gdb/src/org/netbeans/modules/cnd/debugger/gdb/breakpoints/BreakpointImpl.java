@@ -83,31 +83,33 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
 
     public void completeValidation(Map<String, String> map) {
         String number;
-        assert getState().equals(BPSTATE_VALIDATION_PENDING) : getState();
-        if (map != null) {
-            number = map.get("number"); // NOI18N
-        } else {
-            number = null;
-        }
-        if (number != null) {
-            breakpointNumber = Integer.parseInt(number);
-            setState(BPSTATE_VALIDATED);
-            breakpoint.setValid();
-            if (!breakpoint.isEnabled()) {
-                getDebugger().break_disable(breakpointNumber);
+        if (!getState().equals(BPSTATE_DELETION_PENDING)) {
+            assert getState().equals(BPSTATE_VALIDATION_PENDING) : getState();
+            if (map != null) {
+                number = map.get("number"); // NOI18N
+            } else {
+                number = null;
             }
-            if (this instanceof FunctionBreakpointImpl) {
-                try {
-                    breakpoint.setURL(map.get("fullname")); // NOI18N
-                    breakpoint.setLineNumber(Integer.parseInt(map.get("line"))); // NOI18N
-                } catch (Exception ex) {
+            if (number != null) {
+                breakpointNumber = Integer.parseInt(number);
+                setState(BPSTATE_VALIDATED);
+                breakpoint.setValid();
+                if (!breakpoint.isEnabled()) {
+                    getDebugger().break_disable(breakpointNumber);
                 }
+                if (this instanceof FunctionBreakpointImpl) {
+                    try {
+                        breakpoint.setURL(map.get("fullname")); // NOI18N
+                        breakpoint.setLineNumber(Integer.parseInt(map.get("line"))); // NOI18N
+                    } catch (Exception ex) {
+                    }
+                }
+            } else {
+                breakpoint.setInvalid(err);
+                setState(BPSTATE_VALIDATION_FAILED);
             }
-        } else {
-            breakpoint.setInvalid(err);
-            setState(BPSTATE_VALIDATION_FAILED);
+            getDebugger().getBreakpointList().put(number, this);
         }
-        getDebugger().getBreakpointList().put(number, this);
     }
     
     public void addError(String err) {

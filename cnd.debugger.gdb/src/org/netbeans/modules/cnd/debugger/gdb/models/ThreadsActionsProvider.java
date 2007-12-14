@@ -101,6 +101,6 @@ public class ThreadsActionsProvider implements NodeActionsProvider {
     }
     
     private void makeCurrent(Object node) {
-        getDebugger().makeThreadActive(node.toString().trim());
+        getDebugger().setCurrentThread(node.toString().trim());
     }
 }

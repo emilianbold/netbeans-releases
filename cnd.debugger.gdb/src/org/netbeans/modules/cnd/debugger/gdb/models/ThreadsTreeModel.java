@@ -75,7 +75,7 @@ public class ThreadsTreeModel implements TreeModel {
      */
     public Object[] getChildren(Object parent, int from, int to) throws UnknownTypeException {
         if (parent.equals(ROOT)) {
-            String[] threads = debugger.getThreadInformation();
+            String[] threads = debugger.getThreadsList();
 	    return threads;
         } else {
 	    throw new UnknownTypeException(parent);
@@ -189,12 +189,10 @@ public class ThreadsTreeModel implements TreeModel {
         }
         
         public synchronized void propertyChange(PropertyChangeEvent e) {
-            boolean refresh = false;
             String propertyName = e.getPropertyName();
-            if (propertyName.equals(GdbDebugger.PROP_STATE) && debugger.getState().equals(GdbDebugger.STATE_STOPPED)) {
-                refresh = true;
-            }
-            if (refresh) {
+            if ((propertyName.equals(GdbDebugger.PROP_STATE) && 
+                    debugger.getState().equals(GdbDebugger.STATE_STOPPED)) ||
+                    propertyName.equals(GdbDebugger.PROP_CURRENT_THREAD)) {
                 synchronized (this) {
                     if (task == null) {
                         task = RequestProcessor.getDefault().create(new Refresher());

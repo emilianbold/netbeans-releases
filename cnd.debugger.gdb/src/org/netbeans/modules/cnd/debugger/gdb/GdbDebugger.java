@@ -167,9 +167,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private Map<String, String> varToTypeMap = new HashMap<String, String>();
     private Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     private int currentToken = 0;
-    private String currentThread = "1"; // NOI18N
-    private static final String[] noThreadInfo = new String[0];
-    private String[] threadInfo = noThreadInfo;
+    private String currentThreadID = "0"; // NOI18N
+    private static final String[] emptyThreadsList = new String[0];
+    private String[] threadsList = emptyThreadsList;
     private int ttToken = 0;
     private ToolTipAnnotation ttAnnotation = null;
     private Timer startupTimer = null;
@@ -238,12 +238,12 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             gdb.gdb_version();
             gdb.environment_directory(runDirectory);
             gdb.gdb_show("language"); // NOI18N
-            gdb.set("print repeat",  // NOI18N
+            gdb.gdb_set("print repeat",  // NOI18N
                     Integer.toString(CppSettings.getDefault().getArrayRepeatThreshold()));
             if (pae.getID() == DEBUG_ATTACH) {
                 programPID = (Long) lookupProvider.lookupFirst(null, Long.class);
                 CommandBuffer cb = new CommandBuffer(gdb.target_attach(Long.toString(programPID)));
-                cb.postAndWait();
+               cb.postAndWait();
                 String err = cb.getError();
                 if (err != null || cb.attachTimedOut()) {
                     final String msg;
@@ -350,11 +350,11 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
     }
 
-    public String[] getThreadInformation() {
-        if (threadInfo == noThreadInfo) {
+    public String[] getThreadsList() {
+        if (threadsList == emptyThreadsList) {
             while (gdb == null) {
                 try {
-                    Thread.sleep(100);
+                    Thread.sleep(100); // called before session startup had completed...
                 } catch (InterruptedException ex) {
                 }
             }
@@ -367,11 +367,11 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                         list.add(line);
                     }
                 }
-                threadInfo = list.toArray(new String[list.size()]);
-                return threadInfo;
+                threadsList = list.toArray(new String[list.size()]);
+                return threadsList;
             }
         }
-        return threadInfo;
+        return threadsList;
     }
 
     public int getThreadCount() {
@@ -379,7 +379,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     }
     
     private void resetThreadInfo() {
-        threadInfo = noThreadInfo;
+        threadsList = emptyThreadsList;
     }
     
     private String getProgramName(String program) {
@@ -448,6 +448,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             } else if (evt.getNewValue() == STATE_EXITED) {
                 finish(false);
             }
+        } else if (evt.getPropertyName().equals(PROP_CURRENT_THREAD)) {
+            updateCurrentCallStack();
         }
     }
     
@@ -636,6 +638,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
     }
     
+    private void updateCurrentCallStack() {
+        gdb.stack_list_frames();
+    }
+    
     /** Handle geb responses starting with '^' */
     public void resultRecord(int token, String msg) {
         GdbWatchVariable watch;
@@ -663,7 +669,12 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 addArgsToLocalVariables(msg.substring(17));
             }
         } else if (msg.startsWith("^done,new-thread-id=")) { // NOI18N (-thread-select)
-//            firePropertyChange(PROP_CURRENT_THREAD, new)
+            String tid = msg.substring(21, msg.indexOf('"', 22));
+            if (!tid.equals(currentThreadID)) {
+                String otid = currentThreadID;
+                currentThreadID = tid;
+                firePropertyChange(PROP_CURRENT_THREAD, otid, currentThreadID);
+            }
         } else if (msg.startsWith("^done,value=") && msg.contains("auto; currently c++")) { // NOI18N
             cplusplus = true;
         } else if (msg.startsWith("^done,value=")) { // NOI18N (-data-evaluate-expression)
@@ -1622,7 +1633,11 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 finish(false);
             } else if (reason.equals("breakpoint-hit")) { // NOI18N
                 GdbBreakpoint breakpoint;
-                gdb.stack_list_frames();
+                String tid = map.get("thread-id"); // NOI18N
+                if (tid != null && !tid.equals(currentThreadID)) {
+                    currentThreadID = tid;
+                }
+                updateCurrentCallStack();
                 BreakpointImpl impl = getBreakpointList().get(map.get("bkptno")); // NOI18N
                 if (impl != null && (breakpoint = impl.getBreakpoint()) != null) {
                     fireBreakpointEvent(breakpoint, new GdbBreakpointEvent(
@@ -1653,9 +1668,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 }
             } else if (reason.equals("signal-received")) { // NOI18N
                 if (getState().equals(STATE_RUNNING)) {
-                    String thread_id = map.get("thread-id"); // NOI18N
-                    if (thread_id != null && !thread_id.equals(currentThread)) {
-                        gdb.thread_select(currentThread);
+                    String tid = map.get("thread-id"); // NOI18N
+                    if (tid != null && !tid.equals(currentThreadID)) {
+                        currentThreadID = tid;
                     }
                     gdb.stack_list_frames();
                     setStopped();
@@ -1856,7 +1871,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         pcs.firePropertyChange(PROP_CURRENT_CALL_STACK_FRAME, 0, 1);
     }
     
-    public void makeThreadActive(String tline) {
+    public void setCurrentThread(String tline) {
         if (tline.length() > 0) {
             if (Character.isDigit(tline.charAt(0))) {
                 int idx = tline.indexOf(' ');
@@ -2043,6 +2058,19 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
     }
     
+    private CallStackFrame setCurrentCallStackFrameNoFire(CallStackFrame callStackFrame) {
+        CallStackFrame old;
+        
+        synchronized (this) {
+            if (callStackFrame == currentCallStackFrame) {
+                return callStackFrame;
+            }
+            old = currentCallStackFrame;
+            currentCallStackFrame = callStackFrame;
+        }
+        return old;
+    }
+    
     public boolean isValidStackFrame(CallStackFrame csf) {
         return csf.getFileName() != null && csf.getFullname() != null && csf.getFunctionName() != null;
     }
@@ -2056,19 +2084,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             idx++;
         }
         return idx;
-    }
-    
-    private CallStackFrame setCurrentCallStackFrameNoFire(CallStackFrame callStackFrame) {
-        CallStackFrame old;
-        
-        synchronized (this) {
-            if (callStackFrame == currentCallStackFrame) {
-                return callStackFrame;
-            }
-            old = currentCallStackFrame;
-            currentCallStackFrame = callStackFrame;
-        }
-        return old;
     }
     
     public void popTopmostCall() {
