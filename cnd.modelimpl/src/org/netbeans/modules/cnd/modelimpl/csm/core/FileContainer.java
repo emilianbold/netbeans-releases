@@ -531,7 +531,13 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
     
     private static final String getCanonicalKey(String fileKey) {
         try {
-            return new File(fileKey).getCanonicalPath();
+            String res = new File(fileKey).getCanonicalPath();
+            if (fileKey.equals(res)) {
+                res = fileKey;
+            } else {
+                res = FilePathCache.getString(res);
+            }
+            return res;
         } catch (IOException e) {
             // skip exception
             return fileKey;

@@ -54,6 +54,7 @@ import java.io.ObjectOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.cnd.apt.utils.TextCache;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.cache.impl.CacheUtil;
@@ -168,7 +169,7 @@ public class AstUtil {
                             if( next != null ) {
                                 sb.append(next.getText());
                             }
-                            return sb.toString();
+                            return TextCache.getString(sb.toString());
                         } else if (first.getType() == CPPTokenTypes.ID){
                             return first.getText();
                         }

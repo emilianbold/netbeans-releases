@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.apt.utils.APTStringManager;
 import org.netbeans.modules.cnd.modelimpl.csm.BuiltinTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.BuiltinTypes.BuiltInUID;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FixedString;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.ClassifierUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.DeclarationUID;
@@ -148,6 +149,31 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         }
         
     }
+    public void writeFixedStringToArrayUIDMap(Map <FixedString, Object> aMap, DataOutput aStream, boolean sync) throws IOException {
+        assert aMap != null;
+        assert aStream != null;
+        aMap = sync ? copySyncMap(aMap) : aMap;
+        int collSize = aMap.size();
+        aStream.writeInt(collSize);
+        
+        for (Map.Entry<FixedString, Object> anEntry : aMap.entrySet()) {
+            String key = anEntry.getKey().toString();
+            assert key != null;
+            aStream.writeUTF(key);
+            Object o = anEntry.getValue();
+            if (o instanceof CsmUID){
+                aStream.writeInt(1);
+                writeUID((CsmUID)o, aStream);
+            } else {
+                CsmUID[] arr = (CsmUID[])o;
+                aStream.writeInt(arr.length);
+                for(CsmUID uid:arr){
+                    assert uid != null;
+                    writeUID(uid, aStream);
+                }
+            }
+        }
+    }
     
     public void writeStringToArrayUIDMap(Map <String, Object> aMap, DataOutput aStream, boolean sync) throws IOException {
         assert aMap != null;
@@ -207,6 +233,33 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         }
     }
     
+    public void readFixedStringToArrayUIDMap(Map<FixedString, Object> aMap, DataInput aStream, APTStringManager manager) throws IOException {
+        assert aMap != null;
+        assert aStream != null;
+        
+        int collSize = aStream.readInt();
+        
+        for (int i = 0; i < collSize; ++i) {
+            FixedString key = new FixedString(aStream.readUTF());
+            //key = manager == null ? key : manager.getString(key);
+            //assert key != null;
+            int arrSize = aStream.readInt();
+            if (arrSize == 1){
+                CsmUID uid = readUID(aStream);
+                assert uid != null;
+                aMap.put(key, uid);
+            } else {
+                CsmUID[] uids = new CsmUID[arrSize];
+                for(int k = 0; k < arrSize; k++){
+                    CsmUID uid = readUID(aStream);
+                    assert uid != null;
+                    uids[k] = uid;
+                }
+                aMap.put(key, uids);
+            }
+        }
+    }
+
     public void readStringToArrayUIDMap(Map <String, Object> aMap, DataInput aStream, APTStringManager manager) throws IOException {
         assert aMap != null;
         assert aStream != null;

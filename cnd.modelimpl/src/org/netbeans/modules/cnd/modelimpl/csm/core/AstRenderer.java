@@ -47,6 +47,7 @@ import antlr.collections.AST;
 
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
+import org.netbeans.modules.cnd.apt.utils.TextCache;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.EmptyCompoundStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
@@ -538,7 +539,7 @@ public class AstRenderer {
                         sb.append(namePart.getText());
                     }
                 }
-                return sb.toString();
+                return TextCache.getString(sb.toString());
             }
         }
         return "";

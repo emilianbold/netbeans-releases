@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.modelimpl.repository;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import org.netbeans.modules.cnd.apt.utils.TextCache;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
@@ -63,10 +64,11 @@ final class OffsetableDeclarationKey extends OffsetableKey {
     }
     
     public OffsetableDeclarationKey(OffsetableDeclarationBase obj, int index) {
-	super(obj, obj.getKind().toString(), Integer.toString(index));
+	super(obj, obj.getKind().toString(), TextCache.getString(Integer.toString(index)));
 	// we use index for unnamed objects
     }
     
+    @Override
     public void write(DataOutput aStream) throws IOException {
 	super.write(aStream);
     }
@@ -80,6 +82,7 @@ final class OffsetableDeclarationKey extends OffsetableKey {
 	return CsmObjectFactory.instance();
     }
     
+    @Override
     public String toString() {
 	String retValue;
 	
@@ -87,10 +90,12 @@ final class OffsetableDeclarationKey extends OffsetableKey {
 	return retValue;
     }
     
+    @Override
     public int getSecondaryDepth() {
 	return super.getSecondaryDepth() + 1;
     }
     
+    @Override
     public int getSecondaryAt(int level) {
 	if (level == 0) {
 	    return KeyObjectFactory.KEY_DECLARATION_KEY;

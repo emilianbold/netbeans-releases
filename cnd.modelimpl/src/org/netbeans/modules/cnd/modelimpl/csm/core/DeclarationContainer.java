@@ -80,7 +80,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  */
 /*package-local*/ class DeclarationContainer extends ProjectComponent implements Persistent, SelfPersistent {
     
-    private SortedMap<String, Object> declarations = new TreeMap<String, Object>();
+    private SortedMap<FixedString, Object> declarations = new TreeMap<FixedString, Object>();
     private ReadWriteLock declarationsLock = new ReentrantReadWriteLock();
     
     private Map<String, Set<CsmUID<? extends CsmFriend>>> friends = new ConcurrentHashMap<String, Set<CsmUID<? extends CsmFriend>>>();
@@ -97,7 +97,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
     }
 
     public void removeDeclaration(CsmDeclaration decl) {
-	String uniqueName = decl.getUniqueName();
+	FixedString uniqueName = new FixedString(decl.getUniqueName());
 //	synchronized(declarations){
 	Object o = null;
 	try {
@@ -172,7 +172,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
     }
 
     public void putDeclaration(CsmOffsetableDeclaration decl) {
-	String name = decl.getUniqueName();
+	FixedString name = new FixedString(decl.getUniqueName());
         @SuppressWarnings("unchecked")
 	CsmUID<CsmOffsetableDeclaration> uid = RepositoryUtils.put(decl);
 	assert uid != null;
@@ -243,11 +243,13 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 	put();
     }
     
-    public Collection<CsmOffsetableDeclaration> getDeclarationsRange(String from, String to) {
+    public Collection<CsmOffsetableDeclaration> getDeclarationsRange(String from_, String to_) {
         List<CsmUID<CsmOffsetableDeclaration>> list = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
+        FixedString from = new FixedString(from_);
+        FixedString to = new FixedString(to_);
         try {
             declarationsLock.readLock().lock();
-            for (Map.Entry<String, Object> entry : declarations.subMap(from, to).entrySet()){
+            for (Map.Entry<FixedString, Object> entry : declarations.subMap(from, to).entrySet()){
                 Object o = entry.getValue();
                 if (o instanceof CsmUID[]) {
                     CsmUID[] uids = (CsmUID[])o;
@@ -306,8 +308,9 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
         return Collections.<CsmFriend>emptyList();
     }
     
-    public Collection<CsmOffsetableDeclaration> findDeclarations(String uniqueName) {
+    public Collection<CsmOffsetableDeclaration> findDeclarations(String uniqueName_) {
         List<CsmUID<CsmOffsetableDeclaration>> list = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
+        FixedString uniqueName = new FixedString(uniqueName_);
         try {
             declarationsLock.readLock().lock();
             Object o = declarations.get(uniqueName);
@@ -325,9 +328,10 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
         return UIDCsmConverter.UIDsToDeclarations(list);
     }
     
-    public CsmDeclaration getDeclaration(String uniqueName) {
+    public CsmDeclaration getDeclaration(String uniqueName_) {
         CsmDeclaration result;
         CsmUID<CsmDeclaration> uid = null;
+        FixedString uniqueName = new FixedString(uniqueName_);
         try {
             declarationsLock.readLock().lock();
             Object o = declarations.get(uniqueName);
@@ -360,14 +364,14 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 	super.write(aStream);
         try {
             declarationsLock.readLock().lock();
-            UIDObjectFactory.getDefaultFactory().writeStringToArrayUIDMap(declarations, aStream, false);
+            UIDObjectFactory.getDefaultFactory().writeFixedStringToArrayUIDMap(declarations, aStream, false);
         } finally {
             declarationsLock.readLock().unlock();
         }
     }
     
     private void read(DataInput aStream) throws IOException {
-        UIDObjectFactory.getDefaultFactory().readStringToArrayUIDMap(this.declarations, aStream, TextCache.getManager());
+        UIDObjectFactory.getDefaultFactory().readFixedStringToArrayUIDMap(declarations, aStream, TextCache.getManager());
     }
     
     private boolean isSameFile(CsmUID<CsmOffsetableDeclaration> uid1, CsmUID<CsmOffsetableDeclaration> uid2){
@@ -375,7 +379,6 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
     }
     
     private boolean isSameFile(CsmUID<CsmOffsetableDeclaration> uid1, CsmOffsetableDeclaration decl2){
-        CsmOffsetableDeclaration decl1 = uid1.getObject();
         return isSameFile(uid1.getObject(), decl2);
     }
     
