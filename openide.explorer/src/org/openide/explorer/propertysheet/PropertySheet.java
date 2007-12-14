@@ -1357,6 +1357,7 @@ public class PropertySheet extends JPanel {
                             Node n = (Node) evt.getSource();
                             String description = (String) n.getValue("nodeDescription"); //NOI18N
                             psheet.setDescription(n.getDisplayName(), (description == null) ? n.getShortDescription() : description);
+                            table.setBeanName(n.getDisplayName());
                         }
                     }
                 };
