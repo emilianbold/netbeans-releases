@@ -148,14 +148,14 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
         servers = new PlatformsView ();
         addButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
-        cards = new javax.swing.JPanel();
-        messageArea = new javax.swing.JPanel();
-        jPanel1 = new javax.swing.JPanel();
+        cardsPanel = new javax.swing.JPanel();
+        messagePanel = new javax.swing.JPanel();
+        customizerPanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         serverName = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
         serverType = new javax.swing.JTextField();
-        clientArea = new javax.swing.JPanel();
+        clientPanel = new javax.swing.JPanel();
         serversLabel = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
@@ -174,7 +174,7 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
         servers.getAccessibleContext().setAccessibleName("null");
         servers.getAccessibleContext().setAccessibleDescription("null");
 
-        org.openide.awt.Mnemonics.setLocalizedText(addButton, "null");
+        org.openide.awt.Mnemonics.setLocalizedText(addButton, NbBundle.getMessage(ServerManagerPanel.class, "CTL_AddServer")); // NOI18N
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addServer(evt);
@@ -188,7 +188,7 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
         addButton.getAccessibleContext().setAccessibleName("null");
         addButton.getAccessibleContext().setAccessibleDescription("null");
 
-        org.openide.awt.Mnemonics.setLocalizedText(removeButton, "null");
+        org.openide.awt.Mnemonics.setLocalizedText(removeButton, NbBundle.getMessage(ServerManagerPanel.class, "CTL_Remove")); // NOI18N
         removeButton.setEnabled(false);
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -203,18 +203,18 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
         removeButton.getAccessibleContext().setAccessibleName("null");
         removeButton.getAccessibleContext().setAccessibleDescription("null");
 
-        cards.setLayout(new java.awt.CardLayout());
+        cardsPanel.setLayout(new java.awt.CardLayout());
 
-        messageArea.setLayout(new java.awt.GridBagLayout());
-        cards.add(messageArea, "card3");
+        messagePanel.setLayout(new java.awt.GridBagLayout());
+        cardsPanel.add(messagePanel, "card3");
 
-        jPanel1.setLayout(new java.awt.GridBagLayout());
+        customizerPanel.setLayout(new java.awt.GridBagLayout());
 
         jLabel1.setLabelFor(serverName);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, "null");
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(ServerManagerPanel.class, "CTL_ServerName")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        jPanel1.add(jLabel1, gridBagConstraints);
+        customizerPanel.add(jLabel1, gridBagConstraints);
         jLabel1.getAccessibleContext().setAccessibleName("null");
         jLabel1.getAccessibleContext().setAccessibleDescription("null");
 
@@ -225,16 +225,16 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
-        jPanel1.add(serverName, gridBagConstraints);
+        customizerPanel.add(serverName, gridBagConstraints);
         serverName.getAccessibleContext().setAccessibleName("null");
         serverName.getAccessibleContext().setAccessibleDescription("null");
 
         jLabel2.setLabelFor(serverType);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, "null");
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, NbBundle.getMessage(ServerManagerPanel.class, "CTL_ServerType")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 12, 0);
-        jPanel1.add(jLabel2, gridBagConstraints);
+        customizerPanel.add(jLabel2, gridBagConstraints);
         jLabel2.getAccessibleContext().setAccessibleName("null");
         jLabel2.getAccessibleContext().setAccessibleDescription("null");
 
@@ -245,11 +245,11 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 12, 0);
-        jPanel1.add(serverType, gridBagConstraints);
+        customizerPanel.add(serverType, gridBagConstraints);
         serverType.getAccessibleContext().setAccessibleName("null");
         serverType.getAccessibleContext().setAccessibleDescription("null");
 
-        clientArea.setLayout(new java.awt.GridBagLayout());
+        clientPanel.setLayout(new java.awt.GridBagLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
@@ -257,9 +257,9 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        jPanel1.add(clientArea, gridBagConstraints);
+        customizerPanel.add(clientPanel, gridBagConstraints);
 
-        cards.add(jPanel1, "card2");
+        cardsPanel.add(customizerPanel, "card2");
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -270,10 +270,10 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 12);
-        add(cards, gridBagConstraints);
+        add(cardsPanel, gridBagConstraints);
 
         serversLabel.setLabelFor(servers);
-        org.openide.awt.Mnemonics.setLocalizedText(serversLabel, "null");
+        org.openide.awt.Mnemonics.setLocalizedText(serversLabel, org.openide.util.NbBundle.getMessage(ServerManagerPanel.class, "CTL_Servers")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -323,7 +323,7 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
         }
 
         private void selectServer(Node aNode) {
-            clientArea.removeAll();
+            clientPanel.removeAll();
 
             ServerInstance serverInstance = null;
             if (aNode instanceof ServerNode) {
@@ -337,14 +337,14 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
                 }
             } else {
                 removeButton.setEnabled(false);
-                ((CardLayout)cards.getLayout()).first(cards);
+                ((CardLayout)cardsPanel.getLayout()).first(cardsPanel);
                 return;
             }
 
             if (serverInstance.getCustomizer() != null) {
                 Component component = serverInstance.getCustomizer();
                 if (component != null) {
-                    addComponent(clientArea, component);
+                    addComponent(clientPanel, component);
                 }
             }
             // handle the correct window size
@@ -369,8 +369,8 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
                     }
                 }
             }
-            CardLayout cl = (CardLayout)cards.getLayout();
-            cl.last(cards);
+            CardLayout cl = (CardLayout)cardsPanel.getLayout();
+            cl.last(cardsPanel);
         }
 
     private static void addComponent(Container container, Component component) {
@@ -422,13 +422,13 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
-    private javax.swing.JPanel cards;
-    private javax.swing.JPanel clientArea;
+    private javax.swing.JPanel cardsPanel;
+    private javax.swing.JPanel clientPanel;
+    private javax.swing.JPanel customizerPanel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel3;
-    private javax.swing.JPanel messageArea;
+    private javax.swing.JPanel messagePanel;
     private javax.swing.JButton removeButton;
     private javax.swing.JTextField serverName;
     private javax.swing.JTextField serverType;

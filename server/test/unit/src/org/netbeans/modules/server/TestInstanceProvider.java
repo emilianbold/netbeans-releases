@@ -39,46 +39,46 @@
 
 package org.netbeans.modules.server;
 
-import java.util.Collection;
-import java.util.concurrent.CopyOnWriteArrayList;
-import javax.swing.event.ChangeEvent;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.event.ChangeListener;
+import org.netbeans.spi.server.ServerInstance;
 import org.netbeans.spi.server.ServerInstanceProvider;
 import org.openide.util.ChangeSupport;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
-import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author Petr Hejl
  */
-public final class ServerRegistry {
-
-    public static final String SERVERS_PATH = "Servers"; // NOI18N
-
-    private static ServerRegistry registry;
+public class TestInstanceProvider implements ServerInstanceProvider {
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
-    private final Lookup.Result<ServerInstanceProvider> result;
+    private final List<ServerInstance> instances = new ArrayList<ServerInstance>();
 
-    private ServerRegistry() {
-        Lookup lookup = Lookups.forPath(SERVERS_PATH);
-        result = lookup.lookupResult(ServerInstanceProvider.class);
+    public TestInstanceProvider() {
+        super();
     }
 
-    public static synchronized ServerRegistry getInstance() {
-        if (registry == null) {
-            registry = new ServerRegistry();
-            registry.result.addLookupListener(new ProviderLookupListener(registry.changeSupport));
+    public List<ServerInstance> getInstances() {
+        return instances;
+    }
+
+    public void clean() {
+        for (ServerInstance instance : instances) {
+            instances.remove(instance);
+            changeSupport.fireChange();
         }
-        return registry;
     }
 
-    public Collection<? extends ServerInstanceProvider> getProviders() {
-        return result.allInstances();
+    public void addInstance(ServerInstance instance) {
+        instances.add(instance);
+        changeSupport.fireChange();
+    }
+
+    public void removeInstance(ServerInstance instance) {
+        instances.remove(instance);
+        changeSupport.fireChange();
     }
 
     public void addChangeListener(ChangeListener listener) {
@@ -89,17 +89,4 @@ public final class ServerRegistry {
         changeSupport.removeChangeListener(listener);
     }
 
-    private static class ProviderLookupListener implements LookupListener {
-
-        private final ChangeSupport changeSupport;
-
-        public ProviderLookupListener(ChangeSupport changeSupport) {
-            this.changeSupport = changeSupport;
-        }
-
-        public void resultChanged(LookupEvent ev) {
-            changeSupport.fireChange();
-        }
-
-    }
 }

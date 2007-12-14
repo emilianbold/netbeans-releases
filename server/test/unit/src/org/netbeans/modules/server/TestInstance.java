@@ -39,67 +39,49 @@
 
 package org.netbeans.modules.server;
 
-import java.util.Collection;
-import java.util.concurrent.CopyOnWriteArrayList;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import org.netbeans.spi.server.ServerInstanceProvider;
-import org.openide.util.ChangeSupport;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
-import org.openide.util.lookup.Lookups;
+import javax.swing.JComponent;
+import org.netbeans.spi.server.ServerInstance;
+import org.openide.nodes.Node;
 
 /**
  *
  * @author Petr Hejl
  */
-public final class ServerRegistry {
+public class TestInstance extends ServerInstance {
 
-    public static final String SERVERS_PATH = "Servers"; // NOI18N
+    private final TestInstanceProvider provider;
 
-    private static ServerRegistry registry;
-
-    private final ChangeSupport changeSupport = new ChangeSupport(this);
-
-    private final Lookup.Result<ServerInstanceProvider> result;
-
-    private ServerRegistry() {
-        Lookup lookup = Lookups.forPath(SERVERS_PATH);
-        result = lookup.lookupResult(ServerInstanceProvider.class);
+    public TestInstance(TestInstanceProvider provider) {
+        this.provider = provider;
     }
 
-    public static synchronized ServerRegistry getInstance() {
-        if (registry == null) {
-            registry = new ServerRegistry();
-            registry.result.addLookupListener(new ProviderLookupListener(registry.changeSupport));
-        }
-        return registry;
+    @Override
+    public String getDisplayName() {
+        return "Test"; // NOI18N
     }
 
-    public Collection<? extends ServerInstanceProvider> getProviders() {
-        return result.allInstances();
+    @Override
+    public String getServerDisplayName() {
+        return "Test"; // NOI18N
     }
 
-    public void addChangeListener(ChangeListener listener) {
-        changeSupport.addChangeListener(listener);
+    @Override
+    public Node getNode() {
+        return null;
     }
 
-    public void removeChangeListener(ChangeListener listener) {
-        changeSupport.removeChangeListener(listener);
+    @Override
+    public JComponent getCustomizer() {
+        return null;
     }
 
-    private static class ProviderLookupListener implements LookupListener {
+    @Override
+    public boolean isRemovable() {
+        return true;
+    }
 
-        private final ChangeSupport changeSupport;
-
-        public ProviderLookupListener(ChangeSupport changeSupport) {
-            this.changeSupport = changeSupport;
-        }
-
-        public void resultChanged(LookupEvent ev) {
-            changeSupport.fireChange();
-        }
-
+    @Override
+    public void remove() {
+        provider.removeInstance(this);
     }
 }
