@@ -51,6 +51,9 @@ made subject to such option by the copyright holder.
         <xs:element ref="timestamp"
                     minOccurs='1'
                     maxOccurs='1'/>
+        <xs:element ref="delay"
+                    minOccurs='1'
+                    maxOccurs='1'/>
         </xs:sequence>
         <xs:attribute name="version"
                       type="xs:string"
@@ -72,6 +75,14 @@ made subject to such option by the copyright holder.
         <xs:simpleType>
             <xs:restriction base="xs:string">
                 <xs:maxLength value="24"/>
+            </xs:restriction>
+        </xs:simpleType>
+    </xs:element>
+
+    <xs:element name="delay">
+        <xs:simpleType>
+            <xs:restriction base="xs:string">
+                <xs:maxLength value="8"/>
             </xs:restriction>
         </xs:simpleType>
     </xs:element>

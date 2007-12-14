@@ -54,6 +54,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -85,7 +86,7 @@ class NbConnection {
     
     private static final String STATUS_FILE = "status.xml";
     
-    private static StatusData status = new StatusData(StatusData.STATUS_UNKNOWN);
+    private static StatusData status = new StatusData(StatusData.STATUS_UNKNOWN,StatusData.DEFAULT_DELAY);
     
     private NbConnection() {
     }
@@ -113,11 +114,11 @@ class NbConnection {
     }
     
     private static void checkStatus () {
-        LOG.log(Level.FINE,"Check status");
+        LOG.log(Level.FINE,"Check registration status");
         File dir = NbServiceTagSupport.getServiceTagDirHome();
         File statusFile = new File(dir,STATUS_FILE);
         if (statusFile.exists()) {
-            LOG.log(Level.FINE,"Load status from:" + statusFile);
+            LOG.log(Level.FINE,"Load registration status from:" + statusFile);
             //Status file exists, check its content
             BufferedInputStream in = null;
             try {
@@ -142,7 +143,13 @@ class NbConnection {
             } else if (status.getStatus().equals(StatusData.STATUS_LATER)) {
                 LOG.log(Level.FINE,"Status is STATUS_LATER");
                 //Check current date
-                if (status.getTimestamp().getTime() + (15L * 24L * 60L * 60L * 1000L) >= System.currentTimeMillis()) {
+                //Date ts+delay
+                Date next = new Date(status.getTimestamp().getTime() + (status.getDelay() * 24L * 60L * 60L * 1000L));
+                LOG.log(Level.FINE,"      Date timestamp:" + status.getTimestamp());
+                LOG.log(Level.FINE,"Date timestamp+delay:" + next);
+                Date now = new Date();
+                LOG.log(Level.FINE,"            Date now:" + now);
+                if (now.after(next)) {
                     //Time is over, ask again
                     RegisterAction a = SharedClassObject.findObject(RegisterAction.class, true);
                     a.showDialog();
@@ -170,9 +177,11 @@ class NbConnection {
         if (value != null) {
             status.setStatus(value);
         }
+        status.setTimestamp(new Date());
         File dir = NbServiceTagSupport.getServiceTagDirHome();
         File statusFile = new File(dir,STATUS_FILE);
         
+        LOG.log(Level.FINE,"Store registration status to: " + statusFile);
         BufferedOutputStream out = null;
         try {
             out = new BufferedOutputStream(new FileOutputStream(statusFile));

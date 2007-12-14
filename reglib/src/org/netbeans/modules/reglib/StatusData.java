@@ -59,16 +59,21 @@ public class StatusData {
     public static final String STATUS_LATER = "later";
     public static final String STATUS_NEVER = "never";
     
+    public static final int DEFAULT_DELAY = 7;
+    
     private String status;
     private Date timestamp;
+    /** Delay after which reminder dialo will be shown again when Later option is selected.*/
+    private int delay;
 
     /**
      * Creates a {@code StatusData} object with status value and generated time stamp.
      * 
      */
-    public StatusData(String status) {
+    public StatusData(String status, int delay) {
         this.status = status;
         this.timestamp = new Date();
+        this.delay = delay;
     }
     
     public void setStatus(String status) {
@@ -85,6 +90,14 @@ public class StatusData {
     
     public Date getTimestamp() {
         return timestamp;
+    }
+    
+    public void setDelay(int delay) {
+        this.delay = delay;
+    }
+    
+    public int getDelay() {
+        return delay;
     }
     
     /**

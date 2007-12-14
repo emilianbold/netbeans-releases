@@ -50,6 +50,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URL;
 
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -87,6 +89,9 @@ class StatusDocument {
     final static String ST_ATTR_REGISTRATION_STATUS_VERSION = "version";
     final static String ST_NODE_STATUS = "status";
     final static String ST_NODE_TIMESTAMP = "timestamp";
+    final static String ST_NODE_DELAY = "delay";
+    
+    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.reglib.StatusDocument"); // NOI18N
     
     static StatusData load(InputStream in) throws IOException {
         Document doc = initializeDocument(in);
@@ -110,7 +115,15 @@ class StatusDocument {
             stValue = StatusData.STATUS_UNKNOWN;
         }
         
-        StatusData sd = new StatusData(stValue);
+        int delay = StatusData.DEFAULT_DELAY;
+        val = getTextValue(root, ST_NODE_DELAY);
+        try {
+            delay = Integer.parseInt(val);
+        } catch (NumberFormatException exc) {
+            LOG.log(Level.INFO,"Error: Cannot parse delay value:" + val,exc);
+        }
+        
+        StatusData sd = new StatusData(stValue,delay);
         
         Date tsValue = Util.parseTimestamp(getTextValue(root, ST_NODE_TIMESTAMP));
         sd.setTimestamp(tsValue);
@@ -148,6 +161,10 @@ class StatusDocument {
         
         Element t = document.createElement(ST_NODE_TIMESTAMP);
         t.appendChild(document.createTextNode(Util.formatTimestamp(status.getTimestamp())));
+        r.appendChild(t);
+        
+        t = document.createElement(ST_NODE_DELAY);
+        t.appendChild(document.createTextNode(Integer.toString(status.getDelay())));
         r.appendChild(t);
     }
 
