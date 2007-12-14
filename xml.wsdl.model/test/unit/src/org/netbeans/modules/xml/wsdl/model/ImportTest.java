@@ -145,4 +145,14 @@ public class ImportTest extends TestCase {
         model.endTransaction();
         assertEquals("s:string", ((AbstractDocumentComponent)str).getPeer().getAttribute("base"));
     }
+    
+    public void testDeleteOneOfManyEmbeddedSchemas() throws Exception {
+        WSDLModelImpl model = (WSDLModelImpl)Util.loadWSDLModel("resources/newWSDL1.wsdl");
+        assertNotNull(model.getDefinitions().getPeer().getAttributeNode("xmlns:xsd"));
+        Schema schema = model.getDefinitions().getTypes().getSchemas().iterator().next();
+        model.startTransaction();
+        model.removeChildComponent(schema);
+        model.endTransaction();
+        assertNotNull(model.getDefinitions().getPeer().getAttributeNode("xmlns:xsd"));
+    }
 }
