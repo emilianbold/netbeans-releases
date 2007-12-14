@@ -661,4 +661,7 @@ public interface DomProvider {
 //    public int getGridTraceWidth();
 //    public int getGridTraceHeight();
 //    public int getGridOffset();
+    
+    // XXX
+    public DomProviderService getDomProviderService();
 }

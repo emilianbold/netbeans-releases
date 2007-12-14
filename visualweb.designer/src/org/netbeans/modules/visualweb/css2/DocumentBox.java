@@ -702,9 +702,9 @@ public abstract class DocumentBox extends ContainerBox {
             
             // XXX #109446.
             if (nextBox != null) {
-                Element prevComponentRootElement = ModelViewMapper.findClosestComponentRootElement(prevBox.getElement());
-                if (prevComponentRootElement == ModelViewMapper.findClosestComponentRootElement(nextBox.getElement())) {
-                    if (prevComponentRootElement != ModelViewMapper.findClosestComponentRootElement(node)) {
+                Element prevComponentRootElement = ModelViewMapper.findClosestComponentRootElement(webform, prevBox.getElement());
+                if (prevComponentRootElement == ModelViewMapper.findClosestComponentRootElement(webform, nextBox.getElement())) {
+                    if (prevComponentRootElement != ModelViewMapper.findClosestComponentRootElement(webform, node)) {
                         prevBox = getWebForm().findCssBoxForElement(prevComponentRootElement);
                         nextBox = null;
                     }
@@ -723,9 +723,9 @@ public abstract class DocumentBox extends ContainerBox {
             
             // XXX #109446.
             if (prevBox != null) {
-                Element nextComponentRootElement = ModelViewMapper.findClosestComponentRootElement(nextBox.getElement());
-                if (nextComponentRootElement == ModelViewMapper.findClosestComponentRootElement(prevBox.getElement())) {
-                    if (nextComponentRootElement != ModelViewMapper.findClosestComponentRootElement(node)) {
+                Element nextComponentRootElement = ModelViewMapper.findClosestComponentRootElement(webform, nextBox.getElement());
+                if (nextComponentRootElement == ModelViewMapper.findClosestComponentRootElement(webform, prevBox.getElement())) {
+                    if (nextComponentRootElement != ModelViewMapper.findClosestComponentRootElement(webform, node)) {
                         prevBox = null;
                         nextBox = getWebForm().findCssBoxForElement(nextComponentRootElement);
                     }

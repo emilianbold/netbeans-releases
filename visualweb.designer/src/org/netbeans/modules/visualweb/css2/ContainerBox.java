@@ -1012,7 +1012,7 @@ public class ContainerBox extends CssBox {
 //                MarkupServiceProvider.getDefault().expandHtmlEntities(content, true, styleElement);
                     // ====
 //                InSyncService.getProvider().expandHtmlEntities(content, true, styleElement);
-                WebForm.getDomProviderService().expandHtmlEntities(content, true, styleElement);
+                webform.getDomProviderService().expandHtmlEntities(content, true, styleElement);
                     // </markup_separation>
         }
 

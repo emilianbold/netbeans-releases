@@ -596,7 +596,7 @@ public class Resizer extends Interaction implements KeyListener {
 //        }
 //
 //        return constraints;
-        return WebForm.getDomProviderService().getResizeConstraintsForComponent(componentRootElement);
+        return webForm.getDomProviderService().getResizeConstraintsForComponent(componentRootElement);
     }
     
     public static boolean hasMaintainAspectRatioResizeConstraint(ResizeConstraint[] resizeConstraints) {

@@ -158,7 +158,11 @@ public abstract class InlineEditor {
         }
 
 //        String[] properties = getEditableProperties(markupBean);
-        String[] properties = WebForm.getDomProviderService().getEditableProperties(componentRootElement);
+        WebForm webForm = box == null ? null : box.getWebForm();
+        if (webForm == null) {
+            return null;
+        }
+        String[] properties = webForm.getDomProviderService().getEditableProperties(componentRootElement);
 
         if ((properties == null) || (properties.length == 0)) {
             return null;
@@ -215,7 +219,7 @@ public abstract class InlineEditor {
                     
                     if (root != null) {
 //                        Node node = findPropertyNode(root, xpaths[i]);
-                        Node node = WebForm.getDomProviderService().findPropertyNode(root, xpaths[i]);
+                        Node node = webForm.getDomProviderService().findPropertyNode(root, xpaths[i]);
 
                         // Is boxElement under the given node?
                         Node curr = boxElement;

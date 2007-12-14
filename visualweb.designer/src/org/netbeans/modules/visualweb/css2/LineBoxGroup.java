@@ -152,12 +152,12 @@ public class LineBoxGroup extends ContainerBox {
         // XXX #109446 Ensure new box of another component is not put
         // inbetween of two boxes belonging to other component.
         if (prevBox != null) {
-            Element newComponentRootElement = ModelViewMapper.findClosestComponentRootElement(box.getElement());
-            Element prevComponentRootElement = ModelViewMapper.findClosestComponentRootElement(prevBox.getElement());
+            Element newComponentRootElement = ModelViewMapper.findClosestComponentRootElement(webform, box.getElement());
+            Element prevComponentRootElement = ModelViewMapper.findClosestComponentRootElement(webform, prevBox.getElement());
             if (newComponentRootElement != prevComponentRootElement) {
                 CssBox tmpNextBox = getNextCssBox(allBoxes, prevBox);
                 while (tmpNextBox != null) {
-                    Element nextComponentRootElement = ModelViewMapper.findClosestComponentRootElement(tmpNextBox.getElement());
+                    Element nextComponentRootElement = ModelViewMapper.findClosestComponentRootElement(webform, tmpNextBox.getElement());
                     if (prevComponentRootElement == nextComponentRootElement) {
                         prevBox = tmpNextBox;
                         nextBox = null;
@@ -169,12 +169,12 @@ public class LineBoxGroup extends ContainerBox {
             }
         }
         if (nextBox != null) {
-            Element newComponentRootElement = ModelViewMapper.findClosestComponentRootElement(box.getElement());
-            Element nextComponentRootElement = ModelViewMapper.findClosestComponentRootElement(nextBox.getElement());
+            Element newComponentRootElement = ModelViewMapper.findClosestComponentRootElement(webform, box.getElement());
+            Element nextComponentRootElement = ModelViewMapper.findClosestComponentRootElement(webform, nextBox.getElement());
             if (newComponentRootElement != nextComponentRootElement) {
                 CssBox tmpPrevBox = getPreviousCssBox(allBoxes, nextBox);
                 while (tmpPrevBox != null) {
-                    Element prevComponentRootElement = ModelViewMapper.findClosestComponentRootElement(tmpPrevBox.getElement());
+                    Element prevComponentRootElement = ModelViewMapper.findClosestComponentRootElement(webform, tmpPrevBox.getElement());
                     if (prevComponentRootElement == nextComponentRootElement) {
                         prevBox = null;
                         nextBox = tmpPrevBox;

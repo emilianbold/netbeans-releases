@@ -885,7 +885,7 @@ public class Dragger extends Interaction implements KeyListener {
 //                            box = curr.getParent();
 //                        }
 //                    }
-                    if (!WebForm.getDomProviderService().isContainerComponent(currComponentRootElement)) {
+                    if (!webform.getDomProviderService().isContainerComponent(currComponentRootElement)) {
                         box = curr.getParent();
                     }
                 }
@@ -920,7 +920,7 @@ public class Dragger extends Interaction implements KeyListener {
 //        } else {
 //            return isDragged(bean.getBeanParent());
 //        }
-        Element parentComponentRootElement = WebForm.getDomProviderService().getParentComponent(componentRootElement);
+        Element parentComponentRootElement = webform.getDomProviderService().getParentComponent(componentRootElement);
         return parentComponentRootElement == null ? false : isDraggedComponent(parentComponentRootElement);
     }
 

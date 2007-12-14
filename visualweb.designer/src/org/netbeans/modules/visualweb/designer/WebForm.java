@@ -74,6 +74,8 @@ import java.util.WeakHashMap;
 import javax.swing.CellRendererPane;
 import javax.swing.JComponent;
 import javax.swing.event.EventListenerList;
+import org.netbeans.modules.visualweb.css2.BoxType;
+import org.netbeans.modules.visualweb.css2.ContainerBox;
 import org.netbeans.modules.visualweb.spi.designer.Decoration;
 
 import org.netbeans.spi.palette.PaletteController;
@@ -384,14 +386,17 @@ public class WebForm implements Designer {
 //        }
 //    }
     
-    public static DomProviderService getDomProviderService() {
-        DomProviderService domProviderService = (DomProviderService)Lookup.getDefault().lookup(DomProviderService.class);
-        if (domProviderService == null) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
-                    new NullPointerException("No instance of DomProviderService available!")); // NOI18N
-            return new DummyDomProviderService();
-        }
-        return domProviderService;
+//    public static DomProviderService getDomProviderService() {
+//        DomProviderService domProviderService = (DomProviderService)Lookup.getDefault().lookup(DomProviderService.class);
+//        if (domProviderService == null) {
+//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
+//                    new NullPointerException("No instance of DomProviderService available!")); // NOI18N
+//            return new DummyDomProviderService();
+//        }
+//        return domProviderService;
+//    }
+    public DomProviderService getDomProviderService() {
+        return domProvider.getDomProviderService();
     }
     
     
@@ -2964,7 +2969,12 @@ public class WebForm implements Designer {
 //                new Position(CssBox.getMarkupDesignBeanForCssBox(box).getElement(), 0, Bias.FORWARD);
 //                new Position(WebForm.getDomProviderService().getSourceElement(componentRootElement), 0, Bias.FORWARD);
 //        DomPosition editableRegionStart = DesignerPaneBase.createDomPosition(WebForm.getDomProviderService().getSourceElement(componentRootElement), 0, Bias.FORWARD);
-        DomPosition editableRegionStart = createDomPosition(WebForm.getDomProviderService().getSourceElement(componentRootElement), 0, Bias.FORWARD);
+        WebForm webForm = box.getWebForm();
+        if (webForm == null) {
+            return false;
+        }
+//        DomPosition editableRegionStart = createDomPosition(WebForm.getDomProviderService().getSourceElement(componentRootElement), 0, Bias.FORWARD);
+        DomPosition editableRegionStart = createDomPosition(webForm.getDomProviderService().getSourceElement(componentRootElement), 0, Bias.FORWARD);
         
 //        Position editableRegionEnd =
 //            new Position(editableRegionStart.getNode(),
@@ -3582,5 +3592,58 @@ public class WebForm implements Designer {
     
     public int getDefaultFontSize() {
         return defaultFontSize;
+    }
+    
+    /** XXX #113773 Find component root element for specified box. */
+    public static Element getComponentRootElementForCssBox(CssBox cssBox) {
+        WebForm webForm = cssBox == null ? null : cssBox.getWebForm();
+        if (webForm == null) {
+            return null;
+        }
+        while (cssBox != null) {
+            Element element = cssBox.getElement();
+//            if (WebForm.getDomProviderService().isPrincipalElement(element, null)) {
+            if (webForm.getDomProviderService().isPrincipalElement(element, null)) {
+                return element;
+            }
+            cssBox = cssBox.getParent();
+        }
+
+        return null;
+    }
+    
+    /** XXX This will replace the JSF specific above methods.
+     * Gets associated element for the css box. It returns the element only if the specified box
+     * represents component top level element except lines, texts and spaces. */
+    public static Element getElementForComponentRootCssBox(CssBox cssBox) {
+        if (cssBox == null) {
+            return null;
+        }
+        
+        Element element = cssBox.getElement();
+        BoxType boxType = cssBox.getBoxType();
+        if (element == null
+        || boxType == BoxType.LINEBOX
+        || boxType == BoxType.TEXT
+        || boxType == BoxType.SPACE) {
+            // XXX As before no assigned MarkupDesignBean for the above cases.
+            return null;
+        }
+        return getElementForPrincipalCssBox(cssBox);
+    }
+    
+    private static Element getElementForPrincipalCssBox(CssBox cssBox) {
+        if (cssBox == null) {
+            return null;
+        }
+        WebForm webForm = cssBox.getWebForm();
+        if (webForm == null) {
+            return null;
+        }
+        Element element = cssBox.getElement();
+        ContainerBox parentBox = cssBox.getParent();
+        Element parentBoxElement = parentBox == null ? null : parentBox.getElement();
+//        return WebForm.getDomProviderService().isPrincipalElement(element, parentBoxElement) ? element : null;
+        return webForm.getDomProviderService().isPrincipalElement(element, parentBoxElement) ? element : null;
     }
 }

@@ -45,6 +45,7 @@ import org.netbeans.modules.visualweb.api.designer.Designer;
 import com.sun.rave.designtime.DesignProperty;
 import java.util.ArrayList;
 import org.netbeans.modules.visualweb.api.designer.DomProvider;
+import org.netbeans.modules.visualweb.api.designer.DomProviderService;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
@@ -84,6 +85,7 @@ class DomProviderImpl implements DomProvider {
 
     private final JsfForm jsfForm;
 
+    private static final DomProviderService domProviderService = new DomProviderServiceImpl();
 
     /** Creates a new instance of DomProviderImpl */
     public DomProviderImpl(JsfForm jsfForm) {
@@ -1513,5 +1515,9 @@ class DomProviderImpl implements DomProvider {
     @Override
     public String toString() {
         return super.toString() + "[jsfForm=" + jsfForm + "]"; // NOI18N
+    }
+
+    public DomProviderService getDomProviderService() {
+        return domProviderService;
     }
 }

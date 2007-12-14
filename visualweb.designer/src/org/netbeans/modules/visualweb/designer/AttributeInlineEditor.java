@@ -117,7 +117,7 @@ class AttributeInlineEditor extends InlineEditor /*implements org.w3c.dom.events
         // and have them added to as DesignBeans (br is a DesignBean)
         // when committed, etc.
 //        if (!isEscaped(bean)) {
-        if (!isEscaped(componentRootElement)) {
+        if (!isEscaped(webform, componentRootElement)) {
             // Don't support editing unescaped properties yet...
             return null;
         }
@@ -690,7 +690,7 @@ class AttributeInlineEditor extends InlineEditor /*implements org.w3c.dom.events
     }
 
     /** Determine if the given bean is escaped */
-    private /*public*/ static boolean isEscaped(Element componentRootElement) {
+    private /*public*/ static boolean isEscaped(WebForm webForm, Element componentRootElement) {
 //        // See if the bean looks like an output text that has escape
 //        // turned off. If so, it's multiline. All others are considered
 //        // single line.
@@ -707,7 +707,7 @@ class AttributeInlineEditor extends InlineEditor /*implements org.w3c.dom.events
 //        }
 //
 //        return true;
-        return WebForm.getDomProviderService().isEscapedComponent(componentRootElement);
+        return webForm.getDomProviderService().isEscapedComponent(componentRootElement);
     }
 
     public boolean isMultiLine() {

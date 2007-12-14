@@ -510,7 +510,7 @@ public final class TextBox extends CssBox {
 //            offset = MarkupServiceProvider.getDefault().getUnexpandedOffset(jspx, offset);
             // ====
 //            offset = InSyncService.getProvider().getUnexpandedOffset(jspx, offset);
-            offset = WebForm.getDomProviderService().getUnexpandedOffset(jspx, offset);
+            offset = webform.getDomProviderService().getUnexpandedOffset(jspx, offset);
             // </markup_separation>
         }
 
@@ -583,7 +583,7 @@ public final class TextBox extends CssBox {
 //                    getExpandedOffset(jspx, pos.getOffset());
             // ====
 //            htmlpos = InSyncService.getProvider().getExpandedOffset(jspx, pos.getOffset());
-            htmlpos = WebForm.getDomProviderService().getExpandedOffset(jspx, pos.getOffset());
+            htmlpos = webform.getDomProviderService().getExpandedOffset(jspx, pos.getOffset());
             // </markup_separation>
         }
 
@@ -631,7 +631,7 @@ public final class TextBox extends CssBox {
 //                        getUnexpandedOffset(jspx, beginOffset);
                 // ====
 //                beginDomOffset = InSyncService.getProvider().getUnexpandedOffset(jspx, beginOffset);
-                beginDomOffset = WebForm.getDomProviderService().getUnexpandedOffset(jspx, beginOffset);
+                beginDomOffset = webform.getDomProviderService().getUnexpandedOffset(jspx, beginOffset);
                 // </markup_separation>
             }
         }
@@ -650,7 +650,7 @@ public final class TextBox extends CssBox {
 //                        getUnexpandedOffset(jspx, endOffset);
                 // ====
 //                endDomOffset = InSyncService.getProvider().getUnexpandedOffset(jspx, endOffset);
-                endDomOffset = WebForm.getDomProviderService().getUnexpandedOffset(jspx, endOffset);
+                endDomOffset = webform.getDomProviderService().getUnexpandedOffset(jspx, endOffset);
                 // </markup_separation>
             }
         }
@@ -679,7 +679,7 @@ public final class TextBox extends CssBox {
 //                        getExpandedOffset(jspx, pos.getOffset());
                 // ====
 //                offset = InSyncService.getProvider().getExpandedOffset(jspx, pos.getOffset());
-                offset = WebForm.getDomProviderService().getExpandedOffset(jspx, pos.getOffset());
+                offset = webform.getDomProviderService().getExpandedOffset(jspx, pos.getOffset());
                 // </markup_separation>
             }
 
@@ -695,7 +695,7 @@ public final class TextBox extends CssBox {
 //                        getUnexpandedOffset(jspx, offset);
                 // ====
 //                offset = InSyncService.getProvider().getUnexpandedOffset(jspx, offset);
-                offset = WebForm.getDomProviderService().getUnexpandedOffset(jspx, offset);
+                offset = webform.getDomProviderService().getUnexpandedOffset(jspx, offset);
                 // </markup_separation>
             }
 
@@ -729,7 +729,7 @@ public final class TextBox extends CssBox {
 //                        getExpandedOffset(jspx, pos.getOffset());
                 // ====
 //                offset = InSyncService.getProvider().getExpandedOffset(jspx, pos.getOffset());
-                offset = WebForm.getDomProviderService().getExpandedOffset(jspx, pos.getOffset());
+                offset = webform.getDomProviderService().getExpandedOffset(jspx, pos.getOffset());
                 // </markup_separation>
             }
 
@@ -745,7 +745,7 @@ public final class TextBox extends CssBox {
 //                        getUnexpandedOffset(jspx, offset);
                 // ====
 //                offset = InSyncService.getProvider().getUnexpandedOffset(jspx, offset);
-                offset = WebForm.getDomProviderService().getUnexpandedOffset(jspx, offset);
+                offset = webform.getDomProviderService().getUnexpandedOffset(jspx, offset);
                 // </markup_separation>
             }
 

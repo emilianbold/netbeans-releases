@@ -510,7 +510,7 @@ public class FormComponentBox extends ContainerBox {
 
             if ((size > 1) || multiple) {
                 Vector<String> v = new Vector<String>();
-                int[] selected = populateOptions(element, v);
+                int[] selected = populateOptions(webform, element, v);
 
                 JList list;
                 if (v.size() == 0) {
@@ -552,7 +552,7 @@ public class FormComponentBox extends ContainerBox {
 //                }
             } else {
                 Vector<String> v = new Vector<String>();
-                int[] selected = populateOptions(element, v);
+                int[] selected = populateOptions(webform, element, v);
 
                 JComboBox jc;
                 if (v.size() == 0) {
@@ -665,7 +665,7 @@ public class FormComponentBox extends ContainerBox {
      * of the given Vector. (After whitespace is stripped, of course.)
      * Return the set of selected indices.
      */
-    public static int[] populateOptions(Element element, Vector<String> v) {
+    public static int[] populateOptions(WebForm webForm, Element element, Vector<String> v) {
         // <markup_separation>
 //        MarkupService markupService = MarkupServiceProvider.getDefault();
         // </markup_separation>
@@ -712,7 +712,7 @@ public class FormComponentBox extends ContainerBox {
 //                        nodeVal = markupService.expandHtmlEntities(nodeVal, true, element);
                         // ====
 //                        nodeVal = InSyncService.getProvider().expandHtmlEntities(nodeVal, true, element);
-                        nodeVal = WebForm.getDomProviderService().expandHtmlEntities(nodeVal, true, element);
+                        nodeVal = webForm.getDomProviderService().expandHtmlEntities(nodeVal, true, element);
                         // </markup_separation>
                     } // ELSE: regular entity fixing?
 

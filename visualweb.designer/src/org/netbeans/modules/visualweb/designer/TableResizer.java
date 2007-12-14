@@ -179,11 +179,11 @@ public class TableResizer extends Interaction implements KeyListener {
             // Set the column size
             if (direction == CssBox.Y_AXIS) {
 //                designInfo.resizeColumn(bean, column, r.width);
-                WebForm.getDomProviderService().resizeColumn(tableComponentRootElement, column, r.width);
+                webform.getDomProviderService().resizeColumn(tableComponentRootElement, column, r.width);
             } else {
                 assert direction == CssBox.X_AXIS;
 //                designInfo.resizeRow(bean, row, r.height);
-                WebForm.getDomProviderService().resizeRow(tableComponentRootElement, row, r.height);
+                webform.getDomProviderService().resizeRow(tableComponentRootElement, row, r.height);
             }
 
             cleanup(pane);
@@ -249,7 +249,7 @@ public class TableResizer extends Interaction implements KeyListener {
         case CssBox.X_AXIS:
             r.width = otherSize;
 //            size = designInfo.testResizeRow(bean, row, column, size);
-            size = WebForm.getDomProviderService().testResizeRow(tableComponentRootElement, row, column, size);
+            size = webform.getDomProviderService().testResizeRow(tableComponentRootElement, row, column, size);
 
             if (size == -1) { // VERY surprising behavior by the table design info
                 size = 0;
@@ -261,7 +261,7 @@ public class TableResizer extends Interaction implements KeyListener {
 
         case CssBox.Y_AXIS:
 //            size = designInfo.testResizeColumn(bean, row, column, size);
-            size = WebForm.getDomProviderService().testResizeColumn(tableComponentRootElement, row, column, size);
+            size = webform.getDomProviderService().testResizeColumn(tableComponentRootElement, row, column, size);
 
             if (size == -1) { // VERY surprising behavior by the table design info
                 size = 0;

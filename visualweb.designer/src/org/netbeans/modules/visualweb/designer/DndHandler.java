@@ -3476,7 +3476,7 @@ public class DndHandler /*extends TransferHandler*/ {
 //            lastMessage =
 //                NbBundle.getMessage(DndHandler.class, "LinkTarget", region.getDisplayName());
                         lastMessage =
-                NbBundle.getMessage(DndHandler.class, "LinkTarget", WebForm.getDomProviderService().getRegionDisplayName(regionElement));
+                NbBundle.getMessage(DndHandler.class, "LinkTarget", webform.getDomProviderService().getRegionDisplayName(regionElement));
 
             StatusDisplayer.getDefault().setStatusText(lastMessage);
 //        } else if (bean != null) {
@@ -3500,12 +3500,12 @@ public class DndHandler /*extends TransferHandler*/ {
             if (type == DROP_LINKED) {
                 lastMessage =
 //                    NbBundle.getMessage(DndHandler.class, "LinkTarget", bean.getInstanceName());
-                        NbBundle.getMessage(DndHandler.class, "LinkTarget", WebForm.getDomProviderService().getInstanceName(componentRootElement));
+                        NbBundle.getMessage(DndHandler.class, "LinkTarget", webform.getDomProviderService().getInstanceName(componentRootElement));
                 StatusDisplayer.getDefault().setStatusText(lastMessage);
             } else if (type == DROP_PARENTED) {
                 lastMessage =
 //                    NbBundle.getMessage(DndHandler.class, "ParentTarget", bean.getInstanceName());
-                        NbBundle.getMessage(DndHandler.class, "ParentTarget", WebForm.getDomProviderService().getInstanceName(componentRootElement));
+                        NbBundle.getMessage(DndHandler.class, "ParentTarget", webform.getDomProviderService().getInstanceName(componentRootElement));
                 StatusDisplayer.getDefault().setStatusText(lastMessage);
             } else {
                 assert false : type;

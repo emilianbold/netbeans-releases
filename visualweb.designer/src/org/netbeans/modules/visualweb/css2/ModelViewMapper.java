@@ -2578,7 +2578,7 @@ public final class ModelViewMapper {
 ////                                        e = (RaveElement)bean.getElement();
 //                                        e = bean.getElement();
 //                                    }
-                                    Element se = WebForm.getDomProviderService().getSourceElementWhichRendersChildren(e);
+                                    Element se = webForm.getDomProviderService().getSourceElementWhichRendersChildren(e);
                                     if (se != null) {
                                         e = se;
                                     }
@@ -2617,7 +2617,7 @@ public final class ModelViewMapper {
 //                    
 //                    // XXX what if bean itself is a renders children?
 //                    if (parent != bean) {
-                Element se = WebForm.getDomProviderService().getSourceElementWhichRendersChildren(element);
+                Element se = webForm.getDomProviderService().getSourceElementWhichRendersChildren(element);
                 if (se != null) {
 //                    if (se != element) {
                     // XXX #112580 Needs to compare rendered with rendered or source with source element.
@@ -2666,7 +2666,7 @@ public final class ModelViewMapper {
 //                    DesignBean bean = InSyncService.getProvider().getMarkupDesignBeanForElement(element);
 //                    DesignBean bean = WebForm.getDomProviderService().getMarkupDesignBeanForElement(element);
 //                    if (bean != null) {
-                    Element componentRootElement = WebForm.getDomProviderService().getComponentRootElementForElement(element);
+                    Element componentRootElement = webForm.getDomProviderService().getComponentRootElementForElement(element);
                     if (componentRootElement != null) {
 //                        Element el = FacesSupport.getElement(bean);
 //                        Element el = Util.getElement(bean);
@@ -2805,12 +2805,16 @@ public final class ModelViewMapper {
     /** Locates element in the visible view given the box.
      * @return <code>Element</code> or <code>null</code> if there is not such */
     public static Element findElement(CssBox box) {
+        WebForm webForm = box == null ? null : box.getWebForm();
+        if (webForm == null) {
+            return null;
+        }
         for (; box != null; box = box.getParent()) {
             // #107084 Find the element, don't check for the root.
 //            Element componentRootElement = CssBox.getElementForComponentRootCssBox(box);
             Element element = box.getElement();
             if (element != null) {
-                if (WebForm.getDomProviderService().isSpecialComponent(element)) {
+                if (webForm.getDomProviderService().isSpecialComponent(element)) {
                     continue;
                 }
 
@@ -2825,6 +2829,10 @@ public final class ModelViewMapper {
     /** Locates component root element in the visible view given the box.
      * @return <code>Element</code> or <code>null</code> if there is not such */
     public static Element findComponentRootElement(CssBox box) {
+        WebForm webForm = box == null ? null : box.getWebForm();
+        if (webForm == null) {
+            return null;
+        }
         for (; box != null; box = box.getParent()) {
             // #107084 Find the element, don't check for the root.
 //            Element componentRootElement = CssBox.getElementForComponentRootCssBox(box);
@@ -2837,8 +2845,8 @@ public final class ModelViewMapper {
             // (the real one might be excluded from the tree)
             CssBox parentBox = box.getParent();
             Element parentElement = parentBox == null ? null : parentBox.getElement();
-            if (WebForm.getDomProviderService().isPrincipalElement(element, parentElement)) {
-                if (WebForm.getDomProviderService().isSpecialComponent(element)) {
+            if (webForm.getDomProviderService().isPrincipalElement(element, parentElement)) {
+                if (webForm.getDomProviderService().isSpecialComponent(element)) {
                     continue;
                 }
 
@@ -2955,7 +2963,8 @@ public final class ModelViewMapper {
 //                DesignBean child = lb.getChildBean(i);
 //                bounds = pageBox.computeBounds(child, bounds);
 //            }
-            Element[] childComponentRootElements = WebForm.getDomProviderService().getChildComponentRootElements(componentRootElement);
+            WebForm webForm = pageBox.getWebForm();
+            Element[] childComponentRootElements = webForm.getDomProviderService().getChildComponentRootElements(componentRootElement);
             for (Element child : childComponentRootElements) {
                 bounds = pageBox.computeBounds(child, bounds);
             }
@@ -2969,10 +2978,10 @@ public final class ModelViewMapper {
 //    }
 
     /** Finds closes parent (including itself) component root element.  */
-    public static Element findClosestComponentRootElement(Node node) {
+    public static Element findClosestComponentRootElement(WebForm webForm, Node node) {
         while (node != null) {
             if (node instanceof Element
-            && WebForm.getDomProviderService().isPrincipalElement((Element)node, null)) {
+            && webForm.getDomProviderService().isPrincipalElement((Element)node, null)) {
                 return (Element)node;
             }
             

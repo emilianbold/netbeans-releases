@@ -439,6 +439,7 @@ public class DomInspector extends TopComponent implements TreeSelectionListener 
                 sb.append("&gt;"); // NOI18N
                 sb.append(' '); // NOI18N
 
+                WebForm webForm = box.getWebForm();
 //                if (element.getDesignBean() != null && (box.getParent() == null ||
 //                        element.getDesignBean() != box.getParent().getDesignBean())) {
 //                MarkupDesignBean markupDesignBean = InSyncService.getProvider().getMarkupDesignBeanForElement(element);
@@ -452,7 +453,7 @@ public class DomInspector extends TopComponent implements TreeSelectionListener 
                     sb.append("<i>"); // NOI18N
 //                    sb.append(element.getDesignBean().getInstanceName());
 //                    sb.append(markupDesignBean.getInstanceName());
-                    sb.append(WebForm.getDomProviderService().getInstanceName(element));
+                    sb.append(webForm.getDomProviderService().getInstanceName(element));
                     sb.append("</i>"); // NOI18N
                 }
             }
@@ -861,7 +862,8 @@ public class DomInspector extends TopComponent implements TreeSelectionListener 
                 Element componentRootElement = CssBox.getElementForComponentRootCssBox(box);
 //		String s = DesignerUtils.getBeanName(bean);
 //                String s = getBeanName(bean);
-                String s = getComponentName(componentRootElement);
+                WebForm webForm = box == null ? null : box.getWebForm();
+                String s = getComponentName(webForm, componentRootElement);
 
 		if (s == null) {
 		    return ""; // NOI18N
@@ -879,11 +881,14 @@ public class DomInspector extends TopComponent implements TreeSelectionListener 
      * @return the name of the bean, or null if a bean can not be found for this view's element
      */
 //    private static String getBeanName(DesignBean bean) {
-    private static String getComponentName(Element componentRootElement) {
+    private static String getComponentName(WebForm webForm, Element componentRootElement) {
+        if (webForm == null) {
+            return null;
+        }
 //        if (bean != null) {
         if (componentRootElement != null) {
 //            return "<" + bean.getInstanceName() + ">";
-            return "<" + WebForm.getDomProviderService().getInstanceName(componentRootElement) + ">";
+            return "<" + webForm.getDomProviderService().getInstanceName(componentRootElement) + ">";
         }
         
         return null;
@@ -924,7 +929,11 @@ public class DomInspector extends TopComponent implements TreeSelectionListener 
 
 //		return InSyncService.getProvider().getHtmlStream(df);
 //                return WebForm.getDomProviderService().getHtmlStream(df);
-                return WebForm.getDomProviderService().getHtmlStream(componentRootElement);
+                WebForm webForm = box == null ? null : box.getWebForm();
+                if (webForm == null) {
+                    return ""; // NOI18N
+                }
+                return webForm.getDomProviderService().getHtmlStream(componentRootElement);
 	    }
 	};
     }

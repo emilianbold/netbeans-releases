@@ -120,7 +120,7 @@ public class SelectionManager {
     private static final int BARSIZE = 5;
     private static final int SELECTIONVIEW_LEFT = 1;
     private BasicStroke selStroke;
-    private WebForm webform = null;
+    private final WebForm webform;
 //    private DocumentComp documentComponent = null;
 
 //    /** Set of selected objects. Contains FormObjects only. */
@@ -476,7 +476,7 @@ public class SelectionManager {
                 }
 
 //                curr = curr.getBeanParent();
-                curr = WebForm.getDomProviderService().getParentComponent(curr);
+                curr = webform.getDomProviderService().getParentComponent(curr);
             }
 
             // No. This is the new leaf.
@@ -637,7 +637,7 @@ public class SelectionManager {
         for (SelectedComponent sc : selectedComponents) {
 //            DesignBean lb = WebForm.getDomProviderService().getMarkupDesignBeanForElement(sc.componentRootElement);
 //            if (lb.isContainer()) {
-            if (WebForm.getDomProviderService().isContainerTypeComponent(sc.componentRootElement)) {
+            if (webform.getDomProviderService().isContainerTypeComponent(sc.componentRootElement)) {
 //                return lb;
                 return sc.componentRootElement;
             }
@@ -657,7 +657,7 @@ public class SelectionManager {
         for (SelectedComponent sc : selectedComponents) {
 //            DesignBean lb = WebForm.getDomProviderService().getMarkupDesignBeanForElement(sc.componentRootElement);
 //            if (lb.getBeanParent() != null) {
-            Element parentComponentRootElement = WebForm.getDomProviderService().getParentComponent(sc.componentRootElement);
+            Element parentComponentRootElement = webform.getDomProviderService().getParentComponent(sc.componentRootElement);
             if (parentComponentRootElement != null) {
 //                return lb.getBeanParent();
                 return parentComponentRootElement;
@@ -720,7 +720,7 @@ public class SelectionManager {
         // XXX #109439 The same components appeared more times in the selection.
         clearSelection(false);
 
-        Element[] children = WebForm.getDomProviderService().getChildComponents(element);
+        Element[] children = webform.getDomProviderService().getChildComponents(element);
 //        for (int i = 0, n = root.getChildBeanCount(); i < n; i++) {
 //            DesignBean child = root.getChildBean(i);
         for (Element child : children) {
@@ -806,7 +806,7 @@ public class SelectionManager {
 //        if (!FacesSupport.isSpecialBean(/*webform, */bean)) {
 //        if (!Util.isSpecialBean(bean)) {
 //        MarkupDesignBean bean = WebForm.getDomProviderService().getMarkupDesignBeanForElement(componentRootElement);
-        if (!WebForm.getDomProviderService().isSpecialComponent(componentRootElement)) {
+        if (!webform.getDomProviderService().isSpecialComponent(componentRootElement)) {
 //            addSelected(bean, false);
             addSelected(componentRootElement, false);
         }
@@ -819,7 +819,7 @@ public class SelectionManager {
 //                selectAll(WebForm.getDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)child));
 //            }
 //        }
-        Element[] children = WebForm.getDomProviderService().getChildComponents(componentRootElement);
+        Element[] children = webform.getDomProviderService().getChildComponents(componentRootElement);
         for (Element child : children) {
             selectAll(child);
         }
@@ -939,7 +939,7 @@ public class SelectionManager {
 //                    int defaultProp = bi.getDefaultPropertyIndex();
 //
 //                    if (defaultProp != -1) {
-                if (WebForm.getDomProviderService().hasDefaultProperty(sc.componentRootElement)) {
+                if (webform.getDomProviderService().hasDefaultProperty(sc.componentRootElement)) {
 //                        FeatureDescriptor defProp = bi.getPropertyDescriptors()[defaultProp];
 //
 //                        // How do we launch the property sheet editing a
@@ -999,7 +999,7 @@ public class SelectionManager {
 //                                return true;
 //                            }
 //                        }
-                        return WebForm.getDomProviderService().focusDefaultProperty(sc.componentRootElement, event.getActionCommand());
+                        return webform.getDomProviderService().focusDefaultProperty(sc.componentRootElement, event.getActionCommand());
                     } else {
                         // Is it a MarkupBean that has a TextNode child?
                         // (for example a <div> or a <table>. If so,
@@ -1008,7 +1008,7 @@ public class SelectionManager {
 //                        Element element = FacesSupport.getElement(lb);
 //                        Element element = Util.getElement(lb);
 //                        Element element = WebForm.getDomProviderService().getElement(lb);
-                        Element element = WebForm.getDomProviderService().getSourceElement(sc.componentRootElement);
+                        Element element = webform.getDomProviderService().getSourceElement(sc.componentRootElement);
 
                         if (element != null) {
 //                            org.w3c.dom.Node text = DesignerUtils.findFirstTextChild(element);
@@ -1919,11 +1919,11 @@ public class SelectionManager {
 ////                !Util.isSpecialBean(bean)) {
 //                !WebForm.getDomProviderService().isSpecialComponent(
 //                    WebForm.getDomProviderService().getComponentRootElementForMarkupDesignBean(bean))) {
-        if (!WebForm.getDomProviderService().isSpecialComponent(componentRootElement)) {
+        if (!webform.getDomProviderService().isSpecialComponent(componentRootElement)) {
 //            x = paintOrSelectAncestor(g2d, metrics, boldMetrics,
 //                    (MarkupDesignBean)bean.getBeanParent(), x, ytop, y, selected, target);
             x = paintOrSelectAncestor(g2d, metrics, boldMetrics,
-                    WebForm.getDomProviderService().getParentComponent(componentRootElement), x, ytop, y, selectedComponentRootElement, target);
+                    webform.getDomProviderService().getParentComponent(componentRootElement), x, ytop, y, selectedComponentRootElement, target);
 
             if (x < 0) {
                 return x;
@@ -1939,7 +1939,7 @@ public class SelectionManager {
 //        if (x > SELECTIONVIEW_LEFT) {
 //            s = "- " + bean.getInstanceName();
 //        }
-        String s = WebForm.getDomProviderService().getInstanceName(componentRootElement);
+        String s = webform.getDomProviderService().getInstanceName(componentRootElement);
         if (s == null) {
             s = "<unknown>"; // TODO I18N
         }
@@ -1962,7 +1962,7 @@ public class SelectionManager {
 //
 //            if (bi != null) {
 //                icon = bi.getIcon(BeanInfo.ICON_COLOR_16x16);
-            Image icon = WebForm.getDomProviderService().getIcon(componentRootElement);
+            Image icon = webform.getDomProviderService().getIcon(componentRootElement);
 
                 if (icon != null) {
                     if (g2d != null) {

@@ -216,7 +216,7 @@ public class InteractionManager {
 //                }
                 // XXX Doesn't allow to insert into include (fragment).
                 Element componentRootElement = CssBox.getElementForComponentRootCssBox(box);
-                if (WebForm.getDomProviderService().isIncludeComponentBox(componentRootElement)) {
+                if (webform.getDomProviderService().isIncludeComponentBox(componentRootElement)) {
                     insertModeBox = null;
                     return;
                 }
@@ -371,7 +371,7 @@ public class InteractionManager {
 //            if ((b != null) && FacesSupport.isFacesComponent(b)) {
 //            if ((b != null) && isFacesComponent(b)) {
 //            if (b != null && WebForm.getDomProviderService().isFacesComponentBean(b)) {
-            if (componentRootElement != null && WebForm.getDomProviderService().isFacesComponent(componentRootElement)) {
+            if (componentRootElement != null && webform.getDomProviderService().isFacesComponent(componentRootElement)) {
                 return null;
             }
 
@@ -834,7 +834,7 @@ public class InteractionManager {
             }
 
             // XXX #116867 Check whether the position belongs to hightligted component.
-            if (!isPositionFromComponent(pos, targetSourceElement)) {
+            if (!isPositionFromComponent(webform, pos, targetSourceElement)) {
                 pos = DomPosition.NONE;
             } else if (!pos.isInside(targetSourceElement)) { // XXX todo: check front/end positions!
                 // The position is outside of the targeted component
@@ -888,13 +888,13 @@ public class InteractionManager {
     }
     
     /** XXX #116867 Indicates whether specified position belongs to specified component, not its subcomponent. */
-    private static boolean isPositionFromComponent(DomPosition pos, Element sourceComponentRootElement) {
+    private static boolean isPositionFromComponent(WebForm webForm, DomPosition pos, Element sourceComponentRootElement) {
         if (pos == null || sourceComponentRootElement == null) {
             return false;
         }
         org.w3c.dom.Node posNode = pos.getNode();
         if (posNode instanceof Element) {
-            return ModelViewMapper.findClosestComponentRootElement((Element)posNode) == sourceComponentRootElement;
+            return ModelViewMapper.findClosestComponentRootElement(webForm, (Element)posNode) == sourceComponentRootElement;
         }
         return false;
     }
@@ -1223,7 +1223,8 @@ public class InteractionManager {
 //            if ((parentMarkupDesignBean != null) &&
 ////                    FacesSupport.isSpecialBean(/*webform, */parent.getDesignBean())) {
 //                    Util.isSpecialBean(parentMarkupDesignBean)) {
-            if (WebForm.getDomProviderService().isSpecialComponent(parentComponentRootElement)) {
+            WebForm webForm = box.getWebForm();
+            if (webForm.getDomProviderService().isSpecialComponent(parentComponentRootElement)) {
                 return prevComponentRootElement;
             }
 
@@ -1691,7 +1692,7 @@ public class InteractionManager {
 //                    }
 
 //                    parent = parent.getBeanParent();
-                    parentComponentRootElement = WebForm.getDomProviderService().getParentComponent(parentComponentRootElement);
+                    parentComponentRootElement = webform.getDomProviderService().getParentComponent(parentComponentRootElement);
                 }
 
                 if (!found && (bx != ancestor)) {
@@ -3221,27 +3222,27 @@ public class InteractionManager {
 //        if (designContext == null) {
 //            return false;
 //        }
-        Element parentComponentRootElement = WebForm.getDomProviderService().getParentComponent(componentRootElement);
+        Element parentComponentRootElement = webform.getDomProviderService().getParentComponent(componentRootElement);
 
 //        while (parent != null) {
         while (parentComponentRootElement != null) {
             
             // XXX #111692 No corresponding box?
             if (ModelViewMapper.findBox(webform.getPane().getPageBox(), parentComponentRootElement) == null) {
-                parentComponentRootElement = WebForm.getDomProviderService().getParentComponent(parentComponentRootElement);
+                parentComponentRootElement = webform.getDomProviderService().getParentComponent(parentComponentRootElement);
                 continue;
             }
             
 //            if (parent == model.getRootBean()) {
 //            if (parent == designContext.getRootContainer()) {
-            if (WebForm.getDomProviderService().isRootContainerComponent(parentComponentRootElement)) {
+            if (webform.getDomProviderService().isRootContainerComponent(parentComponentRootElement)) {
                 return null;
             }
 
 //            if (Util.isSpecialBean(/*webform, */parent)) {
 //            if (parent instanceof MarkupDesignBean && WebForm.getDomProviderService().isSpecialComponent(
 //                    WebForm.getDomProviderService().getComponentRootElementForMarkupDesignBean((MarkupDesignBean)parent))) {
-            if (WebForm.getDomProviderService().isSpecialComponent(parentComponentRootElement)) {
+            if (webform.getDomProviderService().isSpecialComponent(parentComponentRootElement)) {
                 return null;
             }
 
@@ -3411,7 +3412,7 @@ public class InteractionManager {
                         // We could consider searching recursively here but that's probably overkill.
 //                        for (int j = 0, m = lb.getChildBeanCount(); j < m; j++) {
 //                            DesignBean lbc = lb.getChildBean(j);
-                        Element[] children = WebForm.getDomProviderService().getChildComponents(componentRootElement);
+                        Element[] children = webform.getDomProviderService().getChildComponents(componentRootElement);
                         for (Element child : children) {
 
 //                            if (lbc instanceof MarkupDesignBean) {

@@ -313,7 +313,7 @@ public class SpaceBox extends CssBox {
 //                        getUnexpandedOffset(jspx, beginOffset);
                 // ====
 //                beginDomOffset = InSyncService.getProvider().getUnexpandedOffset(jspx, beginOffset);
-                beginDomOffset = WebForm.getDomProviderService().getUnexpandedOffset(jspx, beginOffset);
+                beginDomOffset = webform.getDomProviderService().getUnexpandedOffset(jspx, beginOffset);
                 // </markup_separation>
             }
         }
@@ -333,7 +333,7 @@ public class SpaceBox extends CssBox {
 //                        getUnexpandedOffset(jspx, endOffset);
                 // ====
 //                endDomOffset = InSyncService.getProvider().getUnexpandedOffset(jspx, endOffset);
-                endDomOffset = WebForm.getDomProviderService().getUnexpandedOffset(jspx, endOffset);
+                endDomOffset = webform.getDomProviderService().getUnexpandedOffset(jspx, endOffset);
                 // </markup_separation>
             }
         }
