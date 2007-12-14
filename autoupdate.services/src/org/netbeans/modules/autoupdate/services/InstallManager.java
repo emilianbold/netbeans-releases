@@ -218,10 +218,10 @@ public class InstallManager extends InstalledFileLocator{
             synchronized (InstallManager.class) {
                 clusters.add(cluster);
             }
-        } catch (PropertyVetoException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+        } catch (PropertyVetoException ioe) {
+            ERR.log (Level.INFO, ioe.getMessage (), ioe);
+        } catch (IOException ioe) {
+            ERR.log (Level.INFO, ioe.getMessage (), ioe);
         }
     }
     
