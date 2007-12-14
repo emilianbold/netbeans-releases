@@ -108,7 +108,10 @@ public class WebFormTest extends NbTestCase {
      */
     public void testGetDomProviderService() {
         System.out.println("getDomProviderService");
-        DomProviderService domProviderService = WebForm.getDomProviderService();
+        DomProvider domProvider = Util.createDomProvider();
+        WebForm webForm = WebForm.createWebForm(domProvider);
+        assertNotNull("Null webForm for domProvider, domProvider=" + domProvider, webForm); // NOI18N
+        DomProviderService domProviderService = webForm.getDomProviderService();
         assertNotNull("There may not be a null DomProviderService!", domProviderService); // NOI18N
     }
 

@@ -41,6 +41,7 @@ package org.netbeans.modules.visualweb.designer;
 
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -56,6 +57,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.modules.visualweb.api.designer.Designer;
 import org.netbeans.modules.visualweb.api.designer.DomProvider;
 import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition.Bias;
+import org.netbeans.modules.visualweb.api.designer.DomProviderService;
 import org.netbeans.modules.visualweb.api.designer.markup.MarkupService;
 import org.netbeans.modules.visualweb.spi.designer.Decoration;
 import org.netbeans.spi.palette.PaletteController;
@@ -86,6 +88,7 @@ public final class Util {
 
         private final Document document;
         private final Element bodyElement;
+        private static final DomProviderService domProviderService = new TestDomProviderService();
         
         public TestDomProvider() {
             this.document = createTestDocument();
@@ -219,7 +222,175 @@ public final class Util {
             return false;
         }
 
+        public DomProviderService getDomProviderService() {
+            return domProviderService;
+        }
+
     } // TestDomProvider.
+
+    
+    
+    
+    private static class TestDomProviderService implements DomProviderService {
+
+        public int getExpandedOffset(String unexpanded, int unexpandedOffset) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public int getUnexpandedOffset(String unexpanded, int expandedOffset) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public String expandHtmlEntities(String html, boolean warn, Node node) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public String getHtmlStream(Node node) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public String getDomDocumentReplacedEventConstant() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public Element getSourceElement(Element componentRootElement) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public boolean isPrincipalElement(Element element, Element parentBoxElement) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public boolean isFocusedElement(Element element) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public boolean ignoreDesignBorder(Element element) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public Element getSourceElementWhichRendersChildren(Element element) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public Element[] getChildComponentRootElements(Element componentRootElement) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public boolean isFacesComponent(Element componentRootElement) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public String getRegionDisplayName(Element regionElement) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public boolean isSameRegionOfElement(Element regionElement, Element element) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public Element getComponentRootElementForElement(Element element) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public String getInstanceName(Element componentRootElement) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public boolean isIncludeComponentBox(Element componentRootElement) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public boolean isSpecialComponent(Element componentRootElement) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public boolean isTrayComponent(Element componentRootElement) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public boolean isCssPositionable(Element componentRootElement) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public boolean isEscapedComponent(Element componentRootElement) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public Element getParentComponent(Element componentRootElement) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public Element[] getChildComponents(Element componentRootElement) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public boolean isContainerComponent(Element componentRootElement) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public boolean isContainerTypeComponent(Element componentRootElement) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public String[] getEditableProperties(Element componentRootElement) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public ResizeConstraint[] getResizeConstraintsForComponent(Element componentRootElement) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public boolean isRootContainerComponent(Element componentRootElement) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public boolean hasDefaultProperty(Element componentRootElement) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public boolean focusDefaultProperty(Element componentRootElement, String content) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public Image getIcon(Element componentRootElement) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public Element getComponentRootElementFromNode(org.openide.nodes.Node node) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public boolean hasTableResizeSupport(Element tableComponentRootElement) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public int testResizeColumn(Element tableComponentRootElement, int row, int column, int width) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public int testResizeRow(Element tableComponentRootElement, int row, int column, int height) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void resizeColumn(Element tableComponentRootElement, int column, int width) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public void resizeRow(Element tableComponentRootElement, int row, int height) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public boolean areLinkedToSameBean(Element oneElement, Element otherElement) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public Node findPropertyNode(Node root, String xpaths) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        
+    } // TestDomProviderService.
+    
     private static Document createTestDocument() {
         try {
             DocumentBuilder documentBuilder = MarkupService.createRaveRenderedDocumentBuilder(true);
