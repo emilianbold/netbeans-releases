@@ -63,7 +63,7 @@ made subject to such option by the copyright holder.
     
     <target name="ide_command_line_suffix">
         <!--  Repeat performance test more than once -->
-        <property name="xtest.ide.commandline.suffix" value="-J-Dcom.sun.aas.installRoot=${j2ee.appserver.path} -J-Dorg.netbeans.performance.repeat=4 -J-Dorg.netbeans.performance.memory.usage.log=true -J-Dnetbeans.javacore.noscan=true"/>
+        <property name="xtest.ide.commandline.suffix" value="-J-Dcom.sun.aas.installRoot=${j2ee.appserver.path} -J-Dorg.netbeans.performance.repeat=4 -J-Dorg.netbeans.performance.memory.usage.log=true"/>
     </target>
     
     <!-- ========= -->
@@ -176,6 +176,13 @@ made subject to such option by the copyright holder.
 
     <!-- Executor for performance tests with backup of appserver domain -->
     <target name="runide_performance_as" depends="init,init-cp,set-appserver-path,check-appserver,ide_command_line_suffix">
+       <antcall target="runidetest">
+          <param name="xtest.userdata|j2ee.appserver.path" value="${j2ee.appserver.path}"/>
+       </antcall>   
+    </target>
+
+    <target name="runide_performance_as_noscan" depends="init,init-cp,set-appserver-path,check-appserver">
+       <property name="xtest.ide.commandline.suffix" value="-J-Dcom.sun.aas.installRoot=${j2ee.appserver.path} -J-Dorg.netbeans.performance.repeat=4 -J-Dorg.netbeans.performance.memory.usage.log=true -J-Dnetbeans.javacore.noscan=true"/>
        <antcall target="runidetest">
           <param name="xtest.userdata|j2ee.appserver.path" value="${j2ee.appserver.path}"/>
        </antcall>   

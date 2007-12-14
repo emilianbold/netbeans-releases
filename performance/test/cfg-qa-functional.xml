@@ -61,6 +61,15 @@ made subject to such option by the copyright holder.
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/MeasureActions.class"/>
+                <exclude name="gui/MeasureActions.class/Create Web Application project"/>
+            </patternset>
+        </testset>
+    </testbag>
+    <testbag testattribs="all or ui_responsiveness or actions" prio="2"
+             executor="ide_performance_noscan" name="UI responsiveness - Actions" >
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/MeasureActions.class/Create Web Application project"/>
             </patternset>
         </testset>
     </testbag>
@@ -87,9 +96,19 @@ made subject to such option by the copyright holder.
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/MeasureActions.class"/>
+                <exclude name="gui/MeasureActions.class/Create Web Application project"/>
             </patternset>
         </testset>
     </testbag>
+    <testbag testattribs="all or ui_responsiveness or actions" prio="5"
+             executor="ide_performance_noscan" name="UI responsiveness - Actions" >
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/MeasureActions.class/Create Web Application project"/>
+            </patternset>
+        </testset>
+    </testbag>
+
     <testbag testattribs="(all or ui_responsiveness or dialogs) and NOT once" prio="6"
              executor="ide_performance" name="UI responsiveness - Dialogs" >
         <testset dir="qa-functional/src">
@@ -113,9 +132,19 @@ made subject to such option by the copyright holder.
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="gui/MeasureActions.class"/>
+                <exclude name="gui/MeasureActions.class/Create Web Application project"/>
             </patternset>
         </testset>
     </testbag>
+    <testbag testattribs="all or ui_responsiveness or actions" prio="8"
+             executor="ide_performance_noscan" name="UI responsiveness - Actions" >
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/MeasureActions.class/Create Web Application project"/>
+            </patternset>
+        </testset>
+    </testbag>
+
     <testbag testattribs="(all or ui_responsiveness or dialogs) and NOT once" prio="9"
              executor="ide_performance" name="UI responsiveness - Dialogs" >
         <testset dir="qa-functional/src">
@@ -298,6 +327,7 @@ made subject to such option by the copyright holder.
     <!-- executors & compilers -->
     <executor name="ide_perf_setup" antfile="build-qa-functional.xml" target="runidesetup"/>
     <executor name="ide_performance" antfile="build-qa-functional.xml" target="runide_performance_as" default="true"/>
+    <executor name="ide_performance_noscan" antfile="build-qa-functional.xml" target="runide_performance_as_noscan"/>
     <executor name="ide_performance_memory_usage" antfile="build-qa-functional.xml" target="runidetest_memory_usage"/>
     <executor name="ide_performance_scan" antfile="build-qa-functional.xml" target="runidetest_scan" />
     <executor name="ide_footprint" antfile="build-qa-functional.xml" target="runidetest_footprint"/>
