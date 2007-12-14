@@ -395,24 +395,30 @@ class AppClientActionProvider implements ActionProvider {
             }
         //DEBUGGING PART
         } else if (command.equals(COMMAND_DEBUG_SINGLE)) {
-            if (!isSelectedServer()) {
-                // no selected server => warning
-                String msg = NbBundle.getMessage(
-                        AppClientActionProvider.class, "MSG_No_Server_Selected"); //  NOI18N
-                DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
-                return null;
-            }
-            if (isDebugged()) {
-                NotifyDescriptor nd;
-                nd = new NotifyDescriptor.Confirmation(
-                            NbBundle.getMessage(AppClientActionProvider.class, "MSG_FinishSession"),
-                            NotifyDescriptor.OK_CANCEL_OPTION);
-                Object o = DialogDisplayer.getDefault().notify(nd);
-                if (o.equals(NotifyDescriptor.OK_OPTION)) {            
-                    DebuggerManager.getDebuggerManager().getCurrentSession().kill();
-                } else {
+            // #122296
+            FileObject[] files = findTestSources(context, false);
+            if (files != null) {
+                targetNames = setupDebugTestSingle(p, files);
+            } else {
+                if (!isSelectedServer()) {
+                    // no selected server => warning
+                    String msg = NbBundle.getMessage(
+                            AppClientActionProvider.class, "MSG_No_Server_Selected"); //  NOI18N
+                    DialogDisplayer.getDefault().notify(
+                            new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
                     return null;
+                }
+                if (isDebugged()) {
+                    NotifyDescriptor nd;
+                    nd = new NotifyDescriptor.Confirmation(
+                                NbBundle.getMessage(AppClientActionProvider.class, "MSG_FinishSession"),
+                                NotifyDescriptor.OK_CANCEL_OPTION);
+                    Object o = DialogDisplayer.getDefault().notify(nd);
+                    if (o.equals(NotifyDescriptor.OK_OPTION)) {
+                        DebuggerManager.getDebuggerManager().getCurrentSession().kill();
+                    } else {
+                        return null;
+                    }
                 }
             }
         } else {
