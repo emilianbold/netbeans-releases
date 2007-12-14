@@ -1891,6 +1891,7 @@ public class TableRowGroup extends TableRowGroupBase implements
         Map propertiesMap = (Map) requestMap.get(propertiesMapId);
         if (propertiesMap == null) {
             propertiesMap = new HashMap();
+            requestMap.put(propertiesMapId, propertiesMap);
         }
 
         // Get properties for this component.
@@ -1898,11 +1899,9 @@ public class TableRowGroup extends TableRowGroupBase implements
         Properties properties = (Properties) propertiesMap.get(propertiesId);
         if (properties == null) {
             properties = new Properties();
+            requestMap.put(propertiesMapId, propertiesMap);
         }
 
-        // Save properties.
-        propertiesMap.put(propertiesId, properties);
-        requestMap.put(propertiesMapId, propertiesMap);
         return properties;
     }
 

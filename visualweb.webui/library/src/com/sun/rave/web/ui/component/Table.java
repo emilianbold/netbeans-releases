@@ -868,7 +868,8 @@ public class Table extends TableBase implements NamingContainer {
             PROPERTIES;
         Map propertiesMap = (Map) requestMap.get(propertiesMapId);
         if (propertiesMap == null) {
-            propertiesMap = new HashMap();
+            propertiesMap = new HashMap();   
+            requestMap.put(propertiesMapId, propertiesMap);
         }
 
         // Get properties for this component.
@@ -876,11 +877,9 @@ public class Table extends TableBase implements NamingContainer {
         Properties properties = (Properties) propertiesMap.get(propertiesId);
         if (properties == null) {
             properties = new Properties();
+            propertiesMap.put(propertiesId, properties);
         }
 
-        // Save properties.
-        propertiesMap.put(propertiesId, properties);
-        requestMap.put(propertiesMapId, propertiesMap);
         return properties;
     }
 

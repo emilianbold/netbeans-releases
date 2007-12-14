@@ -717,6 +717,7 @@ public class TableColumn extends TableColumnBase implements NamingContainer {
         Map propertiesMap = (Map) requestMap.get(propertiesMapId);
         if (propertiesMap == null) {
             propertiesMap = new HashMap();
+            requestMap.put(propertiesMapId, propertiesMap);
         }
 
         // Get properties for this component.
@@ -724,11 +725,9 @@ public class TableColumn extends TableColumnBase implements NamingContainer {
         Properties properties = (Properties) propertiesMap.get(propertiesId);
         if (properties == null) {
             properties = new Properties();
+            propertiesMap.put(propertiesId, properties);
         }
 
-        // Save properties.
-        propertiesMap.put(propertiesId, properties);
-        requestMap.put(propertiesMapId, propertiesMap);
         return properties;
     }
 
