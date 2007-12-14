@@ -85,6 +85,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.netbeans.api.project.ui.OpenProjects;
 
+import org.netbeans.modules.visualweb.dataconnectivity.datasource.CurrentProject;
 import org.w3c.dom.Element;
 
 
@@ -335,6 +336,10 @@ public class ProjectDataSourceTracker{
             FileObject file = model.getFile() ;
             String fname = file.getPath() ;
             Project nb4Proj = FileOwnerQuery.getOwner(file) ;
+            
+            // Set the current project
+            CurrentProject.getInstance().setProject(nb4Proj);
+            
             
             // trim the name down to the relative path (to the project dir)
             String projRoot = nb4Proj.getProjectDirectory().getPath() ;
