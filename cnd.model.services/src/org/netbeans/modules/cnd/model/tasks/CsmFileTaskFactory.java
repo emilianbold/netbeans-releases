@@ -47,6 +47,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
@@ -178,7 +180,7 @@ public abstract class CsmFileTaskFactory {
     private static class Scheduler {
 
         public void addParseCompletionTask(CsmFile js, Runnable task) throws IOException {
-            System.err.println("addParseCompletionTask for " + js.getAbsolutePath());
+            Logger.getLogger(CsmFileTaskFactory.class.getName()).log(Level.FINE, "addParseCompletionTask for " + js.getAbsolutePath());
             List<TaskPair> taskPairs = csmFile2task.get(js);
             if (taskPairs == null) {
                 taskPairs = new ArrayList<TaskPair>();
@@ -192,7 +194,7 @@ public abstract class CsmFileTaskFactory {
         }
 
         public void removeParseCompletionTask(CsmFile js, Runnable task) {
-            System.err.println("removeParseCompletionTask for " + js.getAbsolutePath());
+            Logger.getLogger(CsmFileTaskFactory.class.getName()).log(Level.FINE, "removeParseCompletionTask for " + js.getAbsolutePath());
             List<TaskPair> taskPairs = csmFile2task.get(js);
             assert taskPairs != null;
             for (TaskPair taskPair : taskPairs) {

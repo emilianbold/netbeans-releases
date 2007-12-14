@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.cnd.model.tasks;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -53,12 +55,12 @@ import org.openide.util.RequestProcessor;
  */
 public class CsmFileTaskFactoryManager {
     private static CsmFileTaskFactoryManager INSTANCE;
-    public static final boolean USE_MORE_SEMANTIC = Boolean.getBoolean("cnd.semantic.advanced"); // NOI18N
+    //public static final boolean USE_MORE_SEMANTIC = Boolean.getBoolean("cnd.semantic.advanced"); // NOI18N
     
     public static synchronized void register() {
         //TODO: JavaSource one registers this way but we need something less
         // permanent to don't flood engine with our tasks unless we really have c/c++ file
-        if (INSTANCE == null && USE_MORE_SEMANTIC) {
+        if (INSTANCE == null) {
             INSTANCE = new CsmFileTaskFactoryManager();
         }
     }
@@ -73,7 +75,7 @@ public class CsmFileTaskFactoryManager {
         });
         
         factories = Lookup.getDefault().lookupResult(CsmFileTaskFactory.class);
-        System.err.println("CsmFileTaskFactoryManager: " + factories.allInstances().size() + " factories were found.");
+        Logger.getLogger(CsmFileTaskFactoryManager.class.getName()).log(Level.FINE, "CsmFileTaskFactoryManager: " + factories.allInstances().size() + " factories were found.");
         factories.addLookupListener(new LookupListener() {
             public void resultChanged(LookupEvent ev) {
                 updateTask.schedule(0);
