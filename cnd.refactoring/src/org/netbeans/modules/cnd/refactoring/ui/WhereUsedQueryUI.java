@@ -219,7 +219,7 @@ public class WhereUsedQueryUI implements RefactoringUI {
     }
 
     public String getName() {
-        return getString("LBL_WhereUsed", name); // NOI18N
+        return getString("LBL_UsagesOf", name); // NOI18N
     }
     
     public boolean hasParameters() {
