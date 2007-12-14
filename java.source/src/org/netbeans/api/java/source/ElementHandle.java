@@ -53,6 +53,8 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.usages.ClassFileUtil;
 
@@ -405,6 +407,17 @@ public final class ElementHandle<T extends Element> {
         return new ElementHandle<T> (kind, signatures);
     }
     
+    /**
+     * Gets {@link ElementHandle} from {@link TypeMirrorHandle} representing {@link DeclaredType}.
+     * @param typeMirrorHandle from which the {@link ElementHandle} should be retrieved. Permitted
+     * {@link TypeKind} is {@link TypeKind#DECLARED}.
+     * @return an {@link ElementHandle}
+     * @since 0.29.0
+     */
+    public static ElementHandle<? extends TypeElement> from (final TypeMirrorHandle<? extends DeclaredType> typeMirrorHandle) {
+        assert typeMirrorHandle.getKind() == TypeKind.DECLARED;
+        return (ElementHandle<TypeElement>)typeMirrorHandle.getElementHandle();
+    }
     
     public @Override String toString () {
         final StringBuilder result = new StringBuilder ();

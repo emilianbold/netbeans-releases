@@ -279,5 +279,9 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
      */
     public TypeKind getKind () {
         return this.kind;
-    }    
+    }
+    
+    ElementHandle<? extends Element> getElementHandle() {
+        return element;
+    }
 }
