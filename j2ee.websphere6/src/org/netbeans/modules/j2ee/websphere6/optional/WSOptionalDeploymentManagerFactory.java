@@ -50,12 +50,11 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManage
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 
 import org.netbeans.modules.j2ee.websphere6.ui.wizard.*;
-// Dileep - Start compile fix
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
-// Dileep - Start compile fix
+import org.netbeans.modules.j2ee.websphere6.WSDeploymentManager.WsVersion;
 
 /**
  * An entry point to the plugin's optional functionality, such as server
@@ -66,6 +65,23 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
  */
 public class WSOptionalDeploymentManagerFactory extends
         OptionalDeploymentManagerFactory {
+
+	private final WsVersion version;
+
+    /** Creates a new instance of OptionalFactory */
+    private WSOptionalDeploymentManagerFactory(WsVersion version) {
+        this.version = version;
+    }
+
+    public static WSOptionalDeploymentManagerFactory create60() {
+        return new WSOptionalDeploymentManagerFactory(WsVersion.WS_60);
+    }
+
+    public static WSOptionalDeploymentManagerFactory create61() {
+        return new WSOptionalDeploymentManagerFactory(WsVersion.WS_61);
+    }
+
+
     
     /**
      * Returns an object responsible for starting a particular server instance.
