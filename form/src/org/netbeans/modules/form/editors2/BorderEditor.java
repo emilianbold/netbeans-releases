@@ -441,6 +441,20 @@ public final class BorderEditor extends PropertyEditorSupport
             // update the border
             updateBorder(this);
         }
+
+        @Override
+        public String getShortDescription() {
+            // Workaround for issue 124048
+            String description = super.getShortDescription();
+            if ((description != null) && description.startsWith("<html>")) { // NOI18N
+                int start, end;
+                while (((start = description.indexOf('<')) != -1)
+                        && ((end = description.indexOf('>')) != -1)) {
+                    description = description.substring(0, start) + description.substring(end+1);
+                }
+            }
+            return description;
+        }
     }
 
     static final class NoBorderNode extends AbstractNode {
