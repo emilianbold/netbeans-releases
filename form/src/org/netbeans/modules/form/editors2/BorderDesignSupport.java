@@ -50,6 +50,7 @@ import java.util.logging.Logger;
 
 import org.openide.nodes.*;
 import org.netbeans.modules.form.*;
+import org.netbeans.modules.form.editors.EnumEditor;
 import org.openide.ErrorManager;
 
 /**
@@ -335,9 +336,15 @@ public class BorderDesignSupport implements FormDesignValue
         @Override
         public PropertyEditor getExpliciteEditor() {
             try {
-                return desc.createPropertyEditor(theBorder);
-            } 
-            catch (Exception ex) {
+                PropertyEditor propEd = desc.createPropertyEditor(theBorder);
+                if (propEd == null) {
+                    Object[] enumerationValues = (Object[])desc.getValue("enumerationValues"); // NOI18N
+                    if (enumerationValues != null) {
+                        propEd = new EnumEditor(enumerationValues);
+                    }
+                }
+                return propEd;
+            } catch (Exception ex) {
                 Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
                 return null;
             }
