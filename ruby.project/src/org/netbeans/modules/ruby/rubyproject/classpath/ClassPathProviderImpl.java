@@ -92,7 +92,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     }
 
     private synchronized FileObject getDir(String propname) {
-        FileObject fo = (FileObject) this.dirCache.get (propname);
+        FileObject fo = this.dirCache.get(propname);
         if (fo == null ||  !fo.isValid()) {
             String prop = evaluator.getProperty(propname);
             if (prop != null) {
@@ -268,7 +268,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     
     private synchronized ClassPath getBootClassPath() {
         ClassPath cp = cache[7];
-        if ( cp== null ) {
+        if (cp == null) {
             cp = ClassPathFactory.createClassPath(new BootClassPathImplementation(evaluator));
             cache[7] = cp;
         }

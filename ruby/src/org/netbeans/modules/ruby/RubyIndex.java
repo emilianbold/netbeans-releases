@@ -53,13 +53,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import org.netbeans.api.gsf.Index;
 import org.netbeans.modules.ruby.elements.IndexedField;
 import static org.netbeans.api.gsf.Index.*;
 import org.netbeans.api.gsf.NameKind;
-import org.netbeans.api.ruby.platform.RubyInstallation;
+import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.netbeans.modules.ruby.elements.IndexedElement;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
@@ -80,6 +82,9 @@ import org.openide.util.Exceptions;
  * @author Tor Norbye
  */
 public final class RubyIndex {
+
+    private static final Logger LOGGER = Logger.getLogger(RubyIndex.class.getName());
+    
     public static final String UNKNOWN_CLASS = "<Unknown>"; // NOI18N
     public static final String OBJECT = "Object"; // NOI18N
     private static final String CLASS = "Class"; // NOI18N
@@ -1705,13 +1710,15 @@ public final class RubyIndex {
     }
 
     static String getPreindexUrl(String url) {
-        String s = RubyInstallation.getInstance().getGemHomeUrl();
+        // FIXME: use right platform
+        RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
+        String s = platform.getGemManager().getGemHomeUrl();
 
         if (s != null && url.startsWith(s)) {
             return GEM_URL + url.substring(s.length());
         }
 
-        s = RubyInstallation.getInstance().getRubyHomeUrl();
+        s = platform.getHomeUrl();
 
         if (url.startsWith(s)) {
             url = RUBYHOME_URL + url.substring(s.length());
@@ -1732,11 +1739,17 @@ public final class RubyIndex {
     public static FileObject getFileObject(String url) {
         try {
             if (url.startsWith(RUBYHOME_URL)) {
-                url = RubyInstallation.getInstance().getRubyHomeUrl() +
-                    url.substring(RUBYHOME_URL.length()); // NOI18N
+                LOGGER.info("Resolving of '" + url + "' is not implemented yet");
+                return null;
+                // FIXME: per-platform now
+//                url = RubyInstallation.getInstance().getRubyHomeUrl() +
+//                        url.substring(RUBYHOME_URL.length()); // NOI18N
             } else if (url.startsWith(GEM_URL)) {
-                url = RubyInstallation.getInstance().getGemHomeUrl() +
-                    url.substring(GEM_URL.length()); // NOI18N
+                LOGGER.info("Resolving of '" + url + "' is not implemented yet");
+                return null;
+                // FIXME: per-platform now
+//                url = RubyInstallation.getInstance().getGemHomeUrl() +
+//                        url.substring(GEM_URL.length()); // NOI18N
             } else if (url.startsWith(CLUSTER_URL)) {
                 url = getClusterUrl() + url.substring(CLUSTER_URL.length()); // NOI18N
             }

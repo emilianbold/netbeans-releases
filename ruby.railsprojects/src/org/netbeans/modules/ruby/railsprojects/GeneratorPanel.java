@@ -56,9 +56,10 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.ruby.platform.RubyInstallation;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.platform.gems.GemAction;
+import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -305,17 +306,19 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
             
         }
         
+        GemManager gemManager = RubyPlatform.gemManagerFor(project);
+        
         // 3. Add in RubyGem generators
-        File gemDir = new File(RubyInstallation.getInstance().getRubyLibGemDir() + File.separator + "gems"); // NOI18N
+        File gemDir = new File(gemManager.getGemDir() + File.separator + "gems"); // NOI18N
         if (gemDir.exists()) {
-            Set<String> gems = RubyInstallation.getInstance().getInstalledGems();
+            Set<String> gems = gemManager.getInstalledGemsFiles();
             for (String gem : gems) {
                 if (added.contains(gem)) {
                     continue;
                 }
 
                 if (gem.endsWith("_generator")) { // NOI18N
-                    String version = RubyInstallation.getInstance().getVersion(gem);
+                    String version = gemManager.getVersion(gem);
                     if (version != null) {
                         File f = new File(gemDir, gem + "-" + version); // NOI18N
                         if (f.exists()) {
@@ -342,7 +345,7 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
 
         // Add in the builtins first (since they provide some more specific
         // UI configuration for known generators (labelling the arguments etc.)
-        String railsVersion = RubyInstallation.getInstance().getVersion("rails"); // NOI18N
+        String railsVersion = gemManager.getVersion("rails"); // NOI18N
         
         List<Generator> builtins = Generator.getBuiltinGenerators(railsVersion);
         for (Generator builtin : builtins) {
@@ -399,7 +402,7 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
     private void showUsage(Generator generator) {
         // Look up the Rails directory and read the USAGE file, then stick
         // it into the usageText.
-        String usage = generator.getUsage();
+        String usage = generator.getUsage(RubyPlatform.platformFor(project));
 
         if (usage != null) {
             usageText.setText(usage);
@@ -482,7 +485,7 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
     
     public void run() {
         // Refresh generator list
-        RubyInstallation.getInstance().recomputeRoots();
+        RubyPlatform.platformFor(project).recomputeRoots();
         typeCombo.setModel(getTypeModel());
         
         typeCombo.invalidate();

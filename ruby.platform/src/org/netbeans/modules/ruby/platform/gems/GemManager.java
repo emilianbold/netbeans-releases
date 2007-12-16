@@ -50,12 +50,23 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.JButton;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.ruby.platform.RubyInstallation;
+import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.gsfret.source.usages.ClassIndexManager;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.Util;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
@@ -64,6 +75,11 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -78,14 +94,61 @@ import org.openide.util.Utilities;
  */
 public final class GemManager {
 
+    private static final Logger LOGGER = Logger.getLogger(GemManager.class.getName());
+    
+    /** Directory inside the GEM_HOME directory. */
+    private static final String SPECIFICATIONS = "specifications"; // NOI18N
+    
+    /**
+     * Regexp for matching version number in gem packages:  name-x.y.z (we need
+     * to pull out x,y,z such that we can do numeric comparisons on them)
+     */
+    private static final Pattern VERSION_PATTERN = Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)(-\\S+)?"); // NOI18N
+    
+    private static final boolean PREINDEXING = Boolean.getBoolean("gsf.preindexing");
+
+    private static boolean SKIP_INDEX_LIBS = System.getProperty("ruby.index.nolibs") != null; // NOI18N
+    private static boolean SKIP_INDEX_GEMS = System.getProperty("ruby.index.nogems") != null; // NOI18N
+
+    /**
+     * Extension of files containing gems specification residing in {@link
+     * #SPECIFICATIONS}.
+     */
+    private static final String DOT_GEM_SPEC = ".gemspec"; // NOI18N
+    
+    private Map<String, Map<String, File>> gemFiles;
+    private Map<String, String> gemVersions;
+    private Map<String, URL> gemUrls;
+    private Set<URL> nonGemUrls;
+   
+    /**
+     * Used by tests.
+     * <p>
+     * <em>FIXME</em>: get rid of this
+     */
+    public static String TEST_GEM_HOME;
+    
     /** Share over invocations of the dialog since these are slow to compute */
     private static List<Gem> installed;
     
     /** Share over invocations of the dialog since these are ESPECIALLY slow to compute */
     private static List<Gem> available;
+
+    private String gem;
+    private FileObject gemHomeFo;
+    private String gemHomeUrl;
+    private String rake;
+    private String rails;
+    private String rdoc;
+
+    private final RubyPlatform platform;
     
-    private static String getGemMissingMessage() {
-        if (Utilities.isMac() && "/usr/bin/ruby".equals(RubyInstallation.getInstance().getRuby())) { // NOI18N
+    public GemManager(final RubyPlatform platform) {
+        this.platform = platform;
+    }
+    
+    private String getGemMissingMessage() {
+        if (Utilities.isMac() && "/usr/bin/ruby".equals(platform.getInterpreter())) { // NOI18N
             String version = System.getProperty("os.version"); // NOI18N
             if (version == null || version.startsWith("10.4")) { // Only a problem on Tiger // NOI18N
                 return NbBundle.getMessage(GemAction.class, "GemMissingMac");
@@ -98,14 +161,14 @@ public final class GemManager {
      * Return null if there are no problems running gem. Otherwise return
      * an error message which describes the problem.
      */
-    public static String getGemProblem() {
-        String gem = RubyInstallation.getInstance().getGem();
+    public String getGemProblem() {
+        String gem = getGem();
         
         if (gem == null) {
             return getGemMissingMessage();
         }
         
-        String gemDirPath = RubyInstallation.getInstance().getRubyLibGemDir();
+        String gemDirPath = getGemDir();
         if (gemDirPath == null) {
             // edge case, misconfiguration? gem tool is installed but repository is not found
             return NbBundle.getMessage(GemAction.class, "CannotFindGemRepository");
@@ -125,6 +188,122 @@ public final class GemManager {
         return null;
     }
     
+    public String getGemDir() {
+        return getGemDir(true);
+    }
+    
+    /**
+     * Return the gem directory for the current ruby installation.
+     * Returns the gem root, not the gem subdirectory.
+     * Not cached.
+     */
+    public String getGemDir(boolean canonical) {
+        String gemdir = null;
+        
+        String gemHome = TEST_GEM_HOME; // test hook
+        // XXX: do not use GEM_HOME for bundle JRuby for now
+        if (!platform.isDefault() && gemHome == null) {
+            gemHome = System.getenv().get("GEM_HOME"); // NOI18N
+        }
+        if (gemHome != null) {
+            File lib = new File(gemHome); // NOI18N
+            if (!lib.isDirectory()) {
+                LOGGER.finest("Cannot find Gems repository. \"" + lib + "\" does not exist or is not a directory."); // NOI18N
+                // Fall through and try the Ruby interpreter's area
+            } else {
+                gemHomeFo = FileUtil.toFileObject(lib);
+                return lib.getAbsolutePath();
+            }
+        }
+        
+        File rubyHome = platform.getHome(canonical);
+        assert rubyHome != null : "rubyHome not null for " + platform;
+
+        File libGems = new File(platform.getLib() + File.separator + "ruby" +
+                File.separator + "gems");
+        File defaultGemDir = new File(libGems, RubyPlatform.DEFAULT_RUBY_RELEASE);
+
+        if (defaultGemDir.isDirectory()) {
+            return defaultGemDir.getAbsolutePath();
+        }
+
+        // Special case for Debian: /usr/share/doc/rubygems/README.Debian documents
+        // a special location for gems
+        if ("/usr".equals(rubyHome.getPath())) { // NOI18N
+            File varGem = new File("/var/lib/gems/1.8"); // NOI18N
+            if (varGem.exists()) {
+                gemHomeFo = FileUtil.toFileObject(varGem);
+                return varGem.getPath();
+            }
+        }
+
+        // Search for a numbered directory
+        File[] children = libGems.listFiles();
+        if (children != null) {
+            for (File c : children) {
+                if (!c.isDirectory()) {
+                    continue;
+                }
+
+                if (c.getName().matches("\\d+\\.\\d+")) { // NOI18N
+                    gemHomeFo = FileUtil.toFileObject(c);
+                    gemdir = c.getAbsolutePath();
+                    break;
+                }
+            }
+        }
+
+        if ((gemdir == null) && (children != null) && (children.length > 0)) {
+            gemHomeFo = FileUtil.toFileObject(children[0]);
+            gemdir = children[0].getAbsolutePath();
+        }
+
+        return gemdir;
+    }
+
+    /** Return > 0 if version1 is greater than version 2, 0 if equal and -1 otherwise */
+    public static int compareGemVersions(String version1, String version2) {
+        if (version1.equals(version2)) {
+            return 0;
+        }
+
+        Matcher matcher1 = VERSION_PATTERN.matcher(version1);
+
+        if (matcher1.matches()) {
+            int major1 = Integer.parseInt(matcher1.group(1));
+            int minor1 = Integer.parseInt(matcher1.group(2));
+            int micro1 = Integer.parseInt(matcher1.group(3));
+
+            Matcher matcher2 = VERSION_PATTERN.matcher(version2);
+
+            if (matcher2.matches()) {
+                int major2 = Integer.parseInt(matcher2.group(1));
+                int minor2 = Integer.parseInt(matcher2.group(2));
+                int micro2 = Integer.parseInt(matcher2.group(3));
+
+                if (major1 != major2) {
+                    return major1 - major2;
+                }
+
+                if (minor1 != minor2) {
+                    return minor1 - minor2;
+                }
+
+                if (micro1 != micro2) {
+                    return micro1 - micro2;
+                }
+            } else {
+                // TODO uh oh
+                //assert false : "no version match on " + version2;
+            }
+        } else {
+            // TODO assert false : "no version match on " + version1;
+        }
+
+        // Just do silly alphabetical comparison
+        return version1.compareTo(version2);
+    }
+
     /**
      * Checks whether a gem with the given name is installed in the gem
      * repository used by the currently set Ruby interpreter.
@@ -132,8 +311,8 @@ public final class GemManager {
      * @param gemName name of a gem to be checked
      * @return <tt>true</tt> if installed; <tt>false</tt> otherwise
      */
-    public static boolean isGemInstalled(final String gemName) {
-        return RubyInstallation.getInstance().getVersion(gemName) != null;
+    public boolean isGemInstalled(final String gemName) {
+        return getVersion(gemName) != null;
     }
     
     /**
@@ -145,9 +324,127 @@ public final class GemManager {
      * @param version version of the gem to be checked
      * @return <tt>true</tt> if installed; <tt>false</tt> otherwise
      */
-    public static boolean isGemInstalled(final String gemName, final String version) {
-        String currVersion = RubyInstallation.getInstance().getVersion(gemName);
-        return currVersion != null && RubyInstallation.compareGemVersions(version, currVersion) <= 0;
+    public boolean isGemInstalled(final String gemName, final String version) {
+        String currVersion = getVersion(gemName);
+        return currVersion != null && GemManager.compareGemVersions(version, currVersion) <= 0;
+    }
+
+    public String getVersion(String gemName) {
+        // TODO - use gemVersions map instead!
+        initGemList();
+
+        if (gemFiles == null) {
+            return null;
+        }
+
+        Map<String, File> highestVersion = gemFiles.get(gemName);
+
+        if ((highestVersion == null) || (highestVersion.size() == 0)) {
+            return null;
+        }
+
+        return highestVersion.keySet().iterator().next();
+    }
+
+    private void initGemList() {
+        if (gemFiles == null) {
+            // Initialize lazily
+            String gemDir = getGemDir();
+            if (gemDir == null) {
+                return;
+            }
+            File specDir = new File(gemDir, SPECIFICATIONS);
+
+            if (specDir.exists()) {
+                LOGGER.finest("Initializing \"" + gemDir + "\" repository");
+                // Add each of */lib/
+                File[] gems = specDir.listFiles();
+                gems = chooseGems(gems);
+            } else {
+                LOGGER.finest("Cannot find Gems repository. \"" + gemDir + "\" does not exist or is not a directory."); // NOI18N
+            }
+        }
+    }
+
+    /** 
+     * Given a list of files that may represent gems, choose the most recent
+     * version of each.
+     */
+    private File[] chooseGems(File[] gems) {
+        gemFiles = new HashMap<String, Map<String, File>>();
+
+        for (File f : gems) {
+            // See if it looks like a gem
+            String n = f.getName();
+            if (!n.endsWith(DOT_GEM_SPEC)) {
+                continue;
+            }
+
+            n = n.substring(0, n.length()-DOT_GEM_SPEC.length());
+            
+            int dashIndex = n.lastIndexOf('-');
+            
+            if (dashIndex == -1) {
+                // Probably not a gem
+                continue;
+            }
+            
+            String name;
+            String version;
+
+            if (dashIndex < n.length()-1 && Character.isDigit(n.charAt(dashIndex+1))) {
+                // It's a gem without a platform suffix such as -mswin or -ruby
+                name = n.substring(0, dashIndex);
+                version = n.substring(dashIndex + 1);
+            } else {
+                String nosuffix = n.substring(0, dashIndex);
+                int versionIndex = nosuffix.lastIndexOf('-');
+                if (versionIndex != -1) {
+                    name = n.substring(0, versionIndex);
+                    version = n.substring(versionIndex+1, dashIndex);
+                } else {
+                    name = n.substring(0, dashIndex);
+                    version = n.substring(dashIndex + 1);
+                }
+            }
+
+            Map<String, File> nameMap = gemFiles.get(name);
+
+            if (nameMap == null) {
+                nameMap = new HashMap<String, File>();
+                gemFiles.put(name, nameMap);
+                nameMap.put(version, f);
+            } else {
+                // Decide whether this version is more recent than the one already there
+                String oldVersion = nameMap.keySet().iterator().next();
+
+                if (GemManager.compareGemVersions(version, oldVersion) > 0) {
+                    // New version is higher
+                    nameMap.clear();
+                    nameMap.put(version, f);
+                }
+            }
+        }
+
+        List<File> result = new ArrayList<File>();
+
+        for (Map<String, File> map : gemFiles.values()) {
+            for (File f : map.values()) {
+                result.add(f);
+            }
+        }
+
+        return result.toArray(new File[result.size()]);
+    }
+
+    public Set<String> getInstalledGemsFiles() {
+        initGemList();
+
+        if (gemFiles == null) {
+            return Collections.emptySet();
+        }
+
+        return gemFiles.keySet();
     }
 
     public List<String> reload() {
@@ -175,7 +472,7 @@ public final class GemManager {
     }
     
     public boolean haveGem() {
-        return RubyInstallation.getInstance().getGem() != null;
+        return getGem() != null;
     }
     
     public List<Gem> getAvailableGems() {
@@ -410,7 +707,7 @@ public final class GemManager {
     
     private boolean gemRunner(String command, GemProgressPanel progressPanel,
             Process[] processHolder, List<String> lines, String... commandArgs) {
-        String gemProblem = GemManager.getGemProblem();
+        String gemProblem = getGemProblem();
         if (gemProblem != null) {
             NotifyDescriptor nd = new NotifyDescriptor.Message(gemProblem, NotifyDescriptor.Message.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(nd);
@@ -418,18 +715,16 @@ public final class GemManager {
         }
         
         // Install the given gem
-        String gemCmd = RubyInstallation.getInstance().getGem();
+        String gemCmd = getGem();
         List<String> argList = new ArrayList<String>();
         
-        File cmd = new File(RubyInstallation.getInstance().getRuby());
+        File cmd = new File(platform.getInterpreter());
         
         if (!cmd.getName().startsWith("jruby") || RubyExecution.LAUNCH_JRUBY_SCRIPT) { // NOI18N
             argList.add(cmd.getPath());
         }
         
-        String rubyHome = cmd.getParentFile().getParent();
-        String cmdName = cmd.getName();
-        argList.addAll(RubyExecution.getRubyArgs(rubyHome, cmdName));
+        argList.addAll(RubyExecution.getRubyArgs(platform));
         
         argList.add(gemCmd);
         argList.add(command);
@@ -440,6 +735,7 @@ public final class GemManager {
         
         String[] args = argList.toArray(new String[argList.size()]);
         ProcessBuilder pb = new ProcessBuilder(args);
+        pb.environment().put("GEM_HOME", platform.getGemManager().getGemDir());
         pb.directory(cmd.getParentFile());
         pb.redirectErrorStream(true);
 
@@ -453,7 +749,7 @@ public final class GemManager {
         Util.adjustProxy(pb);
 
         // PATH additions for JRuby etc.
-        new RubyExecution(new ExecutionDescriptor("gem", pb.directory()).cmd(cmd)).setupProcessEnvironment(pb.environment()); // NOI18N
+        new RubyExecution(new ExecutionDescriptor(platform, "gem", pb.directory()).cmd(cmd)).setupProcessEnvironment(pb.environment()); // NOI18N
         
         if (lines == null) {
             lines = new ArrayList<String>(40);
@@ -563,10 +859,10 @@ public final class GemManager {
         };
         Runnable installationComplete = new Runnable() {
             public void run() {
-                RubyInstallation.getInstance().recomputeRoots();
+                platform.recomputeRoots();
             }
         };
-        new GemManager().install(gems, null, rdoc, ri, null, true, true, installationComplete);
+        install(gems, null, rdoc, ri, null, true, true, installationComplete);
     }
 
     /**
@@ -742,5 +1038,351 @@ public final class GemManager {
             return ok;
         }
     }
+
+    public String getGemHomeUrl() {
+        if (gemHomeUrl == null) {
+            String libGemDir = getGemDir();
+            if (libGemDir != null) {
+                try {
+                    File r = new File(libGemDir);
+                    if (r != null) {
+                        gemHomeUrl = r.toURI().toURL().toExternalForm();
+                    }
+                } catch (MalformedURLException mue) {
+                    Exceptions.printStackTrace(mue);
+                }
+            }
+        }
+
+        return gemHomeUrl;
+    }
+
+    /**
+     * Try to find a path to the <tt>toFind</tt> executable in the "Ruby
+     * specific" manner.
+     *
+     * @param toFind executable to be find, e.g. rails, rake, ...
+     * @return path to the found executable; might be <tt>null</tt> if not
+     *         found.
+     */
+    public String findGemExecutable(final String toFind) {
+        String exec = null;
+        boolean canonical = true; // default
+        do {
+            String binDir = platform.getBinDir();
+            if (binDir != null) {
+                LOGGER.finest("Looking for '" + toFind + "' gem executable; used intepreter: '" + platform.getInterpreter() + "'"); // NOI18N
+                exec = GemManager.findExecutable(binDir, toFind);
+            } else {
+                LOGGER.warning("Could not find Ruby interpreter executable when searching for '" + toFind + "'"); // NOI18N
+            }
+            if (exec == null) {
+                String libGemBinDir = getGemDir(canonical) + File.separator + "bin"; // NOI18N
+                exec = GemManager.findExecutable(libGemBinDir, toFind);
+            }
+            canonical ^= true;
+        } while (!canonical && exec == null);
+        // try to find a gem on system path - see issue 116219
+        if (exec == null) {
+            exec = findOnPath(toFind);
+        }
+        // try *.bat commands on Windows
+        if (exec == null && !toFind.endsWith(".bat") && Utilities.isWindows()) { // NOI18N
+            exec = findGemExecutable(toFind + ".bat"); // NOI18N
+        }
+        return exec;
+    }
+
+    public String getAutoTest() {
+        return findGemExecutable("autotest"); // NOI18N
+    }
+
+    public boolean isValidAutoTest(boolean warn) {
+        String autoTest = getAutoTest();
+        boolean valid = (autoTest != null) && new File(autoTest).exists();
+
+        if (warn && !valid) {
+            String msg = NbBundle.getMessage(RubyInstallation.class, "NotInstalledCmd", "autotest"); // NOI18N
+            NotifyDescriptor nd =
+                    new NotifyDescriptor.Message(msg, NotifyDescriptor.Message.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(nd);
+        }
+
+        return valid;
+    }
+
+    private static String findExecutable(final String dir, final String toFind) {
+        String exec = dir + File.separator + toFind;
+        if (!new File(exec).isFile()) {
+            LOGGER.finest("'" + exec + "' is not a file."); // NOI18N
+            exec = null;
+        }
+        return exec;
+    }
     
+    /**
+     * Return path to the <em>gem</em> tool if it does exist.
+     *
+     * @return path to the <em>gem</em> tool; might be <tt>null</tt> if not
+     *         found.
+     */
+    public String getGem() {
+        if (gem == null) {
+            String bin = platform.getBinDir();
+            if (bin != null) {
+                gem = bin + File.separator + "gem"; // NOI18N
+                if (!new File(gem).isFile()) {
+                    gem = null;
+                }
+            }
+        }
+        if (gem == null) {
+            gem = GemManager.findOnPath("gem"); // NOI18N
+        }
+        return gem;
+    }
+    
+    private static String findOnPath(final String toFind) {
+        String rubyLib = System.getenv("PATH"); // NOI18N
+        if (rubyLib != null) {
+            String[] paths = rubyLib.split("[:;]"); // NOI18N
+            for (String path : paths) {
+                String result = path + File.separator + toFind;
+                if (new File(result).isFile()) {
+                    return result;
+                }
+            }
+        }
+        return null;
+    }
+
+    public FileObject getRubyLibGemDirFo() {
+        initGemList(); // Ensure getRubyLibGemDir has been called, which initialized gemHomeFo
+        return gemHomeFo;
+    }
+
+    public String getRake() {
+        if (rake == null) {
+            rake = findGemExecutable("rake"); // NOI18N
+
+            if (rake != null && !(new File(rake).exists()) && getVersion("rake") != null) { // NOI18N
+                // On Windows, rake does funny things - you may only get a rake.bat
+                InstalledFileLocator locator = InstalledFileLocator.getDefault();
+                File f =
+                        locator.locate("modules/org-netbeans-modules-ruby-project.jar", // NOI18N
+                        null, false); // NOI18N
+
+                if (f == null) {
+                    throw new RuntimeException("Can't find cluster"); // NOI18N
+                }
+
+                f = new File(f.getParentFile().getParentFile().getAbsolutePath() + File.separator +
+                        "rake"); // NOI18N
+
+                try {
+                    rake = f.getCanonicalPath();
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
+                }
+            }
+        }
+
+        return rake;
+    }
+
+    public boolean isValidRake(boolean warn) {
+        String rakePath = getRake();
+        boolean valid = (rakePath != null) && new File(rakePath).exists();
+
+        if (warn && !valid) {
+            String msg = NbBundle.getMessage(RubyInstallation.class, "NotInstalledCmd", "rake"); // NOI18N
+            NotifyDescriptor nd =
+                    new NotifyDescriptor.Message(msg, NotifyDescriptor.Message.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(nd);
+        }
+
+        return valid;
+    }
+
+    public String getRDoc() {
+        if (rdoc == null) {
+            rdoc = findGemExecutable("rdoc"); // NOI18N
+            if (rdoc == null && !platform.isJRuby()) {
+                String name = new File(platform.getInterpreter(true)).getName();
+                if (name.startsWith("ruby")) { // NOI18N
+                    String suffix = name.substring(4);
+                    // Try to find with suffix (#120441)
+                    rdoc = findGemExecutable("rdoc" + suffix);
+                }
+            }
+        }
+        return rdoc;
+    }
+
+    public String getRails() {
+        if (rails == null) {
+            rails = findGemExecutable("rails"); // NOI18N
+        }
+        return rails;
+    }
+
+    public boolean isValidRails(boolean warn) {
+        String railsPath = getRails();
+        boolean valid = (railsPath != null) && new File(railsPath).exists();
+
+        if (warn && !valid) {
+            String msg = NbBundle.getMessage(RubyInstallation.class, "NotInstalledCmd", "rails"); // NOI18N
+            NotifyDescriptor nd =
+                    new NotifyDescriptor.Message(msg, NotifyDescriptor.Message.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(nd);
+        }
+
+        return valid;
+    }
+
+    /** Return other load path URLs (than the gem ones returned by {@link #getGemUrls} to add for the platform
+     * such as the basic ruby 1.8 libraries, the site_ruby libraries, and the stub libraries for 
+     * the core/builtin classes.
+     * 
+     * @return a set of URLs
+     */
+    public Set<URL> getNonGemLoadPath() {
+        if (nonGemUrls == null) {
+            initializeUrlMaps();
+        }
+        
+        return nonGemUrls;
+    }
+    
+    /** 
+     * Return a map from gem name to the version string, which is of the form
+     * {@code <major>.<minor>.<tiny>[-<platform>]}, such as 1.2.3 and 1.13.5-ruby
+     */
+    public Map<String, String> getGemVersions() {
+        if (gemVersions == null) {
+            initializeUrlMaps();
+        }
+
+        return gemVersions;
+    }
+
+    /** 
+     * Return a map from gem name to the URL for the lib root of the current gems
+     */
+    public Map<String, URL> getGemUrls() {
+        if (gemUrls == null) {
+            initializeUrlMaps();
+        }
+
+        return gemUrls;
+    }
+
+    private void initializeUrlMaps() {
+        File rubyHome = platform.getHome();
+
+        if (rubyHome == null || !rubyHome.exists()) {
+            gemVersions = Collections.emptyMap();
+            gemUrls = Collections.emptyMap();
+            nonGemUrls = Collections.emptySet();
+            return;
+        }
+        try {
+            gemUrls = new HashMap<String, URL>(60);
+            gemVersions = new HashMap<String, String>(60);
+            nonGemUrls = new HashSet<URL>(12);
+
+            FileObject rubyStubs = platform.getRubyStubs();
+
+            if (rubyStubs != null) {
+                try {
+                    nonGemUrls.add(rubyStubs.getURL());
+                } catch (FileStateInvalidException fsie) {
+                    Exceptions.printStackTrace(fsie);
+                }
+            }
+
+            // Install standard libraries
+            // lib/ruby/1.8/ 
+            if (!SKIP_INDEX_LIBS) {
+                String rubyLibDir = platform.getLibDir();
+                if (rubyLibDir != null) {
+                    File libs = new File(rubyLibDir);
+                    assert libs.exists() && libs.isDirectory();
+                    nonGemUrls.add(libs.toURI().toURL());
+                }
+            }
+
+            // Install gems.
+            if (!SKIP_INDEX_GEMS) {
+                initGemList();
+                if (PREINDEXING) {
+                    String gemDir = getGemDir();
+                    File specDir = new File(gemDir, "gems"); // NOI18N
+
+                    if (specDir.exists()) {
+                        File[] gems = specDir.listFiles();
+                        for (File f : gems) {
+                            if (f.getName().indexOf('-') != -1) {
+                                File lib = new File(f, "lib"); // NOI18N
+
+                                if (lib.exists() && lib.isDirectory()) {
+                                    URL url = lib.toURI().toURL();
+                                    nonGemUrls.add(url);
+                                }
+                            }
+                        }
+                    }
+                } else if (gemFiles != null) {
+                    Set<String> gems = gemFiles.keySet();
+                    for (String name : gems) {
+                        Map<String, File> m = gemFiles.get(name);
+                        assert m.keySet().size() == 1;
+                        File f = m.values().iterator().next();
+                        // Points to the specification file
+                        assert f.getName().endsWith(DOT_GEM_SPEC);
+                        String filename = f.getName().substring(0,
+                                f.getName().length() - DOT_GEM_SPEC.length());
+                        File lib = new File(f.getParentFile().getParentFile(), "gems" + // NOI18N
+                                File.separator + filename + File.separator + "lib"); // NOI18N
+
+                        if (lib.exists() && lib.isDirectory()) {
+                            URL url = lib.toURI().toURL();
+                            gemUrls.put(name, url);
+                            String version = m.keySet().iterator().next();
+                            gemVersions.put(name, version);
+                        }
+                    }
+                }
+            }
+
+            // Install site ruby - this is where rubygems lives for example
+            if (!SKIP_INDEX_LIBS) {
+                String rubyLibSiteDir = platform.getRubyLibSiteDir();
+
+                if (rubyLibSiteDir != null) {
+                    File siteruby = new File(rubyLibSiteDir);
+
+                    if (siteruby.exists() && siteruby.isDirectory()) {
+                        nonGemUrls.add(siteruby.toURI().toURL());
+                    }
+                }
+            }
+
+            // During development only:
+            gemUrls = Collections.unmodifiableMap(gemUrls);
+            gemVersions = Collections.unmodifiableMap(gemVersions);
+            nonGemUrls = Collections.unmodifiableSet(nonGemUrls);
+
+            // Register boot roots. This is a bit of a hack.
+            // I need to find a better way to distinguish source directories
+            // from boot (library, gems, etc.) directories at the scanning and indexing end.
+            ClassIndexManager mgr = ClassIndexManager.getDefault();
+            List<URL> roots = new ArrayList<URL>(gemUrls.size() + nonGemUrls.size());
+            roots.addAll(gemUrls.values());
+            roots.addAll(nonGemUrls);
+            mgr.setBootRoots(roots);
+        } catch (MalformedURLException mue) {
+            Exceptions.printStackTrace(mue);
+        }
+    }
 }

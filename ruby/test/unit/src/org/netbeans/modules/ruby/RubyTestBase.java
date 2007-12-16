@@ -84,13 +84,18 @@ import org.openide.util.NbPreferences;
 /**
  * @author Tor Norbye
  */
-public abstract class RubyTestBase extends NbTestCase {
+public abstract class RubyTestBase extends org.netbeans.api.ruby.platform.RubyTestBase {
 
     public RubyTestBase(String testName) {
         super(testName);
         System.setProperty("ruby.interpreter", FileUtil.toFile(TestUtil.getXTestJRubyHomeFO().getFileObject("bin/jruby")).getAbsolutePath());
     }
 
+    protected @Override void setUp() throws Exception {
+        super.setUp();
+        System.setProperty("netbeans.user", getWorkDirPath());
+    }
+    
     protected ParserResult parse(FileObject fileObject) {
         RubyParser parser = new RubyParser();
         int caretOffset = -1;
@@ -98,14 +103,14 @@ public abstract class RubyTestBase extends NbTestCase {
         ParserFile file = new DefaultParserFile(fileObject, null, false);
         String sequence = "";
         ParseListener listener = new DefaultParseListener();
-        BaseDocument baseDoc = null;
+//        BaseDocument baseDoc = null;
         try {
 //            DataObject dobj = DataObject.find(fileObject);
 //            EditorCookie cookie = dobj.getCookie(EditorCookie.class);
 //            Document doc = cookie.openDocument();
 //            sequence = doc.getText(0, doc.getLength());
             sequence = readFile(fileObject);
-            baseDoc = getDocument(sequence);
+//            baseDoc = getDocument(sequence);
         }
         catch (Exception ex){
             fail(ex.toString());
@@ -113,17 +118,6 @@ public abstract class RubyTestBase extends NbTestCase {
         RubyParser.Context context = new RubyParser.Context(file, listener, sequence, caretOffset);
         ParserResult result = parser.parseBuffer(context, RubyParser.Sanitize.NEVER);
         return result;
-    }
-
-    protected FileObject getTestFile(String relFilePath) {
-        File wholeInputFile = new File(getDataDir(), relFilePath);
-        if (!wholeInputFile.exists()) {
-            NbTestCase.fail("File " + wholeInputFile + " not found.");
-        }
-        FileObject fo = FileUtil.toFileObject(wholeInputFile);
-        assertNotNull(fo);
-
-        return fo;
     }
 
     protected Node getRootNode(String relFilePath) {
@@ -248,13 +242,12 @@ public abstract class RubyTestBase extends NbTestCase {
         }
     }
 
-    public TestCompilationInfo getInfo(String file) throws Exception {
+    TestCompilationInfo getInfo(String file) throws Exception {
         FileObject fileObject = getTestFile(file);
-
         return getInfo(fileObject);
     }
 
-    public TestCompilationInfo getInfo(FileObject fileObject) throws Exception {
+    TestCompilationInfo getInfo(FileObject fileObject) throws Exception {
         String text = readFile(fileObject);
         if (text == null) {
             text = "";

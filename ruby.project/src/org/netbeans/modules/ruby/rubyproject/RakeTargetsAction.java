@@ -75,7 +75,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.ruby.platform.RubyInstallation;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
@@ -379,7 +379,7 @@ public class RakeTargetsAction extends SystemAction implements ContextAwareActio
     }
 
     public static void refreshTargets(Project project) {
-        if (!RubyInstallation.getInstance().isValidRake(false)) {
+        if (!RubyPlatform.gemManagerFor(project).isValidRake(false)) {
             return;
         }
 
@@ -400,27 +400,25 @@ public class RakeTargetsAction extends SystemAction implements ContextAwareActio
         }
 
         // Install the given gem
-        String rakeCmd = RubyInstallation.getInstance().getRake();
+        String rakeCmd = RubyPlatform.gemManagerFor(project).getRake();
+        RubyPlatform platform = RubyPlatform.platformFor(project);
 
-        File cmd = new File(RubyInstallation.getInstance().getRuby());
-        
         StringBuffer sb = new StringBuffer();
-        sb.append(hiddenRakeRunner(cmd, rakeCmd, pwd, "-T"));
+        sb.append(hiddenRakeRunner(platform, rakeCmd, pwd, "-T"));
         // TODO: we are not able to parse complex Rakefile (e.g. rails'), using -P argument, yet
         // sb.append(hiddenRakeRunner(cmd, rakeCmd, pwd, "-P"));
         return sb.toString();
     }
     
-    private static String hiddenRakeRunner(File cmd, String rakeCmd, File pwd, String rakeArg) {
+    private static String hiddenRakeRunner(RubyPlatform platform, String rakeCmd, File pwd, String rakeArg) {
 
         List<String> argList = new ArrayList<String>();
+        File cmd = platform.getInterpreterFile();
         if (!cmd.getName().startsWith("jruby") || RubyExecution.LAUNCH_JRUBY_SCRIPT) {
             argList.add(cmd.getPath());
         }
 
-        String rubyHome = cmd.getParentFile().getParent();
-        String cmdName = cmd.getName();
-        argList.addAll(RubyExecution.getRubyArgs(rubyHome, cmdName));
+        argList.addAll(RubyExecution.getRubyArgs(platform));
 
         argList.add(rakeCmd);
         argList.add(rakeArg);
@@ -432,7 +430,7 @@ public class RakeTargetsAction extends SystemAction implements ContextAwareActio
 
         // PATH additions for JRuby etc.
         Map<String, String> env = pb.environment();
-        new RubyExecution(new ExecutionDescriptor("rake", pwd).cmd(cmd)).setupProcessEnvironment(env);
+        new RubyExecution(new ExecutionDescriptor(platform, "rake", pwd).cmd(cmd)).setupProcessEnvironment(env);
 
         int exitCode = -1;
 
@@ -666,7 +664,8 @@ public class RakeTargetsAction extends SystemAction implements ContextAwareActio
         }
 
         public void run() {
-            if (!RubyInstallation.getInstance().isValidRuby(true) || !RubyInstallation.getInstance().isValidRake(true)) {
+            RubyPlatform platform = RubyPlatform.platformFor(project);
+            if (!platform.isValidRuby(true) || !platform.getGemManager().isValidRake(true)) {
                 return;
             }
 

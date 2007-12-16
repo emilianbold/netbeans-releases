@@ -39,13 +39,25 @@
 package org.netbeans.api.ruby.platform;
 
 import java.io.File;
+import java.io.IOException;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.ruby.platform.gems.GemManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 
 public abstract class RubyTestBase extends NbTestCase {
 
     public RubyTestBase(final String name) {
         super(name);
+    }
+
+    protected @Override void setUp() throws Exception {
+        super.setUp();
+        MockServices.setServices(IFL.class);
+        TestUtil.getXTestJRubyHome();
+        System.setProperty("netbeans.user", getWorkDirPath());
     }
 
     public static final class IFL extends InstalledFileLocator {
@@ -97,22 +109,23 @@ public abstract class RubyTestBase extends NbTestCase {
         //  System.getenv().remove("GEM_HOME");
         // because the environment variable map is unmodifiable. So instead
         // side effect to ensure that the GEM_HOME check isn't run
-        RubyInstallation.TEST_GEM_HOME = ""; // non null but also invalid dir, will bypass $GEM_HOME lookup
+        GemManager.TEST_GEM_HOME = "invalid"; // non null but also invalid dir, will bypass $GEM_HOME lookup
         
         File home = getWorkDir();
 
         // Build a fake ruby structure
+        File rubyLib = new File(new File(home, "lib"), "ruby");
+        rubyLib.mkdirs();
         File bin = new File(home, "bin");
         bin.mkdirs();
-        File ruby = new File(bin, "ruby" + suffix);
-        ruby.createNewFile();
-        File rdoc = new File(bin, "rdoc" + suffix);
-        rdoc.createNewFile();
+        File ruby = touch(bin, "ruby" + suffix);
+        String[] binaries = { "rdoc", "gem" };
+        for (String binary : binaries) {
+            touch(bin, binary + suffix);
+        }
 
         if (withGems) {
             // Build a fake rubygems repository
-            File lib = new File(home, "lib");
-            File rubyLib = new File(lib, "ruby");
             File gems = new File(rubyLib, "gems");
             String version = "1.8";
             File ruby18Libs = new File(rubyLib, version);
@@ -125,7 +138,23 @@ public abstract class RubyTestBase extends NbTestCase {
             gembin.mkdirs();
         }
         return ruby;
-//        return new RubyInstallation(ruby.getAbsolutePath());
+    }
+
+    protected FileObject getTestFile(String relFilePath) {
+        File wholeInputFile = new File(getDataDir(), relFilePath);
+        if (!wholeInputFile.exists()) {
+            NbTestCase.fail("File " + wholeInputFile + " not found.");
+        }
+        FileObject fo = FileUtil.toFileObject(wholeInputFile);
+        assertNotNull(fo);
+
+        return fo;
+    }
+
+    private File touch(final File directory, final String binary) throws IOException {
+        File binaryF = new File(directory, binary);
+        binaryF.createNewFile();
+        return binaryF;
     }
 
 }

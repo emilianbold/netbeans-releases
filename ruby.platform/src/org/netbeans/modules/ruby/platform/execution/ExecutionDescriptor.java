@@ -43,6 +43,7 @@ package org.netbeans.modules.ruby.platform.execution;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Utilities;
@@ -63,6 +64,7 @@ public class ExecutionDescriptor {
     private String displayName;
     Runnable postBuildAction;
 
+    private final RubyPlatform platform;
     private FileLocator fileLocator;
     String script;
     private String[] additionalArgs;
@@ -77,14 +79,16 @@ public class ExecutionDescriptor {
     private boolean appendJdkToPath;
     List<OutputRecognizer> outputRecognizers = new ArrayList<OutputRecognizer>();
 
-    public ExecutionDescriptor() {
+    public ExecutionDescriptor(final RubyPlatform platform) {
+        this.platform = platform;
     }
 
-    public ExecutionDescriptor(final String displayName, final File pwd) {
-        this(displayName, pwd, null);
+    public ExecutionDescriptor(final RubyPlatform platform, final String displayName, final File pwd) {
+        this(platform, displayName, pwd, null);
     }
     
-    public ExecutionDescriptor(final String displayName, final File pwd, final String script) {
+    public ExecutionDescriptor(final RubyPlatform platform, final String displayName, final File pwd, final String script) {
+        this.platform = platform;
         this.displayName = displayName;
         this.pwd = pwd;
         this.script = script;
@@ -200,6 +204,10 @@ public class ExecutionDescriptor {
     
     String getDisplayName() {
         return debug ? displayName + " (debug)" : displayName; // NOI18N
+    }
+
+    public RubyPlatform getPlatform() {
+        return platform;
     }
     
     public File getCmd() {

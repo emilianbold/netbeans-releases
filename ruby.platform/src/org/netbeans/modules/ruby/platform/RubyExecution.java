@@ -49,7 +49,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.api.ruby.platform.RubyInstallation;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.ExecutionService;
 import org.netbeans.modules.ruby.platform.execution.RegexpOutputRecognizer;
@@ -115,14 +115,14 @@ public class RubyExecution extends ExecutionService {
     
     public RubyExecution(ExecutionDescriptor descriptor) {
         super(descriptor);
+        
+        assert descriptor != null : "null descriptor";
 
-        if (descriptor != null) {
-            if (descriptor.getCmd() == null) {
-                descriptor.cmd(new File(RubyInstallation.getInstance().getRuby()));
-            }
-
-            descriptor.addBinPath(true);
+        if (descriptor.getCmd() == null) {
+            descriptor.cmd(descriptor.getPlatform().getInterpreterFile());
         }
+
+        descriptor.addBinPath(true);
     }
 
     /** Create a Ruby execution service with the given source-encoding charset */
@@ -146,8 +146,9 @@ public class RubyExecution extends ExecutionService {
      * Returns the basic Ruby interpreter command and associated flags (not
      * application arguments)
      */
-    public static List<? extends String> getRubyArgs(String rubyHome, String cmdName) {
-        return new RubyExecution(null).getRubyArgs(rubyHome, cmdName, null);
+    public static List<? extends String> getRubyArgs(final RubyPlatform platform) {
+        return new RubyExecution(new ExecutionDescriptor(platform)).getRubyArgs(platform.getHome().getAbsolutePath(),
+                platform.getInterpreterFile().getName(), null);
     }
 
     private List<? extends String> getRubyArgs(String rubyHome, String cmdName, ExecutionDescriptor descriptor) {
@@ -313,9 +314,9 @@ public class RubyExecution extends ExecutionService {
         super.setupProcessEnvironment(env);
 
         // In case we're launching JRuby:
-        RubyInstallation installation = RubyInstallation.getInstance();
-        if (installation.isJRubySet()) {
-            File rubyHome = installation.getRubyHome();
+        RubyPlatform platform = descriptor.getPlatform();
+        if (platform.isJRuby()) {
+            File rubyHome = platform.getHome();
             String jrubyHome = rubyHome.getAbsolutePath();
             env.put("JRUBY_HOME", jrubyHome); // NOI18N
             env.put("JRUBY_BASE", jrubyHome); // NOI18N

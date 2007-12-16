@@ -49,10 +49,8 @@ import java.text.MessageFormat;
 import java.util.StringTokenizer;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
-import org.netbeans.api.options.OptionsDisplayer;
-import org.netbeans.api.ruby.platform.RubyInstallation;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
+import org.netbeans.modules.ruby.platform.PlatformComponentFactory;
+import org.netbeans.modules.ruby.platform.RubyPlatformCustomizer;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.NbBundle;
@@ -68,7 +66,6 @@ public final class PanelOptionsVisual extends SettingsPanel implements ActionLis
     /** Creates new form PanelOptionsVisual */
     public PanelOptionsVisual( PanelConfigureProject panel, int type ) {
         initComponents();
-        interpreterDesc.setToolTipText(NbBundle.getMessage(PanelOptionsVisual.class, "RubyIsGlobal"));
         this.panel = panel;
         interpreterChanged();
 
@@ -141,9 +138,9 @@ public final class PanelOptionsVisual extends SettingsPanel implements ActionLis
         setAsMainCheckBox = new javax.swing.JCheckBox();
         createMainCheckBox = new javax.swing.JCheckBox();
         mainClassTextField = new javax.swing.JTextField();
-        interpreterDesc = new javax.swing.JLabel();
-        changeRubyButton = new javax.swing.JButton();
-        rubyField = new javax.swing.JTextField();
+        rubyPlatformLabel = new javax.swing.JLabel();
+        platforms = org.netbeans.modules.ruby.platform.PlatformComponentFactory.getRubyPlatformsComboxBox();
+        manageButton = new javax.swing.JButton();
 
         setAsMainCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(setAsMainCheckBox, org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("LBL_setAsMainCheckBox")); // NOI18N
@@ -153,17 +150,14 @@ public final class PanelOptionsVisual extends SettingsPanel implements ActionLis
         org.openide.awt.Mnemonics.setLocalizedText(createMainCheckBox, org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("LBL_createMainCheckBox")); // NOI18N
         createMainCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        interpreterDesc.setLabelFor(changeRubyButton);
-        org.openide.awt.Mnemonics.setLocalizedText(interpreterDesc, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "RubyInterpreter")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(rubyPlatformLabel, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "RubyPlatformLabel")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(changeRubyButton, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "Change")); // NOI18N
-        changeRubyButton.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(manageButton, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "RubyHomeBrowse")); // NOI18N
+        manageButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                changeRuby(evt);
+                manageButtonActionPerformed(evt);
             }
         });
-
-        rubyField.setEditable(false);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -171,17 +165,19 @@ public final class PanelOptionsVisual extends SettingsPanel implements ActionLis
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(setAsMainCheckBox)
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(setAsMainCheckBox)
+                            .add(layout.createSequentialGroup()
+                                .add(rubyPlatformLabel)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(platforms, 0, 344, Short.MAX_VALUE)))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(manageButton))
                     .add(layout.createSequentialGroup()
                         .add(createMainCheckBox)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(mainClassTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 184, Short.MAX_VALUE))
-                    .add(layout.createSequentialGroup()
-                        .add(interpreterDesc)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(rubyField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(changeRubyButton)))
+                        .add(mainClassTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 410, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -194,10 +190,10 @@ public final class PanelOptionsVisual extends SettingsPanel implements ActionLis
                     .add(mainClassTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(18, 18, 18)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(interpreterDesc)
-                    .add(changeRubyButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(rubyField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
+                    .add(rubyPlatformLabel)
+                    .add(platforms, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(manageButton))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         setAsMainCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ACSN_setAsMainCheckBox")); // NOI18N
@@ -211,16 +207,11 @@ public final class PanelOptionsVisual extends SettingsPanel implements ActionLis
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_PanelOptionsVisual")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
-    private void changeRuby(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_changeRuby
-        String desc = NbBundle.getMessage(PanelOptionsVisual.class, "RubyIsGlobal");
-        String title = null;
-        String[] continueOptions = new String[] { NbBundle.getMessage(PanelOptionsVisual.class, "Continue") };
-        DialogDescriptor descriptor =
-                new DialogDescriptor(desc, title, true, continueOptions, continueOptions[0], DialogDescriptor.DEFAULT_ALIGN, null, null);
-        DialogDisplayer.getDefault().notify(descriptor);
-    
-        OptionsDisplayer.getDefault().open("RubyOptions"); // NOI18N
-    }//GEN-LAST:event_changeRuby
+    private void manageButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageButtonActionPerformed
+        RubyPlatformCustomizer.showCustomizer();
+        platforms.setModel(new PlatformComponentFactory.RubyPlatformListModel()); // refresh
+        platforms.requestFocus();
+    }//GEN-LAST:event_manageButtonActionPerformed
     
     boolean valid(WizardDescriptor settings) {
         if (mainClassTextField.isVisible () && mainClassTextField.isEnabled ()) {
@@ -235,8 +226,9 @@ public final class PanelOptionsVisual extends SettingsPanel implements ActionLis
         }
     }
     
-    void read (WizardDescriptor d) {
-        RubyInstallation.getInstance().addPropertyChangeListener(this);
+    void read(WizardDescriptor d) {
+        // XXX
+//        RubyInstallation.getInstance().addPropertyChangeListener(this);
     }
     
     void validate (WizardDescriptor d) throws WizardValidationException {
@@ -246,15 +238,17 @@ public final class PanelOptionsVisual extends SettingsPanel implements ActionLis
     void store( WizardDescriptor d ) {
         d.putProperty( /*XXX Define somewhere */ "setAsMain", setAsMainCheckBox.isSelected() && setAsMainCheckBox.isVisible() ? Boolean.TRUE : Boolean.FALSE ); // NOI18N
         d.putProperty( /*XXX Define somewhere */ "mainClass", createMainCheckBox.isSelected() && createMainCheckBox.isVisible() ? mainClassTextField.getText() : null ); // NOI18N
-        RubyInstallation.getInstance().removePropertyChangeListener(this);
+        d.putProperty("platform", platforms.getModel().getSelectedItem());
+        // XXX
+//        RubyInstallation.getInstance().removePropertyChangeListener(this);
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton changeRubyButton;
     private javax.swing.JCheckBox createMainCheckBox;
-    private javax.swing.JLabel interpreterDesc;
     private javax.swing.JTextField mainClassTextField;
-    private javax.swing.JTextField rubyField;
+    private javax.swing.JButton manageButton;
+    private javax.swing.JComboBox platforms;
+    private javax.swing.JLabel rubyPlatformLabel;
     private javax.swing.JCheckBox setAsMainCheckBox;
     // End of variables declaration//GEN-END:variables
     
@@ -274,7 +268,6 @@ public final class PanelOptionsVisual extends SettingsPanel implements ActionLis
     }
 
     public void interpreterChanged() {
-        rubyField.setText(RubyInstallation.getInstance().getShortName());
         this.panel.fireChangeEvent();
     }    
 }

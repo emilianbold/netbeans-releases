@@ -51,6 +51,7 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.rubyproject.RubyProjectGenerator;
 import org.netbeans.modules.ruby.rubyproject.ui.FoldersListSettings;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
@@ -130,12 +131,12 @@ public class NewRubyProjectWizardIterator implements WizardDescriptor.ProgressIn
             dirF = FileUtil.normalizeFile(dirF);
         }
         String name = (String)wiz.getProperty("name");        //NOI18N
-        String mainClass = (String)wiz.getProperty("mainClass");        //NOI18N
         handle.progress (NbBundle.getMessage (NewRubyProjectWizardIterator.class, "LBL_NewRubyProjectWizardIterator_WizardProgress_CreatingProject"), 1);
+        RubyPlatform platform = (RubyPlatform) wiz.getProperty("platform"); // NOI18N
         if (this.type == TYPE_EXT) {
             File[] sourceFolders = (File[])wiz.getProperty("sourceRoot");        //NOI18N
             File[] testFolders = (File[])wiz.getProperty("testRoot");            //NOI18N
-            RubyProjectGenerator.createProject(dirF, name, sourceFolders, testFolders);
+            RubyProjectGenerator.createProject(dirF, name, sourceFolders, testFolders, platform);
             handle.progress(2);
             for (int i=0; i<sourceFolders.length; i++) {
                 FileObject srcFo = FileUtil.toFileObject(sourceFolders[i]);
@@ -145,7 +146,8 @@ public class NewRubyProjectWizardIterator implements WizardDescriptor.ProgressIn
             }
         }
         else {
-            RakeProjectHelper h = RubyProjectGenerator.createProject(dirF, name, mainClass);
+            String mainClass = (String) wiz.getProperty("mainClass"); // NOI18N
+            RakeProjectHelper h = RubyProjectGenerator.createProject(dirF, name, mainClass, platform);
             handle.progress(2);
             // BEGIN SEMPLICE MODIFICATIONS
             // Update since format is customized
@@ -230,12 +232,13 @@ public class NewRubyProjectWizardIterator implements WizardDescriptor.ProgressIn
 
     public void uninitialize(WizardDescriptor wiz) {
         if (this.wiz != null) {
-            this.wiz.putProperty("projdir",null);           //NOI18N
-            this.wiz.putProperty("name",null);          //NOI18N
-            this.wiz.putProperty("mainClass",null);         //NOI18N
+            this.wiz.putProperty("projdir", null);           //NOI18N
+            this.wiz.putProperty("name", null);          //NOI18N
+            this.wiz.putProperty("mainClass", null);         //NOI18N
+            this.wiz.putProperty("platform", null);         //NOI18N
             if (this.type == TYPE_EXT) {
-                this.wiz.putProperty("sourceRoot",null);    //NOI18N
-                this.wiz.putProperty("testRoot",null);      //NOI18N
+                this.wiz.putProperty("sourceRoot", null);    //NOI18N
+                this.wiz.putProperty("testRoot", null);      //NOI18N
             }
             this.wiz = null;
             panels = null;

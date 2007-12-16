@@ -42,10 +42,9 @@ package org.netbeans.modules.ruby.platform.gems;
 
 import java.awt.Dialog;
 
-import org.netbeans.api.ruby.platform.RubyInstallation;
+import javax.swing.JButton;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
@@ -57,23 +56,20 @@ public final class GemAction extends CallableSystemAction {
     }
     
     public static boolean showGemManager(String availableFilter) {
-        if (!RubyInstallation.getInstance().isValidRuby(true)) {
-            return false;
-        }
+        // XXX: should be moved directly to GemManager panel(?)
+//        String gemProblem = GemManager.getGemProblem();
+//
+//        if (gemProblem != null) {
+//            NotifyDescriptor nd =
+//                new NotifyDescriptor.Message(gemProblem, NotifyDescriptor.Message.ERROR_MESSAGE);
+//            DialogDisplayer.getDefault().notify(nd);
+//
+//            return false;
+//        }
 
-        String gemProblem = GemManager.getGemProblem();
-
-        if (gemProblem != null) {
-            NotifyDescriptor nd =
-                new NotifyDescriptor.Message(gemProblem, NotifyDescriptor.Message.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notify(nd);
-
-            return false;
-        }
-
-        GemPanel customizer = new GemPanel(new GemManager(), availableFilter);
-        javax.swing.JButton close =
-            new javax.swing.JButton(NbBundle.getMessage(GemAction.class, "CTL_Close"));
+        GemPanel customizer = new GemPanel(availableFilter);
+        JButton close =
+                new JButton(NbBundle.getMessage(GemAction.class, "CTL_Close"));
         close.getAccessibleContext()
              .setAccessibleDescription(NbBundle.getMessage(GemAction.class, "AD_Close"));
 
@@ -92,11 +88,11 @@ public final class GemAction extends CallableSystemAction {
             }
         }
 
-        if (customizer.isModified()) {
-            RubyInstallation.getInstance().recomputeRoots();
-            
-            return true;
-        }
+        // XXX: recompute roots for affeted platform
+//        if (customizer.isModified()) {
+//            RubyInstallation.getInstance().recomputeRoots();
+//            return true;
+//        }
         
         return false;
     }

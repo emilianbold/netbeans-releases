@@ -51,11 +51,12 @@ import java.util.Map;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.ruby.platform.RubyInstallation;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpointManager;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
+import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.platform.spi.RubyDebuggerImplementation;
 import org.netbeans.spi.debugger.SessionProvider;
 import org.openide.DialogDisplayer;
@@ -116,8 +117,10 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
     static Process startDebugging(final ExecutionDescriptor descriptor)
             throws IOException, RubyDebuggerException {
         DebuggerPreferences prefs = DebuggerPreferences.getInstance();
-        boolean jrubySet = RubyInstallation.getInstance().isJRubySet();
-        
+        final RubyPlatform platform = descriptor.getPlatform();
+        final GemManager gemManager = platform.getGemManager();
+        boolean jrubySet = platform.isJRuby();
+
         if (!checkAndTuneSettings(descriptor)) {
             return null;
         }
@@ -141,6 +144,12 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
             additionalOptions.addAll(Arrays.asList(descriptor.getInitialArgs()));
             debugDesc.setAdditionalOptions(additionalOptions);
         }
+//        List<String> additionalOptions = new ArrayList<String>();
+//        additionalOptions.add("-J-Djruby.compile.mode=OFF");
+//        additionalOptions.add("-d");
+//        additionalOptions.add("-J-Xdebug");
+//        additionalOptions.add("-J-Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=y");
+//        debugDesc.setAdditionalOptions(additionalOptions);
         debugDesc.setScriptArguments(descriptor.getAdditionalArgs());
         debugDesc.setSynchronizedOutput(true);
         if (descriptor.getPwd() != null) {
@@ -150,15 +159,15 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
             debugDesc.setEnvironment(getJRubyEnvironment(descriptor));
         }
         RubyDebuggerProxy proxy;
-        int timeout = Integer.getInteger("org.netbeans.modules.ruby.debugger.timeout", 10); // NOI18N
+        int timeout = Integer.getInteger("org.netbeans.modules.ruby.debugger.timeout", 15); // NOI18N
         Util.finest("Using timeout: " + timeout + 's'); // NOI18N
-        String interpreter = RubyInstallation.getInstance().getRuby();
+        String interpreter = platform.getInterpreter();
         boolean forceRubyDebug = Boolean.getBoolean("org.netbeans.modules.ruby.debugger.force.rdebug");
         if (!forceRubyDebug && (jrubySet || prefs.isUseClassicDebugger())) {
             proxy = RubyDebuggerFactory.startClassicDebugger(debugDesc,
                     PATH_TO_CLASSIC_DEBUG_DIR, interpreter, timeout);
         } else { // ruby-debug
-            File rDebugF = new File(Util.findRDebugExecutable());
+            File rDebugF = new File(Util.findRDebugExecutable(gemManager));
             proxy = RubyDebuggerFactory.startRubyDebug(debugDesc,
                     rDebugF.getAbsolutePath(), interpreter, timeout);
         }
@@ -180,7 +189,10 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
     /** Package private for unit test. */
     static boolean checkAndTuneSettings(final ExecutionDescriptor descriptor) {
         DebuggerPreferences prefs = DebuggerPreferences.getInstance();
-        boolean jrubySet = RubyInstallation.getInstance().isJRubySet();
+        final RubyPlatform platform = descriptor.getPlatform();
+        final GemManager gemManager = platform.getGemManager();
+
+        boolean jrubySet = platform.isJRuby();
         
         // TODO stop to support the property when jruby-debug is available
         boolean fastDebuggerRequired = descriptor.isFastDebugRequired() 
@@ -189,7 +201,7 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         // See issue #114183
         if (!jrubySet && prefs.isFirstTime()) {
             prefs.setFirstTime(false);
-            Util.offerToInstallFastDebugger();
+            Util.offerToInstallFastDebugger(gemManager);
         }
         
         // JRuby vs. ruby-debug-ide
@@ -204,30 +216,30 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         }
         
         if (fastDebuggerRequired && prefs.isUseClassicDebugger()
-                && !Util.ensureRubyDebuggerIsPresent(true, getMessage("RubyDebugger.wrong.fast.debugger.required"))) {
+                && !Util.ensureRubyDebuggerIsPresent(gemManager, true, getMessage("RubyDebugger.wrong.fast.debugger.required"))) {
             return false;
         }
 
-        if (!jrubySet && !Util.isValidRDebugIDEGemInstalled() && !Util.offerToInstallFastDebugger()) {
+        if (!jrubySet && !Util.isValidRDebugIDEGemInstalled(gemManager) && !Util.offerToInstallFastDebugger(gemManager)) {
             // user really wants classic debugger, ensure it
             DebuggerPreferences.getInstance().setUseClassicDebugger(true);
         }
 
         if (jrubySet || prefs.isUseClassicDebugger()) {
-            if (!RubyInstallation.getInstance().isValidRuby(true)) {
-                return false;
+            if (!platform.isValidRuby(true)) {
+            return false;
             }
         } else { // ruby-debug
             String message = NbBundle.getMessage(RubyDebugger.class,
                     "RubyDebugger.requiredMessage", Util.RDEBUG_IDE_VERSION); // NOI18N
-            if (!Util.ensureRubyDebuggerIsPresent(true, message)) {
+            if (!Util.ensureRubyDebuggerIsPresent(gemManager, true, message)) {
                 return false;
             }
-            String rDebugPath = Util.findRDebugExecutable();
+            String rDebugPath = Util.findRDebugExecutable(gemManager);
             if (rDebugPath == null) {
                 Util.showMessage(NbBundle.getMessage(RubyDebugger.class,
                         "RubyDebugger.wrong.rdebug-ide", // NOI18N
-                        RubyInstallation.getInstance().getRuby(), 
+                        platform.getInterpreter(), 
                         Util.rdebugPattern()));
                 return false;
             }

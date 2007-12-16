@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,35 +31,27 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.ruby.rubyproject;
+package org.netbeans.modules.ruby.railsprojects.ui.wizards;
 
-import java.io.File;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
-import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
-import org.openide.filesystems.FileObject;
+import org.openide.WizardDescriptor;
 
-public class RubyProjectGeneratorTest extends RubyProjectTestBase {
+final class WizardUtil {
 
-    public RubyProjectGeneratorTest(String testName) {
-        super(testName);
+    private WizardUtil() {
     }
 
-    public void testCreateProject() throws Exception {
-        // XXX
-//        registerLayer();
-//        File projectDir = new File(getWorkDir(), "RubyApp");
-//        final String name = "script.rb";
-//        RakeProjectHelper helper = RubyProjectGenerator.createProject(projectDir, "Ruby Application", name, RubyPlatformManager.getDefaultPlatform());
-//        FileObject prjDirFO = helper.getProjectDirectory();
-//        assertNotNull("project created", prjDirFO);
-//
-//        assertNotNull("has Rakefile", prjDirFO.getFileObject("Rakefile"));
-//        final FileObject libDirFO = prjDirFO.getFileObject("lib");
-//        assertNotNull("has lib", libDirFO);
-//        assertNotNull("has script.rb", libDirFO.getFileObject(name));
-//        assertNull("does not have Rakefile in lib", libDirFO.getFileObject("Rakefile"));
-//
-//        assertNotNull("has README", prjDirFO.getFileObject("README"));
+    static RubyPlatform platformFor(WizardDescriptor wizardDescriptor) {
+        RubyPlatform platform = (RubyPlatform) wizardDescriptor.getProperty("platform");
+        if (platform == null) {
+            platform = RubyPlatformManager.getDefaultPlatform();
+        }
+        return platform;
     }
 }

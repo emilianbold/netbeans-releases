@@ -59,6 +59,7 @@ import org.netbeans.api.gsf.SourceModelFactory;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.ruby.platform.RubyInstallation;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.AstUtilities;
@@ -82,6 +83,7 @@ import org.openide.util.NbBundle;
  * @author Tor Norbye
  */
 public class GotoTest implements TestLocator {
+    
     private static final String FILE = "(.+)"; // NOI18N
     private static final String EXT = "(.+)"; // NOI18N
     private final String[] ZENTEST_PATTERNS =
@@ -118,15 +120,11 @@ public class GotoTest implements TestLocator {
     public GotoTest() {
     }
 
-    private boolean isZenTestInstalled() {
-        return RubyInstallation.getInstance().getVersion("ZenTest") != null; // NOI18N
+    private boolean isZenTestInstalled(final Project project) {
+        return RubyPlatform.gemManagerFor(project).getVersion("ZenTest") != null; // NOI18N
     }
 
-    private boolean isRSpecInstalled(FileObject projectDir) {
-        Project project = null;
-        if (projectDir != null) {
-            project = FileOwnerQuery.getOwner(projectDir);
-        }
+    private boolean isRSpecInstalled(final Project project) {
         return new RSpecSupport(project).isRSpecInstalled();
     }
 
@@ -262,14 +260,6 @@ public class GotoTest implements TestLocator {
     }
 
     private File findMatchingFile(File file, boolean findTest) {
-        if (isZenTestInstalled()) {
-            File matching = findMatching(ZENTEST_PATTERNS, file, findTest);
-
-            if (matching != null) {
-                return matching;
-            }
-        }
-
         File projectDir = file.getAbsoluteFile().getParentFile();
 
         while (projectDir != null) {
@@ -281,16 +271,27 @@ public class GotoTest implements TestLocator {
             projectDir = projectDir.getParentFile();
         }
 
-        FileObject projectFo = (projectDir != null) ? FileUtil.toFileObject(projectDir) : null;
+        FileObject projectDirFO = (projectDir != null) ? FileUtil.toFileObject(projectDir) : null;
+        if (projectDirFO != null) {
+            Project project = FileOwnerQuery.getOwner(projectDirFO);
+            if (project != null) {
+                if (isZenTestInstalled(project)) {
+                    File matching = findMatching(ZENTEST_PATTERNS, file, findTest);
 
-        if (isRSpecInstalled(projectFo)) {
-            File matching = findMatching(RSPEC_PATTERNS, file, findTest);
+                    if (matching != null) {
+                        return matching;
+                    }
+                }
 
-            if (matching != null) {
-                return matching;
+                if (isRSpecInstalled(project)) {
+                    File matching = findMatching(RSPEC_PATTERNS, file, findTest);
+
+                    if (matching != null) {
+                        return matching;
+                    }
+                }
             }
         }
-
         if (isRailsInstalled()) {
             File matching = findMatching(RAILS_PATTERNS, file, findTest);
 

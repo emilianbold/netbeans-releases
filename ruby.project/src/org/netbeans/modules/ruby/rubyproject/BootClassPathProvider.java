@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.ruby.rubyproject;
 
-import org.netbeans.api.ruby.platform.RubyInstallation;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Map;
@@ -70,11 +69,12 @@ public class BootClassPathProvider implements ClassPathProvider {
     public BootClassPathProvider() {}
     
     public ClassPath findClassPath(FileObject file, String type) {
-        // See if the file is under the Ruby libraries
-        FileObject systemRoot = RubyInstallation.getInstance().getSystemRoot(file);
-        if (systemRoot != null) {
-            return getRubyClassPaths(file, type, systemRoot);
-        }
+        // FIXME: per-platform now
+//        // See if the file is under the Ruby libraries
+//        FileObject systemRoot = RubyInstallation.getInstance().getSystemRoot(file);
+//        if (systemRoot != null) {
+//            return getRubyClassPaths(file, type, systemRoot);
+//        }
         
         return null;
     }

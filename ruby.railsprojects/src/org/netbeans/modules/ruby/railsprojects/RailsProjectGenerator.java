@@ -50,7 +50,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
-import org.netbeans.api.ruby.platform.RubyInstallation;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.ruby.NbUtilities;
 import org.netbeans.modules.ruby.RubyUtils;
@@ -98,15 +98,17 @@ public class RailsProjectGenerator {
      * @return the helper object permitting it to be further customized
      * @throws IOException in case something went wrong
      */
-    public static RakeProjectHelper createProject(RailsProjectCreateData data) throws IOException {
+    public static RakeProjectHelper createProject(RailsProjectCreateData data, final RubyPlatform platform) throws IOException {
         FileObject dirFO = FileUtil.createFolder(data.getDir());
         boolean createJavaDb = false;
         boolean createJdbc = false;
         
         // Run Rails to generate the appliation skeleton
         if (data.isCreate()) {
-            FileObject rails = FileUtil.toFileObject(new File(RubyInstallation.getInstance().getRails()));
-            boolean runThroughRuby = rails != null ? RubyUtils.isRubyFile(rails) : false;
+            final String rails = platform.getGemManager().getRails();
+            final File railsF = new File(rails);
+            final FileObject railsFO = FileUtil.toFileObject(railsF);
+            boolean runThroughRuby = railsFO != null ? RubyUtils.isRubyFile(railsFO) : false;
 
             ExecutionDescriptor desc = null;
             String displayName = NbBundle.getMessage(RailsProjectGenerator.class, "GenerateRails");
@@ -123,19 +125,18 @@ public class RailsProjectGenerator {
             }
             File pwd = data.getDir().getParentFile();
             if (runThroughRuby) {
-                desc = new ExecutionDescriptor(displayName, pwd,
-                    RubyInstallation.getInstance().getRails());
+                desc = new ExecutionDescriptor(platform, displayName, pwd, rails);
                 if (railsDbArg != null) {
                     desc.additionalArgs(data.getName(), railsDbArg);
                 } else {
                     desc.additionalArgs(data.getName());
                 }
             } else {
-                desc = new ExecutionDescriptor(displayName, pwd, data.getName());
+                desc = new ExecutionDescriptor(platform, displayName, pwd, data.getName());
                 if (railsDbArg != null) {
                     desc.additionalArgs(railsDbArg);
                 }
-                desc.cmd(new File(RubyInstallation.getInstance().getRails()));
+                desc.cmd(railsF);
             }
             desc.fileLocator(new DirectoryFileLocator(dirFO));
             desc.addOutputRecognizer(RAILS_GENERATOR);
@@ -152,7 +153,7 @@ public class RailsProjectGenerator {
             task.waitFinished();
             
             // Precreate a spec directory if it doesn't exist such that my source root will work
-            if (RubyInstallation.getInstance().getVersion("rspec") != null) { // NOI18N
+            if (platform.getGemManager().getVersion("rspec") != null) { // NOI18N
                 File spec = new File(data.getDir(), "spec"); // NOI18N
                 if (!spec.exists()) {
                     spec.mkdirs();
@@ -167,13 +168,13 @@ public class RailsProjectGenerator {
             }
             
             if (createJdbc || createJavaDb) {
-                editDatabaseYml(dirFO, createJavaDb);
-            } else if (RubyInstallation.getInstance().isJRubySet()) {
+                editDatabaseYml(platform, dirFO, createJavaDb);
+            } else if (platform.isJRuby()) {
                 commentOutSocket(dirFO);
             }
         }
 
-        RakeProjectHelper h = createProject(dirFO, data.getName()/*, "app", "test", mainClass, manifestFile, false*/); //NOI18N
+        RakeProjectHelper h = createProject(dirFO, data.getName(), platform/*, "app", "test", mainClass, manifestFile, false*/); //NOI18N
         Project p = ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
         
@@ -246,7 +247,7 @@ public class RailsProjectGenerator {
         }
     }
 
-    private static void editDatabaseYml(FileObject dir, boolean javaDb) {
+    private static void editDatabaseYml(final RubyPlatform platform, FileObject dir, boolean javaDb) {
         FileObject fo = dir.getFileObject("config/database.yml"); // NOI18N
         if (fo != null) {
             BaseDocument bdoc = null;
@@ -268,7 +269,7 @@ public class RailsProjectGenerator {
                             "# JavaDB Setup\n" + 
                             "#\n" + 
                             "# You may need to copy derby.jar into\n" + 
-                            "#  " + RubyInstallation.getInstance().getRubyLib() + "\n" + 
+                            "#  " + platform.getLib() + "\n" + 
                             "# With Java SE 6 and later this is not necessary.\n" + 
                             "development:\n" + // NOI18N
                             "  adapter: derby\n" +  // NOI18N
@@ -478,7 +479,7 @@ public class RailsProjectGenerator {
 //        return h;
 //    }
 
-    private static RakeProjectHelper createProject(FileObject dirFO, String name/*,
+    private static RakeProjectHelper createProject(FileObject dirFO, String name, final RubyPlatform platform/*,
                                                   String srcRoot, String testRoot, String mainClass, String manifestFile, boolean isLibrary*/) throws IOException {
         RakeProjectHelper h = ProjectGenerator.createProject(dirFO, RailsProjectType.TYPE);
         Element data = h.getPrimaryConfigurationData(true);
@@ -563,7 +564,8 @@ public class RailsProjectGenerator {
 //        ep.setProperty("build.test.results.dir", "${build.dir}/test/results"); // NOI18N
 //        ep.setProperty("build.classes.excludes", "**/*.java,**/*.form"); // NOI18N
 //        ep.setProperty("dist.javadoc.dir", "${dist.dir}/javadoc"); // NOI18N
-//        ep.setProperty("platform.active", "default_platform"); // NOI18N
+        RailsProjectProperties.storePlatform(ep, platform);
+        
 //
 //        ep.setProperty("run.jvmargs", ""); // NOI18N
 //        ep.setComment("run.jvmargs", new String[] {

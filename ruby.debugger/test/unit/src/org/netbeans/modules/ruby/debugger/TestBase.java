@@ -53,7 +53,7 @@ import java.util.logging.LogRecord;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.ruby.platform.RubyInstallation;
+import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.api.ruby.platform.TestUtil;
 import org.netbeans.junit.MockServices;
 import org.netbeans.modules.ruby.RubyTestBase;
@@ -125,7 +125,7 @@ public abstract class TestBase extends RubyTestBase {
     
     protected Process startDebugging(final File f, final boolean waitForSuspension) throws RubyDebuggerException, IOException, InterruptedException {
         MockServices.setServices(DialogDisplayerImpl.class, IFL.class);
-        ExecutionDescriptor desc = new ExecutionDescriptor(
+        ExecutionDescriptor desc = new ExecutionDescriptor(RubyPlatformManager.getDefaultPlatform(),
                 f.getName(), f.getParentFile(), f.getAbsolutePath());
         desc.fileLocator(new DirectoryFileLocator(FileUtil.toFileObject(f.getParentFile())));
         Process process = RubyDebugger.startDebugging(desc);
@@ -170,13 +170,17 @@ public abstract class TestBase extends RubyTestBase {
     }
     
     protected void switchToRDebugIDE() {
-        DebuggerPreferences.getInstance().setUseClassicDebugger(false);
-        File rubyExecutable = TestBase.getFile("ruby.executable", true);
-        RubyInstallation.getInstance().setRuby(rubyExecutable.getAbsolutePath());
+        throw new UnsupportedOperationException("not implemented yet");
+        // XXX
+//        DebuggerPreferences.getInstance().setUseClassicDebugger(false);
+//        File rubyExecutable = TestBase.getFile("ruby.executable", true);
+//        RubyInstallation.getInstance().setRuby(rubyExecutable.getAbsolutePath());
     }
 
     protected void switchToJRuby() {
-        RubyInstallation.getInstance().setRuby(RubyInstallation.getInstance().getJRuby());
+        throw new UnsupportedOperationException("not implemented yet");
+        // XXX
+//        RubyInstallation.getInstance().setRuby(RubyInstallation.getInstance().getJRuby());
     }
 
     private File getRDebugExecutable(boolean failIfNotAvailable) {

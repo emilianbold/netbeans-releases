@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,34 +38,78 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.ruby.rubyproject;
+package org.netbeans.modules.ruby.platform.gems;
 
 import java.io.File;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
-import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
-import org.openide.filesystems.FileObject;
+import org.netbeans.api.ruby.platform.RubyTestBase;
+import org.netbeans.api.ruby.platform.RubyTestBase.IFL;
+import org.netbeans.api.ruby.platform.TestUtil;
+import org.netbeans.junit.MockServices;
 
-public class RubyProjectGeneratorTest extends RubyProjectTestBase {
+public class GemManagerTest extends RubyTestBase {
 
-    public RubyProjectGeneratorTest(String testName) {
+    public GemManagerTest(final String testName) {
         super(testName);
+        MockServices.setServices(IFL.class);
+        TestUtil.getXTestJRubyHome();
     }
 
-    public void testCreateProject() throws Exception {
-        // XXX
-//        registerLayer();
-//        File projectDir = new File(getWorkDir(), "RubyApp");
-//        final String name = "script.rb";
-//        RakeProjectHelper helper = RubyProjectGenerator.createProject(projectDir, "Ruby Application", name, RubyPlatformManager.getDefaultPlatform());
-//        FileObject prjDirFO = helper.getProjectDirectory();
-//        assertNotNull("project created", prjDirFO);
-//
-//        assertNotNull("has Rakefile", prjDirFO.getFileObject("Rakefile"));
-//        final FileObject libDirFO = prjDirFO.getFileObject("lib");
-//        assertNotNull("has lib", libDirFO);
-//        assertNotNull("has script.rb", libDirFO.getFileObject(name));
-//        assertNull("does not have Rakefile in lib", libDirFO.getFileObject("Rakefile"));
-//
-//        assertNotNull("has README", prjDirFO.getFileObject("README"));
+    public void testGetGemProblem() {
+        RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
+        GemManager gm = jruby.getGemManager();
+        assertNotNull(gm);
+    }
+
+    public void testGetRubyLibGemDir() throws Exception {
+        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems(), "ruby");
+        GemManager gemManager = platform.getGemManager();
+        assertEquals("righ gem dir", new File(platform.getLib(), "ruby/gems/1.8"), new File(gemManager.getGemDir()));
+    }
+    
+    public void testGetGem() throws Exception {
+        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems(), "ruby");
+        GemManager gemManager = platform.getGemManager();
+        assertEquals("righ gem dir", new File(new File(getWorkDir(), "bin"), "gem").getAbsolutePath(), gemManager.getGem());
+    }
+
+    public void testIsGemInstalled() {
+    }
+
+    public void testGetVersion() {
+    }
+
+    public void testGetInstalledGems() {
+    }
+
+    public void testReload() {
+    }
+
+    public void testReloadInstalledGems() {
+    }
+
+    public void testHaveGem() {
+    }
+
+    public void testGetAvailableGems() {
+    }
+
+    public void testReloadAvailableGems() {
+    }
+
+    public void testHasUptodateAvailableList() {
+    }
+
+    public void testInstallGem() {
+    }
+
+    public void testInstall() {
+    }
+
+    public void testUninstall() {
+    }
+
+    public void testUpdate() {
     }
 }

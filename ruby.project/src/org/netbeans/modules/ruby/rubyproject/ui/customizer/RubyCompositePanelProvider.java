@@ -96,7 +96,7 @@ public class RubyCompositePanelProvider implements ProjectCustomizer.CompositeCa
 
     public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
         String nm = category.getName();
-        RubyProjectProperties uiProps = (RubyProjectProperties)context.lookup(RubyProjectProperties.class);
+        RubyProjectProperties uiProps = context.lookup(RubyProjectProperties.class);
         if (SOURCES.equals(nm)) {
             return new CustomizerSources(uiProps);
         } else if (BUILD.equals(nm)) {

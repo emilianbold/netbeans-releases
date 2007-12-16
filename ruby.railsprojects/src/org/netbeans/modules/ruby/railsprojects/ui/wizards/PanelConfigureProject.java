@@ -48,11 +48,10 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
-import org.netbeans.api.ruby.platform.RubyInstallation;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 
 /**
  * Panel just asking for basic info.
@@ -71,8 +70,6 @@ public final class PanelConfigureProject implements WizardDescriptor.Panel, Wiza
     
     public Component getComponent() {
         if (component == null) {
-            // Force initialization fo the Ruby interpreter
-            RubyInstallation.getInstance().getRuby();
             component = new PanelConfigureProjectVisual(this, this.type);
         }
         return component;
@@ -140,12 +137,13 @@ public final class PanelConfigureProject implements WizardDescriptor.Panel, Wiza
     public boolean isFinishPanel() {
         // Can only finish here if the Rails configuration is okay, otherwise
         // user must move on to the Rails installation panel
-        return RubyInstallation.getInstance().isValidRails(false);
+        RubyPlatform platform = WizardUtil.platformFor(wizardDescriptor);
+        return platform.getGemManager().isValidRails(false);
     }
     
-    public void validate () throws WizardValidationException {
-        getComponent ();
-        component.validate (wizardDescriptor);
+    public void validate() throws WizardValidationException {
+        getComponent();
+        component.validate(wizardDescriptor);
     }
 
 }

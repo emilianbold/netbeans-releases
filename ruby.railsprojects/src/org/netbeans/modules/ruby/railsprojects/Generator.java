@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.netbeans.api.ruby.platform.RubyInstallation;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -135,7 +136,7 @@ public class Generator {
         return location;
     }
 
-    public String getUsage() {
+    public String getUsage(final RubyPlatform platform) {
         if (this == NONE) {
             return null;
         }
@@ -147,14 +148,14 @@ public class Generator {
             // Generator dir
             File gemLocation = null;
             
-            String version = RubyInstallation.getInstance().getVersion("rails"); // NOI18N
+            String version = platform.getGemManager().getVersion("rails"); // NOI18N
             
             if (version != null) {
                 gemLocation =
-                    new File(RubyInstallation.getInstance().getRubyLibGemDir() + File.separator +
+                    new File(platform.getGemManager().getGemDir() + File.separator +
                         "gems" + File.separator + "rails" + "-" + version); // NOI18N
             } else if (!Utilities.isWindows()) {
-                File rubyHome = RubyInstallation.getInstance().getRubyHome();
+                File rubyHome = platform.getHome();
                 if (rubyHome != null) {
                     File railsDir = new File(rubyHome, "/share/rails/railties"); // NOI18N
                     if (railsDir.exists()) {

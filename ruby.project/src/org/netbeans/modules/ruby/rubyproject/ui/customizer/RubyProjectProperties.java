@@ -50,26 +50,19 @@ import java.nio.charset.UnsupportedCharsetException;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
 import java.util.TreeMap;
 import java.util.Vector;
-import javax.swing.ButtonModel;
-import javax.swing.ComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
-import javax.swing.JToggleButton;
-import javax.swing.ListCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.rubyproject.JavaClassPathUi;
 import org.netbeans.modules.ruby.rubyproject.ProjectPropertyExtender;
 import org.netbeans.modules.ruby.rubyproject.ProjectPropertyExtender.Item;
@@ -101,7 +94,7 @@ public class RubyProjectProperties extends SharedRubyProjectProperties {
 
     // Special properties of the project
     //public static final String Ruby_PROJECT_NAME = "ruby.project.name"; // NOI18N
-    public static final String JAVA_PLATFORM = "platform.active"; // NOI18N
+    //public static final String RUBY_PLATFORM = "platform.active"; // NOI18N
     
     // Properties stored in the PROJECT.PROPERTIES    
     // TODO - nuke me!
@@ -196,6 +189,7 @@ public class RubyProjectProperties extends SharedRubyProjectProperties {
     
     private StoreGroup privateGroup; 
     private StoreGroup projectGroup;
+    private RubyPlatform platform;
     
     public RubyProject getProject() {
         return project;
@@ -229,8 +223,7 @@ public class RubyProjectProperties extends SharedRubyProjectProperties {
         init(); // Load known properties        
     }
 
-    /** Initializes the visual models 
-     */
+    /** Initializes the visual models/ */
     private void init() {        
         CLASS_PATH_LIST_RENDERER = new JavaClassPathUi.ClassPathListCellRenderer( evaluator );
 
@@ -325,7 +318,9 @@ public class RubyProjectProperties extends SharedRubyProjectProperties {
         // Store standard properties
         EditableProperties projectProperties = updateHelper.getProperties( RakeProjectHelper.PROJECT_PROPERTIES_PATH );        
         EditableProperties privateProperties = updateHelper.getProperties( RakeProjectHelper.PRIVATE_PROPERTIES_PATH );
-        
+
+        RubyProjectProperties.storePlatform(privateProperties, getPlatform());
+
         // Standard store of the properties
         projectGroup.store( projectProperties );        
         privateGroup.store( privateProperties );
@@ -396,7 +391,22 @@ public class RubyProjectProperties extends SharedRubyProjectProperties {
         d.setOptions(new Object[] {regenerateButton, NotifyDescriptor.CANCEL_OPTION});        
         return DialogDisplayer.getDefault().notify(d) == regenerateButton;
     }
-        
+    
+    RubyPlatform getPlatform() {
+        if (platform == null) {
+            platform = RubyPlatform.platformFor(project);
+        }
+        return platform;
+    }
+    
+    void setPlatform(final RubyPlatform platform) {
+        this.platform = platform;
+    }
+    
+    public static void storePlatform(final EditableProperties ep, final RubyPlatform platform) {
+        ep.setProperty("platform.active", platform.getID()); // NOI18N
+    }
+
     /**
      * A mess.
      */

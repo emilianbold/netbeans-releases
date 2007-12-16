@@ -57,6 +57,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.PatternSyntaxException;
+import org.netbeans.api.ruby.platform.RubyPlatformProvider;
+import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
@@ -65,6 +67,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
 
     private static final Pattern GEM_EXCLUDE_FILTER;
     private static final Pattern GEM_INCLUDE_FILTER;
+    
     static {
         String userExcludes = System.getProperty("ruby.prj.excludegems");
         if (userExcludes == null) {
@@ -129,14 +132,14 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
 //            if (jp != null) {
                 //TODO: May also listen on CP, but from Platform it should be fixed.
             List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
-            Set<URL> nonGemUrls = RubyInstallation.getInstance().getNonGemLoadPath();
+            GemManager gemManager = getGemManager();
+            Set<URL> nonGemUrls = gemManager.getNonGemLoadPath();
             
             for (URL url : nonGemUrls) {
                 result.add(ClassPathSupport.createResource(url));
             }
 
-            Map<String,URL> gemUrls = RubyInstallation.getInstance().getGemUrls();
-            //Map<String,String> gemVersions = RubyInstallation.getInstance().getGemVersions();
+            Map<String,URL> gemUrls = gemManager.getGemUrls();
             
             Pattern includeFilter = GEM_INCLUDE_FILTER;
             Pattern excludeFilter = GEM_EXCLUDE_FILTER;
@@ -174,8 +177,9 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
             }
 
             resourcesCache = Collections.unmodifiableList (result);
-            RubyInstallation.getInstance().removePropertyChangeListener(this);
-            RubyInstallation.getInstance().addPropertyChangeListener(this);
+            // XXX
+//            RubyInstallation.getInstance().removePropertyChangeListener(this);
+//            RubyInstallation.getInstance().addPropertyChangeListener(this);
         }
         return this.resourcesCache;
     }
@@ -231,6 +235,11 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
 //                }
 //            }
 //        }
+    }
+
+    private GemManager getGemManager() {
+        // TODO: cache it(?)
+        return new RubyPlatformProvider(evaluator).getPlatform().getGemManager();
     }
     
     /**

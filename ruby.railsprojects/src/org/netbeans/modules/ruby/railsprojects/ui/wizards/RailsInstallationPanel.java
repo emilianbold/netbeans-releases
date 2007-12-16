@@ -44,10 +44,11 @@ package org.netbeans.modules.ruby.railsprojects.ui.wizards;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
+import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.options.OptionsDisplayer;
-import org.netbeans.api.ruby.platform.RubyInstallation;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.gems.Gem;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.openide.DialogDisplayer;
@@ -62,7 +63,7 @@ import org.openide.util.NbBundle;
  *
  * @author  Tor Norbye
  */
-public class RailsInstallationPanel extends javax.swing.JPanel {
+public class RailsInstallationPanel extends JPanel {
 
     private Panel firer;
     private WizardDescriptor wizardDescriptor;
@@ -73,12 +74,18 @@ public class RailsInstallationPanel extends javax.swing.JPanel {
         initComponents();
         this.setName(NbBundle.getMessage(RailsInstallationPanel.class,"LAB_InstallRails"));
         this.putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage(RailsInstallationPanel.class,"TXT_NewRoRApp")); // NOI18N
-        updateLabel();
-        updateGemProblem();
+    }
+    
+    private RubyPlatform platform() {
+        return (RubyPlatform) wizardDescriptor.getProperty("platform");
+    }
+    
+    private GemManager gemManager() {
+        return platform().getGemManager();
     }
     
     private void updateGemProblem() {
-        String gemProblem = GemManager.getGemProblem();
+        String gemProblem = gemManager().getGemProblem();
         if (gemProblem != null) {
             String msg = NbBundle.getMessage(RailsInstallationPanel.class,"GemProblem");
             descLabel.setText(msg);
@@ -90,15 +97,15 @@ public class RailsInstallationPanel extends javax.swing.JPanel {
     }
     
     private void updateLabel() {
-        if (RubyInstallation.getInstance().isValidRails(false)) {
+        if (gemManager().isValidRails(false)) {
             descLabel.setText(NbBundle.getMessage(RailsInstallationPanel.class, "RailsOk"));
             railsButton.setText(NbBundle.getMessage(RailsInstallationPanel.class, "UpdateRails"));
-            String version = RubyInstallation.getInstance().getVersion("rails"); // NOI18N
+            String version = gemManager().getVersion("rails"); // NOI18N
             if (version == null) {
                 version = "?";
             }
             installedLabel.setText(NbBundle.getMessage(RailsInstallationPanel.class, "RailsVersion", version));
-        } else if (!RubyInstallation.getInstance().isValidRuby(false)) {
+        } else if (!platform().isValidRuby(false)) {
             descLabel.setText(NbBundle.getMessage(RailsInstallationPanel.class, "NoRuby"));
             railsButton.setText(NbBundle.getMessage(RailsInstallationPanel.class, "InstallRails"));
             installedLabel.setText("");
@@ -112,18 +119,21 @@ public class RailsInstallationPanel extends javax.swing.JPanel {
     void read (WizardDescriptor settings) {
         this.wizardDescriptor = settings;
         
+        updateLabel();
+        updateGemProblem();
+        
         // In case user went back to the previous panel and changed the ruby settings
         updateGemProblem();
     }
         
     boolean valid (WizardDescriptor settings) {
-        if (!RubyInstallation.getInstance().isValidRuby(false)) {
+        if (!platform().isValidRuby(false)) {
             wizardDescriptor.putProperty( "WizardPanel_errorMessage", 
                     NbBundle.getMessage(RailsInstallationPanel.class, "NoRuby"));
             return false;
         }
         // Make sure we have Rails (and possibly openssl as well)
-        String rails = RubyInstallation.getInstance().getRails();
+        String rails = gemManager().getRails();
         if (rails != null && !(new File(rails).exists())) {
             String msg = NbBundle.getMessage(RailsInstallationPanel.class, "NotFound", rails);
             wizardDescriptor.putProperty( "WizardPanel_errorMessage", msg);       //NOI18N
@@ -249,47 +259,47 @@ public class RailsInstallationPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void railsDetailButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_railsDetailButtonActionPerformed
-    String gemProblem = GemManager.getGemProblem();
-    assert gemProblem != null;
-    NotifyDescriptor nd =
-        new NotifyDescriptor.Message(gemProblem, NotifyDescriptor.Message.ERROR_MESSAGE);
-    DialogDisplayer.getDefault().notify(nd);
-}//GEN-LAST:event_railsDetailButtonActionPerformed
+        String gemProblem = gemManager().getGemProblem();
+        assert gemProblem != null;
+        NotifyDescriptor nd =
+            new NotifyDescriptor.Message(gemProblem, NotifyDescriptor.Message.ERROR_MESSAGE);
+        DialogDisplayer.getDefault().notify(nd);
+    }//GEN-LAST:event_railsDetailButtonActionPerformed
 
-private void proxyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_proxyButtonActionPerformed
-    OptionsDisplayer.getDefault().open("General"); // NOI18N
-}//GEN-LAST:event_proxyButtonActionPerformed
+    private void proxyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_proxyButtonActionPerformed
+        OptionsDisplayer.getDefault().open("General"); // NOI18N
+    }//GEN-LAST:event_proxyButtonActionPerformed
 
-private void sslButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sslButtonActionPerformed
-    Runnable asyncCompletionTask = new InstallationComplete();
-    Gem gem = new Gem("jruby-openssl", null, null); // NOI18N
-    new GemManager().install(new Gem[] { gem }, this, false, false, null, true, true, asyncCompletionTask);
-    
-}//GEN-LAST:event_sslButtonActionPerformed
+    private void sslButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sslButtonActionPerformed
+        Runnable asyncCompletionTask = new InstallationComplete();
+        Gem gem = new Gem("jruby-openssl", null, null); // NOI18N
+        gemManager().install(new Gem[] { gem }, this, false, false, null, true, true, asyncCompletionTask);
 
-private class InstallationComplete implements Runnable {
-    public void run() {
-        RubyInstallation.getInstance().recomputeRoots();
-        RailsInstallationPanel.this.updateLabel();
-        RailsInstallationPanel.this.firer.fireChangeEvent();
-        RubyInstallation.getInstance().recomputeRoots();
+    }//GEN-LAST:event_sslButtonActionPerformed
+
+    private class InstallationComplete implements Runnable {
+        public void run() {
+            platform().recomputeRoots();
+            RailsInstallationPanel.this.updateLabel();
+            RailsInstallationPanel.this.firer.fireChangeEvent();
+            platform().recomputeRoots();
+        }
     }
-}
 
-private void railsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_railsButtonActionPerformed
-    Runnable asyncCompletionTask = new InstallationComplete();
-    Gem rails = new Gem("rails", null, null); // NOI18N
-    Gem jdbc = new Gem("ActiveRecord-JDBC", null, null); // NOI18N
-    Gem[] gems = new Gem[] { rails, jdbc };
-    if (RubyInstallation.getInstance().isValidRails((false))) {
-        // Already installed: update
-        new GemManager().update(gems, this, false, false, true, asyncCompletionTask);
-    } else {
-        new GemManager().install(gems, this, false, false, null, true, true, asyncCompletionTask);
-    }
-}//GEN-LAST:event_railsButtonActionPerformed
-    
-    
+    private void railsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_railsButtonActionPerformed
+        Runnable asyncCompletionTask = new InstallationComplete();
+        Gem rails = new Gem("rails", null, null); // NOI18N
+        Gem jdbc = new Gem("ActiveRecord-JDBC", null, null); // NOI18N
+        Gem[] gems = new Gem[] { rails, jdbc };
+        if (gemManager().isValidRails((false))) {
+            // Already installed: update
+            gemManager().update(gems, this, false, false, true, asyncCompletionTask);
+        } else {
+            gemManager().install(gems, this, false, false, null, true, true, asyncCompletionTask);
+        }
+    }//GEN-LAST:event_railsButtonActionPerformed
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel descLabel;
     private javax.swing.JLabel installedLabel;
@@ -301,13 +311,13 @@ private void railsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     private javax.swing.JButton railsDetailButton;
     private javax.swing.JButton sslButton;
     // End of variables declaration//GEN-END:variables
-    
+
     static class Panel implements WizardDescriptor.ValidatingPanel {
-        
+
         private ArrayList listeners;        
         private RailsInstallationPanel component;
         private WizardDescriptor settings;
-        
+
         public synchronized void removeChangeListener(ChangeListener l) {
             if (this.listeners == null) {
                 return;
@@ -337,11 +347,11 @@ private void railsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         public void storeSettings(Object settings) {
             // Nothing to store/restore here
         }
-        
+
         public void validate() throws WizardValidationException {
             this.component.validate(this.settings);
         }
-                
+
         public boolean isValid() {
             return this.component.valid (this.settings);
         }
@@ -356,19 +366,19 @@ private void railsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         public HelpCtx getHelp() {
             return new HelpCtx (RailsInstallationPanel.class);
         }        
-        
+
         private void fireChangeEvent () {
-           Iterator it = null;
-           synchronized (this) {
-               if (this.listeners == null) {
-                   return;
-               }
-               it = ((ArrayList)this.listeners.clone()).iterator();
-           }
-           ChangeEvent event = new ChangeEvent (this);
-           while (it.hasNext()) {
-               ((ChangeListener)it.next()).stateChanged(event);
-           }
+            Iterator it = null;
+            synchronized (this) {
+                if (this.listeners == null) {
+                    return;
+                }
+                it = ((ArrayList)this.listeners.clone()).iterator();
+            }
+            ChangeEvent event = new ChangeEvent (this);
+            while (it.hasNext()) {
+                ((ChangeListener)it.next()).stateChanged(event);
+            }
         }                
     }    
 }

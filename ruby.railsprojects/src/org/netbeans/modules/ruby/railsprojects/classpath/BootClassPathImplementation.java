@@ -64,11 +64,14 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import org.netbeans.api.ruby.platform.RubyPlatformProvider;
+import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 
 final class BootClassPathImplementation implements ClassPathImplementation, PropertyChangeListener {
+    
     // Flag for controlling last-minute workaround for issue #120231
     private static final boolean INCLUDE_NONLIBPLUGINS = Boolean.getBoolean("ruby.include_nonlib_plugins");
     
@@ -132,14 +135,15 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
 //            if (jp != null) {
                 //TODO: May also listen on CP, but from Platform it should be fixed.
             List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
-            Set<URL> nonGemUrls = RubyInstallation.getInstance().getNonGemLoadPath();
+            GemManager gemManager = getGemManager();
+            Set<URL> nonGemUrls = gemManager.getNonGemLoadPath();
             
             for (URL url : nonGemUrls) {
                 result.add(ClassPathSupport.createResource(url));
             }
 
-            Map<String,URL> gemUrls = RubyInstallation.getInstance().getGemUrls();
-            Map<String,String> gemVersions = RubyInstallation.getInstance().getGemVersions();
+            Map<String,URL> gemUrls = gemManager.getGemUrls();
+            Map<String,String> gemVersions = gemManager.getGemVersions();
             
             // Perhaps I can filter vendor/rails iff the installation contains it
 
@@ -169,9 +173,9 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
 
                 
                 // TODO - handle multiple gem versions in the same repository
-                List<URL> combinedGems = mergeVendorGems(vendor, 
-                        new HashMap<String,String>(gemVersions), 
-                        new HashMap<String,URL>(gemUrls));
+                List<URL> combinedGems = mergeVendorGems(vendor,
+                        new HashMap<String, String>(gemVersions),
+                        new HashMap<String, URL>(gemUrls), gemManager);
                 for (URL url : combinedGems) {
                     if (includeFilter != null) {
                         String gem = getGemName(url);
@@ -213,8 +217,9 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
             }
             
             resourcesCache = Collections.unmodifiableList (result);
-            RubyInstallation.getInstance().removePropertyChangeListener(this);
-            RubyInstallation.getInstance().addPropertyChangeListener(this);
+        // XXX
+//            RubyInstallation.getInstance().removePropertyChangeListener(this);
+//            RubyInstallation.getInstance().addPropertyChangeListener(this);
         }
         return this.resourcesCache;
     }
@@ -272,6 +277,11 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
 //        }
     }
 
+    private GemManager getGemManager() {
+        // TODO: cache it(?)
+        return new RubyPlatformProvider(evaluator).getPlatform().getGemManager();
+    }
+
     /**
      * Resets the cache and firesPropertyChange
      */
@@ -282,13 +292,14 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
         support.firePropertyChange(PROP_RESOURCES, null, null);
     }
 
-    private List<URL> mergeVendorGems(File vendorFile, Map<String,String> gemVersions, Map<String,URL> gemUrls) {
-        chooseGems(vendorFile.listFiles(), gemVersions, gemUrls);
+    private List<URL> mergeVendorGems(File vendorFile, Map<String,String> gemVersions, Map<String,URL> gemUrls, final GemManager gemManager) {
+        chooseGems(vendorFile.listFiles(), gemVersions, gemUrls, gemManager);
         
         return new ArrayList<URL>(gemUrls.values());
     }
     
-    private static void chooseGems(File[] gems, Map<String,String> gemVersions, Map<String,URL> gemUrls) {        
+    private static void chooseGems(File[] gems, Map<String, String> gemVersions,
+            Map<String, URL> gemUrls, final GemManager gemManager) {
         // Try to match foo-1.2.3, foo-bar-1.2.3, foo-bar-1.2.3-ruby
         Pattern GEM_FILE_PATTERN = Pattern.compile("(\\S|-)+-((\\d+)\\.(\\d+)\\.(\\d+))(-\\S+)?"); // NOI18N
 
@@ -306,13 +317,13 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
 
             if ("rails".equals(n)) { // NOI18N
                 // Special case - what do we do here?
-                chooseRails(f.listFiles(), gemVersions, gemUrls);
+                chooseRails(f.listFiles(), gemVersions, gemUrls, gemManager);
                 continue;
             }
 
             if ("gems".equals(n) || "gems-jruby".equals(n)) { // NOI18N
                 // Support both having gems in the vendor/ top directory as well as in a gems/ subdirectory            }
-                chooseGems(f.listFiles(), gemVersions, gemUrls);
+                chooseGems(f.listFiles(), gemVersions, gemUrls, gemManager);
             }
 
             if (n.indexOf('-') == -1) {
@@ -330,7 +341,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
                     URL url = lib.toURI().toURL();
                     String name = m.group(1);
                     String version = m.group(2);
-                    addGem(gemVersions, gemUrls, name, version, url);
+                    addGem(gemVersions, gemUrls, name, version, url, gemManager);
                 } catch (MalformedURLException mufe) {
                     Exceptions.printStackTrace(mufe);
                 }
@@ -338,15 +349,17 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
         }
     }
     
-    private static void addGem(Map<String,String> gemVersions, Map<String,URL> gemUrls, String name, String version, URL url) {
-        if (!gemVersions.containsKey(name) || 
-                RubyInstallation.compareGemVersions(version, gemVersions.get(name)) > 0) {
+    private static void addGem(Map<String, String> gemVersions, Map<String, URL> gemUrls,
+            String name, String version, URL url, final GemManager gemManager) {
+        if (!gemVersions.containsKey(name) ||
+                gemManager.compareGemVersions(version, gemVersions.get(name)) > 0) {
             gemVersions.put(name, version);
             gemUrls.put(name, url);
         }
     }
 
-    private static void chooseRails(File[] gems, Map<String,String> gemVersions, Map<String,URL> gemUrls) {        
+    private static void chooseRails(File[] gems, Map<String, String> gemVersions,
+            Map<String, URL> gemUrls, final GemManager gemManager) {
         for (File f : gems) {
             if (!f.isDirectory()) {
                 continue;
@@ -368,7 +381,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
                     if (version != null) {
                         try {
                             URL url = lib.toURI().toURL();
-                            addGem(gemVersions, gemUrls, name, version, url);
+                            addGem(gemVersions, gemUrls, name, version, url, gemManager);
                         } catch (MalformedURLException mufe) {
                             Exceptions.printStackTrace(mufe);
                         }

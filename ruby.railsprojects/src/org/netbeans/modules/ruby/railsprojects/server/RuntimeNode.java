@@ -48,9 +48,10 @@ import org.openide.nodes.Children;
  * @author Tor Norbye
  */
 public class RuntimeNode extends AbstractNode {
+    
     public RuntimeNode() {
         super(Children.LEAF);
-        setDisplayName(RailsServer.getServerName());
+//        setDisplayName(RailsServer.getServerName());
         setIconBaseWithExtension("org/netbeans/modules/ruby/railsprojects/ui/resources/rails.png");
     }
     

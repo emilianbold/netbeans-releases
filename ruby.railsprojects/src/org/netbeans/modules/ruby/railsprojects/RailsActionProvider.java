@@ -60,6 +60,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
 import org.netbeans.modules.ruby.rubyproject.RakeSupport;
 import org.netbeans.api.ruby.platform.RubyInstallation;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.NbUtilities;
 import org.netbeans.modules.ruby.RubyUtils;
@@ -154,6 +155,10 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
         return supportedActions;
     }
 
+    private RubyPlatform getPlatform() {
+        return RubyPlatform.platformFor(project);
+    }
+
     /** Return true iff the given file is a migration file */
     private boolean isMigrationFile(FileObject file) {
         if (file.getParent() == null || !file.getParent().getName().equals("migrate")) { // NOI18N
@@ -216,7 +221,7 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             runServer("", debugCommand);
             return;
         } else if (COMMAND_TEST.equals(command)) {
-            if (!RubyInstallation.getInstance().isValidRake(true)) {
+            if (!RubyPlatform.gemManagerFor(project).isValidRake(true)) {
                 return;
             }
             // Save all files first
@@ -228,7 +233,7 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             rake.runRake(pwd, null, displayName, new RailsFileLocator(context, project), true, false, "test"); // NOI18N
             return;
         } else if (COMMAND_TEST_SINGLE.equals(command) || COMMAND_DEBUG_TEST_SINGLE.equals(command)) {
-            if (!RubyInstallation.getInstance().isValidRuby(true)) {
+            if (!RubyPlatform.platformFor(project).isValidRuby(true)) {
                 return;
             }
 
@@ -267,7 +272,7 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             return;
 
         } else if (COMMAND_RUN_SINGLE.equals(command) || debugSingleCommand) {
-            if (!RubyInstallation.getInstance().isValidRuby(true)) {
+            if (!RubyPlatform.platformFor(project).isValidRuby(true)) {
                 return;
             }
 
@@ -400,7 +405,7 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             runServer(path, debugCommand || debugSingleCommand);
             return;
         } else if (COMMAND_BUILD.equals(command)) {
-            if (!RubyInstallation.getInstance().isValidRake(true)) {
+            if (!RubyPlatform.gemManagerFor(project).isValidRake(true)) {
                 return;
             }
             
@@ -421,11 +426,11 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
 
             String classPath = project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH);
   
-            new RubyExecution(new ExecutionDescriptor(displayName, pwd, RubyInstallation.getInstance().getRake()).
+            new RubyExecution(new ExecutionDescriptor(getPlatform(), displayName, pwd, RubyPlatform.gemManagerFor(project).getRake()).
                     fileLocator(fileLocator).
                     classPath(classPath).
                     addStandardRecognizers().
-                    appendJdkToPath(RubyInstallation.getInstance().isJRubySet()).
+                    appendJdkToPath(RubyPlatform.platformFor(project).isJRuby()).
                     addOutputRecognizer(RubyExecution.RUBY_TEST_OUTPUT),
                     project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING)
                     ).
@@ -438,7 +443,7 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
         }
         
         if (COMMAND_RDOC.equals(command)) {
-            if (!RubyInstallation.getInstance().isValidRake(true)) {
+            if (!RubyPlatform.gemManagerFor(project).isValidRake(true)) {
                 return;
             }
 
@@ -470,7 +475,7 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             RailsFileLocator fileLocator = new RailsFileLocator(context, project);
             String displayName = NbBundle.getMessage(RailsActionProvider.class, "RakeDoc");
  
-            new RubyExecution(new ExecutionDescriptor(displayName, pwd, RubyInstallation.getInstance().getRake()).
+            new RubyExecution(new ExecutionDescriptor(getPlatform(), displayName, pwd, RubyPlatform.gemManagerFor(project).getRake()).
                     additionalArgs("appdoc"). // NOI18N
                     postBuild(showBrowser).
                     fileLocator(fileLocator).
@@ -483,7 +488,7 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
         }
 
         if (COMMAND_AUTOTEST.equals(command)) {
-            if (AutoTestSupport.isInstalled()) {
+            if (AutoTestSupport.isInstalled(project)) {
                 AutoTestSupport support = new AutoTestSupport(context, project,
                         project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING));
                 support.setClassPath(project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH));
@@ -530,7 +535,7 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
         String script = "script" + File.separator + "console"; // NOI18N
         String classPath = project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH);
 
-        new RubyExecution(new ExecutionDescriptor(displayName, pwd, script).
+        new RubyExecution(new ExecutionDescriptor(getPlatform(), displayName, pwd, script).
                 showSuspended(false).
                 showProgress(false).
                 classPath(classPath).
@@ -627,7 +632,7 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
 
         String classPath = project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH);
         
-        ExecutionDescriptor desc = new ExecutionDescriptor(displayName, pwd, target);
+        ExecutionDescriptor desc = new ExecutionDescriptor(getPlatform(), displayName, pwd, target);
         desc.debug(debug);
         desc.showSuspended(true);
         desc.allowInput();

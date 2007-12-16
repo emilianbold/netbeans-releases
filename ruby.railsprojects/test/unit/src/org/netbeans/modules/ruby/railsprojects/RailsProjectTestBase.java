@@ -32,6 +32,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.ruby.RubyTestBase;
 import org.netbeans.spi.project.ui.support.NodeFactory;
@@ -63,7 +64,7 @@ public class RailsProjectTestBase extends RubyTestBase {
     protected RailsProject createTestProject(String projectName, String... paths) throws Exception {
         File prjDirF = new File(getWorkDir(), projectName);
         RailsProjectCreateData data = new RailsProjectCreateData(prjDirF, projectName, false, null, false, false);
-        RailsProjectGenerator.createProject(data);
+        RailsProjectGenerator.createProject(data, RubyPlatformManager.getDefaultPlatform());
         RubyTestBase.createFiles(prjDirF, paths);
         RailsProject project = (RailsProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(prjDirF));
         assertNotNull(project);

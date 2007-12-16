@@ -51,6 +51,7 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.railsprojects.RailsProjectCreateData;
 import org.netbeans.modules.ruby.railsprojects.RailsProjectGenerator;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
@@ -147,8 +148,10 @@ public class NewRailsProjectWizardIterator implements WizardDescriptor.ProgressI
         Boolean jdbc = (Boolean)wiz.getProperty(JDBC_WN); // NOI18N
         Boolean deploy = (Boolean)wiz.getProperty(GOLDSPIKE_WN); // NOI18N
         
-        RailsProjectCreateData data = new RailsProjectCreateData(dirF, name, type == TYPE_APP, database, jdbc, deploy);
-        h = RailsProjectGenerator.createProject(data);
+        RailsProjectCreateData data = new RailsProjectCreateData(dirF, name, type == TYPE_APP,
+                database, jdbc, deploy);
+        RubyPlatform platform = (RubyPlatform) wiz.getProperty("platform"); // NOI18N
+        h = RailsProjectGenerator.createProject(data, platform);
         handle.progress (2);
 
 //        if (mainClass != null && mainClass.length () > 0) {
@@ -262,6 +265,7 @@ public class NewRailsProjectWizardIterator implements WizardDescriptor.ProgressI
             this.wiz.putProperty("projdir",null);           //NOI18N
             this.wiz.putProperty("name",null);          //NOI18N
             this.wiz.putProperty("mainClass",null);         //NOI18N
+            this.wiz.putProperty("platform", null);         //NOI18N
             this.wiz = null;
             panels = null;
         }

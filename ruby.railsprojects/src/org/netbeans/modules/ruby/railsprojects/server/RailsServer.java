@@ -55,11 +55,11 @@ import java.util.Set;
 import java.util.concurrent.Semaphore;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.ruby.platform.execution.DirectoryFileLocator;
-import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
+import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.openide.DialogDisplayer;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
@@ -69,6 +69,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
@@ -202,7 +203,7 @@ public final class RailsServer {
         serverType = getServerType();
         String displayName = getServerTabName(serverType, projectName, port);
         String serverPath = "script" + File.separator + "server"; // NOI18N
-        ExecutionDescriptor desc = new ExecutionDescriptor(displayName, dir, serverPath);
+        ExecutionDescriptor desc = new ExecutionDescriptor(RubyPlatform.platformFor(project), displayName, dir, serverPath);
         desc.additionalArgs("--port", Integer.toString(port)); // NOI18N
         desc.postBuild(finishedAction);
         desc.classPath(classPath);
@@ -241,7 +242,7 @@ public final class RailsServer {
         
     }
 
-    static String getServerName() {
+    String getServerName() {
         switch (getServerType()) {
             case MONGREL: return NbBundle.getMessage(RailsServer.class, "Mongrel");
             case LIGHTTPD: return NbBundle.getMessage(RailsServer.class, "Lighttpd");
@@ -252,12 +253,12 @@ public final class RailsServer {
     }
     
     /** Figure out which server we're using */
-    private static ServerType getServerType() {
-        RubyInstallation install = RubyInstallation.getInstance();
+    private ServerType getServerType() {
+        GemManager gemManager = RubyPlatform.gemManagerFor(project);
         
-        if (install.getVersion("mongrel") != null) { // NOI18N
+        if (gemManager.getVersion("mongrel") != null) { // NOI18N
             return ServerType.MONGREL;
-        } else if (install.getVersion("lighttpd") != null) { // NOI18N
+        } else if (gemManager.getVersion("lighttpd") != null) { // NOI18N
             return ServerType.LIGHTTPD;
         } else {
             return ServerType.WEBRICK;

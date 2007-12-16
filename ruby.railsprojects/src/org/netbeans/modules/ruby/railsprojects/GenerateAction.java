@@ -57,6 +57,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.netbeans.api.ruby.platform.RubyInstallation;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
 import org.netbeans.modules.ruby.platform.execution.DirectoryFileLocator;
@@ -88,14 +89,6 @@ public final class GenerateAction extends NodeAction implements EditorAction {
     
     @Override
     protected void performAction(Node[] activatedNodes) {
-        if (!RubyInstallation.getInstance().isValidRuby(true)) {
-            return;
-        }
-
-        if (!RubyInstallation.getInstance().isValidRails(true)) {
-            return;
-        }
-
         Lookup lookup = activatedNodes[0].getLookup();
         RailsProject project = lookup.lookup(RailsProject.class);
 
@@ -113,6 +106,14 @@ public final class GenerateAction extends NodeAction implements EditorAction {
         }
 
         if (project == null) {
+            return;
+        }
+
+//        if (!RubyInstallation.getInstance().isValidRuby(true)) {
+//            return;
+//        }
+
+        if (!RubyPlatform.gemManagerFor(project).isValidRails(true)) {
             return;
         }
 
@@ -136,7 +137,7 @@ public final class GenerateAction extends NodeAction implements EditorAction {
         }
     }
 
-    public void generate(RailsProject project, Generator generator, String initialName, 
+    public void generate(final RailsProject project, Generator generator, String initialName, 
             String initialParams, boolean initialEnabled, boolean noOverwrite) {
         boolean cancelled;
         final JButton okButton = new JButton(NbBundle.getMessage(GenerateAction.class, "Ok"));
@@ -243,7 +244,7 @@ public final class GenerateAction extends NodeAction implements EditorAction {
                                 FileLocator locator = new DirectoryFileLocator(dir);
                                 String displayName = NbBundle.getMessage(GenerateAction.class, "RailsGenerator");
                                 Task task =
-                                    new RubyExecution(new ExecutionDescriptor(displayName, pwd, script).
+                                    new RubyExecution(new ExecutionDescriptor(RubyPlatform.platformFor(project), displayName, pwd, script).
                                             additionalArgs(argv).fileLocator(locator).
                                             addOutputRecognizer(recognizer), charsetName).run();
 

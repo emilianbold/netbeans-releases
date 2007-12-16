@@ -41,12 +41,10 @@
 
 package org.netbeans.modules.ruby;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 import javax.swing.Action;
 import javax.swing.JTextArea;
 import javax.swing.text.Caret;
@@ -57,7 +55,6 @@ import org.netbeans.api.gsf.CompletionProposal;
 import org.netbeans.api.gsf.ElementKind;
 import org.netbeans.api.gsf.HtmlFormatter;
 import org.netbeans.api.gsf.NameKind;
-import org.netbeans.api.gsfpath.classpath.ClassPath;
 import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.TestUtil;
@@ -197,8 +194,9 @@ public class CodeCompleterTest extends RubyTestBase {
             languages.add(dl);
             registry.addLanguages(languages);
         }
-        // Force classpath initialization
-        Set<URL> urls = RubyInstallation.getInstance().getNonGemLoadPath();
+        // XXX
+//        // Force classpath initialization
+//        Set<URL> urls = RubyInstallation.getInstance().getNonGemLoadPath();
         
         CompilationInfo ci = getInfo(file);
         String text = ci.getText();
@@ -490,8 +488,9 @@ public class CodeCompleterTest extends RubyTestBase {
             languages.add(dl);
             registry.addLanguages(languages);
         }
-        // Force classpath initialization
-        Set<URL> urls = RubyInstallation.getInstance().getNonGemLoadPath();
+        // XXX
+//        // Force classpath initialization
+//        Set<URL> urls = RubyInstallation.getInstance().getNonGemLoadPath();
 
         CodeCompleter cc = new CodeCompleter();
         TestCompilationInfo info = getInfo(file);

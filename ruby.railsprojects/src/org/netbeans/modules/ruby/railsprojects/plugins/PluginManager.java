@@ -61,7 +61,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.ruby.platform.RubyInstallation;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.Util;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
@@ -352,15 +352,14 @@ public class PluginManager {
         
         List<String> argList = new ArrayList<String>();
         
-        File cmd = new File(RubyInstallation.getInstance().getRuby());
+        RubyPlatform platform = RubyPlatform.platformFor(project);
+        File cmd = new File(platform.getInterpreter());
         
         if (!cmd.getName().startsWith("jruby") || RubyExecution.LAUNCH_JRUBY_SCRIPT) { // NOI18N
             argList.add(cmd.getPath());
         }
         
-        String rubyHome = cmd.getParentFile().getParent();
-        String cmdName = cmd.getName();
-        argList.addAll(RubyExecution.getRubyArgs(rubyHome, cmdName));
+        argList.addAll(RubyExecution.getRubyArgs(platform));
         
         argList.add(pluginCmd);
         argList.add(command);
@@ -378,7 +377,7 @@ public class PluginManager {
         Util.adjustProxy(pb);
         
         // PATH additions for JRuby etc.
-        new RubyExecution(new ExecutionDescriptor("plugin", pb.directory()).cmd(cmd)).setupProcessEnvironment(pb.environment()); // NOI18N
+        new RubyExecution(new ExecutionDescriptor(platform, "plugin", pb.directory()).cmd(cmd)).setupProcessEnvironment(pb.environment()); // NOI18N
         
         if (lines == null) {
             lines = new ArrayList<String>(40);

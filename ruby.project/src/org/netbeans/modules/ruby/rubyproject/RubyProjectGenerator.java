@@ -52,6 +52,7 @@ import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
 import org.netbeans.modules.ruby.spi.project.support.rake.ProjectGenerator;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.spi.project.support.rake.ReferenceHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -85,9 +86,9 @@ public class RubyProjectGenerator {
      * @return the helper object permitting it to be further customized
      * @throws IOException in case something went wrong
      */
-    public static RakeProjectHelper createProject(File dir, String name, String mainClass) throws IOException {
+    public static RakeProjectHelper createProject(File dir, String name, String mainClass, final RubyPlatform platform) throws IOException {
         FileObject dirFO = FileUtil.createFolder(dir);
-        RakeProjectHelper h = createProject(dirFO, name, "lib", "test", mainClass, false); //NOI18N
+        RakeProjectHelper h = createProject(dirFO, name, "lib", "test", mainClass, false, platform); //NOI18N
         Project p = ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
         FileObject srcFolder = dirFO.createFolder("lib"); // NOI18N
@@ -109,11 +110,11 @@ public class RubyProjectGenerator {
     }
 
     public static RakeProjectHelper createProject(final File dir, final String name,
-            final File[] sourceFolders, final File[] testFolders) throws IOException {
+            final File[] sourceFolders, final File[] testFolders, final RubyPlatform platform) throws IOException {
         assert sourceFolders != null && testFolders != null: "Package roots can't be null";   //NOI18N
         final FileObject dirFO = FileUtil.createFolder(dir);
         // this constructor creates only java application type
-        final RakeProjectHelper h = createProject(dirFO, name, null, null, null, false);
+        final RakeProjectHelper h = createProject(dirFO, name, null, null, null, false, platform);
         final RubyProject p = (RubyProject) ProjectManager.getDefault().findProject(dirFO);
         final ReferenceHelper refHelper = p.getReferenceHelper();
         try {
@@ -191,7 +192,8 @@ public class RubyProjectGenerator {
     }
 
     private static RakeProjectHelper createProject(FileObject dirFO, String name,
-                                                  String srcRoot, String testRoot, String mainClass, boolean isLibrary) throws IOException {
+            String srcRoot, String testRoot, String mainClass, boolean isLibrary,
+            final RubyPlatform platform) throws IOException {
         RakeProjectHelper h = ProjectGenerator.createProject(dirFO, RubyProjectType.TYPE);
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
@@ -271,7 +273,8 @@ public class RubyProjectGenerator {
 //        ep.setProperty("build.test.results.dir", "${build.dir}/test/results"); // NOI18N
 //        ep.setProperty("build.classes.excludes", "**/*.java,**/*.form"); // NOI18N
 //        ep.setProperty("dist.javadoc.dir", "${dist.dir}/javadoc"); // NOI18N
-//        ep.setProperty("platform.active", "default_platform"); // NOI18N
+        RubyProjectProperties.storePlatform(ep, platform);
+
 //
 //        ep.setProperty("run.jvmargs", ""); // NOI18N
 //        ep.setComment("run.jvmargs", new String[] {

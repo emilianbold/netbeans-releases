@@ -42,9 +42,10 @@ package org.netbeans.modules.ruby.rubyproject;
 
 import java.io.File;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.ruby.platform.RubyInstallation;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
+import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -55,6 +56,7 @@ import org.openide.util.NbBundle;
  * @author Tor Norbye
  */
 public class AutoTestSupport {
+    
     private Project project;
     private Lookup context;
     private String charsetName;
@@ -71,12 +73,14 @@ public class AutoTestSupport {
         this.classPath = classPath;
     }
     
-    public static boolean isInstalled() {
-        return RubyInstallation.getInstance().isValidAutoTest(false);
+    public static boolean isInstalled(final Project project) {
+        return RubyPlatform.gemManagerFor(project).isValidAutoTest(false);
     }
 
     public void start() {
-        if (!RubyInstallation.getInstance().isValidAutoTest(true)) {
+        RubyPlatform platform = RubyPlatform.platformFor(project);
+        GemManager gemManager = platform.getGemManager();
+        if (!gemManager.isValidAutoTest(true)) {
             return;
         }
 
@@ -91,7 +95,7 @@ public class AutoTestSupport {
 
         RubyFileLocator fileLocator = new RubyFileLocator(context, project);
         String displayName = NbBundle.getMessage(AutoTestSupport.class, "AutoTest");
-        ExecutionDescriptor desc = new ExecutionDescriptor(displayName, pwd, RubyInstallation.getInstance().getAutoTest());
+        ExecutionDescriptor desc = new ExecutionDescriptor(platform, displayName, pwd, gemManager.getAutoTest());
         desc.additionalArgs("-v"); // NOI18N
         desc.fileLocator(fileLocator);
         desc.classPath(classPath); // Applies only to JRuby

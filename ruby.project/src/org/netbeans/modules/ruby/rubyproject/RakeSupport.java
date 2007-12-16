@@ -49,10 +49,12 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.ruby.platform.RubyInstallation;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
+import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
@@ -175,12 +177,13 @@ public class RakeSupport {
             pwd = FileUtil.toFile(rakeFile.getParent());
         }
 
-        if (!RubyInstallation.getInstance().isValidRuby(warn) ||
-                !RubyInstallation.getInstance().isValidRake(warn)) {
+        RubyPlatform platform = RubyPlatform.platformFor(project);
+        GemManager gemManager = platform.getGemManager();
+        if (!platform.isValidRuby(warn) || !gemManager.isValidRake(warn)) {
             return;
         }
 
-        String rake = RubyInstallation.getInstance().getRake();
+        String rake = gemManager.getRake();
         ExecutionDescriptor desc;
 
         List<String> additionalArgs = new ArrayList<String>();
@@ -219,10 +222,10 @@ public class RakeSupport {
         }
 
         if (additionalArgs.size() > 0) {
-            desc = new ExecutionDescriptor(displayName, pwd, rake).additionalArgs(additionalArgs.toArray(
+            desc = new ExecutionDescriptor(platform, displayName, pwd, rake).additionalArgs(additionalArgs.toArray(
                         new String[additionalArgs.size()])); // NOI18N
         } else {
-            desc = new ExecutionDescriptor(displayName, pwd, rake);
+            desc = new ExecutionDescriptor(platform, displayName, pwd, rake);
         }
 
         desc.allowInput();
@@ -230,7 +233,7 @@ public class RakeSupport {
         desc.fileLocator(fileLocator);
         desc.addStandardRecognizers();
 
-        if (RubyInstallation.getInstance().isJRubySet()) {
+        if (platform.isJRuby()) {
             desc.appendJdkToPath(true);
         }
 

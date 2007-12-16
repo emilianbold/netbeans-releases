@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,34 +38,20 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.ruby.rubyproject;
+package org.netbeans.api.ruby.platform;
 
-import java.io.File;
-import org.netbeans.api.ruby.platform.RubyPlatformManager;
-import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 
-public class RubyProjectGeneratorTest extends RubyProjectTestBase {
+public final class RubyPlatformProvider {
 
-    public RubyProjectGeneratorTest(String testName) {
-        super(testName);
+    private final PropertyEvaluator evaluator;
+
+    public RubyPlatformProvider(final PropertyEvaluator evaluator) {
+        this.evaluator = evaluator;
     }
 
-    public void testCreateProject() throws Exception {
-        // XXX
-//        registerLayer();
-//        File projectDir = new File(getWorkDir(), "RubyApp");
-//        final String name = "script.rb";
-//        RakeProjectHelper helper = RubyProjectGenerator.createProject(projectDir, "Ruby Application", name, RubyPlatformManager.getDefaultPlatform());
-//        FileObject prjDirFO = helper.getProjectDirectory();
-//        assertNotNull("project created", prjDirFO);
-//
-//        assertNotNull("has Rakefile", prjDirFO.getFileObject("Rakefile"));
-//        final FileObject libDirFO = prjDirFO.getFileObject("lib");
-//        assertNotNull("has lib", libDirFO);
-//        assertNotNull("has script.rb", libDirFO.getFileObject(name));
-//        assertNull("does not have Rakefile in lib", libDirFO.getFileObject("Rakefile"));
-//
-//        assertNotNull("has README", prjDirFO.getFileObject("README"));
+    public RubyPlatform getPlatform() {
+        String id = evaluator.getProperty("platform.active"); // NOI18N
+        return id == null ? RubyPlatformManager.getDefaultPlatform() : RubyPlatformManager.getPlatformByID(id);
     }
 }

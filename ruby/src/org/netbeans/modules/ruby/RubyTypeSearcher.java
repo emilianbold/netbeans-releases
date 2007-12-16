@@ -62,6 +62,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyInstallation;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.netbeans.modules.ruby.elements.IndexedElement;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
@@ -255,14 +256,17 @@ public class RubyTypeSearcher implements TypeSearcher {
             FileObject fo = element.getFileObject();
             if (fo != null) {
                 File f = FileUtil.toFile(fo);
-                String lib = RubyInstallation.getInstance().getRubyLib();
-                if (lib != null && f.getPath().startsWith(lib)) {
-                    projectName = "Ruby Library";
-                    isLibrary = true;
-                } else {
-                    Project p = FileOwnerQuery.getOwner(fo);                    
-                    if (p != null) {
-                        ProjectInformation pi = ProjectUtils.getInformation( p );
+                Project p = FileOwnerQuery.getOwner(fo);
+                if (p != null) {
+                    RubyPlatform platform = RubyPlatform.platformFor(p);
+                    if (platform != null) {
+                        String lib = platform.getLib();
+                        if (lib != null && f.getPath().startsWith(lib)) {
+                            projectName = "Ruby Library";
+                            isLibrary = true;
+                        }
+                    } else {
+                        ProjectInformation pi = ProjectUtils.getInformation(p);
                         projectName = pi.getDisplayName();
                         projectIcon = pi.getIcon();
                     }

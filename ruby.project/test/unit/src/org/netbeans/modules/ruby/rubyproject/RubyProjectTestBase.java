@@ -35,6 +35,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.ruby.RubyTestBase;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -77,7 +78,7 @@ public abstract class RubyProjectTestBase extends RubyTestBase {
     
     protected RubyProject createTestProject(String projectName, String... paths) throws Exception {
         File prjDirF = new File(getWorkDir(), projectName);
-        RubyProjectGenerator.createProject(prjDirF, projectName, null);
+        RubyProjectGenerator.createProject(prjDirF, projectName, null, RubyPlatformManager.getDefaultPlatform());
         createFiles(prjDirF, paths);
         RubyProject project = (RubyProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(prjDirF));
         assertNotNull(project);

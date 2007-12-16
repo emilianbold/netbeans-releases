@@ -41,38 +41,23 @@
 
 package org.netbeans.modules.ruby.railsprojects.ui.customizer;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
 import java.util.TreeMap;
-import java.util.Vector;
-import javax.swing.ButtonModel;
-import javax.swing.ComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
-import javax.swing.JToggleButton;
-import javax.swing.ListCellRenderer;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
-import org.netbeans.modules.ruby.railsprojects.RailsProjectUtil;
-import org.netbeans.modules.ruby.railsprojects.SourceRoots;
 import org.netbeans.modules.ruby.railsprojects.UpdateHelper;
 import org.netbeans.modules.ruby.rubyproject.JavaClassPathUi;
 import org.netbeans.modules.ruby.rubyproject.ProjectPropertyExtender;
@@ -155,6 +140,7 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
     
     private StoreGroup privateGroup; 
     private StoreGroup projectGroup;
+    private RubyPlatform platform;
     
     RailsProject getProject() {
         return project;
@@ -276,8 +262,10 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
         
         // Store standard properties
         EditableProperties projectProperties = updateHelper.getProperties( RakeProjectHelper.PROJECT_PROPERTIES_PATH );        
-        EditableProperties privateProperties = updateHelper.getProperties( RakeProjectHelper.PRIVATE_PROPERTIES_PATH );
-        
+        EditableProperties privateProperties = updateHelper.getProperties(RakeProjectHelper.PRIVATE_PROPERTIES_PATH);
+
+        RailsProjectProperties.storePlatform(privateProperties, getPlatform());
+
         // Standard store of the properties
         projectGroup.store( projectProperties );        
         privateGroup.store( privateProperties );
@@ -328,7 +316,22 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
         d.setOptions(new Object[] {regenerateButton, NotifyDescriptor.CANCEL_OPTION});        
         return DialogDisplayer.getDefault().notify(d) == regenerateButton;
     }
-    
+
+    RubyPlatform getPlatform() {
+        if (platform == null) {
+            platform = RubyPlatform.platformFor(project);
+        }
+        return platform;
+    }
+
+    void setPlatform(final RubyPlatform platform) {
+        this.platform = platform;
+    }
+
+    public static void storePlatform(final EditableProperties ep, final RubyPlatform platform) {
+        ep.setProperty("platform.active", platform.getID()); // NOI18N
+    }
+
     /**
      * A mess.
      */

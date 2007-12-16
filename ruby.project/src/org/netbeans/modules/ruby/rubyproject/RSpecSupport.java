@@ -46,10 +46,12 @@ import java.util.List;
 import org.netbeans.api.project.Project;
 
 import org.netbeans.api.ruby.platform.RubyInstallation;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
+import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileObject;
@@ -64,21 +66,24 @@ import org.openide.filesystems.FileUtil;
  * @author Tor Norbye
  */
 public class RSpecSupport {
+    
     private static final String PLUGIN_SPEC_PATH = "vendor/plugins/rspec/bin/spec"; // NOI18N
     private static final String SPEC_OPTS = "spec/spec.opts"; // NOI18N
     private static final String NETBEANS_SPEC_OPTS = SPEC_OPTS + ".netbeans"; // NOI18N
     private static final String RSPEC_GEM_NAME = "rspec"; // NOI18N
     private final Project project;
 
-    public RSpecSupport(Project project) {
+    public RSpecSupport(final Project project) {
         this.project = project;
+    }
+
+    private String getVersion(final String gemName) {
+        GemManager gemManager = RubyPlatform.gemManagerFor(project);
+        return gemManager.getVersion(gemName);
     }
     
     public boolean isRSpecInstalled() {
-        RubyInstallation install = RubyInstallation.getInstance();
-
-        if (install.getVersion(RSPEC_GEM_NAME) != null) { // NOI18N
-
+        if (getVersion(RSPEC_GEM_NAME) != null) { // NOI18N
             return true;
         }
 
@@ -105,11 +110,12 @@ public class RSpecSupport {
     private String getSpecBinary() {
         assert isRSpecInstalled();
 
-        RubyInstallation install = RubyInstallation.getInstance();
-        String version = install.getVersion(RSPEC_GEM_NAME); // NOI18N
+        GemManager gemManager = RubyPlatform.gemManagerFor(project);
+
+        String version = gemManager.getVersion(RSPEC_GEM_NAME); // NOI18N
 
         if (version != null) {
-            String libGemDir = install.getRubyLibGemDir();
+            String libGemDir = gemManager.getGemDir();
 
             if (libGemDir != null) {
                 File gemDir = new File(libGemDir, "gems"); // NOI18N
@@ -172,7 +178,8 @@ public class RSpecSupport {
             pwd = FileUtil.toFile(pfo);
         }
 
-        if (!RubyInstallation.getInstance().isValidRuby(warn)) {
+        RubyPlatform platform = RubyPlatform.platformFor(project);
+        if (!platform.isValidRuby(warn)) {
             return;
         }
 
@@ -234,7 +241,7 @@ public class RSpecSupport {
                             new String[additionalArgs.size()])); // NOI18N
             }
         } else {
-            desc = new ExecutionDescriptor(displayName, pwd, spec);
+            desc = new ExecutionDescriptor(platform, displayName, pwd, spec);
 
             desc. additionalArgs(additionalArgs.toArray(
                         new String[additionalArgs.size()])); // NOI18N

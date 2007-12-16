@@ -38,21 +38,12 @@
  */
 package org.netbeans.api.ruby.platform;
 
-import java.io.File;
 import java.util.Set;
-import org.netbeans.junit.MockServices;
 
 public final class RubyPlatformManagerTest extends RubyTestBase {
 
     public RubyPlatformManagerTest(final String testName) {
         super(testName);
-        MockServices.setServices(IFL.class);
-        TestUtil.getXTestJRubyHome();
-    }
-
-    protected @Override void setUp() throws Exception {
-        super.setUp();
-        System.setProperty("netbeans.user", getWorkDirPath());
     }
 
     public void testPlatformBasics() {
@@ -64,30 +55,28 @@ public final class RubyPlatformManagerTest extends RubyTestBase {
         assertNotNull("has label", jruby.getLabel());
         assertTrue("has label", jruby.isValid());
         assertTrue("is default", jruby.isDefault());
+        // XXX
+//        assertEquals("right ruby home", new File("fix me"), jruby.getRubyHome());
+//        assertEquals("right ruby lib", new File("fix me"), jruby.getRubyLibDir());
     }
 
     public void testAddPlatform() throws Exception {
         assertEquals("bundle JRuby", 1, RubyPlatformManager.getPlatforms().size());
-        File rubyF = setUpRuby();
-        RubyPlatform ruby = RubyPlatformManager.addPlatform(rubyF, "ruby");
+        RubyPlatform ruby = RubyPlatformManager.addPlatform(setUpRuby(), "ruby");
+        // XXX
+//        assertEquals("right ruby home", new File("fix me"), ruby.getRubyHome());
+//        assertEquals("right ruby lib", new File("fix me"), ruby.getRubyLibDir());
         assertEquals("two platforms", 2, RubyPlatformManager.getPlatforms().size());
         RubyPlatformManager.removePlatform(ruby);
         assertEquals("platform removed", 1, RubyPlatformManager.getPlatforms().size());
     }
     
     public void testGetPlatformByPath() throws Exception {
-        File rubyF = setUpRuby();
-        RubyPlatform ruby = RubyPlatformManager.addPlatform(rubyF, "ruby");
+        RubyPlatform ruby = RubyPlatformManager.addPlatform(setUpRuby(), "ruby");
         RubyPlatform alsoRuby = RubyPlatformManager.getPlatformByPath(ruby.getInterpreter());
         assertSame("found by path", ruby, alsoRuby);
         RubyPlatform jruby = RubyPlatformManager.getPlatformByPath(TestUtil.getXTestJRubyPath());
         assertSame("found by path", RubyPlatformManager.getDefaultPlatform(), jruby);
     }
-    
-//    public void testGems() {
-//        RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
-//        GemManager gm = jruby.getGemManager();
-//        fail("implement");
-//    }
     
 }

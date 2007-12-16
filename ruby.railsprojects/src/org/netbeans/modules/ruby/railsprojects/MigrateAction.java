@@ -57,6 +57,7 @@ import javax.swing.JPopupMenu;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.rubyproject.RakeSupport;
 import org.netbeans.api.ruby.platform.RubyInstallation;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.openide.LifecycleManager;
 import org.openide.awt.Actions;
 import org.openide.filesystems.FileObject;
@@ -306,7 +307,7 @@ public final class MigrateAction extends SystemAction implements ContextAwareAct
         }
 
         public void run() {
-            if (!RubyInstallation.getInstance().isValidRake(true)) {
+            if (!RubyPlatform.gemManagerFor(project).isValidRake(true)) {
                 return;
             }
 

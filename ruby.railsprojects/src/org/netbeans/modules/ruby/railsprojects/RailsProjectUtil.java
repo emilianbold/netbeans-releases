@@ -44,7 +44,6 @@ package org.netbeans.modules.ruby.railsprojects;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.project.Project;
@@ -52,10 +51,11 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
- * Miscellaneous utilities for the j2seproject module.
+ * Miscellaneous utilities for the Rails project module.
  * @author  Jiri Rechtacek
  */
 public class RailsProjectUtil {
+    
     private RailsProjectUtil () {}
     
     /**
@@ -70,7 +70,7 @@ public class RailsProjectUtil {
         if (value == null) {
             return null;
         }
-        RailsProject j2seprj = (RailsProject) p.getLookup().lookup(RailsProject.class);
+        RailsProject j2seprj = p.getLookup().lookup(RailsProject.class);
         if (j2seprj != null) {
             return j2seprj.evaluator().evaluate(value);
         } else {

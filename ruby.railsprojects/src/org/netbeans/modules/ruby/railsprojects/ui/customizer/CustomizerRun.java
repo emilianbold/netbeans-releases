@@ -63,6 +63,8 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.text.Collator;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -78,6 +80,9 @@ import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.ruby.platform.PlatformComponentFactory;
+import org.netbeans.modules.ruby.platform.RubyPlatformCustomizer;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -95,6 +100,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     private String[] keys;
     private Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> configs;
     RailsProjectProperties uiProperties;
+    private ItemListener platformListener;
     
     public CustomizerRun( RailsProjectProperties uiProperties ) {
         this.uiProperties = uiProperties;
@@ -198,6 +204,24 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                 handleEncodingChange();
             }            
         });
+        platforms.setSelectedItem(uiProperties.getPlatform());
+    }
+    
+    public @Override void addNotify() {
+        super.addNotify();
+        platformListener = new ItemListener() {
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    uiProperties.setPlatform(((RubyPlatform) platforms.getSelectedItem()));
+                }
+            }
+        };
+        platforms.addItemListener(platformListener);
+    }
+    
+    public @Override void removeNotify() {
+        platforms.removeItemListener(platformListener);
+        super.removeNotify();
     }
     
     private String[] getEnvironmentNames() {
@@ -230,14 +254,8 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
         configSep = new javax.swing.JSeparator();
-        configPanel = new javax.swing.JPanel();
-        configLabel = new javax.swing.JLabel();
-        configCombo = new javax.swing.JComboBox();
-        configNew = new javax.swing.JButton();
-        configDel = new javax.swing.JButton();
         mainPanel = new javax.swing.JPanel();
         portLabel = new javax.swing.JLabel();
         portField = new javax.swing.JTextField();
@@ -246,67 +264,13 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         rakeLabel = new javax.swing.JLabel();
         rakeTextField = new javax.swing.JTextField();
         rakeHelpLabel = new javax.swing.JLabel();
-
-        setLayout(new java.awt.GridBagLayout());
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 0);
-        add(configSep, gridBagConstraints);
-
-        configPanel.setLayout(new java.awt.GridBagLayout());
-
-        configLabel.setLabelFor(configCombo);
-        org.openide.awt.Mnemonics.setLocalizedText(configLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.configLabel")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
-        configPanel.add(configLabel, gridBagConstraints);
-
-        configCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "<default>" }));
-        configCombo.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                configComboActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(2, 6, 2, 0);
-        configPanel.add(configCombo, gridBagConstraints);
-        configCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "AD_Configuration")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(configNew, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.configNew")); // NOI18N
-        configNew.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                configNewActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 6, 2, 0);
-        configPanel.add(configNew, gridBagConstraints);
-        configNew.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "AD_NewConfiguration")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(configDel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.configDelete")); // NOI18N
-        configDel.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                configDelActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 6, 2, 0);
-        configPanel.add(configDel, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 0);
-        add(configPanel, gridBagConstraints);
+        configLabel = new javax.swing.JLabel();
+        configCombo = new javax.swing.JComboBox();
+        configNew = new javax.swing.JButton();
+        configDel = new javax.swing.JButton();
+        rubyPlatformLabel = new javax.swing.JLabel();
+        platforms = org.netbeans.modules.ruby.platform.PlatformComponentFactory.getRubyPlatformsComboxBox();
+        manageButton = new javax.swing.JButton();
 
         portLabel.setLabelFor(portField);
         org.openide.awt.Mnemonics.setLocalizedText(portLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_Args_JLabel")); // NOI18N
@@ -336,9 +300,9 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                     .add(org.jdesktop.layout.GroupLayout.LEADING, portLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(encoding, 0, 429, Short.MAX_VALUE)
-                    .add(portField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 429, Short.MAX_VALUE)
-                    .add(rakeTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 429, Short.MAX_VALUE)))
+                    .add(encoding, 0, 479, Short.MAX_VALUE)
+                    .add(portField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 479, Short.MAX_VALUE)
+                    .add(rakeTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 479, Short.MAX_VALUE)))
             .add(mainPanelLayout.createSequentialGroup()
                 .add(120, 120, 120)
                 .add(rakeHelpLabel)
@@ -359,22 +323,90 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                     .add(rakeLabel)
                     .add(rakeTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(rakeHelpLabel))
+                .add(rakeHelpLabel)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         portField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerRun.class).getString("AD_jTextFieldArgs")); // NOI18N
         encoding.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "AD_Encoding")); // NOI18N
         rakeTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "AD_RakeArguments")); // NOI18N
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 0);
-        add(mainPanel, gridBagConstraints);
+        configLabel.setLabelFor(configCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(configLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.configLabel")); // NOI18N
+
+        configCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "<default>" }));
+        configCombo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                configComboActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(configNew, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.configNew")); // NOI18N
+        configNew.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                configNewActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(configDel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.configDelete")); // NOI18N
+        configDel.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                configDelActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(rubyPlatformLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "RubyPlatformLabel")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(manageButton, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "RubyHomeBrowse")); // NOI18N
+        manageButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                manageButtonActionPerformed(evt);
+            }
+        });
+
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(configLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(configCombo, 0, 356, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(configNew)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(configDel))
+            .add(layout.createSequentialGroup()
+                .add(rubyPlatformLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(platforms, 0, 355, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(manageButton)
+                .add(68, 68, 68))
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, configSep, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 614, Short.MAX_VALUE)
+            .add(mainPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(rubyPlatformLabel)
+                    .add(platforms, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(manageButton))
+                .add(7, 7, 7)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(configDel)
+                    .add(configNew)
+                    .add(configLabel)
+                    .add(configCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(14, 14, 14)
+                .add(configSep, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(mainPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        configCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "AD_Configuration")); // NOI18N
+        configNew.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "AD_NewConfiguration")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void portFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_portFieldActionPerformed
@@ -422,6 +454,12 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         uiProperties.activeConfig = config;
     }//GEN-LAST:event_configComboActionPerformed
 
+    private void manageButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageButtonActionPerformed
+        RubyPlatformCustomizer.showCustomizer();
+        platforms.setModel(new PlatformComponentFactory.RubyPlatformListModel()); // refresh
+        platforms.requestFocus();
+    }//GEN-LAST:event_manageButtonActionPerformed
+
     private void configChanged(String activeConfig) {
         DefaultComboBoxModel model = new DefaultComboBoxModel();
         model.addElement("");
@@ -468,16 +506,18 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     private javax.swing.JButton configDel;
     private javax.swing.JLabel configLabel;
     private javax.swing.JButton configNew;
-    private javax.swing.JPanel configPanel;
     private javax.swing.JSeparator configSep;
     private javax.swing.JComboBox encoding;
     private javax.swing.JLabel encodingLabel;
     private javax.swing.JPanel mainPanel;
+    private javax.swing.JButton manageButton;
+    private javax.swing.JComboBox platforms;
     private javax.swing.JTextField portField;
     private javax.swing.JLabel portLabel;
     private javax.swing.JLabel rakeHelpLabel;
     private javax.swing.JLabel rakeLabel;
     private javax.swing.JTextField rakeTextField;
+    private javax.swing.JLabel rubyPlatformLabel;
     // End of variables declaration//GEN-END:variables
     
     private static class EncodingRenderer extends JLabel implements ListCellRenderer, UIResource {

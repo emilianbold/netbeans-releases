@@ -43,7 +43,7 @@ package org.netbeans.modules.ruby.railsprojects.plugins;
 import java.awt.Dialog;
 import org.netbeans.api.project.Project;
 
-import org.netbeans.api.ruby.platform.RubyInstallation;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -60,7 +60,7 @@ public final class PluginAction extends NodeAction {
         Lookup lookup = activatedNodes[0].getLookup();
         Project p = lookup.lookup(Project.class);
 
-        if (!RubyInstallation.getInstance().isValidRuby(true)) {
+        if (!RubyPlatform.platformFor(p).isValidRuby(true)) {
             return;
         }
         

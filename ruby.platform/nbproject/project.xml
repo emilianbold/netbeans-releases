@@ -214,13 +214,18 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages>
+            <friend-packages>
+                <friend>org.netbeans.modules.ruby</friend>
+                <friend>org.netbeans.modules.ruby.debugger</friend>
+                <friend>org.netbeans.modules.ruby.project</friend>
+                <friend>org.netbeans.modules.ruby.railsprojects</friend>
+                <friend>org.netbeans.modules.ruby.rspec</friend>
                 <package>org.netbeans.api.ruby.platform</package>
                 <package>org.netbeans.modules.ruby.platform</package>
                 <package>org.netbeans.modules.ruby.platform.execution</package>
                 <package>org.netbeans.modules.ruby.platform.gems</package>
                 <package>org.netbeans.modules.ruby.platform.spi</package>
-            </public-packages>
+            </friend-packages>
         </data>
     </configuration>
 </project>

@@ -58,6 +58,7 @@ import org.openide.util.NbBundle;
 import org.netbeans.api.gsf.EditorAction;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.ruby.platform.RubyInstallation;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
@@ -179,8 +180,10 @@ public class RunFocusedTest extends AbstractAction implements EditorAction {
             FileObject pfo = (projectDir != null) ? projectDir : target.getParent();
             pwd = FileUtil.toFile(pfo);
         }
+        
+        RubyPlatform platform = RubyPlatform.platformFor(project);
 
-        if (!RubyInstallation.getInstance().isValidRuby(warn)) {
+        if (!platform.isValidRuby(warn)) {
             return;
         }
 
@@ -215,10 +218,10 @@ public class RunFocusedTest extends AbstractAction implements EditorAction {
                             new String[additionalArgs.size()])); // NOI18N
             }
         } else {
-            desc = new ExecutionDescriptor(displayName, pwd, targetPath);
-            
+            desc = new ExecutionDescriptor(platform, displayName, pwd, targetPath);
+
             desc.additionalArgs(additionalArgs.toArray(
-                        new String[additionalArgs.size()])); // NOI18N
+                    new String[additionalArgs.size()])); // NOI18N
             desc.debug(debug);
             desc.allowInput();
             desc.fileLocator(fileLocator);

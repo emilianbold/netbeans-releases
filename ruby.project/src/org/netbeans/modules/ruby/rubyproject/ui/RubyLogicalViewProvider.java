@@ -533,7 +533,7 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
             actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN, bundle.getString("LBL_RunAction_Name"), null)); // NOI18N
             actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG, bundle.getString("LBL_DebugAction_Name"), null)); // NOI18N
             actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST, bundle.getString("LBL_TestAction_Name"), null)); // NOI18N
-            if (AutoTestSupport.isInstalled()) {
+            if (AutoTestSupport.isInstalled(project)) {
                 actions.add(ProjectSensitiveActions.projectCommandAction(RubyActionProvider.COMMAND_AUTOTEST, bundle.getString("LBL_AutoTest"), null)); // NOI18N
             }
             actions.add(CommonProjectActions.setProjectConfigurationAction());

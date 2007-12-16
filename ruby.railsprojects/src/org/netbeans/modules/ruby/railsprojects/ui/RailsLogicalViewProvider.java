@@ -477,7 +477,7 @@ public class RailsLogicalViewProvider implements LogicalViewProvider {
             //actions.add(ProjectSensitiveActions.projectCommandAction(RailsActionProvider.COMMAND_RDOC, bundle.getString("LBL_RDocAction_Name"), null)); // NOI18N
             actions.add(null);
             actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN, bundle.getString("LBL_RunAction_Name"), null)); // NOI18N
-            if (AutoTestSupport.isInstalled()) {
+            if (AutoTestSupport.isInstalled(project)) {
                 actions.add(ProjectSensitiveActions.projectCommandAction(RailsActionProvider.COMMAND_AUTOTEST, bundle.getString("LBL_AutoTest"), null)); // NOI18N
             }
             actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG, bundle.getString("LBL_DebugAction_Name"), null)); // NOI18N

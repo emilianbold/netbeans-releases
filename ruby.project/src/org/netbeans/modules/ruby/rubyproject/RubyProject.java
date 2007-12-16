@@ -54,7 +54,7 @@ import org.netbeans.api.gsfpath.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.ruby.platform.RubyInstallation;
+import org.netbeans.api.ruby.platform.RubyPlatformProvider;
 import org.netbeans.modules.ruby.rubyproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.ruby.rubyproject.queries.RubyProjectEncodingQueryImpl;
 import org.netbeans.modules.ruby.rubyproject.ui.RubyLogicalViewProvider;
@@ -94,6 +94,7 @@ import org.w3c.dom.NodeList;
  * @author Jesse Glick, et al.
  */
 public final class RubyProject implements Project, RakeProjectListener {
+    
     /**
      * Ruby package root sources type.
      * @see org.netbeans.api.project.Sources
@@ -133,12 +134,12 @@ public final class RubyProject implements Project, RakeProjectListener {
     public FileObject getProjectDirectory() {
         return helper.getProjectDirectory();
     }
-
+    
     @Override
     public String toString() {
         return "RubyProject[" + FileUtil.getFileDisplayName(getProjectDirectory()) + "]"; // NOI18N
     }
-    
+
     private PropertyEvaluator createEvaluator() {
         // It is currently safe to not use the UpdateHelper for PropertyEvaluator; UH.getProperties() delegates to APH
         // Adapted from APH.getStandardPropertyEvaluator (delegates to ProjectProperties):
@@ -158,6 +159,7 @@ public final class RubyProject implements Project, RakeProjectListener {
                 new ConfigPropertyProvider(baseEval1, "nbproject/configs", helper), // NOI18N
                 helper.getPropertyProvider(RakeProjectHelper.PROJECT_PROPERTIES_PATH));
     }
+    
     private static final class ConfigPropertyProvider extends FilterPropertyProvider implements PropertyChangeListener {
         private final PropertyEvaluator baseEval;
         private final String prefix;
@@ -230,7 +232,8 @@ public final class RubyProject implements Project, RakeProjectListener {
             LookupProviderSupport.createSourcesMerger(),            
             new RubyProjectEncodingQueryImpl(evaluator()),
             evaluator(),
-            new RubyFileLocator(null, this)
+            new RubyFileLocator(null, this),
+            new RubyPlatformProvider(evaluator())
         });
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-ruby-rubyproject/Lookup"); //NOI18N
     }
@@ -387,9 +390,6 @@ public final class RubyProject implements Project, RakeProjectListener {
         ProjectOpenedHookImpl() {}
         
         protected void projectOpened() {
-            // Force Ruby interpreter initialization
-            RubyInstallation.getInstance().getRuby(false);
-
             // Check up on build scripts.
 /*
             try {
@@ -409,7 +409,7 @@ public final class RubyProject implements Project, RakeProjectListener {
             }
 */
             // register project's classpaths to GlobalPathRegistry
-            ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)lookup.lookup(ClassPathProviderImpl.class);
+            ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
             if (!bootRegistered) {
                 GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
                 bootRegistered = true;
@@ -454,7 +454,7 @@ public final class RubyProject implements Project, RakeProjectListener {
             }
             
             // unregister project's classpaths to GlobalPathRegistry
-            ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)lookup.lookup(ClassPathProviderImpl.class);
+            ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
             //GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
             GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
             //GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
