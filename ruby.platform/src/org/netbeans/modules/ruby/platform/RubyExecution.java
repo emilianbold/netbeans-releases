@@ -170,7 +170,7 @@ public class RubyExecution extends ExecutionService {
             
             String extraArgs = System.getenv("JRUBY_EXTRA_VM_ARGS"); // NOI18N
 
-            String javaMemory = "-Xmx256m"; // NOI18N
+            String javaMemory = "-Xmx512m"; // NOI18N
             String javaStack = "-Xss1024k"; // NOI18N
             
             if (extraArgs != null) {
