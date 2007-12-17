@@ -333,9 +333,24 @@ if (fo.getName().equals("httputils") && fo.getParent().getName().equals("webrick
         format("render foo,\nbar\nbaz",
                "render foo,\n  bar\nbaz", null);
     }
+    
+    public void testQuestionmarkIndent1() throws Exception {
+        format("j = t ?\n1 : 0\nx = 1",
+                "j = t ?\n  1 : 0\nx = 1", null);
+    }
+
+    public void testQuestionmarkIndent2() throws Exception {
+        format("j = t ?\n1 :\n0\nx = 1",
+                "j = t ?\n  1 :\n  0\nx = 1", null);
+    }
 
     public void testCommaIndent() throws Exception {
         insertNewline("puts foo,^", "puts foo,\n  ^", null);
+    }
+    
+    public void testQuestionmarkIndent3() throws Exception {
+        insertNewline("j = t ?^",
+                "j = t ?\n  ^", null);
     }
     
     public void testBackslashIndent() throws Exception {

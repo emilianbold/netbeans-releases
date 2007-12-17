@@ -553,6 +553,8 @@ public final class RubyLexer implements Lexer<RubyTokenId> {
         case Tokens.tRSHFT:
         case Tokens.tASSOC:
         case Tokens.tOP_ASGN:
+        case '?':
+        case ':':
             return RubyTokenId.NONUNARY_OP;
 
         case Tokens.tDOT:

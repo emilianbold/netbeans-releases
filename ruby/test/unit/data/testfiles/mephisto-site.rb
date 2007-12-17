@@ -180,8 +180,8 @@ class Site < ActiveRecord::Base
 
   def page_cache_directory
     multi_sites_enabled ? 
-    (RAILS_PATH + (RAILS_ENV == 'test' ? 'tmp' : 'public') + 'cache' + host) :
-    (RAILS_PATH + (RAILS_ENV == 'test' ? 'tmp/cache' : 'public'))
+      (RAILS_PATH + (RAILS_ENV == 'test' ? 'tmp' : 'public') + 'cache' + host) :
+      (RAILS_PATH + (RAILS_ENV == 'test' ? 'tmp/cache' : 'public'))
   end
 
   def expire_cached_pages(controller, log_message, pages = nil)
