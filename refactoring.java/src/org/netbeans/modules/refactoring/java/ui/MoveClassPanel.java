@@ -75,8 +75,8 @@ import org.openide.filesystems.FileObject;
  */
 public class MoveClassPanel extends JPanel implements ActionListener, DocumentListener,CustomRefactoringPanel {
   
-    private static final ListCellRenderer GROUP_CELL_RENDERER = new GroupCellRenderer();
-    private static final ListCellRenderer PROJECT_CELL_RENDERER = new ProjectCellRenderer();
+    private final ListCellRenderer GROUP_CELL_RENDERER = new GroupCellRenderer();
+    private final ListCellRenderer PROJECT_CELL_RENDERER = new ProjectCellRenderer();
     
     private Project project;
     private ChangeListener parent;

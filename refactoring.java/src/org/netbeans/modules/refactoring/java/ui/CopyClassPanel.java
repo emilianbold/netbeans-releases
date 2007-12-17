@@ -68,8 +68,8 @@ import org.openide.filesystems.FileObject;
  */
 public class CopyClassPanel extends JPanel implements ActionListener, DocumentListener, CustomRefactoringPanel {
   
-    private static final ListCellRenderer GROUP_CELL_RENDERER = new MoveClassPanel.GroupCellRenderer();
-    private static final ListCellRenderer PROJECT_CELL_RENDERER = new MoveClassPanel.ProjectCellRenderer();
+    private final ListCellRenderer GROUP_CELL_RENDERER = new MoveClassPanel.GroupCellRenderer();
+    private final ListCellRenderer PROJECT_CELL_RENDERER = new MoveClassPanel.ProjectCellRenderer();
     
     private Project project;
     private ChangeListener parent;
