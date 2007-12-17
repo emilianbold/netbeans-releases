@@ -76,7 +76,7 @@ public class WebFormDesignerOperator  extends TopComponentOperator {
     
     public WebFormDesignerOperator(String topComponentName, int Index) {
         //super(topComponentName,Index);
-        super(TopComponentOperator.findTopComponent(null,topComponentName, Index, new WebFormDesignerSubchooser()));
+        super(TopComponentOperator.waitTopComponent(null,topComponentName, Index, new WebFormDesignerSubchooser()));
         try {
             surfacecomp = new ComponentOperator(this, new DesignerPaneChooser());
         } catch(TimeoutExpiredException tex) {
