@@ -1133,6 +1133,11 @@ public class CodeCompleter implements Completable {
                         if (commentBlock != OffsetRange.NONE) {
                             try {
                                 String text = doc.getText(commentBlock.getStart(), commentBlock.getLength());
+                                if (text.startsWith("=begin\n")) { // NOI18N
+                                    if (text.endsWith("=end")) { // NOI18N
+                                        text = text.substring("=begin\n".length(), text.length()-"=end".length()); // NOI18N
+                                    }
+                                }
                                 Element element = new CommentElement(text);
                                 ClassItem item = new ClassItem(element, anchor, request);
                                 proposals.add(item);
