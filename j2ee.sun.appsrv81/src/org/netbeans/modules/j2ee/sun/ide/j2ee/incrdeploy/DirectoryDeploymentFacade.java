@@ -42,9 +42,12 @@
 package org.netbeans.modules.j2ee.sun.ide.j2ee.incrdeploy;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.Enumeration;
 import java.util.Map;
 import java.util.WeakHashMap;
-import javax.enterprise.deploy.spi.exceptions.TargetException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import javax.enterprise.deploy.spi.Target;
@@ -62,7 +65,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
 import org.netbeans.modules.j2ee.sun.api.ServerInterface;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.DeploymentManagerProperties;
-import org.openide.util.Exceptions;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -242,6 +245,35 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
             if (retVal && !issue2999Fixed) {
                 retVal = module.getModuleType() != ModuleType.EAR;
             }
+            
+            // What is this ugliness?
+            // this is the result of getting squeezed by two bugs.
+            //
+            // In NetBeans, J2eeModules change their Url if it "logically" would have
+            // had multibyte characters to Url's that do not.  So, they change
+            // things like <mbc><mbc>Foo<mbc> to __Foo_. [bug one]
+            //
+            // Glassfish has a problem with interpreting descriptor free EAR's
+            // that are directory deployed when the exploded submodules are in 
+            // directories that start with an _... [bug two]
+            // 
+            // So, we need to make sure that we don't force GF to directory 
+            // deploy something with initial underscores...
+            //
+            // TODO :: remove this when https://glassfish.dev.java.net/issues/show_bug.cgi?id=3456
+            // is fixed.
+            //
+            if (retVal && module.getModuleType() == ModuleType.EAR) {
+                try {
+                    FileObject fo = module.getContentDirectory();
+                    retVal = noChildrenWithInitialUnderscores(fo);
+                } catch (IOException ioe) {
+                    Logger.getLogger(DirectoryDeploymentFacade.class.getName()).
+                            log(Level.FINER, "", ioe);
+                    retVal = false;
+                }
+            }
+            // end of work-around/hack for issue 3456.
             if (retVal) {
                 retVal = ((SunDeploymentManagerInterface)dm).isLocal();
             }
@@ -253,6 +285,20 @@ public class DirectoryDeploymentFacade  extends IncrementalDeployment {
         
         return retVal;
     }
+    
+    // more GF 3456 ugliness.
+    //
+    private boolean noChildrenWithInitialUnderscores(FileObject fo) {
+        Enumeration e = fo.getChildren(false);
+        while (e.hasMoreElements()) {
+            FileObject childFolder = (FileObject) e.nextElement();
+            if (childFolder.getName().startsWith("_")) {
+                return false;
+            }
+        }
+        return true;
+    }
+    // end 3456 ugliness
     
     public File getDirectoryForNewApplication(Target target, J2eeModule app, ModuleConfiguration configuration) {
         return ((IncrementalDeployment)inner).getDirectoryForNewApplication(target,app,configuration);
