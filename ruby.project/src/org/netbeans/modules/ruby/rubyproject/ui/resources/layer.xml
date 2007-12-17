@@ -223,7 +223,7 @@ made subject to such option by the copyright holder.
         <folder name="options">
             <file name="Platform.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.rubyproject.RubyOptionsAdvancedPanel"/>
-                <attr name="position" intvalue="100"/>
+                <attr name="position" intvalue="300"/>
             </file>
         </folder>
     </folder>
