@@ -869,9 +869,9 @@ public class AstRenderer {
         if( ast != null && ast.getType() ==  CPPTokenTypes.CSM_PARMLIST ) {
             for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
                 if( token.getType() == CPPTokenTypes.CSM_PARAMETER_DECLARATION ) {
-                    ParameterImpl param = AstRenderer.renderParameter(token, file, scope);
-                    if( param != null ) {
-                        parameters.add(param);
+                    List<ParameterImpl> params = AstRenderer.renderParameter(token, file, scope);
+                    if( params != null ) {
+                        parameters.addAll(params);
                     }
                 }
             }
@@ -897,34 +897,41 @@ public class AstRenderer {
         return false;
     }
     
-    public static ParameterImpl renderParameter(AST ast, final CsmFile file, final CsmScope scope1) {
+    public static List<ParameterImpl> renderParameter(AST ast, final CsmFile file, final CsmScope scope1) {
+	
+	// The only reason there might be several declarations is the K&R C style
+	// we can split this function into two (for K&R and "normal" parameters)
+	// if we found this ineffective; but now I vote for more clear and readable - i.e. single for both cases - code
+	
+	final List<ParameterImpl> result = new ArrayList<ParameterImpl>();
         AST firstChild = ast.getFirstChild();
         if( firstChild != null ) {
 	    if( firstChild.getType() == CPPTokenTypes.ELLIPSIS ) {
 		ParameterImpl parameter = new ParameterImpl(ast.getFirstChild(), file, null, "...", scope1); // NOI18N
-		return parameter;
+		result.add(parameter);
+		return result;
 	    }
 	    if( firstChild.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN && firstChild.getNextSibling() == null ) {
 		AST grandChild = firstChild.getFirstChild();
 		if( grandChild != null && grandChild.getType() == CPPTokenTypes.LITERAL_void ) {
-		    return null;
+		    return Collections.emptyList();
 		}
 	    }
         }
 	class AstRendererEx extends AstRenderer {
-	    public ParameterImpl parameter;
 	    public AstRendererEx() {
 		super((FileImpl) file);
 	    }
 	    @Override
 	    protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static, MutableDeclarationsContainer container1, MutableDeclarationsContainer container2, CsmScope scope2) {
-		parameter = new ParameterImpl(offsetAst, file, type, name, scope1);
+		ParameterImpl parameter = new ParameterImpl(offsetAst, file, type, name, scope1);
+		result.add(parameter);
 		return parameter;
 	    }
 	}
 	AstRendererEx renderer = new AstRendererEx();
 	renderer.renderVariable(ast, null, null);
-	return renderer.parameter;
+	return result;
     }
     
     

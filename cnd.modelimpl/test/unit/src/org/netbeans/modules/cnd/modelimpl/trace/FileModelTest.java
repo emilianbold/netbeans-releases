@@ -237,7 +237,10 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("template_dtor_definition.cc"); // NOI18N
     }
     
-
+    public void testKAndRParams() throws Exception {
+        performTest("k_and_r_params.c"); // NOI18N
+    }
+    
     /////////////////////////////////////////////////////////////////////
     // FAILS
     

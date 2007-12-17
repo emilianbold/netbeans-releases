@@ -78,13 +78,17 @@ public class ExceptionHandlerImpl extends CompoundStatementImpl implements CsmEx
         if( parameter == null ) {
             AST ast = AstUtil.findChildOfType(getAst(), CPPTokenTypes.CSM_PARAMETER_DECLARATION);
             if( ast != null ) {
-                parameter = AstRenderer.renderParameter(ast, getContainingFile(), this);
+                List<ParameterImpl> params = AstRenderer.renderParameter(ast, getContainingFile(), this);
+		if( params != null && ! params.isEmpty() ) {
+                    parameter = params.get(0);
+		}
             }
         }
         return parameter;
     }
     
     /** overrides parent method */
+    @Override
     protected void renderStatements(AST ast) {
         ast = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_COMPOUND_STATEMENT);
         if( ast != null ) {
@@ -92,7 +96,8 @@ public class ExceptionHandlerImpl extends CompoundStatementImpl implements CsmEx
         }
     }
    
-    public List getScopeElements() {
+    @Override
+    public List<CsmScopeElement> getScopeElements() {
         return DeepUtil.merge(getParameter(), getStatements());
     }
     
