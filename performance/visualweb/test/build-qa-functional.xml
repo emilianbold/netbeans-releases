@@ -192,6 +192,7 @@ made subject to such option by the copyright holder.
     <target name="copy_unzip_j2ee_projects">
         <unzip src="${nbextra.dir}/qa/projectized/HugeApp.zip" dest="${xtest.tmpdir}/"/>
         <unzip src="${nbextra.dir}/qa/projectized/VisualWebProject.zip" dest="${xtest.tmpdir}/"/>
+        <unzip src="${nbextra.dir}/qa/projectized/UltraLargeWA.zip" dest="${xtest.tmpdir}/"/>
     </target>
     
     <!-- =================== -->
