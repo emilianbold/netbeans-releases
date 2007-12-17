@@ -56,6 +56,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.shared.ModuleType;
@@ -173,7 +174,7 @@ public class AppServerBridge {
             suffix = ".war";
             java.io.File dirLocation = null;
             String modulePart = null;
-            if (!moduleID.toLowerCase().endsWith(suffix)) 
+            if (!moduleID.toLowerCase(Locale.ENGLISH).endsWith(suffix)) 
                 try {
                     SunTargetModuleID ddd = (SunTargetModuleID) module;
 
@@ -212,7 +213,7 @@ public class AppServerBridge {
             suffix = ".rar";
         }
 
-        if (moduleID.endsWith(suffix) || moduleID.endsWith(suffix.toUpperCase())) {
+        if (moduleID.endsWith(suffix) || moduleID.endsWith(suffix.toUpperCase(Locale.ENGLISH))) {
             return moduleID;
         }
         return moduleID + suffix;

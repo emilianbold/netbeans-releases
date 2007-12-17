@@ -59,7 +59,7 @@ import javax.management.AttributeNotFoundException;
 import javax.management.InvalidAttributeValueException;
 
 import java.rmi.RemoteException;
-
+import java.util.Locale;
 
 
 
@@ -291,7 +291,7 @@ public class JvmOptions extends ModuleMBean implements Constants{
             //FIXME -- temporary workaround till plugin can map the env keys returned by appserver
             //to actual values
             String local_osName = System.getProperty("os.name"); //NOI18N
-            if(local_osName.toLowerCase().indexOf("windows") != -1) //NOI18N
+            if(local_osName.toLowerCase(Locale.ENGLISH).indexOf("windows") != -1) //NOI18N
                 return true;
             else
                 return false;

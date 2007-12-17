@@ -1701,7 +1701,7 @@ public class ResourceUtils implements WizardConstants{
     
     private static class ResourceFileFilter implements FileFilter {
         public boolean accept(File f) {
-            return ((! f.isDirectory()) && f.getName().toLowerCase(Locale.getDefault()).endsWith(".sun-resource")); //NOI18N
+            return ((! f.isDirectory()) && f.getName().toLowerCase(Locale.ENGLISH).endsWith(".sun-resource")); //NOI18N
         }
     }
     

@@ -54,6 +54,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.ResourceBundle;
 
 import javax.enterprise.deploy.spi.DeploymentManager;
@@ -785,7 +786,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
      */
     private String getUrlDatabaseName(String url){
         String databaseName = ""; //NOI18N
-        int dbIndex = url.toLowerCase().indexOf(";databasename="); //NOI18N
+        int dbIndex = url.toLowerCase(Locale.ENGLISH).indexOf(";databasename="); //NOI18N
         if(dbIndex != -1){
             int eqIndex = url.indexOf("=", dbIndex); //NOI18N
             int lenIndex = url.indexOf(";", eqIndex); //NOI18N
@@ -856,7 +857,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
      */
     private String getUrlInformixServerName(String url){
         String informixServer = ""; //NOI18N
-        int index = url.toLowerCase().indexOf("informixserver="); //NOI18N
+        int index = url.toLowerCase(Locale.ENGLISH).indexOf("informixserver="); //NOI18N
         if(index != -1){
             int eqIndex = url.indexOf("=", index); //NOI18N
             informixServer = getSubString(url, eqIndex);  

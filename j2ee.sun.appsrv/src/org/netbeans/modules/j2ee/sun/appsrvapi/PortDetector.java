@@ -51,7 +51,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
-
+import java.util.Locale;
 
 /* new algo to test of an app server(8.1 and 9.0) is secured or not
  * @author ludo champenois, and Jean Francois Arcand
@@ -105,7 +105,7 @@ public class PortDetector {
         // Determine protocol from result
         // Can't read https response w/ OpenSSL (or equiv), so use as
         // default & try to detect an http response.
-        String response = new String(input).toLowerCase();
+        String response = new String(input).toLowerCase(Locale.ENGLISH);
         boolean isSecure = true;
         if (response.length() == 0) {
             //isSecure = false;

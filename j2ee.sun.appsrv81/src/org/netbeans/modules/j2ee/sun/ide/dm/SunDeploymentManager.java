@@ -1246,7 +1246,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
      */
     private String stripSlashHtmlAndNewlines(String input) {
         String retVal = null;
-        int dex = input.toLowerCase().lastIndexOf("</html>");
+        int dex = input.toLowerCase(Locale.ENGLISH).lastIndexOf("</html>");
         if (dex > -1) {
             retVal = input.substring(0, dex);
         } else {
