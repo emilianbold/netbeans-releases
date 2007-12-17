@@ -142,6 +142,7 @@ tokens {
 	CSM_TEMPLATE_TEMPLATE_PARAMETER<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 
 	CSM_DTOR_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+	CSM_DTOR_TEMPLATE_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_DTOR_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_CTOR_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_CTOR_TEMPLATE_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
@@ -802,17 +803,17 @@ external_declaration_template { K_and_R = false; boolean ctrName=false;}
 			(template_head)? function_definition
 			{ #external_declaration_template = #(#[CSM_FUNCTION_TEMPLATE_DEFINITION, "CSM_FUNCTION_TEMPLATE_DEFINITION"], #external_declaration_template); }
 
-		)
 		|
-			// Destructor DEFINITION (templated or non-templated)
+			// Destructor DEFINITION (templated)
 			( dtor_head[true] LCURLY)=>
 			{if (statementTrace>=1) 
 				printf("external_declaration_4[%d]: Destructor definition\n",
 					LT(1).getLine());
 			}
 			dtor_head[true] dtor_body
-			{ #external_declaration_template = #(#[CSM_DTOR_DEFINITION, "CSM_DTOR_DEFINITION"], #external_declaration_template); }
-    		{endTemplateDefinition(); /*#external_declaration_template = #(#[CSM_STRANGE_2, "CSM_STRANGE_2"], #external_declaration_template);*/}
+			{ #external_declaration_template = #(#[CSM_DTOR_TEMPLATE_DEFINITION, "CSM_DTOR_TEMPLATE_DEFINITION"], #external_declaration_template); }
+		)
+    		{endTemplateDefinition();}
 	;
 
 protected 

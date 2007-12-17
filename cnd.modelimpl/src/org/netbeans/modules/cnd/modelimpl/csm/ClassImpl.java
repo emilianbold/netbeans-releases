@@ -159,6 +159,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                         addMember(new ConstructorImpl(token, ClassImpl.this, curentVisibility));
                         break;
                     case CPPTokenTypes.CSM_DTOR_DEFINITION:
+                    case CPPTokenTypes.CSM_DTOR_TEMPLATE_DEFINITION:
                         addMember(new DestructorDDImpl(token, ClassImpl.this, curentVisibility));
                         break;
                     case CPPTokenTypes.CSM_DTOR_DECLARATION:

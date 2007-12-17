@@ -232,6 +232,11 @@ public class FileModelTest extends TraceModelTestBase {
     public void testThrowConst() throws Exception {
         performTest("throw_const.cc"); // NOI18N
     }
+    
+    public void testTemplateDtorDefinition() throws Exception {
+        performTest("template_dtor_definition.cc"); // NOI18N
+    }
+    
 
     /////////////////////////////////////////////////////////////////////
     // FAILS

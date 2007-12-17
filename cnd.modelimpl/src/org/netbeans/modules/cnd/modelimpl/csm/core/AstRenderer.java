@@ -115,6 +115,7 @@ public class AstRenderer {
                     container.addDeclaration(new ConstructorDefinitionImpl(token, file, null));
                     break;
                 case CPPTokenTypes.CSM_DTOR_DEFINITION:
+                case CPPTokenTypes.CSM_DTOR_TEMPLATE_DEFINITION:
                     container.addDeclaration(new DestructorDefinitionImpl(token, file));
                     break;
                 case CPPTokenTypes.CSM_FUNCTION_DEFINITION:
