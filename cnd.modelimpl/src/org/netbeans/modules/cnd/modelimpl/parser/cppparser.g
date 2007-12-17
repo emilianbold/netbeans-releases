@@ -527,14 +527,6 @@ tokens {
 	    public String file;
 	}
 
-	/* The following must match values in CppFile.java */
-	public static final int INITIAL_COMMENT_FOLD = 1;
-	public static final int INCLUDES_FOLD = 2;
-	public static final int CLASS_FOLD = 3;
-	public static final int FUNCTION_FOLD = 4 ;
-	public static final int CONSTRUCTOR_FOLD = 5;
-	public static final int DESTRUCTOR_FOLD = 6;
-
 	// Semantic interface; You could subclass and redefine these functions
 	//  so you don't have to mess with the grammar itself.
 
@@ -811,7 +803,16 @@ external_declaration_template { K_and_R = false; boolean ctrName=false;}
 			{ #external_declaration_template = #(#[CSM_FUNCTION_TEMPLATE_DEFINITION, "CSM_FUNCTION_TEMPLATE_DEFINITION"], #external_declaration_template); }
 
 		)
-		{endTemplateDefinition(); /*#external_declaration_template = #(#[CSM_STRANGE_2, "CSM_STRANGE_2"], #external_declaration_template);*/}
+		|
+			// Destructor DEFINITION (templated or non-templated)
+			( dtor_head[true] LCURLY)=>
+			{if (statementTrace>=1) 
+				printf("external_declaration_4[%d]: Destructor definition\n",
+					LT(1).getLine());
+			}
+			dtor_head[true] dtor_body
+			{ #external_declaration_template = #(#[CSM_DTOR_DEFINITION, "CSM_DTOR_DEFINITION"], #external_declaration_template); }
+    		{endTemplateDefinition(); /*#external_declaration_template = #(#[CSM_STRANGE_2, "CSM_STRANGE_2"], #external_declaration_template);*/}
 	;
 
 protected 
