@@ -1,6 +1,6 @@
 plain:? web/external/jsf-1.1
 
-plain:Index: j2ee/clientproject/src/org/netbeans/modules/j2ee/clientproject/api/AppClientProjectGenerator.java
+index:Index: j2ee/clientproject/src/org/netbeans/modules/j2ee/clientproject/api/AppClientProjectGenerator.java
 
 header:===================================================================
 
@@ -32,7 +32,7 @@ plain:         ep.setProperty("dist.dir", "dist"); // NOI18N
 
 plain:         ep.setComment("dist.dir", new String[] {"# " + NbBundle.getMessage(AppClientProjectGenerator.class, "COMMENT_dist.dir")}, false); // NOI18N
 
-plain:Index: j2ee/ejbjarproject/src/org/netbeans/modules/j2ee/ejbjarproject/api/EjbJarProjectGenerator.java
+index:Index: j2ee/ejbjarproject/src/org/netbeans/modules/j2ee/ejbjarproject/api/EjbJarProjectGenerator.java
 
 header:===================================================================
 
@@ -64,7 +64,7 @@ plain:         ep.setProperty(EjbJarProjectProperties.DIST_JAVADOC_DIR, "${"+Ejb
 
 plain:         ep.setProperty(EjbJarProjectProperties.JAVA_PLATFORM, "default_platform");
 
-plain:Index: j2eeserver/src/org/netbeans/modules/j2ee/deployment/config/ConfigSupportImpl.java
+index:Index: j2eeserver/src/org/netbeans/modules/j2ee/deployment/config/ConfigSupportImpl.java
 
 header:===================================================================
 
@@ -96,7 +96,7 @@ plain:         return j2eeModule;
 
 plain:     }
 
-plain:Index: j2eeserver/src/org/netbeans/modules/j2ee/deployment/impl/Bundle.properties
+index:Index: j2eeserver/src/org/netbeans/modules/j2ee/deployment/impl/Bundle.properties
 
 header:===================================================================
 
@@ -126,7 +126,7 @@ added:+MSG_NoContents=No content for {0}
 
 plain:\ No newline at end of file
 
-plain:Index: j2eeserver/src/org/netbeans/modules/j2ee/deployment/impl/InitialServerFileDistributor.java
+index:Index: j2eeserver/src/org/netbeans/modules/j2ee/deployment/impl/InitialServerFileDistributor.java
 
 header:===================================================================
 

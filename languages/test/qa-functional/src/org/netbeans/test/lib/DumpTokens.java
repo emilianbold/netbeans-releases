@@ -92,7 +92,7 @@ public class DumpTokens {
         ParserManager parser = ParserManager.get(doc);
         while(parser.getState() != ParserManager.State.OK){// wait parsing finished
             try {
-                Thread.sleep(100);
+                Thread.sleep(1000);
                 Logger.getLogger(DumpTokens.class.getName()).log(Level.INFO, "Waiting for parser");
             } catch (InterruptedException ex) {
                 Exceptions.printStackTrace(ex);
