@@ -127,6 +127,9 @@ public final class Arity {
     private void initializeFromCall(Node node) {
         if (node instanceof FCallNode) {
             Node argsNode = ((FCallNode)node).getArgsNode();
+            if (argsNode == null) {
+                return;
+            }
 
             initializeFromCall(argsNode);
         } else if (node instanceof LocalAsgnNode) {
@@ -157,6 +160,10 @@ public final class Arity {
             max = Integer.MAX_VALUE;
         } else if (node instanceof CallNode) {
             Node argsNode = ((CallNode)node).getArgsNode();
+            if (argsNode == null) {
+                return;
+            }
+
             initializeFromCall(argsNode);
         } else if (node instanceof VCallNode) {
             List<Node> children = node.childNodes();
@@ -168,13 +175,13 @@ public final class Arity {
             List<Node> children = node.childNodes();
 
             for (Node child : children) {
-                if (child instanceof VCallNode) {
-                    // The argument is a method call - just count it as a regular argument
+                if (AstUtilities.isCall(child)) {
                     min++;
 
-                    if (max < Integer.MAX_VALUE) {
-                        max++;
-                    }
+                    // The argument is a call. Normally, it will just return a single item
+                    // which would then add one to max, but it could return an array or a splat,
+                    // so we go to unknown.
+                    max = Integer.MAX_VALUE;
                 } else if (child instanceof ArrayNode) {
                     // This is an array inside an array - this is a single argument
                     min++;
@@ -232,6 +239,12 @@ public final class Arity {
 
             if (argsNode.getOptArgs() != null) {
                 initializeFromDef(argsNode.getOptArgs());
+            }
+            
+            if (argsNode.getBlockArgNode() != null) {
+                if (max < Integer.MAX_VALUE) {
+                    max++;
+                }
             }
 
             if (argsNode.getRestArg() > 0) {
@@ -294,5 +307,31 @@ public final class Arity {
 
     public static Arity createTestArity(int min, int max) {
         return new Arity(min, max);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Arity other = (Arity) obj;
+        if (this.min != other.min) {
+            return false;
+        }
+        if (this.max != other.max) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 31 * hash + this.min;
+        hash = 31 * hash + this.max;
+        return hash;
     }
 }
