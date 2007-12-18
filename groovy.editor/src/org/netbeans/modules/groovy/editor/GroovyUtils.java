@@ -45,6 +45,7 @@ package org.netbeans.modules.groovy.editor;
  *
  * @author Tor Norbye
  * @author Martin Adamek
+ * @author Gopala Krishnan Sankaran
  */
 public class GroovyUtils {
 
@@ -61,4 +62,13 @@ public class GroovyUtils {
         return Character.isJavaIdentifierPart(c) || (c == '$') ;
     }
 
+    public static final String[] GROOVY_KEYWORDS =
+        new String[] {
+            // Keywords
+            "alias", "and", "BEGIN", "begin", "break", "case", "class", "def", "defined?", "do",
+            "else", "elsif", "END", "end", "ensure", "false", "for", "if", "in", "module", "next",
+            "nil", "not", "or", "redo", "rescue", "retry", "return", "self", "super", "then", "true",
+            "undef", "unless", "until", "when", "while", "yield"
+        };
+    
 }
