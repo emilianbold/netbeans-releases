@@ -43,6 +43,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -207,4 +208,7 @@ public final class RubyPlatformManager {
         return id;
     }
 
+    public static Iterator<RubyPlatform> platformIterator() {
+        return getPlatformsInternal().iterator();
+    }
 }
