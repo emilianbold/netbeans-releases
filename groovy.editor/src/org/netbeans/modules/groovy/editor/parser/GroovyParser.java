@@ -132,11 +132,11 @@ public class GroovyParser implements Parser {
     }
 
     public <T extends Element> ElementHandle<T> createHandle(CompilationInfo info, T element) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return null;
     }
 
     public <T extends Element> T resolveHandle(CompilationInfo info, ElementHandle<T> handle) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return null;
     }
 
     @SuppressWarnings("unchecked")
