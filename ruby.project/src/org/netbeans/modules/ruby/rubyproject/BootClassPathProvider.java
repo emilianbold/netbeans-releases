@@ -46,6 +46,8 @@ import java.lang.ref.WeakReference;
 import java.util.Map;
 import java.util.WeakHashMap;
 import org.netbeans.api.gsfpath.classpath.ClassPath;
+import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.spi.gsfpath.classpath.ClassPathProvider;
 import org.netbeans.spi.gsfpath.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
@@ -69,12 +71,13 @@ public class BootClassPathProvider implements ClassPathProvider {
     public BootClassPathProvider() {}
     
     public ClassPath findClassPath(FileObject file, String type) {
-        // FIXME: per-platform now
-//        // See if the file is under the Ruby libraries
-//        FileObject systemRoot = RubyInstallation.getInstance().getSystemRoot(file);
-//        if (systemRoot != null) {
-//            return getRubyClassPaths(file, type, systemRoot);
-//        }
+        // See if the file is under the Ruby libraries
+        for (RubyPlatform platform : RubyPlatformManager.getPlatforms()) {
+            FileObject systemRoot = platform.getSystemRoot(file);
+            if (systemRoot != null) {
+                return getRubyClassPaths(file, type, systemRoot);
+            }
+        }
         
         return null;
     }
