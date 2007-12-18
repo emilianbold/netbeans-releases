@@ -179,6 +179,16 @@ public class RDocFormatterTest extends RubyTestBase {
 
         assertEquals("class EliteGenerator <b>Rails::Generator::Base</b> ", instance.toHtml());
     }
+
+    public void testBeginEnd() {
+        RDocFormatter instance = new RDocFormatter();
+        
+        instance.appendLine("=begin");
+        instance.appendLine("foo");
+        instance.appendLine("=end");
+
+        assertEquals("<h1>begin</h1>\nfoo <h1>end</h1>\n", instance.toHtml());
+    }
     
     public void testNoLabelSpace() {
         RDocFormatter instance = new RDocFormatter();
