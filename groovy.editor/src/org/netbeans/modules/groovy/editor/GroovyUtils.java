@@ -64,11 +64,37 @@ public class GroovyUtils {
 
     public static final String[] GROOVY_KEYWORDS =
         new String[] {
-            // Keywords
-            "alias", "and", "BEGIN", "begin", "break", "case", "class", "def", "defined?", "do",
-            "else", "elsif", "END", "end", "ensure", "false", "for", "if", "in", "module", "next",
-            "nil", "not", "or", "redo", "rescue", "retry", "return", "self", "super", "then", "true",
-            "undef", "unless", "until", "when", "while", "yield"
+            "as",
+            "import",
+            "assert",
+            "break",
+            "case",
+            "catch",
+            "try",
+            "class",
+            "continue",
+            "def",
+            "default",
+            "do",
+            "else",
+            "extends",
+            "finally",
+            "for",
+            "if",
+            "in",
+            "implements",
+            "import",
+            "instanceof",
+            "interface",
+            "new",
+            "package",
+            "property",
+            "return",
+            "switch",
+            "throw",
+            "throws",
+            "try",
+            "while"
         };
     
 }
