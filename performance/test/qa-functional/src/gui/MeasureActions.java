@@ -166,6 +166,12 @@ public class MeasureActions  {
         
         //TODO    suite.addTest(new AddToFavorites("testAddToFavoritesFolders", "Add to Favorites folders"));
 */        
+
+        suite.addTest(new SwitchView("testSwitchToProjects", "Switch to Projects view"));
+        suite.addTest(new SwitchView("testSwitchToFiles", "Switch to Files view"));
+        suite.addTest(new SwitchView("testSwitchToServices", "Switch to Services view"));
+        suite.addTest(new SwitchView("testSwitchToFavorites", "Switch to Favorite Folders view"));
+
         suite.addTest(new OpenFiles("testGC", "GC of opened editors"));
         suite.addTest(new CreateProject("testGC", "GC of created projects"));
         
