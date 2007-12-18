@@ -44,6 +44,7 @@ package org.netbeans.modules.groovy.grailsproject.ui;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -118,6 +119,7 @@ public class GrailsLogicalViewProvider implements LogicalViewProvider {
                     Lookups.singleton(project)
                     );
             setProjectFiles(project);
+            setShortDescription("Grails Project in " + File.separator + project.getProjectDirectory().getPath());
         }
         
         public Image getIcon(int type) {

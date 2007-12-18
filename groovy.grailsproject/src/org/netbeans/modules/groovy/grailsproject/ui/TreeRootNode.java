@@ -98,9 +98,10 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
         this(DataFolder.findFolder(g.getRootFolder()), g);
         
         this.project = project;
+        String pathName = g.getName();
 
-        int lastSlash = g.getName().lastIndexOf(File.separator);
-        String dirName = g.getName().substring(lastSlash + 1);
+        int lastSlash = pathName.lastIndexOf(File.separator);
+        String dirName = pathName.substring(lastSlash + 1);
 
 
         if (dirName.startsWith("conf")) {
@@ -120,6 +121,7 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
         } else if (dirName.startsWith("views")) {
             category = SourceCategory.VIEWS;
         }
+        setShortDescription(pathName.substring(project.getProjectDirectory().getPath().length() + 1));
     }
 
     private TreeRootNode(DataFolder folder, SourceGroup g) {
