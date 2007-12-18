@@ -52,6 +52,7 @@ import javax.swing.text.Document;
 import org.netbeans.api.gsf.Error;
 import org.netbeans.api.gsf.Index;
 import org.netbeans.api.gsf.PositionManager;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.modules.gsf.Language;
 import org.openide.filesystems.FileObject;
 import static org.netbeans.napi.gsfret.source.Phase.*;
@@ -154,12 +155,11 @@ public class CompilationController extends CompilationInfo {
         return this.delegate.getText();
     }
 
-    /**@inheritDoc*/
-//    @Override
-//    public TokenHierarchy getTokenHiearchy() {
-//        return this.delegate.getTokenHiearchy();
-//    }
-    
+    @Override
+    public TokenHierarchy<?> getTokenHierarchy() {
+        return this.delegate.getTokenHierarchy();
+    }
+
     /**
      * Returns the errors in the file represented by the {@link Source}.
      * 
