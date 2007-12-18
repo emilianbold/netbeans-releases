@@ -50,6 +50,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -1739,17 +1740,32 @@ public final class RubyIndex {
     public static FileObject getFileObject(String url) {
         try {
             if (url.startsWith(RUBYHOME_URL)) {
-                LOGGER.info("Resolving of '" + url + "' is not implemented yet");
-                return null;
+                // TODO - resolve to correct platform
                 // FIXME: per-platform now
-//                url = RubyInstallation.getInstance().getRubyHomeUrl() +
-//                        url.substring(RUBYHOME_URL.length()); // NOI18N
+                Iterator<RubyPlatform> it = RubyPlatformManager.platformIterator();
+                while (it.hasNext()) {
+                    RubyPlatform platform = it.next();
+                    url = platform.getHomeUrl() + url.substring(RUBYHOME_URL.length());
+                    FileObject fo = URLMapper.findFileObject(new URL(url));
+                    if (fo != null) {
+                        return fo;
+                    }
+                }
+                
+                return null;
             } else if (url.startsWith(GEM_URL)) {
-                LOGGER.info("Resolving of '" + url + "' is not implemented yet");
-                return null;
                 // FIXME: per-platform now
-//                url = RubyInstallation.getInstance().getGemHomeUrl() +
-//                        url.substring(GEM_URL.length()); // NOI18N
+                Iterator<RubyPlatform> it = RubyPlatformManager.platformIterator();
+                while (it.hasNext()) {
+                    RubyPlatform platform = it.next();
+                    url = platform.getGemManager().getGemHomeUrl() + url.substring(GEM_URL.length());
+                    FileObject fo = URLMapper.findFileObject(new URL(url));
+                    if (fo != null) {
+                        return fo;
+                    }
+                }
+                
+                return null;
             } else if (url.startsWith(CLUSTER_URL)) {
                 url = getClusterUrl() + url.substring(CLUSTER_URL.length()); // NOI18N
             }
