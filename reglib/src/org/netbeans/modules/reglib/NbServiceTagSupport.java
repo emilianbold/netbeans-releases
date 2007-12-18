@@ -236,14 +236,36 @@ public class NbServiceTagSupport {
             writeRegistrationXml();
         }
         
-        // Install a system service tag if supported
-        if (Registry.isSupported()) {
-            LOG.log(Level.FINE,"Add GlassFish service tag to system registry");
-            installSystemServiceTag(st);
-        } else {
-            LOG.log(Level.FINE,"Cannot add GlassFish service tag to system registry as ST infrastructure is not found");
-        }
         return st;
+    }
+    
+    /**
+     * Used to transfer service tag from GF to NB.
+     * First look in registration data if GlassFish tag exists and is
+     * different then replace it by passed parameter.
+     * @return service tag instance for GlassFish
+     * @throws java.io.IOException
+     */
+    public static ServiceTag createGfServiceTag (ServiceTag serviceTag) throws IOException {
+        if (!inited) {
+            init();
+        }
+        LOG.log(Level.FINE,"Creating GlassFish service tag");
+        
+        ServiceTag st = getGfServiceTag();
+        if (st != null) {
+            //If GF service tag already exists replace it with passed instance
+            if (!st.equals(serviceTag)) {
+                //First remove existing
+                getRegistrationData().removeServiceTag(st.getInstanceURN());
+                getRegistrationData().addServiceTag(serviceTag);
+                writeRegistrationXml();
+            }
+        } else {
+            getRegistrationData().addServiceTag(serviceTag);
+            writeRegistrationXml();
+        }
+        return serviceTag;
     }
     
     /**
