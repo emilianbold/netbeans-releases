@@ -70,7 +70,12 @@
                     <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.BracketCompletion"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.BracketCompleter"/>
                 </file>
-
+                
+                <file name="completion.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.Completable"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.CodeCompleter"/>
+                </file>
+                
             </folder>
         </folder>
     </folder>
