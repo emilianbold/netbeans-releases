@@ -41,6 +41,7 @@
 package org.netbeans.modules.groovy.grailsproject.ui;
 
 import java.awt.Image;
+import java.awt.datatransfer.Transferable;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -67,6 +68,7 @@ import org.openide.nodes.NodeOp;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
+import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import javax.swing.Action;
@@ -174,7 +176,12 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
             return null;
         }
         
-    }    
+    }
+
+    @Override
+    public PasteType getDropType(Transferable t, int action, int index) {
+        return null;
+    }
     
     
     
