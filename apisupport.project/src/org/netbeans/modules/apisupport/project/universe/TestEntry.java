@@ -184,7 +184,7 @@ public final class TestEntry {
     public String getNetBeansOrgPath () throws IOException {
         File nbcvs =  getNBCVSRoot();
         if (nbcvs != null && ModuleList.isNetBeansOrg(nbcvs) ) {
-            ModuleList list = ModuleList.getModuleList(new File(nbcvs,"core")); // NOI18N
+            ModuleList list = ModuleList.findOrCreateModuleListFromNetBeansOrgSources(nbcvs);
             ModuleEntry entry = list.getEntry(codeNameBase);
             if (entry == null) {
                 return null;
