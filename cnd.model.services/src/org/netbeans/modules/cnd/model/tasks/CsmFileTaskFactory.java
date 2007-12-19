@@ -79,7 +79,7 @@ public abstract class CsmFileTaskFactory {
     protected abstract Collection<FileObject> getFileObjects();
 
     protected final void fileObjectsChanged() {
-        final List<FileObject> currentFiles = new ArrayList(getFileObjects());
+        final List<FileObject> currentFiles = new ArrayList<FileObject>(getFileObjects());
 
         WORKER.post(new Runnable() {
 
@@ -94,8 +94,8 @@ public abstract class CsmFileTaskFactory {
         Map<CsmFile, Runnable> toAdd = new HashMap<CsmFile, Runnable>();
 
         synchronized (this) {
-            List<FileObject> addedFiles = new ArrayList(currentFiles);
-            List<FileObject> removedFiles = new ArrayList(file2Task.keySet());
+            List<FileObject> addedFiles = new ArrayList<FileObject>(currentFiles);
+            List<FileObject> removedFiles = new ArrayList<FileObject>(file2Task.keySet());
 
             addedFiles.removeAll(file2Task.keySet());
             removedFiles.removeAll(currentFiles);
