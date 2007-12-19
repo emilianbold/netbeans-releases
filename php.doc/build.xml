@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project basedir="." default="netbeans" name="scripting/php/doc">
+<project basedir="." default="netbeans" name="php/doc">
     <description>Builds, tests, and runs the project org.netbeans.modules.php.doc</description>
     <import file="../../nbbuild/templates/projectized.xml"/>
 
