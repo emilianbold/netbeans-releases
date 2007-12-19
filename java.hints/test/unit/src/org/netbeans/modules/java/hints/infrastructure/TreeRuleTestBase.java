@@ -161,6 +161,14 @@ public abstract class TreeRuleTestBase extends NbTestCase {
         assertTrue(errorsNames.toString(), Arrays.equals(golden, errorsNames.toArray(new String[0])));
     }
     
+    protected String performFixTest(String fileName, String code, String errorDescriptionToString, String fixDebugString, String golden) throws Exception {
+        int[] offset = new int[1];
+
+        code = org.netbeans.modules.java.hints.TestUtilities.detectOffsets(code, offset);
+        
+        return performFixTest(fileName, code, offset[0], errorDescriptionToString, fixDebugString, golden);
+    }
+    
     protected String performFixTest(String fileName, String code, int pos, String errorDescriptionToString, String fixDebugString, String golden) throws Exception {
         return performFixTest(fileName, code, pos, errorDescriptionToString, fixDebugString, fileName, golden);
     }
