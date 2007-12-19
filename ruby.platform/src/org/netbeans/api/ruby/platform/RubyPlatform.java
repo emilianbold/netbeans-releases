@@ -611,7 +611,7 @@ public final class RubyPlatform {
         // See if the file is under the Ruby libraries
         FileObject rubyLibFo = getLibFO();
         FileObject rubyStubs = getRubyStubs();
-        FileObject gemHome = gemManager.getRubyLibGemDirFo();
+        FileObject gemHome = gemManager != null ? gemManager.getRubyLibGemDirFo() : null;
 
         //        FileObject jar = FileUtil.getArchiveFile(file);
         //        if (jar != null) {
