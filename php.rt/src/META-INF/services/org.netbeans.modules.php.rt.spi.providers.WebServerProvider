@@ -1,0 +1,2 @@
+org.netbeans.modules.php.rt.providers.impl.local.LocalServerProvider
+org.netbeans.modules.php.rt.providers.impl.ftp.FtpServerProvider
