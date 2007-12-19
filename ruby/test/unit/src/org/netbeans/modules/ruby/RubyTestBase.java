@@ -242,7 +242,7 @@ public abstract class RubyTestBase extends org.netbeans.api.ruby.platform.RubyTe
         }
     }
 
-    TestCompilationInfo getInfo(String file) throws Exception {
+    protected TestCompilationInfo getInfo(String file) throws Exception {
         FileObject fileObject = getTestFile(file);
         return getInfo(fileObject);
     }
