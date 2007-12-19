@@ -88,11 +88,11 @@ made subject to such option by the copyright holder.
             <class-path-extension>
                 <runtime-relative-path>ext/etl/sjsxp.jar</runtime-relative-path>
                 <binary-origin>../external/sjsxp.jar</binary-origin>
-            </class-path-extension-->
+            </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/etl/wsdl4j.jar</runtime-relative-path>
                 <binary-origin>../external/wsdl4j.jar</binary-origin>
-            </class-path-extension>
+            </class-path-extension-->
             <class-path-extension>
                 <runtime-relative-path>ext/etl/etlengine.jar</runtime-relative-path>
                 <binary-origin>../external/etlengine.jar</binary-origin>
