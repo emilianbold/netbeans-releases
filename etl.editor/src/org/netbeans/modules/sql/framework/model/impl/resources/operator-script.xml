@@ -56,7 +56,7 @@ made subject to such option by the copyright holder.
 
     <operator name="castas" dbspecificname="CASTAS" script="CAST($column AS $type)" type="string" >
       <arg name="column" type="anytype" />
-      <arg name="type" type="varchar:unquoted" useTypeEvaluator="true" />
+      <arg name="type" type="varchar:unquoted" useTypeGenerator="true" />
       <output type="anytype" />
     </operator>
 
@@ -122,6 +122,25 @@ made subject to such option by the copyright holder.
     <operator name="righttrim" dbspecificname="RTRIM" script="RTRIM($str)" type="string" >
       <arg name="str" type="varchar" />
       <output type="varchar"/>
+    </operator>
+
+     <operator name="lpad" dbspecificname="LPAD" script="lpad($str1,$padlen,$padstring)" type="string" arg2Use="str1">
+      <arg name="str1" type="varchar" />
+      <arg name="padlen" type="numeric"/>
+      <arg name="padstring" type="varchar"/>
+      <output type="varchar"/>
+    </operator>
+    
+    <operator name="rpad" dbspecificname="RPAD" script="rpad($str1,$padlen,$padstring)" type="string" arg2Use="str1">
+      <arg name="str1" type="varchar" />
+      <arg name="padlen" type="numeric"/>
+      <arg name="padstring" type="varchar"/>
+      <output type="varchar"/>
+    </operator>
+    
+    <operator name="trim" dbspecificname="TRIM" script="trim($str1)" type="string" arg2Use="str1">
+      <arg name="str1" type="varchar" />
+       <output type="varchar"/>
     </operator>
 
     <operator name="replace" dbspecificname="REPLACE" script="REPLACE($str1, $str2, $str3)" type="string" arg2Use="str1">

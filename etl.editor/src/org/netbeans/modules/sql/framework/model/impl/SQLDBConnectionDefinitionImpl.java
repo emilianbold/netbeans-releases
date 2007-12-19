@@ -46,6 +46,8 @@ import org.w3c.dom.Element;
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.jdbc.DBConnectionParameters;
 import com.sun.sql.framework.utils.StringUtil;
+import org.netbeans.modules.etl.ui.ETLEditorSupport;
+import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 
 /**
@@ -123,6 +125,31 @@ public class SQLDBConnectionDefinitionImpl extends DBConnectionParameters implem
         setUserName(user);
         setPassword(password);
         setDescription(description);
+    }
+    
+    @Override
+    public void setConnectionURL(String url){
+        if (name.startsWith(DBExplorerUtil.AXION_URL_PREFIX) && url.contains(ETLEditorSupport.PRJ_PATH)) {
+            String[] urlParts = DBExplorerUtil.parseConnUrl(url);
+            urlParts[1] = urlParts[1].substring(ETLEditorSupport.PRJ_PATH.length());
+            super.setConnectionURL(DBExplorerUtil.AXION_URL_PREFIX + urlParts[0] + ":" + urlParts[1]);
+        } else {
+            super.setConnectionURL(url);
+        }
+    }
+    
+    @Override
+    public void setName(String name){
+        if (name.startsWith(DBExplorerUtil.AXION_URL_PREFIX) && name.contains(ETLEditorSupport.PRJ_PATH)) {
+            String[] urlParts = DBExplorerUtil.parseConnUrl(name);
+            super.setName(urlParts[0]);
+        } else {
+            if(name.length() > 60) {
+                super.setName(name.substring(name.length() - 60));
+            } else {
+                super.setName(name);
+            }
+        }
     }
     
     /**

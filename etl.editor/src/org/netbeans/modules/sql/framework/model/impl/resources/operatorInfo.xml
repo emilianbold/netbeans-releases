@@ -173,6 +173,80 @@ made subject to such option by the copyright holder.
 			<attr name="InputParam1_DisplayName" stringvalue="LBL_String_displayname_righttrim_inputparam1"/>
 			<attr name="OutputParam1_DisplayName" stringvalue="LBL_String_displayname_righttrim_outputparam1"/>
 		</operator>
+                <operator name="lpad">
+                    <attr name="localizingBundle" stringvalue="org.netbeans.modules.sql.framework.model.impl.resources.Bundle"/>
+                    <attr name="iconURL" urlvalue="/org/netbeans/modules/sql/framework/ui/resources/images/trim.gif"/>
+                    <attr name="DisplayName" stringvalue="LBL_String_lpad"/>
+                    <attr name="Tooltip" stringvalue="TOOLTIP_String_lpad"/>
+                    <attr name="Checked" boolvalue="true"/>
+                    <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLGenericOperatorImpl"/>
+                    <attr name="ShowParenthesis" boolvalue="true"/>
+                    <attr name="InputNum" intvalue="3"/>
+                    <attr name="OutputNum" intvalue="1"/>
+                    
+                    <attr name="InputParam1" stringvalue="str"/>
+                    <attr name="InputTooltip1" stringvalue="TOOLTIP_String_lpad_inputParam1"/>
+                    
+                    <attr name="InputParam2" stringvalue="str"/>
+                    <attr name="InputTooltip2" stringvalue="TOOLTIP_String_lpad_inputParam2"/>
+                    
+                    <attr name="InputParam3" stringvalue="str"/>
+                    <attr name="InputTooltip3" stringvalue="TOOLTIP_String_lpad_inputParam3"/>
+                    <attr name="OutputParam1" stringvalue="output"/>
+                    <attr name="OutputTooltip1" stringvalue="TOOLTIP_String_lpad_outputParam1"/>
+                    <attr name="InputParam1_DisplayName" stringvalue="LBL_String_displayname_lpad_inputparam1"/>
+                    <attr name="OutputParam1_DisplayName" stringvalue="LBL_String_displayname_lpad_outputparam1"/>
+                </operator>
+                
+                <operator name="rpad">
+                    <attr name="localizingBundle" stringvalue="org.netbeans.modules.sql.framework.model.impl.resources.Bundle"/>
+                    <attr name="iconURL" urlvalue="/org/netbeans/modules/sql/framework/ui/resources/images/trim.gif"/>
+                    <attr name="DisplayName" stringvalue="LBL_String_rpad"/>
+                    <attr name="Tooltip" stringvalue="TOOLTIP_String_rpad"/>
+                    <attr name="Checked" boolvalue="true"/>
+                    <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLGenericOperatorImpl"/>
+                    <attr name="ShowParenthesis" boolvalue="true"/>
+                    <attr name="InputNum" intvalue="3"/>
+                    <attr name="OutputNum" intvalue="1"/>
+                    
+                    <attr name="InputParam1" stringvalue="str"/>
+                    <attr name="InputTooltip1" stringvalue="TOOLTIP_String_rpad_inputParam1"/>
+                    
+                    <attr name="InputParam2" stringvalue="str"/>
+                    <attr name="InputTooltip2" stringvalue="TOOLTIP_String_rpad_inputParam2"/>
+                    
+                    <attr name="InputParam3" stringvalue="str"/>
+                    <attr name="InputTooltip3" stringvalue="TOOLTIP_String_rpad_inputParam3"/>
+                    <attr name="OutputParam1" stringvalue="output"/>
+                    <attr name="OutputTooltip1" stringvalue="TOOLTIP_String_rpad_outputParam1"/>
+                    <attr name="InputParam1_DisplayName" stringvalue="LBL_String_displayname_rpad_inputparam1"/>
+                    <attr name="OutputParam1_DisplayName" stringvalue="LBL_String_displayname_rpad_outputparam1"/>
+                </operator>
+                
+                
+                <operator name="trim">
+                    <attr name="localizingBundle" stringvalue="org.netbeans.modules.sql.framework.model.impl.resources.Bundle"/>
+                    <attr name="iconURL" urlvalue="/org/netbeans/modules/sql/framework/ui/resources/images/trim.gif"/>
+                    <attr name="DisplayName" stringvalue="LBL_String_trim"/>
+                    <attr name="Tooltip" stringvalue="TOOLTIP_String_trim"/>
+                    <attr name="Checked" boolvalue="true"/>
+                    <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLGenericOperatorImpl"/>
+                    <attr name="ShowParenthesis" boolvalue="true"/>
+                    <attr name="InputNum" intvalue="1"/>
+                    <attr name="OutputNum" intvalue="1"/>
+                    
+                    <attr name="InputParam1" stringvalue="str1"/>
+                    <attr name="InputTooltip1" stringvalue="TOOLTIP_String_trim_inputParam1"/>
+                    
+                          
+                    <attr name="OutputParam1" stringvalue="output"/>
+                    <attr name="OutputTooltip1" stringvalue="TOOLTIP_String_trim_outputParam1"/>
+                    
+                    <attr name="InputParam1_DisplayName" stringvalue="LBL_String_displayname_trim_inputparam1"/>
+                    <attr name="OutputParam1_DisplayName" stringvalue="LBL_String_displayname_trim_outputparam1"/>
+                </operator>
+                
+                
 		<operator name="substring">
 			<attr name="localizingBundle" stringvalue="org.netbeans.modules.sql.framework.model.impl.resources.Bundle"/>
 			<attr name="iconURL" urlvalue="/org/netbeans/modules/sql/framework/ui/resources/images/substring.gif"/>
@@ -245,6 +319,24 @@ made subject to such option by the copyright holder.
 			<attr name="InputParam1_DisplayName" stringvalue="LBL_String_displayname_stringToHex_inputparam1"/>
 			<attr name="OutputParam1_DisplayName" stringvalue="LBL_String_displayname_stringToHex_outputparam1"/>
 		</operator>
+                <operator name="LPAD">
+			<attr name="localizingBundle" stringvalue="org.netbeans.modules.sql.framework.model.impl.resources.Bundle"/>
+			<attr name="iconURL" urlvalue="/org/netbeans/modules/sql/framework/ui/resources/images/trim.gif"/>
+			<attr name="DisplayName" stringvalue="LBL_String_lpad"/>
+			<attr name="Tooltip" stringvalue="TOOLTIP_String_lpad"/>
+			<attr name="Checked" boolvalue="true"/>
+			<attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLGenericOperatorImpl"/>
+			<attr name="ShowParenthesis" boolvalue="true"/>
+			<attr name="InputNum" intvalue="1"/>
+			<attr name="OutputNum" intvalue="1"/>
+			<attr name="InputParam1" stringvalue="str"/>
+			<attr name="InputTooltip1" stringvalue="TOOLTIP_String_lpad_inputParm1"/>
+			<attr name="OutputParam1" stringvalue="output"/>
+			<attr name="OutputTooltip1" stringvalue="TOOLTIP_String_lpad_outputParm1"/>
+			<attr name="InputParam1_DisplayName" stringvalue="LBL_String_displayname_lpad_inputparam1"/>
+			<attr name="OutputParam1_DisplayName" stringvalue="LBL_String_displayname_lpad_outputparam1"/>
+		</operator>
+                
 	</category>
 	<category name="Number">
 		<attr name="DisplayName" stringvalue="LBL_Number"/>

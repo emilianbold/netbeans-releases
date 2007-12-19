@@ -55,7 +55,7 @@ import org.netbeans.modules.sql.framework.model.impl.ValidationInfoImpl;
 import org.netbeans.modules.sql.framework.ui.view.graph.MetaTableModel;
 import java.util.ArrayList;
 import org.netbeans.modules.sql.framework.model.DBMetaDataFactory;
-import org.netbeans.modules.sql.framework.common.utils.DBExplorerConnectionUtil;
+import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 import org.netbeans.modules.sql.framework.model.SQLDBModel;
 import org.netbeans.modules.sql.framework.model.impl.AbstractDBTable;
@@ -206,33 +206,38 @@ public class SQLDBSynchronizationVisitor {
     public void mergeCollabTableWithDatabaseTable(SQLDBTable collabTable, MetaTableModel tableModel) throws DBSQLException, Exception {
         DBMetaDataFactory meta = new DBMetaDataFactory();
         DBConnectionDefinition connDef = ((SQLDBModel) collabTable.getParentObject()).getETLDBConnectionDefinition();
-        Connection conn = DBExplorerConnectionUtil.createConnection(connDef.getConnectionProperties());
+        Connection conn = DBExplorerUtil.createConnection(connDef.getConnectionProperties());
         if (conn == null) {
             return;
         }
-        meta.connectDB(conn);
+        
+        try {
+            meta.connectDB(conn);
 
-        if (meta.isTableOrViewExist(collabTable.getCatalog(), collabTable.getSchema(), collabTable.getName())) {
-            // Get the table from database
-            Table newTable = new Table(collabTable.getName(), collabTable.getCatalog(), collabTable.getSchema());
-            meta.populateColumns(newTable);
+            if (meta.isTableOrViewExist(collabTable.getCatalog(), collabTable.getSchema(), collabTable.getName())) {
+                // Get the table from database
+                Table newTable = new Table(collabTable.getName(), collabTable.getCatalog(), collabTable.getSchema());
+                meta.populateColumns(newTable);
 
-            List collabColumns = collabTable.getColumnList();
-            List newColumns = newTable.getColumnList();
+                List collabColumns = collabTable.getColumnList();
+                List newColumns = newTable.getColumnList();
 
-            for (Iterator itr = collabColumns.iterator(); itr.hasNext();) {
-                mergeUpdates((SQLDBColumn) itr.next(), newColumns, collabTable, tableModel);
-            }
-            for (Iterator itr = newColumns.iterator(); itr.hasNext();) {
-                mergeNewColumns((SQLDBColumn) itr.next(), collabColumns, collabTable, tableModel);
-            }
+                for (Iterator itr = collabColumns.iterator(); itr.hasNext();) {
+                    mergeUpdates((SQLDBColumn) itr.next(), newColumns, collabTable, tableModel);
+                }
+                for (Iterator itr = newColumns.iterator(); itr.hasNext();) {
+                    mergeNewColumns((SQLDBColumn) itr.next(), collabColumns, collabTable, tableModel);
+                }
 
             // TODO: XXXXX We also need to check PK, FK, Index modifications XXXXX
-        } else {
-            String desc = NbBundle.getMessage(this.getClass(), "MSG_table_not_found", collabTable.getName()) + " " + connDef.getConnectionURL();
-            ValidationInfo vInfo = new ValidationInfoImpl(collabTable, desc, ValidationInfo.VALIDATION_ERROR);
-            infoList.add(vInfo);
-            return;
+            } else {
+                String desc = NbBundle.getMessage(this.getClass(), "MSG_table_not_found", collabTable.getName()) + " " + connDef.getConnectionURL();
+                ValidationInfo vInfo = new ValidationInfoImpl(collabTable, desc, ValidationInfo.VALIDATION_ERROR);
+                infoList.add(vInfo);
+                return;
+            }
+        } finally {
+           meta.disconnectDB();
         }
     }
 }

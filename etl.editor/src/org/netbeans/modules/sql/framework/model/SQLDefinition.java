@@ -69,6 +69,9 @@ public interface SQLDefinition extends SQLContainerObject, SQLVisitedObject {
     /** XML formatting constant: indent prefix */
     public static final String INDENT = "    ";
 
+    public static final String AXION_DB_WORKING_FOLDER="AxionWorkingFolder";
+    public static final String AXION_DB_INSTANCE_NAME="AxionInstanceName";
+
     /**
      * add an sql object listener
      *
@@ -100,6 +103,34 @@ public interface SQLDefinition extends SQLContainerObject, SQLVisitedObject {
      */
     public void setExecutionStrategyStr(String text);
 
+    
+    /**
+     * sets the working folder where axion instance will 
+     * run this colloboration
+     * @param appDataRoot
+     */
+    public void setWorkingFolder(String appDataRoot);
+    
+    /**
+     * sets the name of the axion instance where this etl 
+     * colloboration is run
+     * @param dbInstanceName
+     */
+    public void setDbInstanceName(String dbInstanceName);
+    
+    /**
+     * getter for axion db working folder
+     * @return
+     */
+    public String getDBWorkingFolder();
+    
+    /**
+     * getter for the axion database instance name
+     * @return
+     */
+    public String getDbInstanceName();
+    
+    
     public Object getAttributeValue(String attrName);
 
     /**
@@ -291,6 +322,13 @@ public interface SQLDefinition extends SQLContainerObject, SQLVisitedObject {
      */
     public List<ValidationInfo> validate();
 
+   /**
+     * validate the definition starting from the target tables.
+     *
+     * @return Map of invalid input object as keys and reason as value
+     */
+    public List<ValidationInfo> badgeValidate();
+    
     /**
      * Validate Database synchronization. Identify any eTL Collaboration element which has been
      * deleted or modified in Database.

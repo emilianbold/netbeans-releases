@@ -56,6 +56,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.mashup.db.model.FlatfileDBTable;
 import org.netbeans.modules.mashup.db.model.impl.FlatfileDBColumnImpl;
+import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
 import org.netbeans.modules.sql.framework.model.impl.AbstractDBColumn;
 import org.netbeans.modules.sql.framework.model.impl.AbstractDBTable;
 import org.netbeans.modules.sql.framework.model.impl.ForeignKeyImpl;
@@ -70,7 +71,6 @@ import org.netbeans.modules.sql.framework.model.impl.TargetColumnImpl;
  * @author Ahimanikya Satapathy
  * @version $Revision$
  */
-
 public class DBMetaDataFactory {
 
     /** Index to the name field for results of table/view/procedure searches */
@@ -81,7 +81,6 @@ public class DBMetaDataFactory {
     public static final int SCHEMA = 2;
     /** Index to the type field for results of table/view/procedure searches */
     public static final int TYPE = 3;
-
     public static final String DB2 = "DB2"; // NOI18N
     public static final String ORACLE = "ORACLE"; // NOI18N
     public static final String AXION = "AXION"; // NOI18N
@@ -101,10 +100,8 @@ public class DBMetaDataFactory {
     public static final String SQLSERVER_TEXT = "SQL SERVER"; // NOI18N
     public static final String JDBC_TEXT = "JDBC"; // NOI18N
     public static final String VSAM_ADABAS_IAM_TEXT = "VSAM/ADABAS/IAM"; // NOI18N
-
     /** List of database type display descriptions */
     public static final String[] DBTYPES = {DB2_TEXT, ORACLE_TEXT, SQLSERVER_TEXT, JDBC_TEXT, VSAM_ADABAS_IAM_TEXT, PostgreSQL_TEXT, MYSQL_TEXT, DERBY_TEXT, MYSQL_TEXT, AXION_TEXT};
-
     private static final String SYSTEM_TABLE = "SYSTEM TABLE"; // NOI18N
     private static final String TABLE = "TABLE"; // NOI18N
     private static final String VIEW = "VIEW"; // NOI18N
@@ -200,16 +197,15 @@ public class DBMetaDataFactory {
      *
      * @throws Exception 
      */
-    public void disconnectDB() throws Exception {
+    public void disconnectDB() {
         // close connection to database
         try {
             if ((dbconn != null) && (!dbconn.isClosed())) {
-                dbconn.close();
+               // dbconn.close();
                 dbconn = null;
             }
         } catch (SQLException e) {
             mLogger.log(Level.SEVERE, "disconnectDB", e);
-            throw e;
         }
     }
 
@@ -218,7 +214,7 @@ public class DBMetaDataFactory {
             try {
                 rs.close();
             } catch (SQLException e) {
-                /* Ignore... */
+            /* Ignore... */
             }
         }
     }
@@ -261,12 +257,12 @@ public class DBMetaDataFactory {
         // get the database type based on the product name converted to lowercase
         return getDBTypeFromURL(getDBName());
     }
-    
+
     public static String getDBTypeFromURL(String url) throws Exception {
         String dbtype = "";
 
         // get the database type based on the product name converted to lowercase
-         url = url.toLowerCase();
+        url = url.toLowerCase();
         if (url.equals("microsoft sql server") || (url.equals("sql server"))) {
             // Microsoft SQL Server
             dbtype = SQLSERVER;
@@ -298,7 +294,6 @@ public class DBMetaDataFactory {
 
         return dbtype;
     }
-
 
     private String getJDBCSearchPattern(String guiPattern) throws Exception {
         // Converts the passed in GUI pattern to one understood by the
@@ -373,9 +368,9 @@ public class DBMetaDataFactory {
      */
     public String[][] getTablesOnly(String catalog, String schemaPattern, String tablePattern, boolean includeSystemTables) throws Exception {
         if (includeSystemTables) {
-            return getTables(catalog, schemaPattern, tablePattern, new String[] {TABLE, SYSTEM_TABLE});
+            return getTables(catalog, schemaPattern, tablePattern, new String[]{TABLE, SYSTEM_TABLE});
         } else {
-            return getTables(catalog, schemaPattern, tablePattern, new String[] {TABLE});
+            return getTables(catalog, schemaPattern, tablePattern, new String[]{TABLE});
         }
     }
 
@@ -539,11 +534,11 @@ public class DBMetaDataFactory {
                 int position = rs.getInt("ORDINAL_POSITION");
                 int scale = rs.getInt("DECIMAL_DIGITS");
                 int precision = rs.getInt("COLUMN_SIZE");
-                
+
                 boolean isNullable = rs.getString("IS_NULLABLE").equals("YES") ? true : false;
-                
+
                 // create a table column and add it to the vector
-                
+
                 SQLDBColumn col = createColumn(table);
                 col.setName(colName);
                 col.setJdbcType(sqlTypeCode);
@@ -559,40 +554,40 @@ public class DBMetaDataFactory {
                 }
                 table.addColumn(col);
             }
-            
+
             if (table instanceof AbstractDBTable) {
                 checkPrimaryKeys((AbstractDBTable) table);
                 checkForeignKeys((AbstractDBTable) table);
 
-                //    try {
-                //        // get index info for this table
-                //        rs = dbmeta.getIndexInfo(tcatalog, tschema, tname, false, true);
-                //        Iterator<IndexImpl> it = IndexImpl.createIndexList(rs).iterator();
-                //        while (it.hasNext()) {
-                //            ((AbstractDBTable) table).addIndex(it.next());
-                //        }
-                //    } catch (Exception e) {
-                //        // ignore and continue
-                //    }
+            //    try {
+            //        // get index info for this table
+            //        rs = dbmeta.getIndexInfo(tcatalog, tschema, tname, false, true);
+            //        Iterator<IndexImpl> it = IndexImpl.createIndexList(rs).iterator();
+            //        while (it.hasNext()) {
+            //            ((AbstractDBTable) table).addIndex(it.next());
+            //        }
+            //    } catch (Exception e) {
+            //        // ignore and continue
+            //    }
             }
-            
+
 
         } catch (Exception e) {
             mLogger.log(Level.SEVERE, "getTableMetaData", e);
             throw e;
         } finally {
             closeResultSet(rs);
-        }                
+        }
     }
-    
+
     private SQLDBColumn createColumn(SQLDBTable table) {
-        if(table.getObjectType() == SQLConstants.TARGET_TABLE) {
+        if (table.getObjectType() == SQLConstants.TARGET_TABLE) {
             return new TargetColumnImpl();
-        }else if(table.getObjectType() == SQLConstants.SOURCE_TABLE) {
+        } else if (table.getObjectType() == SQLConstants.SOURCE_TABLE) {
             return new SourceColumnImpl();
-        } else if(table instanceof FlatfileDBTable) {
+        } else if (table instanceof FlatfileDBTable) {
             return new FlatfileDBColumnImpl();
-        }else {
+        } else {
             return new AbstractDBColumn() {
 
                 public String toXMLString(String prefix) throws BaseException {

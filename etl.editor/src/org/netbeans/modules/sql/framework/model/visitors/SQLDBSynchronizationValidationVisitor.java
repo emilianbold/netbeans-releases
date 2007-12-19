@@ -54,8 +54,9 @@ import org.netbeans.modules.sql.framework.model.impl.ValidationInfoImpl;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import java.sql.Connection;
+import java.sql.SQLException;
 import org.netbeans.modules.sql.framework.model.DBMetaDataFactory;
-import org.netbeans.modules.sql.framework.common.utils.DBExplorerConnectionUtil;
+import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 import org.netbeans.modules.sql.framework.model.impl.AbstractDBTable;
 
@@ -84,20 +85,25 @@ public class SQLDBSynchronizationValidationVisitor {
         connDef = etlDBModel.getETLDBConnectionDefinition();
 
         if (connDef != null) {
-            conn = DBExplorerConnectionUtil.createConnection(connDef.getConnectionProperties());
-            if (conn == null) {
-                return;
-            }
-            meta.connectDB(conn);
-            List collabTables = etlDBModel.getTables();
-
-            if ((collabTables != null) && (!collabTables.isEmpty())) {
-                Iterator itr = collabTables.iterator();
-                SQLDBTable collabTable = null;
-                while (itr.hasNext()) {
-                    collabTable = (SQLDBTable) itr.next();
-                    compareCollabTableWithDatabaseTable(collabTable, meta);
+            try{
+                conn = DBExplorerUtil.createConnection(connDef.getConnectionProperties());
+                if (conn == null) {
+                    return;
                 }
+                meta.connectDB(conn);
+                List collabTables = etlDBModel.getTables();
+
+                if ((collabTables != null) && (!collabTables.isEmpty())) {
+                    Iterator itr = collabTables.iterator();
+                    SQLDBTable collabTable = null;
+                    while (itr.hasNext()) {
+                        collabTable = (SQLDBTable) itr.next();
+                        compareCollabTableWithDatabaseTable(collabTable, meta);
+                    }
+                }
+            } finally {
+                meta.disconnectDB();
+                meta = null;
             }
         }
     }
@@ -111,13 +117,9 @@ public class SQLDBSynchronizationValidationVisitor {
                 try {
                     etlDBModel = (SQLDBModel) itr.next();
                     visit(etlDBModel);
-                } catch (DBSQLException dbex) {
-                    ValidationInfo vInfo = new ValidationInfoImpl(etlDBModel, dbex.getMessage(), ValidationInfo.VALIDATION_ERROR);
+                } catch (Exception ex) {
+                    ValidationInfo vInfo = new ValidationInfoImpl(etlDBModel, ex.getMessage(), ValidationInfo.VALIDATION_ERROR);
                     this.validationInfoList.add(vInfo);
-                } catch (BaseException ex) {
-                    Exceptions.printStackTrace(ex);
-                }  catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
                 }
             }
         }

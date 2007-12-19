@@ -212,7 +212,7 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
     public void addObject(SQLObject newObject) throws BaseException {
         // check if object already exist -- Do we still need this check ?? -- Ahi
         if (objectMap.get(newObject.getId()) != null) {
-            //throw new BaseException("Object " + newObject.getDisplayName() + "already exists.");
+        //throw new BaseException("Object " + newObject.getDisplayName() + "already exists.");
         }
 
         // always set the id first.
@@ -226,8 +226,8 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
         // special handling for tables and columns
         // we need to generate unique ids for them
         switch (newObject.getObjectType()) {
-        // Tables are not added directly to object map, but rather through
-        // its parent database model.
+            // Tables are not added directly to object map, but rather through
+            // its parent database model.
             case SQLConstants.SOURCE_TABLE:
             case SQLConstants.TARGET_TABLE:
             case SQLConstants.RUNTIME_INPUT:
@@ -423,6 +423,18 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
         return (Integer) this.getAttributeValue(ATTR_EXECUTION_STRATEGY_CODE);
     }
 
+    public String getDBWorkingFolder() {
+        String workingFolder = (String)this.getAttributeValue(AXION_DB_WORKING_FOLDER);
+        workingFolder = (workingFolder == null ) ? "":workingFolder;
+        return workingFolder;
+    }
+
+    public String getDbInstanceName() {
+        String dbName = (String)this.getAttributeValue(AXION_DB_INSTANCE_NAME);
+        dbName = (dbName == null) ? "":dbName;
+        return dbName;
+    }
+
     public String getExecutionStrategyStr() {
         int code = getExecutionStrategyCode().intValue();
         switch (code) {
@@ -463,8 +475,8 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
         SQLObject sqlObj;
 
         switch (type) {
-        // for source table and source column we need to look in each db model
-        // if that id exists
+            // for source table and source column we need to look in each db model
+            // if that id exists
             case SQLConstants.SOURCE_TABLE:
             case SQLConstants.SOURCE_COLUMN:
                 sqlObj = getObjectFromDBModel(objectId, SQLConstants.SOURCE_DBMODEL);
@@ -998,6 +1010,22 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
     }
 
     /**
+     * sets the axion database working folder
+     * @param appDataRoot
+     */
+    public void setWorkingFolder(String appDataRoot) {
+        this.setAttribute(AXION_DB_WORKING_FOLDER, appDataRoot);
+    }
+    
+    /**
+     * sets the axion database instance name
+     * @param dbInstanceName
+     */
+    public void setDbInstanceName(String dbInstanceName) {
+        this.setAttribute(AXION_DB_INSTANCE_NAME, dbInstanceName);
+    }
+
+    /**
      * @see SQLDefinition#setParent
      */
     public void setParent(Object newParent) {
@@ -1066,10 +1094,34 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
     public List<ValidationInfo> validate() {
         // TODO: Need to validate the drivers, file location used for data file
         List<ValidationInfo> valInfo = validateDbDrivers();
-        if(valInfo.size() != 0) { // Found driver errors. don't proceed with other validation.
+        if (valInfo.size() == 0) { // Found driver errors. don't proceed with other validation.
             valInfo.addAll(validateDbSynchronization()); // Validate Database Synchronization
         }
-        
+
+        // General eTL Collaboration validation
+        SQLValidationVisitor vVisitor = new SQLValidationVisitor();
+        vVisitor.visit(this);
+        valInfo.addAll(vVisitor.getValidationInfoList());
+
+        // Operator usage validation.
+        SQLOperatorInfoVisitor opInfo = new SQLOperatorInfoVisitor(true);
+        opInfo.visit(this);
+        valInfo.addAll(opInfo.getValidationInfoList());
+
+        // Filter condition validation
+        valInfo = ConditionBuilderUtil.filterValidations(valInfo);
+        return valInfo;
+    }
+
+    /**
+     * validate the definition starting from the target tables.
+     *
+     * @return Map of invalid input object as keys and reason as value
+     */
+    public List<ValidationInfo> badgeValidate() {
+        // TODO: Need to validate the drivers, file location used for data file
+        List<ValidationInfo> valInfo = validateDbDrivers();
+
         // General eTL Collaboration validation
         SQLValidationVisitor vVisitor = new SQLValidationVisitor();
         vVisitor.visit(this);
@@ -1097,7 +1149,6 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
         return vVisitor.getValidationInfoList();
     }
 
-    
     /**
      * Validate Database synchronization. Identify any eTL Collaboration element which has been
      * deleted or modified in Database.
@@ -1268,27 +1319,25 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
     private SQLObject copyExpressionObject(SQLConnectableObject object, SQLCondition condition) throws BaseException {
         int objectType = object.getObjectType();
         switch (objectType) {
-            case SQLConstants.VISIBLE_PREDICATE:
-                {
-                    VisibleSQLPredicate visiblePredCopy = null;
-                    if (object instanceof VisibleMatchesPredicateImpl) {
-                        visiblePredCopy = new VisibleMatchesPredicateImpl((VisibleMatchesPredicateImpl) object);
-                    } else {
-                        visiblePredCopy = new VisibleSQLPredicateImpl();
-                        ((VisibleSQLPredicateImpl) visiblePredCopy).copyFrom((VisibleSQLPredicate) object);
-                    }
-
-                    copyNonStaticInputs(visiblePredCopy, condition, visiblePredCopy.getOperatorXmlInfo());
-                    return visiblePredCopy;
+            case SQLConstants.VISIBLE_PREDICATE: {
+                VisibleSQLPredicate visiblePredCopy = null;
+                if (object instanceof VisibleMatchesPredicateImpl) {
+                    visiblePredCopy = new VisibleMatchesPredicateImpl((VisibleMatchesPredicateImpl) object);
+                } else {
+                    visiblePredCopy = new VisibleSQLPredicateImpl();
+                    ((VisibleSQLPredicateImpl) visiblePredCopy).copyFrom((VisibleSQLPredicate) object);
                 }
-            case SQLConstants.PREDICATE:
-                {
-                    SQLPredicateImpl predCopy = new VisibleSQLPredicateImpl();
-                    predCopy.copyFrom((VisibleSQLPredicate) object);
 
-                    copyNonStaticInputs(predCopy, condition, predCopy.getOperatorXmlInfo());
-                    return predCopy;
-                }
+                copyNonStaticInputs(visiblePredCopy, condition, visiblePredCopy.getOperatorXmlInfo());
+                return visiblePredCopy;
+            }
+            case SQLConstants.PREDICATE: {
+                SQLPredicateImpl predCopy = new VisibleSQLPredicateImpl();
+                predCopy.copyFrom((VisibleSQLPredicate) object);
+
+                copyNonStaticInputs(predCopy, condition, predCopy.getOperatorXmlInfo());
+                return predCopy;
+            }
             case SQLConstants.GENERIC_OPERATOR:
                 try {
                     if (object instanceof SQLNormalizeOperatorImpl) {
@@ -1657,5 +1706,4 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
 
     public void setExecutionStrategyStr(String text) {
     }
-
 }
