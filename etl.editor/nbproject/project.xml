@@ -57,19 +57,19 @@ made subject to such option by the copyright holder.
                 <runtime-relative-path>ext/etl/velocity-1.4.jar</runtime-relative-path>
                 <binary-origin>../external/velocity-1.4.jar</binary-origin>
             </class-path-extension>
-            <class-path-extension>
+            <!--class-path-extension>
                 <runtime-relative-path>ext/etl/jxl.jar</runtime-relative-path>
                 <binary-origin>../external/jxl.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/etl/avalon-logkit-current.jar</runtime-relative-path>
                 <binary-origin>../external/avalon-logkit-current.jar</binary-origin>
-            </class-path-extension>
+            </class-path-extension-->
             <class-path-extension>
                 <runtime-relative-path>ext/etl/axiondb.jar</runtime-relative-path>
                 <binary-origin>../external/axiondb.jar</binary-origin>
             </class-path-extension>
-            <class-path-extension>
+            <!--class-path-extension>
                 <runtime-relative-path>ext/etl/commons-codec-1.3.jar</runtime-relative-path>
                 <binary-origin>../external/commons-codec-1.3.jar</binary-origin>
             </class-path-extension>
@@ -88,7 +88,7 @@ made subject to such option by the copyright holder.
             <class-path-extension>
                 <runtime-relative-path>ext/etl/sjsxp.jar</runtime-relative-path>
                 <binary-origin>../external/sjsxp.jar</binary-origin>
-            </class-path-extension>
+            </class-path-extension-->
             <class-path-extension>
                 <runtime-relative-path>ext/etl/wsdl4j.jar</runtime-relative-path>
                 <binary-origin>../external/wsdl4j.jar</binary-origin>
@@ -156,8 +156,8 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.24</specification-version>
+                        <release-version>0-1</release-version>
+                        <specification-version>1.23</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

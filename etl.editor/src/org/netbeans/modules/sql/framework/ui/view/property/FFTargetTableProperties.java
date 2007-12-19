@@ -47,11 +47,14 @@ import org.netbeans.modules.sql.framework.model.SQLGroupBy;
 import org.openide.nodes.Node;
 
 import com.sun.sql.framework.exception.BaseException;
+import com.sun.sql.framework.utils.Attribute;
+import com.sun.sql.framework.utils.StringUtil;
 
 /**
  * @author Ahimanikya Satapathy
  */
 public class FFTargetTableProperties {
+
     protected TargetTableProperties mDeligate;
 
     public FFTargetTableProperties(TargetTableProperties deligate) {
@@ -79,7 +82,7 @@ public class FFTargetTableProperties {
     public SQLCondition getJoinCondition() {
         return mDeligate.getJoinCondition();
     }
-    
+
     /**
      * get condition text
      * 
@@ -88,9 +91,9 @@ public class FFTargetTableProperties {
     public String getJoinConditionText() {
         return mDeligate.getJoinConditionText();
     }
-    
+
     public SQLCondition getFilterCondition() {
-    	return mDeligate.getFilterCondition();
+        return mDeligate.getFilterCondition();
     }
 
     /**
@@ -99,7 +102,7 @@ public class FFTargetTableProperties {
      * @return sql condition
      */
     public String getFilterConditionText() {
-    	return mDeligate.getFilterConditionText();
+        return mDeligate.getFilterConditionText();
     }
 
     public PropertyEditor getCustomEditor(Node.Property property) {
@@ -131,6 +134,24 @@ public class FFTargetTableProperties {
      */
     public String getIndices() {
         return mDeligate.getIndices();
+    }
+
+    /**
+     * RSS Table methods
+     */
+    /**
+     * Get the FileName for this Flat file source table
+     * "Delimited", "FixedWidth" etc.
+     * 
+     * @return LoadType
+     */
+    public String getUrl() {
+        Attribute attr = mDeligate.getOrgProperty("URL");
+        if (attr != null) {
+            return attr.getAttributeValue().toString();
+        } else {
+            return "";
+        }
     }
 
     /**
@@ -189,6 +210,90 @@ public class FFTargetTableProperties {
     }
 
     /**
+     * Get the LoadType attribute for this Flat file source table
+     * "Delimited", "FixedWidth" etc.
+     * 
+     * @return LoadType
+     */
+    public String getFileType() {
+        Attribute attr = mDeligate.getOrgProperty("LOADTYPE");
+        if (attr != null) {
+            return attr.getAttributeValue().toString();
+        } else {
+            return "";
+        }
+    }
+
+    /**
+     * Get the FileName for this Flat file source table
+     * "Delimited", "FixedWidth" etc.
+     * 
+     * @return LoadType
+     */
+    public String getFileName() {
+        Attribute attr = mDeligate.getOrgProperty("FILENAME");
+        if (attr != null) {
+            return attr.getAttributeValue().toString();
+        } else {
+            return "";
+        }
+    }
+
+    public String getTextQualifier() {
+        Attribute attr = mDeligate.getOrgProperty("QUALIFIER");
+        if (attr != null) {
+            return attr.getAttributeValue().toString();
+        } else {
+            return "";
+        }
+    }
+
+    public boolean isFirstLineHeader() {
+        Attribute attr = mDeligate.getOrgProperty("ISFIRSTLINEHEADER");
+        if (attr != null) {
+            return Boolean.valueOf(attr.getAttributeValue().toString());
+        } else {
+            return false;
+        }
+    }
+
+    public String getFieldDelimiter() {
+        Attribute attr = mDeligate.getOrgProperty("FIELDDELIMITER");
+        if (attr != null) {
+            return attr.getAttributeValue().toString();
+        } else {
+            return "";
+        }
+    }
+
+    public String getRecordDelimiter() {
+        Attribute attr = mDeligate.getOrgProperty("RECORDDELIMITER");
+        if (attr != null) {
+            return StringUtil.escapeControlChars(attr.getAttributeValue().toString());
+        } else {
+            return "";
+        }
+    }
+
+    public Integer getRowsToSkip() {
+        Attribute attr = mDeligate.getOrgProperty("ROWSTOSKIP");
+        if (attr != null) {
+            return Integer.valueOf(attr.getAttributeValue().toString());
+        } else {
+            return 0;
+        }
+    }
+
+    public boolean isTrimWhiteSpace() {
+        Attribute attr = mDeligate.getOrgProperty("TRIMWHITESPACE");
+        if (attr != null) {
+            return Boolean.valueOf(attr.getAttributeValue().toString());
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * Sets the alias name for this table
      * 
      * @param aName alias name
@@ -222,7 +327,7 @@ public class FFTargetTableProperties {
     public void setJoinConditionText(String cond) {
         mDeligate.setJoinConditionText(cond);
     }
-    
+
     public void setFilterCondition(SQLCondition filter) throws BaseException {
         mDeligate.setFilterCondition(filter);
     }
@@ -267,4 +372,50 @@ public class FFTargetTableProperties {
         mDeligate.setTruncateBeforeLoad(flag);
     }
 
+    public void setFileType(String newFileType) {
+        mDeligate.setOrgProperty("LOADTYPE", newFileType);
+    }
+
+    public void setFileName(String newFileName) {
+        mDeligate.setOrgProperty("FILENAME", newFileName);
+    }
+
+    public void setFieldDelimiter(String newDelimiter) {
+        mDeligate.setOrgProperty("FIELDDELIMITER", newDelimiter);
+    }
+
+    public void setTextQualifier(String newTextQualifier) {
+        mDeligate.setOrgProperty("QUALIFIER", newTextQualifier);
+    }
+
+    public void setFirstLineHeader(boolean firstLineHeader) {
+        Boolean b = new Boolean(firstLineHeader);
+        mDeligate.setOrgProperty("ISFIRSTLINEHEADER", b.toString());
+    }
+
+    public void setRecordDelimiter(String newDelimiter) {
+        mDeligate.setOrgProperty("RECORDDELIMITER", newDelimiter);
+    }
+
+    public void setRowsToSkip(String rowsToSkip) {
+        mDeligate.setOrgProperty("ROWSTOSKIP", rowsToSkip);
+    }
+
+    public void setTrimWhiteSpace(boolean trimWhiteSpace) {
+        Boolean b = new Boolean(trimWhiteSpace);
+        mDeligate.setOrgProperty("TRIMWHITESPACE", b.toString());
+    }
+
+    /**
+     * RSS Table methods
+     */
+    /**
+     * Get the FileName for this Flat file source table
+     * "Delimited", "FixedWidth" etc.
+     * 
+     * @return LoadType
+     */
+    public void setUrl(String newUrl) {
+        mDeligate.setOrgProperty("URL", newUrl);
+    }
 }

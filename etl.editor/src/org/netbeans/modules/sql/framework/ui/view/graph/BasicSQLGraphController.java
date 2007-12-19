@@ -159,16 +159,18 @@ public class BasicSQLGraphController implements IGraphController {
                 Transferable t = e.getTransferable();
                 Object o = t.getTransferData(mDataFlavorArray[0]);
                 if (o instanceof DatabaseMetaDataTransfer.Table) {
-                    DatabaseConnection dbConn = ((DatabaseMetaDataTransfer.Table) o).getDatabaseConnection();
-                    conn = ((DatabaseMetaDataTransfer.Table) o).getDatabaseConnection().getJDBCConnection();
-                    String tableName = ((DatabaseMetaDataTransfer.Table) o).getTableName();
-                    String schema = ((DatabaseMetaDataTransfer.Table) o).getDatabaseConnection().getSchema();
-                    String url = ((DatabaseMetaDataTransfer.Table) o).getDatabaseConnection().getDatabaseURL();
+                    DatabaseMetaDataTransfer.Table tbl = (DatabaseMetaDataTransfer.Table)o;
+                    DatabaseConnection dbConn = tbl.getDatabaseConnection();
+                    conn = dbConn.getJDBCConnection();
+                    String tableName = tbl.getTableName();
+                    String schema = tbl.getDatabaseConnection().getSchema();
+                    String url = dbConn.getDatabaseURL();
                     String catalog = null;
                     try {
                         catalog = conn.getCatalog();
                     } catch (Exception ex) {
                     }
+                    
                     String dlgTitle = null;
                     try {
                         dlgTitle = NbBundle.getMessage(BasicSQLGraphController.class, "TITLE_dlg_table_type");
@@ -264,7 +266,8 @@ public class BasicSQLGraphController implements IGraphController {
                         }
 
                         SourceColumn runtimeArg = SQLObjectUtil.createRuntimeInput(sTable, sqlModel.getSQLDefinition());
-
+                        SQLObjectUtil.setOrgProperties(sTable);
+                        
                         if (runtimeArg != null && (RuntimeInput) runtimeArg.getParent() != null) {
                             RuntimeInput runtimeInput = (RuntimeInput) runtimeArg.getParent();
                             // if runtime input is not in SQL definition then add it
@@ -318,13 +321,6 @@ public class BasicSQLGraphController implements IGraphController {
             } finally {
                 e.dropComplete(dropStatus);
                 conn = null;
-                /* try {
-                if(conn != null) {
-                conn.close();
-                }
-                } catch (SQLException ex) {
-                conn = null;
-                }*/
             }
         } else {
             e.rejectDrop();

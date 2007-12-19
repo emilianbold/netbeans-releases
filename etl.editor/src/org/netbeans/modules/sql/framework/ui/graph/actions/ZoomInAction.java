@@ -48,7 +48,7 @@ import org.netbeans.modules.etl.ui.DataObjectProvider;
 
 
 import org.netbeans.modules.etl.ui.ETLDataObject;
-import org.netbeans.modules.etl.ui.view.ETLCollaborationTopComponent;
+import org.netbeans.modules.etl.ui.view.ETLCollaborationTopPanel;
 import org.netbeans.modules.sql.framework.model.SQLConstants;
 import org.openide.util.NbBundle;
 
@@ -75,9 +75,9 @@ public class ZoomInAction extends GraphAction {
   
     
     public void actionPerformed(ActionEvent e) {
-         ETLCollaborationTopComponent etlEditor = null;
+         ETLCollaborationTopPanel etlEditor = null;
         try {
-            etlEditor = DataObjectProvider.getProvider().getActiveDataObject().getETLEditorTC();
+            etlEditor = DataObjectProvider.getProvider().getActiveDataObject().getETLEditorTopPanel();
         } catch (Exception ex) {
             // ignore
         }

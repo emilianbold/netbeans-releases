@@ -6,7 +6,7 @@ import javax.swing.AbstractAction;
 import javax.swing.undo.UndoManager;
 
 import org.netbeans.modules.etl.ui.DataObjectProvider;
-import org.netbeans.modules.etl.ui.view.ETLCollaborationTopComponent;
+import org.netbeans.modules.etl.ui.view.ETLCollaborationTopPanel;
 import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
 import org.netbeans.modules.sql.framework.ui.model.SQLUIModel;
 import org.openide.util.HelpCtx;
@@ -37,9 +37,9 @@ public final class UndoAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent e) {
-        ETLCollaborationTopComponent topComp = null;
+        ETLCollaborationTopPanel topComp = null;
         try {
-            topComp = DataObjectProvider.getProvider().getActiveDataObject().getETLEditorTC();
+            topComp = DataObjectProvider.getProvider().getActiveDataObject().getETLEditorTopPanel();
         } catch (Exception ex) {
             // ignore
         }

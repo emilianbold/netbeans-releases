@@ -95,6 +95,25 @@ public class SQLCollaborationProperties {
         setDirty(true);
     }
     
+    
+    public void setWorkingFolder(String appDataRoot) {
+        this.sqlDef.setWorkingFolder(appDataRoot);
+        setDirty(true);
+    }
+    
+    public void setDbInstanceName(String dbInstanceName) {
+        this.sqlDef.setDbInstanceName(dbInstanceName);
+        setDirty(true);
+    }
+    
+    public String getWorkingFolder() {
+        return this.sqlDef.getDBWorkingFolder();
+    }
+    
+    public String getDbInstanceName() {
+        return this.sqlDef.getDbInstanceName();
+    }
+    
     public String getSourceModelName(){
         try {
             return this.sqlDef.getSourceDatabaseModels().get(0).getETLDBConnectionDefinition().getConnectionURL();

@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.sql.framework.ui.view;
 
+import org.netbeans.modules.sql.framework.ui.output.dataview.DataOutputPanel;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
@@ -55,6 +56,7 @@ import javax.swing.Action;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.etl.ui.DataObjectProvider;
@@ -85,21 +87,31 @@ import org.netbeans.modules.sql.framework.ui.view.property.FFTargetTableProperti
 import org.netbeans.modules.sql.framework.ui.view.property.SourceTableProperties;
 import org.netbeans.modules.sql.framework.ui.view.property.TargetTableProperties;
 import com.sun.sql.framework.exception.BaseException;
+import com.sun.sql.framework.utils.Attribute;
 import com.sun.sql.framework.utils.Logger;
 import java.beans.PropertyChangeListener;
 import org.netbeans.modules.etl.ui.view.ETLOutputWindowTopComponent;
 import org.netbeans.modules.sql.framework.model.DBMetaDataFactory;
+import org.netbeans.modules.sql.framework.model.SQLDBTable;
 import org.netbeans.modules.sql.framework.model.SQLJoinOperator;
 import org.netbeans.modules.sql.framework.model.impl.RuntimeInputImpl;
 import org.netbeans.modules.sql.framework.model.impl.RuntimeOutputImpl;
 import org.netbeans.modules.sql.framework.model.impl.SQLJoinViewImpl;
+import org.netbeans.modules.sql.framework.model.utils.SQLObjectUtil;
 import org.netbeans.modules.sql.framework.ui.editor.property.impl.PropertyNode;
 import org.netbeans.modules.sql.framework.ui.editor.property.impl.TemplateFactory;
+import org.netbeans.modules.sql.framework.ui.output.SQLStatementPanel;
+import org.netbeans.modules.sql.framework.ui.output.dataview.JoinOperatorDataPanel;
+import org.netbeans.modules.sql.framework.ui.output.dataview.JoinViewDataPanel;
+import org.netbeans.modules.sql.framework.ui.output.dataview.RejectedRowsDataPanel;
+import org.netbeans.modules.sql.framework.ui.output.dataview.SourceTableDataPanel;
+import org.netbeans.modules.sql.framework.ui.output.dataview.TargetTableDataPanel;
 import org.netbeans.modules.sql.framework.ui.view.property.RuntimeInputProperties;
 import org.netbeans.modules.sql.framework.ui.view.property.RuntimeOutputProperties;
 import org.netbeans.modules.sql.framework.ui.view.property.SQLCollaborationProperties;
 import org.netbeans.modules.sql.framework.ui.view.property.SQLJoinProperties;
 import org.netbeans.modules.sql.framework.ui.view.validation.SQLValidationView;
+import org.openide.awt.StatusDisplayer;
 import org.openide.nodes.Node;
 import org.openide.windows.WindowManager;
 
@@ -109,7 +121,7 @@ import org.openide.windows.WindowManager;
  * @author Wei Han
  * @version $Revision$
  */
-public abstract class BasicTopView extends JPanel implements IGraphViewContainer, IOutputViewContainer {
+public abstract class BasicTopView extends JPanel implements IGraphViewContainer {
 
     protected static abstract class ConditionValidator implements ActionListener {
 
@@ -242,7 +254,7 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
         this.sqlModel = model;
         initGui();
     }
-    
+
     /**
      * Is editable
      *
@@ -358,17 +370,6 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
         return this.collabView.getZoomFactor();
     }
 
-    /**
-     * Hides output view from bottom portion of a split pane.
-     */
-    public void hideSplitPaneView() {
-        // close the output panel.
-        ETLOutputWindowTopComponent topComp = ETLOutputWindowTopComponent.findInstance();
-        if (topComp.isVisible()) {
-            topComp.setVisible(false);
-        }
-    }
-
     public void setModifiable(boolean b) {
         this.collabView.getGraphView().setModifiable(b);
         enableToolBarActions(b);
@@ -416,6 +417,50 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
         return c;
     }
 
+    private String getTemplateName(SQLObject bean) {
+        String template = null;
+        Attribute attr = bean.getAttribute("ORGPROP_LOADTYPE");
+        if(attr == null) {
+            try {
+                SQLObjectUtil.setOrgProperties((SQLDBTable) bean);
+                attr = bean.getAttribute("ORGPROP_LOADTYPE");
+            } catch (BaseException ex) {
+                StatusDisplayer.getDefault().setStatusText(ex.getMessage());
+                if (bean.getObjectType() == SQLConstants.SOURCE_TABLE) {
+                    template = "FFSourceTable";
+                } else if (bean.getObjectType() == SQLConstants.TARGET_TABLE){
+                    template = "FFTargetTable";
+                }
+                return template;
+            }
+        }
+        
+        if (bean.getObjectType() == SQLConstants.SOURCE_TABLE) {
+            if (((String) attr.getAttributeValue()).equals("RSS")) {
+                template = "RSSSourceTable";
+            } else if (((String) attr.getAttributeValue()).equalsIgnoreCase("WEB")) {
+                template = "WebSourceTable";
+            } else if (((String) attr.getAttributeValue()).equalsIgnoreCase("WEBROWSET")) {
+                template = "WebrowsetSourceTable";
+            } else if (((String) attr.getAttributeValue()).equalsIgnoreCase("DELIMITED") ||
+                    ((String) attr.getAttributeValue()).equalsIgnoreCase("FIXEDWIDTH")) {
+                template = "FFSourceTable";
+            }
+        } else if (bean.getObjectType() == SQLConstants.TARGET_TABLE) {
+            if (((String) attr.getAttributeValue()).equals("RSS")) {
+                template = "RSSTargetTable";
+            } else if (((String) attr.getAttributeValue()).equalsIgnoreCase("WEB")) {
+                template = "WebTargetTable";
+            } else if (((String) attr.getAttributeValue()).equalsIgnoreCase("WEBROWSET")) {
+                template = "WebrowsetTargetTable";
+            } else if (((String) attr.getAttributeValue()).equalsIgnoreCase("DELIMITED") ||
+                    ((String) attr.getAttributeValue()).equalsIgnoreCase("FIXEDWIDTH")) {
+                template = "FFTargetTable";
+            }
+        }
+        return template;
+    }
+
     /**
      * show properties dialog
      */
@@ -433,7 +478,7 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
             if (bean.getObjectType() == SQLConstants.SOURCE_TABLE) {
                 SourceTableProperties srcTableBaen = new SourceTableProperties(this, (SQLBasicTableArea) gNode, (SourceTable) bean);
                 if (((SourceTable) bean).getParent().getConnectionDefinition().getDBType().equals(DBMetaDataFactory.AXION)) {
-                    template = "FFSourceTable";
+                    template = getTemplateName(bean);
                     pBean = new FFSourceTableProperties(srcTableBaen);
                 } else {
                     template = "SourceTable";
@@ -442,7 +487,7 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
             } else if (bean.getObjectType() == SQLConstants.TARGET_TABLE) {
                 TargetTableProperties trgtTableBaen = new TargetTableProperties(this, (SQLBasicTableArea) gNode, (TargetTable) bean);
                 if (((TargetTable) bean).getParent().getConnectionDefinition().getDBType().equals(DBMetaDataFactory.AXION)) {
-                    template = "FFTargetTable";
+                    template = getTemplateName(bean);
                     pBean = new FFTargetTableProperties(trgtTableBaen);
                 } else {
                     template = "TargetTable";
@@ -496,6 +541,8 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
         if ((valInfo != null) && (valInfo.size() > 0)) {
             refreshMetaView.setValidationInfos(valInfo);
             showSplitPaneView(refreshMetaView);
+        } else {
+            StatusDisplayer.getDefault().setStatusText("Collaboration Metadata is up-to-date.");
         }
     }
 
@@ -584,13 +631,13 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
 
         if (dataView == null) {
             if (table.getObjectType() == SQLConstants.TARGET_TABLE) {
-                dataView = new DataOutputPanel.TargetQuery((TargetTable) table, def);
+                dataView = new TargetTableDataPanel((TargetTable) table, def);
             } else if (table.getObjectType() == SQLConstants.SOURCE_TABLE) {
-                dataView = new DataOutputPanel.SourceQuery((SourceTable) table, def);
+                dataView = new SourceTableDataPanel((SourceTable) table, def);
             } else if (table.getObjectType() == SQLConstants.JOIN_VIEW) {
-                dataView = new DataOutputPanel.JoinViewQuery((SQLJoinView) table, def);
+                dataView = new JoinViewDataPanel((SQLJoinView) table, def);
             } else if (table.getObjectType() == SQLConstants.JOIN) {
-                dataView = new DataOutputPanel.JoinOperatorQuery((SQLJoinOperator) table, def);
+                dataView = new JoinOperatorDataPanel((SQLJoinOperator) table, def);
             }
 
             outputDataViewMap.put(table.getId(), dataView);
@@ -614,7 +661,7 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
         SQLDefinition def = ((CollabSQLUIModel) model).getSQLDefinition();
         DataOutputPanel view = rejectionDataViewMap.get(table.getId());
         if (view == null) {
-            view = new DataOutputPanel.RejectedRows(table, def);
+            view = new RejectedRowsDataPanel(table, def);
             rejectionDataViewMap.put(table.getId(), view);
         }
 
@@ -671,15 +718,14 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
             //SQLUIModel model = (SQLUIModel) getGraphView().getGraphModel();
             /*IToolBar toolBar = this.getToolBar();
             if (toolBar == null) {
-                return;
+            return;
             }
-             
             Action undoAction = toolBar.getAction(UndoAction.class);
             Action redoAction = toolBar.getAction(RedoAction.class);
             UndoManager undoManager = model.getUndoManager();
             if (undoManager != null && undoAction != null && redoAction != null) {
-                undoAction.setEnabled(undoManager.canUndo());
-                redoAction.setEnabled(undoManager.canRedo());
+            undoAction.setEnabled(undoManager.canUndo());
+            redoAction.setEnabled(undoManager.canRedo());
             }*/
             try {
                 ETLDataObject etlDataObject = DataObjectProvider.getProvider().getActiveDataObject();

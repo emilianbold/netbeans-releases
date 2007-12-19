@@ -38,9 +38,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.sql.framework.ui.view.graph;
 
+import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.exception.DBSQLException;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
@@ -61,40 +61,35 @@ import org.openide.util.NbBundle;
 
 import com.nwoods.jgo.JGoBrush;
 import javax.swing.JOptionPane;
+import org.netbeans.modules.sql.framework.model.DBMetaDataFactory;
+import org.netbeans.modules.sql.framework.model.SQLDBModel;
 import org.netbeans.modules.sql.framework.model.SQLDBTable;
+import org.netbeans.modules.sql.framework.model.impl.SQLDBModelImpl;
+import org.netbeans.modules.sql.framework.model.utils.SQLObjectUtil;
 import org.netbeans.modules.sql.framework.model.visitors.SQLDBSynchronizationVisitor;
 import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
 import org.netbeans.modules.sql.framework.ui.model.CollabSQLUIModel;
 import org.netbeans.modules.sql.framework.ui.view.BasicTopView;
+import org.openide.awt.StatusDisplayer;
 import org.openide.windows.WindowManager;
-
-
 
 /**
  * @author Ritesh Adval
  */
 public class SQLTargetTableArea extends SQLBasicTableArea {
-    
+
     private static URL targetTableImgUrl = SQLTargetTableArea.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/TargetTable.png");
-    
     private static URL showDataUrl = SQLSourceTableArea.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/SourceTable.png");
-    
     private static URL showSqlUrl = SQLSourceTableArea.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/Show_Sql.png");
-    
     private static URL propertiesUrl = SQLSourceTableArea.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/properties.png");
-    
     private static URL showRejectionDataImgUrl = SQLBasicTableArea.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/showRejectedData.png");
-    
-     private static URL synchroniseImgUrl = SQLSourceTableArea.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/refresh.png");
+    private static URL synchroniseImgUrl = SQLSourceTableArea.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/refresh.png");
     private static URL targetTableConditionImgUrl = SQLBasicTableArea.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/targetTableCondition.png");
     private static URL dataFilterImgUrl = SQLSourceTableArea.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/filter16.gif");
-    
-    private static final Color DEFAULT_BG_COLOR = new Color(219,207,219);//(204, 213, 241);
-    
-    private static final Color DEFAULT_BG_COLOR_DARK = new Color(221,235,246);//(165, 193, 249);
-    
+    private static URL remountImgUrl = SQLTargetTableArea.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/redo.png");
+    private static final Color DEFAULT_BG_COLOR = new Color(219, 207, 219);//(204, 213, 241);
+    private static final Color DEFAULT_BG_COLOR_DARK = new Color(221, 235, 246);//(165, 193, 249);
     private static final JGoBrush DEFAULT_TITLE_BRUSH = new GradientBrush(DEFAULT_BG_COLOR, DEFAULT_BG_COLOR_DARK);
-    
     private JMenuItem showSqlItem;
     private JMenuItem showDataItem;
     private JMenuItem showRejectionDataItem;
@@ -102,14 +97,15 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
     private JMenuItem editFilterConditionItem;
     private JMenuItem propertiesItem;
     private JMenuItem synchroniseItem;
-    
+    private JMenuItem remountItem;
+
     /**
      * Creates a new instance of SQLTargetTableArea
      */
     public SQLTargetTableArea() {
         super();
     }
-    
+
     /**
      * Creates a new instance of SQLTargetTableArea
      *
@@ -119,70 +115,84 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
     public SQLTargetTableArea(TargetTable tgttable) {
         super();
     }
-    
+
     /**
      * @see org.netbeans.modules.sql.framework.ui.view.graph.SQLBasicTableArea#initializePopUpMenu()
      */
     protected void initializePopUpMenu() {
-        ActionListener aListener = new TableActionListener();
-        // Show SQL
-        String lblShowSql = NbBundle.getMessage(SQLBasicTableArea.class, "LBL_show_sql");
-        showSqlItem = new JMenuItem(lblShowSql, new ImageIcon(showSqlUrl));
-        showSqlItem.addActionListener(aListener);
-        popUpMenu.add(showSqlItem);
-        
-        // Show data
-        String lblShowData = NbBundle.getMessage(SQLBasicTableArea.class, "LBL_show_data");
-        showDataItem = new JMenuItem(lblShowData, new ImageIcon(showDataUrl));
-        showDataItem.addActionListener(aListener);
-        popUpMenu.add(showDataItem);
-        
-        // Show rejection data
-        // TODO: Add listener framework to enable/disable this action depending on whether
-        // a validation condition exists
-        String lblRjtShowData = NbBundle.getMessage(SQLBasicTableArea.class, "LBL_show_rejection_data");
-        showRejectionDataItem = new JMenuItem(lblRjtShowData, new ImageIcon(showRejectionDataImgUrl));
-        
-        showRejectionDataItem.addActionListener(aListener);
-        popUpMenu.add(showRejectionDataItem);
-        
-        // Select Columns
-        addSelectVisibleColumnsPopUpMenu(aListener);
-        synchroniseItem = new JMenuItem("Refresh Metadata", new ImageIcon(synchroniseImgUrl));
-        synchroniseItem.addActionListener(aListener);
-        popUpMenu.add(synchroniseItem);
-        popUpMenu.addSeparator();
-        
-        // TODO: show join condition only if source table exist (Delete, Static Insert/Update does not require Join Condition)
-        // Target Join Condition
-        String lblTargetCondition = NbBundle.getMessage(SQLBasicTableArea.class, "LBL_edit_target_join_condition");
-        editJoinConditionItem = new JMenuItem(lblTargetCondition, new ImageIcon(targetTableConditionImgUrl));
-        editJoinConditionItem.addActionListener(aListener);
-        popUpMenu.add(editJoinConditionItem);
-        
-        // Target Filter Condition
-        String lblTargetFilterCondition = NbBundle.getMessage(SQLBasicTableArea.class, "LBL_edit_target_filter_condition");
-        editFilterConditionItem = new JMenuItem(lblTargetFilterCondition, new ImageIcon(dataFilterImgUrl));
-        editFilterConditionItem.addActionListener(aListener);
-        popUpMenu.add(editFilterConditionItem);
-        popUpMenu.addSeparator();
-        
-        // Remove
-        addRemovePopUpMenu(aListener);
-        
-        // Properties
-        popUpMenu.addSeparator();
-        String lblProps = NbBundle.getMessage(SQLBasicTableArea.class, "LBL_properties");
-        propertiesItem = new JMenuItem(lblProps, new ImageIcon(propertiesUrl));
-        propertiesItem.addActionListener(aListener);
-        popUpMenu.add(propertiesItem); 
+        try {
+            ActionListener aListener = new TableActionListener();
+            // Show SQL
+            String lblShowSql = NbBundle.getMessage(SQLBasicTableArea.class, "LBL_show_sql");
+            showSqlItem = new JMenuItem(lblShowSql, new ImageIcon(showSqlUrl));
+            showSqlItem.addActionListener(aListener);
+            popUpMenu.add(showSqlItem);
+
+            // Show data
+            String lblShowData = NbBundle.getMessage(SQLBasicTableArea.class, "LBL_show_data");
+            showDataItem = new JMenuItem(lblShowData, new ImageIcon(showDataUrl));
+            showDataItem.addActionListener(aListener);
+            popUpMenu.add(showDataItem);
+
+            // Show rejection data
+            // TODO: Add listener framework to enable/disable this action depending on whether
+            // a validation condition exists
+            String lblRjtShowData = NbBundle.getMessage(SQLBasicTableArea.class, "LBL_show_rejection_data");
+            showRejectionDataItem = new JMenuItem(lblRjtShowData, new ImageIcon(showRejectionDataImgUrl));
+
+            showRejectionDataItem.addActionListener(aListener);
+            popUpMenu.add(showRejectionDataItem);
+
+
+            addSelectVisibleColumnsPopUpMenu(aListener);
+            synchroniseItem = new JMenuItem("Refresh Metadata", new ImageIcon(synchroniseImgUrl));
+            synchroniseItem.addActionListener(aListener);
+            popUpMenu.add(synchroniseItem);
+
+            String lblRemount = NbBundle.getMessage(SQLBasicTableArea.class, "LBL_Remount");
+            remountItem = new JMenuItem(lblRemount, new ImageIcon(remountImgUrl));
+            remountItem.addActionListener(aListener);
+            SQLObject tbl = (SQLObject) SQLTargetTableArea.this.getDataObject();
+            SQLDBModelImpl impl = (SQLDBModelImpl) tbl.getParentObject();
+            if (impl.getETLDBConnectionDefinition().getDBType().equals(DBMetaDataFactory.AXION)) {
+                popUpMenu.add(remountItem);
+            }
+            popUpMenu.addSeparator();
+
+            // TODO: show join condition only if source table exist (Delete, Static Insert/Update does not require Join Condition)
+            // Target Join Condition
+            String lblTargetCondition = NbBundle.getMessage(SQLBasicTableArea.class, "LBL_edit_target_join_condition");
+            editJoinConditionItem = new JMenuItem(lblTargetCondition, new ImageIcon(targetTableConditionImgUrl));
+            editJoinConditionItem.addActionListener(aListener);
+            popUpMenu.add(editJoinConditionItem);
+
+            // Target Filter Condition
+            String lblTargetFilterCondition = NbBundle.getMessage(SQLBasicTableArea.class, "LBL_edit_target_filter_condition");
+            editFilterConditionItem = new JMenuItem(lblTargetFilterCondition, new ImageIcon(dataFilterImgUrl));
+            editFilterConditionItem.addActionListener(aListener);
+            popUpMenu.add(editFilterConditionItem);
+            popUpMenu.addSeparator();
+
+            // Remove
+            addRemovePopUpMenu(aListener);
+
+            // Properties
+            popUpMenu.addSeparator();
+            String lblProps = NbBundle.getMessage(SQLBasicTableArea.class, "LBL_properties");
+            propertiesItem = new JMenuItem(lblProps, new ImageIcon(propertiesUrl));
+            propertiesItem.addActionListener(aListener);
+            popUpMenu.add(propertiesItem);
+        } catch (BaseException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
-    
+
     Icon createIcon() {
         return new ImageIcon(targetTableImgUrl);
     }
-    
+
     private class TableActionListener implements ActionListener {
+
         /**
          * Invoked when an action occurs.
          *
@@ -194,56 +204,70 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
                 Properties_ActionPerformed(e);
             } else if (source == showSqlItem) {
                 ShowSql_ActionPerformed(e);
+            } else if (source == remountItem) {
+                Remount_ActionPerformed(e);
             } else if (source == showDataItem) {
                 ShowData_ActionPerformed(e);
             } else if (source == showRejectionDataItem) {
                 ShowRejectionData_ActionPerformed(e);
             } else if (source == editJoinConditionItem) {
                 ShowTargetJoinCondition_ActionPerformed(e);
-            }else if (source == editFilterConditionItem) {
+            } else if (source == editFilterConditionItem) {
                 ShowTargetFilterCondition_ActionPerformed(e);
-            }else if (source == synchroniseItem) {
+            } else if (source == synchroniseItem) {
                 synchroniseItem_ActionPerformed(e);
-            }  else {
+            } else {
                 handleCommonActions(e);
             }
         }
     }
-    
+
     private void Properties_ActionPerformed(ActionEvent e) {
-         if(!WindowManager.getDefault ().findTopComponent ("properties").isShowing())
-           WindowManager.getDefault ().findTopComponent ("properties").open ();
+        if (!WindowManager.getDefault().findTopComponent("properties").isShowing()) {
+            WindowManager.getDefault().findTopComponent("properties").open();
+        }
     }
-    
+
     private void ShowSql_ActionPerformed(ActionEvent e) {
         SQLObject sqlObject = (SQLObject) SQLTargetTableArea.this.getDataObject();
-        Object[] args = new Object[] { sqlObject};
+        Object[] args = new Object[]{sqlObject};
         this.getGraphView().execute(ICommand.SHOW_SQL_CMD, args);
     }
-    
+
+    private void Remount_ActionPerformed(ActionEvent e) {
+        try {
+            SQLObject sqlObject = (SQLObject) SQLTargetTableArea.this.getDataObject();
+            SQLObjectUtil.dropTable(table, (SQLDBModel) table.getParent());
+            SQLObjectUtil.createTable(table, (SQLDBModel) table.getParent());
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+            StatusDisplayer.getDefault().setStatusText("Unable to remount :" + ex.getMessage());
+        }
+    }
+
     private void ShowData_ActionPerformed(ActionEvent e) {
         SQLObject tbl = (SQLObject) SQLTargetTableArea.this.getDataObject();
-        this.getGraphView().execute(ICommand.SHOW_DATA_CMD, new Object[] { tbl});
+        this.getGraphView().execute(ICommand.SHOW_DATA_CMD, new Object[]{tbl});
     }
-    
+
     private void ShowRejectionData_ActionPerformed(ActionEvent e) {
         SQLObject tbl = (SQLObject) SQLTargetTableArea.this.getDataObject();
-        this.getGraphView().execute(ICommand.SHOW_REJECTION_DATA_CMD, new Object[] { tbl});
+        this.getGraphView().execute(ICommand.SHOW_REJECTION_DATA_CMD, new Object[]{tbl});
     }
-    
+
     private void ShowTargetJoinCondition_ActionPerformed(ActionEvent e) {
         SQLObject sqlObject = (SQLObject) SQLTargetTableArea.this.getDataObject();
-        Object[] args = new Object[] { SQLTargetTableArea.this, sqlObject};
+        Object[] args = new Object[]{SQLTargetTableArea.this, sqlObject};
         this.getGraphView().execute(ICommand.SHOW_TARGET_JOIN_CONDITION_CMD, args);
     }
-    
+
     private void ShowTargetFilterCondition_ActionPerformed(ActionEvent e) {
         SQLObject sqlObject = (SQLObject) SQLTargetTableArea.this.getDataObject();
-        Object[] args = new Object[] { SQLTargetTableArea.this, sqlObject};
+        Object[] args = new Object[]{SQLTargetTableArea.this, sqlObject};
         this.getGraphView().execute(ICommand.SHOW_TARGET_FILTER_CONDITION_CMD, args);
     }
-    
-     private void synchroniseItem_ActionPerformed(ActionEvent e) {
+
+    private void synchroniseItem_ActionPerformed(ActionEvent e) {
         IGraphView gView = this.getGraphView();
 
         String dlgMsg = NbBundle.getMessage(SQLBasicTableArea.class, "MSG_dlg_refresh_metadata");
@@ -277,6 +301,7 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
             }
         }
     }
+
     /**
      * Sets the data object
      *
@@ -286,18 +311,18 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
         super.setDataObject(obj);
         setConditionIcons();
     }
-    
+
     public void setConditionIcons() {
         TargetTable tbl = (TargetTable) this.getDataObject();
         if (tbl != null) {
             SQLCondition c1 = tbl.getJoinCondition();
             setTableConditionIcons(c1);
-            
+
             SQLCondition c2 = tbl.getFilterCondition();
             setTableConditionIcons(c2);
         }
     }
-    
+
     /**
      * @return 
      * @see org.netbeans.modules.sql.framework.ui.view.graph.SQLBasicTableArea#getDefaultTitleBrush()
@@ -305,7 +330,7 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
     protected JGoBrush getDefaultTitleBrush() {
         return DEFAULT_TITLE_BRUSH;
     }
-    
+
     /**
      * @return 
      * @see org.netbeans.modules.sql.framework.ui.view.graph.SQLBasicTableArea#getDefaultBackgroundColor()

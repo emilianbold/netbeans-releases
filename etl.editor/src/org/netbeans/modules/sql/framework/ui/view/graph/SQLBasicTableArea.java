@@ -110,21 +110,13 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
 
     /* log4j logger category */
     private static final String LOG_CATEGORY = SQLBasicTableArea.class.getName();
-
     protected SQLDBTable table;
-
     private static URL filterUrl = SQLBasicTableArea.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/filter16.gif");
-
     private static URL columnValidationIconUrl = SQLBasicTableArea.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/validateField.png");
-
     private static URL selectColumnsUrl = SQLBasicTableArea.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/ColumnSelection.png");
-
     private static URL removeUrl = SQLBasicTableArea.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/remove.png");
-
     private int tableType;
-
     private JMenuItem selectColumnsItem;
-
     private JMenuItem removeItem;
 
     public SQLBasicTableArea() {
@@ -154,18 +146,18 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
         init();
 
         this.tableType = table.getObjectType();
-        
+
         String title = table.getQualifiedName();
 
         titleArea = new TableTitleArea(title);
         Icon icon = createIcon();
         titleArea.setTitleImage(icon);
         titleArea.setBrush(getDefaultTitleBrush());
-        
+
         this.addObjectAtTail(titleArea);
 
         initializeTable();
-        
+
         // Set initialized size to ensure everything is visible in this area.
         setSize(new Dimension(getMaximumWidth(), this.getMaximumHeight()));
     }
@@ -173,9 +165,9 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
     abstract Icon createIcon();
 
     abstract void initializePopUpMenu();
-    
+
     protected abstract JGoBrush getDefaultTitleBrush();
-    
+
     protected abstract Color getDefaultBackgroundColor();
 
     /**
@@ -218,7 +210,7 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
 
         if (this.tableType == SQLConstants.TARGET_TABLE) {
             tType = TableConstants.OUTPUT_TABLE;
-        } else if(this.tableType == SQLConstants.RUNTIME_OUTPUT) {
+        } else if (this.tableType == SQLConstants.RUNTIME_OUTPUT) {
             tType = TableConstants.NO_PORT_TABLE;
         }
 
@@ -333,6 +325,7 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
      * @param width width of object
      * @param height height of object
      */
+    @Override
     public void setBoundingRect(int left, int top, int width, int height) {
         super.setBoundingRect(left, top, Math.max(width, 100), (isExpandedState() ? getMaximumHeight() : height));
     }
@@ -340,6 +333,7 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
     /**
      * Lays out the children of this area.
      */
+    @Override
     public void layoutChildren() {
         super.layoutChildren();
     }
@@ -365,6 +359,7 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
      * @param iGraphPort port
      * @return name which has a port iGraphPort attach to it
      */
+    @Override
     public String getFieldName(IGraphPort iGraphPort) {
         DBColumn column = getColumn((JGoPort) iGraphPort);
         return column.getName();
@@ -376,6 +371,7 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
      * @param columnName name of the column
      * @return column port group
      */
+    @Override
     public IGraphPort getInputGraphPort(String columnName) {
         SQLTableArea tabArea = (SQLTableArea) this.getTableArea();
         MetaTableModel model = (MetaTableModel) tabArea.getModel();
@@ -408,6 +404,7 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
      * @param columnName name of the column
      * @return port which represents columnName
      */
+    @Override
     public IGraphPort getOutputGraphPort(String columnName) {
         SQLTableArea tabArea = (SQLTableArea) this.getTableArea();
         MetaTableModel model = (MetaTableModel) tabArea.getModel();
@@ -439,6 +436,7 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
      *
      * @param obj - then object to be represented by this node
      */
+    @Override
     public void setDataObject(Object obj) {
         table = (SQLDBTable) obj;
     }
@@ -529,6 +527,7 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
      *
      * @return data object
      */
+    @Override
     public Object getDataObject() {
         return this.table;
     }
@@ -589,7 +588,7 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
 
         String dlgTitle = NbBundle.getMessage(SQLBasicTableArea.class, "TITLE_dlg_select_columns");
         int response = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), panel, dlgTitle, JOptionPane.OK_CANCEL_OPTION,
-            JOptionPane.PLAIN_MESSAGE);
+                JOptionPane.PLAIN_MESSAGE);
 
         boolean userClickedOk = (JOptionPane.OK_OPTION == response);
         if (userClickedOk) {
@@ -674,8 +673,7 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
             try {
                 setConditionFlag(BasicCellArea.IMAGE_EXTRACTION, metTabMod, extractionPredicate);
             } catch (BaseException ex) {
-                Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "setTableConditionIcons", "Error setting filter icon for ("
-                    + table.getDisplayName() + ")", ex);
+                Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "setTableConditionIcons", "Error setting filter icon for (" + table.getDisplayName() + ")", ex);
                 return;
             }
         }
@@ -690,8 +688,7 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
             try {
                 setConditionFlag(BasicCellArea.IMAGE_VALIDATION, metTabMod, validationPredicate);
             } catch (BaseException ex) {
-                Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "setTableConditionIcons", "Error setting validation icon for ("
-                    + table.getDisplayName() + ")", ex);
+                Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "setTableConditionIcons", "Error setting validation icon for (" + table.getDisplayName() + ")", ex);
                 return;
             }
         }
@@ -827,6 +824,7 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
     }
 
     class ColumnPropertySupport {
+
         private Vector pkVec;
 
         ColumnPropertySupport(List list) {
@@ -864,6 +862,7 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
     /**
      * Updates this node with changes in data object.
      */
+    @Override
     public void updateUI() {
         SQLBasicTableArea.this.setHeight(this.getMaximumHeight());
     }
@@ -873,6 +872,7 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
      *
      * @param obj child data object
      */
+    @Override
     public void removeChildObject(Object obj) {
         if (obj instanceof DBColumn) {
             ArrayList list = new ArrayList();
@@ -886,6 +886,7 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
      *
      * @param obj child data object
      */
+    @Override
     public void addChildObject(Object obj) {
         if (obj instanceof DBColumn) {
             ArrayList list = new ArrayList();
@@ -909,10 +910,12 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
     }
 
     class TableTitleArea extends TitleArea {
+
         TableTitleArea(String titleStr) {
             super(titleStr);
         }
 
+        @Override
         public String getToolTipText() {
             return UIUtil.getTableToolTip((SQLDBTable) SQLBasicTableArea.this.getDataObject());
         }
@@ -927,6 +930,7 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
             this.condition = cond;
         }
 
+        @Override
         public String getToolTipText() {
             if (condition == null) {
                 return null;
@@ -943,6 +947,5 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
             return filterStr;
         }
     }
-
 }
 

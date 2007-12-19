@@ -38,9 +38,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.sql.framework.ui.view.graph;
 
+import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.exception.DBSQLException;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -84,11 +84,15 @@ import org.openide.util.NbBundle;
 import com.nwoods.jgo.JGoBrush;
 import com.nwoods.jgo.JGoView;
 import javax.swing.JOptionPane;
-import org.netbeans.modules.etl.ui.view.ETLCollaborationTopComponent;
+import org.netbeans.modules.etl.ui.view.ETLCollaborationTopPanel;
+import org.netbeans.modules.sql.framework.model.DBMetaDataFactory;
+import org.netbeans.modules.sql.framework.model.SQLDBModel;
 import org.netbeans.modules.sql.framework.model.SQLJoinView;
+import org.netbeans.modules.sql.framework.model.impl.SQLDBModelImpl;
 import org.netbeans.modules.sql.framework.model.visitors.SQLDBSynchronizationVisitor;
 import org.netbeans.modules.sql.framework.ui.view.BasicTopView;
 import org.netbeans.modules.sql.framework.ui.view.join.JoinViewGraphNode;
+import org.openide.awt.StatusDisplayer;
 import org.openide.windows.WindowManager;
 
 /**
@@ -96,51 +100,36 @@ import org.openide.windows.WindowManager;
  * @author Jonathan Giron
  */
 public class SQLSourceTableArea extends SQLBasicTableArea {
-    
+
     private static URL sourceTableImgUrl = SQLSourceTableArea.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/SourceTable.png");
-    
     private static URL showDataUrl = SQLSourceTableArea.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/SourceTable.png");
-    
     private static URL showSqlUrl = SQLSourceTableArea.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/Show_Sql.png");
-    
     private static URL autoMapImgUrl = SQLSourceTableArea.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/AutoMapToTarget.png");
-    
     private static URL defineValidationImgUrl = SQLSourceTableArea.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/validateMenu.png");
-    
     private static URL dataFilterImgUrl = SQLSourceTableArea.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/filter16.gif");
-    
     private static URL propertiesUrl = SQLSourceTableArea.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/properties.png");
-    
     private static URL synchroniseImgUrl = SQLSourceTableArea.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/refresh.png");
+    private static URL remountImgUrl = SQLSourceTableArea.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/redo.png");
     private static final Color DEFAULT_BG_COLOR = new Color(204, 213, 241);
-    
     private static final Color DEFAULT_BG_COLOR_DARK = new Color(165, 193, 249); // new Color(249, 224, 127);
-    
     private static final JGoBrush DEFAULT_TITLE_BRUSH = new GradientBrush(DEFAULT_BG_COLOR_DARK, DEFAULT_BG_COLOR);
-    
     private JMenuItem showSqlItem;
-    
     private JMenuItem showDataItem;
-    
     private JMenuItem propertiesItem;
-    
     private JMenuItem autoMapItem;
-    
     private JMenuItem dataValidationMapItem;
-    
     private JMenuItem dataFilterMapItem;
-    
     private JMenuItem synchroniseItem;
-    private transient ETLCollaborationTopComponent designView;
-    
-    
+    private JMenuItem remountItem;
+    private transient ETLCollaborationTopPanel designView;
+
     /**
      * Creates a new instance of SQLSourceTableArea
      */
     public SQLSourceTableArea() {
         super();
     }
-    
+
     /**
      * Creates a new instance of SQLSourceTableArea
      *
@@ -149,64 +138,80 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
     public SQLSourceTableArea(SourceTable table) {
         super(table);
     }
+
     /**
      *
      */
     protected void initializePopUpMenu() {
-        ActionListener aListener = new TableActionListener();
-        // Show SQL
-        String lblShowSql = NbBundle.getMessage(SQLBasicTableArea.class, "LBL_show_sql");
-        showSqlItem = new JMenuItem(lblShowSql, new ImageIcon(showSqlUrl));
-        showSqlItem.addActionListener(aListener);
-        popUpMenu.add(showSqlItem);
-        
-        // Show data
-        String lblShowData = NbBundle.getMessage(SQLBasicTableArea.class, "LBL_show_data");
-        showDataItem = new JMenuItem(lblShowData, new ImageIcon(showDataUrl));
-        showDataItem.addActionListener(aListener);
-        popUpMenu.add(showDataItem);
-        
-        // Fit to size
-        addSelectVisibleColumnsPopUpMenu(aListener);
-        synchroniseItem = new JMenuItem("Refresh Metadata", new ImageIcon(synchroniseImgUrl));
-        synchroniseItem.addActionListener(aListener);
-        popUpMenu.add(synchroniseItem);
-        // Define data filtering action
-        popUpMenu.addSeparator();
-        dataFilterMapItem = new JMenuItem("Extraction Condition...", new ImageIcon(dataFilterImgUrl));
-        dataFilterMapItem.addActionListener(aListener);
-        popUpMenu.add(dataFilterMapItem);
-        
-        // Define data validation action
-        dataValidationMapItem = new JMenuItem("Data Validation...", new ImageIcon(defineValidationImgUrl));
-        dataValidationMapItem.addActionListener(aListener);
-        popUpMenu.add(dataValidationMapItem);
-        
-        // Remove
-        popUpMenu.addSeparator();
-        addRemovePopUpMenu(aListener);
-        
-        // Show properties
-        popUpMenu.addSeparator();
-        String lblProps = NbBundle.getMessage(SQLBasicTableArea.class, "LBL_properties");
-        propertiesItem = new JMenuItem(lblProps, new ImageIcon(propertiesUrl));
-        propertiesItem.addActionListener(aListener);
-        popUpMenu.add(propertiesItem);
-        
-        // Auto map action
-        autoMapItem = new JMenuItem("Auto Map", new ImageIcon(autoMapImgUrl));
-        autoMapItem.addActionListener(aListener);
-        
-        popUpMenu.addSeparator();
-        popUpMenu.add(autoMapItem);
-        
+        try {
+            ActionListener aListener = new TableActionListener();
+            // Show SQL
+            String lblShowSql = NbBundle.getMessage(SQLBasicTableArea.class, "LBL_show_sql");
+            showSqlItem = new JMenuItem(lblShowSql, new ImageIcon(showSqlUrl));
+            showSqlItem.addActionListener(aListener);
+            popUpMenu.add(showSqlItem);
+
+            // Show data
+            String lblShowData = NbBundle.getMessage(SQLBasicTableArea.class, "LBL_show_data");
+            showDataItem = new JMenuItem(lblShowData, new ImageIcon(showDataUrl));
+            showDataItem.addActionListener(aListener);
+            popUpMenu.add(showDataItem);
+
+
+            addSelectVisibleColumnsPopUpMenu(aListener);
+            synchroniseItem = new JMenuItem("Refresh Metadata", new ImageIcon(synchroniseImgUrl));
+            synchroniseItem.addActionListener(aListener);
+            popUpMenu.add(synchroniseItem);
+
+            String lblRemount = NbBundle.getMessage(SQLBasicTableArea.class, "LBL_Remount");
+            remountItem = new JMenuItem(lblRemount, new ImageIcon(remountImgUrl));
+            remountItem.addActionListener(aListener);
+            SQLObject tbl = (SQLObject) SQLSourceTableArea.this.getDataObject();
+            SQLDBModelImpl impl = (SQLDBModelImpl) tbl.getParentObject();
+            if (impl.getETLDBConnectionDefinition().getDBType().equals(DBMetaDataFactory.AXION)) {
+                popUpMenu.add(remountItem);
+            }
+
+            // Define data filtering action
+            popUpMenu.addSeparator();
+            dataFilterMapItem = new JMenuItem("Extraction Condition...", new ImageIcon(dataFilterImgUrl));
+            dataFilterMapItem.addActionListener(aListener);
+            popUpMenu.add(dataFilterMapItem);
+
+            // Define data validation action
+            dataValidationMapItem = new JMenuItem("Data Validation...", new ImageIcon(defineValidationImgUrl));
+            dataValidationMapItem.addActionListener(aListener);
+            popUpMenu.add(dataValidationMapItem);
+
+            // Remove
+            popUpMenu.addSeparator();
+            addRemovePopUpMenu(aListener);
+
+            // Show properties
+            popUpMenu.addSeparator();
+            String lblProps = NbBundle.getMessage(SQLBasicTableArea.class, "LBL_properties");
+            propertiesItem = new JMenuItem(lblProps, new ImageIcon(propertiesUrl));
+            propertiesItem.addActionListener(aListener);
+            popUpMenu.add(propertiesItem);
+
+            // Auto map action
+            autoMapItem = new JMenuItem("Auto Map", new ImageIcon(autoMapImgUrl));
+            autoMapItem.addActionListener(aListener);
+
+            popUpMenu.addSeparator();
+            popUpMenu.add(autoMapItem);
+        } catch (BaseException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
     }
-    
+
     Icon createIcon() {
         return new ImageIcon(sourceTableImgUrl);
     }
-    
+
     private class TableActionListener implements ActionListener {
+
         /**
          * Invoked when an action occurs.
          *
@@ -215,9 +220,11 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
         public void actionPerformed(ActionEvent e) {
             Object source = e.getSource();
             if (source == propertiesItem) {
-                   Properties_ActionPerformed(e);
+                Properties_ActionPerformed(e);
             } else if (source == showSqlItem) {
                 ShowSql_ActionPerformed(e);
+            } else if (source == remountItem) {
+                Remount_ActionPerformed(e);
             } else if (source == showDataItem) {
                 ShowData_ActionPerformed(e);
             } else if (source == autoMapItem) {
@@ -233,30 +240,42 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
             }
         }
     }
-    
+
     private void Properties_ActionPerformed(ActionEvent e) {
-        if(!WindowManager.getDefault ().findTopComponent ("properties").isShowing())
-           WindowManager.getDefault ().findTopComponent ("properties").open ();
+        if (!WindowManager.getDefault().findTopComponent("properties").isShowing()) {
+            WindowManager.getDefault().findTopComponent("properties").open();
+        }
     }
-    
+
+    private void Remount_ActionPerformed(ActionEvent e) {
+        try {
+            SQLDBTable table = (SQLDBTable) SQLSourceTableArea.this.getDataObject();
+            SQLObjectUtil.dropTable(table, (SQLDBModel) table.getParent());
+            SQLObjectUtil.createTable(table, (SQLDBModel) table.getParent());
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+            StatusDisplayer.getDefault().setStatusText("Unable to remount :" + ex.getMessage());
+        }
+    }
+
     private void ShowSql_ActionPerformed(ActionEvent e) {
         SQLObject sqlObject = (SQLObject) SQLSourceTableArea.this.getDataObject();
-        Object[] args = new Object[] { sqlObject};
+        Object[] args = new Object[]{sqlObject};
         this.getGraphView().execute(ICommand.SHOW_SQL_CMD, args);
     }
-    
+
     private void ShowData_ActionPerformed(ActionEvent e) {
         SQLObject tbl = (SQLObject) SQLSourceTableArea.this.getDataObject();
-        this.getGraphView().execute(ICommand.SHOW_DATA_CMD, new Object[] { tbl});
+        this.getGraphView().execute(ICommand.SHOW_DATA_CMD, new Object[]{tbl});
     }
-    
+
     private void showDataFilter_ActionPerformed(ActionEvent e) {
         SQLObject sqlObject = (SQLObject) SQLSourceTableArea.this.getDataObject();
-        Object[] args = new Object[] { SQLSourceTableArea.this, sqlObject};
+        Object[] args = new Object[]{SQLSourceTableArea.this, sqlObject};
         this.getGraphView().execute(ICommand.DATA_EXTRACTION, args);
     }
-    
-        private void synchroniseItem_ActionPerformed(ActionEvent e) {
+
+    private void synchroniseItem_ActionPerformed(ActionEvent e) {
         IGraphView gView = this.getGraphView();
         CollabSQLUIModel sqlModel = (CollabSQLUIModel) gView.getGraphModel();
 
@@ -292,10 +311,11 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
             }
         }
     }
+
     private void performAutoMap(ActionEvent e) {
         IGraphView gView = this.getGraphView();
         CollabSQLUIModel sqlModel = (CollabSQLUIModel) gView.getGraphModel();
-        
+
         if (sqlModel != null) {
             List tTables = sqlModel.getSQLDefinition().getTargetTables();
             //if there is only one target table
@@ -303,23 +323,23 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
                 createLinksToTarget((TargetTable) tTables.get(0));
                 return;
             }
-            
+
             TargetTable tt = SQLObjectUtil.getMappedTargetTable((SQLObject) this.getDataObject(), tTables);
             if (tt != null) {
                 createLinksToTarget(tt);
                 return;
             }
-            
+
             //otherwise we have multiple target tables so need to ask user to select a
             // target
             //table
             TableSelectionPanel tableSelectionPanel = new TableSelectionPanel(tTables);
             tableSelectionPanel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             tableSelectionPanel.setPreferredSize(new Dimension(200, 160));
-            
+
             DialogDescriptor dd = new DialogDescriptor(tableSelectionPanel, "Select Target Table to Auto Map", true,
                     NotifyDescriptor.OK_CANCEL_OPTION, null, null);
-            
+
             if (DialogDisplayer.getDefault().notify(dd) == NotifyDescriptor.OK_OPTION) {
                 List selectedTables = tableSelectionPanel.getSelectedTables();
                 if (selectedTables.size() == 1) {
@@ -329,28 +349,28 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
         }
         updateActions();
     }
-    
+
     private void createLinksToTarget(TargetTable tTable) {
         IGraphView gView = this.getGraphView();
         if (!(gView instanceof SQLGraphView)) {
             return;
         }
-        
+
         IGraphController graphController = gView.getGraphController();
-        
+
         IGraphNode targetNode = gView.findGraphNode(tTable);
         if (targetNode == null) {
             return;
         }
-        
+
         SQLDBTable sTable = (SQLDBTable) this.getDataObject();
         Iterator it = sTable.getColumnList().iterator();
-        
+
         while (it.hasNext()) {
             SQLDBColumn column = (SQLDBColumn) it.next();
             SQLDBColumn tColumn = getColumnIgnoreCase(tTable, column.getName());
             if (tColumn != null && tColumn.getJdbcType() == column.getJdbcType()) {
-                
+
                 IGraphPort from = this.getOutputGraphPort(column.getName());
                 IGraphPort to = targetNode.getInputGraphPort(tColumn.getName());
                 if (from != null && to != null) {
@@ -360,26 +380,26 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
         }
         updateActions();
     }
-    
+
     private SQLDBColumn getColumnIgnoreCase(TargetTable tt, String columnName) {
         Iterator it = tt.getColumnList().iterator();
-        
+
         while (it.hasNext()) {
             SQLDBColumn column = (SQLDBColumn) it.next();
             if (column.getName().equalsIgnoreCase(columnName)) {
                 return column;
             }
         }
-        
+
         return null;
     }
-    
+
     private void DataValidation_ActionPerformed(ActionEvent e) {
         SQLObject sqlObject = (SQLObject) SQLSourceTableArea.this.getDataObject();
-        Object[] args = new Object[] { SQLSourceTableArea.this, sqlObject};
+        Object[] args = new Object[]{SQLSourceTableArea.this, sqlObject};
         this.getGraphView().execute(ICommand.DATA_VALIDATION, args);
     }
-    
+
     public boolean doMouseClick(int modifiers, Point dc, Point vc, JGoView view1) {
         IGraphView gView = this.getGraphView();
         CollabSQLUIModel sqlModel = (CollabSQLUIModel) gView.getGraphModel();
@@ -390,9 +410,9 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
                 this.autoMapItem.setEnabled(false);
                 return super.doMouseClick(modifiers, dc, vc, view1);
             }
-            
+
             this.autoMapItem.setEnabled(true);
-            
+
             //if there is only one target table then we do not need to show a dialog to
             // the user
             //to select a target table
@@ -400,7 +420,7 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
                 this.autoMapItem.setText("Auto Map");
                 return super.doMouseClick(modifiers, dc, vc, view1);
             }
-            
+
             TargetTable tt = SQLObjectUtil.getMappedTargetTable((SQLObject) this.getDataObject(), tTables);
             //if this source table is already mapped to an existing target table
             //then auto map should map to that target table and also we do not need to
@@ -409,16 +429,16 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
                 this.autoMapItem.setText("Auto Map");
                 return super.doMouseClick(modifiers, dc, vc, view1);
             }
-            
+
             //otherwise there are multiple target tables so we need to show a dialog
             //to the user
             this.autoMapItem.setText("Auto Map...");
             return super.doMouseClick(modifiers, dc, vc, view1);
         }
-        
+
         return super.doMouseClick(modifiers, dc, vc, view1);
     }
-    
+
     /**
      * Sets the data object
      *
@@ -428,7 +448,7 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
         super.setDataObject(obj);
         setConditionIcons();
     }
-    
+
     /**
      * Sets Data extraction and Validation icons.
      *
@@ -437,23 +457,23 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
     public void setConditionIcons() {
         SQLCondition extractionCondition = null;
         SQLCondition validationCondition = null;
-        
+
         SourceTable tbl = (SourceTable) this.getDataObject();
         if (tbl != null) {
             extractionCondition = tbl.getExtractionCondition();
             validationCondition = tbl.getDataValidationCondition();
-            
+
             setTableConditionIcons(extractionCondition, validationCondition);
         }
     }
-    
+
     /**
      * @see org.netbeans.modules.sql.framework.ui.view.graph.SQLBasicTableArea#getDefaultTitleBrush()
      */
     protected JGoBrush getDefaultTitleBrush() {
         return DEFAULT_TITLE_BRUSH;
     }
-    
+
     /**
      * @return
      * @see org.netbeans.modules.sql.framework.ui.view.graph.SQLBasicTableArea#getDefaultBackgroundColor()
@@ -461,17 +481,16 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
     protected Color getDefaultBackgroundColor() {
         return DEFAULT_BG_COLOR;
     }
-    
+
     private void updateActions() {
-        try{
+        try {
             this.getView().updateUI();
             ETLDataObject etlDataObject = DataObjectProvider.getProvider().getActiveDataObject();
             ETLEditorSupport editor = etlDataObject.getETLEditorSupport();
             editor.synchDocument();
-        } catch(Exception ex){
-            //ignore
+        } catch (Exception ex) {
+        //ignore
         }
     }
-
 }
 

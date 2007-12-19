@@ -63,21 +63,19 @@ import org.netbeans.modules.sql.framework.ui.graph.view.impl.BasicToolBar;
 import org.netbeans.modules.sql.framework.ui.model.ConditionBuilderSQLUiModel;
 import org.netbeans.modules.sql.framework.ui.model.impl.ConditionBuilderSQLUIModelImpl;
 import org.netbeans.modules.sql.framework.ui.view.IGraphViewContainer;
-import org.netbeans.modules.sql.framework.ui.view.IOutputViewContainer;
-import org.netbeans.modules.sql.framework.ui.view.SQLOutputView;
-import org.netbeans.modules.sql.framework.ui.view.SQLStatementPanel;
+import org.netbeans.modules.sql.framework.ui.output.SQLStatementPanel;
 import org.netbeans.modules.sql.framework.ui.view.conditionbuilder.actions.ValidateGraphAction;
 import org.netbeans.modules.sql.framework.ui.view.validation.SQLValidationView;
 import org.openide.util.NbBundle;
 
 import com.sun.sql.framework.utils.Logger;
-import org.netbeans.modules.sql.framework.ui.view.SQLOutputConditionView;
+import org.netbeans.modules.sql.framework.ui.output.SQLOutputConditionView;
 
 /**
  * @author Ritesh Adval
  * @version $Revision$
  */
-public class ConditionBuilderRightPanel extends JPanel implements IOutputViewContainer, IConditionGraphViewContainer {
+public class ConditionBuilderRightPanel extends JPanel implements IConditionGraphViewContainer {
 
     private class ValidationThread extends SwingWorker {
         private SQLCondition execModel;
@@ -213,14 +211,6 @@ public class ConditionBuilderRightPanel extends JPanel implements IOutputViewCon
         return editor.getOperatorFolder();
     }
 
-    /**
-     * Hides output view from bottom portion of a split pane.
-     */
-    public void hideSplitPaneView() {
-        splitPane.setOneTouchExpandable(false);
-        splitPane.setBottomComponent(null);
-    }
-
     public boolean isDirty() {
         return model.isDirty();
     }
@@ -307,9 +297,7 @@ public class ConditionBuilderRightPanel extends JPanel implements IOutputViewCon
     public void showSQL() {
         if (splitPane.getBottomComponent() == null) {
             showSql();
-        } else {
-            hideSplitPaneView();
-        }
+        } 
     }
 
     public void showTableTree() {

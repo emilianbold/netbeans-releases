@@ -67,15 +67,12 @@ import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.Logger;
 import org.netbeans.modules.sql.framework.model.DBTable;
 
-
 /**
  *
  * @author Ritesh Adval
  * @version $Revision$
  */
 public class SQLTableArea extends TableArea implements TableModelListener {
-         /**
-   
 
     /* log4j logger category */
     private static final String LOG_CATEGORY = SQLTableArea.class.getName();
@@ -314,7 +311,7 @@ public class SQLTableArea extends TableArea implements TableModelListener {
             removeColumnReference(column);
         } catch (BaseException ex) {
             Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "makeColumnInVisible", "Error making column invisible, unable to remove column references." + column.getName(), ex);
-         // mLogger.errorNoloc(mLoc.t("PRSR099: Error making column invisible, unable to remove column references." + column.getName()), ex);
+
             throw ex;
         }
 

@@ -59,12 +59,8 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
 import org.netbeans.modules.sql.framework.model.ValidationInfo;
 import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
-import org.netbeans.modules.sql.framework.ui.view.ButtonTableHeader;
-import org.netbeans.modules.sql.framework.ui.view.SortableTableModel;
-
 
 /**
  * @author Ritesh Adval
@@ -81,12 +77,12 @@ public class ValidationTableView extends JPanel {
     private IGraphView graphView;
     private TableCellRenderer cellRenderer;
     private String maxLengthStr = "THIS IS MAX LENGTH STRING";
+
     static {
         errorImg = new ImageIcon(errorImgUrl);
         warningImg = new ImageIcon(warningImgUrl);
         infoImg = new ImageIcon(infoImgUrl);
     }
-
 
     public ValidationTableView(IGraphView gView) {
         this.graphView = gView;
@@ -95,21 +91,13 @@ public class ValidationTableView extends JPanel {
 
     private void initGui() {
         this.setLayout(new BorderLayout());
-        
+
         ValidationTableModel model = new ValidationTableModel(Collections.EMPTY_LIST);
-        SortableTableModel sortModel = new SortableTableModel(model);
-        
-        table = new JTable(sortModel);
+
+        table = new JTable(model);
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         table.getSelectionModel().addListSelectionListener(new TableListSelectionListener());
-
-        TableColumnModel cModel = table.getColumnModel();
-
-        //set the header with sort button
-        ButtonTableHeader bHeader = new ButtonTableHeader();
-        bHeader.setColumnModel(cModel);
-        bHeader.setReorderingAllowed(false);
-        table.setTableHeader(bHeader);
+        table.getTableHeader().setReorderingAllowed(false);
 
         JScrollPane scrollPane = new JScrollPane();
         scrollPane.setViewportView(table);
@@ -128,8 +116,7 @@ public class ValidationTableView extends JPanel {
 
     public void setValidationInfos(List vInfos) {
         ValidationTableModel model = new ValidationTableModel(vInfos);
-        SortableTableModel sortModel = new SortableTableModel(model);
-        table.setModel(sortModel);
+        table.setModel(model);
 
         // set icon column size
         TableColumn column1 = table.getColumnModel().getColumn(0);
@@ -162,8 +149,7 @@ public class ValidationTableView extends JPanel {
 
     public void clearView() {
         ValidationTableModel model = new ValidationTableModel(Collections.EMPTY_LIST);
-        SortableTableModel sortModel = new SortableTableModel(model);
-        table.setModel(sortModel);
+        table.setModel(model);
     }
 
     class TableMouseAdapter extends MouseAdapter {
@@ -174,10 +160,8 @@ public class ValidationTableView extends JPanel {
         @Override
         public void mousePressed(MouseEvent e) {
             int row = table.getSelectedRow();
-            SortableTableModel sortModel = (SortableTableModel) table.getModel();
-            ValidationTableModel model = (ValidationTableModel) sortModel.getActualModel();
-            int actualModelRow = sortModel.getActualModelRow(row);
-            ValidationInfo vInfo = model.getValidationInfo(actualModelRow);
+            ValidationTableModel model = (ValidationTableModel) table.getModel();
+            ValidationInfo vInfo = model.getValidationInfo(row);
             ValidationHandlerFactory factory = new ValidationHandlerFactory(graphView);
             ValidationHandler vHandler = factory.getValidationHandler(vInfo);
 
@@ -212,10 +196,10 @@ public class ValidationTableView extends JPanel {
                 if (type == ValidationInfo.VALIDATION_WARNING) {
                     label = new JLabel(warningImg);
                     label.setToolTipText("Warning");
-                } else if(type == ValidationInfo.VALIDATION_INFO){
+                } else if (type == ValidationInfo.VALIDATION_INFO) {
                     label = new JLabel(infoImg);
                     label.setToolTipText("Information");
-                }else {
+                } else {
                     label = new JLabel(errorImg);
                     label.setToolTipText("Error");
                 }
@@ -245,15 +229,11 @@ public class ValidationTableView extends JPanel {
         public void valueChanged(ListSelectionEvent e) {
             int row = table.getSelectedRow();
             if (row != -1) {
-                SortableTableModel sortModel = (SortableTableModel) table.getModel();
-                ValidationTableModel model = (ValidationTableModel) sortModel.getActualModel();
-                int actualModelRow = sortModel.getActualModelRow(row);
-                if (actualModelRow != -1) {
-                    ValidationInfo vInfo = model.getValidationInfo(actualModelRow);
-                    ValidationHandlerFactory factory = new ValidationHandlerFactory(graphView);
-                    factory.higlightInvalidNode(vInfo);
-                }
+                ValidationTableModel model = (ValidationTableModel) table.getModel();
+                ValidationInfo vInfo = model.getValidationInfo(row);
+                ValidationHandlerFactory factory = new ValidationHandlerFactory(graphView);
+                factory.higlightInvalidNode(vInfo);
             }
         }
+        }
     }
-}

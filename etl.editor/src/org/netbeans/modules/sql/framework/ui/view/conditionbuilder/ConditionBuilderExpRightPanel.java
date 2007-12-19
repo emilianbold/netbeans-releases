@@ -89,22 +89,20 @@ import org.netbeans.modules.sql.framework.ui.graph.actions.GraphAction;
 import org.netbeans.modules.sql.framework.ui.graph.view.impl.BasicToolBar;
 import org.netbeans.modules.sql.framework.ui.model.CollabSQLUIModel;
 import org.netbeans.modules.sql.framework.ui.view.IGraphViewContainer;
-import org.netbeans.modules.sql.framework.ui.view.IMessageView;
-import org.netbeans.modules.sql.framework.ui.view.IOutputViewContainer;
-import org.netbeans.modules.sql.framework.ui.view.SQLLogView;
+import org.netbeans.modules.sql.framework.ui.output.IMessageView;
+import org.netbeans.modules.sql.framework.ui.output.SQLLogView;
 import org.netbeans.modules.sql.framework.ui.view.conditionbuilder.actions.ValidateSQLAction;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
 import com.sun.sql.framework.utils.Logger;
-import org.netbeans.modules.sql.framework.ui.view.SQLEditorPanel;
-import org.netbeans.modules.sql.framework.ui.view.SQLOutputConditionView;
+import org.netbeans.modules.sql.framework.ui.output.SQLEditorPanel;
 
 /**
  * @author Ritesh Adval
  * @version $Revision$
  */
-public class ConditionBuilderExpRightPanel extends TopComponent implements IOutputViewContainer {
+public class ConditionBuilderExpRightPanel extends TopComponent  {
 
     private class ConditionDocumentListener implements DocumentListener {
         /**
@@ -318,7 +316,7 @@ public class ConditionBuilderExpRightPanel extends TopComponent implements IOutp
     private ConditionBuilderRightPanel gPanel;
     private JSplitPane hSplitPane;
     private SQLLogView logView;
-    private SQLOutputConditionView outputView;
+    //private SQLOutputConditionView outputView;
     public SQLEditorPanel pane;
     private JSplitPane splitPane;
 
@@ -473,14 +471,6 @@ public class ConditionBuilderExpRightPanel extends TopComponent implements IOutp
     }
 
     /**
-     * Hides output view from bottom portion of a split pane.
-     */
-    public void hideSplitPaneView() {
-        splitPane.setOneTouchExpandable(false);
-        splitPane.setBottomComponent(null);
-    }
-
-    /**
      * highlight invalid objects
      */
     public void highlightInvalidNode(List list, IMessageView c) {
@@ -530,10 +520,10 @@ public class ConditionBuilderExpRightPanel extends TopComponent implements IOutp
      * @param c - component
      */
     public void showSplitPaneView(Component c) {
-        splitPane.setBottomComponent(outputView);
+        splitPane.setBottomComponent(c);
         splitPane.setOneTouchExpandable(true);
         splitPane.setDividerLocation(PREFERRED_DIVIDER_RATIO);
-        outputView.addComponent(c);
+        //outputView.addComponent(c);
     }
 
     /**
@@ -594,9 +584,9 @@ public class ConditionBuilderExpRightPanel extends TopComponent implements IOutp
         validationPanel.add(validationButton, BorderLayout.EAST);
         splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         splitPane.setResizeWeight(SPLITPANE_RESIZE_WEIGHT);
-        outputView = new SQLOutputConditionView(this);
+        //outputView = new SQLOutputConditionView(this);
         logView = new SQLLogView();
-        logView.setName("Validation:");
+        logView.setName("Validation ");
 
         splitPane.setTopComponent(c);
         hSplitPane.setRightComponent(splitPane);

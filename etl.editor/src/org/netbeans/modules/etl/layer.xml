@@ -89,14 +89,16 @@ made subject to such option by the copyright holder.
         </folder> 
     </folder>
     <folder name="Templates">
-        <folder name="SOA">
+        <folder name="SOA_ETL">
+            <attr name="position" intvalue="105"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.Bundle"/>
             <file name="untitled.etl" url="empty.etl">
                 <attr name="template" boolvalue="true"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.etl.ui.view.wizards.ETLCollaborationWizard.newTemplateIterator"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/etl/ui/resources/images/ETLDefinition.png"/> 
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/etl/template.html"/> 
-                <attr name="templateCategory" stringvalue="XML"/>
+                <attr name="templateCategory" stringvalue="SOA_ETL"/>
             </file>            
     
         </folder>
@@ -160,8 +162,6 @@ made subject to such option by the copyright holder.
                 <attr name="InputParam1_DisplayName" stringvalue="LBL_String_displayname_varconcat_inputparam1"/>
                 <attr name="OutputParam1_DisplayName" stringvalue="LBL_String_displayname_varconcat_outputparam1"/>
             </file>
-            
-           
             
             <file name="replace">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
@@ -281,6 +281,83 @@ made subject to such option by the copyright holder.
                 <attr name="OutputParam1_DisplayName" stringvalue="LBL_String_displayname_righttrim_outputparam1"/>
             </file>
             
+            
+            <file name="lpad">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/trim.gif"/>
+                <attr name="DisplayName" stringvalue="LBL_String_lpad"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_String_lpad"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLGenericOperatorImpl"/>
+                <attr name="ShowParenthesis" boolvalue="true"/>
+                <attr name="InputNum" intvalue="3"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="str1"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_String_lpad_inputParam1"/>
+                
+                <attr name="InputParam2" stringvalue="padlen"/>
+                <attr name="InputTooltip2" stringvalue="TOOLTIP_String_lpad_inputParam2"/>
+                
+                <attr name="InputParam3" stringvalue="padstring"/>
+                <attr name="InputTooltip3" stringvalue="TOOLTIP_String_lpad_inputParam3"/>
+                
+                <attr name="OutputParam1" stringvalue="output"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_String_lpad_outputParam1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_String_displayname_lpad_inputparam1"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_String_displayname_lpad_outputparam1"/>
+            </file>
+            
+            <file name="rpad">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/trim.gif"/>
+                <attr name="DisplayName" stringvalue="LBL_String_rpad"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_String_rpad"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLGenericOperatorImpl"/>
+                <attr name="ShowParenthesis" boolvalue="true"/>
+                <attr name="InputNum" intvalue="3"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="str1"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_String_rpad_inputParam1"/>
+                
+                <attr name="InputParam2" stringvalue="padlen"/>
+                <attr name="InputTooltip2" stringvalue="TOOLTIP_String_rpad_inputParam2"/>
+                
+                <attr name="InputParam3" stringvalue="padstring"/>
+                <attr name="InputTooltip3" stringvalue="TOOLTIP_String_rpad_inputParam3"/>
+                
+                <attr name="OutputParam1" stringvalue="output"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_String_rpad_outputParam1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_String_displayname_rpad_inputparam1"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_String_displayname_rpad_outputparam1"/>
+            </file>
+            
+            
+              <file name="trim">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/trim.gif"/>
+                <attr name="DisplayName" stringvalue="LBL_String_trim"/>
+                <attr name="Tooltip" stringvalue="TOOLTIP_String_trim"/>
+                <attr name="Checked" boolvalue="true"/>
+                <attr name="className" stringvalue="org.netbeans.modules.sql.framework.model.impl.SQLGenericOperatorImpl"/>
+                <attr name="ShowParenthesis" boolvalue="true"/>
+                <attr name="InputNum" intvalue="1"/>
+                <attr name="OutputNum" intvalue="1"/>
+                
+                <attr name="InputParam1" stringvalue="str1"/>
+                <attr name="InputTooltip1" stringvalue="TOOLTIP_String_trim_inputParam1"/>
+               
+                <attr name="OutputParam1" stringvalue="output"/>
+                <attr name="OutputTooltip1" stringvalue="TOOLTIP_String_trim_outputParam1"/>
+                
+                <attr name="InputParam1_DisplayName" stringvalue="LBL_String_displayname_trim_inputparam1"/>
+                <attr name="OutputParam1_DisplayName" stringvalue="LBL_String_displayname_trim_outputparam1"/>
+            </file>
+                      
             <file name="substring">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/substring.gif"/>
@@ -1259,6 +1336,7 @@ made subject to such option by the copyright holder.
                 <attr name="InputParam1_DisplayName" stringvalue="LBL_Date_displayname_datetochar_inputParam1"/>
                 <attr name="InputParam2_DisplayName" stringvalue="LBL_Date_common_format"/>
                 <attr name="OutputParam1_DisplayName" stringvalue="LBL_Date_displayname_datetochar_outputParam1"/>
+                
                 
                 <attr name="InputParamStaticChoices2_DisplayValues" stringvalue="LBL_Date_displayvalues_common_dateformats"/>
             </file>

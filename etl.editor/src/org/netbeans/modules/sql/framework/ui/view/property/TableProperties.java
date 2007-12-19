@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.sql.framework.ui.view.property;
 
+import com.sun.sql.framework.utils.Attribute;
 import java.beans.PropertyEditor;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,6 +49,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import java.util.Vector;
 import org.netbeans.modules.sql.framework.model.DBColumn;
 import org.netbeans.modules.sql.framework.model.DBTable;
 import org.netbeans.modules.sql.framework.model.ForeignKey;
@@ -109,6 +111,10 @@ public class TableProperties {
     public PropertyEditor getCustomEditor(Node.Property property) {
         if (property.getName().equals("primaryKeys")) {
             return new DefaultPropertyEditor.ListEditor(pKeys.getDisplayVector());
+        }else if (property.getName().equals("modelName")) {
+            Vector str = new Vector();
+            str.add(table.getParent().getModelName());
+            return new DefaultPropertyEditor.ListEditor(str);
         } else if (property.getName().equals("foreignKeys")) {
             return new DefaultPropertyEditor.ListEditor(fKeys.getDisplayVector());
         } else if (property.getName().equals("indices")) {
@@ -397,6 +403,15 @@ public class TableProperties {
     public void setStagingTableName(String stgTbleName) {
         table.setStagingTableName(stgTbleName);
         setDirty(true);
+    }
+
+    public void setOrgProperty(String attrName, String newFileType) {
+        table.setAttribute("ORGPROP_" + attrName , newFileType);
+        setDirty(true);
+    }
+    
+    public Attribute getOrgProperty(String attrName) {
+        return table.getAttribute("ORGPROP_" + attrName);
     }
     
     protected void setDirty(boolean dirty) {

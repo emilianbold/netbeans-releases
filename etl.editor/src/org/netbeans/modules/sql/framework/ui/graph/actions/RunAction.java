@@ -39,7 +39,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 
 import org.netbeans.modules.etl.ui.DataObjectProvider;
-import org.netbeans.modules.etl.ui.view.ETLCollaborationTopComponent;
+import org.netbeans.modules.etl.ui.view.ETLCollaborationTopPanel;
 import org.netbeans.modules.etl.ui.view.graph.actions.TestRunAction;
 import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
 import org.openide.util.HelpCtx;

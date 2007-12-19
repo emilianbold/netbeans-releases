@@ -51,7 +51,7 @@ import java.util.Vector;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import org.netbeans.modules.etl.ui.DataObjectProvider;
-import org.netbeans.modules.etl.ui.view.ETLCollaborationTopComponent;
+import org.netbeans.modules.etl.ui.view.ETLCollaborationTopPanel;
 import org.openide.windows.TopComponent;
 
 
@@ -128,9 +128,9 @@ public class ZoomComboBox extends JPanel implements PropertyChangeListener {
             }
 
             lastValue = val.getValue();
-            ETLCollaborationTopComponent topComp = null;
+            ETLCollaborationTopPanel topComp = null;
             try {
-                topComp = DataObjectProvider.getProvider().getActiveDataObject().getETLEditorTC();
+                topComp = DataObjectProvider.getProvider().getActiveDataObject().getETLEditorTopPanel();
                 topComp.setZoomFactor(lastValue);
             } catch (Exception ex) {
                 // ignore
