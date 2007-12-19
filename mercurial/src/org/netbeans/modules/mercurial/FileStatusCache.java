@@ -429,7 +429,7 @@ public class FileStatusCache {
             for (Iterator i = files.keySet().iterator(); i.hasNext();) {
                 File file = (File) i.next();
                 FileInformation info = files.get(file);
-                if ((info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) {
+                if ((info.getStatus() & (FileInformation.STATUS_LOCAL_CHANGE | FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) != 0) {
                     fireFileStatusChanged(file, null, info);
                 }
             }
