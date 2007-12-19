@@ -341,6 +341,26 @@ function detect_platform() {
     }
 }
 
+function select_language() {
+    var lang = LANGUAGE_IDS[0];
+    if(navigator.userLanguage)  lang = navigator.userLanguage;
+    else if(navigator.language) lang = navigator.language;
+    lang = lang.replace("-", "_");
+    var language = "";
+    for(var i=0; i < LANGUAGE_IDS.length; i++ ) {
+        if(lang.indexOf(LANGUAGE_IDS[i])!=-1) {
+            if(LANGUAGE_IDS[i].length > language.length) {
+                language = LANGUAGE_IDS[i];		
+            }
+        }
+    }
+    var select = document.getElementById("language_select");
+    var languageOptions = select.options;
+    for(var i=0;i<languageOptions.length;i++) {
+        if(languageOptions[i].value == language) select.selectedIndex = i;
+    }
+}
+
 function update() {
     var select = document.getElementById("platform_select");
     var platform = select.options[select.selectedIndex].value;
