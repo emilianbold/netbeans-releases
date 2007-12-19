@@ -14,6 +14,7 @@ import java.io.File;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -26,7 +27,13 @@ public class GeneralCustomizerPanel extends javax.swing.JPanel implements Docume
     public GeneralCustomizerPanel(Project prj) {
         prjConfig = new GrailsProjectConfig(prj);
         initComponents();
-        projectFolderTextField.setText(File.separator + prj.getProjectDirectory().getPath());
+        
+        String prefix = "";
+
+        if(!Utilities.isWindows())
+            prefix = File.separator;
+        
+        projectFolderTextField.setText(prefix + prj.getProjectDirectory().getPath());
         
         grailsServerPort.getDocument().addDocumentListener( this );
         grailsServerPort.setText(prjConfig.getPort());
