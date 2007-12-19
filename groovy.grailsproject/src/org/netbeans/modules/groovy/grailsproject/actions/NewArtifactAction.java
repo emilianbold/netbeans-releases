@@ -37,6 +37,8 @@ import java.awt.Dialog;
 import java.util.Set;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.SourceCategory;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  *
@@ -46,6 +48,7 @@ public class NewArtifactAction extends AbstractAction {
     
     GrailsProject project;
     SourceCategory cat;
+    private  final Logger LOG = Logger.getLogger(NewArtifactAction.class.getName());
 
     public NewArtifactAction(GrailsProject project, SourceCategory cat, String desc) {
         super (desc);
@@ -54,6 +57,8 @@ public class NewArtifactAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent e) {
+        
+        // LOG.log(Level.WARNING, "hitting actionPerformed()");
         
         assert cat != null;
         assert project != null;

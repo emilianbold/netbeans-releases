@@ -102,10 +102,13 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
         this.project = project;
         String pathName = g.getName();
 
-        int lastSlash = pathName.lastIndexOf(File.separator);
+        // Source Groups always use a slash as file-separator, no matter
+        // whether we are dealing with unix or windows:
+        int lastSlash = pathName.lastIndexOf("/");
         String dirName = pathName.substring(lastSlash + 1);
 
-
+        // LOG.log(Level.WARNING, "dirName: " + dirName);
+        
         if (dirName.startsWith("conf")) {
             category = SourceCategory.CONFIGURATION;
         } else if (dirName.startsWith("controllers")) {
@@ -225,6 +228,8 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
                 break;
         }
 
+        // LOG.log(Level.WARNING, "getActions()" );
+        // LOG.log(Level.WARNING, "category: " + category);
         return result.toArray(new Action[result.size()]);
     }
 
