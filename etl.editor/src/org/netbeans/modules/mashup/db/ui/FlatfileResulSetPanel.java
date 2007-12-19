@@ -65,7 +65,7 @@ import org.netbeans.modules.mashup.db.model.FlatfileDefinition;
 import org.netbeans.modules.mashup.db.ui.model.FlatfileTable;
 import org.netbeans.modules.sql.framework.ui.SwingWorker;
 import org.netbeans.modules.sql.framework.ui.utils.UIUtil;
-import org.netbeans.modules.sql.framework.ui.view.ResultSetTablePanel;
+import org.netbeans.modules.sql.framework.ui.output.dataview.ResultSetTablePanel;
 import org.openide.DialogDisplayer;
 
 import org.openide.NotifyDescriptor;

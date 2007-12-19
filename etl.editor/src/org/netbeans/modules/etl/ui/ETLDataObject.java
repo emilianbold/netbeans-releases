@@ -43,7 +43,7 @@ import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.netbeans.modules.etl.model.ETLDefinition;
 import org.netbeans.modules.etl.ui.model.impl.ETLCollaborationModel;
-import org.netbeans.modules.etl.ui.view.ETLCollaborationTopComponent;
+import org.netbeans.modules.etl.ui.view.ETLCollaborationTopPanel;
 import org.netbeans.spi.xml.cookies.CheckXMLSupport;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.openide.ErrorManager;
@@ -221,15 +221,15 @@ public class ETLDataObject extends MultiDataObject {
         return this.mModel;
     }
 
-    public ETLCollaborationTopComponent getETLEditorTC() throws Exception {
-        if (this.mTC == null) {
-            this.mTC = new ETLCollaborationTopComponent(this);
+    public ETLCollaborationTopPanel getETLEditorTopPanel() throws Exception {
+        if (this.topPanel == null) {
+            this.topPanel = new ETLCollaborationTopPanel(this);
         }
-        return this.mTC;
+        return this.topPanel;
     }
     private static final long serialVersionUID = 6338889116068357651L;
     private transient ETLEditorSupport editorSupport;
-    private transient ETLCollaborationTopComponent mTC;
+    private transient ETLCollaborationTopPanel topPanel;
     private transient ETLCollaborationModel mModel;
     private transient AtomicReference<Lookup> myLookup = new AtomicReference<Lookup>();
     private transient AtomicBoolean isLookupInit = new AtomicBoolean(false);

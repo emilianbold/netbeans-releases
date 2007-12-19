@@ -40,10 +40,12 @@
  */
 package org.netbeans.modules.etl.ui.view;
 
+import com.sun.sql.framework.exception.BaseException;
+import com.sun.sql.framework.utils.Logger;
+import com.sun.sql.framework.utils.StringUtil;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.openide.util.NbBundle;
 
 import org.netbeans.modules.etl.codegen.ETLProcessFlowGeneratorFactory;
 import org.netbeans.modules.etl.codegen.ETLStrategyBuilder;
@@ -58,9 +60,7 @@ import org.netbeans.modules.etl.ui.view.graph.actions.TestRunAction;
 import org.netbeans.modules.etl.ui.view.graph.actions.ToggleOutputAction;
 import org.netbeans.modules.etl.ui.view.graph.actions.ValidationAction;
 import org.netbeans.modules.sql.framework.model.SQLConstants;
-import org.netbeans.modules.sql.framework.model.SQLDefinition;
 import org.netbeans.modules.sql.framework.model.SQLObject;
-import org.netbeans.modules.sql.framework.model.TargetTable;
 import org.netbeans.modules.sql.framework.ui.graph.ICommand;
 import org.netbeans.modules.sql.framework.ui.graph.actions.AutoLayoutAction;
 import org.netbeans.modules.sql.framework.ui.graph.actions.CollapseAllAction;
@@ -69,13 +69,14 @@ import org.netbeans.modules.sql.framework.ui.graph.actions.GraphAction;
 import org.netbeans.modules.sql.framework.ui.graph.actions.ZoomAction;
 import org.netbeans.modules.sql.framework.ui.model.CollabSQLUIModel;
 import org.netbeans.modules.sql.framework.ui.view.BasicTopView;
-import org.netbeans.modules.sql.framework.ui.view.SQLStatementPanel;
-import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.utils.Logger;
-import com.sun.sql.framework.utils.StringUtil;
 import org.netbeans.modules.etl.ui.view.graph.actions.RefreshMetadataAction;
+import org.netbeans.modules.etl.ui.view.graph.actions.RemountCollaborationAction;
+import org.netbeans.modules.sql.framework.model.SQLDefinition;
+import org.netbeans.modules.sql.framework.model.TargetTable;
 import org.netbeans.modules.sql.framework.ui.graph.actions.ZoomInAction;
 import org.netbeans.modules.sql.framework.ui.graph.actions.ZoomOutAction;
+import org.netbeans.modules.sql.framework.ui.output.SQLStatementPanel;
+import org.openide.util.NbBundle;
 /**
  * ETL Editor top view. This class just provides ETL specfic actions in toolbar and graph
  * right click.
@@ -85,7 +86,7 @@ import org.netbeans.modules.sql.framework.ui.graph.actions.ZoomOutAction;
 public class ETLEditorTopView extends BasicTopView {
     public static final String OPERATOR_FOLDER = "ETLOperators";
     
-    private ETLCollaborationTopComponent etlView;
+    private ETLCollaborationTopPanel topPanel;
     //private UndoAction undoAction;
     //private RedoAction redoAction;
     
@@ -93,11 +94,11 @@ public class ETLEditorTopView extends BasicTopView {
      * Creates a new instance of ETLEditorTopView.
      *
      * @param model CollabSQLUIModelImpl containing collab model info
-     * @param etlTopComp ETLCollaborationTopComponent which will host this view
+     * @param etlTopComp ETLCollaborationTopPanel which will host this view
      */
-    public ETLEditorTopView(CollabSQLUIModel model, ETLCollaborationTopComponent etlTopComp) {
+    public ETLEditorTopView(CollabSQLUIModel model, ETLCollaborationTopPanel etlTopComp) {
         super(model);
-        this.etlView = etlTopComp;
+        this.topPanel = etlTopComp;
     }
 
     /**
@@ -116,7 +117,7 @@ public class ETLEditorTopView extends BasicTopView {
      */
     @Override
     public boolean canEdit() {
-        return etlView.canEdit();
+        return topPanel.canEdit();
     }
     
     /**
@@ -173,6 +174,7 @@ public class ETLEditorTopView extends BasicTopView {
         actions.add(GraphAction.getAction(CollapseAllAction.class));
         actions.add(GraphAction.getAction(ToggleOutputAction.class));
         actions.add(GraphAction.getAction(RefreshMetadataAction.class));
+        actions.add(GraphAction.getAction(RemountCollaborationAction.class));
         actions.add(GraphAction.getAction(SelectTableAction.class));
         
         //null is used for seperator
@@ -239,6 +241,7 @@ public class ETLEditorTopView extends BasicTopView {
         actions.add(GraphAction.getAction(CollapseAllAction.class));
         actions.add(GraphAction.getAction(ToggleOutputAction.class));
         actions.add(GraphAction.getAction(RefreshMetadataAction.class));
+        actions.add(GraphAction.getAction(RemountCollaborationAction.class));
         actions.add(GraphAction.getAction(SelectTableAction.class));
       
         // null is used for seperator

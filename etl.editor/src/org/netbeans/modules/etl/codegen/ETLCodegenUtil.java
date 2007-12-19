@@ -24,7 +24,17 @@ import org.netbeans.modules.mashup.db.model.FlatfileDefinition;
 import org.netbeans.modules.sql.framework.model.SQLConstants;
 import org.netbeans.modules.sql.framework.model.SQLDBModel;
 import com.sun.sql.framework.exception.BaseException;
+import java.util.HashMap;
+import java.util.Iterator;
+import org.netbeans.modules.mashup.db.model.FlatfileDatabaseModel;
+import org.netbeans.modules.mashup.db.model.impl.FlatfileDBConnectionDefinitionImpl;
+import org.netbeans.modules.mashup.db.model.impl.FlatfileDBTableImpl;
+import org.netbeans.modules.mashup.db.model.impl.FlatfileDatabaseModelImpl;
+import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 import org.netbeans.modules.sql.framework.model.DBTable;
+import org.netbeans.modules.sql.framework.model.DatabaseModel;
+import org.netbeans.modules.sql.framework.model.SQLDBTable;
+import org.netbeans.modules.sql.framework.model.impl.SQLDBModelImpl;
 
 /**
  * Utility methods for generating engine file, Please note the class modifiers should be
@@ -129,7 +139,6 @@ public class ETLCodegenUtil {
 //
 //            return runtimeServerWorkspaceDir;
 //    }
-
     /**
      * Returns Folder for Monitor DB. Specific to each Collaboration/CMap service.
      * @return Parameterized engine instance DB path.
@@ -151,10 +160,55 @@ public class ETLCodegenUtil {
         return engineInstanceDBFolder;
     }
 
+    /**
+     * Returns Folder for Monitor DB. Specific to each Collaboration/CMap service.
+     * @return Parameterized engine instance DB path.
+     * @throws BaseException
+     */
+    public static String getEngineInstanceWorkingFolder(String appWorkspaceDirectory, String dbInstanceName) {
+        String engineInstanceDBFolder = null;
+        // Use "/" as codegen OS may be different than OS on which deployed.
+        engineInstanceDBFolder = appWorkspaceDirectory + "/" + ETL_FOLDER + "/i/" + dbInstanceName + "/";
+        return engineInstanceDBFolder;
+    }
+
     public static FlatfileDefinition getFFDefinition(DBTable table) {
-        if (table.getParent().getSource() != null) {
+        if (table.getParent().getSource() == null) {
             if (table.getParent().getSource() instanceof FlatfileDefinition) {
-                return (FlatfileDefinition) table.getParent().getSource();
+                DatabaseModel model = table.getParent();
+                DBConnectionDefinition condef = model.getConnectionDefinition();
+                try {
+                    Class.forName("org.axiondb.jdbc.AxionDriver");
+                } catch (ClassNotFoundException e1) {
+                    // TODO Auto-generated catch block
+                    e1.printStackTrace();
+
+                }
+
+                if (condef.getDriverClass().equals("org.axiondb.jdbc.AxionDriver")) {
+
+                    FlatfileDefinition fd = new FlatfileDefinition(model.getModelName());
+                    FlatfileDBConnectionDefinitionImpl ffdbConndef = new FlatfileDBConnectionDefinitionImpl(condef.getName(), condef.getDriverClass(),
+                            condef.getConnectionURL(), condef.getUserName(), condef.getPassword(),
+                            condef.getDescription());
+
+                    FlatfileDatabaseModel fdm = new FlatfileDatabaseModelImpl(model.getModelName(),
+                            ffdbConndef);
+                    Iterator iterator = model.getTables().iterator();
+                    HashMap fftables = new HashMap();
+                    while (iterator.hasNext()) {
+                        SQLDBTable element = (SQLDBTable) iterator.next();
+                        element.getClass();
+                        FlatfileDBTableImpl ft = new FlatfileDBTableImpl(element);
+                        HashMap map = ((SQLDBModelImpl) model).getTableMetaData(condef, element);
+                        ft.setProperties(map);
+                        fftables.put(element.getName(), ft);
+                    }
+                    fdm.setTables(fftables);
+                    fd.setFlatfileDatabaseModel(fdm);
+//                return (FlatfileDefinition) table.getParent().getSource();
+                    return fd;
+                }
             }
         }
         return null;
@@ -166,6 +220,8 @@ public class ETLCodegenUtil {
             if (obj instanceof FlatfileDefinition) {
                 return (FlatfileDefinition) obj;
             }
+        } else {
+            return getFFDefinition(table);
         }
         return (FlatfileDefinition) null;
     }

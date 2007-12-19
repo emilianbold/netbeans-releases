@@ -127,10 +127,10 @@ public class ETLNavigatorComponent implements NavigatorPanel, NavigatorLookupHin
 
             while(true) {
                 try {                                      
-                   //panelUI = dObj.getETLEditorTC().getSatelliteView();
-                    //panelUI.add((JComponent)dObj.getETLEditorTC().getGraphView());
-                    //dObj.getETLEditorTC().getGraphView().getObserved();
-                    panelUI.add(dObj.getETLEditorTC().getSatelliteView());
+                   //panelUI = dObj.getETLEditorTopPanel().getSatelliteView();
+                    //panelUI.add((JComponent)dObj.getETLEditorTopPanel().getGraphView());
+                    //dObj.getETLEditorTopPanel().getGraphView().getObserved();
+                    panelUI.add(dObj.getETLEditorTopPanel().getSatelliteView());
                     panelUI.updateUI();
                     panelUI.requestFocus();
                     break;

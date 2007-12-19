@@ -457,6 +457,10 @@ public class ETLDefinitionImpl implements ETLDefinition, Serializable {
         return this.sqlDefinition.validate();
     }
 
+    public List<ValidationInfo> badgeValidate() {
+        return this.sqlDefinition.badgeValidate();
+    }
+
     /**
      * Applies whatever rules are appropriate to migrate the current object model to the
      * current version of ETLDefinition as implemented by the concrete class.

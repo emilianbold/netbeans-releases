@@ -2,8 +2,6 @@ package org.netbeans.modules.mashup.tables.wizard;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Vector;
@@ -53,6 +51,7 @@ public final class SpreadsheetChooserVisualPanel extends JPanel {
         rowsToShow.setInputVerifier(new NumberVerifier());
     }
     
+    @Override
     public String getName() {
         return "Choose a Sheet";
     }

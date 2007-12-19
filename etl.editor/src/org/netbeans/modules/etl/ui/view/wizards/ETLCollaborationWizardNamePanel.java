@@ -73,12 +73,14 @@ import org.openide.util.NbBundle;
 public class ETLCollaborationWizardNamePanel extends JPanel implements WizardDescriptor.Panel {
 
     class NameFieldKeyAdapter extends KeyAdapter {
+
         /**
          * Overrides default implementation to notify listeners of new collab name value
          * in associated textfield.
          * 
          * @param e KeyEvent to be handled
          */
+        @Override
         public void keyReleased(KeyEvent e) {
             String collaborationName = ETLCollaborationWizardNamePanel.this.textField.getText();
 
@@ -97,7 +99,6 @@ public class ETLCollaborationWizardNamePanel extends JPanel implements WizardDes
     protected final Set listeners = new HashSet(1);
     protected ETLCollaborationWizard owner;
     protected JTextField textField;
-
     protected String title;
 
     /**
@@ -215,15 +216,12 @@ public class ETLCollaborationWizardNamePanel extends JPanel implements WizardDes
     public String getCollabName() {
         return collabName;
     }
-    
+
     /**
      * @see ETLWizardPanel#getHelp
      */
     public HelpCtx getHelp() {
-        // Show no Help button for this panel:
         return HelpCtx.DEFAULT_HELP;
-        // If you have context help:
-        // return new HelpCtx(ETLCollaborationWizardNamePanel.class);
     }
 
     /**
@@ -235,7 +233,7 @@ public class ETLCollaborationWizardNamePanel extends JPanel implements WizardDes
     public boolean isDuplicateCollabName() {
         String collaborationName = textField.getText();
         collaborationName = (collaborationName != null) ? collaborationName.trim() : null;
-        
+
         boolean duplicated = false;
 
         //TODO - verify implementation. Where do collaboration files live?
@@ -244,9 +242,9 @@ public class ETLCollaborationWizardNamePanel extends JPanel implements WizardDes
         if (fo != null) { // file exists
             duplicated = true;
             NotifyDescriptor.Message d1 = new NotifyDescriptor.Message(NbBundle.getMessage(ETLCollaborationWizardNamePanel.class,
-                "ERROR_tblwizard_duplicatename", collaborationName), NotifyDescriptor.INFORMATION_MESSAGE);
+                    "ERROR_tblwizard_duplicatename", collaborationName), NotifyDescriptor.INFORMATION_MESSAGE);
             DialogDisplayer.getDefault().notify(d1);
-            
+
             textField.requestFocus();
         }
 
@@ -256,6 +254,7 @@ public class ETLCollaborationWizardNamePanel extends JPanel implements WizardDes
     /**
      * @see ETLWizardPanel#isValid
      */
+    @Override
     public boolean isValid() {
         boolean returnVal = false;
         if (collabName != null) {
@@ -269,14 +268,14 @@ public class ETLCollaborationWizardNamePanel extends JPanel implements WizardDes
      */
     public void readSettings(Object settings) {
         WizardDescriptor wd = null;
-        if(settings instanceof ETLWizardContext) {
+        if (settings instanceof ETLWizardContext) {
             ETLWizardContext wizardContext = (ETLWizardContext) settings;
             wd = (WizardDescriptor) wizardContext.getProperty(ETLWizardContext.WIZARD_DESCRIPTOR);
-        } else if(settings instanceof WizardDescriptor) {
+        } else if (settings instanceof WizardDescriptor) {
             wd = (WizardDescriptor) settings;
         }
-        
-        if(wd != null) {
+
+        if (wd != null) {
             String myCollabName = (String) wd.getProperty(ETLCollaborationWizard.COLLABORATION_NAME);
             textField.setText(myCollabName);
         }
@@ -296,15 +295,15 @@ public class ETLCollaborationWizardNamePanel extends JPanel implements WizardDes
      */
     public void storeSettings(Object settings) {
         WizardDescriptor wd = null;
-        if(settings instanceof  ETLWizardContext) {
+        if (settings instanceof ETLWizardContext) {
             ETLWizardContext wizardContext = (ETLWizardContext) settings;
             wd = (WizardDescriptor) wizardContext.getProperty(ETLWizardContext.WIZARD_DESCRIPTOR);
-        } else if(settings instanceof WizardDescriptor) {
+        } else if (settings instanceof WizardDescriptor) {
             wd = (WizardDescriptor) settings;
             this.owner.setDescriptor(wd);
         }
-        
-        if(wd != null) {
+
+        if (wd != null) {
             final Object selectedOption = wd.getValue();
             if (NotifyDescriptor.CANCEL_OPTION == selectedOption || NotifyDescriptor.CLOSED_OPTION == selectedOption) {
                 return;

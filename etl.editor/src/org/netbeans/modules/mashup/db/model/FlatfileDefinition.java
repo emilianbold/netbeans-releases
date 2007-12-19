@@ -49,8 +49,6 @@ import java.util.UUID;
 import org.netbeans.modules.etl.model.ETLObject;
 import org.netbeans.modules.etl.model.impl.ETLObjectImpl;
 import org.netbeans.modules.mashup.db.model.impl.FlatfileDatabaseModelImpl;
-import org.netbeans.modules.sql.framework.common.utils.FlatfileDBMarker;
-import org.netbeans.modules.sql.framework.common.utils.FlatfileDBTableMarker;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 import org.netbeans.modules.sql.framework.model.DBTable;
 import org.netbeans.modules.sql.framework.model.JDBCConnectionProvider;
@@ -60,7 +58,7 @@ import org.netbeans.modules.sql.framework.model.JDBCConnectionProvider;
  * @author Jonathan Giron
  * @version $Revision$
  */
-public class FlatfileDefinition extends ETLObjectImpl implements ETLObject, FlatfileDBMarker, JDBCConnectionProvider   {
+public class FlatfileDefinition extends ETLObjectImpl implements ETLObject, JDBCConnectionProvider   {
 
     /* Database metadata model storing record/column formatting for underlying Flatfile DB */
     private FlatfileDatabaseModelImpl modelImpl;
@@ -199,16 +197,6 @@ public class FlatfileDefinition extends ETLObjectImpl implements ETLObject, Flat
 
     private void createDatabaseModel() {
         
-    }
-
-    /**
-     * Gets the Table marker for a given dbName
-     * 
-     * @param dbName to be used to get Table
-     * @return FlatfileDBTableMarker
-     */
-    public FlatfileDBTableMarker getFlatfileDBTableMarker(String tableName) {
-        return (FlatfileDBTableMarker) this.getTable(tableName);
     }
 
     /**

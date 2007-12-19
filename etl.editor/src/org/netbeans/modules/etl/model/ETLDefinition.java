@@ -227,4 +227,11 @@ public interface ETLDefinition {
      * @return Map of invalid input object as keys and reason as value
      */
     public List<ValidationInfo> validate();
+    
+   /**
+     * validate the definition starting from the target tables.
+     *
+     * @return Map of invalid input object as keys and reason as value
+     */
+    public List<ValidationInfo> badgeValidate();
 }

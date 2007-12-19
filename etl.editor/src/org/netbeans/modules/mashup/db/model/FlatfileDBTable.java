@@ -43,7 +43,6 @@ package org.netbeans.modules.mashup.db.model;
 import java.io.File;
 import java.util.Map;
 
-import org.netbeans.modules.sql.framework.common.utils.FlatfileDBTableMarker;
 import org.netbeans.modules.sql.framework.model.SQLDBTable;
 
 
@@ -55,7 +54,7 @@ import org.netbeans.modules.sql.framework.model.SQLDBTable;
  * @author Ahimanikya Satapathy
  * @version $Revision$
  */
-public interface FlatfileDBTable extends SQLDBTable, FlatfileDBTableMarker {
+public interface FlatfileDBTable extends SQLDBTable {
 
     public static final String PROP_CREATE_IF_NOT_EXIST = "CREATE_IF_NOT_EXIST";
 
@@ -117,6 +116,7 @@ public interface FlatfileDBTable extends SQLDBTable, FlatfileDBTableMarker {
      * @return true if obj is functionally identical to this ETLTable instance; false
      *         otherwise
      */
+    @Override
     boolean equals(Object obj);
 
     /**
@@ -125,16 +125,6 @@ public interface FlatfileDBTable extends SQLDBTable, FlatfileDBTableMarker {
      * @return SQL for this Flatfile with getTableName()
      */
     String getCreateStatementSQL();
-
-    /**
-     * Gets the SQL create statement to create a text table representing this flatfile.
-     * 
-     * @param tableName table name to use in synthesizing the create statement; if null,
-     *        the current table name yielded by getName() will be used
-     * @return SQL statement to create a text table representing the contents of this
-     *         flatfile
-     */
-    String getCreateStatementSQL(String tableName);
 
     /**
      * Gets the SQL create statement to create a text table representing this flatfile.
@@ -148,16 +138,6 @@ public interface FlatfileDBTable extends SQLDBTable, FlatfileDBTableMarker {
     String getDropStatementSQL();
 
     /**
-     * Gets the SQL Drop statement to drop the text table representing this flatfile.
-     * 
-     * @param tableName name of table to use in synthesizing the drop statement; if null,
-     *        uses the value yielded by getName()
-     * @return SQLstatement to drop a text table representing the contents of this
-     *         flatfile
-     */
-    String getDropStatementSQL(String tableName);
-
-    /**
      * Gets the encoding scheme.
      * 
      * @return encoding scheme
@@ -165,6 +145,8 @@ public interface FlatfileDBTable extends SQLDBTable, FlatfileDBTableMarker {
     String getEncodingScheme();
 
     String getFlatfilePropertiesSQL();
+    
+    String getFileName();
 
     /**
      * Gets local path to sample file.
@@ -174,6 +156,8 @@ public interface FlatfileDBTable extends SQLDBTable, FlatfileDBTableMarker {
     String getLocalFilePath();
 
     String getParserType();
+    
+    Map getProperties();
 
     /**
      * Gets property string associated with the given name.
@@ -199,6 +183,7 @@ public interface FlatfileDBTable extends SQLDBTable, FlatfileDBTableMarker {
      * @return hash code for this object
      * @see java.lang.Object#hashCode
      */
+    @Override
     int hashCode();
 
     /**
@@ -242,6 +227,7 @@ public interface FlatfileDBTable extends SQLDBTable, FlatfileDBTableMarker {
      * 
      * @return table name.
      */
+    @Override
     String toString();
 
     void updateProperties(Map newProps);

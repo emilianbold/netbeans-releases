@@ -21,23 +21,18 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
 public final class TableDetailsVisualPanel extends JPanel {
-    
+
     private TableDetailsPanel owner;
-    
     private FlatfileDatabaseModel currentModel;
-    
     private FlatfileDBTable currentTable;
-    
     private String url;
-    
     private static Map<String, String> encodingMap = new HashMap<String, String>();
-    
     private static Map<String, String> typeMap = new HashMap<String, String>();
-    
-    static{
+
+    static {
         encodingMap.put("ASCII (ISO646-US)", "US-ASCII");
     }
-    
+
     static {
         typeMap.put("Spreadsheet (MS Excel)", PropertyKeys.SPREADSHEET);
         typeMap.put("Web Row Set", PropertyKeys.WEBROWSET);
@@ -47,14 +42,16 @@ public final class TableDetailsVisualPanel extends JPanel {
         typeMap.put("Fixed Width Flatfile", PropertyKeys.FIXEDWIDTH);
         typeMap.put("RSS", PropertyKeys.RSS);
     }
-    
+
     /**
      * Creates new form ChooseTableVisualPanel
      */
     public TableDetailsVisualPanel(TableDetailsPanel panel) {
         owner = panel;
         initComponents();
-        tableName.addKeyListener(new KeyAdapter(){
+        tableName.addKeyListener(new KeyAdapter() {
+
+            @Override
             public void keyReleased(KeyEvent e) {
                 checkTableName(tableName.getText().trim());
                 owner.fireChangeEvent();
@@ -64,11 +61,12 @@ public final class TableDetailsVisualPanel extends JPanel {
         setMaximumSize(new Dimension(100, 100));
         setPreferredSize(new Dimension(100, 100));
     }
-    
+
+    @Override
     public String getName() {
         return "Enter Table Details";
     }
-    
+
     /*
      * Checks whether the contents of the table name text field are valid. @return
      * INVALID_NAME if name is invalid, DUPLICATE_NAME if name is already in use in the
@@ -76,7 +74,7 @@ public final class TableDetailsVisualPanel extends JPanel {
      */
     private boolean checkTableName(String tableName) {
         String newName = tableName.trim();
-        
+
         if (!StringUtil.isValid(newName, "[A-Za-z][A-Za-z0-9_]*")) {
             setError("Invalid Table Name.");
             return false;
@@ -84,45 +82,45 @@ public final class TableDetailsVisualPanel extends JPanel {
             setError("Duplicate Table Name");
             return false;
         }
-        
-        if(isAxionReservedName(newName)) {
+
+        if (isAxionReservedName(newName)) {
             setError("Reserved Table Name used.");
             return false;
         }
         setError("");
         return true;
     }
-    
+
     public void setDBModel(FlatfileDatabaseModel model) {
         currentModel = model;
     }
-    
+
     public void setCurrentTable(FlatfileDBTable table) {
         currentTable = table;
     }
-    
+
     public void setJDBCUrl(String jdbcURL) {
         url = jdbcURL;
     }
-    
+
     public String getTableName() {
         return tableName.getText().trim();
     }
-    
+
     public String getTableType() {
-        String type = (String)typeCombo.getSelectedItem();
+        String type = (String) typeCombo.getSelectedItem();
         return typeMap.get(type);
     }
-    
+
     public String getEncoding() {
-        String key = (String)encodingCombo.getSelectedItem();
+        String key = (String) encodingCombo.getSelectedItem();
         return encodingMap.get(key);
     }
-    
+
     private void setError(String errorText) {
         error.setText(errorText);
     }
-    
+
     private boolean isUniqueTableName(String tblName) {
         if (currentModel == null) {
             return false;
@@ -132,23 +130,21 @@ public final class TableDetailsVisualPanel extends JPanel {
         ind = url.indexOf(":", ind + 1);
         String path = url.substring(url.indexOf(":", ind + 1) + 1) + "\\";
         File f = new File(path + tblName);
-        if(f.exists()) {
+        if (f.exists()) {
             return false;
         }
         FlatfileDBTable match = currentModel.getFileMatchingTableName(tblName);
         return (match == null) || (match == currentTable);
     }
-    
+
     private boolean isAxionReservedName(String newName) {
         boolean isReservedName = false;
         Connection conn = null;
         Statement stmt = null;
-        
+
         try {
-            String url = FlatfileDBConnectionFactory.DEFAULT_FLATFILE_JDBC_URL_PREFIX + "nametest";
             conn = FlatfileDBConnectionFactory.getInstance().getConnection(url);
             stmt = conn.createStatement();
-            
             stmt.execute("create table " + newName + " (id int)");
         } catch (Exception se) {
             isReservedName = true;
@@ -158,22 +154,22 @@ public final class TableDetailsVisualPanel extends JPanel {
                     stmt.execute("drop table " + newName);
                     stmt.execute("shutdown");
                 } catch (SQLException ignore) {
-                    // Ignore.
+                // Ignore.
                 }
             }
-            
+
             if (conn != null) {
                 try {
                     conn.close();
                 } catch (SQLException ignore) {
-                    // Ignore.
+                // Ignore.
                 }
             }
         }
-        
+
         return isReservedName;
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -275,58 +271,55 @@ public final class TableDetailsVisualPanel extends JPanel {
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
-    
     public boolean canAdvance() {
         return (typeCombo.getSelectedIndex() != -1 && checkTableName(tableName.getText().trim()));
     }
-    
+
     public void guessParserType(FlatfileDBTable table) {
         String type = FlatfileBootstrapParserFactory.getInstance().getParserType(table);
-        if(typeMap.containsValue(type)) {
+        if (typeMap.containsValue(type)) {
             typeCombo.setSelectedIndex(0);
             Iterator it = typeMap.keySet().iterator();
-            while(it.hasNext()) {
-                String key = (String)it.next();
-                if(typeMap.get(key).equals(type)) {
+            while (it.hasNext()) {
+                String key = (String) it.next();
+                if (typeMap.get(key).equals(type)) {
                     typeCombo.setSelectedItem(key);
                     break;
                 }
             }
         }
     }
-    
+
     private String getTableName(String fileName) {
         // Use only fileName
-        if(fileName.lastIndexOf("//") != -1) {
+        if (fileName.lastIndexOf("//") != -1) {
             fileName = fileName.substring(fileName.lastIndexOf("/") + 1);
         } else {
-            if(fileName.lastIndexOf("/") != -1) {
+            if (fileName.lastIndexOf("/") != -1) {
                 fileName = fileName.substring(fileName.lastIndexOf("/") + 1);
             }
-            if(fileName.lastIndexOf("\\") != -1) {
+            if (fileName.lastIndexOf("\\") != -1) {
                 fileName = fileName.substring(fileName.lastIndexOf("\\") + 1);
             }
-            
-            if(fileName.lastIndexOf(".") != -1) {
+
+            if (fileName.lastIndexOf(".") != -1) {
                 fileName = fileName.substring(0, fileName.lastIndexOf("."));
             }
         }
-        return StringUtil.isNullString(fileName) ?
-            "<table name>" : StringUtil.createTableNameFromFileName(fileName);
+        return StringUtil.isNullString(fileName) ? "<table name>" : StringUtil.createTableNameFromFileName(fileName);
     }
-    
+
     public void setFileName(String fileName) {
         tableName.setText(getTableName(fileName));
     }
-    
+
     public void setResourceUrl(String text) {
         resourceUrl.setText(text.trim());
     }
-    
+
     public String getResourceUrl() {
         return resourceUrl.getText().trim();
     }
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox encodingCombo;
     private javax.swing.JLabel error;
@@ -339,5 +332,4 @@ public final class TableDetailsVisualPanel extends JPanel {
     private javax.swing.JTextField tableName;
     private javax.swing.JComboBox typeCombo;
     // End of variables declaration//GEN-END:variables
-    
 }

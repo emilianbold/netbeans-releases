@@ -14,28 +14,19 @@ import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
-import org.netbeans.modules.jdbc.builder.DBMetaData;
+import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
+import org.netbeans.modules.sql.framework.model.DBMetaDataFactory;
 
 public final class JDBCTableVisualPanel extends JPanel {
-    
+
     private JDBCTablePanel owner;
-    
-    private String selectedUrl;
-    
     private boolean canAdvance = false;
-    
     private Map<String, String> userMap = new HashMap<String, String>();
-    
     private Map<String, String> passwdMap = new HashMap<String, String>();
-    
-    private DBMetaData meta = new DBMetaData();
-    
+    private DBMetaDataFactory meta = new DBMetaDataFactory();
     DatabaseConnection conn = null;
-    
     private Map<String, String> driverMap = new HashMap<String, String>();
-    
-    private String jdbcUrl;
-    
+
     /**
      * Creates new form ChooseTableVisualPanel
      */
@@ -48,38 +39,39 @@ public final class JDBCTableVisualPanel extends JPanel {
         selectButton.setEnabled(false);
         removeButton.setEnabled(false);
         populateConnections();
-        connectionList.addMouseListener(new MouseListener(){
+        connectionList.addMouseListener(new MouseListener() {
+
             public void mouseClicked(MouseEvent e) {
             }
-            
+
             public void mousePressed(MouseEvent e) {
             }
-            
+
             public void mouseReleased(MouseEvent e) {
                 DefaultListModel model = (DefaultListModel) connectionList.getModel();
                 String jdbcUrl = (String) connectionList.getSelectedValue();
                 DatabaseConnection dbConn = null;
                 DatabaseConnection dbConns[] = ConnectionManager.getDefault().getConnections();
-                for(DatabaseConnection dc : dbConns) {
-                    if(dc.getDatabaseURL().equals(jdbcUrl)) {
+                for (DatabaseConnection dc : dbConns) {
+                    if (dc.getDatabaseURL().equals(jdbcUrl)) {
                         dbConn = dc;
                         break;
                     }
                 }
-                
+
                 conn = dbConn;
                 ConnectionManager.getDefault().showConnectionDialog(conn);
                 try {
                     userMap.put(conn.getDatabaseURL(), conn.getUser());
                     passwdMap.put(conn.getDatabaseURL(), conn.getPassword());
                     driverMap.put(conn.getDatabaseURL(), conn.getDriverClass());
-                    meta.connectDB(conn.getJDBCConnection());
+                    meta.connectDB(DBExplorerUtil.createConnection(conn));
                     String[] schemas = meta.getSchemas();
                     schemaCombo.removeAllItems();
-                    for(String schema : schemas) {
+                    for (String schema : schemas) {
                         schemaCombo.addItem(schema);
                     }
-                    if(schemaCombo.getItemCount() != 0) {
+                    if (schemaCombo.getItemCount() != 0) {
                         String schema = (String) schemaCombo.getItemAt(0);
                         populateTable(schema);
                     }
@@ -87,34 +79,34 @@ public final class JDBCTableVisualPanel extends JPanel {
                     ex.printStackTrace();
                 }
             }
-            
+
             public void mouseEntered(MouseEvent e) {
             }
-            
+
             public void mouseExited(MouseEvent e) {
             }
-            
         });
     }
-    
+
+    @Override
     public String getName() {
         return "Choose Connection Details";
     }
-    
+
     public DefaultTableModel getTables() {
-        return (DefaultTableModel)jTable1.getModel();
+        return (DefaultTableModel) jTable1.getModel();
     }
-    
+
     public void cleanup() {
         try {
-            if(meta != null) {
+            if (meta != null) {
                 meta.disconnectDB();
             }
         } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -262,14 +254,14 @@ public final class JDBCTableVisualPanel extends JPanel {
                 .add(error, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 17, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
-
     private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
         int[] rows = jTable1.getSelectedRows();
         final DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
-        for(int row : rows) {
+        for (int row : rows) {
             model.removeRow(row);
         }
-        Runnable run = new Runnable(){
+        Runnable run = new Runnable() {
+
             public void run() {
                 jTable1.setModel(model);
             }
@@ -277,20 +269,20 @@ public final class JDBCTableVisualPanel extends JPanel {
         SwingUtilities.invokeLater(run);
         owner.fireChangeEvent();        
     }//GEN-LAST:event_removeButtonActionPerformed
-    
+
     private void selectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectButtonActionPerformed
         final DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
         Object[] tables = tableList.getSelectedValues();
         String schema = (String) schemaCombo.getSelectedItem();
         String jdbcUrl = (String) connectionList.getSelectedValue();
-        for(Object table : tables) {
+        for (Object table : tables) {
             Vector row = new Vector();
             row.add(table);
             row.add(schema);
             row.add(jdbcUrl);
             model.addRow(row);
         }
-        if(model.getRowCount() != 0) {
+        if (model.getRowCount() != 0) {
             removeButton.setEnabled(true);
             error.setText("");
             canAdvance = true;
@@ -299,7 +291,8 @@ public final class JDBCTableVisualPanel extends JPanel {
             error.setText("No table available for processing.");
             canAdvance = false;
         }
-        Runnable run = new Runnable(){
+        Runnable run = new Runnable() {
+
             public void run() {
                 jTable1.setModel(model);
             }
@@ -307,28 +300,28 @@ public final class JDBCTableVisualPanel extends JPanel {
         SwingUtilities.invokeLater(run);
         owner.fireChangeEvent();
     }//GEN-LAST:event_selectButtonActionPerformed
-    
+
     private void schemaComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_schemaComboActionPerformed
-        JComboBox combo = (JComboBox)evt.getSource();
+        JComboBox combo = (JComboBox) evt.getSource();
         String schema = (String) combo.getSelectedItem();
         populateTable(schema);
     }//GEN-LAST:event_schemaComboActionPerformed
-    
+
     private void populateTable(String schema) {
-        if(conn != null) {
+        if (conn != null) {
             try {
                 DefaultListModel model = (DefaultListModel) tableList.getModel();
                 model.clear();
-                meta.connectDB(conn.getJDBCConnection());
+                meta.connectDB(DBExplorerUtil.createConnection(conn));
                 String[][] tables = meta.getTablesAndViews("", schema, "", false);
                 String[] currTable = null;
                 if (tables != null) {
                     for (int i = 0; i < tables.length; i++) {
                         currTable = tables[i];
-                        model.addElement(currTable[DBMetaData.NAME]);
+                        model.addElement(currTable[DBMetaDataFactory.NAME]);
                     }
                 }
-                if(model.getSize() != 0) {
+                if (model.getSize() != 0) {
                     selectButton.setEnabled(true);
                 } else {
                     selectButton.setEnabled(false);
@@ -339,22 +332,21 @@ public final class JDBCTableVisualPanel extends JPanel {
             }
         }
     }
-    
+
     private void populateConnections() {
         DefaultListModel model = (DefaultListModel) connectionList.getModel();
         model.clear();
         driverMap.clear();
         DatabaseConnection connections[] = ConnectionManager.getDefault().getConnections();
-        for(DatabaseConnection conn : connections) {
-            //if(!conn.getDriverClass().equals("org.axiondb.jdbc.AxionDriver")) {
-            model.addElement(conn.getDatabaseURL());
-            //}
+        for (DatabaseConnection conn1 : connections) {
+            model.addElement(conn1.getDatabaseURL());
         }
         setModel(connectionList, model);
     }
-    
+
     private void setModel(final JList list, final DefaultListModel model) {
-        Runnable run = new Runnable(){
+        Runnable run = new Runnable() {
+
             public void run() {
                 list.setModel(model);
             }
@@ -377,7 +369,6 @@ public final class JDBCTableVisualPanel extends JPanel {
     public boolean canAdvance() {
         return (jTable1.getModel().getRowCount() != 0);
     }
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JList connectionList;
     private javax.swing.JLabel error;

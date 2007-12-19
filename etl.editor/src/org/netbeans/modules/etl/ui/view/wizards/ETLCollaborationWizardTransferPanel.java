@@ -76,7 +76,6 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 
-import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.sql.framework.model.DBMetaDataFactory;
 import org.netbeans.modules.sql.framework.model.SQLConstants;
@@ -90,6 +89,7 @@ import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
 import com.sun.sql.framework.utils.Logger;
+import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 import org.netbeans.modules.sql.framework.model.DBTable;
 import org.netbeans.modules.sql.framework.model.DatabaseModel;
@@ -166,7 +166,6 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
      * from the destination list.
      *
      * @author Jonathan Giron
-     * @author Sanjeeth Duvuru
      * @version $Revision$
      */
     class ListTransferModel {
@@ -559,10 +558,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
                     this.setText(model.getModelName());
                 }
             } else if (value instanceof DatabaseConnection) {
-                if( value.toString()!=null)
-                    this.setText(((DatabaseConnection)value).getName());
-                else
-                    this.setText("<None>");
+                this.setText(DBExplorerUtil.getDisplayName(((DatabaseConnection)value)));
             } else if (value instanceof String) {
                 this.setText((String)value);
             }
@@ -862,8 +858,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
                 selectedConnection = conn;
                 DBMetaDataFactory meta = new DBMetaDataFactory();
                 try {
-                    ConnectionManager.getDefault().showConnectionDialog(selectedConnection);
-                    meta.connectDB(selectedConnection.getJDBCConnection());
+                    meta.connectDB(DBExplorerUtil.createConnection(selectedConnection));
                     if(selectedConnection.getDatabaseURL().startsWith("jdbc:axiondb:")) {
                         schemaComboBox.setEnabled(false);
                         populateTableList("");
@@ -881,6 +876,9 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
                     }
                 } catch (Exception ex) {
                     Logger.printThrowable(Logger.INFO, LOG_CATEGORY, null, "Error retrieving schemas" , ex);
+                    throw new RuntimeException(ex.getCause());
+                } finally{
+                    meta.disconnectDB();
                 }
             }
         });
@@ -914,7 +912,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
                     // Add all tables to database
                     DBMetaDataFactory meta = new DBMetaDataFactory();
                     try {
-                        meta.connectDB(conn.getJDBCConnection());
+                        meta.connectDB(DBExplorerUtil.createConnection(conn));
                         
                         // we are now using SQLDBModel and SQLTable etc
                         SQLDBModel model = nameToDBModelMap.get(connName);
@@ -934,6 +932,8 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
                         model.addTable(newTable);
                     } catch (Exception e) {
                         throw e;
+                    } finally {
+                        meta.disconnectDB();
                     }
                 }
             }
@@ -999,7 +999,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
             }
             
             if ((selectedConnection != null)) {
-                dbMeta.connectDB(selectedConnection.getJDBCConnection());                
+                dbMeta.connectDB(DBExplorerUtil.createConnection(selectedConnection));                
                 String[][] tableList = dbMeta.getTablesAndViews("", schemaName, "", false);
                 SQLDBTable aTable = null;
                 String[] currTable = null;
@@ -1021,6 +1021,8 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
             }
         } catch (Exception ex) {
             Logger.printThrowable(Logger.INFO, LOG_CATEGORY, null, "Error trying to retrieve tables and views" , ex);
+        } finally {
+            dbMeta.disconnectDB();
         }
     }
     
@@ -1141,10 +1143,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
      * @see org.openide.WizardDescriptor.Panel#getHelp
      */
     public HelpCtx getHelp() {
-        // Show no Help button for this panel:
         return HelpCtx.DEFAULT_HELP;
-        // If you have context help:
-        // return new HelpCtx(ETLCollaborationWizardTransferPanel.class);
     }
     
     /**

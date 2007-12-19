@@ -43,7 +43,10 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.Externalizable;
 import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.Arrays;
 
 import javax.swing.UIManager;
@@ -58,10 +61,13 @@ import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.etl.model.ETLDefinition;
 import org.netbeans.modules.etl.ui.palette.PaletteSupport;
-import org.netbeans.modules.etl.ui.view.ETLCollaborationTopComponent;
+import org.netbeans.modules.sql.framework.model.utils.SQLObjectUtil;
+import org.netbeans.modules.etl.ui.view.ETLCollaborationTopPanel;
+import org.netbeans.modules.etl.ui.view.ETLOutputWindowTopComponent;
 import org.netbeans.modules.sql.framework.ui.graph.impl.GraphView;
 import org.netbeans.spi.palette.PaletteController;
 import org.openide.ErrorManager;
+import org.openide.awt.StatusDisplayer;
 import org.openide.awt.UndoRedo;
 import org.openide.cookies.SaveCookie;
 import org.openide.nodes.Node;
@@ -80,11 +86,11 @@ import org.openide.windows.CloneableTopComponent;
  * Window - Preferences - Java - Code Generation - Code and Comments
  */
 public class ETLEditorViewMultiViewElement extends CloneableTopComponent
-        implements MultiViewElement, Lookup.Provider {
+        implements MultiViewElement, Lookup.Provider, Externalizable {
 
     private static final long serialVersionUID = -655912409997381426L;
-    private ETLDataObject mObj = null;
-    private ETLCollaborationTopComponent mTC;
+    private ETLDataObject dataObject = null;
+    private ETLCollaborationTopPanel topPanel;
     private ETLEditorSupport mEditorSupport = null;
     private transient InstanceContent nodesHack;
     private transient javax.swing.JLabel errorLabel = new javax.swing.JLabel();
@@ -95,7 +101,7 @@ public class ETLEditorViewMultiViewElement extends CloneableTopComponent
 
     public ETLEditorViewMultiViewElement(ETLDataObject dObj) {
         super();
-        this.mObj = dObj;
+        this.dataObject = dObj;
         try {
             initialize();
         } catch (Exception ex) {
@@ -107,10 +113,10 @@ public class ETLEditorViewMultiViewElement extends CloneableTopComponent
 
     private void initialize() throws Exception {
         try {
-            mEditorSupport = mObj.getETLEditorSupport();
+            mEditorSupport = dataObject.getETLEditorSupport();
             setLayout(new BorderLayout());
-            mTC = mObj.getETLEditorTC();
-            add(BorderLayout.CENTER, mTC);
+            topPanel = dataObject.getETLEditorTopPanel();
+            add(BorderLayout.CENTER, topPanel);
             initializeLookup();
         } catch (Exception ex) {
             throw ex;
@@ -154,16 +160,16 @@ public class ETLEditorViewMultiViewElement extends CloneableTopComponent
             getETLDataObject().getLookup(), // this lookup contain objects that are used in OM clients
             Lookups.singleton(this),
             new AbstractLookup(nodesHack),
-            Lookups.fixed(new Object[] {controller}),});
+            Lookups.fixed(new Object[]{controller}),});
     }
 
     private  PaletteController createPalette( ) throws IOException {
-         PaletteController controller = PaletteSupport.createPalette(mTC);
+         PaletteController controller = PaletteSupport.createPalette(topPanel);
          return controller;
     }
     
     private ETLDataObject getETLDataObject() {
-        return mObj;
+        return dataObject;
     }
    
     /**
@@ -179,12 +185,12 @@ public class ETLEditorViewMultiViewElement extends CloneableTopComponent
     }
     
     public void setMultiViewCallback(final MultiViewElementCallback callback) {
-        ETLEditorSupport editor = mObj.getETLEditorSupport();
+        ETLEditorSupport editor = dataObject.getETLEditorSupport();
         editor.setTopComponent(callback.getTopComponent());
     }
     
     public CloseOperationState canCloseElement() {
-        if ((mObj != null) && (mObj.isModified())) {
+        if ((dataObject != null) && (dataObject.isModified())) {
             return MultiViewFactory.createUnsafeCloseState("Data object modified", null, null);
         }
         return CloseOperationState.STATE_OK;
@@ -203,19 +209,24 @@ public class ETLEditorViewMultiViewElement extends CloneableTopComponent
     @Override
     public void componentOpened() {
         super.componentOpened();
-        DataObjectProvider.activeDataObject = mObj;
+        DataObjectProvider.activeDataObject = dataObject;
     }
 
     @Override
     public void componentActivated() {
         super.componentActivated();
-
         if (getETLDataObject().getETLEditorSupport().isFirstTime) {
-            getETLDataObject().getETLEditorSupport().syncModel();
+            try {
+                getETLDataObject().getETLEditorSupport().syncModel();
+                SQLObjectUtil.createMissingModelTablesInDB(getETLDataObject());
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                StatusDisplayer.getDefault().setStatusText(ex.getMessage());
+            }
         }
         getETLDataObject().createNodeDelegate();
-        DataObjectProvider.activeDataObject = mObj;
-        GraphView graphView = (GraphView) this.mTC.getGraphView();
+        DataObjectProvider.activeDataObject = dataObject;
+        GraphView graphView = (GraphView) this.topPanel.getGraphView();
         if (null != graphView) {
             graphView.setObserved(graphView);
         }
@@ -223,7 +234,7 @@ public class ETLEditorViewMultiViewElement extends CloneableTopComponent
 
     @Override
     public void componentDeactivated() {
-        SaveCookie cookie = mObj.getCookie(SaveCookie.class);
+        SaveCookie cookie = dataObject.getCookie(SaveCookie.class);
         if (cookie != null) {
             getETLDataObject().getETLEditorSupport().synchDocument();
         }
@@ -234,14 +245,14 @@ public class ETLEditorViewMultiViewElement extends CloneableTopComponent
     public void componentShowing() {
 
         super.componentShowing();
-        ETLEditorSupport editor = mObj.getETLEditorSupport();
+        ETLEditorSupport editor = dataObject.getETLEditorSupport();
         UndoRedo.Manager undoRedo = editor.getUndoManager();
         Document document = editor.getDocument();
         if (document != null) {
             document.removeUndoableEditListener(undoRedo);
         }
         checkModelState();
-        DataObjectProvider.activeDataObject = mObj;
+        DataObjectProvider.activeDataObject = dataObject;
     }
 
     private void checkModelState() {
@@ -288,11 +299,11 @@ public class ETLEditorViewMultiViewElement extends CloneableTopComponent
     private void recreateUI(ETLDefinition model) {
         this.removeAll();
         // Add the schema category pane as our primary interface.
-        add(mTC, BorderLayout.CENTER);
+        add(topPanel, BorderLayout.CENTER);
     }
 
     public javax.swing.JComponent getToolbarRepresentation() {
-        return mTC.createToolbar();
+        return topPanel.createToolbar();
     }
 
     public javax.swing.JComponent getVisualRepresentation() {
@@ -318,7 +329,7 @@ public class ETLEditorViewMultiViewElement extends CloneableTopComponent
 
     }
 
-    class TreeEditorUndoRedo implements UndoRedo {
+    public class TreeEditorUndoRedo implements UndoRedo {
 
         public void addChangeListener(ChangeListener l) {
 
@@ -355,6 +366,21 @@ public class ETLEditorViewMultiViewElement extends CloneableTopComponent
 
         public void undo() throws CannotUndoException {
             mEditorSupport.getUndoManager().undo();
+        }
+    }
+
+    @Override
+    public void writeExternal(ObjectOutput out) throws IOException {
+        super.writeExternal(out);
+        out.writeObject(dataObject);
+    }
+
+    @Override
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+        super.readExternal(in);
+        Object firstObject = in.readObject();
+        if (firstObject instanceof ETLDataObject) {
+            dataObject = (ETLDataObject) in.readObject();
         }
     }
 }

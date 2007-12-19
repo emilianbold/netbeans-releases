@@ -63,7 +63,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
-
 /**
  * @author radval
  */
@@ -88,9 +87,6 @@ public class ETLCollaborationWizardJoinPanel extends JPanel implements WizardDes
 
         joinMainPanel = new JoinMainPanel(view, false);
         joinMainPanel.reset(view);
-
-//        this.setPreferredSize(new Dimension(500, 500));
-//        this.setSize(new Dimension(500, 500));
 
         this.add(joinMainPanel, BorderLayout.CENTER);
         this.joinMainPanel.setDividerLocation(210);
@@ -138,6 +134,7 @@ public class ETLCollaborationWizardJoinPanel extends JPanel implements WizardDes
      * 
      * @return <code>true</code> if the user has entered satisfactory information
      */
+    @Override
     public boolean isValid() {
         return true;
     }
@@ -162,16 +159,14 @@ public class ETLCollaborationWizardJoinPanel extends JPanel implements WizardDes
         Set sTables = new HashSet();
         List sourceDb = etlCWizard.getSelectedSourceDb();
         Iterator it = sourceDb.iterator();
-        
+
         while (it.hasNext()) {
             SQLDBModel dbModel = (SQLDBModel) it.next();
             List tables = dbModel.getTables();
             Iterator tableIt = tables.iterator();
             while (tableIt.hasNext()) {
                 Object table = tableIt.next();
-                if (table instanceof SQLDBTable
-                        && ((SQLDBTable) table).isEditable()
-                        && ((SQLDBTable) table).isSelected()) {
+                if (table instanceof SQLDBTable && ((SQLDBTable) table).isEditable() && ((SQLDBTable) table).isSelected()) {
                     sTables.add(table);
                 }
             }
@@ -219,13 +214,13 @@ public class ETLCollaborationWizardJoinPanel extends JPanel implements WizardDes
         SQLJoinView joinView = this.joinMainPanel.getSQLJoinView();
 
         if (joinView != null && joinView.getSQLJoinTables().size() > 1) {
-	        WizardDescriptor wizard = null;
-	        if(settings instanceof ETLWizardContext) {
-	            ETLWizardContext wizardContext = (ETLWizardContext) settings;
-	            wizard = (WizardDescriptor) wizardContext.getProperty(ETLWizardContext.WIZARD_DESCRIPTOR);
-	        } else if(settings instanceof WizardDescriptor) {
-	            wizard = (WizardDescriptor) settings;
-	        }
+            WizardDescriptor wizard = null;
+            if (settings instanceof ETLWizardContext) {
+                ETLWizardContext wizardContext = (ETLWizardContext) settings;
+                wizard = (WizardDescriptor) wizardContext.getProperty(ETLWizardContext.WIZARD_DESCRIPTOR);
+            } else if (settings instanceof WizardDescriptor) {
+                wizard = (WizardDescriptor) settings;
+            }
 
             Object selectedOption = wizard.getValue();
             if (NotifyDescriptor.CANCEL_OPTION == selectedOption || NotifyDescriptor.CLOSED_OPTION == selectedOption) {
@@ -280,6 +275,5 @@ public class ETLCollaborationWizardJoinPanel extends JPanel implements WizardDes
             }
         }
     }
-
 }
 

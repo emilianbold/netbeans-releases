@@ -22,7 +22,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.modules.etl.ui.model.impl.ETLCollaborationModel;
-import org.netbeans.modules.etl.ui.view.ETLCollaborationTopComponent;
+import org.netbeans.modules.etl.ui.view.ETLCollaborationTopPanel;
 import org.netbeans.modules.etl.ui.view.property.ETLResourceManager;
 import org.netbeans.modules.etl.ui.view.wizards.ETLWizardHelper;
 import org.netbeans.modules.sql.framework.model.RuntimeDatabaseModel;
@@ -79,7 +79,7 @@ public class DataObjectHelper {
         
         // for now we need to have an editor top component so that table can be added to
         // it
-        final ETLCollaborationTopComponent etlEditor = mDataObject.getETLEditorTC();
+        final ETLCollaborationTopPanel etlEditor = mDataObject.getETLEditorTopPanel();
         ETLCollaborationModel collabModel = mObj.getModel();
         
         // first add join view
@@ -106,7 +106,7 @@ public class DataObjectHelper {
             editorSupport.getDocument().remove(0, editorSupport.getDocument().getLength());
             editorSupport.getDocument().insertString(0, content, null);
         } catch(Exception ex) {
-            //ErrorManager.getDefault().notify(ex);
+            ErrorManager.getDefault().notify(ex);
         }
     }
     
@@ -152,6 +152,7 @@ public class DataObjectHelper {
                     }
                 }
             }
+            SQLObjectUtil.setOrgProperties(sTable);               
         }
     }
     

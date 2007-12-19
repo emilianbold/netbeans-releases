@@ -41,7 +41,6 @@
 package org.netbeans.modules.etl.ui.view.wizards;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -51,32 +50,18 @@ import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
-import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.modules.etl.model.impl.ETLDefinitionImpl;
-import org.netbeans.modules.sql.framework.common.jdbc.DesignTimeDBConnectionProvider;
-import org.netbeans.modules.sql.framework.common.utils.DBExplorerConnectionUtil;
+import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
 import org.netbeans.modules.sql.framework.model.SQLDBModel;
 import org.netbeans.modules.sql.framework.model.SQLDBTable;
-
-import com.sun.sql.framework.utils.StringUtil;
-import com.sun.sql.framework.utils.Logger;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.Properties;
-import org.netbeans.modules.mashup.db.ui.AxionDBConfiguration;
-import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 
 /**
  * Presents choice source and target tables for inclusion in an ETL Definition.
  *
- * @author Sanjeeth Duvuru
+ * @author Ahimanikya Satapathy
  * @version $Revision$
  */
 public class ETLTableSelectionWizard extends ETLWizard {
-
-    private static final String LOG_CATEGORY = ETLTableSelectionWizard.class.getName();
 
     class Descriptor extends ETLWizardDescriptor {
 
@@ -88,8 +73,6 @@ public class ETLTableSelectionWizard extends ETLWizard {
     class WizardIterator extends ETLWizardIterator {
 
         private List panels;
-        private List srcModels;
-        private List targetModels;
         public WizardDescriptor wiz;
 
         public WizardIterator(ETLDefinitionImpl def) {
@@ -97,62 +80,29 @@ public class ETLTableSelectionWizard extends ETLWizard {
             List srcModel = new ArrayList();
             List destModel = new ArrayList();
             List dbModels = getModelConnections();
-            sourceTransferPanel = new ETLCollaborationWizardTransferFinishPanel(NbBundle.getMessage(ETLCollaborationWizard.class, "TITLE_tblwizard_selectsources"), dbModels, srcModel, true);
+            String selectSrcTitle = NbBundle.getMessage(ETLCollaborationWizard.class, "TITLE_tblwizard_selectsources");
+            sourceTransferPanel = new ETLCollaborationWizardTransferFinishPanel(selectSrcTitle, dbModels, srcModel, true);
             panels.add(sourceTransferPanel);
-            targetTransferPanel = new ETLCollaborationWizardTransferFinishPanel(NbBundle.getMessage(ETLCollaborationWizard.class, "TITLE_tblwizard_selecttargets"), dbModels, destModel, false);
+            String selectTrgtTitle = NbBundle.getMessage(ETLCollaborationWizard.class, "TITLE_tblwizard_selecttargets");
+            targetTransferPanel = new ETLCollaborationWizardTransferFinishPanel(selectTrgtTitle, dbModels, destModel, false);
             panels.add(targetTransferPanel);
-        }
-
-        private String getDefaultWorkingFolder() {
-            File conf = AxionDBConfiguration.getConfigFile();
-            Properties prop = new Properties();
-            try {
-                FileInputStream in = new FileInputStream(conf);
-                prop.load(in);
-            } catch (FileNotFoundException ex) {
-            //ignore
-            } catch (IOException ex) {
-            //ignore
-            }
-            return prop.getProperty(AxionDBConfiguration.PROP_DB_LOC);
         }
 
         private List getModelConnections() {
             List model = new ArrayList();
-            // add flatfile databases to db explorer.
-            String workDir = getDefaultWorkingFolder();
-            File f = new File(workDir);
-            File[] db = null;
-            if (f.exists()) {
-                db = f.listFiles();
-                for (int i = 0; i < db.length; i++) {
-                    String ver = null;
-                    try {
-                        ver = db[i].getCanonicalPath() + "\\" + db[i].getName().toUpperCase() + ".VER";
-                        File version = new File(ver);
-                        if (version.exists()) {
-                            String url = "jdbc:axiondb:" + db[i].getName() + ":" + getDefaultWorkingFolder() + db[i].getName();
-                            DatabaseConnection con = ConnectionManager.getDefault().getConnection(url);
-                            if (con == null) {
-                                DBExplorerConnectionUtil.createConnection("org.axiondb.jdbc.AxionDriver", url, "sa", "sa");
-                            }
-                        }
-                    } catch (Exception ex) {
-                    //ignore
-                    }
-                }
-            }
+            DBExplorerUtil.recreateMissingFlatfileConnectionInDBExplorer();
+            model.addAll(DBExplorerUtil.getDatabasesForCurrentProject());
+
             DatabaseConnection[] conns = ConnectionManager.getDefault().getConnections();
             if (conns.length > 0) {
                 for (int i = 0; i < conns.length; i++) {
                     if (conns[i] == null) {
-                        Logger.print(Logger.INFO, LOG_CATEGORY, null, "Got Null connection.");
                         model.add("<NULL>");
                     } else {
                         model.add(conns[i]);
                     }
                 }
-            } else {
+            } else if (model.size() == 0) {
                 model.add("<None>");
             }
             return model;
@@ -170,84 +120,8 @@ public class ETLTableSelectionWizard extends ETLWizard {
             try {
                 return new String[]{NbBundle.getMessage(ETLTableSelectionWizard.class, "STEP_tblwizard_sources"), NbBundle.getMessage(ETLTableSelectionWizard.class, "STEP_tblwizard_targets")};
             } catch (MissingResourceException e) {
-                Logger.printThrowable(Logger.DEBUG, LOG_CATEGORY, "createPanelTitles()", "Could not locate steps strings.", e);
-                return new String[] 
-        {};
+                return new String[]{};
             }
-        }
-        
-        // this will return list of already existing dbmodels
-        // this will also remove already existing dbModels from passed all DBModel list
-        // (i.e. dbModels)
-        private List getDatabaseModels(ETLDefinitionImpl def, Collection dbModels, int type) {
-            ArrayList list = new ArrayList();
-            Iterator it = dbModels.iterator();
-
-            List selModels = Collections.EMPTY_LIST;
-            if (type == org.netbeans.modules.sql.framework.model.SQLConstants.TARGET_DBMODEL) {
-                selModels = def.getTargetDatabaseModels();
-            } else {
-                selModels = def.getSourceDatabaseModels();
-            }
-
-            // This flag is used to find out if a DatabaseModel is already used
-            // if so then we delete that DatabaseModel from the passed in all available
-            // dbmodel list
-            boolean dbModelAlreadyUsed = false;
-
-            while (it.hasNext()) {
-                // this is already a dbmodel as passed in this metohd
-                SQLDBModel newDbModel = (SQLDBModel) it.next();
-
-                Iterator selIter = selModels.iterator();
-                while (selIter.hasNext()) {
-                    SQLDBModel selModel = (SQLDBModel) selIter.next();
-                    if (isIdenticalModel(selModel, newDbModel)) {
-                        dbModelAlreadyUsed = true;
-                        break;
-                    }
-                }
-                DatabaseConnection[] connections = ConnectionManager.getDefault().getConnections();
-                DatabaseConnection dbconn = null;
-                if (dbModelAlreadyUsed) {
-                    DesignTimeDBConnectionProvider provider = new DesignTimeDBConnectionProvider();
-                    try {
-                        for (int i = 0; i < connections.length; i++) {
-                            if (connections[i].getDatabaseURL().equals(newDbModel.getETLDBConnectionDefinition().getConnectionURL())) {
-                                dbconn = connections[i];
-                                break;
-                            }
-                        }
-                        if (dbconn == null) {
-                            JDBCDriver drv = DBExplorerConnectionUtil.registerDriverInstance(newDbModel.getETLDBConnectionDefinition().getDriverClass());
-                            dbconn = DatabaseConnection.create(drv, newDbModel.getETLDBConnectionDefinition().getConnectionURL(), newDbModel.getETLDBConnectionDefinition().getUserName(), (String) null, newDbModel.getETLDBConnectionDefinition().getPassword(), true);
-                            ConnectionManager.getDefault().addConnection(dbconn);
-                        }
-                    } catch (Exception ex) {
-                    //ignore
-                    }
-                    list.add(dbconn);
-                    // remove this db model from passed in all dbmodel list
-                    it.remove();
-                    // reset the flag so that it can be set again
-                    dbModelAlreadyUsed = false;
-                }
-            }
-
-            return list;
-        }
-
-        private boolean isIdenticalModel(SQLDBModel model1, SQLDBModel model2) {
-            boolean identical = model1.getModelName().equals(model2.getModelName());
-
-            final DBConnectionDefinition c1 = model1.getConnectionDefinition();
-            final DBConnectionDefinition c2 = model2.getConnectionDefinition();
-
-            if (c1 != null && c2 != null) {
-                identical &= StringUtil.isIdentical(c1.getConnectionURL(), c2.getConnectionURL()) && StringUtil.isIdentical(c1.getUserName(), c2.getUserName()) && StringUtil.isIdentical(c1.getPassword(), c2.getPassword());
-            }
-
-            return identical;
         }
 
         protected List createPanels(WizardDescriptor wiz) {
@@ -279,14 +153,10 @@ public class ETLTableSelectionWizard extends ETLWizard {
     public static final String DESTINATION_MODELS = ETLCollaborationWizard.TARGET_DB;
     /** Constant string key for storing/retrieving destination tables from wizard context. */
     public static final String DESTINATION_TABLES = "destination_tables"; // NOI18N
-
     /** Constant string key for storing/retrieving source Databases from wizard context. */
     public static final String SOURCE_MODELS = ETLCollaborationWizard.SOURCE_DB;
     /** Constant string key for storing/retrieving source tables from wizard context. */
     public static final String SOURCE_TABLES = "source_tables"; // NOI18N
-
-    /* Log4J category string */
-    //private static final String LOG_CATEGORY = ETLTableSelectionWizard.class.getName();
 
     /**
      * Iterates through the given List, removing db model that have no DBTable instances where
@@ -450,6 +320,7 @@ public class ETLTableSelectionWizard extends ETLWizard {
     /**
      * @see org.netbeans.modules.etl.ui.view.wizards.ETLWizard#getDialogTitle()
      */
+    @Override
     protected String getDialogTitle() {
         return NbBundle.getMessage(ETLTableSelectionWizard.class, "TITLE_dlg_selecttables");
     }

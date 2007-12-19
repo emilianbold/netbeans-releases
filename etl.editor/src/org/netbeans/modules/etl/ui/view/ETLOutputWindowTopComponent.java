@@ -41,50 +41,175 @@
 package org.netbeans.modules.etl.ui.view;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.logging.Logger;
-import javax.swing.JLabel;
+import javax.swing.AbstractAction;
+import javax.swing.BoxLayout;
+import javax.swing.Icon;
+import javax.swing.JButton;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
-import javax.swing.SwingUtilities;
+import javax.swing.JToolBar;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.sql.framework.ui.output.ETLOutputPanel;
 import org.openide.awt.MouseUtils;
 import org.openide.awt.TabbedPaneFactory;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 /**
- * Top component which displays something.
+ * Top component which displays various output panel
+ * 
+ * @author Ahimanikya Satapathy
+ * @author Nithya Radhakrishnan
  */
-public final class ETLOutputWindowTopComponent extends TopComponent implements PropertyChangeListener {
+public final class ETLOutputWindowTopComponent extends TopComponent {
 
     private static ETLOutputWindowTopComponent instance;
-    /** path to the icon used by the component and its open action */
-    //    static final String ICON_PATH = "SET/PATH/TO/ICON/HERE";
     private static final String PREFERRED_ID = "ETLOutputWindowTopComponent";
-    private Set<Component> components = new HashSet<Component>(1);
     private JTabbedPane tabbedPane = TabbedPaneFactory.createCloseButtonTabbedPane();
     private PopupListener listener;
+    private ChangeListener listen;
     private JPopupMenu pop;
     private CloseListener closeL;
     private transient boolean isVisible = false;
-    private boolean inited = false;
+    private ETLOutputPanel lastKnownSelection = null;
+    private ETLOutputPanel newSelection;
+    private JToolBar verticalBar;
+    public static final String ICON_RESOURCE = "org/netbeans/modules/sql/framework/ui/resources/images/showOutput.png"; // NOI18N
+
 
     private ETLOutputWindowTopComponent() {
         initComponents();
         setLayout(new BorderLayout());
+
+        setFocusable(true);
+        setBackground(UIManager.getColor("text")); //NOI18N
+
         setName(NbBundle.getMessage(ETLOutputWindowTopComponent.class, "CTL_ETLOutputWindowTopComponent"));
+        setIcon(Utilities.loadImage(ICON_RESOURCE));
         setToolTipText(NbBundle.getMessage(ETLOutputWindowTopComponent.class, "HINT_ETLOutputWindowTopComponent"));
-        tabbedPane.addPropertyChangeListener(this);
+
+        // create it but don't add it yet...
+        verticalBar = new JToolBar(JToolBar.VERTICAL);
+        verticalBar.setLayout(new BoxLayout(verticalBar, BoxLayout.Y_AXIS));
+        verticalBar.setFloatable(false);
+
+        Insets ins = verticalBar.getMargin();
+        JButton sample = new JButton();
+        sample.setBorderPainted(false);
+        sample.setOpaque(false);
+        sample.setText(null);
+        sample.setIcon(new Icon() {
+
+            public int getIconHeight() {
+                return 16;
+            }
+
+            public int getIconWidth() {
+                return 16;
+            }
+
+            public void paintIcon(Component c, Graphics g, int x, int y) {
+            }
+        });
+        verticalBar.add(sample);
+        Dimension buttonPref = sample.getPreferredSize();
+        Dimension minDim = new Dimension(buttonPref.width + ins.left + ins.right, buttonPref.height + ins.top + ins.bottom);
+        verticalBar.setMinimumSize(minDim);
+        verticalBar.setPreferredSize(minDim);
+        verticalBar.remove(sample);
+        verticalBar.setBorder(new VariableRightBorder(tabbedPane));
+        verticalBar.setBorderPainted(true);
+
         pop = new JPopupMenu();
+        pop.add(new Close());
+        pop.add(new CloseAll());
+        pop.add(new CloseAllButCurrent());
         listener = new PopupListener();
         closeL = new CloseListener();
+        listen = new ChangeListener() {
+
+            public void stateChanged(ChangeEvent e) {
+                if (e.getSource() instanceof JTabbedPane) {
+                    JTabbedPane jp = ((JTabbedPane) e.getSource());
+                    newSelection = (ETLOutputPanel) jp.getSelectedComponent();
+                    fire(lastKnownSelection, newSelection);
+                }
+            }
+        };
+
+    }
+
+    private class Close extends AbstractAction {
+
+        public Close() {
+            super(NbBundle.getMessage(ETLOutputWindowTopComponent.class, "LBL_CloseTab"));
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            if (tabbedPane.getComponentCount() > 0) {
+                removePanel(tabbedPane.getSelectedComponent());
+            }
+
+        }
+    }
+
+    private final class CloseAll extends AbstractAction {
+
+        public CloseAll() {
+            super(NbBundle.getMessage(ETLOutputWindowTopComponent.class, "LBL_CloseAllTabs"));
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            if (tabbedPane.getComponentCount() > 0) {
+                closeAll(tabbedPane);
+            }
+            removeAll();
+            close();
+        }
+    }
+
+    private class CloseAllButCurrent extends AbstractAction {
+
+        public CloseAllButCurrent() {
+            super(NbBundle.getMessage(ETLOutputWindowTopComponent.class, "LBL_CloseOtherTabs"));
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            if (tabbedPane.getComponentCount() > 0) {
+                closeAllButCurrent(tabbedPane);
+            }
+        }
+    }
+
+    void closeAllButCurrent(JTabbedPane tabs) {
+        Component current = tabs.getSelectedComponent();
+        for (Component comp : tabs.getComponents()) {
+            if (comp != current) {
+                removePanel(comp);
+            }
+        }
+    }
+
+    void closeAll(JTabbedPane tabs) {
+        for (Component comp : tabs.getComponents()) {
+            removePanel(comp);
+        }
+        revalidate();
     }
 
     private class CloseListener implements PropertyChangeListener {
@@ -96,7 +221,7 @@ public final class ETLOutputWindowTopComponent extends TopComponent implements P
         }
     }
 
-/** This method is called from within the constructor to
+    /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
      * always regenerated by the Form Editor.
@@ -135,6 +260,7 @@ public final class ETLOutputWindowTopComponent extends TopComponent implements P
      * To obtain the singleton instance, use {@link findInstance}.
      * @return ETLOutputWindowTopComponent defaultInstance
      */
+
     public static synchronized ETLOutputWindowTopComponent getDefault() {
         if (instance == null) {
             instance = new ETLOutputWindowTopComponent();
@@ -158,56 +284,51 @@ public final class ETLOutputWindowTopComponent extends TopComponent implements P
         Logger.getLogger(ETLOutputWindowTopComponent.class.getName()).warning("There seem to be multiple components with the '" + PREFERRED_ID + "' ID. That is a potential source of errors and unexpected behavior.");
         return getDefault();
     }
-    //removePanel
 
     public void removePanel(Component panel) {
-        Component comp = getComponentCount() > 0 ? getComponent(0) : null;
-        if (comp instanceof JTabbedPane) {
-            JTabbedPane tabs = (JTabbedPane) comp;
-            if (panel == null) {
-                panel = tabs.getSelectedComponent();
-            }
-            tabs.remove(panel);
-            if (tabs.getComponentCount() == 1) {
-                Component c = tabs.getComponent(0);
-                tabs.removeMouseListener(listener);
-                tabs.removePropertyChangeListener(closeL);
-                remove(tabs);
+        if (tabbedPane.getComponentCount() == 0) {
+            remove(panel);
+        } else {
+            tabbedPane.remove(panel);
+            if (tabbedPane.getComponentCount() == 1) {
+                Component c = tabbedPane.getSelectedComponent();
+                lastKnownSelection = (ETLOutputPanel) c;
+                tabbedPane.removeMouseListener(listener);
+                tabbedPane.removePropertyChangeListener(closeL);
+                remove(tabbedPane);
                 add(c, BorderLayout.CENTER);
             }
-        } else {
-            if (comp != null) {
-                remove(comp);
-            }
-            isVisible = false;
-            close();
         }
-        validate();
+        revalidate();
     }
 
     public void addPanel(Component panel) {
         if (getComponentCount() == 0) {
             add(panel, BorderLayout.CENTER);
-        } else {
-            Component comp = getComponent(0);
-            if (comp instanceof JTabbedPane) {
-                ((JTabbedPane) comp).addTab(panel.getName() + "  ", null, panel, panel.getName()); //NOI18N
-                ((JTabbedPane) comp).setSelectedComponent(panel);
-                comp.validate();
-            } else if (comp instanceof JLabel) {
-                remove(comp);
-                add(panel, BorderLayout.CENTER);
-            } else {
-                remove(comp);
-                JTabbedPane pane = TabbedPaneFactory.createCloseButtonTabbedPane();
-                pane.addMouseListener(listener);
-                pane.addPropertyChangeListener(closeL);
-                add(pane, BorderLayout.CENTER);
-                pane.addTab(comp.getName() + "  ", null, comp, comp.getName()); //NOI18N
-                pane.addTab(panel.getName() + "  ", null, panel, panel.getName()); //NOI18N
-                pane.setSelectedComponent(panel);
-                pane.validate();
+            if (panel instanceof ETLOutputPanel) {
+                lastKnownSelection = (ETLOutputPanel) panel;
+                verticalBar.removeAll();
+                JButton[] btns = ((ETLOutputPanel) panel).getVerticalToolBar();
+                for (JButton btn : btns) {
+                    verticalBar.add(btn);
+                }
+                add(verticalBar, BorderLayout.WEST);
             }
+        } else if (tabbedPane.getComponentCount() == 0 && lastKnownSelection != panel) {
+            Component comp = (Component) lastKnownSelection;
+            remove(comp);
+            tabbedPane.addMouseListener(listener);
+            tabbedPane.addPropertyChangeListener(closeL);
+            tabbedPane.addChangeListener(listen);
+            add(tabbedPane, BorderLayout.CENTER);
+            tabbedPane.addTab(comp.getName() + "  ", null, comp, comp.getName()); //NOI18N
+            tabbedPane.addTab(panel.getName() + "  ", null, panel, panel.getName()); //NOI18N
+            tabbedPane.setSelectedComponent(panel);
+            tabbedPane.validate();
+        } else if (lastKnownSelection != panel) {
+            tabbedPane.addTab(panel.getName() + "  ", null, panel, panel.getName()); //NOI18N
+            tabbedPane.setSelectedComponent(panel);
+            tabbedPane.validate();
         }
         if (!isVisible) {
             isVisible = true;
@@ -215,22 +336,6 @@ public final class ETLOutputWindowTopComponent extends TopComponent implements P
         }
         validate();
         requestActive();
-    }
-    //remove Component
-
-    private void removeComponent(Component c) {
-        assert SwingUtilities.isEventDispatchThread();
-        assert components.remove(c);
-        if (components.size() == 0) {
-            removeAll();
-        } else if (components.size() == 1) {
-            tabbedPane.removeAll();
-            removeAll();
-            add(components.iterator().next());
-        } else {
-            tabbedPane.remove(c);
-        }
-        revalidate();
     }
 
     @Override
@@ -240,12 +345,12 @@ public final class ETLOutputWindowTopComponent extends TopComponent implements P
 
     @Override
     public void componentOpened() {
-        // TODO add custom code on component opening
+    // TODO add custom code on component opening
     }
 
     @Override
     public void componentClosed() {
-        // TODO add custom code on component closing
+    // TODO add custom code on component closing
     }
 
     @Override
@@ -267,10 +372,57 @@ public final class ETLOutputWindowTopComponent extends TopComponent implements P
         }
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (TabbedPaneFactory.PROP_CLOSE.equals(evt.getPropertyName())) {
-            Component c = (Component) evt.getNewValue();
-            removeComponent(c);
+    protected void fire(ETLOutputPanel formerSelection, ETLOutputPanel selection) {
+        if (formerSelection != selection && selection != null) {
+            lastKnownSelection = selection;
+            setToolbarButtons(selection.getVerticalToolBar());
+        } else if (lastKnownSelection != null) {
+            setToolbarButtons(lastKnownSelection.getVerticalToolBar());
+        }
+    }
+
+    private void setToolbarButtons(JButton[] buttons) {
+        verticalBar.removeAll();
+        for (JButton btn : buttons) {
+            if(btn != null) {
+                verticalBar.add(btn);
+            }
+        }
+        verticalBar.repaint();
+        verticalBar.validate();
+    }
+
+    private class VariableRightBorder implements Border {
+
+        private JTabbedPane pane;
+
+        public VariableRightBorder(JTabbedPane pane) {
+            this.pane = pane;
+        }
+
+        public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+            Color old = g.getColor();
+            g.setColor(getColor());
+            g.drawLine(x + width - 1, y, x + width - 1, y + height);
+            g.setColor(old);
+        }
+
+        public Color getColor() {
+            if (Utilities.isMac()) {
+                Color c1 = UIManager.getColor("controlShadow");
+                Color c2 = UIManager.getColor("control");
+                return new Color((c1.getRed() + c2.getRed()) / 2, (c1.getGreen() + c2.getGreen()) / 2, (c1.getBlue() + c2.getBlue()) / 2);
+            } else {
+                return UIManager.getColor("controlShadow");
+            }
+        }
+
+        public Insets getBorderInsets(Component c) {
+            return new Insets(0, 0, 0, 2);
+        }
+
+        public boolean isBorderOpaque() {
+            return true;
         }
     }
 }

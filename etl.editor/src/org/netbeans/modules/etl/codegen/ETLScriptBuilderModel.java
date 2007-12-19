@@ -34,7 +34,6 @@ import org.netbeans.modules.sql.framework.model.SQLDBModel;
 import org.netbeans.modules.sql.framework.model.SQLDBTable;
 import org.netbeans.modules.sql.framework.model.SQLDefinition;
 import org.netbeans.modules.sql.framework.model.SQLModelObjectFactory;
-import org.netbeans.modules.sql.framework.ui.view.DataOutputPanel;
 import com.sun.etl.engine.ETLEngine;
 import com.sun.etl.engine.impl.ETLEngineImpl;
 import com.sun.sql.framework.exception.BaseException;
@@ -58,7 +57,7 @@ public final class ETLScriptBuilderModel {
     public static final String ETL_INSTANCE_DB_NAME = "InstanceDB";
     public static final String ETL_MONITOR_DB_CONN_DEF_NAME = "MDB_CONN_DEF";
     public static final String ETL_MONITOR_DB_FOLDER = "mdb/";
-    public static final String ETL_MONITOR_DB_NAME = DataOutputPanel.ETL_MONITOR_DB_NAME;
+    public static final String ETL_MONITOR_DB_NAME = "MonitorDB";;
     private boolean connectionDefinitionOverridesApplied = false;
     private List<SQLDBConnectionDefinition> connectionDefinitions = null;
     private ETLEngine engine = null;

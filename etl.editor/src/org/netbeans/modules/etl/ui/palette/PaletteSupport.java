@@ -43,7 +43,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import javax.swing.Action;
-import org.netbeans.modules.etl.ui.view.ETLCollaborationTopComponent;
+import org.netbeans.modules.etl.ui.view.ETLCollaborationTopPanel;
 import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
 import org.netbeans.modules.sql.framework.ui.graph.IOperatorXmlInfo;
 import org.netbeans.modules.sql.framework.ui.graph.impl.OperatorXmlInfoModel;
@@ -72,17 +72,17 @@ public class PaletteSupport {
      *
      * @return
      */
-    public static PaletteController createPalette(final ETLCollaborationTopComponent topC) throws IOException {
+    public static PaletteController createPalette(final ETLCollaborationTopPanel etlPanel) throws IOException {
         controller = PaletteFactory.createPalette("ETLOperators", new ETLAction(), null, new ETLDnDHandler());
         controller.addPropertyChangeListener(new PropertyChangeListener() {
 
             // FIXME: There should be a better way to do this.
-            ETLCollaborationTopComponent tc = topC;
+            ETLCollaborationTopPanel topPanel = etlPanel;
             public void propertyChange(PropertyChangeEvent evt) {
                 if (PaletteController.PROP_SELECTED_ITEM.equals(evt.getPropertyName())) {
                     Lookup selItem = controller.getSelectedItem();
 
-                    graphView = tc.getGraphView();
+                    graphView = topPanel.getGraphView();
                     if (null != selItem) {
                         Node selNode = selItem.lookup(Node.class);
                         if (null != selNode) {

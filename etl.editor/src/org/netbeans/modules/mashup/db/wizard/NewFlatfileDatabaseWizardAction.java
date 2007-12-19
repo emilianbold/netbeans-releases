@@ -18,7 +18,7 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.modules.mashup.db.ui.AxionDBConfiguration;
-import org.netbeans.modules.sql.framework.common.utils.DBExplorerConnectionUtil;
+import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
@@ -154,7 +154,7 @@ public final class NewFlatfileDatabaseWizardAction extends CallableSystemAction 
         } else {
             Connection conn = null;
             try {
-                conn = DBExplorerConnectionUtil.createConnection("org.axiondb.jdbc.AxionDriver", url, "sa", "sa");
+                conn = DBExplorerUtil.createConnection("org.axiondb.jdbc.AxionDriver", url, "sa", "sa");
                 if(conn != null) {
                     status = true;
                 }

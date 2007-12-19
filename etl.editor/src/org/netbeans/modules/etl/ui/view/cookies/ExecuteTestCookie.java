@@ -52,13 +52,12 @@ import org.netbeans.modules.etl.codegen.ETLScriptBuilderModel;
 import org.netbeans.modules.etl.model.ETLDefinition;
 import org.netbeans.modules.etl.ui.DataObjectHelper;
 import org.netbeans.modules.etl.ui.DataObjectProvider;
-import org.netbeans.modules.etl.ui.ETLDataObject;
 import org.netbeans.modules.etl.ui.model.impl.ETLCollaborationModel;
-import org.netbeans.modules.etl.ui.view.ETLCollaborationTopComponent;
+import org.netbeans.modules.etl.ui.view.ETLCollaborationTopPanel;
 import org.netbeans.modules.sql.framework.model.ValidationInfo;
 import org.netbeans.modules.sql.framework.ui.SwingWorker;
 import org.netbeans.modules.sql.framework.ui.utils.UIUtil;
-import org.netbeans.modules.sql.framework.ui.view.SQLLogView;
+import org.netbeans.modules.sql.framework.ui.output.SQLLogView;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
@@ -83,8 +82,7 @@ public class ExecuteTestCookie implements Node.Cookie {
     private static final String NL = System.getProperty("line.separator", "\n");
     private final String logCategory = ExecuteTestCookie.class.getName();
     private ETLEngine engine;
-    private ETLCollaborationTopComponent etlView;
-    private ETLDataObject dObj;
+    private ETLCollaborationTopPanel topPanel;
     private SQLLogView logView;
     private long startTime;
     private long endTime;
@@ -101,12 +99,12 @@ public class ExecuteTestCookie implements Node.Cookie {
     /** Executes the test process for the associated SQLDefinition. */
     public void start() {
         try {
-            etlView = DataObjectProvider.getProvider().getActiveDataObject().getETLEditorTC();
+            topPanel = DataObjectProvider.getProvider().getActiveDataObject().getETLEditorTopPanel();
         } catch (Exception ex) {
             // ignore
         }
-        if (etlView != null) {
-            logView = etlView.showLog();
+        if (topPanel != null) {
+            logView = topPanel.showLog();
         }
 
         try {

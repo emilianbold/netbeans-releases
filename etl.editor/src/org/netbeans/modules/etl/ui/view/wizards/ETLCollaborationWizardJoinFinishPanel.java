@@ -38,14 +38,12 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.etl.ui.view.wizards;
 
 import java.awt.Dimension;
 
 import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
 import org.openide.WizardDescriptor;
-
 
 /**
  * @author Ritesh Adval

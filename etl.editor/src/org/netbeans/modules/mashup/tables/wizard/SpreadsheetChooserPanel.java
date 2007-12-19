@@ -12,56 +12,48 @@ import org.netbeans.modules.mashup.db.model.impl.FlatfileDBTableImpl;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
-import java.awt.Dimension;
 import java.util.List;
 
 public class SpreadsheetChooserPanel implements WizardDescriptor.Panel {
-    
+
     /**
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
      */
     private Component component;
-    
+
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
     // but never displayed, or not all panels are displayed, it is better to
     // create only those which really need to be visible.
     public Component getComponent() {
         if (component == null) {
-            component = new SpreadsheetChooserVisualPanel(this);         
+            component = new SpreadsheetChooserVisualPanel(this);
         }
         return component;
     }
-    
+
     public HelpCtx getHelp() {
-        // Show no Help button for this panel:
         return HelpCtx.DEFAULT_HELP;
-        // If you have context help:
-        // return new HelpCtx(SampleWizardPanel1.class);
     }
-    
+
     public boolean isValid() {
-        // If it is always OK to press Next or Finish, then:
-        // return true;
-        // If it depends on some condition (form filled out...), then:
         return canAdvance();
-        // and when this condition changes (last form field filled in...) then:
-        // fireChangeEvent();
-        // and uncomment the complicated stuff below.
     }
-    
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
+
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
+
     public final void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
         }
     }
+
     protected final void fireChangeEvent() {
         Iterator<ChangeListener> it;
         synchronized (listeners) {
@@ -72,29 +64,28 @@ public class SpreadsheetChooserPanel implements WizardDescriptor.Panel {
             it.next().stateChanged(ev);
         }
     }
-    
+
     public void readSettings(Object settings) {
         if (settings instanceof WizardDescriptor) {
             WizardDescriptor wd = (WizardDescriptor) settings;
-            FlatfileDBTable table = (FlatfileDBTable) wd.getProperty(MashupTableWizardIterator.PROP_CURRENTTABLE);
             List<String> tables = (List<String>) wd.getProperty(MashupTableWizardIterator.URL_LIST);
             int index = Integer.parseInt((String) wd.getProperty(MashupTableWizardIterator.TABLE_INDEX));
-            ((SpreadsheetChooserVisualPanel)getComponent()).populateSheets(tables.get(index));
+            ((SpreadsheetChooserVisualPanel) getComponent()).populateSheets(tables.get(index));
         }
     }
-    
+
     public void storeSettings(Object settings) {
         if (settings instanceof WizardDescriptor) {
             WizardDescriptor wd = (WizardDescriptor) settings;
             FlatfileDBTable table = (FlatfileDBTable) wd.getProperty(MashupTableWizardIterator.PROP_CURRENTTABLE);
-            if(!((SpreadsheetChooserVisualPanel)getComponent()).getSelectedSheetName().equals("")) {
-                ((FlatfileDBTableImpl)table).setOrPutProperty("SHEET",
-                        ((SpreadsheetChooserVisualPanel)getComponent()).getSelectedSheetName());
+            if (!((SpreadsheetChooserVisualPanel) getComponent()).getSelectedSheetName().equals("")) {
+                ((FlatfileDBTableImpl) table).setOrPutProperty("SHEET",
+                        ((SpreadsheetChooserVisualPanel) getComponent()).getSelectedSheetName());
             }
         }
     }
-    
+
     private boolean canAdvance() {
-        return ((SpreadsheetChooserVisualPanel)getComponent()).canAdvance();
+        return ((SpreadsheetChooserVisualPanel) getComponent()).canAdvance();
     }
 }

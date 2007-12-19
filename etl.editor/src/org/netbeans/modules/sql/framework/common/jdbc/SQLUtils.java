@@ -947,6 +947,24 @@ public class SQLUtils {
                 return true;
         }
     }
+    
+    public static boolean isNumeric(int jdbcType) {
+        switch (jdbcType) {
+            case Types.BIT:
+            case Types.BIGINT:
+            case Types.BOOLEAN:
+            case Types.INTEGER:
+            case Types.SMALLINT:
+            case Types.TINYINT:
+            case Types.FLOAT:
+            case Types.REAL:
+            case Types.DOUBLE:
+                return true;
+
+            default:
+                return false;
+        }
+    }
 
     public static boolean isScaleRequired(int type) {
         switch (type) {

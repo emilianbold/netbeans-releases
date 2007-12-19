@@ -67,7 +67,7 @@ import org.netbeans.modules.mashup.db.common.PropertyKeys;
 import org.netbeans.modules.mashup.db.model.FlatfileDBTable;
 import org.netbeans.modules.mashup.db.model.impl.FlatfileDBTableImpl;
 import org.netbeans.modules.mashup.db.ui.FlatfileResulSetPanel;
-import org.netbeans.modules.sql.framework.ui.view.ResultSetTablePanel;
+import org.netbeans.modules.sql.framework.ui.output.dataview.ResultSetTablePanel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;

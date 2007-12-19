@@ -52,6 +52,7 @@ import com.sun.sql.framework.jdbc.DBConnectionFactory;
 import com.sun.sql.framework.jdbc.SQLPart;
 import com.sun.sql.framework.utils.AttributeMap;
 import com.sun.sql.framework.utils.StringUtil;
+import org.netbeans.modules.mashup.db.model.impl.FlatfileDBTableImpl;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 import org.netbeans.modules.sql.framework.model.DBTable;
 
@@ -398,7 +399,7 @@ public abstract class BaseETLStrategyBuilder implements ETLStrategyBuilder {
         // this is required, then cast FlatfileDBTable to FlatfileDBTableImpl and call
         // setName().
         if (stmtType.equals("DROP")) {
-            sqlPart = createSQLPart(flatfileDBTable.getDropStatementSQL(tableName), stmtType, connPoolName);
+            sqlPart = createSQLPart(FlatfileDBTableImpl.getDropStatementSQL(tableName), stmtType, connPoolName);
         } else if (stmtType.equals("CREATE")) {
             sqlPart = createSQLPart(flatfileDBTable.getCreateStatementSQL(staticDirectory, tableName, flatfileRuntimeFilePath, isDynamicPath,
                     createDataFileIfNotExist), stmtType, connPoolName);
@@ -570,15 +571,17 @@ public abstract class BaseETLStrategyBuilder implements ETLStrategyBuilder {
             tgtInternalMetadata = new InternalDBMetadata(null, false, null);
         }
 
-        populateFlatfileMetadata(tTable, tgtConnPoolName, tgtInternalMetadata, initTask, cleanupTask);
         int targetDBType = connFactory.getDatabaseVersion(getConnectionPropertiesFrom(dbCondefn));
+        String poolName = (targetDBType == DB.AXIONDB) ? ETLScriptBuilderModel.ETL_INSTANCE_DB_CONN_DEF_NAME: tgtConnPoolName;
+        populateFlatfileMetadata(tTable, poolName , tgtInternalMetadata, initTask, cleanupTask);
+
 
         DB db = DBFactory.getInstance().getDatabase(targetDBType);
         StatementContext context = new StatementContext();
         SQLPart initStatements = db.getStatements().getInitializationStatements(context);
 
         if (initStatements != null) {
-            initStatements.setConnectionPoolName(tgtConnPoolName);
+            initStatements.setConnectionPoolName(poolName);
             initTask.addStatement(initStatements);
         }
     }

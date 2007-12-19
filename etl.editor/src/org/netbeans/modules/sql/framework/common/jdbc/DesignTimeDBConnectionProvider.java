@@ -13,7 +13,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
 
-import org.netbeans.modules.sql.framework.common.utils.DBExplorerConnectionUtil;
+import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
 
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.jdbc.DBConnectionFactory;
@@ -35,7 +35,7 @@ public class DesignTimeDBConnectionProvider implements DBConnectionProvider {
         String username = conDef.getUserName();
         String password = conDef.getPassword();
         String url = conDef.getConnectionURL();
-        return DBExplorerConnectionUtil.createConnection(driver, url, username, password);
+        return DBExplorerUtil.createConnection(driver, url, username, password);
     }
 
     public Connection getConnection(Properties connProps) throws BaseException {
@@ -43,7 +43,7 @@ public class DesignTimeDBConnectionProvider implements DBConnectionProvider {
         String username = connProps.getProperty(DBConnectionFactory.PROP_USERNAME);
         String password = connProps.getProperty(DBConnectionFactory.PROP_PASSWORD);
         String url = connProps.getProperty(DBConnectionFactory.PROP_URL);
-        return DBExplorerConnectionUtil.createConnection(driver, url, username, password);
+        return DBExplorerUtil.createConnection(driver, url, username, password);
     }
 
     public void closeConnection(Connection con) {

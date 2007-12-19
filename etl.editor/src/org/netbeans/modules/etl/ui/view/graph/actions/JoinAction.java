@@ -51,7 +51,7 @@ import javax.swing.KeyStroke;
 
 import org.netbeans.modules.etl.ui.DataObjectProvider;
 import org.netbeans.modules.etl.ui.model.impl.ETLCollaborationModel;
-import org.netbeans.modules.etl.ui.view.ETLCollaborationTopComponent;
+import org.netbeans.modules.etl.ui.view.ETLCollaborationTopPanel;
 import org.netbeans.modules.sql.framework.model.SQLJoinView;
 import org.netbeans.modules.sql.framework.ui.graph.actions.GraphAction;
 import org.netbeans.modules.sql.framework.ui.view.join.JoinMainDialog;
@@ -96,9 +96,9 @@ public class JoinAction extends GraphAction {
      * @param ev event
      */
     public void actionPerformed(ActionEvent ev) {
-        ETLCollaborationTopComponent etlEditor = null;
+        ETLCollaborationTopPanel etlEditor = null;
         try {
-            etlEditor = DataObjectProvider.getProvider().getActiveDataObject().getETLEditorTC();
+            etlEditor = DataObjectProvider.getProvider().getActiveDataObject().getETLEditorTopPanel();
         } catch (Exception ex) {
             //ignore
         }

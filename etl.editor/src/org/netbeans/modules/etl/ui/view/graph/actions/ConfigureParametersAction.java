@@ -69,6 +69,7 @@ import org.openide.filesystems.FileUtil;
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.Logger;
 import com.sun.sql.framework.utils.XmlUtil;
+import org.openide.awt.StatusDisplayer;
 
 /**
  * Action class used for configuring ETL Collaborations.
@@ -117,12 +118,10 @@ public final class ConfigureParametersAction extends CookieAction {
                 }
                 showConfigPanel();
             } else {
-                msg = "Failed to create the config file.";
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.INFORMATION_MESSAGE));
+                StatusDisplayer.getDefault().setStatusText("\nFailed to create the config file.");
             }
         } else {
-            msg = "Failed to initialize.";
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.INFORMATION_MESSAGE));
+            StatusDisplayer.getDefault().setStatusText("\nFailed to initialize.");
         }
     }
 
@@ -189,20 +188,16 @@ public final class ConfigureParametersAction extends CookieAction {
                     this.configFile.delete();
                     try {
                         writeToConfigFile(this.configFile, defn);
-                        String msg = "Deployment parameters successfully updated.";
-                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.INFORMATION_MESSAGE));
+                        StatusDisplayer.getDefault().setStatusText("\nDeployment parameters successfully updated.");
                     } catch (IOException ex) {
-                        String msg = "Failed to update changes.";
-                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.INFORMATION_MESSAGE));
+                        StatusDisplayer.getDefault().setStatusText("\nFailed to update changes.");
                     } catch (BaseException baseEx) {
-                        String msg = "Failed to read SQL Definition.";
-                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.INFORMATION_MESSAGE));
+                        StatusDisplayer.getDefault().setStatusText("\nFailed to read SQL Definition.");
                     }
                 }
             }
         } else {
-            String msg = "All the edits are discarded.";
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.INFORMATION_MESSAGE));
+            StatusDisplayer.getDefault().setStatusText("\nAll the edits are discarded.");
         }
     }
 

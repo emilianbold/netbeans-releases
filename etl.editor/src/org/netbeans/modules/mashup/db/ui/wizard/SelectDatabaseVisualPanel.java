@@ -25,7 +25,7 @@ import javax.swing.JRadioButton;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.mashup.db.ui.AxionDBConfiguration;
-import org.netbeans.modules.sql.framework.common.utils.DBExplorerConnectionUtil;
+import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
 
 
 /**
@@ -99,7 +99,7 @@ public class SelectDatabaseVisualPanel extends javax.swing.JPanel {
                         urls.add(url);
                         DatabaseConnection con = ConnectionManager.getDefault().getConnection(url);
                         if(con == null) {
-                            DBExplorerConnectionUtil.createConnection("org.axiondb.jdbc.AxionDriver", url, "sa", "sa");
+                            DBExplorerUtil.createConnection("org.axiondb.jdbc.AxionDriver", url, "sa", "sa");
                         }
                     }
                 } catch (Exception ex) {

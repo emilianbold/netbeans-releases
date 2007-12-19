@@ -69,6 +69,7 @@ import com.sun.sql.framework.utils.Logger;
 import com.sun.sql.framework.utils.StringUtil;
 import org.netbeans.modules.sql.framework.model.DBTable;
 import org.netbeans.modules.sql.framework.model.SQLDBColumn;
+import org.netbeans.modules.sql.framework.model.SQLDBTable;
 import org.netbeans.modules.sql.framework.model.impl.AbstractDBTable;
 
 /**
@@ -224,6 +225,7 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
      * @return true if successful. false if failed.
      */
     
+    @Override
     public boolean addColumn(SQLDBColumn theColumn) {
         return addColumn(theColumn, false);
     }
@@ -234,6 +236,7 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
      *
      * @return a copy of DBTable.
      */
+    @Override
     public Object clone() {
         try {
             FlatfileDBTableImpl table = (FlatfileDBTableImpl) super.clone();
@@ -255,6 +258,7 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
      * @return -1 if the column name is less than obj to be compared. 0 if the column name
      *         is the same. 1 if the column name is greater than obj to be compared.
      */
+    @Override
     public int compareTo(Object refObj) {
         if (refObj == null) {
             return -1;
@@ -276,6 +280,7 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
      *
      * @param source DBTable providing contents to be copied.
      */
+    @Override
     public void copyFrom(DBTable source) {
         if (source == null) {
             throw new IllegalArgumentException("Must supply non-null ref for source");
@@ -338,6 +343,7 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
      * @return true if obj is functionally identical to this ETLTable instance; false
      *         otherwise
      */
+    @Override
     public boolean equals(Object obj) {
         boolean result = false;
         
@@ -377,6 +383,7 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
     /**
      * @see org.netbeans.modules.model.database.DBTable#getCatalog
      */
+    @Override
     public String getCatalog() {
         return "";
     }
@@ -387,28 +394,24 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
      * @return SQL for this Flatfile with getTableName()
      */
     public String getCreateStatementSQL() {
-        return getCreateStatementSQL(this.name);
+        return getCreateStatementSQL(this) + getFlatfilePropertiesSQL();
     }
     
     /**
      * Gets the SQL create statement to create a text table representing this flatfile.
      *
-     * @param tableName table name to use in synthesizing the create statement; if null,
+     * @param table to use in synthesizing the create statement; if null,
      *        the current table name yielded by getName() will be used
      * @return SQL statement to create a text table representing the contents of this
      *         flatfile
      */
-    public String getCreateStatementSQL(String tableName) {
-        if (StringUtil.isNullString(tableName)) {
-            tableName = name;
-        }
-        
+    public String getCreateStatementSQL(SQLDBTable table) {
+        String tableName = table.getName();
         List<String> pkList = new ArrayList<String>();
-        //SortedSet fields = new TreeSet(this.columns.values());
-        Iterator it = this.columns.values().iterator();
+        Iterator it = table.getColumns().values().iterator();
         StringBuilder buffer = new StringBuilder(100);
-        buffer.append("CREATE EXTERNAL TABLE \"").append(tableName).append("\" ("); // NOI18N
-        
+        buffer.append("CREATE EXTERNAL TABLE IF NOT EXISTS \"").append(tableName).append("\" (");
+        // NOI18N
         int i = 0;
         while (it.hasNext()) {
             FlatfileDBColumn colDef = (FlatfileDBColumn) it.next();
@@ -420,8 +423,6 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
                 pkList.add(colDef.getName());
             }
         }
-        
-        
         if (pkList.size() > 0) {
             StringBuilder pkbuffer = new StringBuilder(20);
             pkbuffer.append(", PRIMARY KEY( ");
@@ -436,12 +437,60 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
             pkbuffer.append(") ");
             buffer.append(pkbuffer.toString());
         }
-        
+
         buffer.append(")");
-        buffer.append(getFlatfilePropertiesSQL());
         return buffer.toString();
     }
+
     
+    
+    /**
+     * Gets the SQL create statement to create a text table representing this flatfile.
+     *
+     * @param table to use in synthesizing the create statement; if null,
+     *        the current table name yielded by getName() will be used
+     * @return SQL statement to create a text table representing the contents of this
+     *         flatfile
+     */
+    public static String getCreateStatementSQL(SQLDBTable table, String generatedName) {
+        String tableName = table.getName();
+        List<String> pkList = new ArrayList<String>();
+        Iterator it = table.getColumns().values().iterator();
+        StringBuilder buffer = new StringBuilder(100);
+        buffer.append("CREATE EXTERNAL TABLE \"").append(generatedName).append("\" (");
+        // NOI18N
+        int i = 0;
+        while (it.hasNext()) {
+            FlatfileDBColumn colDef = (FlatfileDBColumn) it.next();
+            if (i++ != 0) {
+                buffer.append(", ");
+            }
+            buffer.append(colDef.getCreateStatementSQL());
+            if (colDef.isPrimaryKey()) {
+                pkList.add(colDef.getName());
+            }
+        }
+        if (pkList.size() > 0) {
+            StringBuilder pkbuffer = new StringBuilder(20);
+            pkbuffer.append(", PRIMARY KEY( ");
+            it = pkList.iterator();
+            int j = 0;
+            while (it.hasNext()) {
+                if (j++ != 0) {
+                    buffer.append(", ");
+                }
+                pkbuffer.append((String) it.next());
+            }
+            pkbuffer.append(") ");
+            buffer.append(pkbuffer.toString());
+        }
+
+        buffer.append(")");
+        return buffer.toString();
+    }
+
+    
+
     /**
      * Gets the SQL create statement to create a text table representing this flatfile.
      *
@@ -453,6 +502,8 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
         String sql = null;
         try {
             if (runtimeName != null && runtimeName.trim().length() != 0) {
+                setOrPutProperty(FlatfileDBTable.PROP_FILENAME, "$" + runtimeName);
+                /**
                 if (isDynamicFilePath) {
                     setOrPutProperty(FlatfileDBTable.PROP_FILENAME, "$" + runtimeName);
                 } else {
@@ -461,13 +512,13 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
                     // platform-specific root-drive info (e.g., "C:" for M$-Window$)
                     // where it's inappropriate.
                     setOrPutProperty(FlatfileDBTable.PROP_FILENAME, getFullFilePath(directory, "$" + runtimeName));
-                }
+                }**/
             } else {
                 setOrPutProperty(FlatfileDBTable.PROP_FILENAME, getFullFilePath(directory, fileName));
             }
             
             setOrPutProperty(FlatfileDBTable.PROP_CREATE_IF_NOT_EXIST, new Boolean(createDataFileIfNotExist));
-            sql = this.getCreateStatementSQL(theTableName);
+            sql = this.getCreateStatementSQL(this, theTableName) + this.getFlatfilePropertiesSQL();
         } catch (Exception e) {
             Logger.print(Logger.ERROR, LOG_CATEGORY, "Failed to set the file path", e);
         }
@@ -475,23 +526,29 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
     }
     
     public String getDropStatementSQL() {
-        return getDropStatementSQL(this.name);
+        return getDropStatementSQL(this);
     }
     
+    public static String getDropStatementSQL(String generatedTableName) {
+         StringBuilder buffer = new StringBuilder("DROP TABLE IF EXISTS \"");
+        // NOI18N
+        return buffer.append(generatedTableName).append("\"").toString();
+    }
+    
+    
+     
     /**
      * Gets the SQL Drop statement to drop the text table representing this flatfile.
      *
-     * @param tableName name of table to use in synthesizing the drop statement; if null,
+     * @param table table to use in synthesizing the drop statement; if null,
      *        uses the value yielded by getName()
      * @return SQLstatement to drop a text table representing the contents of this
      *         flatfile
      */
-    public String getDropStatementSQL(String tableName) {
-        if (StringUtil.isNullString(tableName)) {
-            tableName = this.name;
-        }
-        
-        StringBuilder buffer = new StringBuilder("DROP TABLE IF EXISTS \""); // NOI18N
+    public static String getDropStatementSQL(SQLDBTable table) {
+        String tableName = table.getName();
+        StringBuilder buffer = new StringBuilder("DROP TABLE IF EXISTS \"");
+        // NOI18N
         return buffer.append(tableName).append("\"").toString();
     }
     
@@ -538,12 +595,14 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
                 continue;
             }
             
-            if(((!(parserType.equals(PropertyKeys.WEB) ||
+            if (parserType != null) {
+                if (((!(parserType.equals(PropertyKeys.WEB) ||
                     parserType.equals(PropertyKeys.RSS))) &&
-                    aProp.getName().equals(PropertyKeys.URL))||
+                        aProp.getName().equals(PropertyKeys.URL)) ||
                     (((parserType.equals(PropertyKeys.WEB) ||
                     parserType.equals(PropertyKeys.RSS))) && aProp.getName().equals(PropertyKeys.FILENAME))) {
                 continue;
+            }
             }
             
             if (!aProp.isValid()) {
@@ -606,6 +665,7 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
     /**
      * @see org.netbeans.modules.model.database.DBTable#getSchema
      */
+    @Override
     public String getSchema() {
         return "";
     }
@@ -662,6 +722,7 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
      * @return hash code for this object
      * @see java.lang.Object#hashCode
      */
+    @Override
     public int hashCode() {
         int myHash = (name != null) ? name.hashCode() : 0;
         // myHash += (parent != null) ? parent.hashCode() : 0;
@@ -676,6 +737,7 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
         return myHash;
     }
     
+    @Override
     public void parseXML(Element xmlElement) throws BaseException {
         // In order to be compliant with lagacy JIBX generated XML, following structure
         // needs to be adhered to.
@@ -790,6 +852,7 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
      *
      * @return table name.
      */
+    @Override
     public String toString() {
         StringBuilder buf = new StringBuilder(50);
         
@@ -810,6 +873,7 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
      * @param prefix
      * @return XML string
      */
+    @Override
     public String toXMLString(String prefix) throws BaseException {
         StringBuilder sb = new StringBuilder();
         if (prefix == null) {
@@ -852,6 +916,7 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
      *
      * @param source ETLTable whose columns are to be copied.
      */
+    @Override
     protected void deepCopyReferences(DBTable source) {
         if (source != null && source != this) {
             columns.clear();
@@ -1036,10 +1101,12 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
         }
     }
 
+    @Override
     public String toXMLString(String prefix, boolean tableOnly) throws BaseException {
         return toXMLString(prefix, true);
     }
 
+    @Override
     protected String getElementTagName() {
         throw new UnsupportedOperationException("Not supported yet.");
     }

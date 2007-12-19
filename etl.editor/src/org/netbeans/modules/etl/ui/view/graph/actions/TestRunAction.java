@@ -7,7 +7,7 @@ import javax.swing.ImageIcon;
 
 import org.axiondb.ExternalConnectionProvider;
 import org.netbeans.modules.etl.ui.DataObjectProvider;
-import org.netbeans.modules.etl.ui.view.ETLCollaborationTopComponent;
+import org.netbeans.modules.etl.ui.view.ETLCollaborationTopPanel;
 import org.netbeans.modules.sql.framework.ui.graph.actions.GraphAction;
 import org.netbeans.modules.sql.framework.ui.utils.AxionExternalConnectionProvider;
 import org.openide.util.NbBundle;
@@ -31,9 +31,9 @@ public final class TestRunAction extends GraphAction {
     }
     
     public void actionPerformed(ActionEvent ev) {
-        ETLCollaborationTopComponent topComp = null;
+        ETLCollaborationTopPanel topComp = null;
         try {
-            topComp = DataObjectProvider.getProvider().getActiveDataObject().getETLEditorTC();
+            topComp = DataObjectProvider.getProvider().getActiveDataObject().getETLEditorTopPanel();
             Thread.currentThread().getContextClassLoader().loadClass(AxionExternalConnectionProvider.class.getName());
         } catch (Exception ex) {
             Logger.printThrowable(Logger.ERROR, TestRunAction.class.getName(), null, "Error loading class:", ex);

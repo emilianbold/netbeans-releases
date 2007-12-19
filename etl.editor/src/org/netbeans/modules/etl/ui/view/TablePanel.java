@@ -746,9 +746,9 @@ public class TablePanel extends JPanel {
                 initialTable.addColumn(column);
             }
         }
-        ETLCollaborationTopComponent etlView = null;
+        ETLCollaborationTopPanel etlView = null;
         try {
-            etlView = DataObjectProvider.getProvider().getActiveDataObject().getETLEditorTC();
+            etlView = DataObjectProvider.getProvider().getActiveDataObject().getETLEditorTopPanel();
         } catch (Exception ex) {
             // ignore
         }
@@ -771,9 +771,9 @@ public class TablePanel extends JPanel {
             // TODO log this
             return;
         }
-        ETLCollaborationTopComponent etlView = null;
+        ETLCollaborationTopPanel etlView = null;
         try {
-            etlView = DataObjectProvider.getProvider().getActiveDataObject().getETLEditorTC();
+            etlView = DataObjectProvider.getProvider().getActiveDataObject().getETLEditorTopPanel();
         } catch (Exception ex) {
             // ignore
         }
