@@ -997,6 +997,8 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
         public int compare(String o1, String o2) {
             if (o1.equals(ColorModel.ALL_LANGUAGES))
                 return o2.equals(ColorModel.ALL_LANGUAGES) ? 0 : -1;
+            if (o2.equals(ColorModel.ALL_LANGUAGES))
+                return 1;
             return o1.compareTo(o2);
         }
     }

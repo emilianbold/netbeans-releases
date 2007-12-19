@@ -44,6 +44,7 @@ package org.netbeans.modules.options.colors;
 import java.util.Comparator;
 import javax.swing.text.AttributeSet;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -51,19 +52,20 @@ import org.netbeans.api.editor.settings.EditorStyleConstants;
  * @author Jan Jancura
  */
 public final class CategoryComparator implements Comparator<AttributeSet> {
-
+    String default_string = NbBundle.getMessage(org.netbeans.modules.editor.NbEditorKit.class, "default");
+                
     public int compare (AttributeSet o1, AttributeSet o2) {
         String name_1 = name(o1);
         String name_2 = name(o2);
-	if (name_1.startsWith ("default")) // NOI18N
-	    return name_2.startsWith ("default") ? 0 : -1; // NOI18N
-        if (name_2.startsWith ("default")) // NOI18N
+	if (name_1.startsWith (default_string))
+	    return name_2.startsWith (default_string) ? 0 : -1;
+        if (name_2.startsWith (default_string))
             return 1;
 	return name_1.compareTo (name_2);
     }
     
     private static String name (AttributeSet o) {
-        return ((String) o.getAttribute(EditorStyleConstants.DisplayName)).toLowerCase();
+        return ((String) o.getAttribute(EditorStyleConstants.DisplayName));
     }
     
 }
