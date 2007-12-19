@@ -70,10 +70,9 @@ import javax.net.ssl.HttpsURLConnection;
  */
 public class NbConnectionSupport {
     
-    private static String NB_REGISTRATION_URL =
-       "https://inventory.sun.com/RegistrationWeb/register";
-    private static String SANDBOX_TESTING_URL =
-       "https://connection-tst.sun.com/RegistrationWeb/register";
+    private static String NB_REGISTRATION_HOST = "https://inventory.sun.com";
+    private static String SANDBOX_TESTING_HOST = "https://connection-tst.sun.com";
+    //private static String SANDBOX_TESTING_HOST = "http://devtest2-fe.central.sun.com";
     
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.reglib.NbConnectionSupport"); // NOI18N
     
@@ -98,7 +97,7 @@ public class NbConnectionSupport {
     public static URL getRegistrationURL(String registrationURN, String product) {
         String url = System.getProperty("nb.registration.host");
         if (url == null) {
-            url = SANDBOX_TESTING_URL;
+            url = SANDBOX_TESTING_HOST + "/RegistrationWeb/register";
         }
         //url = NB_REGISTRATION_URL;
 
@@ -119,6 +118,21 @@ public class NbConnectionSupport {
             x.initCause(ex);
             throw x;               
         }
+    }
+    
+    public static String getRegistrationQueryHost () {
+        String url = System.getProperty("nb.registration.host");
+        if (url == null) {
+            url = SANDBOX_TESTING_HOST;
+        }
+        //url = NB_REGISTRATION_URL;
+
+        // trim whitespaces 
+        url = url.trim(); 
+        if (url.length() == 0) {
+            throw new InternalError("Empty registration url set");
+        }
+        return url;
     }
     
     private static String rewriteURL(String url, String registryURN, String product) {
@@ -145,6 +159,7 @@ public class NbConnectionSupport {
                                                 RegistrationData registration) {
         try {
             HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
+            //HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setDoInput(true);
             con.setDoOutput(true);
             con.setUseCaches(false);
@@ -198,5 +213,66 @@ public class NbConnectionSupport {
                 reader.close();
             }
         }
+    }
+    
+    /** Query web service if given product by instance_urn is registered.
+     * Returns false only when we have 'NOT REGISTERED' response from server.
+     * Otherwise return true to avoid false not registered status.
+     */
+    public static boolean isRegistered (String host, String uuid) {
+        try {
+            URL url = new URL(
+                host
+                + "/ProductRegistrationService/status/"
+                + uuid);
+            LOG.log(Level.FINE,"Query URL: " + url);
+            //HttpURLConnection con = (HttpURLConnection) (url.openConnection());
+            HttpsURLConnection con = (HttpsURLConnection) (url.openConnection());
+            
+            con.setRequestMethod("GET");
+            con.setDoOutput(true);
+            con.setDoInput(true);
+            con.setAllowUserInteraction(false);
+            con.setUseCaches(false);
+
+            con.connect();
+            int responseCode = con.getResponseCode();
+
+            LOG.log(Level.FINE,"Response code = " + responseCode);
+            if (responseCode == 200) {
+                BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(con.getInputStream()));
+                StringBuffer sb = new StringBuffer();
+
+                while (true) {
+                    String line = reader.readLine();
+                    if (line == null) {
+                        break;
+                    }
+                    sb.append(line);
+                }
+
+                reader.close();
+                String response = sb.toString();
+                
+                LOG.log(Level.FINE,"Response: " + response);
+                
+                // the response should be equal to 'REGISTERED' or 'NOT REGISTERED'
+                if (response.equals("NOT REGISTERED")) {
+                    return false;
+                } else {
+                    return true;
+                }
+            } else if (responseCode == 404) {
+                // response code of 404 is not found, which means not registered
+                return true;
+            } else {
+                // unknown response code
+                return true;
+            }
+        } catch (Exception ex) {
+            LOG.log(Level.FINE,"Error: " + ex.getMessage(), ex);
+        }
+        return true;
     }
 }

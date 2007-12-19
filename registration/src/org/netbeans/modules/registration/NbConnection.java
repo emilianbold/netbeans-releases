@@ -42,6 +42,7 @@
 package org.netbeans.modules.registration;
 
 import com.sun.servicetag.RegistrationData;
+import com.sun.servicetag.ServiceTag;
 import java.awt.Frame;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
@@ -54,6 +55,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -138,6 +140,7 @@ class NbConnection {
             }
             if (status.getStatus().equals(StatusData.STATUS_REGISTERED)) {
                 LOG.log(Level.FINE,"Status is STATUS_REGISTERED");
+                checkProductRegistrationStatus();
             } else if (status.getStatus().equals(StatusData.STATUS_NEVER)) {
                 LOG.log(Level.FINE,"Status is STATUS_NEVER");
             } else if (status.getStatus().equals(StatusData.STATUS_LATER)) {
@@ -151,6 +154,8 @@ class NbConnection {
                 LOG.log(Level.FINE,"            Date now:" + now);
                 if (now.after(next)) {
                     //Time is over, ask again
+                    status.setDelay(StatusData.DEFAULT_DELAY);
+                    storeStatus();
                     RegisterAction a = SharedClassObject.findObject(RegisterAction.class, true);
                     a.showDialog();
                 }
@@ -167,6 +172,31 @@ class NbConnection {
         }
     }
     
+    /**
+     * Query web service if all products are registered. If there is confirmation that any product is
+     * not registered show Reminder dialog.
+     */
+    private static void checkProductRegistrationStatus () {
+        RegistrationData regData = null;
+        try {
+            regData = NbServiceTagSupport.getRegistrationData();
+        } catch (IOException exc) {
+            LOG.log(Level.INFO,"Error: Cannot get registration data",exc);
+            return;
+        }
+        Collection<ServiceTag> svcTags = regData.getServiceTags();
+        boolean registered = true;
+        for (ServiceTag st : svcTags) {
+            registered = NbConnectionSupport.isRegistered(NbConnectionSupport.getRegistrationQueryHost(), st.getInstanceURN());
+            if (!registered) {
+                //If one service tag is not registered show reminder dialog
+                RegisterAction a = SharedClassObject.findObject(RegisterAction.class, true);
+                a.showDialog();
+                return;
+            }
+        }
+    }
+    
     /** This method updates registration status. It saves user selection.
      * If user selects Register registration is started
      * @param value User choice in reminder dialog
@@ -177,7 +207,22 @@ class NbConnection {
         if (value != null) {
             status.setStatus(value);
         }
+        //Set time stamp to time when we showed reminder dialog.
         status.setTimestamp(new Date());
+        
+        storeStatus();
+        
+        if (StatusData.STATUS_REGISTERED.equals(status.getStatus())) {
+            try {
+                NbConnection.register(NbServiceTagSupport.getRegistrationData(), product);
+            } catch (IOException ex) {
+                LOG.log(Level.INFO,
+                "Error: Cannot register product", ex);
+            }
+        }
+    }
+    
+    static void storeStatus () {
         File dir = NbServiceTagSupport.getServiceTagDirHome();
         File statusFile = new File(dir,STATUS_FILE);
         
@@ -197,14 +242,6 @@ class NbConnection {
                     LOG.log(Level.INFO,
                     "Error: Cannot close writer", ex);
                 }
-            }
-        }
-        if (StatusData.STATUS_REGISTERED.equals(status.getStatus())) {
-            try {
-                NbConnection.register(NbServiceTagSupport.getRegistrationData(), product);
-            } catch (IOException ex) {
-                LOG.log(Level.INFO,
-                "Error: Cannot register product", ex);
             }
         }
     }
