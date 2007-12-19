@@ -73,6 +73,7 @@ public class ConferenceEventHelper extends org.xml.sax.helpers.DefaultHandler {
     private final String ATTRIBUTE_ACCESSLEVEL = "accesslevel";
     private final String ATTRIBUTE_STATUS = "status";
     private final String ATTRIBUTE_DESTINATION = "destination";
+    private final String ATTRIBUTE_ID = "id";
     
     /** 
      * Constructor used to parse a conference event
@@ -158,12 +159,14 @@ public class ConferenceEventHelper extends org.xml.sax.helpers.DefaultHandler {
 		String status = attributes.getValue(ATTRIBUTE_STATUS);
 		String accessLevel = attributes.getValue(ATTRIBUTE_STATUS);
 		String destination = attributes.getValue(ATTRIBUTE_DESTINATION);
+                String id = attributes.getValue(ATTRIBUTE_ID);
 		if (destination == null) {
 		    throw new org.xml.sax.SAXException("Missing destination");
 		}
 		_currentTuple = new ConferenceEventTuple(destination);
 		_currentTuple.status = status;
 		_currentTuple.accesslevel = accessLevel;
+                _currentTuple.id = id;
 	    } else {
 		throw new org.xml.sax.SAXException("Unrecognized element: " + fqName);               
 	    }
@@ -195,6 +198,9 @@ public class ConferenceEventHelper extends org.xml.sax.helpers.DefaultHandler {
         for (int i = 0 ; i < _tuples.size() ; i++) {
             ConferenceEventTuple ces = (ConferenceEventTuple)_tuples.get(i);
             buf.append("<subject destination='" + ces.destination + "'");
+            if(ces.id != null) {
+                buf.append(" id='" + ces.id + "'");
+            }            
 	    if (ces.status != null) {
 		 buf.append(" status='" + ces.status + "'");
 	    }

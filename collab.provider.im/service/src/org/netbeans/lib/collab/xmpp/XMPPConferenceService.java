@@ -130,6 +130,7 @@ public class XMPPConferenceService implements ConferenceService,ExtendedConferen
                     } else {
                         c.setNode(in.getFrom());
                     }
+                    c.useChatStates(in.getFirstElement(XMPPConference.NSI_ACTIVE) != null);
                     //_conferences.put(in.getFrom().toString(),c);
                     addConference(c);
                 }

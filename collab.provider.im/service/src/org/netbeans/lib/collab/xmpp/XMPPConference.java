@@ -653,15 +653,15 @@ public class XMPPConference implements org.netbeans.lib.collab.Conference {
     {
         org.jabberstudio.jso.Message m = 
                     (org.jabberstudio.jso.Message)((XMPPMessage)message).getXMPPMessage();
+        StreamElement activeElement = _session.getDataFactory().createElementNode(NSI_ACTIVE);
+        m.add(activeElement);
         String rcpt[] = message.getRecipients();
         if ((!isGroupChat) && ((_participants.size() == 1) && (rcpt.length == 1))) {                
             m.setFrom(_session.getCurrentUserJID());
             m.setTo(new JID(rcpt[0]));
             m.setID(null);
             m.setType(org.jabberstudio.jso.Message.CHAT);
-            if (_useThread) m.setThread(getName());
-            StreamElement activeElement = _session.getDataFactory().createElementNode(NSI_ACTIVE);
-            m.add(activeElement);
+            if (_useThread) m.setThread(getName());            
             _session.sendAllMessageParts((XMPPMessage)message);
             if (inviteListener != null) {        
                 inviteListeners.put(rcpt[0],inviteListener);
@@ -1097,6 +1097,7 @@ public class XMPPConference implements org.netbeans.lib.collab.Conference {
     
     public void userStatusChange(org.jabberstudio.jso.Presence p) {
         JID jid = null;
+        JID roomJID = p.getFrom();
         MUCUserQuery user = 
             (MUCUserQuery)p.getExtension(MUCUserQuery.NAMESPACE);
         Iterator itr = user.listElements().iterator();
@@ -1119,8 +1120,9 @@ public class XMPPConference implements org.netbeans.lib.collab.Conference {
                     currentUserAffiliation = item.getAffiliation();
                     XMPPSessionProvider.debug("Current user privilege "+ currentUserPrivilege);
                 }
-                if ((_listener == null) || (jid == null)) continue;
-                ConferenceEventTuple cet = new ConferenceEventTuple(jid.toString());
+                if ((_listener == null) || (jid == null) || (roomJID == null)) continue;
+                ConferenceEventTuple cet = new ConferenceEventTuple(roomJID.toString());
+                cet.id = jid.toString();
                 if (p.getType() == null) {
                     cet.status = Integer.toString(ConferenceEvent.ETYPE_USER_JOINED);
                     //if the user was already present in the room then dont send the join remove the older entry from _participants
@@ -1182,7 +1184,7 @@ public class XMPPConference implements org.netbeans.lib.collab.Conference {
         //if there was a invite message status listener then notify the listener
         //instead of Conference listener.
         if ((!isGroupChat) && (status == ConferenceEvent.ETYPE_USER_LEFT)) 
-        {
+        {            
             String rcpt = StringUtility.removeResource(jid);
             //remove this user from the participants list
             if (jid.equals(_recipient)) {
@@ -1206,6 +1208,8 @@ public class XMPPConference implements org.netbeans.lib.collab.Conference {
         }
         if (_listener == null) return;
         ConferenceEventTuple cet = new ConferenceEventTuple(jid);
+        cet.id = StringUtility.removeResource( (isGroupChat) ? 
+            getParticipant(StringUtility.getResource(jid)).toString() : jid);
         if (status == MessageStatus.TYPING_ON) {
             cet.status = Integer.toString(ConferenceEvent.ETYPE_USER_INPUT_STARTED);
         } else if (status == MessageStatus.TYPING_OFF) {
@@ -1431,12 +1435,7 @@ public class XMPPConference implements org.netbeans.lib.collab.Conference {
                 }
             }
         } else {
-            String uid;
-            if (in.getType() == org.jabberstudio.jso.Message.GROUPCHAT) {
-                uid = getParticipant(in.getFrom().getResource()).toString();
-            } else {
-                uid = in.getFrom().toString();
-            }
+            String uid = in.getFrom().toString();
             StreamElement element = in.getFirstElement(NSI_COMPOSING);
             if (element != null) {
                 userStatusChange(uid, MessageStatus.TYPING_ON);

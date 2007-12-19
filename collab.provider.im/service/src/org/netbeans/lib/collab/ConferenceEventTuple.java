@@ -56,9 +56,14 @@ public class ConferenceEventTuple extends java.lang.Object
     public String note;
 
     /**
-     * user address
+     * user participation address
      */
     public String destination;
+    
+    /*
+     * user id
+     */
+    public String id;
 
     /**
      * conference user status
@@ -73,6 +78,7 @@ public class ConferenceEventTuple extends java.lang.Object
 
     public ConferenceEventTuple(String dest) {
         destination = dest;
+        id = null;
         status = null;
 	accesslevel = null;
         note = "";
