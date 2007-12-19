@@ -13,6 +13,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.zip.GZIPInputStream;
 
 /**
  *
@@ -36,6 +38,14 @@ public final class RepositoryMaintenance {
         File repo = new File(repoPath);
         repo.mkdir();
         File dump = new File(dumpPath);
+        boolean gzip = false;
+        if (!dump.isFile()) {
+            File dumpgz = new File(dumpPath + ".gz");
+            if (dumpgz.isFile()) {
+                dump = dumpgz;
+                gzip = true;
+            }
+        }
         
         File tmpOutput = new File(repo.getParent() + File.separator + "output.txt");
                 
@@ -45,7 +55,10 @@ public final class RepositoryMaintenance {
         
         try {
             String[] cmd = {"svnadmin", "load", repo.getCanonicalPath()};
-            FileInputStream fis = new FileInputStream(dump);
+            InputStream fis = new FileInputStream(dump);
+            if (gzip) {
+                fis = new GZIPInputStream(fis);
+            }
             FileOutputStream fos = new FileOutputStream(tmpOutput);
             Process p = Runtime.getRuntime().exec(cmd);
             shFile = new StreamHandler(fis, p.getOutputStream());
