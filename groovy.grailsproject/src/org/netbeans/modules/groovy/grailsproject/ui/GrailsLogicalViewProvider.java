@@ -119,7 +119,13 @@ public class GrailsLogicalViewProvider implements LogicalViewProvider {
                     Lookups.singleton(project)
                     );
             setProjectFiles(project);
-            setShortDescription("Grails Project in " + File.separator + project.getProjectDirectory().getPath());
+            
+            String prefix = "";
+            
+            if(!Utilities.isWindows())
+                prefix = File.separator;
+                        
+            setShortDescription("Grails Project in " + prefix + project.getProjectDirectory().getPath());
         }
         
         public Image getIcon(int type) {
