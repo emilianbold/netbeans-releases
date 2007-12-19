@@ -217,9 +217,15 @@ public class HgUtils {
     public static boolean isIgnored(File file){
         if (file == null) return true;
         String name = file.getName();
+        File topFile = Mercurial.getInstance().getTopmostManagedParent(file);
         
+        // We assume that the toplevel directory should not be ignored.
+        if (topFile == null || topFile.equals(file)) {
+            return false;
+        }
+
         Set<Pattern> patterns = new HashSet<Pattern>(5);
-        addIgnorePatterns(patterns, Mercurial.getInstance().getTopmostManagedParent(file));
+        addIgnorePatterns(patterns, topFile);
 
         for (Iterator i = patterns.iterator(); i.hasNext();) {
             Pattern pattern = (Pattern) i.next();
@@ -248,11 +254,15 @@ public class HgUtils {
         File root = hg.getTopmostManagedParent(path);
         if( root == null) return;
         File ignore = new File(root, FILENAME_HGIGNORE);
-        if (ignore.exists()) return;
+        if (ignore.exists()) {
+            if (!confirmDialog(HgUtils.class, "MSG_IGNORE_FILES_TITLE", "MSG_IGNORE_FILES")) { // NOI18N 
+                return;
+            }
+        }
            
         try     {
             fileWriter = new BufferedWriter(
-                    new OutputStreamWriter(new FileOutputStream(ignore)));
+                    new OutputStreamWriter(new FileOutputStream(ignore, true)));
             for (String name : HG_IGNORE_FILES) {
                 fileWriter.write(name + "\n"); // NOI18N
             }
@@ -292,6 +302,36 @@ public class HgUtils {
         }
     }
 
+    private static Boolean ignoreContainsSyntax(File directory) throws IOException {
+        File hgIgnore = new File(directory, FILENAME_HGIGNORE);
+        Boolean val = false;
+
+        if (!hgIgnore.canRead()) return val;
+
+        String s;
+        BufferedReader r = null;
+        try {
+            r = new BufferedReader(new FileReader(hgIgnore));
+            while ((s = r.readLine()) != null) {
+                String line = s.trim();
+                int indexOfHash = line.indexOf("#");
+                if (indexOfHash != -1) {
+                    if (indexOfHash == 0)
+                        continue;
+                    line = line.substring(0, indexOfHash -1); 
+                }
+                String [] array = line.split(" ");
+                if (array[0].equals("syntax:")) {
+                    val = true;
+                    break;
+                }
+            }
+        } finally {
+            if (r != null) try { r.close(); } catch (IOException e) {}
+        }
+        return val;
+    }
+
     private static Set<String> readIgnoreEntries(File directory) throws IOException {
         File hgIgnore = new File(directory, FILENAME_HGIGNORE);
 
@@ -303,7 +343,17 @@ public class HgUtils {
         try {
             r = new BufferedReader(new FileReader(hgIgnore));
             while ((s = r.readLine()) != null) {
-                entries.addAll(Arrays.asList(s.trim().split(" ")));
+                String line = s.trim();
+                if (line.length() == 0) continue;
+                int indexOfHash = line.indexOf("#");
+                if (indexOfHash != -1) {
+                    if (indexOfHash == 0)
+                        continue;
+                    line = line.substring(0, indexOfHash -1); 
+                }
+                String [] array = line.split(" ");
+                if (array[0].equals("syntax:")) continue;
+                entries.addAll(Arrays.asList(array));
             }
         } finally {
             if (r != null) try { r.close(); } catch (IOException e) {}
@@ -350,6 +400,10 @@ public class HgUtils {
      * @param files an array of Files to be added
      */
     public static void addIgnored(File directory, File[] files) throws IOException {
+        if (ignoreContainsSyntax(directory)) {
+            warningDialog(HgUtils.class, "MSG_UNABLE_TO_IGNORE_TITLE", "MSG_UNABLE_TO_IGNORE");
+            return;
+        }
         Set<String> entries = readIgnoreEntries(directory);
         for (File file: files) {
             String patterntoIgnore = computePatternToIgnore(directory, file);
@@ -366,6 +420,10 @@ public class HgUtils {
      * @param files an array of Files to be removed
      */
     public static void removeIgnored(File directory, File[] files) throws IOException {
+        if (ignoreContainsSyntax(directory)) {
+            warningDialog(HgUtils.class, "MSG_UNABLE_TO_UNIGNORE_TITLE", "MSG_UNABLE_TO_UNIGNORE");
+            return;
+        }
         Set entries = readIgnoreEntries(directory);
         for (File file: files) {
             String patterntoIgnore = computePatternToIgnore(directory, file);
