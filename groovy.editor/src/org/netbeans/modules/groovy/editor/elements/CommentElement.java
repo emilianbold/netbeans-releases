@@ -38,7 +38,15 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.modules.groovy.editor.elements;
+
+/**
+ * Element describing a Groovy comment
+ *
+ * @author Tor Norbye
+ * @author Gopala Krishnan S
+ */
 
 import java.util.Collections;
 import java.util.Set;
@@ -47,23 +55,17 @@ import org.netbeans.api.gsf.Element;
 import org.netbeans.api.gsf.ElementKind;
 import org.netbeans.api.gsf.Modifier;
 
+public class CommentElement implements Element {
 
-/**
- * Element describing a Groovy keyword
- *
- * @author Tor Norbye
- * @author Gopala Krishnan S
- */
-public class KeywordElement implements Element {
-    private final String name;
+    private final String text;
 
-    /** Creates a new instance of DefaultComKeyword */
-    public KeywordElement(String name) {
-        this.name = name;
+    public CommentElement(String text) {
+        super();
+        this.text = text;
     }
 
     public String getName() {
-        return name;
+        return text;
     }
 
     public ElementKind getKind() {
