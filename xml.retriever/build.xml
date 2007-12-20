@@ -40,5 +40,5 @@
   made subject to such option by the copyright holder.
 -->
 <project name="retriever" default="netbeans" basedir=".">
-    <import file="nbproject/build-impl.xml"/>
+    <import file="../../nbbuild/templates/projectized.xml"/>
 </project>
