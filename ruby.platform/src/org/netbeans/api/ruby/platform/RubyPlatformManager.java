@@ -83,6 +83,15 @@ public final class RubyPlatformManager {
     private static Set<RubyPlatform> getPlatformsInternal() {
         if (platforms == null) {
             platforms = new HashSet<RubyPlatform>();
+
+            // Test and preindexing hook
+            String hardcodedRuby = System.getProperty("ruby.interpreter");
+            if (hardcodedRuby != null) {
+                platforms.add(new RubyPlatform(PLATFORM_ID_DEFAULT, hardcodedRuby,
+                        "User-specified Ruby"));
+                return platforms;
+            }
+            
             Map<String, String> p = PropertyUtils.sequentialPropertyEvaluator(null,
                     PropertyUtils.globalPropertyProvider()).getProperties();
             if (p == null) { // #115909
