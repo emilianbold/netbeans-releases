@@ -57,42 +57,18 @@ made subject to such option by the copyright holder.
                 <runtime-relative-path>ext/etl/velocity-1.4.jar</runtime-relative-path>
                 <binary-origin>../external/velocity-1.4.jar</binary-origin>
             </class-path-extension>
-            <!--class-path-extension>
-                <runtime-relative-path>ext/etl/jxl.jar</runtime-relative-path>
-                <binary-origin>../external/jxl.jar</binary-origin>
-            </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/etl/avalon-logkit-current.jar</runtime-relative-path>
                 <binary-origin>../external/avalon-logkit-current.jar</binary-origin>
-            </class-path-extension-->
+            </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/etl/axiondb.jar</runtime-relative-path>
                 <binary-origin>../external/axiondb.jar</binary-origin>
-            </class-path-extension>
-            <!--class-path-extension>
-                <runtime-relative-path>ext/etl/commons-codec-1.3.jar</runtime-relative-path>
-                <binary-origin>../external/commons-codec-1.3.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/etl/commons-collections-3.0.jar</runtime-relative-path>
                 <binary-origin>../external/commons-collections-3.0.jar</binary-origin>
             </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/etl/commons-primitives-1.0.jar</runtime-relative-path>
-                <binary-origin>../external/commons-primitives-1.0.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/etl/jsr173_api.jar</runtime-relative-path>
-                <binary-origin>../external/jsr173_api.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/etl/sjsxp.jar</runtime-relative-path>
-                <binary-origin>../external/sjsxp.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/etl/wsdl4j.jar</runtime-relative-path>
-                <binary-origin>../external/wsdl4j.jar</binary-origin>
-            </class-path-extension-->
             <class-path-extension>
                 <runtime-relative-path>ext/etl/etlengine.jar</runtime-relative-path>
                 <binary-origin>../external/etlengine.jar</binary-origin>
