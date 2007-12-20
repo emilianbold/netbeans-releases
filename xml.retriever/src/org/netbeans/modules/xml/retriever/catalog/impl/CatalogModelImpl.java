@@ -81,6 +81,7 @@ import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.modules.xml.retriever.catalog.CatalogWriteModel;
 import org.netbeans.modules.xml.retriever.catalog.CatalogWriteModelFactory;
 import org.netbeans.modules.xml.retriever.catalog.ProjectCatalogSupport;
+import org.netbeans.modules.xml.retriever.catalog.SynchModelSourceProvider;
 import org.netbeans.modules.xml.retriever.impl.Util;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
@@ -101,7 +102,7 @@ import org.xml.sax.SAXException;
  *
  * @author girix
  */
-public class CatalogModelImpl implements CatalogModel {
+public class CatalogModelImpl implements CatalogModel, SynchModelSourceProvider {
     protected FileObject catalogFileObject = null;
     private static Logger logger = Logger.getLogger(CatalogModelImpl.class.getName());
     /** Creates a new instance of CatalogModelImpl */
@@ -177,13 +178,10 @@ public class CatalogModelImpl implements CatalogModel {
         }
         if( (absResourceFile == null) || (exn != null) ){
             //means there was no entry found in catalog or relative path resolution            
-            if(fetchSynchronous) { //request from CC, no one else should lookup system wide catalog
-                //check in the system wide catalog (Runtime tab), if entry found, return that
                 ModelSource rms = getModelSourceFromSystemWideCatalog(locationURI, modelSourceOfSourceDocument);
                 if (rms != null) {
                     return rms;
                 }
-            }
             try {
                 if(doFetch) {
                     //we did not get any matching entry by conventional way..So try retrieve and cache
@@ -433,18 +431,18 @@ public class CatalogModelImpl implements CatalogModel {
             //In case of layer.xml defined sourceFileObject, FileUtil.toFile returns null.
             
             if (sourceFile != null) {
-            	URI sourceFileObjectURI = sourceFile.toURI();
-            	URI resultURI = sourceFileObjectURI.resolve(locationURI);
-            	try{
-            		result = new File(resultURI);
-            	} catch(Exception e){
-            		throw new CatalogModelException(locationURI.toString()+" : Entry is relative but resolved entry is not absolute");
-            	}
-            	if(result.isFile()){
-            		logger.exiting("CatalogModelImpl", "resolveUsingCatalog",result);
-            		return result;
-            	} else
-            		throw new FileNotFoundException(result.getAbsolutePath()+" Not Found.");
+                URI sourceFileObjectURI = sourceFile.toURI();
+                URI resultURI = sourceFileObjectURI.resolve(locationURI);
+                try{
+                        result = new File(resultURI);
+                } catch(Exception e){
+                        throw new CatalogModelException(locationURI.toString()+" : Entry is relative but resolved entry is not absolute");
+                }
+                if(result.isFile()){
+                        logger.exiting("CatalogModelImpl", "resolveUsingCatalog",result);
+                        return result;
+                } else
+                        throw new FileNotFoundException(result.getAbsolutePath()+" Not Found.");
             }
         }
         return null;
