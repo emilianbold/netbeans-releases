@@ -54,7 +54,7 @@ made subject to such option by the copyright holder.
                 <path refid="cp"/>
                 <pathelement location="${netbeans.dest.dir}/${nb.cluster.java.dir}/ant/lib/ant.jar"/>
                 <pathelement location="${cluster}/${module.jar}"/>
-            	<!--pathelement location="../external/wsdl4j.jar"/-->
+            	<pathelement location="../external/wsdl4j.jar"/>
             	<pathelement location="${cluster}/modules/org-netbeans-modules-etl-editor.jar"/>
             	<!--pathelement location="../external/etlengine.jar"/-->
             	
