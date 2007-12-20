@@ -1,0 +1,70 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2007 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<title>Invoke</title>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Invoke</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<!-- add to the Property Editor section -->
+<p>The Invoke activity invokes a one-way or request-response operation between the BPEL process and a partner web service on a port provided by the partner. Invoke is used in both synchronous and asynchronous calls. In other words, it enables the BPEL process to exchange messages with partners. </p>
+As Invoke interacts with a partner web service, an Invoke activity should be associated with a <a href="partner_link.html">Partner Link</a> element on the diagram. 
+<p><b>To use the Invoke element</b>:</p>
+<ol>
+  <li>In the Design view, drag the Invoke element from the Palette to the diagram.</li>
+  <li>Right-click the Invoke element and choose Edit.</li>
+  <li>In the Property Editor dialog box, configure the following:
+<ul>
+      <li><b>Name</b>. Enter an arbitrary name. </li>
+      <li><b>Partner Link</b>. Select a Partner Link for which to specify an operation. Another way to associate a Partner Link with the Invoke activity is to draw a <a href="../design/change_message_flow.html" title="Changing Message Flows">message flow</a> on the diagram.</li>
+      <li><b>Operation</b>. Define an operation to be invoked. The operation is defined in the partner WSDL file, so you can only select it from the drop-down list.</li>
+      <li><b>Input Variable</b>. Create a new variable or use an existing variable to pass the input data to the partner service. </li>
+      <li><b>Output Variable.</b> Create a new variable or use an existing variable to transport the data received from the partner service.  </li>
+    </ul>
+ The Invoke element is now configured to invoke calls to the target partner web service.      
+</ol>
+<h3>Adding Correlation Sets</h3>
+ <p>You can add correlation sets defined for the Process element to an Invoke activity. Before adding a correlation set to Invoke, make sure that at least one <a href="../design/create_correlation_set.html" title="Adding Correlation Sets">correlation set</a> has been defined for the Process element. </p>
+ <p><b>To add a correlation set to Invoke:</b></p>
+ <ol>
+   <li>In the Design view, right-click an Invoke element and choose Edit.</li>
+   <li>In the Property Editor, select the Correlations tab and
+     click Add. </li>
+   <li>In the Choose a Correlation Set dialog box, expand the
+     Correlation Sets node, select the correlation set, and click OK.</li>
+   <li> From the Initiate drop-down list, choose the initiate attribute for this correlation set. You can select one of the following options: <br>
+     <ul>
+       <li><tt><b>Yes</b>.</tt> The activity must attempt to initiate the correlation set.</li>
+       <li><tt><b>Join</b></tt>. The activity must attempt to initiate the correlation set if the correlation set is not yet initiated.</li>
+       <li><tt><b>No.</b></tt> The activity must not attempt to initiate the correlation set. This is the default option. </li>
+     </ul>
+   </li>
+   <li>From the Pattern drop-down list, select a pattern attribute to indicate whether the correlation applies to the outbound message (<tt>request</tt>), inbound message (<tt>response</tt>), or both (<tt>request-response</tt>).</li>
+   <li>(Optional) Add more correlation sets as needed and click OK. </li>
+</ol>
+ <dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="partner_link.html" title="Partner Link">Partner Link</a></dd>
+<dd><a href="create_variable.html" title="Creating Variables">Creating Variables</a></dd>
+<dd><a href="../design/about_correlation.html" title="Understanding Correlation">Understanding Correlation</a></dd>
+<dd><a href="../design/create_correlation_set.html" title="Adding Correlation Sets">Adding Correlation Sets</a></dd>
+<dd><a href="../properties/new_input_variable.html" title="New Variable Dialog Box">New Variable Dialog Box</a></dd>
+<dd><a href="palette_web_svc.html" title="BPEL Designer Palette: Web Service">BPEL Designer Palette: Web Service</a></dd>
+<dd><a href="../windows_editors/design_view.html" title="About the Design View of the BPEL Designer">About the Design View of the BPEL Designer</a></dd>
+
+</dl>
+<hr>
+<small>  
+<a href="../credits.html">Legal Notices</a></small>
+<table border="0" cellpadding="150">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>
