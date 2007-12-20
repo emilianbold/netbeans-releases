@@ -42,9 +42,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.apt.support.APTFileBuffer;
 
