@@ -15,6 +15,9 @@ require_gem "rails"
 HINT:As of RubyGems 1.0, "require_gem" is obsolete and should be replaced with "gem"
 FIX:Replace require_gem with gem
 FIX:Show more information about this deprecation
+require "ftools"
+-------
+HINT:FileUtils contains all or nearly all the same functionality and more, and is a recommended option over ftools
   assert_raises(AssertionFailedError){ assert_select "p" }
   -------------
 HINT:"assert_raises" is deprecated in Ruby 1.9, use "assert_raise" instead.

@@ -119,6 +119,17 @@ public class DeprecationsTest extends HintTestBase {
             exceptions.add("aggregations_test.rb");
             exceptions.add("migration_test.rb");
             exceptions.add("simple.rb");
+            
+            // Hits for require ftools.rb
+            exceptions.add("rake.rb");
+            exceptions.add("ri_generator.rb");
+            exceptions.add("install.rb");
+            exceptions.add("command-processor.rb");
+            exceptions.add("rdoc.rb");
+            exceptions.add("xml_generator.rb");
+            exceptions.add("html_generator.rb");
+            exceptions.add("filecreation.rb");
+            exceptions.add("sys.rb");
 
             assertNoJRubyMatches(new Deprecations(), exceptions);
             

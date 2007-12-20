@@ -116,6 +116,9 @@ public class Deprecations implements AstRule {
         
         d = new Deprecation("parsearg", "optparse", null, null); // NOI18N
         deprecatedRequires.put(d.oldName, d);
+
+        d = new Deprecation("ftools", "fileutils", "HELP_ftools", null); // NOI18N
+        deprecatedRequires.put(d.oldName, d);
     }
 
     public Deprecations() {
