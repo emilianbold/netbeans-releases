@@ -1,42 +1,20 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 package org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget;
@@ -44,8 +22,10 @@ package org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.datatransfer.Transferable;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -67,12 +47,23 @@ import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.EventProcessingType;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.xml.schema.model.SchemaModel;
+import org.netbeans.modules.xml.schema.ui.basic.SchemaModelCookie;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
+import org.netbeans.modules.xml.wsdl.ui.netbeans.module.WSDLDataObject;
+import org.netbeans.modules.xml.wsdl.ui.netbeans.module.WSDLModelCookie;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.DragOverSceneLayer;
+import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.pastetype.SchemaImportPasteType;
+import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.pastetype.WSDLImportPasteType;
 import org.netbeans.modules.xml.xam.ComponentEvent;
 import org.netbeans.modules.xml.xam.ComponentListener;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
 import org.openide.util.WeakListeners;
+import org.openide.util.datatransfer.PasteType;
 
 /**
  *
@@ -139,6 +130,7 @@ public class PartnerScene extends ObjectScene implements ComponentListener, DnDH
         
         this.addObjectSceneListener(cycleFocusProviderAndSceneListener, ObjectSceneEventType.OBJECT_FOCUS_CHANGED, ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
         selectedWidgets = new ArrayList<Widget>();
+        dndAction.addPriorHandler(new FileDropDnDHandler());
     }
     
     @Override
@@ -300,6 +292,8 @@ public class PartnerScene extends ObjectScene implements ComponentListener, DnDH
                     }
                     parent = parent.getParentWidget();
                 }
+                //Make the parents visible so that this widget can be seen. 
+                WidgetHelper.makeWidgetVisible(widget);
                 setFocusedObject (object);
                 setFocusedWidget(widget);
                 Rectangle bounds = widget.getClientArea();
@@ -367,17 +361,26 @@ public class PartnerScene extends ObjectScene implements ComponentListener, DnDH
     }
 
     public void expandForDragAndDrop() {
-        //do nothing
+        messagesWidget.expandForDragAndDrop();
+        collaborationsWidget.expandForDragAndDrop();
     }
 
     public boolean isCollapsed() {
-        return false;
+        return messagesWidget.isCollapsed() || collaborationsWidget.isCollapsed();
     }
     
     @Override
     public void userSelectionSuggested(Set<?> suggestedSelectedObjects,
     		boolean invertSelection) {
-    	super.userSelectionSuggested(suggestedSelectedObjects, invertSelection);
+        boolean unRecognizedObjectsPresent = false;
+        for (Object obj : suggestedSelectedObjects) {
+            if (!isObject(obj)) {
+                unRecognizedObjectsPresent = true;
+            }
+        }
+        if (!unRecognizedObjectsPresent) {
+            super.userSelectionSuggested(suggestedSelectedObjects, invertSelection);
+        }
     	for (Widget w : getSelectedWidgets()) {
     		w.setState(w.getState().deriveSelected(false));
     	}
@@ -614,7 +617,11 @@ public class PartnerScene extends ObjectScene implements ComponentListener, DnDH
             	if (w != null && w != scene.findObject(w)) { // in case of button widgets
                 	if (!newSelection.isEmpty()) {
                 		Object obj = newSelection.iterator().next();
-                		scene.setFocusedWidget(scene.findWidget(obj));
+                		Widget newWidget = scene.findWidget(obj);
+                		if (newWidget != null) {
+                		    WidgetHelper.makeWidgetVisible(newWidget);
+                		}
+                		scene.setFocusedWidget(newWidget);
                 		scene.setFocusedObject(obj);
                 	}            		
             	} else { 
@@ -623,5 +630,66 @@ public class PartnerScene extends ObjectScene implements ComponentListener, DnDH
                 	}            		
             	}
             }
+    }
+    
+    
+    private class FileDropDnDHandler implements DnDHandler {
+        
+        public FileDropDnDHandler() {
+            //default constructor.
+        }
+        
+        public boolean dragOver(Point scenePoint, WidgetDropTargetDragEvent event) {
+            Transferable t = event.getTransferable();
+            if (t != null) {
+                Node[] nodes = Utility.getNodes(t);
+                if (nodes.length == 1) {
+                    Node node = nodes[0];
+                    DataObject dObj = node.getLookup().lookup(DataObject.class);
+                    if (dObj.getNodeDelegate().equals(node)) {
+                        PasteType p = Utility.getWSDLOrSchemaPasteType(dObj, model, true, true);
+                        if (p != null) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+        
+        public boolean drop(Point scenePoint, WidgetDropTargetDropEvent event) {
+            Transferable t = event.getTransferable();
+            if (t != null) {
+                Node[] nodes = Utility.getNodes(t);
+                if (nodes.length == 1) {
+                    Node node = nodes[0];
+                    DataObject dObj = node.getLookup().lookup(DataObject.class);
+                    if (dObj.getNodeDelegate().equals(node)) {
+                        PasteType p = Utility.getWSDLOrSchemaPasteType(dObj, model, true, true);
+                        if (p != null) {
+                            try {
+                                p.paste();
+                            } catch (IOException e) {
+                                //ignore
+                            }
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        public void dragExit() {
+            //do nothing
+        }
+
+        public void expandForDragAndDrop() {
+            //do nothing
+        }
+
+        public boolean isCollapsed() {
+            return false;
+        }
     }
 }

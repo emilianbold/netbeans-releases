@@ -1,42 +1,20 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 package org.netbeans.modules.xml.wsdl.ui.wizard;
@@ -220,21 +198,21 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
             if(schemas != null) {
                 
                 if(schemas.iterator().hasNext()) {
-	                WSDLSchema wsdlSchema = schemas.iterator().next();
-	                SchemaModel sModel = wsdlSchema.getSchemaModel();
-	                if(sModel != null) {
-		                Schema schema = sModel.getSchema();
-		                if(schema != null && schema.getImports() != null) {
-		                	model.startTransaction();
-		                	Iterator<Import> it = schema.getImports().iterator();
-			                while(it.hasNext()) {
-			                    Import imp = it.next();
-			                    postProcessImport(imp, sModel, fobj, catalogSupport);
-			                }
-			                model.endTransaction();
-		                }
-		                
-	                }
+                    WSDLSchema wsdlSchema = schemas.iterator().next();
+                    SchemaModel sModel = wsdlSchema.getSchemaModel();
+                    if(sModel != null) {
+                        Schema schema = sModel.getSchema();
+                        if(schema != null && schema.getImports() != null) {
+                            model.startTransaction();
+                            Iterator<Import> it = schema.getImports().iterator();
+                            while(it.hasNext()) {
+                                Import imp = it.next();
+                                postProcessImport(imp, sModel, fobj, catalogSupport);
+                            }
+                            model.endTransaction();
+                        }
+                        
+                    }
                 }
             }
         }
@@ -431,19 +409,19 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
         
         File tempWSDLFile = (File) wiz.getProperty(WizardPortTypeConfigurationStep.TEMP_WSDLFILE);
         try {
-        	if(tempWSDLFile != null) {
-    	        
-        		FileObject tempFile = FileUtil.toFileObject(tempWSDLFile.getCanonicalFile());
-        		if(tempFile != null) {
-        			DataObject dObj = DataObject.find(tempFile);
-        			if(dObj != null) {
-        				dObj.delete();
-        			}
-        			
-        		}
-	        }
+            if(tempWSDLFile != null) {
+                
+                FileObject tempFile = FileUtil.toFileObject(tempWSDLFile.getCanonicalFile());
+                if(tempFile != null) {
+                    DataObject dObj = DataObject.find(tempFile);
+                    if(dObj != null) {
+                        dObj.delete();
+                    }
+                    
+                }
+            }
         } catch(Exception ex) {
-        	ErrorManager.getDefault().notify(ex);
+            ErrorManager.getDefault().notify(ex);
         }
         
         panels = null;
@@ -484,6 +462,59 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
     public void addChangeListener(ChangeListener l) {}
     public void removeChangeListener(ChangeListener l) {}
     
+    // If something changes dynamically (besides moving between panels), e.g.
+    // the number of panels changes in response to user input, then uncomment
+    // the following and call when needed: fireChangeEvent();
+    /*
+    private Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
+    public final void addChangeListener(ChangeListener l) {
+        synchronized (listeners) {
+            listeners.add(l);
+        }
+    }
+    public final void removeChangeListener(ChangeListener l) {
+        synchronized (listeners) {
+            listeners.remove(l);
+        }
+    }
+    protected final void fireChangeEvent() {
+        Iterator<ChangeListener> it;
+        synchronized (listeners) {
+            it = new HashSet<ChangeListener>(listeners).iterator();
+        }
+        ChangeEvent ev = new ChangeEvent(this);
+        while (it.hasNext()) {
+            it.next().stateChanged(ev);
+        }
+    }
+     */
+    
+    // You could safely ignore this method. Is is here to keep steps which were
+    // there before this wizard was instantiated. It should be better handled
+    // by NetBeans Wizard API itself rather than needed to be implemented by a
+    // client code.
+    /*private String[] createSteps() {
+        String[] beforeSteps = null;
+        Object prop = wizard.getProperty("WizardPanel_contentData");
+        if (prop != null && prop instanceof String[]) {
+            beforeSteps = (String[]) prop;
+        }
+        
+        if (beforeSteps == null) {
+            beforeSteps = new String[0];
+        }
+        
+        String[] res = new String[(beforeSteps.length - 1) + panels.length];
+        for (int i = 0; i < res.length; i++) {
+            if (i < (beforeSteps.length - 1)) {
+                res[i] = beforeSteps[i];
+            } else {
+                res[i] = panels[i - beforeSteps.length + 1].getComponent().getName();
+            }
+        }
+        return res;
+    }*/
+
     //from schema wizard
     private JTextField findFileNameField(Component panel, String text) {
         Collection<Component> allComponents = new ArrayList<Component>();

@@ -1,42 +1,20 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 package org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget;
@@ -48,7 +26,6 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Shape;
 import java.awt.Stroke;
-import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.KeyEvent;
 import java.awt.geom.Rectangle2D;
@@ -79,6 +56,8 @@ import org.netbeans.modules.xml.wsdl.model.extensions.bpel.BPELQName;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
+import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
+import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.actions.WidgetEditCookie;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.PortTypeNode;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.xam.dom.Utils;
@@ -136,9 +115,11 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
                     DialogDisplayer.getDefault().notify(desc);
                     return;
                 }
+                
                 PartnerLinkType partnerLinkType = getPartnerLinkType();
                 WSDLModel model = partnerLinkType.getModel();
                 Role role = getWSDLComponent();
+                if (role != null && text != null && text.equals(role.getName())) return;
                 try {
                     if (model.startTransaction()) {
                         if (role == null) {
@@ -211,6 +192,19 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
                 return State.REJECTED;
             }
 
+        });
+        getLookupContent().add(new WidgetEditCookie() {
+            
+            public void edit() {
+                InplaceEditorProvider.EditorController inplaceEditorController = ActionFactory.getInplaceEditorController (editorAction);
+                inplaceEditorController.openEditor (mLabelWidget);
+            }
+
+            public void close() {
+                InplaceEditorProvider.EditorController inplaceEditorController = ActionFactory.getInplaceEditorController (editorAction);
+                inplaceEditorController.closeEditor(false);
+            }
+        
         });
     }
     
@@ -303,46 +297,29 @@ public class RoleWidget extends AbstractWidget<Role> implements DnDHandler{
     }
 
     public boolean dragOver(Point scenePoint, WidgetDropTargetDragEvent event) {
-        Transferable transferable = event.getTransferable();
+        Transferable t = event.getTransferable();
 
-        try {
-            if (transferable != null) {
-                for (DataFlavor flavor : transferable.getTransferDataFlavors()) {
-                    Class repClass = flavor.getRepresentationClass();
-                    if (Node.class.isAssignableFrom(repClass)) {
-                        Node node = Node.class.cast(transferable.getTransferData(flavor));
-                        if (node instanceof PortTypeNode) {
-                            mPortTypeWidget.setHitPointBorder();
-                            return true;
-                        }
-                    }
+        if (t != null) {
+            for (Node node : Utility.getNodes(t)) {
+                if (node instanceof PortTypeNode) {
+                    mPortTypeWidget.setHitPointBorder();
+                    return true;
                 }
             }
-        } catch (Exception ex) {
-            //do nothing
         }
         return false;
     }
 
     public boolean drop(Point scenePoint, WidgetDropTargetDropEvent event) {
-        Transferable transferable = event.getTransferable();
-        try {
-            if (transferable != null) {
-                for (DataFlavor flavor : transferable.getTransferDataFlavors()) {
-                    Class repClass = flavor.getRepresentationClass();
-                    Object data = transferable.getTransferData(flavor);
-                    if (Node.class.isAssignableFrom(repClass)) {
-                        Node node = (Node) data;
-                        if (node instanceof PortTypeNode) {
-                            mPortTypeWidget.setDefaultBorder();
-                            setPortType((PortTypeNode)node);
-                        }
-                        return true;
-                    }
+        Transferable t = event.getTransferable();
+        if (t != null) {
+            for (Node node : Utility.getNodes(t)) {
+                if (node instanceof PortTypeNode) {
+                    mPortTypeWidget.setDefaultBorder();
+                    setPortType((PortTypeNode)node);
                 }
+                return true;
             }
-        } catch (Exception ex) {
-            //do nothing
         }
         return false;
     }

@@ -38,54 +38,54 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.xml.wsdl.ui.view.grapheditor.actions;
 
-/*
- * WSDLBpelExtensibilityElementsTest.java
- *
- * Created on January 23, 2007, 4:07 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
-
-package org.netbeans.modules.xml.wsdl.ui.extensibility.model;
-
-import junit.framework.*;
-import org.netbeans.modules.xml.wsdl.ui.TestLookup;
-import org.openide.filesystems.XMLFileSystem;
-import org.openide.util.Lookup;
+import org.netbeans.api.visual.action.ConnectProvider;
+import org.netbeans.api.visual.action.WidgetAction;
+import org.netbeans.api.visual.widget.Widget;
+import org.openide.util.Utilities;
 
 /**
- *
- * @author radval
+ * Modified version of ExtendedConnectionAction.
+ * 
+ * @author alex
  */
-public class WSDLBpelExtensibilityElementsTest extends TestCase {
-    
-    static {
-        try {
-           System.setProperty("org.openide.util.Lookup", TestLookup.class.getName());
-           Lookup l = Lookup.getDefault();
-           if(l instanceof TestLookup) {
-               XMLFileSystem x = new XMLFileSystem(WSDLBpelExtensibilityElementsTest.class.getResource("/org/netbeans/modules/wsdlextensions/jms/resources/layer.xml"));
-              
-               ((TestLookup) l).setup(x);
-           }
-        } catch(Exception ex) {
-            ex.printStackTrace();
-        }
-    }
-    
-    /** Creates a new instance of WSDLBpelExtensibilityElementsTest */
-    public WSDLBpelExtensibilityElementsTest() {
-    }
-    
-    protected void setUp() throws Exception {
+public class ExtendedDragDropAction extends DragDropAction {
+
+    private long modifiers;
+    private boolean macLocking;
+
+    public ExtendedDragDropAction(DragDropDecorator decorator, Widget interractionLayer, ConnectProvider provider, long modifiers) {
+        super(decorator, interractionLayer, provider);
+        this.modifiers = modifiers;
     }
 
-    protected void tearDown() throws Exception {
+    protected boolean isLocked () {
+        return super.isLocked ()  ||  macLocking;
     }
-    
-    public void testMe() {
-        
+
+    public WidgetAction.State mousePressed(Widget widget, WidgetAction.WidgetMouseEvent event) {
+        if (isLocked ())
+            return State.createLocked (widget, this);
+        if ((event.getModifiers () & modifiers) == modifiers) {
+            if ((Utilities.getOperatingSystem () & Utilities.OS_MAC) != 0)
+                macLocking = true;
+            return super.mousePressed(widget,event);
+        }
+        return State.REJECTED;
+    }
+
+    public WidgetAction.State mouseReleased(Widget widget, WidgetAction.WidgetMouseEvent event) {
+        macLocking = false;
+        if (isLocked ())
+            return super.mouseReleased(widget,event);
+        else
+            return State.REJECTED;
+    }
+
+    public State mouseMoved (Widget widget, WidgetMouseEvent event) {
+        if (macLocking)
+            return super.mouseDragged (widget, event);
+        return super.mouseMoved (widget, event);
     }
 }

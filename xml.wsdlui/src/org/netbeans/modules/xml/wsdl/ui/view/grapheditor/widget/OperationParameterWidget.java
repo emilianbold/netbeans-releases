@@ -1,42 +1,20 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 /*
  * LabelAndTextFieldWidget.java
@@ -52,7 +30,6 @@ package org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Point;
-import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
@@ -83,13 +60,19 @@ import org.netbeans.api.visual.widget.LabelWidget.VerticalAlignment;
 import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.Fault;
+import org.netbeans.modules.xml.wsdl.model.Input;
 import org.netbeans.modules.xml.wsdl.model.Message;
+import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.OperationParameter;
+import org.netbeans.modules.xml.wsdl.model.Output;
+import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
+import org.netbeans.modules.xml.wsdl.ui.actions.NameGenerator;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.actions.ComboBoxInplaceEditor;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.actions.ComboBoxInplaceEditorProvider;
+import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.actions.WidgetEditCookie;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.MessageNode;
 import org.netbeans.modules.xml.wsdl.ui.wsdl.util.DisplayObject;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
@@ -270,6 +253,19 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
         
         });
         getActions().addAction(((PartnerScene) getScene()).getDnDAction());
+        getLookupContent().add(new WidgetEditCookie() {
+        
+            public void edit() {
+                InplaceEditorProvider.EditorController inplaceEditorController = ActionFactory.getInplaceEditorController (editorAction);
+                inplaceEditorController.openEditor (mNameLabel);
+            }
+            
+            public void close() {
+                InplaceEditorProvider.EditorController inplaceEditorController = ActionFactory.getInplaceEditorController (editorAction);
+                inplaceEditorController.closeEditor(false);
+            }
+        
+        });
     }
     
     public void setText(String text) {
@@ -360,49 +356,69 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
 
     public boolean dragOver(Point scenePoint, WidgetDropTargetDragEvent event) {
         if (isImported()) return false;
-        Transferable transferable = event.getTransferable();
-
-        try {
-            if (transferable != null) {
-                for (DataFlavor flavor : transferable.getTransferDataFlavors()) {
-                    Class repClass = flavor.getRepresentationClass();
-                    if (Node.class.isAssignableFrom(repClass)) {
-                        Node node = Node.class.cast(transferable.getTransferData(flavor));
-                        if (node instanceof MessageNode) {
-                            setBorder(BorderFactory.createLineBorder(WidgetConstants.HIT_POINT_BORDER, 2));
-                            event.acceptDrag(event.getDropAction());
-                            return true;
-                        }
-                    }
-                }
+        Transferable t = event.getTransferable();
+        Node node = Utility.getPaletteNode(t);
+        if (node != null) {
+            if (!node.getName().startsWith("Message")) {
+                node = null;
             }
-        } catch (Exception ex) {
-            //do nothing
+        } else {
+            Node[] nodes = Utility.getNodes(t);
+            if (nodes.length == 1) {
+                node = nodes[0];
+            }
         }
-        
+        if (node != null && (node instanceof MessageNode || node.getName().startsWith("Message"))) {
+            setBorder(BorderFactory.createLineBorder(WidgetConstants.HIT_POINT_BORDER, 2));
+            event.acceptDrag(event.getDropAction());
+            return true;
+        }
+
         return false;
     }
 
     public boolean drop(Point scenePoint, WidgetDropTargetDropEvent event) {
         if (isImported()) return false;
-        Transferable transferable = event.getTransferable();
-        try {
-            if (transferable != null) {
-                for (DataFlavor flavor : transferable.getTransferDataFlavors()) {
-                    Class repClass = flavor.getRepresentationClass();
-                    Object data = transferable.getTransferData(flavor);
-                    if (Node.class.isAssignableFrom(repClass)) {
-                        Node node = (Node) data;
-                        if (node instanceof MessageNode) {
-                            setBorder(BorderFactory.createEmptyBorder());
-                            setMessage((MessageNode)node);
-                        }
-                        return true;
+        Transferable t = event.getTransferable();
+        Node node = Utility.getPaletteNode(t);
+        if (node != null) {
+            if (!node.getName().startsWith("Message")) {
+                node = null;
+            }
+        } else {
+            Node[] nodes = Utility.getNodes(t);
+            if (nodes.length == 1) {
+                node = nodes[0];
+            }
+        }
+        if (node != null) {
+            setBorder(BorderFactory.createEmptyBorder());
+            if (node instanceof MessageNode) { 
+                setMessage((MessageNode)node);
+            } else {
+                WSDLModel model = getWSDLComponent().getModel();
+                Message msg = null;
+                try {
+                    model.startTransaction();
+                    msg = model.getFactory().createMessage();
+                    msg.setName(generateMessageName());
+                    model.getDefinitions().addMessage(msg);
+
+                    Part newPart = model.getFactory().createPart();
+                    newPart.setName(NameGenerator.getInstance().generateUniqueMessagePartName(msg));
+                    msg.addPart(newPart);
+                    
+                    getWSDLComponent().setMessage(getWSDLComponent().createReferenceTo(msg, Message.class));
+                } finally {
+                    if (model.isIntransaction()) {
+                        model.endTransaction();
                     }
                 }
+                ActionHelper.selectNode(msg);
+                WidgetEditCookie ec = WidgetHelper.getWidgetLookup(msg, getScene()).lookup(WidgetEditCookie.class);
+                if (ec != null) ec.edit();
             }
-        } catch (Exception ex) {
-            //do nothing
+            return true;
         }
         return false;
     }
@@ -436,5 +452,19 @@ public class OperationParameterWidget extends AbstractWidget<OperationParameter>
                 liter.remove();
             }
         }
+    }
+    
+    private String generateMessageName() {
+        String name = ((Operation) getWSDLComponent().getParent()).getName();
+        if (getWSDLComponent() instanceof Input) {
+            name = NameGenerator.getInstance().generateUniqueInputMessageName(name, getWSDLComponent().getModel());
+        } else if (getWSDLComponent() instanceof Output) {
+            name = NameGenerator.getInstance().generateUniqueOutputMessageName(name, getWSDLComponent().getModel());
+        } else {
+            name = NameGenerator.getInstance().generateUniqueFaultMessageName(name, getWSDLComponent().getModel());
+            
+        }
+        
+        return name;
     }
 }

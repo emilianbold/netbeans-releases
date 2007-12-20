@@ -1,42 +1,20 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 package org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget;
@@ -52,6 +30,7 @@ import java.util.ListIterator;
 
 import javax.swing.Action;
 import javax.swing.border.EmptyBorder;
+import javax.xml.namespace.QName;
 
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.InplaceEditorProvider;
@@ -66,6 +45,8 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
+import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
+import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.actions.WidgetEditCookie;
 import org.netbeans.modules.xml.xam.dom.Utils;
 import org.netbeans.modules.xml.xam.ui.XAMUtils;
 import org.openide.DialogDisplayer;
@@ -118,6 +99,8 @@ public class PartnerLinkTypeWidget extends AbstractWidget<PartnerLinkType>
             		DialogDisplayer.getDefault().notify(desc);
             		return;
             	}
+            	
+            	if (text != null && text.equals(getWSDLComponent().getName())) return;
 
             	WSDLModel model = getWSDLComponent().getModel();
             	try {
@@ -182,6 +165,20 @@ public class PartnerLinkTypeWidget extends AbstractWidget<PartnerLinkType>
         mContentWidget.setVisible(ExpanderWidget.isExpanded(this, EXPANDED_DEFAULT));
 
         getActions().addAction(((PartnerScene) getScene()).getDnDAction());
+        
+        getLookupContent().add(new WidgetEditCookie() {
+            
+            public void edit() {
+                InplaceEditorProvider.EditorController inplaceEditorController = ActionFactory.getInplaceEditorController (editorAction);
+                inplaceEditorController.openEditor (mLabelWidget);
+            }
+            
+            public void close() {
+                InplaceEditorProvider.EditorController inplaceEditorController = ActionFactory.getInplaceEditorController (editorAction);
+                inplaceEditorController.closeEditor(false);
+            }
+        
+        });
     }
 
     private ImageLabelWidget createLabelWidget() {
@@ -270,7 +267,13 @@ public class PartnerLinkTypeWidget extends AbstractWidget<PartnerLinkType>
 
     public Object hashKey() {
         PartnerLinkType comp = getWSDLComponent();
-        return comp != null ? comp.getName() : this;
+        if (comp != null) {
+            QName qname = Utility.getQNameForWSDLComponent(comp, comp.getModel());
+            if (qname != null) {
+                return qname;
+            }
+        }
+        return this;
     }
 
     @Override

@@ -1,42 +1,20 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 /*
@@ -73,6 +51,8 @@ import org.netbeans.modules.xml.wsdl.model.Service;
 import org.netbeans.modules.xml.wsdl.model.SolicitResponseOperation;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.extensibility.model.WSDLExtensibilityElements;
+import org.netbeans.modules.xml.wsdl.ui.model.StringAttribute;
+import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 
 /**
@@ -118,61 +98,70 @@ public class BindingGenerator implements Command {
     
     public void execute() {
         //binding
-            String bindingName = (String) this.mConfigurationMap.get(WizardBindingConfigurationStep.BINDING_NAME);
-            if (bindingName == null) return;
-            Binding b = mModel.getFactory().createBinding();
-            this.mBinding = b;
-            b.setName(bindingName);
-            mModel.getDefinitions().addBinding(b);
-            NamedComponentReference<PortType> ptRef = b.createReferenceTo(this.mPortType, PortType.class);
-            b.setType(ptRef);
-            
-            //Not used LocalizedTemplateGroup bindingType = (LocalizedTemplateGroup) this.mConfigurationMap.get(WizardBindingConfigurationStep.BINDING_TYPE);
-            //this could be null for a binding which does not have a sub type
-            LocalizedTemplate bindingSubType = (LocalizedTemplate) this.mConfigurationMap.get(WizardBindingConfigurationStep.BINDING_SUBTYPE);
-            if(bindingSubType != null) {
-                //binding protocol
-                createAndAddBindingProtocol(b, bindingSubType);
-                
-                Collection<Operation> operations = mPortType.getOperations();
-                for (Operation operation : operations) {
-                    //binding operation
-                    BindingOperation bo = this.mModel.getFactory().createBindingOperation();
-                    b.addBindingOperation(bo);
-                    NamedComponentReference<Operation> opRef = bo.createReferenceTo(operation, Operation.class);
-                    bo.setOperation(opRef);
-                    
-                    //binding operation protocol
-                    createAndAddBindingOperationProtocolElements(bo, bindingSubType, operation);
-                }
-                
-            } else {
-                //no binding subtype
-                
-            }
-            
-            //service and port
-            String serviceName = (String) this.mConfigurationMap.get(WizardBindingConfigurationStep.SERVICE_NAME);
-            String servicePortName = (String) this.mConfigurationMap.get(WizardBindingConfigurationStep.SERVICEPORT_NAME);
-            
-            Collection<Service> services = mModel.getDefinitions().getServices();
-            Service service = null;
-            for (Service svc : services) {
-                if (svc.getName().equals(serviceName)) {
-                    service = svc;
-                    break;
-                }
-            }
-            
-            if (service == null) {
-                service = mModel.getFactory().createService();
-                this.mService = service;
-                service.setName(serviceName);
-                mModel.getDefinitions().addService(service);
+        String bindingName = (String) this.mConfigurationMap.get(WizardBindingConfigurationStep.BINDING_NAME);
+        if (bindingName == null) {
+            return;
+        }
+        Binding b = mModel.getFactory().createBinding();
+        this.mBinding = b;
+        b.setName(bindingName);
+        mModel.getDefinitions().addBinding(b);
+        NamedComponentReference<PortType> ptRef = b.createReferenceTo(this.mPortType, PortType.class);
+        b.setType(ptRef);
+
+        //Not used LocalizedTemplateGroup bindingType = (LocalizedTemplateGroup) this.mConfigurationMap.get(WizardBindingConfigurationStep.BINDING_TYPE);
+        //this could be null for a binding which does not have a sub type
+        LocalizedTemplate bindingSubType = (LocalizedTemplate) this.mConfigurationMap.get(WizardBindingConfigurationStep.BINDING_SUBTYPE);
+        if (bindingSubType != null) {
+            //binding protocol
+            createAndAddBindingProtocol(b, bindingSubType);
+
+            Collection<Operation> operations = mPortType.getOperations();
+            for (Operation operation : operations) {
+                //binding operation
+                BindingOperation bo = this.mModel.getFactory().createBindingOperation();
+                b.addBindingOperation(bo);
+                NamedComponentReference<Operation> opRef = bo.createReferenceTo(operation, Operation.class);
+                bo.setOperation(opRef);
+
+                //binding operation protocol
+                createAndAddBindingOperationProtocolElements(bo, bindingSubType, operation);
             }
 
+        } else {
+        //no binding subtype
+
+        }
+
+        Boolean autoCreateServicePort = (Boolean) mConfigurationMap.get(WizardBindingConfigurationStep.AUTO_CREATE_SERVICEPORT);
+
+        if (autoCreateServicePort != null && !autoCreateServicePort.booleanValue()) {
+            return;
+        }
+
+        //service and port
+        String serviceName = (String) this.mConfigurationMap.get(WizardBindingConfigurationStep.SERVICE_NAME);
+        String servicePortName = (String) this.mConfigurationMap.get(WizardBindingConfigurationStep.SERVICEPORT_NAME);
+
+        Collection<Service> services = mModel.getDefinitions().getServices();
+        Service service = null;
+        for (Service svc : services) {
+            if (svc.getName().equals(serviceName)) {
+                service = svc;
+                break;
+            }
+        }
+
+        if (service == null) {
+            service = mModel.getFactory().createService();
+            this.mService = service;
+            service.setName(serviceName);
+            mModel.getDefinitions().addService(service);
+        }
+
+
         /*
-         01/02/07, following code replaced to allow the reuse of empty port element in CASA (T. Li)
+        01/02/07, following code replaced to allow the reuse of empty port element in CASA (T. Li)
          */
         //  Port port = mModel.getFactory().createPort();
         //  this.mPort = port;
@@ -182,24 +171,24 @@ public class BindingGenerator implements Command {
         //  createAndAddServicePortProtocolElements(port, bindingSubType);
         //  service.addPort(port);
 
-            Collection<Port> ports = service.getPorts();
-            Port port = null;
-            for (Port p : ports) {
-                if (p.getName().equals(servicePortName)) {
-                    port = p;
-                    break;
-                }
+        Collection<Port> ports = service.getPorts();
+        Port port = null;
+        for (Port p : ports) {
+            if (p.getName().equals(servicePortName)) {
+                port = p;
+                break;
             }
+        }
 
-            if (port == null) {
-                port = mModel.getFactory().createPort();
-                this.mPort = port;
-                port.setName(servicePortName);
-                service.addPort(port);
-            }
-            NamedComponentReference<Binding> bindingRef = port.createReferenceTo(b, Binding.class);
-            port.setBinding(bindingRef);
-            createAndAddServicePortProtocolElements(port, bindingSubType);
+        if (port == null) {
+            port = mModel.getFactory().createPort();
+            this.mPort = port;
+            port.setName(servicePortName);
+            service.addPort(port);
+        }
+        NamedComponentReference<Binding> bindingRef = port.createReferenceTo(b, Binding.class);
+        port.setBinding(bindingRef);
+        createAndAddServicePortProtocolElements(port, bindingSubType);
 
     }
     
@@ -222,12 +211,16 @@ public class BindingGenerator implements Command {
             
             if(input != null) {
                 BindingInput bIn = createAndAddBindingOperationInput(bOperation, bindingSubType);
-                bIn.setName(input.getName());
+                if (input.getAttribute(new StringAttribute(Named.NAME_PROPERTY)) != null) {
+                    bIn.setName(input.getName());
+                }
             }
             
             if(output != null) {
                 BindingOutput bOut = createAndAddBindingOperationOutput(bOperation, bindingSubType);
-                bOut.setName(output.getName());
+                if (output.getAttribute(new StringAttribute(Named.NAME_PROPERTY)) != null) {
+                    bOut.setName(output.getName());
+                }
             }
             
             if(faults != null) {
@@ -244,7 +237,9 @@ public class BindingGenerator implements Command {
             
             if(input != null) {
                 BindingInput bIn = createAndAddBindingOperationInput(bOperation, bindingSubType);
-                bIn.setName(input.getName());
+                if (input.getAttribute(new StringAttribute(Named.NAME_PROPERTY)) != null) {
+                    bIn.setName(input.getName());
+                }
             }
             
         } else if(portTypeOperation instanceof SolicitResponseOperation) {
@@ -254,12 +249,16 @@ public class BindingGenerator implements Command {
             
             if(input != null) {
                 BindingInput bIn = createAndAddBindingOperationInput(bOperation, bindingSubType);
-                bIn.setName(input.getName());
+                if (input.getAttribute(new StringAttribute(Named.NAME_PROPERTY)) != null) {
+                    bIn.setName(input.getName());
+                }
             }
             
             if(output != null) {
                 BindingOutput bOut = createAndAddBindingOperationOutput(bOperation, bindingSubType);
-                bOut.setName(output.getName());
+                if (output.getAttribute(new StringAttribute(Named.NAME_PROPERTY)) != null) {
+                    bOut.setName(output.getName());
+                }
             }
             
             if(faults != null) {
@@ -274,7 +273,9 @@ public class BindingGenerator implements Command {
             Output output = portTypeOperation.getOutput();
             if(output != null) {
                 BindingOutput bOut = createAndAddBindingOperationOutput(bOperation, bindingSubType);
-                bOut.setName(output.getName());
+                if (output.getAttribute(new StringAttribute(Named.NAME_PROPERTY)) != null) {
+                    bOut.setName(output.getName());
+                }
             }
         }
     }

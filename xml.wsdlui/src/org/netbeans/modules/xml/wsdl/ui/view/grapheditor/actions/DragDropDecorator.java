@@ -38,36 +38,24 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.xml.wsdl.ui.view.grapheditor.actions;
 
-/*
- * TestModelSourceProvider.java
- *
- * Created on January 22, 2007, 7:30 PM
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
-
-package org.netbeans.modules.xml.wsdl.ui;
-
-import org.netbeans.modules.xml.wsdl.ui.extensibility.model.ModelSourceProvider;
-import org.netbeans.modules.xml.xam.ModelSource;
-import org.netbeans.modules.xml.xam.locator.CatalogModelException;
-import org.openide.filesystems.FileObject;
+import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.api.visual.widget.Widget;
 
 /**
+ * This interface decorates a drag drop action.
  *
- * @author radval
+ * @author skini
  */
-public class TestModelSourceProvider implements ModelSourceProvider {
-    
-    /** Creates a new instance of TestModelSourceProvider */
-    public TestModelSourceProvider() {
-    }
+public interface DragDropDecorator {
 
-    public ModelSource getModelSource(FileObject file, boolean editable) throws CatalogModelException {
-        //return TestCatalogModel.getDefault().createModelSource(file, editable);
-        return TestUtil.createModelSource(file, editable);
-    }
+    /**
+     * Creates a drag widget that is temporarily used for visualization of a drag action while user is dragging (creating) it.
+     * @param scene the scene where the connection widget will be used
+     * @return the connection widget
+     */
+    Widget createDragWidget (Scene scene);
+
 
 }

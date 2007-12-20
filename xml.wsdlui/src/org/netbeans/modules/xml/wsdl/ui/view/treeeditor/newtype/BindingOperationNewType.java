@@ -1,55 +1,37 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 package org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype;
 
 import java.awt.Dialog;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Collection;
 
+import org.netbeans.modules.xml.wsdl.bindingsupport.template.ExtensibilityElementTemplateFactory;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.BindingFault;
 import org.netbeans.modules.xml.wsdl.model.BindingInput;
 import org.netbeans.modules.xml.wsdl.model.BindingOperation;
 import org.netbeans.modules.xml.wsdl.model.BindingOutput;
+import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.model.Fault;
 import org.netbeans.modules.xml.wsdl.model.Input;
 import org.netbeans.modules.xml.wsdl.model.Operation;
@@ -60,6 +42,7 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 import org.netbeans.modules.xml.wsdl.ui.view.BindingOperationView;
+import org.netbeans.modules.xml.wsdl.ui.wizard.BindingOperationGenerator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -96,15 +79,24 @@ public class BindingOperationNewType extends NewType {
         } else {
             BindingOperationView operationView = new BindingOperationView(operations);
             
-            DialogDescriptor dd = 
+            final DialogDescriptor dd = 
                 new DialogDescriptor(operationView, 
                         NbBundle.getMessage(BindingOperationNewType.class, "AddBindingOperationView_SELECT_OPERATION") , 
                         true, 
                         DialogDescriptor.OK_CANCEL_OPTION, 
                         DialogDescriptor.CANCEL_OPTION, 
                         null);
+            operationView.addPropertyChangeListener(new PropertyChangeListener() {
+            
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (evt.getPropertyName().equals("ENABLE_OK") && evt.getNewValue() instanceof Boolean) {
+                        dd.setValid(((Boolean) evt.getNewValue()).booleanValue());
+                    }            
+                }
+            });
             Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
             dlg.getAccessibleContext().setAccessibleDescription(dlg.getTitle());
+            dlg.pack();
             dlg.setVisible(true);
             
             if (dd.getValue() == DialogDescriptor.OK_OPTION) {
@@ -112,48 +104,19 @@ public class BindingOperationNewType extends NewType {
             }
         }
         if (selectedOperations != null && selectedOperations.length > 0) {
-            WSDLComponent lastAdded = null;
             WSDLModel document = binding.getModel();
-            document.startTransaction();
-            for (Operation operation : selectedOperations) {
-            	BindingOperation bindingOperation = document.getFactory().createBindingOperation();
-            	if(operation != null) {
-            		bindingOperation.setName(operation.getName());
-            		Input input = operation.getInput();
-            		Output output = operation.getOutput();
-            		Collection<Fault> faults = operation.getFaults();
-            		if(input != null) {
-            			BindingInput bIn = document.getFactory().createBindingInput();
-            			if(input.getName() != null) {
-            				bIn.setName(input.getName());
-            			}
-            			bindingOperation.setBindingInput(bIn);
-            		}
-            		
-            		if(output != null) {
-            			BindingOutput bOut = document.getFactory().createBindingOutput();
-            			if(output.getName() != null) {
-            				bOut.setName(output.getName());
-            			}
-            			bindingOperation.setBindingOutput(bOut);
-            		}
-            		
-            		if(faults != null) {
-            			for (Fault fault : faults) {
-            				BindingFault bFault = document.getFactory().createBindingFault();
-            				if(fault.getName() != null) {
-            					bFault.setName(fault.getName());
-            				}
-            				bindingOperation.addBindingFault(bFault);
-            			}
-            			
-            		}
-            	}
-            	binding.addBindingOperation(bindingOperation);
-                lastAdded = bindingOperation;
+            Collection<ExtensibilityElement> exElements = binding.getExtensibilityElements();
+
+            String namespace = null;
+            if (!exElements.isEmpty()) {
+                namespace = exElements.iterator().next().getQName().getNamespaceURI();
             }
+            
+            document.startTransaction();
+            BindingOperationGenerator generator = new BindingOperationGenerator(binding, namespace, selectedOperations);
+            generator.execute();
             document.endTransaction();
-            ActionHelper.selectNode(lastAdded);
+            ActionHelper.selectNode(generator.getBindingOperation());
         }
     }
 	

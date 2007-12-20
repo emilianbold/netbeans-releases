@@ -39,4 +39,8 @@ public interface OperationConfiguration {
     public void setPortTypeName(String portTypeName);
 
     public JTextField getPortTypeNameTextField();
+    
+    public boolean isAutoGeneratePartnerLinkType();
+    
+    public void setAutoGeneratePartnerLinkType(boolean autoGenPartnerLinkType);
 }

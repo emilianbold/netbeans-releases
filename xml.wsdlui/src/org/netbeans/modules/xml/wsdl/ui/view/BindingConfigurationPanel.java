@@ -1,42 +1,20 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 /*
@@ -53,7 +31,6 @@ import java.util.Collection;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.Vector;
-import javax.swing.ComboBoxModel;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JTextField;
@@ -107,47 +84,62 @@ public class BindingConfigurationPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
+        bindingNameLabel = new javax.swing.JLabel();
         bindingNameTextField = new javax.swing.JTextField();
-        jLabel2 = new javax.swing.JLabel();
+        bindingTypeLabel = new javax.swing.JLabel();
         bindingTypeComboBox = new javax.swing.JComboBox();
-        jLabel3 = new javax.swing.JLabel();
-        jPanel1 = new javax.swing.JPanel();
-        jLabel4 = new javax.swing.JLabel();
+        bindingSubtypeLabel = new javax.swing.JLabel();
+        bindingSubtypePanel = new javax.swing.JPanel();
+        serviceNameLabel = new javax.swing.JLabel();
         serviceNameTextField = new javax.swing.JTextField();
-        jLabel5 = new javax.swing.JLabel();
+        portNameLabel = new javax.swing.JLabel();
         servicePortTextField = new javax.swing.JTextField();
 
-        jLabel1.setLabelFor(bindingNameTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(BindingConfigurationPanel.class, "BindingConfigurationPanel.jLabel1.text")); // NOI18N
-        jLabel1.setToolTipText(org.openide.util.NbBundle.getMessage(BindingConfigurationPanel.class, "BindingConfigurationPanel.jLabel1.toolTipText")); // NOI18N
+        setName("Form"); // NOI18N
 
-        jLabel2.setLabelFor(bindingTypeComboBox);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(BindingConfigurationPanel.class, "BindingConfigurationPanel.jLabel2.text")); // NOI18N
-        jLabel2.setToolTipText(org.openide.util.NbBundle.getMessage(BindingConfigurationPanel.class, "BindingConfigurationPanel.jLabel2.toolTipText")); // NOI18N
+        bindingNameLabel.setLabelFor(bindingNameTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(bindingNameLabel, org.openide.util.NbBundle.getMessage(BindingConfigurationPanel.class, "BindingConfigurationPanel.bindingNameLabel.text")); // NOI18N
+        bindingNameLabel.setToolTipText(org.openide.util.NbBundle.getMessage(BindingConfigurationPanel.class, "BindingConfigurationPanel.bindingNameLabel.toolTipText")); // NOI18N
+        bindingNameLabel.setName("bindingNameLabel"); // NOI18N
+
+        bindingNameTextField.setName("bindingNameTextField"); // NOI18N
+
+        bindingTypeLabel.setLabelFor(bindingTypeComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(bindingTypeLabel, org.openide.util.NbBundle.getMessage(BindingConfigurationPanel.class, "BindingConfigurationPanel.bindingTypeLabel.text")); // NOI18N
+        bindingTypeLabel.setToolTipText(org.openide.util.NbBundle.getMessage(BindingConfigurationPanel.class, "BindingConfigurationPanel.bindingTypeLabel.toolTipText")); // NOI18N
+        bindingTypeLabel.setName("bindingTypeLabel"); // NOI18N
 
         DefaultComboBoxModel model = new DefaultComboBoxModel(protocols);
         model.setSelectedItem(defaultSelection);
         bindingTypeComboBox.setModel(model);
+        bindingTypeComboBox.setName("bindingTypeComboBox"); // NOI18N
         bindingTypeComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bindingTypeComboBoxActionPerformed(evt);
             }
         });
 
-        jLabel3.setLabelFor(jPanel1);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(BindingConfigurationPanel.class, "BindingConfigurationPanel.jLabel3.text")); // NOI18N
-        jLabel3.setToolTipText(org.openide.util.NbBundle.getMessage(BindingConfigurationPanel.class, "BindingConfigurationPanel.jLabel3.toolTipText")); // NOI18N
+        bindingSubtypeLabel.setLabelFor(bindingSubtypePanel);
+        org.openide.awt.Mnemonics.setLocalizedText(bindingSubtypeLabel, org.openide.util.NbBundle.getMessage(BindingConfigurationPanel.class, "BindingConfigurationPanel.bindingSubtypeLabel.text")); // NOI18N
+        bindingSubtypeLabel.setToolTipText(org.openide.util.NbBundle.getMessage(BindingConfigurationPanel.class, "BindingConfigurationPanel.bindingSubtypeLabel.toolTipText")); // NOI18N
+        bindingSubtypeLabel.setName("bindingSubtypeLabel"); // NOI18N
 
-        jPanel1.setLayout(new javax.swing.BoxLayout(jPanel1, javax.swing.BoxLayout.X_AXIS));
+        bindingSubtypePanel.setName("bindingSubtypePanel"); // NOI18N
+        bindingSubtypePanel.setLayout(new javax.swing.BoxLayout(bindingSubtypePanel, javax.swing.BoxLayout.X_AXIS));
 
-        jLabel4.setLabelFor(serviceNameTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(BindingConfigurationPanel.class, "BindingConfigurationPanel.jLabel4.text")); // NOI18N
-        jLabel4.setToolTipText(org.openide.util.NbBundle.getMessage(BindingConfigurationPanel.class, "BindingConfigurationPanel.jLabel4.toolTipText")); // NOI18N
+        serviceNameLabel.setLabelFor(serviceNameTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(serviceNameLabel, org.openide.util.NbBundle.getMessage(BindingConfigurationPanel.class, "BindingConfigurationPanel.serviceNameLabel.text")); // NOI18N
+        serviceNameLabel.setToolTipText(org.openide.util.NbBundle.getMessage(BindingConfigurationPanel.class, "BindingConfigurationPanel.serviceNameLabel.toolTipText")); // NOI18N
+        serviceNameLabel.setName("serviceNameLabel"); // NOI18N
 
-        jLabel5.setLabelFor(servicePortTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(BindingConfigurationPanel.class, "BindingConfigurationPanel.jLabel5.text")); // NOI18N
-        jLabel5.setToolTipText(org.openide.util.NbBundle.getMessage(BindingConfigurationPanel.class, "BindingConfigurationPanel.jLabel5.toolTipText")); // NOI18N
+        serviceNameTextField.setName("serviceNameTextField"); // NOI18N
+
+        portNameLabel.setLabelFor(servicePortTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(portNameLabel, org.openide.util.NbBundle.getMessage(BindingConfigurationPanel.class, "BindingConfigurationPanel.portNameLabel.text")); // NOI18N
+        portNameLabel.setToolTipText(org.openide.util.NbBundle.getMessage(BindingConfigurationPanel.class, "BindingConfigurationPanel.portNameLabel.toolTipText")); // NOI18N
+        portNameLabel.setName("portNameLabel"); // NOI18N
+
+        servicePortTextField.setName("servicePortTextField"); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -156,14 +148,14 @@ public class BindingConfigurationPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                    .add(jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(jLabel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(jLabel5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(bindingSubtypeLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(bindingNameLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(bindingTypeLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(serviceNameLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(portNameLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
+                    .add(bindingSubtypePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, bindingTypeComboBox, 0, 288, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, bindingNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
                     .add(serviceNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
@@ -176,23 +168,23 @@ public class BindingConfigurationPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(bindingNameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel1))
+                    .add(bindingNameLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(bindingTypeComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel2))
+                    .add(bindingTypeLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                    .add(jLabel3)
-                    .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 14, Short.MAX_VALUE))
+                    .add(bindingSubtypeLabel)
+                    .add(bindingSubtypePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 14, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(serviceNameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel4))
+                    .add(serviceNameLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(servicePortTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel5))
+                    .add(portNameLabel))
                 .add(108, 108, 108))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -258,7 +250,7 @@ public class BindingConfigurationPanel extends javax.swing.JPanel {
     private void initGUI() {
         if (protocols.size() > 0) {
             subTypePanel = new BindingSubTypePanel(defaultSelection,  new BindingSubTypeActionListener());
-            jPanel1.add(subTypePanel);
+            bindingSubtypePanel.add(subTypePanel);
         }
     }
     
@@ -272,14 +264,14 @@ public class BindingConfigurationPanel extends javax.swing.JPanel {
     
     private BindingSubTypePanel subTypePanel;
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel bindingNameLabel;
     private javax.swing.JTextField bindingNameTextField;
+    private javax.swing.JLabel bindingSubtypeLabel;
+    private javax.swing.JPanel bindingSubtypePanel;
     private javax.swing.JComboBox bindingTypeComboBox;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JPanel jPanel1;
+    private javax.swing.JLabel bindingTypeLabel;
+    private javax.swing.JLabel portNameLabel;
+    private javax.swing.JLabel serviceNameLabel;
     private javax.swing.JTextField serviceNameTextField;
     private javax.swing.JTextField servicePortTextField;
     // End of variables declaration//GEN-END:variables

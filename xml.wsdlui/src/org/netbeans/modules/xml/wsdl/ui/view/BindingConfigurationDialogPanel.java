@@ -1,42 +1,20 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 /*
@@ -44,275 +22,563 @@
  *
  * Created on September 8, 2006, 2:22 PM
  */
-
 package org.netbeans.modules.xml.wsdl.ui.view;
+
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.Document;
 
+import org.netbeans.modules.xml.wsdl.bindingsupport.spi.ValidationInfo;
 import org.netbeans.modules.xml.wsdl.bindingsupport.template.localized.LocalizedTemplate;
 import org.netbeans.modules.xml.wsdl.bindingsupport.template.localized.LocalizedTemplateGroup;
 import org.netbeans.modules.xml.wsdl.model.Binding;
-
+import org.netbeans.modules.xml.wsdl.model.Definitions;
+import org.netbeans.modules.xml.wsdl.model.Operation;
+import org.netbeans.modules.xml.wsdl.model.Port;
+import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.Service;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.actions.NameGenerator;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.OperationPanel;
+import org.netbeans.modules.xml.wsdl.ui.wizard.BindingGenerator;
+import org.netbeans.modules.xml.wsdl.ui.wizard.WizardBindingConfigurationStep;
 import org.openide.DialogDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.windows.IOProvider;
 
 /**
  *
  * @author  skini
  */
 public class BindingConfigurationDialogPanel extends javax.swing.JPanel {
-    
+
     private String mErrorMessage = null;
-    
+    private ServiceNameChangeListener serviceNameListener;
+    private BindingNameChangeListener bindingNameListener;
+    private ServicePortNameChangeListener servicePortNameListener;
+    private final PortType mPortType;
+
     /** Creates new form BindingConfigurationDialogPanel */
     public BindingConfigurationDialogPanel(WSDLModel model) {
         mModel = model;
+        mPortType = null;
         initComponents();
         initGUI();
     }
+
+    public BindingConfigurationDialogPanel(WSDLModel model, PortType portType) {
+        mModel = model;
+        mPortType = portType;
+        initComponents();
+        initGUI();
+    }
+
+    public boolean canAutoCreateServicePort() {
+        return addBindingPanel.canAutoCreateServicePort();
+    }
     
+    public void setAutoCreateServicePort(boolean enabled) {
+        addBindingPanel.setAutoCreateServicePort(enabled);
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
      * always regenerated by the Form Editor.
      */
-    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        bindingConfigurationPanel1 = new org.netbeans.modules.xml.wsdl.ui.view.BindingConfigurationPanel();
-        commonMessagePanel1 = new org.netbeans.modules.xml.wsdl.ui.view.common.CommonMessagePanel();
+        commonMessagePanel = new org.netbeans.modules.xml.wsdl.ui.view.common.CommonMessagePanel();
+        addBindingPanel = new org.netbeans.modules.xml.wsdl.ui.view.AddBindingPanel();
+
+        setName("BindingConfigurationDialogPanel"); // NOI18N
+
+        commonMessagePanel.setName("ShowErrorWarningPanel"); // NOI18N
+
+        addBindingPanel.setName("addBindingPanel"); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+            .add(addBindingPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 395, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(commonMessagePanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 301, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(10, 10, 10))
-            .add(bindingConfigurationPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 420, Short.MAX_VALUE)
+                .add(commonMessagePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 385, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(bindingConfigurationPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 228, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(58, 58, 58)
-                .add(commonMessagePanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 44, Short.MAX_VALUE)
+                .addContainerGap()
+                .add(addBindingPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 285, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(commonMessagePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 82, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
-    
     private void initGUI() {
-        DocumentListener bindingNameListener  = new BindingNameChangeListener();
-        DocumentListener serviceNameListener  = new ServiceNameChangeListener();
-        DocumentListener servicePortNameListener  = new ServicePortNameChangeListener();
+        bindingNameListener = new BindingNameChangeListener();
+        serviceNameListener = new ServiceNameChangeListener();
+        servicePortNameListener = new ServicePortNameChangeListener();
+
+        this.addBindingPanel.setServiceNameDocumentListener(serviceNameListener);
+
+        addBindingPanel.initPortTypeSelection(mModel, mPortType);
+
+        NameGenerator nameGen = NameGenerator.getInstance();
+        PortType pt = getPortType();
+        String portTypeName = null;
+        if (pt != null) {
+            portTypeName = pt.getName();
+        } else {
+            mErrorMessage = NbBundle.getMessage(BindingConfigurationDialogPanel.class, "ERR_MSG_NoPortTypeForCreatingNewBinding");
+            addBindingPanel.setPanelEnabled(false);
+            updateMessagePanel();
+        }
+        String bindingName = null;
+        if (portTypeName != null) {
+            bindingName = portTypeName + "Binding";
+        } else {
+            bindingName = nameGen.generateUniqueBindingName(mModel);
+        }
+        if (bindingName != null) {
+            if (nameGen.isBindingExists(bindingName, mModel)) {
+                bindingName = nameGen.generateUniqueBindingName(bindingName, mModel);
+            }
+        }
+        setBindingName(bindingName);
+
+        FileObject fo = mModel.getModelSource().getLookup().lookup(FileObject.class);
+        String svcName = fo.getName() + "Service";
+        Definitions def = mModel.getDefinitions();
+        Collection<Service> services = def.getServices();
+        Service service = null;
+        if (services != null && !services.isEmpty()) {
+            service = services.iterator().next();
+            svcName = service.getName();
+        }
+
+        setServiceName(svcName);
+        String portName = getBindingName() + "Port";
+        if (service != null) {
+            if (nameGen.isServicePortExists(portName, service)) {
+                portName = nameGen.generateUniqueServicePortName(portName, service);
+            }
+        }
+        setServicePortName(portName);
+
+        addBindingPanel.getPortTypeSelectionComboBox().addItemListener(new ItemListener() {
+
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    PortType pt = getPortType();
+                    validateAll();
+                    boolean bindingNameChangedHere = false;
+                    if (!bindingNameChanged) {
+                        String bindingName = pt.getName() + "Binding";
+                        NameGenerator nGen = NameGenerator.getInstance();
+                        if (nGen.isBindingExists(bindingName, mModel)) {
+                            bindingName = nGen.generateUniqueBindingName(bindingName, mModel);
+                        }
+                        if (!getBindingName().equals(bindingName)) {
+                            setBindingName(bindingName);
+                            bindingNameChangedHere = true;
+                        }
+                    }
+
+                    if (bindingNameChangedHere && !portNameChanged) {
+                        String portName = getBindingName() + "Port";
+                        NameGenerator nGen = NameGenerator.getInstance();
+                        Service service = mModel.findComponentByName(getServiceName(), Service.class);
+                        if (service != null) {
+                            if (nGen.isServicePortExists(portName, service)) {
+                                portName = nGen.generateUniqueServicePortName(portName, service);
+                            }
+                        }
+                        if (!getServicePortName().equals(portName)) {
+                            setServicePortName(portName);
+                        }
+                    }
+                }
+            }
+        });
+
+
+        PropertyChangeListener propListener = new BindingConfigurationListener();
+        addBindingPanel.addPropertyChangeListener(propListener);
+
         
-        this.bindingConfigurationPanel1.getBindingNameTextField().getDocument().addDocumentListener(bindingNameListener);
-        this.bindingConfigurationPanel1.getServiceNameTextField().getDocument().addDocumentListener(serviceNameListener);
-        this.bindingConfigurationPanel1.getServicePortTextField().getDocument().addDocumentListener(servicePortNameListener);
+        validateAll();
     }
-    
-    
+
     public String getBindingName() {
-        return bindingConfigurationPanel1.getBindingName();
+        return addBindingPanel.getBindingName();
     }
-    
+
     public void setBindingName(String bindingName) {
-        bindingConfigurationPanel1.setBindingName(bindingName);
-        
+        addBindingPanel.getBindingNameTextField().getDocument().removeDocumentListener(bindingNameListener);
+        addBindingPanel.setBindingName(bindingName);
+        addBindingPanel.getBindingNameTextField().getDocument().addDocumentListener(bindingNameListener);
+
     }
 
     public void setServiceName(String svcName) {
-        bindingConfigurationPanel1.setServiceName(svcName);
-        
+        addBindingPanel.setServiceName(svcName);
     }
 
     public void setServicePortName(String string) {
-        bindingConfigurationPanel1.setServicePortName(string);
-        
+        addBindingPanel.getServicePortTextField().getDocument().removeDocumentListener(servicePortNameListener);
+        addBindingPanel.setServicePortName(string);
+        addBindingPanel.getServicePortTextField().getDocument().addDocumentListener(servicePortNameListener);
     }
 
     public LocalizedTemplateGroup getBindingType() {
-        return bindingConfigurationPanel1.getBindingType();
+        return addBindingPanel.getBindingType();
     }
 
     public LocalizedTemplate getBindingSubType() {
-        return bindingConfigurationPanel1.getBindingSubType();
+        return addBindingPanel.getBindingSubType();
     }
 
     public String getServiceName() {
-        return bindingConfigurationPanel1.getServiceName();
+        return addBindingPanel.getServiceName();
     }
 
     public String getServicePortName() {
-        return bindingConfigurationPanel1.getServicePortName();
+        return addBindingPanel.getServicePortName();
     }
-    
+
+    public PortType getPortType() {
+        if (mPortType != null) {
+            return mPortType;
+        }
+        return addBindingPanel.getSelectedPortType();
+    }
+
     public void setDialogDescriptor(DialogDescriptor dd) {
         this.mDD = dd;
+        updateMessagePanel();
     }
-    
+
     private boolean isValidName(String text) {
         try {
-            boolean isValid  = org.netbeans.modules.xml.xam.dom.Utils.isValidNCName(text);
-            if(!isValid) {
-                mErrorMessage = NbBundle.getMessage(OperationPanel.class, "ERR_MSG_INVALID_NAME" , text);
+            boolean isValid = org.netbeans.modules.xml.xam.dom.Utils.isValidNCName(text);
+            if (!isValid) {
+                mErrorMessage = NbBundle.getMessage(OperationPanel.class, "ERR_MSG_INVALID_NAME", text);
             } else {
                 mErrorMessage = null;
             }
-            
-        }  catch(Exception ex) {
+
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
-        
+
         return mErrorMessage == null;
     }
-    
+
     private void validateAll() {
-        boolean validBinding = isValidName(this.bindingConfigurationPanel1.getBindingName());
-        if(!validBinding) {
+        boolean isPortTypeValid = validatePortType();
+        if (!isPortTypeValid) {
             updateMessagePanel();
             return;
         }
         
-        
+
+        if (mBindingSubTypeError != null) {
+            mErrorMessage = mBindingSubTypeError;
+            updateMessagePanel();
+            return;
+        }
+
+        boolean validBinding = isValidName(this.addBindingPanel.getBindingName());
+        if (!validBinding) {
+            updateMessagePanel();
+            return;
+        }
+
+
         boolean isBindingExist = isBindingExists();
-        if(isBindingExist) {
+        if (isBindingExist) {
             updateMessagePanel();
             return;
         }
-        
-        boolean validService = isValidName(this.bindingConfigurationPanel1.getServiceName());
-        if(!validService) {
-            updateMessagePanel();
-            return;
+
+        if (canAutoCreateServicePort()) {
+            boolean validService = isValidName(this.addBindingPanel.getServiceName());
+            if (!validService) {
+                updateMessagePanel();
+                return;
+            }
+
+
+            boolean validPort = isValidName(this.addBindingPanel.getServicePortName());
+            if (!validPort) {
+                updateMessagePanel();
+                return;
+            }
+
+
+            String serviceName = this.addBindingPanel.getServiceName();
+            String portName = this.addBindingPanel.getServicePortName();
+
+            boolean isServicePortExist = isServicePortExists(serviceName, portName);
+            if (isServicePortExist) {
+                updateMessagePanel();
+                return;
+            }
         }
-        
-        
-        boolean validPort = isValidName(this.bindingConfigurationPanel1.getServicePortName());
-        if(!validPort) {
-            updateMessagePanel();
-            return;
-        }
-        
-        
-        String serviceName = this.bindingConfigurationPanel1.getServiceName();
-        String portName = this.bindingConfigurationPanel1.getServicePortName();
-        
-        boolean isServicePortExist = isServicePortExists(serviceName, portName);
-        if(isServicePortExist) {
-            updateMessagePanel();
-            return;
-        }
-        
-        
+
         this.mErrorMessage = null;
         updateMessagePanel();
-        
+
     }
-    
+
+    private boolean validatePortType() {
+        Set<String> operationNames = new HashSet<String>();
+        PortType pt = getPortType();
+        if (pt == null) {
+            return false;
+        }
+        for (Operation operation : pt.getOperations()) {
+            String opName = operation.getName();
+            String inputName = "";
+            try { 
+                inputName = operation.getInput().getName();
+            } catch (Exception e) {
+                
+            }
+            String outputName = "";
+            try { 
+                outputName = operation.getOutput().getName();
+            } catch (Exception e) {
+                
+            }
+            
+            String opUniqueName = opName + inputName + outputName;
+            if (operationNames.contains(opUniqueName)) {
+                mErrorMessage = NbBundle.getMessage(BindingConfigurationDialogPanel.class, "ERR_MSG_ImproperlyOverloadedOperations");
+                return false;
+            } else {
+                operationNames.add(opUniqueName);
+            }
+        }
+        return true;
+    }
+
     private boolean isBindingExists() {
         boolean exist = false;
-        
-        String text = this.bindingConfigurationPanel1.getBindingName();
+
+        String text = this.addBindingPanel.getBindingName();
         Binding b = mModel.findComponentByName(text, Binding.class);
-            
-        if(b != null) {
-            this.mErrorMessage = "Binding \"" + text + "\" already exists.";
+
+        if (b != null) {
+            this.mErrorMessage = NbBundle.getMessage(BindingConfigurationDialogPanel.class, "ERR_MSG_BindingAlreadyExists", text);
             exist = true;
-        } 
-                
+        }
+
         return exist;
     }
- 
-    
-    
+
     public boolean isServicePortExists(String serviceName, String portName) {
         boolean exist = false;
-        if(serviceName != null && portName != null) {
+        if (serviceName != null && portName != null) {
             Service service = mModel.findComponentByName(serviceName, Service.class);
-            if(service != null) {
+            if (service != null) {
                 exist = NameGenerator.getInstance().isServicePortExists(getServicePortName(), service);
                 if (exist) {
-                    this.mErrorMessage = "Service port" + getServicePortName() + " already exists.";
+                    this.mErrorMessage = NbBundle.getMessage(BindingConfigurationDialogPanel.class, "ERR_MSG_ServicePortAlreadyExists", getServicePortName());
                 }
             }
         }
         return exist;
     }
-    
+
     private void updateMessagePanel() {
-        if(this.mErrorMessage != null) {
-            commonMessagePanel1.setErrorMessage(mErrorMessage);
-            if(this.mDD != null) {
+        if (this.mErrorMessage != null) {
+            commonMessagePanel.setErrorMessage(mErrorMessage);
+            if (this.mDD != null) {
                 mDD.setValid(false);
             }
-            //firePropertyChange(APPLY_CHANGE, !commonMessagePanel1.isStateValid(), commonMessagePanel1.isStateValid());
+        //firePropertyChange(APPLY_CHANGE, !commonMessagePanel1.isStateValid(), commonMessagePanel1.isStateValid());
         } else {
-            commonMessagePanel1.setMessage("");
+            commonMessagePanel.setMessage("");
             if (mDD != null) {
                 mDD.setValid(true);
             }
-            //firePropertyChange(APPLY_CHANGE, !commonMessagePanel1.isStateValid(), commonMessagePanel1.isStateValid());
+        //firePropertyChange(APPLY_CHANGE, !commonMessagePanel1.isStateValid(), commonMessagePanel1.isStateValid());
         }
     }
 
     class BindingNameChangeListener implements DocumentListener {
-        
+
         public void changedUpdate(DocumentEvent e) {
-            validateAll();
+            bindingChanged();
         }
-        
+
         public void insertUpdate(DocumentEvent e) {
-            validateAll();
+            bindingChanged();
         }
-        
+
         public void removeUpdate(DocumentEvent e) {
+            bindingChanged();
+        }
+
+        private void bindingChanged() {
+            bindingNameChanged = true;
             validateAll();
         }
     }
-    
+
     class ServiceNameChangeListener implements DocumentListener {
-        
+
         public void changedUpdate(DocumentEvent e) {
-            validateAll();
+            serviceChanged();
         }
-        
+
         public void insertUpdate(DocumentEvent e) {
-            validateAll();
+            serviceChanged();
         }
-        
+
         public void removeUpdate(DocumentEvent e) {
+            serviceChanged();
+        }
+
+        private void serviceChanged() {
             validateAll();
         }
     }
+
     class ServicePortNameChangeListener implements DocumentListener {
-        
+
         public void changedUpdate(DocumentEvent e) {
-            validateAll();
+            portChanged();
         }
-        
+
         public void insertUpdate(DocumentEvent e) {
-            validateAll();
+            portChanged();
         }
-        
+
         public void removeUpdate(DocumentEvent e) {
+            portChanged();
+        }
+
+        private void portChanged() {
+            portNameChanged = true;
             validateAll();
         }
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private org.netbeans.modules.xml.wsdl.ui.view.BindingConfigurationPanel bindingConfigurationPanel1;
-    private org.netbeans.modules.xml.wsdl.ui.view.common.CommonMessagePanel commonMessagePanel1;
+    private org.netbeans.modules.xml.wsdl.ui.view.AddBindingPanel addBindingPanel;
+    private org.netbeans.modules.xml.wsdl.ui.view.common.CommonMessagePanel commonMessagePanel;
     // End of variables declaration//GEN-END:variables
     private WSDLModel mModel;
     private DialogDescriptor mDD;
+    private boolean bindingNameChanged = false;
+    private boolean portNameChanged = false;
+    private String mBindingSubTypeError;
+
     
+        
+    
+    class BindingConfigurationListener implements PropertyChangeListener {
+        public void propertyChange(PropertyChangeEvent evt) {
+            String propertyName = evt.getPropertyName();
+            if(AddBindingPanel.PROP_BINDING_SUBTYPE.equals(propertyName)) {
+                LocalizedTemplate bindingSubType = (LocalizedTemplate) evt.getNewValue();
+                processBindingSubType(bindingSubType);
+            } else if(AddBindingPanel.PROP_BINDING_TYPE.equals(propertyName)) {
+                processBindingSubType(getBindingSubType());
+            } else if (AddBindingPanel.PROP_AUTOCREATE_SERVICE.equals(propertyName)) {
+                validateAll();
+            }
+        }
+    }
+    
+    private void processBindingSubType(LocalizedTemplate bindingSubType) {
+        if(bindingSubType != null) {
+            String bindingName = getBindingName();
+            LocalizedTemplateGroup bindingType = getBindingType();
+            
+            
+            //service and port
+            String serviceName = getServiceName();
+            String servicePortName = getServicePortName();
+            
+            Map configurationMap = new HashMap();
+            configurationMap.put(WizardBindingConfigurationStep.BINDING_NAME, bindingName);
+            configurationMap.put(WizardBindingConfigurationStep.BINDING_TYPE, bindingType);
+           
+            //this could be null for a binding which does not have a sub type
+            configurationMap.put(WizardBindingConfigurationStep.BINDING_SUBTYPE, bindingSubType);
+            
+            //service and port
+            configurationMap.put(WizardBindingConfigurationStep.SERVICE_NAME, serviceName);
+            configurationMap.put(WizardBindingConfigurationStep.SERVICEPORT_NAME, servicePortName);
+            configurationMap.put(WizardBindingConfigurationStep.AUTO_CREATE_SERVICEPORT, canAutoCreateServicePort());
+            
+            try {
+                mModel.startTransaction();
+
+                BindingGenerator bGen = new BindingGenerator(mModel, getPortType(), configurationMap);
+                bGen.execute();
+
+                Binding binding = bGen.getBinding();
+                Port port = bGen.getPort();
+
+                if(binding != null) {
+                    String targetNamespace = mModel.getDefinitions().getTargetNamespace();
+                    List<ValidationInfo> vAllInfos =new ArrayList<ValidationInfo>();
+
+                    List<ValidationInfo> vBindingInfos = bindingSubType.getMProvider().validate(binding);
+                    if(vBindingInfos != null) {
+                        vAllInfos.addAll(vBindingInfos);
+                    }
+
+                    if(port != null) {
+                        List<ValidationInfo> vPortInfos = bindingSubType.getMProvider().validate(port);
+                        if(vPortInfos != null) {
+                            vAllInfos.addAll(vPortInfos);
+                        }
+                    }
+                    if(vAllInfos.size() > 0) {
+                        ValidationInfo vInfo = vAllInfos.get(0);
+                        mBindingSubTypeError =  vInfo.getDescription();
+                        IOProvider.getDefault().getStdOut().print(mBindingSubTypeError);
+                        mErrorMessage = mBindingSubTypeError;
+                        updateMessagePanel();
+                    } else {
+                        //no errors
+                        this.mBindingSubTypeError =  null;
+                        mErrorMessage = mBindingSubTypeError;
+                        updateMessagePanel();
+                        bindingSubType.getMProvider().postProcess(targetNamespace, binding);
+                        if(port != null) {
+                            bindingSubType.getMProvider().postProcess(targetNamespace, port);
+                        }
+                    }
+                }
+
+            } finally {
+                if (mModel.isIntransaction()) {
+                    mModel.rollbackTransaction();
+                }
+            }
+        }
+    }
+
 //    public void doesBindingExist() {
 //        boolean exists = NameGenerator.getInstance().isBindingExists(getBindingName(), mModel);
 //        if (commonMessagePanel1.isStateValid()) {

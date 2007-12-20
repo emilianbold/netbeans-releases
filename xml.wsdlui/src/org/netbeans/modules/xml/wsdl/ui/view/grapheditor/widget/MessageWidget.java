@@ -1,42 +1,20 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 /*
  * MessageWidget.java
@@ -61,12 +39,12 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.Stroke;
-import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 import java.beans.PropertyChangeEvent;
@@ -74,7 +52,11 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
+import javax.xml.namespace.QName;
+
 import org.netbeans.api.visual.action.ActionFactory;
+import org.netbeans.api.visual.action.ConnectProvider;
+import org.netbeans.api.visual.action.ConnectorState;
 import org.netbeans.api.visual.action.InplaceEditorProvider;
 import org.netbeans.api.visual.action.TextFieldInplaceEditor;
 import org.netbeans.api.visual.action.WidgetAction;
@@ -90,10 +72,16 @@ import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.wsdl.model.Message;
+import org.netbeans.modules.xml.wsdl.model.OperationParameter;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
+import org.netbeans.modules.xml.wsdl.ui.actions.NameGenerator;
+import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
+import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.actions.DragDropDecorator;
+import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.actions.ExtendedDragDropAction;
+import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.actions.WidgetEditCookie;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.FilledBorder;
 import org.netbeans.modules.xml.xam.AbstractComponent;
 import org.netbeans.modules.xml.xam.ui.XAMUtils;
@@ -235,6 +223,21 @@ public class MessageWidget extends AbstractWidget<Message>
             }
 
         });
+        
+        getLookupContent().add(new WidgetEditCookie() {
+        
+            public void edit() {
+                InplaceEditorProvider.EditorController inplaceEditorController = ActionFactory.getInplaceEditorController (editorAction);
+                inplaceEditorController.openEditor (labelWidget);
+            }
+            
+            public void close() {
+                InplaceEditorProvider.EditorController inplaceEditorController = ActionFactory.getInplaceEditorController (editorAction);
+                inplaceEditorController.closeEditor(false);
+            }
+        
+        });
+        
     }
 
     void updateButtonState() {
@@ -260,7 +263,7 @@ public class MessageWidget extends AbstractWidget<Message>
             try {
                 if (model.startTransaction()) {
                     newPart = model.getFactory().createPart();
-                    newPart.setName(MessagesUtils.createNewPartName(message));
+                    newPart.setName(NameGenerator.getInstance().generateUniqueMessagePartName(message));
                     newPart.setType(MessagesUtils.getDefaultTypeReference(model));
 
                     message.addPart(newPart);
@@ -270,6 +273,8 @@ public class MessageWidget extends AbstractWidget<Message>
             }
             if (newPart != null) {
             	ActionHelper.selectNode(newPart);
+            	WidgetEditCookie ec = WidgetHelper.getWidgetLookup(newPart, getScene()).lookup(WidgetEditCookie.class);
+                if (ec != null) ec.edit();
             }
         } else if (event.getSource() == removePartButton) {
             for (Widget w : tableWidget.getChildren()) {
@@ -442,6 +447,68 @@ public class MessageWidget extends AbstractWidget<Message>
         result.addChild(expanderWidget);
         result.setLayout(WidgetConstants.HEADER_LAYOUT);
         result.setBorder(WidgetConstants.GRADIENT_BLUE_WHITE_BORDER);
+        
+        result.getActions().addAction(new ExtendedDragDropAction(
+                new DragDropDecorator() {
+
+                    public Widget createDragWidget(Scene scene) {
+                        return new ImageLabelWidget(scene, IMAGE, getWSDLComponent().getName());
+                    }
+
+                }, 
+                ((PartnerScene)getScene()).getDragOverLayer(), 
+                new ConnectProvider() {
+
+                    public Widget resolveTargetWidget(Scene scene, Point sceneLocation) {
+                        // TODO Auto-generated method stub
+                        return null;
+                    }
+
+                    public ConnectorState isTargetWidget(Widget sourceWidget,
+                            Widget targetWidget) {
+                        if (targetWidget instanceof OperationParameterWidget) {
+                            return ConnectorState.ACCEPT;
+                        }
+                        return ConnectorState.REJECT;
+                    }
+
+                    public boolean isSourceWidget(Widget sourceWidget) {
+                        if (sourceWidget == header) {
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    public boolean hasCustomTargetWidgetResolver(Scene scene) {
+                        // TODO Auto-generated method stub
+                        return false;
+                    }
+
+                    public void createConnection(Widget sourceWidget, Widget targetWidget) {
+                        if (targetWidget instanceof OperationParameterWidget) {
+                            Node node = ((OperationParameterWidget)targetWidget).getNode();
+                            if (node != null) {
+                                OperationParameter param = node.getLookup().lookup(OperationParameter.class);
+                                if (param != null) {
+                                    Message message = getWSDLComponent();
+                                    WSDLModel model = message.getModel();
+                                    try {
+                                        model.startTransaction();
+                                        param.setMessage(param.createReferenceTo(message, Message.class));
+                                    } finally {
+                                        if (model.isIntransaction()) {
+                                            model.endTransaction();
+                                        }
+                                    }
+                                    ActionHelper.selectNode(param);
+                                }
+                            }
+                        }
+
+                    }
+
+                }, MouseEvent.CTRL_MASK)
+        );
         return result;
     }
 
@@ -560,27 +627,20 @@ public class MessageWidget extends AbstractWidget<Message>
 
     public boolean dragOver(Point scenePoint, WidgetAction.WidgetDropTargetDragEvent event) {
         if (isCollapsed()) return false;
-        
-        try {
-            Transferable t = event.getTransferable();
-            if (t != null) {
-                for (DataFlavor flavor : t.getTransferDataFlavors()) {
-                    Class repClass = flavor.getRepresentationClass();
-                    if (Node.class.isAssignableFrom(repClass)) {
-                        SchemaComponent sc = MessagesUtils
-                                .extractSchemaComponent((Node) 
-                                t.getTransferData(flavor));
 
-                        if (sc != null) {
-                            showHitPoint(scenePoint, sc);
-                            getScene().validate();
-                            return true;
-                        }
-                    }
+        Transferable t = event.getTransferable();
+        if (t != null) {
+            
+            for (Node node : Utility.getNodes(t)) {
+                SchemaComponent sc = MessagesUtils
+                .extractSchemaComponent(node);
+
+                if (sc != null) {
+                    showHitPoint(scenePoint, sc);
+                    getScene().validate();
+                    return true;
                 }
             }
-        } catch (Exception ex) {
-            //do nothing
         }
         
         return false;
@@ -603,14 +663,15 @@ public class MessageWidget extends AbstractWidget<Message>
         
         Message message = getWSDLComponent();
         WSDLModel model = message.getModel();
-
+        boolean newlyCreated = false;
         Part part = null;
         if (model.startTransaction()) {
             try {
                 if (position.column == 0) {
                     part = model.getFactory().createPart();
-                    part.setName(MessagesUtils.createNewPartName(message));
+                    part.setName(NameGenerator.getInstance().generateUniqueMessagePartName(message));
                     ((AbstractComponent<WSDLComponent>) message).insertAtIndex(Message.PART_PROPERTY, part, position.row);
+                    newlyCreated = true;
                 } else {
                     Part[] parts = message.getParts().toArray(new Part[0]);
                     part = parts[position.row];
@@ -633,6 +694,10 @@ public class MessageWidget extends AbstractWidget<Message>
             }
         }
         ActionHelper.selectNode(part);
+        if (newlyCreated) {
+            WidgetEditCookie ec = WidgetHelper.getWidgetLookup(part, getScene()).lookup(WidgetEditCookie.class);
+            if (ec != null) ec.edit();
+        }
         return true;
     }
     
@@ -643,7 +708,13 @@ public class MessageWidget extends AbstractWidget<Message>
 
     public Object hashKey() {
         Message comp = getWSDLComponent();
-        return comp != null ? comp.getName() : this;
+        if (comp != null) {
+            QName qname = Utility.getQNameForWSDLComponent(comp, comp.getModel());
+            if (qname != null) {
+                return qname;
+            }
+        }
+        return this;
     }
 
     private static final Border BUTTONS_BORDER = new FilledBorder(

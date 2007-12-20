@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.0" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.4" maxVersion="1.4" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+  <Properties>
+    <Property name="name" type="java.lang.String" value="Form" noResource="true"/>
+  </Properties>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -14,7 +18,10 @@
 
   <Layout class="org.netbeans.modules.form.compat2.layouts.DesignCardLayout"/>
   <SubComponents>
-    <Component class="org.netbeans.modules.xml.wsdl.ui.view.RequestReplyOperationPanel" name="requestReplyOperationPanel1">
+    <Component class="org.netbeans.modules.xml.wsdl.ui.view.RequestReplyOperationPanel" name="requestReplyOperationPanel">
+      <Properties>
+        <Property name="name" type="java.lang.String" value="requestReplyOperationPanel" noResource="true"/>
+      </Properties>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new org.netbeans.modules.xml.wsdl.ui.view.RequestReplyOperationPanel(this.mProject, this.mCommonOperationTextFieldDocument, namespaceToPrefixMap, mIsShowMessageComboBoxes, mModel, showPortType);"/>
       </AuxValues>
@@ -24,7 +31,10 @@
         </Constraint>
       </Constraints>
     </Component>
-    <Component class="org.netbeans.modules.xml.wsdl.ui.view.OneWayOperationPanel" name="oneWayOperationPanel1">
+    <Component class="org.netbeans.modules.xml.wsdl.ui.view.OneWayOperationPanel" name="oneWayOperationPanel">
+      <Properties>
+        <Property name="name" type="java.lang.String" value="oneWayOperationPanel" noResource="true"/>
+      </Properties>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new org.netbeans.modules.xml.wsdl.ui.view.OneWayOperationPanel(this.mProject, this.mCommonOperationTextFieldDocument, namespaceToPrefixMap, mIsShowMessageComboBoxes, mModel, showPortType);"/>
       </AuxValues>

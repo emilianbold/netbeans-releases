@@ -1,46 +1,25 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 package org.netbeans.modules.xml.wsdl.ui.netbeans.module;
 
+import java.awt.datatransfer.Transferable;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -56,13 +35,18 @@ import java.util.Set;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.catalogsupport.DefaultProjectCatalogSupport;
 import org.netbeans.modules.xml.schema.model.Element;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
+import org.netbeans.modules.xml.schema.model.ReferenceableSchemaComponent;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
+import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
+import org.netbeans.modules.xml.schema.ui.basic.SchemaModelCookie;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.BindingOperation;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
@@ -76,17 +60,27 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.xsd.WSDLSchema;
 import org.netbeans.modules.xml.wsdl.ui.actions.NameGenerator;
 import org.netbeans.modules.xml.wsdl.ui.actions.schema.ExtensibilityElementCreatorVisitor;
+import org.netbeans.modules.xml.wsdl.ui.common.Constants;
 import org.netbeans.modules.xml.wsdl.ui.schema.visitor.OptionalAttributeFinderVisitor;
+import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.pastetype.SchemaImportPasteType;
+import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.pastetype.WSDLImportPasteType;
 import org.netbeans.modules.xml.wsdl.ui.wsdl.util.RelativePath;
 import org.netbeans.modules.xml.xam.AbstractComponent;
+import org.netbeans.modules.xml.xam.Model;
+import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
+import org.netbeans.spi.palette.PaletteController;
 import org.openide.ErrorManager;
 import org.openide.explorer.view.TreeView;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.nodes.NodeTransfer;
+import org.openide.util.Lookup;
+import org.openide.util.datatransfer.PasteType;
 
 public class Utility {
     
@@ -149,32 +143,78 @@ public class Utility {
         return ((AbstractDocumentComponent) def).getPrefixes();
     }
     
-    public static GlobalElement findGlobalElement(Schema schema, String elementName) {
-        Collection gElem = schema.findAllGlobalElements();
-        if (gElem !=null){
-            Iterator iter = gElem.iterator();
-            while (iter.hasNext()) {
-                GlobalElement elem = (GlobalElement) iter.next();
-                if (elem.getName().equals(elementName)) {
-                    return elem;
+    public static GlobalElement findGlobalElement(WSDLModel model, QName elementQName) {
+        String namespace = elementQName.getNamespaceURI();
+        String localName = elementQName.getLocalPart();
+        
+        GlobalElement target = null;
+        if (XMLConstants.W3C_XML_SCHEMA_NS_URI.equals(namespace)) {
+            SchemaModel primitiveModel = SchemaModelFactory.getDefault().getPrimitiveTypesModel();
+            target = primitiveModel.resolve(namespace, localName, GlobalElement.class);
+        } else {
+            Types types = model.getDefinitions().getTypes();
+            if (types != null) {
+                for (Schema s : types.getSchemas()) {
+                    target = s.getModel().resolve(namespace, localName, GlobalElement.class);
+                    if (target != null) {
+                        break;
+                    }
+                }
+            }
+            if (target == null) {
+                for (Import i : model.getDefinitions().getImports()) {
+                    String location = i.getLocation();
+                    if(location.toLowerCase().endsWith(Constants.XSD_EXT)) {
+                        List<Schema> schemas = model.findSchemas(i.getNamespace());
+                        
+                        for (Schema schema : schemas) {
+                            target = schema.getModel().resolve(namespace, localName, GlobalElement.class);
+                            if (target != null) {
+                                break;
+                            }
+                        }                        
+                    }
                 }
             }
         }
-        return null;
+        return target;
     }
     
-    public static GlobalType findGlobalType(Schema schema, String typeName) {
-        Collection gTypes = schema.findAllGlobalTypes();
-        if (gTypes !=null){
-            Iterator iter = gTypes.iterator();
-            while (iter.hasNext()) {
-                GlobalType type = (GlobalType) iter.next();
-                if (type.getName().equals(typeName)) {
-                    return type;
+    public static GlobalType findGlobalType(WSDLModel model, QName typeQName) {
+        String namespace = typeQName.getNamespaceURI();
+        String localName = typeQName.getLocalPart();
+        
+        GlobalType target = null;
+        if (XMLConstants.W3C_XML_SCHEMA_NS_URI.equals(namespace)) {
+            SchemaModel primitiveModel = SchemaModelFactory.getDefault().getPrimitiveTypesModel();
+            target = primitiveModel.resolve(namespace, localName, GlobalType.class);
+        } else {
+            Types types = model.getDefinitions().getTypes();
+            if (types != null) {
+                for (Schema s : types.getSchemas()) {
+                    target = s.getModel().resolve(namespace, localName, GlobalType.class);
+                    if (target != null) {
+                        break;
+                    }
+                }
+            }
+            if (target == null) {
+                for (Import i : model.getDefinitions().getImports()) {
+                    String location = i.getLocation();
+                    if(location.toLowerCase().endsWith(Constants.XSD_EXT)) {
+                        List<Schema> schemas = model.findSchemas(i.getNamespace());
+                        
+                        for (Schema schema : schemas) {
+                            target = schema.getModel().resolve(namespace, localName, GlobalType.class);
+                            if (target != null) {
+                                break;
+                            }
+                        }                        
+                    }
                 }
             }
         }
-        return null;
+        return target;
     }
     
     public static String fromQNameToString(QName qname) {
@@ -267,7 +307,7 @@ public class Utility {
         }
     }
     
-    private static void addNamespacePrefix(WSDLModel imported, WSDLModel model, String prefix) {
+    public static void addNamespacePrefix(WSDLModel imported, WSDLModel model, String prefix) {
         assert model != null;
         if(imported != null) {
             Definitions definitions = model.getDefinitions();
@@ -356,35 +396,89 @@ public class Utility {
         model.endTransaction();
     }
     
+    
+    /**
+     * Get all operations that are not part of the given binding.
+     * 
+     * @param portType
+     * @param binding
+     * @return list of operations, may be null.
+     */
     public static Collection<Operation> getImplementableOperations(PortType portType, Binding binding) {
         if (portType == null || portType.getOperations() == null || portType.getOperations().size() == 0
                 || binding == null) {
             return null;
         }
         List<Operation> listData = new ArrayList<Operation>(portType.getOperations().size());
-        Set<String> bindingOperationsSet = new HashSet<String>();
-        Collection<BindingOperation> bindingOperations = binding.getBindingOperations();
-        if (bindingOperations != null) {
-            Iterator<BindingOperation> iter = bindingOperations.iterator();
-            while (iter.hasNext()) {
-                bindingOperationsSet.add(iter.next().getOperation().get().getName());
+        if (portType.getOperations().size() != binding.getBindingOperations().size()) {
+
+            Set<Operation> bindingOperationsSet = new HashSet<Operation>();
+            for (BindingOperation bo : binding.getBindingOperations()) {
+                bindingOperationsSet.add(bo.getOperation().get());
             }
-            
-        }
-        Iterator it = portType.getOperations().iterator();
-        
-        while(it.hasNext()) {
-            Operation operation = (Operation) it.next();
-            if(operation.getName() != null) {
-                if (!bindingOperationsSet.contains(operation.getName())) {
+
+            for (Operation operation : portType.getOperations()) {
+                if (!bindingOperationsSet.contains(operation)) {
                     listData.add(operation);
                 }
             }
         }
-        
         return listData;
     }
+
+    /**
+     * Get all the operations that are overloaded in the port type.
+     * Overloaded means: same operation name with same input/output names.
+     * @param portType
+     * @return non null list of operations.
+     */
+    public static List<Operation> getOverloadedOperations(PortType portType) {
+        List<Operation> result = new ArrayList<Operation>();
+        Set<String> operationNames = new HashSet<String>();
+        Set<String> overloadedOperationNames = new HashSet<String>();
+
+        for (Operation operation : portType.getOperations()) {
+            String opName = operation.getName();
+            if (operationNames.contains(opName)) {
+                overloadedOperationNames.add(opName);
+            } else {
+                operationNames.add(opName);
+            }
+        }
+
+        if (!overloadedOperationNames.isEmpty()) {
+            result = new ArrayList<Operation>();
+            for (Operation operation : portType.getOperations()) {
+                String opName = operation.getName();
+                if (overloadedOperationNames.contains(opName)) {
+                    result.add(operation);
+                }
+            }
+        }
+
+        return result;
+    }
     
+    public static String getOperationSignature(Operation operation) {
+        StringBuilder builder = new StringBuilder(operation.getName() + "(");
+        String inputName = "none";
+        try {
+            inputName = operation.getInput().getName();
+        } catch (Exception e) {
+        //ignore
+        }
+        builder.append("input=\"").append(inputName).append("\"");
+        String outputName = "none";
+        try {
+            outputName = operation.getOutput().getName();
+        } catch (Exception e) {
+        //ignore
+        }
+        builder.append(", output=\"").append(outputName).append("\"");
+        builder.append(")");
+        return builder.toString();
+    }
+
     @SuppressWarnings("unchecked")
     public static Map<String,String> getPrefixes(WSDLComponent wsdlComponent) {
         AbstractDocumentComponent comp = ((AbstractDocumentComponent) wsdlComponent);
@@ -468,7 +562,35 @@ public class Utility {
 
     
     /* Similiar logic can be found in SchemaImportsGenerator.processImports(). So if there are changes here, also change in SchemaImportsGenerator*/
-    public static void addSchemaImport(SchemaComponent comp1, WSDLModel wsdlModel) {
+    public static void addSchemaImport(SchemaComponent comp, WSDLModel wsdlModel) {
+        if (comp != null && wsdlModel != null && comp.getModel() != null) {
+            
+            if (comp instanceof ReferenceableSchemaComponent) {
+                ReferenceableSchemaComponent rsc = (ReferenceableSchemaComponent) comp;
+                String localName = rsc.getName();
+                String namespace = rsc.getModel().getSchema().getTargetNamespace();
+                if (namespace != null) {
+                    QName qname = new QName(namespace, localName);
+                    if (rsc instanceof GlobalElement) {
+                        GlobalElement element = findGlobalElement(wsdlModel, qname);
+                        if (element != null && element.equals(rsc)) {
+                            return;
+                        }
+                    } else if (rsc instanceof GlobalType) {
+                        GlobalType type = findGlobalType(wsdlModel, qname);
+                        if (type != null && type.equals(rsc)) {
+                            return;
+                        }
+                    }
+                }
+            }
+            
+            addSchemaImport(comp.getModel(), wsdlModel);
+        }
+    } 
+
+    /* Similiar logic can be found in SchemaImportsGenerator.processImports(). So if there are changes here, also change in SchemaImportsGenerator*/
+    public static org.netbeans.modules.xml.schema.model.Import addSchemaImport(SchemaModel impSchemaModel, WSDLModel wsdlModel) {
         Map<String, String> existingLocationToNamespaceMap = new HashMap<String, String>();
         
         FileObject wsdlFileObj = wsdlModel.getModelSource().getLookup().lookup(FileObject.class);
@@ -519,15 +641,13 @@ public class Utility {
              }
         }
         
-        SchemaModel model = comp1.getModel();
-
-        if (model != null) {
+        if (impSchemaModel != null) {
             
-            String schemaTNS = model.getSchema().getTargetNamespace();
+            String schemaTNS = impSchemaModel.getSchema().getTargetNamespace();
             if (schemaTNS != null && 
                     !schemaTNS.equals(XMLConstants.W3C_XML_SCHEMA_NS_URI)) {
 
-                FileObject fo = model.getModelSource().getLookup().lookup(FileObject.class);
+                FileObject fo = impSchemaModel.getModelSource().getLookup().lookup(FileObject.class);
                 
                 
                 if (fo != null) {
@@ -566,54 +686,127 @@ public class Utility {
                         if (wsdlSchema != null) {
                             types.addExtensibilityElement(wsdlSchema);
                         }
+                        return schemaImport;
                     }
                 }
             }
         }
+        return null;
         
     } 
     
+    /**
+     * Adds a import statement importing the wsdl comprising of the provided wsdl component.
+     * Does not initiate or end transactions. 
+     * 
+     * @param comp              the wsdl component
+     * @param recievingModel    importing wsdl model
+     */
     public static void addWSDLImport(WSDLComponent comp, WSDLModel wsdlModel) {
-        if (comp != null && wsdlModel != null && comp.getModel() != wsdlModel) {
-            
-            String importedWSDLTargetNamespace = comp.getModel().getDefinitions().getTargetNamespace();
-            
-            if (importedWSDLTargetNamespace != null) {
-                Import wsdlImport = wsdlModel.getFactory().createImport();
-                wsdlImport.setNamespace(importedWSDLTargetNamespace);
-                
-                FileObject wsdlFileObj = wsdlModel.getModelSource().getLookup().lookup(FileObject.class);
-                URI wsdlFileURI = FileUtil.toFile(wsdlFileObj).toURI();
-                
-                FileObject fo = comp.getModel().getModelSource().getLookup().lookup(FileObject.class);
-                String path = null;
-                if (!FileUtil.toFile(fo).toURI().equals(wsdlFileURI)) {
-                    DefaultProjectCatalogSupport catalogSupport = DefaultProjectCatalogSupport.getInstance(wsdlFileObj);
-                    if (catalogSupport.needsCatalogEntry(wsdlFileObj, fo)) {
-                        // Remove the previous catalog entry, then create new one.
-                        URI uri;
-                        try {
-                            uri = catalogSupport.getReferenceURI(wsdlFileObj, fo);
-                            catalogSupport.removeCatalogEntry(uri);
-                            catalogSupport.createCatalogEntry(wsdlFileObj, fo);
-                            path = catalogSupport.getReferenceURI(wsdlFileObj, fo).toString();
-                        } catch (URISyntaxException use) {
-                            ErrorManager.getDefault().notify(use);
-                        } catch (IOException ioe) {
-                            ErrorManager.getDefault().notify(ioe);
-                        } catch (CatalogModelException cme) {
-                            ErrorManager.getDefault().notify(cme);
-                        }
-                    } else {
-                        path = RelativePath.getRelativePath(FileUtil.toFile(wsdlFileObj).getParentFile(), FileUtil.toFile(fo));
-                    }
-                }
-                
-                if (path != null) wsdlImport.setLocation(path);
-                
-                wsdlModel.getDefinitions().addImport(wsdlImport);
-            }
+        if (comp != null && wsdlModel != null && comp.getModel() != null) {
+            addWSDLImport(comp.getModel(), wsdlModel);
         }
+    }
+    
+    
+    /**
+     * Adds a import statement importing the provided wsdl model.
+     * Does not initiate or end transactions. 
+     * 
+     * @param modelToBeImported wsdl model to be imported
+     * @param recievingModel    importing wsdl model
+     * @return the newly create import.
+     */
+    public static Import addWSDLImport(WSDLModel modelToBeImported, WSDLModel recievingModel) {
+        assert modelToBeImported != null;
+        assert recievingModel != null;
+        
+        //cannot be same model
+        if (modelToBeImported == recievingModel) return null;
+        
+        String importedWSDLTargetNamespace = modelToBeImported.getDefinitions().getTargetNamespace();
+        
+        if (importedWSDLTargetNamespace != null) {
+            Import wsdlImport = recievingModel.getFactory().createImport();
+            wsdlImport.setNamespace(importedWSDLTargetNamespace);
+            
+            FileObject wsdlFileObj = recievingModel.getModelSource().getLookup().lookup(FileObject.class);
+            URI wsdlFileURI = FileUtil.toFile(wsdlFileObj).toURI();
+            
+            FileObject fo = modelToBeImported.getModelSource().getLookup().lookup(FileObject.class);
+            String path = null;
+            if (!FileUtil.toFile(fo).toURI().equals(wsdlFileURI)) {
+                DefaultProjectCatalogSupport catalogSupport = DefaultProjectCatalogSupport.getInstance(wsdlFileObj);
+                if (catalogSupport.supportsCrossProject())
+                if (catalogSupport.needsCatalogEntry(wsdlFileObj, fo)) {
+                    // Remove the previous catalog entry, then create new one.
+                    URI uri;
+                    try {
+                        uri = catalogSupport.getReferenceURI(wsdlFileObj, fo);
+                        catalogSupport.removeCatalogEntry(uri);
+                        catalogSupport.createCatalogEntry(wsdlFileObj, fo);
+                        path = catalogSupport.getReferenceURI(wsdlFileObj, fo).toString();
+                    } catch (URISyntaxException use) {
+                        ErrorManager.getDefault().notify(use);
+                    } catch (IOException ioe) {
+                        ErrorManager.getDefault().notify(ioe);
+                    } catch (CatalogModelException cme) {
+                        ErrorManager.getDefault().notify(cme);
+                    }
+                } else {
+                    path = RelativePath.getRelativePath(FileUtil.toFile(wsdlFileObj).getParentFile(), FileUtil.toFile(fo));
+                }
+            }
+            
+            if (path != null) wsdlImport.setLocation(path);
+            
+            recievingModel.getDefinitions().addImport(wsdlImport);
+            return wsdlImport;
+        }
+        return null;
+        
+    }
+    
+    public static boolean canImport(Model modelToBeImported, WSDLModel receivingModel) {
+        assert modelToBeImported != null;
+        assert receivingModel != null;
+        
+        //cannot be same model
+        if (modelToBeImported == receivingModel) return false;
+
+
+
+        FileObject wsdlFileObj = receivingModel.getModelSource().getLookup().lookup(FileObject.class);
+        URI wsdlFileURI = FileUtil.toFile(wsdlFileObj).toURI();
+
+        FileObject fo = modelToBeImported.getModelSource().getLookup().lookup(FileObject.class);
+        if (!FileUtil.toFile(fo).toURI().equals(wsdlFileURI)) {
+            
+            Project receivingProject = FileOwnerQuery.getOwner(wsdlFileObj);
+            Project toBeImportedProject = FileOwnerQuery.getOwner(fo);
+            
+            if (receivingProject.getProjectDirectory().equals(toBeImportedProject.getProjectDirectory())) return true;
+            
+            DefaultProjectCatalogSupport rCatalogSupport = DefaultProjectCatalogSupport.getInstance(wsdlFileObj);
+            
+            if (!rCatalogSupport.supportsCrossProject()) return false;
+            
+            Set projectRefs = rCatalogSupport.getProjectReferences();
+            if (projectRefs == null || projectRefs.isEmpty()) return false;
+            
+            Iterator projectRefsIter = projectRefs.iterator();
+            while(projectRefsIter.hasNext()) {
+                Project proj = (Project) projectRefsIter.next();
+                if (proj.getProjectDirectory().equals(toBeImportedProject.getProjectDirectory())) return true;
+            }
+            
+            /*DefaultProjectCatalogSupport tCatalogSupport = DefaultProjectCatalogSupport.getInstance(fo);
+            
+            if (!tCatalogSupport.supportsCrossProject()) return false;*/
+            
+        }
+
+        return false;
     }
 
     /**
@@ -631,5 +824,118 @@ public class Utility {
         if (str == null || str.length() == 0) return str;
         return str.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\\s", "&nbsp;");
     }
+    
+    
+    /**
+     * Gets all the nodes from the transferable.
+     * 
+     * @param t the Transferable
+     * @return all the nodes for action NodeTransfer.COPY and NodeTransfer.MOVE
+     */
+    public static Node[] getNodes(Transferable t) {
+        Node[] nodes = NodeTransfer.nodes(t, NodeTransfer.COPY | NodeTransfer.MOVE);
+        if (nodes == null) {
+            nodes = new Node[0];
+        }
+        return nodes;
+    }
+    
+    
+    /**
+     * Get the palette item node from the transferable
+     * 
+     * @param t the transferable
+     * @return the palette item node if any. otherwise null
+     * 
+     */
+    public static Node getPaletteNode(Transferable t) {
+        if (t.isDataFlavorSupported(PaletteController.ITEM_DATA_FLAVOR)) {
+            Lookup lookup;
+            try {
+                lookup = (Lookup) t.getTransferData(PaletteController.ITEM_DATA_FLAVOR);
+                return lookup.lookup(Node.class);
+            } catch (Exception e) {
+                //ignore
+            }
+        }
+        return null;
+    }
+    public static String getNamespace(WSDLComponent comp) {
+        return comp.getModel().getDefinitions().getTargetNamespace();
+    }
+    
+    public static String getNamespacePrefix(WSDLComponent comp, WSDLModel model) {
+        String ns = getNamespace(comp);
+        return getNamespacePrefix(ns, model);
+    }
+    
+    
+    /**
+     * Creates a QName for the given wsdl component. The WSDLComponent needs to be Named.
+     * The model can be different from the wsdl component's model.
+     * 
+     * @param comp  given wsdl component
+     * @param model given model
+     * @return QName for the wsdl component
+     */
+    public static QName getQNameForWSDLComponent(WSDLComponent comp, WSDLModel model) {
+        if (!Named.class.isInstance(comp)) return null;
+        String localPart = ((Named)comp).getName();
+        String namespace = getNamespace(comp);
+        String prefix = getNamespacePrefix(namespace, model);
+        if (localPart != null) {
+            if (namespace != null) {
+                if (prefix != null) {
+                    return new QName(namespace, localPart, prefix);
+                }
+                return new QName(namespace, localPart);
+            }
+            return new QName(localPart);
+        }
+        
+        return null;
+    }
+
+    
+    /**
+     * Utility method to get WSDL and/or Schema Paste type.
+     * 
+     * @param dObj  DataObjcet to be imported
+     * @param currModel the importing wsdl model 
+     * @param schema    whether schema paste type needs to be generated.
+     * @param wsdl      whether wsdl paste type needs to generated.
+     * @return the paste type.
+     */
+    public static PasteType getWSDLOrSchemaPasteType(DataObject dObj, WSDLModel currModel, boolean schema, boolean wsdl) {
+        String mimeType = FileUtil.getMIMEType(dObj.getPrimaryFile());
+        if (wsdl && mimeType.contains("wsdl")) {
+            WSDLModelCookie wmCookie = dObj.getCookie(WSDLModelCookie.class);
+            if (wmCookie != null) {
+                WSDLModel impModel;
+                try {
+                    impModel = wmCookie.getModel();
+                    if (!impModel.equals(currModel)) {
+                        return new WSDLImportPasteType(currModel, impModel);
+                    }
+                } catch (IOException e) {
+                    //ignore
+                }
+            }
+        } else if (schema && mimeType.contains("schema")) {
+            SchemaModelCookie smCookie = dObj.getCookie(SchemaModelCookie.class);
+            if (smCookie != null) {
+                SchemaModel impModel = null;
+                try {
+                    impModel = smCookie.getModel();
+                    return new SchemaImportPasteType(currModel, impModel);
+                } catch (IOException e) {
+                    //ignore
+                }
+
+            }
+        }
+        return null;
+    }
+    
         
 }

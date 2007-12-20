@@ -1,79 +1,121 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype;
 
+import java.awt.Dialog;
 import java.io.IOException;
 
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.modules.xml.wsdl.bindingsupport.template.localized.LocalizedTemplate;
+import org.netbeans.modules.xml.wsdl.bindingsupport.template.localized.LocalizedTemplateGroup;
 import org.netbeans.modules.xml.wsdl.model.Binding;
+import org.netbeans.modules.xml.wsdl.model.Port;
+import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
-import org.netbeans.modules.xml.wsdl.ui.actions.NameGenerator;
+import org.netbeans.modules.xml.wsdl.ui.view.BindingConfigurationDialogPanel;
+import org.netbeans.modules.xml.wsdl.ui.wizard.BindingGenerator;
+import org.netbeans.modules.xml.wsdl.ui.wizard.WizardBindingConfigurationStep;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.NewType;
 
 public class BindingNewType extends NewType {
+
     private WSDLComponent mDef = null;
 
     public BindingNewType(WSDLComponent def) {
         mDef = def;
     }
-    
 
     @Override
     public String getName() {
         return NbBundle.getMessage(BindingNewType.class, "LBL_NewType_Binding");
     }
 
-
     @Override
     public void create() throws IOException {
         WSDLModel model = mDef.getModel();
-        model.startTransaction();
-        Binding binding = model.getFactory().createBinding();
-        String bindingName = NameGenerator.getInstance().generateUniqueBindingName(model);
-        binding.setName(bindingName);
-        model.getDefinitions().addBinding(binding);
-        model.endTransaction();
-        ActionHelper.selectNode(binding);
+        
+        BindingConfigurationDialogPanel panel = new BindingConfigurationDialogPanel(model);
+        final DialogDescriptor descriptor = new DialogDescriptor(panel,
+                NbBundle.getMessage(BindingNewType.class, "LBL_Create_Binding"),
+                true,
+                DialogDescriptor.OK_CANCEL_OPTION,
+                DialogDescriptor.OK_OPTION,
+                DialogDescriptor.DEFAULT_ALIGN,
+                new HelpCtx(BindingNewType.class),
+                null);
+        panel.setDialogDescriptor(descriptor);
+
+
+        Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
+        dlg.getAccessibleContext().setAccessibleDescription(dlg.getTitle());
+        dlg.setVisible(true);
+
+        if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
+            String bindName = panel.getBindingName();
+            LocalizedTemplateGroup bindingType = panel.getBindingType();
+            //this could be null for a binding which does not have a sub type
+            LocalizedTemplate bindingSubType = panel.getBindingSubType();
+            String serviceName = panel.getServiceName();
+            String servicePortName = panel.getServicePortName();
+            Map configurationMap = new HashMap();
+            
+            boolean createServicePort = panel.canAutoCreateServicePort();
+
+            configurationMap.put(WizardBindingConfigurationStep.BINDING_NAME, bindName);
+            configurationMap.put(WizardBindingConfigurationStep.BINDING_TYPE, bindingType);
+
+
+            configurationMap.put(WizardBindingConfigurationStep.BINDING_SUBTYPE, bindingSubType);
+
+            //service and port
+            configurationMap.put(WizardBindingConfigurationStep.SERVICE_NAME, serviceName);
+            configurationMap.put(WizardBindingConfigurationStep.SERVICEPORT_NAME, servicePortName);
+            configurationMap.put(WizardBindingConfigurationStep.AUTO_CREATE_SERVICEPORT, createServicePort);
+            
+            PortType pt = panel.getPortType();
+            model.startTransaction();
+            BindingGenerator generator = new BindingGenerator(model, pt, configurationMap);
+            generator.execute();
+            Binding binding = generator.getBinding();
+            Port port = generator.getPort();
+
+            String targetNamespace = model.getDefinitions().getTargetNamespace();
+            if (binding != null) {
+                bindingSubType.getMProvider().postProcess(targetNamespace, binding);
+            }
+            
+            if (createServicePort) {
+                if (port != null) {
+                    bindingSubType.getMProvider().postProcess(targetNamespace, port);
+                }
+            }
+
+            model.endTransaction();
+            ActionHelper.selectNode(binding);
+        }
     }
+
 }

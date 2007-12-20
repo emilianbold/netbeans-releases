@@ -1,42 +1,20 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.xml.wsdl.ui.view.grapheditor;
 
@@ -63,7 +41,6 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 
 import org.netbeans.api.visual.layout.LayoutFactory;
-import org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
@@ -99,6 +76,9 @@ public class GraphView extends JPanel {
     private Widget contentWidget;
     private Widget middleWidget;
     private JScrollPane panel;
+    
+    private JToggleButton showHidePLTToggle;
+    private JToggleButton showHideMessageToggle;
 
     /**
      * Creates a new instance of GraphView.
@@ -118,7 +98,7 @@ public class GraphView extends JPanel {
         // Note that the arrangement of collaborationsWidget and
         // messagesWidget is also controlled by the View actions below.
         contentWidget = new Widget(scene);
-        contentWidget.setLayout(LayoutFactory.createVerticalFlowLayout(SerialAlignment.JUSTIFY, 0));
+        contentWidget.setLayout(LayoutFactory.createVerticalFlowLayout());
         contentWidget.addChild(collaborationsWidget);
         
         middleWidget = new Widget(scene);
@@ -127,6 +107,24 @@ public class GraphView extends JPanel {
         middleWidget.setOpaque(true);
         contentWidget.addChild(middleWidget);
         contentWidget.addChild(messagesWidget);
+        
+        contentWidget.addDependency(new Widget.Dependency() {
+        
+            public void revalidateDependency() {
+                if (middleWidget == null) return;
+                Dimension d = middleWidget.getMinimumSize();
+                if (!isCollaborationsShowing() || !isMessagesShowing()) {
+                    d.height = 0;
+                } else {
+                    d.height = 5;
+                }
+                middleWidget.setMinimumSize(d);
+                
+                if (showHidePLTToggle != null) showHidePLTToggle.setSelected(isCollaborationsShowing());
+                if (showHideMessageToggle != null) showHideMessageToggle.setSelected(isMessagesShowing());
+            }
+        
+        });
         
         scene.addChild(contentWidget);
         scene.addSceneListener (new Scene.SceneListener() {
@@ -185,27 +183,29 @@ public class GraphView extends JPanel {
         zoomer.addToolbarActions(toolbar);
         toolbar.addSeparator();
         Border border = UIManager.getBorder("nb.tabbutton.border"); //NOI18N
-        Action[] actions = new Action[] {
-            new ViewCollaborationsAction(),
-            new ViewMessagesAction(),
-        };
-        boolean[] visible = new boolean[] {
-            isCollaborationsShowing(),
-            isMessagesShowing(),
-        };
-        for (int ii = 0; ii < actions.length; ii++) {
-            Action action = actions[ii];
-            JToggleButton button = new JToggleButton(action);
-            // Action has a name for accessibility purposes, but we do
-            // not want that to appear in the button label.
-            button.setText(null);
-            button.setRolloverEnabled(true);
-            if (border != null) {
-                button.setBorder(border);
-            }
-            button.setSelected(visible[ii]);
-            toolbar.add(button);
+        
+        showHidePLTToggle = new JToggleButton(new ViewCollaborationsAction());
+        showHidePLTToggle.setSelected(isCollaborationsShowing());
+        // Action has a name for accessibility purposes, but we do
+        // not want that to appear in the button label.
+        showHidePLTToggle.setText(null);
+        showHidePLTToggle.setRolloverEnabled(true);
+        if (border != null) {
+            showHidePLTToggle.setBorder(border);
         }
+        toolbar.add(showHidePLTToggle);
+ 
+        showHideMessageToggle = new JToggleButton(new ViewMessagesAction());
+        showHideMessageToggle.setSelected(isMessagesShowing());
+        // Action has a name for accessibility purposes, but we do
+        // not want that to appear in the button label.
+        showHideMessageToggle.setText(null);
+        showHideMessageToggle.setRolloverEnabled(true);
+        if (border != null) {
+            showHideMessageToggle.setBorder(border);
+        }
+        toolbar.add(showHideMessageToggle);
+
     }
 
     /**
@@ -266,7 +266,7 @@ public class GraphView extends JPanel {
      */
     public void setCollaborationsVisible(boolean visible) {
         collaborationsWidget.setVisible(visible);
-        middleWidget.setVisible(visible && messagesWidget.isVisible());
+        //middleWidget.setVisible(visible && messagesWidget.isVisible());
         scene.validate();
     }
     
@@ -278,7 +278,7 @@ public class GraphView extends JPanel {
      * @param  visible  true to make visible, false to hide.
      */
     public void setMessagesVisible(boolean visible) {
-        middleWidget.setVisible(visible && collaborationsWidget.isVisible());
+        //middleWidget.setVisible(visible && collaborationsWidget.isVisible());
         messagesWidget.setVisible(visible);
         scene.validate();
     }

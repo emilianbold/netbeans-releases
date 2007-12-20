@@ -1,42 +1,20 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 /*
@@ -66,6 +44,7 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.api.property.ElementOrTypeOrMessagePartProvider.ParameterType;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 import org.netbeans.modules.xml.wsdl.ui.view.ElementOrTypeChooserPanel;
+import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.ui.customizer.FolderNode;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -114,47 +93,29 @@ public class ElementOrTypeOrMessagePartPropertyPanel extends JPanel {
         this.add(BorderLayout.CENTER, this.mTreeView);
     }
 
-    /** Override method to detect the OK button */
-    @Override
-    public void removeNotify() {
-        if (mEnv.getState().equals(PropertyEnv.STATE_VALID)) {
-            if (mSelectedNode != null) {
-                ElementOrTypeOrMessagePart elementOrTypeOrMessagePart = null;
-                WSDLComponent comp = (WSDLComponent) mSelectedNode.getLookup().lookup(WSDLComponent.class);
-                if (comp != null) {
-                    if (comp instanceof Part) {
-                        elementOrTypeOrMessagePart = new ElementOrTypeOrMessagePart((Part) comp, mProv.getModel());
-                    }
-                } else {
-                    SchemaComponent sc = null;
-                    SchemaComponentReference reference = (SchemaComponentReference) mSelectedNode.getLookup().lookup(SchemaComponentReference.class);
-                    if (reference != null) {
-                        sc = reference.get();
-                    }
-                    if (sc == null) {
-                        sc = (SchemaComponent) mSelectedNode.getLookup().lookup(SchemaComponent.class);
-                    }
-
-                    if (sc != null) {
-                        if (sc instanceof GlobalType) {
-                            elementOrTypeOrMessagePart = createType((GlobalType) sc);
-                        } else if (sc instanceof GlobalElement) {
-                            elementOrTypeOrMessagePart = createElement((GlobalElement) sc);
-                        }
-                    }
+    public Component getSelectedElementOrTypeOrMessagePart() {
+        if (mSelectedNode != null) {
+            WSDLComponent comp = mSelectedNode.getLookup().lookup(WSDLComponent.class);
+            if (comp != null) {
+                if (comp instanceof Part) {
+                    return comp;
                 }
-                
-
-                
-                if(elementOrTypeOrMessagePart != null) {
-                    this.firePropertyChange(ElementOrTypePropertyEditor.PROP_NAME, null, elementOrTypeOrMessagePart);
+            } else {
+                SchemaComponent sc = null;
+                SchemaComponentReference reference = mSelectedNode.getLookup().lookup(SchemaComponentReference.class);
+                if (reference != null) {
+                    sc = reference.get();
+                }
+                if (sc == null) {
+                    sc = mSelectedNode.getLookup().lookup(SchemaComponent.class);
                 }
 
+                if (sc != null) {
+                    return sc;
+                }
             }
-
-        } else {
         }
-        super.removeNotify();
+        return null;
     }
 
     private ElementOrTypeOrMessagePart createElement(GlobalElement element) {
@@ -220,6 +181,13 @@ public class ElementOrTypeOrMessagePartPropertyPanel extends JPanel {
             btv.setPopupAllowed( false );
             btv.expandNode(mRootNode);
             btv.setDefaultActionAllowed(false);
+            btv.setFocusable(false);
+            btv.setAutoscrolls(true);
+            btv.setDragSource(false);
+            btv.setDropTarget(false);
+            btv.setName("beanTreeView1"); // NOI18N
+        
+        
             Utility.expandNodes(btv, 2, mRootNode);
             manager.setExploredContext(mRootNode);
             this.add(btv, BorderLayout.CENTER);
@@ -301,24 +269,24 @@ public class ElementOrTypeOrMessagePartPropertyPanel extends JPanel {
                         mSelectedNode = null;
                         mEnv.setState(PropertyEnv.STATE_INVALID);
                         
-                        WSDLComponent comp = (WSDLComponent) node.getLookup().lookup(WSDLComponent.class);
+                        WSDLComponent comp = node.getLookup().lookup(WSDLComponent.class);
                         if (comp != null && comp instanceof Part) {
                             mSelectedNode = node;
-                            mEnv.setState(PropertyEnv.STATE_VALID);
+                            mEnv.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
                             return;
                         }
                         SchemaComponent sc = null;
-                        SchemaComponentReference reference = (SchemaComponentReference) node.getLookup().lookup(SchemaComponentReference.class);
+                        SchemaComponentReference reference = node.getLookup().lookup(SchemaComponentReference.class);
                         if (reference != null) {
                             sc = reference.get();
                         }
                         if (sc == null) {
-                            sc = (SchemaComponent) node.getLookup().lookup(SchemaComponent.class);
+                            sc = node.getLookup().lookup(SchemaComponent.class);
                         }
                         
                         if (sc != null && (sc instanceof GlobalType || sc instanceof GlobalElement)) {
                             mSelectedNode = node;
-                            mEnv.setState(PropertyEnv.STATE_VALID);
+                            mEnv.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
                         }
                     }
                 }

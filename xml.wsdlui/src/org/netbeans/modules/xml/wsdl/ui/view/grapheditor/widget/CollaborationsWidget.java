@@ -1,42 +1,20 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget;
 
@@ -51,7 +29,6 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
-import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -89,6 +66,7 @@ import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
 import org.netbeans.modules.xml.wsdl.ui.actions.NameGenerator;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
+import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.actions.WidgetEditCookie;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.FilledBorder;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.ExtensibilityElementsFolderNode;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
@@ -207,27 +185,7 @@ public class CollaborationsWidget extends Widget
                 "LBL_CollaborationsWidget_AddPartnerLinkType"),true);
         addButtonWidget.setActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                PartnerLinkType plt = null;
-                try {
-                    if (mModel.startTransaction()) {
-                        plt = (PartnerLinkType) mModel.
-                                getFactory().create(mModel.getDefinitions(),
-                                BPELQName.PARTNER_LINK_TYPE.getQName());
-                        plt.setName(NameGenerator.generateUniquePartnerLinkType(
-                                "partnerlinktype",
-                                BPELQName.PARTNER_LINK_TYPE.getQName(), mModel));
-                        Role role = (Role) mModel.getFactory().create(
-                                plt, BPELQName.ROLE.getQName());
-                        role.setName("role1");
-                        plt.setRole1(role);
-                        mModel.getDefinitions().addExtensibilityElement(plt);
-                    }
-                } finally {
-                    mModel.endTransaction();
-                }
-                if (plt != null) {
-                    ActionHelper.selectNode(plt);
-                }
+                addOrInsertPartnerLinkType(mModel.getDefinitions().getExtensibilityElements(PartnerLinkType.class).size());
             }
         });
         actionWidget.addChild(addButtonWidget);
@@ -259,8 +217,21 @@ public class CollaborationsWidget extends Widget
             if (obj != null && obj instanceof PartnerLinkType) {
                 update();
                 if (evt.getOldValue() == null) {
-                    Widget widget = WidgetFactory.getInstance().getOrCreateWidget(getScene(), (PartnerLinkType) obj, mCollaborationContentWidget);
-                    mCollaborationContentWidget.addChild(widget);
+                    PartnerLinkType plt = (PartnerLinkType) obj;
+                    Widget widget = WidgetFactory.getInstance().getOrCreateWidget(getScene(), plt, mCollaborationContentWidget);
+                    Collection<PartnerLinkType> plts = mModel.getDefinitions().getExtensibilityElements(PartnerLinkType.class);
+                    int i = 0;
+                    for (PartnerLinkType partnerlinktype : plts) {
+                        if (partnerlinktype == plt) {
+                            break;
+                        }
+                        i++;
+                    }
+                    if (i > mCollaborationContentWidget.getChildren().size()) {
+                        mCollaborationContentWidget.addChild(widget);
+                    } else {
+                        mCollaborationContentWidget.addChild(i, widget);
+                    }
                 }
             } else {
                 obj = evt.getOldValue();
@@ -311,23 +282,14 @@ public class CollaborationsWidget extends Widget
     }
 
     public boolean dragOver(Point scenePoint, WidgetDropTargetDragEvent event) {
-        try {
-            Transferable t = event.getTransferable();
-            if (t != null) {
-                for (DataFlavor flavor : t.getTransferDataFlavors()) {
-                    Class repClass = flavor.getRepresentationClass();
-                    if (Node.class.isAssignableFrom(repClass)) {
-                        Node node = (Node) t.getTransferData(flavor);
-                        if (node.getName().startsWith("PartnerLinkType")) {
-                            showHitPoint(scenePoint, node);
-                            getScene().validate();
-                            return true;
-                        }
-                    }
-                }
+        Transferable t = event.getTransferable();
+        if (t != null) {
+            Node node = Utility.getPaletteNode(t);
+            if (node != null && node.getName().startsWith("PartnerLinkType")) {
+                showHitPoint(scenePoint, node);
+                getScene().validate();
+                return true;
             }
-        } catch (Exception ex) {
-            //do nothing
         }
         return false;
     }
@@ -338,44 +300,52 @@ public class CollaborationsWidget extends Widget
         hideHitPoint();
         getScene().validate();
         if (node != null && index >= 0) {
-        	PartnerLinkType plt = null;
-            try {
-                if (mModel.startTransaction()) {
-                    PartnerLinkType[] plts = mModel.getDefinitions().
-                            getExtensibilityElements(PartnerLinkType.class).
-                            toArray(new PartnerLinkType[0]);
-                    plt = (PartnerLinkType) mModel.
-                            getFactory().create(mModel.getDefinitions(),
-                            BPELQName.PARTNER_LINK_TYPE.getQName());
-                    String pltName = NameGenerator.generateUniquePartnerLinkType(
-                            "partnerlinktype", BPELQName.PARTNER_LINK_TYPE.getQName(), mModel);
-                    plt.setName(pltName);
-                    Role role = (Role) mModel.getFactory().create(
-                            plt, BPELQName.ROLE.getQName());
-                    role.setName("role1");
-                    plt.setRole1(role);
-                    
-                    if (index == plts.length) {
-                        mModel.getDefinitions().addExtensibilityElement(plt);
-                    } else {
-                        Utility.insertIntoDefinitionsAtIndex(index, mModel, plt,
-                                Definitions.EXTENSIBILITY_ELEMENT_PROPERTY);
-                    }
-                }
-            } finally {
-                mModel.endTransaction();
-            }
-            ActionHelper.selectNode(plt);
+            addOrInsertPartnerLinkType(index);
             return true;
         }
         return false;
     }
 
+    private void addOrInsertPartnerLinkType(int index) {
+        PartnerLinkType plt = null;
+        try {
+            if (mModel.startTransaction()) {
+                PartnerLinkType[] plts = mModel.getDefinitions().
+                        getExtensibilityElements(PartnerLinkType.class).
+                        toArray(new PartnerLinkType[0]);
+                plt = (PartnerLinkType) mModel.
+                        getFactory().create(mModel.getDefinitions(),
+                        BPELQName.PARTNER_LINK_TYPE.getQName());
+                String pltName = NameGenerator.generateUniquePartnerLinkType(
+                        null, BPELQName.PARTNER_LINK_TYPE.getQName(), mModel);
+                plt.setName(pltName);
+                Role role = (Role) mModel.getFactory().create(
+                        plt, BPELQName.ROLE.getQName());
+                role.setName("role1");
+                plt.setRole1(role);
+                
+                if (index == plts.length) {
+                    mModel.getDefinitions().addExtensibilityElement(plt);
+                } else {
+                    Utility.insertIntoDefinitionsAtIndex(index, mModel, plt,
+                            Definitions.EXTENSIBILITY_ELEMENT_PROPERTY);
+                }
+            }
+        } finally {
+            mModel.endTransaction();
+        }
+        ActionHelper.selectNode(plt);
+        WidgetEditCookie ec = WidgetHelper.getWidgetLookup(plt, getScene()).lookup(WidgetEditCookie.class);
+        if (ec != null) ec.edit();
+        
+    }
+
     public void expandForDragAndDrop() {
+        setVisible(true);
     }
 
     public boolean isCollapsed() {
-        return !mCollaborationContentWidget.isVisible();
+        return !isVisible();
     }
     
     

@@ -1,49 +1,27 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 package org.netbeans.modules.xml.wsdl.ui.view.grapheditor.widget;
 
 import java.awt.Point;
-//import java.util.logging.Level;
-//import java.util.logging.Logger;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.widget.Widget;
@@ -58,7 +36,9 @@ public class DnDAction extends WidgetAction.Adapter {
     private DnDHandler currentHandler = null;
     private long lastId = Long.MIN_VALUE;            
     private long dragEnterTime = -1;
-//    private Logger mLogger = Logger.getLogger(DnDAction.class.getName());
+    
+    private List<DnDHandler> priorHandlers;
+    
     public DnDAction() {
     
     }
@@ -73,6 +53,7 @@ public class DnDAction extends WidgetAction.Adapter {
         
         //remove the icon from drag layer.
         ((PartnerScene) widget.getScene()).getDragOverLayer().resetLayer();
+        
         
         if (currentHandler != null) {
             currentHandler.dragExit();
@@ -93,58 +74,70 @@ public class DnDAction extends WidgetAction.Adapter {
 
         Point scenePoint = widget.convertLocalToScene(event.getPoint());
         
+        boolean isEventHandled = false;
+        
         //Render a icon on the drag layer.
         ((PartnerScene)widget.getScene()).getDragOverLayer().dragOver(scenePoint, event);
         
-        boolean isEventHandled = false;
-        if (widget == currentHandler) {
-            if (dragEnterTime >= 0) {
-                if (System.currentTimeMillis() - dragEnterTime 
-                        >= EXPAND_TIMEOUT) 
-                {
-                	
-//                	mLogger.log(Level.SEVERE, currentHandler.toString() + " : Expanding");
-                    currentHandler.expandForDragAndDrop();
-//                    mLogger.log(Level.SEVERE, currentHandler.toString() + " : Expanded");
-                    dragEnterTime = -1;
+        
+        //Global prior handler get the first chance to handle all DnD events.
+        if (priorHandlers != null && !priorHandlers.isEmpty()) {
+            //If a global handler is the currentHandler then use it.
+            if (currentHandler != null && priorHandlers.contains(currentHandler)) {
+                isEventHandled = currentHandler.dragOver(scenePoint, event);
+            }
+            
+            if (!isEventHandled) {
+                for (DnDHandler handler : priorHandlers) {
+                    if (handler.dragOver(scenePoint, event)) {
+                        if (currentHandler != null && currentHandler != handler) {
+                            currentHandler.dragExit();
+                        }
+                        currentHandler = handler;
+                        isEventHandled = true;
+                        break;
+                    }
                 }
             }
-//            mLogger.log(Level.SEVERE, currentHandler.toString() + " : DragOver start");
-            isEventHandled = currentHandler.dragOver(scenePoint, event);
-//            mLogger.log(Level.SEVERE, currentHandler.toString() + " : DragOver end");
-        } else if (widget instanceof DnDHandler) {
-            if (currentHandler != null) {
-//            	mLogger.log(Level.SEVERE, currentHandler.toString() + " : DragExit start");
+        }
+        
+        if (!isEventHandled) {
+            if (widget == currentHandler) {
+                if (dragEnterTime >= 0) {
+                    if (System.currentTimeMillis() - dragEnterTime 
+                            >= EXPAND_TIMEOUT) 
+                    {
+                        currentHandler.expandForDragAndDrop();
+                        dragEnterTime = -1;
+                    }
+                }
+                isEventHandled = currentHandler.dragOver(scenePoint, event);
+            } else if (widget instanceof DnDHandler) {
+                if (currentHandler != null) {
+                    currentHandler.dragExit();
+                } 
+
+                currentHandler = (DnDHandler) widget;
+                if (currentHandler.isCollapsed()) {
+                    dragEnterTime = System.currentTimeMillis();
+                } else {
+                    dragEnterTime = -1;
+                }
+
+                isEventHandled = currentHandler.dragOver(scenePoint, event);
+            } else if (currentHandler != null) {
                 currentHandler.dragExit();
-//                mLogger.log(Level.SEVERE, currentHandler.toString() + " : DragExit end");
-            } 
-            
-            currentHandler = (DnDHandler) widget;
-//            mLogger.log(Level.SEVERE, currentHandler.toString() + " : New CurrentHandler");
-            if (currentHandler.isCollapsed()) {
-                dragEnterTime = System.currentTimeMillis();
-            } else {
+                currentHandler = null;
                 dragEnterTime = -1;
             }
-            
-//            mLogger.log(Level.SEVERE, currentHandler.toString() + " : DragOver start");
-            isEventHandled = currentHandler.dragOver(scenePoint, event);
-//            mLogger.log(Level.SEVERE, currentHandler.toString() + " : DragOver end");
-        } else if (currentHandler != null) {
-//        	mLogger.log(Level.SEVERE, currentHandler.toString() + " : DragExit start");
-            currentHandler.dragExit();
-//            mLogger.log(Level.SEVERE, currentHandler.toString() + " : DragExit end");
-            currentHandler = null;
-            dragEnterTime = -1;
         }
+        
         if (isEventHandled) {
             event.acceptDrag(event.getDropAction());
-//            mLogger.log(Level.SEVERE, currentHandler.toString() + " : EventAccepted");
             return WidgetAction.State.CONSUMED;
         }
         
         event.rejectDrag();
-//        mLogger.log(Level.SEVERE, currentHandler.toString() + " : EventRejected");
         return WidgetAction.State.REJECTED;
     } 
 
@@ -193,6 +186,18 @@ public class DnDAction extends WidgetAction.Adapter {
         }
         
         return true;
+    }
+    
+    public void addPriorHandler(DnDHandler handler) {
+        if (priorHandlers == null) {
+            priorHandlers = new ArrayList<DnDHandler>();
+        }
+        priorHandlers.add(handler);
+    }
+    
+    public void removePriorHandler(DnDHandler handler) {
+        if (priorHandlers == null) return;
+        priorHandlers.remove(handler);
     }
     
     private static final long EXPAND_TIMEOUT = 1500;

@@ -1,42 +1,20 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 /*
@@ -69,113 +47,124 @@ import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.filesystems.FileObject;
 
-
-
 /**
  * @author radval
- *
- * To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Generation - Code and Comments
+ * 
+ * To change the template for this generated type comment go to Window -
+ * Preferences - Java - Code Generation - Code and Comments
  */
-public class ElementOrTypePropertyEditor extends PropertyEditorSupport 
-implements ExPropertyEditor, PropertyChangeListener {
+public class ElementOrTypePropertyEditor extends PropertyEditorSupport
+        implements ExPropertyEditor {
 
-    /** property name used by propertyChangeEvent */
-    public static final String PROP_NAME = "ElementOrType";//NOI18N
-
-    /** Environment passed to the ExPropertyEditor*/
+    /** Environment passed to the ExPropertyEditor */
     private PropertyEnv mEnv;
-    
+
     private ElementOrTypeProvider mElementOrTypeProvider;
-    
-    
-    public ElementOrTypePropertyEditor(ElementOrTypeProvider elementOrTypeProvider) {
+
+    public ElementOrTypePropertyEditor(
+            ElementOrTypeProvider elementOrTypeProvider) {
         this.mElementOrTypeProvider = elementOrTypeProvider;
+        
+    }
+
+    @Override
+    public String getAsText() {
+        if (mElementOrTypeProvider != null) {
+            ElementOrType eot = mElementOrTypeProvider.getElementOrType();
+            if (eot != null) {
+                return eot.toString();
+            }
+        }
+        return "";
     }
     
     /**
-     * This method is called by the IDE to pass
-     * the environment to the property editor.
-     * @param env Environment passed by the ide.
+     * This method is called by the IDE to pass the environment to the property
+     * editor.
+     * 
+     * @param env
+     *            Environment passed by the ide.
      */
     public void attachEnv(PropertyEnv env) {
         this.mEnv = env;
         FeatureDescriptor desc = env.getFeatureDescriptor();
-        // make this is not editable  
+        // make this is not editable
         desc.setValue("canEditAsText", Boolean.FALSE); // NOI18N
-        //add help id
-        desc.setValue(ExPropertyEditor.PROPERTY_HELP_ID, "org.netbeans.modules.xml.wsdl.ui.api.property.ElementOrTypePropertyEditor");
-        
+        // add help id
+        desc
+                .setValue(ExPropertyEditor.PROPERTY_HELP_ID,
+                        "org.netbeans.modules.xml.wsdl.ui.api.property.ElementOrTypePropertyEditor");
     }
-    
-    
-    
-    
+
     /** @return tags */
     @Override
     public String[] getTags() {
         return null;
     }
-    
+
     /** @return true */
     @Override
-    public boolean supportsCustomEditor () {
+    public boolean supportsCustomEditor() {
         return XAMUtils.isWritable(mElementOrTypeProvider.getModel());
     }
-    
+
     /** @return editor component */
     @Override
-    public Component getCustomEditor () {
+    public Component getCustomEditor() {
         WSDLModel model = mElementOrTypeProvider.getModel();
         ModelSource modelSource = model.getModelSource();
         FileObject wsdlFile = modelSource.getLookup().lookup(FileObject.class);
-        if(wsdlFile != null) {
+        if (wsdlFile != null) {
             Project project = FileOwnerQuery.getOwner(wsdlFile);
-            if(project != null) {
-                
+            if (project != null) {
+
                 Map<String, String> namespaceToPrefixMap = new HashMap<String, String>();
-                Map<String, String> map = ((AbstractDocumentComponent)model.getDefinitions()).getPrefixes();
+                Map<String, String> map = ((AbstractDocumentComponent) model
+                        .getDefinitions()).getPrefixes();
                 for (String prefix : map.keySet()) {
                     namespaceToPrefixMap.put(map.get(prefix), prefix);
                 }
                 ElementOrType eot = mElementOrTypeProvider.getElementOrType();
-                SchemaComponent comp = eot.getElement();
-                if (comp == null) {
-                    comp = eot.getType();
+                SchemaComponent comp = null;
+                if (eot != null) {
+                    comp = eot.getElement();
+                    if (comp == null) {
+                        comp = eot.getType();
+                    }
                 }
-                
-                final ElementOrTypeChooserPanel panel = new ElementOrTypeChooserPanel(project, namespaceToPrefixMap, model, comp);
-                
-                panel.setEnvForPropertyEditor(mEnv);
+
+                final ElementOrTypeChooserPanel panel = new ElementOrTypeChooserPanel(
+                        project, namespaceToPrefixMap, model, comp);
+
                 mEnv.setState(PropertyEnv.STATE_INVALID);
+
                 final PropertyChangeListener pcl = new PropertyChangeListener() {
                     public void propertyChange(PropertyChangeEvent evt) {
-                        if(evt.getSource()== panel && evt.getPropertyName().
-                                equals(ElementOrTypeChooserPanel.PROP_ACTION_APPLY)) {
+                        if (evt.getSource() == panel && evt.getPropertyName().equals(ElementOrTypeChooserPanel.PROP_ACTION_APPLY)) {
                             Boolean b = (Boolean) evt.getNewValue();
-                            mEnv.setState(b.booleanValue() ? PropertyEnv.STATE_VALID : PropertyEnv.STATE_INVALID);
+                            mEnv.setState(b.booleanValue() ? PropertyEnv.STATE_NEEDS_VALIDATION : PropertyEnv.STATE_INVALID);
+                            
                         }
                     }
                 };
                 panel.addPropertyChangeListener(ElementOrTypeChooserPanel.PROP_ACTION_APPLY, pcl);
-                panel.addPropertyChangeListener(PROP_NAME, this);
+                mEnv.addPropertyChangeListener(new PropertyChangeListener() {
+                
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        if ((PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID)) {
+                            SchemaComponent comp = panel.getSelectedSchemaComponent();
+                            if (comp instanceof GlobalType) {
+                                setValue(new ElementOrType((GlobalType) comp, mElementOrTypeProvider.getModel())); 
+                            } else if (comp instanceof GlobalElement) {
+                                setValue(new ElementOrType((GlobalElement) comp, mElementOrTypeProvider.getModel()));
+                            }
+                        }
+                    }
+                
+                });
                 return panel;
             }
         }
         return null;
     }
-    /** handles property change
-     *  
-     * @param evt propertyChangeEvent
-     */
-    public void propertyChange(PropertyChangeEvent evt) {
-        Object comp = evt.getNewValue();
-        if (comp instanceof GlobalType) {
-            setValue(new ElementOrType((GlobalType) comp, mElementOrTypeProvider.getModel()));
-        } else if (comp instanceof GlobalElement){
-            setValue(new ElementOrType((GlobalElement) comp, mElementOrTypeProvider.getModel()));
-        }
-    }
 }
-
-
