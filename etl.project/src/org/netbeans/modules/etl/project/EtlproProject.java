@@ -1,54 +1,29 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.etl.project;
 
-import java.awt.Dialog;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.File;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -58,8 +33,8 @@ import org.netbeans.modules.compapp.projects.base.ui.IcanproCustomizerProvider;
 import org.netbeans.modules.compapp.projects.base.ui.IcanproLogicalViewProvider;
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.compapp.projects.base.ProjectPropertyProvider;
 import org.netbeans.spi.project.SubprojectProvider;
-import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
@@ -78,17 +53,12 @@ import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
-import org.netbeans.modules.compapp.projects.base.ui.BrokenReferencesAlertPanel;
-import org.netbeans.modules.compapp.projects.base.ui.FoldersListSettings;
 import org.netbeans.modules.compapp.projects.base.spi.JbiArtifactProvider;
 import org.netbeans.modules.etl.project.ui.EtlproLogicalViewProvider;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.util.NbBundle;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -98,17 +68,15 @@ import org.w3c.dom.Text;
  * Represents one ejb module project
  * @author Chris Webster
  */
-public final class EtlproProject implements Project, AntProjectListener {
+public final class EtlproProject implements Project, AntProjectListener, ProjectPropertyProvider {
 
     private static final Icon PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/etl/project/ui/resources/etlproProjectIcon.gif")); // NOI18N
     public static final String SOURCES_TYPE_ICANPRO = "BIZPRO";
-
     public static final String MODULE_INSTALL_NAME = "modules/org-netbeans-modules-etl-project.jar";
     public static final String MODULE_INSTALL_CBN = "org.netbeans.modules.etl.project";
     public static final String MODULE_INSTALL_DIR = "module.install.dir";
-
     public static final String COMMAND_GENWSDL = "gen-wsdl";
-
+    public static final String COMMAND_SCHEMA = "gen-schema";
     private final AntProjectHelper helper;
     private final PropertyEvaluator eval;
     private final ReferenceHelper refHelper;
@@ -141,68 +109,78 @@ public final class EtlproProject implements Project, AntProjectListener {
     PropertyEvaluator evaluator() {
         return eval;
     }
-
+    
+    public AntProjectHelper getAntProjectHelper() {
+        return helper;
+    }
+            
+    public ReferenceHelper getReferenceHelper() {
+        return this.refHelper;
+    }
+    
     public Lookup getLookup() {
         return lookup;
     }
 
     private Lookup createLookup(AuxiliaryConfiguration aux) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
-        FileBuiltQueryImplementation fileBuilt = helper.createGlobFileBuiltQuery(helper.getStandardPropertyEvaluator(), 
-            new String[] {"${src.dir}/*.java"}, // NOI18N
-            new String[] {"${build.classes.dir}/*.class"} // NOI18N
-        );
+        FileBuiltQueryImplementation fileBuilt = helper.createGlobFileBuiltQuery(helper.getStandardPropertyEvaluator(),
+                new String[]{"${src.dir}/*.java"}, // NOI18N
+                new String[]{"${build.classes.dir}/*.class"} // NOI18N
+                );
         final SourcesHelper sourcesHelper = new SourcesHelper(helper, evaluator());
         String webModuleLabel = org.openide.util.NbBundle.getMessage(IcanproCustomizerProvider.class, "LBL_Node_EJBModule"); //NOI18N
         String srcJavaLabel = org.openide.util.NbBundle.getMessage(IcanproCustomizerProvider.class, "LBL_Node_Sources"); //NOI18N
 
-        sourcesHelper.addPrincipalSourceRoot("${"+IcanproProjectProperties.SOURCE_ROOT+"}", webModuleLabel, /*XXX*/null, null);
-        sourcesHelper.addPrincipalSourceRoot("${"+IcanproProjectProperties.SRC_DIR+"}", srcJavaLabel, /*XXX*/null, null);
+        sourcesHelper.addPrincipalSourceRoot("${" + IcanproProjectProperties.SOURCE_ROOT + "}", webModuleLabel, /*XXX*/ null, null);
+        sourcesHelper.addPrincipalSourceRoot("${" + IcanproProjectProperties.SRC_DIR + "}", srcJavaLabel, /*XXX*/ null, null);
 
-        sourcesHelper.addTypedSourceRoot("${"+IcanproProjectProperties.SRC_DIR+"}", SOURCES_TYPE_ICANPRO, srcJavaLabel, /*XXX*/null, null);
-        sourcesHelper.addTypedSourceRoot("${"+IcanproProjectProperties.SRC_DIR+"}", JavaProjectConstants.SOURCES_TYPE_JAVA, srcJavaLabel, /*XXX*/null, null);
+        sourcesHelper.addTypedSourceRoot("${" + IcanproProjectProperties.SRC_DIR + "}", SOURCES_TYPE_ICANPRO, srcJavaLabel, /*XXX*/ null, null);
+        sourcesHelper.addTypedSourceRoot("${" + IcanproProjectProperties.SRC_DIR + "}", JavaProjectConstants.SOURCES_TYPE_JAVA, srcJavaLabel, /*XXX*/ null, null);
         ProjectManager.mutex().postWriteRequest(new Runnable() {
+
             public void run() {
                 sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
             }
         });
-        return Lookups.fixed(new Object[] {
+        return Lookups.fixed(new Object[]{
             new Info(),
             aux,
             helper.createCacheDirectoryProvider(),
             helper,
             spp,
-            new EtlproActionProvider( this, helper, refHelper ),
+            new EtlproActionProvider(this, helper, refHelper),
             new EtlproLogicalViewProvider(this, helper, evaluator(), spp, refHelper),
-            new IcanproCustomizerProvider( this, helper, refHelper ),
+            new IcanproCustomizerProvider(this, helper, refHelper),
             new JbiArtifactProviderImpl(),
             new ProjectXmlSavedHookImpl(),
             new ProjectOpenedHookImpl(),
+            new EtlProjectOperations(this),
             fileBuilt,
             new RecommendedTemplatesImpl(),
             refHelper,
             sourcesHelper.createSources(),
             helper.createSharabilityQuery(evaluator(),
-                new String[] {"${"+IcanproProjectProperties.SOURCE_ROOT+"}"},
-                new String[] {
-                    "${"+IcanproProjectProperties.BUILD_DIR+"}",
-                    "${"+IcanproProjectProperties.DIST_DIR+"}"}
-                )
+            new String[]{"${" + IcanproProjectProperties.SOURCE_ROOT + "}"},
+            new String[]{
+        "${" + IcanproProjectProperties.BUILD_DIR + "}",
+        "${" + IcanproProjectProperties.DIST_DIR + "}"
+    })
         });
     }
 
     public void configurationXmlChanged(AntProjectEvent ev) {
         if (ev.getPath().equals(AntProjectHelper.PROJECT_XML_PATH)) {
             // Could be various kinds of changes, but name & displayName might have changed.
-            Info info = (Info)getLookup().lookup(ProjectInformation.class);
+            Info info = (Info) getLookup().lookup(ProjectInformation.class);
             info.firePropertyChange(ProjectInformation.PROP_NAME);
             info.firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME);
         }
     }
 
     public void propertiesChanged(AntProjectEvent ev) {
-        // currently ignored
-        //TODO: should not be ignored!
+    // currently ignored
+    //TODO: should not be ignored!
     }
 
     String getBuildXmlName() {
@@ -211,7 +189,6 @@ public final class EtlproProject implements Project, AntProjectListener {
     }
 
     // Package private methods -------------------------------------------------
-
     FileObject getSourceDirectory() {
         String srcDir = helper.getStandardPropertyEvaluator().getProperty("src.dir"); // NOI18N
         return helper.resolveFileObject(srcDir);
@@ -220,6 +197,7 @@ public final class EtlproProject implements Project, AntProjectListener {
     /** Return configured project name. */
     public String getName() {
         return (String) ProjectManager.mutex().readAccess(new Mutex.Action() {
+
             public Object run() {
                 Element data = helper.getPrimaryConfigurationData(true);
                 // XXX replace by XMLUtil when that has findElement, findText, etc.
@@ -236,12 +214,12 @@ public final class EtlproProject implements Project, AntProjectListener {
     }
 
     // Private innerclasses ----------------------------------------------------
-
     private final class Info implements ProjectInformation {
 
         private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
-        Info() {}
+        Info() {
+        }
 
         void firePropertyChange(String prop) {
             pcs.firePropertyChange(prop, null, null);
@@ -270,47 +248,48 @@ public final class EtlproProject implements Project, AntProjectListener {
         public void removePropertyChangeListener(PropertyChangeListener listener) {
             pcs.removePropertyChangeListener(listener);
         }
-
     }
 
     private final class ProjectXmlSavedHookImpl extends ProjectXmlSavedHook {
 
-        ProjectXmlSavedHookImpl() {}
+        ProjectXmlSavedHookImpl() {
+        }
 
         protected void projectXmlSaved() throws IOException {
             genFilesHelper.refreshBuildScript(
-                GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                EtlproProject.class.getResource("resources/build-impl.xsl"),
-                false);
+                    GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                    EtlproProject.class.getResource("resources/build-impl.xsl"),
+                    false);
             genFilesHelper.refreshBuildScript(
-                getBuildXmlName(),
-                EtlproProject.class.getResource("resources/build.xsl"),
-                false);
+                    getBuildXmlName(),
+                    EtlproProject.class.getResource("resources/build.xsl"),
+                    false);
         }
-
     }
 
     private final class ProjectOpenedHookImpl extends ProjectOpenedHook {
 
-        ProjectOpenedHookImpl() {}
+        ProjectOpenedHookImpl() {
+        }
 
         protected void projectOpened() {
             try {
                 // Check up on build scripts.
                 genFilesHelper.refreshBuildScript(
-                GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                EtlproProject.class.getResource("resources/build-impl.xsl"),
-                true);
+                        GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                        EtlproProject.class.getResource("resources/build-impl.xsl"),
+                        true);
                 genFilesHelper.refreshBuildScript(
-                getBuildXmlName(),
-                EtlproProject.class.getResource("resources/build.xsl"),
-                true);
+                        getBuildXmlName(),
+                        EtlproProject.class.getResource("resources/build.xsl"),
+                        true);
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
 
             // Make it easier to run headless builds on the same machine at least.
             ProjectManager.mutex().writeAccess(new Mutex.Action() {
+
                 public Object run() {
                     EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                     ep.setProperty("netbeans.user", System.getProperty("netbeans.user"));
@@ -343,9 +322,31 @@ public final class EtlproProject implements Project, AntProjectListener {
                 ErrorManager.getDefault().notify(e);
             }
         }
-
     }
 
+        public void setName(final String name) {
+        ProjectManager.mutex().writeAccess(new Mutex.Action() {
+            public Object run() {
+                Element data = helper.getPrimaryConfigurationData(true);
+                NodeList nl = data.getElementsByTagNameNS(EtlproProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");
+                Element nameEl;
+                if (nl.getLength() == 1) {
+                    nameEl = (Element) nl.item(0);
+                    NodeList deadKids = nameEl.getChildNodes();
+                    while (deadKids.getLength() > 0) {
+                        nameEl.removeChild(deadKids.item(0));
+                    }
+                } else {
+                    nameEl = data.getOwnerDocument().createElementNS(EtlproProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");
+                    data.insertBefore(nameEl, data.getChildNodes().item(0));
+                }
+                nameEl.appendChild(data.getOwnerDocument().createTextNode(name));
+                helper.putPrimaryConfigurationData(data, true);
+                return null;
+            }
+        });
+    }
+    
     /**
      * Exports the main JAR as an official build product for use from other scripts.
      * The type of the artifact will be {@link AntArtifact}.
@@ -353,11 +354,11 @@ public final class EtlproProject implements Project, AntProjectListener {
     private final class JbiArtifactProviderImpl implements JbiArtifactProvider {
 
         public AntArtifact[] getBuildArtifacts() {
-            return new AntArtifact[] {
+            return new AntArtifact[]{
                 helper.createSimpleAntArtifact(JbiArtifactProvider.ARTIFACT_TYPE_JBI_ASA + ":" +
-                        helper.getStandardPropertyEvaluator().getProperty(IcanproProjectProperties.JBI_SETYPE_PREFIX),
-                        IcanproProjectProperties.SE_DEPLOYMENT_JAR,
-                        helper.getStandardPropertyEvaluator(), "dist_se", "clean"), // NOI18N
+                helper.getStandardPropertyEvaluator().getProperty(IcanproProjectProperties.JBI_SETYPE_PREFIX),
+                IcanproProjectProperties.SE_DEPLOYMENT_JAR,
+                helper.getStandardPropertyEvaluator(), "dist_se", "clean"), // NOI18N
             };
         }
 
@@ -365,21 +366,24 @@ public final class EtlproProject implements Project, AntProjectListener {
             return helper.getStandardPropertyEvaluator().getProperty(IcanproProjectProperties.JBI_SETYPE_PREFIX);
         }
     }
-
+    public IcanproProjectProperties getProjectProperties() {
+         return new IcanproProjectProperties(this, helper, refHelper, EtlproProjectType.PROJECT_CONFIGURATION_NAMESPACE );
+    }
     private static final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
 
         // List of primarily supported templates
 
         private static final String[] TYPES = new String[] {
-            "XML",                  // NOI18N
-            "simple-files"          // NOI18N
+            "SOA_ETL", // NOI18N
+            "XML", // NOI18N
+            "simple-files" // NOI18N
         };
-
-        private static final String[] PRIVILEGED_NAMES = new String[] {
-            "Templates/CAPS/ETL.etl",
+        private static final String[] PRIVILEGED_NAMES = new String[]{
+            "Templates/CAPS/ETL.etl" ,
         };
+    
 
-        public String[] getRecommendedTypes() {
+    public  String[] getRecommendedTypes() {
             return TYPES;
         }
 
@@ -388,4 +392,4 @@ public final class EtlproProject implements Project, AntProjectListener {
         }
 
     }
-}
+        }

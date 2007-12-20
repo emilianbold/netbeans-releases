@@ -1,55 +1,35 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.etl.project.ui;
 
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Collections;
+import java.util.List;
 import java.util.ResourceBundle;
 
+import java.util.StringTokenizer;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.openide.ErrorManager;
 
+import javax.swing.JSeparator;
 import org.openide.nodes.*;
 import org.openide.util.*;
 import org.openide.loaders.DataFolder;
@@ -71,20 +51,26 @@ import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectPr
 import org.netbeans.modules.compapp.projects.base.ui.IcanproLogicalViewProvider;
 import org.netbeans.modules.compapp.projects.base.IcanproConstants;
 import org.netbeans.modules.etl.project.EtlproProject;
+import org.netbeans.modules.mashup.db.wizard.FlatfileDBViewerAction;
+import org.netbeans.modules.mashup.db.wizard.NewFlatfileDatabaseWizardAction;
+import org.netbeans.modules.mashup.db.wizard.NewFlatfileTableAction;
+import org.netbeans.modules.mashup.tables.wizard.MashupTableWizardIterator;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 
 /**
  * Support for creating logical views.
  * @author Petr Hrebejk
  */
 public class EtlproLogicalViewProvider implements LogicalViewProvider {
-    
+
     private final Project project;
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
     private final SubprojectProvider spp;
     private final ReferenceHelper resolver;
-    
-    
+
     public EtlproLogicalViewProvider(Project project, AntProjectHelper helper, PropertyEvaluator evaluator, SubprojectProvider spp, ReferenceHelper resolver) {
         this.project = project;
         assert project != null;
@@ -96,31 +82,95 @@ public class EtlproLogicalViewProvider implements LogicalViewProvider {
         assert spp != null;
         this.resolver = resolver;
     }
-    
+
     public Node createLogicalView() {
         return new EtlLogicalViewRootNode();
     }
-    
-    public Node findPath( Node root, Object target ) {
-        // XXX implement
+
+    public Node findPath(Node root, Object target) {
+        // Check each child node in turn.
+        Node[] children = root.getChildren().getNodes(true);
+        for (Node node : children) {
+            if (target instanceof DataObject || target instanceof FileObject) {
+                DataObject d = (DataObject) node.getLookup().
+                        lookup(DataObject.class);
+                if (d == null) {
+                    continue;
+                }
+                // Copied from org.netbeans.spi.java.project.support.ui.TreeRootNode.PathFinder.findPath:
+                FileObject kidFO = d.getPrimaryFile();
+                FileObject targetFO = target instanceof DataObject ? ((DataObject) target).getPrimaryFile() : (FileObject) target;
+                if (kidFO == targetFO) {
+                    return node;
+                } else if (FileUtil.isParentOf(kidFO, targetFO)) {
+                    String relPath = FileUtil.getRelativePath(kidFO, targetFO);
+                    List/*<String>*/ path = Collections.list(
+                            new StringTokenizer(relPath, "/")); // NOI18N
+                    // XXX see original code for justification
+                    path.set(path.size() - 1, targetFO.getName());
+                    try {
+                        Node found = NodeOp.findPath(node,
+                                Collections.enumeration(path));
+
+                        // The code below is fix for #84948. 
+                        if (hasObject(found, target)) {
+                            return found;
+                        }
+                        Node parent = found.getParentNode();
+                        Children kids = parent.getChildren();
+                        children = kids.getNodes();
+                        for (Node child : children) {
+                            if (hasObject(child, target)) {
+                                return child;
+                            }
+                        }
+
+                    } catch (NodeNotFoundException e) {
+                        return null;
+                    }
+                }
+            }
+        }
         return null;
     }
-    
-    private static Lookup createLookup( Project project ) {
-        DataFolder rootFolder = DataFolder.findFolder( project.getProjectDirectory() );
-        // XXX Remove root folder after FindAction rewrite
-        return Lookups.fixed( new Object[] { project, rootFolder } );
+
+    private boolean hasObject(Node node, Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        DataObject dataObject = (DataObject) node.getLookup().lookup(
+                DataObject.class);
+        if (dataObject == null) {
+            return false;
+        }
+        if (obj instanceof DataObject) {
+            if (dataObject.equals(obj)) {
+                return true;
+            }
+            FileObject fileObject = ((DataObject) obj).getPrimaryFile();
+            return hasObject(node, fileObject);
+        } else if (obj instanceof FileObject) {
+            FileObject fileObject = dataObject.getPrimaryFile();
+            return obj.equals(fileObject);
+        } else {
+            return false;
+        }
     }
-    
+
+    private static Lookup createLookup(Project project) {
+        DataFolder rootFolder = DataFolder.findFolder(project.getProjectDirectory());
+        // XXX Remove root folder after FindAction rewrite
+        return Lookups.fixed(new Object[]{project, rootFolder});
+
+    }
     // Private innerclasses ----------------------------------------------------
-    
-    private static final String[] BREAKABLE_PROPERTIES = new String[] {
+    private static final String[] BREAKABLE_PROPERTIES = new String[]{
         IcanproProjectProperties.JAVAC_CLASSPATH,
         IcanproProjectProperties.DEBUG_CLASSPATH,
         IcanproProjectProperties.SRC_DIR,
-    };
+   };
     
-    public static boolean hasBrokenLinks(AntProjectHelper helper, ReferenceHelper resolver) {
+    public static boolean hasBrokenLinks (AntProjectHelper helper, ReferenceHelper resolver){
         return BrokenReferencesSupport.isBroken(helper, resolver, BREAKABLE_PROPERTIES,
                 new String[] {IcanproProjectProperties.JAVA_PLATFORM});
     }
@@ -135,83 +185,131 @@ public class EtlproLogicalViewProvider implements LogicalViewProvider {
         
         public EtlLogicalViewRootNode() {
             super( new EtlproViews.LogicalViewChildren( helper, evaluator, project ), createLookup( project ) );
-            setIconBaseWithExtension( "org/netbeans/modules/etl/project/ui/resources/etlproProjectIcon.gif" ); // NOI18N
-            setName( ProjectUtils.getInformation( project ).getDisplayName() );
+            setIconBaseWithExtension( "org/netbeans/modules/etl/project/ui/resources/etlproProjectIcon.gif"); // NOI18N
+            setName(ProjectUtils.getInformation(project).getDisplayName());
             if (hasBrokenLinks(helper, resolver)) {
                 broken = true;
                 brokenLinksAction = new BrokenLinksAction();
             }
         }
-        
-        public Action[] getActions( boolean context ) {
-            if ( context )
-                return super.getActions( true );
-            else
+
+        @Override
+        public Action[] getActions(boolean context) {
+            if (context) {
+                return super.getActions(true);
+            } else {
+                EtlproProject pro = (EtlproProject) project;
+                MashupTableWizardIterator.setProjectInfo(pro.getName(),pro.getProjectDirectory().getPath(), true);
                 return getAdditionalActions();
+            }
         }
-        
+
+        @Override
         public boolean canRename() {
-            return false;
+            return true;
         }
-        
+
+        @Override
+        public boolean canCopy() {
+            return true;
+        }
+
+        @Override
+        public boolean canDestroy() {
+            return true;
+        }
+
+        @Override
+        public boolean canCut() {
+            return true;
+        }
+
+        @Override
+        public void setName(String arg0) {
+            super.setName(arg0);
+        }
+
+        @Override
         protected Sheet createSheet() {
             Sheet sheet = Sheet.createDefault();
-            Sheet.Set set = sheet.createPropertiesSet();            
-            Property nameProp = new PropertySupport.Name(this, "Name", "ETL Project Name");                            
-            set.put(nameProp);                
+            Sheet.Set set = Sheet.createPropertiesSet();
+            Property nameProp = new PropertySupport.Name(this, "Name", "ETL Project Name");
+            set.put(nameProp);
             sheet.put(set);
             return sheet;
         }
-        
+
         // Private methods -------------------------------------------------
-        
         private Action[] getAdditionalActions() {
-            
+
             ResourceBundle bundle = NbBundle.getBundle(IcanproLogicalViewProvider.class);
-            
-            return new Action[] {
-                // disable new action at the top...
-                // CommonProjectActions.newFileAction(),
-                // null,
-                ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_BUILD, bundle.getString( "LBL_BuildAction_Name" ), null ), // NOI18N
-                ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_REBUILD, bundle.getString( "LBL_RebuildAction_Name" ), null ), // NOI18N
-                ProjectSensitiveActions.projectCommandAction( ActionProvider.COMMAND_CLEAN, bundle.getString( "LBL_CleanAction_Name" ), null ), // NOI18N
+
+            return new Action[]{
+                CommonProjectActions.newFileAction(), 
+                null,                
+                ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_BUILD, bundle.getString("LBL_BuildAction_Name"), null), // NOI18N
+                ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_REBUILD, bundle.getString("LBL_RebuildAction_Name"), null), // NOI18N
+                ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, bundle.getString("LBL_CleanAction_Name"), null), // NOI18N
                 null,
-                ProjectSensitiveActions.projectCommandAction( EtlproProject.COMMAND_GENWSDL, "Generate WSDL", null ), // NOI18N
+                ProjectSensitiveActions.projectCommandAction(EtlproProject.COMMAND_GENWSDL, "Generate WSDL", null), // NOI18N
+                ProjectSensitiveActions.projectCommandAction(EtlproProject.COMMAND_SCHEMA, "Generate Schema", null), // NOI18N
                 null,
-                ProjectSensitiveActions.projectCommandAction( IcanproConstants.COMMAND_REDEPLOY, bundle.getString( "LBL_RedeployAction_Name" ), null ), // NOI18N
-                ProjectSensitiveActions.projectCommandAction( IcanproConstants.COMMAND_DEPLOY, bundle.getString( "LBL_DeployAction_Name" ), null ), // NOI18N
+                SystemAction.get(NewFlatfileDatabaseWizardAction.class),
+                SystemAction.get(NewFlatfileTableAction.class),              
+                //SystemAction.get(FlatfileDBViewerAction.class),
+                null,
+                ProjectSensitiveActions.projectCommandAction(IcanproConstants.COMMAND_REDEPLOY, bundle.getString("LBL_RedeployAction_Name"), null), // NOI18N
+                ProjectSensitiveActions.projectCommandAction(IcanproConstants.COMMAND_DEPLOY, bundle.getString("LBL_DeployAction_Name"), null), // NOI18N
                 null,
                 CommonProjectActions.setAsMainProjectAction(),
                 CommonProjectActions.openSubprojectsAction(),
                 CommonProjectActions.closeProjectAction(),
                 null,
-                SystemAction.get( org.openide.actions.FindAction.class ),
+                CommonProjectActions.renameProjectAction(),
+                CommonProjectActions.moveProjectAction(),
+                CommonProjectActions.copyProjectAction(),
+                CommonProjectActions.deleteProjectAction(),
+                null,
+                SystemAction.get(org.openide.actions.FindAction.class),                
+                addFromLayers(),
                 null,
                 SystemAction.get(org.openide.actions.OpenLocalExplorerAction.class),
                 null,
                 brokenLinksAction,
                 CommonProjectActions.customizeProjectAction(),
-            };
+                };
         }
-        
+      
+        private Action addFromLayers() {
+            Action action = null;
+            Lookup look = Lookups.forPath("Projects/Actions");
+            for (Object next : look.lookupAll(Object.class)) {
+                if (next instanceof Action) {
+                        action = (Action) next;
+                } else if (next instanceof JSeparator) {
+                        action = null;
+                }
+            }
+            return action;
+        }
+
         /** This action is created only when project has broken references.
          * Once these are resolved the action is disabled.
          */
         private class BrokenLinksAction extends AbstractAction implements PropertyChangeListener {
-            
+
             public BrokenLinksAction() {
                 evaluator.addPropertyChangeListener(this);
                 putValue(Action.NAME, NbBundle.getMessage(IcanproLogicalViewProvider.class, "LBL_Fix_Broken_Links_Action"));
             }
-            
+
             public void actionPerformed(ActionEvent e) {
-                BrokenReferencesSupport.showCustomizer(helper, resolver, BREAKABLE_PROPERTIES, new String[]{IcanproProjectProperties.JAVA_PLATFORM});
-                if (!hasBrokenLinks(helper, resolver)) {
-                    disable();
-                }
+            /*BrokenReferencesSupport.showCustomizer(helper, resolver, BREAKABLE_PROPERTIES, new String[]{IcanproProjectProperties.JAVA_PLATFORM});
+            if (!hasBrokenLinks(helper, resolver)) {
+            disable();
+            }*/
             }
-            
+
             public void propertyChange(PropertyChangeEvent evt) {
                 if (!broken) {
                     disable();
@@ -222,7 +320,7 @@ public class EtlproLogicalViewProvider implements LogicalViewProvider {
                     disable();
                 }
             }
-            
+
             private void disable() {
                 broken = false;
                 setEnabled(false);
@@ -230,49 +328,45 @@ public class EtlproLogicalViewProvider implements LogicalViewProvider {
                 fireIconChange();
                 fireOpenedIconChange();
             }
-            
         }
-        
     }
-    
+
     /** Factory for project actions.<BR>
      * XXX This class is a candidate for move to org.netbeans.spi.project.ui.support
      */
     public static class Actions {
-        
-        private Actions() {} // This is a factory
-        
-        public static Action createAction( String key, String name, boolean global ) {
-            return new ActionImpl( key, name, global ? Utilities.actionsGlobalContext() : null );
+
+        private Actions() {
+        } // This is a factory
+
+        public static Action createAction(String key, String name, boolean global) {
+            return new ActionImpl(key, name, global ? Utilities.actionsGlobalContext() : null);
         }
-        
+
         private static class ActionImpl extends AbstractAction implements ContextAwareAction {
-            
+
             Lookup context;
             String name;
             String command;
-            
-            public ActionImpl( String command, String name, Lookup context ) {
-                super( name );
+
+            public ActionImpl(String command, String name, Lookup context) {
+                super(name);
                 this.context = context;
                 this.command = command;
                 this.name = name;
             }
-            
-            public void actionPerformed( ActionEvent e ) {
-                
-                Project project = (Project)context.lookup( Project.class );
-                ActionProvider ap = (ActionProvider)project.getLookup().lookup( ActionProvider.class);
-                
-                ap.invokeAction( command, context );
-                
+
+            public void actionPerformed(ActionEvent e) {
+
+                Project project = (Project) context.lookup(Project.class);
+                ActionProvider ap = (ActionProvider) project.getLookup().lookup(ActionProvider.class);
+                ap.invokeAction(command, context);
+
             }
-            
-            public Action createContextAwareInstance( Lookup lookup ) {
-                return new ActionImpl( command, name, lookup );
+
+            public Action createContextAwareInstance(Lookup lookup) {
+                return new ActionImpl(command, name, lookup);
             }
         }
-        
     }
-    
 }
