@@ -51,7 +51,7 @@ import java.util.List;
 
 import javax.swing.JComponent;
 
-import org.netbeans.modules.print.impl.util.Util;
+import org.netbeans.modules.print.impl.util.Option;
 import static org.netbeans.modules.print.api.PrintUtil.*;
 
 /**
@@ -74,12 +74,12 @@ final class ComponentDocument extends JComponent {
 
   private void init() {
 //out();
-    myWrapLines = Util.getOption().isWrapLines();
-    myLineNumbers = Util.getOption().isLineNumbers();
-    myTextColor = Util.getOption().getTextColor();
-    myTextFont = Util.getOption().getTextFont();
-    myBackgroundColor = Util.getOption().getBackgroundColor();
-    myLineSpacing = Util.getOption().getLineSpacing();
+    myWrapLines = Option.getDefault().isWrapLines();
+    myLineNumbers = Option.getDefault().isLineNumbers();
+    myTextColor = Option.getDefault().getTextColor();
+    myTextFont = Option.getDefault().getTextFont();
+    myBackgroundColor = Option.getDefault().getBackgroundColor();
+    myLineSpacing = Option.getDefault().getLineSpacing();
     myLines = new ArrayList<ComponentLine>();
   }
 
@@ -175,7 +175,7 @@ final class ComponentDocument extends JComponent {
   }
 
   private void prepareWrapLines() {
-    myWidth = Util.getOption().getPageWidth();
+    myWidth = Option.getDefault().getPageWidth();
 //out("Width: " + myWidth);
     List<ComponentLine> lines = new ArrayList<ComponentLine>();
 
@@ -279,7 +279,7 @@ final class ComponentDocument extends JComponent {
     myLeading = new int [size];
     myCorrection = new int [size];
 
-    int pageHeight = Util.getOption().getPageHeight();
+    int pageHeight = Option.getDefault().getPageHeight();
     int breakPosition = pageHeight;
     int prevPos;
 //out();
@@ -323,7 +323,7 @@ final class ComponentDocument extends JComponent {
   @Override
   protected void paintComponent(Graphics graphics)
   {
-    Graphics2D g = Util.getGraphics(graphics);
+    Graphics2D g = Option.getDefault().getGraphics(graphics);
 
     g.setColor(myBackgroundColor);
     g.fillRect(0, 0, myWidth, myHeight);

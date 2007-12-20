@@ -77,7 +77,7 @@ public enum Macro {
     myButton.setFocusable(false);
     myButton.setToolTipText(getToolTipText());
     myButton.setMnemonic(KeyEvent.VK_1 + ordinal());
-    myButton.setIcon(icon(Util.class, name().toLowerCase()));
+    myButton.setIcon(icon(getClass(), name().toLowerCase()));
   }
 
   public String getName() {

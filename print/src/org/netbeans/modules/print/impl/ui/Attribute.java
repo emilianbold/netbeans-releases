@@ -69,7 +69,7 @@ import org.openide.util.HelpCtx;
 
 import org.netbeans.modules.print.impl.util.Percent;
 import org.netbeans.modules.print.impl.util.Macro;
-import org.netbeans.modules.print.impl.util.Util;
+import org.netbeans.modules.print.impl.util.Option;
 import static org.netbeans.modules.print.api.PrintUtil.*;
 
 /**
@@ -82,15 +82,15 @@ final class Attribute extends Dialog
   Attribute(Preview preview) {
     myPreview = preview;
 
-    myBorderColorValue = Util.getOption().getBorderColor();
-    myTextColorValue = Util.getOption().getTextColor();
-    myTextFontValue = Util.getOption().getTextFont();
-    myBackgroundColorValue = Util.getOption().getBackgroundColor();
+    myBorderColorValue = Option.getDefault().getBorderColor();
+    myTextColorValue = Option.getDefault().getTextColor();
+    myTextFontValue = Option.getDefault().getTextFont();
+    myBackgroundColorValue = Option.getDefault().getBackgroundColor();
 
-    myHeaderColorValue = Util.getOption().getHeaderColor();
-    myHeaderFontValue = Util.getOption().getHeaderFont();
-    myFooterColorValue = Util.getOption().getFooterColor();
-    myFooterFontValue = Util.getOption().getFooterFont();
+    myHeaderColorValue = Option.getDefault().getHeaderColor();
+    myHeaderFontValue = Option.getDefault().getHeaderFont();
+    myFooterColorValue = Option.getDefault().getFooterColor();
+    myFooterFontValue = Option.getDefault().getFooterFont();
   }
 
   @Override
@@ -145,38 +145,38 @@ final class Attribute extends Dialog
   }
 
   private boolean updatePreview() {
-    int zoomWidth = Util.getInt(myZoomWidth.getText());
-    int zoomHeight = Util.getInt(myZoomHeight.getText());
+    int zoomWidth = getInt(myZoomWidth.getText());
+    int zoomHeight = getInt(myZoomHeight.getText());
 
     if ( !checkValue(zoomWidth, zoomHeight)) {
       return false;
     }
-    Util.getOption().setBorder(myBorder.isSelected());
-    Util.getOption().setBorderColor(myBorderColorValue);
+    Option.getDefault().setBorder(myBorder.isSelected());
+    Option.getDefault().setBorderColor(myBorderColorValue);
 
-    Util.getOption().setHeader(myHeader.isSelected());
-    Util.getOption().setHeaderLeft(myHeaderLeft.getText());
-    Util.getOption().setHeaderCenter(myHeaderCenter.getText());
-    Util.getOption().setHeaderRight(myHeaderRight.getText());
-    Util.getOption().setHeaderColor(myHeaderColorValue);
-    Util.getOption().setHeaderFont(myHeaderFontValue);
+    Option.getDefault().setHeader(myHeader.isSelected());
+    Option.getDefault().setHeaderLeft(myHeaderLeft.getText());
+    Option.getDefault().setHeaderCenter(myHeaderCenter.getText());
+    Option.getDefault().setHeaderRight(myHeaderRight.getText());
+    Option.getDefault().setHeaderColor(myHeaderColorValue);
+    Option.getDefault().setHeaderFont(myHeaderFontValue);
 
-    Util.getOption().setFooter(myFooter.isSelected());
-    Util.getOption().setFooterLeft(myFooterLeft.getText());
-    Util.getOption().setFooterCenter(myFooterCenter.getText());
-    Util.getOption().setFooterRight(myFooterRight.getText());
-    Util.getOption().setFooterColor(myFooterColorValue);
-    Util.getOption().setFooterFont(myFooterFontValue);
+    Option.getDefault().setFooter(myFooter.isSelected());
+    Option.getDefault().setFooterLeft(myFooterLeft.getText());
+    Option.getDefault().setFooterCenter(myFooterCenter.getText());
+    Option.getDefault().setFooterRight(myFooterRight.getText());
+    Option.getDefault().setFooterColor(myFooterColorValue);
+    Option.getDefault().setFooterFont(myFooterFontValue);
 
-    Util.getOption().setWrapLines(myWrapLines.isSelected());
-    Util.getOption().setLineNumbers(myLineNumbers.isSelected());
-    Util.getOption().setUseFont(myUseFont.isSelected());
-    Util.getOption().setUseColor(myUseColor.isSelected());
-    Util.getOption().setTextColor(myTextColorValue);
-    Util.getOption().setTextFont(myTextFontValue);
-    Util.getOption().setBackgroundColor(myBackgroundColorValue);
-    Util.getOption().setLineSpacing(getDouble(myLineSpacing.getValue()));
-    Util.getOption().setAsEditor(myAsEditor.isSelected());
+    Option.getDefault().setWrapLines(myWrapLines.isSelected());
+    Option.getDefault().setLineNumbers(myLineNumbers.isSelected());
+    Option.getDefault().setUseFont(myUseFont.isSelected());
+    Option.getDefault().setUseColor(myUseColor.isSelected());
+    Option.getDefault().setTextColor(myTextColorValue);
+    Option.getDefault().setTextFont(myTextFontValue);
+    Option.getDefault().setBackgroundColor(myBackgroundColorValue);
+    Option.getDefault().setLineSpacing(getDouble(myLineSpacing.getValue()));
+    Option.getDefault().setAsEditor(myAsEditor.isSelected());
 
     double zoom = 0.0;
 
@@ -189,7 +189,7 @@ final class Attribute extends Dialog
     else if (myZoomHeight.isEnabled()) {
       zoom = Percent.createZoomHeight(zoomHeight);
     }
-    Util.getOption().setZoom(zoom);
+    Option.getDefault().setZoom(zoom);
     myPreview.updated();
 //out("SAVE.zoom: " + zoom);
 
@@ -265,7 +265,7 @@ final class Attribute extends Dialog
     c.insets = new Insets(0, SMALL_INSET, TINY_INSET, 0);
     myBorderColor = createButton(
       new ButtonAction(
-        icon(Util.class, "color"), // NOI18N
+        icon(Option.class, "color"), // NOI18N
         i18n("TLT_Border_Color")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           borderColor();
@@ -349,7 +349,7 @@ final class Attribute extends Dialog
     c.fill = GridBagConstraints.NONE;
     myHeaderColor = createButton(
       new ButtonAction(
-        icon(Util.class, "color"), // NOI18N
+        icon(Option.class, "color"), // NOI18N
         i18n("TLT_Header_Color")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           headerColor();
@@ -360,7 +360,7 @@ final class Attribute extends Dialog
 
     // header font
     myHeaderFont = createButton(
-      new ButtonAction(icon(Util.class, "font"), i18n("TLT_Header_Font")) { // NOI18N
+      new ButtonAction(icon(Option.class, "font"), i18n("TLT_Header_Font")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           headerFont();
         }
@@ -410,7 +410,7 @@ final class Attribute extends Dialog
     c.fill = GridBagConstraints.NONE;
     myFooterColor = createButton(
       new ButtonAction(
-        icon(Util.class, "color"), // NOI18N
+        icon(Option.class, "color"), // NOI18N
         i18n("TLT_Footer_Color")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           footerColor();
@@ -421,7 +421,7 @@ final class Attribute extends Dialog
 
     // footer font
     myFooterFont = createButton(
-      new ButtonAction(icon(Util.class, "font"), i18n("TLT_Footer_Font")) { // NOI18N
+      new ButtonAction(icon(Option.class, "font"), i18n("TLT_Footer_Font")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           footerFont();
         }
@@ -526,7 +526,7 @@ final class Attribute extends Dialog
     // text color
     c.insets = new Insets(0, SMALL_INSET, TINY_INSET, 0);
     myTextColor = createButton(
-      new ButtonAction(icon(Util.class, "color"), i18n("TLT_Text_Color")) { // NOI18N
+      new ButtonAction(icon(Option.class, "color"), i18n("TLT_Text_Color")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           textColor();
         }
@@ -536,7 +536,7 @@ final class Attribute extends Dialog
     
     // text font
     myTextFont = createButton(
-      new ButtonAction(icon(Util.class, "font"), i18n("TLT_Text_Font")) { // NOI18N
+      new ButtonAction(icon(Option.class, "font"), i18n("TLT_Text_Font")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           textFont();
         }
@@ -575,7 +575,7 @@ final class Attribute extends Dialog
     c.insets = new Insets(0, SMALL_INSET, TINY_INSET, 0);
     myBackgroundColor = createButton(
       new ButtonAction(
-        icon(Util.class, "color"), // NOI18N
+        icon(Option.class, "color"), // NOI18N
         i18n("TLT_Background_Color")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           backgroundColor();
@@ -612,7 +612,7 @@ final class Attribute extends Dialog
 
     c.anchor = GridBagConstraints.WEST;
     c.insets = new Insets(0, SMALL_INSET, TINY_INSET, 0);
-    double value = Util.getOption().getLineSpacing();
+    double value = Option.getDefault().getLineSpacing();
 
     if (value < 0) {
       value = 1.0;
@@ -624,7 +624,7 @@ final class Attribute extends Dialog
       SPACING_STP
     ));
     int height = myLineSpacing.getPreferredSize().height;
-    setHeight(myLineSpacing, Util.round(height * SPACING_FTR));
+    setHeight(myLineSpacing, round(height * SPACING_FTR));
 
     myLineSpacingLabel.setLabelFor(myLineSpacing);
     panel.add(myLineSpacing, c);
@@ -635,7 +635,7 @@ final class Attribute extends Dialog
     GridBagConstraints c = new GridBagConstraints();
     ButtonGroup group = new ButtonGroup();
     c.anchor = GridBagConstraints.WEST;
-    double zoom = Util.getOption().getZoom();
+    double zoom = Option.getDefault().getZoom();
 //out("GET ZOOM: " + zoom);
 
     // (o) Fit width to
@@ -846,34 +846,34 @@ final class Attribute extends Dialog
   }
 
   private void updateControl() {
-    myBorder.setSelected(Util.getOption().hasBorder());
-    myBorderColor.setEnabled(Util.getOption().hasBorder());
+    myBorder.setSelected(Option.getDefault().hasBorder());
+    myBorderColor.setEnabled(Option.getDefault().hasBorder());
 
-    myHeader.setSelected(Util.getOption().hasHeader());
-    myHeaderLeft.setText(Util.getOption().getHeaderLeft());
-    myHeaderLeft.setEnabled(Util.getOption().hasHeader());
-    myHeaderCenter.setText(Util.getOption().getHeaderCenter());
-    myHeaderCenter.setEnabled(Util.getOption().hasHeader());
-    myHeaderRight.setText(Util.getOption().getHeaderRight());
-    myHeaderRight.setEnabled(Util.getOption().hasHeader());
-    myHeaderColor.setEnabled(Util.getOption().hasHeader());
-    myHeaderFont.setEnabled(Util.getOption().hasHeader());
+    myHeader.setSelected(Option.getDefault().hasHeader());
+    myHeaderLeft.setText(Option.getDefault().getHeaderLeft());
+    myHeaderLeft.setEnabled(Option.getDefault().hasHeader());
+    myHeaderCenter.setText(Option.getDefault().getHeaderCenter());
+    myHeaderCenter.setEnabled(Option.getDefault().hasHeader());
+    myHeaderRight.setText(Option.getDefault().getHeaderRight());
+    myHeaderRight.setEnabled(Option.getDefault().hasHeader());
+    myHeaderColor.setEnabled(Option.getDefault().hasHeader());
+    myHeaderFont.setEnabled(Option.getDefault().hasHeader());
 
-    myFooter.setSelected(Util.getOption().hasFooter());
-    myFooterLeft.setText(Util.getOption().getFooterLeft());
-    myFooterLeft.setEnabled(Util.getOption().hasFooter());
-    myFooterCenter.setText(Util.getOption().getFooterCenter());
-    myFooterCenter.setEnabled(Util.getOption().hasFooter());
-    myFooterRight.setText(Util.getOption().getFooterRight());
-    myFooterRight.setEnabled(Util.getOption().hasFooter());
-    myFooterColor.setEnabled(Util.getOption().hasFooter());
-    myFooterFont.setEnabled(Util.getOption().hasFooter());
+    myFooter.setSelected(Option.getDefault().hasFooter());
+    myFooterLeft.setText(Option.getDefault().getFooterLeft());
+    myFooterLeft.setEnabled(Option.getDefault().hasFooter());
+    myFooterCenter.setText(Option.getDefault().getFooterCenter());
+    myFooterCenter.setEnabled(Option.getDefault().hasFooter());
+    myFooterRight.setText(Option.getDefault().getFooterRight());
+    myFooterRight.setEnabled(Option.getDefault().hasFooter());
+    myFooterColor.setEnabled(Option.getDefault().hasFooter());
+    myFooterFont.setEnabled(Option.getDefault().hasFooter());
 
-    myLineNumbers.setSelected(Util.getOption().isLineNumbers());
-    myWrapLines.setSelected(Util.getOption().isWrapLines());
-    myUseFont.setSelected(Util.getOption().isUseFont());
-    myUseColor.setSelected(Util.getOption().isUseColor());
-    myAsEditor.setSelected(Util.getOption().isAsEditor());
+    myLineNumbers.setSelected(Option.getDefault().isLineNumbers());
+    myWrapLines.setSelected(Option.getDefault().isWrapLines());
+    myUseFont.setSelected(Option.getDefault().isUseFont());
+    myUseColor.setSelected(Option.getDefault().isUseColor());
+    myAsEditor.setSelected(Option.getDefault().isAsEditor());
 
     updateText();
   }

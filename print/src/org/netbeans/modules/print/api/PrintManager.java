@@ -48,13 +48,23 @@ import javax.swing.Action;
  */
 public final class PrintManager {
 
+  private PrintManager() {}
+
+  /**
+   * Returns Print Preview instance.
+   * @return Print Preview instance
+   */
+  public static PrintManager getDefault() {
+    return DEFAULT;
+  }
+
   /**
    * Returns Print Preview action.
    * @return Print Preview action
    */
-  public static Action getPrintPreviewAction() {
-    return org.netbeans.modules.print.impl.action.PrintPreviewAction.INSTANCE;
+  public Action getPrintPreviewAction() {
+    return org.netbeans.modules.print.impl.action.PrintPreviewAction.DEFAULT;
   }
 
-  private PrintManager() {}
+  private static final PrintManager DEFAULT = new PrintManager();
 }

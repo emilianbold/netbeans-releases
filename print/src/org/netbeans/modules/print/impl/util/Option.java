@@ -42,6 +42,10 @@ package org.netbeans.modules.print.impl.util;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.font.FontRenderContext;
 import java.awt.geom.Rectangle2D;
 import java.awt.print.Paper;
 import java.awt.print.PrinterJob;
@@ -59,6 +63,8 @@ import static org.netbeans.modules.print.api.PrintUtil.*;
  * @version 2006.03.21
  */
 public final class Option {
+
+  private Option() {}
 
   public boolean showPageSetup() {
     PrinterJob job = PrinterJob.getPrinterJob();
@@ -94,7 +100,7 @@ public final class Option {
 
       // restore
       myPageFormat.setOrientation(
-        Util.round(get(PAGE_ORIENTATION, PageFormat.PORTRAIT)));
+        round(get(PAGE_ORIENTATION, PageFormat.PORTRAIT)));
       Paper paper = myPageFormat.getPaper();
 
       if (get(PAPER_WIDTH, null) != null && get(PAPER_HEIGHT, null) != null) {
@@ -127,11 +133,11 @@ public final class Option {
 
   // page
   public int getPageX() {
-    return Util.round(getPageFormat().getImageableX());
+    return round(getPageFormat().getImageableX());
   }
 
   public int getPageY() {
-    int y = Util.round(getPageFormat().getImageableY());
+    int y = round(getPageFormat().getImageableY());
 
     if (hasHeader()) {
       y += getBound(getHeaderFont()).getHeight();
@@ -157,11 +163,11 @@ public final class Option {
 
   // header
   public int getHeaderY() {
-    return getPageY() - Util.round(getBound(getHeaderFont()).getMaxY());
+    return getPageY() - round(getBound(getHeaderFont()).getMaxY());
   }
 
   public int getFooterY() {
-    return getPageY() + getPageHeight() + Util.round(getBound(
+    return getPageY() + getPageHeight() + round(getBound(
       getFooterFont()).getHeight() - getBound(getFooterFont()).getMaxY());
   }
   
@@ -413,9 +419,9 @@ public final class Option {
     }
     StringTokenizer stk = new StringTokenizer(value, COMMA);
 
-    int red = getInt(stk);
-    int green = getInt(stk);
-    int blue = getInt(stk);
+    int red = integer(stk);
+    int green = integer(stk);
+    int blue = integer(stk);
 
     if (red == -1 || green == -1 || blue == -1) {
       return defaultValue;
@@ -430,8 +436,8 @@ public final class Option {
     StringTokenizer stk = new StringTokenizer(value, COMMA);
 
     String name = getString(stk);
-    int style = getInt(stk);
-    int size = getInt(stk);
+    int style = integer(stk);
+    int size = integer(stk);
 
     if (name == null || style == -1 || size == -1) {
       return defaultValue;
@@ -439,11 +445,11 @@ public final class Option {
     return new Font(name, style, size);
   }
 
-  private int getInt(StringTokenizer stk) {
+  private int integer(StringTokenizer stk) {
     if ( !stk.hasMoreTokens()) {
       return -1;
     }
-    return Util.getInt(stk.nextToken());
+    return getInt(stk.nextToken());
   }
 
   private String getString(StringTokenizer stk) {
@@ -454,10 +460,38 @@ public final class Option {
   }
 
   private Rectangle2D getBound(Font font) {
-    return font.getMaxCharBounds(Util.FONT_RENDER_CONTEXT);
+    return font.getMaxCharBounds(FONT_RENDER_CONTEXT);
+  }
+
+  public static String getPageOfCount(String page, String count) {
+    return i18n(Option.class, "LBL_Page_of_Count", page, count); // NOI18N
+  }
+
+  private static String getRowColumn(String row, String column) {
+    return i18n(Option.class, "LBL_Row_Column", row, column); // NOI18N
+  }
+
+  public static Option getDefault() {
+    return DEFAULT;
+  }
+
+  public Graphics2D getGraphics(Graphics g) {
+    Graphics2D graphics = (Graphics2D) g;
+
+    graphics.setRenderingHint(
+      RenderingHints.KEY_ANTIALIASING,
+      RenderingHints.VALUE_ANTIALIAS_ON);
+
+    graphics.setRenderingHint(
+      RenderingHints.KEY_FRACTIONALMETRICS,
+      RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+
+    return graphics;
   }
 
   private PageFormat myPageFormat;
+
+  private static final Option DEFAULT = new Option();
   private static final double INCH = 72.0; // .pt
 
   private static final Font DEFAULT_TITLE_FONT =
@@ -465,6 +499,9 @@ public final class Option {
 
   private static final Font DEFAULT_TEXT_FONT =
     new Font("Monospaced", Font.PLAIN, 10); // NOI18N
+
+  public static final FontRenderContext FONT_RENDER_CONTEXT
+    = new FontRenderContext(null, true, true);
 
   private static final Color DEFAULT_BACGROUND_COLOR = new Color(255, 250, 255);
 
@@ -475,8 +512,8 @@ public final class Option {
   private static final String HEADER_CENTER_TEXT = EMPTY;
   private static final String HEADER_RIGHT_TEXT = EMPTY;
 
-  private static final String FOOTER_LEFT_TEXT = Util.getPageOfCount(
-    Util.getRowColumn(Macro.ROW.getName(),Macro.COLUMN.getName()),Macro.COUNT.getName());
+  private static final String FOOTER_LEFT_TEXT = getPageOfCount(
+    getRowColumn(Macro.ROW.getName(),Macro.COLUMN.getName()),Macro.COUNT.getName());
   private static final String FOOTER_CENTER_TEXT = EMPTY;
   private static final String FOOTER_RIGHT_TEXT = Macro.MODIFIED_DATE.getName() +
     "  " + Macro.MODIFIED_TIME.getName(); // NOI18N

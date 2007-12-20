@@ -292,7 +292,7 @@ public final class Percent extends JComboBox implements ActionListener {
     if (value.endsWith(PERCENT)) {
       value = value.substring (0, value.length() - 1);
     }
-    return Util.getInt(value.trim()) / YUZ;
+    return getInt(value.trim()) / YUZ;
   }
 
   private String getPercent(double value) {
@@ -308,14 +308,14 @@ public final class Percent extends JComboBox implements ActionListener {
 
   public static int getZoomWidth(double zoom, int defaultValue) {
     if (BOUND_1 <= zoom && zoom < BOUND_2) {
-      return Util.round(zoom - BOUND_1);
+      return round(zoom - BOUND_1);
     }
     return defaultValue;
   }
   
   public static int getZoomHeight(double zoom, int defaultValue) {
     if (BOUND_2 <= zoom) {
-      return Util.round(zoom - BOUND_2);
+      return round(zoom - BOUND_2);
     }
     return defaultValue;
   }

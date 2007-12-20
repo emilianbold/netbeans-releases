@@ -59,7 +59,7 @@ import org.netbeans.modules.print.spi.PrintProvider;
 import org.netbeans.modules.print.impl.provider.ComponentProvider;
 import org.netbeans.modules.print.impl.provider.TextProvider;
 import org.netbeans.modules.print.impl.ui.Preview;
-import org.netbeans.modules.print.impl.util.Util;
+import org.netbeans.modules.print.impl.util.Option;
 
 import static org.netbeans.modules.print.api.PrintUtil.*;
 
@@ -70,14 +70,14 @@ import static org.netbeans.modules.print.api.PrintUtil.*;
 public final class PrintPreviewAction extends IconAction {
 
   public PrintPreviewAction() {
-    this("LBL_Print_Preview_Action", "TLT_Print_Preview_Action", null); // NOI18N
+    this("LBL_Print_Preview_Action", "TLT_Print_Preview_Action", "print"); // NOI18N
   }
 
   private PrintPreviewAction(String name, String toolTip, String icon) {
     super(
       i18n(PrintPreviewAction.class, name),
       i18n(PrintPreviewAction.class, toolTip),
-      icon(Util.class, icon)
+      icon(Option.class, icon)
     );
     setEnabled(false);
   }
@@ -98,13 +98,25 @@ public final class PrintPreviewAction extends IconAction {
   }
 
   private PrintProvider getPrintProvider() {
-    TopComponent top = getActivateTopComponent();
 //out();
+    PrintProvider provider;
+    Node node = getActiveNode();
+
+    if (node != null) {
+      provider = (PrintProvider) node.getLookup().lookup(PrintProvider.class);
+
+      if (provider != null) {
+//out("NODE PROVIDER: " + provider);
+        return provider;
+      }
+    }
+    TopComponent top = getActivateTopComponent();
+
     if (top == null) {
       return null;
     }
 //out(" TOP: " + top.getDisplayName() + " " + top.getName() + " " + top.getClass().getName());
-    PrintProvider provider = (PrintProvider) top.getLookup().lookup(PrintProvider.class);
+    provider = (PrintProvider) top.getLookup().lookup(PrintProvider.class);
 
     if (provider != null) {
 //out("TOP PROVIDER: " + provider);
@@ -234,10 +246,10 @@ public final class PrintPreviewAction extends IconAction {
     return getPrintProvider() != null || getPrintCookie() != null;
   }
 
-  public static final Action INSTANCE;
+  public static final Action DEFAULT;
 
   static {
-    INSTANCE = new PrintPreviewAction(null, "TLT_Print_Preview_Action", "print"); // NOI18N
-    INSTANCE.setEnabled(true);
+    DEFAULT = new PrintPreviewAction(null,"TLT_Print_Preview_Action","print"); // NOI18N
+    DEFAULT.setEnabled(true);
   }
 }

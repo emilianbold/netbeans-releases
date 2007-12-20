@@ -52,7 +52,7 @@ import javax.swing.JComponent;
 
 import org.netbeans.modules.print.spi.PrintPage;
 import org.netbeans.modules.print.impl.util.Macro;
-import org.netbeans.modules.print.impl.util.Util;
+import org.netbeans.modules.print.impl.util.Option;
 import static org.netbeans.modules.print.api.PrintUtil.*;
 
 /**
@@ -85,31 +85,31 @@ final class Paper extends JComponent {
     myName = name;
     myLastModifiedDate = modified;
 
-    myPaperWidth = Util.getOption().getPaperWidth();
-    myPaperHeight = Util.getOption().getPaperHeight();
-    myPageX = Util.getOption().getPageX();
-    myPageY = Util.getOption().getPageY();
-    myPageWidth = Util.getOption().getPageWidth();
-    myPageHeight = Util.getOption().getPageHeight();
+    myPaperWidth = Option.getDefault().getPaperWidth();
+    myPaperHeight = Option.getDefault().getPaperHeight();
+    myPageX = Option.getDefault().getPageX();
+    myPageY = Option.getDefault().getPageY();
+    myPageWidth = Option.getDefault().getPageWidth();
+    myPageHeight = Option.getDefault().getPageHeight();
 
-    myHeaderY = Util.getOption().getHeaderY();
-    myHasHeader = Util.getOption().hasHeader();
-    myHeaderLeft = expandTitle(Util.getOption().getHeaderLeft());
-    myHeaderCenter = expandTitle(Util.getOption().getHeaderCenter());
-    myHeaderRight = expandTitle(Util.getOption().getHeaderRight());
-    myHeaderColor = Util.getOption().getHeaderColor();
-    myHeaderFont = Util.getOption().getHeaderFont();
+    myHeaderY = Option.getDefault().getHeaderY();
+    myHasHeader = Option.getDefault().hasHeader();
+    myHeaderLeft = expandTitle(Option.getDefault().getHeaderLeft());
+    myHeaderCenter = expandTitle(Option.getDefault().getHeaderCenter());
+    myHeaderRight = expandTitle(Option.getDefault().getHeaderRight());
+    myHeaderColor = Option.getDefault().getHeaderColor();
+    myHeaderFont = Option.getDefault().getHeaderFont();
 
-    myFooterY = Util.getOption().getFooterY();
-    myHasFooter = Util.getOption().hasFooter();
-    myFooterLeft = expandTitle(Util.getOption().getFooterLeft());
-    myFooterCenter = expandTitle(Util.getOption().getFooterCenter());
-    myFooterRight = expandTitle(Util.getOption().getFooterRight());
-    myFooterColor = Util.getOption().getFooterColor();
-    myFooterFont = Util.getOption().getFooterFont();
+    myFooterY = Option.getDefault().getFooterY();
+    myHasFooter = Option.getDefault().hasFooter();
+    myFooterLeft = expandTitle(Option.getDefault().getFooterLeft());
+    myFooterCenter = expandTitle(Option.getDefault().getFooterCenter());
+    myFooterRight = expandTitle(Option.getDefault().getFooterRight());
+    myFooterColor = Option.getDefault().getFooterColor();
+    myFooterFont = Option.getDefault().getFooterFont();
 
-    myHasBorder = Util.getOption().hasBorder();
-    myBorderColor = Util.getOption().getBorderColor();
+    myHasBorder = Option.getDefault().hasBorder();
+    myBorderColor = Option.getDefault().getBorderColor();
     myIsPainting = true;
 
     setScale(scale);
@@ -157,7 +157,7 @@ final class Paper extends JComponent {
   @Override
   public void paint(Graphics graphics)
   {
-    Graphics2D g = Util.getGraphics(graphics);
+    Graphics2D g = Option.getDefault().getGraphics(graphics);
 
     // scaling
     if (myIsPainting) {
@@ -292,22 +292,22 @@ final class Paper extends JComponent {
   private String expandTitle(String t) {
     Date printed = new Date(System.currentTimeMillis());
 
-    t = Util.replace(t, Macro.NAME.getName(), myName);
-    t = Util.replace(t, Macro.ROW.getName(), myRowNumber);
-    t = Util.replace(t, Macro.COLUMN.getName(), myColumnNumber);
-    t = Util.replace(t, Macro.USER.getName(), USER_NAME);
-    t = Util.replace(t, Macro.COUNT.getName(), myCount);
-    t = Util.replace(t, Macro.MODIFIED_DATE.getName(),getDate(myLastModifiedDate));
-    t = Util.replace(t, Macro.MODIFIED_TIME.getName(),getTime(myLastModifiedDate));
-    t = Util.replace(t, Macro.PRINTED_DATE.getName(), getDate(printed));
-    t = Util.replace(t, Macro.PRINTED_TIME.getName(), getTime(printed));
+    t = replace(t, Macro.NAME.getName(), myName);
+    t = replace(t, Macro.ROW.getName(), myRowNumber);
+    t = replace(t, Macro.COLUMN.getName(), myColumnNumber);
+    t = replace(t, Macro.USER.getName(), USER_NAME);
+    t = replace(t, Macro.COUNT.getName(), myCount);
+    t = replace(t, Macro.MODIFIED_DATE.getName(),getDate(myLastModifiedDate));
+    t = replace(t, Macro.MODIFIED_TIME.getName(),getTime(myLastModifiedDate));
+    t = replace(t, Macro.PRINTED_DATE.getName(), getDate(printed));
+    t = replace(t, Macro.PRINTED_TIME.getName(), getTime(printed));
 
     return t;
   }
 
   private int getWidth(String text, Font font) {
     return (int) Math.ceil(font.getStringBounds(
-      text, Util.FONT_RENDER_CONTEXT).getWidth());
+      text, Option.FONT_RENDER_CONTEXT).getWidth());
   }
 
   private String getDate(Date timestamp) {

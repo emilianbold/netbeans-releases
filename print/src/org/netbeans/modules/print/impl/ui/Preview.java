@@ -77,8 +77,8 @@ import javax.swing.SwingUtilities;
 import org.openide.DialogDescriptor;
 import org.netbeans.modules.print.spi.PrintPage;
 import org.netbeans.modules.print.spi.PrintProvider;
+import org.netbeans.modules.print.impl.util.Option;
 import org.netbeans.modules.print.impl.util.Percent;
-import org.netbeans.modules.print.impl.util.Util;
 import static org.netbeans.modules.print.api.PrintUtil.*;
 
 /**
@@ -146,7 +146,7 @@ public final class Preview extends Dialog implements Percent.Listener {
     c.anchor = GridBagConstraints.EAST;
     c.insets = new Insets(TINY_INSET, MEDIUM_INSET, TINY_INSET, MEDIUM_INSET);
     myToggle = createToggleButton(
-      new ButtonAction(icon(Util.class, "toggle"), i18n("TLT_Toggle")) { // NOI18N
+      new ButtonAction(icon(Option.class, "toggle"), i18n("TLT_Toggle")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           toggle();
         }
@@ -197,7 +197,7 @@ public final class Preview extends Dialog implements Percent.Listener {
     panel = new JPanel(new GridBagLayout());
     c.insets = new Insets(TINY_INSET, TINY_INSET, TINY_INSET, TINY_INSET);
     myFirst = createButton(
-      new ButtonAction(icon(Util.class, "first"), i18n("TLT_First")) { // NOI18N
+      new ButtonAction(icon(Option.class, "first"), i18n("TLT_First")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           first();
         }
@@ -209,7 +209,7 @@ public final class Preview extends Dialog implements Percent.Listener {
     // previous
     myPrevious = createButton(
       new ButtonAction(
-        icon(Util.class, "previous"), // NOI18N
+        icon(Option.class, "previous"), // NOI18N
         i18n("TLT_Previous")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           previous();
@@ -255,7 +255,7 @@ public final class Preview extends Dialog implements Percent.Listener {
     
     // next
     myNext = createButton(
-      new ButtonAction(icon(Util.class, "next"), i18n("TLT_Next")) { // NOI18N
+      new ButtonAction(icon(Option.class, "next"), i18n("TLT_Next")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           next();
         }
@@ -266,7 +266,7 @@ public final class Preview extends Dialog implements Percent.Listener {
 
     // last
     myLast = createButton(
-      new ButtonAction(icon(Util.class, "last"), i18n("TLT_Last")) { // NOI18N
+      new ButtonAction(icon(Option.class, "last"), i18n("TLT_Last")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           last();
         }
@@ -286,7 +286,7 @@ public final class Preview extends Dialog implements Percent.Listener {
     // fit to window
     c.insets = new Insets(TINY_INSET, MEDIUM_INSET, TINY_INSET, TINY_INSET);
     myFit = createButton(
-      new ButtonAction(icon(Util.class, "fit"), i18n("TLT_Fit")) { // NOI18N
+      new ButtonAction(icon(Option.class, "fit"), i18n("TLT_Fit")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           showCustom(true);
         }
@@ -299,7 +299,7 @@ public final class Preview extends Dialog implements Percent.Listener {
     c.insets = new Insets(TINY_INSET, TINY_INSET, TINY_INSET, TINY_INSET);
     myScale = new Percent(
       this,
-      Util.getOption().getScale(),
+      Option.getDefault().getScale(),
       PERCENTS,
       CUSTOMS.length - 1,
       CUSTOMS,
@@ -313,7 +313,7 @@ public final class Preview extends Dialog implements Percent.Listener {
     
     // decrease
     myDecrease = createButton(
-      new ButtonAction(icon(Util.class, "minus"), i18n("TLT_Zoom_Out")) { // NOI18N
+      new ButtonAction(icon(Option.class, "minus"), i18n("TLT_Zoom_Out")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           myScale.decreaseValue();
         }
@@ -324,7 +324,7 @@ public final class Preview extends Dialog implements Percent.Listener {
 
     // increase
     myIncrease = createButton(
-      new ButtonAction(icon(Util.class, "plus"), i18n("TLT_Zoom_In")) { // NOI18N
+      new ButtonAction(icon(Option.class, "plus"), i18n("TLT_Zoom_In")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           myScale.increaseValue();
         }
@@ -542,9 +542,9 @@ public final class Preview extends Dialog implements Percent.Listener {
 
   private void createPapers() {
     PrintPage [][] pages = myPrintProvider.getPages(
-      Util.getOption().getPageWidth(),
-      Util.getOption().getPageHeight(),
-      Util.getOption().getZoom());
+      Option.getDefault().getPageWidth(),
+      Option.getDefault().getPageHeight(),
+      Option.getDefault().getZoom());
 //out("Create papers: " + pages.length);
     myPapers = null;
 
@@ -677,7 +677,7 @@ public final class Preview extends Dialog implements Percent.Listener {
   }
 
   private String getPaper(int value) {
-    return Util.getPageOfCount(String.valueOf(value), String.valueOf(getPaperCount()));
+    return Option.getPageOfCount(String.valueOf(value), String.valueOf(getPaperCount()));
   }
       
   @Override
@@ -723,7 +723,7 @@ public final class Preview extends Dialog implements Percent.Listener {
         i18n("LBL_Page_Setup_Button"), // NOI18N
         i18n("TLT_Page_Setup_Button")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
-          if (Util.getOption().showPageSetup()) {
+          if (Option.getDefault().showPageSetup()) {
             updated();
           }
         }
@@ -779,7 +779,7 @@ public final class Preview extends Dialog implements Percent.Listener {
 //out("Closed");
     myPapers = null;
     myPrintProvider = null;
-    Util.getOption().setScale(myScale.getValue());
+    Option.getDefault().setScale(myScale.getValue());
   }
 
   private boolean isSingleMode() {
@@ -809,7 +809,7 @@ public final class Preview extends Dialog implements Percent.Listener {
       }
       buffer.append(c);
     }
-    return Util.getInt(buffer.toString());
+    return getInt(buffer.toString());
   }
 
   private boolean isAplha(char c) {
