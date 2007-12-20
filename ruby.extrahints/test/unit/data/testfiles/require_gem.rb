@@ -1,0 +1,71 @@
+# Copyright (c) 2006 The Pragmatic Programmers, LLC.
+# Reproduced from the book "Agile Web Development with Rails, 2nd Ed.",
+# published by The Pragmatic Bookshelf.
+# Available from www.pragmaticprogrammer.com/titles/rails2
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this source code (the "Software"), to deal in the Software without
+# restriction, including without limitation the rights to use, copy, modify,
+# merge, publish, distribute, sublicense, and/or sell copies of the Software,
+# and to permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+# 
+# 1) This Software cannot be used in any training course or seminar, whether
+# presented live, via video, audio, screencast, or any other media, without
+# explicit prior permission from the publisher.
+# 
+# 2) The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE. 
+
+# Don't change this file. Configuration is done in config/environment.rb and config/environments/*.rb
+
+unless defined?(RAILS_ROOT)
+  root_path = File.join(File.dirname(__FILE__), '..')
+
+  unless RUBY_PLATFORM =~ /mswin32/
+    require 'pathname'
+    root_path = Pathname.new(root_path).cleanpath(true).to_s
+  end
+
+  RAILS_ROOT = root_path
+end
+
+unless defined?(Rails::Initializer)
+  if File.directory?("#{RAILS_ROOT}/vendor/rails")
+    require "#{RAILS_ROOT}/vendor/rails/railties/lib/initializer"
+  else
+    require 'rubygems'
+
+    environment_without_comments = IO.readlines(File.dirname(__FILE__) + '/environment.rb').reject { |l| l =~ /^#/ }.join
+    environment_without_comments =~ /[^#]RAILS_GEM_VERSION = '([\d.]+)'/
+    rails_gem_version = $1
+
+    if version = defined?(RAILS_GEM_VERSION) ? RAILS_GEM_VERSION : rails_gem_version
+      rails_gem = Gem.cache.search('rails', "=#{version}").first
+
+      if rails_gem
+        require_gem "rails", "=#{version}"
+        require rails_gem.full_gem_path + '/lib/initializer'
+      else
+        STDERR.puts %(Cannot find gem for Rails =#{version}:
+    Install the missing gem with 'gem install -v=#{version} rails', or
+    change environment.rb to define RAILS_GEM_VERSION with your desired version.
+  )
+        exit 1
+      end
+    else
+      require_gem "rails"
+      require 'initializer'
+    end
+  end
+
+  Rails::Initializer.run(:set_load_path)
+end
