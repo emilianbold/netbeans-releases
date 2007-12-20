@@ -1,0 +1,22 @@
+require 'cgi-lib'
+-------
+HINT:Library cgi-lib is deprecated, replace with cgi
+require 'importenv'
+-------
+HINT:Library importenv is deprecated, replace with (no replacement)
+require 'parsearg'
+-------
+HINT:Library parsearg is deprecated, replace with optparse
+require "getopts"
+-------
+HINT:Library getopts is deprecated, replace with optparse
+require_gem "rails"
+-----------
+HINT:As of RubyGems 1.0, "require_gem" is obsolete and should be replaced with "gem"
+FIX:Replace require_gem with gem
+FIX:Show more information about this deprecation
+  assert_raises(AssertionFailedError){ assert_select "p" }
+  -------------
+HINT:"assert_raises" is deprecated in Ruby 1.9, use "assert_raise" instead.
+FIX:Replace assert_raises with assert_raise
+FIX:Show more information about this deprecation

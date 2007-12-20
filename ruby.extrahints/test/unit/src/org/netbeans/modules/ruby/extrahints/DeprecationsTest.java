@@ -39,6 +39,9 @@
 
 package org.netbeans.modules.ruby.extrahints;
 
+import java.util.HashSet;
+import java.util.Set;
+import org.netbeans.modules.ruby.hints.AttributeIsLocal;
 import org.netbeans.modules.ruby.hints.HintTestBase;
 
 /**
@@ -55,8 +58,73 @@ public class DeprecationsTest extends HintTestBase {
         findHints(this, new Deprecations(), "testfiles/require_gem.rb", null);
     }
 
+    public void testHint2() throws Exception {
+        findHints(this, new Deprecations(), "testfiles/deprecations.rb", null);
+    }
+
     public void testFix1() throws Exception {
         applyHint(this, new Deprecations(), "testfiles/require_gem.rb", 
                 "req^uire_gem", "Replace");
     }
+
+    public void testNoPositives() throws Exception {
+        try {
+            parseErrorsOk = true;
+            Set<String> exceptions = new HashSet<String>();
+            
+            // Env.rb and parsearg.rb include deprecated require calls (optparse and printenv)
+            // Everything else is related to the assert_raises call.
+            
+            // Known exceptions
+            exceptions.add("assert.rb");
+            exceptions.add("invocation_test.rb");
+            exceptions.add("test_package_task.rb");
+            exceptions.add("Env.rb");
+            exceptions.add("parsearg.rb");
+            exceptions.add("dispatcher_action_controller_soap_test.rb");
+            exceptions.add("routing_test.rb");
+            exceptions.add("associations_test.rb");
+            exceptions.add("url_helper_test.rb");
+            exceptions.add("callbacks_test.rb");
+            exceptions.add("deprecated_finder_test.rb");
+            exceptions.add("finder_test.rb");
+            exceptions.add("test_tasks.rb");
+            exceptions.add("url_rewriter_test.rb");
+            exceptions.add("client_xmlrpc_test.rb");
+            exceptions.add("base_test.rb");
+            exceptions.add("locking_test.rb");
+            exceptions.add("inheritance_test.rb");
+            exceptions.add("resources_test.rb");
+            exceptions.add("casting_test.rb");
+            exceptions.add("redirect_test.rb");
+            exceptions.add("selector_test.rb");
+            exceptions.add("test_fileutils.rb");
+            exceptions.add("test_application.rb");
+            exceptions.add("test_definitions.rb");
+            exceptions.add("deprecated_associations_test.rb");
+            exceptions.add("api_test.rb");
+            exceptions.add("fixtures_test.rb");
+            exceptions.add("new_render_test.rb");
+            exceptions.add("format.rb");
+            exceptions.add("calculations_test.rb");
+            exceptions.add("render_test.rb");
+            exceptions.add("action_pack_assertions_test.rb");
+            exceptions.add("join_model_test.rb");
+            exceptions.add("validations_test.rb");
+            exceptions.add("filters_test.rb");
+            exceptions.add("test_rules.rb");
+            exceptions.add("eager_test.rb");
+            exceptions.add("assert_select_test.rb");
+            exceptions.add("container_test.rb");
+            exceptions.add("aggregations_test.rb");
+            exceptions.add("migration_test.rb");
+            exceptions.add("simple.rb");
+
+            assertNoJRubyMatches(new Deprecations(), exceptions);
+            
+        } finally {
+            parseErrorsOk = false;
+        }
+    }
+
 }

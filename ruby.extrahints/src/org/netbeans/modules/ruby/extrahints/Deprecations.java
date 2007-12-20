@@ -36,9 +36,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
+import org.jruby.ast.FCallNode;
+import org.jruby.ast.ListNode;
 import org.jruby.ast.Node;
 import org.jruby.ast.NodeTypes;
+import org.jruby.ast.StrNode;
 import org.jruby.ast.types.INameNode;
+import org.jruby.util.ByteList;
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.editor.BaseDocument;
@@ -62,41 +66,56 @@ import org.openide.util.NbBundle;
  *
  * @todo Offer customized messages per suggested fix, e.g. explaining why a particular
  *   fix is necessary, which versions it applies to, and perhaps a link to more information.
+ * @todo See http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-core/2397
+ *  Looks like deprecations are marked like this:
+ *  +warn "Warning: getopts.rb is deprecated after Ruby 1.8.1"
  * 
  * @author Tor Norbye
  */
 public class Deprecations implements AstRule {
     
     private static class Deprecation {
-        private String oldMethodName;
-        private String newMethodName;
-        /** {0} is the old name, {1} is the new name */
+        private String oldName;
+        private String newName;
+        /** Key: {0} is the old name, {1} is the new name */
         private String descriptionKey;
         private String helpUrl;
 
-        public Deprecation(String oldMethodName, String newMethodName, String descriptionKey,
+        public Deprecation(String oldName, String newName, String descriptionKey,
                 String helpUrl) {
-            this.oldMethodName = oldMethodName;
-            this.newMethodName = newMethodName;
+            this.oldName = oldName;
+            this.newName = newName;
             this.descriptionKey = descriptionKey;
             this.helpUrl = helpUrl;
         }
     }
     
     static Set<Integer> kinds = new HashSet<Integer>();
-    static Map<String,String> deprecatedMethods = new HashMap<String,String>();
-    static Map<String,Deprecation> deprecations = new HashMap<String,Deprecation>();
+    private static Map<String,Deprecation> deprecatedMethods = new HashMap<String,Deprecation>();
+    private static Map<String,Deprecation> deprecatedRequires = new HashMap<String,Deprecation>();
     static {
         kinds.add(NodeTypes.FCALLNODE);
         kinds.add(NodeTypes.VCALLNODE);
         kinds.add(NodeTypes.CALLNODE);
 
-        // Note - these replacements will be offered as fixes so if more complicated code block
-        // replacements are needed this will need to be revised.
-        deprecatedMethods.put("require_gem", "gem"); // NOI18N
-        
         Deprecation require_gem = new Deprecation("require_gem", "gem", "HELP_require_gem", "http://www.ruby-forum.com/topic/136010"); // NOI18N
-        deprecations.put(require_gem.oldMethodName, require_gem);
+        deprecatedMethods.put(require_gem.oldName, require_gem);
+        
+        Deprecation assert_raises = new Deprecation("assert_raises", "assert_raise", "HELP_assert_raises", "http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-talk/155815"); // NOI18N
+        deprecatedMethods.put(assert_raises.oldName, assert_raises);
+        
+        // Deprecated requires
+        Deprecation d = new Deprecation("getopts", "optparse", null, null); // NOI18N
+        deprecatedRequires.put(d.oldName, d);
+        
+        d = new Deprecation("cgi-lib", "cgi", null, null); // NOI18N
+        deprecatedRequires.put(d.oldName, d);
+        
+        d = new Deprecation("importenv", "(no replacement)", null, null); // NOI18N
+        deprecatedRequires.put(d.oldName, d);
+        
+        d = new Deprecation("parsearg", "optparse", null, null); // NOI18N
+        deprecatedRequires.put(d.oldName, d);
     }
 
     public Deprecations() {
@@ -117,21 +136,38 @@ public class Deprecations implements AstRule {
         // Look for use of deprecated fields
         String name = ((INameNode)node).getName();
 
-        if (deprecatedMethods.containsKey(name)) {
+        Deprecation deprecation = null;
+        final boolean isRequire;
+        if ("require".equals(name)) { // NOI18N
+            isRequire = true;
+            // It's a require-completion.
+            String require = getRequire(node);
+            if (require != null) {
+                deprecation = deprecatedRequires.get(require);
+            }
+        } else if (deprecatedMethods.containsKey(name)) {
+            isRequire = false;
+            deprecation = deprecatedMethods.get(name);
+        } else {
+            return;
+        }
+
+        if (deprecation != null) {
             // Add a warning - you're using a deprecated field. Use the
             // method/attribute instead!
             OffsetRange range = AstUtilities.getNameRange(node);
 
             range = LexUtilities.getLexerOffsets(info, range);
             if (range != OffsetRange.NONE) {
-                Deprecation deprecation = deprecations.get(name);
-
-                String message= NbBundle.getMessage(Deprecations.class, deprecation.descriptionKey != null ?
-                    deprecation.descriptionKey : "DeprecatedMethodUse", 
-                    deprecation.oldMethodName, deprecation.newMethodName);
+                String defaultKey = isRequire ? "DeprecatedRequire" : "DeprecatedMethodUse"; // NOI18N
+                String message = NbBundle.getMessage(Deprecations.class, deprecation.descriptionKey != null ?
+                    deprecation.descriptionKey : defaultKey, 
+                    deprecation.oldName, deprecation.newName);
 
                 List<Fix> fixes = new ArrayList<Fix>();
-                fixes.add(new DeprecationCallFix(info, node, deprecation, false));
+                if (!isRequire) {
+                    fixes.add(new DeprecationCallFix(info, node, deprecation, false));
+                }
                 if (deprecation.helpUrl != null) {
                     fixes.add(new DeprecationCallFix(info, node, deprecation, true));
                 }
@@ -140,6 +176,32 @@ public class Deprecations implements AstRule {
                 result.add(desc);
             }
         }
+    }
+    
+    private String getRequire(Node node) {
+        if (node.nodeId == NodeTypes.FCALLNODE) {
+            Node argsNode = ((FCallNode)node).getArgsNode();
+
+            if (argsNode instanceof ListNode) {
+                ListNode args = (ListNode)argsNode;
+
+                if (args.size() > 0) {
+                    Node n = args.get(0);
+
+                    // For dynamically computed strings, we have n instanceof DStrNode
+                    // but I can't handle these anyway
+                    if (n instanceof StrNode) {
+                        ByteList require = ((StrNode)n).getValue();
+                        
+                        if ((require != null) && (require.length() > 0)) {
+                            return require.toString();
+                        }
+                    }
+                }
+            }
+        }
+        
+        return null;
     }
 
     public void cancel() {
@@ -193,7 +255,7 @@ public class Deprecations implements AstRule {
                 return NbBundle.getMessage(Deprecations.class, "ShowDeprecationHelp");
             } else {
                 return NbBundle.getMessage(Deprecations.class, "DeprecationFix", 
-                    deprecation.oldMethodName, deprecation.newMethodName);
+                    deprecation.oldName, deprecation.newName);
             }
         }
 
@@ -215,7 +277,7 @@ public class Deprecations implements AstRule {
             
             EditList list = new EditList(doc);
             if (range != OffsetRange.NONE) {
-                list.replace(range.getStart(), range.getLength(), deprecation.newMethodName, false, 0);
+                list.replace(range.getStart(), range.getLength(), deprecation.newName, false, 0);
             }
             
             return list;
