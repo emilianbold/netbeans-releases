@@ -51,7 +51,7 @@ import org.netbeans.modules.php.editor.TokenUtils;
 import org.netbeans.modules.php.model.ClassBody;
 import org.netbeans.modules.php.model.ClassConst;
 import org.netbeans.modules.php.model.ClassDefinition;
-import org.netbeans.modules.php.model.ClassReference;
+import org.netbeans.modules.php.model.ClassMemberReference;
 import org.netbeans.modules.php.model.ConstDeclaration;
 import org.netbeans.modules.php.model.Constant;
 import org.netbeans.modules.php.model.FunctionDeclaration;
@@ -116,7 +116,7 @@ public class ScopeResolutionOperatorContext extends ASTBasedProvider
           return false;
         }
         constant = (Constant)e;
-        ClassReference<SourceElement> classReference = constant.getClassConstant();
+        ClassMemberReference<SourceElement> classReference = constant.getClassConstant();
         if(classReference == null) {
           return false;
         }
@@ -181,7 +181,7 @@ public class ScopeResolutionOperatorContext extends ASTBasedProvider
         return list;
     }
     
-    private static ClassDefinition findClassDefinition(PhpModel model, ClassReference<SourceElement> reference) {
+    private static ClassDefinition findClassDefinition(PhpModel model, ClassMemberReference<SourceElement> reference) {
         assert model != null;
         assert reference != null;
         String className = reference.getObjectName();
