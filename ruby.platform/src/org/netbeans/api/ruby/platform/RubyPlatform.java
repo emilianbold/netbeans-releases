@@ -83,7 +83,8 @@ public final class RubyPlatform {
     private FileObject libFO;
     private GemManager gemManager;
     private FileObject stubsFO;
-
+    private boolean indexInitialized;
+    
     private PropertyChangeSupport pcs;
 
     private RubyPlatform(final String id, final String interpreterPath) {
@@ -119,14 +120,21 @@ public final class RubyPlatform {
                 LOGGER.log(Level.WARNING, "Cannot get canonical path", e);
             }
         }
+        
+        updateIndexRoots();
+        
         return result;
     }
 
     public String getInterpreter() {
+        updateIndexRoots();
+        
         return interpreter;
     }
 
     public File getInterpreterFile() {
+        updateIndexRoots();
+        
         return new File(interpreter);
     }
 
@@ -649,14 +657,32 @@ public final class RubyPlatform {
 //        }
 //    }
 
+
+    private void updateIndexRoots() {
+        if (!indexInitialized) {
+            indexInitialized = true;
+            // HACK, fix soon
+            // Let RepositoryUpdater and friends know where they can root preindexing
+            // This should be done in a cleaner way.
+            //org.netbeans.modules.gsfret.source.usages.Index.setPreindexRootUrl(getHomeUrl());
+
+            org.netbeans.modules.gsfret.source.usages.Index.addPreindexRoot(FileUtil.toFileObject(getHome(true)));
+
+            String gemDir = getGemManager().getGemDir(true);
+            if (gemDir != null) {
+                FileObject gemFo = FileUtil.toFileObject(new File(gemDir));
+                org.netbeans.modules.gsfret.source.usages.Index.addPreindexRoot(gemFo);
+            }
+
+        }
+    }
+    
     /**
      * The gems installed have changed, or the installed ruby has changed etc. --
      * force a recomputation of the installed classpath roots.
      */
     public void recomputeRoots() {
-        // Let RepositoryUpdater and friends know where they can root preindexing
-        // This should be done in a cleaner way.
-        org.netbeans.modules.gsfret.source.usages.Index.setPreindexRootUrl(getHomeUrl());
+        updateIndexRoots();
 
         // Ensure that source cache is wiped and classpaths recomputed for existing files
         Source.clearSourceCache();

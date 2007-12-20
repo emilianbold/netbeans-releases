@@ -52,7 +52,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
@@ -180,10 +182,12 @@ public abstract class Index extends org.netbeans.api.gsf.Index {
     }
       
     // BEGIN TOR MODIFICATIONS
-    private static String preindexRootUrl = null; // HACK!
+    private static List<FileObject> preindexRoots = new ArrayList<FileObject>();
     private static FileObject clusterLoc;
-    public static void setPreindexRootUrl(String url) {
-        preindexRootUrl = url;
+    public static void addPreindexRoot(FileObject root) {
+        if (!preindexRoots.contains(root)) {
+            preindexRoots.add(root);
+        }
     }
 
     /** For testing only */
@@ -231,12 +235,17 @@ public abstract class Index extends org.netbeans.api.gsf.Index {
                     // versions, such as native ruby 1.8.6, rails 1.1.6, 1.2.3, etc.
 
                     // Compute relative path
-                    if (preindexRootUrl != null && rootName.startsWith(preindexRootUrl)) {
-                        String relative = rootName.substring(preindexRootUrl.length());
-                        if (relative.length() > 0) {
-                            FileObject cluster = getPreindexedDb();
-                            if (cluster != null) {
-                                extract = cluster.getFileObject(relative + PREINDEXED + ".zip"); // NOI18N
+                    rootSearch:
+                    for (FileObject fo : preindexRoots) {
+                        if (FileUtil.isParentOf(fo, rootFo)) {
+                            // getRelativePath performs a isParentOf check and returns null if not
+                            String relative = FileUtil.getRelativePath(fo, rootFo);
+                            if (relative != null && relative.length() > 0) {
+                                FileObject cluster = getPreindexedDb();
+                                if (cluster != null) {
+                                    extract = cluster.getFileObject(relative + "/" + PREINDEXED + ".zip"); // NOI18N
+                                }
+                                break rootSearch;
                             }
                         }
                     }
