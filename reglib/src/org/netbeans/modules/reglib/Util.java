@@ -61,29 +61,6 @@ class Util {
     
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.reglib.Util"); // NOI18N
     
-    private static Properties stProps = new Properties();
-    
-    static void loadProperties () {
-        //Extract image from jar
-        String resource = "/org/netbeans/modules/reglib/Bundle.properties";
-        InputStream in = Util.class.getResourceAsStream(resource);
-        try {
-            stProps.load(in);
-        } catch (IOException ex) {
-            LOG.log(Level.INFO,"Cannot load properties:",ex);
-        } finally {
-            try {
-                in.close();
-            } catch (IOException exc) {
-                LOG.log(Level.INFO,"Cannot close input stream:",exc);
-            }
-        }
-    }
-    
-    static String getProperty (String key) {
-        return stProps.getProperty(key);
-    }
-    
     static String commandOutput(Process p) throws IOException {
         Reader r = null;
         Reader err = null;

@@ -129,10 +129,9 @@ public class NbServiceTagSupport {
     
     private static void init () {
         LOG.log(Level.FINE,"Initializing");
-        Util.loadProperties();
-        NB_CLUSTER = Util.getProperty("nb.cluster");    
-        NB_VERSION = Util.getProperty("servicetag.nb.version");    
-        GF_VERSION = Util.getProperty("servicetag.gf.version");
+        NB_CLUSTER = NbBundle.getMessage(NbServiceTagSupport.class,"nb.cluster");
+        NB_VERSION = NbBundle.getMessage(NbServiceTagSupport.class,"servicetag.nb.version");    
+        GF_VERSION = NbBundle.getMessage(NbServiceTagSupport.class,"servicetag.gf.version");
         
         //This return platfomX dir but we need install dir
         File f = new File(System.getProperty("netbeans.home"));
@@ -385,11 +384,11 @@ public class NbServiceTagSupport {
         // Determine the product URN and name
         String productURN, productName, parentURN, parentName;
 
-        productURN = Util.getProperty("servicetag.nb.urn");
-        productName = Util.getProperty("servicetag.nb.name");
+        productURN = NbBundle.getMessage(NbServiceTagSupport.class,"servicetag.nb.urn");
+        productName = NbBundle.getMessage(NbServiceTagSupport.class,"servicetag.nb.name");
         
-        parentURN = Util.getProperty("servicetag.nb.parent.urn");
-        parentName = Util.getProperty("servicetag.nb.parent.name");
+        parentURN = NbBundle.getMessage(NbServiceTagSupport.class,"servicetag.nb.parent.urn");
+        parentName = NbBundle.getMessage(NbServiceTagSupport.class,"servicetag.nb.parent.name");
 
         return ServiceTag.newInstance(ServiceTag.generateInstanceURN(),
                                       productName,
@@ -414,11 +413,11 @@ public class NbServiceTagSupport {
         // Determine the product URN and name
         String productURN, productName, parentURN, parentName;
 
-        productURN = Util.getProperty("servicetag.gf.urn");
-        productName = Util.getProperty("servicetag.gf.name");
+        productURN = NbBundle.getMessage(NbServiceTagSupport.class,"servicetag.gf.urn");
+        productName = NbBundle.getMessage(NbServiceTagSupport.class,"servicetag.gf.name");
         
-        parentURN = Util.getProperty("servicetag.gf.parent.urn");
-        parentName = Util.getProperty("servicetag.gf.parent.name");
+        parentURN = NbBundle.getMessage(NbServiceTagSupport.class,"servicetag.gf.parent.urn");
+        parentName = NbBundle.getMessage(NbServiceTagSupport.class,"servicetag.gf.parent.name");
 
         return ServiceTag.newInstance(ServiceTag.generateInstanceURN(),
                                       productName,
@@ -440,7 +439,7 @@ public class NbServiceTagSupport {
      * @return a service tag for 
      */
     private static ServiceTag getNbServiceTag () throws IOException {
-        String productURN = Util.getProperty("servicetag.nb.urn");
+        String productURN = NbBundle.getMessage(NbServiceTagSupport.class,"servicetag.nb.urn");
         RegistrationData regData = getRegistrationData();
         Collection<ServiceTag> svcTags = regData.getServiceTags();
         for (ServiceTag st : svcTags) {
@@ -458,7 +457,7 @@ public class NbServiceTagSupport {
      * @return a service tag for 
      */
     private static ServiceTag getGfServiceTag () throws IOException {
-        String productURN = Util.getProperty("servicetag.gf.urn");
+        String productURN = NbBundle.getMessage(NbServiceTagSupport.class,"servicetag.gf.urn");
         RegistrationData regData = getRegistrationData();
         Collection<ServiceTag> svcTags = regData.getServiceTags();
         for (ServiceTag st : svcTags) {
@@ -476,7 +475,7 @@ public class NbServiceTagSupport {
      * @return a service tag for 
      */
     private static ServiceTag getJdkServiceTag () throws IOException {
-        String productURN = Util.getProperty("servicetag.jdk.urn");
+        String productURN = NbBundle.getMessage(NbServiceTagSupport.class,"servicetag.jdk.urn");
         RegistrationData regData = getRegistrationData();
         Collection<ServiceTag> svcTags = regData.getServiceTags();
         for (ServiceTag st : svcTags) {
@@ -768,7 +767,7 @@ public class NbServiceTagSupport {
     }            
     
     private static final String NB_HEADER_PNG_KEY = "@@NB_HEADER_PNG@@";
-    private static final String NB_VERSION_KEY = "@@NB_VERSION@@";
+    private static final String PRODUCT_KEY = "@@PRODUCT@@";
     private static final String REGISTRATION_URL_KEY = "@@REGISTRATION_URL@@";
     private static final String REGISTRATION_PAYLOAD_KEY = "@@REGISTRATION_PAYLOAD@@";
 
@@ -829,10 +828,11 @@ public class NbServiceTagSupport {
             BufferedReader reader = new BufferedReader(new InputStreamReader(in));
             PrintWriter pw = new PrintWriter(f);
             String line = null;
+            String productName = NbBundle.getMessage(NbServiceTagSupport.class,"product." + product);
             while ((line = reader.readLine()) != null) {
                 String output = line;
-                if (line.contains(NB_VERSION_KEY)) {
-                    output = line.replace(NB_VERSION_KEY, NB_VERSION);
+                if (line.contains(PRODUCT_KEY)) {
+                    output = line.replace(PRODUCT_KEY, productName);
                 } else if (line.contains(NB_HEADER_PNG_KEY)) {
                     output = line.replace(NB_HEADER_PNG_KEY, headerImageSrc);
                 } else if (line.contains(REGISTRATION_URL_KEY)) {
