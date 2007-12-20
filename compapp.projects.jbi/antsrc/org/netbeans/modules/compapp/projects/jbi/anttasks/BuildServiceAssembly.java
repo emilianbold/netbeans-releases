@@ -59,24 +59,27 @@ import javax.xml.transform.stream.StreamResult;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
-import org.netbeans.modules.compapp.projects.jbi.MigrationHelper;
-import org.netbeans.modules.compapp.projects.jbi.JbiConstants;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.XmlUtil;
-import org.netbeans.modules.compapp.projects.jbi.descriptor.endpoints.model.Connection;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.endpoints.model.Endpoint;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.endpoints.model.PtConnection;
 import org.netbeans.modules.compapp.projects.jbi.ui.customizer.JbiProjectProperties;
 import org.netbeans.modules.compapp.javaee.codegen.model.AbstractProject;
-import org.netbeans.modules.xml.wsdl.model.Port;
-import org.netbeans.modules.xml.wsdl.model.Service;
-import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.spi.Validation;
+import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
+import org.netbeans.modules.xml.xam.spi.Validator;
+import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import static org.netbeans.modules.compapp.projects.jbi.JbiConstants.*;
+import static org.netbeans.modules.compapp.projects.jbi.CasaConstants.*;
+
 
 /**
  * Ant task to build jbiserver service assembly
@@ -155,51 +158,55 @@ public class BuildServiceAssembly extends Task {
     public void execute() throws BuildException {
         showLog = showLogOption.equalsIgnoreCase("true");
         JarFile genericBCJar = null;
-        try {                        
-            Project p = this.getProject();
-            String confDir = p.getProperty((JbiProjectProperties.META_INF));
-            if ((confDir == null) || (confDir.length() < 1)) {
-                return;
-            }
-            
-            String javaeeJars = p.getProperty(JbiProjectProperties.JBI_JAVAEE_JARS);
-            String jars = p.getProperty((JbiProjectProperties.JBI_CONTENT_ADDITIONAL));
-            
-            projDirLoc = p.getProperty("basedir") + File.separator;
-            String srcDirLoc = projDirLoc + "src" + File.separator;
-            String confDirLoc = srcDirLoc + "conf" + File.separator;
-            
-            serviceUnitsDirLoc = srcDirLoc + JbiProjectConstants.FOLDER_JBISERVICEUNITS;            
-            jbiasaDirLoc = srcDirLoc + JbiProjectConstants.FOLDER_JBIASA;               
-            
-            // Command-line support
-            MigrationHelper.migrateCasaWSDL(jbiasaDirLoc, getProjectName());
-            
-            // Command-line support
+                             
+        Project p = this.getProject();
+        String confDir = p.getProperty((JbiProjectProperties.META_INF));
+        if ((confDir == null) || (confDir.length() < 1)) {
+            return;
+        }
+
+        String javaeeJars = p.getProperty(JbiProjectProperties.JBI_JAVAEE_JARS);
+        String jars = p.getProperty((JbiProjectProperties.JBI_CONTENT_ADDITIONAL));
+
+        projDirLoc = p.getProperty("basedir") + File.separator;
+        String srcDirLoc = projDirLoc + "src" + File.separator;
+        String confDirLoc = srcDirLoc + "conf" + File.separator;
+
+        serviceUnitsDirLoc = srcDirLoc + JbiProjectConstants.FOLDER_JBISERVICEUNITS;            
+        jbiasaDirLoc = srcDirLoc + JbiProjectConstants.FOLDER_JBIASA;               
+
+        // Command-line support
+//        MigrationHelper.migrateCasaWSDL(jbiasaDirLoc, getProjectName());
+
+        // Command-line support
 //            MigrationHelper.migrateCompAppProperties(projDirLoc, null);
-            
-            
-            String catalogDirLoc = serviceUnitsDirLoc
-                    + File.separator + "META-INF";
-                    //+ File.separator + "catalogData";
-            
-            // String mapFileLoc = projPath + confDir + File.separator + "portmap.xml";
-            String connectionsFileLoc = confDirLoc + "connections.xml";
-            String buildDir = projDirLoc + p.getProperty(JbiProjectProperties.BUILD_DIR);
-            
-            // create confDir if needed..
-            File buildMetaInfDir = new File(buildDir + "/META-INF");
-            if (!buildMetaInfDir.exists()) {
-                buildMetaInfDir.mkdirs();
-            }
-            
-            // todo: set the default to false for now... 03/15/06
-            // jbiRouting = getBooleanProperty(p.getProperty((JbiProjectProperties.JBI_ROUTING)), true);
-            saInternalRouting = getBooleanProperty(p.getProperty((JbiProjectProperties.JBI_SA_INTERNAL_ROUTING)), true);
-            
-            // create project wsdl repository...
-            mRepo = new wsdlRepository(p, this);
-            
+
+
+        String catalogDirLoc = serviceUnitsDirLoc
+                + File.separator + "META-INF";
+                //+ File.separator + "catalogData";
+
+        // String mapFileLoc = projPath + confDir + File.separator + "portmap.xml";
+        String connectionsFileLoc = confDirLoc + "connections.xml";
+        String buildDir = projDirLoc + p.getProperty(JbiProjectProperties.BUILD_DIR);
+
+        // create confDir if needed..
+        File buildMetaInfDir = new File(buildDir + "/META-INF");
+        if (!buildMetaInfDir.exists()) {
+            buildMetaInfDir.mkdirs();
+        }
+
+        // todo: set the default to false for now... 03/15/06
+        // jbiRouting = getBooleanProperty(p.getProperty((JbiProjectProperties.JBI_ROUTING)), true);
+        saInternalRouting = getBooleanProperty(p.getProperty((JbiProjectProperties.JBI_SA_INTERNAL_ROUTING)), true);
+
+        // create project wsdl repository...
+        mRepo = new wsdlRepository(p, this);
+
+        log("Validating CompApp project...");
+        validateCompAppProject();
+        
+        try {   
             String jbiFileLoc = buildDir + "/META-INF/jbi.xml";
             String genericBCJarFileLoc = buildDir + "/BCDeployment.jar";            
             
@@ -243,7 +250,7 @@ public class BuildServiceAssembly extends Task {
                     log(" Error: Cannot locate service unit for " + jarName);
                 } else {
                     String destJarPath = buildDir + File.separator + jarName;
-                    log(" copying Sub-Assembly: " + destJarPath);
+                    //log("  copying Sub-Assembly: " + destJarPath);
                     copyJarFile(srcJarPath, destJarPath);
                 }
             }
@@ -252,63 +259,82 @@ public class BuildServiceAssembly extends Task {
             final Document oldCasaDocument = casaBuilder.getOldCasaDocument();
             
             // Resolve connections
+            log("Resolving connections...");
             ConnectionResolver connectionResolver = 
                     new ConnectionResolver(this, showLog, saInternalRouting);          
-            connectionResolver.resolveConnections(mRepo, oldCasaDocument);
-            
+            connectionResolver.resolveConnections(mRepo, oldCasaDocument);            
             
             // Write connections to connections.xml
-            CreateSAConnections dd = new CreateSAConnections();
-            dd.buildDOMTree(connectionResolver, mRepo, p);
+            log("Writing connections out to connections.xml...");
+            SAConnectionsBuilder dd = new SAConnectionsBuilder();
+            String saName = AntProjectHelper.getServiceAssemblyID(p);
+            String saDescription = AntProjectHelper.getServiceAssemblyDescription(p);
+            dd.buildDOMTree(connectionResolver, saName, saDescription, oldCasaDocument);
             dd.writeToFile(connectionsFileLoc);
             
             // Generate SA jbi.xml,
+            log("Generating Service Assembly jbi.xml...");
             generateServiceAssemblyDescriptor(
-                    connectionResolver, connectionsFileLoc, jbiFileLoc);
+                    connectionResolver, connectionsFileLoc, jbiFileLoc, oldCasaDocument);
             
             // Todo: 08/22/06 merge catalogs
+            log("Merging component projects' catalogs...");
             MergeSeJarCatalogs(catalogDirLoc);
             
             // Generate BC SU jbi.xml and BC SU jar file
-            genericBCJar = new JarFile(genericBCJarFileLoc);                                         
+            log("Generating Binding Component Service Units...");
+            genericBCJar = new JarFile(genericBCJarFileLoc);  
             
-            // a map mapping binding component name (say, "sun-http-binding")
-            // to a list of two connection lists.  
-            Map<String, List<Connection>[]> bcConnections = 
-                    connectionResolver.getBCConnections();
+            // Create undecorated BC SU jbi.xml    
+            Map<String, BCSUDescriptorBuilder> bcsuDescriptorBuilderMap = 
+                    new HashMap<String, BCSUDescriptorBuilder>();
+            Map<String, String> bcJarMap = new HashMap<String, String>();
             
-//            List<String> bcsUsingCompAppWsdl = 
-//                    getBindingComponentsUsingCompAppWsdl(bcConnections);            
             for (String bcName : connectionResolver.getBCNames()) {
                 String bcJarName = null;
                 for (int k = 0; k < suJarNames.size(); k++) {
                     String name = suJarNames.get(k);
                     if (name.indexOf(bcName) != -1) {
                         // Use the name defined in ASI.xml
-                        bcJarName = buildDir + "/" + name;
+                        bcJarName = buildDir + File.separator + name;
+                        log("  creating " + name);
                         break;
                     }
                 }
                 if (bcJarName != null) {
-                    log("Create " + bcJarName + " for binding component " + bcName);
                     
                     // Create standalone BC jbi.xml file under src/jbiServiceUnits/<bcName>/.
-                    createBCJBIDescriptor(bcJarName, bcName, connectionResolver);
-                    
-                    // Create build/<bcName>.jar
-                    // ToDo: update bc jar endpoints.xml
-                    // 1. copy BCjars for each needed BC
-                    // 2. create jbi.xml
-//                    boolean isCompAppWSDLNeeded = bcsUsingCompAppWsdl.contains(bcName);
-                    createBCJar(bcJarName, bcName, genericBCJar, connectionResolver/*, isCompAppWSDLNeeded*/);                    
+                    BCSUDescriptorBuilder bcsuDescriptorBuilder = createBCSUDescriptor(
+                            //bcJarName, 
+                            bcName, connectionResolver);
+                    bcsuDescriptorBuilderMap.put(bcName, bcsuDescriptorBuilder);
+                    bcJarMap.put(bcName, bcJarName);
                 } else {
-                    log("ERROR: Cannot create binding component jar for " + bcName);
+                    log("ERROR: Cannot create binding component jar file for " + bcName);
                 }
             }
             
-            casaBuilder.createCasaDocument(jbiDocument);  
-
+            // Create the new CASA file (This depends on BC SU jbi.xml)
+            log("Creating/Updating CASA...");
+            Document newCasaDocument = casaBuilder.createCasaDocument(jbiDocument);  
+            
+            // Decorate BC SU jbi.xml and generate BC jar.
+            for (String bcName : bcsuDescriptorBuilderMap.keySet()) {
+                BCSUDescriptorBuilder bcsuDescriptorBuilder = 
+                        bcsuDescriptorBuilderMap.get(bcName);
+                bcsuDescriptorBuilder.decorateEndpoints(newCasaDocument);
+                
+                // Create build/<bcName>.jar
+                // ToDo: update bc jar endpoints.xml
+                // 1. copy BCjars for each needed BC
+                // 2. create jbi.xml
+                // boolean isCompAppWSDLNeeded = bcsUsingCompAppWsdl.contains(bcName);
+                createBCJar(bcJarMap.get(bcName), genericBCJar, 
+                        /*isCompAppWSDLNeeded,*/ bcsuDescriptorBuilder);
+            }
+                        
             // 9/12/07, filter out unconnected JavaEE endpoints
+            log("Filtering Java EE Endpoints...");
             filterJavaEEEndpoints(connectionResolver, saEEJarPaths, serviceUnitsDirLoc);
         } catch (Exception e) {
             e.printStackTrace();
@@ -466,14 +492,18 @@ public class BuildServiceAssembly extends Task {
      */
     private void generateServiceAssemblyDescriptor(ConnectionResolver connectionResolver,
             String conFileLoc,
-            String jbiFileLoc) {  
+            String jbiFileLoc,
+            Document casaDocument) {  
         
         Set<String> outputBCNames = connectionResolver.getBCNames();
         
         try {
             
-            CreateSAConnections dd = new CreateSAConnections();
-            dd.buildDOMTree(connectionResolver, mRepo, getProject());
+            SAConnectionsBuilder dd = new SAConnectionsBuilder();
+            Project p = getProject();
+            String saName = AntProjectHelper.getServiceAssemblyID(p);
+            String saDescription = AntProjectHelper.getServiceAssemblyDescription(p);
+            dd.buildDOMTree(connectionResolver, saName, saDescription, casaDocument);
             dd.writeToFile(conFileLoc);
             
             NodeList sas = jbiDocument.getElementsByTagName("service-assembly");
@@ -495,8 +525,12 @@ public class BuildServiceAssembly extends Task {
                     }
                 }
                 
-                // 2. add connections
-                sa.appendChild(dd.createConnections(connectionResolver, jbiDocument));
+                // 2. add connections (and qos:connections)
+                List<Element> connectionsElements = 
+                    dd.createConnections(connectionResolver, jbiDocument, casaDocument);
+                for (Element connections : connectionsElements) {
+                    sa.appendChild(connections);
+                }               
                 
                 // normalize the document
                 sa.normalize();
@@ -567,6 +601,7 @@ public class BuildServiceAssembly extends Task {
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setValidating(false);
+            factory.setNamespaceAware(true);
             
             jbiDocument = factory.newDocumentBuilder().parse(new File(asiFileLoc));
             
@@ -583,7 +618,7 @@ public class BuildServiceAssembly extends Task {
         }
     }
     
-    private String getShortName(String source) {
+    private String getShortName_Fallback(String source) {
         // source: ../SynchronousSample/build/SEDeployment.jar
         //           2                 1
         // shortName: SynchronousSample.jar
@@ -607,6 +642,57 @@ public class BuildServiceAssembly extends Task {
         }
         
         return name;
+    }   
+    
+    private String getShortName(String source) {
+        
+        File file = new File(source);
+
+        // The following doesn't work outside of IDE.
+        /*
+        FileObject projDirFO = FileUtil.toFileObject(file.getParentFile());
+        ProjectManager projectManager = ProjectManager.getDefault();
+        while (!projectManager.isProject(projDirFO)) {
+            projDirFO = projDirFO.getParent();
+        }
+        org.netbeans.api.project.Project proj = 
+                projectManager.findProject(projDirFO);
+        ProjectInformation projInfo = 
+                proj.getLookup().lookup(ProjectInformation.class);
+        String projName = projInfo.getDisplayName();
+        return projName + source.substring(source.lastIndexOf("."));
+        */
+
+        // get project display name from nbproject/project.xml
+        // /project/configuration/data/name
+        File projDir = file.getParentFile();
+
+        FilenameFilter filter = new FilenameFilter() {
+            public boolean accept(File dir, String name) {
+                return name.equals("nbproject");
+            }
+        };
+
+        try {
+            while (true) {
+                File[] files = projDir.listFiles(filter);
+                if (files != null && files.length > 0) {
+                    File projectXmlFile = new File(files[0], "project.xml");
+                    DocumentBuilderFactory fact = DocumentBuilderFactory.newInstance();
+                    DocumentBuilder builder = fact.newDocumentBuilder();
+                    Document document = builder.parse(projectXmlFile);
+                    Element nameElement = 
+                            (Element) document.getElementsByTagName("name").item(0);                
+                    String projDisplayName = nameElement.getTextContent();
+                    return projDisplayName + source.substring(source.lastIndexOf(".")); //?
+                }
+
+                projDir = projDir.getParentFile();
+            }
+        } catch (Exception e) {
+            log(e.getMessage());
+            return getShortName_Fallback(source);
+        }
     }
     
     private String getLocalJavaEEJarPath(String dir, String subProjectJar){
@@ -788,29 +874,29 @@ public class BuildServiceAssembly extends Task {
         return "";
     }
         
-    private void createBCJBIDescriptor(String outFile, String bcName,
-            ConnectionResolver connectionResolver) {
-        Project p = this.getProject();
-        String projPath = p.getProperty("basedir") + File.separator;
+    private BCSUDescriptorBuilder createBCSUDescriptor(//String outFile, 
+            String bcName, ConnectionResolver connectionResolver) {
         
-        String suName = outFile.substring(outFile.lastIndexOf("/") + 1); //TMP
-        suName = suName.substring(0, suName.length() - 4);
-        String bcSUDirLoc = serviceUnitsDirLoc + File.separator + suName;
+//        String suName = outFile.substring(outFile.lastIndexOf(File.separator) + 1); //TMP
+//        suName = suName.substring(0, suName.length() - 4);
+        String bcSUDirLoc = serviceUnitsDirLoc + File.separator + bcName;
         File bcSUDir = new File(bcSUDirLoc);
         if (!bcSUDir.exists()) {
-            boolean success = bcSUDir.mkdir();
+            bcSUDir.mkdir();
         }
         if (!bcSUDir.isDirectory()) {
             throw new RuntimeException(bcSUDirLoc + " is not a directory");
         }
         
-        CreateSUDescriptor dd = new CreateSUDescriptor();
+        BCSUDescriptorBuilder dd = new BCSUDescriptorBuilder();
         try {
-            dd.buildDOMTree(connectionResolver, bcName, mRepo);
+            dd.buildDOMTree(connectionResolver, bcName);
             dd.writeToFile(bcSUDirLoc);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+        
+        return dd;
     }
     
     private String getProjectName() {
@@ -818,18 +904,19 @@ public class BuildServiceAssembly extends Task {
         return AntProjectHelper.getServiceAssemblyID(proj);
     }
     
-    private String getCasaWSDLFileName() {
+    private String getCompAppWSDLFileName() {
         return getProjectName() + ".wsdl";
     }
         
-    private void createBCJar(String outFile, String bcName,
-            JarFile genericBCJar, ConnectionResolver connectionResolver/*,
-            boolean isCompAppWSDLNeeded*/) 
+    private void createBCJar(String outFile,
+            JarFile genericBCJar,
+            /*boolean isCompAppWSDLNeeded,*/ 
+            BCSUDescriptorBuilder bcsuDescriptorBuilder)
             throws Exception {
         byte[] buffer = new byte[1024];
         int bytesRead;
         
-        String casaWSDLFileName = getCasaWSDLFileName();
+        String compAppWSDLFileName = getCompAppWSDLFileName();
         
         JarOutputStream newJar = new JarOutputStream(new FileOutputStream(outFile));
         
@@ -841,14 +928,14 @@ public class BuildServiceAssembly extends Task {
                 InputStream is = genericBCJar.getInputStream(jarEntry);
                 
                 // TODO: update casa wsdl entry in generic bc jar file.
-                if (jarEntry.getName().equals(casaWSDLFileName)) {
+                if (jarEntry.getName().equals(compAppWSDLFileName)) {
 //                    // Quick fix for J1: If the casa wsdl file doesn't contain 
 //                    // active endpoints, then we skip packaging the casa wsdl entry.
 //                    // (Future improvement: This rule should apply to all the 
 //                    // wsdl files.)
 //                    if (isCompAppWSDLNeeded) {
                     
-                    newJar.putNextEntry(new JarEntry(casaWSDLFileName));
+                    newJar.putNextEntry(new JarEntry(compAppWSDLFileName));
                     
                     // HACK: remove "../jbiServiceUnits/" and "../jbiasa" from 
                     // import elements' location
@@ -881,12 +968,10 @@ public class BuildServiceAssembly extends Task {
                 is = null;
             }
             
-            // create a jbi.xml
+            // create BC SU's jbi.xml
             JarEntry jbientry = new JarEntry(SU_JBIXML_PATH);
-            newJar.putNextEntry(jbientry);
-            CreateSUDescriptor dd = new CreateSUDescriptor();
-            dd.buildDOMTree(connectionResolver, bcName, mRepo);
-            newJar.write(dd.writeToBytes());
+            newJar.putNextEntry(jbientry);            
+            newJar.write(bcsuDescriptorBuilder.writeToBytes());
             
             // create the catalog.xml
             if (mergedCatalogFile != null) {
@@ -912,18 +997,153 @@ public class BuildServiceAssembly extends Task {
             }
         }
     }
-      
+    
+    // TODO: Move me to a separate ant task when some mandatory change is 
+    // required for ATS.
+    public void validateCompAppProject() throws BuildException {
+                
+        boolean isError = false;
+        
+        Validation validation = new MyValidation();
+        
+        for (WSDLModel wsdlModel : mRepo.getWsdlCollection()) {   
+            String wsdlPath = wsdlRepository.getWsdlFilePath(wsdlModel);
+//            System.out.println("wsdlPath: " + wsdlPath);
+//            System.out.println("serviceUnitsDirLoc: " + serviceUnitsDirLoc);
+         
+            // skip validation of WSDLs defined in the SU projects
+            if (wsdlPath.startsWith(serviceUnitsDirLoc)) {
+                continue;
+            }  
+            
+            log("  validating " + wsdlPath);
+            validation.validate(wsdlModel, ValidationType.COMPLETE);        
+
+            for (ResultItem resultItem : validation.getValidationResult()) {
+               logValidationErrors(new File(wsdlPath), resultItem);
+
+               if(resultItem.getType() == Validator.ResultType.ERROR) {
+                   isError = true;
+               }
+            }
+        }
+        
+        if (isError) {
+            throw new BuildException("Found validation error(s).");
+        }
+    }
+       
+    private void logValidationErrors(File file, ResultItem resultItem) {
+        int lineNumber = 0;
+        int columnNumber = 0;
+        String errorDescription = resultItem.getDescription();
+        
+        // FIXME: getting null errorDescription when building from command line.
+        // It seems such "error" can be ignored. Needs further investigation.
+        // On the other hand, debbuging ant task with classpath set from 
+        // command line works fine.
+        if (errorDescription == null) {
+            return;
+        }
+        
+        String msgType = resultItem.getType().name();
+        Component component = resultItem.getComponents();
+
+        if (component != null) {
+            lineNumber = ModelUtil.getLineNumber(component);
+            columnNumber = ModelUtil.getColumnNumber(component);
+            showError(file, columnNumber, lineNumber, errorDescription, msgType);
+        } else {
+            columnNumber = resultItem.getColumnNumber();
+            lineNumber = resultItem.getLineNumber();
+            showError(file, columnNumber, lineNumber, errorDescription, msgType);
+        }
+    }
+
+    private void showError(File file, int columnNumber, int lineNumber, 
+            String errorDescription, String msgType) {
+        StringBuffer lineNumStr = new StringBuffer(5);
+        StringBuffer columnNumStr = new StringBuffer(5);
+
+        if (lineNumber != -1) {
+            lineNumStr.append(":");
+            lineNumStr.append(lineNumber);
+            lineNumStr.append(",");
+        }
+        if (columnNumber != -1) {
+            columnNumStr.append(" column:");
+            columnNumStr.append(columnNumber);
+            columnNumStr.append(" ");
+        }
+        msgType = msgType + ": ";
+        StringBuffer msg = new StringBuffer(100);
+        msg.append(msgType);
+
+        if (file != null) {
+            msg.append(file.getPath());
+        }
+        msg.append(lineNumStr);
+        msg.append(columnNumStr);
+        msg.append(System.getProperty("line.separator"));        
+        msg.append(errorDescription);
+        msg.append(System.getProperty("line.separator"));
+        
+        log(msg.toString());
+    }
+
+    /*
+    private Document decorateSuJbiDocument(Document suJbiDocument, 
+            Document casaDocument, String bcName) {
+        
+        Document ret = suJbiDocument; //(Document) suJbiDocument.cloneNode(true);
+        
+        NodeList consumesNodeList = casaDocument.getElementsByTagName(
+                JBI_CONSUMES_ELEM_NAME);
+        for (int i = 0; i < consumesNodeList.getLength(); i++) {
+            Element consumes = (Element) consumesNodeList.item(i);
+            
+        }
+        
+        
+        
+        NodeList bcsuNodeList = casaDocument.getElementsByTagName(
+                CASA_BINDING_COMPONENT_SERVICE_UNIT_ELEM_NAME);
+        for (int i = 0; i < bcsuNodeList.getLength(); i++) {
+            Element bcsu = (Element) bcsuNodeList.item(i);
+            if (!bcsu.getAttribute(CASA_COMPONENT_NAME_ATTR_NAME).equals(bcName)) {
+                continue;
+            }
+            
+            NodeList consumesNodeList = casaDocument.getElementsByTagName(
+                CASA_CONSUMES_ELEM_NAME);
+            for (int j = 0; j < bcsuNodeList.getLength(); j++) {
+                Element consumes = (Element) bcsuNodeList.item(j);
+                NodeList consumesChildren = consumes.getChildNodes();
+                for (int k = 0; k < consumesChildren.getLength(); k++) {
+                    Node consumesChild = consumesChildren.item(k);
+                    if (consumesChild instanceof Element) {
+                        Element 
+                    }
+                }
+            }
+        }
+        
+        return ret;
+    }
+    */
+    
+    /*
     private WSDLModel getCompAppWsdlModel() {
-        String casaWsdlName = getCasaWSDLFileName();
+        String compappWSDLFileName = getCompAppWSDLFileName();
         for (WSDLModel wsdlModel : mRepo.getWsdlCollection()) {
             String wsdlPath = wsdlRepository.getWsdlFilePath(wsdlModel);
-            if (wsdlPath.endsWith(casaWsdlName)) { // FIXME
+            if (wsdlPath.endsWith(compappWSDLFileName)) { // FIXME
                 return wsdlModel;
             }
         }
         return null;
-    }
-       
+    }    
+    
     private List<Endpoint> getEndpointsInWsdlModel(WSDLModel wsdlModel) {
         List<Endpoint> ret = new ArrayList<Endpoint>();
         
@@ -988,7 +1208,8 @@ public class BuildServiceAssembly extends Task {
         
         return ret;
     }
-
+    */
+    
     //--------------------------------------------------------------------
     // 09/12/07, T.Li, code add to support JavaEE endpoint filtering
     //--------------------------------------------------------------------
@@ -1001,25 +1222,25 @@ public class BuildServiceAssembly extends Task {
             try {
                 // 1. get the EE proj jbi.xml from jbiServiceUnits
                 Document jbiDoc = XmlUtil.createDocument(true, jbixml);
-                NodeList nodeList = jbiDoc.getElementsByTagName(JbiConstants.JBI_PROVIDES_ELEM_NAME);
+                NodeList nodeList = jbiDoc.getElementsByTagName(JBI_PROVIDES_ELEM_NAME);
                 List<Element> uList = new ArrayList<Element>();
                 getUnconnectedNodes(uList, nodeList, cR);
-                nodeList = jbiDoc.getElementsByTagName(JbiConstants.JBI_CONSUMES_ELEM_NAME);
+                nodeList = jbiDoc.getElementsByTagName(JBI_CONSUMES_ELEM_NAME);
                 getUnconnectedNodes(uList, nodeList, cR);
 
                 if (uList.size() > 0) {
                     // 2. remove unconnected endpoint from jbi.xml
-                    Node srvNode = jbiDoc.getElementsByTagName(JbiConstants.JBI_SERVICES_ELEM_NAME).item(0);
+                    Node srvNode = jbiDoc.getElementsByTagName(JBI_SERVICES_ELEM_NAME).item(0);
                     Node mapNode = jbiDoc.getElementsByTagNameNS(NS, AbstractProject.MAPPING_ELEMS).item(0);
                     NodeList mapList = jbiDoc.getElementsByTagNameNS(NS, AbstractProject.MAPPING_JAVA_ELEM);
                     Hashtable eptMap = new Hashtable();
                     for (int i=0; i<mapList.getLength(); i++) {
                         Element map = (Element) mapList.item(i);
-                        String eptName = map.getAttribute(JbiConstants.JBI_ENDPOINT_NAME_ATTR_NAME);
+                        String eptName = map.getAttribute(JBI_ENDPOINT_NAME_ATTR_NAME);
                         eptMap.put(eptName, map.getParentNode());
                     }
                     for (Element elm : uList) {
-                        String eptName = elm.getAttribute(JbiConstants.JBI_ENDPOINT_NAME_ATTR_NAME);
+                        String eptName = elm.getAttribute(JBI_ENDPOINT_NAME_ATTR_NAME);
                         srvNode.removeChild(elm);
                         if (mapNode != null) {
                             mapNode.removeChild((Node) eptMap.get(eptName));
@@ -1114,9 +1335,9 @@ public class BuildServiceAssembly extends Task {
     private void getUnconnectedNodes(List<Element> uList, NodeList nodeList, ConnectionResolver cR) {
         for (int i = 0, node = nodeList.getLength(); i < node; i++) {
             Element pe = (Element) nodeList.item(i);
-            String endpointName = pe.getAttribute(JbiConstants.JBI_ENDPOINT_NAME_ATTR_NAME);
-            QName serviceQName = getNSName(pe, pe.getAttribute(JbiConstants.JBI_SERVICE_NAME_ATTR_NAME));
-            QName interfaceQName = getNSName(pe, pe.getAttribute(JbiConstants.JBI_INTERFACE_NAME_ATTR_NAME));
+            String endpointName = pe.getAttribute(JBI_ENDPOINT_NAME_ATTR_NAME);
+            QName serviceQName = getNSName(pe, pe.getAttribute(JBI_SERVICE_NAME_ATTR_NAME));
+            QName interfaceQName = getNSName(pe, pe.getAttribute(JBI_INTERFACE_NAME_ATTR_NAME));
             Endpoint p = new Endpoint(endpointName, serviceQName, interfaceQName);
             boolean connected = cR.isConnected(p);
             //System.out.println("\tEntPt: "+endpointName+ ", connected: "+connected);

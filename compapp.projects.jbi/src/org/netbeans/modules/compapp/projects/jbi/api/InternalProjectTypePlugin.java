@@ -41,6 +41,8 @@
 package org.netbeans.modules.compapp.projects.jbi.api;
 
 import org.netbeans.api.project.Project;
+import java.util.List;
+import java.awt.*;
 
 /**
  * Service Provider Interface for internal JBI projects.
@@ -57,28 +59,31 @@ public interface InternalProjectTypePlugin {
      * @return display name
      */
     String getPluginName();
-    
+
     /**
      * Resource path to the icon that corresponds to this JBI project type.
      * @return icon
      */
     String getIconFileBase();
-    
+
     /**
      * Category name for the JBI project type.
      * JBI project types that correspond to the same category name will be
      * grouped together (i.e. for example, on a palette).
+     *
+     * use null, if it should not be added into any category
+     *
      * @return category name
      */
     String getCategoryName();
-    
+
     /**
      * Obtains the WizardIterator that can show a new project
      * wizard to the user (if necessary), and then create the project.
      * @return the wizard iterator
      */
     InternalProjectTypePluginWizardIterator getWizardIterator();
-    
+
     /**
      * Opens whatever editor that corresponds to the JBI project type.
      * The user may need to rebuild the composite application project in order
@@ -87,4 +92,43 @@ public interface InternalProjectTypePlugin {
      */
     void openEditor(Project project);
 
+
+    // 11/08/07, extension for generic plug-in projects, e.g., ear-link
+
+    /**
+     * Return the JBI target component name of this project type.
+     *
+     * @return the name of SU target
+     */
+    String getJbiTargetName();
+
+    /**
+     * get the list of action performer from the plug-in project type
+     *
+     * @return  a list of action performer
+     */
+    List<JbiProjectActionPerformer>  getProjectActions();
+
+    /**
+     * can a project be created to represent this source object?
+     *
+     * @param source the source object
+     * @return true if the object is associated with the project type
+     */
+    boolean isAcceptableProjectSource(Object source);
+
+    /**
+     * Has project properties customizer
+     *
+     * @return true if has project properties customizer
+     */
+    boolean hasCustomizer();
+
+    /**
+     * Get the project properties customizer
+     *
+     * @param project the project instance
+     * @return the project properties customizer
+     */
+    Component getCustomizer(Project project);
 }

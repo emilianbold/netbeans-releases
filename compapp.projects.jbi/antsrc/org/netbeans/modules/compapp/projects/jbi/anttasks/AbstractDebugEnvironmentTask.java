@@ -40,12 +40,12 @@
  */
 package org.netbeans.modules.compapp.projects.jbi.anttasks;
 
+import com.sun.esb.management.api.configuration.ConfigurationService;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.netbeans.modules.compapp.projects.jbi.AdministrationServiceHelper;
-import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
 
 
 /**
@@ -109,12 +109,12 @@ public class AbstractDebugEnvironmentTask extends Task {
         return DEBUG_ENABLED_MAP_THREADLOCAL.get();
     }
     
-    protected AdministrationService getAdminService() {
+    protected ConfigurationService getConfigurationService() {
         String nbUserDir = getNetBeansUserDir();
         String serverInstance = getJ2eeServerInstance();
         
         try {
-            return AdministrationServiceHelper.getAdminService(
+            return AdministrationServiceHelper.getConfigurationService(
                     nbUserDir, serverInstance);
         } catch (Exception e) {
             throw new BuildException(e.getMessage());

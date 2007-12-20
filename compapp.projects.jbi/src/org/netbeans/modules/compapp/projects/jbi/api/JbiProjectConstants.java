@@ -61,7 +61,12 @@ public class JbiProjectConstants {
      * jbiServiceUnits folder
      */
     public static final String FOLDER_JBISERVICEUNITS = "jbiServiceUnits"; // NOI18N
-    
+
+    /**
+     * jbiServiceUnits folder
+     */
+    public static final String FOLDER_JBIPROJECTS = "projs/caps"; // NOI18N
+
     /**
      * Jbi package root sources type.
      *
@@ -143,6 +148,7 @@ public class JbiProjectConstants {
     public static final String COMMAND_DEBUG_SINGLE = "debug-single"; // NOI18N
     // End Test Framework
 
+    public static final String SU_BUILD_ARTIFACT_RELATIVE_PATH = "build/SEDeployment.jar" ; //NOI18N
     // J2EE add-on...
     public static final String JAVA_EE_SE_COMPONENT_NAME = "sun-javaee-engine" ; // NOI18N
     public static final String JAVA_EE_EAR_COMPONENT_ARCHIVE = "j2ee_ear_archive"; // NOI18N

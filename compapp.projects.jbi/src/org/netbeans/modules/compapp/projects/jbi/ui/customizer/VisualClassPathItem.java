@@ -106,7 +106,7 @@ public class VisualClassPathItem {
     private boolean inDeployment;
     
     // ASA inforamtion
-    private String asaType;
+    private String asaType; // target component ID, e.x., sun-bpel-engine
     private String asaDescription;
     private String asaTarget;
     private Icon projIcon;
@@ -141,7 +141,7 @@ public class VisualClassPathItem {
                     aa.getProject().getLookup().lookup(ProjectInformation.class);
             
             if (info != null) {
-                projectName = info.getName();   // e.x., SynchronousSample
+                projectName = info.getDisplayName();   // e.x., SynchronousSample // #121834
                 // TMP FIX
                 // eval doesn't always give us the desired name
                 // JavaEE project: WebApplication.war (good)
@@ -153,10 +153,10 @@ public class VisualClassPathItem {
             }
             
             // extract the JBI component type info
-            String aType = aa.getType();
+            String aType = aa.getType(); // e.x., CAPS.asa:sun-bpel-engine
             int idx = aType.indexOf(':');
             if (idx > 0) {
-                asaType = aType.substring(idx + 1); // e.x., com.sun.bpelse
+                asaType = aType.substring(idx + 1); 
             } else {
                 if (isJavaEEProjectAntArtifact(aa)){
                     asaType = JbiProjectConstants.JAVA_EE_SE_COMPONENT_NAME;

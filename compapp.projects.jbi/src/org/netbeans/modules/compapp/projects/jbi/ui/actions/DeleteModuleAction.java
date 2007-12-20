@@ -60,6 +60,7 @@ import org.openide.windows.OutputWriter;
 
 import java.util.List;
 import org.netbeans.modules.compapp.projects.jbi.JbiSubprojectProvider;
+import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.actions.SystemAction;

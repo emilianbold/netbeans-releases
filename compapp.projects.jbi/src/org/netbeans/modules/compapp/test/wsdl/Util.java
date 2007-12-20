@@ -54,6 +54,8 @@ import org.netbeans.modules.xml.wsdl.model.BindingOperation;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.model.Import;
+import org.netbeans.modules.xml.wsdl.model.Port;
+import org.netbeans.modules.xml.wsdl.model.Service;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.openide.util.Exceptions;
@@ -133,6 +135,44 @@ public class Util {
         });
             
         return bindings;
+     }
+    
+      
+    private static void getPorts(WSDLModel wsdlModel, boolean recursive, 
+            Collection<Port> ports) {
+        
+        Definitions definitions = wsdlModel.getDefinitions();
+        for (Service service : definitions.getServices()) {            
+            ports.addAll(service.getPorts());
+        }
+        
+        if (recursive) {
+            for (Import imp : definitions.getImports()) {
+                try {
+                    WSDLModel importedWsdlModel = imp.getImportedWSDLModel();
+                    getPorts(importedWsdlModel, recursive, ports);
+                } catch (CatalogModelException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+    }
+    
+    public static List<Port> getSortedPorts(WSDLModel wsdlModel) {
+        List<Port> ports = new ArrayList<Port>();
+        
+        getPorts(wsdlModel, true, ports); 
+        
+        Collections.sort(ports, new Comparator() {
+            public int compare(Object o1, Object o2) {
+                return ((Port)o1).getName().compareTo(((Port)o2).getName());
+            }
+            public boolean equals(Object obj) {
+                return this == obj;
+            }
+        });
+            
+        return ports;
      }
     
     public static List<BindingOperation> getSortedBindingOperations(Binding binding) {

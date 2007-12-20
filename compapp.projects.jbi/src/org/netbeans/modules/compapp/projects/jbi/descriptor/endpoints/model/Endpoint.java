@@ -48,8 +48,8 @@ import javax.xml.namespace.QName;
 /**
  * DOCUMENT ME!
  *
- * @author Graj TODO To change the template for this generated type comment go to Window -
- *         Preferences - Java - Code Style - Code Templates
+ * @author Graj 
+ * @author jqian
  */
 public class Endpoint implements Serializable {
     
@@ -92,8 +92,13 @@ public class Endpoint implements Serializable {
         return getServiceQName().toString() + "." + getEndpointName();
     }
 
+    @Override
     public boolean equals(Object p) {
-        if (!(p instanceof Endpoint)) {
+        if (this == p) {
+            return true;
+        }
+        
+        if (p == null || !(p instanceof Endpoint)) {
             return false;
         }
         
@@ -105,5 +110,14 @@ public class Endpoint implements Serializable {
             return true;
         }
         return false;
+    }
+    
+    @Override
+    public int hashCode() {
+        int hash = 1;
+        hash = hash * 31 + endpointName.hashCode();
+        hash = hash * 31 + serviceQName.hashCode();
+        hash = hash * 31 + interfaceQName.hashCode();
+        return hash;
     }
 }

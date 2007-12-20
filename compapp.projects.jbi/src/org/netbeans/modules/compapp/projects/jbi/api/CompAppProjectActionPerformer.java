@@ -38,47 +38,17 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.compapp.projects.jbi.anttasks;
 
-import com.sun.esb.management.api.configuration.ConfigurationService;
-import java.util.Map;
-import java.util.Properties;
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Project;
-import org.netbeans.api.debugger.DebuggerManager;
+package org.netbeans.modules.compapp.projects.jbi.api;
 
+import javax.swing.Icon;
+import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 
 /**
- * Ant task to tear down debug environment for CompApp project test case run.
  *
- * @author jqian
+ * @author gpatil
  */
-public class TearDownDebugEnvironment extends AbstractDebugEnvironmentTask {
-    
-    @Override
-    public void execute() throws BuildException {
-        log("TearDownDebugEnvironment:", Project.MSG_DEBUG);
-        
-        DebuggerManager.getDebuggerManager().finishAllSessions();
-        
-        // Restore SE's debugEnabled property        
-        ConfigurationService configService = getConfigurationService();  
-                
-        Map<String, Boolean> debugEnabledMap = getDebugEnabledMap();
-        for (String seName : debugEnabledMap.keySet()) {
-            boolean wasDebugEnabled = debugEnabledMap.get(seName); 
-            if (!wasDebugEnabled) {
-                try {
-                    log("Restore debug-enabled property for " + seName, Project.MSG_DEBUG);
-                    
-                    Properties properties = new Properties();
-                    properties.setProperty(SERVICE_ENGINE_DEBUG_FLAG, "false");
-                    
-                    configService.setComponentConfiguration(seName, properties, "server");
-                } catch (Exception e) {
-                    log(e.getMessage(), Project.MSG_WARN);
-                }
-            }
-        }
-    }     
+public interface CompAppProjectActionPerformer extends ProjectActionPerformer{
+    public String getLabel();
+    public Icon getIcon();
 }

@@ -155,7 +155,6 @@ public class JbiInstalledExtensionInfo {
                     String ns = ""; // NOI18N
                     String desc = ""; // NOI18N
                     URL icon = null;
-                    List<JbiExtensionElement> elements = new ArrayList<JbiExtensionElement>();
 
                     FileObject compFO = extsDO.getPrimaryFile();
                     for (Enumeration<String> e = compFO.getAttributes(); e.hasMoreElements();) {
@@ -174,21 +173,50 @@ public class JbiInstalledExtensionInfo {
                             icon = (URL) attrObj;
                         }
                     }
-                    // System.out.println("GotExt: "+name+", "+file+", "+type+", "+target);
-                    for (DataObject extDO : ((DataFolder) extsDO).getChildren()) {
-                        FileObject extFO = extDO.getPrimaryFile();
-                        String extName = extDO.getName();
-                        String extType = (String) extFO.getAttribute(ITEM_TYPE);
-                        String extDesc = (String) extFO.getAttribute(ITEM_DESC);
-                        elements.add(new JbiExtensionElement(extName, extType, extDesc));
-                    }
+                   
+                    List[] children = processElement((DataFolder)extsDO);
 
-                    JbiExtensionInfo extInfo = new JbiExtensionInfo(name, type, target, file, ns, desc, icon, elements);
+                    @SuppressWarnings("unchecked")
+                    JbiExtensionInfo extInfo = new JbiExtensionInfo(name, type, 
+                            target, file, ns, desc, icon, children[0]);
                     singleton.extensionList.add(extInfo);
                     singleton.extensionMap.put(name, extInfo);
                 }
             }
         }
+    }
+    /**
+     *
+     */
+    @SuppressWarnings("unchecked")
+    private static List[] processElement(DataFolder ext) {
+        List[] ret = new ArrayList[2];
+        
+        List<JbiExtensionElement> elements = new ArrayList<JbiExtensionElement>();
+        List<JbiExtensionAttribute> attrs = new ArrayList<JbiExtensionAttribute>();
+        
+        for (DataObject child : ext.getChildren()) {
+            FileObject childFO = child.getPrimaryFile();
+            String childName = child.getName();
+            if (childFO.isFolder()) {
+                JbiExtensionElement element = new JbiExtensionElement(childName);
+                List[] grandChildren = processElement((DataFolder)child);  
+                element.setElements(grandChildren[0]);
+                element.setAttributes(grandChildren[1]);
+                elements.add(element);                
+            } else {
+                String extType = (String) childFO.getAttribute(ITEM_TYPE);
+                String extDesc = (String) childFO.getAttribute(ITEM_DESC);
+                JbiExtensionAttribute attr = new JbiExtensionAttribute(
+                        childName, extType, extDesc);
+                attrs.add(attr);
+            }
+        }
+        
+        ret[0] = elements;
+        ret[1] = attrs;
+        
+        return ret;
     }
 
     /**

@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.compapp.projects.jbi.anttasks;
 
+import com.sun.esb.management.api.configuration.ConfigurationService;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -56,9 +57,6 @@ import org.apache.tools.ant.Project;
 import org.netbeans.modules.compapp.projects.jbi.ui.customizer.JbiProjectProperties;
 import org.openide.util.Exceptions;
 import org.netbeans.modules.compapp.debugger.CompAppSessionProvider;
-import org.netbeans.modules.sun.manager.jbi.GenericConstants;
-import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
-import org.netbeans.modules.sun.manager.jbi.management.JBIComponentConfigurator;
 
 /**
  * Ant task to set up debug environment for CompApp project test case run.
@@ -67,15 +65,15 @@ import org.netbeans.modules.sun.manager.jbi.management.JBIComponentConfigurator;
  */
 public class SetUpDebugEnvironment extends AbstractDebugEnvironmentTask {
     
+    @Override
     public void execute() throws BuildException {
         log("SetUpDebugEnvironment:", Project.MSG_DEBUG);
-        //log("Current thread:" + Thread.currentThread(), Project.MSG_DEBUG);
         
         Map<String, Boolean> debugEnabledMap = initDebugEnabledMap();
         
         Set<String> seNames = getUsedServiceEngineNames(); 
         
-        AdministrationService adminService = getAdminService();
+        ConfigurationService adminService = getConfigurationService();
         
         //We are going to create one debug session to which other modules could
         //provide their debugger engines (i.e. BPEL Debugger Engine).
@@ -84,33 +82,35 @@ public class SetUpDebugEnvironment extends AbstractDebugEnvironmentTask {
         Map<String, Object> debugParams = new HashMap<String, Object>();
         
         for (String seName : seNames) {
-            try {
-                JBIComponentConfigurator configurator = 
-                        adminService.getComponentConfigurator(
-                        GenericConstants.SERVICE_ENGINES_FOLDER_NAME, seName);
-                
+            try {                
                 // Make sure the SE is in debug mode
                 //TODO:probably, this should be refactored so that debugger engines
                 //enables the debugging of their SEs themselfs.
                 //That would require to make some of JBI Manager APIs public.
-                Object debugFlag = 
-                    configurator.getPropertyValue(SERVICE_ENGINE_DEBUG_FLAG);
-                if (debugFlag == null || !(debugFlag instanceof Boolean)) {
+                
+                Properties configProperties = 
+                        adminService.getComponentConfiguration(seName, "server");
+                String debugFlag = 
+                        configProperties.getProperty(SERVICE_ENGINE_DEBUG_FLAG);
+                if (debugFlag == null) {
                     continue;
                 }
 
-                Boolean debugEnabled = (Boolean) debugFlag;
+                Boolean debugEnabled = Boolean.parseBoolean(debugFlag);
                 log("The original debug-enabled property for " + 
                         seName + " is " + debugEnabled, Project.MSG_DEBUG);
 
                 debugEnabledMap.put(seName, debugEnabled);
 
                 if (!debugEnabled) {
-                    configurator.setPropertyValue(SERVICE_ENGINE_DEBUG_FLAG, Boolean.TRUE);
+                    Properties properties = new Properties();
+                    properties.setProperty(SERVICE_ENGINE_DEBUG_FLAG, "true");                         
+                    adminService.setComponentConfiguration(seName, properties, "server");
                 }
 
                 // Obtain the attach-to port number from the SE
-                Integer debugPort = (Integer)configurator.getPropertyValue(SERVICE_ENGINE_DEBUG_PORT);
+                String debugPort = 
+                    configProperties.getProperty(SERVICE_ENGINE_DEBUG_PORT);
 
                 if (debugPort != null) {
                     //adding Service Engine specific information to debug session parameters

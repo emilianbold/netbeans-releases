@@ -114,7 +114,6 @@ import javax.swing.text.BadLocationException;
 //import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.compapp.catd.util.EditableProperties;
 
-import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
 import org.netbeans.modules.sun.manager.jbi.util.ServerInstance;
 import org.netbeans.modules.sun.manager.jbi.util.ServerInstanceReader;
 
@@ -1961,27 +1960,29 @@ public class ConfiguredTest extends TestCase {
             start = System.currentTimeMillis();
         }
         
-        if (destination.indexOf("${") != -1 && destination.indexOf("}") != -1) {
-            try {
-                String nbUserDir = System.getProperty("NetBeansUserDir");
-                // FIXME: use the first instance for now
-                ServerInstance serverInstance = getFirstServerInstance(nbUserDir);
-                AdministrationService adminService = new AdministrationService(serverInstance);
-                // Currently only deal with http soap bc because soap binding is the 
-                // only supported binding type in test driver.
-                destination = 
-                        adminService.translateEnvrionmentVariables(
-                        destination, "bindingComponents", "sun-http-binding");
-            } catch (Exception ex) {
-                if (stdErr != null) {
-                    System.setErr(origErr);
-                    stdErr.flush();
-                    stdErr.close();
-                    origErr.print(bufferedErr.toString());
-                }
-                throw ex;
-            }
-        }
+        // FIXME: temporarily disable
+//        if (destination.indexOf("${") != -1 && destination.indexOf("}") != -1) {
+//            try {
+//                String nbUserDir = System.getProperty("NetBeansUserDir");
+//                // FIXME: use the first instance for now
+//                ServerInstance serverInstance = getFirstServerInstance(nbUserDir);
+//                AdministrationService adminService = 
+//                        AdministrationServiceHerlper.(serverInstance);
+//                // Currently only deal with http soap bc because soap binding is the 
+//                // only supported binding type in test driver.
+//                destination = 
+//                        adminService.translateEnvrionmentVariables(
+//                        destination, "bindingComponents", "sun-http-binding");
+//            } catch (Exception ex) {
+//                if (stdErr != null) {
+//                    System.setErr(origErr);
+//                    stdErr.flush();
+//                    stdErr.close();
+//                    origErr.print(bufferedErr.toString());
+//                }
+//                throw ex;
+//            }
+//        }
         
         boolean httpSuccess = true;
         try {
@@ -2224,9 +2225,9 @@ public class ConfiguredTest extends TestCase {
                 //--assertTrue(logPrefix + " Response is longer than expected. \nreceived: " + outputStream.toString() + "\nexpected: " + new String(compare), bytesRead != -1);
                 //--assertTrue(logPrefix + " Response is shorter than expected \nreceived: " + outputStream.toString() + "\nexpected: " + new String(compare), nextByte == -1);
                 //--assertTrue(logPrefix + " The response received does not match the expected response. \nreceived: " + outputStream.toString() + "\nexpected: " + new String(compare), Arrays.equals(output, compare));
-                assertTrue(timeStampPrefix + " " + logPrefix + " The response is longer than expected.", responseIsTooLong);
-                assertTrue(timeStampPrefix + " " + logPrefix + " The response is shorter than expected.", responseIsTooShort);
-                assertTrue(timeStampPrefix + " " + logPrefix + " The response received does not match the expected response.", responseNotMatch);
+                assertFalse(timeStampPrefix + " " + logPrefix + " The response is longer than expected.", responseIsTooLong);
+                assertFalse(timeStampPrefix + " " + logPrefix + " The response is shorter than expected.", responseIsTooShort);
+                assertFalse(timeStampPrefix + " " + logPrefix + " The response received does not match the expected response.", responseNotMatch);
             }
             
             if (logDetails) {

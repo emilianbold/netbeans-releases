@@ -40,13 +40,22 @@
  */
 package org.netbeans.modules.compapp.projects.jbi;
 
+import com.sun.esb.management.api.configuration.ConfigurationService;
+import com.sun.esb.management.api.deployment.DeploymentService;
+import com.sun.esb.management.api.runtime.RuntimeManagementService;
+import com.sun.esb.management.client.ManagementClient;
+import com.sun.esb.management.common.ManagementRemoteException;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Iterator;
 import java.util.List;
+import javax.management.MBeanServerConnection;
 import javax.management.MalformedObjectNameException;
-import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
+import org.netbeans.modules.sun.manager.jbi.management.JBIClassLoader;
+import org.netbeans.modules.sun.manager.jbi.management.ServiceFactory;
+import org.netbeans.modules.sun.manager.jbi.management.connectors.HTTPServerConnector;
+import org.netbeans.modules.sun.manager.jbi.management.wrapper.api.RuntimeManagementServiceWrapper;
 import org.netbeans.modules.sun.manager.jbi.util.ServerInstance;
 import org.netbeans.modules.sun.manager.jbi.util.ServerInstanceReader;
 
@@ -56,19 +65,91 @@ import org.netbeans.modules.sun.manager.jbi.util.ServerInstanceReader;
  */
 public class AdministrationServiceHelper {
     
-    public static AdministrationService getAdminService(String j2eeServerInstance) 
-            throws MalformedURLException, IOException, MalformedObjectNameException {
+//    public static AdministrationService getAdminService(String j2eeServerInstance) 
+//            throws MalformedURLException, IOException, MalformedObjectNameException {
+//        String netBeansUserDir = System.getProperty("netbeans.user");  // NOI18N
+//        return getAdminService(netBeansUserDir, j2eeServerInstance);
+//    }
+//        
+//    public static AdministrationService getAdminService(String netBeansUserDir,
+//            String j2eeServerInstance)
+//            throws MalformedURLException, IOException, MalformedObjectNameException {
+//        
+//        ServerInstance instance = getServerInstance(netBeansUserDir, j2eeServerInstance);        
+//        return new AdministrationService(instance);
+//    }
+    
+    public static RuntimeManagementServiceWrapper getRuntimeManagementServiceWrapper(
+            String j2eeServerInstance) throws ManagementRemoteException {
+        ManagementClient mgmtClient = getManagementClient(j2eeServerInstance);
+        return ServiceFactory.getRuntimeManagementServiceWrapper(mgmtClient);
+    }
+    
+    public static RuntimeManagementServiceWrapper getRuntimeManagementServiceWrapper(
+            ServerInstance serverInstance) throws ManagementRemoteException {
+        MBeanServerConnection connection = getMBeanServerConnection(serverInstance);
+        ManagementClient mgmtClient = new ManagementClient(connection);
+        return ServiceFactory.getRuntimeManagementServiceWrapper(mgmtClient);
+    }
+    public static DeploymentService getDeploymentService(
+            ServerInstance serverInstance) throws ManagementRemoteException {
+        MBeanServerConnection connection = getMBeanServerConnection(serverInstance);
+        ManagementClient mgmtClient = new ManagementClient(connection);
+        return mgmtClient.getDeploymentService();
+    }
+
+//    static RuntimeManagementService getRuntimeManagementServiceWrapper(String serverInstance) 
+//            throws ManagementRemoteException {
+//        ManagementClient mgmtClient = getManagementClient(serverInstance);
+//        RuntimeManagementService mgmtService = mgmtClient.getRuntimeManagementService();
+//        return mgmtClient.getRuntimeManagementService();
+//    }
+                       
+    
+    public static ConfigurationService getConfigurationService(
+            String netBeansUserDir, String j2eeServerInstance) 
+            throws ManagementRemoteException {
+        ManagementClient mgmtClient = getManagementClient(
+                netBeansUserDir, j2eeServerInstance);
+        return mgmtClient.getConfigurationService();
+    }
+    
+    private static ManagementClient getManagementClient(String j2eeServerInstance) {
         String netBeansUserDir = System.getProperty("netbeans.user");  // NOI18N
-        return getAdminService(netBeansUserDir, j2eeServerInstance);
+        return getManagementClient(netBeansUserDir, j2eeServerInstance);
     }
-        
-    public static AdministrationService getAdminService(String netBeansUserDir,
-            String j2eeServerInstance)
+    
+    private static ManagementClient getManagementClient(String netBeansUserDir,
+            String j2eeServerInstance) {
+        ServerInstance instance = getServerInstance(netBeansUserDir, j2eeServerInstance);  
+        MBeanServerConnection connection = getMBeanServerConnection(instance);
+        return new ManagementClient(connection);
+    }
+    
+    
+    private static MBeanServerConnection getMBeanServerConnection(
+            ServerInstance serverInstance) {
+        try {
+            return getMBeanServerConnection(serverInstance.getHostName(),
+                    serverInstance.getAdminPort(),
+                    serverInstance.getUserName(),
+                    serverInstance.getPassword(), 
+                    new JBIClassLoader(serverInstance));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
+    private static MBeanServerConnection getMBeanServerConnection(
+            String hostName, String port, String userName, String password,
+            JBIClassLoader jbiClassLoader)
             throws MalformedURLException, IOException, MalformedObjectNameException {
-        
-        ServerInstance instance = getServerInstance(netBeansUserDir, j2eeServerInstance);        
-        return new AdministrationService(instance);
+        HTTPServerConnector connector = new HTTPServerConnector(
+                hostName, port, userName, password, jbiClassLoader);
+        return connector.getConnection();
     }
+    
     
     public static ServerInstance getServerInstance(String netBeansUserDir,
             String j2eeServerInstance) {

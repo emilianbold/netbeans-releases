@@ -65,12 +65,16 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 import javax.swing.AbstractAction;
 
 import javax.swing.Action;
+import org.netbeans.modules.compapp.projects.jbi.api.InternalProjectTypePlugin;
+import org.netbeans.modules.compapp.projects.jbi.api.JbiInstalledProjectPluginInfo;
+import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectActionPerformer;
 import org.netbeans.modules.compapp.projects.jbi.ui.actions.AddProjectAction;
-import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 
 
 /**
@@ -189,19 +193,48 @@ public class JbiModuleViewNode extends AbstractNode {
     // Create the popup menu:
     public Action[] getActions(boolean context) {
         ResourceBundle bundle = NbBundle.getBundle(JbiModuleViewNode.class);
-        return new Action[] {
-            new AbstractAction(bundle.getString("LBL_AddProjectAction_Name"), null) {
-                public void actionPerformed(ActionEvent e) {
-                    new AddProjectAction().perform(project);
+        int actCnt = 0;
+        Action[] actions = null;
+        Action addJBIModule = new AbstractAction(bundle.getString("LBL_AddProjectAction_Name"), null) {
+            public void actionPerformed(ActionEvent e) {
+                new AddProjectAction().perform(project);
+            }
+        };
+
+        // Add Actions added by other modules.        
+        JbiInstalledProjectPluginInfo plugins = JbiInstalledProjectPluginInfo.getProjectPluginInfo();
+        List<JbiProjectActionPerformer> pluginActions = new ArrayList<JbiProjectActionPerformer>();
+        
+        if (plugins != null) {
+            List<InternalProjectTypePlugin> plist = plugins.getUncategorizedProjectPluginList();
+            for (InternalProjectTypePlugin plugin : plist) {
+                List<JbiProjectActionPerformer> acts = plugin.getProjectActions();
+                for (JbiProjectActionPerformer act : acts) {
+                    if (act.getActionType().equalsIgnoreCase(JbiProjectActionPerformer.ACT_ADD_PROJECT)) {
+                        pluginActions.add(act);
+                    }
+                }
+            }            
+            
+            if (pluginActions.size() > 0){
+                actions = new Action[pluginActions.size() + 1];
+                actions[actCnt++] = addJBIModule;
+                for (final JbiProjectActionPerformer act : pluginActions){
+                    actions[actCnt++] = new AbstractAction(act.getLabel(), act.getIcon()) {
+                            public void actionPerformed(ActionEvent e) {
+                                act.perform(project);
+                            }
+                    };
                 }
             }
-            /*
-            SystemAction.get(AddModuleAction.class), null,
-            //SystemAction.get(ToolsAction.class),
-            //null,
-            SystemAction.get(PropertiesAction.class),
-            */
-        };
+        }
+                
+        if (actions == null) {
+            actions = new Action[1];
+            actions[0] = addJBIModule;
+        }
+        
+        return actions;
     }
 
     /**
@@ -220,5 +253,9 @@ public class JbiModuleViewNode extends AbstractNode {
         OutputWriter out = IOProvider.getDefault().getStdOut();
         out.println(str);
         out.flush();
+    }
+
+    public JbiProject getProject() {
+        return project;
     }
 }

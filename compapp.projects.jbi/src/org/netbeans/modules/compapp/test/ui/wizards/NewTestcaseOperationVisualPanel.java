@@ -50,15 +50,20 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeSelectionModel;
 import org.openide.util.NbBundle;
 import java.awt.Component;
+import java.util.List;
 import javax.swing.JLabel;
+import javax.swing.ToolTipManager;
 import javax.swing.tree.TreePath;
-import org.netbeans.modules.compapp.projects.jbi.JbiActionProvider;
+import org.netbeans.modules.compapp.projects.jbi.api.JbiBindingInfo;
+import org.netbeans.modules.compapp.projects.jbi.api.JbiDefaultComponentInfo;
 import org.netbeans.modules.compapp.test.wsdl.Util;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.BindingOperation;
+import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.model.Input;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.Output;
+import org.netbeans.modules.xml.wsdl.model.Port;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -98,7 +103,9 @@ public class NewTestcaseOperationVisualPanel extends javax.swing.JPanel  {
         });
         mTree.setRootVisible(false);
         mTree.setEditable(false);
+        ToolTipManager.sharedInstance().registerComponent(mTree);
         mTree.setCellRenderer(new DefaultTreeCellRenderer() {
+            @Override
             public Component getTreeCellRendererComponent(JTree tree,
                     Object value,
                     boolean sel,
@@ -110,10 +117,22 @@ public class NewTestcaseOperationVisualPanel extends javax.swing.JPanel  {
                         tree, value, sel, expanded, leaf, row, hasFocus);
                 DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
                 Object usrObj = node.getUserObject();
-                if (usrObj instanceof Binding) {
-                    label.setText(((Binding)usrObj).getName());
+                if (usrObj instanceof Port) {
+                    Port port = (Port) usrObj;
+                    Binding binding = port.getBinding().get();
+                    String labelText = port.getName() + 
+                            " (" + "Binding=\"" + binding.getName() + "\")"; // NOI18N
+                    label.setText(labelText);
+                    
+                    JbiBindingInfo bi = getBindingInfo(port);
+                    if (bi != null) {   
+                        label.setToolTipText("binding type: " + bi.getBindingName()); // NOI18N
+                    } else {
+                        label.setToolTipText(null);
+                    }
                 } else if (usrObj instanceof BindingOperation) {
                     label.setText(((BindingOperation)usrObj).getName());
+                    label.setToolTipText(null);
                 }
                 return label;
             }
@@ -145,13 +164,18 @@ public class NewTestcaseOperationVisualPanel extends javax.swing.JPanel  {
         
         this.wsdlModel = wsdlModel;
         DefaultMutableTreeNode root = new DefaultMutableTreeNode();
-        for (Binding binding : Util.getSortedBindings(wsdlModel)) {
-            DefaultMutableTreeNode bindingNode = new DefaultMutableTreeNode(binding);
-            root.add(bindingNode);
-            for (BindingOperation bindingOp : Util.getSortedBindingOperations(binding)) {
-                DefaultMutableTreeNode bindingOpNode = new DefaultMutableTreeNode(bindingOp);
-                bindingNode.add(bindingOpNode);
-                bindingOpNode.setAllowsChildren(false);
+        for (Port port : Util.getSortedPorts(wsdlModel)) {
+            Binding binding = port.getBinding().get();
+            List<BindingOperation> bindingOps = Util.getSortedBindingOperations(binding);
+            if (bindingOps != null && bindingOps.size() > 0) {
+                DefaultMutableTreeNode portNode = new DefaultMutableTreeNode(port);
+                root.add(portNode);
+                for (BindingOperation bindingOp : bindingOps) {
+                    DefaultMutableTreeNode bindingOpNode = 
+                            new DefaultMutableTreeNode(bindingOp);
+                    portNode.add(bindingOpNode);
+                    bindingOpNode.setAllowsChildren(false);
+                }
             }
         }
         DefaultTreeModel dtm = new DefaultTreeModel(root);
@@ -162,7 +186,7 @@ public class NewTestcaseOperationVisualPanel extends javax.swing.JPanel  {
         }
     }
     
-    public Binding getSelectedBinding() {
+    private Port getSelectedPort() {
         Object value = mTree.getLastSelectedPathComponent();
         if (value == null) {
             return null;
@@ -170,7 +194,15 @@ public class NewTestcaseOperationVisualPanel extends javax.swing.JPanel  {
         DefaultMutableTreeNode node = (DefaultMutableTreeNode)value;
         if (node.getUserObject() instanceof BindingOperation) {
             DefaultMutableTreeNode parent = (DefaultMutableTreeNode)node.getParent();
-            return (Binding)parent.getUserObject();
+            return (Port)parent.getUserObject();
+        }
+        return null;
+    }
+    
+    public Binding getSelectedBinding() {
+        Port port = getSelectedPort();
+        if (port != null) {
+            return port.getBinding().get();
         }
         return null;
     }
@@ -283,5 +315,33 @@ public class NewTestcaseOperationVisualPanel extends javax.swing.JPanel  {
             sb.append("void");  // NOI18N
         }
         return sb.toString();
+    }
+    
+    private static JbiBindingInfo getBindingInfo(final Port port) {
+        JbiDefaultComponentInfo bcinfo =
+                JbiDefaultComponentInfo.getJbiDefaultComponentInfo();
+        if (bcinfo == null) {
+            return null;
+        }
+        
+        List<JbiBindingInfo> bclist = bcinfo.getBindingInfoList();
+        List<ExtensibilityElement> xts = port.getExtensibilityElements();
+        if (xts.size() > 0) {
+            ExtensibilityElement ex = xts.get(0);
+            String qns = ex.getQName().getNamespaceURI();
+            if (qns != null) {
+                for (JbiBindingInfo bi : bclist) {
+                    String[] ns = bi.getNameSpaces();
+                    if (ns != null) {
+                        for (String n : ns) {
+                            if (n.equalsIgnoreCase(qns)) {
+                                return bi;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 }

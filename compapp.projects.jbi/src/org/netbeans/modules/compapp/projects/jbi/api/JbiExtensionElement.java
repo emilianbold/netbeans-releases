@@ -42,67 +42,104 @@
 package org.netbeans.modules.compapp.projects.jbi.api;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
- * JBI Extension element
+ * JBI Extension element.
  *
- * @author tli
+ * @author jqian
  */
 public class JbiExtensionElement implements Serializable {
 
     /**
-     * Name of the extension element.
+     * Name of the element.
      */
     private String name;
+    
+    /**
+     * A list of child elements.
+     */
+    private List<JbiExtensionElement> elements;
+    
+    /**
+     * A list of attributes.
+     */
+    private List<JbiExtensionAttribute> attributes;
 
     /**
-     * Type of the extension, e.x., "string", "integer", or "boolean".
+     * 
      */
-    private String type;
-
-    /**
-     * DOCUMENT ME!
-     */
-    private String description;
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param name
-     * @param type
-     * @param description
-     */
-    public JbiExtensionElement(String name, String type, String description) {
+    public JbiExtensionElement(String name) {
         this.name = name;
-        this.type = type;
-        this.description = description;
     }
 
     /**
-     * DOCUMENT ME!
+     * Sets the child elements.
      *
-     * @return the name.
+     * @param attributes
+     */
+    public void setElements(List<JbiExtensionElement> elements) {
+        this.elements = elements;
+    }
+
+    /**
+     * Sets the list of attributes.
+     *
+     * @param attributes
+     */
+    public void setAttributes(List<JbiExtensionAttribute> attributes) {
+        this.attributes = attributes;
+    }
+    
+    /**
+     * Gets the name of the element.
      */
     public String getName() {
-        return this.name;
+        return name;
     }
-
+    
     /**
-     * DOCUMENT ME!
-     *
-     * @return the type.
+     * Gets the list of child elements.
      */
-    public String getType() {
-        return this.type;
+    public List<JbiExtensionElement> getElements() {
+        return elements;        
     }
-
+    
     /**
-     * DOCUMENT ME!
-     *
-     * @return the description
+     * Gets the list of attributes.
      */
-    public String getDescription() {
-        return this.description;
+    public List<JbiExtensionAttribute> getAttributes() {
+        return attributes;
     }
-
+    
+//    /**
+//     * Checks whether it is a leaf element.
+//     */
+//    public boolean isLeafElement() {
+//        return elements == null;
+//    }
+      
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("JbiExtensionElement:");
+        
+        if (attributes != null) {
+            for (JbiExtensionAttribute attr : attributes) {
+                sb.append(System.getProperty("line.separator"));
+                sb.append("  ");
+                sb.append(attr.toString());
+            }
+        } 
+        
+        if (elements != null) {
+            for (JbiExtensionElement childElement : elements) {
+                sb.append(System.getProperty("line.separator"));
+                sb.append("  ");
+                sb.append(childElement.toString());
+            }
+        }        
+        
+        return sb.toString();
+    }
 }

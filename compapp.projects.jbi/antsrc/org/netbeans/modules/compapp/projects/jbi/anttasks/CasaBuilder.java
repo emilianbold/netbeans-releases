@@ -53,8 +53,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
-import org.netbeans.modules.compapp.projects.jbi.CasaConstants;
-import org.netbeans.modules.compapp.projects.jbi.JbiConstants;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.XmlUtil;
 import org.netbeans.modules.compapp.projects.jbi.descriptor.endpoints.model.Endpoint;
@@ -77,11 +75,15 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.xml.sax.SAXException;
 
+import static org.netbeans.modules.compapp.projects.jbi.CasaConstants.*;
+import static org.netbeans.modules.compapp.projects.jbi.JbiConstants.*;
+
+
 /**
  *
  * @author jqian
  */
-public class CasaBuilder implements JbiConstants, CasaConstants {
+public class CasaBuilder {
     
     // WSDL Domain
     public static final String WSDL_NAMESPACE_URI = "http://schemas.xmlsoap.org/wsdl/";
@@ -184,8 +186,10 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
      * an old CASA file.
      * 
      * @param jbiDocument   service assembly JBI document
+     * 
+     * @return the new CASA document
      */
-    public void createCasaDocument(Document jbiDocument) {      
+    public Document createCasaDocument(Document jbiDocument) {      
         try {
             DocumentBuilderFactory factory =
                     DocumentBuilderFactory.newInstance();
@@ -194,9 +198,9 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
             DocumentBuilder builder = factory.newDocumentBuilder();
             newCasaDocument = builder.newDocument();
             
-            Element casaRoot = newCasaDocument.createElement("casa");
+            Element casaRoot = newCasaDocument.createElement(CASA_ELEM_NAME);
             newCasaDocument.appendChild(casaRoot);
-            casaRoot.setAttribute("xmlns", "http://java.sun.com/xml/ns/casa");
+            casaRoot.setAttribute("xmlns", CASA_NAMESPACE_URI);
             casaRoot.setAttribute("xmlns:" + XLINK_NAMESPACE_PREFIX, XLINK_NAMESPACE_URI);
             
             // build binding component namespace to ID map
@@ -230,31 +234,58 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
             
             //        preserveCasaWSDLEndpointsAndPorts();
             
-            mergeLocations(jbiDocument);
+            mergeLocations();
+            
+            // Merge endpoint extension elements from old casa
+            mergeBCEndpointExtensions(true);
+            mergeBCEndpointExtensions(false);
+            
+            // Merge connection extension elements from old casa
+            mergeConnectionExtensions();
             
             XmlUtil.writeToFile(casaFileLoc, newCasaDocument);
         } catch (Exception e) {
             e.printStackTrace();
             log(e.getMessage());
         }
-    }
         
+        return newCasaDocument;
+    }       
+    
     /**
      * Gets an Endpoint object from an endpoint element in CASA DOM.
      */
-    private static Endpoint getEndpoint(Element endpointElement) {
+    private static Endpoint getEndpointInCASA(Element casaEndpointElement) {
         String endpointName = 
-                endpointElement.getAttribute(CASA_ENDPOINT_NAME_ATTR_NAME);
+                casaEndpointElement.getAttribute(CASA_ENDPOINT_NAME_ATTR_NAME);
         QName serviceQName = XmlUtil.getAttributeNSName(
-                endpointElement, CASA_SERVICE_NAME_ATTR_NAME);
+                casaEndpointElement, CASA_SERVICE_NAME_ATTR_NAME);
         QName interfaceQName = XmlUtil.getAttributeNSName(
-                endpointElement, CASA_INTERFACE_NAME_ATTR_NAME);
+                casaEndpointElement, CASA_INTERFACE_NAME_ATTR_NAME);
         
         return new Endpoint(endpointName, serviceQName, interfaceQName); 
-    }
+    }    
     
     /**
-     * Creates the service-units element in the new casa document.
+     * Gets the ID of the given endpoint in the CASA document.
+     */
+    private static String getEndpointID(Document casaDocument, Endpoint endpoint) {
+        NodeList endpointNodeList = casaDocument.getElementsByTagName(
+                CASA_ENDPOINT_ELEM_NAME);
+        
+        for (int i = 0; i < endpointNodeList.getLength(); i++) {            
+            Element endpointElement = (Element) endpointNodeList.item(i);
+            Endpoint casaEndpoint = getEndpointInCASA(endpointElement);
+            if (endpoint.equals(casaEndpoint)) {
+                return endpointElement.getAttribute(CASA_NAME_ATTR_NAME);
+            }
+        }
+        
+        return null;
+    }   
+    
+    /**
+     * Creates the SE/BC service-units element in the new casa document.
      */
     private Element createSUs(Document jbiDocument)
             throws SAXException, IOException, ParserConfigurationException {
@@ -308,10 +339,191 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
             } catch (Exception e) {
                 log("ERROR: Problem merging external service units from old casa: " + e +
                         ". This does not affect regular compapp build." );
-            }
+            }            
         }
         
         return casaSUs;
+    }
+    
+    /**
+     * Merge connection extension elements from the old CASA document.
+     * 
+     * @param isConsumes    is consumes endpoint or provides endpoint
+     */
+    private void mergeConnectionExtensions() {
+        if (oldCasaDocument == null) {
+            return;
+        }
+        
+        NodeList oldConnections = oldCasaDocument.getElementsByTagName(
+                CASA_CONNECTION_ELEM_NAME);
+        
+        for (int i = 0; i < oldConnections.getLength(); i++) {
+            Element oldConnection = (Element) oldConnections.item(i);
+            Element newConnection = findConnection(
+                    oldCasaDocument, oldConnection, newCasaDocument);
+            
+            // Copy child extension elements over from old CASA to new CASA
+            if (newConnection != null) {
+                deepCloneChildren(oldConnection, newConnection);
+            }
+        }
+    }
+    
+    private static Element findConnection(Document oldCasaDocument, 
+            Element oldConnection, Document newCasaDocument) {
+        Element ret = null;
+        
+        String oldConsumerEndpointID = oldConnection.getAttribute(CASA_CONSUMER_ATTR_NAME);
+        Endpoint consumerEndpoint = getEndpoint(oldCasaDocument, oldConsumerEndpointID);
+        String newConsumerEndpointID = getEndpointID(newCasaDocument, consumerEndpoint);
+        
+        String oldProviderEndpointID = oldConnection.getAttribute(CASA_PROVIDER_ATTR_NAME);
+        Endpoint providerEndpoint = getEndpoint(oldCasaDocument, oldProviderEndpointID);
+        String newProviderEndpointID = getEndpointID(newCasaDocument, providerEndpoint);
+        
+        NodeList newConnections = newCasaDocument.getElementsByTagName(
+                CASA_CONNECTION_ELEM_NAME);
+        
+        for (int i = 0; i < newConnections.getLength(); i++) {
+            Element newConnection = (Element) newConnections.item(i);
+            if (newConnection.getAttribute(CASA_CONSUMER_ATTR_NAME).
+                    equals(newConsumerEndpointID) &&
+                newConnection.getAttribute(CASA_PROVIDER_ATTR_NAME).
+                    equals(newProviderEndpointID)) {
+                ret = newConnection;
+                break;
+            }
+        }
+        
+        return ret;        
+    }
+    
+    /**
+     * Merge binding component endpoint extension elements from the 
+     * old CASA document.
+     * 
+     * @param isConsumes    is consumes endpoint or provides endpoint
+     */
+    private void mergeBCEndpointExtensions(boolean isConsumes) {
+        if (oldCasaDocument == null) {
+            return;
+        }
+        
+        NodeList oldBCSUs = oldCasaDocument.getElementsByTagName(
+                CASA_BINDING_COMPONENT_SERVICE_UNIT_ELEM_NAME);
+        
+        for (int i = 0; i < oldBCSUs.getLength(); i++) {
+            Element oldBCSU = (Element) oldBCSUs.item(i);
+            NodeList oldEndpointRefs = oldBCSU.getElementsByTagName(
+                    isConsumes ? CASA_CONSUMES_ELEM_NAME : CASA_PROVIDES_ELEM_NAME);
+            
+            for (int j = 0; j < oldEndpointRefs.getLength(); j++) {
+                Element oldEndpointRef = (Element) oldEndpointRefs.item(j);
+                Element newEndpointRef = findEndpointRef(oldCasaDocument,
+                        oldEndpointRef, newCasaDocument, isConsumes);
+               
+                // Copy child extension elements over from old CASA to new CASA
+                if (newEndpointRef != null) {
+                    deepCloneChildren(oldEndpointRef, newEndpointRef);
+                }
+            }
+        }        
+    }
+    
+    private static Element findEndpointRef(Document oldCasaDocument, 
+            Element oldEndpointRef, Document newCasaDocument, boolean isConsumes) {
+        Element newEndpointRef = null;
+        
+        String oldEndpointID = oldEndpointRef.getAttribute(CASA_ENDPOINT_ATTR_NAME);
+        Endpoint endpoint = getEndpoint(oldCasaDocument, oldEndpointID);
+        String newEndpointID = getEndpointID(newCasaDocument, endpoint);
+
+        if (newEndpointID != null) {
+            newEndpointRef = getEndpointRefElement(
+                    newCasaDocument, newEndpointID, false, isConsumes);
+        }
+        
+        return newEndpointRef;
+    }
+    
+    public static void deepCloneChildren(Element src, Element dest) {
+        assert src != null && dest != null;
+        
+        Document destDocument = dest.getOwnerDocument();
+        
+        NodeList oldChildren = src.getChildNodes();
+        for (int k = 0; k < oldChildren.getLength(); k++) {
+            Node oldChild = oldChildren.item(k);
+            if (oldChild instanceof Element) {
+                Node clonedNode = deepCloneCasaNode(oldChild, destDocument);
+                dest.appendChild(clonedNode);
+            }
+        }
+    }
+    
+    /**
+     * Gets the CASA endpoint reference element (consumes/provides) that 
+     * corresponds to the given endpoint object.
+     * 
+     * @param casaDocument  CASA document
+     * @param endpoint      an endpoint object
+     * @param isSESU        if <code>true</code>, the endpoint belongs to a 
+     *                      service engine service unit; 
+     *                      if <code>false</code>, the endpoint belongs to a 
+     *                      binging component service unit
+     * @param isConsumes    if <code>true</code>, the endpoint is a consumes,
+     *                      if <code>false</code>, the endpoint is a provides.
+     * 
+     * @return  the consumes/provides element with the given ID.
+     */
+    static Element getEndpointRefElement(Document casaDocument, 
+            Endpoint endpoint, boolean isSESU, boolean isConsumes) {
+                
+        String endpointID = getEndpointID(casaDocument, endpoint);        
+        return getEndpointRefElement(casaDocument, endpointID, isSESU, isConsumes);
+    }
+     
+    
+    /**
+     * Gets the CASA endpoint reference element (consumes/provides) with the 
+     * given enpoint ID.
+     * 
+     * @param casaDocument  CASA document
+     * @param endpointID    ID of an endpoint
+     * @param isSESU        if <code>true</code>, the endpoint belongs to a 
+     *                      service engine service unit; 
+     *                      if <code>false</code>, the endpoint belongs to a 
+     *                      binging component service unit
+     * @param isConsumes    if <code>true</code>, the endpoint is a consumes,
+     *                      if <code>false</code>, the endpoint is a provides.
+     * 
+     * @return  the consumes/provides element with the given ID.
+     */
+    private static Element getEndpointRefElement(Document casaDocument, 
+            String endpointID, boolean isSESU, boolean isConsumes) {
+        
+        NodeList sus = casaDocument.getElementsByTagName(
+            isSESU ? CASA_SERVICE_ENGINE_SERVICE_UNIT_ELEM_NAME :
+                CASA_BINDING_COMPONENT_SERVICE_UNIT_ELEM_NAME);
+        
+        for (int i = 0; i < sus.getLength(); i++) {
+            
+            Element su = (Element) sus.item(i);
+            
+            NodeList endpointRefs = su.getElementsByTagName(
+                isConsumes ? CASA_CONSUMES_ELEM_NAME : CASA_PROVIDES_ELEM_NAME);
+            
+            for (int j = 0; j < endpointRefs.getLength(); j++) {
+                Element endpointRef = (Element) endpointRefs.item(j);
+                if (endpointRef.getAttribute(CASA_ENDPOINT_ATTR_NAME).
+                        equals(endpointID)) {
+                    return endpointRef;
+                }
+            }
+        }
+        
+        return null;
     }
     
     private Element deepCloneCasaNodeWithEndpointConversion(Element oldElement) {
@@ -323,7 +535,7 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
         for (int i = 0; i < oldConsumesNodeList.getLength(); i++) {
             Element oldConsumes = (Element) oldConsumesNodeList.item(i);
             Element newConsumes = (Element) newConsumesNodeList.item(i);
-            fixEndpointID(oldConsumes, newConsumes);
+            fixEndpointRefElementID(oldConsumes, newConsumes);
         }
         
         NodeList oldProvidesNodeList = oldElement.getElementsByTagName(CASA_PROVIDES_ELEM_NAME);
@@ -331,26 +543,27 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
         for (int i = 0; i < oldProvidesNodeList.getLength(); i++) {
             Element oldProvides = (Element) oldProvidesNodeList.item(i);
             Element newProvides = (Element) newProvidesNodeList.item(i);
-            fixEndpointID(oldProvides, newProvides);
+            fixEndpointRefElementID(oldProvides, newProvides);
         }
         
         return newElement;
     }        
          
     /**
-     * Fixes the ID attribute of an Endpoint element in the new casa document 
-     * so that both the Endpoint element in the new casa document and the 
-     * Endpoint element in the old casa document refer to the same fully 
-     * qualified endpoint.
+     * Fixes the ID attribute of an endpoint reference element 
+     * (consumes/provides) in the new CASA document so that both the 
+     * endpoint referebce element in the new CASA document and the 
+     * endpoint reference element in the old CASA document refer to 
+     * the same fully-qualified endpoint.
      * 
-     * @param oldEndpoint an Endpoint element in the old casa document
-     * @param newEndpoint an Endpoint element in the new casa document
+     * @param oldEndpoint an endpoint reference element in the old CASA document
+     * @param newEndpoint an endpoint reference element in the new CASA document
      */
-    private void fixEndpointID(Element oldEndpoint, Element newEndpoint) {
-        String oldEndpointID = oldEndpoint.getAttribute(CASA_ENDPOINT_ATTR_NAME);
+    private void fixEndpointRefElementID(Element oldEndpointRef, Element newEndpointRef) {
+        String oldEndpointID = oldEndpointRef.getAttribute(CASA_ENDPOINT_ATTR_NAME);
         Endpoint endpoint = getEndpoint(oldCasaDocument, oldEndpointID);
         String newEndpointID = addEndpoint(endpoint);     
-        newEndpoint.setAttribute(CASA_ENDPOINT_ATTR_NAME, newEndpointID);
+        newEndpointRef.setAttribute(CASA_ENDPOINT_ATTR_NAME, newEndpointID);
     }
     
     /**
@@ -422,15 +635,15 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
         String suName = getJBIServiceUnitName(jbiSU);
 
         List<Endpoint> suEndpointList = su2Endpoints.get(suName); 
-        if (suEndpointList == null) {
-            log("ERROR: Invalid service unit name in service assembly jbi.xml: " + suName);
-            return null;
-        }
+//        if (suEndpointList == null) {
+//            log("ERROR: Invalid service unit name in service assembly jbi.xml: " + suName);
+//            return null;
+//        }
         
-        if (suEndpointList.size() == 0) {
-            // This is OK. It's possible that a SU doesn't contain any endpoints, 
-            // for example, an empty BPEL SU.
-        } 
+//        if (suEndpointList.size() == 0) {
+//            // This is OK. It's possible that a SU doesn't contain any endpoints, 
+//            // for example, an empty BPEL SU.
+//        } 
         
         Element identification = (Element) jbiSU.getElementsByTagName(JBI_IDENTIFICATION_ELEM_NAME).item(0);
         String name = ((Element) identification.getElementsByTagName(JBI_NAME_ELEM_NAME).item(0)).
@@ -456,13 +669,15 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
         seSU.setAttribute(CASA_DESCRIPTION_ATTR_NAME, description);
         seSU.setAttribute(CASA_ARTIFACTS_ZIP_ATTR_NAME, artifactsZip);
         
-        for (Endpoint endpoint : suEndpointList) {
-            Element endpointRef = endpoint.isConsumes() ?
-                (Element) newCasaDocument.createElement(CASA_CONSUMES_ELEM_NAME) :
-                (Element) newCasaDocument.createElement(CASA_PROVIDES_ELEM_NAME);
-            String endpointID = getNewEndpointID(endpoint);
-            endpointRef.setAttribute(CASA_ENDPOINT_ATTR_NAME, endpointID);
-            seSU.appendChild(endpointRef);
+        if (suEndpointList != null) {
+            for (Endpoint endpoint : suEndpointList) {
+                Element endpointRef = endpoint.isConsumes() ?
+                    (Element) newCasaDocument.createElement(CASA_CONSUMES_ELEM_NAME) :
+                    (Element) newCasaDocument.createElement(CASA_PROVIDES_ELEM_NAME);
+                String endpointID = getNewEndpointID(endpoint);
+                endpointRef.setAttribute(CASA_ENDPOINT_ATTR_NAME, endpointID);
+                seSU.appendChild(endpointRef);
+            }
         }
         return seSU;
     }
@@ -474,9 +689,9 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
 
         Element casaConnections = newCasaDocument.createElement(CASA_CONNECTIONS_ELEM_NAME);
 
-        // 1. Copy connections from jbi document over.
+        // 1. Copy jbi:connections from jbi document over.
         NodeList jbiConnections =
-                jbiDocument.getElementsByTagName(JBI_CONNECTION_ELEM_NAME);
+                jbiDocument.getElementsByTagNameNS(JBI_NAMESPACE_URI, JBI_CONNECTION_ELEM_NAME);
 
         for (int i = 0; i < jbiConnections.getLength(); i++) {
             Element jbiConnection = (Element) jbiConnections.item(i);
@@ -652,23 +867,40 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
     private String getJBIServiceUnitComponentName(Element jbiSU) {
         Element target = (Element) jbiSU.getElementsByTagName(JBI_TARGET_ELEM_NAME).item(0);
         Element compName = (Element) target.getElementsByTagName(JBI_COMPONENT_NAME_ELEM_NAME).item(0);
-        return compName.getFirstChild().getNodeValue();
+        return compName.getTextContent();
     }
 
     private String getJBIServiceUnitName(Element jbiSU) {
+        // We can not derive the SU name (w/o the compapp name prefix) from 
+        // the jar name. We can derive it from the SU identification name.
+        // See JbiProjectProperties.generateServiceUnitElement(). 
+        /*
         Element target = (Element) jbiSU.getElementsByTagName(JBI_TARGET_ELEM_NAME).item(0);
         Element artifactsZip = (Element) target.getElementsByTagName(JBI_ARTIFACTS_ZIP_ELEM_NAME).item(0);
         String zipFileName = artifactsZip.getFirstChild().getNodeValue();
-        // Java EE application can have extension '.war' and 'ear'
+        // Java EE application can have extension '.war' and '.ear'
         //assert zipFileName.endsWith(".jar");
         return zipFileName.substring(0, zipFileName.length() - 4);
+        */
+        
+        Element suID = (Element) jbiSU.getElementsByTagName(JBI_IDENTIFICATION_ELEM_NAME).item(0);
+        Element suName = (Element) suID.getElementsByTagName(JBI_NAME_ELEM_NAME).item(0);
+        String compApp_SuName = suName.getTextContent();
+        
+        Element jbiSA = (Element) jbiSU.getParentNode();
+        Element saID = (Element) jbiSA.getElementsByTagName(JBI_IDENTIFICATION_ELEM_NAME).item(0);
+        Element saName = (Element) saID.getElementsByTagName(JBI_NAME_ELEM_NAME).item(0);
+        String compAppName = saName.getTextContent();
+        
+        // Strip the compAppName and '-' from compApp_SuName
+        return compApp_SuName.substring(compAppName.length() + 1);
     }
        
     private static File getFile(WSDLModel model) {
         Lookup lookup = model.getModelSource().getLookup();
-        File f = (File) lookup.lookup(File.class);
+        File f = lookup.lookup(File.class);
         if (f == null) {
-            FileObject fo = (FileObject) lookup.lookup(FileObject.class);
+            FileObject fo = lookup.lookup(FileObject.class);
             f = FileUtil.toFile(fo);
         }
         return f;
@@ -781,7 +1013,7 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
                                  endpointMap.put(componentName, list);
                              }
                              
-                             Endpoint endpoint = getEndpoint(endpointElement);
+                             Endpoint endpoint = getEndpointInCASA(endpointElement);
                              list.add(endpoint);
                              break;
                          }
@@ -826,15 +1058,14 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
     }
         
     /**
-     * Gets a non-null list of endpoints from the old casa document. 
-     * (The external endpoints in the new casa document will be the same.)
+     * Gets a non-null list of endpoints from the old CASA document. 
+     * (The external endpoints in the new CASA document will always be the same.)
      */
     private List<Endpoint> getExternalEndpoints() {
         if (externalEndpoints == null) {            
             externalEndpoints = new ArrayList<Endpoint>();
             
-            List<Element> sesus = getExternalSESUs();
-            for (Element sesu : sesus) {
+            for (Element sesu : getExternalSESUs()) {
                 NodeList consumesNodeList =
                         sesu.getElementsByTagName(CASA_CONSUMES_ELEM_NAME);
                 for (int j = 0; j < consumesNodeList.getLength(); j++) {
@@ -854,10 +1085,10 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
             }
         }
 
-         return externalEndpoints;
+        return externalEndpoints;
     }
     
-    private void mergeLocations(Document jbiDocument) {
+    private void mergeLocations() {
         
         if (oldCasaDocument == null) {
             return;
@@ -951,8 +1182,9 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
         return null;
     }
 
-    private static Node deepCloneCasaNode(final Node node, final Document targetDocument)
-    throws DOMException {
+    // REFACTOR ME
+    static Node deepCloneCasaNode(final Node node, 
+            final Document targetDocument) throws DOMException {
         String nodeName = node.getNodeName();
 
         Node clonedNode = null;
@@ -963,14 +1195,15 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
             NamedNodeMap attrs = node.getAttributes();
             for (int i = 0; i < attrs.getLength(); i++) {
                 Node attrNode = attrs.item(i);
-                String name = attrNode.getNodeName();
-                String value = attrNode.getNodeValue();
+                String attrName = attrNode.getNodeName();
+                String attrValue = attrNode.getNodeValue();
 
+                /*
                 // side effect: updating target document's namespaces
-                if (value.indexOf(":") != -1) {
+                if (!attrName.equals("xmlns") && attrValue.indexOf(":") != -1) {
                     //System.out.println("deep cloning " + value);
-                    String valuePrefix = value.substring(0, value.indexOf(":"));
-                    String valueLocal = value.substring(value.indexOf(":") + 1);
+                    String valuePrefix = attrValue.substring(0, attrValue.indexOf(":"));
+                    String valueLocal = attrValue.substring(attrValue.indexOf(":") + 1);
                     String oldNamespaceURI = XmlUtil.getNamespaceURI((Element)node, valuePrefix); // REFACTOR ME
 
                     String newNamespaceURI = targetDocument.getDocumentElement().getAttribute("xmlns:" + valuePrefix);
@@ -984,8 +1217,9 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
                         System.out.println("throw new RuntimeException(not implemented...)");
                     }
                 }
+                */
 
-                ((Element)clonedNode).setAttribute(name, value);
+                ((Element)clonedNode).setAttribute(attrName, attrValue);
             }
 
             NodeList children = node.getChildNodes();
@@ -1032,7 +1266,13 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
     }
     
     /**
-     * Gets the endpoint object in a casa document with the given endpoint ID.
+     * Gets the Endpoint object in the given CASA document with the given
+     * endpoint ID.
+     * 
+     * @param casaDocument  CASA document
+     * @param endpointID    ID of an endpoint
+     * 
+     * @return an Endpoint object
      */
     static Endpoint getEndpoint(Document casaDocument, String endpointID) {
         NodeList endpointList = 
@@ -1040,7 +1280,7 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
         for (int i = 0; i < endpointList.getLength(); i++) {
             Element endpoint = (Element) endpointList.item(i);
             if (endpoint.getAttribute(CASA_NAME_ATTR_NAME).equals(endpointID)) {
-                return getEndpoint(endpoint);
+                return getEndpointInCASA(endpoint);
             }
         }
 
@@ -1048,7 +1288,7 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
     }
     
     /**
-     * Gets a non-null list of all the endpoints defined in a casa document.
+     * Gets a non-null list of Endpoints defined in the given CASA document.
      */
     private static List<Endpoint> getEndpoints(Document casaDocument) {
         List<Endpoint> ret = new ArrayList<Endpoint>();
@@ -1058,7 +1298,7 @@ public class CasaBuilder implements JbiConstants, CasaConstants {
                     casaDocument.getElementsByTagName(CASA_ENDPOINT_ELEM_NAME);
             for (int i = 0; i < endpointList.getLength(); i++) {
                 Element endpointElement = (Element) endpointList.item(i);
-                Endpoint endpoint = getEndpoint(endpointElement);
+                Endpoint endpoint = getEndpointInCASA(endpointElement);
                 ret.add(endpoint);
             }
         }

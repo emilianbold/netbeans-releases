@@ -102,7 +102,8 @@ public class WsdlSupport {
         } catch (Exception e) {
             String msg = NbBundle.getMessage(WsdlSupport.class, "LBL_Fail_to_load_schema_types", mWsdlUrl); // NOI18N
             if (e.getMessage() != null) {
-                String newline = System.getProperty("line.separator");
+                msg += "\n" + e.getMessage();  // NOI18N
+                String newline = System.getProperty("line.separator"); // NOI18N
                 msg += newline;
                 msg += newline;
                 msg += "The original error message is:"; // NOI18N
@@ -167,7 +168,11 @@ public class WsdlSupport {
         options.setErrorListener(errorList);
         
         try {
-            schemaList.add(XmlObject.Factory.parse(WsdlSupport.class.getResource(
+            schemaList.add(
+                    // IZ #112499
+                    //XmlObject.Factory
+                    org.apache.xmlbeans.impl.xb.xsdschema.SchemaDocument.Factory
+                    .parse(WsdlSupport.class.getResource(
                     "/org/netbeans/modules/compapp/test/wsdl/resources/soapEncoding.xsd"))); // NOI18N
             XmlObject[] schemaArray = (XmlObject[])schemaList.toArray(new XmlObject[0]);
             return XmlBeans.loadXsd(schemaArray, options);
@@ -221,7 +226,11 @@ public class WsdlSupport {
                 for (int i = 0; i < schemas.length; i++) {
                     XmlCursor xmlCursor = schemas[i].newCursor();
                     String xmlText = xmlCursor.getObject().xmlText(options);
-                    schemas[i] = XmlObject.Factory.parse(xmlText, options);
+                    schemas[i] = 
+                            // IZ #112499
+                            //XmlObject.Factory
+                            org.apache.xmlbeans.impl.xb.xsdschema.SchemaDocument.Factory
+                            .parse(xmlText, options);
                     schemas[i].documentProperties().setSourceName(wsdlUrl);
                     
                     result.put(wsdlUrl + "@" + (i+1), schemas[i]); // NOI18N

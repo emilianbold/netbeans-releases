@@ -44,7 +44,6 @@ package org.netbeans.modules.compapp.projects.jbi.ui;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.compapp.projects.jbi.JbiProject;
-import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
 import org.netbeans.modules.compapp.projects.jbi.ui.actions.AddProjectAction;
 import org.netbeans.modules.compapp.projects.jbi.ui.actions.OpenEditorAction;
 import org.netbeans.modules.compapp.projects.jbi.ui.customizer.JbiProjectProperties;
@@ -89,7 +88,7 @@ import java.util.List;
 import javax.swing.*;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.compapp.projects.jbi.CasaHelper;
-import org.netbeans.modules.compapp.projects.jbi.JbiProjectGenerator;
+import org.netbeans.modules.compapp.projects.jbi.api.*;
 import org.openide.actions.FindAction;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -453,6 +452,34 @@ public class JbiLogicalViewProvider implements LogicalViewProvider {
                     bundle.getString("LBL_AddProjectAction_Name"),  // NOI18N
                     null
                     ));
+            
+            // Add Actions added by other modules.
+            /*
+            List<CompAppProjectActionPerformer> otherActions =
+                    PluggableProjectActionsProvider.getInstance().getProjectActions();
+            if ((otherActions != null) && (otherActions.size() > 0)) {
+                for (CompAppProjectActionPerformer act : otherActions){
+                    actions.add(ProjectSensitiveActions.projectSensitiveAction(
+                            act, act.getLabel(), act.getIcon()));
+                }
+            }
+            todo: 11/12/07, remove the above code when switching to using project plugins
+            */
+            
+            JbiInstalledProjectPluginInfo plugins = JbiInstalledProjectPluginInfo.getProjectPluginInfo();
+            if (plugins != null) {
+                List<InternalProjectTypePlugin> plist = plugins.getUncategorizedProjectPluginList();
+                for (InternalProjectTypePlugin plugin : plist) {
+                    List<JbiProjectActionPerformer> acts = plugin.getProjectActions();
+                    for (JbiProjectActionPerformer act : acts) {
+                        if (act.getActionType().equalsIgnoreCase(JbiProjectActionPerformer.ACT_ADD_PROJECT)) {
+                            actions.add(ProjectSensitiveActions.projectSensitiveAction(
+                                act, act.getLabel(), act.getIcon()));
+                        }
+                    }
+                }
+            }
+            
             actions.add(CommonProjectActions.newFileAction());
             
             // Create CASA on demand            

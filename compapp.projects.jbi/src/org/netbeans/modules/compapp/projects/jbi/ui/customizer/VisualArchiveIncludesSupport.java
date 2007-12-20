@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.compapp.projects.jbi.ui.customizer;
 
+import com.sun.esb.management.common.ManagementRemoteException;
+import com.sun.jbi.ui.common.JBIComponentInfo;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
 import org.netbeans.modules.compapp.projects.jbi.ui.actions.AddProjectAction;
 import org.netbeans.modules.compapp.projects.jbi.ui.deployInfo.ComponentObject;
@@ -60,6 +62,7 @@ import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
@@ -86,11 +89,10 @@ import org.netbeans.modules.compapp.jbiserver.JbiManager;
 import org.netbeans.modules.compapp.projects.jbi.AdministrationServiceHelper;
 import org.netbeans.modules.compapp.projects.jbi.JbiActionProvider;
 import org.netbeans.modules.compapp.projects.jbi.ui.NoSelectedServerWarning;
-import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
 import org.netbeans.modules.sun.manager.jbi.management.JBIComponentType;
 import org.netbeans.modules.sun.manager.jbi.management.model.ComponentInformationParser;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentDocument;
-import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
+import org.netbeans.modules.sun.manager.jbi.management.wrapper.api.RuntimeManagementServiceWrapper;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -519,8 +521,10 @@ final class VisualArchiveIncludesSupport {
         
         try {
             if (dst.exists()) {
-                JBIComponentDocument compDoc = ComponentInformationParser.parse(dst);
-                List<JBIComponentStatus> compList = compDoc.getJbiComponentList();
+                List<JBIComponentInfo> compList =
+                        JBIComponentInfo.readFromXmlText(new FileReader(dst));
+//                JBIComponentDocument compDoc = ComponentInformationParser.parse(dst);
+//                List<JBIComponentInfo> compList = compDoc.getJbiComponentList();
                 updateComponentTable(compList);
             }
         } catch (Exception e) {
@@ -532,20 +536,23 @@ final class VisualArchiveIncludesSupport {
      * Update component table with components from the given list.
      * Also rebuild componentNames and bindingVisualClassPathItems.
      */            
-    private void updateComponentTable(List<JBIComponentStatus> compList) {
+    private void updateComponentTable(List<JBIComponentInfo> compList) {
         
         List<ComponentObject> rowData = new ArrayList<ComponentObject>();
         
         componentNames.clear();
         bindingVisualClassPathItems.clear();
         
-        for (JBIComponentStatus component : compList) {
-            if (component.isSharedLibrary()) {
+        for (JBIComponentInfo component : compList) {
+            String type = component.getType();
+            
+            //if (component.isSharedLibrary()) {
+            if (type.equals("sharedLibrary")) { //???
                 continue;
             }
             
             ComponentObject comp = new ComponentObject(
-                    component.getType(),
+                    type, //component.getType(),
                     component.getState(),
                     component.getName(),
                     component.getDescription()); // update this when loading assembly info
@@ -553,7 +560,8 @@ final class VisualArchiveIncludesSupport {
             
             componentNames.add(component.getName());
             
-            if (component.isBindingComponent()) {
+            //if (component.isBindingComponent()) {
+            if (type.equals("bindingComponent")) { // ???
                 VisualClassPathItem vi = new VisualClassPathItem(
                         bcJar, VisualClassPathItem.TYPE_ARTIFACT,
                         "BCDeployment.jar", null, // NOI18N
@@ -631,13 +639,13 @@ final class VisualArchiveIncludesSupport {
     
     private void fetchInfo() {
         try {
-            AdministrationService adminService = getAdministrationService();
+            RuntimeManagementServiceWrapper adminService = getAdministrationService();
             if (adminService != null) {
                 adminService.clearJBIComponentStatusCache(JBIComponentType.SERVICE_ENGINE);
                 adminService.clearJBIComponentStatusCache(JBIComponentType.BINDING_COMPONENT);
-                List<JBIComponentStatus> compList = new ArrayList<JBIComponentStatus>();
-                compList.addAll(adminService.getJBIComponentStatusList(JBIComponentType.SERVICE_ENGINE));
-                compList.addAll(adminService.getJBIComponentStatusList(JBIComponentType.BINDING_COMPONENT));
+                List<JBIComponentInfo> compList = new ArrayList<JBIComponentInfo>();
+                compList.addAll(adminService.listServiceEngines("server"));
+                compList.addAll(adminService.listBindingComponents("server"));
                 updateComponentTable(compList);
             }
         } catch (Exception e) {
@@ -647,8 +655,8 @@ final class VisualArchiveIncludesSupport {
         }
     }
     
-    private AdministrationService getAdministrationService() 
-        throws MalformedURLException, IOException, MalformedObjectNameException {
+    private RuntimeManagementServiceWrapper getAdministrationService() 
+        throws MalformedURLException, IOException, MalformedObjectNameException, ManagementRemoteException {
         
         String serverInstance = (String) projProperties.get(JbiProjectProperties.J2EE_SERVER_INSTANCE);
         
@@ -667,7 +675,7 @@ final class VisualArchiveIncludesSupport {
             return null;
         }
         
-        return AdministrationServiceHelper.getAdminService(serverInstance);
+        return AdministrationServiceHelper.getRuntimeManagementServiceWrapper(serverInstance);
     }
         
     private void updateProperties(JbiProjectProperties prop, 

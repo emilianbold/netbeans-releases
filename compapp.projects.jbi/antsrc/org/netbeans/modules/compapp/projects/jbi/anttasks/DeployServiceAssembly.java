@@ -41,8 +41,10 @@
 
 package org.netbeans.modules.compapp.projects.jbi.anttasks;
 
+import com.sun.esb.management.api.deployment.DeploymentService;
+import com.sun.esb.management.common.ManagementRemoteException;
+import com.sun.jbi.ui.common.ServiceAssemblyInfo;
 import java.io.StringReader;
-import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -55,10 +57,10 @@ import org.xml.sax.InputSource;
 import org.netbeans.modules.j2ee.deployment.impl.ServerString;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.impl.ServerTarget;
-import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
+import org.netbeans.modules.sun.manager.jbi.GenericConstants;
 import org.netbeans.modules.sun.manager.jbi.management.JBIMBeanTaskResultHandler;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
-import org.netbeans.modules.sun.manager.jbi.management.model.JBIServiceAssemblyStatus;
+import org.netbeans.modules.sun.manager.jbi.management.wrapper.api.RuntimeManagementServiceWrapper;
 import org.netbeans.modules.sun.manager.jbi.util.ServerInstance;
 
 /**
@@ -236,69 +238,63 @@ public class DeployServiceAssembly extends Task {
         
         ServerInstance serverInstance = AdministrationServiceHelper.getServerInstance(
                 nbUserDir, serverInstanceID);
-        AdministrationService adminService = null;
+               
         try {
-            adminService = new AdministrationService(serverInstance);
-        } catch (Exception e) {
-            throw new BuildException(e.getMessage());
-        }                
+            RuntimeManagementServiceWrapper mgmtServiceWrapper = 
+                    AdministrationServiceHelper.
+                    getRuntimeManagementServiceWrapper(serverInstance);
+            DeploymentService deploymentService = 
+                    AdministrationServiceHelper.
+                    getDeploymentService(serverInstance);
         
-        hostName = serverInstance.getHostName();
-        port = serverInstance.getAdminPort();
-        userName = serverInstance.getUserName();
-        password = serverInstance.getPassword();
-        
-        JBIServiceAssemblyStatus assembly = getJBIServiceAssemblyStatus(
-                adminService, serviceAssemblyID);
-        
-        String status = assembly == null ? null : assembly.getStatus();
-        // System.out.println("Current assembly status is " + status);
-        
-        if (JBIComponentStatus.UNKNOWN_STATE.equals(status)) {
-            String msg = "Unknown status for Service Assembly "
-                    + serviceAssemblyID;
-            throw new BuildException(msg);
-        }
-        
-        boolean success;
-        if (undeployServiceAssembly.equalsIgnoreCase("true")) { // NOI18N
-            if (JBIComponentStatus.STARTED_STATE.equals(status)) {
-                success = stopServiceAssembly(adminService)
-                && shutdownServiceAssembly(adminService)
-                && undeployServiceAssembly(adminService);
-            } else if (JBIComponentStatus.STOPPED_STATE.equals(status)) {
-                success = shutdownServiceAssembly(adminService)
-                && undeployServiceAssembly(adminService);
-            } else if (JBIComponentStatus.SHUTDOWN_STATE.equals(status)) {
-                success = undeployServiceAssembly(adminService);
-            } else {
-                success = true;
+            hostName = serverInstance.getHostName();
+            port = serverInstance.getAdminPort();
+            userName = serverInstance.getUserName();
+            password = serverInstance.getPassword();
+
+            ServiceAssemblyInfo assembly = mgmtServiceWrapper.getServiceAssembly(
+                    serviceAssemblyID, "server");        
+            String status = assembly == null ? null : assembly.getState();
+            // System.out.println("Current assembly status is " + status);
+
+            if (JBIComponentStatus.UNKNOWN_STATE.equals(status)) {
+                String msg = "Unknown status for Service Assembly "
+                        + serviceAssemblyID;
+                throw new BuildException(msg);
             }
-        } else { // deploy action...
-            if (JBIComponentStatus.STARTED_STATE.equals(status)) {
-                success = stopServiceAssembly(adminService)
-                && shutdownServiceAssembly(adminService)
-                && undeployServiceAssembly(adminService)
-                && deployServiceAssembly(adminService)
-                && startServiceAssembly(adminService);
-            } else if (JBIComponentStatus.STOPPED_STATE.equals(status)) {
-                success = shutdownServiceAssembly(adminService)
-                && undeployServiceAssembly(adminService)
-                && deployServiceAssembly(adminService)
-                && startServiceAssembly(adminService);
-            } else if (JBIComponentStatus.SHUTDOWN_STATE.equals(status)) {
-                success = undeployServiceAssembly(adminService)
-                && deployServiceAssembly(adminService)
-                && startServiceAssembly(adminService);
-            } else {
-                success = deployServiceAssembly(adminService)
-                && startServiceAssembly(adminService);
+
+            if (undeployServiceAssembly.equalsIgnoreCase("true")) { // NOI18N
+                if (JBIComponentStatus.STARTED_STATE.equals(status)) {
+                    stopServiceAssembly(mgmtServiceWrapper);
+                    shutdownServiceAssembly(mgmtServiceWrapper);
+                    undeployServiceAssembly(deploymentService);
+                } else if (JBIComponentStatus.STOPPED_STATE.equals(status)) {
+                    shutdownServiceAssembly(mgmtServiceWrapper);
+                    undeployServiceAssembly(deploymentService);
+                } else if (JBIComponentStatus.SHUTDOWN_STATE.equals(status)) {
+                    undeployServiceAssembly(deploymentService);
+                }
+            } else { // deploy action...
+                if (JBIComponentStatus.STARTED_STATE.equals(status)) {
+                    stopServiceAssembly(mgmtServiceWrapper);
+                    shutdownServiceAssembly(mgmtServiceWrapper);
+                    undeployServiceAssembly(deploymentService);
+                } else if (JBIComponentStatus.STOPPED_STATE.equals(status)) {
+                    shutdownServiceAssembly(mgmtServiceWrapper);
+                    undeployServiceAssembly(deploymentService);
+                } else if (JBIComponentStatus.SHUTDOWN_STATE.equals(status)) {
+                    undeployServiceAssembly(deploymentService);
+                } 
+                
+                deployServiceAssembly(deploymentService);
+                startServiceAssembly(mgmtServiceWrapper);                
             }
-        }
-        
-        if (!success) {
-            throw new BuildException("Service assembly deployment failed.");
-        }
+        } catch (ManagementRemoteException e) {
+            Object[] processResult = JBIMBeanTaskResultHandler.getProcessResult(
+                    GenericConstants.START_COMPONENT_OPERATION_NAME,
+                    serviceAssemblyID, e.getMessage(), false);
+            throw new BuildException((String) processResult[0]);
+        }             
     }
       
     private void startServer(String serverInstanceID) {
@@ -331,185 +327,125 @@ public class DeployServiceAssembly extends Task {
         ServerTarget targets[] = serverInstance.getTargets();
     }
     
-    /**
-     * Retrieves the status of the given Service Assembly deployed on the JBI
-     * Container on the Server.
-     *
-     * @param assemblyName
-     *            name of a Service Assembly
-     * @return JBI ServiceAssembly Status
-     */
-    private JBIServiceAssemblyStatus getJBIServiceAssemblyStatus(
-            AdministrationService adminService, String assemblyName) {
-        
-        if (adminService != null) {
-            List<JBIServiceAssemblyStatus> assemblyList = 
-                    adminService.getServiceAssemblyStatusList();
-            for (JBIServiceAssemblyStatus assembly : assemblyList) {
-                if (assembly.getServiceAssemblyName().equals(assemblyName)) {
-                    return assembly;
-                }
-            }
-        }
-        
-        return null;
-    }
+//    /**
+//     * Retrieves the status of the given Service Assembly deployed on the JBI
+//     * Container on the Server.
+//     *
+//     * @param assemblyName
+//     *            name of a Service Assembly
+//     * @return JBI ServiceAssembly Status
+//     */
+//    private JBIServiceAssemblyStatus getJBIServiceAssemblyStatus(
+//            AdministrationService adminService, String assemblyName) {
+//        
+//        if (adminService != null) {
+//            List<JBIServiceAssemblyStatus> assemblyList = 
+//                    adminService.getServiceAssemblyStatusList();
+//            for (JBIServiceAssemblyStatus assembly : assemblyList) {
+//                if (assembly.getServiceAssemblyName().equals(assemblyName)) {
+//                    return assembly;
+//                }
+//            }
+//        }
+//        
+//        return null;
+//    }
     
-    private boolean deployServiceAssembly(AdministrationService adminService) {
+    private void deployServiceAssembly(DeploymentService adminService) 
+            throws BuildException {
         log("[deploy-service-assembly]");
         log("    Deploying a service assembly...");
         log("        host=" + hostName);
         log("        port=" + port);
         log("        file=" + serviceAssemblyLocation);
         
-        String result = adminService
-                .deployServiceAssembly(serviceAssemblyLocation);
-        Object[] value = JBIMBeanTaskResultHandler.getProcessResult(
-                "Deploy", serviceAssemblyLocation, result, false);
-        if (value[0] != null) {
-            log((String) value[0]);
+        try {
+            adminService.deployServiceAssembly(serviceAssemblyLocation, "server");
+        } catch (ManagementRemoteException e) {
+            Object[] value = JBIMBeanTaskResultHandler.getProcessResult(
+                "Deploy", serviceAssemblyLocation, e.getMessage(), false);
+            if (value[0] != null) {
+                throw new BuildException((String)value[0]);
+            }
         }
-        
-        return ((Boolean)value[1]).booleanValue();
     }
     
-    private boolean startServiceAssembly(AdministrationService adminService) {
+    private void startServiceAssembly(
+            RuntimeManagementServiceWrapper adminService) 
+            throws BuildException {
         log("[start-service-assembly]");
         log("    Starting a service assembly...");
         log("        host=" + hostName);
         log("        port=" + port);
         log("        name=" + serviceAssemblyID);
-        
-        String result = adminService.startServiceAssembly(serviceAssemblyID);
-        Object[] value = JBIMBeanTaskResultHandler.getProcessResult(
-                "Start", serviceAssemblyID, result, false);
-        if (value[0] != null) {
-            log((String) value[0]);
+          
+        try {
+            adminService.startServiceAssembly(serviceAssemblyID, "server");
+        } catch (ManagementRemoteException e) {
+            Object[] value = JBIMBeanTaskResultHandler.getProcessResult(
+                "Start", serviceAssemblyID, e.getMessage(), false);
+            if (value[0] != null) {
+                throw new BuildException((String)value[0]);
+            }
         }
-        
-        return ((Boolean)value[1]).booleanValue();
     }
     
-    private boolean stopServiceAssembly(AdministrationService adminService) {
+    private void stopServiceAssembly(RuntimeManagementServiceWrapper adminService) 
+            throws BuildException {
         log("[stop-service-assembly]");
         log("    Stopping a service assembly...");
         log("        host=" + hostName);
         log("        port=" + port);
         log("        name=" + serviceAssemblyID);
         
-        String result = adminService.stopServiceAssembly(serviceAssemblyID);
-        Object[] value = JBIMBeanTaskResultHandler.getProcessResult(
-                "Stop", serviceAssemblyID, result, false);
-        if (value[0] != null) {
-            log((String) value[0]);
+        try {
+            adminService.stopServiceAssembly(serviceAssemblyID, "server");
+        } catch (ManagementRemoteException e) {
+            Object[] value = JBIMBeanTaskResultHandler.getProcessResult(
+                "Stop", serviceAssemblyID, e.getMessage(), false);
+            if (value[0] != null) {
+                throw new BuildException((String)value[0]);
+            }
         }
-        
-        return ((Boolean)value[1]).booleanValue();
     }
     
-    private boolean shutdownServiceAssembly(AdministrationService adminService) {
+    private void shutdownServiceAssembly(RuntimeManagementServiceWrapper adminService) 
+            throws BuildException {
         log("[shutdown-service-assembly]");
         log("    Shutting down a service assembly...");
         log("        host=" + hostName);
         log("        port=" + port);
         log("        name=" + serviceAssemblyID);
         
-        String result = adminService.shutdownServiceAssembly(serviceAssemblyID, FORCE);
-        Object[] value = JBIMBeanTaskResultHandler.getProcessResult(
-                "Shutdown", serviceAssemblyID, result, false);
-        if (value[0] != null) {
-            log((String) value[0]);
+        try {
+            adminService.shutdownServiceAssembly(serviceAssemblyID, FORCE, "server");
+        } catch (ManagementRemoteException e) {
+            Object[] value = JBIMBeanTaskResultHandler.getProcessResult(
+                "Shutdown", serviceAssemblyID, e.getMessage(), false);
+            if (value[0] != null) {
+                throw new BuildException((String)value[0]);
+            }
         }
-        
-        return ((Boolean)value[1]).booleanValue();
     }
     
-    private boolean undeployServiceAssembly(AdministrationService adminService) {
+    private void undeployServiceAssembly(DeploymentService adminService) 
+            throws BuildException {
         log("[undeploy-service-assembly]");
         log("    Undeploying a service assembly...");
         log("        host=" + hostName);
         log("        port=" + port);
         log("        name=" + serviceAssemblyID);
         
-        String result = adminService.undeployServiceAssembly(serviceAssemblyID, FORCE);
-        Object[] value = JBIMBeanTaskResultHandler.getProcessResult(
-                "Undeploy", serviceAssemblyID, result, false);
-        if (value[0] != null) {
-            log((String) value[0]);
+         try {
+            adminService.undeployServiceAssembly(serviceAssemblyID, FORCE, "server");
+        } catch (ManagementRemoteException e) {
+            Object[] value = JBIMBeanTaskResultHandler.getProcessResult(
+                "Undeploy", serviceAssemblyID, e.getMessage(), false);
+            if (value[0] != null) {
+                throw new BuildException((String)value[0]);
+            }
         }
-        
-        return ((Boolean)value[1]).booleanValue();
     }
-//
-//    private boolean postProcessResult(String actionName, String result) {
-//        boolean success = (result.indexOf("Exception") == -1)
-//                && (result.indexOf("FAILED") == -1);
-//
-//        if (success) {
-//            log("    " + actionName + " service assembly succeeded.");
-//        } else {
-//
-//            if (result.indexOf("<?xml") == -1) {
-//                log("    " + actionName + " service assembly failed.");
-//                // No XML, exception occurred during invoke()
-//                log("    " + result);
-//
-//            } else {
-//
-//                if (result.indexOf("SUCCESS") != -1) {
-//                    log("    " + actionName + " service assembly failed. (partial success)");
-//                } else {
-//                    log("    " + actionName + " service assembly failed.");
-//                }
-//
-//                // Extract error info from the XML result
-//                try {
-//                    result = result.substring(result.indexOf("<?xml"));
-//                    Document document = loadXML(result);
-//
-//                    XPath xpath = XPathFactory.newInstance().newXPath();
-//                    NodeList nodes = (NodeList) xpath.evaluate(
-//                            "//exception-info/msg-loc-info", document,
-//                            XPathConstants.NODESET);
-//
-//                    if (nodes != null) {
-//                        int length = nodes.getLength();
-//                        for (int i = 0; i < length; i++) {
-//                            Node locInfoNode = nodes.item(i);
-//
-//                            String locTokenValue = null;
-//                            String locMessageValue = null;
-//
-//                            Node tokenNode = (Node) xpath.evaluate("loc-token",
-//                                    locInfoNode, XPathConstants.NODE);
-//                            if (tokenNode != null) {
-//                                locTokenValue = tokenNode.getTextContent();
-//                            }
-//
-//                            Node messageNode = (Node) xpath.evaluate(
-//                                    "loc-message", locInfoNode,
-//                                    XPathConstants.NODE);
-//                            if (messageNode != null) {
-//                                locMessageValue = messageNode.getTextContent();
-//                            }
-//
-//                            if (locTokenValue != null
-//                                    || locMessageValue != null) {
-//                                log("        MESSAGE: ("
-//                                        + locTokenValue + ") "
-//                                        + locMessageValue);
-//                            }
-//                        }
-//                    }
-//                } catch (Exception e) {
-//                    // TODO Auto-generated catch block
-//                    e.printStackTrace();
-//                }
-//            }
-//        }
-//
-//        return success;
-//    }
     
     static Document loadXML(String xmlSource) {
         try {
@@ -535,9 +471,8 @@ public class DeployServiceAssembly extends Task {
     public static void main(String[] args) {
         System.out.println("here");
         DeployServiceAssembly deploy = new DeployServiceAssembly();
-        deploy.setServiceAssemblyID("01000000-C40493EE0B0100-8199A774-01"); // NOI18N
-        deploy
-                .setServiceAssemblyLocation("C:\\Documents and Settings\\jqian\\CompositeApp10\\dist\\CompositeApp10.zip"); // NOI18N
+        deploy.setServiceAssemblyID("01000000-C40493EE0B0100-8199A774-01"); 
+        deploy.setServiceAssemblyLocation("C:\\Documents and Settings\\jqian\\CompositeApp10\\dist\\CompositeApp10.zip"); 
         deploy.setUserName("admin");
         deploy.setPassword("adminadmin");
         deploy.setHostName("localhost");

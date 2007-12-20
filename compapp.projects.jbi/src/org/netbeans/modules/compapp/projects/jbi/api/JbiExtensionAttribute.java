@@ -42,35 +42,23 @@
 package org.netbeans.modules.compapp.projects.jbi.api;
 
 import java.io.Serializable;
-import java.net.URL;
-import java.util.List;
 
 /**
- * JBI extension info.
+ * JBI Extension attribute
  *
  * @author tli
  */
-public class JbiExtensionInfo implements Serializable {
+public class JbiExtensionAttribute implements Serializable {
 
     /**
-     * Name of the extension.
+     * Name of the extension element.
      */
     private String name;
 
     /**
-     * Name of the extension schema file.
-     */
-    private String file;
-
-    /**
-     * Type of the extension, e.x., "port", "endpoint", "connection", or "su".
+     * Type of the extension, e.x., "string", "integer", or "boolean".
      */
     private String type;
-
-    /**
-     * Name of the target component, e.x., "sun-http-binding". "all"
-     */
-    private String target;
 
     /**
      * DOCUMENT ME!
@@ -79,54 +67,21 @@ public class JbiExtensionInfo implements Serializable {
 
     /**
      * DOCUMENT ME!
-     */
-    private URL icon;
-
-    /**
-     * DOCUMENT ME!
-     */
-    private String ns;
-
-    /**
-     * DOCUMENT ME!
-     */
-    private List<JbiExtensionElement> elements;
-
-    /**
-     * DOCUMENT ME!
      *
      * @param name
      * @param type
-     * @param icon
      * @param description
-     * @param ns
      */
-    public JbiExtensionInfo(String name, String type, String target,
-                            String file, String ns, String description, URL icon,
-                            List<JbiExtensionElement> elements) {
+    public JbiExtensionAttribute(String name, String type, String description) {
         this.name = name;
         this.type = type;
-        this.target = target;
-        this.file = file;
-        this.ns = ns;
-        this.icon = icon;
         this.description = description;
-        this.elements = elements;
     }
 
     /**
      * DOCUMENT ME!
      *
-     * @return the icon.
-     */
-    public URL getIcon() {
-        return this.icon;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return the description
+     * @return the name.
      */
     public String getName() {
         return this.name;
@@ -135,7 +90,7 @@ public class JbiExtensionInfo implements Serializable {
     /**
      * DOCUMENT ME!
      *
-     * @return the description
+     * @return the type.
      */
     public String getType() {
         return this.type;
@@ -146,65 +101,17 @@ public class JbiExtensionInfo implements Serializable {
      *
      * @return the description
      */
-    public String getTarget() {
-        return this.target;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return the description
-     */
-    public String getFile() {
-        return this.file;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return the description
-     */
     public String getDescription() {
         return this.description;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return the extension namespaces
-     */
-    public String getNameSpace() {
-        return this.ns;
-    }
-
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return the extension elements
-     */
-    public List<JbiExtensionElement> getElements() {
-        return this.elements;
     }
     
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("JbiExtensionInfo:")
+        sb.append("JbiExtensionAttribute:")
                 .append(" name=").append(getName())
                 .append(" type=").append(getType())
-                .append(" file=").append(getFile())
-                .append(" ns=").append(getNameSpace())
-                .append(" target=").append(getTarget())
-                .append(" icon=").append(getIcon())
                 .append(" description=").append(getDescription());
-        
-        for (JbiExtensionElement element : getElements()) {
-            sb.append(System.getProperty("line.separator")); // NOI18N
-            sb.append(element.toString());
-        }
-        
-        sb.append(System.getProperty("line.separator")); // NOI18N
         
         return sb.toString();
     }

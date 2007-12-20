@@ -48,6 +48,7 @@ package org.netbeans.modules.compapp.projects.jbi;
 public interface JbiConstants {
     public static final String JBI_NAMESPACE_URI = "http://java.sun.com/xml/ns/jbi";  // NO18N
     
+    public static final String JBI_ELEM_NAME = "jbi";  // NO18N
     public static final String JBI_SERVICE_ASSEMBLY_ELEM_NAME = "service-assembly";  // NO18N
     public static final String JBI_SERVICE_UNIT_ELEM_NAME = "service-unit";  // NO18N
     public static final String JBI_TARGET_ELEM_NAME = "target";  // NO18N
@@ -64,6 +65,7 @@ public interface JbiConstants {
     public static final String JBI_CONSUMES_ELEM_NAME = "consumes";  // NO18N
     public static final String JBI_SERVICES_ELEM_NAME = "services";  // NO18N
     
+    public static final String JBI_BINDING_COMPONENT_ATTR_NAME = "binding-component"; // NOI18N
     public static final String JBI_ENDPOINT_NAME_ATTR_NAME = "endpoint-name";  // NO18N
     public static final String JBI_SERVICE_NAME_ATTR_NAME = "service-name";  // NO18N
     public static final String JBI_INTERFACE_NAME_ATTR_NAME = "interface-name";  // NO18N    

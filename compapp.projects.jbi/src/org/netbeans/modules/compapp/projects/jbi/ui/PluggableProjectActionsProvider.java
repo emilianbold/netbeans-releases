@@ -38,47 +38,59 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.compapp.projects.jbi.anttasks;
+package org.netbeans.modules.compapp.projects.jbi.ui;
 
-import com.sun.esb.management.api.configuration.ConfigurationService;
-import java.util.Map;
-import java.util.Properties;
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Project;
-import org.netbeans.api.debugger.DebuggerManager;
-
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.modules.compapp.projects.jbi.api.CompAppProjectActionPerformer;
+import org.netbeans.modules.compapp.projects.jbi.api.CompAppProjectActionsProvider;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 
 /**
- * Ant task to tear down debug environment for CompApp project test case run.
  *
- * @author jqian
+ * @author gpatil
  */
-public class TearDownDebugEnvironment extends AbstractDebugEnvironmentTask {
+public class PluggableProjectActionsProvider{
+    private static PluggableProjectActionsProvider instance;
     
-    @Override
-    public void execute() throws BuildException {
-        log("TearDownDebugEnvironment:", Project.MSG_DEBUG);
-        
-        DebuggerManager.getDebuggerManager().finishAllSessions();
-        
-        // Restore SE's debugEnabled property        
-        ConfigurationService configService = getConfigurationService();  
-                
-        Map<String, Boolean> debugEnabledMap = getDebugEnabledMap();
-        for (String seName : debugEnabledMap.keySet()) {
-            boolean wasDebugEnabled = debugEnabledMap.get(seName); 
-            if (!wasDebugEnabled) {
-                try {
-                    log("Restore debug-enabled property for " + seName, Project.MSG_DEBUG);
-                    
-                    Properties properties = new Properties();
-                    properties.setProperty(SERVICE_ENGINE_DEBUG_FLAG, "false");
-                    
-                    configService.setComponentConfiguration(seName, properties, "server");
-                } catch (Exception e) {
-                    log(e.getMessage(), Project.MSG_WARN);
-                }
-            }
+    private List<CompAppProjectActionPerformer> projActions;
+    
+    public synchronized static PluggableProjectActionsProvider getInstance() {
+        if (instance == null) {
+            instance = new PluggableProjectActionsProvider();
         }
-    }     
+        return instance;
+    }
+    
+    private PluggableProjectActionsProvider() {
+        Lookup.Template<CompAppProjectActionsProvider> template = 
+                new Lookup.Template<CompAppProjectActionsProvider> (CompAppProjectActionsProvider.class);
+        final Lookup.Result<CompAppProjectActionsProvider> result = Lookup.getDefault().lookup(template);
+        result.addLookupListener(new LookupListener() {
+            public void resultChanged(LookupEvent e) {
+                initialize(result);
+            }
+        });
+        initialize(result);
+    }
+    
+    private synchronized void initialize(Lookup.Result<CompAppProjectActionsProvider> result) {
+        if (projActions == null){
+            projActions = new ArrayList<CompAppProjectActionPerformer>();
+        }
+        
+        projActions.clear();
+        
+        for(CompAppProjectActionsProvider actProvider : result.allInstances()) {
+            projActions.addAll(actProvider.getProjectActions());
+        }        
+    }
+    
+    public synchronized List<CompAppProjectActionPerformer> getProjectActions(){
+        return Collections.unmodifiableList(projActions);
+    }
+   
 }

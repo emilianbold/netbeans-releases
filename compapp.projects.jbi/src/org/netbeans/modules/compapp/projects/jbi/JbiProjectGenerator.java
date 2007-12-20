@@ -38,14 +38,12 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.compapp.projects.jbi;
 
 import org.netbeans.modules.compapp.projects.jbi.ui.customizer.JbiProjectProperties;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 
 import org.netbeans.spi.project.support.ant.AntProjectHelper;

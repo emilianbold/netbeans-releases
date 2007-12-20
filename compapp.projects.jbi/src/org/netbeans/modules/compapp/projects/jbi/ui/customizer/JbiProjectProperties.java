@@ -91,6 +91,7 @@ import javax.xml.transform.stream.StreamResult;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.compapp.javaee.sunresources.SunResourcesUtil;
 import org.netbeans.modules.compapp.projects.jbi.ComponentHelper;
+import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectHelper;
 import org.netbeans.modules.sun.manager.jbi.management.model.ComponentInformationParser;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentDocument;
@@ -1032,7 +1033,6 @@ public class JbiProjectProperties {
         Element suElement = document.createElement("service-unit"); // NOI18N
         
         String desc = vi.getAsaDescription();
-        String shortName = vi.getShortName();
         AntArtifact aa = vi.getAntArtifact();
         
         if (desc == null) { // if needed, use default one...
@@ -1047,24 +1047,28 @@ public class JbiProjectProperties {
         String suJarName;
         
         if (isEngine) {
-            if (VisualClassPathItem.isJavaEEProjectAntArtifact(aa)){
-                // Get the Java EE archive name with extension.
-                String[] fileParts = getFileNameParts(
-                        aa.getArtifactLocations()[0].toString());
-                suJarName =  fileParts[0] ;                
-                suName = jbiProjName + "-" + fileParts[1]; //NOI18N
+            String suJarRelPath = aa.getArtifactLocations()[0].toString();
+            suName = vi.getProjectName(); 
+            
+            if (suJarRelPath.indexOf(
+                    JbiProjectConstants.SU_BUILD_ARTIFACT_RELATIVE_PATH) >= 0){
+                // Sub projects generating SU at build/SEDepoyment.jar
+                suJarName = suName + ".jar"; // e.x., SynchronousSample.jar // NOI18N                                
             } else {
-                String suProjName = vi.getProjectName(); 
-                suName = jbiProjName + "-" + suProjName; //NOI18N
-                suJarName = suProjName + ".jar"; // e.x., SynchronousSample.jar // NOI18N                
+                // VisualClassPathItem.isJavaEEProjectAntArtifact(aa) or 
+                // Sub projects generating SU with different name and extension.
+                // Get the Java EE archive name with extension.
+                String[] fileParts = getFileNameParts(suJarRelPath);
+                suJarName = fileParts[0];             
             }
-        } else {
-            suName = jbiProjName + "-" + target; // NOI18N
+        } else { // Binding Component
+            suName = target; 
             suJarName = target + ".jar"; // e.x., sun-http-binding.jar // NOI18N
         }
         
+        String compAppSuName = jbiProjName + "-" + suName;     // NOI18N   
         Element identificationElement = 
-                generateIdentificationElement(document, suName, desc);
+                generateIdentificationElement(document, compAppSuName, desc);
         suElement.appendChild(identificationElement);
         
         Element targetElement = 

@@ -138,11 +138,11 @@ public class WSDLCatalogModel implements CatalogModel {
         if (catalogFileList.size() > 0) {
             URI uri = null;
             
-            try {
-                uri = resolveUsingApacheCatalog(catalogFileList, locationURI.toString());
-            }catch (IOException ioe) {
-                
-            }
+//            try {
+//                uri = resolveUsingApacheCatalog(catalogFileList, locationURI.toString());
+//            }catch (IOException ioe) {
+//                
+//            }
             
             if (uri != null ) {
                 file =new File(uri);

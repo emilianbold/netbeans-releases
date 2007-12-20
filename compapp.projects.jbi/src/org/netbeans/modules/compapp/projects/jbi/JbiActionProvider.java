@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.compapp.projects.jbi;
 
+import com.sun.esb.management.common.ManagementRemoteException;
+import com.sun.jbi.ui.common.ServiceAssemblyInfo;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -77,9 +79,8 @@ import org.netbeans.modules.compapp.projects.jbi.api.JbiBuildListener;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiBuildTask;
 import org.netbeans.modules.compapp.projects.jbi.api.ProjectValidator;
 import org.netbeans.modules.compapp.test.ui.TestcaseNode;
-import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
 import org.netbeans.modules.sun.manager.jbi.management.JBIMBeanTaskResultHandler;
-import org.netbeans.modules.sun.manager.jbi.management.model.JBIServiceAssemblyStatus;
+import org.netbeans.modules.sun.manager.jbi.management.wrapper.api.RuntimeManagementServiceWrapper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.execution.ExecutorTask;
@@ -246,45 +247,38 @@ public class JbiActionProvider implements ActionProvider {
             if (command.equals(JbiProjectConstants.COMMAND_TEST)) {
                 String serverInstance = antProjectHelper.getStandardPropertyEvaluator().
                         getProperty(JbiProjectProperties.J2EE_SERVER_INSTANCE);
-                AdministrationService adminService = null;
+                              
                 try {
-                     adminService = AdministrationServiceHelper.getAdminService(serverInstance);
-                } catch (Exception e) {
-                    NotifyDescriptor d = new NotifyDescriptor.Message(
-                            e.getMessage(), NotifyDescriptor.ERROR_MESSAGE);
+                    RuntimeManagementServiceWrapper mgmtServiceWrapper =
+                            AdministrationServiceHelper.getRuntimeManagementServiceWrapper(serverInstance);
+
+                    JbiProjectProperties properties = project.getProjectProperties();
+                    String saID = (String) properties.get(JbiProjectProperties.SERVICE_ASSEMBLY_ID);
+                    ServiceAssemblyInfo saStatus = mgmtServiceWrapper.getServiceAssembly(saID, "server");
+                    if (saStatus == null) { // not deployed
+                        // Add the deploy target to the target list. 
+                        // (Alternatively, we could call adminService.deployServiceAssembly
+                        // directly, but then we need to worry about project build.)
+                        List<String> targetList = new ArrayList<String>();
+                        String[] extraTargetNames = commands.get(JbiProjectConstants.COMMAND_DEPLOY);
+                        targetList.addAll(Arrays.asList(extraTargetNames));
+                        targetList.addAll(Arrays.asList(targetNames));
+                        targetNames = targetList.toArray(new String[]{});
+                    } else if (!saStatus.getState().equals(ServiceAssemblyInfo.STARTED_STATE)) {
+                        // simply start the service assembly
+                        String result = mgmtServiceWrapper.startServiceAssembly(saID, "server");
+                        boolean success = JBIMBeanTaskResultHandler.showRemoteInvokationResult(
+                                "Start", saID, result); // NOI18N
+                        if (!success) {
+                            return;
+                        }
+                    }
+                } catch (ManagementRemoteException e) {
+                    NotifyDescriptor d = new NotifyDescriptor.Message(e.getMessage(),
+                            NotifyDescriptor.ERROR_MESSAGE);
                     DialogDisplayer.getDefault().notify(d);
                     return;
                 }
-                
-                JbiProjectProperties properties = project.getProjectProperties();
-                String saID = (String) properties.get(JbiProjectProperties.SERVICE_ASSEMBLY_ID);
-                JBIServiceAssemblyStatus saStatus = adminService.getServiceAssemblyStatus(saID);
-                if (saStatus == null) { // not deployed
-                    /*
-                    String msg = NbBundle.getMessage(JbiActionProvider.class, 
-                            "MSG_SERVICE_ASSEMBLY_NOT_DEPLOYED", saID); // NOI18N
-                    NotifyDescriptor d = new NotifyDescriptor.Message(
-                            msg, NotifyDescriptor.WARNING_MESSAGE);
-                    DialogDisplayer.getDefault().notify(d);
-                    return;
-                    */
-                    // Add the deploy target to the target list. 
-                    // (Alternatively, we could call adminService.deployServiceAssembly
-                    // directly, but then we need to worry about project build.)
-                    List<String> targetList = new ArrayList<String>();
-                    String[] extraTargetNames = commands.get(JbiProjectConstants.COMMAND_DEPLOY);
-                    targetList.addAll(Arrays.asList(extraTargetNames));
-                    targetList.addAll(Arrays.asList(targetNames));
-                    targetNames = targetList.toArray(new String[]{});
-                } else if (!saStatus.getStatus().equals(JBIServiceAssemblyStatus.START_STATUS)) {
-                    // simply start the service assembly
-                    String result = adminService.startServiceAssembly(saID);
-                    boolean success = JBIMBeanTaskResultHandler.showRemoteInvokationResult(
-                            "Start", saID, result); // NOI18N
-                    if (!success) {
-                        return;
-                    }
-                } 
             }
             
         } else if (command.equals(JbiProjectConstants.COMMAND_JBICLEANCONFIG) || 

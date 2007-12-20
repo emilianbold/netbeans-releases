@@ -174,8 +174,8 @@ made subject to such option by the copyright holder.
                     <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-compapp-projects-jbi.jar"/>
                     <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-compapp-manager-jbi.jar"/>
                     <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-soa-libs-xmlbeans.jar"/>
+                    <pathelement location="${{netbeans.home}}/../soa1/modules/ext/jbi/jbi-admin-common.jar"/>
                     <pathelement location="${{netbeans.home}}/../soa1/ant/nblib/org-netbeans-modules-compapp-projects-jbi.jar"/>
-                    <!--<pathelement location="${{netbeans.home}}/../soa1/modules/ext/jbi/anttask.jar"/>-->
                     <pathelement location="${{netbeans.home}}/../platform7/lib/org-openide-util.jar"/>
                     <pathelement location="${{netbeans.home}}/../platform7/lib/org-openide-modules.jar"/>
                     <pathelement location="${{netbeans.home}}/../platform7/modules/org-openide-options.jar"/>
@@ -443,59 +443,9 @@ made subject to such option by the copyright holder.
                 <xsl:attribute name="depends">init,init-deploy,clean,jbi-build</xsl:attribute>
                 <xsl:attribute name="description">Clean and Build Service Assembly.</xsl:attribute>
             </target>
-            
-            <target name="pre-dist">
-                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
-                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
-                <!--
-                <jbiserver-generate-endpoint-descriptors
-                endpointDescriptorDirectoryLocation="${{basedir}}/${{src.dir}}"
-                serviceEngineJarDirectoryFileNames="${{jbiserver.content.additional}}">
-                </jbiserver-generate-endpoint-descriptors>
-                -->
-            </target>
-                        
-            <target name="do-dist">
-                <xsl:attribute name="depends">init,pre-dist</xsl:attribute>
-                
-                <mkdir dir="${{build.dir}}/META-INF"/>
-
-                <jar compress="${{jar.compress}}" jarfile="${{build.dir}}/SEDeployment.jar">
-                    <fileset includes="**/*.bpel,**/*.wsdl,**/*.xsd" dir="${{src.dir}}"/>
-                    <fileset dir="${{basedir}}/${{src.dir}}">
-                        <include name="portmap.xml" />
-                    </fileset>
-                </jar>
-                <jar compress="${{jar.compress}}" jarfile="${{build.dir}}/BCDeployment.jar">
-                    <fileset includes="**/*.wsdl,**/*.xsd" dir="${{src.dir}}"/>
-                    <fileset dir="${{basedir}}/${{src.dir}}">
-                        <include name="endpoints.xml" />
-                    </fileset>
-                </jar>
-                <dirname property="dist.jar.dir" file="${{dist.jar}}"/>
-                <mkdir dir="${{dist.jar.dir}}"/>
-                <jar compress="${{jar.compress}}" jarfile="${{dist.jar}}">
-                    <fileset dir="${{build.dir}}"/>
-                </jar>
-            </target>
-            
-            <target name="post-dist">
-                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
-                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
-                <!--<jbi-generate-deployment-path
-                jarFileClasspath="${{module.install.dir}}/org-netbeans-modules-compapp-projects-jbi.jar"
-                privatePropertiesFileLocation="${{basedir}}/nbproject/private/private.properties"
-                netBeansUserPropertyValue="${{netbeans.user}}">
-                </jbi-generate-deployment-path>
-                <loadproperties srcFile="${{basedir}}/nbproject/private/private.properties"/>
-                -->
-            </target>
-            
+         
             <target name="dist">
-                <xsl:attribute name="depends">init,pre-dist,do-dist,post-dist</xsl:attribute>
-                <!--    
-                <xsl:attribute name="depends">init,compile,pre-dist,do-dist,post-dist,library-inclusion-in-manifest</xsl:attribute>
-                -->                
+                <xsl:attribute name="depends">jbi-build</xsl:attribute>
                 <xsl:attribute name="description">Build distribution (JAR).</xsl:attribute>
             </target>
             
@@ -562,6 +512,7 @@ made subject to such option by the copyright holder.
                 <teardown-debug-environment
                     netBeansUserDir="${{netbeans.user}}" 
                     j2eeServerInstance="${{j2ee.server.instance}}"/>
+
             </target>
             
             <xsl:comment>
@@ -644,35 +595,36 @@ made subject to such option by the copyright holder.
             </xsl:comment>
             <target name="-pre-test-run" if="have.tests" depends="init">
                 <mkdir dir="${{test.results.dir}}"/>
+                <path id="unit.test.classpath">
+                    <pathelement path="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-compapp-manager-jbi.jar"/>
+                    <pathelement path="${{netbeans.home}}/../soa1/modules/ext/jbi/catd.jar"/>
+                    <pathelement path="${{netbeans.home}}/../soa1/modules/ext/jbi/xmlunit-1.0.jar"/>
+                    <!--<pathelement path="${{netbeans.home}}/../soa1/modules/ext/jbi/httpunit-1.6.jar"/> -->
+                    <pathelement path="${{netbeans.home}}/../java1/modules/ext/junit-3.8.2.jar"/>                        
+                    <pathelement path="${{netbeans.home}}/../java1/modules/ext/jaxws21/api/saaj-api.jar"/>
+                    <pathelement path="${{netbeans.home}}/../java1/modules/ext/jaxws21/saaj-impl.jar"/>
+                    <pathelement path="${{netbeans.home}}/../java1/modules/ext/jaxws21/FastInfoset.jar"/>
+                    <pathelement path="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-xdm.jar"/>
+                    <pathelement path="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-xam.jar"/>
+                    <pathelement path="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-editor-lib.jar"/>
+                    <pathelement path="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-text.jar"/>
+                    <pathelement path="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-editor.jar"/>
+                    <pathelement path="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-editor-util.jar"/>
+                    <pathelement path="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-core.jar"/>
+                    <pathelement path="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-editor-lib2.jar"/>
+                    <pathelement path="${{netbeans.home}}/../platform7/lib/org-openide-modules.jar"/>
+                    <pathelement path="${{netbeans.home}}/../platform7/lib/org-openide-util.jar"/>
+                    <pathelement path="${{netbeans.home}}/../platform7/modules/org-openide-options.jar"/>
+                    <pathelement path="${{netbeans.home}}/../platform7/modules/org-openide-text.jar"/>
+                    <pathelement path="${{netbeans.home}}/../platform7/modules/org-openide-loaders.jar"/>
+                    <pathelement path="${{netbeans.home}}/../platform7/modules/org-openide-nodes.jar"/>
+                    <pathelement path="${{netbeans.home}}/../platform7/modules/org-netbeans-modules-editor-mimelookup.jar"/>
+                    <pathelement path="${{netbeans.home}}/../platform7/core/org-openide-filesystems.jar"/>
+                </path>
             </target>
             <target name="-do-test-run" if="netbeans.home+have.tests" depends="init,-pre-test-run">
                 <junit showoutput="true" fork="yes" dir="${{basedir}}" failureproperty="tests.failed" errorproperty="tests.failed">
-                    <classpath>
-                        <pathelement path="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-compapp-manager-jbi.jar"/>
-                        <pathelement path="${{netbeans.home}}/../soa1/modules/ext/jbi/catd.jar"/>
-                        <pathelement path="${{netbeans.home}}/../soa1/modules/ext/jbi/xmlunit-1.0.jar"/>
-                        <!--<pathelement path="${{netbeans.home}}/../soa1/modules/ext/jbi/httpunit-1.6.jar"/> -->
-                        <pathelement path="${{netbeans.home}}/../java1/modules/ext/junit-3.8.2.jar"/>                        
-                        <pathelement path="${{netbeans.home}}/../java1/modules/ext/jaxws21/api/saaj-api.jar"/>
-                        <pathelement path="${{netbeans.home}}/../java1/modules/ext/jaxws21/saaj-impl.jar"/>
-                        <pathelement path="${{netbeans.home}}/../java1/modules/ext/jaxws21/FastInfoset.jar"/>
-                        <pathelement path="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-xdm.jar"/>
-                        <pathelement path="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-xam.jar"/>
-                        <pathelement path="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-editor-lib.jar"/>
-                        <pathelement path="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-text.jar"/>
-                        <pathelement path="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-editor.jar"/>
-                        <pathelement path="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-editor-util.jar"/>
-                        <pathelement path="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-core.jar"/>
-                        <pathelement path="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-editor-lib2.jar"/>
-                        <pathelement path="${{netbeans.home}}/../platform7/lib/org-openide-modules.jar"/>
-                        <pathelement path="${{netbeans.home}}/../platform7/lib/org-openide-util.jar"/>
-                        <pathelement path="${{netbeans.home}}/../platform7/modules/org-openide-options.jar"/>
-                        <pathelement path="${{netbeans.home}}/../platform7/modules/org-openide-text.jar"/>
-                        <pathelement path="${{netbeans.home}}/../platform7/modules/org-openide-loaders.jar"/>
-                        <pathelement path="${{netbeans.home}}/../platform7/modules/org-openide-nodes.jar"/>
-                        <pathelement path="${{netbeans.home}}/../platform7/modules/org-netbeans-modules-editor-mimelookup.jar"/>
-                        <pathelement path="${{netbeans.home}}/../platform7/core/org-openide-filesystems.jar"/>
-                    </classpath>
+                    <classpath refid="unit.test.classpath"/>
                     <sysproperty key="NetBeansUserDir" value="${{netbeans.user}}"/>
                     <!-- 
                     Netbeans JUnit Test Results Window will look for TEST-{TestClassName}.xml to parse and display
@@ -695,32 +647,7 @@ made subject to such option by the copyright holder.
             </target>
             <target name="-do-single-test-run" if="netbeans.home+have.tests" depends="init,-pre-test-run">
                 <junit showoutput="true" fork="yes" dir="${{basedir}}" failureproperty="tests.failed" errorproperty="tests.failed">
-                    <classpath>
-                        <pathelement path="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-compapp-manager-jbi.jar"/>
-                        <pathelement path="${{netbeans.home}}/../soa1/modules/ext/jbi/catd.jar"/>
-                        <pathelement path="${{netbeans.home}}/../soa1/modules/ext/jbi/xmlunit-1.0.jar"/>
-                        <pathelement path="${{netbeans.home}}/../soa1/modules/ext/jbi/httpunit-1.6.jar"/>
-                        <pathelement path="${{netbeans.home}}/../java1/modules/ext/junit-3.8.2.jar"/>
-                        <pathelement path="${{netbeans.home}}/../java1/modules/ext/jaxws21/api/saaj-api.jar"/>
-                        <pathelement path="${{netbeans.home}}/../java1/modules/ext/jaxws21/saaj-impl.jar"/>
-                        <pathelement path="${{netbeans.home}}/../java1/modules/ext/jaxws21/FastInfoset.jar"/>
-                        <pathelement path="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-xdm.jar"/>
-                        <pathelement path="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-xam.jar"/>
-                        <pathelement path="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-editor-lib.jar"/>
-                        <pathelement path="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-text.jar"/>
-                        <pathelement path="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-editor.jar"/>
-                        <pathelement path="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-editor-util.jar"/>
-                        <pathelement path="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-core.jar"/>
-                        <pathelement path="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-editor-lib2.jar"/>
-                        <pathelement path="${{netbeans.home}}/../platform7/lib/org-openide-modules.jar"/>
-                        <pathelement path="${{netbeans.home}}/../platform7/lib/org-openide-util.jar"/>
-                        <pathelement path="${{netbeans.home}}/../platform7/modules/org-openide-options.jar"/>
-                        <pathelement path="${{netbeans.home}}/../platform7/modules/org-openide-text.jar"/>
-                        <pathelement path="${{netbeans.home}}/../platform7/modules/org-openide-loaders.jar"/>
-                        <pathelement path="${{netbeans.home}}/../platform7/modules/org-openide-nodes.jar"/>
-                        <pathelement path="${{netbeans.home}}/../platform7/modules/org-netbeans-modules-editor-mimelookup.jar"/>
-                        <pathelement path="${{netbeans.home}}/../platform7/core/org-openide-filesystems.jar"/>
-                    </classpath>
+                    <classpath refid="unit.test.classpath"/>
                     <sysproperty key="NetBeansUserDir" value="${{netbeans.user}}"/>
                     <sysproperty key="inDebug" value="${{inDebug}}"/>
                     <!-- 
@@ -853,15 +780,19 @@ made subject to such option by the copyright holder.
                         </available>
                     </condition>
                     -->
-                    <basename property="se.jar.name">
+                    <!--
+                    <basename>
+                        <xsl:attribute name="property"><xsl:value-of select="$subproj"/><xsl:text>.se.jar.name</xsl:text></xsl:attribute>
                         <xsl:attribute name="file">${reference.<xsl:value-of select="$subproj"/>.dist_se}</xsl:attribute>
-                    </basename>
+                    </basename> 
+                    -->
                     <basename>
                         <xsl:attribute name="property"><xsl:value-of select="$subproj"/><xsl:text>.su.name</xsl:text></xsl:attribute>
                         <xsl:attribute name="file">${project.<xsl:value-of select="$subproj"/>}</xsl:attribute>
                     </basename>
                     <unzip>
-                        <xsl:attribute name="src">${project.<xsl:value-of select="$subproj"/>}<xsl:text>/build/${se.jar.name}</xsl:text></xsl:attribute>
+                        <xsl:attribute name="src">${reference.<xsl:value-of select="$subproj"/>.dist_se}</xsl:attribute>
+                        <!--<xsl:attribute name="src">${project.<xsl:value-of select="$subproj"/>}/build/${<xsl:value-of select="$subproj"/>.se.jar.name}</xsl:attribute>-->
                         <xsl:attribute name="dest">${src.dir}<xsl:text>/../jbiServiceUnits</xsl:text></xsl:attribute>
                         <xsl:attribute name="dest">${src.dir}<xsl:text>/../jbiServiceUnits/</xsl:text>${<xsl:value-of select="$subproj"/>.su.name}</xsl:attribute>
                         <patternset>
@@ -903,7 +834,7 @@ made subject to such option by the copyright holder.
         -->
         
                     <move>
-                        <xsl:attribute name="todir">${src.dir}<xsl:text>/../jbiServiceUnits/META-INF/</xsl:text><xsl:value-of select="$subproj"/></xsl:attribute>                        
+                        <xsl:attribute name="todir">${src.dir}<xsl:text>/../jbiServiceUnits/META-INF/${</xsl:text><xsl:value-of select="$subproj"/><xsl:text>.su.name}</xsl:text></xsl:attribute>                        
                         <fileset>
                             <xsl:attribute name="dir">${<xsl:value-of select="$subproj"/>.su.dir}<xsl:text>/META-INF</xsl:text></xsl:attribute>
                         </fileset>

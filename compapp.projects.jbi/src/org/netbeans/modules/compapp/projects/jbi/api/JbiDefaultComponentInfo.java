@@ -215,9 +215,8 @@ public class JbiDefaultComponentInfo {
                         nsList.add(attrValue);
                     }
                 }
-                                
-//                List<String> bindingTypes = new ArrayList<String>();
-                if (JBIComponentStatus.BINDING_TYPE.equals(type) && compDO instanceof DataFolder) {
+                        
+                if (JBIComponentStatus.BINDING.equals(type) && compDO instanceof DataFolder) {
                     for (DataObject bindingTypeDO : ((DataFolder)compDO).getChildren()) { 
                         FileObject bindingTypeFO = bindingTypeDO.getPrimaryFile(); // e.x., SeeBeyondJbiComponents/sun-file-binding/file.binding-1.0
                         
@@ -226,7 +225,6 @@ public class JbiDefaultComponentInfo {
                         if (idx > 0) {
                             bindingType = bindingType.substring(0,idx).toLowerCase();
                         }
-//                        bindingTypes.add(bindingType); // bid: file, http, soap
                         
                         String ns = (String) bindingTypeFO.getAttribute(COMP_NAMESPACE);
                         if (ns != null) {
@@ -240,12 +238,9 @@ public class JbiDefaultComponentInfo {
                 // check for duplicates first..
                 if (id.length() > 0 && !singleton.componentMap.containsKey(id)) {
                     JBIComponentStatus jcs = 
-                            new JBIComponentStatus(id, id, desc, type, state, nss);
+                            new JBIComponentStatus(id, desc, type, state, nss);
                     singleton.componentList.add(jcs);
                     singleton.componentMap.put(id, jcs);
-//                    for (String bindingType : bindingTypes) {
-//                        addBindingInfo(id, bindingType, desc, ns);
-//                    }
                 }
             }
         }

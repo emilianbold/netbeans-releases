@@ -43,23 +43,33 @@
 package org.netbeans.modules.compapp.projects.jbi.ui;
 
 import java.io.IOException;
+import java.io.File;
+
 import org.netbeans.modules.compapp.projects.jbi.ui.actions.DeleteModuleAction;
 import org.netbeans.modules.compapp.projects.jbi.ui.customizer.VisualClassPathItem;
+import org.netbeans.modules.compapp.projects.jbi.JbiProject;
+import org.netbeans.modules.compapp.projects.jbi.api.JbiInstalledProjectPluginInfo;
+import org.netbeans.modules.compapp.projects.jbi.api.InternalProjectTypePlugin;
+import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectActionPerformer;
+import org.netbeans.api.project.Project;
+import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.actions.DeleteAction;
+import org.openide.actions.CustomizeAction;
 
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
+import org.openide.nodes.*;
 
 import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
+import org.openide.filesystems.FileUtil;
+import org.openide.ErrorManager;
 
-import java.awt.Image;
+import java.awt.*;
+import java.util.List;
+import java.util.ArrayList;
 
-import javax.swing.Action;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
+import javax.swing.*;
 
 
 /**
@@ -71,42 +81,88 @@ import javax.swing.ImageIcon;
  * @author Tientien Li
  */
 public class JbiModuleNode extends AbstractNode implements Node.Cookie {
-    static private Action[] actions = null;
+    // static private Action[] actions = null;
+    List<Action> actions = null;
+
     private VisualClassPathItem model;
-    
+    private InternalProjectTypePlugin plugin;
+    private Project suProj;
+
     // will frequently accept an element from some data model in the constructor:
     public JbiModuleNode(VisualClassPathItem key) {
         super(Children.LEAF);
         model = key;
         setName("preferablyUniqueNameForThisNodeAmongSiblings"); // NOI18N or, super.setName if needed
-        setDisplayName(key.getShortName()); 
-
+        setDisplayName(key.getShortName());
+        suProj = model.getAntArtifact().getProject();
+        if (suProj != null) {
+            plugin = JbiInstalledProjectPluginInfo.getPlugin(suProj);
+        }
         //setShortDescription(NbBundle.getMessage(JbiModuleNode.class, "HINT_ModuleNode"));
     }
 
     // Create the popup menu:
     public Action[] getActions(boolean context) {
         if (null == actions) {
-            actions = new Action[] {   
-                    SystemAction.get(DeleteAction.class), 
-                };
+            actions = new ArrayList<Action>();
+            actions.add(SystemAction.get(DeleteAction.class));
+            if ((plugin != null) && (plugin.hasCustomizer())) {
+                actions.add(SystemAction.get(CustomizeAction.class));
+            }
             getCookieSet().add(this);
         }
 
-        return actions;
+        return actions.toArray(new Action[actions.size()]);
     }
-    
+
     public boolean canDestroy() {
         return true;
     }
 
     public void destroy() throws IOException {
         super.destroy();
-        
-        DeleteModuleAction deleteModuleAction = 
+
+        // remove internal su project files...
+        if (plugin != null) {
+            List<JbiProjectActionPerformer> acts = plugin.getProjectActions();
+            for (JbiProjectActionPerformer act : acts) {
+                if (act.getActionType().equalsIgnoreCase(JbiProjectActionPerformer.ACT_DELETE_PROJECT)) {
+                    // perform plug-in specific delete action...
+                    act.perform(suProj);
+                    return;
+                }
+            }
+        }
+
+        DeleteModuleAction deleteModuleAction =
                 SystemAction.get(DeleteModuleAction.class);
         deleteModuleAction.performAction(new Node[] {this});
+
+        // clean up the internal plug-in project generated files..
+        JbiProject jbiProj = ((JbiModuleViewNode) this.getParentNode()).getProject();
+        if (JbiInstalledProjectPluginInfo.isInternalSubproject(jbiProj, suProj)) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    boolean ok = deleteDir(FileUtil.toFile(suProj.getProjectDirectory()));
+                }
+            });
+        }
     }
+
+    private boolean deleteDir(File dir) {
+        if (dir.isDirectory()) {
+            String[] children = dir.list();
+            for (int i=0; i<children.length; i++) {
+                boolean success = deleteDir(new File(dir, children[i]));
+                if (!success) {
+                    return false;
+                }
+            }
+        }
+
+        return dir.delete();
+    }
+
 
     private Image getProjIcon(){
         Icon ic = null;
@@ -117,10 +173,26 @@ public class JbiModuleNode extends AbstractNode implements Node.Cookie {
                 ret = ((ImageIcon)ic).getImage();
             }
         }
-        
+
         return ret;
     }
-    
+
+    @Override
+    public boolean hasCustomizer() {
+        if ((plugin != null) && (plugin.hasCustomizer())) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public Component getCustomizer() {
+        if ((plugin != null) && (plugin.hasCustomizer())) {
+            return plugin.getCustomizer(suProj);
+        }
+        return null;
+    }
+
     /**
      * DOCUMENT ME!
      *
@@ -132,8 +204,8 @@ public class JbiModuleNode extends AbstractNode implements Node.Cookie {
         Image ret = getProjIcon();
         if (ret == null){
             ret = Utilities.loadImage("org/netbeans/modules/compapp/projects/jbi/ui/resources/jar.gif"); // NOI18N
-        } 
-        
+        }
+
         return ret;
     }
 
