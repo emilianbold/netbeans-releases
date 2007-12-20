@@ -201,8 +201,7 @@ public class DBMetaDataFactory {
         // close connection to database
         try {
             if ((dbconn != null) && (!dbconn.isClosed())) {
-               // dbconn.close();
-                dbconn = null;
+                DBExplorerUtil.closeIfLocalConnection(dbconn);
             }
         } catch (SQLException e) {
             mLogger.log(Level.SEVERE, "disconnectDB", e);

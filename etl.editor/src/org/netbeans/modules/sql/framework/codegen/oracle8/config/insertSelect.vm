@@ -1,0 +1,2 @@
+#parse("org/netbeans/modules/sql/framework/codegen/oracle8/config/insert.vm") 
+#parse("org/netbeans/modules/sql/framework/codegen/oracle8/config/select.vm")

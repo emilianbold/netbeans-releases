@@ -1,0 +1,12 @@
+#set( $indent = "    " )
+INSERT INTO  $tableName
+VALUES(
+${indent}'$targetTable',
+${indent}?,
+${indent}NULL,
+${indent}NULL,
+${indent}NULL,
+${indent}NULL,
+${indent}NULL
+)
+

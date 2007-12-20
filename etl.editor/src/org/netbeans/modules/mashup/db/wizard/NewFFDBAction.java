@@ -9,7 +9,6 @@
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
-
 If you wish your version of this file to be governed by only the CDDL
 or only the GPL Version 2, indicate your decision by adding
 "[Contributor] elects to include this software in this distribution
@@ -20,7 +19,6 @@ to extend the choice of license to its licensees as provided above.
 However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
-
 If you wish your version of this file to be governed by only the CDDL
 or only the GPL Version 2, indicate your decision by adding
 "[Contributor] elects to include this software in this distribution
@@ -32,7 +30,6 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.mashup.db.wizard;
 
 import java.awt.Component;
@@ -45,6 +42,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
+import org.netbeans.modules.mashup.tables.wizard.MashupTableWizardIterator;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -55,15 +53,14 @@ import org.openide.util.actions.SystemAction;
  *
  * @author ks161616
  */
-
 public class NewFFDBAction extends AbstractAction implements Presenter.Menu {
-    
+
     private JMenuItem menuPresenter = null;
-    
+
     public NewFFDBAction() {
         super(NbBundle.getMessage(NewFFDBAction.class, "CTL_MashupDatabase"));
     }
-    
+
     public void actionPerformed(java.awt.event.ActionEvent e) {
     }
 
@@ -73,25 +70,26 @@ public class NewFFDBAction extends AbstractAction implements Presenter.Menu {
         }
         return menuPresenter;
     }
-    
+
     private final class MenuPresenter extends JMenu implements DynamicMenuContent, MenuListener {
-        
+
         public MenuPresenter() {
-            super((String)getValue(Action.NAME));
+            super((String) getValue(Action.NAME));
             addMenuListener(this);
         }
-        
+
         public JComponent[] synchMenuPresenters(javax.swing.JComponent[] items) {
             return getMenuPresenters();
         }
 
         public JComponent[] getMenuPresenters() {
-            return new JComponent[] { this };
+            return new JComponent[]{this};
         }
 
         public void menuSelected(MenuEvent e) {
             getPopupMenu().removeAll();
-            JPopupMenu menu = Utilities.actionsToPopup(new Action[] {
+            MashupTableWizardIterator.IS_PROJECT_CALL = false;
+            JPopupMenu menu = Utilities.actionsToPopup(new Action[]{
                 SystemAction.get(NewFlatfileDatabaseWizardAction.class),
                 SystemAction.get(NewFlatfileTableAction.class),
                 SystemAction.get(NewJDBCTableAction.class),
@@ -103,10 +101,10 @@ public class NewFFDBAction extends AbstractAction implements Presenter.Menu {
                 getPopupMenu().add(c);
             }
         }
-        
+
         public void menuCanceled(MenuEvent e) {
         }
-        
+
         public void menuDeselected(MenuEvent e) {
         }
     }

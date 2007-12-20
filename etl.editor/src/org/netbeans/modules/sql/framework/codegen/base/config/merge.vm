@@ -1,0 +1,3 @@
+#parse("org/netbeans/modules/sql/framework/codegen/base/config/update.vm")
+${statementSeparator}
+#parse("org/netbeans/modules/sql/framework/codegen/base/config/insertSelect.vm")

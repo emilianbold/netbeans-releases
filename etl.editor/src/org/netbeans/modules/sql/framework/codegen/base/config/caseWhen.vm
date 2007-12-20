@@ -1,0 +1,17 @@
+#set( $totalWhens = $whenClauses.size())
+#set( $indent = "    " )
+##
+## Execute only if there is at least one when and as many then clauses
+## as when clauses.
+##
+#if ($totalWhens != 0)
+CASE
+#if ($switch != "")${nestedIndent}${indent}(${switch})#end
+#foreach($whenThen in $whenClauses )
+${nestedIndent}${indent}WHEN $whenThen.when
+${nestedIndent}${indent}${indent}THEN $whenThen.then
+#end
+#if($default != "")
+${nestedIndent}${indent}ELSE $default
+#end
+${nestedIndent}END#end

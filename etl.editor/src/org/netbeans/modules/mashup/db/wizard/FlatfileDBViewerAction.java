@@ -9,7 +9,6 @@
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
-
 If you wish your version of this file to be governed by only the CDDL
 or only the GPL Version 2, indicate your decision by adding
 "[Contributor] elects to include this software in this distribution
@@ -20,7 +19,6 @@ to extend the choice of license to its licensees as provided above.
 However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
-
 If you wish your version of this file to be governed by only the CDDL
 or only the GPL Version 2, indicate your decision by adding
 "[Contributor] elects to include this software in this distribution
@@ -32,7 +30,6 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.mashup.db.wizard;
 
 import java.awt.Component;
@@ -46,18 +43,14 @@ import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CallableSystemAction;
 
-
 /**
  *
  * @author  ks161616
  */
-
-// An example action demonstrating how the wizard could be called from within
-// your code. You can copy-paste the code below wherever you need.
 public final class FlatfileDBViewerAction extends CallableSystemAction {
-    
+
     private WizardDescriptor.Panel[] panels;
-    
+
     public void performAction() {
         WizardDescriptor wizardDescriptor = new WizardDescriptor(getPanels());
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
@@ -71,14 +64,14 @@ public final class FlatfileDBViewerAction extends CallableSystemAction {
             // do something
         }
     }
-    
+
     /**
      * Initialize panels representing individual wizard's steps and sets
      * various properties for them influencing wizard appearance.
      */
     private WizardDescriptor.Panel[] getPanels() {
         if (panels == null) {
-            panels = new WizardDescriptor.Panel[] {
+            panels = new WizardDescriptor.Panel[]{
                 new SelectDatabasePanel(),
                 new FlatfileViewerTreePanel()
             };
@@ -103,24 +96,25 @@ public final class FlatfileDBViewerAction extends CallableSystemAction {
                     jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE);
                 }
             }
-        }        
+        }
         return panels;
     }
-    
+
     public String getName() {
         return "Mashup Database Viewer";
     }
-    
+
+    @Override
     public String iconResource() {
         return null;
     }
-    
+
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
-    
+
+    @Override
     protected boolean asynchronous() {
         return false;
     }
 }
-

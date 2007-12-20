@@ -1,0 +1,17 @@
+#set( $totalColumns = $sourceColumnIdentifiers.size())
+#set( $columnCounter = 1)
+#set( $indent = "    " )
+SELECT #if($limit != "")TOP ${limit} #end#if($distinct) DISTINCT #end
+
+#foreach($sColumn in $sourceColumnIdentifiers )
+${indent}$sColumn.getSql()#if($aliasColumns) AS $sColumn.getAliasName()#end#if($columnCounter < $totalColumns), #end
+
+#set( $columnCounter = $columnCounter + 1)
+#end
+#if($selectAliasName != "")${selectAliasName} #end#parse("org/netbeans/modules/sql/framework/codegen/base/config/from.vm")
+#if($useWhere)
+#parse("org/netbeans/modules/sql/framework/codegen/base/config/where.vm")
+#end
+#if($useGroupBy)
+#parse("org/netbeans/modules/sql/framework/codegen/base/config/groupBy.vm")
+#end

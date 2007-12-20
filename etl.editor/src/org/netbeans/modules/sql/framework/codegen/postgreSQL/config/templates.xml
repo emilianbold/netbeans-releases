@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<!-- 
+  * Contents of this template will override any existing attributes in base/config/templates.xml
+  -->
+<templates>
+	<attr attributeName="create" attributeType="java.lang.String" attributeValue="postgreSQL/config/create.vm" />
+	<attr attributeName="correlatedSelect" attributeType="java.lang.String" attributeValue="postgreSQL/config/correlatedSelect.vm" /> 
+	<attr attributeName="correlatedUpdate" attributeType="java.lang.String" attributeValue="postgreSQL/config/correlatedUpdate.vm" /> 		
+	<attr attributeName="merge"  attributeType="java.lang.String" attributeValue="postgreSQL/config/merge.vm" />
+        <attr attributeName="tableExists" attributeType="java.lang.String" attributeValue="postgreSQL/config/tableExists.vm" />	
+</templates>

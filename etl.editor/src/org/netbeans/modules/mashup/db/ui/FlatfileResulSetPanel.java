@@ -59,7 +59,6 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 
 import org.netbeans.modules.mashup.db.model.FlatfileDefinition;
 import org.netbeans.modules.mashup.db.ui.model.FlatfileTable;
@@ -95,12 +94,12 @@ public class FlatfileResulSetPanel extends JPanel implements ActionListener, Pro
         private void generateData(FlatfileNode node) {
             showDataBtn.setEnabled(false);
             recordCount.setEnabled(false);
-            QueryViewWorkerThread queryThread = new QueryViewWorkerThread(node);
+            DataViewWorkerThread queryThread = new DataViewWorkerThread(node);
             queryThread.start();
         }
     }
     
-    private class QueryViewWorkerThread extends SwingWorker {
+    private class DataViewWorkerThread extends SwingWorker {
         
         FlatfileNode node;
         private ResultSet cntRs;
@@ -109,7 +108,7 @@ public class FlatfileResulSetPanel extends JPanel implements ActionListener, Pro
         private ResultSet rs;
         private Statement stmt;
         
-        public QueryViewWorkerThread(FlatfileNode newNode) {
+        public DataViewWorkerThread(FlatfileNode newNode) {
             node = newNode;
         }
         

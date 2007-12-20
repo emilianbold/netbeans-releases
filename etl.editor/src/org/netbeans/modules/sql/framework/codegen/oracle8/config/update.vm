@@ -1,0 +1,36 @@
+#set( $totalColumns = $sourceColumnIdentifiers.size())
+#set( $columnCounter = 1)
+#set( $conditionCounter = 1)
+#set( $totalMappings = $mappings.size())
+#set( $mappingCounter = 1)
+#set( $indent = "    " )
+UPDATE (  
+##
+## SUBSELECT CLAUSE
+##
+${indent}SELECT /*+ bypass_ujvc */ #if($distinct) DISTINCT #end
+
+#foreach($sColumn in $sourceColumnIdentifiers )${indent}${indent}$sColumn.getSql()#if($aliasColumns) AS $sColumn.getAliasName()#end#if($columnCounter < $totalColumns), #end
+
+#set( $columnCounter = $columnCounter + 1)
+#end
+${indent}FROM $fromContent 
+##
+## OPTIONAL:  where/filter condition(s)
+##
+#if($useUpdateWhere)
+${indent}WHERE
+${indent}${indent}#foreach($condition in $conditions)#if($conditionCounter >1) AND #end ($condition) #set ($conditionCounter = $conditionCounter + 1)#end
+#end
+)
+##
+## SET CLAUSE
+##
+SET
+#foreach($mapping in $mappings)
+#if( $mapping.isKeyColumn() == false )
+${indent}$mapping.getTarget().getAliasName() = $mapping.getSource().getAliasName() #if($mappingCounter < $totalMappings),#end
+
+#set( $mappingCounter = $mappingCounter + 1)
+#end
+#end

@@ -105,15 +105,15 @@ made subject to such option by the copyright holder.
                       required="true" position="8" default="0" />
             <Property name="MAXFAULTS" valueType="java.lang.Integer"
                       required="true" position="9" default="0" />                       
-             <OptionProperty name="TRIMWHITESPACE" 
+            <OptionProperty name="TRIMWHITESPACE" 
                             valueType="java.lang.Boolean"
                             position="10"
                             required="false"
                             default="true"
                             defaultOption="0"
                             editorClass="org.netbeans.modules.sql.framework.ui.editor.property.impl.OptionListEditor">
-                <Option name="True" value="true" />
-                <Option name="False" value="false" />
+                <Option name="true" value="true" />
+                <Option name="false" value="false" />
             </OptionProperty>
         </PropertyGroup>
     </Template>
@@ -142,7 +142,7 @@ made subject to such option by the copyright holder.
                             default="true"
                             defaultOption="3"
                             editorClass="org.netbeans.modules.sql.framework.ui.editor.property.impl.OptionListEditor">
-				<Option name="none" value="" />
+                <Option name="none" value="" />
                 <Option name="newline" value="\n" />
                 <Option name="cr" value="\r" />
                 <Option name="crlf" value="\r\n" />
@@ -162,8 +162,8 @@ made subject to such option by the copyright holder.
                             default="true"
                             defaultOption="0"
                             editorClass="org.netbeans.modules.sql.framework.ui.editor.property.impl.OptionListEditor">
-            <Option name="True" value="true" />
-            <Option name="False" value="false" />
+                <Option name="true" value="true" />
+                <Option name="false" value="false" />
             </OptionProperty>
         </PropertyGroup>
     </Template>
@@ -263,7 +263,7 @@ made subject to such option by the copyright holder.
                       required="true" position="8" default="0" />
             <Property name="MAXFAULTS" valueType="java.lang.Integer"
                       required="true" position="9" default="0" />                       
-             <OptionProperty name="TRIMWHITESPACE" 
+            <OptionProperty name="TRIMWHITESPACE" 
                             valueType="java.lang.Boolean"
                             position="10"
                             required="false"
@@ -273,7 +273,7 @@ made subject to such option by the copyright holder.
                 <Option name="True" value="true" />
                 <Option name="False" value="false" />
             </OptionProperty>
-             <OptionProperty name="REFRESH" 
+            <OptionProperty name="REFRESH" 
                             valueType="java.lang.Boolean"
                             position="11"
                             required="false"

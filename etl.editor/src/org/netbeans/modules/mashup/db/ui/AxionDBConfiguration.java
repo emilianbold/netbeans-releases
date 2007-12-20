@@ -99,7 +99,7 @@ public class AxionDBConfiguration {
             String nbHomeDir = System.getProperty("netbeans.home") + File.separator +
                     ".." + File.separator + "soa1" + File.separator + "modules"
                     + File.separator + "ext" + File.separator + "etl"
-                    + File.separator + "mashupdb.zip";
+                    + File.separator + "axiondb.jar";
             File driver = new File(nbHomeDir);
             if(!driver.exists()) {
                 
@@ -107,7 +107,7 @@ public class AxionDBConfiguration {
                 nbHomeDir = System.getProperty("netbeans.home") + File.separator
                         + ".." + File.separator + "extra" + File.separator + "modules"
                         + File.separator + "ext" + File.separator + "etl"
-                        + File.separator + "mashupdb.zip";
+                        + File.separator + "axiondb.jar";
                 driver = new File(nbHomeDir);
                 if(!driver.exists()) {
                     nbHomeDir = "";
@@ -209,7 +209,7 @@ public class AxionDBConfiguration {
         String nbHomeDir = System.getProperty("netbeans.home") + File.separator +
                 ".." + File.separator + "soa1" + File.separator + "modules"
                 + File.separator + "ext" + File.separator + "etl"
-                + File.separator + "mashupdb.zip";
+                + File.separator + "axiondb.jar";
         File driver = new File(nbHomeDir);
         if(!driver.exists()) {
             
@@ -217,7 +217,7 @@ public class AxionDBConfiguration {
             nbHomeDir = System.getProperty("netbeans.home") + File.separator
                     + ".." + File.separator + "extra" + File.separator + "modules"
                     + File.separator + "ext" + File.separator + "etl"
-                    + File.separator + "mashupdb.zip";
+                    + File.separator + "axiondb.jar";
             driver = new File(nbHomeDir);
             if(!driver.exists()) {
                 nbHomeDir = "";
