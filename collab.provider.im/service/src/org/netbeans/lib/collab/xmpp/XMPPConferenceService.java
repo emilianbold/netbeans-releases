@@ -684,7 +684,13 @@ public class XMPPConferenceService implements ConferenceService,ExtendedConferen
         Iterator itr = dq.listItems().iterator();
         while(itr.hasNext()){
             JID jid = ((DiscoItem)itr.next()).getJID();
-            DiscoInfoQuery infoquery = __session.sendInfoQuery(jid,null);
+            DiscoInfoQuery infoquery = null;
+	    try{
+	    	infoquery = __session.sendInfoQuery(jid,null);
+	    }catch(CollaborationException cex){
+		    XMPPSessionProvider.error("[XMPPConferenceService:getMUCProviders] cant find identities for component " + jid + " error: " + cex.getMessage());
+		    continue;
+	    }
             for(Iterator iter = infoquery.listIdentities().iterator();iter.hasNext(); ) {
                 DiscoIdentity discoIdentity = (DiscoIdentity)iter.next();
                 String category = discoIdentity.getCategory();
