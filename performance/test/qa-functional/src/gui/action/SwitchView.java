@@ -64,12 +64,20 @@ public class SwitchView  extends org.netbeans.performance.test.utilities.Perform
     /** Creates a new instance of SwitchToFile */
     public SwitchView(String testName) {
         super(testName);
+        pto = ProjectsTabOperator.invoke();
+        rto = RuntimeTabOperator.invoke();
+        fto = FilesTabOperator.invoke();
+        fo = FavoritesOperator.invoke();
         expectedTime = WINDOW_OPEN;
     }
     
     /** Creates a new instance of SwitchView */
     public SwitchView(String testName, String performanceDataName) {
         super(testName,performanceDataName);
+        pto = ProjectsTabOperator.invoke();
+        rto = RuntimeTabOperator.invoke();
+        fto = FilesTabOperator.invoke();
+        fo = FavoritesOperator.invoke();
         expectedTime = WINDOW_OPEN;
     }
 
@@ -96,10 +104,6 @@ public class SwitchView  extends org.netbeans.performance.test.utilities.Perform
     
     protected void initialize() {
         log(":: initialize");
-        pto = ProjectsTabOperator.invoke();
-        rto = RuntimeTabOperator.invoke();
-        fto = FilesTabOperator.invoke();
-        fo = FavoritesOperator.invoke();
     }
         
     public void prepare() {
