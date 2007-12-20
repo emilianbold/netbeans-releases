@@ -294,10 +294,6 @@ public class MercurialInterceptor extends VCSInterceptor {
 
     private void fileCreatedImpl(final File file) {
         if (file.isDirectory()) return;
-        if(HgUtils.isIgnored(file)){
-            Mercurial.LOG.log(Level.FINE, "fileCreatedImpl(): Ignored File: {0}", new Object[] {file.getAbsolutePath()}); // NOI18N
-            return;
-        }
         cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
     }
     
@@ -311,10 +307,6 @@ public class MercurialInterceptor extends VCSInterceptor {
 
     private void fileChangedImpl(File file) {
         if (file.isDirectory()) return;
-        if(HgUtils.isIgnored(file)){
-            Mercurial.LOG.log(Level.FINE, "fileChangedImpl(): Ignored File: {0}", new Object[] {file.getAbsolutePath()}); // NOI18N
-            return;
-        }
         cache.refreshForce(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
    }
 }
