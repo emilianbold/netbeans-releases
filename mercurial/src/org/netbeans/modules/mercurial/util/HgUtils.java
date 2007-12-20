@@ -216,7 +216,7 @@ public class HgUtils {
      */
     public static boolean isIgnored(File file){
         if (file == null) return true;
-        String name = file.getName();
+        String name = file.getPath();
         File topFile = Mercurial.getInstance().getTopmostManagedParent(file);
         
         // We assume that the toplevel directory should not be ignored.
@@ -229,7 +229,7 @@ public class HgUtils {
 
         for (Iterator i = patterns.iterator(); i.hasNext();) {
             Pattern pattern = (Pattern) i.next();
-            if (pattern.matcher(name).matches()) {
+            if (pattern.matcher(name).find()) {
                 return true;
             }
         }
