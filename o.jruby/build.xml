@@ -43,7 +43,7 @@
                 <filter token="os.arch" value="${os.arch}"/>
                 <filter token="java.specification.version" value="${java.specification.version}"/>
                 <!--
-                Defined in jruby-1.0.2/default.build.properties
+                Defined in jruby-1.0.3/default.build.properties
                 <filter token="javac.version" value="${javac.version}"/>
                 -->
                 <filter token="javac.version" value="1.4"/>

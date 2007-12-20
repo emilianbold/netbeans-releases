@@ -275,14 +275,14 @@
       <arg value="maybe_install_gems"/>
       <arg value="rspec"/>
       <arg value="rake"/>
-      <!-- Modified for NetBeans builds: ActiveRecord-JDBC, Rails, no ri or rdoc indices -->
+      <!-- Modified for NetBeans builds: activerecord-jdbc-adapter, Rails, no ri or rdoc indices -->
       <arg value="activesupport"/>
       <arg value="actionpack"/>
       <arg value="activerecord"/>
-      <!-- Renamed from ActiveRecord-JDBC.gem because attempting a simple
+      <!-- Renamed from activerecord-jdbc-adapter.gem because attempting a simple
         gem install activerecord-jdbc will find and use the ActiveRecord gem file
         instead -->
-      <arg value="jdbc-ActiveRecord-JDBC"/>
+      <arg value="jdbc-activerecord-jdbc-adapter"/>
       <arg value="actionmailer"/>
       <arg value="actionwebservice"/>
       <arg value="rails"/>
