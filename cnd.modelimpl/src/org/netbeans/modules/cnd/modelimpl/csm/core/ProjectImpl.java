@@ -46,6 +46,8 @@ import java.io.DataOutput;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
@@ -56,7 +58,7 @@ import org.netbeans.modules.cnd.apt.utils.APTIncludeUtils;
 import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
-import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.openide.util.RequestProcessor;
 
 /**
  * Project implementation
@@ -101,14 +103,14 @@ public final class ProjectImpl extends ProjectBase {
         ParserQueue.instance().addFirst(csmFile, state, true);
     }
     
-    public @Override void onFileEditStart(FileBuffer buf, NativeFileItem nativeFile) {
+    public @Override void onFileEditStart(final FileBuffer buf, NativeFileItem nativeFile) {
         if( !acceptNativeItem(nativeFile)) {
             return;
         }
         if( TraceFlags.DEBUG ) Diagnostic.trace("------------------------- onFileEditSTART " + buf.getFile().getName()); // NOI18N
-	FileImpl impl = createOrFindFileImpl(buf, nativeFile);
+	final FileImpl impl = createOrFindFileImpl(buf, nativeFile);
         if (impl != null) {
-            impl.setBuffer(buf); // don't enqueue here!
+            impl.setBuffer(buf); 
             synchronized( editedFiles ) {
                 editedFiles.add(impl);
             }
@@ -117,6 +119,12 @@ public final class ProjectImpl extends ProjectBase {
             } else {
                 APTDriver.getInstance().invalidateAPT(buf);
             }
+            schedule(buf, impl);
+            buf.addChangeListener(new ChangeListener() {
+                public void stateChanged(ChangeEvent e) {
+                    schedule(buf, impl);
+                }
+            });
         }
     }
 
@@ -134,11 +142,15 @@ public final class ProjectImpl extends ProjectBase {
                 }
             }
             file.setBuffer(buf);
-            if (TraceFlags.USE_DEEP_REPARSING) {
-                DeepReparsingUtils.reparseOnEdit(file,this);
-            } else {
-                ParserQueue.instance().addFirst(file, getPreprocHandler(buf.getFile()).getState(), false);
-            }
+            addToQueue(buf, file);
+        }
+    }
+    
+    private void addToQueue(FileBuffer buf, FileImpl file) {
+        if (TraceFlags.USE_DEEP_REPARSING) {
+            DeepReparsingUtils.reparseOnEdit(file,this);
+        } else {
+            ParserQueue.instance().addFirst(file, getPreprocHandler(buf.getFile()).getState(), false);
         }
     }
     
@@ -335,6 +347,29 @@ public final class ProjectImpl extends ProjectBase {
         //LibraryManager.getInsatnce().read(uid, input);
 	LibraryManager.getInstance().readProjectLibraries(getUID(), input);
         //nativeFiles = new NativeFileContainer();
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////
+    private RequestProcessor.Task task = null;
+    private final static int DELAY = 1001;
+    
+    public void schedule(final FileBuffer buf, final FileImpl file) {
+        if (task==null) {
+            task = RequestProcessor.getDefault().create(new Runnable() {
+                public void run() {
+                    try {
+                        addToQueue(buf, file);
+                    } catch (AssertionError ex) {
+                        ex.printStackTrace();
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }, true);
+            task.setPriority(Thread.MIN_PRIORITY);
+        }
+        task.cancel();
+        task.schedule(DELAY);        
     }
 
 }
