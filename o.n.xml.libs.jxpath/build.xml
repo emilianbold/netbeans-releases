@@ -20,12 +20,12 @@
 <project name="jxpath" default="netbeans" basedir=".">
     <import file="../../../nbbuild/templates/projectized.xml"/>
 
-    <!--target name="netbeans-extra">
+    <target name="netbeans-extra">
         <mkdir dir="${cluster}/modules/ext"/>
         <copy todir="${cluster}/modules/ext/xpath">
             <fileset dir="external">
                 <include name="*.jar"/>
             </fileset>
         </copy>
-    </target-->
+    </target>
 </project>
