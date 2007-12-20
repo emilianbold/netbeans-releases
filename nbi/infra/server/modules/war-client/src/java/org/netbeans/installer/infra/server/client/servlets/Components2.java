@@ -97,6 +97,7 @@ public class Components2 extends HttpServlet {
                 "nb-soa",
                 "nb-uml",
                 "nb-ruby",
+                "nb-php",
                 "glassfish",
                 "openesb",
                 "sjsam",
