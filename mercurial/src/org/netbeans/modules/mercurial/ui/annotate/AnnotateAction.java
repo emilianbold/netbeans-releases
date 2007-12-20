@@ -64,6 +64,8 @@ import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgLogMessage;
 import org.openide.windows.TopComponent;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
@@ -76,7 +78,7 @@ import org.openide.NotifyDescriptor;
 public class AnnotateAction extends AbstractAction {
     
     private final VCSContext context;
-
+    
     public AnnotateAction(String name, VCSContext context) {
         this.context = context;
         putValue(Action.NAME, name);
@@ -166,7 +168,6 @@ public class AnnotateAction extends AbstractAction {
         }
         if (list == null) return;
         AnnotateLine [] lines = toAnnotateLines(list);
-        ab.annotationLines(file, Arrays.asList(lines));
         try {
              list = HgCommand.doLogShort(repository, file);
         } catch (HgException ex) {
@@ -180,6 +181,7 @@ public class AnnotateAction extends AbstractAction {
         if (logs == null) return;
         fillCommitMessages(lines, logs);
         ab.setLogs(logs);
+        ab.annotationLines(file, Arrays.asList(lines));
     }
 
     private static void fillCommitMessages(AnnotateLine [] annotations, HgLogMessage [] logs) {
@@ -224,7 +226,6 @@ public class AnnotateAction extends AbstractAction {
             } else if (i % 4 == 2) {
                 String splits[] = line.split(" ", 2); // NOI18N
                 try {
-                    Date date = new Date(Long.parseLong(splits[0]) * 1000);
                     log.setDate(new Date(Long.parseLong(splits[0].trim()) * 1000));
                 } catch (java.lang.Exception e) {
                     Mercurial.LOG.log(Level.SEVERE, "Caught Exception while parsing date", e); // NOI18N
@@ -241,19 +242,26 @@ public class AnnotateAction extends AbstractAction {
 
     private static AnnotateLine [] toAnnotateLines(List<String> annotations)
 {
+        final int GROUP_AUTHOR = 1;
+        final int GROUP_REVISION = 2;
+        final int GROUP_FILENAME = 3;
+        final int GROUP_CONTENT = 4;
+        
         AnnotateLine [] lines = new AnnotateLine[annotations.size()];
-        int n = annotations.size();
         int i = 0;
+        Pattern p = Pattern.compile("^\\s*(\\w+\\b)\\s+(\\d+)\\s+(\\b.*):\\s+(.*)$"); //NOI18N
         for (String line : annotations) {
-            int endAuthor = line.indexOf(" "); // NOI18N
-            int endFile = line.indexOf(":", endAuthor + 1); // NOI18N
-            int endRevision = line.indexOf(" ", endAuthor + 1); // NOI18N
+            Matcher m = p.matcher(line);
+            if (!m.matches()){
+                Mercurial.LOG.log(Level.WARNING, "AnnotateAction: toAnnotateLines(): Failed when matching: {0}", new Object[] {line}); //NOI18N
+                continue;
+            }
             lines[i] = new AnnotateLine();
-            lines[i].setAuthor(line.substring(0, endAuthor));
-            lines[i].setContent(line.substring(endFile + 2));
-            lines[i].setFileName(line.substring(endRevision + 1, endFile).trim());
+            lines[i].setAuthor(m.group(GROUP_AUTHOR));
+            lines[i].setRevision(m.group(GROUP_REVISION));
+            lines[i].setFileName(m.group(GROUP_FILENAME));
+            lines[i].setContent(m.group(GROUP_CONTENT));
             lines[i].setLineNum(i + 1);
-            lines[i].setRevision(line.substring(endAuthor, endRevision).trim());
             i++;
         }
         return lines;
