@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<componentConfig:Configuration name="sun-http-binding"
+                               xmlns:componentConfig="http://com.sun.jbi.component/schema/configuration"
+                               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                               xsi:schemaLocation="http://com.sun.jbi.component/schema/configuration ./componentConfiguration.xsd">
+    
+    <componentConfig:OutboundThreads displayName="Number of Outbound Threads"
+                                     displayDescription="Number of threads to concurrently process outbound HTTP/SOAP requests"
+                                     isPasswordField="false"
+                                     isApplicationRestartRequired="false"
+                                     isComponentRestartRequired="false"
+                                     isServerRestartRequired="false">10</componentConfig:OutboundThreads>
+    
+    <componentConfig:HttpDefaultPort displayName="Default HTTP Port Number"
+                                     displayDescription="Default HTTP port number for inbound HTTP/SOAP requests"
+                                     isPasswordField="false"
+                                     isApplicationRestartRequired="true"
+                                     isComponentRestartRequired="false"
+                                     isServerRestartRequired="false">1111</componentConfig:HttpDefaultPort>
+    
+    <componentConfig:HttpsDefaultPort displayName="Default HTTPS Port Number"
+                                      displayDescription="Default HTTPS port number for inbound HTTP/SOAP requests"
+                                      isPasswordField="false"
+                                      isApplicationRestartRequired="true"
+                                      isComponentRestartRequired="false"
+                                      isServerRestartRequired="false">2222</componentConfig:HttpsDefaultPort>
+    
+    <componentConfig:ProxyType displayName="Proxy Type"
+                               displayDescription="Specifies a valid proxy type"
+                               isPasswordField="false"
+                               isApplicationRestartRequired="true"
+                               isComponentRestartRequired="true"
+                               isServerRestartRequired="false">SOCKS</componentConfig:ProxyType>
+    
+    <componentConfig:ProxyHost displayName="Proxy Host"
+                               displayDescription="Specifies a valid proxy host name"
+                               isPasswordField="false"
+                               isApplicationRestartRequired="true"
+                               isComponentRestartRequired="true"
+                               isServerRestartRequired="false">dummy</componentConfig:ProxyHost>
+    
+    <componentConfig:ProxyPort displayName="Proxy Port"
+                               displayDescription="Specifies a valid proxy port"
+                               isPasswordField="false"
+                               isApplicationRestartRequired="true"
+                               isComponentRestartRequired="true"
+                               isServerRestartRequired="false">3333</componentConfig:ProxyPort>
+    
+    <componentConfig:NonProxyHosts displayName="Non-proxy Hosts"
+                                   displayDescription="Specifies a list of server hosts whose connections do not require a proxy server"
+                                   isPasswordField="false"
+                                   isApplicationRestartRequired="true"
+                                   isComponentRestartRequired="true"
+                                   isServerRestartRequired="false">dummy</componentConfig:NonProxyHosts>
+    
+    <componentConfig:ProxyUserName displayName="Proxy User Name"
+                                   displayDescription="Specifies a valid proxy user name"
+                                   isPasswordField="false"
+                                   isApplicationRestartRequired="true"
+                                   isComponentRestartRequired="true"
+                                   isServerRestartRequired="false">dummy</componentConfig:ProxyUserName>
+    
+    <componentConfig:ProxyPassword displayName="Proxy User Password"
+                                   displayDescription="Specifies a valid proxy user password"
+                                   isPasswordField="true"
+                                   isApplicationRestartRequired="true"
+                                   isComponentRestartRequired="true"
+                                   isServerRestartRequired="false">dummy</componentConfig:ProxyPassword>
+    
+    <componentConfig:UseJVMProxySettings displayName="Use Default JVM Proxy Settings"
+                                         displayDescription="Determines whether or not to use the default JVM system properties for proxy settings"
+                                         isPasswordField="false"
+                                         isApplicationRestartRequired="true"
+                                         isComponentRestartRequired="true"
+                                         isServerRestartRequired="false">true</componentConfig:UseJVMProxySettings>
+    
+    <componentConfig:ApplicationConfigurations displayName="Application Configuration Objects"
+                                               displayDescription="Specifies a list of application configuration objects"
+                                               isPasswordField="false"
+                                               isApplicationRestartRequired="true"
+                                               isComponentRestartRequired="false"
+                                               isServerRestartRequired="false">
+        
+        <componentConfig:configurationName displayName="Application Configuration Name"
+                                           displayDescription="Specifies the name of the application configuration"
+                                           isPasswordField="false"
+                                           isRequiredField="true">dummy</componentConfig:configurationName >
+        
+        <componentConfig:httpUrlLocation displayName="HTTP URL Location"
+                                         displayDescription="Specifies the HTTP URL location."
+                                         isPasswordField="false"
+                                         isRequiredField="true">dummy</componentConfig:httpUrlLocation>
+        
+    </componentConfig:ApplicationConfigurations>
+    
+    <componentConfig:ApplicationVariables displayName="Application Variables"
+                                          displayDescription="Specifies a list of application variables"
+                                          isPasswordField="false"
+                                          isApplicationRestartRequired="true"
+                                          isComponentRestartRequired="false"
+                                          isServerRestartRequired="false">
+        
+        <componentConfig:name displayName="Application Variable Name"
+                              displayDescription="Specifies the name of the application variable"
+                              isPasswordField="false"
+                              isRequiredField="true">dummy</componentConfig:name >
+        
+        <componentConfig:value displayName="Application Variable Value"
+                               displayDescription="Specifies the value of the application variable"
+                               isPasswordField="false"
+                               isRequiredField="true">dummy</componentConfig:value>
+        
+        <componentConfig:type displayName="Application Variable Type"
+                              displayDescription="Specifies the data type of the application variable"
+                              isPasswordField="false"
+                              isRequiredField="true">dummy</componentConfig:type>
+    </componentConfig:ApplicationVariables>
+    
+</componentConfig:Configuration>

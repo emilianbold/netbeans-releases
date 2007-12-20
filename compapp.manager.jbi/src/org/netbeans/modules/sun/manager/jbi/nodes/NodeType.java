@@ -65,7 +65,12 @@ public enum NodeType {
     }
     
     public String getShortDescription() {
-        return NbBundle.getMessage(NodeType.class, this.toString() + "_SHORT_DESC"); // NOI18N
+        try {
+            return NbBundle.getMessage(NodeType.class, 
+                    this.toString() + "_SHORT_DESC"); // NOI18N
+        } catch (Exception e) {
+            return ""; // not necessarily defined
+        }
     }    
 }
             

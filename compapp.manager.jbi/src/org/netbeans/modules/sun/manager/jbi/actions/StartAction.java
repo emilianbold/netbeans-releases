@@ -87,12 +87,12 @@ public class StartAction extends NodeAction {
         });
     }
     
-    protected boolean enable(Node[] nodes) {
+    protected boolean enable(Node[] activatedNodes) {
         boolean ret = false;
         
-        if (nodes != null && nodes.length > 0) {
+        if (activatedNodes != null && activatedNodes.length > 0) {
             ret = true;
-            for (Node node : nodes) {
+            for (Node node : activatedNodes) {
                 Startable startable = node.getLookup().lookup(Startable.class);                
                 try {
                     if (startable != null && !startable.canStart()) {
@@ -108,15 +108,16 @@ public class StartAction extends NodeAction {
         return ret;
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }
     
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-    
     public String getName() {
         return NbBundle.getMessage(StartAction.class, "LBL_StartAction"); // NOI18N
+    }    
+    
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
     }    
 }

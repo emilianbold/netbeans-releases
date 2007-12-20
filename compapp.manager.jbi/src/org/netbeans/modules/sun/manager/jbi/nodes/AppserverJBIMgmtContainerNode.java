@@ -41,11 +41,13 @@
 
 package org.netbeans.modules.sun.manager.jbi.nodes;
 
+import com.sun.esb.management.common.ManagementRemoteException;
 import java.util.Collections;
 import java.util.logging.Level;
 import javax.swing.Action;
 import org.netbeans.modules.sun.manager.jbi.actions.RefreshAction;
 import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
+import org.netbeans.modules.sun.manager.jbi.util.Utils;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.actions.SystemAction;
@@ -62,10 +64,18 @@ public abstract class AppserverJBIMgmtContainerNode extends AppserverJBIMgmtNode
     /**
      *
      */
-    public AppserverJBIMgmtContainerNode(
-            
-            final AppserverJBIMgmtController controller, final NodeType type) {
-        super(controller, getChildren(controller, type), type);
+    public AppserverJBIMgmtContainerNode(            
+            final AppserverJBIMgmtController controller, 
+            final NodeType nodeType) {
+        super(controller, getChildren(controller, nodeType), nodeType);
+        
+        setDisplayName(nodeType.getDisplayName());
+        
+        String shortDescription = nodeType.getShortDescription();        
+        // Use HTML version for tooltip.
+        setShortDescription(Utils.getTooltip(shortDescription));         
+        // Use non-HTML version in the property sheet's description area.
+        setValue("nodeDescription", shortDescription); // NOI18N 
     }
     
     
@@ -76,6 +86,7 @@ public abstract class AppserverJBIMgmtContainerNode extends AppserverJBIMgmtNode
      * @param boolean true/false
      * @return An array of Action objects.
      */
+    @Override
     public Action[] getActions(boolean flag) {
         return new SystemAction[] {
             SystemAction.get(RefreshAction.class)
@@ -96,7 +107,8 @@ public abstract class AppserverJBIMgmtContainerNode extends AppserverJBIMgmtNode
      *
      */
     public void refresh(){
-        setChildren(new JBIContainerChildren(getAppserverJBIMgmtController(), getNodeType()));
+        setChildren(new JBIContainerChildren(
+                getAppserverJBIMgmtController(), getNodeType()));
         JBIContainerChildren ch = (JBIContainerChildren)getChildren();
         ch.updateKeys();
     }
@@ -117,13 +129,15 @@ public abstract class AppserverJBIMgmtContainerNode extends AppserverJBIMgmtNode
             this.type = type;
             this.cfactory = new JBIContainerChildFactory(controller);
         }
+        @Override
         protected void addNotify() {
             try {
                 setKeys(this.cfactory.getChildrenObject(getNode(), this.type));
-            } catch (RuntimeException e) {
+            } catch (ManagementRemoteException e) {
                 getLogger().log(Level.FINE, e.getMessage(), e);
             }   
         }
+        @Override
         protected void removeNotify() {
             setKeys(Collections.EMPTY_SET);
         }

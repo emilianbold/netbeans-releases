@@ -38,21 +38,40 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.sun.manager.jbi.nodes;
 
+import com.sun.esb.management.api.configuration.ConfigurationService;
+import com.sun.esb.management.common.ManagementRemoteException;
+import com.sun.esb.management.common.data.FrameworkStatisticsData;
+import com.sun.esb.management.common.data.NMRStatisticsData;
 import java.awt.Image;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.management.Attribute;
 import javax.management.MBeanAttributeInfo;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.sun.manager.jbi.actions.RefreshAction;
-import org.netbeans.modules.sun.manager.jbi.management.JBIFrameworkService;
 import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
-import org.netbeans.modules.sun.manager.jbi.nodes.NodeType;
+import org.netbeans.modules.sun.manager.jbi.management.JBIComponentType;
+import org.netbeans.modules.sun.manager.jbi.management.wrapper.api.PerformanceMeasurementServiceWrapper;
+import org.netbeans.modules.sun.manager.jbi.management.wrapper.api.RuntimeManagementServiceWrapper;
+import org.netbeans.modules.sun.manager.jbi.nodes.property.JBIPropertySupportFactory;
+import org.netbeans.modules.sun.manager.jbi.nodes.property.SchemaBasedConfigPropertySupportFactory;
+import org.netbeans.modules.sun.manager.jbi.util.ComparableAttribute;
 import org.netbeans.modules.sun.manager.jbi.util.Utils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.actions.PropertiesAction;
+import org.openide.nodes.PropertySupport;
+import org.openide.nodes.Sheet;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 
@@ -61,70 +80,295 @@ import org.openide.util.HelpCtx;
  *
  * @author jqian
  */
-public class JBINode extends AppserverJBIMgmtContainerNode {  
-        
+public class JBINode extends AppserverJBIMgmtContainerNode {
+
+    private static final String FRAMEWORK_STATISTICS_SHEET_SET_NAME =
+            "FRAMEWORK_STATISTICS"; // NOI18N
+    private static final String NMR_STATISTICS_SHEET_SET_NAME =
+            "NMR_STATISTICS"; // NOI18N
+    private static final String LOGGERS_SHEET_SET_NAME = "LOGGERS"; // NOI18N
+    private static Logger logger = Logger.getLogger("org.netbeans.modules.sun.manager.jbi.nodes.JBINode"); // NOI18N   
+    
+    // Runtime configuration meta data
+    private static final String RUNTIME_CONFIG_DISPLAY_NAME = "displayName"; // NOI18N
+    private static final String RUNTIME_CONFIG_TOOLTIP = "toolTip"; // NOI18N
+    private static final String RUNTIME_CONFIG_IS_STATIC = "isStatic"; // NOI18N
+    private static final String RUNTIME_CONFIG_IS_PASSWORD = "isPassword"; // NOI18N
+    private static final String RUNTIME_CONFIG_MIN_VALUE = "minValue"; // NOI18N
+    private static final String RUNTIME_CONFIG_MAX_VALUE = "maxValue"; // NOI18N
+    private static final String RUNTIME_CONFIG_ENUM_VALUE = "enumValue"; // NOI18N
+    
+    // A list of runtime configurations that are not very useful for IDE users.
+    private static final List<String> hiddenRuntimeConfigNames;
+
+    static {
+        hiddenRuntimeConfigNames = new ArrayList<String>();
+        hiddenRuntimeConfigNames.add("jbiHome"); // NOI18N
+        hiddenRuntimeConfigNames.add("autoInstallDir"); // NOI18N
+        hiddenRuntimeConfigNames.add("autoDeployDir"); // NOI18N
+    }
+
     /** Creates a new instance of JBINode */
-    public JBINode(final AppserverJBIMgmtController controller) {        
+    public JBINode(final AppserverJBIMgmtController controller) {
         super(controller, NodeType.JBI);
     }
-    
-    /**
-     * Return the actions associated with the menu drop down seen when
-     * a user right-clicks on an Applications node in the plugin.
-     *
-     * @param boolean true/false
-     * @return An array of Action objects.
-     */
+
+    @Override
     public Action[] getActions(boolean flag) {
-        return new SystemAction[] {
+        return new SystemAction[]{
             SystemAction.get(PropertiesAction.class),
             SystemAction.get(RefreshAction.class)
         };
     }
-    
-    /**
-     * 
-     */
+
+    @Override
     public Image getIcon(int type) {
-        return new ImageIcon(JBINode.class.getResource(IconConstants.JBI_ICON)).getImage(); 
+        return new ImageIcon(
+                getClass().getResource(IconConstants.JBI_ICON)).getImage();
     }
-    
-    //  For now, use the same open for open/closed state
+
+    @Override
     public Image getOpenedIcon(int type) {
         return getIcon(type);
     }
-    
-    /**
-     * Return the SheetProperties to be displayed for this JVM.
-     *
-     * @return A java.util.Map containing all JVM properties.
-     */
-    protected Map<Attribute, MBeanAttributeInfo> getSheetProperties() {                
-        JBIFrameworkService frameworkService = getJBIFrameworkService();
-        return Utils.getIntrospectedPropertyMap(frameworkService, true);
+
+    @Override
+    public void refresh() {
+        // clear the cache first
+        RuntimeManagementServiceWrapper service =
+                getRuntimeManagementServiceWrapper();
+        service.clearJBIComponentStatusCache(JBIComponentType.SERVICE_ENGINE);
+        service.clearJBIComponentStatusCache(JBIComponentType.BINDING_COMPONENT);
+        service.clearJBIComponentStatusCache(JBIComponentType.SHARED_LIBRARY);
+        service.clearServiceAssemblyStatusCache();
+
+        super.refresh();
+
+        // Explicitly reset the property sheet (since the property sheet in 
+        // AbstractNode is "sticky").
+        setSheet(createSheet());
     }
-  
-    public Attribute setSheetProperty(String attrName, Object value) {        
-//        AppserverJBIMgmtController controller = getAppserverJBIMgmtController();
-//        controller.setJBIFrameworkServiceDefaultLogProperty((String)value);
-//        
-//        // Get the new value
-//        Object newValue = getDefaultLogPropertyValue();
-//        return new Attribute(attrName, newValue);
-        return null;
-    }
-       
-//    private String getDefaultLogPropertyValue() {
-//        JBIFrameworkService frameworkService = getJBIFrameworkService();
-//        return frameworkService.getDefaultLogPropertyValue();
-//    }
+
+    @Override
+    protected Sheet createSheet() {
+        Sheet sheet = new Sheet();
         
-    private JBIFrameworkService getJBIFrameworkService() {
-        AppserverJBIMgmtController controller = getAppserverJBIMgmtController();
-        return controller.getJBIFrameworkService();
+        // Add the general property sheet the non-standard way
+        try {
+            PropertySupport[] generalPropertySupports = 
+                    getGeneralSheetSetPropertySupports();
+
+            Sheet.Set sheetSet = createSheetSet(GENERAL_SHEET_SET_NAME,
+                            "LBL_GENERAL_PROPERTIES", // NOI18N
+                            "DSC_GENERAL_PROPERTIES", // NOI18N
+                            generalPropertySupports);
+            if (sheetSet != null) {
+                sheet.put(sheetSet);
+            }
+        } catch (Exception e) {
+            logger.warning(e.getMessage());
+        }
+
+        // Augment the general property sheet by adding loggers sheet
+        try {
+            addSheetSet(sheet,
+                    LOGGERS_SHEET_SET_NAME,
+                    "LBL_LOGGERS_PROPERTIES", // NOI18N
+                    "DSC_LOGGERS_PROPERTIES", // NOI18N
+                    getLoggerSheetSetProperties());
+        } catch (ManagementRemoteException e) {
+            logger.warning(e.getMessage());
+        }
+
+        // Augment the general property sheet by adding framework statistics sheet
+        try {
+            addSheetSet(sheet,
+                    FRAMEWORK_STATISTICS_SHEET_SET_NAME,
+                    "LBL_FRAMEWORK_STATISTICS_PROPERTIES", // NOI18N
+                    "DSC_FRAMEWORK_STATISTICS_PROPERTIES", // NOI18N
+                    getFrameworkStatisticsSheetSetProperties());
+        } catch (ManagementRemoteException e) {
+            logger.warning(e.getMessage());
+        }
+
+        // Augment the general property sheet by adding NMR statistics sheet
+        try {
+            addSheetSet(sheet,
+                    NMR_STATISTICS_SHEET_SET_NAME,
+                    "LBL_NMR_STATISTICS_PROPERTIES", // NOI18N
+                    "DSC_NMR_STATISTICS_PROPERTIES", // NOI18N
+                    getNMRStatisticsSheetSetProperties());
+        } catch (ManagementRemoteException e) {
+            logger.warning(e.getMessage());
+        }
+
+        return sheet;
     }
-    
-    public HelpCtx getHelpCtx() { 
+
+    private PropertySupport[] getGeneralSheetSetPropertySupports() 
+        throws ManagementRemoteException {
+        
+        List<PropertySupport> properties = new ArrayList<PropertySupport>();
+
+        AppserverJBIMgmtController controller = getAppserverJBIMgmtController();
+        ConfigurationService configService =
+                controller.getConfigurationService();
+        Map<String, Object> configMap =
+                configService.getRuntimeConfigurationAsMap(SERVER_TARGET);
+
+        List<String> keys = new ArrayList<String>();
+        keys.addAll(configMap.keySet());
+        Collections.sort(keys);
+
+        for (String key : keys) {
+            if (hiddenRuntimeConfigNames.contains(key)) {
+                continue;
+            }
+
+            Object value = configMap.get(key);
+            Attribute attr = new Attribute(key, value);
+
+            Properties metaData = configService.getRuntimeConfigurationMetaData(key);
+            String displayName = metaData.getProperty(RUNTIME_CONFIG_DISPLAY_NAME);
+            String toolTip = metaData.getProperty(RUNTIME_CONFIG_TOOLTIP);
+            String isStatic = metaData.getProperty(RUNTIME_CONFIG_IS_STATIC, "false"); // NOI18N
+            String isPassword = metaData.getProperty(RUNTIME_CONFIG_IS_PASSWORD, "false"); // NOI18N
+            String minValue = metaData.getProperty(RUNTIME_CONFIG_MIN_VALUE);
+            String maxValue = metaData.getProperty(RUNTIME_CONFIG_MAX_VALUE);
+            String enumValue = metaData.getProperty(RUNTIME_CONFIG_ENUM_VALUE);
+
+            MBeanAttributeInfo attrInfo = new MBeanAttributeInfo(
+                    displayName,
+                    value.getClass().getName(),
+                    toolTip,
+                    true, !Boolean.parseBoolean(isStatic), false);
+
+            PropertySupport property;
+            if (minValue != null && maxValue != null) {
+                property = SchemaBasedConfigPropertySupportFactory.
+                        getIntegerPropertySupport(
+                        this, attr, attrInfo,
+                        Integer.parseInt(minValue),
+                        Integer.parseInt(maxValue));
+            } else if (enumValue != null) {
+                if (enumValue.startsWith("{")) {
+                    enumValue = enumValue.substring(1);
+                }
+                if (enumValue.endsWith("}")) {
+                    enumValue = enumValue.substring(0, enumValue.length() - 2);
+                }
+                property = SchemaBasedConfigPropertySupportFactory.
+                        getEnumeratedStringPropertySupport(
+                        this, attr, attrInfo,
+                        enumValue.split("\\s*,\\s*")); // NOI18N
+            } else {
+                property = JBIPropertySupportFactory.getPropertySupport(
+                        this, attr, attrInfo);
+            }
+            properties.add(property);
+        }
+
+        return properties.toArray(new PropertySupport[0]);    
+    }
+
+    /**
+     * Gets the logger properties to be displayed for the framework.
+     *
+     * @return A java.util.Map containing all logger properties.
+     */
+    private Map<Attribute, MBeanAttributeInfo> getLoggerSheetSetProperties()
+            throws ManagementRemoteException {
+
+        // Sorted by the fully qualified logger name (loggerCustomName).
+        // Only display the short name in the property sheet.
+        Map<Attribute, MBeanAttributeInfo> ret =
+                new TreeMap<Attribute, MBeanAttributeInfo>();
+
+        ConfigurationService configService = getConfigurationService();
+        Map<String, Level> loggerMap = configService.getRuntimeLoggerLevels(
+                SERVER_TARGET);
+
+        for (String loggerCustomName : loggerMap.keySet()) {
+            Level logLevel = loggerMap.get(loggerCustomName);
+            String displayName =
+                    configService.getRuntimeLoggerDisplayName(
+                    loggerCustomName, SERVER_TARGET);
+
+            Attribute attr = new Attribute(loggerCustomName, logLevel);
+            MBeanAttributeInfo info = new MBeanAttributeInfo(
+                    displayName,
+                    "java.util.logging.Level", // NOI18N
+                    displayName + " (" + loggerCustomName + ")", // NOI18N
+                    true, true, false);
+            ret.put(new ComparableAttribute(attr), info);
+        }
+
+        return ret;
+    }
+
+    private Map<Attribute, MBeanAttributeInfo> getFrameworkStatisticsSheetSetProperties()
+            throws ManagementRemoteException {
+        AppserverJBIMgmtController controller = getAppserverJBIMgmtController();
+        PerformanceMeasurementServiceWrapper perfService =
+                controller.getPerformanceMeasurementServiceWrapper();
+        FrameworkStatisticsData statistics =
+                perfService.getFrameworkStatistics(SERVER_TARGET);
+        return Utils.getIntrospectedPropertyMap(
+                statistics, true, MODEL_BEAN_INFO_PACKAGE_NAME);
+    }
+
+    private Map<Attribute, MBeanAttributeInfo> getNMRStatisticsSheetSetProperties()
+            throws ManagementRemoteException {
+        AppserverJBIMgmtController controller = getAppserverJBIMgmtController();
+        PerformanceMeasurementServiceWrapper perfService =
+                controller.getPerformanceMeasurementServiceWrapper();
+        NMRStatisticsData statistics =
+                perfService.getNMRStatistics(SERVER_TARGET);
+        return Utils.getIntrospectedPropertyMap(statistics, true);
+    }
+
+    public Attribute setSheetProperty(String attrName, Object value) {
+        try {
+            ConfigurationService configService = getConfigurationService();
+            Map<String, Object> map = new HashMap<String, Object>();
+            map.put(attrName, value);
+            configService.setRuntimeConfiguration(map, SERVER_TARGET);
+
+            // Get the new value
+            value = configService.getRuntimeConfigurationAsMap(
+                    SERVER_TARGET).get(attrName);
+        } catch (ManagementRemoteException e) {
+            NotifyDescriptor d = new NotifyDescriptor.Message(e.getMessage(),
+                    NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(d);
+        }
+
+        return new Attribute(attrName, value);
+    }
+
+    /**
+     * Sets the logger property of the framework.
+     * 
+     * @param loggerName
+     * @param value
+     * @return
+     */
+    public Attribute setLoggerSheetProperty(String loggerName, Level value) {
+        try {
+            ConfigurationService configService = getConfigurationService();
+            configService.setRuntimeLoggerLevel(loggerName, value, SERVER_TARGET);
+        } catch (Exception e) {
+            NotifyDescriptor d = new NotifyDescriptor.Message(e.getMessage(),
+                    NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(d);
+            value = null;
+        }
+
+        return new Attribute(loggerName, value);
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
         return new HelpCtx(JBINode.class);
     }
 }

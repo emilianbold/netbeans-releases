@@ -53,7 +53,7 @@ public interface Installable {
      *
      *
      */
-    public void install();
+    public void install(boolean start);
 
 
 }

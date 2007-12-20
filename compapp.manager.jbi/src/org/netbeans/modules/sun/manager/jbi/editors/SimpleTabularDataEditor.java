@@ -42,7 +42,10 @@
 package org.netbeans.modules.sun.manager.jbi.editors;
 
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyEditorSupport;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -53,8 +56,11 @@ import javax.management.openmbean.CompositeType;
 import javax.management.openmbean.TabularData;
 import javax.management.openmbean.TabularDataSupport;
 import javax.management.openmbean.TabularType;
+import org.netbeans.modules.sun.manager.jbi.management.model.ComponentConfigurationDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.explorer.propertysheet.ExPropertyEditor;
+import org.openide.explorer.propertysheet.PropertyEnv;
 
 
 /**
@@ -62,9 +68,32 @@ import org.openide.NotifyDescriptor;
  *
  * @author jqian
  */
-public class SimpleTabularDataEditor extends PropertyEditorSupport {
+public class SimpleTabularDataEditor extends PropertyEditorSupport 
+        implements ExPropertyEditor {
+        
+    protected String tableLabelText;
     
+    protected String tableLabelDescription;
+        
     private TabularType tabularType;
+    
+    protected ComponentConfigurationDescriptor descriptor;
+    
+    protected SimpleTabularDataCustomEditor customEditor;
+    
+    protected boolean isWritable;
+            
+    public SimpleTabularDataEditor(String tableLabelText,
+            String tableLabelDescription,
+            TabularType tabularType,
+            ComponentConfigurationDescriptor descriptor,
+            boolean isWritable){
+        this.tabularType = tabularType;
+        this.tableLabelText = tableLabelText;
+        this.tableLabelDescription = tableLabelDescription;
+        this.descriptor = descriptor;
+        this.isWritable = isWritable;
+    }
     
     @Override
     public String getAsText() {
@@ -75,7 +104,6 @@ public class SimpleTabularDataEditor extends PropertyEditorSupport {
             assert value instanceof TabularData;
             
             TabularData tabularData = (TabularData)value;
-            tabularType = tabularData.getTabularType();
             
             sb.append("{"); // NOI18N
             for (Object rowDataObj : tabularData.values()) {
@@ -101,8 +129,10 @@ public class SimpleTabularDataEditor extends PropertyEditorSupport {
         // {[foo, bar][frodo, sam]}
         
         try {
+            TabularType tabularType = ((TabularData) getValue()).getTabularType();
             TabularData tabularData = new TabularDataSupport(tabularType);
             CompositeType rowType = tabularType.getRowType();
+            @SuppressWarnings("unchecked")
             String[] columnNames = (String[]) rowType.keySet().toArray(new String[] {});
             
             if (text != null) {
@@ -136,8 +166,9 @@ public class SimpleTabularDataEditor extends PropertyEditorSupport {
         }
     }
     
+    // to be extended
     protected void validateRowData(String[] rowData) throws Exception {
-        ; // no-op
+        // no-op
     }
 
     @Override    
@@ -154,10 +185,36 @@ public class SimpleTabularDataEditor extends PropertyEditorSupport {
     public boolean supportsCustomEditor() {
         return true;
     }
-    
+        
     @Override
     public java.awt.Component getCustomEditor() {
-        return new SimpleTabularDataCustomEditor(this);
-    }
+        customEditor = new SimpleTabularDataCustomEditor(this, 
+                tableLabelText, tableLabelDescription, descriptor, isWritable);
+        return customEditor;
+    }    
     
+    TabularType getTabluarType() {
+        return tabularType;
+    }
+
+    public void attachEnv(PropertyEnv env) {
+        // Disable direct inline text editing.
+        env.getFeatureDescriptor().setValue("canEditAsText", false); // NOI18N
+        
+        // Add validation. 
+        env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
+        env.addVetoableChangeListener(new VetoableChangeListener() {
+            public void vetoableChange(PropertyChangeEvent ev) 
+                    throws PropertyVetoException {
+                if (PropertyEnv.PROP_STATE.equals(ev.getPropertyName())) {
+                    try {
+                        customEditor.getPropertyValue();
+                    } catch (Exception e) {
+                        throw new PropertyVetoException(e.getMessage(), ev);
+                    }
+                }
+            }
+        });
+    }
+     
 }

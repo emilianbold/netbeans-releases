@@ -40,27 +40,51 @@
  */
 package org.netbeans.modules.sun.manager.jbi.editors;
 
+import java.awt.Component;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import javax.management.openmbean.CompositeData;
+import javax.management.openmbean.TabularType;
+import org.netbeans.modules.sun.manager.jbi.management.model.ComponentConfigurationDescriptor;
+import org.openide.util.NbBundle;
 
 /**
- *
+ * A property editor for JBI Component's Environment Variables TabularData or 
+ * Application Variables TabularData.
+ * 
  * @author jqian
  */
 public class EnvironmentVariablesEditor extends SimpleTabularDataEditor {
-
-    public EnvironmentVariablesEditor() {
+            
+    /**
+     * Constructs a Environment Variables / Application Variables property editor.
+     * 
+     * @param isAppVar  <code>true</code> for Application Variables; 
+     *                  <code>false</code> for Environment Variables.
+     * @param tabularType   the type of the tabular data
+     */
+    public EnvironmentVariablesEditor(boolean isAppVar, TabularType tabularType,
+            ComponentConfigurationDescriptor descriptor, boolean isWritable) {
+        super(NbBundle.getMessage(EnvironmentVariablesEditor.class, 
+                isAppVar ? "LBL_APPLICATION_VARIABLES_TABLE" :  // NOI18N 
+                    "LBL_ENVIRONMENT_VARIABLES_TABLE"),  // NOI18N 
+              NbBundle.getMessage(EnvironmentVariablesEditor.class, 
+                isAppVar ? "ACS_APPLICATION_VARIABLES_TABLE" :  // NOI18N 
+                    "ACS_ENVIRONMENT_VARIABLES_TABLE"),  // NOI18N
+              tabularType, descriptor, isWritable); 
     }
 
     @Override
-    public java.awt.Component getCustomEditor() {
-        return new EnvironmentVariablesCustomEditor(this);
+    public Component getCustomEditor() {
+        customEditor = new EnvironmentVariablesCustomEditor(this,
+                tableLabelText, tableLabelDescription, 
+                descriptor, isWritable);
+        return customEditor;
     }
     
     @Override
+    @SuppressWarnings("unchecked")
     protected String getStringForRowData(CompositeData rowData) {
         Collection rowValues = rowData.values();
         
@@ -69,11 +93,11 @@ public class EnvironmentVariablesEditor extends SimpleTabularDataEditor {
         List<String> visibleRowValues = new ArrayList<String>();
         visibleRowValues.addAll(rowValues);
         
-        String type = (String) visibleRowValues.get(
+        String type = visibleRowValues.get(
                 EnvironmentVariablesCustomEditor.TYPE_COLUMN);
         
-        if (type.equals(EnvironmentVariablesCustomEditor.PASSWORD_TYPE)) {
-            String password = (String) visibleRowValues.get(
+        if (type.equals(ApplicationVariableType.PASSWORD.toString())) {
+            String password = visibleRowValues.get(
                     EnvironmentVariablesCustomEditor.VALUE_COLUMN);
             if (password != null) {
                 password = password.replaceAll(".", "*"); // NOI18N
@@ -86,6 +110,12 @@ public class EnvironmentVariablesEditor extends SimpleTabularDataEditor {
     }
     
     @Override
+    public void setAsText(String text) throws IllegalArgumentException {
+        assert false; // see attachEnv
+    } 
+        
+    /*
+    @Override
     protected void validateRowData(String[] rowData) throws Exception {
         if (rowData == null || rowData.length != 3) {
             throw new RuntimeException("Illegal environment variable: "  + Arrays.toString(rowData) +
@@ -93,30 +123,30 @@ public class EnvironmentVariablesEditor extends SimpleTabularDataEditor {
         }
         
         String type = rowData[1];
-        if (! type.equals(EnvironmentVariablesCustomEditor.STRING_TYPE) &&
-                type.equalsIgnoreCase(EnvironmentVariablesCustomEditor.STRING_TYPE)) {
-            type = rowData[1] = EnvironmentVariablesCustomEditor.STRING_TYPE;
-        } else if (! type.equals(EnvironmentVariablesCustomEditor.NUMBER_TYPE) &&
-                type.equalsIgnoreCase(EnvironmentVariablesCustomEditor.NUMBER_TYPE)) {
-            type = rowData[1] = EnvironmentVariablesCustomEditor.NUMBER_TYPE;
-        } else if (! type.equals(EnvironmentVariablesCustomEditor.BOOLEAN_TYPE) &&
-                type.equalsIgnoreCase(EnvironmentVariablesCustomEditor.BOOLEAN_TYPE)) {
-            type = rowData[1] = EnvironmentVariablesCustomEditor.BOOLEAN_TYPE;
-        } else if (! type.equals(EnvironmentVariablesCustomEditor.PASSWORD_TYPE) &&
-                type.equalsIgnoreCase(EnvironmentVariablesCustomEditor.PASSWORD_TYPE)) {
-            type = rowData[1] = EnvironmentVariablesCustomEditor.PASSWORD_TYPE;
+        if (! type.equals(ApplicationVariableType.STRING.toString()) &&
+                type.equalsIgnoreCase(ApplicationVariableType.STRING.toString())) {
+            type = rowData[1] = ApplicationVariableType.STRING.toString();
+        } else if (! type.equals(ApplicationVariableType.NUMBER.toString()) &&
+                type.equalsIgnoreCase(ApplicationVariableType.NUMBER.toString())) {
+            type = rowData[1] = ApplicationVariableType.NUMBER.toString();
+        } else if (! type.equals(ApplicationVariableType.BOOLEAN.toString()) &&
+                type.equalsIgnoreCase(ApplicationVariableType.BOOLEAN.toString())) {
+            type = rowData[1] = ApplicationVariableType.BOOLEAN.toString();
+        } else if (! type.equals(ApplicationVariableType.PASSWORD.toString()) &&
+                type.equalsIgnoreCase(ApplicationVariableType.PASSWORD.toString())) {
+            type = rowData[1] = ApplicationVariableType.PASSWORD.toString();
         }
                 
-        if (! type.equals(EnvironmentVariablesCustomEditor.STRING_TYPE) &&
-                ! type.equals(EnvironmentVariablesCustomEditor.NUMBER_TYPE) &&
-                ! type.equals(EnvironmentVariablesCustomEditor.BOOLEAN_TYPE) &&
-                ! type.equals(EnvironmentVariablesCustomEditor.PASSWORD_TYPE)) {
+        if (! type.equals(ApplicationVariableType.STRING.toString()) &&
+                ! type.equals(ApplicationVariableType.NUMBER.toString()) &&
+                ! type.equals(ApplicationVariableType.BOOLEAN.toString()) &&
+                ! type.equals(ApplicationVariableType.PASSWORD.toString())) {
             throw new RuntimeException("Illegal environment variable type: " + type + 
                     ". The only supported types are: STRING, NUMBER, BOOLEAN and PASSWORD.");
         }        
         
         String value = rowData[2]; 
-        if (type.equals(EnvironmentVariablesCustomEditor.BOOLEAN_TYPE)) {
+        if (type.equals(ApplicationVariableType.BOOLEAN.toString())) {
             if (!value.equalsIgnoreCase(Boolean.TRUE.toString()) && 
                     !value.equalsIgnoreCase(Boolean.FALSE.toString()) ) {
                 if (value.equals("0")) { // NOI18N
@@ -129,7 +159,7 @@ public class EnvironmentVariablesEditor extends SimpleTabularDataEditor {
             }
         }
         
-        if (type.equals(EnvironmentVariablesCustomEditor.NUMBER_TYPE)) {
+        if (type.equals(ApplicationVariableType.NUMBER.toString())) {
             try {                
                 Double.parseDouble(value);
             } catch (Exception e) {
@@ -137,10 +167,11 @@ public class EnvironmentVariablesEditor extends SimpleTabularDataEditor {
             }
         }
         
-        if (type.equals(EnvironmentVariablesCustomEditor.PASSWORD_TYPE)) {
+        if (type.equals(ApplicationVariableType.PASSWORD.toString())) {
             if (!value.matches("^\\*+$")) {
                 throw new RuntimeException("Password is in clear text. Please use the custom editor to set password.");
             }
         }
     }
+    */
 }

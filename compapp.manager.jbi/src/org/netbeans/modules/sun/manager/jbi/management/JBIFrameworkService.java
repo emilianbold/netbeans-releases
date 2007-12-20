@@ -70,6 +70,9 @@ import javax.management.remote.JMXServiceURL;
  */
 public class JBIFrameworkService implements Serializable {
     
+    public static final String ADMIN_SERVICE_OBJECTNAME = 
+            "com.sun.jbi:ServiceName=JbiAdminUiService,ComponentType=System"; // NOI18N
+    
     /**
      * com.sun.jbi.home
      */
@@ -212,7 +215,7 @@ public class JBIFrameworkService implements Serializable {
         Set set = null;
         ObjectName objectName = null;
         objectName = new ObjectName(JBIFrameworkService.JBI_CONFIG_OBJECTNAME);
-        ObjectName uiMBeanObjectName = new ObjectName(AdministrationService.ADMIN_SERVICE_OBJECTNAME);
+        ObjectName uiMBeanObjectName = new ObjectName(ADMIN_SERVICE_OBJECTNAME);
 
         if (this.serverConnection != null) {
             try {

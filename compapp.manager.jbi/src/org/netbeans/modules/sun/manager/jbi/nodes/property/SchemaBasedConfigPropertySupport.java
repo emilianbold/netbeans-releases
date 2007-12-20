@@ -23,17 +23,36 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.modules.sun.manager.jbi.nodes.property;
 
+import com.sun.esb.management.common.ManagementRemoteException;
 import java.util.List;
 import javax.management.Attribute;
 import javax.management.MBeanAttributeInfo;
-import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
-import org.netbeans.modules.sun.manager.jbi.nodes.JBIComponentNode;
-import org.netbeans.modules.sun.manager.jbi.util.MyMBeanAttributeInfo;
+import javax.swing.SwingUtilities;
+import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
+import org.netbeans.modules.sun.manager.jbi.management.ConfigurationMBeanAttributeInfo;
+import org.netbeans.modules.sun.manager.jbi.management.wrapper.api.RuntimeManagementServiceWrapper;
+import org.netbeans.modules.sun.manager.jbi.nodes.AppserverJBIMgmtNode;
 import org.netbeans.modules.sun.manager.jbi.util.DoNotShowAgainMessage;
+import org.netbeans.modules.sun.manager.jbi.util.StackTraceUtil;
+import org.netbeans.modules.sun.manager.jbi.util.Utils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.PropertySupport;
@@ -52,18 +71,23 @@ class SchemaBasedConfigPropertySupport<T>
     private static boolean promptForComponentRestart = true;
     private static boolean promptForServerRestart = true;
 
-    private Attribute attr;
-    private MBeanAttributeInfo info;
-    private JBIComponentNode componentNode;
+    protected Attribute attr;
+    protected MBeanAttributeInfo info;
+    protected AppserverJBIMgmtNode componentNode;
 
     SchemaBasedConfigPropertySupport(
-            JBIComponentNode componentNode, 
+            AppserverJBIMgmtNode componentNode, 
             Class<T> type, 
             Attribute attr, 
             MBeanAttributeInfo info) {
 
-        super(attr.getName(), type, info.getName(), info.getDescription());
-
+        super(attr.getName(), type, info.getName(), 
+                Utils.getTooltip(info.getDescription()));
+          
+        // Doesn't work yet. #124256
+//        // Use non-HTML version in the property sheet's description area.
+//        setValue("nodeDescription", info.getDescription()); // NOI18N 
+        
         this.attr = attr;
         this.info = info;
         this.componentNode = componentNode;
@@ -84,32 +108,73 @@ class SchemaBasedConfigPropertySupport<T>
         }
     }
 
-    public void setValue(T val) {
-        String name = getName();
+    public void setValue(T newValue) {
+        /*
+        // There is a problem for password field because we don't know 
+        // the actual old value.
+        if (attr.getValue().equals(newValue)) {
+            return;
+        }*/
+        
+        if (StackTraceUtil.isCalledBy(
+                "org.openide.explorer.propertysheet.PropertyDialogManager", // NOI18N
+                "cancelValue")) { // NOI18N
+            return;
+        }           
+        
         try {
-            if (validate(val)) {
-                attr = componentNode.setSheetProperty(name, val);
+            if (validate(newValue)) {
+                attr = componentNode.setSheetProperty(getName(), newValue);
+                checkForPromptToRestart();
+            }
+        } catch (Exception ex) {
+            NotifyDescriptor d = new NotifyDescriptor.Message(
+                    NbBundle.getMessage(getClass(), 
+                    "MSG_SET_COMPONENT_CONFIG_PROPERTY_ERROR", // NOI18N
+                    ex.getMessage()), 
+                    NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(d);
+        }
+    }
 
-                if (info instanceof MyMBeanAttributeInfo) {
-                    
-                    MyMBeanAttributeInfo myInfo = (MyMBeanAttributeInfo)info;
-                    
+    protected boolean validate(T newValue) {
+        return true;
+    }
+    
+    protected void checkForPromptToRestart() {
+        
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                if (info instanceof ConfigurationMBeanAttributeInfo) {
+
+                    ConfigurationMBeanAttributeInfo myInfo =
+                            (ConfigurationMBeanAttributeInfo)info;
+
                     DoNotShowAgainMessage d;
-                            
+
                     if (myInfo.isApplicationRestartRequired() && 
                             promptForApplicationRestart) {
                         String compName = componentNode.getName();
-                        AdministrationService adminService = 
-                                componentNode.getAppserverJBIMgmtController().
-                                getJBIAdministrationService();
-                        List<String> saNames = 
-                                adminService.getServiceAssemblyNames(compName);
-                        if (saNames.size() > 0) {
-                            d = promptForRestart("MSG_NEEDS_APPLICATION_RESTART", 
-                                    saNames.toString());
-                            if (d.getDoNotShowAgain()) {
-                                promptForApplicationRestart = false;
+                        
+                        try {
+                            RuntimeManagementServiceWrapper adminService = 
+                                    componentNode.getAppserverJBIMgmtController().
+                                    getRuntimeManagementServiceWrapper();
+                            List<String> saNames = 
+                                    adminService.getServiceAssemblyNames(
+                                    compName, AppserverJBIMgmtController.SERVER_TARGET);
+                            if (saNames.size() > 0) {
+                                d = promptForRestart("MSG_NEEDS_APPLICATION_RESTART", 
+                                        saNames.toString());
+                                if (d.getDoNotShowAgain()) {
+                                    promptForApplicationRestart = false;
+                                }
                             }
+                        } catch (ManagementRemoteException e) {
+                            NotifyDescriptor nd = new NotifyDescriptor.Message(
+                                    e.getMessage(),
+                                    NotifyDescriptor.ERROR_MESSAGE);
+                            DialogDisplayer.getDefault().notify(nd);
                         }
                     }
 
@@ -128,20 +193,9 @@ class SchemaBasedConfigPropertySupport<T>
                             promptForServerRestart = false;
                         }
                     }
-                }
+                }            
             }
-        } catch (Exception ex) {
-            NotifyDescriptor d = new NotifyDescriptor.Message(
-                    NbBundle.getMessage(getClass(), 
-                    "MSG_SET_COMPONENT_CONFIG_PROPERTY_ERROR", 
-                    ex.getMessage()), 
-                    NotifyDescriptor.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notify(d);
-        }
-    }
-
-    protected boolean validate(T value) {
-        return true;
+        });
     }
     
     private DoNotShowAgainMessage promptForRestart(String msgBundleName) {

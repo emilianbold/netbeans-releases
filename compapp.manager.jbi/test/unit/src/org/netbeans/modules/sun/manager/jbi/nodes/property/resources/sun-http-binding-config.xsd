@@ -4,72 +4,85 @@
             xmlns:tns="http://com.sun.jbi.component/schema/configuration"
             attributeFormDefault="unqualified"
             elementFormDefault="qualified">
-   
+    
     <xsd:element name="Configuration"
                  type="tns:ConfigurationType"/>
-   
+    
     <xsd:complexType name="ConfigurationType">
         <xsd:sequence>
             <xsd:element type="tns:ThreadType" name="OutboundThreads">
             </xsd:element>
-           
+            
             <xsd:element type="tns:HttpPortType" name="HttpDefaultPort">
             </xsd:element>
-           
+            
             <xsd:element type="tns:HttpPortType" name="HttpsDefaultPort">
             </xsd:element>
-           
-            <xsd:element type="tns:UseJVMProxySettingsType" name="UseJVMProxySettings">
-            </xsd:element>
-           
+            
             <xsd:element type="tns:ProxyTypeType" name="ProxyType">
             </xsd:element>
-           
+            
             <xsd:element type="tns:ProxyHostType" name="ProxyHost">
             </xsd:element>
-           
+            
             <xsd:element type="tns:ProxyPortType" name="ProxyPort">
             </xsd:element>
-           
+            
             <xsd:element type="tns:nonProxyHostsType" name="NonProxyHosts">
             </xsd:element>
-           
+            
             <xsd:element type="tns:ProxyUserNameType" name="ProxyUserName">
             </xsd:element>
-           
+            
             <xsd:element type="tns:ProxyPasswordType" name="ProxyPassword">
             </xsd:element>
+            
+            <xsd:element type="tns:UseJVMProxySettingsType" name="UseJVMProxySettings">
+            </xsd:element>
+            
+            <xsd:element type="tns:ApplicationConfigurationsType" name="ApplicationConfigurations">
+            </xsd:element>
+            
+            <xsd:element type="tns:ApplicationVariablesType" name="ApplicationVariables">
+            </xsd:element>
+            
         </xsd:sequence>
         <xsd:attribute type="xsd:string" name="name"/>
     </xsd:complexType>
-   
+    
     <xsd:complexType name="ThreadType">
         <xsd:simpleContent>
             <xsd:extension base="tns:SimpleRestrictedThreadType">
                 <xsd:attribute type="xsd:string" name="displayName"/>
                 <xsd:attribute type="xsd:string" name="displayDescription"/>
                 <xsd:attribute type="xsd:boolean" name="isPasswordField"/>
+                <xsd:attribute type="xsd:boolean" name="isApplicationRestartRequired"/>
+                <xsd:attribute type="xsd:boolean" name="isComponentRestartRequired"/>
+                <xsd:attribute type="xsd:boolean" name="isServerRestartRequired"/>
             </xsd:extension>
         </xsd:simpleContent>
     </xsd:complexType>
-   
-     <xsd:simpleType name="SimpleRestrictedThreadType">
+    
+    <xsd:simpleType name="SimpleRestrictedThreadType">
         <xsd:restriction base="xsd:int">
             <xsd:minInclusive value="1"/>
             <xsd:maxInclusive value="2147483647"/>
         </xsd:restriction>
     </xsd:simpleType>
-   
+    
     <xsd:complexType name="HttpPortType">
         <xsd:simpleContent>
             <xsd:extension base="tns:HttpPortSimpleType">
                 <xsd:attribute type="xsd:string" name="displayName"/>
                 <xsd:attribute type="xsd:string" name="displayDescription"/>
                 <xsd:attribute type="xsd:boolean" name="isPasswordField"/>
+                <xsd:attribute type="xsd:boolean" name="isApplicationRestartRequired"/>
+                <xsd:attribute type="xsd:boolean" name="isComponentRestartRequired"/>
+                <xsd:attribute type="xsd:boolean" name="isServerRestartRequired"/>
             </xsd:extension>
         </xsd:simpleContent>
     </xsd:complexType>
-   
+    
     <xsd:simpleType name="HttpPortSimpleType">
         <xsd:restriction base="xsd:int">
             <xsd:totalDigits value="5"/>
@@ -77,17 +90,20 @@
             <xsd:maxInclusive value="65536"/>
         </xsd:restriction>
     </xsd:simpleType>
-   
+    
     <xsd:complexType name="ProxyPortType">
         <xsd:simpleContent>
             <xsd:extension base="tns:ProxyPortSimpleType">
                 <xsd:attribute type="xsd:string" name="displayName"/>
                 <xsd:attribute type="xsd:string" name="displayDescription"/>
                 <xsd:attribute type="xsd:boolean" name="isPasswordField"/>
+                <xsd:attribute type="xsd:boolean" name="isApplicationRestartRequired"/>
+                <xsd:attribute type="xsd:boolean" name="isComponentRestartRequired"/>
+                <xsd:attribute type="xsd:boolean" name="isServerRestartRequired"/>
             </xsd:extension>
         </xsd:simpleContent>
     </xsd:complexType>
-   
+    
     <xsd:simpleType name="ProxyPortSimpleType">
         <xsd:restriction base="xsd:int">
             <xsd:totalDigits value="5"/>
@@ -95,27 +111,33 @@
             <xsd:maxInclusive value="65536"/>
         </xsd:restriction>
     </xsd:simpleType>
-   
+    
     <xsd:complexType name="UseJVMProxySettingsType">
         <xsd:simpleContent>
             <xsd:extension base="xsd:boolean">
                 <xsd:attribute type="xsd:string" name="displayName"/>
                 <xsd:attribute type="xsd:string" name="displayDescription"/>
                 <xsd:attribute type="xsd:boolean" name="isPasswordField"/>
+                <xsd:attribute type="xsd:boolean" name="isApplicationRestartRequired"/>
+                <xsd:attribute type="xsd:boolean" name="isComponentRestartRequired"/>
+                <xsd:attribute type="xsd:boolean" name="isServerRestartRequired"/>
             </xsd:extension>
         </xsd:simpleContent>
     </xsd:complexType>
-   
+    
     <xsd:complexType name="ProxyTypeType">
         <xsd:simpleContent>
             <xsd:extension base="tns:ProxyTypeSimpleType">
                 <xsd:attribute type="xsd:string" name="displayName"/>
                 <xsd:attribute type="xsd:string" name="displayDescription"/>
                 <xsd:attribute type="xsd:boolean" name="isPasswordField"/>
+                <xsd:attribute type="xsd:boolean" name="isApplicationRestartRequired"/>
+                <xsd:attribute type="xsd:boolean" name="isComponentRestartRequired"/>
+                <xsd:attribute type="xsd:boolean" name="isServerRestartRequired"/>
             </xsd:extension>
         </xsd:simpleContent>
     </xsd:complexType>
-   
+    
     <xsd:simpleType name="ProxyTypeSimpleType">
         <xsd:restriction base="xsd:string">
             <xsd:enumeration value="SOCKS"/>
@@ -123,51 +145,146 @@
             <xsd:enumeration value="DIRECT"/>
         </xsd:restriction>
     </xsd:simpleType>
-   
+    
     <xsd:complexType name="ProxyHostType">
         <xsd:simpleContent>
             <xsd:extension base="tns:SimpleStringType">
                 <xsd:attribute type="xsd:string" name="displayName"/>
                 <xsd:attribute type="xsd:string" name="displayDescription"/>
                 <xsd:attribute type="xsd:boolean" name="isPasswordField"/>
+                <xsd:attribute type="xsd:boolean" name="isApplicationRestartRequired"/>
+                <xsd:attribute type="xsd:boolean" name="isComponentRestartRequired"/>
+                <xsd:attribute type="xsd:boolean" name="isServerRestartRequired"/>
             </xsd:extension>
         </xsd:simpleContent>
     </xsd:complexType>
-   
+    
     <xsd:complexType name="nonProxyHostsType">
         <xsd:simpleContent>
             <xsd:extension base="tns:SimpleStringType">
                 <xsd:attribute type="xsd:string" name="displayName"/>
                 <xsd:attribute type="xsd:string" name="displayDescription"/>
                 <xsd:attribute type="xsd:boolean" name="isPasswordField"/>
+                <xsd:attribute type="xsd:boolean" name="isApplicationRestartRequired"/>
+                <xsd:attribute type="xsd:boolean" name="isComponentRestartRequired"/>
+                <xsd:attribute type="xsd:boolean" name="isServerRestartRequired"/>
             </xsd:extension>
         </xsd:simpleContent>
     </xsd:complexType>
-   
+    
     <xsd:complexType name="ProxyUserNameType">
         <xsd:simpleContent>
             <xsd:extension base="tns:SimpleStringType">
                 <xsd:attribute type="xsd:string" name="displayName"/>
                 <xsd:attribute type="xsd:string" name="displayDescription"/>
                 <xsd:attribute type="xsd:boolean" name="isPasswordField"/>
+                <xsd:attribute type="xsd:boolean" name="isApplicationRestartRequired"/>
+                <xsd:attribute type="xsd:boolean" name="isComponentRestartRequired"/>
+                <xsd:attribute type="xsd:boolean" name="isServerRestartRequired"/>
             </xsd:extension>
         </xsd:simpleContent>
     </xsd:complexType>
-   
-   
+    
+    
     <xsd:complexType name="ProxyPasswordType">
         <xsd:simpleContent>
             <xsd:extension base="tns:SimpleStringType">
                 <xsd:attribute type="xsd:string" name="displayName"/>
                 <xsd:attribute type="xsd:string" name="displayDescription"/>
                 <xsd:attribute type="xsd:boolean" name="isPasswordField"/>
+                <xsd:attribute type="xsd:boolean" name="isApplicationRestartRequired"/>
+                <xsd:attribute type="xsd:boolean" name="isComponentRestartRequired"/>
+                <xsd:attribute type="xsd:boolean" name="isServerRestartRequired"/>
             </xsd:extension>
         </xsd:simpleContent>
     </xsd:complexType>
-   
+    
     <xsd:simpleType name="SimpleStringType">
         <xsd:restriction base="xsd:string">
         </xsd:restriction>
     </xsd:simpleType>
-   
+    
+    <!-- The Application Configuration Definition for HTTP BC -->
+    <xsd:complexType name="ApplicationConfigurationsType">
+        <xsd:attribute type="xsd:string" name="displayName"/>
+        <xsd:attribute type="xsd:string" name="displayDescription"/>
+        <xsd:attribute type="xsd:boolean" name="isPasswordField"/>
+        <xsd:attribute type="xsd:boolean" name="isApplicationRestartRequired"/>
+        <xsd:attribute type="xsd:boolean" name="isComponentRestartRequired"/>
+        <xsd:attribute type="xsd:boolean" name="isServerRestartRequired"/>
+        <xsd:sequence>
+            <xsd:element type="tns:ConfigurationNameType" name="configurationName" />
+            <xsd:element type="tns:HttpLocationType" name="httpUrlLocation" />
+        </xsd:sequence>
+    </xsd:complexType>
+    
+    <xsd:complexType name="ConfigurationNameType">
+        <xsd:simpleContent>
+            <xsd:extension base="tns:SimpleStringType">
+                <!-- Display name and description in the composite type definition will take precedence if there are any inconsistencies -->
+                <xsd:attribute type="xsd:string" name="displayName"/>
+                <xsd:attribute type="xsd:string" name="displayDescription"/>
+                <xsd:attribute type="xsd:boolean" name="isPasswordField"/>
+                <xsd:attribute type="xsd:boolean" name="isRequiredField"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+    
+    <xsd:complexType name="HttpLocationType">
+        <xsd:simpleContent>
+            <xsd:extension base="tns:SimpleStringType">
+                <!-- Display name and description in the composite type definition will take precedence if there are any inconsistencies -->
+                <xsd:attribute type="xsd:string" name="displayName"/>
+                <xsd:attribute type="xsd:string" name="displayDescription"/>
+                <xsd:attribute type="xsd:boolean" name="isPasswordField"/>
+                <xsd:attribute type="xsd:boolean" name="isRequiredField"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+    
+    <!-- The Application Variables Definition for HTTP BC -->
+    <xsd:complexType name="ApplicationVariablesType">
+        <xsd:sequence>
+            <xsd:element type="tns:ApplicationVariableNameType" name="name" />
+            <xsd:element type="tns:ApplicationVariableValueType" name="value" />
+            <xsd:element type="tns:ApplicationVariableTypeType" name="type" />
+        </xsd:sequence>
+    </xsd:complexType>
+    
+    <xsd:complexType name="ApplicationVariableNameType">
+        <xsd:simpleContent>
+            <xsd:extension base="tns:SimpleStringType">
+                <!-- Display name and description in the composite type definition will take precedence if there are any inconsistencies -->
+                <xsd:attribute type="xsd:string" name="displayName"/>
+                <xsd:attribute type="xsd:string" name="displayDescription"/>
+                <xsd:attribute type="xsd:boolean" name="isPasswordField"/>
+                <xsd:attribute type="xsd:boolean" name="isRequiredField"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+    
+    <xsd:complexType name="ApplicationVariableValueType">
+        <xsd:simpleContent>
+            <xsd:extension base="tns:SimpleStringType">
+                <!-- Display name and description in the composite type definition will take precedence if there are any inconsistencies -->
+                <xsd:attribute type="xsd:string" name="displayName"/>
+                <xsd:attribute type="xsd:string" name="displayDescription"/>
+                <xsd:attribute type="xsd:boolean" name="isPasswordField"/>
+                <xsd:attribute type="xsd:boolean" name="isRequiredField"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+    
+    <xsd:complexType name="ApplicationVariableTypeType">
+        <xsd:simpleContent>
+            <xsd:extension base="tns:SimpleStringType">
+                <!-- Display name and description in the composite type definition will take precedence if there are any inconsistencies -->
+                <xsd:attribute type="xsd:string" name="displayName"/>
+                <xsd:attribute type="xsd:string" name="displayDescription"/>
+                <xsd:attribute type="xsd:boolean" name="isPasswordField"/>
+                <xsd:attribute type="xsd:boolean" name="isRequiredField"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+    
 </xsd:schema>

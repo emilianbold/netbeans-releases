@@ -38,9 +38,14 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.sun.manager.jbi.nodes;
 
+import com.sun.esb.management.api.administration.AdministrationService;
+import com.sun.esb.management.common.ManagementRemoteException;
+import com.sun.esb.management.common.data.ServiceAssemblyStatisticsData;
+import com.sun.esb.management.common.data.ServiceUnitStatisticsData;
+import com.sun.jbi.ui.common.JBIComponentInfo;
+import com.sun.jbi.ui.common.ServiceUnitInfo;
 import java.awt.Image;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -50,16 +55,17 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
 import javax.management.Attribute;
 import javax.management.MBeanAttributeInfo;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-
-import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
-import org.netbeans.modules.sun.manager.jbi.management.model.JBIServiceUnitStatus;
 import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
+import org.netbeans.modules.sun.manager.jbi.management.wrapper.api.PerformanceMeasurementServiceWrapper;
+import org.netbeans.modules.sun.manager.jbi.management.wrapper.api.RuntimeManagementServiceWrapper;
 import org.netbeans.modules.sun.manager.jbi.util.Utils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.nodes.Sheet;
 import org.openide.util.datatransfer.ExTransferable;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -72,163 +78,229 @@ import org.xml.sax.InputSource;
  * @author jqian
  */
 public class JBIServiceUnitNode extends AppserverJBIMgmtLeafNode {
+
+    private static final String SERVICE_UNIT_STATISTICS_SHEET_SET_NAME =
+            "SERVICE_UNIT_STATISTICS"; // NOI18N
     
     private String componentName;
-    
+
     public JBIServiceUnitNode(final AppserverJBIMgmtController controller,
             final String name,
             final String displayName,
             final String description) {
         super(controller, NodeType.SERVICE_UNIT);
+        
         setName(name);
+        
         setDisplayName(displayName);
-        setShortDescription(description);
+        
+        // Use HTML version for tooltip.
+        setShortDescription(Utils.getTooltip(description));         
+        // Use non-HTML version in the property sheet's description area.
+        setValue("nodeDescription", description); // NOI18N 
     }
-    
-    /**
-     * Return the SheetProperties to be displayed for this JVM.
-     *
-     * @return A java.util.Map containing all JVM properties.
-     */
-    protected Map<Attribute, MBeanAttributeInfo> getSheetProperties() {
-        JBIServiceUnitStatus serviceUnit = getServiceUnitStatus();
-        return Utils.getIntrospectedPropertyMap(serviceUnit, true);
+
+    @Override
+    protected Sheet createSheet() {
+        Sheet sheet = new Sheet();
+
+        addSheetSet(sheet,
+                GENERAL_SHEET_SET_NAME,
+                "LBL_GENERAL_PROPERTIES", // NOI18N
+                "DSC_GENERAL_PROPERTIES", // NOI18N
+                getGeneralSheetSetProperties());
+
+        // Augment the general property sheet by adding SU statistics sheet
+        try {
+            addSheetSet(sheet,
+                    SERVICE_UNIT_STATISTICS_SHEET_SET_NAME,
+                    "LBL_SERVICE_UNIT_STATISTICS_PROPERTIES", // NOI18N
+                    "DSC_SERVICE_UNIT_STATISTICS_PROPERTIES", // NOI18N
+                    getServiceUnitStatisticsSheetSetProperties());
+        } catch (ManagementRemoteException e) {
+            e.printStackTrace();
+        }
+        return sheet;
     }
-    
-    /**
-     *
-     */
+
+    private Map<Attribute, MBeanAttributeInfo> 
+            getServiceUnitStatisticsSheetSetProperties()
+            throws ManagementRemoteException {
+        AppserverJBIMgmtController controller = getAppserverJBIMgmtController();
+        
+        PerformanceMeasurementServiceWrapper perfService =
+                controller.getPerformanceMeasurementServiceWrapper();
+        
+        String saName = getParentNode().getName();
+        ServiceAssemblyStatisticsData saStatistics =
+                perfService.getServiceAssemblyStatistics(
+                saName, SERVER_TARGET);
+
+        String suName = getName();
+        for (ServiceUnitStatisticsData suStatistics : 
+            saStatistics.getServiceUnitStatisticsList()) {
+            if (suStatistics.getName().equals(suName)) {
+                return Utils.getIntrospectedPropertyMap(suStatistics, true);
+            }
+        }
+
+        return null;
+    }
+
+    private Map<Attribute, MBeanAttributeInfo> getGeneralSheetSetProperties() {
+        ServiceUnitInfo suInfo = getServiceUnitInfo();
+        return Utils.getIntrospectedPropertyMap(suInfo, true,
+                MODEL_BEAN_INFO_PACKAGE_NAME);
+    }
+  
     public Attribute setSheetProperty(String attrName, Object value) {
         return null;
     }
-    
+
     /**
      *
      * @return
      */
-    private JBIServiceUnitStatus getServiceUnitStatus() {
-        String assemblyName = getParentNode().getName();
-        return getAdminService().getServiceUnitStatus(assemblyName, getName());
+    private ServiceUnitInfo getServiceUnitInfo() {
+        try {
+            String assemblyName = getParentNode().getName();
+            RuntimeManagementServiceWrapper mgmtService =
+                    getRuntimeManagementServiceWrapper();
+            return mgmtService.getServiceUnit(assemblyName, getName(), SERVER_TARGET);
+        } catch (ManagementRemoteException e) {
+            NotifyDescriptor d = new NotifyDescriptor.Message(e.getMessage(),
+                    NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(d);
+        }
+
+        return null;
     }
-    
+
     /**
      *
      */
     public Image getIcon(int type) {
-        
+
         String baseIconName = IconConstants.SERVICE_UNIT_ICON;
-        
-        JBIServiceUnitStatus unitStatus = getServiceUnitStatus();
-        String status = (unitStatus == null) ? null : unitStatus.getStatus();
-        
+
+        ServiceUnitInfo suInfo = getServiceUnitInfo();
+        String status = (suInfo == null) ? null : suInfo.getState();
+
         String externalBadgeIconName = null;
-        if (JBIComponentStatus.SHUTDOWN_STATE.equals(status)) {
+        if (JBIComponentInfo.SHUTDOWN_STATE.equals(status)) {
             externalBadgeIconName = IconConstants.INSTALLED_ICON;
-        } else if (JBIComponentStatus.STOPPED_STATE.equals(status)) {
+        } else if (JBIComponentInfo.STOPPED_STATE.equals(status)) {
             externalBadgeIconName = IconConstants.STOPPED_ICON;
-        } else if (!JBIComponentStatus.STARTED_STATE.equals(status)) {
+        } else if (!JBIComponentInfo.STARTED_STATE.equals(status)) {
             externalBadgeIconName = IconConstants.UNKNOWN_ICON;
         }
-        
-        return Utils.getBadgedIcon(getClass(), baseIconName, null, externalBadgeIconName);
+
+        return Utils.getBadgedIcon(
+                getClass(), baseIconName, null, externalBadgeIconName);
     }
     
-    
     // DnD Support for CASA
-    
     public static final DataFlavor ServiceUnitDataFlavor =
-            new DataFlavor(Object.class, "JBIServiceUnitDataFlavor" ) {  // NOI18N
-    };
-    
+            new DataFlavor(Object.class, "JBIServiceUnitDataFlavor") {  // NOI18N
+            };
+
     public Transferable drag() throws IOException {
-        ExTransferable retValue = ExTransferable.create( super.drag() );
+        ExTransferable retValue = ExTransferable.create(super.drag());
         //add the 'data' into the Transferable
         final String suDD = getDeploymentDescriptor();
-        
+
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setNamespaceAware(true);
-        
+
         try {
             DocumentBuilder builder = factory.newDocumentBuilder();
             // parse SU DD
             Document suDoc = builder.parse(new InputSource(new StringReader(suDD)));
             Element services = (Element) suDoc.getElementsByTagName("services").item(0); // NOI18N
             boolean isBC = services.getAttribute("binding-component").equals("true"); // NOI18N
-            
+
             if (!isBC) {
-                retValue.put( new ExTransferable.Single(ServiceUnitDataFlavor) {
+                retValue.put(new ExTransferable.Single(ServiceUnitDataFlavor) {
+
                     protected Object getData() throws IOException, UnsupportedFlavorException {
                         List<String> ret = new ArrayList<String>();
                         ret.add("JBIMGR_SU_TRANSFER"); // NOI18N
                         ret.add(getName()); // service unit name
-                        ret.add(getComponentName()); 
+                        ret.add(getComponentName());
                         ret.add(getShortDescription());
                         ret.add(suDD);
                         return ret;
                     }
                 });
-            } 
+            }
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-         
-         /*
-         return new Transferable() {
-             public DataFlavor[] getTransferDataFlavors() {
-                 return new DataFlavor[] {
-                     JBIServiceUnitTransferObject.ServiceUnitDataFlavor};
-             }
-             
-             public boolean isDataFlavorSupported(DataFlavor flavor) {
-                 return JBIServiceUnitTransferObject.ServiceUnitDataFlavor.equals(flavor);
-             }
-             
-             public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
-                 return suTransfer;
-             }
-             
-         };*/
-        
+
+        /*
+        return new Transferable() {
+        public DataFlavor[] getTransferDataFlavors() {
+        return new DataFlavor[] {
+        JBIServiceUnitTransferObject.ServiceUnitDataFlavor};
+        }
+        public boolean isDataFlavorSupported(DataFlavor flavor) {
+        return JBIServiceUnitTransferObject.ServiceUnitDataFlavor.equals(flavor);
+        }
+        public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
+        return suTransfer;
+        }
+        };*/
+
         return retValue;
     }
-    
+
     public String getDeploymentDescriptor() {
-        String assemblyName = getParentNode().getName();
-        String suDD = getAdminService().getServiceUnitDeploymentDescriptor(assemblyName, getName());
+
+        String suDD = null;
+
+        AdministrationService adminService = getAdministrationService();
+
+        String assemblyName = getName();
+        try {
+            suDD = adminService.getServiceUnitDeploymentDescriptor(
+                    assemblyName, getName());
+        } catch (ManagementRemoteException e) {
+            e.printStackTrace();
+        }
+
         return suDD;
     }
-        
+
     private String getComponentName() {
         if (componentName == null) {
-            JBIServiceAssemblyNode saNode = (JBIServiceAssemblyNode)getParentNode(); 
+            JBIServiceAssemblyNode saNode = (JBIServiceAssemblyNode) getParentNode();
             String saDD = saNode.getDeploymentDescriptor();
             String myName = getName();
-            
+
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setNamespaceAware(true);
             try {
                 DocumentBuilder builder = factory.newDocumentBuilder();
-                
+
                 // parse SA DD
                 Document saDoc = builder.parse(new InputSource(new StringReader(saDD)));
                 NodeList sus = saDoc.getElementsByTagName("service-unit"); // NOI18N
                 for (int i = 0; i < sus.getLength(); i++) {
                     Element su = (Element) sus.item(i);
-                    String name = ((Element)su.getElementsByTagName("name").item(0)).getFirstChild().getNodeValue(); // identification/name
+                    String name = ((Element) su.getElementsByTagName("name").item(0)).getFirstChild().getNodeValue(); // identification/name
                     if (name.equals(myName)) {
-                        componentName = ((Element)su.getElementsByTagName("component-name").item(0)).getFirstChild().getNodeValue(); // target/component-name
+                        componentName = ((Element) su.getElementsByTagName("component-name").item(0)).getFirstChild().getNodeValue(); // target/component-name
                         break;
                     }
-                }                
+                }
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
-            
+
             if (componentName == null) {
                 componentName = "?"; // NOI18N
             }
         }
         return componentName;
     }
-    
 }

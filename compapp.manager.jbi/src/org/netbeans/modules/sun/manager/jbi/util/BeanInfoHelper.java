@@ -53,19 +53,42 @@ import org.openide.util.NbBundle;
  */
 public class BeanInfoHelper {
 
+    /**
+     * Gets the descriptor of a bean property.
+     * 
+     * @param beanClass     a bean class
+     * @param resourceBundleClass a class used for locating the resource bundle;
+     *                      if <code>null</code>, then the bean class is used 
+     *                      for locating the resource bundle.                      
+     * @param getter        getter method name
+     * @param setter        setter method name
+     * @param nameBundleKey key (in the resource bundle) for the property's name 
+     * @param descBundleKey key (in the resource bundle) for the property's 
+     *                      short desciption
+     * 
+     * @return  the descriptor of a bean property
+     * 
+     * @throws java.beans.IntrospectionException
+     */
     public static PropertyDescriptor getPropertyDescriptor(
             Class beanClass,
-            String propNameLabel,
-            String getter, String setter,
-            String shortDescriptionLabel) throws IntrospectionException {
+            Class resourceBundleClass,
+            String getter, 
+            String setter,
+            String nameBundleKey,
+            String descBundleKey) throws IntrospectionException {
 
-        ResourceBundle bundle = NbBundle.getBundle(beanClass);
+        if (resourceBundleClass == null) {
+            resourceBundleClass = beanClass;
+        }
         
-        String propName = bundle.getString(propNameLabel);
+        ResourceBundle bundle = NbBundle.getBundle(resourceBundleClass);
+        
+        String propName = bundle.getString(nameBundleKey);
         PropertyDescriptor proertyDescriptor =
             new PropertyDescriptor(propName, beanClass, getter, setter);
         
-        String shortDesc = bundle.getString(shortDescriptionLabel);
+        String shortDesc = bundle.getString(descBundleKey);
         proertyDescriptor.setShortDescription(shortDesc);
         
         return proertyDescriptor;

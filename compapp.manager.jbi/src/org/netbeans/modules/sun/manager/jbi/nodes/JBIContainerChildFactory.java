@@ -38,17 +38,18 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.sun.manager.jbi.nodes;
 
+import com.sun.esb.management.common.ManagementRemoteException;
+import com.sun.jbi.ui.common.JBIComponentInfo;
+import com.sun.jbi.ui.common.ServiceAssemblyInfo;
+import com.sun.jbi.ui.common.ServiceUnitInfo;
 import org.netbeans.modules.sun.manager.jbi.management.JBIComponentType;
-import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
-import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
-import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
-import org.netbeans.modules.sun.manager.jbi.management.model.JBIServiceAssemblyStatus;
-import org.netbeans.modules.sun.manager.jbi.management.model.JBIServiceUnitStatus;
+import org.netbeans.modules.sun.manager.jbi.management.wrapper.api.RuntimeManagementServiceWrapper;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
@@ -57,9 +58,9 @@ import org.openide.nodes.Node;
  *
  */
 public class JBIContainerChildFactory {
-    
+
     private AppserverJBIMgmtController controller;
-    
+
     /**
      * Public constructor for factory used to create the children of a given
      * NodeType.
@@ -71,8 +72,7 @@ public class JBIContainerChildFactory {
     public JBIContainerChildFactory(AppserverJBIMgmtController controller) {
         this.controller = controller;
     }
-    
-    
+
     /**
      * Creates the children for a given NodeType.
      *
@@ -81,138 +81,151 @@ public class JBIContainerChildFactory {
      */
     public Children getChildren(Node node, NodeType type) {
         Children children = new Children.Array();
-        children.add(getChildrenObject(node, type));        
+        try {
+            children.add(getChildrenObject(node, type));
+        } catch (ManagementRemoteException e) {
+            NotifyDescriptor d = new NotifyDescriptor.Message(e.getMessage(),
+                    NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(d);
+        }
         return children;
     }
-    
+
     /**
      * 
      * @param node
      * @param type
      * @return
      */
-    public Node[] getChildrenObject(Node node, NodeType type) {
-        Node[] children = new Node[] {};
+    public Node[] getChildrenObject(Node node, NodeType type)
+            throws ManagementRemoteException {
+        Node[] children = new Node[]{};
+        
         if (NodeType.JBI.equals(type)) {
             children = createJBIChildren();
-        } else if (NodeType.SERVICE_ENGINES.equals(type)) {
-            children = 
-                createJBIComponentContainerChildren(
-                        JBIComponentType.SERVICE_ENGINE);
-        } else if (NodeType.BINDING_COMPONENTS.equals(type)) {
-            children = 
-                createJBIComponentContainerChildren(
-                        JBIComponentType.BINDING_COMPONENT);
-        } else if (NodeType.SHARED_LIBRARIES.equals(type)) {
-            children = 
-                createJBIComponentContainerChildren(
-                        JBIComponentType.SHARED_LIBRARY);
         } else if (NodeType.SERVICE_ASSEMBLIES.equals(type)) {
             children = createServiceAssembliesChildren();
         } else if (NodeType.SERVICE_ASSEMBLY.equals(type)) {
-            children = 
-                createServiceAssemblyChildren(
-                        (JBIServiceAssemblyNode) node);
+            children = createServiceAssemblyChildren((JBIServiceAssemblyNode)node);
+        } else if (NodeType.SERVICE_ENGINES.equals(type) ||
+                NodeType.BINDING_COMPONENTS.equals(type) ||
+                NodeType.SHARED_LIBRARIES.equals(type)) {
+            children = createJBIComponentContainerChildren(type);
         }
+        
         return children;
     }
-    
-    
+
     /**
      * 
      * @return
      */
     private Node[] createJBIChildren() {
-        return new Node[] {
-                new JBIComponentContainerNode.ServiceEngines(controller), 
-                new JBIComponentContainerNode.BindingComponents(controller), 
-                new JBIComponentContainerNode.SharedLibraries(controller),
-                new JBIServiceAssembliesNode(controller)
+        return new Node[]{
+            new JBIComponentContainerNode.ServiceEngines(controller),
+            new JBIComponentContainerNode.BindingComponents(controller),
+            new JBIComponentContainerNode.SharedLibraries(controller),
+            new JBIServiceAssembliesNode(controller)
         };
     }
-    
+
     /**
      * 
-     * @param componentType
+     * @param parentNodeType
      * @return
      */
-    private Node[] createJBIComponentContainerChildren(JBIComponentType componentType) {
-        AdministrationService adminService = 
-                controller.getJBIAdministrationService();
-        List<JBIComponentStatus> compList = 
-                adminService.getJBIComponentStatusList(componentType);
-        
+    private Node[] createJBIComponentContainerChildren(NodeType parentNodeType) 
+            throws ManagementRemoteException {
+
+        RuntimeManagementServiceWrapper runtimeManagementService =
+                controller.getRuntimeManagementServiceWrapper();
+
+        List<JBIComponentInfo> compList = null;
+
+        if (NodeType.SERVICE_ENGINES.equals(parentNodeType)) {
+            compList = runtimeManagementService.listServiceEngines(
+                    AppserverJBIMgmtController.SERVER_TARGET);
+        } else if (NodeType.BINDING_COMPONENTS.equals(parentNodeType)) {
+            compList = runtimeManagementService.listBindingComponents(
+                    AppserverJBIMgmtController.SERVER_TARGET);
+        } else if (NodeType.SHARED_LIBRARIES.equals(parentNodeType)) {
+            compList = runtimeManagementService.listSharedLibraries(
+                    AppserverJBIMgmtController.SERVER_TARGET);
+        } else {
+            assert false;
+        }
+
         Node[] nodes = new Node[compList.size()];
-        
+
         int index = 0;
-        for (JBIComponentStatus comp : compList) {
+        for (JBIComponentInfo comp : compList) {
             String name = comp.getName();
             String description = comp.getDescription();
-            
+
             Node newNode;
-            if (componentType.equals(JBIComponentType.SERVICE_ENGINE)) {
-                newNode = 
-                    new JBIComponentNode.ServiceEngine(
-                            controller, name, description);
-            } else if (componentType.equals(JBIComponentType.BINDING_COMPONENT)) {
-                newNode = 
-                    new JBIComponentNode.BindingComponent(
-                            controller, name, description);
+            if (NodeType.SERVICE_ENGINES.equals(parentNodeType)) {
+                newNode = new JBIComponentNode.ServiceEngine(
+                        controller, name, description);
+            } else if (NodeType.BINDING_COMPONENTS.equals(parentNodeType)) {
+                newNode = new JBIComponentNode.BindingComponent(
+                        controller, name, description);
             } else {
-                newNode = 
-                    new JBIComponentNode.SharedLibrary(
-                            controller, name, description);
+                newNode = new JBIComponentNode.SharedLibrary(
+                        controller, name, description);
             }
             nodes[index++] = newNode;
         }
-        
+
         return nodes;
-    }  
-    
+    }
+
     /**
      * 
      * @return
      */
-    private Node[] createServiceAssembliesChildren() {
-        AdministrationService adminService =
-                controller.getJBIAdministrationService();
-        List<JBIServiceAssemblyStatus> assemblyList =
-                adminService.getServiceAssemblyStatusList();
-        
+    private Node[] createServiceAssembliesChildren() 
+            throws ManagementRemoteException {
+
+        RuntimeManagementServiceWrapper runtimeMgmtService =
+                controller.getRuntimeManagementServiceWrapper();
+
+        List<ServiceAssemblyInfo> assemblyList =
+                runtimeMgmtService.listServiceAssemblies(
+                AppserverJBIMgmtController.SERVER_TARGET);
+
         Node[] nodes = new Node[assemblyList.size()];
-        
+
         int index = 0;
-        for (JBIServiceAssemblyStatus assembly : assemblyList) { 
-            String name = assembly.getServiceAssemblyName();
-            String description = assembly.getServiceAssemblyDescription();
-            nodes[index++] = 
-                new JBIServiceAssemblyNode(controller, name, description);
+        for (ServiceAssemblyInfo assembly : assemblyList) {
+            String name = assembly.getName();
+            String description = assembly.getDescription();
+            nodes[index++] = new JBIServiceAssemblyNode(
+                    controller, name, description);
         }
-        
+
         return nodes;
     }
-    
+
     /**
      * 
      * @param node
      * @return
      */
     private Node[] createServiceAssemblyChildren(JBIServiceAssemblyNode node) {
-        
-        JBIServiceAssemblyStatus assembly = node.getAssembly();
-        List unitList = assembly.getJbiServiceUnitStatusList();
-        
+
+        ServiceAssemblyInfo saInfo = node.getAssemblyInfo();
+        List<ServiceUnitInfo> unitList = saInfo.getServiceUnitInfoList();
+
         Node[] nodes = new Node[unitList.size()];
-        
-        int index = 0;        
-        for (Iterator iter = unitList.iterator(); iter.hasNext();) {
-            JBIServiceUnitStatus unit = (JBIServiceUnitStatus) iter.next();
-            String unitName = unit.getServiceUnitName();
-            String unitDescription = unit.getServiceUnitDescription();
+
+        int index = 0;
+        for (ServiceUnitInfo unit : unitList) {
+            String unitName = unit.getName();
+            String unitDescription = unit.getDescription();
             nodes[index++] = new JBIServiceUnitNode(
                     controller, unitName, unitName, unitDescription);
         }
-        
+
         return nodes;
     }
 }

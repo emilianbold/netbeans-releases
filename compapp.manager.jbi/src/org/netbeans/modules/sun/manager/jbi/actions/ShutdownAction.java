@@ -88,12 +88,12 @@ public abstract class ShutdownAction extends NodeAction {
         });
     }
     
-    protected boolean enable(Node[] nodes) {
+    protected boolean enable(Node[] activatedNodes) {
         boolean ret = false;
         
-        if (nodes != null && nodes.length > 0) {
+        if (activatedNodes != null && activatedNodes.length > 0) {
             ret = true;
-            for (Node node : nodes) {
+            for (Node node : activatedNodes) {
                 Lookup lookup = node.getLookup();
                 Shutdownable shutdownable = lookup.lookup(Shutdownable.class);
                 try {

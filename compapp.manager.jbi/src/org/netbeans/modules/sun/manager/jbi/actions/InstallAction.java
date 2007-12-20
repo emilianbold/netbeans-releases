@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.sun.manager.jbi.actions;
 
 import javax.swing.SwingUtilities;
@@ -57,22 +56,28 @@ import org.openide.util.actions.NodeAction;
  * @author jqian
  */
 public abstract class InstallAction extends NodeAction {
-  
+
+    private boolean autoStart;
+
+    private InstallAction(boolean autoStart) {
+        this.autoStart = autoStart;
+    }
+
     protected void performAction(Node[] activatedNodes) {
         final Lookup lookup = activatedNodes[0].getLookup();
         final Installable installable = lookup.lookup(Installable.class);
-        
+
         if (installable != null) {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     try {
-                        installable.install();
-                        
+                        installable.install(autoStart);
+
                         SwingUtilities.invokeLater(new Runnable() {
                             public void run() {
                                 Refreshable refreshable =
                                         lookup.lookup(Refreshable.class);
-                                if (refreshable != null){
+                                if (refreshable != null) {
                                     refreshable.refresh();
                                 }
                             }
@@ -84,48 +89,47 @@ public abstract class InstallAction extends NodeAction {
             });
         }
     }
-    
-    protected boolean enable(Node[] nodes) {
-        return nodes != null && nodes.length == 1;
+
+    protected boolean enable(Node[] activatedNodes) {
+        return activatedNodes != null && activatedNodes.length == 1;
     }
-    
+
+    @Override
     protected boolean asynchronous() {
         return false;
     }
+
     
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-    
-    //==========================================================================
-    
-    /**
-     * Action for installing Service Engine.
-     */
-    public static class ServiceEngine extends InstallAction {
+    public static class InstallOnly extends InstallAction {
+
+        public InstallOnly() {
+            super(false);
+        }
+
         public String getName() {
             return NbBundle.getMessage(InstallAction.class,
-                    "LBL_InstallServiceEngineAction");  // NOI18N
+                    "LBL_InstallAction"); // NOI18N
+        }
+
+        public HelpCtx getHelpCtx() {
+            return HelpCtx.DEFAULT_HELP;
         }
     }
     
-    /**
-     * Action for installing Binding Component.
-     */
-    public static class BindingComponent extends InstallAction {
-        public String getName() {
-            return NbBundle.getMessage(InstallAction.class,
-                    "LBL_InstallBindingComponentAction"); // NOI18N
-        }
-    }
     
-    /**
-     * Action for installing Shared Library
-     */
-    public static class SharedLibrary extends InstallAction {
+    public static class InstallAndStart extends InstallAction {
+
+        public InstallAndStart() {
+            super(true);
+        }
+
         public String getName() {
             return NbBundle.getMessage(InstallAction.class,
-                    "LBL_InstallSharedLibraryAction"); // NOI18N
+                    "LBL_InstallAndStartAction"); // NOI18N
+        }
+
+        public HelpCtx getHelpCtx() {
+            return HelpCtx.DEFAULT_HELP;
         }
     }
 }

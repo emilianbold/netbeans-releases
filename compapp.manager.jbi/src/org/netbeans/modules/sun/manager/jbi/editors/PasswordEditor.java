@@ -42,28 +42,26 @@
 package org.netbeans.modules.sun.manager.jbi.editors;
 
 
-import java.awt.Component;
-import java.awt.KeyboardFocusManager;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyEditorSupport;
-
-import javax.swing.JPasswordField;
-
-import org.openide.explorer.propertysheet.editors.EnhancedPropertyEditor;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
+import org.openide.explorer.propertysheet.ExPropertyEditor;
+import org.openide.explorer.propertysheet.PropertyEnv;
 
 /**
- *
- * @author  nityad
+ * Password editor in the property sheet.
+ * 
+ * @author jqian
  */
-
 public class PasswordEditor extends PropertyEditorSupport
-        implements EnhancedPropertyEditor /*, ExPropertyEditor*/ {
+    implements ExPropertyEditor {
 
-//    private PropertyEnv mEnv;
+    protected PasswordCustomEditor customEditor;
     
     private String value;
 
+    @Override
     public String getAsText() {
         if (value != null) {
             return value.replaceAll(".", "*"); // NOI18N
@@ -72,6 +70,7 @@ public class PasswordEditor extends PropertyEditorSupport
         }
     }
     
+    @Override
     public void setAsText(String value) throws IllegalArgumentException {        
         if (value != null){ 
             this.value = value;
@@ -79,55 +78,46 @@ public class PasswordEditor extends PropertyEditorSupport
         }
     }
     
+    @Override
     public void setValue(Object value) {
         setAsText((String)value);
     }
     
+    @Override
     public Object getValue() {
         return value;
     }
     
-    public Component getInPlaceCustomEditor() {
-        JPasswordField textfield = new JPasswordField(value);
-        textfield.setEchoChar('*'); // NOI18N
-        textfield.selectAll();
-        textfield.addKeyListener(new KeyAdapter() {
-            public void keyReleased(KeyEvent evt) {
-                JPasswordField source = (JPasswordField)evt.getSource();
-                // value = new String(source.getPassword());
-                setValue(new String(source.getPassword()));
-                // CR 5055478/6199209 cb.setText(curValue);
-                //firePropertyChange();
-                if (evt.getKeyCode() == KeyEvent.VK_ENTER){
-                    KeyEvent esc = new KeyEvent(evt.getComponent(), 
-                            KeyEvent.KEY_PRESSED, 0, 0, 
-                            KeyEvent.VK_ESCAPE, 
-                            KeyEvent.CHAR_UNDEFINED); 
-                    KeyboardFocusManager.getCurrentKeyboardFocusManager()
-                        .dispatchKeyEvent(esc);
-                    //firePropertyChange();
+    @Override
+    public boolean supportsCustomEditor() {
+        return true;
+    }
+        
+    @Override
+    public java.awt.Component getCustomEditor() {
+        customEditor = new PasswordCustomEditor();
+        return customEditor;
+    }   
+        
+    public void attachEnv(PropertyEnv env) {
+        // Disable direct inline text editing.
+        env.getFeatureDescriptor().setValue("canEditAsText", false); // NOI18N
+        
+        // Add validation. 
+        env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
+        env.addVetoableChangeListener(new VetoableChangeListener() {
+            public void vetoableChange(PropertyChangeEvent ev) 
+                    throws PropertyVetoException {
+                if (PropertyEnv.PROP_STATE.equals(ev.getPropertyName())) {
+                    try {
+                        customEditor.getPropertyValue();
+                    } catch (Exception e) {
+                        throw new PropertyVetoException(e.getMessage(), ev);
+                    }
                 }
             }
         });
-        return textfield;
-    }
-    
-    public boolean hasInPlaceCustomEditor() {
-        return true;
-    }
-    
-    public boolean supportsEditingTaggedValues() {
-        return false;
-    }
-
-//    /**
-//     * This method is called by the IDE to pass
-//     * the environment to the property editor.
-//     * @param env Environment passed by the ide.
-//     */
-//    public void attachEnv(PropertyEnv env) {
-//        mEnv = env;
-//    }
+    }    
 }
 
 

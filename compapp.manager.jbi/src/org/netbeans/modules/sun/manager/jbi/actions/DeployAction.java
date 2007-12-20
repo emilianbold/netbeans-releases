@@ -56,7 +56,14 @@ import org.openide.util.actions.NodeAction;
  * 
  * @author jqian
  */
-public class DeployAction extends NodeAction {
+public abstract class DeployAction extends NodeAction {
+    
+    
+    private boolean autoStart;
+    
+    private DeployAction(boolean autoStart) {
+        this.autoStart = autoStart;
+    }
     
     protected void performAction(Node[] activatedNodes) {
         final Lookup lookup = activatedNodes[0].getLookup();
@@ -66,7 +73,7 @@ public class DeployAction extends NodeAction {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     try {      
-                        deployable.deploy();
+                        deployable.deploy(autoStart);
                         
                         SwingUtilities.invokeLater(new Runnable() {
                             public void run() {
@@ -90,15 +97,41 @@ public class DeployAction extends NodeAction {
         return nodes != null && nodes.length == 1;
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }
+     
     
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
+    public static class DeployOnly extends DeployAction {
+
+        public DeployOnly() {
+            super(false);
+        }
+
+        public String getName() {
+            return NbBundle.getMessage(DeployAction.class,
+                    "LBL_DeployAction"); // NOI18N
+        }
+
+        public HelpCtx getHelpCtx() {
+            return HelpCtx.DEFAULT_HELP;
+        }
     }
     
-    public String getName() {
-        return NbBundle.getMessage(DeployAction.class, "LBL_DeployAction"); // NOI18N
+    public static class DeployAndStart extends DeployAction {
+
+        public DeployAndStart() {
+            super(true);
+        }
+
+        public String getName() {
+            return NbBundle.getMessage(DeployAction.class,
+                    "LBL_DeployAndStartAction"); // NOI18N
+        }
+
+        public HelpCtx getHelpCtx() {
+            return HelpCtx.DEFAULT_HELP;
+        }
     }    
 }

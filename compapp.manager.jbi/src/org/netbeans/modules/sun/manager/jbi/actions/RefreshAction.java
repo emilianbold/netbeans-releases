@@ -72,7 +72,7 @@ public class RefreshAction extends NodeAction {
         }
     }
         
-    protected boolean enable(Node[] nodes) {
+    protected boolean enable(Node[] activatedNodes) {
         return true;
     }
          

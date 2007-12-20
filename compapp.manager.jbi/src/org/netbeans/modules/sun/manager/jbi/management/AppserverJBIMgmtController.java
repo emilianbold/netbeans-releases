@@ -38,71 +38,129 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.sun.manager.jbi.management;
 
-import java.util.Map;
-import java.util.TreeMap;
+import com.sun.esb.management.api.administration.AdministrationService;
+import com.sun.esb.management.api.configuration.ConfigurationService;
+import com.sun.esb.management.api.deployment.DeploymentService;
+import com.sun.esb.management.api.installation.InstallationService;
+import com.sun.esb.management.client.ManagementClient;
+import com.sun.esb.management.common.ManagementRemoteException;
 import java.io.File;
 import java.net.InetAddress;
 import java.util.List;
 import java.util.logging.Logger;
-import javax.management.Attribute;
-import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 import org.netbeans.modules.sun.manager.jbi.management.connectors.HTTPServerConnector;
-import org.netbeans.modules.sun.manager.jbi.util.ComparableAttribute;
+import org.netbeans.modules.sun.manager.jbi.management.wrapper.api.PerformanceMeasurementServiceWrapper;
+import org.netbeans.modules.sun.manager.jbi.management.wrapper.api.RuntimeManagementServiceWrapper;
+import org.netbeans.modules.sun.manager.jbi.management.wrapper.api.impl.PerformanceMeasurementServiceWrapperImpl;
+import org.netbeans.modules.sun.manager.jbi.management.wrapper.api.impl.RuntimeManagementServiceWrapperImpl;
 import org.netbeans.modules.sun.manager.jbi.util.ServerInstance;
 import org.netbeans.modules.sun.manager.jbi.util.ServerInstanceReader;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
 
 /**
  *
  * @author jqian
  */
 public class AppserverJBIMgmtController {
-    
+
+    // original MBeanServerConnection from NetBeans
     private MBeanServerConnection mBeanServerConnection;
     
-    private AdministrationService adminService;
+    // MBeanServerConnection with classpath problem fixed
+    private MBeanServerConnection myMBeanServerConnection;
     
+    private ManagementClient managementClient;
+    
+    // cached services
+    private AdministrationService administrationService;
+    private DeploymentService deploymentService;
+    private InstallationService installationService;
+    private ConfigurationService configurationService;
+    private PerformanceMeasurementServiceWrapper performanceMeasurementServiceWrapper;
+    private RuntimeManagementServiceWrapper runtimeManagementServiceWrapper;
+    
+    public static final String SERVER_TARGET = "server";
     private static final String HOST_MBEAN_NAME =
             "com.sun.appserv:name=server,type=virtual-server,category=monitor,server=server"; // NOI18N
-    private static final String HOST_ASADMIN_MBEAN_NAME = 
+    private static final String HOST_ASADMIN_MBEAN_NAME =
             "com.sun.appserv:type=Host,host=__asadmin"; // NOI18N
     private static final String HTTP_PORT_MBEAN_NAME =
             "com.sun.appserv:type=http-listener,id=http-listener-1,config=server-config,category=config";  // NOI18N
-    
-    private static Logger logger = Logger.getLogger("org.netbeans.modules.sun.manager.jbi.management"); // NOI18N
-    
+    private static Logger logger = Logger.getLogger("org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController"); // NOI18N
+
     /**
-     * Creates a new instance of JBIAppserverMgmtController
+     * Creates a new instance of AppserverJBIMgmtController
      */
-    public AppserverJBIMgmtController(MBeanServerConnection mbeanServerConn) {
-        this.mBeanServerConnection = mbeanServerConn;
+    public AppserverJBIMgmtController(MBeanServerConnection mBeanServerConnection) {
+        this.mBeanServerConnection = mBeanServerConnection;
+        init();
+        managementClient = new ManagementClient(myMBeanServerConnection);
     }
-        
-    /**
-     *
-     */
+
     public boolean isJBIFrameworkEnabled() {
-        JBIFrameworkService service = getJBIFrameworkService();
+        JBIFrameworkService service = 
+                new JBIFrameworkService(mBeanServerConnection);
         return service.isJbiFrameworkEnabled();
     }
     
-    public JBIFrameworkService getJBIFrameworkService() {
-        return new JBIFrameworkService(mBeanServerConnection);
+    public AdministrationService getAdministrationService()
+            throws ManagementRemoteException {
+        if (administrationService == null) {
+            administrationService = managementClient.getAdministrationService();
+        }
+        return administrationService;
     }
-    
-    /**
-     *
-     * @return
-     */
-    public AdministrationService getJBIAdministrationService() {
-        
+
+    public DeploymentService getDeploymentService()
+            throws ManagementRemoteException {
+        if (deploymentService == null) {
+            deploymentService = managementClient.getDeploymentService();
+        }
+        return deploymentService;
+    }
+
+    public InstallationService getInstallationService()
+            throws ManagementRemoteException {
+        if (installationService == null) {
+            installationService = managementClient.getInstallationService();
+        }        
+        return installationService;
+    }
+
+    public ConfigurationService getConfigurationService()
+            throws ManagementRemoteException {
+        if (configurationService == null) {
+            configurationService = managementClient.getConfigurationService();
+        }
+        return configurationService;
+    }
+
+    public PerformanceMeasurementServiceWrapper 
+            getPerformanceMeasurementServiceWrapper()
+            throws ManagementRemoteException {
+        if (performanceMeasurementServiceWrapper == null) {
+            performanceMeasurementServiceWrapper =
+                    new PerformanceMeasurementServiceWrapperImpl(
+                    managementClient.getPerformanceMeasurementService());
+        }
+        return performanceMeasurementServiceWrapper;
+    }
+
+    public RuntimeManagementServiceWrapper getRuntimeManagementServiceWrapper()
+            throws ManagementRemoteException {
+        if (runtimeManagementServiceWrapper == null) {
+            runtimeManagementServiceWrapper = 
+                    new RuntimeManagementServiceWrapperImpl(
+                    managementClient.getRuntimeManagementService());
+        }
+        return runtimeManagementServiceWrapper;
+    }
+   
+    private void init() {
+
         // The MBeanServerConnection we get from NetBeans
         // (org.netbeans.modules.j2ee.sun.util.PluginRequestInterceptor)
         // doesn't provide good error message when the RPC fails.
@@ -110,214 +168,105 @@ public class AppserverJBIMgmtController {
         // doesn't do the job either.
         // See ControllerUtil.java in org.netbeans.modules.j2ee.sun.ide.controllers
         // in appserverplugin.
-        
-        if (adminService == null) {
-            String netBeansUserDir = System.getProperty("netbeans.user"); // NOI18N
-            
-            try {
-                if (netBeansUserDir != null) {
-                    ServerInstance serverInstance = null;
-                    
-                    String settingsFileName = 
-                            netBeansUserDir + ServerInstanceReader.RELATIVE_FILE_PATH;
-                    File settingsFile = new File(settingsFileName);
-                    
-                    if (!settingsFile.exists()) {
-                        logger.warning("The application server definition file " +  // NOI18N
-                                    settingsFileName + " is missing."); // NOI18N
-                    } else {
-                        ServerInstanceReader settings = 
-                                new ServerInstanceReader(settingsFileName);   
-                        List<ServerInstance> instances = settings.getServerInstances();
-                        for (ServerInstance instance : instances) {
-                            if (isCurrentInstance(instance)) {
-                                serverInstance = instance;
-                                break;
-                            }
-                        }
-                        
-                        // If there is no match, and there is only one instance 
-                        // available, then use it.
-                        if (serverInstance == null) {
-                            if (instances.size() == 1) {
-                                logger.warning("Could not find the server instance. Use the only instance available in " + settingsFileName + "."); // NOI18N
-                                serverInstance = instances.get(0);
-                            }
-                        }
-                        
-                        // If there is no match, and there is only one remote 
-                        // instance available, use it.
-                        if (serverInstance == null) {
-                            int remoteInstances = 0;
-                            for (ServerInstance instance : instances) {
-                                if (!instance.getHostName().equals("localhost")) { // NOI18N
-                                    remoteInstances++;
-                                }
-                            }
-                            
-                            if (remoteInstances == 1) {
-                                for (ServerInstance instance : instances) {
-                                    if (!instance.getHostName().equals("localhost")) { // NOI18N
-                                        logger.warning("Could not find the server instance. Use the only remote instance defined in " + settingsFileName + "."); // NOI18N
-                                        serverInstance = instance;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    
-                        if (serverInstance != null) {
-                            JBIClassLoader jbiClassLoader = new JBIClassLoader(serverInstance);
 
-                            String hostName = serverInstance.getHostName();
-                            String port     = serverInstance.getAdminPort();
-                            String userName = serverInstance.getUserName();
-                            String password = serverInstance.getPassword();                    
+        String netBeansUserDir = System.getProperty("netbeans.user"); // NOI18N
 
-                            HTTPServerConnector httpConnector = new HTTPServerConnector(
-                                    hostName, port, userName, password, jbiClassLoader);
+        try {
+            if (netBeansUserDir != null) {
+                ServerInstance serverInstance = null;
 
-                            adminService = new AdministrationService(httpConnector);
+                String settingsFileName =
+                        netBeansUserDir + ServerInstanceReader.RELATIVE_FILE_PATH;
+                File settingsFile = new File(settingsFileName);
+
+                if (!settingsFile.exists()) {
+                    logger.warning("The application server definition file " + // NOI18N
+                            settingsFileName + " is missing."); // NOI18N
+                } else {
+                    ServerInstanceReader settings =
+                            new ServerInstanceReader(settingsFileName);
+                    List<ServerInstance> instances = settings.getServerInstances();
+                    for (ServerInstance instance : instances) {
+                        if (isCurrentInstance(instance)) {
+                            serverInstance = instance;
+                            break;
                         }
                     }
-                }                
-            } catch (Exception e) {
-                logger.warning(e.getMessage());
+
+                    // If there is no match, and there is only one instance 
+                    // available, then use it.
+                    if (serverInstance == null) {
+                        if (instances.size() == 1) {
+                            logger.warning("Could not find the server instance. Use the only instance available in " + settingsFileName + "."); // NOI18N
+                            serverInstance = instances.get(0);
+                        }
+                    }
+
+                    // If there is no match, and there is only one remote 
+                    // instance available, use it.
+                    if (serverInstance == null) {
+                        int remoteInstances = 0;
+                        for (ServerInstance instance : instances) {
+                            if (!instance.getHostName().equals("localhost")) { // NOI18N
+                                remoteInstances++;
+                            }
+                        }
+
+                        if (remoteInstances == 1) {
+                            for (ServerInstance instance : instances) {
+                                if (!instance.getHostName().equals("localhost")) { // NOI18N
+                                    logger.warning("Could not find the server instance. Use the only remote instance defined in " + settingsFileName + "."); // NOI18N
+                                    serverInstance = instance;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    if (serverInstance != null) {
+                        JBIClassLoader jbiClassLoader = new JBIClassLoader(serverInstance);
+
+                        String hostName = serverInstance.getHostName();
+                        String port = serverInstance.getAdminPort();
+                        String userName = serverInstance.getUserName();
+                        String password = serverInstance.getPassword();
+
+                        HTTPServerConnector httpConnector = new HTTPServerConnector(
+                                hostName, port, userName, password, jbiClassLoader);
+
+                        myMBeanServerConnection = httpConnector.getConnection();
+                    }
+                }
             }
-        }              
-        
-        if (adminService == null) {
+        } catch (Exception e) {
+            logger.warning(e.getMessage());
+        }
+
+        if (myMBeanServerConnection == null) {
             // Fall back on the mBeanServerConnection provided by NetBeans
             try {
                 logger.warning("Could not find the server instance. Falling back on the mBeanServerConnection provided by NetBeans."); // NOI18N
-                adminService = new AdministrationService(mBeanServerConnection);
+                myMBeanServerConnection = mBeanServerConnection;
             } catch (Exception e) {
                 logger.warning(e.getMessage());
             }
         }
-        
-        if (adminService == null) {
-            String msg = NbBundle.getMessage(getClass(), "NULL_ADMIN_SERVICE_MSG"); // NOI18N
-            NotifyDescriptor d = 
-                    new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notify(d);
-        }
-        
-        return adminService;
     }
-        
-    public Map<Attribute, ? extends MBeanAttributeInfo> getJBIComponentConfigProperties(
-            String containerType, String componentName, boolean sort)
-            throws Exception {
-        JBIComponentConfigurator configurator =
-                getComponentConfigurator(containerType, componentName);
-        Map<Attribute, ? extends MBeanAttributeInfo> propertyMap = 
-                configurator.getPropertyMap();
-        return sort ? getSortedPropertyMap(propertyMap) : propertyMap;
-    }
-    
-    public Map<Attribute, MBeanAttributeInfo> getJBIComponentLoggerProperties(
-            String componentName, boolean sort)
-            throws Exception {
-        Map<Attribute, MBeanAttributeInfo> propertyMap = 
-                getJBIAdministrationService().
-                getComponentLoggerProperties(componentName);
-        return sort ? getSortedPropertyMap(propertyMap) : propertyMap;
-    }
-    
-    public Map<Attribute, MBeanAttributeInfo> getJBIComponentIdentificationProperties(
-            String componentName, boolean sort) throws Exception {
-        Map<Attribute, MBeanAttributeInfo> propertyMap = 
-                getJBIAdministrationService().
-                getComponentIdentificationProperties(componentName);
-        return sort ? getSortedPropertyMap(propertyMap) : propertyMap;
-    }
-    
-    public Map<Attribute, MBeanAttributeInfo> getSharedLibraryIdentificationProperties(
-            String componentName, boolean sort) throws Exception {
-        Map<Attribute, MBeanAttributeInfo> propertyMap = 
-                getJBIAdministrationService().
-                getSharedLibraryIdentificationProperties(componentName);
-        return sort ? getSortedPropertyMap(propertyMap) : propertyMap;
-    }
-    
-    private <T extends MBeanAttributeInfo> Map<Attribute,T> getSortedPropertyMap(
-            Map<Attribute, T> propertyMap) {
-        Map<Attribute, T> sortedMap =
-                new TreeMap<Attribute, T>();
-        
-        for (Attribute attr : propertyMap.keySet()) {
-            T info = propertyMap.get(attr);
-            sortedMap.put(new ComparableAttribute(attr), info);
-        }
-        return sortedMap;
-    }
-    
-    /**
-     *
-     * @param containerType
-     * @param componentName
-     * @param attrName
-     * @return
-     */
-    public Object getJBIComponentConfigPropertyValue(String containerType,
-            String componentName, String attrName) throws Exception {
-        
-        JBIComponentConfigurator configurator =
-                getComponentConfigurator(containerType, componentName);
-        
-        return configurator.getPropertyValue(attrName);
-    }
-    
-    /**
-     *
-     * @param containerType
-     * @param componentName
-     * @param attrName
-     * @param value
-     */
-    public void setJBIComponentConfigProperty(String containerType,
-            String componentName, String attrName, Object value) 
-            throws Exception {
-        
-        JBIComponentConfigurator configurator =
-                getComponentConfigurator(containerType, componentName);
-        
-        configurator.setPropertyValue(attrName, value);
-    }
-    
-    public void setJBIComponentLoggerProperty(
-            String componentName, String attrName, Object value) 
-            throws Exception {
-        getJBIAdministrationService().setComponentLoggerProperty(
-                componentName, attrName, value);
-    }
-    
-    public JBIComponentConfigurator getComponentConfigurator(
-            String containerType, String componentName) {
-        try {
-            return new JBIComponentConfigurator(containerType, componentName,
-                    mBeanServerConnection);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-    
+
     private boolean isCurrentInstance(ServerInstance instance) {
-        
+
         boolean isLocalHost = false;
         String instanceHost = instance.getHostName();
         if (instanceHost.equals("localhost")) { // NOI18N
             instanceHost = getHostName();
             isLocalHost = true;
-        } 
-        
-        try {            
+        }
+
+        try {
             ObjectName objectName = new ObjectName(HOST_MBEAN_NAME);
-            
+
             String host = (String) mBeanServerConnection.getAttribute(objectName, "hosts-current");  // NOI18N
-            
+
             // InetAddress's getCanonicalHostName() is a best-effort method 
             // and doesn't work if the name service is not available. (cordova)
             // IP address is not reliable either. 
@@ -325,42 +274,42 @@ public class AppserverJBIMgmtController {
             String hostCanonicalHostName = InetAddress.getByName(host).getCanonicalHostName();
             String instanceHostAddress = InetAddress.getByName(instanceHost).getHostAddress();
             String hostAddress = InetAddress.getByName(host).getHostAddress();
-            
+
             logger.fine("isCurrentInstance():");
             logger.fine("    isLocalHost? " + isLocalHost);
-            logger.fine("    instanceHost=" + instanceHost + 
-                    " CanonicalHostName=" + instanceHostCanonicalHostName + 
+            logger.fine("    instanceHost=" + instanceHost +
+                    " CanonicalHostName=" + instanceHostCanonicalHostName +
                     " IP=" + instanceHostAddress);
-            logger.fine("            host=" + host + 
-                    " CanonicalHostName=" + hostCanonicalHostName + 
+            logger.fine("            host=" + host +
+                    " CanonicalHostName=" + hostCanonicalHostName +
                     " IP=" + hostAddress);
 //            for (InetAddress addr : InetAddress.getAllByName(host)) {
 //                logger.log(Level.FINE, "                   " +  addr.getHostAddress());
 //            }
-            
+
             if (instanceHostCanonicalHostName.equals(hostCanonicalHostName) ||
                     instanceHostAddress.equals(hostAddress)) {
                 objectName = new ObjectName(HOST_ASADMIN_MBEAN_NAME);
                 String appBase = (String) mBeanServerConnection.getAttribute(objectName, "appBase");    // NOI18N
-                                
+
                 // For local domains, use instance LOCATION instead of url location  (#90749)
                 String localInstanceLocation = instance.getLocation();
-                assert localInstanceLocation != null;                
+                assert localInstanceLocation != null;
                 localInstanceLocation = localInstanceLocation.replace('\\', '/'); // NOI18N
-                                        
+
                 if (isLocalHost) {
                     logger.fine("    localInstanceLocation=" + localInstanceLocation);
                     logger.fine("                  appBase=" + appBase);
                 }
-                
+
                 if (!isLocalHost || appBase.toLowerCase().startsWith(localInstanceLocation.toLowerCase())) {
                     objectName = new ObjectName(HTTP_PORT_MBEAN_NAME);
                     String port = (String) mBeanServerConnection.getAttribute(objectName, "port");  // NOI18N
                     String instanceHttpPort = instance.getHttpPortNumber();
-                    
+
                     logger.fine("    instanceHttpPort=" + instanceHttpPort);
                     logger.fine("                port=" + port);
-                    
+
                     if (port.equals(instanceHttpPort)) {
                         return true;
                     }
@@ -369,19 +318,19 @@ public class AppserverJBIMgmtController {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
+
         return false;
     }
-    
+
     private static String getHostName() {
         String hostName = null;
         try {
-            InetAddress localMachine = InetAddress.getLocalHost(); 
+            InetAddress localMachine = InetAddress.getLocalHost();
             hostName = localMachine.getHostName();
         } catch (java.net.UnknownHostException e) {
             e.printStackTrace();
         }
-        
+
         return hostName;
     }
 }

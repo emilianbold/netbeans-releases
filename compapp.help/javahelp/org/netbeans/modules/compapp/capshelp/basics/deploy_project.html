@@ -13,16 +13,19 @@
 <p><small><a href="#seealso">See Also</a></small></p>
 <p>Before you can <a href="jbi_tester.html">test-run</a> a business process, make 
   sure that you have <a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/server/server_start.html" title="Starting and Stopping a Server">started 
-  the Application Server</a> and <a href="add_jbi_module.html" title="Adding JBI Modules to Composite Application Projects">added</a> 
-  BPEL, XSLT, and SQL Module projects a Composite Application project as a JBI module. </p>
+  the Application Server</a>, <a href="nbdocs://org.netbeans.modules.bpel.bpelhelp/org/netbeans/modules/bpel/bpelhelp/test_run/build_project.html" title="Building BPEL Module Projects">built 
+  the BPEL module project</a>, and <a href="add_jbi_module.html" title="Adding JBI Modules to Composite Application Projects">added</a> 
+  it to a Composite Application project as a JBI module. </p>
 <p><b>To deploy a Composite Application project to the JBI server:</b> </p>
 <ul>
   <li> In the Projects window, right-click the Composite Application project's 
     node and choose Deploy Project. </li>
 </ul>  
 <p>The Deploy action compiles the files in the Composite Application project, 
-  packages the module project files, and deploys them to the appropriate service engine. </p>
-<p>To verify that the project has been successfully deployed to a service engine that corresponds to the deployed project type, open the Services window, expand the JBI node, right-click the Service 
+  packages the compiled BPEL and related web service artifacts (<tt>.wsdl</tt> 
+  and <tt>.xsd</tt> files), and deploys them to the BPEL Service Engine. </p>
+<p>To verify that the project has been successfully deployed to the BPEL service 
+  engine, open the Runtime window, expand the JBI node, right-click the Service 
   Assemblies node, and choose Refresh. You should see the name of the Composite 
   Application project for the deployed service assembly. </p>
 <dl>

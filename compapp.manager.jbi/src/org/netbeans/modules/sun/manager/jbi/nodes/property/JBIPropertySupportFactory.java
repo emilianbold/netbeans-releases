@@ -50,17 +50,19 @@ import javax.management.openmbean.TabularDataSupport;
 import javax.management.openmbean.TabularType;
 import org.netbeans.modules.sun.manager.jbi.editors.EnvironmentVariablesEditor;
 import org.netbeans.modules.sun.manager.jbi.editors.JBILogLevelEditor;
-import org.netbeans.modules.sun.manager.jbi.editors.SimpleTabularDataEditor;
 import org.netbeans.modules.sun.manager.jbi.nodes.AppserverJBIMgmtNode;
 import org.netbeans.modules.sun.manager.jbi.nodes.JBIComponentNode;
+import org.netbeans.modules.sun.manager.jbi.nodes.JBINode;
+import org.netbeans.modules.sun.manager.jbi.util.Utils;
 import org.openide.nodes.PropertySupport;
 
 /**
  * 
  * @author jqian
  */
-public class JBIPropertySupportFactory {
-        
+public class JBIPropertySupportFactory {       
+    
+    
     /**
      * Returns the appropriate PropertySupport given the MBean Attribute and its
      * MBeanAttributeInfo.
@@ -88,83 +90,135 @@ public class JBIPropertySupportFactory {
         } else if (attrValue instanceof Integer) {
             support = new MyPropertySupport(parent, Integer.class, attr, info);
         } else if (attrValue instanceof Level) {  
-            support = createLogLevelProperty((JBIComponentNode)parent, attr, info);
-        } else if (attrValue instanceof TabularData) { 
-            TabularDataSupport tabularData = (TabularDataSupport) attrValue;
-            TabularType tabularType = tabularData.getTabularType();
-            int columnCount = tabularType.getRowType().keySet().size();
-            if (columnCount == 3) { // new typed environment variables
-                support = createTabularDataProperty(
-                        (JBIComponentNode)parent, attr, info, 
-                        EnvironmentVariablesEditor.class);
-            } else {  // untyped environment variables (for backward compatibility)
-                support = createTabularDataProperty(
-                        (JBIComponentNode)parent, attr, info, 
-                        SimpleTabularDataEditor.class);
-            }
+            support = createLogLevelProperty(parent, attr, info);
+        } else if (attrValue instanceof TabularData) {
+            support = createTabularDataProperty((JBIComponentNode)parent, attr, info);  
         } else {  // default           
             support = new MyPropertySupport(parent, String.class, attr, info);
         }
         return support;
     }
     
+    /**
+     * Creates PorpertySupport for some TabularData. 
+     */ 
     private static PropertySupport createTabularDataProperty(
-            final JBIComponentNode parent,
-            final Attribute attr, 
-            final MBeanAttributeInfo info, 
-            final Class editorClass) {
-
-        return new MyPropertySupport<TabularDataSupport>(
-                parent, TabularDataSupport.class, attr, info) {
-
-            public PropertyEditor getPropertyEditor(){
-                try {
-                    return (PropertyEditor) editorClass.newInstance(); 
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                return null;
-            }
-        };
-    }
-       
-    public static PropertySupport createLogLevelProperty(
             final JBIComponentNode parent,
             final Attribute attr, 
             final MBeanAttributeInfo info) {
         
+        PropertySupport support = null;
+        
+        String attrName = attr.getName();
+        if (attrName.equals(JBIComponentNode.ENVIRONMENT_VARIABLES_NAME)) {
+            support = createEnvironmentVariablesProperty(parent, attr, info);
+        } else if (attrName.equals(JBIComponentNode.APPLICATION_VARIABLES_NAME)) {
+            support = createApplicationVariablesProperty(parent, attr, info); 
+        } else if (attrName.equals(JBIComponentNode.APPLICATION_CONFIGURATIONS_NAME)) {
+            support = createApplicationConfigurationsProperty(parent, attr, info);
+        }
+        
+        return support;
+    }
+    
+    /**
+     * Creates PorpertySupport for Environment Variables
+     * (for backward compatibility).
+     */
+    private static PropertySupport createEnvironmentVariablesProperty(
+            final JBIComponentNode parent,
+            final Attribute attr, 
+            final MBeanAttributeInfo info) {
+
+        return new MyPropertySupport<TabularDataSupport>(
+                parent, TabularDataSupport.class, attr, info) {
+
+            @Override
+            public PropertyEditor getPropertyEditor(){     
+                TabularType tabularType = null;
+                TabularData tabularData = (TabularData)attr.getValue();
+                if (tabularData != null) {
+                    tabularType = tabularData.getTabularType();
+                }
+                return new EnvironmentVariablesEditor(false, tabularType, null, // FIXME
+                        info.isWritable());  
+            }
+        };
+    }
+    
+    /**
+     * Creates PorpertySupport for Application Variables. 
+     */
+    private static PropertySupport createApplicationVariablesProperty(
+            final JBIComponentNode parent,
+            final Attribute attr, 
+            final MBeanAttributeInfo info) {
+        return new ApplicationVariablesPropertySupport(parent, attr, info);
+    }
+    
+    /**
+     * Creates PorpertySupport for Application Configurations. 
+     */ 
+    private static PropertySupport createApplicationConfigurationsProperty(
+            final JBIComponentNode parent,
+            final Attribute attr, 
+            final MBeanAttributeInfo info) {
+        return new ApplicationConfigurationsPropertySupport(
+                parent, attr, info);
+    }
+  
+    public static PropertySupport createLogLevelProperty(
+            final AppserverJBIMgmtNode parent,
+            final Attribute attr, 
+            final MBeanAttributeInfo info) {
+        
+        assert (parent instanceof JBIComponentNode) || (parent instanceof JBINode);
+        
         return new MyPropertySupport<Level>(parent, Level.class, attr, info) {
                       
+            @Override
             public void setValue(Level val){
                 try {
-                    attribute = parent.setLoggerSheetProperty(attr.getName(), val);
+                    if (parent instanceof JBIComponentNode) {
+                        attribute = ((JBIComponentNode)parent).
+                                setLoggerSheetProperty(attr.getName(), val);
+                    } else {
+                        attribute = ((JBINode)parent).
+                                setLoggerSheetProperty(attr.getName(), val);                        
+                    }
                 } catch (RuntimeException rex) {
                     rex.printStackTrace();
                 }
             }
             
+            @Override
             public PropertyEditor getPropertyEditor(){
                 return new JBILogLevelEditor();
             }
         };
-    }
+    }    
 }                
     
 class MyPropertySupport<T> extends PropertySupport<T> {
 
-    private AppserverJBIMgmtNode parent;
+    protected AppserverJBIMgmtNode parent;
     protected Attribute attribute;
 
     MyPropertySupport(AppserverJBIMgmtNode parent,                
             Class<T> type, 
             Attribute attr, 
             MBeanAttributeInfo info) {
-        super(attr.getName(), type, info.getName(), info.getDescription(), 
+        super(attr.getName(), type, info.getName(), 
+                Utils.getTooltip(info.getDescription()), 
                 info.isReadable(), info.isWritable());
+        
+        // Doesn't work yet. #124256
+//        // Use non-HTML version in the property sheet's description area.
+//        setValue("nodeDescription", info.getDescription()); // NOI18N 
+        
         this.attribute = attr;
         this.parent = parent;
     }
-
 
     @SuppressWarnings(value = "unchecked")
     public T getValue() {

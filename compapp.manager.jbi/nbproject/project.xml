@@ -47,6 +47,14 @@ made subject to such option by the copyright holder.
             <code-name-base>org.netbeans.modules.compapp.manager.jbi</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.netbeans.soa.libs.jbiadmincommon</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.jdesktop.layout</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -164,14 +172,24 @@ made subject to such option by the copyright holder.
                         <specification-version>6.8.1</specification-version>
                     </run-dependency>
                 </dependency>
+                <dependency>
+                    <code-name-base>org.openide.windows</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.18.1</specification-version>
+                    </run-dependency>
+                </dependency>
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.compapp.projects.jbi</friend>
                 <package>org.netbeans.modules.sun.manager.jbi.management</package>
                 <package>org.netbeans.modules.sun.manager.jbi.management.connectors</package>
                 <package>org.netbeans.modules.sun.manager.jbi.management.model</package>
+                <package>org.netbeans.modules.sun.manager.jbi.management.wrapper.api</package>
                 <package>org.netbeans.modules.sun.manager.jbi.util</package>
             </friend-packages>
         </data>
+        <junit-version xmlns="http://www.netbeans.org/ns/junit/1" value="junit4"/>
     </configuration>
 </project>

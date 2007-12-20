@@ -48,9 +48,11 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.io.StringReader;
 import java.lang.reflect.Method;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.management.Attribute;
 import javax.management.MBeanAttributeInfo;
 import javax.swing.ImageIcon;
@@ -99,13 +101,18 @@ public class Utils {
         }
     }
     
-    public static Map<Attribute, MBeanAttributeInfo> getIntrospectedPropertyMap(
-            Object bean) {
-        return getIntrospectedPropertyMap(bean, false);
-    }
+//    public static Map<Attribute, MBeanAttributeInfo> getIntrospectedPropertyMap(
+//            Object bean) {
+//        return getIntrospectedPropertyMap(bean, false);
+//    }
     
     public static Map<Attribute,MBeanAttributeInfo> getIntrospectedPropertyMap(
             Object bean, boolean sort) {
+        return getIntrospectedPropertyMap(bean, sort, null);
+    }
+    
+    public static Map<Attribute,MBeanAttributeInfo> getIntrospectedPropertyMap(
+            Object bean, boolean sort, String beanInfoPackageName) {
         
         if (bean == null) {
             return null;
@@ -114,6 +121,9 @@ public class Utils {
         Class beanClass = bean.getClass();
         BeanInfo beanInfo = null;
         try {
+            if (beanInfoPackageName != null) {
+                Introspector.setBeanInfoSearchPath(new String[] {beanInfoPackageName});
+            }
             beanInfo = Introspector.getBeanInfo(beanClass, Object.class);
         } catch (IntrospectionException ex) {
             System.err.println("Couldn't introspect " + beanClass.getName()); // NOI18N
@@ -122,7 +132,7 @@ public class Utils {
         
         Map<Attribute, MBeanAttributeInfo> map = sort ? 
             new TreeMap<Attribute, MBeanAttributeInfo>() : 
-            new HashMap<Attribute, MBeanAttributeInfo>();  
+            new LinkedHashMap<Attribute, MBeanAttributeInfo>();  
         
         PropertyDescriptor[] propDescriptors = beanInfo.getPropertyDescriptors();
         
@@ -131,29 +141,65 @@ public class Utils {
             Method readMethod = propDescriptors[i].getReadMethod();
             Method writeMethod = propDescriptors[i].getWriteMethod();
             
-            if (readMethod != null) {
-                String propertyType = propertyTypeClass.getName();
-                String propertyName = propDescriptors[i].getName();
-                String propertyDesc = propDescriptors[i].getShortDescription();
-                Object propertyValue = null;
-                try {
-                    propertyValue = readMethod.invoke(bean, (Object[])null);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                Attribute attr = new Attribute(propertyName, propertyValue);
-                if (sort) {
-                    attr = new ComparableAttribute(attr);
-                }
-                map.put(attr,
-                        new MBeanAttributeInfo(propertyName, propertyType,
-                        propertyDesc,
-                        readMethod != null, writeMethod != null,
-                        readMethod.getName().startsWith("is"))); // NOI18N
+            String propertyType = propertyTypeClass.getName();
+            String propertyName = propDescriptors[i].getName();
+            String propertyDesc = propDescriptors[i].getShortDescription();
+            Object propertyValue = null;
+            try {
+                propertyValue = readMethod.invoke(bean, (Object[])null);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
+            Attribute attr = new Attribute(propertyName, propertyValue);
+            if (sort) {
+                attr = new ComparableAttribute(attr);
+            }
+            map.put(attr,
+                    new MBeanAttributeInfo(propertyName, propertyType,
+                    propertyDesc,
+                    readMethod != null, writeMethod != null,
+                    readMethod.getName().startsWith("is"))); // NOI18N
         }
         
         return map;
+    }
+    
+    /**
+     * Word-wrap long string. 
+     * 
+     * @param input         an input string
+     * @param maxLineLength maximum characters per line after word wrapping
+     * @param newLineChars  new line characters to be inserted
+     * 
+     * @return the word-wrapped string with new line characters inserted.
+     */
+    public static String wordWrapString(String input, int maxLineLength, 
+            String newLineChars) {
+        String ret = ""; // NOI18N
+        String regex = "(.{1," + maxLineLength + "}$)|" + // NOI18N
+                "(.{1," + maxLineLength + "}\\b\\s*)|(.{" + // NOI18N
+                maxLineLength + "}\\B)"; // NOI18N
+        Pattern p = Pattern.compile(regex); 
+        Matcher m = p.matcher(input);
+        while (m.find()) {
+            ret += input.substring(m.start(), m.end());
+            ret += newLineChars;
+        }
+        
+        return ret;
+    }
+    
+    public static String getTooltip(String input) {
+         if (input == null) {
+             return ""; // NOI18N
+         } else if (input.length() > 80) {
+            String ret = "<HTML>"; // NOI18N
+            ret += Utils.wordWrapString(input, 80, "<br>"); // NOI18N
+            ret += "</HTML>"; // NOI18N
+            return ret;        
+        } else {
+            return input;
+        }
     }
     
     private static Document getDocument(String xmlString) {

@@ -181,8 +181,8 @@ public class JBIMBeanTaskResultHandler {
                     msg = msg.append(frameworkTaskResult);
                 }
 
-                msg = msg.append(lineSeparator); 
                 for (TaskResult componentTaskResult : componentTaskResults) {
+                    msg = msg.append(lineSeparator); 
                     msg = msg.append(componentTaskResult);
                 }
             }

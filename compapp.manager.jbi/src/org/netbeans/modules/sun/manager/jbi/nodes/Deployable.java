@@ -53,7 +53,7 @@ public interface Deployable {
      *
      *
      */
-    public void deploy();
+    public void deploy(boolean start);
 
 
 }

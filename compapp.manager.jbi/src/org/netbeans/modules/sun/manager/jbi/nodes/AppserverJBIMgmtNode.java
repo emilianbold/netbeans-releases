@@ -38,17 +38,23 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.sun.manager.jbi.nodes;
 
+import com.sun.esb.management.api.administration.AdministrationService;
+import com.sun.esb.management.api.configuration.ConfigurationService;
+import com.sun.esb.management.api.deployment.DeploymentService;
+import com.sun.esb.management.api.installation.InstallationService;
+import com.sun.esb.management.common.ManagementRemoteException;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.management.Attribute;
 import javax.management.MBeanAttributeInfo;
-import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
 import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
+import org.netbeans.modules.sun.manager.jbi.management.wrapper.api.RuntimeManagementServiceWrapper;
 import org.netbeans.modules.sun.manager.jbi.nodes.property.JBIPropertySupportFactory;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.PropertySupport;
@@ -61,11 +67,15 @@ import org.openide.util.NbBundle;
  * @author jqian
  */
 public abstract class AppserverJBIMgmtNode extends AbstractNode {
+
+    protected static final String GENERAL_SHEET_SET_NAME = "GENERAL"; // NOI18N
     
-    protected static final String GENERAL_SHEET_SET_NAME = "General"; // NOI18N
+    protected static final String SERVER_TARGET = AppserverJBIMgmtController.SERVER_TARGET;
     
+    protected static final String MODEL_BEAN_INFO_PACKAGE_NAME = 
+            "org.netbeans.modules.sun.manager.jbi.management.model.beaninfo"; // NOI18N
+
     private static Logger logger;
-    
     private NodeType nodeType;
     private AppserverJBIMgmtController appsrvrJBIMgmtController;
     
@@ -73,72 +83,67 @@ public abstract class AppserverJBIMgmtNode extends AbstractNode {
      *
      *
      */
-    public AppserverJBIMgmtNode(final AppserverJBIMgmtController controller, 
+    public AppserverJBIMgmtNode(final AppserverJBIMgmtController controller,
             final Children children, final NodeType nodeType) {
         super(children);
-        setNodeProperties(nodeType);
+
+        this.nodeType = nodeType;
 
         appsrvrJBIMgmtController = controller;
+
+        if (appsrvrJBIMgmtController == null) {
+            getLogger().log(Level.FINE,
+                    "AppserverJBIMgmtController is " + "null for [" + nodeType + "]");  // NOI18N
+        }
     }
-    
-    public NodeType getNodeType(){
+
+    protected NodeType getNodeType() {
         return nodeType;
     }
 
     /**
-     *
-     *
+     * 
      */
     public AppserverJBIMgmtController getAppserverJBIMgmtController() {
-        try {
-            if(appsrvrJBIMgmtController == null) { 
-                getLogger().log(Level.FINE, 
-                        "AppserverJBIMgmtController is " + "null for [" + getNodeType() + "]");  // NOI18N
-            }
-        } catch(Exception e) {
-            getLogger().log(Level.FINE, e.getMessage(), e);
-        }
         return appsrvrJBIMgmtController;
     }
-    
+
     /**
+     * Creates a new property sheet set and adds it into the property sheet.
      *
+     * @param sheet                 property sheet
+     * @param name                  name of the property sheet set
+     * @param displayNameLabel      bundle name of the diaplay name of the 
+     *                              property sheet set 
+     * @param descriptoinLabel      bundle name of the description of the 
+     *                              property sheet set
+     * @parm properties             property map
      */
-    protected String getNodeDisplayName() {
-        return getNodeType().getDisplayName();
-    }    
-       
-    /**
-     *
-     */
-    protected String getNodeShortDescription() {
+    protected void addSheetSet(Sheet sheet,
+            String name,
+            String displayNameLabel,
+            String descriptionLabel,
+            Map<Attribute, ? extends MBeanAttributeInfo> properties) {
+        
+        if (properties == null) {
+            return;
+        }
+        
         try {
-            return getNodeType().getShortDescription();
+            PropertySupport[] propertySupports =
+                    createPropertySupportArray(properties);
+
+            Sheet.Set sheetSet = createSheetSet(
+                    name, displayNameLabel, descriptionLabel, propertySupports);
+            
+            if (sheetSet != null) {
+                sheet.put(sheetSet);
+            }
         } catch (Exception e) {
-            return ""; // not necessarily defined // NOI18N
+            e.printStackTrace();
         }
     }
-    
-    /**
-     * Creates a properties Sheet for viewing when a user chooses the option
-     * from the right-click menu.
-     *
-     * @returns the Sheet to display when Properties is chosen by the user.
-     */
-    protected Sheet createSheet() {
-        Sheet sheet = new Sheet();
-        
-        Sheet.Set sheetSet = createSheetSet(GENERAL_SHEET_SET_NAME,
-                "LBL_GENERAL_PROPERTIES", // NOI18N
-                "DSC_GENERAL_PROPERTIES", // NOI18N
-                getSheetProperties());
-        if (sheetSet != null) {
-            sheet.put(sheetSet);
-        }
-        
-        return sheet;
-    }
-        
+
     /**
      * Creates a property sheet set.
      *
@@ -149,42 +154,42 @@ public abstract class AppserverJBIMgmtNode extends AbstractNode {
      *                              property sheet set
      * @parm properties             property map
      */
-    protected Sheet.Set createSheetSet(String name, 
-            String displayNameLabel, 
-            String descriptionLabel, 
+    protected Sheet.Set createSheetSet(String name,
+            String displayNameLabel,
+            String descriptionLabel,
             Map<Attribute, ? extends MBeanAttributeInfo> properties) {
-        
+
         if (properties == null) {
             return null;
         }
 
-        PropertySupport[] propertySupports = 
+        PropertySupport[] propertySupports =
                 createPropertySupportArray(properties);
-        
+
         Sheet.Set sheetSet = createSheetSet(
                 name, displayNameLabel, descriptionLabel, propertySupports);
-        
+
         return sheetSet;
     }
-    
-    protected Sheet.Set createSheetSet(String name, 
-            String displayNameLabel, 
-            String descriptionLabel, 
+
+    protected Sheet.Set createSheetSet(String name,
+            String displayNameLabel,
+            String descriptionLabel,
             PropertySupport[] propertySupports) {
-        
+
         Sheet.Set sheetSet = new Sheet.Set();
         sheetSet.setName(name);
         sheetSet.setDisplayName(
-                NbBundle.getMessage(AppserverJBIMgmtNode.class, displayNameLabel)); 
+                NbBundle.getMessage(AppserverJBIMgmtNode.class, displayNameLabel));
         sheetSet.setShortDescription(
-                NbBundle.getMessage(AppserverJBIMgmtNode.class, descriptionLabel)); 
+                NbBundle.getMessage(AppserverJBIMgmtNode.class, descriptionLabel));
         if (propertySupports != null) {
             sheetSet.put(propertySupports);
         }
-        
+
         return sheetSet;
     }
-    
+
     /**
      * Creates a PropertySupport array from a map of component properties.
      *
@@ -194,30 +199,71 @@ public abstract class AppserverJBIMgmtNode extends AbstractNode {
     protected PropertySupport[] createPropertySupportArray(
             final Map<Attribute, ? extends MBeanAttributeInfo> attrMap) {
         PropertySupport[] supports = new PropertySupport[attrMap.size()];
-        
-        int i = 0;        
+
+        int i = 0;
         for (Attribute attr : attrMap.keySet()) {
             MBeanAttributeInfo info = attrMap.get(attr);
-            supports[i++] = 
-                JBIPropertySupportFactory.getPropertySupport(this, attr, info);
+            supports[i++] =
+                    JBIPropertySupportFactory.getPropertySupport(this, attr, info);
         }
-        return supports; 
+        return supports;
     }
-    
-    protected AdministrationService getAdminService() {
-        return getAppserverJBIMgmtController().getJBIAdministrationService();
-    }  
-    
-    
-    /**
-     * Returns all the properties of the leaf node to disply in the properties
-     * window (or Sheet). This must be overriden in order for the Sheet to be
-     * processed.
-     *
-     * @returns a java.util.Map of all properties to be accessed from the Sheet.
-     */
-    protected abstract Map<Attribute, MBeanAttributeInfo> getSheetProperties();
-    
+
+    protected RuntimeManagementServiceWrapper getRuntimeManagementServiceWrapper() {
+        try {
+            return getAppserverJBIMgmtController().getRuntimeManagementServiceWrapper();
+        } catch (ManagementRemoteException e) {
+            NotifyDescriptor d = new NotifyDescriptor.Message(e.getMessage(),
+                    NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(d);
+        }
+        return null;
+    }
+
+    protected InstallationService getInstallationService() {
+        try {
+            return getAppserverJBIMgmtController().getInstallationService();
+        } catch (ManagementRemoteException e) {
+            NotifyDescriptor d = new NotifyDescriptor.Message(e.getMessage(),
+                    NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(d);
+        }
+        return null;
+    }
+
+    protected DeploymentService getDeploymentService() {
+        try {
+            return getAppserverJBIMgmtController().getDeploymentService();
+        } catch (ManagementRemoteException e) {
+            NotifyDescriptor d = new NotifyDescriptor.Message(e.getMessage(),
+                    NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(d);
+        }
+        return null;
+    }
+
+    protected ConfigurationService getConfigurationService() {
+        try {
+            return getAppserverJBIMgmtController().getConfigurationService();
+        } catch (ManagementRemoteException e) {
+            NotifyDescriptor d = new NotifyDescriptor.Message(e.getMessage(),
+                    NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(d);
+        }
+        return null;
+    }
+
+    protected AdministrationService getAdministrationService() {
+        try {
+            return getAppserverJBIMgmtController().getAdministrationService();
+        } catch (ManagementRemoteException e) {
+            NotifyDescriptor d = new NotifyDescriptor.Message(e.getMessage(),
+                    NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(d);
+        }
+        return null;
+    }
+
     /**
      * Sets the property as an attribute to the underlying AMX mbeans. It 
      * usually will delegate to the controller object which is responsible for
@@ -230,7 +276,7 @@ public abstract class AppserverJBIMgmtNode extends AbstractNode {
      * @returns the updated Attribute accessed from the Sheet.
      */
     public abstract Attribute setSheetProperty(String attrName, Object value);
-           
+
     /**
      * Returns the logger for all nodes.
      *
@@ -240,13 +286,7 @@ public abstract class AppserverJBIMgmtNode extends AbstractNode {
         if (logger == null) {
             logger = Logger.getLogger("org.netbeans.modules.sun.manager.jbi.nodes");
         }
+
         return logger;
-    }
-        
-    private void setNodeProperties(NodeType nodeType) {
-        this.nodeType = nodeType;
-        setDisplayName(getNodeDisplayName());
-//        setIconBaseWithExtension(getNodeIconPath());
-        setShortDescription(getNodeShortDescription());
     }
 }

@@ -62,10 +62,7 @@ public class AdvancedAction extends NodeAction implements Presenter.Popup {
         return NbBundle.getMessage(AdvancedAction.class, "LBL_Advanced");  // NOI18N
     }
     
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-    
+    @Override
     public JMenuItem getPopupPresenter() {
         JMenu menu = new JMenu(getName());
         
@@ -93,10 +90,13 @@ public class AdvancedAction extends NodeAction implements Presenter.Popup {
     }
 
     protected void performAction(Node[] activatedNodes) {
-        ;
     }
 
     protected boolean enable(Node[] activatedNodes) {
         return true;
+    }    
+    
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
     }
 }

@@ -85,19 +85,19 @@ public class UpgradeAction extends NodeAction {
         }
     }
     
-    protected boolean enable(Node[] nodes) {
-        return nodes != null && nodes.length == 1;
+    protected boolean enable(Node[] activatedNodes) {
+        return activatedNodes != null && activatedNodes.length == 1;
     }
     
     protected boolean asynchronous() {
         return false;
     }
     
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-    
     public String getName() {
         return NbBundle.getMessage(UpgradeAction.class, "LBL_UpgradeAction");  // NOI18N
+    }
+    
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
     }
 }

@@ -45,7 +45,8 @@ import javax.management.Attribute;
 import junit.framework.TestCase;
 import org.netbeans.modules.sun.manager.jbi.editors.ComboBoxPropertyEditor;
 import org.netbeans.modules.sun.manager.jbi.editors.PasswordEditor;
-import org.netbeans.modules.sun.manager.jbi.util.MyMBeanAttributeInfo;
+import org.netbeans.modules.sun.manager.jbi.management.model.ComponentConfigurationDescriptor;
+import org.netbeans.modules.sun.manager.jbi.management.ConfigurationMBeanAttributeInfo;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.openide.nodes.PropertySupport;
 
@@ -56,6 +57,8 @@ import org.openide.nodes.PropertySupport;
 public class SchemaBasedConfigPropertySupportFactoryTest extends TestCase {
     
     private Schema schema;
+    
+    private ComponentConfigurationDescriptor descriptor;
 
     public SchemaBasedConfigPropertySupportFactoryTest(String testName) {
         super(testName);
@@ -67,6 +70,12 @@ public class SchemaBasedConfigPropertySupportFactoryTest extends TestCase {
         File xsdFile = new File(xsdURI);        
         String schemaText = getContent(xsdFile);
         schema = SchemaBasedConfigPropertySupportFactory.getSchema(schemaText, "whatever");
+        
+        URI xmlURI = getClass().getResource(
+                "resources/sun-http-binding-config.xml").toURI();
+        File xmlFile = new File(xmlURI);        
+        String xmlText = getContent(xmlFile);
+        descriptor = ComponentConfigurationDescriptor.parse(xmlText);        
     }
 
     protected void tearDown() throws Exception {        
@@ -97,31 +106,37 @@ public class SchemaBasedConfigPropertySupportFactoryTest extends TestCase {
         type = SchemaBasedConfigPropertySupportFactory.
             getGlobalSimpleTypeName(schema, "ProxyPassword");
         assertEquals(type, "tns:SimpleStringType"); 
+        
+        // tabular data
+        type = SchemaBasedConfigPropertySupportFactory.
+            getGlobalSimpleTypeName(schema, "ApplicationConfigurations");
+        assertEquals(type, null); 
     }
 
     public void testGetPropertySupport() throws Exception {
+        
         // integer
         PropertySupport propSupport = SchemaBasedConfigPropertySupportFactory.
             getPropertySupport(schema, null, 
                 new Attribute("OutboundThreads", 4), 
-                new MyMBeanAttributeInfo("name", "java.lang.Integer", "description", 
-                true, true, false, false, false, false, false));
+                new ConfigurationMBeanAttributeInfo(
+                descriptor.getChild("OutboundThreads"), "java.lang.Integer", true, true, false));
         assertTrue(propSupport.getValue() instanceof Integer);
 
         // boolean
         propSupport = SchemaBasedConfigPropertySupportFactory.
             getPropertySupport(schema, null, 
                 new Attribute("UseJVMProxySettings", true), 
-                new MyMBeanAttributeInfo("name", "java.lang.Boolean", "description", 
-                true, true, false, false, false, false, false));
+                new ConfigurationMBeanAttributeInfo(
+                descriptor.getChild("UseJVMProxySettings"), "java.lang.Boolean", true, true, false));
         assertTrue(propSupport.getValue() instanceof Boolean);
         
         // string
         propSupport = SchemaBasedConfigPropertySupportFactory.
             getPropertySupport(schema, null, 
                 new Attribute("ProxyHost", "localhost"), 
-                new MyMBeanAttributeInfo("name", "java.lang.String", "description", 
-                true, true, false, false, false, false, false));
+                new ConfigurationMBeanAttributeInfo(
+                descriptor.getChild("ProxyHost"), "java.lang.String", true, true, false));
         assertTrue(propSupport.getValue() instanceof String);
         assertFalse(propSupport.getPropertyEditor() instanceof ComboBoxPropertyEditor);
 
@@ -129,8 +144,8 @@ public class SchemaBasedConfigPropertySupportFactoryTest extends TestCase {
         propSupport = SchemaBasedConfigPropertySupportFactory.
             getPropertySupport(schema, null, 
                 new Attribute("ProxyType", "SOCKS"), 
-                new MyMBeanAttributeInfo("name", "java.lang.String", "description", 
-                true, true, false, false, false, false, false));
+                new ConfigurationMBeanAttributeInfo(
+                descriptor.getChild("ProxyType"), "java.lang.String", true, true, false));
         assertTrue(propSupport.getValue() instanceof String);
         PropertyEditor propEditor = propSupport.getPropertyEditor();
         assertTrue(propEditor instanceof ComboBoxPropertyEditor);
@@ -145,9 +160,9 @@ public class SchemaBasedConfigPropertySupportFactoryTest extends TestCase {
         // password
         propSupport = SchemaBasedConfigPropertySupportFactory.
             getPropertySupport(schema, null, 
-                new Attribute("ProxyPassword", "localhost"), 
-                new MyMBeanAttributeInfo("name", "java.lang.String", "description", 
-                true, true, false, true, false, false, false));
+                new Attribute("ProxyPassword", "somePassword"), 
+                new ConfigurationMBeanAttributeInfo(
+                descriptor.getChild("ProxyPassword"), "java.lang.String", true, true, false));
         assertTrue(propSupport.getValue() instanceof String);
         assertTrue(propSupport.getPropertyEditor() instanceof PasswordEditor);
     }

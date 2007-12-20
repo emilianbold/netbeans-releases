@@ -1,7 +1,42 @@
 /*
- * MyNewJPanel.java
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Created on August 7, 2007, 5:28 PM
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
  */
 
 package org.netbeans.modules.sun.manager.jbi.editors;
@@ -11,6 +46,7 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 import javax.management.openmbean.CompositeData;
@@ -19,6 +55,7 @@ import javax.management.openmbean.CompositeType;
 import javax.management.openmbean.KeyAlreadyExistsException;
 import javax.management.openmbean.OpenDataException;
 import javax.management.openmbean.OpenType;
+import javax.management.openmbean.SimpleType;
 import javax.management.openmbean.TabularData;
 import javax.management.openmbean.TabularDataSupport;
 import javax.management.openmbean.TabularType;
@@ -31,10 +68,10 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.netbeans.modules.sun.manager.jbi.management.model.ComponentConfigurationDescriptor;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.util.NbBundle;
 
@@ -59,15 +96,46 @@ public class SimpleTabularDataCustomEditor extends javax.swing.JPanel
     private TabularType tabularType;
     private TabularData tabularData;
     
+    private String tableLabelText;
+    private String tableLabelDescription;
     
-    /** Creates new form MyNewJPanel */
-    public SimpleTabularDataCustomEditor(SimpleTabularDataEditor editor) {
-        
+    protected ComponentConfigurationDescriptor descriptor;
+    
+    protected boolean isWritable = true;
+    
+    public SimpleTabularDataCustomEditor(TabularData tabularData, 
+            String tableLabelText, 
+            String tableLabelDescription,
+            ComponentConfigurationDescriptor descriptor, 
+            boolean isWritable) {
+        this.tableLabelText = tableLabelText;
+        this.tableLabelDescription = tableLabelDescription;
+        this.tabularData = tabularData;     
+        this.tabularType = tabularData.getTabularType();
+        this.descriptor = descriptor;
+        this.isWritable = isWritable;
+        init();
+    }
+    
+    public SimpleTabularDataCustomEditor(SimpleTabularDataEditor editor, 
+            String tableLabelText, 
+            String tableLabelDescription,
+            ComponentConfigurationDescriptor descriptor,
+            boolean isWritable) {        
+        this.tableLabelText = tableLabelText;
+        this.tableLabelDescription = tableLabelDescription;
+        this.tabularData = (TabularData) editor.getValue();     
+        this.tabularType = editor.getTabluarType();
+        this.descriptor = descriptor;
+        this.isWritable = isWritable;
+        init();
+    }
+    
+    private void init() {
         initComponents();
         
         headerCellRenderer = createTableHeaderRenderer(); 
         
-        tabularData = (TabularData) editor.getValue();        
         DefaultTableModel tableModel = initTableModel(tabularData);
         table = createTable(tableModel);
         table.getTableHeader().setReorderingAllowed(false);
@@ -79,7 +147,7 @@ public class SimpleTabularDataCustomEditor extends javax.swing.JPanel
             public void valueChanged(ListSelectionEvent e) {
                 if (!e.getValueIsAdjusting()) {
                     int minSelectionIndex = table.getSelectionModel().getMinSelectionIndex();
-                    deleteButton.setEnabled(minSelectionIndex != -1);
+                    deleteButton.setEnabled(isWritable && minSelectionIndex != -1);
                 }
             }
         });
@@ -87,14 +155,16 @@ public class SimpleTabularDataCustomEditor extends javax.swing.JPanel
         addButton.addActionListener(this);
         deleteButton.addActionListener(this);
         deleteAllButton.addActionListener(this);
+        addButton.setEnabled(isWritable);
         deleteButton.setEnabled(false);
+        deleteAllButton.setEnabled(isWritable && tableModel.getRowCount() > 0);
     }
     
     protected TableCellRenderer createTableHeaderRenderer() {
         return new TabularDataTableHeaderRenderer();   
     }
     
-    public Object getPropertyValue() throws IllegalStateException {
+    public TabularData getPropertyValue() throws IllegalStateException {
         
         if (table.isEditing()) {
             table.getCellEditor().stopCellEditing();
@@ -106,53 +176,88 @@ public class SimpleTabularDataCustomEditor extends javax.swing.JPanel
             ret = new TabularDataSupport(tabularType);
             CompositeType rowType = tabularType.getRowType();
             
-            DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
-            Vector dataVectors = tableModel.getDataVector();
-            for (Object rowDataObj : dataVectors) {
-                Object[] itemValues = ((Vector) rowDataObj).toArray();
+            int rowIndex = 0;
+            for (Vector rowVector : getDataVector()) {
+                Object[] itemValues = rowVector.toArray();
                 
-                // Ignore rows with null keys
-                boolean nullKeyRow = false;
-                for (int i = 0; i < indexColumnCount; i++) {
-                    if (itemValues[i] == null ||
-                            // the following check is not really required by tabular data
-                            ((String)itemValues[i]).trim().length() == 0) {
-                        nullKeyRow = true;
-                        break;
+                // Check isRequired field based on the tabular data descriptor.
+                if (descriptor != null) {
+                    List<String> incompleteRequiredColumns = new ArrayList<String>();
+                    for (int col = 0; col < itemValues.length; col++) {
+                        Object itemValue = itemValues[col];
+                        String columnName = columnNames[col];
+                        ComponentConfigurationDescriptor childDescriptor = 
+                                descriptor.getChild(columnName);
+                        if (childDescriptor.isRequired()) {
+                            if (itemValue == null ||
+                                    ((itemValue instanceof String) && 
+                                    (((String)itemValue).length() == 0))) {
+                                incompleteRequiredColumns.add(
+                                        childDescriptor.getDisplayName());
+                            }
+                        }
+                    }
+                    
+                    if (incompleteRequiredColumns.size() > 0) {
+                        String msg = NbBundle.getMessage(
+                                SimpleTabularDataCustomEditor.class,
+                                "MSG_REQUIRED_FIELD_IS_MISSING", // NOI18N
+                                rowIndex + 1,
+                                incompleteRequiredColumns);
+                        throw new RuntimeException(msg);
                     }
                 }
-                if (!nullKeyRow) {
-                    CompositeData rowData =
-                            new CompositeDataSupport(rowType, columnNames, itemValues);
-                    ret.put(rowData);
+                
+                // Check undefined index columns in the tabular data.
+                List<String> undefinedIndexColumns = new ArrayList<String>();
+                for (int col = 0; col < indexColumnCount; col++) {
+                    Object itemValue = itemValues[col];
+                    if (itemValues == null ||
+                            ((itemValue instanceof String) &&
+                            (((String) itemValue).length() == 0))) {
+                        undefinedIndexColumns.add(columnNames[col]);
+                    }
                 }
+                
+                if (undefinedIndexColumns.size() > 0) {
+                    String msg = NbBundle.getMessage(
+                            SimpleTabularDataCustomEditor.class,
+                            "MSG_INDEX_FIELD_IS_MISSING", // NOI18N
+                            rowIndex + 1,
+                            undefinedIndexColumns);
+                    throw new RuntimeException(msg);
+                }
+                
+                CompositeData rowData = new CompositeDataSupport(
+                        rowType, columnNames, itemValues);
+                ret.put(rowData);
+                
+                rowIndex++;
             }
-        } catch (KeyAlreadyExistsException e) {
-            e.printStackTrace();
-            
-            NotifyDescriptor d = new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notify(d);
-            
-            ret = tabularData;  // if anything wrong, just return the old value
+        } catch (KeyAlreadyExistsException e) {   
+            List<String> indexColumns = 
+                    Arrays.asList(columnNames).subList(0, indexColumnCount);
+            String msg = NbBundle.getMessage(SimpleTabularDataCustomEditor.class,
+                    "MSG_TABULAR_DATA_KEY_ALREADY_EXISTS", indexColumns);
+            throw new RuntimeException(msg);
         } catch (OpenDataException e) {
             e.printStackTrace();
-            
-            NotifyDescriptor d = new NotifyDescriptor.Message(e.getMessage(), NotifyDescriptor.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notify(d);
-            
-            ret = tabularData;  // if anything wrong, just return the old value
+            throw new RuntimeException(e.getMessage());
         }
         
         return ret;
     }
     
     /** Returns preferredSize as the preferred height and the width of the panel */
+    @Override
     public Dimension getPreferredSize() {
-        return new Dimension(400, 250);
+        return new Dimension(450, 250);
     }
     
     protected JTable createTable(DefaultTableModel tableModel) {
         JTable ret = new JTable(tableModel) {
+            
+            @Override
             public Class getColumnClass(int column) {
                 OpenType columnType = columnTypes[column];
                 String className = columnType.getClassName();
@@ -166,6 +271,26 @@ public class SimpleTabularDataCustomEditor extends javax.swing.JPanel
                 
                 return clazz;
             }
+            
+            @Override
+            public TableCellEditor getCellEditor(int row, int column) { 
+                if (!isWritable) {
+                    return null;
+                } 
+                
+                Class clazz = getColumnClass(column);
+                //System.out.println("SimpleTabularDataCustomEditor.getCellEditor(): column : " + column + " columnClass" + clazz);                
+                return TabularDataCellEditorFactory.getEditor(
+                        clazz, descriptor, isWritable);
+            }
+            
+            @Override
+            public TableCellRenderer getCellRenderer(int row, int column) {   
+                Class clazz = getColumnClass(column);
+                //System.out.println("SimpleTabularDataCustomEditor.getCellRenderer(): column : " + column + " columnClass" + clazz);                
+                return TabularDataCellRendererFactory.getRenderer(clazz);
+            }
+            
         };
         
         return ret;
@@ -180,12 +305,15 @@ public class SimpleTabularDataCustomEditor extends javax.swing.JPanel
     
     private DefaultTableModel initTableModel(TabularData tabularData) {
         
-        tabularType = tabularData.getTabularType();
+        if (tabularType == null) {
+            tabularType = tabularData.getTabularType();
+        }
         CompositeType rowType = tabularType.getRowType();
         
         // Construct reordered column names to make sure all the keys are
         // at the beginning of the list.
         
+        @SuppressWarnings("unchecked")
         List<String> indexNames = tabularType.getIndexNames();
         indexColumnCount = indexNames.size();
         
@@ -233,14 +361,38 @@ public class SimpleTabularDataCustomEditor extends javax.swing.JPanel
         return new DefaultTableModel();
     }
     
-    protected Vector<String> createRow() {
-        Vector<String> row = new Vector<String>();
-        for (int i = 0; i < columnNames.length; i++) {
-            row.addElement(null);
+    /**
+     * Creates a new row for the tabular data.
+     * 
+     * @return  a Vector of objects for the new row in the tabular data. 
+     *          The order of the objects in the Vector is determined by 
+     *          the table columns.
+     */
+    @SuppressWarnings("unchecked")
+    protected Vector createRow() {
+        Vector row = new Vector();
+        
+        CompositeType rowType = tabularType.getRowType();
+
+        for (int col = 0; col < columnNames.length; col++) {
+            String headerName = columnNames[col];
+            OpenType openType = rowType.getType(headerName);
+            if (openType.equals(SimpleType.STRING)) {
+                row.add("");  
+            } else if (openType.equals(SimpleType.INTEGER)) {  // ?
+                row.add(0);
+            } else if (openType instanceof TabularType) {
+                row.add(new TabularDataSupport((TabularType)openType));
+            } else {
+                System.out.println("Unknown type: " + openType);
+                row.add("");
+            }
         }
+         
         return row;
     }
     
+    @SuppressWarnings("unchecked")
     private Vector<Vector> getDataVector() {
         return ((DefaultTableModel)table.getModel()).getDataVector();
     }
@@ -276,11 +428,14 @@ public class SimpleTabularDataCustomEditor extends javax.swing.JPanel
             table.addNotify();
             table.getSelectionModel().clearSelection();
         }
+        
+         deleteAllButton.setEnabled(isWritable && !dataVector.isEmpty());
     }    
     
     class TabularDataTableHeaderRenderer extends DefaultTableCellRenderer {
         // This method is called each time a column header
         // using this renderer needs to be rendered.
+        @Override
         public Component getTableCellRendererComponent(JTable table, Object value,
                 boolean isSelected, boolean hasFocus, int rowIndex, int colIndex) {
             if (table != null) {
@@ -291,11 +446,28 @@ public class SimpleTabularDataCustomEditor extends javax.swing.JPanel
                     setFont(header.getFont());
                 }
             }
-            String myValue = (value == null) ? "" : // NOI18N
-                "<html><body><b>" + value.toString().toUpperCase() + "</b></body></html>"; // NOI18N
+            
+            String columnTitle, columnDescription;
+            
+            if (descriptor != null) {
+                // Display name and description in the composite type 
+                // definition will take precedence if there are any 
+                // inconsistencies.
+                ComponentConfigurationDescriptor childDescriptor = 
+                        descriptor.getChild(value.toString());
+                columnTitle = childDescriptor.getDisplayName();
+                columnDescription = childDescriptor.getDescription();
+            } else {
+                columnTitle = value.toString().toUpperCase();
+                columnDescription = columnDescriptions[getColumnIndex(colIndex)]; // ?
+            }
+            
+            String myValue = colIndex < indexColumnCount ?
+                "<html><body><b><i>" + columnTitle + "</i></b></body></html>" : // NOI18N
+                "<html><body><b>" + columnTitle + "</b></body></html>"; // NOI18N
             setText(myValue);
-            setToolTipText(columnDescriptions[getColumnIndex(colIndex)]); 
-            setBorder(UIManager.getBorder("TableHeader.cellBorder"));
+            setToolTipText(columnDescription); 
+            setBorder(UIManager.getBorder("TableHeader.cellBorder")); // NOI18N
             setHorizontalAlignment(JLabel.CENTER);
             return this;
         }
@@ -310,7 +482,7 @@ public class SimpleTabularDataCustomEditor extends javax.swing.JPanel
      * WARNING: Do NOT modify this code. The content of this method is
      * always regenerated by the Form Editor.
      */
-    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -336,7 +508,7 @@ public class SimpleTabularDataCustomEditor extends javax.swing.JPanel
         deleteAllButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SimpleTabularDataCustomEditor.class, "ACS_DELETE_ALL")); // NOI18N
 
         label.setLabelFor(table);
-        org.openide.awt.Mnemonics.setLocalizedText(label, org.openide.util.NbBundle.getMessage(SimpleTabularDataCustomEditor.class, "LBL_TABLE")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(label, tableLabelText);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -347,7 +519,7 @@ public class SimpleTabularDataCustomEditor extends javax.swing.JPanel
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, buttonPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
-                    .add(label, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 118, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(label, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 364, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -362,7 +534,7 @@ public class SimpleTabularDataCustomEditor extends javax.swing.JPanel
                 .addContainerGap())
         );
 
-        label.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SimpleTabularDataCustomEditor.class, "ACS_TABLE_LABEL")); // NOI18N
+        label.getAccessibleContext().setAccessibleDescription(tableLabelDescription);
     }// </editor-fold>//GEN-END:initComponents
     
     
@@ -375,5 +547,5 @@ public class SimpleTabularDataCustomEditor extends javax.swing.JPanel
     private javax.swing.JLabel label;
     private javax.swing.JTable table;
     // End of variables declaration//GEN-END:variables
-    
+   
 }

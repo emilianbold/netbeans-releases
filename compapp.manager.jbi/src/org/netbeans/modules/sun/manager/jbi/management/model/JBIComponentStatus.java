@@ -40,7 +40,8 @@
  */
 
 package org.netbeans.modules.sun.manager.jbi.management.model;
-import java.io.Serializable;
+
+import com.sun.jbi.ui.common.JBIComponentInfo;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,127 +51,47 @@ import java.util.List;
  *
  * @author Graj
  */
-public class JBIComponentStatus implements Serializable {
+public class JBIComponentStatus extends JBIComponentInfo {
+    
+    
+    private List<String> namespaceList = new ArrayList<String>();
 
-    /** Installed state */
-    public static final String SHUTDOWN_STATE = "Shutdown"; // NOI18N
-    /** Stopped state  */
-    public static final String STOPPED_STATE = "Stopped"; // NOI18N
-    /** Started state */
-    public static final String STARTED_STATE = "Started"; // NOI18N
-    /** Unknown state */
-    public static final String UNKNOWN_STATE = "Unknown";   // NOI18N
-
-     
     /** Binding type */
-    public static final String BINDING_TYPE = "Binding";    // NOI18N
+    public static final String BINDING = "Binding";    // NOI18N
     
     /** Engine Type */
-    public static final String ENGINE_TYPE = "Engine";  // NOI18N
+    public static final String ENGINE = "Engine";  // NOI18N
     
-    /** Namespace Type */
-    public static final String NAMESPACE_TYPE = "Namespace";    // NOI18N
+//    /** Namespace Type */
+//    public static final String NAMESPACE = "Namespace";    // NOI18N
     
-    String componentId;
-    String state;
-    String name;
-    String description;
-    String type;
-    List<String> namespaceList = new ArrayList<String>();
 
     public JBIComponentStatus() {
-        
+        super();
     }
 
-    /**
-     * @param componentId
-     * @param state
-     * @param name
-     * @param description
-     * @param type
-     */
-    public JBIComponentStatus(String componentId, String name, 
-            String description, String type, String state) {
-        this(componentId, name, description, type, state, null);
-    }
+//    /**
+//     * @param componentId
+//     * @param state
+//     * @param name
+//     * @param description
+//     * @param type
+//     */
+//    public JBIComponentStatus(String componentId, String name, 
+//            String description, String type, String state) {
+//        this(componentId, name, description, type, state, null);
+//    }
     
-    public JBIComponentStatus(String componentId, String name, 
+    public JBIComponentStatus(String name, 
             String description, String type, String state, String[] ns) {
-        this.componentId = componentId;
-        this.name = name;
-        this.description = description;
-        this.type = type;
-        this.state = state;
+        super(type, state, name, description);
         setNamespace(ns);
     }
-    /**
-     * @return Returns the componentId.
-     */
-    public String getComponentId() {
-        return this.componentId;
-    }
-    /**
-     * @param componentId The componentId to set.
-     */
-    public void setComponentId(String componentId) {
-        this.componentId = componentId;
-    }
-    /**
-     * @return Returns the description.
-     */
-    public String getDescription() {
-        return this.description;
-    }
-    /**
-     * @param description The description to set.
-     */
-    public void setDescription(String description) {
-        if((description != null) && (description.length() > 0)) {
-            this.description = description;
-        }
-    }
-    /**
-     * @return Returns the name.
-     */
-    public String getName() {
-        return this.name;
-    }
-    /**
-     * @param name The name to set.
-     */
-    public void setName(String name) {
-        this.name = name;
-    }
-    /**
-     * @return Returns the state.
-     */
-    public String getState() {
-        return this.state;
-    }
-    /**
-     * @param state The state to set.
-     */
-    public void setState(String status) {
-        this.state = status;
-    }
-
-    /**
-     * @return Returns the type.
-     */
-    public String getType() {
-        return this.type;
-    }
-    /**
-     * @param type The type to set.
-     */
-    public void setType(String type) {
-        this.type = type;
-    }
-    
+        
     /**
      * DOCUMENT ME!
      *
-     * @return Returns the Namespace.
+     * @return the namespace.
      */
     public List<String> getNamespaceList() {
         return new ArrayList<String>(namespaceList);
@@ -179,7 +100,7 @@ public class JBIComponentStatus implements Serializable {
     /**
      * DOCUMENT ME!
      *
-     * @param namesapce The Namespace to set.
+     * @param namesapce The namespace to set.
      */
     // RENAME ME 
     public void setNamespace(String namespaces[]) {
@@ -211,11 +132,11 @@ public class JBIComponentStatus implements Serializable {
     }
     
     public boolean isBindingComponent() {
-        return getType().equalsIgnoreCase("Binding"); // NOI18N
+        return getType().equalsIgnoreCase(BINDING); 
     }
     
     public boolean isServiceEngine() {
-        return getType().equalsIgnoreCase("Engine"); // NOI18N
+        return getType().equalsIgnoreCase(ENGINE);
     }
     
     public boolean isSharedLibrary() {
@@ -227,10 +148,10 @@ public class JBIComponentStatus implements Serializable {
         System.out.println("//  -- JBI Component --                        //"); // NOI18N
         System.out.println("/////////////////////////////////////////////////"); // NOI18N
         //System.out.println("//  componentId is: "+ this.componentId);
-        System.out.println("//  name is: "+ this.name); // NOI18N
-        System.out.println("//  description is: "+ this.description); // NOI18N
-        System.out.println("//  type is: "+ this.type); // NOI18N
-        System.out.println("//  state is: "+ this.state); // NOI18N
+        System.out.println("//  name is: "+ getName()); // NOI18N
+        System.out.println("//  description is: "+ getDescription()); // NOI18N
+        System.out.println("//  type is: "+ getType()); // NOI18N
+        System.out.println("//  state is: "+ getState()); // NOI18N
         System.out.println("/////////////////////////////////////////////////"); // NOI18N
     }
 }
