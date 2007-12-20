@@ -42,15 +42,42 @@ package org.netbeans.modules.php.model;
 
 import java.util.List;
 
+import org.netbeans.modules.php.model.resources.ResourceMarker;
+
 
 /**
  * @author ads
  *
  */
-public interface InterfaceDefinition extends Statement, ObjectDefinition {
-    
-     List<Reference<InterfaceDefinition>> getSuperInterfaces();
-     
-     InterfaceBody getBody();
+public class ReferencesTest extends BaseCase {
 
+    public void testClassReference() throws Exception{
+        PhpModel model = getModel( ResourceMarker.CLASS_REF );
+        model.sync();
+        model.readLock();
+        try {
+           List<ClassDefinition> classes = 
+               model.getStatements( ClassDefinition.class );
+           assert classes.size() > 0 :"Expected to find at least one class" +
+           		" definition";
+           ClassDefinition def = classes.get(0);
+           assert def != null :"Expected not null first class definition";
+           Reference<ClassDefinition> ref = def.getSuperClass();
+           assert ref!= null : "Expected not null reference to super class";
+           
+           String ident = ref.getIdentifier();
+           assert ident!= null :"Reference identifier is null";
+           assert ident.equals("Two") :"Exepcted string 'Two' as reference" +
+           		" identifier super class name , but found :" +ident;
+           
+           ClassDefinition superDef =  ref.get();
+           assert superDef!= null : "Expected not null OM referenced class definition";
+           assert superDef.getName().equals( "Two" ) :"Expected to find " +
+           		"referenced class definition with name 'Two' but found :"+
+           		superDef.getName();
+        }
+        finally {
+            model.readUnlock();
+        }
+    }
 }

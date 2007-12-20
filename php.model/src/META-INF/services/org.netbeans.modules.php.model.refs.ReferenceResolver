@@ -1,1 +1,2 @@
 org.netbeans.modules.php.model.impl.refs.VariableReferenceResolver
+org.netbeans.modules.php.model.impl.refs.ClassReferenceResolver

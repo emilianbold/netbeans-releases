@@ -75,6 +75,8 @@ public final class ResourceMarker {
     
     public static final String ARRAY        = "array.php";                // NOI18N
     
+    public static final String CLASS_REF    = "classReference.php";       // NOI18N
+    
     public static InputStream getStream( String relativeResourceName ){
         /*String pack = ResourceMarker.class.getPackage().getName().
             replace( '.', '/');*/

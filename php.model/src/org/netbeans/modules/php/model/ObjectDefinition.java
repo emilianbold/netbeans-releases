@@ -49,4 +49,5 @@ package org.netbeans.modules.php.model;
  */
 public interface ObjectDefinition extends SourceElement{
 
+    String getName();
 }

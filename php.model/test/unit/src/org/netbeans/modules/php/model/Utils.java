@@ -48,7 +48,6 @@ import javax.swing.text.Document;
 
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
-import org.netbeans.modules.php.editor.PhpKit;
 
 
 /**

@@ -51,8 +51,6 @@ public interface ClassDefinition extends Statement, ObjectDefinition {
     
     List<Modifier> getModifiers();
     
-    String getName();
-    
     Reference<ClassDefinition> getSuperClass();
     
     List<Reference<InterfaceDefinition>> getImplementedInterfaces();
