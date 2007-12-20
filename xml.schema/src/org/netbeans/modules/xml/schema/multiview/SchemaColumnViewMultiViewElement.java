@@ -85,8 +85,7 @@ import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.xam.ui.category.Category;
 import org.netbeans.modules.xml.xam.ui.category.CategoryPane;
 import org.netbeans.modules.xml.xam.ui.category.DefaultCategoryPane;
-import org.netbeans.modules.xml.search.api.SearchManager;
-import org.netbeans.modules.xml.search.api.SearchManagerAccess;
+import org.netbeans.modules.xml.xam.ui.search.SearchManager;
 import org.netbeans.modules.xml.xam.ui.multiview.ActivatedNodesMediator;
 import org.netbeans.modules.xml.xam.ui.multiview.CookieProxyLookup;
 import org.netbeans.modules.xml.xam.ui.undo.QuietUndoManager;
@@ -482,10 +481,10 @@ public class SchemaColumnViewMultiViewElement extends TopComponent
                         categoryPane.populateToolbar(toolbar);
                     }
                     // vlv: search
-                    toolbar.addSeparator();
-                    SearchManager manager = SearchManagerAccess.getManager();
+                    SearchManager manager = SearchManager.Access.getDefault();
 
                     if (manager != null) {
+                      toolbar.addSeparator();
                       toolbar.add(manager.getSearchAction());
                     }
                     toolbar.addSeparator();

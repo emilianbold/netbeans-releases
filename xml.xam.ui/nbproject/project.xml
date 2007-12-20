@@ -168,6 +168,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.bpel.core</friend>
                 <friend>org.netbeans.modules.bpel.editors</friend>
                 <friend>org.netbeans.modules.bpel.editors.api</friend>
+                <friend>org.netbeans.modules.bpel.mapper</friend>
                 <friend>org.netbeans.modules.bpel.search</friend>
                 <friend>org.netbeans.modules.bpel.xpath</friend>
                 <friend>org.netbeans.modules.compapp.casaeditor</friend>
@@ -175,6 +176,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.iep.editor</friend>
                 <friend>org.netbeans.modules.workflow.editor</friend>
                 <friend>org.netbeans.modules.worklist.editor</friend>
+                <friend>org.netbeans.modules.soa.mappercore</friend>
                 <friend>org.netbeans.modules.xml.schema</friend>
                 <friend>org.netbeans.modules.xml.schema.abe</friend>
                 <friend>org.netbeans.modules.xml.schema.refactoring</friend>
