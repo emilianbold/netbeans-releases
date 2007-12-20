@@ -47,6 +47,14 @@ made subject to such option by the copyright holder.
             <code-name-base>org.netbeans.modules.xml.wsdl.extensions</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.xml.xpath.ext</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.xml.schema.model</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -73,14 +81,6 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.xml.xpath</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.openide.util</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -94,6 +94,8 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.bpel.project</friend>
                 <friend>org.netbeans.modules.bpel.refactoring</friend>
                 <friend>org.netbeans.modules.bpel.search</friend>
+                <friend>org.netbeans.modules.bpel.validation</friend>
+                <friend>org.netbeans.modules.bpel.debugger.ui</friend>
                 <friend>org.netbeans.modules.compapp.projects.jbi</friend>
                 <friend>org.netbeans.modules.compapp.casaeditor</friend>
                 <friend>org.netbeans.modules.xml.wsdlui</friend>
@@ -110,3 +112,4 @@ made subject to such option by the copyright holder.
         </data>
     </configuration>
 </project>
+

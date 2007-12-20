@@ -1,79 +1,45 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
  *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.xpath;
 
-import java.text.MessageFormat;
-import org.netbeans.modules.xml.schema.model.Attribute;
-import org.netbeans.modules.xml.schema.model.Element;
-import org.netbeans.modules.xml.schema.model.Form;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import org.netbeans.modules.xml.xpath.ext.LocationStep;
 import org.netbeans.modules.xml.schema.model.GlobalAttribute;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.LocalAttribute;
-import org.netbeans.modules.xml.schema.model.LocalElement;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
-import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.TypeContainer;
 import org.netbeans.modules.xml.schema.model.ElementReference;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PropertyAlias;
 import org.netbeans.modules.xml.xam.Named;
-import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
-import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
-import org.netbeans.modules.xml.xpath.LocationStep;
-import org.netbeans.modules.xml.xpath.StepNodeNameTest;
-import org.netbeans.modules.xml.xpath.StepNodeTest;
-import org.netbeans.modules.xml.xpath.StepNodeTypeTest;
-import org.netbeans.modules.xml.xpath.XPathCoreFunction;
-import org.netbeans.modules.xml.xpath.XPathCoreOperation;
-import org.netbeans.modules.xml.xpath.XPathExpression;
-import org.netbeans.modules.xml.xpath.XPathExpressionPath;
-import org.netbeans.modules.xml.xpath.XPathExtensionFunction;
-import org.netbeans.modules.xml.xpath.XPathLocationPath;
-import org.netbeans.modules.xml.xpath.XPathPredicateExpression;
-import org.netbeans.modules.xml.xpath.visitor.AbstractXPathVisitor;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.xml.xpath.ext.XPathExpressionPath;
+import org.netbeans.modules.xml.xpath.ext.XPathLocationPath;
+import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext.SchemaCompPair;
+import org.netbeans.modules.xml.xpath.ext.visitor.XPathModelTracerVisitor;
 
 /**
  * This visitor is intended to validate semantics of single XPath.
@@ -81,84 +47,37 @@ import org.openide.util.NbBundle;
  *
  * @author nk160297
  */
-public class PathValidatorVisitor extends AbstractXPathVisitor {
-    
-    private XPathExpression myInitialExpression = null;
+public class PathValidatorVisitor extends XPathModelTracerVisitor {
     
     private PathValidationContext myContext;
-    
-    private transient SchemaComponent parentComponent;
-    private transient boolean stopPathValidation = false;
-    private transient boolean lookForGlobalObject = false;
     
     public PathValidatorVisitor(PathValidationContext context) {
         myContext = context;
     }
     
-    public PathValidationContext getContext() {
-        return myContext;
-    }
-    
-    //========================================================
-    // Do standard processing
-    
-    public void visit(XPathCoreFunction coreFunction) {
-        visitChildren(coreFunction);
-    }
-    
-    public void visit(XPathCoreOperation coreOperation) {
-        visitChildren(coreOperation);
-    }
-    
-    public void visit(XPathExtensionFunction extensionFunction) {
-        visitChildren(extensionFunction);
-    }
-    
     //========================================================
     
+    @Override
     public void visit(XPathLocationPath locationPath) {
-        if (myInitialExpression == null) {
-            myInitialExpression = locationPath;
-        } else {
-            // Delegate processing of a new path expression to a new path validator
-            PathValidationContext newContext = myContext.clone();
-            newContext.setSchemaContextComponent(parentComponent);
-            PathValidatorVisitor newPVVisitor = new PathValidatorVisitor(newContext);
-            locationPath.accept(newPVVisitor);
-            return;
-        }
         //
         if (locationPath.getAbsolute()) {
             //
             // Process the first step of an absolute location path.
             //
-            SchemaModel contextModel = myContext.getSchemaContextModel();
             SchemaComponent rootComp = myContext.getSchemaContextComponent();
             //
             if (rootComp instanceof GlobalType) {
+                // issue #90323
                 // Error. The location path must not be absolute if the global type is used.
-                addResultItem(ResultType.ERROR, "ABSOLUTE_XPATH_WITH_TYPE"); // NOI18N
+                myContext.addResultItem(ResultType.ERROR, "ABSOLUTE_XPATH_WITH_TYPE"); // NOI18N
+            } else {
+                assert rootComp instanceof GlobalElement : 
+                    "Root component type is " + rootComp.getComponentType().getName() + 
+                    " but it has to be a GlobalElement"; // NOI18N
+                //
+                // Check if the root element equals to the element of the first step
+                checkFirstStepType(locationPath, (GlobalElement)rootComp);
             }
-            //
-            assert rootComp.getModel() == contextModel;
-            lookForGlobalObject = true;
-            parentComponent = contextModel.getRootComponent();
-        } else {
-            parentComponent = myContext.getSchemaContextComponent();
-        }
-        //
-        LocationStep[] steps = locationPath.getSteps();
-        if ( steps != null ){
-            for (LocationStep step : steps) {
-                visit(step);
-                if (stopPathValidation) {
-                    break;
-                }
-            }
-        }
-        //
-        if (stopPathValidation) {
-            return;
         }
         //
         // The following check is intended specially for Property Aliases.
@@ -174,184 +93,184 @@ public class PathValidatorVisitor extends AbstractXPathVisitor {
         //
         if (propType != null) {
             //
-            // Here the parentComponent has to reference to the last element of the XPath
-            GlobalType gType = getComponentType(parentComponent);
-
-            if (gType == null) {
-              return;
-            }
-            //
-            // Check if the type of the last element of the XPath
-            if (!propType.equals(gType)) {
-                // Error. The type of the last XPath element differ from the type
-                // of the correlaton property.
-                addResultItem(ResultType.ERROR, "PROP_ALIAS_INCONSISTENT_TYPE",
-                        gType.getName(), propType.getName()); // NOI18N
+            // Take the schema component which corresponds to the last step.
+            Set<GlobalType> lastStepTypes = getLastStepSchemaTypeSet(locationPath);
+            if (lastStepTypes == null || lastStepTypes.isEmpty()) {
+                // Error. Can not resolve type of the last location path element.
+                myContext.addResultItem(ResultType.ERROR, "UNRESOLVED_XPATH_TAIL"); // NOI18N
+                return;
+            } 
+            if (lastStepTypes.size() == 1) {
+                GlobalType gType = lastStepTypes.iterator().next();
+                //
+                // Check if the type of the last element of the XPath
+                if (!propType.equals(gType)) {
+                    // Error. The type of the last XPath element differ from the type
+                    // of the correlaton property.
+                    myContext.addResultItem(ResultType.ERROR, 
+                            "QUERY_INCONSISTENT_TYPE",
+                            propType.getName()); // NOI18N
+                }
+            } else {
+                boolean hasConsistentType = false; 
+                for (GlobalType gType : lastStepTypes) {
+                    if (propType.equals(gType)) {
+                        hasConsistentType = true;
+                    }
+                }
+                //
+                if (hasConsistentType) {
+                    // Error. The type of the last XPath element differ from the type
+                    // of the correlaton property.
+                    myContext.addResultItem(ResultType.WARNING, 
+                            "QUERY_AMBIGUOUS_TYPE",
+                            propType.getName()); // NOI18N
+                } else {
+                    // Error. The type of the last XPath element differ from the type
+                    // of the correlaton property.
+                    myContext.addResultItem(ResultType.ERROR, 
+                            "QUERY_CANNOTBE_CONSISTENT_TYPE",
+                            propType.getName()); // NOI18N
+                }
             }
         }
     }
     
+    @Override
     public void visit(XPathExpressionPath expressionPath) {
-        addResultItem(ResultType.ERROR, "UNSUPPORTED_VARIABLE_EXPRESSION"); // NOI18N
-        stopPathValidation = true;
-        return;
-    }
-    
-    public void visit(LocationStep locationStep) {
-        assert parentComponent != null;
-        //
-        boolean isAttribute = locationStep.getAxis() == LocationStep.AXIS_ATTRIBUTE;
-        if (!isAttribute && locationStep.getAxis() != LocationStep.AXIS_CHILD) {
-            // The usage of any axis except the attribute or child can result in
-            // loss of type context. It doesn't matter to check schema types any more.
-            addResultItem(ResultType.WARNING,
-                    "UNSUPPORTED_AXIS", locationStep.getString()); // NOI18N
-            stopPathValidation = true;
-            return;
-        }
-        //
-        StepNodeTest nodeTest = locationStep.getNodeTest();
-        assert nodeTest != null;
-        if (nodeTest instanceof StepNodeNameTest) {
-            // get the text of the step
-            String nodeName = ((StepNodeNameTest)nodeTest).getNodeName();
-            //
-            // Extract namespace prefix
-            String nsPrefix = null;
-            int colonIndex = nodeName.indexOf(':');
-            if (colonIndex != -1) {
-                nsPrefix = nodeName.substring(0, colonIndex);
-                nodeName = nodeName.substring(colonIndex + 1);
-            }
-            //
-            // Obtain the namespace URI by the prefix
-            // The absence of prefix means that the XPath step is unqualified.
-            // The default namespace can't be used by XPath in BPEL!
-            String nsUri = null;
-            if (nsPrefix == null) {
-                //
-                // If the prefix isn't specified for the global object 
-                // then the checkNsPrefixes should show warning
-                // 
-                // If the prefix isn't specified then the step component can
-                // be considered as an unqualified schema object.
-                // ATTENTION! The namaspace is indefinite in such case. 
-                // It doesn't related to the namespace of the parent component 
-                // because the child component can be defined in other schema 
-                // with other target namespace! It can't be considered as 
-                // default namespace as for global elements in such case. 
-                // The child element has to be found among all children 
-                // by name only. 
-                nsUri = null; 
-            } else {
-                WSDLComponent contentElement = myContext.getXpathContentElement();
-                assert contentElement instanceof AbstractDocumentComponent;
-                nsUri = ((AbstractDocumentComponent)contentElement).
-                        lookupNamespaceURI(nsPrefix, true);
-                //
-                if (nsUri == null) {
-                    addResultItem(ResultType.WARNING,
-                            "UNKNOWN_NAMESPACE_PREFIX", nsPrefix); // NOI18N
-                    stopPathValidation = true;
-                    return;
-                }
-            }
-            //
-            SchemaComponent foundComponent = null;
-            if (lookForGlobalObject) {
-                SchemaModel contextModel = myContext.getSchemaContextModel();
-                SchemaComponent rootComp = myContext.getSchemaContextComponent();
-                //
-                String name = null;
-                String namespace = contextModel.getEffectiveNamespace(rootComp);
-                //
-                if (rootComp instanceof GlobalElement) {
-                    name = ((GlobalElement)rootComp).getName();
-                } else if (rootComp instanceof GlobalAttribute) {
-                    name = ((GlobalAttribute)rootComp).getName();
-                } else {
-                    assert false : "The root component of an absolute " +
-                            "location path has to be either GlobalElement " +
-                            "or GlobalAttribute"; // NOI18N
-                    stopPathValidation = true;
-                    return;
-                }
-                //
-                boolean isSuitableType = false;
-                if (nsUri == null) {
-                    isSuitableType = nodeName.equals(name);
-                } else {
-                    isSuitableType = (nsUri.equals(namespace) && nodeName.equals(name));
-                }
-                if (isSuitableType) {
-                    foundComponent = rootComp;
-                } else {
-                    // Error. The XPath has to be started from another global object
-                    String correctRootName =
-                            (nsPrefix == null ? "" : nsPrefix + ":") + name;
-                    if (isAttribute) {
-                        addResultItem(ResultType.ERROR,
-                                "WRONG_GLOBAL_ATTRIBUTE", correctRootName); // NOI18N
-                    } else {
-                        addResultItem(ResultType.ERROR,
-                                "WRONG_GLOBAL_ELEMENT", correctRootName); // NOI18N
-                    }
-                    //
-                    stopPathValidation = true;
-                    return;
-                }
-                //
-                // Look for local object next time.
-                lookForGlobalObject = false;
-            } else {
-                FindChildSchemaVisitor visitor =
-                        new FindChildSchemaVisitor(nodeName, nsUri, isAttribute);
-                visitor.lookForSubcomponent(parentComponent);
-                //
-                if (visitor.isChildFound()) {
-                    foundComponent = visitor.getFound();
-                } else {
-                    // Error. The child with the specified name isn't found
-                    if (isAttribute) {
-                        addResultItem(ResultType.ERROR,
-                                "UNKNOWN_ATTRIBUTE", nodeName, nsUri); // NOI18N
-                    } else {
-                        addResultItem(ResultType.ERROR,
-                                "UNKNOWN_ELEMENT", nodeName, nsUri); // NOI18N
-                    }
-                    //
-                    // It doesn't matter to check schema types any more
-                    stopPathValidation = true;
-                    return;
-                }
-            }
-            //
-            assert foundComponent instanceof GlobalElement ||
-                    foundComponent instanceof LocalElement ||
-                    foundComponent instanceof Attribute;
-            //
-            checkNsPrefixes(foundComponent, nsPrefix, nsUri);
-            //
-            parentComponent = foundComponent;
-        } else if (nodeTest instanceof StepNodeTypeTest) {
-            // It doesn't matter to check schema types any more
-            stopPathValidation = true;
-            return;
-        }
-        //
-        // Process nested predicates
-        // IMPORTANT! This code has to be here because of it requires that 
-        // the current step element has already calculated. 
-        // The parentComponent variable points to it. 
-        XPathPredicateExpression[] expressions = locationStep.getPredicates();
-        if ( expressions!= null ){
-            for (XPathPredicateExpression expression : expressions) {
-                expression.accept( this );
-            }
-        }
+        myContext.addResultItem(ResultType.ERROR, "UNSUPPORTED_VARIABLE_EXPRESSION"); // NOI18N
     }
     
     //========================================================
+    
+    /**
+     * This method is pertinent only for the first step of an absolute location path
+     */ 
+    private boolean checkFirstStepType(XPathLocationPath locationPath, 
+            GlobalElement requiredElement) {
+        //
+        Set<SchemaCompPair> scPairSet = null;
+        LocationStep[] stepArr = locationPath.getSteps();
+        if (stepArr != null && stepArr.length != 0) {
+            LocationStep firstStep = stepArr[0];
+            if (firstStep != null) {
+                XPathSchemaContext sContext = firstStep.getSchemaContext();
+                if (sContext != null) {
+                    scPairSet = sContext.getSchemaCompPairs();
+                }
+            }
+        }
+        //
+        if (scPairSet == null || scPairSet.isEmpty()) {
+            // The schema type was not resolved.
+            // It is Ok, but there is nothing to check
+            return true; 
+        }
+        //
+        if (scPairSet.size() == 1) {
+            SchemaCompPair scPair = scPairSet.iterator().next();
+            if (scPair != null) {
+                SchemaComponent firstStepComp = scPair.getComp();
+                if (firstStepComp.equals(requiredElement)) {
+                    return true;
+                }
+            }
+        }
+        //
+        String elName = requiredElement.getName();
+        String elNsUri = requiredElement.getModel().
+                getEffectiveNamespace(requiredElement);
+        String requiredElementName = elName;
+        if (elNsUri != null) {
+            String nsPrefix = myContext.getNsContext().getPrefix(elNsUri);
+            if (nsPrefix != null && nsPrefix.length() != 0) {
+                requiredElementName = nsPrefix + ":" + elName;
+            }
+        }
+        //
+        myContext.addResultItem(ResultType.ERROR, "WRONG_START_ELEMENT_ABSOLUTE",
+                requiredElementName); // NOI18N
+        //
+        return false;
+    }
+    
+    /**
+     * Returns a set of possible Schema types, which corresponds to 
+     * the last step of the location path. Only global types make sense.
+     */ 
+    private Set<GlobalType> getLastStepSchemaTypeSet(
+            XPathLocationPath locationPath) {
+        //
+        Set<SchemaCompPair> scPairSet = null;
+        //
+        LocationStep[] stepArr = locationPath.getSteps();
+        if (stepArr != null && stepArr.length > 0) {
+            LocationStep lastStep = stepArr[stepArr.length - 1];
+            if (lastStep != null) {
+                XPathSchemaContext sContext = lastStep.getSchemaContext();
+                if (sContext != null) {
+                    scPairSet = sContext.getSchemaCompPairs();
+                }
+            }
+        }
+        //
+        if (scPairSet == null || scPairSet.isEmpty()) {
+            // The schema type was not resolved.
+            // It is Ok, but there is nothing to check
+            return null; 
+        }
+        //
+        if (scPairSet.size() == 1) {
+            SchemaCompPair scPair = scPairSet.iterator().next();
+            SchemaComponent sComp = scPair.getComp();
+            GlobalType type = getComponentType(sComp);
+            if (type == null) {
+                // Error. A global type has to be specified for the last element (attribute)
+                // of the Location path.
+                String lastElementName = ((Named)sComp).getName();
+                myContext.addResultItem(ResultType.ERROR, 
+                        "QUERY_TAIL_NOT_GLOBAL_TYPE",
+                        lastElementName); // NOI18N
+                return null;
+            } else {
+                return Collections.singleton(type);
+            }
+        } else {
+            boolean allTailsAreGlobal = true;
+            boolean hasOneGlobalTail = false;
+            SchemaComponent sComp = null;
+            HashSet<GlobalType> result = new HashSet<GlobalType>();
+            for (SchemaCompPair scPair : scPairSet) {
+                sComp = scPair.getComp();
+                GlobalType type = getComponentType(sComp);
+                if (type != null) {
+                    result.add(type);
+                    hasOneGlobalTail = true;
+                } else {
+                    allTailsAreGlobal = false;
+                }
+            }
+            //
+            if (!hasOneGlobalTail) {
+                // Error. The set of possible schema components for the tail 
+                // of location path doesn't contain any object with global type. 
+                String lastElementName = ((Named)sComp).getName();
+                myContext.addResultItem(ResultType.ERROR, 
+                        "QUERY_TAIL_NOT_GLOBAL_TYPE",
+                        lastElementName); // NOI18N
+                return null;
+            } else if (!allTailsAreGlobal) {
+                // Error. The set of possible schema components for the tail 
+                // of location path contains some objects with not global type. 
+                String lastElementName = ((Named)sComp).getName();
+                myContext.addResultItem(ResultType.WARNING, 
+                        "QUERY_TAIL_CANBE_NOT_GLOBAL_TYPE",
+                        lastElementName); // NOI18N
+            }
+            //
+            return result; 
+        }
+    }
     
     /**
      * Obtains the type of the schema component. 
@@ -367,45 +286,45 @@ public class PathValidatorVisitor extends AbstractXPathVisitor {
         } else if (comp instanceof GlobalAttribute) {
             gTypeRef = ((GlobalAttribute)comp).getType();
         } else if (comp instanceof ElementReference) {
-          return null;
-        } else {
-            // Error. Can not resolve type of the last location path element.
-            addResultItem(ResultType.ERROR, "UNRESOLVED_XPATH_TAIL",
-                    myInitialExpression.getExpressionString()); // NOI18N
-            return null;
+            NamedComponentReference<GlobalElement> gELementRef = 
+                    ((ElementReference)comp).getRef();
+            if (gELementRef != null) {
+                GlobalElement gElement = gELementRef.get();
+                if (gElement != null) {
+                    gTypeRef = gElement.getType();
+                }
+            }
         }
         //
-        if (gTypeRef == null) {
-            // Error. A global type has to be specified for the last element (attribute)
-            // of the Location path.
-            String lastElementName = ((Named)comp).getName();
-            addResultItem(ResultType.ERROR, "XPATH_TAIL_NOT_GLOBAL_TYPE",
-                    lastElementName); // NOI18N
-            return null;
-        } else {
+        if (gTypeRef != null) {
             GlobalType gType = gTypeRef.get();
             if (gType == null) {
                 // Error. Can not resolve the global type
-                addResultItem(ResultType.ERROR, "UNRESOLVED_GLOBAL_TYPE",
+                myContext.addResultItem(ResultType.ERROR, "UNRESOLVED_GLOBAL_TYPE",
                         gTypeRef.getRefString()); // NOI18N
             }
-            //
             return gType;
         }
+        //
+        return null;
     }
     
+    /**
+     * Takes the reference to the correlation property which is used by 
+     * the specified property alias and obtains the schema type of that property. 
+     */ 
     private GlobalType getPropertyType(PropertyAlias pa) {
         NamedComponentReference<CorrelationProperty> cPropRef =
                 pa.getPropertyName();
         if (cPropRef == null) {
             // Warning. The property has not specified yet.
-            addResultItem(ResultType.WARNING, "CPROP_NOT_SPECIFIED"); // NOI18N
+            myContext.addResultItem(ResultType.WARNING, "CPROP_NOT_SPECIFIED"); // NOI18N
             return null;
         } else {
             CorrelationProperty cProp = cPropRef.get();
             if (cProp == null) {
                 // Error. Can not resolve the Correlation Property
-                addResultItem(ResultType.ERROR, "UNRESOLVED_CPROP",
+                myContext.addResultItem(ResultType.ERROR, "UNRESOLVED_CPROP",
                         cProp.getName()); // NOI18N
                 return null;
             }
@@ -432,134 +351,11 @@ public class PathValidatorVisitor extends AbstractXPathVisitor {
             //
             if (result == null) {
                 // Error. Can not resolve the type of Correlation Property
-                addResultItem(ResultType.ERROR, "UNRESOLVED_CPROP_TYPE",
+                myContext.addResultItem(ResultType.ERROR, "UNRESOLVED_CPROP_TYPE",
                         cProp.getName(), propTypeRef.getRefString()); // NOI18N
             }
             return result;
         }
     }
-    
-    /**
-     * Checks if the prefix required or redundant. 
-     * Check if the prefix is correct.
-     * Check if the external schema is imported and prefix is defined.
-     */ 
-    private void checkNsPrefixes(SchemaComponent sComp, String nsPrefix, String nsUri) {
-        Form form = null;
-        boolean isGlobal = false;
-        if (sComp instanceof LocalElement){
-            form = ((LocalElement) sComp).getFormEffective();
-        } else if (sComp instanceof LocalAttribute){
-            form = ((LocalAttribute) sComp).getFormEffective();
-        } else {
-            form = Form.QUALIFIED; // by default for global components
-            isGlobal = true;
-        }
-        //
-        if (Form.UNQUALIFIED.equals(form) && nsPrefix != null) {
-            // Error. It should be without a prefix
-            if (sComp instanceof LocalElement){
-                String elementName = ((LocalElement)sComp).getName();
-                addResultItem(ResultType.WARNING,
-                        "ELEMENT_UNNECESSARY_PREFIX", elementName); // NOI18N
-            } else if (sComp instanceof LocalAttribute){
-                String attrName = ((LocalAttribute)sComp).getName();
-                addResultItem(ResultType.WARNING,
-                        "ATTRIBUTE_UNNECESSARY_PREFIX", attrName); // NOI18N
-            }
-        } else if (Form.QUALIFIED.equals(form) && nsPrefix == null) {
-            // Error. It should be qualified.
-            //
-            // Check if the prefix is declared for the namespace URI
-            String preferredPrefix = null;
-            if (nsUri != null && nsPrefix == null) {
-                preferredPrefix = getPrefixByNsUri(nsUri);
-                //
-                if (preferredPrefix == null) {
-                    // Error. The required prefix isn't declared
-                    addResultItem(ResultType.WARNING,
-                            "MISSING_NAMESPACE_PREFIX", nsUri); // NOI18N
-                }
-            }
-            //
-            String name = ((Named)sComp).getName();
-            if (isGlobal) {
-                if (sComp instanceof Element){
-                    if (preferredPrefix == null) {
-                        addResultItem(ResultType.WARNING,
-                                "GLOBAL_ELEMENT_PREFIX_REQUIRED", name); // NOI18N
-                    }
-                } else if (sComp instanceof Attribute){
-                    if (preferredPrefix == null) {
-                        addResultItem(ResultType.WARNING,
-                                "GLOBAL_ATTRIBUTE_PREFIX_REQUIRED", name); // NOI18N
-                    } else {
-                        addResultItem(ResultType.WARNING,
-                                "GLOBAL_ATTRIBUTE_SPECIFIC_PREFIX_REQUIRED",
-                                name, preferredPrefix); // NOI18N
-                    }
-                }
-            } else {
-                if (sComp instanceof Element){
-                    if (preferredPrefix == null) {
-                        addResultItem(ResultType.WARNING,
-                                "ELEMENT_PREFIX_REQUIRED", name); // NOI18N
-                    } else {
-                        addResultItem(ResultType.WARNING,
-                                "ELEMENT_SPECIFIC_PREFIX_REQUIRED",
-                                name, preferredPrefix); // NOI18N
-                    }
-                } else if (sComp instanceof Attribute){
-                    if (preferredPrefix == null) {
-                        addResultItem(ResultType.WARNING,
-                                "ATTRIBUTE_PREFIX_REQUIRED", name); // NOI18N
-                    } else {
-                        addResultItem(ResultType.WARNING,
-                                "ATTRIBUTE_SPECIFIC_PREFIX_REQUIRED",
-                                name, preferredPrefix); // NOI18N
-                    }
-                }
-            }
-        }
-    }
-    
-    private void addResultItem(ResultType resultType, String bundleKey,
-            Object... values){
-        //
-        String str = NbBundle.getMessage(BPELExtensionXpathValidator.class, bundleKey);
-        if (values != null && values.length > 0) {
-            str = MessageFormat.format(str, values);
-        }
-        //
-        if (myInitialExpression != null) {
-            str = str + " Expression: \"" + myInitialExpression + "\"";
-        }
-        //
-        ResultItem resultItem = new ResultItem(
-                myContext.getValidator(),
-                resultType,
-                myContext.getXpathContentElement(),
-                str);
-        myContext.getVVisitor().getResultItems().add(resultItem);
-    }
-    
-    private String getNsUriByPrefix(String nsPrefix) {
-        WSDLComponent xPathOwner = myContext.getXpathContentElement();
-        //
-        assert xPathOwner instanceof AbstractDocumentComponent;
-        String nsUri = ((AbstractDocumentComponent)xPathOwner).
-                lookupNamespaceURI(nsPrefix, true);
-        //
-        return nsUri;
-    }
-    
-    private String getPrefixByNsUri(String nsUri) {
-        WSDLComponent xPathOwner = myContext.getXpathContentElement();
-        //
-        assert xPathOwner instanceof AbstractDocumentComponent;
-        String nsPrefix = ((AbstractDocumentComponent)xPathOwner).lookupPrefix(nsUri);
-        //
-        return nsPrefix;
-    }
-    
+ 
 }

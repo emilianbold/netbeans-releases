@@ -38,14 +38,23 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.xpath;
 
+import java.text.MessageFormat;
+import javax.xml.namespace.NamespaceContext;
+import org.netbeans.modules.xml.xpath.ext.XPathExpression;
+import org.netbeans.modules.xml.xpath.ext.XPathModel;
+import org.netbeans.modules.xml.xpath.ext.spi.validation.XPathProblem;
+import org.netbeans.modules.xml.xpath.ext.spi.validation.XPathValidationContext;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.ValidationVisitor;
 import org.netbeans.modules.xml.xam.spi.Validator;
-import org.netbeans.modules.xml.xpath.visitor.AbstractXPathVisitor;
+import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
+import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
+import org.openide.util.NbBundle;
 
 /**
  * This is an auxiliary class which hold all context objects are required to 
@@ -54,30 +63,27 @@ import org.netbeans.modules.xml.xpath.visitor.AbstractXPathVisitor;
  * 
  * @author nk160297
  */
-public class PathValidationContext extends AbstractXPathVisitor {
+public class PathValidationContext implements XPathValidationContext {
+
+    private XPathModel myXPathModel;
     private Validator myValidator;
     private ValidationVisitor myVVisitor;
     private WSDLComponent myWsdlComponent;
     private WSDLComponent myXpathContentElement;
+    private NamespaceContext myNsContext;
     
-    private transient SchemaModel contextModel;
     private transient SchemaComponent contextComponent;
     
-    public PathValidationContext(Validator validator, ValidationVisitor vVisitor, 
-            WSDLComponent component, WSDLComponent xpathContentElement) {
+    public PathValidationContext(XPathModel xPathModel, 
+            Validator validator, ValidationVisitor vVisitor, 
+            WSDLComponent component, WSDLComponent xpathContentElement, 
+            NamespaceContext nsContext) {
+        myXPathModel = xPathModel;
         myValidator = validator;
         myVVisitor = vVisitor;
         myWsdlComponent = component;
         myXpathContentElement = xpathContentElement;
-    }
-    
-    public PathValidationContext clone() {
-        PathValidationContext newContext = new PathValidationContext(
-                myValidator, myVVisitor, 
-                myWsdlComponent, myXpathContentElement);
-        newContext.setSchemaContextModel(contextModel);
-        newContext.setSchemaContextComponent(contextComponent);
-        return newContext;
+        myNsContext = nsContext;
     }
     
     /**
@@ -95,14 +101,19 @@ public class PathValidationContext extends AbstractXPathVisitor {
     }
     
     /**
-     * Context is a Schema component which represents current context for 
-     * the XPath expression. 
+     * This context is specific to validation of Property Alias with query. 
+     * The schema component is a global element or global type of 
+     * the massage part to which the query is implied to be applied. 
+     * The query first step has to be consistent with the type of the message part. 
      * <p>
-     * In case of relative location paths, it references to a parent component, 
-     * which should be considered as a parent for the first location step element.
+     * In case of the query has a form of relative location paths, its first step 
+     * has to be associated with a child element of the context element (type).
      * <p>
-     * In case of absolute location paths, it references to a global component, 
-     * which corresponds to the root location step. 
+     * In case of the query has a form of absolute location paths, its first step 
+     * has to be associated with the same element as specified for the massage part. 
+     * <p>
+     * If the message part uses a global type, then only relative form is 
+     * allowed. See issue #90323.
      */ 
     public void setSchemaContextComponent(SchemaComponent context) {
         contextComponent = context;
@@ -112,24 +123,49 @@ public class PathValidationContext extends AbstractXPathVisitor {
         return contextComponent;
     }
     
-    /**
-     * Context model specifies the root schema model. 
-     * It is intended to be used to check absolute location paths.
-     */ 
-    public void setSchemaContextModel(SchemaModel context) {
-        contextModel = context;
-    }
-    
-    public SchemaModel getSchemaContextModel() {
-        return contextModel;
-    }
-    
     public Validator getValidator() {
         return myValidator;
     }
     
     public ValidationVisitor getVVisitor() {
         return myVVisitor;
+    }
+    
+    public NamespaceContext getNsContext() {
+        return myNsContext;
+    }
+
+    //==========================================================================
+    
+    public void addResultItem(ResultType resultType, String bundleKey,
+            Object... values){
+        //
+        String str = NbBundle.getMessage(BPELExtensionXpathValidator.class, bundleKey);
+        addResultItemImpl(resultType, str, values);
+    }
+    
+    public void addResultItem(XPathExpression expr, ResultType resultType, 
+            XPathProblem problem, Object... values) {
+        //
+        addResultItemImpl(resultType, problem.getMsgTemplate(), values);
+    }
+
+    private void addResultItemImpl(ResultType resultType, String template,
+            Object... values){
+        //
+        String str = template;
+        if (values != null && values.length > 0) {
+            str = MessageFormat.format(str, values);
+        }
+        //
+        if (myXPathModel != null) {
+            XPathExpression rootExpr = myXPathModel.getRootExpression();
+            str = str + " Expression: \"" + rootExpr + "\"";
+        }
+        //
+        ResultItem resultItem = new ResultItem(
+                getValidator(), resultType, getXpathContentElement(), str);
+        getVVisitor().getResultItems().add(resultItem);
     }
 
 }

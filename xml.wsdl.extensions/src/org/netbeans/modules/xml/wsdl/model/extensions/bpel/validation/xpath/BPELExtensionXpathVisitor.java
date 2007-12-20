@@ -42,10 +42,15 @@
 package org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.xpath;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import javax.xml.namespace.NamespaceContext;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
+import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PropertyAlias;
@@ -56,11 +61,15 @@ import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.xam.spi.Validator;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
-import org.netbeans.modules.xml.xpath.AbstractXPathModelHelper;
-import org.netbeans.modules.xml.xpath.XPathException;
-import org.netbeans.modules.xml.xpath.XPathExpression;
-import org.netbeans.modules.xml.xpath.XPathLocationPath;
-import org.netbeans.modules.xml.xpath.XPathModel;
+import org.netbeans.modules.xml.xpath.ext.XPathModelHelper;
+import org.netbeans.modules.xml.xpath.ext.XPathException;
+import org.netbeans.modules.xml.xpath.ext.XPathExpression;
+import org.netbeans.modules.xml.xpath.ext.XPathLocationPath;
+import org.netbeans.modules.xml.xpath.ext.XPathModel;
+import org.netbeans.modules.xml.xpath.ext.spi.ExternalModelResolver;
+import org.netbeans.modules.xml.xpath.ext.spi.SimpleSchemaContext;
+import org.netbeans.modules.xml.schema.model.Schema;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.util.NbBundle;
 
 /**
@@ -79,7 +88,8 @@ public class BPELExtensionXpathVisitor extends ValidationVisitor {
         init();
     }
     
-    public void visit(PropertyAlias pa) {
+    @Override
+    public void visit(final PropertyAlias pa) {
         //
         // Check the property alias only if it has the Query
         //
@@ -89,105 +99,184 @@ public class BPELExtensionXpathVisitor extends ValidationVisitor {
         }
         String queryText = query.getContent();
         if (queryText == null || queryText.length() == 0) {
+            // Query is empty. Nothing to validate!
             return;
         }
         //
+        //
         String qLanguage = query.getQueryLanguage();
-        if (qLanguage == null || XPATH_EXPRESSION_TYPE.equals(qLanguage)) {
-            AbstractXPathModelHelper helper= AbstractXPathModelHelper.getInstance();
-            XPathModel model = helper.newXPathModel();
-            XPathExpression xpath = null;
-            try {
-                xpath = model.parseExpression(queryText);
-            } catch (XPathException e) {
-                Throwable initialThrowable = getInitialCause(e);
-                String msg = initialThrowable.getMessage();
-                addNewResultItem(ResultType.ERROR, pa, msg, "");
-            }
-            assert xpath != null;
-            if (!(xpath instanceof XPathLocationPath)) {
-                // Error. Query has to be a Location Path expression
-                String str = NbBundle.getMessage(BPELExtensionXpathValidator.class,
-                        "LOCATION_PATH_REQUIRED");
-                addNewResultItem(ResultType.ERROR, query, str, ""); // NOI18N
-                return;
-            }
-            //
-            NamedComponentReference<GlobalElement> gElementRef = null;
-            NamedComponentReference<GlobalType> gTypeRef = null;
-            //
-            NamedComponentReference<Message> messageRef = pa.getMessageType();
-            if (messageRef != null) {
-                Message message = messageRef.get();
-                if (message == null) {
-                    // Error. Can not resolve message type
-                    String str = constructMessage("UNRESOLVED_MESSAGE_TYPE",
-                            messageRef.getRefString()); // NOI18N
-                    addNewResultItem(ResultType.ERROR, query, str, ""); // NOI18N
-                    return;
-                }
-                String partName = pa.getPart();
-                Collection<Part> parts = message.getParts();
-                Part part = null;
-                for (Part aPart : parts) {
-                    if (aPart.getName().equals(partName)) {
-                        part = aPart;
-                    }
-                }
-                //
-                if (part == null) {
-                    // Error. Can not find a part with the specified name
-                    String str = constructMessage("UNKNOWN_MESSAGE_PART",
-                            partName, message.getName()); // NOI18N
-                    addNewResultItem(ResultType.ERROR, query, str, ""); // NOI18N
-                    return;
-                }
-                //
-                gElementRef = part.getElement();
-                gTypeRef = part.getType();
-            } else {
-                gElementRef = pa.getElement();
-                gTypeRef = pa.getType();
-            }
-            //
-            if (gElementRef == null && gTypeRef == null) {
-                // Error. Can not obtain the root type of the query
-                String str = constructMessage("UNRESOLVED_QUERY_ROOT_TYPE",
-                        queryText); // NOI18N
-                addNewResultItem(ResultType.ERROR, query, str, ""); // NOI18N
-                return;
-            }
-            //
-            SchemaComponent contextSchemaComponent = null;
-            XPathLocationPath locationPath = (XPathLocationPath)xpath;
-            if (gElementRef != null) {
-                GlobalElement gElement = gElementRef.get();
-                if (gElement != null) {
-                    contextSchemaComponent = gElement;
-                }
-            } else if (gTypeRef != null) {
-                GlobalType gType = gTypeRef.get();
-                if (gType != null) {
-                    contextSchemaComponent = gType;
-                }
-            }
-            //
-            if (contextSchemaComponent == null) {
-                // Error. Can not obtain root type of the query
-                String str = constructMessage("UNRESOLVED_QUERY_ROOT_TYPE",
-                        queryText); // NOI18N
-                addNewResultItem(ResultType.ERROR, query, str, ""); // NOI18N
-                return;
-            }
-            //
-            PathValidationContext context =
-                    new PathValidationContext(mValidator, this, pa, query);
-            context.setSchemaContextComponent(contextSchemaComponent);
-            context.setSchemaContextModel(contextSchemaComponent.getModel());
-            //
-            PathValidatorVisitor pathVVisitor = new PathValidatorVisitor(context);
-            pathVVisitor.visit(locationPath);
+        boolean isXPathExpr = (qLanguage == null ||
+                XPATH_EXPRESSION_TYPE.equals(qLanguage));
+        //
+        // we can handle only xpath expressions.
+        if (!isXPathExpr) {
+            return;
         }
+        //
+        // Resolve context type for the query.
+        final SchemaComponent contextComp = resolveContextSchemaComp(pa, query);
+        if (contextComp == null) {
+            // It doesn't make sense to continue without a schema context
+            return;
+        }
+        //
+        // Perform standard XPath validation here
+        //
+        XPathModelHelper helper = XPathModelHelper.getInstance();
+        XPathModel model = helper.newXPathModel();
+        // 
+        // Initiate the XPath model
+        //
+        NamespaceContext nsContext = new WsdlNamespaceContext(pa);
+        model.setNamespaceContext(nsContext);
+        //
+        PathValidationContext context = new PathValidationContext(
+                model, mValidator, this, pa, query, nsContext);
+        context.setSchemaContextComponent(contextComp);
+        //
+        model.setValidationContext(context);
+        //
+        // DON'T SPECIFY A VARIABLE OR EXT FUNCTION RESOLVER!
+        //
+        model.setExternalModelResolver(new ExternalModelResolver() {
+            public Collection<SchemaModel> getModels(String schemaNamespaceUri) {
+                WSDLModel wsdlModel = pa.getModel();
+                List<Schema> schemaList = wsdlModel.findSchemas(schemaNamespaceUri);
+                ArrayList<SchemaModel> result = 
+                        new ArrayList<SchemaModel>(schemaList.size());
+                for (Schema schema : schemaList) {
+                    SchemaModel sModel = schema.getModel();
+                    result.add(sModel);
+                }
+                return result;
+            }
+
+            public Collection<SchemaModel> getVisibleModels() {
+                // TODO: waiting answer from Samaresh! 
+                //
+                // Returns the schema where the contextComp is declared for a while.
+                // It means that in case when the root element isn't explicitly defined 
+                // the variants will be looked only in the same model where the 
+                // context component is declared.
+                SchemaModel model = contextComp.getModel();
+                return Collections.singleton(model);
+            }
+
+            public boolean isSchemaVisible(String schemaNamespaceUri) {
+                WSDLModel wsdlModel = pa.getModel();
+                List<Schema> schemaList = wsdlModel.findSchemas(schemaNamespaceUri);
+                return (schemaList != null && schemaList.size() > 0);
+            }
+        });
+        //
+        XPathExpression xpath = null;
+        try {
+            xpath = model.parseExpression(queryText);
+        } catch (XPathException e) {
+            // Nothing to do here because of the validation context 
+            // was specified before and it has to be populated 
+            // with a set of problems.
+        }
+        //
+        // Check if the expression is the Location Path.
+        // Only Locatin Path is allowed as a content of Query!
+        assert xpath != null;
+        if (!(xpath instanceof XPathLocationPath)) {
+            // Error. Query has to be a Location Path expression
+            String str = NbBundle.getMessage(BPELExtensionXpathValidator.class,
+                    "LOCATION_PATH_REQUIRED");
+            addNewResultItem(ResultType.ERROR, query, str, ""); // NOI18N
+            return;
+        }
+        //
+        // Specifies the context schema component to the schema resolver be able 
+        // to resolve a relative query. 
+        SimpleSchemaContext schemaContext = new SimpleSchemaContext(contextComp);
+        model.setSchemaContext(schemaContext);
+        //
+        // Common validation will be made here!
+        model.resolveExtReferences(true);
+        //
+        // Perform additional XPath validation here
+        PathValidatorVisitor pathVVisitor = new PathValidatorVisitor(context);
+        xpath.accept(pathVVisitor);
+    }
+    
+    /**
+     * Resolve context type for the query.
+     * It is defined by the Message Part.
+     */
+    private SchemaComponent resolveContextSchemaComp(
+            PropertyAlias pa, Query query) {
+        assert pa != null && query != null;
+        //
+        NamedComponentReference<GlobalElement> gElementRef = null;
+        NamedComponentReference<GlobalType> gTypeRef = null;
+        String queryText = query.getContent();
+        //
+        NamedComponentReference<Message> messageRef = pa.getMessageType();
+        if (messageRef != null) {
+            Message message = messageRef.get();
+            if (message == null) {
+                // Error. Can not resolve message type
+                String str = constructMessage("UNRESOLVED_MESSAGE_TYPE",
+                        messageRef.getRefString()); // NOI18N
+                addNewResultItem(ResultType.ERROR, query, str, ""); // NOI18N
+                return null;
+            }
+            String partName = pa.getPart();
+            Collection<Part> parts = message.getParts();
+            Part part = null;
+            for (Part aPart : parts) {
+                if (aPart.getName().equals(partName)) {
+                    part = aPart;
+                }
+            }
+            //
+            if (part == null) {
+                // Error. Can not find a part with the specified name
+                String str = constructMessage("UNKNOWN_MESSAGE_PART",
+                        partName, message.getName()); // NOI18N
+                addNewResultItem(ResultType.ERROR, query, str, ""); // NOI18N
+                return null;
+            }
+            //
+            gElementRef = part.getElement();
+            gTypeRef = part.getType();
+        } else {
+            gElementRef = pa.getElement();
+            gTypeRef = pa.getType();
+        }
+        //
+        if (gElementRef == null && gTypeRef == null) {
+            // Error. Can not obtain the root type of the query
+            String str = constructMessage("UNRESOLVED_QUERY_ROOT_TYPE",
+                    queryText); // NOI18N
+            addNewResultItem(ResultType.ERROR, query, str, ""); // NOI18N
+            return null;
+        }
+        //
+        SchemaComponent contextSchemaComponent = null;
+        if (gElementRef != null) {
+            GlobalElement gElement = gElementRef.get();
+            if (gElement != null) {
+                contextSchemaComponent = gElement;
+            }
+        } else if (gTypeRef != null) {
+            GlobalType gType = gTypeRef.get();
+            if (gType != null) {
+                contextSchemaComponent = gType;
+            }
+        }
+        //
+        if (contextSchemaComponent == null) {
+            // Error. Can not obtain root type of the query
+            String str = constructMessage("UNRESOLVED_QUERY_ROOT_TYPE",
+                    queryText); // NOI18N
+            addNewResultItem(ResultType.ERROR, query, str, ""); // NOI18N
+        }
+        //
+        return contextSchemaComponent;
     }
     
     /**

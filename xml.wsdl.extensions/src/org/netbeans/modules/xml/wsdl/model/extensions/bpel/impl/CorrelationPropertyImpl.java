@@ -42,7 +42,6 @@
 package org.netbeans.modules.xml.wsdl.model.extensions.bpel.impl;
 
 import org.netbeans.modules.xml.schema.model.GlobalElement;
-import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.ReferenceableExtensibilityElement;
@@ -51,7 +50,6 @@ import org.netbeans.modules.xml.wsdl.model.extensions.bpel.BPELExtensibilityComp
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.BPELQName;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
 import org.netbeans.modules.xml.wsdl.model.spi.NamedExtensibilityElementBase;
-import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.w3c.dom.Element;
