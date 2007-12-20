@@ -361,6 +361,11 @@ public class JingleAudioSession implements P2PAudioSession{
                             P2PAudioSessionListener l = (P2PAudioSessionListener) i.next();
                             l.onTerminate();
                         }
+                        for(Iterator i = _echolisteners.iterator(); i.hasNext();){
+                            EchoListener l = (EchoListener)i.next();
+                            l.stopListener();
+                        }
+                        _echolisteners.clear();
                         _state = STATE_TERMINATED;
                     }
                 }
