@@ -226,14 +226,19 @@ public class StyleBuilderMemTest extends org.netbeans.performance.test.utilities
        }
        
     }
-    
+    public void testMem() {
+        doMeasurement();
+    }
     /** Creates suite from particular test cases. You can define order of testcases here. */
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new StyleBuilderMemTest("measureMemory","Memory footprint test"));
-        //suite.addTest(new StyleBuilderMemoryLeakCaseTest("test2"));
+        suite.addTest(new StyleBuilderMemTest("testMem","Memory footprint test"));
         return suite;
     }    
-       
+    /* Method allowing test execution directly from the IDE. */
+    public static void main(java.lang.String[] args) {
+        junit.textui.TestRunner.run(suite());
+
+    }       
 
 }
