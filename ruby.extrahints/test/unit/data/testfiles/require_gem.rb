@@ -62,10 +62,15 @@ unless defined?(Rails::Initializer)
         exit 1
       end
     else
-      require_gem "rails"
+      require_gem "rails" #2
       require 'initializer'
     end
   end
 
   Rails::Initializer.run(:set_load_path)
+
+  require_gem 'rails', '2.0.1'
+
+  require_gem File.dirname(__FILE__) + "/../autotest_helper"
+
 end

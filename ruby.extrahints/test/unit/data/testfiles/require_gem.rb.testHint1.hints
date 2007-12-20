@@ -3,8 +3,18 @@
 HINT:As of RubyGems 1.0, "require_gem" is obsolete and should be replaced with "gem"
 FIX:Replace require_gem with gem
 FIX:Show more information about this deprecation
-      require_gem "rails"
+      require_gem "rails" #2
       -----------
+HINT:As of RubyGems 1.0, "require_gem" is obsolete and should be replaced with "gem"
+FIX:Replace require_gem with gem
+FIX:Show more information about this deprecation
+  require_gem 'rails', '2.0.1'
+  -----------
+HINT:As of RubyGems 1.0, "require_gem" is obsolete and should be replaced with "gem"
+FIX:Replace require_gem with gem
+FIX:Show more information about this deprecation
+  require_gem File.dirname(__FILE__) + "/../autotest_helper"
+  -----------
 HINT:As of RubyGems 1.0, "require_gem" is obsolete and should be replaced with "gem"
 FIX:Replace require_gem with gem
 FIX:Show more information about this deprecation

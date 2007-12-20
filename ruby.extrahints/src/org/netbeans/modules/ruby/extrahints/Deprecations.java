@@ -46,6 +46,7 @@ import org.jruby.util.ByteList;
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.hints.spi.AstRule;
 import org.netbeans.modules.ruby.hints.spi.Description;
@@ -144,7 +145,7 @@ public class Deprecations implements AstRule {
         if ("require".equals(name)) { // NOI18N
             isRequire = true;
             // It's a require-completion.
-            String require = getRequire(node);
+            String require = getStringArg(node);
             if (require != null) {
                 deprecation = deprecatedRequires.get(require);
             }
@@ -181,7 +182,7 @@ public class Deprecations implements AstRule {
         }
     }
     
-    private String getRequire(Node node) {
+    private static String getStringArg(Node node) {
         if (node.nodeId == NodeTypes.FCALLNODE) {
             Node argsNode = ((FCallNode)node).getArgsNode();
 
@@ -280,7 +281,19 @@ public class Deprecations implements AstRule {
             
             EditList list = new EditList(doc);
             if (range != OffsetRange.NONE) {
-                list.replace(range.getStart(), range.getLength(), deprecation.newName, false, 0);
+                if ("require_gem".equals(deprecation.oldName)) { // NOI18N
+                    // Special case; see Dr. Nic's advice in my blog entry's comments
+                    // http://blogs.sun.com/tor/entry/require_gem
+                    String gemName = getStringArg(node);
+                    int rowEnd = Utilities.getRowEnd(doc, range.getStart());
+                    list.replace(range.getStart(), range.getLength(), deprecation.newName, false, 0);
+                    if (gemName != null) {
+                        list.replace(rowEnd, 0, "\nrequire \"" + gemName + "\"", false, 1); // NOI18N
+                    }
+                    list.format();
+                } else {
+                    list.replace(range.getStart(), range.getLength(), deprecation.newName, false, 0);
+                }
             }
             
             return list;

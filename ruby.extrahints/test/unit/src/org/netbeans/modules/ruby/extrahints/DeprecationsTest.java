@@ -67,6 +67,26 @@ public class DeprecationsTest extends HintTestBase {
                 "req^uire_gem", "Replace");
     }
 
+    public void testFix2() throws Exception {
+        applyHint(this, new Deprecations(), "testfiles/deprecations.rb", 
+                "asse^rt_raises", "Replace");
+    }
+
+    public void testFix3() throws Exception {
+        applyHint(this, new Deprecations(), "testfiles/require_gem.rb", 
+                "require_g^em 'rails', '2.0.1'", "Replace");
+    }
+
+    public void testFix4() throws Exception {
+        applyHint(this, new Deprecations(), "testfiles/require_gem.rb", 
+                "require^_gem \"rails\" #2", "Replace");
+    }
+
+    public void testFix5() throws Exception {
+        applyHint(this, new Deprecations(), "testfiles/require_gem.rb", 
+                "require_g^em File.dirname", "Replace");
+    }
+
     public void testNoPositives() throws Exception {
         try {
             parseErrorsOk = true;
