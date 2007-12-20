@@ -1,0 +1,231 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ * 
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.modules.xml.xpath.ext.impl;
+
+import javax.xml.namespace.QName;
+import org.netbeans.modules.xml.xpath.ext.LocationStep;
+import org.netbeans.modules.xml.xpath.ext.StepNodeTest;
+import org.netbeans.modules.xml.xpath.ext.StepNodeNameTest;
+import org.netbeans.modules.xml.xpath.ext.StepNodeTestType;
+import org.netbeans.modules.xml.xpath.ext.StepNodeTypeTest;
+import org.netbeans.modules.xml.xpath.ext.XPathUtils;
+import org.netbeans.modules.xml.xpath.ext.XPathAxis;
+import org.netbeans.modules.xml.xpath.ext.XPathModel;
+import org.netbeans.modules.xml.xpath.ext.XPathPredicateExpression;
+import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.visitor.XPathVisitor;
+
+/**
+ * Represents a location path step.
+ * 
+ * @author Enrico Lelina
+ * @author nk160297
+ * @version 
+ */
+public class LocationStepImpl extends XPathExpressionImpl implements LocationStep {
+    
+    private static XPathAxis[] int2Axis = new XPathAxis[] {
+        XPathAxis.SELF, 
+        XPathAxis.CHILD, 
+        XPathAxis.PARENT, 
+        XPathAxis.ANCESTOR, 
+        XPathAxis.ATTRIBUTE, 
+        XPathAxis.NAMESPACE, 
+        XPathAxis.PRECEDING, 
+        XPathAxis.FOLLOWING, 
+        XPathAxis.DESCENDANT, 
+        XPathAxis.ANCESTOR_OR_SELF, 
+        XPathAxis.DESCENDANT_OR_SELF, 
+        XPathAxis.FOLLOWING_SIBLING, 
+        XPathAxis.PRECEDING_SIBLING
+    };
+    
+    /** The axis. */
+    private XPathAxis mAxis;
+    
+    /** The node test. */
+    private StepNodeTest mNodeTest;
+
+    /** predicates */
+    private XPathPredicateExpression[] mPredicates = null;
+    
+    private XPathSchemaContext mSchemaContext;
+    
+    /** Constructor. */
+    public LocationStepImpl(XPathModel model) {
+        this(model, 0, null, null);
+    }
+
+    /**
+     * Constructor.
+     * @param axis the axis
+     * @param nodeTest the node test
+     */
+    public LocationStepImpl(XPathModel model, int axis, 
+            StepNodeTest nodeTest, XPathPredicateExpression[] predicates) {
+        super(model);
+        assert axis < int2Axis.length : "The index of axis " + axis + 
+                " is out of possible values"; // NOI18N
+        //
+        setAxis(int2Axis[axis - 1]);
+        setNodeTest(nodeTest);
+        setPredicates(predicates);
+    }
+    
+    /**
+     * Constructor.
+     * @param axis the axis
+     * @param nodeTest the node test
+     */
+    public LocationStepImpl(XPathModelImpl model, XPathAxis axis, 
+            StepNodeTest nodeTest, XPathPredicateExpression[] predicates) {
+        super(model);
+        //
+        if (axis == null) {
+            axis = XPathAxis.CHILD;
+        }
+        //
+        setAxis(axis);
+        setNodeTest(nodeTest);
+        setPredicates(predicates);
+    }
+    
+    /**
+     * Gets the axis.
+     * @return the axis
+     */
+    public XPathAxis getAxis() {
+        return mAxis;
+    }
+    
+    /**
+     * Sets the axis.
+     * @param axis the axis
+     */
+    public void setAxis(XPathAxis axis) {
+        mAxis = axis;
+    }
+                                          
+    /**
+     * Gets the node test.
+     * @return the node test
+     */
+    public StepNodeTest getNodeTest() {
+        return mNodeTest;
+    }
+    
+    /**
+     * Sets the node test.
+     * @param nodeTest the node test
+     */
+    public void setNodeTest(StepNodeTest nodeTest) {
+        mNodeTest = nodeTest;
+    }
+    
+    /**
+     * Gets the Predicates
+     * @return the predicates
+     */
+    public XPathPredicateExpression[] getPredicates() {
+        return mPredicates;
+    }
+    
+    /**
+     * Sets the Predicates
+     * @param predicates list of predicates
+     */
+    public void setPredicates(XPathPredicateExpression[] predicates) {
+        mPredicates = predicates;
+    }
+    
+    /**
+     * Gets the string representation.
+     * @return the string representation
+     */
+    public String getString() {
+        StringBuilder sb = new StringBuilder();
+        //
+        StepNodeTest nodeTest = getNodeTest();
+        if (nodeTest instanceof StepNodeNameTest) {
+            sb.append(getAxis().getShortForm());
+            //
+            StepNodeNameTest snnt = (StepNodeNameTest)nodeTest;
+            if (snnt.isWildcard()) {
+                sb.append("*"); // NOI18N
+            } else {
+                QName nodeName = ((StepNodeNameTest) nodeTest).getNodeName();
+                sb.append(XPathUtils.qNameObjectToString(nodeName));
+            }
+        } else if (nodeTest instanceof StepNodeTypeTest) {
+            StepNodeTypeTest sntt = (StepNodeTypeTest)nodeTest;
+            switch (sntt.getNodeType()) {
+            case NODETYPE_NODE:
+                switch (getAxis()) {
+                case CHILD: // it means that the location step is "node()"
+                    sb.append(StepNodeTestType.NODETYPE_NODE.getXPathText());
+                    break;
+                case SELF:   // it means that the location step is abbreviated step "."
+                    sb.append("."); // NOI18N
+                    break;
+                case PARENT: // it means that the location step is abbreviated step ".."
+                    sb.append(".."); // NOI18N
+                    break;
+                case DESCENDANT_OR_SELF: // it means that the location step is abbreviated step "//"
+                    // It doesn't necessary to append anything here because 
+                    // the double slash "//" abbreviated step is a kind of "empty" step.
+                    // It is a step without a content between two slashes.
+                    break;
+                default:
+                    // other axis are not supported here
+                }
+                break;
+            case NODETYPE_COMMENT:
+            case NODETYPE_PI:
+            case NODETYPE_TEXT:
+                sb.append(sntt.getNodeType().getXPathText());
+                break;
+            }
+        }
+        //
+        return sb.toString();
+    }
+
+    @Override
+    public void accept(XPathVisitor visitor) {
+        visitor.visit(this);
+    }
+
+    public XPathSchemaContext getSchemaContext() {
+        if (!((XPathModelImpl)myModel).isInResolveMode() && 
+                mSchemaContext == null) {
+            myModel.resolveExtReferences(false);
+        }
+        return mSchemaContext;
+    }
+
+    public void setSchemaContext(XPathSchemaContext newContext) {
+        mSchemaContext = newContext;
+    }
+    
+    @Override
+    public String toString() {
+        return getString();
+    }
+}
