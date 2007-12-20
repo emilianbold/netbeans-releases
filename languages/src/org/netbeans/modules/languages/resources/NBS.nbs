@@ -170,7 +170,12 @@ COLOR:commandName: {
     color_name: "keyword";
     default_coloring: "keyword";
     foreground_color:"blue";
-} 
+}
+COLOR:tokenDef: {
+    color_name: "token";
+    default_coloring: "variable";
+    foreground_color:"0x228B22";
+}
 NAVIGATOR:token: {
     display_name: "<html><b><font color=000099>TOKEN</font></b>: $tokenName$</html>";
 }
