@@ -49,9 +49,9 @@ import org.netbeans.modules.php.model.impl.VariableImpl;
 
 public class StaticExpressionBuilder implements SourceElementBuilder {
 
-    public static final String VARIABLE = "Variable";
+    public static final String VARIABLE         = "Variable";                    // NOI18N  
     
-    public  static final String CLASS_STATIC = "ClassStaticPrimaryExpression";// NOI18N  
+    public  static final String CLASS_STATIC    = "ClassStaticPrimaryExpression";// NOI18N  
     
     private StaticExpressionBuilder() {
     }

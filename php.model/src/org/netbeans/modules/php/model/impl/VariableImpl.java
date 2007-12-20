@@ -75,6 +75,8 @@ import org.netbeans.modules.php.model.VariableAppearance;
  *
  */
 public class VariableImpl extends SourceElementImpl implements Variable {
+    
+    private static final String OPERATOR    = "::";         // NOI18N
 
     public VariableImpl( SourceElement parent, ASTNode node, ASTNode realNode ,
             TokenSequence sequence ) {
@@ -111,6 +113,10 @@ public class VariableImpl extends SourceElementImpl implements Variable {
         int indx = variable.lastIndexOf( '$' );
         if ( indx >0 ) {
             return null;
+        }
+        if ( variable.contains( OPERATOR )){
+            return new ClassMemberReferenceImpl<VariableAppearance>(this ,
+                  getNarrowNode()  );
         }
         return new ReferenceImpl<VariableAppearance>( this , variable , 
                 VariableAppearance.class);

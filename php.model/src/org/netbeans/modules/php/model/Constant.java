@@ -86,7 +86,7 @@ public interface Constant extends IdentifierExpression {
      * </pre> 
      * @return reference to static member of class or interface determined from expression 
      */
-    ClassReference<SourceElement> getClassConstant();
+    ClassMemberReference<SourceElement> getClassConstant();
     
     /**
      * <pre>

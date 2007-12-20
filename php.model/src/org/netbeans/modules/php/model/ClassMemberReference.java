@@ -40,22 +40,25 @@
  */
 package org.netbeans.modules.php.model;
 
-import java.util.List;
-
 
 /**
  * @author ads
  *
  */
-public interface ClassDefinition extends Statement, ObjectDefinition {
+public interface ClassMemberReference<T extends SourceElement> extends Reference<T> {
+
+    /**
+     * @return class or interface name that contains referenced element
+     */
+    String getObjectName();
     
-    List<Modifier> getModifiers();
+    /**
+     * @return referenced member in class or interface 
+     */
+    String getMemberName();
     
-    String getName();
-    
-    Reference<ClassDefinition> getSuperClass();
-    
-    List<Reference<InterfaceDefinition>> getImplementedInterfaces();
-    
-    ClassBody getBody();
+    /**
+     * @return class or interface that contains referenced element
+     */
+    ObjectDefinition getObject();
 }

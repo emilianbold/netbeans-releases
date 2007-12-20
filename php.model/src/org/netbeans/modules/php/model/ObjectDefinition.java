@@ -40,22 +40,13 @@
  */
 package org.netbeans.modules.php.model;
 
-import java.util.List;
-
 
 /**
+ * Super interface for object oriented object defenition.
+ * This interface represented by InterfaceDef and ClassDef. 
  * @author ads
  *
  */
-public interface ClassDefinition extends Statement, ObjectDefinition {
-    
-    List<Modifier> getModifiers();
-    
-    String getName();
-    
-    Reference<ClassDefinition> getSuperClass();
-    
-    List<Reference<InterfaceDefinition>> getImplementedInterfaces();
-    
-    ClassBody getBody();
+public interface ObjectDefinition extends SourceElement{
+
 }

@@ -44,7 +44,7 @@ import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTToken;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.php.model.ClassReference;
+import org.netbeans.modules.php.model.ClassMemberReference;
 import org.netbeans.modules.php.model.Constant;
 import org.netbeans.modules.php.model.PhpModelVisitor;
 import org.netbeans.modules.php.model.Reference;
@@ -80,12 +80,12 @@ public class ConstantImpl extends SourceElementImpl implements Constant {
     /* (non-Javadoc)
      * @see org.netbeans.modules.php.model.Constant#getClassConstant()
      */
-    public ClassReference<SourceElement> getClassConstant() {
+    public ClassMemberReference<SourceElement> getClassConstant() {
         String nt = getNarrowNode().getNT();
         if ( nt.equals( StaticExpressionBuilder.CLASS_STATIC ) && 
                 getNarrowNode().getTokenType( Utils.OPERATOR ) != null ) 
         {
-            return new ClassReferenceImpl<SourceElement>( this , getNarrowNode() );
+            return new ClassMemberReferenceImpl<SourceElement>( this , getNarrowNode() );
         }
         return null;
     }

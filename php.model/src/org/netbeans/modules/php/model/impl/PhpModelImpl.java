@@ -350,6 +350,7 @@ class PhpModelImpl implements PhpModel {
             Language lang = LanguagesManager.get().getLanguage(
                     PhpTokenId.EMBED_MIME_TYPE);
             node = lang.parse(is);
+            
             List<ASTItem> list = node.getChildren();
             handleChildren(list , sequence );
         }

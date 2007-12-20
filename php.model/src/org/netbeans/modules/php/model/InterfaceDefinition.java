@@ -47,7 +47,7 @@ import java.util.List;
  * @author ads
  *
  */
-public interface InterfaceDefinition extends Statement, ObjectDefenition {
+public interface InterfaceDefinition extends Statement, ObjectDefinition {
     
      String getName();
      
