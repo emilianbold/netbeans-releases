@@ -3,7 +3,6 @@ package org.netbeans.modules.xml.wsdl.validator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Vector;
 
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.validator.visitor.WSDLSemanticsVisitor;

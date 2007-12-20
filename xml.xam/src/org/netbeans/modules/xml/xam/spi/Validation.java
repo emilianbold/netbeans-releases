@@ -38,9 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-
-
 package org.netbeans.modules.xml.xam.spi;
 
 import java.util.ArrayList;
@@ -50,7 +47,6 @@ import java.util.List;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.openide.util.Lookup;
-
 
 /**
  * Validation clients use this interface to start validation on a model.

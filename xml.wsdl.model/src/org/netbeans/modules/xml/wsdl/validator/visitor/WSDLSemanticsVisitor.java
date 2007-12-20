@@ -49,10 +49,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Vector;
-import org.netbeans.modules.xml.schema.model.Annotation;
-import org.netbeans.modules.xml.schema.model.Schema;
-import org.netbeans.modules.xml.schema.model.SchemaComponent;
-import org.netbeans.modules.xml.schema.model.SchemaModel;
+
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.BindingFault;
 import org.netbeans.modules.xml.wsdl.model.BindingInput;
@@ -78,11 +75,9 @@ import org.netbeans.modules.xml.wsdl.model.SolicitResponseOperation;
 import org.netbeans.modules.xml.wsdl.model.Types;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.wsdl.model.extensions.xsd.WSDLSchema;
 import org.netbeans.modules.xml.wsdl.model.impl.WSDLAttribute;
 import org.netbeans.modules.xml.wsdl.model.spi.GenericExtensibilityElement.StringAttribute;
 import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
-import org.netbeans.modules.xml.wsdl.validator.visitor.schema.SchemaSemanticsVisitor;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
@@ -98,8 +93,6 @@ import org.openide.util.NbBundle;
  * Visits the model nodes and validates them.
  *
  * @author  sbyn
- * TODO: add validation for extensibility elements like bpws: property, propertyAlias
- * in a generic way. someone can register a validator for these and validate them
  * @version 
  */
 public class WSDLSemanticsVisitor  implements WSDLVisitor {
@@ -399,6 +392,9 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
      * @return  <tt>true</tt> if auto-traversal is to continue.
      */
     public void visit(PortType portType) {
+        //Check for overloaded operations with same signatures.
+        validateOverloadedOperations(portType);
+        
         //wsdl 1.1 spec validation:
         //2.4.5 Names of Elements within an Operation:
         //The name attribute of the input and output elements provides a unique name
@@ -447,6 +443,36 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
         
         visitChildren(portType);
         //return true;
+    }
+    
+    private void validateOverloadedOperations(PortType portType) {
+        Set<String> operationNames = new HashSet<String>();
+        
+        for (Operation operation : portType.getOperations()) {
+            String opName = operation.getName();
+            String inputName = "";
+            try { 
+                inputName = operation.getInput().getName();
+            } catch (Exception e) {
+                //ignore
+            }
+            String outputName = "";
+            try { 
+                outputName = operation.getOutput().getName();
+            } catch (Exception e) {
+                //ignore
+            }
+            
+            String opUniqueName = opName + inputName + outputName;
+            if (operationNames.contains(opUniqueName)) {
+                getValidateSupport().fireToDo
+                (Validator.ResultType.ERROR, operation,
+                NbBundle.getMessage(WSDLSemanticsVisitor.class, "VAL_INVALID_OVERLOADED_OPERATION_IN_PORTTYPE", operation.getName()),
+                NbBundle.getMessage(WSDLSemanticsVisitor.class, "FIX_INVALID_OVERLOADED_OPERATION_IN_PORTTYPE"));
+            } else {
+                operationNames.add(opUniqueName);
+            }
+        }
     }
     
     /**
@@ -760,6 +786,8 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
         
         String bindingName = binding.getName();
         String operationName = bindingOp.getName();
+        
+        Set<Operation> usedOperations = new HashSet<Operation>();
         if(portType != null && operationName != null) {
             Collection<Operation> operations = portType.getOperations();
             Reference<Operation> matchingOpRef = bindingOp.getOperation();
@@ -775,6 +803,11 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
                         (Validator.ResultType.ERROR, bindingOp,
                         NbBundle.getMessage(WSDLSemanticsVisitor.class, VAL_OPERATION_DOES_NOT_EXIST_IN_PORT_TYPE, operationName, binding.getName(), portType.getName()),
                         NbBundle.getMessage(WSDLSemanticsVisitor.class, FIX_OPERATION_DOES_NOT_EXIST_IN_PORT_TYPE, portType.getName()));
+            } else if (usedOperations.contains(matchingOp)){
+                getValidateSupport().fireToDo
+                (Validator.ResultType.ERROR, bindingOp,
+                NbBundle.getMessage(WSDLSemanticsVisitor.class, "VAL_BINDINGOP_IMPLEMENTS_SAME_OPERATION_IN_PORT_TYPE", operationName, binding.getName(), portType.getName()),
+                NbBundle.getMessage(WSDLSemanticsVisitor.class, "FIX_BINDINGOP_IMPLEMENTS_SAME_OPERATION_IN_PORT_TYPE", portType.getName()));
             } else{
                 //check if the signatures match
                 BindingInput bindingInput = bindingOp.getBindingInput();

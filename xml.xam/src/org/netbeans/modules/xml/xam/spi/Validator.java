@@ -65,8 +65,6 @@ public interface Validator {
      */
     String getName();
     
-    
-    
     /**
      * Validates given model.
      * @return ValidationResult.
@@ -74,9 +72,7 @@ public interface Validator {
      * @param model model to validate.
      * @param validation reference to the validation context.
      */
-    ValidationResult validate(Model model, Validation validation,
-            ValidationType validationType);
-    
+    ValidationResult validate(Model model, Validation validation, ValidationType validationType);
     
     enum ResultType {
         ADVICE, WARNING, ERROR
@@ -85,10 +81,10 @@ public interface Validator {
     public class ResultItem {
         private Validator validator;
         private ResultType type;
-        private Component component = null;
+        private Component component;
         private String description;
-        private int lineNumber = -1;
-        private int columnNumber = -1;
+        private int lineNumber;
+        private int columnNumber;
         private Model model;
         
         /**
@@ -98,16 +94,10 @@ public interface Validator {
          * @param component Component to which this resultItem points.
          * @param desc Message text string.
          */
-        public ResultItem(Validator validator, ResultType type, Component component,
-                String desc) {
-            this.validator = validator;
-            this.type = type;
-            this.component = component;
-            this.description = desc;            
-            this.model = (component == null) ? null : component.getModel();
+        public ResultItem(Validator validator, ResultType type, Component component, String desc) {
+          this(validator, type, desc, component, -1, -1, null);
         }         
-        
-        
+
         /**
          * Constructor to create an instance of ResultItem
          * @param validator Reference to validator.
@@ -117,16 +107,27 @@ public interface Validator {
          * @param columnNumber Column Number where this error happens.
          * @param model Model on which this is reported.
          */
-        public ResultItem(Validator validator, ResultType type, 
-                String desc, int lineNumber, int columnNumber, Model model) {
-                this.validator = validator;
-                this.type = type;
-                this.description = desc;
-                this.lineNumber = lineNumber;
-                this.columnNumber = columnNumber; 
-                this.model = model;
+        public ResultItem(Validator validator, ResultType type, String desc, int lineNumber, int columnNumber, Model model) {
+          this(validator, type, desc, null, lineNumber, columnNumber, model);
         }    
         
+        private ResultItem(Validator validator, ResultType type,
+          String desc, Component component, int lineNumber, int columnNumber, Model model)
+        {
+          this.validator = validator;
+          this.type = type;
+          this.description = desc;
+          this.lineNumber = lineNumber;
+          this.columnNumber = columnNumber; 
+          this.component = component;
+
+          if (model != null) {
+            this.model = model;
+          }
+          else {
+            this.model = (component == null) ? null : component.getModel();
+          }
+        }    
         
         /**
          * Get the validator which generated this error.
@@ -190,6 +191,5 @@ public interface Validator {
         public Model getModel() {
             return model;
         }
-        
     }
 }

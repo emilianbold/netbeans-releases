@@ -201,7 +201,7 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
      * performed. The default implementation simply returns true.
      */
     protected boolean needsSync() {
-	return true;
+    return true;
     }
     
     /**
@@ -209,7 +209,7 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
      * default implementation does nothing.  
      */
     protected void transactionStarted() {
-	
+    
     }
     
     /**
@@ -217,7 +217,7 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
      *  implementation  does nothing. 
      */
     protected void transactionCompleted() {
-	
+    
     }
     
     /**
@@ -225,7 +225,7 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
      * does nothing. 
      */
     protected void syncStarted() {
-	
+    
     }
     
     /**
@@ -233,7 +233,7 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
      * does nothing. 
      */
     protected void syncCompleted() {
-	
+    
     }
     
     /**
@@ -358,7 +358,7 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
         assert transaction == null;
         
         if (! inSync && getState() == State.NOT_WELL_FORMED) {
-	    transactionSemaphore.release();
+        transactionSemaphore.release();
             return false;
         }
 
@@ -382,6 +382,23 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
                 throw new IllegalArgumentException("Should never call rollback during sync or undo/redo.");
             }
             ues.abortUpdate();
+        } finally {
+            transaction = null;
+            setInSync(false);
+            setInUndoRedo(false);
+            transactionSemaphore.release();
+            transactionCompleted();
+        }
+    }
+
+    // vlv # 121042
+    protected synchronized void finishTransaction() {
+        if (transaction == null) return;  // just no-op when not in transaction
+        validateWrite(); // ensures that the releasing thread really owns trnx
+        try {
+            if (inSync() || inUndoRedo()) {
+                throw new IllegalArgumentException("Should never call rollback during sync or undo/redo.");
+            }
         } finally {
             transaction = null;
             setInSync(false);
@@ -460,7 +477,7 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
         
         /**
          * This method is added to allow mutations to occur inside events. The
-	 * list is cloned so that additional events can be added. 
+     * list is cloned so that additional events can be added. 
          */
         private void fireCompleteEventSet() {
             final List<PropertyChangeEvent> clonedEvents = 

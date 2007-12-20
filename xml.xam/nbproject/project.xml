@@ -45,11 +45,6 @@ made subject to such option by the copyright holder.
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.modules.xml.xam</code-name-base>
-            <!--public-packages>
-                <package>org.netbeans.modules.xml.xam</package>
-                <package>org.netbeans.modules.xml.xam.locator.api</package>
-                <package>org.netbeans.modules.xml.xam.xdm</package>
-            </public-packages -->
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.openide.util</code-name-base>
