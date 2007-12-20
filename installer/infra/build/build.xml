@@ -1942,10 +1942,6 @@ jarsigner.storepass=${jarsigner.storepass}
 		<param name="languages.js" value="${web.page.dir}/js/languages.js"/>
 	    </antcall>	    
 	</for-each>
-	
-        <generate-components-js
-            root="${output.dir}/registry-temp" 
-            file="${web.page.dir}/js/components.js"/>
     </target>
 
     <target name="init-web-page-locale">	
@@ -1958,7 +1954,14 @@ jarsigner.storepass=${jarsigner.storepass}
 	<available file="${web.page.dir}/language${locale.suffix}.properties" property="locale.file.present"/>
     </target>
 
-    <target name="prepare-web-page-locale" depends="init-web-page-locale,web-page-replace-tokens,web-page-add-language"/>	
+    <target name="generate-components-js-locale">
+        <generate-components-js
+            root="${output.dir}/registry-temp" 
+            locale="${locale.name}"
+            file="${web.page.dir}/js/components${locale.suffix}.js"/>
+    </target>
+
+    <target name="prepare-web-page-locale" depends="init-web-page-locale,web-page-replace-tokens,web-page-add-language,generate-components-js-locale"/>	
 
     <target name="web-page-replace-tokens" if="locale.file.present">
 	<property file="${web.page.dir}/replace.properties"/>

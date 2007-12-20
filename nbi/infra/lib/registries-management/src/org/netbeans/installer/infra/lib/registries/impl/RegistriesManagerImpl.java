@@ -639,6 +639,11 @@ public class RegistriesManagerImpl implements RegistriesManager {
     
     public String generateComponentsJs(
             final File root) throws ManagerException {
+        return generateComponentsJs(root, null);
+    }
+    
+    public String generateComponentsJs(
+            final File root, final String localeString) throws ManagerException {
         final List<String> java = Arrays.asList(
                 "nb-platform",
                 "nb-base",
@@ -692,6 +697,7 @@ public class RegistriesManagerImpl implements RegistriesManager {
         final Map<String, String> notes = new HashMap<String, String>();
         //notes.put("nb-javase", "for Java SE, includes GUI Builder, Profiler");
         
+        Locale locale = StringUtils.parseLocale(localeString==null ? "" : localeString);
         
         final ReentrantLock lock = getLock(root);
         
@@ -766,8 +772,8 @@ public class RegistriesManagerImpl implements RegistriesManager {
                         ((double) product.getDownloadSize()) / 1024. );
                 productUids.add(product.getUid());
                 productVersions.add(product.getVersion().toString());
-                productDisplayNames.add(product.getDisplayName().replace("\"", "\\\"").replaceAll("\r\n|\r|\n", "\\\n"));
-                productDescriptions.add(product.getDescription().replace("\"", "\\\"").replaceAll("\r\n|\r|\n", "\\\n"));
+                productDisplayNames.add(product.getDisplayName(locale).replace("\"", "\\\"").replaceAll("\r\n|\r|\n", "\\\n"));
+                productDescriptions.add(product.getDescription(locale).replace("\"", "\\\"").replaceAll("\r\n|\r|\n", "\\\n"));
                 productDownloadSizes.add(Long.toString(size));
                 productPlatforms.add(product.getPlatforms());
                 
@@ -873,8 +879,8 @@ public class RegistriesManagerImpl implements RegistriesManager {
                 }
                 
                 groupProducts.add(components);
-                groupDisplayNames.add(group.getDisplayName().replace("\"", "\\\"").replaceAll("\r\n|\r|\n", "\\\n"));
-                groupDescriptions.add(group.getDescription().replace("\"", "\\\"").replaceAll("\r\n|\r|\n", "\\\n"));
+                groupDisplayNames.add(group.getDisplayName(locale).replace("\"", "\\\"").replaceAll("\r\n|\r|\n", "\\\n"));
+                groupDescriptions.add(group.getDescription(locale).replace("\"", "\\\"").replaceAll("\r\n|\r|\n", "\\\n"));
             }
             
             if (defaultGroupProducts.size() > 0) {

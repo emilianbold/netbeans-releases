@@ -113,4 +113,7 @@ public interface RegistriesManager {
     
     String generateComponentsJs(
             final File root) throws ManagerException;
+
+    String generateComponentsJs(
+            final File root, final String locale) throws ManagerException;
 }

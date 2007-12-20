@@ -51,7 +51,8 @@ import org.netbeans.installer.infra.lib.registries.impl.RegistriesManagerImpl;
 public class GenerateComponentsJs extends Task {
     private File root;
     private File file;
-
+    private String locale;
+    
     public void setRoot(final File root) {
         this.root = root;
     }
@@ -59,12 +60,16 @@ public class GenerateComponentsJs extends Task {
     public void setFile(final File file) {
         this.file = file;
     }
+
+    public void setLocale(String locale) {
+        this.locale = locale;
+    }
     
     @Override
     public void execute() throws BuildException {
         try {
             final String contents = 
-                    new RegistriesManagerImpl().generateComponentsJs(root);
+                    new RegistriesManagerImpl().generateComponentsJs(root, locale);
             
             Utils.write(file, contents);
         } catch (ManagerException e) {
