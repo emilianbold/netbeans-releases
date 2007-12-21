@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.netbeans.modules.iep.model.Component;
 import org.netbeans.modules.iep.model.IEPModel;
+import org.netbeans.modules.iep.model.IEPVisitor;
 import org.netbeans.modules.iep.model.ModelHelper;
 import org.netbeans.modules.iep.model.OperatorComponent;
 import org.netbeans.modules.iep.model.OperatorType;
@@ -27,7 +28,11 @@ public class OperatorComponentImpl extends ComponentImpl implements OperatorComp
     public OperatorComponentImpl(IEPModel model) {
         super(model);
     }
-        
+       
+    public void accept(IEPVisitor visitor) {
+    	visitor.visitOperatorComponent(this);
+    }
+    
 	public String getDescription() {
 		String description = null;
 		

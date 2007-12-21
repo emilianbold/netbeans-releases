@@ -1,61 +1,44 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 package org.netbeans.modules.iep.editor.ps;
 
 import org.netbeans.modules.iep.editor.designer.GuiConstants;
 import org.netbeans.modules.iep.editor.model.AttributeMetadata;
-import org.netbeans.modules.iep.editor.model.ModelManager;
-import org.netbeans.modules.iep.editor.model.Plan;
-import org.netbeans.modules.iep.editor.model.Schema;
+import org.netbeans.modules.iep.editor.model.NameGenerator;
 import org.netbeans.modules.iep.editor.tcg.dialog.NotifyHelper;
 import org.netbeans.modules.iep.editor.share.SharedConstants;
 import org.netbeans.modules.iep.editor.tcg.table.DefaultMoveableRowTableModel;
 import org.netbeans.modules.iep.editor.tcg.table.MoveableRowTable;
-import org.netbeans.modules.iep.editor.tcg.model.TcgComponent;
-import org.netbeans.modules.iep.editor.tcg.model.TcgProperty;
-import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodeProperty;
 import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodePropertyCustomizerState;
 import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodePropertyCustomizer;
 import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodePropertyEditor;
+import org.netbeans.modules.iep.model.IEPModel;
+import org.netbeans.modules.iep.model.OperatorComponent;
+import org.netbeans.modules.iep.model.OperatorComponentContainer;
+import org.netbeans.modules.iep.model.Property;
+import org.netbeans.modules.iep.model.SchemaAttribute;
+import org.netbeans.modules.iep.model.SchemaComponent;
+import org.netbeans.modules.iep.model.SchemaComponentContainer;
+import org.netbeans.modules.iep.model.lib.TcgComponent;
+import org.netbeans.modules.iep.model.lib.TcgPropertyType;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -87,6 +70,7 @@ import javax.swing.JTextField;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
+import org.netbeans.modules.iep.model.lib.TcgProperty;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.NbBundle;
 
@@ -118,13 +102,13 @@ public class GapWindowCustomEditor extends TcgComponentNodePropertyEditor implem
     
     public Component getCustomEditor() {
         if (mEnv != null) {
-            return new MyCustomizer(mProperty, mEnv);
+            return new MyCustomizer(getPropertyType(), getOperatorComponent(), mEnv);
         }
-        return new MyCustomizer(mProperty, mCustomizerState);
+        return new MyCustomizer(getPropertyType(), getOperatorComponent(), mCustomizerState);
     }
     
     private static class MyCustomizer extends TcgComponentNodePropertyCustomizer implements SharedConstants {
-        private TcgComponent mComponent;
+        private OperatorComponent mComponent;
         private PropertyPanel mNamePanel;
         private PropertyPanel mOutputSchemaNamePanel;
         private PropertyPanel mStartPanel;
@@ -133,20 +117,20 @@ public class GapWindowCustomEditor extends TcgComponentNodePropertyEditor implem
         private DefaultMoveableRowTableModel mTableModel;
         private MoveableRowTable mTable;
         private Vector mColTitle;
-        private JLabel mStatusLbl;
+//        private JLabel mStatusLbl;
         
-        public MyCustomizer(TcgComponentNodeProperty prop, PropertyEnv env) {
-            super(prop, env);
+        public MyCustomizer(TcgPropertyType propertyType, OperatorComponent component, PropertyEnv env) {
+            super(propertyType,component, env);
         }
         
-        public MyCustomizer(TcgComponentNodeProperty prop, TcgComponentNodePropertyCustomizerState customizerState) {
-            super(prop, customizerState);
+        public MyCustomizer(TcgPropertyType propertyType, OperatorComponent component, TcgComponentNodePropertyCustomizerState customizerState) {
+            super(propertyType, component, customizerState);
         }
         
         protected void initialize() {
             try {
-                mComponent = mProperty.getProperty().getParentComponent();
-                setLayout(new GridBagLayout());
+                mComponent = getOperatorComponent();
+                getContentPane().setLayout(new GridBagLayout());
                 GridBagConstraints gbc = new GridBagConstraints();
                 gbc.insets = new Insets(3, 3, 3, 3);
                 int gGridy = 0;
@@ -158,7 +142,8 @@ public class GapWindowCustomEditor extends TcgComponentNodePropertyEditor implem
                 // create partition key panel first to parse schema information
                 // which is used by properties in property panel created
                 // by createPropertyPanel()
-                mPartitionKeyPanel = new PartitionKeySelectionPanel((Plan)mProperty.getNode().getDoc(), mComponent);
+                IEPModel model = mComponent.getModel();
+                mPartitionKeyPanel = new PartitionKeySelectionPanel(model, mComponent);
 
                 // property pane
                 gbc.gridx = 0;
@@ -170,7 +155,7 @@ public class GapWindowCustomEditor extends TcgComponentNodePropertyEditor implem
                 gbc.weighty = 0.0D;
                 gbc.fill = GridBagConstraints.HORIZONTAL;
                 JPanel topPanel = createPropertyPanel();
-                add(topPanel, gbc);
+                getContentPane().add(topPanel, gbc);
                 
                 // attribute pane
                 gbc.gridx = 0;
@@ -184,7 +169,7 @@ public class GapWindowCustomEditor extends TcgComponentNodePropertyEditor implem
                 JSplitPane attributePane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
                 String msg = NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.ATTRIBUTES");
                 attributePane.setBorder(new TitledBorder(LineBorder.createGrayLineBorder(), msg, TitledBorder.LEFT, TitledBorder.TOP));
-                add(attributePane, gbc);
+                getContentPane().add(attributePane, gbc);
                 
                 // left attribute pane
                 ((JSplitPane)attributePane).setOneTouchExpandable(true);
@@ -198,7 +183,7 @@ public class GapWindowCustomEditor extends TcgComponentNodePropertyEditor implem
                 
                 // right attribute pane
                 JScrollPane rightPane = new JScrollPane();
-                rightPane.setPreferredSize(new Dimension(450, 300));
+                rightPane.setPreferredSize(new Dimension(500, 300));
                 attributePane.setRightComponent(rightPane);
                 
                 mColTitle = new Vector();
@@ -218,18 +203,18 @@ public class GapWindowCustomEditor extends TcgComponentNodePropertyEditor implem
                 };
                 rightPane.getViewport().add(mTable);
                 
-                // status bar
-                gbc.gridx = 0;
-                gbc.gridy = gGridy++;
-                gbc.gridwidth = 1;
-                gbc.gridheight = 1;
-                gbc.anchor = GridBagConstraints.WEST;
-                gbc.weightx = 1.0D;
-                gbc.weighty = 0.0D;
-                gbc.fill = GridBagConstraints.HORIZONTAL;
-                mStatusLbl = new JLabel();
-                mStatusLbl.setForeground(Color.RED);
-                add(mStatusLbl, gbc);
+//                // status bar
+//                gbc.gridx = 0;
+//                gbc.gridy = gGridy++;
+//                gbc.gridwidth = 1;
+//                gbc.gridheight = 1;
+//                gbc.anchor = GridBagConstraints.WEST;
+//                gbc.weightx = 1.0D;
+//                gbc.weighty = 0.0D;
+//                gbc.fill = GridBagConstraints.HORIZONTAL;
+//                mStatusLbl = new JLabel();
+//                mStatusLbl.setForeground(Color.RED);
+//                add(mStatusLbl, gbc);
             } catch(Exception e) {
                 mLog.log(Level.SEVERE,
                         NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.FAILED_TO_LAYOUT"),
@@ -242,10 +227,10 @@ public class GapWindowCustomEditor extends TcgComponentNodePropertyEditor implem
                 Vector data = new Vector();
                 String indexAttribute = mAttributePanel.getStringValue();
                 boolean indexSelected = indexAttribute != null && !indexAttribute.trim().equals("");
-                List attributeList = mPartitionKeyPanel.getSelectedAttributeList();
+                List<SchemaAttribute> attributeList = mPartitionKeyPanel.getSelectedAttributeList();
                 Vector r;
                 for (int i = 0, I = attributeList.size(); i < I; i++) {
-                    AttributeMetadata attr = (AttributeMetadata)attributeList.get(i);
+                    SchemaAttribute attr = attributeList.get(i);
                     r = new Vector();
                     r.add(attr.getAttributeName());
                     r.add(attr.getAttributeType());
@@ -254,7 +239,7 @@ public class GapWindowCustomEditor extends TcgComponentNodePropertyEditor implem
                     data.add(r);
                 }
                 if (indexSelected) {
-                    AttributeMetadata attr = mPartitionKeyPanel.getAttribute(indexAttribute);
+                    SchemaAttribute attr = mPartitionKeyPanel.getAttribute(indexAttribute);
                     r = new Vector();
                     r.add(attr.getAttributeName());
                     r.add(attr.getAttributeType());
@@ -281,7 +266,7 @@ public class GapWindowCustomEditor extends TcgComponentNodePropertyEditor implem
             gbc.insets = new Insets(3, 3, 3, 3);
             
             // name
-            TcgProperty nameProp = mComponent.getProperty(NAME_KEY);
+            Property nameProp = mComponent.getProperty(NAME_KEY);
             String nameStr = NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.NAME");
             mNamePanel = PropertyPanel.createSingleLineTextPanel(nameStr, nameProp, false);
             gbc.gridx = 0;
@@ -305,11 +290,13 @@ public class GapWindowCustomEditor extends TcgComponentNodePropertyEditor implem
             pane.add(mNamePanel.component[1], gbc);
 
             // output schema
-            TcgProperty outputSchemaNameProp = mComponent.getProperty(OUTPUT_SCHEMA_ID_KEY);
+            Property outputSchemaNameProp = mComponent.getProperty(OUTPUT_SCHEMA_ID_KEY);
             String outputSchemaNameStr = NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.OUTPUT_SCHEMA_NAME");
             mOutputSchemaNamePanel = PropertyPanel.createSingleLineTextPanel(outputSchemaNameStr, outputSchemaNameProp, false);
             if (mOutputSchemaNamePanel.getStringValue() == null || mOutputSchemaNamePanel.getStringValue().trim().equals("")) {
-                mOutputSchemaNamePanel.setStringValue(((Plan)mProperty.getNode().getDoc()).getNameForNewSchema());
+            	IEPModel model = mComponent.getModel();
+            	String schemaName = NameGenerator.generateSchemaName(model.getPlanComponent().getSchemaComponentContainer());
+                mOutputSchemaNamePanel.setStringValue(schemaName);
             }
             gbc.gridx = 0;
             gbc.gridy = 1;
@@ -343,7 +330,7 @@ public class GapWindowCustomEditor extends TcgComponentNodePropertyEditor implem
             pane.add(Box.createHorizontalStrut(20), gbc);
 
             // start
-            TcgProperty startProp = mComponent.getProperty(START_KEY);
+            Property startProp = mComponent.getProperty(START_KEY);
             String startStr = NbBundle.getMessage(GapWindowCustomEditor.class, "CustomEditor.START");
             mStartPanel = PropertyPanel.createIntNumberPanel(startStr, startProp, false);
             gbc.gridx = 3;
@@ -367,7 +354,7 @@ public class GapWindowCustomEditor extends TcgComponentNodePropertyEditor implem
             pane.add(mStartPanel.component[1], gbc);
 
             // attribute
-            TcgProperty attributeProp = mComponent.getProperty(ATTRIBUTE_KEY);
+            Property attributeProp = mComponent.getProperty(ATTRIBUTE_KEY);
             String attributeStr = NbBundle.getMessage(TupleBasedAggregatorCustomEditor.class, "CustomEditor.SORT_BY");
             List attributeList = mPartitionKeyPanel.getAttributeNameList(INTEGER_TYPES);
             attributeList.add(0, "");
@@ -414,24 +401,31 @@ public class GapWindowCustomEditor extends TcgComponentNodePropertyEditor implem
         
         public void validateContent(PropertyChangeEvent evt) throws PropertyVetoException {
             try {
-                Plan plan = (Plan)mProperty.getNode().getDoc();
-                
+            	OperatorComponentContainer ocContainer = mModel.getPlanComponent().getOperatorComponentContainer();
+            	
                 // name
                 mNamePanel.validateContent(evt);
                 String newName = mNamePanel.getStringValue();
-                String name = mComponent.getProperty(NAME_KEY).getStringValue();
-                if (!newName.equals(name) && plan.hasOperator(newName)) {
+                String name = mComponent.getProperty(NAME_KEY).getValue();
+                if (!newName.equals(name) && ocContainer.findOperator(newName) != null) {
                     String msg = NbBundle.getMessage(DefaultCustomEditor.class,
                             "CustomEditor.NAME_IS_ALREADY_TAKEN_BY_ANOTHER_OPERATOR",
                             newName);
                     throw new PropertyVetoException(msg, evt);
                 }
                 
+                SchemaComponentContainer scContainer = mModel.getPlanComponent().getSchemaComponentContainer();
+                
                 // output schema name
                 mOutputSchemaNamePanel.validateContent(evt);
                 String newSchemaName = mOutputSchemaNamePanel.getStringValue();
-                String schemaName = mComponent.getProperty(OUTPUT_SCHEMA_ID_KEY).getStringValue();
-                if (!newSchemaName.equals(schemaName) && plan.hasSchema(newSchemaName)) {
+                SchemaComponent outputSchema = mComponent.getOutputSchemaId();
+                String schemaName = null;
+                if(outputSchema != null) {
+                	schemaName = outputSchema.getName();
+                }
+                
+                if (!newSchemaName.equals(schemaName) && scContainer.findSchema(newSchemaName) != null) {
                     String msg = NbBundle.getMessage(DefaultCustomEditor.class,
                             "CustomEditor.OUTPUT_SCHEMA_NAME_IS_ALREADY_TAKENBY_ANOTHER_SCHEMA",
                             newSchemaName);
@@ -477,46 +471,111 @@ public class GapWindowCustomEditor extends TcgComponentNodePropertyEditor implem
             return attributeMetadataList;
         }
         
+        public List<SchemaAttribute> getAttributes() {
+            List<SchemaAttribute> attributeList = new ArrayList<SchemaAttribute>();
+            Vector r = mTableModel.getDataVector();
+            for (int i = 0, I = r.size(); i < I; i++) {
+                Vector c = (Vector) r.elementAt(i);
+                if (!(c.elementAt(0) == null) && !(c.elementAt(0).equals(""))) {
+                	SchemaAttribute sa = mModel.getFactory().createSchemaAttribute(mModel);
+                	String name = (String) c.elementAt(0);
+                	sa.setName(name);
+                	sa.setTitle(name);
+                	//name
+                	sa.setAttributeName(name);
+                	//type
+                	sa.setAttributeType((String) c.elementAt(1));
+                	//size
+                	sa.setAttributeSize((String) c.elementAt(2));
+                	//scale
+                	sa.setAttributeScale((String) c.elementAt(3));
+                	
+                	
+                	attributeList.add(sa);
+                    
+                }
+            }
+            return attributeList;
+        }
+        
+        
+        
         public void setValue() {
-            Plan plan = (Plan)mProperty.getNode().getDoc();
-            Schema newSchema = null;
+        	
+            IEPModel model = mComponent.getModel();
+            SchemaComponentContainer scContainer = model.getPlanComponent().getSchemaComponentContainer();
             mNamePanel.store();
             mStartPanel.store();
             mAttributePanel.store();
             mPartitionKeyPanel.store();
             try {
                 String newSchemaName = mOutputSchemaNamePanel.getStringValue();
-                String schemaName = mComponent.getProperty(OUTPUT_SCHEMA_ID_KEY).getStringValue();
-                Schema schema = plan.getSchema(schemaName);
-                boolean schemaExist = schemaName != null && !schemaName.trim().equals("") && schema != null;
-                List attributes = getAttributeMetadataAsList();
+                SchemaComponent outputSchema = mComponent.getOutputSchemaId();
+                String schemaName = null;
+                
+                if(outputSchema != null) {
+                	schemaName = outputSchema.getName();
+                }
+                
+                boolean schemaExist = schemaName != null && !schemaName.trim().equals("") && outputSchema != null;
+                List<SchemaAttribute> attrs = getAttributes();
                 if (schemaExist) {
                     if (!newSchemaName.equals(schemaName)) {
-                        newSchema = ModelManager.createSchema(newSchemaName);
-                        newSchema.setAttributeMetadataAsList(attributes);
-                        plan.addSchema(newSchema);
-                        plan.removeSchema(schemaName);
-                        mOutputSchemaNamePanel.store();
-                        mProperty.getNode().getView().updateTcgComponentNodeView();
-                        plan.getPropertyChangeSupport().firePropertyChange("Schema Name",
-                                schemaName, newSchemaName);
+                    	model.startTransaction();
+                    	
+//                    	String sName = NameGenerator.generateSchemaName(scContainer);
+                    	SchemaComponent scComp = model.getFactory().createSchema(model);
+                    	scComp.setName(newSchemaName);
+                    	scComp.setTitle(newSchemaName);
+                    	scComp.setSchemaAttributes(attrs);
+                    	
+                    	
+                    	scContainer.addSchemaComponent(scComp);
+                    	scContainer.removeSchemaComponent(outputSchema);
+                    	model.endTransaction();
+                    	
+                    	mOutputSchemaNamePanel.store();
+                    	
+                        //newSchema = ModelManager.createSchema(newSchemaName);
+                        //newSchema.setAttributeMetadataAsList(attributes);
+                        //plan.addSchema(newSchema);
+                        //plan.removeSchema(schemaName);
+                        
+                        //ritmProperty.getNode().getView().updateTcgComponentNodeView();
+                        //ritplan.getPropertyChangeSupport().firePropertyChange("Schema Name",
+                        //        schemaName, newSchemaName);
                         
                     } else {
+                    	model.startTransaction();
+                    	outputSchema.setSchemaAttributes(attrs);
+                    	model.endTransaction();
+                    	
+                    	//rit fix this
+                    	/*
                         if (!schema.hasSameAttributeMetadata(attributes)) {
                             schema.setAttributeMetadataAsList(attributes);
                             plan.getPropertyChangeSupport().firePropertyChange("Schema Column Metadata",
                                     "old", "new");
-                        }
+                        }*/
                     }
                 } else {
-                    newSchema = ModelManager.createSchema(newSchemaName);
-                    plan.addSchema(newSchema);
-                    newSchema.setAttributeMetadataAsList(attributes);
-                    mOutputSchemaNamePanel.store();
-                    mProperty.getNode().getView().updateTcgComponentNodeView();
-                    plan.getPropertyChangeSupport().firePropertyChange("Schema",
-                            null, newSchema);
+                	model.startTransaction();
+                	SchemaComponent scComp = model.getFactory().createSchema(model);
+                	scComp.setName(newSchemaName);
+                	scComp.setTitle(newSchemaName);
+                	scComp.setSchemaAttributes(attrs);
+                	scContainer.addSchemaComponent(scComp);
+                	model.endTransaction();
+                	mOutputSchemaNamePanel.store();
+                    //mProperty.getNode().getView().updateTcgComponentNodeView();
+                    //ritplan.getPropertyChangeSupport().firePropertyChange("Schema",
+                    //        null, scComp);
                 }
+                
+
+                //set documentation
+                super.setDocumentation();
+                
             } catch (Exception e) {
                 e.printStackTrace();
                 NotifyHelper.reportError(e.getMessage());

@@ -1,58 +1,43 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 package org.netbeans.modules.iep.editor.ps;
 
 import org.netbeans.modules.iep.editor.designer.GuiConstants;
-import org.netbeans.modules.iep.editor.model.ModelManager;
-import org.netbeans.modules.iep.editor.model.Plan;
-import org.netbeans.modules.iep.editor.model.Schema;
+import org.netbeans.modules.iep.editor.model.NameGenerator;
 import org.netbeans.modules.iep.editor.tcg.dialog.NotifyHelper;
 import org.netbeans.modules.iep.editor.share.SharedConstants;
-import org.netbeans.modules.iep.editor.tcg.model.TcgComponent;
-import org.netbeans.modules.iep.editor.tcg.model.TcgProperty;
-import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodeProperty;
 import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodePropertyCustomizerState;
 import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodePropertyCustomizer;
 import org.netbeans.modules.iep.editor.tcg.util.StringUtil;
+import org.netbeans.modules.iep.model.Documentation;
+import org.netbeans.modules.iep.model.IEPModel;
+import org.netbeans.modules.iep.model.OperatorComponent;
+import org.netbeans.modules.iep.model.OperatorComponentContainer;
+import org.netbeans.modules.iep.model.Property;
+import org.netbeans.modules.iep.model.SchemaAttribute;
+import org.netbeans.modules.iep.model.SchemaComponent;
+import org.netbeans.modules.iep.model.SchemaComponentContainer;
+import org.netbeans.modules.iep.model.lib.TcgComponent;
+import org.netbeans.modules.iep.model.lib.TcgModelManager;
+import org.netbeans.modules.iep.model.lib.TcgPropertyType;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -62,6 +47,7 @@ import java.awt.Insets;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -76,6 +62,7 @@ import javax.swing.JTextField;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
+import org.netbeans.modules.iep.model.lib.TcgProperty;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.NbBundle;
 
@@ -89,7 +76,7 @@ import org.openide.util.NbBundle;
 public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implements SharedConstants {
     protected static final Logger mLog = Logger.getLogger(DefaultCustomizer.class.getName());
     
-    protected TcgComponent mComponent;
+    protected OperatorComponent mComponent;
     protected PropertyPanel mNamePanel;
     protected PropertyPanel mOutputSchemaNamePanel;
     protected InputSchemaTreePanel mInputPanel;
@@ -97,7 +84,7 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
     protected PropertyPanel mFromPanel;
     protected PropertyPanel mWherePanel;
     protected PropertyPanel mGroupByPanel;
-    protected JLabel mStatusLbl;
+//    protected JLabel mStatusLbl;
     
     protected boolean mIsSchemaOwner;
     protected boolean mHasExpressionColumn;
@@ -105,26 +92,26 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
     protected boolean mHasWhereClause;
     protected boolean mHasGroupBy;
     
-    public DefaultCustomizer(TcgComponentNodeProperty prop, PropertyEnv env) {
-        super(prop, env);
+    public DefaultCustomizer(TcgPropertyType propertyType, OperatorComponent component, PropertyEnv env) {
+        super(propertyType, component, env);
     }
     
-    public DefaultCustomizer(TcgComponentNodeProperty prop, TcgComponentNodePropertyCustomizerState customizerState) {
-        super(prop, customizerState);
+    public DefaultCustomizer(TcgPropertyType propertyType, OperatorComponent component, TcgComponentNodePropertyCustomizerState customizerState) {
+        super(propertyType, component, customizerState);
     }
     
     
     protected void initialize() {
         try {
-            mComponent = mProperty.getProperty().getParentComponent();
-            mIsSchemaOwner = mComponent.getProperty(IS_SCHEMA_OWNER_KEY).getBoolValue();
-            String inputType = mComponent.getProperty(INPUT_TYPE_KEY).getStringValue();
+            mComponent = getOperatorComponent();
+            mIsSchemaOwner = mComponent.isSchemaOwner();
+            String inputType = mComponent.getProperty(INPUT_TYPE_KEY).getValue();
             mHasExpressionColumn = mIsSchemaOwner && !inputType.equals(IO_TYPE_NONE);
-            mHasFromClause = mComponent.hasProperty(FROM_CLAUSE_KEY);
-            mHasWhereClause = mComponent.hasProperty(WHERE_CLAUSE_KEY);
-            mHasGroupBy = mComponent.hasProperty(GROUP_BY_COLUMN_LIST_KEY);
+            mHasFromClause = mComponent.getFromClause() != null;
+            mHasWhereClause = mComponent.getWhereClause()!= null;
+            mHasGroupBy = mComponent.getGroupByColumnList() != null;
             
-            setLayout(new GridBagLayout());
+            getContentPane().setLayout(new GridBagLayout());
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.insets = new Insets(3, 3, 3, 3);
             int gGridy = 0;
@@ -132,7 +119,12 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
             // create selection panel first to parse schema information
             // which is used by properties in property panel created
             // by createPropertyPanel()
-            mSelectPanel = new SelectPanel((Plan)mProperty.getNode().getDoc(), mComponent);
+            IEPModel model = getOperatorComponent().getModel();
+            
+            mSelectPanel = new SelectPanel(model, mComponent);
+            
+            ExpressionAttributeDropNotificationListener listener = new ExpressionAttributeDropNotificationListener();
+            mSelectPanel.addAttributeDropNotificationListener(listener);
             
             // property pane
             gbc.gridx = 0;
@@ -144,7 +136,7 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
             gbc.weighty = 0.0D;
             gbc.fill = GridBagConstraints.HORIZONTAL;
             JPanel topPanel = createPropertyPanel();
-            add(topPanel, gbc);
+            getContentPane().add(topPanel, gbc);
             
             // attribute pane
             gbc.gridx = 0;
@@ -164,19 +156,19 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
             }
             String msg = NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.ATTRIBUTES");
             attributePane.setBorder(new TitledBorder(LineBorder.createGrayLineBorder(), msg, TitledBorder.LEFT, TitledBorder.TOP));
-            add(attributePane, gbc);
+            getContentPane().add(attributePane, gbc);
             
             // left attribute pane
             if (mHasExpressionColumn) {
                 ((JSplitPane)attributePane).setOneTouchExpandable(true);
-                mInputPanel = new InputSchemaTreePanel((Plan)mProperty.getNode().getDoc(), mComponent);
+                mInputPanel = new InputSchemaTreePanel(model, mComponent);
                 mInputPanel.setPreferredSize(new Dimension(200, 400));
                 ((JSplitPane)attributePane).setLeftComponent(mInputPanel);
             }
             
             // right attribute pane
             JPanel rightPane = new JPanel();
-            rightPane.setPreferredSize(new Dimension(700, 400));
+            rightPane.setPreferredSize(new Dimension(500, 300));
             if (mHasExpressionColumn) {
                 ((JSplitPane)attributePane).setRightComponent(rightPane);
             } else {
@@ -204,7 +196,7 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
                     gbc.weightx = 1.0D;
                     gbc.weighty = 0.0D;
                     gbc.fill = GridBagConstraints.HORIZONTAL;
-                    TcgProperty fromProp = mComponent.getProperty(FROM_CLAUSE_KEY);
+                    Property fromProp = mComponent.getProperty(FROM_CLAUSE_KEY);
                     boolean truncateColumn = true;
                     mFromPanel = PropertyPanel.createSmartSingleLineTextPanel("FROM", fromProp, truncateColumn, true);
                     rightPane.add(mFromPanel.panel, gbc);
@@ -218,7 +210,7 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
                     gbc.weightx = 1.0D;
                     gbc.weighty = 0.5D;
                     gbc.fill = GridBagConstraints.BOTH;
-                    TcgProperty whereProp = mComponent.getProperty(WHERE_CLAUSE_KEY);
+                    Property whereProp = mComponent.getProperty(WHERE_CLAUSE_KEY);
                     mWherePanel = PropertyPanel.createSmartMultiLineTextPanel("WHERE", whereProp);
                     rightPane.add(mWherePanel.panel, gbc);
                 }
@@ -231,26 +223,26 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
                     gbc.weightx = 1.0D;
                     gbc.weighty = 0.0D;
                     gbc.fill = GridBagConstraints.BOTH;
-                    TcgProperty groupByProp = mComponent.getProperty(GROUP_BY_COLUMN_LIST_KEY);
+                    Property groupByProp = mComponent.getProperty(GROUP_BY_COLUMN_LIST_KEY);
                     boolean truncateColumn = false;
                     mGroupByPanel = PropertyPanel.createSmartSingleLineTextPanel("GROUP BY", groupByProp, truncateColumn, true);
                     rightPane.add(mGroupByPanel.panel, gbc);
                 }
             }
             
-            // status bar
-            gbc.gridx = 0;
-            gbc.gridy = gGridy++;
-            gbc.gridwidth = 1;
-            gbc.gridheight = 1;
-            gbc.anchor = GridBagConstraints.WEST;
-            gbc.weightx = 1.0D;
-            gbc.weighty = 0.0D;
-            gbc.fill = GridBagConstraints.HORIZONTAL;
-            mStatusLbl = new JLabel();
-            mStatusLbl.setForeground(Color.RED);
-            mStatusLbl.setPreferredSize(new Dimension(160, 20));
-            add(mStatusLbl, gbc);
+//            // status bar
+//            gbc.gridx = 0;
+//            gbc.gridy = gGridy++;
+//            gbc.gridwidth = 1;
+//            gbc.gridheight = 1;
+//            gbc.anchor = GridBagConstraints.WEST;
+//            gbc.weightx = 1.0D;
+//            gbc.weighty = 0.0D;
+//            gbc.fill = GridBagConstraints.HORIZONTAL;
+//            mStatusLbl = new JLabel();
+//            mStatusLbl.setForeground(Color.RED);
+//            mStatusLbl.setPreferredSize(new Dimension(160, 20));
+//            add(mStatusLbl, gbc);
         } catch(Exception e) {
             mLog.log(Level.SEVERE,
                     NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.FAILED_TO_LAYOUT"),
@@ -269,7 +261,7 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
         gbc.insets = new Insets(3, 3, 3, 3);
         
         // name
-        TcgProperty nameProp = mComponent.getProperty(NAME_KEY);
+        Property nameProp = mComponent.getProperty(NAME_KEY);
         String nameStr = NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.NAME");
         mNamePanel = PropertyPanel.createSingleLineTextPanel(nameStr, nameProp, false);
         gbc.gridx = 0;
@@ -303,12 +295,14 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
         pane.add(Box.createHorizontalGlue(), gbc);
         
         // output schema
-        TcgProperty outputSchemaNameProp = mComponent.getProperty(OUTPUT_SCHEMA_ID_KEY);
+        Property outputSchemaNameProp = mComponent.getProperty(OUTPUT_SCHEMA_ID_KEY);
         String outputSchemaNameStr = NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.OUTPUT_SCHEMA_NAME");
         mOutputSchemaNamePanel = PropertyPanel.createSingleLineTextPanel(outputSchemaNameStr, outputSchemaNameProp, false);
         if (mIsSchemaOwner) {
             if (mOutputSchemaNamePanel.getStringValue() == null || mOutputSchemaNamePanel.getStringValue().trim().equals("")) {
-                mOutputSchemaNamePanel.setStringValue(((Plan)mProperty.getNode().getDoc()).getNameForNewSchema());
+            	IEPModel model = mComponent.getModel();
+            	String schemaName = NameGenerator.generateSchemaName(model.getPlanComponent().getSchemaComponentContainer());
+                mOutputSchemaNamePanel.setStringValue(schemaName);
             }
         } else {
             ((JTextField)mOutputSchemaNamePanel.input[0]).setEditable(false);
@@ -351,12 +345,16 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
     
     public void validateContent(PropertyChangeEvent evt) throws PropertyVetoException {
         try {
-            Plan plan = (Plan)mProperty.getNode().getDoc();
+        	IEPModel model = mComponent.getModel();
+        	
+        	OperatorComponentContainer ocContainer = model.getPlanComponent().getOperatorComponentContainer();
+        	SchemaComponentContainer scContainer = model.getPlanComponent().getSchemaComponentContainer();
+        	
             // name
             mNamePanel.validateContent(evt);
             String newName = mNamePanel.getStringValue();
-            String name = mComponent.getProperty(NAME_KEY).getStringValue();
-            if (!newName.equals(name) && plan.hasOperator(newName)) {
+            String name = mComponent.getDisplayName();
+            if (!newName.equals(name) && ocContainer.findOperator(newName) != null) {
                 String msg = NbBundle.getMessage(DefaultCustomEditor.class,
                         "CustomEditor.NAME_IS_ALREADY_TAKEN_BY_ANOTHER_OPERATOR",
                         newName);
@@ -367,8 +365,14 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
                 // output schema name
                 mOutputSchemaNamePanel.validateContent(evt);
                 String newSchemaName = mOutputSchemaNamePanel.getStringValue();
-                String schemaName = mComponent.getProperty(OUTPUT_SCHEMA_ID_KEY).getStringValue();
-                if (!newSchemaName.equals(schemaName) && plan.hasSchema(newSchemaName)) {
+                SchemaComponent outputSchema = mComponent.getOutputSchemaId();
+                
+                String schemaName = null;
+                if(outputSchema != null) {
+                	schemaName = outputSchema.getName();
+                }
+                
+                if (!newSchemaName.equals(schemaName) && scContainer.findSchema(newSchemaName) != null) {
                     String msg = NbBundle.getMessage(DefaultCustomEditor.class,
                             "CustomEditor.OUTPUT_SCHEMA_NAME_IS_ALREADY_TAKENBY_ANOTHER_SCHEMA",
                             newSchemaName);
@@ -411,7 +415,7 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
                         // group-by attribute name must be found from input tree
                         for (int i = 0, I = attributeList.size(); i < I; i++) {
                             String attributeName = (String)attributeList.get(i);
-                            if (mSelectPanel.getAttributeMetadata(attributeName) == null) {
+                            if (mSelectPanel.getAttribute(attributeName) == null) {
                                 String msg = NbBundle.getMessage(DefaultCustomEditor.class,
                                         "CustomEditor.GROUP_BY_ATTRIBUTE_NAME_CANNOT_FOUND_FROM_THE_INPUT_ATTRIBUTES",
                                         attributeName);
@@ -457,8 +461,9 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
     }
     
     public void setValue() {
-        Plan plan = (Plan)mProperty.getNode().getDoc();
-        Schema newSchema = null;
+    	IEPModel model = mComponent.getModel();
+    	SchemaComponentContainer scContainer = model.getPlanComponent().getSchemaComponentContainer();
+    	
         try {
             // name
             mNamePanel.store();
@@ -466,45 +471,81 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
             // schema
             if (mIsSchemaOwner) {
                 String newSchemaName = mOutputSchemaNamePanel.getStringValue();
-                String schemaName = mComponent.getProperty(OUTPUT_SCHEMA_ID_KEY).getStringValue();
-                Schema schema = plan.getSchema(schemaName);
-                boolean schemaExist = schemaName != null && !schemaName.trim().equals("") && schema != null;
-                List attributes = mSelectPanel.getAttributeMetadataAsList();
+                SchemaComponent outputSchema = mComponent.getOutputSchemaId();
+                String schemaName = null;
+                if(outputSchema != null) {
+                	schemaName = outputSchema.getName();
+                }
+                
+                boolean schemaExist = schemaName != null && !schemaName.trim().equals("") && outputSchema != null;
+                //ritList attributes = mSelectPanel.getAttributeMetadataAsList();
+                List<SchemaAttribute> attrs = mSelectPanel.getAttributes();
                 if (schemaExist) {
                     if (!newSchemaName.equals(schemaName)) {
-                        newSchema = ModelManager.createSchema(newSchemaName);
-                        newSchema.setAttributeMetadataAsList(attributes);
-                        plan.addSchema(newSchema);
-                        plan.removeSchema(schemaName);
+                    	model.startTransaction();
+                    	SchemaComponent sc = model.getFactory().createSchema(model);
+                    	sc.setName(newSchemaName);
+                    	sc.setTitle(newSchemaName);
+                    	sc.setSchemaAttributes(attrs);
+                    	
+                    	
+                    	scContainer.addSchemaComponent(sc);
+                    	scContainer.removeSchemaComponent(outputSchema);
+                    	model.endTransaction();
+                    	
                         mOutputSchemaNamePanel.store();
-                        mProperty.getNode().getView().updateTcgComponentNodeView();
-                        plan.getPropertyChangeSupport().firePropertyChange("Schema Name",
-                                schemaName, newSchemaName);
+                        //ritmProperty.getNode().getView().updateTcgComponentNodeView();
+                        //ritplan.getPropertyChangeSupport().firePropertyChange("Schema Name",
+                        //        schemaName, newSchemaName);
                         
                     } else {
-                        if (!schema.hasSameAttributeMetadata(attributes)) {
-                            schema.setAttributeMetadataAsList(attributes);
-                            plan.getPropertyChangeSupport().firePropertyChange("Schema Column Metadata",
-                                    "old", "new");
-                        }
+                    	mModel.startTransaction();
+                    	outputSchema.setSchemaAttributes(attrs);
+                    	mModel.endTransaction();
+//                        if (!schema.hasSameAttributeMetadata(attributes)) {
+//                        	outputSchema.setSchemaAttributes(attrs);
+//                            schema.setAttributeMetadataAsList(attributes);
+//                            //ritplan.getPropertyChangeSupport().firePropertyChange("Schema Column Metadata",
+//                                    "old", "new");
+//                        }
                     }
                 } else {
-                    newSchema = ModelManager.createSchema(newSchemaName);
-                    plan.addSchema(newSchema);
-                    newSchema.setAttributeMetadataAsList(attributes);
-                    mOutputSchemaNamePanel.store();
-                    mProperty.getNode().getView().updateTcgComponentNodeView();
-                    plan.getPropertyChangeSupport().firePropertyChange("Schema", null, newSchema);
+                	model.startTransaction();
+                	SchemaComponent sc = model.getFactory().createSchema(model);
+                	sc.setName(newSchemaName);
+                	sc.setTitle(newSchemaName);
+                	sc.setSchemaAttributes(attrs);
+                	
+                	scContainer.addSchemaComponent(sc);
+                	model.endTransaction();
+                	
+                	mOutputSchemaNamePanel.store();
+                	
+//                    newSchema = ModelManager.createSchema(newSchemaName);
+//                    plan.addSchema(newSchema);
+//                    newSchema.setAttributeMetadataAsList(attributes);
+//                    mOutputSchemaNamePanel.store();
+//                    //ritmProperty.getNode().getView().updateTcgComponentNodeView();
+//                    plan.getPropertyChangeSupport().firePropertyChange("Schema", null, newSchema);
                 }
                 
                 if (mHasExpressionColumn) {
                     // expression
                     List expList = mSelectPanel.getExpressionList();
-                    mComponent.getProperty(FROM_COLUMN_LIST_KEY).setValue(expList);
+                    Property fromColumnListProp = mComponent.getProperty(FROM_COLUMN_LIST_KEY);
+                    String val = fromColumnListProp.getPropertyType().getType().format(expList);
+                    mModel.startTransaction();
+                    fromColumnListProp.setValue(val);
+                    
+                    //ritmComponent.getProperty(FROM_COLUMN_LIST_KEY).setValue(expList);
                     
                     // to column list
                     List toList = mSelectPanel.getToColumnList();
-                    mComponent.getProperty(TO_COLUMN_LIST_KEY).setValue(toList);
+                    Property toColumnList = mComponent.getProperty(TO_COLUMN_LIST_KEY);
+                    String toListVal = toColumnList.getPropertyType().getType().format(toList);
+                    toColumnList.setValue(toListVal);
+                    mModel.endTransaction();
+                    //ritmComponent.getProperty(TO_COLUMN_LIST_KEY).setValue(toList);
                     
                     if (mHasFromClause) {
                         // from clause
@@ -522,10 +563,41 @@ public class DefaultCustomizer extends TcgComponentNodePropertyCustomizer implem
                     }
                 }
             }
+            
+            //set documentation
+            super.setDocumentation();
+            
         } catch (Exception e) {
             e.printStackTrace();
             NotifyHelper.reportError(e.getMessage());
         }
     }
     
+    class ExpressionAttributeDropNotificationListener implements AttributeDropNotificationListener {
+
+		public void onDropComplete(AttributeDropNotificationEvent evt) {
+			if(mFromPanel == null) {
+				return;
+			}
+			
+			//generate form clause automatically
+			String from = mFromPanel.getStringValue();
+			AttributeInfo info = evt.getAttributeInfo();
+			String entityName = info.getEntityName();
+			
+			if(from == null || from.trim().equals("")) {
+				mFromPanel.setStringValue(entityName);
+			} else {
+				if(!(from != null && from.contains(entityName))) {
+					StringBuffer strBuf = new StringBuffer();
+					strBuf.append(from);
+					strBuf.append(",");
+					strBuf.append(entityName);
+					mFromPanel.setStringValue(strBuf.toString());
+				}
+			}
+			
+		}
+    	
+    }
 }

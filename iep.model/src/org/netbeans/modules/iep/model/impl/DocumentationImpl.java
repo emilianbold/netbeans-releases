@@ -18,7 +18,7 @@ public class DocumentationImpl extends IEPComponentBase implements Documentation
     }
 
     public void accept(IEPVisitor visitor) {
-    	
+        visitor.visitDocumentation(this);
     }
 
     public IEPComponent createChild(Element childEl) {

@@ -1,42 +1,20 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 
@@ -50,6 +28,11 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+
+import org.netbeans.modules.iep.model.lib.TcgCodeType;
+import org.netbeans.modules.iep.model.lib.TcgComponent;
+import org.netbeans.modules.iep.model.lib.TcgComponentType;
+import org.netbeans.modules.iep.model.lib.TcgPropertyType;
 import org.w3c.dom.Element;
 
 
@@ -72,31 +55,7 @@ public class TcgModelToTypeConverter {
      * @param fullModelName fullModelName
      * @param outFile output file name
      */
-    public static void convert(TcgComponent c, String outFile) {
-
-        try {
-            IIOMetadataNode rootNode = new IIOMetadataNode("component_type_group");
-
-            rootNode.setAttribute("name", "model");
-            rootNode.setAttribute("icon", "");
-            rootNode.setAttribute("title", "Model");
-
-            IIOMetadataNode childNode = new IIOMetadataNode("component_type_group");
-
-            childNode.setAttribute("name", "Connector Forms");
-            childNode.setAttribute("icon", "");
-            childNode.setAttribute("title", "Connector Forms");
-            rootNode.appendChild(childNode);
-
-            Element e = TcgModelToTypeConverter.toXml(c);
-
-            childNode.appendChild(e);
-            write(rootNode, outFile);
-        } catch (Exception e) {
-            mLog.warning(e.getMessage());
-        }
-    }
-
+  
     /**
      * TcgMain method
      *
@@ -117,81 +76,8 @@ public class TcgModelToTypeConverter {
      *
      * @return XML element representing the TcgComponentType hierarchy
      */
-    static Element toXml(TcgComponent c) {
-
-        TcgComponentType type = c.getType();
-        IIOMetadataNode rootNode = new IIOMetadataNode("component_type");
-
-        rootNode.setAttribute("name", c.getName());
-        rootNode.setAttribute("icon", type.getIconName());
-        rootNode.setAttribute("title", type.getTitle());
-        rootNode.setAttribute("allowsChildren",
-                              Boolean.valueOf(type.getAllowsChildren()).toString());
-        rootNode.setAttribute("visible",
-                              Boolean.valueOf(type.isVisible()).toString());
-
-        // Lets check out if this node has any property
-        List propList = type.getPropertyTypeList();
-
-        for (int i = 0, ii = propList.size(); i < ii; i++) {
-            TcgPropertyType propType = (TcgPropertyType) propList.get(i);
-            IIOMetadataNode propertyNode = new IIOMetadataNode("property");
-
-            propertyNode.setAttribute("name", propType.getName());
-
-            if (propType.isMultiple()) {
-                String s = propType.getType().toString();
-
-                propertyNode.setAttribute("type",
-                                          s.substring(0, s.length() - 4));
-            } else {
-                propertyNode.setAttribute("type",
-                                          propType.getType().toString());
-            }
-
-            propertyNode.setAttribute("editor", propType.getEditorName());
-            propertyNode.setAttribute("default",
-                                      (propType.getDefaultValue() == null)
-                                      ? ""
-                                      : propType.getDefaultValue().toString());
-            propertyNode.setAttribute("renderer", propType.getRendererName());
-            propertyNode.setAttribute("title", propType.getTitle());
-            propertyNode.setAttribute("description", propType.getDescription());
-            propertyNode.setAttribute("access", propType.getAccess());
-            propertyNode.setAttribute("required",
-                                      Boolean.valueOf(propType.isRequired())
-                                          .toString());
-            propertyNode.setAttribute("multiple",
-                                      Boolean.valueOf(propType.isMultiple())
-                                          .toString());
-            rootNode.appendChild(propertyNode);
-        }
-
-        List codeTypes = type.getCodeTypeList();
-
-        for (Iterator itr = codeTypes.iterator(); itr.hasNext();) {
-            TcgCodeType aTcgCodeType = (TcgCodeType) itr.next();
-            IIOMetadataNode codeNode = new IIOMetadataNode("code");
-
-            codeNode.setAttribute("type", aTcgCodeType.getName());
-            codeNode.setAttribute("file", aTcgCodeType.getTemplateName());
-            rootNode.appendChild(codeNode);
-        }
-
-        /*
-         *  Lets check out if this node has any children if it does then recurse
-         *  until we hit the bottom
-         */
-        List compList = c.getComponentList();
-
-        for (int i = 0, ii = compList.size(); i < ii; i++) {
-            TcgComponent pdscomponent = (TcgComponent) compList.get(i);
-
-            rootNode.appendChild(TcgModelToTypeConverter.toXml(pdscomponent));
-        }
-
-        return (Element) rootNode;
-    }
+    
+    
 
     /**
      * Method usage

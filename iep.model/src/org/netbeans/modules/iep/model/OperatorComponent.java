@@ -56,6 +56,8 @@ public interface OperatorComponent extends Component {
 	//operators
 	public static String PROP_NON_PERSIST_STATIC_INPUT_MAX_COUNT_KEY = "staticInputMaxCount";
 	
+	public static String PROP_FROM_COLUMN_LIST_KEY = "fromColumnList";
+	
 	int getX();
 	
 	void setX(int x);

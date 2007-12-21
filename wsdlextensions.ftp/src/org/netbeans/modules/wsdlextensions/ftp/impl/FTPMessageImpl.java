@@ -38,7 +38,7 @@ public class FTPMessageImpl extends FTPComponentImpl implements FTPMessage {
     }
     
     public FTPMessageImpl(WSDLModel model){
-        this(model, createPrefixedElement(FTPQName.MESSAGE.getQName(), model));
+        this(model, createPrefixedElement(FTPQName.TRANSFER.getQName(), model));
     }
     
     public void accept(FTPComponent.Visitor visitor) {

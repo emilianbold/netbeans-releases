@@ -35,10 +35,9 @@ public class IEPSemanticValidator implements Validator {
                 }
                  
                 IEPSemanticsVisitor visitor = new IEPSemanticsVisitor(this, validation, validatedModels);
-//                wsdlModel.getDefinitions().accept(visitor);
-//                validatedModels.add(model);
-//                List<ResultItem> resultItems = visitor.getResultItems();
-                List<ResultItem> resultItems = new ArrayList<ResultItem>();
+                iepModel.getPlanComponent().accept(visitor);
+                validatedModels.add(model);
+                List<ResultItem> resultItems = visitor.getResultItems();
                 return new ValidationResult(resultItems, validatedModels);
                 
             }

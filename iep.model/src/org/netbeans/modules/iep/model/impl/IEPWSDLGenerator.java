@@ -66,45 +66,11 @@ public class IEPWSDLGenerator {
 		
 	}
 	
-	private List getInputList() {
-        List<InputOperatorComponent> list = new ArrayList<InputOperatorComponent>();
-        	List<OperatorComponent> operators = mocContainer.getAllOperatorComponent();
-        	Iterator<OperatorComponent> it = operators.iterator();
-        	while(it.hasNext()) {
-        		OperatorComponent oc = it.next();
-        		if(oc instanceof InputOperatorComponent) {
-        			InputOperatorComponent inOC = (InputOperatorComponent) oc;
-        			if(inOC.isWebServiceInput()) {
-        				list.add(inOC);
-        			}
-        		}
-        		
-        	}
-        	
-        return list;
-    }
-    
-    private List getOutputList() {
-    	List<OutputOperatorComponent> list = new ArrayList<OutputOperatorComponent>();
-    	List<OperatorComponent> operators = mocContainer.getAllOperatorComponent();
-    	Iterator<OperatorComponent> it = operators.iterator();
-    	while(it.hasNext()) {
-    		OperatorComponent oc = it.next();
-    		if(oc instanceof OutputOperatorComponent) {
-    			OutputOperatorComponent inOC = (OutputOperatorComponent) oc;
-    			if(inOC.isWebServiceOutput()) {
-    				list.add(inOC);
-    			}
-    		}
-    		
-    	}
-    	
-    	return list;
-    }
+	
     
 	public String getWSDL(String tns) throws Exception {
-        List inList = getInputList();
-        List outList = getOutputList();
+        List<InputOperatorComponent> inList = mModel.getInputList();
+        List<OutputOperatorComponent> outList = mModel.getOutputList();
         
         StringBuffer sb = new StringBuffer();
         sb.append("<definitions targetNamespace=\"" + tns + "\"\n");

@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.netbeans.modules.iep.model.IEPComponent;
 import org.netbeans.modules.iep.model.IEPModel;
+import org.netbeans.modules.iep.model.IEPVisitor;
 import org.netbeans.modules.iep.model.SchemaComponent;
 import org.netbeans.modules.iep.model.SchemaComponentContainer;
 import org.w3c.dom.Element;
@@ -39,6 +40,10 @@ public class SchemaComponentContainerImpl extends ComponentImpl implements Schem
         return child;
 	}
 	
+	 public void accept(IEPVisitor visitor) {
+    	visitor.visitSchemaComponentContainer(this);
+    }
+	 
 	public void addSchemaComponent(SchemaComponent schema) {
 		addChildComponent(schema);
 	}

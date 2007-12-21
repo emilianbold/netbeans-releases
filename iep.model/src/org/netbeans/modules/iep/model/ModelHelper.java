@@ -6,7 +6,7 @@ import java.util.List;
 public class ModelHelper {
 
 	public static OperatorComponent findOperator(String id, IEPModel model) {
-		if(id == null) {
+		if(id == null || model == null) {
 			return null;
 		}
 		

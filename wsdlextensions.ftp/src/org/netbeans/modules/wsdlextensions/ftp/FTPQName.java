@@ -32,7 +32,9 @@ public enum FTPQName {
     BINDING(createFTPQName("binding")),
     FAULT(createFTPQName("fault")),
     OPERATION(createFTPQName("operation")),
-    MESSAGE(createFTPQName("message"));
+    MESSAGE(createFTPQName("message")),
+    /*MESSAGEACTIVEPASSIVE(createFTPQName("messageActivePassive")),*/
+    TRANSFER(createFTPQName("transfer"));
     
     public static final String FTP_NS_URI = "http://schemas.sun.com/jbi/wsdl-extensions/ftp/";
     public static final String FTP_NS_PREFIX = "ftp";

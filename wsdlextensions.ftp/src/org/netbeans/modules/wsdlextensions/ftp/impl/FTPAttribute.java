@@ -27,8 +27,6 @@ import org.netbeans.modules.xml.xam.dom.Attribute;
  */
 public enum FTPAttribute implements Attribute {
     FTP_URL_PROPERTY("url"),
-    FTP_USER_PROPERTY("user"),
-    FTP_PASSWORD_PROPERTY("password"),
     FTP_CMD_CH_TIMEOUT_PROPERTY("cmdChannelTimeout"),
     FTP_DATA_CH_TIMEOUT_PROPERTY("dataChannelTimeout"),
     FTP_ENCODINGSTYLE_PROPERTY("encodingStyle"),

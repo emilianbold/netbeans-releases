@@ -1,49 +1,24 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 package org.netbeans.modules.iep.editor.tcg.ps;
 
-import org.netbeans.modules.iep.editor.tcg.model.TcgComponent;
-import org.netbeans.modules.iep.editor.tcg.model.TcgProperty;
-import org.netbeans.modules.iep.editor.tcg.model.TcgType;
 import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodePropertyCustomizer.Validator;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -51,6 +26,13 @@ import java.beans.PropertyEditor;
 import java.util.List;
 import java.util.Vector;
 import java.util.logging.Logger;
+
+import org.netbeans.modules.iep.model.IEPModel;
+import org.netbeans.modules.iep.model.OperatorComponent;
+import org.netbeans.modules.iep.model.Property;
+import org.netbeans.modules.iep.model.lib.TcgProperty;
+import org.netbeans.modules.iep.model.lib.TcgPropertyType;
+import org.netbeans.modules.iep.model.lib.TcgType;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.HelpCtx;
@@ -59,10 +41,16 @@ import org.openide.util.HelpCtx;
  *
  * @author Bing Lu
  */
-public abstract class TcgComponentNodePropertyEditor implements PropertyEditor, ExPropertyEditor,HelpCtx.Provider {
+public abstract class TcgComponentNodePropertyEditor implements PropertyEditor, ComponentPropertyEditorConfig, ExPropertyEditor,HelpCtx.Provider {
     private static final Logger mLogger = Logger.getLogger(TcgComponentNodePropertyEditor.class.getName());
    
-    protected TcgComponentNodeProperty mProperty;
+    private Property mProperty;
+    
+    private OperatorComponent mComponent;
+    
+    private TcgPropertyType mPropertyType;
+    
+    private IEPModel mModel;
     
     // mValue is initialized to TcgComponentNodeProperty.getValue()
     // But we never use this initial value at all because we
@@ -86,18 +74,33 @@ public abstract class TcgComponentNodePropertyEditor implements PropertyEditor, 
     
     
     // Must be called right after instance creation
-    public void setProperty(TcgComponentNodeProperty property) {
-	if (property == null) {
-	   throw new NullPointerException();
-	}
-        mProperty = property;
+    public void setOperatorComponent(OperatorComponent component) {
+    	this.mComponent = component;
+    	if(component != null) {
+    		this.mModel = component.getModel();
+    	}
     }
     
-    public TcgComponentNodeProperty getProperty() {
-        return mProperty;
+    public OperatorComponent getOperatorComponent() {
+    	return this.mComponent;
     }
-
     
+    public void setPropertyType(TcgPropertyType type) {
+    	this.mPropertyType = type;
+    }
+    
+    public TcgPropertyType getPropertyType() {
+    	return this.mPropertyType;
+    }
+    
+    
+    public IEPModel getModel() {
+    	return this.mModel;
+    }
+    
+    public void setModel() {
+    	
+    }
     /**
      * Set (or change) the object that is to be edited.
      *
@@ -178,44 +181,51 @@ public abstract class TcgComponentNodePropertyEditor implements PropertyEditor, 
      *	     be prepared to parse that string back in setAsText().
      */
     public String getAsText() {
+    	return "Launch custom editor using ...";
         // See TcgComponentNodeProperty.getValue() for all possible return-types
-        Object value = getValue();
-        if (value == null) {
-            return "";
-        }
-        TcgType type = mProperty.getPropertyType().getType();
-        TcgProperty prop = mProperty.getProperty();
-        if (type == TcgType.STRING_LIST) {
-            List list = prop.getListValue();
-            StringBuffer sb = new StringBuffer();
-            sb.append("[");
-            for (int i = 0, I = list.size(); i < I; i++) {
-                String s = (String)list.get(i);
-                if (0 < i) {
-                    sb.append(",");
-                }
-                if (s.startsWith("i18n.")) {
-                    sb.append(TcgPsI18n.getI18nString(s.substring(5)));
-                } else {
-                    sb.append(s);
-                }
-            }
-            sb.append("]");
-            return sb.toString();
-        }
-        if (type == TcgType.STRING) {
-            String s = prop.getStringValue();
-            if (s.startsWith("i18n.")) {
-                return TcgPsI18n.getI18nString(s.substring(5));
-            } 
-            return s;
-        }
-        if (mProperty.getPropertyType().isMultiple()) {
-            String s = prop.getStringValue();
-            s = "[" + s.replace("\\", ",") + "]";
-            return s;
-        }
-        return prop.getStringValue();
+//        Object value = getValue();
+//        if (value == null) {
+//            return "";
+//        }
+//        TcgType type = getPropertyType().getType();
+//        Property prop = getProperty();
+//        if(prop == null) {
+//        	return "";
+//        }
+//        
+//        if (type == TcgType.STRING_LIST) {
+//            
+//            String val = prop.getValue();
+//            List list =  ( List) prop.getPropertyType().getType().parse(val);
+//            StringBuffer sb = new StringBuffer();
+//            sb.append("[");
+//            for (int i = 0, I = list.size(); i < I; i++) {
+//                String s = (String)list.get(i);
+//                if (0 < i) {
+//                    sb.append(",");
+//                }
+//                if (s.startsWith("i18n.")) {
+//                    sb.append(TcgPsI18n.getI18nString(s.substring(5)));
+//                } else {
+//                    sb.append(s);
+//                }
+//            }
+//            sb.append("]");
+//            return sb.toString();
+//        }
+//        if (type == TcgType.STRING) {
+//            String s = prop.getValue();
+//            if (s.startsWith("i18n.")) {
+//                return TcgPsI18n.getI18nString(s.substring(5));
+//            } 
+//            return s;
+//        }
+//        if (mProperty.getPropertyType().isMultiple()) {
+//            String s = prop.getValue();
+//            s = "[" + s.replace("\\", ",") + "]";
+//            return s;
+//        }
+//        return prop.getValue();
     }
 
     /**

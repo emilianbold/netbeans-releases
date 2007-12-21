@@ -1,48 +1,30 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 
 package org.netbeans.modules.iep.editor.tcg.ps;
 
-import org.netbeans.modules.iep.editor.tcg.exception.I18nException;
+import org.netbeans.modules.iep.editor.share.SharedConstants;
+import org.netbeans.modules.iep.model.IEPModel;
+import org.netbeans.modules.iep.model.OperatorComponent;
+import org.netbeans.modules.iep.model.Property;
+import org.netbeans.modules.iep.model.lib.I18nException;
 import java.beans.PropertyEditor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Logger;
@@ -52,69 +34,50 @@ import javax.swing.DefaultListModel;
 
 import org.openide.nodes.Node;
 
-import org.netbeans.modules.iep.editor.tcg.model.TcgProperty;
-import org.netbeans.modules.iep.editor.tcg.model.TcgPropertyType;
-import org.netbeans.modules.iep.editor.tcg.model.TcgType;
 import java.util.logging.Level;
+import org.netbeans.modules.iep.model.lib.TcgProperty;
+import org.netbeans.modules.iep.model.lib.TcgPropertyType;
+import org.netbeans.modules.iep.model.lib.TcgType;
 import org.openide.util.NbBundle;
 
 
 public class TcgComponentNodeProperty extends Node.Property {
     private static final Logger mLog = Logger.getLogger(TcgComponentNodeProperty.class.getName());
 
-    protected TcgProperty mProperty;
     protected TcgPropertyType mPropertyType;
-    protected TcgComponentNode mNode;
+    protected OperatorComponent mComp;
+    protected IEPModel mModel;
     
-    public static TcgComponentNodeProperty newInstance(String propName, TcgComponentNode node) throws I18nException {
-        TcgProperty property = node.getComponent().getProperty(propName);
-        return newInstance(property, node);
+    public static TcgComponentNodeProperty 
+    		newCustomPropertyEditorInstance(OperatorComponent component, IEPModel model) throws I18nException {
+        Property property = model.getFactory().createProperty(model);
+        property.setName(SharedConstants.PROPERTY_EDITOR_KEY);
+        TcgPropertyType propertyType = component.getComponentType().getPropertyType(SharedConstants.PROPERTY_EDITOR_KEY);
+        return newInstance(propertyType, component, model);
+        //return newPropertyInstance(property, node);
+    }
+    
+    public static TcgComponentNodeProperty newInstance(TcgPropertyType propertyType,
+    												   OperatorComponent component,
+    												   IEPModel model) throws I18nException {
+        return newPropertyInstance(propertyType, component, model);
+    }
+    
+    private static TcgComponentNodeProperty newPropertyInstance(TcgPropertyType propertyType,
+    												   OperatorComponent component,
+    												   IEPModel model) {
+        return new TcgComponentNodeProperty(Object.class, propertyType, component, model);
     }
 
-    public static TcgComponentNodeProperty newInstance(TcgProperty property, TcgComponentNode node) {
-        TcgPropertyType pt = property.getType();
-        TcgType type = pt.getType();
-        if (type == TcgType.BOOLEAN) {
-            return new TcgComponentNodeProperty(property, Boolean.class, node);
-        }
-        if (type == TcgType.INTEGER) {
-            return new TcgComponentNodeProperty(property, Integer.class, node);
-        }
-        if (type == TcgType.LONG) {
-            return new TcgComponentNodeProperty(property, Long.class, node);
-        }
-        if (type == TcgType.DOUBLE) {
-            return new TcgComponentNodeProperty(property, Double.class, node);
-        }
-        if (type == TcgType.STRING) {
-            return new TcgComponentNodeProperty(property, String.class, node);
-        }
-        if (type == TcgType.DATE) {
-            return new TcgComponentNodeProperty(property, Date.class, node);
-        }
-        if (type == TcgType.OBJECT && !pt.isWritable()) {
-            return new TcgComponentNodeProperty(property, String.class, node);
-        }
-        if (type == TcgType.BOOLEAN_LIST ||
-            type == TcgType.INTEGER_LIST ||
-            type == TcgType.LONG_LIST ||
-            type == TcgType.DOUBLE_LIST ||
-            type == TcgType.STRING_LIST) 
-        {
-            TcgComponentNodeProperty p = new TcgComponentNodeProperty(property, ListModel.class, node);
-            // Disable inplace editing.
-            p.setValue("canEditAsText", Boolean.FALSE);
-            return p;
-        }
-        return new TcgComponentNodeProperty(property, Object.class, node);
-    }
-
-    private TcgComponentNodeProperty(TcgProperty property, Class valueType, TcgComponentNode node) {
+    private TcgComponentNodeProperty(Class valueType,
+    								 TcgPropertyType propertyType,
+    								 OperatorComponent component,
+    								 IEPModel model) {
         super (valueType);
-        mProperty = property;
-        mPropertyType = mProperty.getType();
-        mNode = node;
-        setName(mProperty.getName());
+        mPropertyType = propertyType;
+        mComp = component;
+        mModel = model;
+        setName(propertyType.getName());
         setDisplayName(TcgPsI18n.getDisplayName(mPropertyType));
         setShortDescription(TcgPsI18n.getToolTip(mPropertyType));
     }
@@ -136,27 +99,33 @@ public class TcgComponentNodeProperty extends Node.Property {
     public Object getValue () 
         throws IllegalAccessException, IllegalArgumentException, InvocationTargetException 
     {
-        // Note that the return of this method is not used by 
-        // TcgComponentNodePropertyEditor and its children at all.
-        // It is used by Netbean's default property editors
-        TcgType type = mPropertyType.getType();
-        if (type == TcgType.OBJECT && !mPropertyType.isWritable()) {
-            return mProperty.getValue().toString();
-        }
-        if (type == TcgType.BOOLEAN_LIST ||
-            type == TcgType.INTEGER_LIST ||
-            type == TcgType.LONG_LIST ||
-            type == TcgType.DOUBLE_LIST ||
-            type == TcgType.STRING_LIST) 
-        {
-            DefaultListModel listModel = new DefaultListModel();
-            List list = mProperty.getListValue();
-            for (int i = 0, I = list.size(); i < I; i++) {
-                listModel.addElement(list.get(i));
-            }
-            return listModel;
-        }
-        return mProperty.getValue();
+    	return "";
+    	//rit commented below
+//        // Note that the return of this method is not used by 
+//        // TcgComponentNodePropertyEditor and its children at all.
+//        // It is used by Netbean's default property editors
+//        TcgType type = mPropertyType.getType();
+//        if (type == TcgType.OBJECT && !mPropertyType.isWritable()) {
+//            return mProperty.getValue().toString();
+//        }
+//        if (type == TcgType.BOOLEAN_LIST ||
+//            type == TcgType.INTEGER_LIST ||
+//            type == TcgType.LONG_LIST ||
+//            type == TcgType.DOUBLE_LIST ||
+//            type == TcgType.STRING_LIST) 
+//        {
+//            DefaultListModel listModel = new DefaultListModel();
+//            List list = new ArrayList();//ritmProperty.getListValue();
+//            String value = mProperty.getValue();
+//            if(value != null) {
+//            	list = (List) mProperty.getPropertyType().getType().parse(value);
+//            }
+//            for (int i = 0, I = list.size(); i < I; i++) {
+//                listModel.addElement(list.get(i));
+//            }
+//            return listModel;
+//        }
+//        return mProperty.getValue();
     }
 
     /* Can write the value of the property.
@@ -179,24 +148,26 @@ public class TcgComponentNodeProperty extends Node.Property {
         if (!mPropertyType.isWritable()) {
             throw new IllegalAccessException ();
         }
-        // Note that TcgComponentNodePropertyEditor and its children will only
-        // pass back following types of value:
-        // Boolean, Integer, Double, String, and 
-        // Lists whose elements are of above type.
-        if (val instanceof ListModel) { 
-            ArrayList list = new ArrayList();
-            ListModel listModel = (ListModel)val;
-            for (int i = 0, I = listModel.getSize(); i < I; i++) {
-                list.add(listModel.getElementAt(i));
-            }
-            mProperty.setValue(list);
-            return;
-        }
-        if (val instanceof String) {
-            mProperty.setStringValue((String)val);
-            return;
-        }
-        mProperty.setValue(val);
+        //rit commented
+//        // Note that TcgComponentNodePropertyEditor and its children will only
+//        // pass back following types of value:
+//        // Boolean, Integer, Double, String, and 
+//        // Lists whose elements are of above type.
+//        if (val instanceof ListModel) { 
+//            ArrayList list = new ArrayList();
+//            ListModel listModel = (ListModel)val;
+//            for (int i = 0, I = listModel.getSize(); i < I; i++) {
+//                list.add(listModel.getElementAt(i));
+//            }
+//            String value = mProperty.getPropertyType().getType().format(list);
+//            mProperty.setValue(value);
+//            return;
+//        }
+//        if (val instanceof String) {
+//            mProperty.setValue((String)val);
+//            return;
+//        }
+//        mProperty.setValue(val.toString());
     }
 
     /**
@@ -210,8 +181,10 @@ public class TcgComponentNodeProperty extends Node.Property {
             return super.getPropertyEditor();
         }
         try {
-            TcgComponentNodePropertyEditor editor = (TcgComponentNodePropertyEditor)Class.forName(editorName).newInstance();
-            editor.setProperty(this);
+        	ComponentPropertyEditorConfig editor = (ComponentPropertyEditorConfig)Class.forName(editorName).newInstance();
+            //editor.setProperty(this);
+            editor.setPropertyType(this.mPropertyType);
+            editor.setOperatorComponent(this.mComp);
             return editor;
         } catch (Exception e) {
             mLog.log(Level.SEVERE, 
@@ -221,12 +194,13 @@ public class TcgComponentNodeProperty extends Node.Property {
         return null;
     }
 
-    public TcgComponentNode getNode() {
-        return mNode;
+   
+    public IEPModel getModel() {
+    	return this.mModel;
     }
     
-    public TcgProperty getProperty() {
-        return mProperty;
+    public OperatorComponent getModelComponent() {
+    	return this.mComp;
     }
     
     public TcgPropertyType getPropertyType() {

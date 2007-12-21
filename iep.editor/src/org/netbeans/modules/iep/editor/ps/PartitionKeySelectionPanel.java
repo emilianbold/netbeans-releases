@@ -1,57 +1,33 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 package org.netbeans.modules.iep.editor.ps;
 
 import org.netbeans.modules.iep.editor.model.AttributeMetadata;
-import org.netbeans.modules.iep.editor.model.Plan;
-import org.netbeans.modules.iep.editor.model.Schema;
 import org.netbeans.modules.iep.editor.share.SharedConstants;
-import org.netbeans.modules.iep.editor.tcg.model.TcgComponent;
 import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -63,7 +39,12 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
-import org.netbeans.modules.iep.editor.tcg.model.TcgProperty;
+
+import org.netbeans.modules.iep.model.IEPModel;
+import org.netbeans.modules.iep.model.OperatorComponent;
+import org.netbeans.modules.iep.model.Property;
+import org.netbeans.modules.iep.model.SchemaAttribute;
+import org.netbeans.modules.iep.model.SchemaComponent;
 import org.openide.util.NbBundle;
 
 /**
@@ -76,13 +57,15 @@ import org.openide.util.NbBundle;
 public class PartitionKeySelectionPanel extends JPanel implements SharedConstants {
     private static final Logger mLog = Logger.getLogger(PartitionKeySelectionPanel.class.getName());
     
-    private TcgComponent mComponent;
+    private IEPModel mModel;
+    private OperatorComponent mComponent;
     private List mCheckBoxList = new ArrayList();
-    private List mAttributeList = new ArrayList();
+    private List<SchemaAttribute> mAttributeList = new ArrayList<SchemaAttribute>();
     
     /** Creates a new instance of PartitionKeySelectionPanel */
-    public PartitionKeySelectionPanel(Plan plan, TcgComponent component) {
+    public PartitionKeySelectionPanel(IEPModel model, OperatorComponent component) {
         try {
+        	mModel = model;
             mComponent = component;
             String msg = NbBundle.getMessage(InputSchemaSelectionPanel.class, "PartitionKeySelectionPanel.SELECTED_PARTITION_KEY");
             setBorder(new TitledBorder(LineBorder.createGrayLineBorder(), msg, TitledBorder.LEFT, TitledBorder.TOP));
@@ -106,30 +89,32 @@ public class PartitionKeySelectionPanel extends JPanel implements SharedConstant
             gbc.weighty = 0.0D;
             gbc.fill = GridBagConstraints.NONE;
 
-            List inputIdList = component.getProperty(INPUT_ID_LIST_KEY).getListValue();
-            if (inputIdList.size() < 1) {
+            List<OperatorComponent> inputs = component.getInputOperatorList();
+            if (inputs.size() < 1) {
                 msg = NbBundle.getMessage(PartitionKeySelectionPanel.class,
                         "PartitionKeySelectionPanel.INPUT_IS_NOT_SPECIFIED");
                 JLabel label = new JLabel(msg);
                 checkPanel.add(label, gbc);
                 return;
             }
-            String id = (String)inputIdList.get(0);
-            TcgComponent input = plan.getOperatorById(id);
-            String outputSchemaId = input.getProperty(OUTPUT_SCHEMA_ID_KEY).getStringValue();
-            Schema schema = plan.getSchema(outputSchemaId);
-            if (schema == null) {
+            OperatorComponent input = inputs.get(0);
+            SchemaComponent outputSchema = input.getOutputSchemaId();
+            if (outputSchema == null) {
                 msg = NbBundle.getMessage(PartitionKeySelectionPanel.class,
                         "PartitionKeySelectionPanel.INPUT_DOES_NOT_HAVE_ANY_SCHEMA");
                 JLabel label = new JLabel(msg);
                 checkPanel.add(label, gbc);
                 return;
             }
-            List attributeList = component.getProperty(ATTRIBUTE_LIST_KEY).getListValue();
-            for(int i = 0, I = schema.getAttributeCount(); i < I; i++) {
-                AttributeMetadata cm = schema.getAttributeMetadata(i);
-                mAttributeList.add(cm);
-                String attributeName = cm.getName();
+            String attributeListStr = component.getProperty(ATTRIBUTE_LIST_KEY).getValue();
+            List attributeList = (List) component.getProperty(ATTRIBUTE_LIST_KEY).getPropertyType().getType().parse(attributeListStr);
+            //ritList attributeList = component.getProperty(ATTRIBUTE_LIST_KEY).getListValue();
+            List<SchemaAttribute> attrs = outputSchema.getSchemaAttributes();
+            Iterator<SchemaAttribute> attrsIt = attrs.iterator();
+            while(attrsIt.hasNext()) {
+            	SchemaAttribute sa = attrsIt.next();
+            	mAttributeList.add(sa);
+            	String attributeName = sa.getName();
                 JCheckBox cb = new JCheckBox(attributeName);
                 mCheckBoxList.add(cb);
                 if (attributeList.contains(attributeName)) {
@@ -140,6 +125,21 @@ public class PartitionKeySelectionPanel extends JPanel implements SharedConstant
                 gbc.gridy = gGridy++;
                 checkPanel.add(cb, gbc);
             }
+            
+//            for(int i = 0, I = schema.getAttributeCount(); i < I; i++) {
+//                AttributeMetadata cm = schema.getAttributeMetadata(i);
+//                mAttributeList.add(cm);
+//                String attributeName = cm.getName();
+//                JCheckBox cb = new JCheckBox(attributeName);
+//                mCheckBoxList.add(cb);
+//                if (attributeList.contains(attributeName)) {
+//                    cb.setSelected(true);
+//                } else {
+//                    cb.setSelected(false);
+//                }
+//                gbc.gridy = gGridy++;
+//                checkPanel.add(cb, gbc);
+//            }
             gbc.gridy = gGridy++;
             gbc.weighty = 1.0D;
             gbc.fill = GridBagConstraints.VERTICAL;
@@ -150,7 +150,7 @@ public class PartitionKeySelectionPanel extends JPanel implements SharedConstant
         }
     }
     
-    public List getSelectedAttributeList() {
+    public List<SchemaAttribute> getSelectedAttributeList() {
         List ret = new ArrayList();
         for (int i = 0, I = mCheckBoxList.size(); i < I; i++) {
             if (((JCheckBox)mCheckBoxList.get(i)).isSelected()) {
@@ -165,7 +165,7 @@ public class PartitionKeySelectionPanel extends JPanel implements SharedConstant
         try {
             for (int i = 0, I = mCheckBoxList.size(); i < I; i++) {
                 if (((JCheckBox)mCheckBoxList.get(i)).isSelected()) {
-                    ret.add(((AttributeMetadata)mAttributeList.get(i)).getAttributeName());
+                    ret.add((mAttributeList.get(i)).getAttributeName());
                 }
             }
         } catch (Exception e) {
@@ -173,9 +173,9 @@ public class PartitionKeySelectionPanel extends JPanel implements SharedConstant
         return ret;
     }
     
-    public AttributeMetadata getAttribute(String attributeName) throws Exception {
+    public SchemaAttribute getAttribute(String attributeName) throws Exception {
         for (int i = 0, I = mAttributeList.size(); i < I; i++) {
-            AttributeMetadata cm = (AttributeMetadata)mAttributeList.get(i);
+            SchemaAttribute cm = mAttributeList.get(i);
             String name = cm.getAttributeName();
             if (name.equals(attributeName)) {
                 return cm;
@@ -187,7 +187,7 @@ public class PartitionKeySelectionPanel extends JPanel implements SharedConstant
     public List getAttributeNameList(Set types) throws Exception {
         List attributeNameList = new ArrayList();
         for (int i = 0, I = mAttributeList.size(); i < I; i++) {
-            AttributeMetadata cm = (AttributeMetadata)mAttributeList.get(i);
+        	SchemaAttribute cm = (SchemaAttribute)mAttributeList.get(i);
             String name = cm.getAttributeName();
             String type = cm.getAttributeType();
             if ( type != null && types.contains(type)) {
@@ -213,9 +213,13 @@ public class PartitionKeySelectionPanel extends JPanel implements SharedConstant
                 }
                 sb.append((String)partitionKey.get(i));
             }
-            TcgProperty prop = mComponent.getProperty(ATTRIBUTE_LIST_KEY);
-            if (!sb.toString().equals(prop.getStringValue())) {
-                prop.setValue(partitionKey);
+            Property prop = mComponent.getProperty(ATTRIBUTE_LIST_KEY);
+            if (!sb.toString().equals(prop.getValue())) {
+            	prop.getModel().startTransaction();
+                //ritprop.setValue(partitionKey);
+            	prop.setValue(sb.toString());
+            	prop.getModel().endTransaction();
+            	
             }
         } catch (Exception e) {
             mLog.log(Level.SEVERE, e.getMessage(), e);

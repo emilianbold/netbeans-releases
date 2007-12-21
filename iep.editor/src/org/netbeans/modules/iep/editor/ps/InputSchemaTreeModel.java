@@ -1,52 +1,32 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 
 package org.netbeans.modules.iep.editor.ps;
 
-import org.netbeans.modules.iep.editor.model.Plan;
-import org.netbeans.modules.iep.editor.model.Schema;
 import org.netbeans.modules.iep.editor.share.SharedConstants;
-import org.netbeans.modules.iep.editor.tcg.model.TcgComponent;
-import org.netbeans.modules.iep.editor.tcg.model.TcgProperty;
+import org.netbeans.modules.iep.model.IEPModel;
+import org.netbeans.modules.iep.model.OperatorComponent;
+import org.netbeans.modules.iep.model.SchemaAttribute;
+import org.netbeans.modules.iep.model.SchemaComponent;
+
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,9 +44,58 @@ import org.openide.util.NbBundle;
 class InputSchemaTreeModel extends DefaultTreeModel implements SharedConstants {
     private static final Logger mLog = Logger.getLogger(InputSchemaTreeModel.class.getName());
     
-    public InputSchemaTreeModel(DefaultMutableTreeNode root, Plan plan, TcgComponent component) {
+    public InputSchemaTreeModel(DefaultMutableTreeNode root, IEPModel model, OperatorComponent component) {
         super(root);
         try {
+        	List<OperatorComponent> inputs = component.getInputOperatorList();
+        	Iterator<OperatorComponent> itIn = inputs.iterator();
+        	while(itIn.hasNext()) {
+        		OperatorComponent  input = itIn.next();
+        		if(input != null) {
+                    String inputName = input.getDisplayName();
+                    DefaultMutableTreeNode inputNode = new DefaultMutableTreeNode(inputName);
+                    root.add(inputNode);
+                    SchemaComponent outputSchema = input.getOutputSchemaId();
+                    if(outputSchema != null) {
+                    	List<SchemaAttribute> attrs =  outputSchema.getSchemaAttributes();
+                    	Iterator<SchemaAttribute> attrsIt = attrs.iterator();
+                    	while(attrsIt.hasNext()) {
+                    		SchemaAttribute sa = attrsIt.next();
+                    		AttributeInfo ai = new AttributeInfo(inputName, sa);
+                            DefaultMutableTreeNode columnNode = new DefaultMutableTreeNode(ai);
+                            inputNode.add(columnNode);
+                    	}
+                    }
+                }
+        	}
+        	
+        	List<OperatorComponent> tableInputs = component.getStaticInputTableList();
+        	Iterator<OperatorComponent> tableInIt = tableInputs.iterator();
+        	while(tableInIt.hasNext()) {
+        		OperatorComponent input = tableInIt.next();
+        		
+        		if(input != null) {
+                    String inputName = input.getDisplayName();
+                    DefaultMutableTreeNode inputNode = new DefaultMutableTreeNode(inputName);
+                    root.add(inputNode);
+                    SchemaComponent outputSchema = input.getOutputSchemaId();
+                    if(outputSchema != null) {
+                    	List<SchemaAttribute> attrs = outputSchema.getSchemaAttributes();
+                    	Iterator<SchemaAttribute> attrsIt = attrs.iterator();
+                    	while(attrsIt.hasNext()) {
+                    		SchemaAttribute sa = attrsIt.next();
+                    		AttributeInfo ai = new AttributeInfo(inputName, sa);
+                            DefaultMutableTreeNode columnNode = new DefaultMutableTreeNode(ai);
+                            inputNode.add(columnNode);
+                    	}
+                        
+                    }
+                }
+        		
+        	}
+        	
+        	
+        	/*
             List inputIdList = component.getProperty(INPUT_ID_LIST_KEY).getListValue();
             for(int i = 0, I = inputIdList.size(); i < I; i++) {
                 String id = (String)inputIdList.get(i);
@@ -111,7 +140,7 @@ class InputSchemaTreeModel extends DefaultTreeModel implements SharedConstants {
                     }
                 }
             }
-            
+            */
         } catch(Exception e) {
             mLog.log(Level.SEVERE, NbBundle.getMessage(InputSchemaTreeModel.class, 
                     "InputSchemaTreeModel.FAIL_TO_BUILD_TREE_MODEL_FOR", component.getTitle()), e);

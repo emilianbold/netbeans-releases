@@ -1,11 +1,13 @@
 package org.netbeans.modules.iep.model.impl;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import org.netbeans.modules.iep.model.Component;
 import org.netbeans.modules.iep.model.IEPComponent;
 import org.netbeans.modules.iep.model.IEPModel;
+import org.netbeans.modules.iep.model.IEPVisitor;
 import org.netbeans.modules.iep.model.OperatorComponent;
 import org.netbeans.modules.iep.model.OperatorComponentContainer;
 import org.w3c.dom.Element;
@@ -22,24 +24,35 @@ public class OperatorComponentContainerImpl extends ComponentImpl implements Ope
 		setType("/IEP/Model/Plan|Operators"); //NOI18N
 	}
 	
-	public IEPComponent createChild (Element childEl) {
-		IEPComponent child = null;
-        
-        if (childEl != null) {
-            String localName = childEl.getLocalName();
-            if (localName == null || localName.length() == 0) {
-                    localName = childEl.getTagName();
-            }
-            if (localName.equals(COMPONENT_CHILD)) {
-            		child = new OperatorComponentImpl(getModel(), childEl);
-            } else {
-            	child = super.createChild(childEl);
-            }
-        }
-        
-        return child;
-	}
+	 public IEPComponent createChild(Element childEl) {
+	        IEPComponent child = null;
+	        
+	        if (childEl != null) {
+	            String localName = childEl.getLocalName();
+	            if (localName == null || localName.length() == 0) {
+	                    localName = childEl.getTagName();
+	            }
+	            if (localName.equals(COMPONENT_CHILD)) {
+	            	 String type = childEl.getAttribute(OperatorComponent.TYPE_PROPERTY);
+	            	 if(type.endsWith("Input")) {
+	            		 child = new InputOperatorComponentImpl(getModel(), childEl);
+	            	 } else if(type.endsWith("Output")) {
+	            		 child = new OutputOperatorComponentImpl(getModel(), childEl);
+	            	 } else {
+	                    child = new OperatorComponentImpl(getModel(), childEl);
+	            	 }
+	            } else {
+	            	child = super.createChild(childEl);
+	            }
+	        }
+	        
+	        return child;
+	    }
 	
+	public void accept(IEPVisitor visitor) {
+    	visitor.visitOperatorComponentContainer(this);
+    }
+	 
 	public void addOperatorComponent(OperatorComponent operator) {
 		addChildComponent(operator);
 	}
@@ -93,5 +106,23 @@ public class OperatorComponentContainerImpl extends ComponentImpl implements Ope
     	return child;
     	
 		
+	}
+	
+	public List<OperatorComponent> findOutputOperator(OperatorComponent operator) {
+		List<OperatorComponent> outputOperatorList = new ArrayList<OperatorComponent>();
+		
+		List<OperatorComponent> allOps = getAllOperatorComponent();
+		Iterator<OperatorComponent> it = allOps.iterator();
+		while(it.hasNext()) {
+			OperatorComponent oc = it.next();
+			
+			if(!oc.equals(operator)) {
+				if(oc.getInputOperatorList().contains(operator)) {
+					outputOperatorList.add(oc);
+				}
+			}
+		}
+		
+		return outputOperatorList;
 	}
 }

@@ -30,7 +30,9 @@ public interface FTPComponent extends ExtensibilityElement {
         void visit(FTPAddress target);
         void visit(FTPBinding target);
         void visit(FTPOperation target);
+        void visit(FTPTransfer target);
         void visit(FTPMessage target);
+        //void visit(FTPMessageActivePassive target);
     }
     
     void accept(Visitor visitor);

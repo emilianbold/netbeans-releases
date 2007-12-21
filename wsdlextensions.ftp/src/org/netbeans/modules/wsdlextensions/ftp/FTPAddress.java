@@ -26,8 +26,6 @@ package org.netbeans.modules.wsdlextensions.ftp;
 */
 public interface FTPAddress extends FTPComponent {
     public static final String FTP_URL_PROPERTY = "url";
-    public static final String FTP_USER_PROPERTY = "user";
-    public static final String FTP_PASSWORD_PROPERTY = "password";
     public static final String FTP_DIRLSTSTYLE_PROPERTY = "dirListStyle";
     public static final String FTP_USE_UD_HEURISTICS_PROPERTY = "useUserDefinedHeuristics";
     public static final String FTP_UD_DIRLSTSTYLE_PROPERTY = "userDefDirListStyle";
@@ -38,10 +36,6 @@ public interface FTPAddress extends FTPComponent {
     
     public String getFTPURL();
     public void setFTPURL(String url);
-    public String getUser();
-    public void setUser(String s);
-    public String getPassword();
-    public void setPassword(String s);
     public String getDirListStyle();
     public void setDirListStyle(String style);
     //useUserDefinedHeuristics="indicate that user defined listing style will be used"

@@ -1,53 +1,43 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 package org.netbeans.modules.iep.editor.tcg.ps;
 
-import org.netbeans.modules.iep.editor.tcg.model.TcgComponent;
-import org.netbeans.modules.iep.editor.tcg.model.TcgProperty;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
+
+import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
+
+import org.netbeans.modules.iep.model.Documentation;
+import org.netbeans.modules.iep.model.IEPModel;
+import org.netbeans.modules.iep.model.OperatorComponent;
+import org.netbeans.modules.iep.model.Property;
+import org.netbeans.modules.iep.model.lib.TcgPropertyType;
 import org.openide.explorer.propertysheet.PropertyEnv;
 
 /**
@@ -58,37 +48,60 @@ import org.openide.explorer.propertysheet.PropertyEnv;
  * @author Bing Lu
  */
 public abstract class TcgComponentNodePropertyCustomizer extends JPanel{
-    protected TcgComponentNodeProperty mProperty;
+    
+	protected TcgPropertyType mPropertyType;
+    protected OperatorComponent mComponent;
+    protected IEPModel mModel;
+    
+   
     protected PropertyEnv mEnv;
     protected Validator mValidator;
     protected TcgComponentNodePropertyCustomizerState mCustomizerState;
     
+    private JPanel contentPane;
+    
+    private JTextArea documentationArea;
+    
+    protected JLabel mStatusLbl;
+    
     /**
      * Creates a new instance of TcgComponentNodePropertyCustomizer
      */
-    public TcgComponentNodePropertyCustomizer(TcgComponentNodeProperty prop, PropertyEnv env) {
-        mProperty = prop;
+    public TcgComponentNodePropertyCustomizer(TcgPropertyType propertyType, OperatorComponent component, PropertyEnv env) {
+    	mPropertyType = propertyType;
+        mComponent = component;
+        mModel = component.getModel();
         mEnv = env;
         mValidator = new Validator();
         mEnv.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
         mEnv.addVetoableChangeListener(mValidator);
         mEnv.addPropertyChangeListener(mValidator);
+        initGUI();
         initialize();
+        
     }
-    
-    /**
-     * Creates a new instance of TcgComponentNodePropertyCustomizer
-     */
-    public TcgComponentNodePropertyCustomizer(TcgComponentNodeProperty prop, TcgComponentNodePropertyCustomizerState customizerState) {
-        mProperty = prop;
+
+    public TcgComponentNodePropertyCustomizer(TcgPropertyType propertyType, OperatorComponent component, TcgComponentNodePropertyCustomizerState customizerState) {
+        mPropertyType = propertyType;
+        mComponent = component;
+        mModel = component.getModel();
         mCustomizerState = customizerState;
         mValidator = new Validator();
         mCustomizerState.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
         mCustomizerState.addVetoableChangeListener(mValidator);
         mCustomizerState.addPropertyChangeListener(mValidator);
+        initGUI();
         initialize();
     }
-
+    
+    public OperatorComponent getOperatorComponent() {
+    	return this.mComponent;
+    }
+    
+    public TcgPropertyType getPropertyType() {
+    	return this.mPropertyType;
+    }
+    
     protected abstract void initialize();
     
     public void removeNotify() {
@@ -116,6 +129,21 @@ public abstract class TcgComponentNodePropertyCustomizer extends JPanel{
     public abstract void validateContent(PropertyChangeEvent evt) throws PropertyVetoException;
     public abstract void setValue();
     
+    protected void setDocumentation() {
+//    	set documentation
+        String doc = getDocumentation();
+        if(doc != null && !doc.trim().equals("")) {
+        	Documentation documentation = mModel.getFactory().createDocumentation(mModel);
+        	documentation.setTextContent(doc);
+        	mModel.startTransaction();
+        	mComponent.setDocumentation(documentation);
+        	mModel.endTransaction();
+        } else {
+        	mModel.startTransaction();
+        	mComponent.setDocumentation(null);
+        	mModel.endTransaction();
+        }
+    }
     class Validator implements VetoableChangeListener, PropertyChangeListener {
         private boolean mVetoStart = false;
         private boolean mVetoEnd = true;
@@ -147,5 +175,43 @@ public abstract class TcgComponentNodePropertyCustomizer extends JPanel{
                 mVetoEnd = true;
             }
         }
+    }
+    
+    public JComponent getContentPane() {
+    	return this.contentPane;
+    }
+    
+    public String getDocumentation() {
+    	return this.documentationArea.getText();
+    }
+    
+    public void setDocumentation(String documentation) {
+    	this.documentationArea.setText(documentation);
+    }
+    
+    private void initGUI() {
+    	this.setLayout(new BorderLayout());
+    	
+    	JTabbedPane tabPane = new JTabbedPane();
+    	this.contentPane = new JPanel();
+    	this.contentPane.setName("Operator Configuration");
+    	tabPane.add(this.contentPane);
+    	this.add(tabPane, BorderLayout.CENTER);
+    	
+    	this.documentationArea = new JTextArea();
+    	this.documentationArea.setName("Documentation");
+    	this.documentationArea.setWrapStyleWord(true);
+    	this.documentationArea.setLineWrap(true);
+    	tabPane.add(this.documentationArea);
+    	
+    	Documentation doc = this.getOperatorComponent().getDocumentation();
+    	if(doc != null && doc.getTextContent() != null) {
+    		setDocumentation(doc.getTextContent());
+    	}
+    	
+    	mStatusLbl = new JLabel();
+        mStatusLbl.setForeground(Color.RED);
+        mStatusLbl.setPreferredSize(new Dimension(160, 20));
+        add(mStatusLbl, BorderLayout.SOUTH);
     }
 }

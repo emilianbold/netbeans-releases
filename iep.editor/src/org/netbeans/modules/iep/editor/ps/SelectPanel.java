@@ -1,57 +1,37 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
-
+ 
 package org.netbeans.modules.iep.editor.ps;
 
 import org.netbeans.modules.iep.editor.designer.JTextFieldFilter;
 import org.netbeans.modules.iep.editor.model.AttributeMetadata;
-import org.netbeans.modules.iep.editor.model.Plan;
-import org.netbeans.modules.iep.editor.model.Schema;
 import org.netbeans.modules.iep.editor.share.SharedConstants;
 import org.netbeans.modules.iep.editor.tcg.table.DefaultMoveableRowTableModel;
 import org.netbeans.modules.iep.editor.tcg.table.MoveableRowTable;
-import org.netbeans.modules.iep.editor.tcg.model.TcgComponent;
-import org.netbeans.modules.iep.editor.tcg.util.ArrayHashMap;
-import org.netbeans.modules.iep.editor.tcg.util.ListMap;
+import org.netbeans.modules.iep.model.IEPModel;
+import org.netbeans.modules.iep.model.OperatorComponent;
+import org.netbeans.modules.iep.model.SchemaAttribute;
+import org.netbeans.modules.iep.model.SchemaComponent;
+import org.netbeans.modules.iep.model.lib.ArrayHashMap;
+import org.netbeans.modules.iep.model.lib.ListMap;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -70,6 +50,7 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
@@ -86,6 +67,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
+import javax.swing.event.EventListenerList;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumnModel;
 import org.openide.util.NbBundle;
@@ -151,11 +133,39 @@ public class SelectPanel extends JPanel implements SharedConstants {
     private static JTextField mTextFieldANU;
     private static JTextField mTextFieldAny;
     private static SmartTextField mTextFieldExpression;
+    private static AttributeDropNotificationListener mTextFieldExpressionDropHandler;
     private static JComboBox mComboBoxSqlType;
     private static Vector mSqlType;
+   
     
+    private IEPModel mModel;
+    private OperatorComponent mComponent;
+    private DefaultMoveableRowTableModel mTableModel;
+    private MoveableRowTable mTable;
+    private SmartCellEditor mCellEditorExpression;
+    private ListMap mColumnMetadataTable;
+    private DropTarget mDropTarget;
+    private boolean mReadOnly;
+    private boolean mHasExpressionColumn;
+    private int mNameCol;
+    private SelectPanelTableCellRenderer  spTCRenderer;
     
-    static  {
+    private EventListenerList mListernerList = new EventListenerList();
+    
+    public SelectPanel(IEPModel model, OperatorComponent component) {
+    	mModel = model;
+        mComponent = component;
+        try {
+            boolean isSchemaOwner = component.isSchemaOwner();
+            String inputType = component.getProperty(INPUT_TYPE_KEY).getValue();
+            mReadOnly = !isSchemaOwner;
+            mHasExpressionColumn = isSchemaOwner && !inputType.equals(IO_TYPE_NONE);
+            mNameCol = mHasExpressionColumn? 1 : 0;
+        } catch (Exception e) {
+            mHasExpressionColumn = false;
+            mNameCol = 0;
+        }
+        
         mTextFieldANU = new JTextField();
         mTextFieldANU.setDocument(JTextFieldFilter.newAlphaNumericUnderscore());
         mCellEditorANU = new DefaultCellEditor(mTextFieldANU);
@@ -168,7 +178,9 @@ public class SelectPanel extends JPanel implements SharedConstants {
         mCellEditorAny = new DefaultCellEditor(mTextFieldAny);
         
         boolean truncateColumn = false;
-        mTextFieldExpression = new SmartTextField(truncateColumn);
+        mTextFieldExpressionDropHandler = new TextFieldExpressionDropNotificationHandler();
+        
+        mTextFieldExpression = new SmartTextField(truncateColumn, mTextFieldExpressionDropHandler);
         
         mSqlType = new Vector();
         mSqlType.add("");
@@ -177,45 +189,68 @@ public class SelectPanel extends JPanel implements SharedConstants {
         
         mComboBoxSqlType = new JComboBox(mSqlType);
         mCellEditorSqlType = new DefaultCellEditor(mComboBoxSqlType);
-    }
-    
-    private Plan mPlan;
-    private TcgComponent mComponent;
-    private DefaultMoveableRowTableModel mTableModel;
-    private MoveableRowTable mTable;
-    private SmartCellEditor mCellEditorExpression;
-    private ListMap mColumnMetadataTable;
-    private DropTarget mDropTarget;
-    private boolean mReadOnly;
-    private boolean mHasExpressionColumn;
-    private int mNameCol;
-    private SelectPanelTableCellRenderer  spTCRenderer;
-    
-    public SelectPanel(Plan plan, TcgComponent component) {
-        mPlan = plan;
-        mComponent = component;
-        try {
-            boolean isSchemaOwner = component.getProperty(IS_SCHEMA_OWNER_KEY).getBoolValue();
-            String inputType = component.getProperty(INPUT_TYPE_KEY).getStringValue();
-            mReadOnly = !isSchemaOwner;
-            mHasExpressionColumn = isSchemaOwner && !inputType.equals(IO_TYPE_NONE);
-            mNameCol = mHasExpressionColumn? 1 : 0;
-        } catch (Exception e) {
-            mHasExpressionColumn = false;
-            mNameCol = 0;
-        }
         
         initAttributeMetadataTables();
         mCellEditorExpression = new SmartCellEditor(mTextFieldExpression);
         initComponents();
     }
     
+    public void addAttributeDropNotificationListener(AttributeDropNotificationListener listener) {
+    	this.mListernerList.add(AttributeDropNotificationListener.class, listener);
+    }
+    
+    public void removeAttributeDropNotificationListener(AttributeDropNotificationListener listener) {
+    	this.mListernerList.remove(AttributeDropNotificationListener.class, listener);
+    }
+    
     private void initAttributeMetadataTables() {
         String opName = "";
         mColumnMetadataTable = new ArrayHashMap();
         try {
-            opName = mComponent.getProperty(NAME_KEY).getStringValue();
-            List inputIdList = mComponent.getProperty(INPUT_ID_LIST_KEY).getListValue();
+            opName = mComponent.getDisplayName();
+            List<OperatorComponent> inputOperators = mComponent.getInputOperatorList();
+            Iterator<OperatorComponent> it = inputOperators.iterator();
+            
+            while(it.hasNext()) {
+            	OperatorComponent input = it.next();
+            	if(input != null) {
+                    String inputName = input.getDisplayName();
+                    ListMap lm = new ArrayHashMap();
+                    mColumnMetadataTable.put(inputName, lm);
+                    SchemaComponent outputSchema = input.getOutputSchemaId();
+                    if(outputSchema != null) {
+                    	List<SchemaAttribute> attrs = outputSchema.getSchemaAttributes();
+                    	Iterator<SchemaAttribute> attrsIt = attrs.iterator();
+                    	while(attrsIt.hasNext()) {
+                    		SchemaAttribute sa = attrsIt.next();
+                    		lm.put(sa.getAttributeName(), sa);
+                    	}
+                    }
+                }
+            }
+            
+            List<OperatorComponent> tableOperators = mComponent.getStaticInputTableList();
+            Iterator<OperatorComponent> itTable = tableOperators.iterator();
+            
+            while(itTable.hasNext()) {
+            	OperatorComponent tableInput = itTable.next();
+	            	if(tableInput != null) {
+	            		String inputName = tableInput.getDisplayName();
+	                    ListMap lm = new ArrayHashMap();
+	                    mColumnMetadataTable.put(inputName, lm);
+	                    SchemaComponent outputSchema = tableInput.getOutputSchemaId();
+	                    if(outputSchema != null) {
+		                    List<SchemaAttribute> attrs = outputSchema.getSchemaAttributes();
+	                    	Iterator<SchemaAttribute> attrsIt = attrs.iterator();
+	                    	while(attrsIt.hasNext()) {
+	                    		SchemaAttribute sa = attrsIt.next();
+	                    		lm.put(sa.getAttributeName(), sa);
+	                    	}
+	                    }
+                    }
+            }
+            
+            /*
             for(int i = 0,I = inputIdList.size(); i < I; i++) {
                 String id = (String)inputIdList.get(i);
                 TcgComponent input = mPlan.getOperatorById(id);
@@ -233,6 +268,7 @@ public class SelectPanel extends JPanel implements SharedConstants {
                     }
                 }
             }
+            
             List staticInputIdList = mComponent.getProperty(STATIC_INPUT_ID_LIST_KEY).getListValue();
             for(int i = 0, I = staticInputIdList.size(); i < I; i++) {
                 String id = (String)staticInputIdList.get(i);
@@ -251,6 +287,8 @@ public class SelectPanel extends JPanel implements SharedConstants {
                     }
                 }
             }
+            */
+            
         } catch(Exception e) {
             mLog.log(Level.SEVERE,
                     NbBundle.getMessage(InputSchemaTreeModel.class,
@@ -303,9 +341,107 @@ public class SelectPanel extends JPanel implements SharedConstants {
         mDropTarget = new DropTarget(mTable, new MyDropTargetAdapter());
         Vector data = new Vector();
         try {
-            String schemaId = mComponent.getProperty(OUTPUT_SCHEMA_ID_KEY).getStringValue();
-            if(!schemaId.trim().equals("")) {
-                Schema schema = mPlan.getSchema(schemaId);
+        	SchemaComponent outputSchema = mComponent.getOutputSchemaId();
+        	
+            if(outputSchema != null) {
+            	if (mHasExpressionColumn) {
+            		List<SchemaAttribute> attrs = outputSchema.getSchemaAttributes();
+            		Iterator<SchemaAttribute> attrIt = attrs.iterator();
+            		String fromColumnListStr = mComponent.getProperty(FROM_COLUMN_LIST_KEY).getValue();
+            		List fromColumnList = (List) mComponent.getProperty(FROM_COLUMN_LIST_KEY).getPropertyType().getType().parse(fromColumnListStr);
+            		int j = 0;
+	            	while(attrIt.hasNext()) {
+	            		Vector r = new Vector();
+                        r.add(fromColumnList.get(j));
+                        
+	            		SchemaAttribute sa = attrIt.next();
+	            		String attributeName = sa.getAttributeName();
+	            		String attributeType = sa.getAttributeType();
+	            		String attributeSize = sa.getAttributeSize();
+	            		String attributeScale = sa.getAttributeScale();
+	            		String attributeComment = sa.getAttributeComment();
+	            		 
+	                     if(attributeName != null) {
+	                    	 r.add(attributeName);
+	                     } else {
+	                    	 r.add("");
+	                     }
+	
+						if(attributeType != null) {
+							 r.add(attributeType);                    	 
+	                     } else {
+	                    	 r.add("");
+	                     }
+
+						if(attributeSize != null) {
+							r.add(attributeSize);
+						} else {
+							 r.add("");
+						}
+
+						if(attributeScale != null) {
+							r.add(attributeScale);
+						} else {
+							 r.add("");
+						}
+
+						if(attributeComment != null) {
+							r.add(attributeComment);
+						} else {
+							 r.add("");
+						}
+						
+						data.add(r);
+	            		j++;
+	            	}
+            	} else {
+            		List<SchemaAttribute> attrs = outputSchema.getSchemaAttributes();
+            		Iterator<SchemaAttribute> attrIt = attrs.iterator();
+            		while(attrIt.hasNext()) {
+	            		Vector r = new Vector();
+                        
+	            		SchemaAttribute sa = attrIt.next();
+	            		String attributeName = sa.getAttributeName();
+	            		String attributeType = sa.getAttributeType();
+	            		String attributeSize = sa.getAttributeSize();
+	            		String attributeScale = sa.getAttributeScale();
+	            		String attributeComment = sa.getAttributeComment();
+	            		 
+	                     if(attributeName != null) {
+	                    	 r.add(attributeName);
+	                     } else {
+	                    	 r.add("");
+	                     }
+	
+						if(attributeType != null) {
+							 r.add(attributeType);                    	 
+	                     } else {
+	                    	 r.add("");
+	                     }
+
+						if(attributeSize != null) {
+							r.add(attributeSize);
+						} else {
+							 r.add("");
+						}
+
+						if(attributeScale != null) {
+							r.add(attributeScale);
+						} else {
+							 r.add("");
+						}
+
+						if(attributeComment != null) {
+							r.add(attributeComment);
+						} else {
+							 r.add("");
+						}
+						
+						data.add(r);
+	            	}
+                }
+            	
+            	/*
                 java.util.List attributeMetadataList = new ArrayList(schema.getAttributeMetadataAsList());
                 if (mHasExpressionColumn) {
                     java.util.List fromColumnList = mComponent.getProperty(FROM_COLUMN_LIST_KEY).getListValue();
@@ -362,6 +498,7 @@ public class SelectPanel extends JPanel implements SharedConstants {
                         data.add(r);
                     }
                 }
+                */
                 if(data.size() == 0) {
                     Vector r = new Vector();
                     if (mHasExpressionColumn) {
@@ -519,20 +656,50 @@ public class SelectPanel extends JPanel implements SharedConstants {
         topPane.add(pane, BorderLayout.CENTER);
     }
     
-    public List getAttributeMetadataAsList() {
-        List attributeMetadataList = new ArrayList();
+//    public List getAttributeMetadataAsList() {
+//        List attributeMetadataList = new ArrayList();
+//        Vector r = mTableModel.getDataVector();
+//        for (int i = 0, I = r.size(); i < I; i++) {
+//            Vector c = (Vector) r.elementAt(i);
+//            if (!(c.elementAt(mNameCol) == null) && !(c.elementAt(mNameCol).equals(""))) {
+//                attributeMetadataList.add(c.elementAt(mNameCol));
+//                attributeMetadataList.add(c.elementAt(mNameCol + 1));
+//                attributeMetadataList.add(c.elementAt(mNameCol + 2));
+//                attributeMetadataList.add(c.elementAt(mNameCol + 3));
+//                attributeMetadataList.add(c.elementAt(mNameCol + 4));
+//            }
+//        }
+//        return attributeMetadataList;
+//    }
+    
+   
+    public List<SchemaAttribute> getAttributes() {
+        List<SchemaAttribute> attributeList = new ArrayList<SchemaAttribute>();
         Vector r = mTableModel.getDataVector();
         for (int i = 0, I = r.size(); i < I; i++) {
             Vector c = (Vector) r.elementAt(i);
             if (!(c.elementAt(mNameCol) == null) && !(c.elementAt(mNameCol).equals(""))) {
-                attributeMetadataList.add(c.elementAt(mNameCol));
-                attributeMetadataList.add(c.elementAt(mNameCol + 1));
-                attributeMetadataList.add(c.elementAt(mNameCol + 2));
-                attributeMetadataList.add(c.elementAt(mNameCol + 3));
-                attributeMetadataList.add(c.elementAt(mNameCol + 4));
+            	SchemaAttribute sa = mModel.getFactory().createSchemaAttribute(mModel);
+            	String name = (String) c.elementAt(mNameCol);
+            	sa.setName(name);
+            	sa.setTitle(name);
+            	
+            	//name
+            	sa.setAttributeName(name);
+            	//type
+            	sa.setAttributeType((String) c.elementAt(mNameCol + 1));
+            	//size
+            	sa.setAttributeSize((String) c.elementAt(mNameCol + 2));
+            	//scale
+            	sa.setAttributeScale((String) c.elementAt(mNameCol + 3));
+            	//comment
+            	sa.setAttributeComment((String) c.elementAt(mNameCol + 4));
+            	
+            	attributeList.add(sa);
+                
             }
         }
-        return attributeMetadataList;
+        return attributeList;
     }
     
     public boolean hasExpressionList() {
@@ -574,7 +741,7 @@ public class SelectPanel extends JPanel implements SharedConstants {
     }
     
     public boolean hasInputAttribute(String inputAttributeName) {
-        return getAttributeMetadata(inputAttributeName) != null;
+        return getAttribute(inputAttributeName) != null;
     }
     
     /**
@@ -582,7 +749,7 @@ public class SelectPanel extends JPanel implements SharedConstants {
      *
      * @return null if not found
      */
-    public AttributeMetadata getAttributeMetadata(String inputAttributeName) {
+    public SchemaAttribute getAttribute(String inputAttributeName) {
         int index = inputAttributeName.indexOf(".");
         if (index < 1) {
             String attributeName = inputAttributeName;
@@ -593,7 +760,7 @@ public class SelectPanel extends JPanel implements SharedConstants {
             if (!lm.containsKey(attributeName)) {
                 return null;
             }
-            return (AttributeMetadata)lm.get(attributeName);
+            return (SchemaAttribute)lm.get(attributeName);
         }
         String inputName = inputAttributeName.substring(0, index);
         if (!mColumnMetadataTable.containsKey(inputName)) {
@@ -604,7 +771,7 @@ public class SelectPanel extends JPanel implements SharedConstants {
         if (!lm.containsKey(attributeName)) {
             return null;
         }
-        return (AttributeMetadata)lm.get(attributeName);
+        return (SchemaAttribute)lm.get(attributeName);
     }
     
     public List getQuantityAttributeList() {
@@ -673,6 +840,119 @@ public class SelectPanel extends JPanel implements SharedConstants {
             }
             nameSet.add(colName);
         }
+    }
+    
+    private void updateWhenExpressionChanges() {
+    	String opName = "";
+        String columnName = "";
+        try {
+            opName = SelectPanel.this.mComponent.getDisplayName();
+            int row = SelectPanel.this.mCellEditorExpression.mRow;
+            int column = SelectPanel.this.mCellEditorExpression.mColumn;
+            String exp = (String)SelectPanel.this.mTable.getValueAt(row, 0);
+            String name = (String)SelectPanel.this.mTable.getValueAt(row, 1);
+            String type = (String)SelectPanel.this.mTable.getValueAt(row, 2);
+            String size = (String)SelectPanel.this.mTable.getValueAt(row, 3);
+            String scale = (String)SelectPanel.this.mTable.getValueAt(row, 4);
+            if (!(name.trim().equals("") && type.trim().equals("") && size.trim().equals("") && scale.trim().equals(""))) {
+                return;
+            }
+            exp = exp.trim();
+            if (exp.equals("")) {
+                return;
+            }
+            SchemaAttribute sa = SelectPanel.this.getAttribute(exp);
+            if (sa == null) {
+                return;
+            }
+            String attrName = generateUniqueAttributeName(sa.getAttributeName());
+            
+            SelectPanel.this.mTable.setValueAt(attrName, row, 1);
+            SelectPanel.this.mTable.setValueAt(sa.getAttributeType(), row, 2);
+            SelectPanel.this.mTable.setValueAt(sa.getAttributeSize(), row, 3);
+            SelectPanel.this.mTable.setValueAt(sa.getAttributeScale(), row, 4);
+        } catch (Exception ex) {
+            mLog.log(Level.WARNING,
+                    NbBundle.getMessage(SelectPanel.class,
+                    "SelectPanel.FAIL_TO_AUTOFILL_COLUMN_METADATA_FOR_COLUMN_OF_OPERATOR",
+                    columnName,
+                    opName),
+                    ex);
+        }
+    }
+    
+   
+    private void updateWhenExpressionChanges(AttributeInfo info) {
+    	String opName = "";
+        String columnName = "";
+        try {
+            opName = SelectPanel.this.mComponent.getDisplayName();
+            int row = SelectPanel.this.mCellEditorExpression.mRow;
+            int column = SelectPanel.this.mCellEditorExpression.mColumn;
+            String exp = (String)SelectPanel.this.mTable.getValueAt(row, 0);
+            String name = (String)SelectPanel.this.mTable.getValueAt(row, 1);
+            String type = (String)SelectPanel.this.mTable.getValueAt(row, 2);
+            String size = (String)SelectPanel.this.mTable.getValueAt(row, 3);
+            String scale = (String)SelectPanel.this.mTable.getValueAt(row, 4);
+            if (!(name.trim().equals("") && type.trim().equals("") && size.trim().equals("") && scale.trim().equals(""))) {
+                return;
+            }
+            exp = exp.trim();
+            if (exp.equals("")) {
+                exp = info.getEntityAndColumnName();
+            
+	            SchemaAttribute sa = SelectPanel.this.getAttribute(exp);
+	            if (sa == null) {
+	                return;
+	            }
+	            
+	            String attrName = generateUniqueAttributeName(sa.getAttributeName());
+	            
+	            SelectPanel.this.mTable.setValueAt(attrName, row, 1);
+	            SelectPanel.this.mTable.setValueAt(sa.getAttributeType(), row, 2);
+	            SelectPanel.this.mTable.setValueAt(sa.getAttributeSize(), row, 3);
+	            SelectPanel.this.mTable.setValueAt(sa.getAttributeScale(), row, 4);
+            
+            }
+        } catch (Exception ex) {
+            mLog.log(Level.WARNING,
+                    NbBundle.getMessage(SelectPanel.class,
+                    "SelectPanel.FAIL_TO_AUTOFILL_COLUMN_METADATA_FOR_COLUMN_OF_OPERATOR",
+                    columnName,
+                    opName),
+                    ex);
+        }
+    }
+    
+    private String generateUniqueAttributeName(String baseName) {
+    	int rowCount = mTableModel.getRowCount();
+    	
+    	String newAttrName = baseName;
+    	
+    	Set nameSet = new HashSet();
+        for (int i = 0; i < rowCount; i++) {
+            String colName = (String)mTableModel.getValueAt(i, mNameCol);
+            nameSet.add(colName);
+        }
+        
+    	int counter = 0;
+        while(nameSet.contains(newAttrName)) {
+        	newAttrName = baseName + "_" + counter;
+        	counter++;
+        }
+        
+        return newAttrName;
+    }
+    
+    
+    private void fireDropNotification(AttributeInfo info) {
+    	Object[] listeners = mListernerList.getListenerList();
+    	for (int i = listeners.length-2; i>=0; i-=2) {
+    		if (listeners[i]==AttributeDropNotificationListener.class) {
+    			AttributeDropNotificationEvent evt = new AttributeDropNotificationEvent(info);
+    			((AttributeDropNotificationListener)listeners[i+1]).onDropComplete(evt);
+    		}
+    	}
     }
     
     class MyDropTargetAdapter extends DropTargetAdapter {
@@ -773,43 +1053,22 @@ public class SelectPanel extends JPanel implements SharedConstants {
         }
         // This tells the listeners the editor has ended editing
         public void editingStopped(ChangeEvent e) {
-            String opName = "";
-            String columnName = "";
-            try {
-                opName = SelectPanel.this.mComponent.getProperty(NAME_KEY).getStringValue();
-                int row = SelectPanel.this.mCellEditorExpression.mRow;
-                int column = SelectPanel.this.mCellEditorExpression.mColumn;
-                String exp = (String)SelectPanel.this.mTable.getValueAt(row, 0);
-                String name = (String)SelectPanel.this.mTable.getValueAt(row, 1);
-                String type = (String)SelectPanel.this.mTable.getValueAt(row, 2);
-                String size = (String)SelectPanel.this.mTable.getValueAt(row, 3);
-                String scale = (String)SelectPanel.this.mTable.getValueAt(row, 4);
-                if (!(name.trim().equals("") && type.trim().equals("") && size.trim().equals("") && scale.trim().equals(""))) {
-                    return;
-                }
-                exp = exp.trim();
-                if (exp.equals("")) {
-                    return;
-                }
-                AttributeMetadata cm = SelectPanel.this.getAttributeMetadata(exp);
-                if (cm == null) {
-                    return;
-                }
-                SelectPanel.this.mTable.setValueAt(cm.getAttributeName(), row, 1);
-                SelectPanel.this.mTable.setValueAt(cm.getAttributeType(), row, 2);
-                SelectPanel.this.mTable.setValueAt(cm.getAttributeSize(), row, 3);
-                SelectPanel.this.mTable.setValueAt(cm.getAttributeScale(), row, 4);
-            } catch (Exception ex) {
-                mLog.log(Level.WARNING,
-                        NbBundle.getMessage(SelectPanel.class,
-                        "SelectPanel.FAIL_TO_AUTOFILL_COLUMN_METADATA_FOR_COLUMN_OF_OPERATOR",
-                        columnName,
-                        opName),
-                        ex);
-            }
-            
+        	updateWhenExpressionChanges();
         }
         
     }
     
+    class TextFieldExpressionDropNotificationHandler implements AttributeDropNotificationListener {
+
+	
+		
+		public void onDropComplete(AttributeDropNotificationEvent evt) {
+			AttributeInfo info = evt.getAttributeInfo();
+			if(info != null) {
+				updateWhenExpressionChanges(info);
+				fireDropNotification(info);
+			}
+		}
+    	
+    }
 }

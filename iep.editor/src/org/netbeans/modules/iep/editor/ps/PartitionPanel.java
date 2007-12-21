@@ -1,54 +1,35 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 
 package org.netbeans.modules.iep.editor.ps;
 
-import org.netbeans.modules.iep.editor.model.Plan;
-import org.netbeans.modules.iep.editor.model.Schema;
 import org.netbeans.modules.iep.editor.share.SharedConstants;
 import org.netbeans.modules.iep.editor.tcg.table.DefaultMoveableRowTableModel;
 import org.netbeans.modules.iep.editor.tcg.table.MoveableRowTable;
-import org.netbeans.modules.iep.editor.tcg.model.TcgComponent;
-import org.netbeans.modules.iep.editor.tcg.model.TcgProperty;
+import org.netbeans.modules.iep.model.IEPModel;
+import org.netbeans.modules.iep.model.OperatorComponent;
+import org.netbeans.modules.iep.model.Property;
+import org.netbeans.modules.iep.model.SchemaAttribute;
+import org.netbeans.modules.iep.model.SchemaComponent;
+import org.netbeans.modules.iep.model.SchemaComponentContainer;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.dnd.DragGestureEvent;
@@ -56,6 +37,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
@@ -69,6 +51,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumnModel;
+import org.netbeans.modules.iep.model.lib.TcgProperty;
 import org.openide.util.NbBundle;
 
 /**
@@ -83,15 +66,15 @@ public class PartitionPanel extends JPanel implements SharedConstants {
     
     private static DefaultCellEditor mCellEditor = new DefaultCellEditor(new JCheckBox());
     
-    private Plan mPlan;
-    private TcgComponent mComponent;
+    private IEPModel mModel;
+    private OperatorComponent mComponent;
     private DefaultMoveableRowTableModel mTableModel;
     private MoveableRowTable mTable;
     private boolean mAllowEmptySelection;
 
-    public PartitionPanel(Plan plan, TcgComponent component, boolean allowEmptySelection) {
-        mPlan = plan;
+    public PartitionPanel(OperatorComponent component, IEPModel model,  boolean allowEmptySelection) {
         mComponent = component;
+        mModel = model;
         mAllowEmptySelection = allowEmptySelection;
         initComponents();
     }
@@ -116,41 +99,45 @@ public class PartitionPanel extends JPanel implements SharedConstants {
         };
         Vector data = new Vector();
         try {
-            String schemaId = mComponent.getProperty(OUTPUT_SCHEMA_ID_KEY).getStringValue();
-            java.util.List partitionKey = mComponent.getProperty(ATTRIBUTE_LIST_KEY).getListValue();
+            String schemaId = mComponent.getProperty(OUTPUT_SCHEMA_ID_KEY).getValue();
+            Property partionKeyProp = mComponent.getProperty(ATTRIBUTE_LIST_KEY);
+            String partionKeyPropStringVal =  partionKeyProp.getValue();
+            
+            java.util.List partitionKey = (List) partionKeyProp.getPropertyType().getType().parse(partionKeyPropStringVal);
             if(!schemaId.trim().equals("")) {
-                Schema schema = mPlan.getSchema(schemaId);
-                java.util.List attributeMetadataList = new ArrayList(schema.getAttributeMetadataAsList());
-                for(int i = 0; i < attributeMetadataList.size(); i+=5) {
-                    Vector r = new Vector();
-                    String name = (String)attributeMetadataList.get(i);
-                    if (partitionKey.contains(name)) {
-                        r.add(Boolean.TRUE);
-                    } else {
-                        r.add(Boolean.FALSE);
-                    }
-                    r.add(name);
-                    if(i + 1 < attributeMetadataList.size()) {
-                        r.add(attributeMetadataList.get(i + 1));
-                    } else {
-                        r.add("");
-                    }
-                    if(i + 2 < attributeMetadataList.size()) {
-                        r.add(attributeMetadataList.get(i + 2));
-                    } else {
-                        r.add("");
-                    }
-                    if(i + 3 < attributeMetadataList.size()) {
-                        r.add(attributeMetadataList.get(i + 3));
-                    } else {
-                        r.add("");
-                    }
-                    if(i + 4 < attributeMetadataList.size()) {
-                        r.add(attributeMetadataList.get(i + 4));
-                    } else {
-                        r.add("");
-                    }
-                    data.add(r);
+            	SchemaComponentContainer scContainer = mModel.getPlanComponent().getSchemaComponentContainer();
+            	
+                SchemaComponent schema = scContainer.findSchema(schemaId);
+                if(schema != null) {
+                	
+                	List<SchemaAttribute> attrs = schema.getSchemaAttributes();
+                	Iterator<SchemaAttribute> it = attrs.iterator();
+                	
+                	while(it.hasNext()) {
+                		Vector r = new Vector();
+                    	
+                		SchemaAttribute sa = it.next();
+                		String attributeName = sa.getAttributeName();
+                		String attributeType = sa.getAttributeType();
+                		String attributeSize = sa.getAttributeSize();
+                		String attributeScale = sa.getAttributeScale();
+                		String attributeComment = sa.getAttributeComment();
+                		 
+                         
+                		if (partitionKey.contains(attributeName)) {
+                            r.add(Boolean.TRUE);
+                        } else {
+                            r.add(Boolean.FALSE);
+                        }
+                		
+                		r.add(attributeName);
+                		r.add(attributeType);
+                		r.add(attributeSize);
+                		r.add(attributeScale);
+                		r.add(attributeComment);
+                		
+                		data.add(r);
+                	}
                 }
             } 
         } catch(Exception e) {
@@ -231,10 +218,14 @@ public class PartitionPanel extends JPanel implements SharedConstants {
                 }
                 sb.append((String)partitionKey.get(i));
             }
-            TcgProperty prop = mComponent.getProperty(ATTRIBUTE_LIST_KEY);
-            if (!sb.toString().equals(prop.getStringValue())) {
-                prop.setValue(partitionKey);
+            Property partionKeyProp = mComponent.getProperty(ATTRIBUTE_LIST_KEY);
+            String oldValue = partionKeyProp.getValue();
+            if (!sb.toString().equals(oldValue)) {
+            	mComponent.getModel().startTransaction();
+            	partionKeyProp.setValue(sb.toString());
+            	mComponent.getModel().endTransaction();
             }
+            
         } catch (Exception e) {
             mLog.log(Level.SEVERE, e.getMessage(), e);
         }

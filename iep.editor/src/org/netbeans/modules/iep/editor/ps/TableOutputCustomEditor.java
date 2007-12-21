@@ -1,56 +1,37 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 package org.netbeans.modules.iep.editor.ps;
 
 import org.netbeans.modules.iep.editor.designer.GuiConstants;
-import org.netbeans.modules.iep.editor.model.Plan;
 import org.netbeans.modules.iep.editor.tcg.dialog.NotifyHelper;
 import org.netbeans.modules.iep.editor.share.SharedConstants;
-import org.netbeans.modules.iep.editor.tcg.model.TcgComponent;
-import org.netbeans.modules.iep.editor.tcg.model.TcgProperty;
-import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodeProperty;
 import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodePropertyCustomizerState;
 import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodePropertyCustomizer;
 import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodePropertyEditor;
+import org.netbeans.modules.iep.model.IEPModel;
+import org.netbeans.modules.iep.model.OperatorComponent;
+import org.netbeans.modules.iep.model.OperatorComponentContainer;
+import org.netbeans.modules.iep.model.Property;
+import org.netbeans.modules.iep.model.lib.TcgComponent;
+import org.netbeans.modules.iep.model.lib.TcgPropertyType;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -70,6 +51,7 @@ import javax.swing.JTextField;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
+import org.netbeans.modules.iep.model.lib.TcgProperty;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.NbBundle;
 
@@ -93,32 +75,34 @@ public class TableOutputCustomEditor extends TcgComponentNodePropertyEditor {
     
     public Component getCustomEditor() {
         if (mEnv != null) {
-            return new MyCustomizer(mProperty, mEnv);
+            return new MyCustomizer(getPropertyType(), getOperatorComponent(), mEnv);
         }
-        return new MyCustomizer(mProperty, mCustomizerState);
+        return new MyCustomizer(getPropertyType(), getOperatorComponent(), mCustomizerState);
     }
     
     private static class MyCustomizer extends TcgComponentNodePropertyCustomizer implements SharedConstants {
-        protected TcgComponent mComponent;
+        protected OperatorComponent mComponent;
         protected PropertyPanel mNamePanel;
         protected PropertyPanel mOutputSchemaNamePanel;
         protected PropertyPanel mIsGlobalPanel;
         protected PropertyPanel mGlobalIdPanel;
         protected TableOutputSchemaPanel mSchemaPanel;
-        protected JLabel mStatusLbl;
+//        protected JLabel mStatusLbl;
         
-        public MyCustomizer(TcgComponentNodeProperty prop, PropertyEnv env) {
-            super(prop, env);
+        public MyCustomizer(TcgPropertyType propertyType, OperatorComponent component, PropertyEnv env) {
+            super(propertyType, component, env);
         }
         
-        public MyCustomizer(TcgComponentNodeProperty prop, TcgComponentNodePropertyCustomizerState customizerState) {
-            super(prop, customizerState);
+        public MyCustomizer(TcgPropertyType propertyType, OperatorComponent component, TcgComponentNodePropertyCustomizerState customizerState) {
+            super(propertyType, component, customizerState);
         }
         
         protected void initialize() {
             try {
-                mComponent = mProperty.getProperty().getParentComponent();
-                setLayout(new GridBagLayout());
+                mComponent = getOperatorComponent();
+                IEPModel model = mComponent.getModel();
+                
+                getContentPane().setLayout(new GridBagLayout());
                 GridBagConstraints gbc = new GridBagConstraints();
                 gbc.insets = new Insets(3, 3, 3, 3);
                 int gGridy = 0;
@@ -133,7 +117,7 @@ public class TableOutputCustomEditor extends TcgComponentNodePropertyEditor {
                 gbc.weighty = 0.0D;
                 gbc.fill = GridBagConstraints.HORIZONTAL;
                 JPanel topPanel = createPropertyPanel();
-                add(topPanel, gbc);
+                getContentPane().add(topPanel, gbc);
                 
                 // attribute pane
                 gbc.gridx = 0;
@@ -148,7 +132,7 @@ public class TableOutputCustomEditor extends TcgComponentNodePropertyEditor {
                 attributePane.setLayout(new GridBagLayout());
                 String msg = NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.ATTRIBUTES");
                 attributePane.setBorder(new TitledBorder(LineBorder.createGrayLineBorder(), msg, TitledBorder.LEFT, TitledBorder.TOP));
-                add(attributePane, gbc);
+                getContentPane().add(attributePane, gbc);
                 
                 gbc.gridx = 0;
                 gbc.gridy = 0;
@@ -158,22 +142,22 @@ public class TableOutputCustomEditor extends TcgComponentNodePropertyEditor {
                 gbc.weightx = 1.0D;
                 gbc.weighty = 0.3D;
                 gbc.fill = GridBagConstraints.BOTH;
-                mSchemaPanel = new TableOutputSchemaPanel((Plan)mProperty.getNode().getDoc(), mComponent);
-                mSchemaPanel.setPreferredSize(new Dimension(700, 300));
+                mSchemaPanel = new TableOutputSchemaPanel(model, mComponent);
+                mSchemaPanel.setPreferredSize(new Dimension(500, 300));
                 attributePane.add(mSchemaPanel, gbc);
                 
-                // status bar
-                gbc.gridx = 0;
-                gbc.gridy = gGridy++;
-                gbc.gridwidth = 1;
-                gbc.gridheight = 1;
-                gbc.anchor = GridBagConstraints.WEST;
-                gbc.weightx = 1.0D;
-                gbc.weighty = 0.0D;
-                gbc.fill = GridBagConstraints.HORIZONTAL;
-                mStatusLbl = new JLabel();
-                mStatusLbl.setForeground(Color.RED);
-                add(mStatusLbl, gbc);
+//                // status bar
+//                gbc.gridx = 0;
+//                gbc.gridy = gGridy++;
+//                gbc.gridwidth = 1;
+//                gbc.gridheight = 1;
+//                gbc.anchor = GridBagConstraints.WEST;
+//                gbc.weightx = 1.0D;
+//                gbc.weighty = 0.0D;
+//                gbc.fill = GridBagConstraints.HORIZONTAL;
+//                mStatusLbl = new JLabel();
+//                mStatusLbl.setForeground(Color.RED);
+//                add(mStatusLbl, gbc);
             } catch(Exception e) {
                 mLog.log(Level.SEVERE,
                         NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.FAILED_TO_LAYOUT"),
@@ -192,7 +176,7 @@ public class TableOutputCustomEditor extends TcgComponentNodePropertyEditor {
             gbc.insets = new Insets(3, 3, 3, 3);
             
             // name
-            TcgProperty nameProp = mComponent.getProperty(NAME_KEY);
+            Property nameProp = mComponent.getProperty(NAME_KEY);
             String nameStr = NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.NAME");
             mNamePanel = PropertyPanel.createSingleLineTextPanel(nameStr, nameProp, false);
             gbc.gridx = 0;
@@ -216,11 +200,11 @@ public class TableOutputCustomEditor extends TcgComponentNodePropertyEditor {
             pane.add(mNamePanel.component[1], gbc);
 
             // output schema
-            TcgProperty outputSchemaNameProp = mComponent.getProperty(OUTPUT_SCHEMA_ID_KEY);
+            Property outputSchemaNameProp = mComponent.getProperty(OUTPUT_SCHEMA_ID_KEY);
             String outputSchemaNameStr = NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.OUTPUT_SCHEMA_NAME");
             mOutputSchemaNamePanel = PropertyPanel.createSingleLineTextPanel(outputSchemaNameStr, outputSchemaNameProp, false);
             ((JTextField)mOutputSchemaNamePanel.input[0]).setEditable(false);
-            ((JTextField)mOutputSchemaNamePanel.input[0]).setText(outputSchemaNameProp.getStringValue() + "_Ext");
+            ((JTextField)mOutputSchemaNamePanel.input[0]).setText(outputSchemaNameProp.getValue() + "_Ext");
             gbc.gridx = 0;
             gbc.gridy = 1;
             gbc.gridwidth = 1;
@@ -261,16 +245,16 @@ public class TableOutputCustomEditor extends TcgComponentNodePropertyEditor {
             gbc.weightx = 0.0D;
             gbc.weighty = 0.0D;
             gbc.fill = GridBagConstraints.NONE;
-            TcgProperty isGlobalProp = mComponent.getProperty(IS_GLOBAL_KEY);
+            Property isGlobalProp = mComponent.getProperty(IS_GLOBAL_KEY);
             String isGlobalStr = NbBundle.getMessage(TableInputCustomEditor.class, "CustomEditor.IS_GLOBAL");
             mIsGlobalPanel = PropertyPanel.createCheckBoxPanel(isGlobalStr, isGlobalProp);
-            if (!isGlobalProp.getType().isWritable()) {
+            if (!isGlobalProp.getPropertyType().isWritable()) {
                 ((JCheckBox)mIsGlobalPanel.input[0]).setEnabled(false);
             }
             pane.add(mIsGlobalPanel.panel, gbc);
             
             // global id
-            TcgProperty globalIdProp = mComponent.getProperty(GLOBAL_ID_KEY);
+            Property globalIdProp = mComponent.getProperty(GLOBAL_ID_KEY);
             String globalIdStr = NbBundle.getMessage(TableInputCustomEditor.class, "CustomEditor.GLOBAL_ID");
             mGlobalIdPanel = PropertyPanel.createSingleLineTextPanel(globalIdStr, globalIdProp, false);
             gbc.gridx = 3;
@@ -308,12 +292,13 @@ public class TableOutputCustomEditor extends TcgComponentNodePropertyEditor {
         
         public void validateContent(PropertyChangeEvent evt) throws PropertyVetoException {
             try {
-                Plan plan = (Plan)mProperty.getNode().getDoc();
-                // name
+            	OperatorComponentContainer ocContainer = mModel.getPlanComponent().getOperatorComponentContainer();
+            	
+            	// name
                 mNamePanel.validateContent(evt);
                 String newName = mNamePanel.getStringValue();
-                String name = mComponent.getProperty(NAME_KEY).getStringValue();
-                if (!newName.equals(name) && plan.hasOperator(newName)) {
+                String name = mComponent.getDisplayName();
+                if (!newName.equals(name) && ocContainer.findOperator(newName) != null) {
                     String msg = NbBundle.getMessage(DefaultCustomEditor.class,
                             "CustomEditor.NAME_IS_ALREADY_TAKEN_BY_ANOTHER_OPERATOR",
                             newName);
@@ -336,11 +321,14 @@ public class TableOutputCustomEditor extends TcgComponentNodePropertyEditor {
         }
         
         public void setValue() {
-            Plan plan = (Plan)mProperty.getNode().getDoc();
             try {
                 mNamePanel.store();
                 mIsGlobalPanel.store();
                 mGlobalIdPanel.store();
+                
+
+                //set documentation
+                super.setDocumentation();
             } catch (Exception e) {
                 e.printStackTrace();
                 NotifyHelper.reportError(e.getMessage());

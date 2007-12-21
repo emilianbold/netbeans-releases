@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.netbeans.modules.iep.model.IEPComponent;
 import org.netbeans.modules.iep.model.IEPModel;
+import org.netbeans.modules.iep.model.IEPVisitor;
 import org.netbeans.modules.iep.model.LinkComponent;
 import org.netbeans.modules.iep.model.LinkComponentContainer;
 import org.netbeans.modules.iep.model.ModelConstants;
@@ -42,6 +43,10 @@ public class LinkComponentContainerImpl extends ComponentImpl implements LinkCom
         return child;
 	}
 
+	public void accept(IEPVisitor visitor) {
+    	visitor.visitLinkComponentContainer(this);
+    }
+	 
 	public void addLinkComponent(LinkComponent link) {
 		addChildComponent(link);
 	}

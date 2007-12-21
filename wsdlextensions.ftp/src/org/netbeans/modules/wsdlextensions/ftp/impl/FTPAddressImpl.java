@@ -48,21 +48,6 @@ public class FTPAddressImpl extends FTPComponentImpl implements FTPAddress {
         return getAttribute(FTPAttribute.FTP_URL_PROPERTY);
     }
 
-    public void setUser(String s) {
-        setAttribute(FTPAddress.FTP_USER_PROPERTY, FTPAttribute.FTP_USER_PROPERTY, s);
-    }
-
-    public String getUser() {
-        return getAttribute(FTPAttribute.FTP_USER_PROPERTY);
-    }
-
-    public void setPassword(String s) {
-        setAttribute(FTPAddress.FTP_PASSWORD_PROPERTY, FTPAttribute.FTP_PASSWORD_PROPERTY, s);
-    }
-
-    public String getPassword() {
-        return getAttribute(FTPAttribute.FTP_PASSWORD_PROPERTY);
-    }
     public String getDirListStyle() {
         return getAttribute(FTPAttribute.FTP_DIRLSTSTYLE_PROPERTY);
     }

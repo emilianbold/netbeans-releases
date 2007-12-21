@@ -9,24 +9,28 @@ package org.netbeans.modules.iep.model;
  */
 public interface IEPVisitor {
         
+		
         void visitComponent(Component component);
         
         void visitProperty(Property property);
         
-	/*void visitTasks (TTasks tasks);
-	void visitTask (TTask task);
-	void visitImport (TImport importEl);
-	void visitAssignment (TAssignment assignment);
-	void visitTimeout (TTimeout timeout);
-	void visitEscalation (TEscalation escalation);
-	void visitNotification (TNotification notification);
-	void visitUser (User user);
-	void visitRole (Role role);
-	void visitGroup (Group group);
-	void visitAction (TAction action);
-	void visitRecipient (TRecipient recipient);
-	void visitAddress (TAddress address);
-	void visitDeadLine (TDeadlineExpr deadline);
-	void visitDuration (TDurationExpr duration);
-        */
+        void visitDocumentation(Documentation doc);
+        
+        void visitPlanComponent(PlanComponent component);
+        
+        void visitOperatorComponentContainer(OperatorComponentContainer component);
+        
+        void visitSchemaComponentContainer(SchemaComponentContainer component);
+        
+        void visitLinkComponentContainer(LinkComponentContainer component);
+        
+        void visitOperatorComponent(OperatorComponent component);
+        
+        void visitSchemaComponent(SchemaComponent component);
+        
+        void visitLinkComponent(LinkComponent component);
+        
+        void visitSchemaAttribute(SchemaAttribute component);
+        
+        
 }

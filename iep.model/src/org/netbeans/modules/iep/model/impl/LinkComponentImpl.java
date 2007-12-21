@@ -1,6 +1,7 @@
 package org.netbeans.modules.iep.model.impl;
 
 import org.netbeans.modules.iep.model.IEPModel;
+import org.netbeans.modules.iep.model.IEPVisitor;
 import org.netbeans.modules.iep.model.LinkComponent;
 import org.netbeans.modules.iep.model.ModelHelper;
 import org.netbeans.modules.iep.model.OperatorComponent;
@@ -19,7 +20,10 @@ public class LinkComponentImpl extends ComponentImpl implements LinkComponent {
     	setType("/IEP/Model/Link"); //NOTI18N
     }
 	
-	
+	 public void accept(IEPVisitor visitor) {
+    	visitor.visitLinkComponent(this);
+     }
+	 
 
 	public OperatorComponent getFrom() {
 		Property fromProperty = getProperty(LinkComponent.PROP_FROM);

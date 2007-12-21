@@ -1,6 +1,7 @@
 package org.netbeans.modules.iep.model.impl;
 
 import org.netbeans.modules.iep.model.IEPModel;
+import org.netbeans.modules.iep.model.IEPVisitor;
 import org.netbeans.modules.iep.model.Property;
 import org.netbeans.modules.iep.model.SchemaAttribute;
 import org.w3c.dom.Element;
@@ -16,6 +17,11 @@ public class SchemaAttributeImpl extends ComponentImpl implements SchemaAttribut
 		super(model, element);
 		setType("/IEP/Metadata/ColumnMetadata"); //NOI18N
 	}
+
+	 public void accept(IEPVisitor visitor) {
+    	visitor.visitSchemaAttribute(this);
+     }
+		 
 
 	public String getAttributeName() {
 		String propValue = null;

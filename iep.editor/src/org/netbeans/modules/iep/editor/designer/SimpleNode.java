@@ -1,42 +1,20 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 
@@ -55,6 +33,15 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.net.URL;
+
+import javax.swing.ImageIcon;
+
+import org.netbeans.modules.iep.editor.tcg.model.DefaultLibraryProvider;
+import org.netbeans.modules.iep.editor.tcg.model.TcgModelManager;
+import org.netbeans.modules.iep.model.lib.ImageUtil;
+import org.netbeans.modules.iep.model.lib.TcgComponentType;
+import org.netbeans.modules.iep.model.lib.TcgModelConstants;
 import org.openide.util.HelpCtx;
 
 /**
@@ -81,6 +68,7 @@ public class SimpleNode extends JGoNode implements HelpCtx.Provider  {
     public void initialize(Point loc, Dimension size, JGoImage icon,
             String labeltext, boolean hasinport, boolean hasoutport) 
     {
+    	init();
         setInitializing(true);
         // the area as a whole is not directly selectable using a mouse,
         // but the area can be selected by trying to select any of its
@@ -93,6 +81,13 @@ public class SimpleNode extends JGoNode implements HelpCtx.Provider  {
         setResizable(false);
         // if it does become resizable, only show four resize handles
         set4ResizeHandles(true);
+        
+        if (mDocumentationNode != null) {
+        	mDocumentationNode.setSelectable(true);
+        	mDocumentationNode.setResizable(false);
+        	mDocumentationNode.setVisible(false);
+            addObjectAtHead(mDocumentationNode);
+        }
         
         mIcon = icon;
         if (mIcon != null) {
@@ -109,9 +104,11 @@ public class SimpleNode extends JGoNode implements HelpCtx.Provider  {
         // create an input port and an output port, each instances of SimpleNodePort
         if (hasinport) {
             mInputPort = new SimpleNodePort(true,this);
+            mInvalidInputPort = new Port(true,this);
         }
         if (hasoutport) {
             mOutputPort = new SimpleNodePort(false,this);
+            mInvalidOutputPort = new Port(false,this);
         }
         
         setInitializing(false);
@@ -158,10 +155,19 @@ public class SimpleNode extends JGoNode implements HelpCtx.Provider  {
         }
         setInitializing(true);
         
+        JGoObject docArea = getDocumentationNode();
         JGoObject icon = getIcon();
         JGoObject label = getLabel();
         JGoObject inport = getInputPort();
         JGoObject outport = getOutputPort();
+        
+        if(docArea != null) {
+        	if(icon != null) {
+        		docArea.setSpotLocation(TopCenter, icon,  TopCenter);
+        	} else {
+        		docArea.setSpotLocation(TopCenter, this,  TopCenter);
+        	}
+        }
         
         if (label != null) {
             if (icon != null) {
@@ -173,15 +179,19 @@ public class SimpleNode extends JGoNode implements HelpCtx.Provider  {
         if (inport != null) {
             if (icon != null) {
                 inport.setSpotLocation(RightCenter, icon, LeftCenter);
+                mInvalidInputPort.setSpotLocation(RightCenter, icon, LeftCenter);
             } else {
                 inport.setSpotLocation(LeftCenter, this, LeftCenter);
+                mInvalidInputPort.setSpotLocation(LeftCenter, this, LeftCenter);
             }
         }
         if (outport != null) {
             if (icon != null) {
                 outport.setSpotLocation(LeftCenter, icon, RightCenter);
+                mInvalidOutputPort.setSpotLocation(LeftCenter, icon, RightCenter);
             } else {
                 outport.setSpotLocation(RightCenter, this, RightCenter);
+                mInvalidOutputPort.setSpotLocation(RightCenter, this, RightCenter);
             }
         }
         
@@ -296,6 +306,7 @@ public class SimpleNode extends JGoNode implements HelpCtx.Provider  {
     
     public JGoText getLabel() { return mLabel; }
     public JGoImage getIcon() { return mIcon; }
+    public JGoNode getDocumentationNode() { return mDocumentationNode; }
     public JGoPort getInputPort() { return mInputPort; }
     public JGoPort getOutputPort() { return mOutputPort; }
     public boolean hasInputPort() {
@@ -305,11 +316,61 @@ public class SimpleNode extends JGoNode implements HelpCtx.Provider  {
         return mOutputPort != null;
     }
     
+    private void init() {
+    	if(mDocumentationNode == null) {
+    		mDocumentationNode = new DocumentationNode();
+    		mDocumentationNode.setSelectable(true);
+    		mDocumentationNode.setResizable(false);
+    		mDocumentationNode.setVisible(false);
+    		this.addObjectAtTail(mDocumentationNode);
+    	}
+    }
+    
+    public void setOperatorDisplayName(String operatorDisplayName) {
+    	if(operatorDisplayName != null) {
+    		mLabel.setText(operatorDisplayName);
+    	}
+    }
+    
+    public void showInvalidPorts(boolean show) {
+    	if(show) {
+    		if(mInputPort != null) {
+    			mInputPort.setStyle(JGoPort.StyleHidden);
+    			mInvalidInputPort.setStyle(JGoPort.StyleObject);
+    		}
+    		
+    		
+    		if(mOutputPort != null) {
+    			mOutputPort.setStyle(JGoPort.StyleHidden);
+    			mInvalidOutputPort.setStyle(JGoPort.StyleObject);
+    		}
+    		
+    		
+    	} else {
+    		if(mInputPort != null) {
+    			mInputPort.setStyle(JGoPort.StyleTriangle);
+    			mInvalidInputPort.setStyle(JGoPort.StyleHidden);
+    		}
+    		
+    		if(mOutputPort != null) {
+    			
+    			mOutputPort.setStyle(JGoPort.StyleTriangle);
+        		mInvalidOutputPort.setStyle(JGoPort.StyleHidden);
+    		}
+    		
+    	}
+    }
+    
     // State
     protected JGoText mLabel = null;
     protected JGoImage mIcon = null;
+    private JGoNode mDocumentationNode = null;
     protected JGoPort mInputPort = null;
     protected JGoPort mOutputPort = null;
+    
+    protected Port mInvalidInputPort = null;
+    protected Port mInvalidOutputPort = null;
+    
     /**
      * A real application will have some other data associated with
      * the node, holding state and methods to be called according to

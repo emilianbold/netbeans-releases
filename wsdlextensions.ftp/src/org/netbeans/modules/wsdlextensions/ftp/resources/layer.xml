@@ -59,21 +59,45 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
 			
         <folder name ="BindingOperationInput">
+            <file name="FTPBindingTransfer">
+                <attr name="xsdFileName" stringvalue="ftp_ext" />
+                <attr name="element" stringvalue="transfer" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.ftp.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/ftp/resources/onmessage16x16.png" /> 
+            </file>
             <file name="FTPBindingMessage">
                 <attr name="xsdFileName" stringvalue="ftp_ext" />
                 <attr name="element" stringvalue="message" />
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.ftp.resources.Bundle" />
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/ftp/resources/onmessage16x16.png" /> 
             </file>
+            <!--file name="FTPBindingMessageActivePassive">
+                <attr name="xsdFileName" stringvalue="ftp_ext" />
+                <attr name="element" stringvalue="messageActivePassive" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.ftp.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/ftp/resources/onmessage16x16.png" /> 
+            </file-->
         </folder>	        
 	      
         <folder name ="BindingOperationOutput">
+            <file name="FTPBindingTransfer">
+                <attr name="xsdFileName" stringvalue="ftp_ext" />
+                <attr name="element" stringvalue="transfer" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.ftp.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/ftp/resources/scope16x16.png" /> 
+            </file>
             <file name="FTPBindingMessage">
                 <attr name="xsdFileName" stringvalue="ftp_ext" />
                 <attr name="element" stringvalue="message" />
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.ftp.resources.Bundle" />
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/ftp/resources/onmessage16x16.png" /> 
             </file>
+            <!--file name="FTPBindingMessageActivePassive">
+                <attr name="xsdFileName" stringvalue="ftp_ext" />
+                <attr name="element" stringvalue="messageActivePassive" />
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.wsdlextensions.ftp.resources.Bundle" />
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/wsdlextensions/ftp/resources/onmessage16x16.png" /> 
+            </file-->
 	</folder>	        
 
         <folder name ="ServicePort">

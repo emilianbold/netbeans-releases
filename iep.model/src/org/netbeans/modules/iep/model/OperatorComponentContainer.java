@@ -13,4 +13,12 @@ public interface OperatorComponentContainer extends Component {
 	OperatorComponent findChildComponent(String id);
 	
 	OperatorComponent findOperator(String name);
+	
+	/**
+	 * Given an operator, find all the operators where this
+	 * operator is an input.
+	 * @param operator
+	 * @return
+	 */
+	List<OperatorComponent> findOutputOperator(OperatorComponent operator);
 }

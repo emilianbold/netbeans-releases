@@ -20,6 +20,7 @@ package org.netbeans.modules.wsdlextensions.ftp.validator;
 
 import org.netbeans.modules.wsdlextensions.ftp.FTPComponentEncodable;
 import org.netbeans.modules.wsdlextensions.ftp.FTPMessage;
+//import org.netbeans.modules.wsdlextensions.ftp.FTPMessageActivePassive;
 import java.net.URI;
 import java.net.URL;
 import java.text.MessageFormat;
@@ -60,6 +61,7 @@ import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 
 import org.netbeans.modules.wsdlextensions.ftp.FTPComponent;
 import org.netbeans.modules.wsdlextensions.ftp.FTPOperation;
+import org.netbeans.modules.wsdlextensions.ftp.FTPTransfer;
 import org.netbeans.modules.wsdlextensions.ftp.FTPBinding;
 import org.netbeans.modules.wsdlextensions.ftp.FTPAddress;
 
@@ -178,6 +180,29 @@ public class FTPComponentValidator
                             // that could be under <input> as child, need to do
                             // more validation
 
+                            // assumption:
+                            // under <input>, there could be one of the following:
+                            // <ftp:message> or <ftp:transfer> or <ftp:messageActivePassive>
+                            // but only one is allowed;
+                            // 
+                            Iterator<FTPTransfer> ftpTransfers =
+                                    bindingInput.getExtensibilityElements(FTPTransfer.class).iterator();
+                            if ( ftpTransfers != null ) {                                    
+                                while (ftpTransfers.hasNext()) {
+                                    transCntInput++;
+                                    FTPTransfer ftpTransfer = ftpTransfers.next();
+                                    ftpTransfer.accept(this);
+                                    inputChild = ftpTransfer;
+                                }
+                                if ( transCntInput > 1 ) {
+                                    results.add(
+                                            new Validator.ResultItem(this,
+                                            Validator.ResultType.ERROR,
+                                            binding,
+                                            Util.getMessage("FTPBindingValidation.ATMOST_ONE_TRANSFER_IN_INPUT", new Object[] {transCntInput})));
+                                }
+                            }
+
                             Iterator<FTPMessage> ftpMessages =
                                     bindingInput.getExtensibilityElements(FTPMessage.class).iterator();
                             if ( ftpMessages != null ) {                                    
@@ -195,6 +220,24 @@ public class FTPComponentValidator
                                             Util.getMessage("FTPBindingValidation.ATMOST_ONE_TRANSFER_IN_INPUT", new Object[] {msgCntInput})));
                                 }
                             }
+
+//                            Iterator<FTPMessageActivePassive> ftpMessagesMode =
+//                                    bindingInput.getExtensibilityElements(FTPMessageActivePassive.class).iterator();
+//                            if ( ftpMessagesMode != null ) {                                    
+//                                while (ftpMessagesMode.hasNext()) {
+//                                    msgModeCntInput++;
+//                                    FTPMessageActivePassive ftpMessageMode = ftpMessagesMode.next();
+//                                    ftpMessageMode.accept(this);
+//                                    inputChild = ftpMessageMode;
+//                                }
+//                                if ( msgModeCntInput > 1 ) {
+//                                    results.add(
+//                                            new Validator.ResultItem(this,
+//                                            Validator.ResultType.ERROR,
+//                                            binding,
+//                                            Util.getMessage("FTPBindingValidation.ATMOST_ONE_TRANSFER_IN_INPUT", new Object[] {msgModeCntInput})));
+//                                }
+//                            }
                         }
                         
                         if ( transCntInput + msgCntInput /*+ msgModeCntInput*/ > 1 ) {
@@ -215,7 +258,26 @@ public class FTPComponentValidator
                         BindingOutput bindingOutput = bindingOp.getBindingOutput();
                         if (bindingOutput != null) {
                             // reset and do output checking
+                            transCntOutput = 0;
                             msgCntOutput = 0;
+                            //msgModeCntOutput = 0;
+                            Iterator<FTPTransfer> ftpTransfers =
+                                    bindingOutput.getExtensibilityElements(FTPTransfer.class).iterator();
+                            if ( ftpTransfers != null ) {
+                                while (ftpTransfers.hasNext()) {
+                                    transCntOutput++;
+                                    FTPTransfer ftpTransfer = ftpTransfers.next();
+                                    ftpTransfer.accept(this);
+                                    outputChild = ftpTransfer;
+                                }
+                                if ( transCntOutput > 1 ) {
+                                    results.add(
+                                            new Validator.ResultItem(this,
+                                            Validator.ResultType.ERROR,
+                                            binding,
+                                            Util.getMessage("FTPBindingValidation.ATMOST_ONE_TRANSFER_IN_OUTPUT", new Object[] {transCntOutput})));
+                                }
+                            }
 
                             Iterator<FTPMessage> ftpMessages =
                                     bindingOutput.getExtensibilityElements(FTPMessage.class).iterator();
@@ -235,7 +297,25 @@ public class FTPComponentValidator
                                 }
                             }
 
-                            if ( msgCntOutput > 1 ) {
+//                            Iterator<FTPMessageActivePassive> ftpMessagesMode =
+//                                    bindingOutput.getExtensibilityElements(FTPMessageActivePassive.class).iterator();
+//                            if ( ftpMessagesMode != null ) {
+//                                while (ftpMessagesMode.hasNext()) {
+//                                    msgModeCntOutput++;
+//                                    FTPMessageActivePassive ftpMessageMode = ftpMessagesMode.next();
+//                                    ftpMessageMode.accept(this);
+//                                    outputChild = ftpMessageMode;
+//                                }
+//                                if ( msgModeCntOutput > 1 ) {
+//                                    results.add(
+//                                            new Validator.ResultItem(this,
+//                                            Validator.ResultType.ERROR,
+//                                            binding,
+//                                            Util.getMessage("FTPBindingValidation.ATMOST_ONE_TRANSFER_IN_OUTPUT", new Object[] {msgModeCntOutput})));
+//                                }
+//                            }
+
+                            if ( transCntOutput + msgCntOutput /*+ msgModeCntOutput*/ > 1 ) {
                                 results.add(
                                         new Validator.ResultItem(this,
                                         Validator.ResultType.ERROR,
@@ -243,7 +323,7 @@ public class FTPComponentValidator
                                         Util.getMessage("FTPBindingValidation.ATMOST_ONE_TRANSFER_IN_OUTPUT", new Object[] {transCntOutput + msgCntOutput /*+ msgModeCntOutput*/})));
                             }
                             
-                            if ( msgCntOutput == 0 ) {
+                            if ( transCntOutput + msgCntOutput /*+ msgModeCntOutput*/ == 0 ) {
                                 results.add(
                                         new Validator.ResultItem(this,
                                         Validator.ResultType.ERROR,
@@ -252,6 +332,39 @@ public class FTPComponentValidator
                             }
                         }
                         
+                        //Reference<Operation> opRef = bindingOp.getOperation();
+                        //boolean noAbstractOp = false;
+                        //if ( opRef == null ) {
+                        //    noAbstractOp = true;
+                        //    results.add(
+                        //            new Validator.ResultItem(this,
+                        //            Validator.ResultType.ERROR,
+                        //            binding,
+                        //            Util.getMessage("FTPBindingValidation.OP_ABSTRACT_NOT_FOUND", new Object[] {bindingOp.getName()})));
+                        //}
+                        //else {
+                        //    Operation op = opRef.get();
+                        //    if ( op == null ) {
+                        //        noAbstractOp = true;
+                        //        results.add(
+                        //                new Validator.ResultItem(this,
+                        //                Validator.ResultType.ERROR,
+                        //                binding,
+                        //                Util.getMessage("FTPBindingValidation.OP_ABSTRACT_NOT_FOUND", new Object[] {bindingOp.getName()})));
+                        //    }
+                        //}
+
+                        // taken care of by generic wsdl model validation
+                        //if ( !noAbstractOp ) {
+                        //    if ( !checkSignature(bindingOp/*, inputChild, outputChild*/) ) {
+                        //        results.add(
+                        //                new Validator.ResultItem(this,
+                        //                Validator.ResultType.ERROR,
+                        //                binding,
+                        //                Util.getMessage("FTPBindingValidation.OP_SIG_MISMATCH_BINDING_ABSTRACT", new Object[] {bindingOp.getName()})));
+                        //    }
+                        //}
+
                         // inputChild and outputChild should be same type
                         // if input & output both present, they should have same type 
                         // of FTP BC ext elements as child
@@ -344,6 +457,34 @@ public class FTPComponentValidator
         return mValidationResult;
     }
 
+    private boolean checkSignature(BindingOperation bindingOp/*, Object inputChild, Object outputChild*/) {
+        boolean result = true;
+        Reference<Operation> opRef = bindingOp.getOperation();
+        if ( opRef == null )
+            return false;
+        Operation op = opRef.get();
+        if ( op == null )
+            return false;
+        if ( (op.getInput() == null && bindingOp.getBindingInput() == null /*&& inputChild == null*/)
+         ||
+             (op.getInput() != null && bindingOp.getBindingInput() != null /*&& inputChild != null*/)   ) {
+            
+        }
+        else {
+            result = false;
+        }
+            
+        if ( (op.getOutput() == null && bindingOp.getBindingOutput() == null /*&& outputChild == null*/)
+        ||
+             (op.getOutput() != null && bindingOp.getBindingOutput() != null /*&& outputChild != null*/)   ) {
+            
+        }
+        else {
+            result = false;
+        }
+        return result;        
+    }
+    
     public void visit(FTPAddress target) {
         // validate the following:
         // (1) attribute 'url' has the right syntax: i.e. ftp://[ftp_user]:[ftp_password]@[ftp_host]:[ftp_port]
@@ -382,6 +523,153 @@ public class FTPComponentValidator
 
     public void visit(FTPOperation target) {
         // for ftp operation tag - nothing to validate at this point
+    }
+
+    public void visit(FTPTransfer target) {
+        // check the values and relations of/between all the attributes
+        Collection<ResultItem> results =
+                mValidationResult.getValidationResult();
+
+        if ( !doStructuralChecking(results, target) )
+            return;
+        
+        String sendTo = null;
+        String receiveFrom = null;
+        
+        // sendTo and receiveFrom can not be both NULL or blank
+        // if sendTo is specified, then further validate its pre/post
+        // if receiveFrom is specified, then further validate its pre/post
+
+        sendTo = target.getSendTo();
+        receiveFrom = target.getReceiveFrom();
+        
+        if ( (sendTo == null || sendTo.trim().length() == 0 ) 
+        && (receiveFrom == null || receiveFrom.trim().length() == 0 ) ) {
+            results.add(new Validator.ResultItem(this,
+                    Validator.ResultType.ERROR,
+                    target,
+                    Util.getMessage("FTPTransfer.BOTH_SENDTO_AND_RECEIVEFROM_ARE_NOT_SPECIFIED")));
+        }
+
+        if ( sendTo != null && sendTo.trim().length() > 0 ) {
+            if ( !Util.hasMigrationEnvVar(sendTo) ) {
+                if ( sendTo.endsWith("/")) {
+                    results.add(new Validator.ResultItem(this,
+                            Validator.ResultType.ERROR,
+                            target,
+                            Util.getMessage("FTPTransfer.A_PATH_POINTING_TO_FILE_REQUIRED", new Object[] {"sendTo", sendTo})));
+                }
+            }
+            // validate sendTo related stuff
+            if ( target.getPreSendCommand() != null 
+                    && (target.getPreSendCommand().equals("RENAME")
+            || target.getPreSendCommand().equals("COPY")) ) {
+                if ( target.getPreSendLocation() == null 
+                        || target.getPreSendLocation().trim().length() == 0 ) {
+                    results.add(new Validator.ResultItem(this,
+                            Validator.ResultType.ERROR,
+                            target,
+                            Util.getMessage("FTPTransfer.PRE_POST_OPERATION_WO_LOCATION")));
+                }
+                if ( !Util.hasMigrationEnvVar(target.getPreSendLocation())) {
+                    if ( target.getPreSendLocation() != null
+                            && target.getPreSendLocation().endsWith("/")) {
+                        results.add(new Validator.ResultItem(this,
+                                Validator.ResultType.ERROR,
+                                target,
+                                Util.getMessage("FTPTransfer.A_PATH_POINTING_TO_FILE_REQUIRED", new Object[] {"preSendLocation", target.getPreSendLocation()})));
+                    }
+                }
+            }
+            
+            if ( target.getPostSendCommand() != null
+                    && (target.getPostSendCommand().equals("RENAME")
+            || target.getPostSendCommand().equals("COPY")) ) {
+                if ( target.getPostSendLocation() == null
+                        || target.getPostSendLocation().trim().length() == 0 ) {
+                    results.add(new Validator.ResultItem(this,
+                            Validator.ResultType.ERROR,
+                            target,
+                            Util.getMessage("FTPTransfer.PRE_POST_OPERATION_WO_LOCATION")));
+                }
+                if ( !Util.hasMigrationEnvVar(target.getPostSendLocation())) {
+                    if ( target.getPostSendLocation() != null
+                            && target.getPostSendLocation().endsWith("/")) {
+                        results.add(new Validator.ResultItem(this,
+                                Validator.ResultType.ERROR,
+                                target,
+                                Util.getMessage("FTPTransfer.A_PATH_POINTING_TO_FILE_REQUIRED", new Object[] {"postSendLocation", target.getPostSendLocation()})));
+                    }
+                }
+            }
+        }
+        
+        if ( receiveFrom != null && receiveFrom.trim().length() > 0 ) {
+            if ( !Util.hasMigrationEnvVar(receiveFrom) ) {
+                if ( receiveFrom.endsWith("/")) {
+                    results.add(new Validator.ResultItem(this,
+                            Validator.ResultType.ERROR,
+                            target,
+                            Util.getMessage("FTPTransfer.A_PATH_POINTING_TO_FILE_REQUIRED", new Object[] {"receiveFrom", receiveFrom})));
+                }
+            }
+            // validate receiveFrom related stuff
+            if ( target.getPreReceiveCommand() != null
+                    && (target.getPreReceiveCommand().equals("RENAME")
+            || target.getPreReceiveCommand().equals("COPY")) ) {
+                if ( target.getPreReceiveLocation() == null
+                        || target.getPreReceiveLocation().trim().length() == 0 ) {
+                    results.add(new Validator.ResultItem(this,
+                            Validator.ResultType.ERROR,
+                            target,
+                            Util.getMessage("FTPTransfer.PRE_POST_OPERATION_WO_LOCATION")));
+                }
+                if ( !Util.hasMigrationEnvVar(target.getPreReceiveLocation()) ) {
+                    if ( target.getPreReceiveLocation() != null
+                            && target.getPreReceiveLocation().endsWith("/")) {
+                        results.add(new Validator.ResultItem(this,
+                                Validator.ResultType.ERROR,
+                                target,
+                                Util.getMessage("FTPTransfer.A_PATH_POINTING_TO_FILE_REQUIRED", new Object[] {"preReceiveLocation", target.getPreReceiveLocation()})));
+                    }
+                }
+            }
+            if ( target.getPostReceiveCommand() != null
+                    && (target.getPostReceiveCommand().equals("RENAME")
+            || target.getPostReceiveCommand().equals("COPY")) ) {
+                if ( target.getPostReceiveLocation() == null 
+                        || target.getPostReceiveLocation().trim().length() == 0 ) {
+                    results.add(new Validator.ResultItem(this,
+                            Validator.ResultType.ERROR,
+                            target,
+                            Util.getMessage("FTPTransfer.PRE_POST_OPERATION_WO_LOCATION")));
+                }
+                if ( !Util.hasMigrationEnvVar(target.getPostReceiveLocation()) ) {
+                    if ( target.getPostReceiveLocation() != null
+                            && target.getPostReceiveLocation().endsWith("/")) {
+                        results.add(new Validator.ResultItem(this,
+                                Validator.ResultType.ERROR,
+                                target,
+                                Util.getMessage("FTPTransfer.A_PATH_POINTING_TO_FILE_REQUIRED", new Object[] {"postReceiveLocation", target.getPostReceiveLocation()})));
+                    }
+                }
+            }
+        }
+        
+        // validate use: if use="encoded", encodingStyle must be specified
+        if ( !Util.hasMigrationEnvVar(target.getUse()) ) {
+            if ( target.getUse() != null && target.getUse().equals("encoded") ) {
+                    if ( target.getEncodingStyle() == null || target.getEncodingStyle().trim().length() == 0 ) {
+                        results.add(new Validator.ResultItem(this,
+                                Validator.ResultType.ERROR,
+                                target,
+                                Util.getMessage("FTPTransfer.MISSING_STYLE_WHEN_USE_ENCODED")));
+                    }
+            }
+        }
+
+        // check polling interval
+        validatePollInterval(target.getPollInterval(), results, target);
     }
 
     public void visit(FTPMessage target) {
@@ -452,6 +740,76 @@ public class FTPComponentValidator
         validatePollInterval(target.getPollInterval(), results, target);
     }
 
+    /**
+    public void visit(FTPMessageActivePassive target) {
+        String t = null;
+        Collection<ResultItem> results =
+                mValidationResult.getValidationResult();
+        if ( !doStructuralChecking(results, target) )
+            return;
+        // validate that a messageRepository is specified
+        if ( target.getMessageRepository() == null
+                || target.getMessageRepository().trim().length() == 0 ) {
+            results.add(new Validator.ResultItem(this,
+                    Validator.ResultType.ERROR,
+                    target,
+                    Util.getMessage("FTPMessage.A_PATH_POINTING_TO_MESSAGE_EXCHANGE_AREA_REQUIRED", "")));
+        }
+        // validate use: if use="encoded", encodingStyle must be specified
+        if ( !Util.hasMigrationEnvVar(target.getUse()) ) {
+            if ( target.getUse() != null && target.getUse().equals("encoded") ) {
+                    if ( target.getEncodingStyle() == null || target.getEncodingStyle().trim().length() == 0 ) {
+                    results.add(new Validator.ResultItem(this,
+                            Validator.ResultType.ERROR,
+                            target,
+                            Util.getMessage("FTPMessage.MISSING_STYLE_WHEN_USE_ENCODED")));
+                    }
+            }
+        }
+        // if messageName specified, and does not contain pattern chars (% escaped symbols)
+        // give warning (message name usually contains patterns, especially %u)
+        t = target.getMessageName();
+        if ( t != null && t.trim().length() > 0 ) {
+            if ( !Util.hasMigrationEnvVar(t) ) {
+                if ( t.indexOf("%") < 0 ) {
+                    results.add(new Validator.ResultItem(this,
+                            Validator.ResultType.WARNING,
+                            target,
+                            Util.getMessage("FTPMessage.MSG_NAME_SPEC_DOES_NOT_INCLUDE_PATTERN")));
+                }
+            }
+        }
+        
+        // if messageNamePrefixIB or messageNamePrefixOB specified, and contains pattern chars (% escaped symbols)
+        // give warning (prefix must be a literal string)
+        t = target.getMessageNamePrefixIB();
+        if ( t != null && t.trim().length() > 0 ) {
+            if ( t.indexOf("%") >= 0 ) {
+                // this is not an accurate check, but just do not allow % in the prefix,
+                // period!
+                results.add(new Validator.ResultItem(this,
+                        Validator.ResultType.ERROR,
+                        target,
+                        Util.getMessage("FTPMessage.IB_MSG_PREFIX_HAS_PATTERN")));
+            }
+        }
+        t = target.getMessageNamePrefixOB();
+        if ( t != null && t.trim().length() > 0 ) {
+            if ( t.indexOf("%") >= 0 ) { 
+                // this is not an accurate check, but just do not allow % in the prefix,
+                // period!
+                results.add(new Validator.ResultItem(this,
+                        Validator.ResultType.ERROR,
+                        target,
+                        Util.getMessage("FTPMessage.OB_MSG_PREFIX_HAS_PATTERN")));
+            }
+        }
+
+        // check polling interval
+        validatePollInterval(target.getPollInterval(), results, target);
+    }
+    */
+    
     private boolean checkPartReference(BindingOperation bop, boolean isInputChild, String part) {
         boolean result = false;
         if ( bop != null ) {

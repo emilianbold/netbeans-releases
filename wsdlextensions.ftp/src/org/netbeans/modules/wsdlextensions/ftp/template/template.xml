@@ -73,8 +73,89 @@
                 [ftp_host]: name or IP of FTP server host
                 [ftp_port]: FTP port
                 -->
-                <extensionAttr name="user"  defaultValue=""/>
-                <extensionAttr name="password"  defaultValue=""/>
+                <extensionAttr name="dirListStyle" defaultValue="UNIX" />
+                <extensionAttr name="useUserDefinedHeuristics" defaultValue="false" />
+                <extensionAttr name="userDefDirListStyle" defaultValue="" />
+                <extensionAttr name="userDefDirListHeuristics" defaultValue="" />
+                <extensionAttr name="mode" defaultValue="BINARY" />
+                <extensionAttr name="cmdChannelTimeout" defaultValue="45000" />
+                <extensionAttr name="dataChannelTimeout" defaultValue="45000" />
+            </extensionElement>
+        </wsdlElement>
+        <wsdlElement name="Binding">
+            <extensionElement name="binding" />
+        </wsdlElement>
+        <wsdlElement name="BindingOperation">
+            <extensionElement name="operation" />
+        </wsdlElement>
+    </template>
+    <template name="FTPTransport">
+        <wsdlElement name="BindingOperationInput">
+            <extensionElement name="transfer" >
+                <extensionAttr name="sendTo" defaultValue="" />
+                <extensionAttr name="sendToHasPatterns" defaultValue="false" />
+                <extensionAttr name="append" defaultValue="false" />
+                <extensionAttr name="receiveFrom" defaultValue="" />
+                <extensionAttr name="receiveFromHasRegexs" defaultValue="false" />
+                <extensionAttr name="pollIntervalMillis" defaultValue="5000" />
+                <extensionAttr name="preSendCommand" defaultValue="NONE" />
+                <extensionAttr name="preSendLocation" defaultValue="" />
+                <extensionAttr name="preSendLocationHasPatterns" defaultValue="false" />
+                <extensionAttr name="preReceiveCommand" defaultValue="NONE" />
+                <extensionAttr name="preReceiveLocation" defaultValue="" />
+                <extensionAttr name="preReceiveLocationHasPatterns" defaultValue="false" />
+                <extensionAttr name="postSendCommand" defaultValue="NONE" />
+                <extensionAttr name="postSendLocation" defaultValue="" />
+                <extensionAttr name="postSendLocationHasPatterns" defaultValue="false" />
+                <extensionAttr name="postReceiveCommand" defaultValue="NONE" />
+                <extensionAttr name="postReceiveLocation" defaultValue="" />
+                <extensionAttr name="postReceiveLocationHasPatterns" defaultValue="false" />
+                <extensionAttr name="senderUsePassive" defaultValue="true" />
+                <extensionAttr name="receiverUsePassive" defaultValue="true" />
+                <extensionAttr name="use" defaultValue="literal" />
+                <extensionAttr name="encodingStyle" defaultValue="" />
+                <extensionAttr name="part"/>
+                <extensionAttr name="messageCorrelate" defaultValue="false" />
+            </extensionElement>
+        </wsdlElement>
+        <wsdlElement name="BindingOperationOutput">
+            <extensionElement name="transfer" >
+                <extensionAttr name="sendTo" defaultValue="" />
+                <extensionAttr name="sendToHasPatterns" defaultValue="false" />
+                <extensionAttr name="append" defaultValue="false" />
+                <extensionAttr name="receiveFrom" defaultValue="" />
+                <extensionAttr name="receiveFromHasRegexs" defaultValue="false" />
+                <extensionAttr name="pollIntervalMillis" defaultValue="5000" />
+                <extensionAttr name="preSendCommand" defaultValue="NONE" />
+                <extensionAttr name="preSendLocation" defaultValue="" />
+                <extensionAttr name="preSendLocationHasPatterns" defaultValue="false" />
+                <extensionAttr name="preReceiveCommand" defaultValue="NONE" />
+                <extensionAttr name="preReceiveLocation" defaultValue="" />
+                <extensionAttr name="preReceiveLocationHasPatterns" defaultValue="false" />
+                <extensionAttr name="postSendCommand" defaultValue="NONE" />
+                <extensionAttr name="postSendLocation" defaultValue="" />
+                <extensionAttr name="postSendLocationHasPatterns" defaultValue="false" />
+                <extensionAttr name="postReceiveCommand" defaultValue="NONE" />
+                <extensionAttr name="postReceiveLocation" defaultValue="" />
+                <extensionAttr name="postReceiveLocationHasPatterns" defaultValue="false" />
+                <extensionAttr name="senderUsePassive" defaultValue="true" />
+                <extensionAttr name="receiverUsePassive" defaultValue="true" />
+                <extensionAttr name="use" defaultValue="literal" />
+                <extensionAttr name="encodingStyle" defaultValue="" />
+                <extensionAttr name="part"/>
+                <extensionAttr name="messageCorrelate" defaultValue="false" />
+            </extensionElement>
+        </wsdlElement>
+        <wsdlElement name="ServicePort">
+            <extensionElement name="address" >
+                <extensionAttr name="url"  defaultValue="ftp://anonymous:user\@yahoo.com@localhost:21"/>
+                <!-- 
+                where:
+                [ftp_user]: FTP account login
+                [ftp_password]: FTP account login password
+                [ftp_host]: name or IP of FTP server host
+                [ftp_port]: FTP port
+                -->
                 <extensionAttr name="dirListStyle" defaultValue="UNIX" />
                 <extensionAttr name="useUserDefinedHeuristics" defaultValue="false" />
                 <extensionAttr name="userDefDirListStyle" defaultValue="" />

@@ -1,42 +1,20 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 
@@ -49,7 +27,9 @@ import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import com.nwoods.jgo.JGoCopyEnvironment;
 import com.nwoods.jgo.JGoDocument;
@@ -64,8 +44,15 @@ import com.nwoods.jgo.JGoPort;
 import com.nwoods.jgo.JGoUndoManager;
 
 import org.netbeans.modules.iep.editor.designer.GuiConstants;
-import org.netbeans.modules.iep.editor.model.Plan;
-import org.netbeans.modules.iep.editor.tcg.model.TcgComponent;
+import org.netbeans.modules.iep.editor.model.NameGenerator;
+import org.netbeans.modules.iep.model.Component;
+import org.netbeans.modules.iep.model.IEPModel;
+import org.netbeans.modules.iep.model.LinkComponent;
+import org.netbeans.modules.iep.model.LinkComponentContainer;
+import org.netbeans.modules.iep.model.OperatorComponent;
+import org.netbeans.modules.iep.model.OperatorComponentContainer;
+import org.netbeans.modules.iep.model.PlanComponent;
+import org.netbeans.modules.iep.model.lib.TcgComponent;
 
 public class PdModel extends JGoDocument implements GuiConstants{
     private static final java.util.logging.Logger mLog = java.util.logging.Logger.getLogger(PdModel.class.getName());
@@ -76,9 +63,12 @@ public class PdModel extends JGoDocument implements GuiConstants{
     private boolean mOrthoLinks = false;
     
     private transient boolean mIsModified = false;
-    private transient Plan mPlan;
-    private transient PlanDesigner mDesigner;
-            
+    
+    
+    private IEPModel mModel;
+    
+    private boolean mIsReloading = false;
+    
     // Default constructor
     // needed for JGo cut-copy-paste to work
     public PdModel() {
@@ -86,29 +76,13 @@ public class PdModel extends JGoDocument implements GuiConstants{
         setUndoManager(new JGoUndoManager());
     }
     
-    public PdModel(Plan plan)  {
-        super();
-        setUndoManager(new JGoUndoManager());
-        mPlan = plan;
-        mPlan.initializeModel(this);
-        mPlan.getPropertyChangeSupport().addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                mDesigner.setDirty();
-            }
-        });
-        // set properties
-        updatePaperColor();
-        setModified(false);
+    public PdModel(IEPModel model)  {
+    	this.mModel = model;
     }
     
-    public Plan getPlan() {
-        return mPlan;
-    }
+   
     
-    public void setDesigner(PlanDesigner designer) {
-        mDesigner = designer;
-    }
-    
+   
     public EntityNode findNodeById(String id)  {
         // for larger documents, it would be more efficient to keep a
         // hash table mapping id to ActivityNode
@@ -164,12 +138,40 @@ public class PdModel extends JGoDocument implements GuiConstants{
         super.fireUpdate(hint, flags, object, prevInt, prevVal);
     }
     
+   
     
-    // creating a new flow between activities
-    public Link newLink(JGoPort from, JGoPort to) {
-        TcgComponent component = mPlan.addNewLink();
-        Link ll = new Link(component, from, to);
-        ll.initialize();
+    public void newModelLink(JGoPort from, JGoPort to) {
+    	LinkComponent linkComp = mModel.getFactory().createLink(mModel);
+    	String linkName  = NameGenerator.generateLinkName(mModel.getPlanComponent().getLinkComponentContainer());
+    	linkComp.setName(linkName);
+    	linkComp.setTitle(linkName);
+    	
+    	
+    	JGoObject fromObj = from.getParentNode();
+        JGoObject toObj = to.getParentNode();
+        if (!(fromObj instanceof EntityNode) || !(toObj instanceof EntityNode)) {
+            return;
+        }
+        EntityNode fromNode = (EntityNode)fromObj;
+        EntityNode toNode = (EntityNode)toObj;
+        
+        OperatorComponent fromComp = (OperatorComponent) fromNode.getModelComponent();
+        OperatorComponent toComp = (OperatorComponent) toNode.getModelComponent();
+        
+        if(fromComp == null || toComp == null) {
+        	return;
+        }
+        
+        PlanComponent planComp = mModel.getPlanComponent();
+        LinkComponentContainer linkContainer = planComp.getLinkComponentContainer();
+        mModel.startTransaction();
+        linkComp.setFrom(fromComp);
+        linkComp.setTo(toComp);
+        linkContainer.addLinkComponent(linkComp);
+        mModel.endTransaction();
+        /*
+    	Link ll = new Link(linkComp, from, to);
+    	ll.initialize();
         ll.setOrthogonal(isOrthogonalFlows());
         addObjectAtTail(ll);
         
@@ -178,6 +180,19 @@ public class PdModel extends JGoDocument implements GuiConstants{
             fromNode.updateDownstreamNodes();
         }
         return ll;
+        */
+    }
+    
+    public void createLink(JGoPort from, JGoPort to, LinkComponent component) {
+    	Link ll = new Link(component, from, to);
+        ll.initialize();
+        ll.setOrthogonal(isOrthogonalFlows());
+        addObjectAtTail(ll);
+        
+        EntityNode fromNode = ll.getFromNode();
+        if (fromNode != null) {
+            fromNode.updateDownstreamNodes();
+        }
     }
     
     public Link findLinkByNodes(EntityNode from, EntityNode to) {
@@ -207,7 +222,7 @@ public class PdModel extends JGoDocument implements GuiConstants{
     
     
     // toggle the routing style of the links
-    void toggleOrthogonalFlows() {
+    public void toggleOrthogonalFlows() {
         startTransaction();
         setOrthogonalFlows(!isOrthogonalFlows());
         endTransaction("toggleOrthogonalFlows");
@@ -235,43 +250,43 @@ public class PdModel extends JGoDocument implements GuiConstants{
     }
     
     
-    public void store() {
-        try {
-            // store properties
-            HashMap properties = new HashMap();
-            properties.put(ORTHO_FLOW_KEY, Boolean.valueOf(isOrthogonalFlows()));
-            mPlan.setProperties(properties);
-            
-            // store nodes and links
-            HashSet set = new HashSet();
-            int z = 0;
-            JGoListPosition pos = getFirstObjectPos();
-            while (pos != null) {
-                JGoObject obj = getObjectAtPos(pos);
-                pos = getNextObjectPosAtTop(pos);
-                if (obj instanceof EntityNode) {
-                    EntityNode node = (EntityNode)obj;
-                    TcgComponent component = node.getComponent();
-                    component.getProperty(X_KEY).setValue(new Integer(node.getLeft()));
-                    component.getProperty(Y_KEY).setValue(new Integer(node.getTop()));
-                    component.getProperty(Z_KEY).setValue(new Integer(z++));
-                    set.add(component);
-                } else if (obj instanceof Link) {
-                    Link link = (Link)obj;
-                    set.add(link.getComponent());
-                }
-            }
-            mPlan.cleanupDanglingReferences(set);
-        } catch (Exception e) {
-            //e.printStackTrace();
-            mLog.warning("Exception: " + e.getMessage());
-        }
-    }
-    
+//    public void store() {
+//        try {
+//            // store properties
+//            HashMap properties = new HashMap();
+//            properties.put(ORTHO_FLOW_KEY, Boolean.valueOf(isOrthogonalFlows()));
+//            mPlan.setProperties(properties);
+//            
+//            // store nodes and links
+//            HashSet set = new HashSet();
+//            int z = 0;
+//            JGoListPosition pos = getFirstObjectPos();
+//            while (pos != null) {
+//                JGoObject obj = getObjectAtPos(pos);
+//                pos = getNextObjectPosAtTop(pos);
+//                if (obj instanceof EntityNode) {
+//                    EntityNode node = (EntityNode)obj;
+//                    TcgComponent component = node.getComponent();
+//                    component.getProperty(X_KEY).setValue(new Integer(node.getLeft()));
+//                    component.getProperty(Y_KEY).setValue(new Integer(node.getTop()));
+//                    component.getProperty(Z_KEY).setValue(new Integer(z++));
+//                    set.add(component);
+//                } else if (obj instanceof Link) {
+//                    Link link = (Link)obj;
+//                    set.add(link.getComponent());
+//                }
+//            }
+//            mPlan.cleanupDanglingReferences(set);
+//        } catch (Exception e) {
+//            //e.printStackTrace();
+//            mLog.warning("Exception: " + e.getMessage());
+//        }
+//    }
+//    
     
     public void endTransaction(String pname) {
         super.endTransaction(pname);
-        PdAction.updateAllActions(mDesigner);
+        //ritPdAction.updateAllActions(mDesigner);
     }
     
     public void releasePlan() {
@@ -308,7 +323,12 @@ public class PdModel extends JGoDocument implements GuiConstants{
      * @param offset specify the (x,y) by which all copied objects should be moved
      * @return the copy environment with the results
      */
-    public JGoCopyEnvironment islandCopyFromCollection(JGoObjectSimpleCollection coll, Point offset) {
+    public JGoCopyEnvironment islandCopyFromCollection(JGoObjectSimpleCollection coll, 
+    												   Point offset) {
+    	mModel.startTransaction();
+    	OperatorComponentContainer opContainer = mModel.getPlanComponent().getOperatorComponentContainer();
+    	LinkComponentContainer lcContainer = mModel.getPlanComponent().getLinkComponentContainer();
+    	
         JGoCopyEnvironment map = createDefaultCopyEnvironment();
         List nodeList = new ArrayList();
         List linkList = new ArrayList();
@@ -324,11 +344,17 @@ public class PdModel extends JGoDocument implements GuiConstants{
             pos = coll.getNextObjectPosAtTop(pos);
         }
         
+        Map<String, OperatorComponent> oldOperatorIdToNewOperatorMap = new HashMap<String, OperatorComponent>();
+        
         // copy all EntityNodes and position them
         for (int i = 0, I = nodeList.size(); i < I; i++) {
             EntityNode node = (EntityNode)nodeList.get(i);
-            EntityNode newNode = (EntityNode)node.copyObjectAndResetContextProperties(map, mPlan);
-            positionNewObj(newNode, node, offset);
+            OperatorComponent operator = node.getModelComponent();
+            OperatorComponent newOperator = node.copyObjectAndResetContextProperties(mModel);
+            oldOperatorIdToNewOperatorMap.put(operator.getId(), newOperator);
+            opContainer.addOperatorComponent(newOperator);
+            positionNewObj(newOperator, node, offset);
+            //positionNewObj(newNode, node, offset);
         }
         
         // copy all qualified Links and position them
@@ -337,12 +363,28 @@ public class PdModel extends JGoDocument implements GuiConstants{
             if (!nodeList.contains(link.getFromNode()) || !nodeList.contains(link.getToNode())) {
                 continue;
             }
-            Link newLink = (Link)link.copyObjectAndResetContextProperties(map, mPlan);
-            link.copyObjectDelayed(map, newLink);
-            positionNewObj(newLink, link, offset);
+            LinkComponent newLink = link.copyObjectAndResetContextProperties(oldOperatorIdToNewOperatorMap, mModel);
+            lcContainer.addLinkComponent(newLink);
+            //link.copyObjectDelayed(map, newLink);
+            //positionNewObj(newLink, link, offset);
         }
         
+        
+        
+        mModel.endTransaction();
+        
         return map;
+    }
+    
+    private void positionNewObj(OperatorComponent newOperator, 
+    							JGoObject oldObj, 
+    							Point offset) {
+        
+    	Point location = oldObj.getLocation();
+    	
+    	Point newLocation = new Point(location.x + offset.x, + location.y + offset.y);
+    	newOperator.setX(newLocation.x);
+    	newOperator.setY(newLocation.y);
     }
     
     private void positionNewObj(JGoObject newObj, JGoObject oldObj, Point offset) {
@@ -369,56 +411,12 @@ public class PdModel extends JGoDocument implements GuiConstants{
         newlayer.addObjectAtTail(newObj);
     }
     
-    /**
-     * This method is called by the JGoDocumentChangedEdit.undo and redo methods
-     * to actually perform the state change.
-     * <p>
-     * For JGoDocumentEvent.CHANGED events, the JGoObject's changeValue method is called.
-     * <p>
-     * You will want to override this method to handle changing the additional state
-     * of your document subclasses.
-     *
-     * @param e the UndoableEdit that also remembers the kind of change and any
-     *          appropriate old and new state for performing an undo or redo
-     * @param undo if true, this method should restore the old state/value, otherwise
-     *             this method should restore the new state/value
-     */
-    public void changeValue(JGoDocumentChangedEdit e, boolean undo) {
-        super.changeValue(e, undo);
-        switch (e.getHint()) {
-            case JGoDocumentEvent.INSERTED: {
-                JGoObject obj = (JGoObject)e.getObject();
-                if (undo) {
-                    if (obj instanceof EntityNode) {
-                        mPlan.removeOperator(((EntityNode)obj).getComponent());
-                    } else if (obj instanceof Link) {
-                        mPlan.removeLink(((Link)obj).getComponent());
-                    }
-                } else {
-                    if (obj instanceof EntityNode) {
-                        mPlan.addOperator(((EntityNode)obj).getComponent());
-                    } else if (obj instanceof Link) {
-                        mPlan.addLink(((Link)obj).getComponent());
-                    }
-                }
-                return;}
-            case JGoDocumentEvent.REMOVED: {
-                JGoObject obj = (JGoObject)e.getObject();
-                if (undo) {
-                    if (obj instanceof EntityNode) {
-                        mPlan.addOperator(((EntityNode)obj).getComponent());
-                    } else if (obj instanceof Link) {
-                        mPlan.addLink(((Link)obj).getComponent());
-                    }
-                } else {
-                    if (obj instanceof EntityNode) {
-                        mPlan.removeOperator(((EntityNode)obj).getComponent());
-                    } else if (obj instanceof Link) {
-                        mPlan.removeLink(((Link)obj).getComponent());
-                    }
-                }
-                return; }
-         }
+    public boolean isReloading() {
+    	return this.mIsReloading;
+    }
+    
+    public void setIsReloading(boolean isReloading) {
+    	this.mIsReloading = isReloading;
     }
 }
 

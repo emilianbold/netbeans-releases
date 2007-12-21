@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.netbeans.modules.iep.model.IEPComponent;
 import org.netbeans.modules.iep.model.IEPModel;
+import org.netbeans.modules.iep.model.IEPVisitor;
 import org.netbeans.modules.iep.model.SchemaAttribute;
 import org.netbeans.modules.iep.model.SchemaComponent;
 import org.w3c.dom.Element;
@@ -39,39 +40,31 @@ public class SchemaComponentImpl extends ComponentImpl implements SchemaComponen
         return child;
 	}
 	
-	public SchemaComponent duplicateSchema(String name) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public int getAttributeCount() {
-		return 0;
-	}
-
-	public SchemaAttribute getSchemaAttribute(int i) {
-		return null;
-	}
+	 public void accept(IEPVisitor visitor) {
+    	visitor.visitSchemaComponent(this);
+     }
+	 
 
 	public List<SchemaAttribute> getSchemaAttributes() {
 		return getChildren(SchemaAttribute.class);
 	}
 
-	public boolean hasSameSchemaAttribute(List<SchemaAttribute> columns)  {
-		return false;
-	}
 
 	public void setSchemaAttributes(List<SchemaAttribute> attrs)  {
 		if(attrs != null) {
+			//first remove existing attributes
+			removeAllSchemaAttributes();
+			
 			Iterator<SchemaAttribute> it = attrs.iterator();
 			while(it.hasNext()) {
 				SchemaAttribute sa = it.next();
-				String attrName = sa.getAttributeName();
-				if(attrName != null) {
-					SchemaAttribute existingSA = findSchemaAttribute(attrName);
-					if(existingSA != null) {
-						removeSchemaAttribute(existingSA);
-					}
-				}
+//				String attrName = sa.getAttributeName();
+//				if(attrName != null) {
+//					SchemaAttribute existingSA = findSchemaAttribute(attrName);
+//					if(existingSA != null) {
+//						removeSchemaAttribute(existingSA);
+//					}
+//				}
 				
 				addSchemaAttribute(sa);
 			}
@@ -120,6 +113,14 @@ public class SchemaComponentImpl extends ComponentImpl implements SchemaComponen
 			removeChildComponent(sa);
 		}
 		
+	}
+	
+	private void removeAllSchemaAttributes() {
+		Iterator<SchemaAttribute> it = getSchemaAttributes().iterator();
+		while(it.hasNext()) {
+			SchemaAttribute sa = it.next();
+			removeSchemaAttribute(sa);
+		}
 	}
 	
 	public String toString() {

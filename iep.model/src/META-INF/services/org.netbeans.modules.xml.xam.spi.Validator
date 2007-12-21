@@ -1,1 +1,3 @@
-org.netbeans.modules.wlm.validator.WLMSchemaValidator
+org.netbeans.modules.iep.model.validator.IEPSchemaValidator
+org.netbeans.modules.iep.model.validator.IEPSemanticValidator
+

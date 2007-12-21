@@ -1,61 +1,44 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 package org.netbeans.modules.iep.editor.ps;
 
 import org.netbeans.modules.iep.editor.designer.GuiConstants;
 import org.netbeans.modules.iep.editor.model.AttributeMetadata;
-import org.netbeans.modules.iep.editor.model.ModelManager;
-import org.netbeans.modules.iep.editor.model.Plan;
-import org.netbeans.modules.iep.editor.model.Schema;
+import org.netbeans.modules.iep.editor.model.NameGenerator;
 import org.netbeans.modules.iep.editor.tcg.dialog.NotifyHelper;
 import org.netbeans.modules.iep.editor.share.SharedConstants;
 import org.netbeans.modules.iep.editor.tcg.table.DefaultMoveableRowTableModel;
 import org.netbeans.modules.iep.editor.tcg.table.MoveableRowTable;
-import org.netbeans.modules.iep.editor.tcg.model.TcgComponent;
-import org.netbeans.modules.iep.editor.tcg.model.TcgProperty;
-import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodeProperty;
 import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodePropertyCustomizerState;
 import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodePropertyCustomizer;
 import org.netbeans.modules.iep.editor.tcg.ps.TcgComponentNodePropertyEditor;
+import org.netbeans.modules.iep.model.IEPModel;
+import org.netbeans.modules.iep.model.OperatorComponent;
+import org.netbeans.modules.iep.model.OperatorComponentContainer;
+import org.netbeans.modules.iep.model.Property;
+import org.netbeans.modules.iep.model.SchemaAttribute;
+import org.netbeans.modules.iep.model.SchemaComponent;
+import org.netbeans.modules.iep.model.SchemaComponentContainer;
+import org.netbeans.modules.iep.model.lib.TcgComponent;
+import org.netbeans.modules.iep.model.lib.TcgPropertyType;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -84,6 +67,7 @@ import javax.swing.JTextField;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
+import org.netbeans.modules.iep.model.lib.TcgProperty;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.NbBundle;
 
@@ -107,13 +91,13 @@ public class TupleSerialCorrelationCustomEditor extends TcgComponentNodeProperty
     
     public Component getCustomEditor() {
         if (mEnv != null) {
-            return new MyCustomizer(mProperty, mEnv);
+            return new MyCustomizer(getPropertyType(), getOperatorComponent(), mEnv);
         }
-        return new MyCustomizer(mProperty, mCustomizerState);
+        return new MyCustomizer(getPropertyType(), getOperatorComponent(), mCustomizerState);
     }
     
     private static class MyCustomizer extends TcgComponentNodePropertyCustomizer implements SharedConstants {
-        private TcgComponent mComponent;
+        private OperatorComponent mComponent;
         private PropertyPanel mNamePanel;
         private PropertyPanel mOutputSchemaNamePanel;
         private PropertyPanel mIncrementPanel;
@@ -122,20 +106,21 @@ public class TupleSerialCorrelationCustomEditor extends TcgComponentNodeProperty
         private DefaultMoveableRowTableModel mTableModel;
         private MoveableRowTable mTable;
         private Vector mColTitle;
-        private JLabel mStatusLbl;
+//        private JLabel mStatusLbl;
         
-        public MyCustomizer(TcgComponentNodeProperty prop, PropertyEnv env) {
-            super(prop, env);
+        public MyCustomizer(TcgPropertyType propertyType, OperatorComponent component, PropertyEnv env) {
+            super(propertyType, component, env);
         }
         
-        public MyCustomizer(TcgComponentNodeProperty prop, TcgComponentNodePropertyCustomizerState customizerState) {
-            super(prop, customizerState);
+        public MyCustomizer(TcgPropertyType propertyType, OperatorComponent component, TcgComponentNodePropertyCustomizerState customizerState) {
+            super(propertyType, component, customizerState);
         }
         
         protected void initialize() {
             try {
-                mComponent = mProperty.getProperty().getParentComponent();
-                setLayout(new GridBagLayout());
+                mComponent = getOperatorComponent();
+                IEPModel model = mComponent.getModel();
+                getContentPane().setLayout(new GridBagLayout());
                 GridBagConstraints gbc = new GridBagConstraints();
                 gbc.insets = new Insets(3, 3, 3, 3);
                 int gGridy = 0;
@@ -150,7 +135,7 @@ public class TupleSerialCorrelationCustomEditor extends TcgComponentNodeProperty
                 gbc.weighty = 0.0D;
                 gbc.fill = GridBagConstraints.HORIZONTAL;
                 JPanel topPanel = createPropertyPanel();
-                add(topPanel, gbc);
+                getContentPane().add(topPanel, gbc);
                 
                 // attribute pane
                 gbc.gridx = 0;
@@ -164,11 +149,11 @@ public class TupleSerialCorrelationCustomEditor extends TcgComponentNodeProperty
                 JSplitPane attributePane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
                 String msg = NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.ATTRIBUTES");
                 attributePane.setBorder(new TitledBorder(LineBorder.createGrayLineBorder(), msg, TitledBorder.LEFT, TitledBorder.TOP));
-                add(attributePane, gbc);
+                getContentPane().add(attributePane, gbc);
                 
                 // left attribute pane
                 ((JSplitPane)attributePane).setOneTouchExpandable(true);
-                mSelectionPanel = new InputSchemaSelectionPanel((Plan)mProperty.getNode().getDoc(), mComponent);
+                mSelectionPanel = new InputSchemaSelectionPanel(model, mComponent);
                 mSelectionPanel.setPreferredSize(new Dimension(150, 300));
                 ((JSplitPane)attributePane).setLeftComponent(mSelectionPanel);
                 mSelectionPanel.addItemListener(new ItemListener() {
@@ -179,7 +164,7 @@ public class TupleSerialCorrelationCustomEditor extends TcgComponentNodeProperty
                 
                 // right attribute pane
                 JScrollPane rightPane = new JScrollPane();
-                rightPane.setPreferredSize(new Dimension(450, 300));
+                rightPane.setPreferredSize(new Dimension(500, 300));
                 attributePane.setRightComponent(rightPane);
                 
                 mColTitle = new Vector();
@@ -199,18 +184,18 @@ public class TupleSerialCorrelationCustomEditor extends TcgComponentNodeProperty
                 };
                 rightPane.getViewport().add(mTable);
                 
-                // status bar
-                gbc.gridx = 0;
-                gbc.gridy = gGridy++;
-                gbc.gridwidth = 1;
-                gbc.gridheight = 1;
-                gbc.anchor = GridBagConstraints.WEST;
-                gbc.weightx = 1.0D;
-                gbc.weighty = 0.0D;
-                gbc.fill = GridBagConstraints.HORIZONTAL;
-                mStatusLbl = new JLabel();
-                mStatusLbl.setForeground(Color.RED);
-                add(mStatusLbl, gbc);
+//                // status bar
+//                gbc.gridx = 0;
+//                gbc.gridy = gGridy++;
+//                gbc.gridwidth = 1;
+//                gbc.gridheight = 1;
+//                gbc.anchor = GridBagConstraints.WEST;
+//                gbc.weightx = 1.0D;
+//                gbc.weighty = 0.0D;
+//                gbc.fill = GridBagConstraints.HORIZONTAL;
+//                mStatusLbl = new JLabel();
+//                mStatusLbl.setForeground(Color.RED);
+//                add(mStatusLbl, gbc);
             } catch(Exception e) {
                 mLog.log(Level.SEVERE,
                         NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.FAILED_TO_LAYOUT"),
@@ -222,12 +207,12 @@ public class TupleSerialCorrelationCustomEditor extends TcgComponentNodeProperty
             try {
                 Vector data = new Vector();
                 int size = mSizePanel.getIntValue();
-                List attributeList = mSelectionPanel.getSelectedAttributeList();
+                List<SchemaAttribute> attributeList = mSelectionPanel.getSelectedAttributeList();
                 Vector r;
                 for (int i = 0; i < size; i++) {
                     for (int j = 0, J = attributeList.size(); j < J; j++) {
                         r = new Vector();
-                        AttributeMetadata attr = (AttributeMetadata)attributeList.get(j);
+                        SchemaAttribute attr = attributeList.get(j);
                         r.add(attr.getAttributeName() + "_" + i);
                         r.add(attr.getAttributeType());
                         r.add(attr.getAttributeSize());
@@ -254,7 +239,7 @@ public class TupleSerialCorrelationCustomEditor extends TcgComponentNodeProperty
             gbc.insets = new Insets(3, 3, 3, 3);
             
             // name
-            TcgProperty nameProp = mComponent.getProperty(NAME_KEY);
+            Property nameProp = mComponent.getProperty(NAME_KEY);
             String nameStr = NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.NAME");
             mNamePanel = PropertyPanel.createSingleLineTextPanel(nameStr, nameProp, false);
             gbc.gridx = 0;
@@ -278,11 +263,13 @@ public class TupleSerialCorrelationCustomEditor extends TcgComponentNodeProperty
             pane.add(mNamePanel.component[1], gbc);
 
             // output schema
-            TcgProperty outputSchemaNameProp = mComponent.getProperty(OUTPUT_SCHEMA_ID_KEY);
+            Property outputSchemaNameProp = mComponent.getProperty(OUTPUT_SCHEMA_ID_KEY);
             String outputSchemaNameStr = NbBundle.getMessage(DefaultCustomEditor.class, "CustomEditor.OUTPUT_SCHEMA_NAME");
             mOutputSchemaNamePanel = PropertyPanel.createSingleLineTextPanel(outputSchemaNameStr, outputSchemaNameProp, false);
             if (mOutputSchemaNamePanel.getStringValue() == null || mOutputSchemaNamePanel.getStringValue().trim().equals("")) {
-                mOutputSchemaNamePanel.setStringValue(((Plan)mProperty.getNode().getDoc()).getNameForNewSchema());
+            	IEPModel model = mComponent.getModel();
+            	String schemaName = NameGenerator.generateSchemaName(model.getPlanComponent().getSchemaComponentContainer());
+                mOutputSchemaNamePanel.setStringValue(schemaName);
             }
             gbc.gridx = 0;
             gbc.gridy = 1;
@@ -316,7 +303,7 @@ public class TupleSerialCorrelationCustomEditor extends TcgComponentNodeProperty
             pane.add(Box.createHorizontalStrut(20), gbc);
 
             // increment
-            TcgProperty incrementProp = mComponent.getProperty(INCREMENT_KEY);
+            Property incrementProp = mComponent.getProperty(INCREMENT_KEY);
             String incrementStr = NbBundle.getMessage(TupleSerialCorrelationCustomEditor.class, "CustomEditor.INCREMENT");
             mIncrementPanel = PropertyPanel.createIntNumberPanel(incrementStr, incrementProp, false);
             gbc.gridx = 3;
@@ -340,7 +327,7 @@ public class TupleSerialCorrelationCustomEditor extends TcgComponentNodeProperty
             pane.add(mIncrementPanel.component[1], gbc);
 
             // size
-            TcgProperty sizeProp = mComponent.getProperty(SIZE_KEY);
+            Property sizeProp = mComponent.getProperty(SIZE_KEY);
             String sizeStr = NbBundle.getMessage(TupleSerialCorrelationCustomEditor.class, "CustomEditor.SIZE");
             mSizePanel = PropertyPanel.createIntNumberPanel(sizeStr, sizeProp, false);
             ((JTextField)mSizePanel.input[0]).addActionListener(new ActionListener() {
@@ -384,13 +371,14 @@ public class TupleSerialCorrelationCustomEditor extends TcgComponentNodeProperty
         
         public void validateContent(PropertyChangeEvent evt) throws PropertyVetoException {
             try {
-                Plan plan = (Plan)mProperty.getNode().getDoc();
+            	OperatorComponentContainer ocContainer = mModel.getPlanComponent().getOperatorComponentContainer();
+                SchemaComponentContainer scContainer = mModel.getPlanComponent().getSchemaComponentContainer();
                 
                 // name
                 mNamePanel.validateContent(evt);
                 String newName = mNamePanel.getStringValue();
-                String name = mComponent.getProperty(NAME_KEY).getStringValue();
-                if (!newName.equals(name) && plan.hasOperator(newName)) {
+                String name = mComponent.getDisplayName();
+                if (!newName.equals(name) && ocContainer.findOperator(newName) != null) {
                     String msg = NbBundle.getMessage(DefaultCustomEditor.class,
                             "CustomEditor.NAME_IS_ALREADY_TAKEN_BY_ANOTHER_OPERATOR",
                             newName);
@@ -400,8 +388,13 @@ public class TupleSerialCorrelationCustomEditor extends TcgComponentNodeProperty
                 // output schema name
                 mOutputSchemaNamePanel.validateContent(evt);
                 String newSchemaName = mOutputSchemaNamePanel.getStringValue();
-                String schemaName = mComponent.getProperty(OUTPUT_SCHEMA_ID_KEY).getStringValue();
-                if (!newSchemaName.equals(schemaName) && plan.hasSchema(newSchemaName)) {
+                SchemaComponent outputSchema = mComponent.getOutputSchemaId();
+                String schemaName = null;
+                if(outputSchema != null) {
+                	schemaName = outputSchema.getName();
+                }
+                
+                if (!newSchemaName.equals(schemaName) && scContainer.findSchema(newSchemaName) != null) {
                     String msg = NbBundle.getMessage(DefaultCustomEditor.class,
                             "CustomEditor.OUTPUT_SCHEMA_NAME_IS_ALREADY_TAKENBY_ANOTHER_SCHEMA",
                             newSchemaName);
@@ -448,47 +441,112 @@ public class TupleSerialCorrelationCustomEditor extends TcgComponentNodeProperty
             return attributeMetadataList;
         }
         
+        private List<SchemaAttribute> getAttributes() {
+            List<SchemaAttribute> attributeList = new ArrayList<SchemaAttribute>();
+            Vector r = mTableModel.getDataVector();
+            for (int i = 0, I = r.size(); i < I; i++) {
+                Vector c = (Vector) r.elementAt(i);
+                SchemaAttribute sa = mModel.getFactory().createSchemaAttribute(mModel);
+                String name = (String) c.elementAt(0);
+            	sa.setName(name);
+            	sa.setTitle(name);
+            	
+            	//name
+            	sa.setAttributeName(name);
+                
+                //type
+                sa.setAttributeSize((String) c.elementAt(1));
+                //size
+                sa.setAttributeSize((String) c.elementAt(2));
+                //scale
+                sa.setAttributeScale((String) c.elementAt(3));
+                //comment
+                sa.setAttributeComment("");
+                
+                attributeList.add(sa);
+            }
+            return attributeList;
+        }
+        
         public void setValue() {
-            Plan plan = (Plan)mProperty.getNode().getDoc();
-            Schema newSchema = null;
-            mNamePanel.store();
+        	SchemaComponentContainer scContainer = mModel.getPlanComponent().getSchemaComponentContainer();
+        	
+        	mNamePanel.store();
             mIncrementPanel.store();
             mSizePanel.store();
             try {
                 String newSchemaName = mOutputSchemaNamePanel.getStringValue();
-                String schemaName = mComponent.getProperty(OUTPUT_SCHEMA_ID_KEY).getStringValue();
-                Schema schema = plan.getSchema(schemaName);
-                boolean schemaExist = schemaName != null && !schemaName.trim().equals("") && schema != null;
-                List attributes = getAttributeMetadataAsList();
+                
+                SchemaComponent outputSchema = mComponent.getOutputSchemaId();
+                String schemaName = null;
+                if(outputSchema != null) {
+                	schemaName = outputSchema.getName();
+                }
+                
+                boolean schemaExist = schemaName != null && !schemaName.trim().equals("") && outputSchema != null;
+                List<SchemaAttribute> attrs = getAttributes();
+                
+                //rit fix below
                 if (schemaExist) {
                     if (!newSchemaName.equals(schemaName)) {
-                        newSchema = ModelManager.createSchema(newSchemaName);
-                        newSchema.setAttributeMetadataAsList(attributes);
-                        plan.addSchema(newSchema);
-                        plan.removeSchema(schemaName);
+                    	mModel.startTransaction();
+                    	SchemaComponent scComp = mModel.getFactory().createSchema(mModel);
+                    	scComp.setName(newSchemaName);
+                    	scComp.setType(newSchemaName);
+                    	scComp.setSchemaAttributes(attrs);
+                    	
+                    	
+                    	scContainer.addSchemaComponent(scComp);
+                    	scContainer.removeSchemaComponent(outputSchema);
+                    	mModel.endTransaction();
+                    	
                         mOutputSchemaNamePanel.store();
-                        mProperty.getNode().getView().updateTcgComponentNodeView();
-                        plan.getPropertyChangeSupport().firePropertyChange("Schema Name",
-                                schemaName, newSchemaName);
+                        //ritmProperty.getNode().getView().updateTcgComponentNodeView();
+                        //ritplan.getPropertyChangeSupport().firePropertyChange("Schema Name",
+                        //rit        schemaName, newSchemaName);
                         
                     } else {
-                        if (!schema.hasSameAttributeMetadata(attributes)) {
+                    	mModel.startTransaction();
+                    	outputSchema.setSchemaAttributes(attrs);
+                    	mModel.endTransaction();
+                    	
+                        //rit need to fix this
+                        /*if (!schema.hasSameAttributeMetadata(attributes)) {
                             schema.setAttributeMetadataAsList(attributes);
                             plan.getPropertyChangeSupport().firePropertyChange("Schema Column Metadata",
                                     "old", "new");
-                        }
+                        }*/
                     }
                 } else {
-                    newSchema = ModelManager.createSchema(schemaName);
-                    plan.addSchema(newSchema);
-                    newSchema.setAttributeMetadataAsList(attributes);
-                    mOutputSchemaNamePanel.store();
-                    mProperty.getNode().getView().updateTcgComponentNodeView();
-                    plan.getPropertyChangeSupport().firePropertyChange("Schema",
-                            null, newSchema);
+                	mModel.startTransaction();
+                	
+                	SchemaComponent scComp = mModel.getFactory().createSchema(mModel);
+                	scComp.setName(newSchemaName);
+                	scComp.setTitle(newSchemaName);
+                	scComp.setSchemaAttributes(attrs);
+                	
+                	scContainer.addSchemaComponent(scComp);
+                	mModel.endTransaction();
+                	mOutputSchemaNamePanel.store();
+                	
+//                    newSchema = ModelManager.createSchema(schemaName);
+//                    plan.addSchema(newSchema);
+//                    newSchema.setAttributeMetadataAsList(attributes);
+//                    mOutputSchemaNamePanel.store();
+//                    //ritmProperty.getNode().getView().updateTcgComponentNodeView();
+//                    plan.getPropertyChangeSupport().firePropertyChange("Schema",
+//                            null, newSchema);
                 }
                 List selectedAttrNameList = mSelectionPanel.getSelectedAttributeNameList();
-                mComponent.getProperty(FROM_COLUMN_LIST_KEY).setValue(selectedAttrNameList);
+                String val = mComponent.getProperty(FROM_COLUMN_LIST_KEY).getPropertyType().getType().format(selectedAttrNameList);
+                mModel.startTransaction();
+                mComponent.getProperty(FROM_COLUMN_LIST_KEY).setValue(val);
+                mModel.endTransaction();
+                
+
+                //set documentation
+                super.setDocumentation();
+                
             } catch (Exception e) {
                 e.printStackTrace();
                 NotifyHelper.reportError(e.getMessage());
