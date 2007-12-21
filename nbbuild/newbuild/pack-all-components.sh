@@ -92,6 +92,9 @@ pack_all_components()
     pack_component $DIST_DIR/zip/moduleclusters $NAME cnd "cnd*"
     rm -rf cnd*
 
+    pack_component $DIST_DIR/zip/moduleclusters $NAME php "php*"
+    rm -rf php*
+
     pack_component $DIST_DIR/zip/moduleclusters $NAME nb6.0-etc "*"
 }
 
