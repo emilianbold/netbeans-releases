@@ -147,14 +147,7 @@ class BracketCompletion {
     {
         if (completionSettingEnabled()) {
             if (ch == '(' || ch == '[') {
-                Token tokenAtDot = TokenUtils.getPhpToken( doc, dotPos );
-                if ((isTokenTextEquals( tokenAtDot, TokenUtils.RBRACKET )
-                    && !isBalanced(doc, TokenUtils.LBRACKET, TokenUtils.RBRACKET))
-                    || 
-                    (isTokenTextEquals( tokenAtDot, TokenUtils.RPAREN )
-                    && !isBalanced( doc, TokenUtils.LPAREN,TokenUtils.RPAREN)))
-                {
-                    
+                if (isRemovePairedBracket(doc, dotPos, ch)){
                     doc.remove(dotPos, 1);
                 }
             }
@@ -169,7 +162,27 @@ class BracketCompletion {
         }
     }
     
-    
+    private static boolean isRemovePairedBracket(BaseDocument doc, int dotPos,
+            char ch) {
+        Token tokenAtDot = TokenUtils.getPhpToken(doc, dotPos);
+
+        if (TokenUtils.LBRACKET.equals(ch)) {
+            if ( isTokenTextEquals(tokenAtDot, TokenUtils.RBRACKET) 
+                 && !isBalanced(doc, TokenUtils.LBRACKET, TokenUtils.RBRACKET)) 
+            {
+                return true;
+            }
+        } 
+        else if (TokenUtils.LPAREN.equals(ch)) {
+            if ( isTokenTextEquals(tokenAtDot, TokenUtils.RPAREN) 
+                 && !isBalanced(doc, TokenUtils.LPAREN, TokenUtils.RPAREN)) 
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Resolve whether pairing right curly should be added automatically at the
      * caret position or not. <br>
