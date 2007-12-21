@@ -45,26 +45,34 @@ made subject to such option by the copyright holder.
                                 "http://www.netbeans.org/dtds/EditorCodeTemplates-1_0.dtd">
 
 <codetemplates>
-    <codetemplate abbreviation="ab"><code><![CDATA[abstract ]]></code></codetemplate> 
+    <codetemplate abbreviation="ab"><code><![CDATA[abstract ]]></code></codetemplate>
+    <codetemplate abbreviation="as"><code><![CDATA[assert ]]></code></codetemplate>
     <codetemplate abbreviation="bo"><code><![CDATA[boolean ]]></code></codetemplate> 
     <codetemplate abbreviation="br"><code><![CDATA[break]]></code></codetemplate> 
     <codetemplate abbreviation="ca"><code><![CDATA[catch (]]></code></codetemplate> 
     <codetemplate abbreviation="cl"><code><![CDATA[class ]]></code></codetemplate> 
-    <codetemplate abbreviation="cn"><code><![CDATA[continue]]></code></codetemplate> 
-    <codetemplate abbreviation="df"><code><![CDATA[default:]]></code></codetemplate> 
+    <codetemplate abbreviation="cn"><code><![CDATA[continue]]></code></codetemplate>
+    <codetemplate abbreviation="co"><code><![CDATA[contains]]></code></codetemplate> 
+    <codetemplate abbreviation="df"><code><![CDATA[default:]]></code></codetemplate>
+    <codetemplate abbreviation="d"><code><![CDATA[def ]]></code></codetemplate> 
+    <codetemplate abbreviation="ea"><code><![CDATA[each]]></code></codetemplate>
+    <codetemplate abbreviation="eal"><code><![CDATA[eachLine]]></code></codetemplate>
     <codetemplate abbreviation="eq"><code><![CDATA[equals]]></code></codetemplate> 
     <codetemplate abbreviation="ex"><code><![CDATA[extends ]]></code></codetemplate> 
     <codetemplate abbreviation="fa"><code><![CDATA[false]]></code></codetemplate> 
-    <codetemplate abbreviation="fi"><code><![CDATA[final ]]></code></codetemplate> 
+    <codetemplate abbreviation="fi"><code><![CDATA[final ]]></code></codetemplate>
+    <codetemplate abbreviation="fia"><code><![CDATA[findAll]]></code></codetemplate> 
     <codetemplate abbreviation="fl"><code><![CDATA[float ]]></code></codetemplate> 
     <codetemplate abbreviation="fy"><code><![CDATA[finally ]]></code></codetemplate> 
     <codetemplate abbreviation="ie"><code><![CDATA[interface ]]></code></codetemplate> 
+    <codetemplate abbreviation="imps"><code><![CDATA[implements Serializable]]></code></codetemplate>
     <codetemplate abbreviation="im"><code><![CDATA[implements ]]></code></codetemplate> 
     <codetemplate abbreviation="iof"><code><![CDATA[instanceof ]]></code></codetemplate> 
     <codetemplate abbreviation="ir"><code><![CDATA[import ]]></code></codetemplate> 
     <codetemplate abbreviation="le"><code><![CDATA[length]]></code></codetemplate> 
     <codetemplate abbreviation="pe"><code><![CDATA[protected ]]></code></codetemplate> 
     <codetemplate abbreviation="pr"><code><![CDATA[private ]]></code></codetemplate> 
+    <codetemplate abbreviation="pri"><code><![CDATA[println ]]></code></codetemplate>
     <codetemplate abbreviation="psf"><code><![CDATA[private static final ]]></code></codetemplate> 
     <codetemplate abbreviation="psfi"><code><![CDATA[private static final int ]]></code></codetemplate> 
     <codetemplate abbreviation="psfs"><code><![CDATA[private static final String ]]></code></codetemplate> 
@@ -72,13 +80,13 @@ made subject to such option by the copyright holder.
     <codetemplate abbreviation="pst"><code><![CDATA[printStackTrace();]]></code></codetemplate> 
     <codetemplate abbreviation="pu"><code><![CDATA[public ]]></code></codetemplate> 
     <codetemplate abbreviation="re"><code><![CDATA[return ]]></code></codetemplate> 
-    <codetemplate abbreviation="serr"><code><![CDATA[System.err.println("${cursor}");]]></code></codetemplate> 
-    <codetemplate abbreviation="sout"><code><![CDATA[System.out.println("${cursor}");]]></code></codetemplate> 
+    <codetemplate abbreviation="red"><code><![CDATA[redirect]]></code></codetemplate>
     <codetemplate abbreviation="st"><code><![CDATA[static ]]></code></codetemplate> 
     <codetemplate abbreviation="sw"><code><![CDATA[switch (]]></code></codetemplate> 
     <codetemplate abbreviation="sy"><code><![CDATA[synchronized ]]></code></codetemplate> 
     <codetemplate abbreviation="tds"><code><![CDATA[Thread.dumpStack();]]></code></codetemplate> 
     <codetemplate abbreviation="th"><code><![CDATA[throws ]]></code></codetemplate> 
+    <codetemplate abbreviation="ti"><code><![CDATA[times { ]]></code></codetemplate>
     <codetemplate abbreviation="tw"><code><![CDATA[throw ]]></code></codetemplate> 
     <codetemplate abbreviation="twn"><code><![CDATA[throw new ]]></code></codetemplate> 
     <codetemplate abbreviation="wh"><code><![CDATA[while (]]></code></codetemplate> 
@@ -92,16 +100,6 @@ made subject to such option by the copyright holder.
     <codetemplate abbreviation="Psfb"><code><![CDATA[public static final boolean ]]></code></codetemplate> 
     <codetemplate abbreviation="St"><code><![CDATA[String]]></code></codetemplate> 
 
-
-    <codetemplate abbreviation="fori" contexts="BLOCK,CASE">
-        <code>
-<![CDATA[for (int ${IDX newVarName default="idx"} = 0; ${IDX} < ${ARR array default="arr"}.length; ${IDX}++) {
-   ${TYPE rightSideType default="Object"} ${ELEM newVarName default="elem"} = ${TYPE_CAST cast default="" editable=false}${ARR}[${IDX}];
-   ${selection line}${cursor}
-}
-]]>
-        </code>
-    </codetemplate>
     <codetemplate abbreviation="forc" contexts="BLOCK,CASE">
         <code>
 <![CDATA[for (${IT_TYPE rightSideType type="java.util.Iterator" default="Iterator" editable=false} ${IT newVarName default="it"} = ${COL instanceof="java.util.Collection" default="col"}.iterator(); ${IT}.hasNext();) {
@@ -154,12 +152,7 @@ made subject to such option by the copyright holder.
 }
 ]]>
         </code>
-    </codetemplate>
-    <codetemplate abbreviation="soutv">
-        <code>
-        <![CDATA[System.out.println("${EXP instanceof="<any>" default="exp"} = " + ${EXP});]]>
-        </code>
-    </codetemplate>
+   </codetemplate>
     <codetemplate abbreviation="whilen" contexts="BLOCK,CASE">
         <code>
 <![CDATA[while(${ENUM instanceof="java.util.Enumeration" default="en"}.hasMoreElements()) {
@@ -233,15 +226,6 @@ made subject to such option by the copyright holder.
     <codetemplate abbreviation="newo">
         <code>
         <![CDATA[${TYPE default="Object"} ${OBJ newVarName default="obj"} = new ${TYPE}(${cursor});]]>
-        </code>
-    </codetemplate>
-        
-    <codetemplate abbreviation="psvm">
-        <code>
-<![CDATA[public static void main(String[] args) { 
-   ${cursor} 
-}
-]]>
         </code>
     </codetemplate>
 
