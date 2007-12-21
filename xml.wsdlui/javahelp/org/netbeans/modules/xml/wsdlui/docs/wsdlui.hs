@@ -12,12 +12,14 @@
         <type>javax.help.TOCView</type>
         <data>wsdlui-toc.xml</data>
     </view>
+<!--
     <view mergetype="javax.help.AppendMerge">
         <name>Index</name>
         <label>Index</label>
         <type>javax.help.IndexView</type>
         <data>wsdlui-idx.xml</data>
     </view>
+-->
     <view>
         <name>Search</name>
         <label>Search</label>
