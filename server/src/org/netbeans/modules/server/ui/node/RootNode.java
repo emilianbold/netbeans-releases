@@ -88,7 +88,7 @@ public final class RootNode extends AbstractNode {
         return new SystemAction[] {SystemAction.get(AddServerInstanceAction.class)};
     }
 
-    private static class ChildFactory extends org.openide.nodes.ChildFactory<Node> implements ChangeListener {
+    private static class ChildFactory extends org.openide.nodes.ChildFactory<ServerInstance> implements ChangeListener {
 
         private static final Comparator<ServerInstance> COMPARATOR = new InstanceComparator();
 
@@ -127,26 +127,22 @@ public final class RootNode extends AbstractNode {
         }
 
         @Override
-        protected Node createNodeForKey(Node key) {
-            return key;
+        protected Node createNodeForKey(ServerInstance key) {
+            return key.getNode(true);
         }
 
         @Override
-        protected boolean createKeys(List<Node> toPopulate) {
+        protected boolean createKeys(List<ServerInstance> toPopulate) {
             List<ServerInstance> fresh = new ArrayList<ServerInstance>();
 
             ServerRegistry registry = ServerRegistry.getInstance();
             for (ServerInstanceProvider type : registry.getProviders()) {
                 fresh.addAll(type.getInstances());
             }
+
             Collections.sort(fresh, COMPARATOR);
 
-            for (ServerInstance instance : fresh) {
-                Node instanceNode = instance.getNode();
-                if (instanceNode != null) {
-                    toPopulate.add(instanceNode);
-                }
-            }
+            toPopulate.addAll(fresh);
             return true;
         }
 

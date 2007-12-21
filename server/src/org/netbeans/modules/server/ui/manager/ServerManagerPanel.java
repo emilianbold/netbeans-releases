@@ -53,11 +53,12 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.Comparator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.netbeans.modules.server.ServerRegistry;
 import org.netbeans.modules.server.ui.wizard.AddServerInstanceWizard;
@@ -65,8 +66,9 @@ import org.netbeans.spi.server.ServerInstance;
 import org.netbeans.spi.server.ServerInstanceProvider;
 import org.openide.nodes.Node;
 import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.view.BeanTreeView;
+import org.openide.explorer.view.ListView;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.util.NbBundle;
@@ -81,9 +83,12 @@ import org.openide.util.NbBundle;
  */
 public class ServerManagerPanel extends javax.swing.JPanel implements PropertyChangeListener, VetoableChangeListener, ExplorerManager.Provider {
 
-    private static final Dimension MINIMUM_SIZE = new Dimension(720, 400);
+    private static final Logger LOGGER = Logger.getLogger(ServerManagerPanel.class.getName());
 
-    private ServerCategoriesChildren children;
+    private static final Dimension MINIMUM_SIZE = new Dimension(750, 450);
+
+    //private ServerCategoriesChildren children;
+    private ServersChildren children;
     private ExplorerManager manager;
     private ServerInstance initialInstance;
 
@@ -101,20 +106,20 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
 
     public void propertyChange(PropertyChangeEvent evt) {
         if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
-        Node[] nodes = (Node[]) evt.getNewValue();
-        if (nodes.length!=1) {
-            selectServer(null);
-        } else {
-            selectServer(nodes[0]);
-        }
+            Node[] nodes = (Node[]) evt.getNewValue();
+            if (nodes.length != 1) {
+                selectServer(null);
+            } else {
+                selectServer(nodes[0]);
+            }
         }
     }
 
     public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
         if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
             Node[] nodes = (Node[]) evt.getNewValue();
-            if (nodes.length>1) {
-                throw new PropertyVetoException("Invalid length",evt);   //NOI18N
+            if (nodes.length != 1) {
+                throw new PropertyVetoException("Invalid length", evt);   //NOI18N
             }
         }
     }
@@ -122,18 +127,12 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
     public synchronized ExplorerManager getExplorerManager() {
         if (this.manager == null) {
             this.manager = new ExplorerManager();
-            this.manager.setRootContext(new AbstractNode(getChildren()));
+            this.manager.setRootContext(new AbstractNode(Children.create(getChildren(), false)));
             this.manager.addPropertyChangeListener(this);
             this.manager.addVetoableChangeListener(this);
         }
         return manager;
     }
-
-    public void addNotify() {
-        super.addNotify();
-        expandServers(initialInstance);
-    }
-
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -145,7 +144,7 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
         java.awt.GridBagConstraints gridBagConstraints;
 
         jPanel3 = new javax.swing.JPanel();
-        servers = new PlatformsView ();
+        servers = new org.openide.explorer.view.ListView();
         addButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
         cardsPanel = new javax.swing.JPanel();
@@ -158,21 +157,10 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
         clientPanel = new javax.swing.JPanel();
         serversLabel = new javax.swing.JLabel();
 
-        setLayout(new java.awt.GridBagLayout());
-
+        servers.setBorder(UIManager.getBorder("Nb.ScrollPane.border"));
+        servers.setPopupAllowed(false);
         servers.setPreferredSize(new java.awt.Dimension(220, 400));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.RELATIVE;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.RELATIVE;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(3, 12, 6, 6);
-        add(servers, gridBagConstraints);
-        servers.getAccessibleContext().setAccessibleName("null");
-        servers.getAccessibleContext().setAccessibleDescription("null");
+        servers.setSelectionMode(0);
 
         org.openide.awt.Mnemonics.setLocalizedText(addButton, NbBundle.getMessage(ServerManagerPanel.class, "CTL_AddServer")); // NOI18N
         addButton.addActionListener(new java.awt.event.ActionListener() {
@@ -180,13 +168,6 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
                 addServer(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 12, 12, 0);
-        add(addButton, gridBagConstraints);
-        addButton.getAccessibleContext().setAccessibleName("null");
-        addButton.getAccessibleContext().setAccessibleDescription("null");
 
         org.openide.awt.Mnemonics.setLocalizedText(removeButton, NbBundle.getMessage(ServerManagerPanel.class, "CTL_Remove")); // NOI18N
         removeButton.setEnabled(false);
@@ -195,13 +176,6 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
                 removeServer(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 12, 6);
-        add(removeButton, gridBagConstraints);
-        removeButton.getAccessibleContext().setAccessibleName("null");
-        removeButton.getAccessibleContext().setAccessibleDescription("null");
 
         cardsPanel.setLayout(new java.awt.CardLayout());
 
@@ -261,25 +235,50 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
 
         cardsPanel.add(customizerPanel, "card2");
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 12);
-        add(cardsPanel, gridBagConstraints);
-
         serversLabel.setLabelFor(servers);
         org.openide.awt.Mnemonics.setLocalizedText(serversLabel, org.openide.util.NbBundle.getMessage(ServerManagerPanel.class, "CTL_Servers")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
-        add(serversLabel, gridBagConstraints);
+
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(serversLabel)
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                            .add(servers, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                                .add(addButton)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(removeButton)))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                        .add(cardsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 267, Short.MAX_VALUE)))
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(serversLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, cardsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, servers, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(addButton)
+                    .add(removeButton))
+                .addContainerGap())
+        );
+
+        servers.getAccessibleContext().setAccessibleName("null");
+        servers.getAccessibleContext().setAccessibleDescription("null");
+        addButton.getAccessibleContext().setAccessibleName("null");
+        addButton.getAccessibleContext().setAccessibleDescription("null");
+        removeButton.getAccessibleContext().setAccessibleName("null");
+        removeButton.getAccessibleContext().setAccessibleDescription("null");
         serversLabel.getAccessibleContext().setAccessibleName("null");
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/server/ui/manager/Bundle"); // NOI18N
         serversLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_ServerList")); // NOI18N
@@ -290,34 +289,70 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
 
     private void removeServer(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeServer
         Node[] nodes = getExplorerManager().getSelectedNodes();
-        if (nodes.length!=1) {
-            assert false : "Illegal number of selected nodes";      //NOI18N
-            return;
-        }
+        assert nodes.length != 1 : "Illegal number of selected nodes"; // NOI18N
+        LOGGER.log(Level.FINE, "----Remove");
+            
         if (nodes[0] instanceof ServerNode) {
-            ServerInstance serverInstance = ((ServerNode)nodes[0]).getServerInstance();
+            ServerInstance serverInstance = ((ServerNode) nodes[0]).getServerInstance();
             if (serverInstance.isRemovable()) {
+                LOGGER.log(Level.FINE, "Removing node");
                 serverInstance.remove();
-                getChildren().refreshServers();
-                expandServers(null);
+                LOGGER.log(Level.FINE, "Node removed");
+                LOGGER.log(Level.FINE, "Calling refresh");
+                getChildren().refresh();
+//                new Thread() {
+//
+//                    @Override
+//                    public void run() {
+//                        try {
+//                            Thread.sleep(5000);
+//                        } catch (InterruptedException ex) {}
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                expandServers(null);
+                            }
+                        });
+
+//                    }
+//
+//                }.start();
+                //LOGGER.log(Level.FINE, "Refresh called");
+                LOGGER.log(Level.FINE, "Expanding servers");
+                //expandServers(null);
+                //LOGGER.log(Level.FINE, "Servers expanded");
             }
         }
+        LOGGER.log(Level.FINE, "----Remove finish");
     }//GEN-LAST:event_removeServer
 
     private void addServer(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addServer
-        ServerInstance instance = AddServerInstanceWizard.showAddServerInstanceWizard();
+        final ServerInstance instance = AddServerInstanceWizard.showAddServerInstanceWizard();
         if (instance != null) {
-            getChildren().refreshServers();
-            if (instance != null) {
-                expandServers(instance);
-            }
+            getChildren().refresh();
+//                new Thread() {
+//
+//                    @Override
+//                    public void run() {
+//                        try {
+//                            Thread.sleep(5000);
+//                        } catch (InterruptedException ex) {}
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                expandServers(instance);
+                            }
+                        });
+//
+//                    }
+//
+//                }.start();
+            //expandServers(instance);
         }
     }//GEN-LAST:event_addServer
 
 
-        private synchronized ServerCategoriesChildren getChildren() {
+        private synchronized ServersChildren getChildren() {
             if (this.children == null) {
-                this.children = new ServerCategoriesChildren();
+                this.children = new ServersChildren();
             }
             return this.children;
         }
@@ -390,31 +425,39 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
         expandAllNodes(servers, node, mgr, servInst);
     }
 
-    private static void expandAllNodes(BeanTreeView btv, Node node, ExplorerManager mgr, ServerInstance servInst) {
-        btv.expandNode(node);
+    private static void expandAllNodes(ListView btv, Node node, ExplorerManager mgr, ServerInstance servInst) {
+        //btv.expandNode(node);
+
         Children ch = node.getChildren();
+        //LOGGER.log(Level.FINE, "children: " + ch);
 
         // preselect node for the specified server instance
         if (servInst != null && ch == Children.LEAF && node instanceof ServerNode) {
             try {
+                //LOGGER.log(Level.FINE, "preselect server");
                 if (((ServerNode)node).getServerInstance() == servInst) {
                     mgr.setSelectedNodes(new Node[] {node});
                 }
             } catch (PropertyVetoException e) {
                 //Ignore it
+                e.printStackTrace();
             }
         }
 
         // preselect first server
         if (servInst == null && ch == Children.LEAF && mgr.getSelectedNodes().length == 0) {
             try {
+                //LOGGER.log(Level.FINE, "preselect first");
                 mgr.setSelectedNodes(new Node[] {node});
             } catch (PropertyVetoException e) {
                 //Ignore it
+                e.printStackTrace();
             }
         }
         Node nodes[] = ch.getNodes( true );
+        //LOGGER.log(Level.FINE, "children nodes: " + nodes.length);
         for ( int i = 0; i < nodes.length; i++ ) {
+            //LOGGER.log(Level.FINE, "child node: " + nodes[i].getDisplayName());
             expandAllNodes( btv, nodes[i], mgr, servInst);
         }
     }
@@ -432,197 +475,64 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
     private javax.swing.JButton removeButton;
     private javax.swing.JTextField serverName;
     private javax.swing.JTextField serverType;
-    private org.openide.explorer.view.BeanTreeView servers;
+    private org.openide.explorer.view.ListView servers;
     private javax.swing.JLabel serversLabel;
     // End of variables declaration//GEN-END:variables
 
 
-    private static class PlatformsView extends BeanTreeView {
+    private static class ServersChildren extends ChildFactory<ServerInstance> {
 
-        public PlatformsView() {
+        private static final Comparator<ServerInstance> COMPARATOR = new InstanceComparator();
+
+        public ServersChildren() {
             super();
-            this.setPopupAllowed(false);
-            this.setDefaultActionAllowed(false);
-            this.setRootVisible(false);
-            this.tree.setEditable(false);
-            this.tree.setShowsRootHandles(false);
-            this.setBorder(UIManager.getBorder("Nb.ScrollPane.border")); // NOI18N
         }
 
-    }
-
-    private static class ServerCategoriesDescriptor implements Comparable {
-        private final String categoryName;
-        private final List/*<Node>*/ servers;
-
-        public ServerCategoriesDescriptor(String categoryName) {
-            assert categoryName != null;
-            this.categoryName = categoryName;
-            this.servers = new ArrayList();
+        protected final void refresh() {
+            refresh(true);
         }
 
-        public String getName() {
-            return categoryName;
+        @Override
+        protected Node createNodeForKey(ServerInstance key) {
+            return new ServerNode(key);
         }
 
-        public List getServers() {
-            Collections.sort(servers);
-            return Collections.unmodifiableList(servers);
-        }
 
-        public void add(Node node) {
-            servers.add(node);
-        }
-
-        public int hashCode() {
-            return categoryName.hashCode();
-        }
-
-        public boolean equals(Object other) {
-            if (other instanceof ServerCategoriesDescriptor) {
-                ServerCategoriesDescriptor desc = (ServerCategoriesDescriptor) other;
-                return categoryName.equals(desc.categoryName) &&
-                        servers.size() == desc.servers.size();
+        @Override
+        protected boolean createKeys(List<ServerInstance> toPopulate) {
+            List<ServerInstance> fresh = new ArrayList<ServerInstance>();
+            for (ServerInstanceProvider provider : ServerRegistry.getInstance().getProviders()) {
+                fresh.addAll(provider.getInstances());
             }
-            return false;
-        }
 
-        public int compareTo(Object other) {
-            if (!(other instanceof ServerCategoriesDescriptor )) {
-                throw new IllegalArgumentException();
-            }
-            ServerCategoriesDescriptor desc = (ServerCategoriesDescriptor) other;
-            return categoryName.compareTo(desc.categoryName);
-        }
+            Collections.sort(fresh, COMPARATOR);
 
-    }
-
-    private static class ServersChildren extends Children.Keys {
-
-        private List servers;
-
-        public ServersChildren (List/*<Node>*/ servers) {
-            this.servers = servers;
-        }
-
-        protected void addNotify() {
-            super.addNotify();
-            this.setKeys (this.servers);
-        }
-
-        protected void removeNotify() {
-            super.removeNotify();
-            this.setKeys(new Object[0]);
-        }
-
-        protected Node[] createNodes(Object key) {
-            return new Node[] {(Node) key};
+            toPopulate.addAll(fresh);
+            return true;
         }
     }
 
-    private static class ServerNode extends FilterNode implements Comparable {
+    private static class ServerNode extends FilterNode {
 
         private final ServerInstance serverInstance;
 
         public ServerNode(ServerInstance serverInstance) {
-            super(serverInstance.getNode());
-            disableDelegation(DELEGATE_GET_DISPLAY_NAME | DELEGATE_SET_DISPLAY_NAME |
-                    DELEGATE_GET_NAME | DELEGATE_SET_NAME);
+            super(serverInstance.getNode(false));
             this.serverInstance = serverInstance;
             setChildren(Children.LEAF);
-            setDisplayName(serverInstance.getDisplayName());
-            //setName(serverInstance.getUrl());
         }
 
         public ServerInstance getServerInstance() {
             return serverInstance;
         }
-
-        public int compareTo(Object other) {
-            if (!(other instanceof ServerNode)) {
-                throw new IllegalArgumentException();
-            }
-            return serverInstance.getDisplayName().compareTo(((ServerNode) other).serverInstance.getDisplayName());
-        }
-    }
-    
-    private static final String SERVERS_ICON = "org/netbeans/modules/server/ui/resources/servers.png"; // NOI18N    
-
-    private static class ServerCategoryNode extends AbstractNode {
-
-        //private final ServerCategoriesDescriptor desc;
-        //private Node iconDelegate;
-
-        public ServerCategoryNode (ServerCategoriesDescriptor desc) {
-            super (new ServersChildren (desc.getServers()));
-            setDisplayName(desc.getName());
-            //this.iconDelegate = DataFolder.findFolder (Repository.getDefault().getDefaultFileSystem().getRoot()).getNodeDelegate();
-            setIconBaseWithExtension(SERVERS_ICON);
-        }
-
-//        public String getDisplayName () {
-//            return desc.getName();
-//        }
-//
-//        public Image getIcon(int type) {
-//            return iconDelegate.getIcon(type);
-//        }
-//
-//        public Image getOpenedIcon(int type) {
-//            return iconDelegate.getOpenedIcon(type);
-//        }
     }
 
-    private static class ServerCategoriesChildren extends Children.Keys {
+    private static class InstanceComparator implements Comparator<ServerInstance> {
 
-        protected void addNotify () {
-            super.addNotify ();
-            this.refreshServers();
+        public int compare(ServerInstance o1, ServerInstance o2) {
+            return o1.getDisplayName().compareTo(o2.getDisplayName());
         }
 
-        protected void removeNotify () {
-            super.removeNotify ();
-        }
-
-        protected Node[] createNodes(Object key) {
-            if (key instanceof ServerCategoriesDescriptor) {
-                ServerCategoriesDescriptor desc = (ServerCategoriesDescriptor) key;
-                return new Node[] {
-                    new ServerCategoryNode (desc)
-                };
-            }
-            else if (key instanceof Node) {
-                return new Node[] {
-                    new FilterNode ((Node)key,Children.LEAF)
-                };
-            }
-            else {
-                return new Node[0];
-            }
-        }
-
-        private void refreshServers() {
-            Collection<ServerInstance> servInstances = new ArrayList<ServerInstance>();
-            for (ServerInstanceProvider provider : ServerRegistry.getInstance().getProviders()) {
-                servInstances.addAll(provider.getInstances());
-            }
-
-
-            HashMap/*<String,ServerCategoriesDescriptor>*/ categories = new HashMap();
-
-            // currently we have only j2eeServers category
-            final String J2EE_SERVERS_CATEGORY = NbBundle.getMessage(ServerManagerPanel.class, "LBL_J2eeServersNode");  // NOI18N
-            ServerCategoriesDescriptor j2eeServers = new ServerCategoriesDescriptor(J2EE_SERVERS_CATEGORY);
-            for(Iterator it = servInstances.iterator(); it.hasNext();) {
-                ServerInstance serverInstance = (ServerInstance)it.next();
-                j2eeServers.add(new ServerNode(serverInstance));
-            }
-            categories.put(J2EE_SERVERS_CATEGORY, j2eeServers);
-            List keys = new ArrayList(categories.values());
-            // TODO sort by display name
-            //Collections.sort(keys);
-            this.setKeys(keys);
-        }
     }
 }
 

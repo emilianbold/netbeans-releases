@@ -64,11 +64,15 @@ public abstract class ServerInstance {
     public abstract String getServerDisplayName();
 
     /**
-     * Returns the node representing the instance.
+     * Returns the node representing the instance. Parameter determines whether
+     * the node should be manageable (provide actions for the instance,
+     * display its status).
      *
+     * @param manageable <code>true</code> if the node should display
+     *           the status of the instance and provide control functionality
      * @return the node representing the instance, may return <code>null</code>
      */
-    public abstract Node getNode();
+    public abstract Node getNode(boolean manageable);
 
     /**
      * Returns the component allowing the customization of the instance.

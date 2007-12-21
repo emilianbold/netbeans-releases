@@ -65,6 +65,9 @@ public interface ServerWizardProvider {
      * the infrastructure (as you usually want this to happen),
      * {@link ServerInstanceProvider} must fire change events on all registered
      * listeners.
+     * <p>
+     * The {@link java.util.Set} returned by {@link InstantiatingIterator#instantiate()}
+     * should return the created {@link org.netbeans.spi.server.ServerInstance}.
      *
      * @return iterator for adding the server instance
      */

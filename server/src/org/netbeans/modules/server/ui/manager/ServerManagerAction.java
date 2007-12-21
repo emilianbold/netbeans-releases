@@ -52,22 +52,23 @@ import org.openide.util.actions.CallableSystemAction;
  */
 public class ServerManagerAction extends CallableSystemAction {
 
-    public ServerManagerAction () {
+    public ServerManagerAction() {
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
 
     public void performAction() {
         ServerManager.showCustomizer(null);
     }
-    
+
     public String getName() {
-        return NbBundle.getMessage(ServerManagerAction.class,"CTL_ServerManager"); // NOI18N
+        return NbBundle.getMessage(ServerManagerAction.class, "CTL_ServerManager"); // NOI18N
     }
-    
+
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
-    
+
+    @Override
     protected boolean asynchronous() {
         return false;
     }
