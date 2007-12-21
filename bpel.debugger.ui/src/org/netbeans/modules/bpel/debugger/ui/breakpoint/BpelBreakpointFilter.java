@@ -90,7 +90,8 @@ public class BpelBreakpointFilter implements NodeActionsProviderFilter {
     private static void goToSource (LineBreakpoint breakpoint) {
         EditorContextBridge.showSource(
             breakpoint.getURL(),
-            breakpoint.getXpath());
+            breakpoint.getXpath(),
+            EditorContextBridge.SOURCE_VIEW);
     }
 
     private static final Action GO_TO_SOURCE_ACTION = Models.createAction (

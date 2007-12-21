@@ -36,7 +36,7 @@ public interface EditorContext {
      *
      * @return true if succeeded to show the source or false otherwise
      */
-    boolean showSource(String url, String xpath);
+    boolean showSource(String url, String xpath, String view);
     
     /**
      * Annotates the bpel element identified by the given xpath in the given

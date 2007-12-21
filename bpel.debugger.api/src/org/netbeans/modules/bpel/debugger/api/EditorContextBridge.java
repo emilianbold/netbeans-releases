@@ -74,8 +74,8 @@ public final class EditorContextBridge {
      * @return <code>true</code> if any of the registered EditorContext
      *         implementations succeeded to show the source.
      */
-    public static boolean showSource(String url, String xpath) {
-        return getContext().showSource(url, xpath);
+    public static boolean showSource(String url, String xpath, String view) {
+        return getContext().showSource(url, xpath, view);
     }
     
     /**
@@ -165,4 +165,9 @@ public final class EditorContextBridge {
         }
         return context;
     }
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // Constants
+    public static final String DESIGN_VIEW = "orch-designer";
+    public static final String SOURCE_VIEW = "bpelsource";
 }

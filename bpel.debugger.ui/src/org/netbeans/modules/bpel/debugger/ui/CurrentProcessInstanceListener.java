@@ -119,7 +119,7 @@ public class CurrentProcessInstanceListener extends DebuggerManagerAdapter {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 synchronized (myLock) {
-                    EditorContextBridge.showSource(url, xpath);
+                    EditorContextBridge.showSource(url, xpath, null);
                 }
             }
         });

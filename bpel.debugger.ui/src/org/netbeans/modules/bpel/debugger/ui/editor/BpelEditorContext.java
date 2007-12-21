@@ -171,26 +171,29 @@ public class BpelEditorContext implements EditorContext {
     }
     
     /**{@inheritDoc}*/
-    public boolean showSource(final String url, final String xpath) {
-        DataObject dataObject = EditorUtil.getDataObject(url);
+    public boolean showSource(
+            final String url, 
+            final String xpath,
+            final String view) {
+        final DataObject dataObject = EditorUtil.getDataObject(url);
         if (dataObject == null) {
             Log.out("DataObject is null: " + url);
             return false;
         }
-
-        BpelModel model = EditorUtil.getBpelModel(dataObject);
+        
+        final BpelModel model = EditorUtil.getBpelModel(dataObject);
         if (model == null) {
             Log.out("BpelModel is null: " + url);
             return false;
         }
         
-        UniqueId bpelEntityId = ModelUtil.getBpelEntityId(model, xpath);
+        final UniqueId bpelEntityId = ModelUtil.getBpelEntityId(model, xpath);
         if (bpelEntityId == null) {
             Log.out("BPEL Entity not found: " + dataObject + ", " + xpath);
             return false;
         }
         
-        showBpelEntity(bpelEntityId);
+        showBpelEntity(bpelEntityId, view);
         
         return true;
     }
@@ -224,7 +227,10 @@ public class BpelEditorContext implements EditorContext {
         return myTranslator;
     }
     
-    private void showBpelEntity(final UniqueId bpelEntityId) {
+    private void showBpelEntity(
+            final UniqueId bpelEntityId, 
+            final String view) {
+        
         final BpelModel model = bpelEntityId.getModel();
         final BpelEntity bpelEntity = model.getEntity(bpelEntityId);
         
@@ -252,7 +258,20 @@ public class BpelEditorContext implements EditorContext {
                     return;
                 }
                 
-                final MultiViewPerspective mvp = mvh.getSelectedPerspective();
+                MultiViewPerspective mvp = mvh.getSelectedPerspective();
+                
+                if (view != null) {
+                    for (MultiViewPerspective temp: mvh.getPerspectives()) {
+                        if (temp.preferredID().equals(view)) {
+                            mvp = temp;
+                            break;
+                        }
+                    }
+                    
+                    mvh.requestVisible(mvp);
+                    mvh.requestActive(mvp);
+                }
+                
                 if (mvp.preferredID().equals("orch-designer")) {
                     final List<TopComponent> list = 
                             getAssociatedTopComponents(dataObject);

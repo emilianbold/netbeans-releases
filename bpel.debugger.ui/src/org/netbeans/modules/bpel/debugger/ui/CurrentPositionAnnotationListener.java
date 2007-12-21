@@ -147,7 +147,8 @@ public class CurrentPositionAnnotationListener extends DebuggerManagerAdapter {
                             
                             EditorContextBridge.showSource(
                                     url,
-                                    position.getXpath());
+                                    position.getXpath(),
+                                    null);
                         }
                     }
                 }
