@@ -142,13 +142,6 @@ public class RevertModificationsAction extends AbstractAction {
             DialogDisplayer.getDefault().notifyLater(e);
         }
 
-        if (revStr == null) {
-            for (File file : files) {
-                HgUtils.forceStatusRefresh(file);
-            }
-        } else {
-            HgUtils.forceStatusRefresh(files[0]);
-        }
         // refresh filesystem to take account of changes
         FileObject rootObj = FileUtil.toFileObject(repository);
         try {
