@@ -57,7 +57,7 @@ public class CurrentPositionAnnotationListener extends DebuggerManagerAdapter {
      * Listens BpelDebuggerImpl and DebuggerManager.
      */
     @Override
-    public void propertyChange (PropertyChangeEvent e) {
+    public void propertyChange(PropertyChangeEvent e) {
         if (DebuggerManager.PROP_CURRENT_ENGINE.equals(e.getPropertyName())) {
             updateCurrentDebugger();
             updateCurrentPosition();
