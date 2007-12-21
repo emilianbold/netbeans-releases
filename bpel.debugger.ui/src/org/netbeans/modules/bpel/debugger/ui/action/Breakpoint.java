@@ -24,8 +24,6 @@ import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.swing.JEditorPane;
-import javax.swing.text.Caret;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -42,12 +40,10 @@ import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.support.UniqueId;
 import org.netbeans.modules.soa.ui.nodes.InstanceRef;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-import org.openide.text.NbDocument;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -131,7 +127,7 @@ public class Breakpoint extends ActionsProviderSupport
             bpelEntityId = bpelEntity.getUID();
             lineNumber = ModelUtil.getLineNumber(bpelEntityId);
         } else {
-            lineNumber = getCurrentLineNumber(node);
+            lineNumber = EditorUtil.getLineNumber(node);
             
             if (lineNumber > 0) {
                 final int translatedLineNumber = EditorContextBridge.
@@ -222,35 +218,6 @@ public class Breakpoint extends ActionsProviderSupport
         }
         
         return fileObject.getExt();
-    }
-    
-    private int getCurrentLineNumber(
-            final Node node) {
-        
-        final EditorCookie editorCookie = 
-                node.getLookup().lookup(EditorCookie.class);
-        if (editorCookie == null) {
-            return -1;
-        }
-        
-        final JEditorPane[] editorPanes = editorCookie.getOpenedPanes();
-        if (editorPanes == null || editorPanes.length == 0) {
-            return -1;
-        }
-        
-        final Caret caret = editorPanes[0].getCaret();
-        if (caret == null) {
-            return -1;
-        }
-        
-        final int offset = caret.getDot();
-        
-        final StyledDocument document = editorCookie.getDocument();
-        if (document == null) {
-            return -1;
-        }
-        
-        return NbDocument.findLineNumber(document, offset) + 1;
     }
     
     private BpelBreakpointListener getBreakpointAnnotationListener() {

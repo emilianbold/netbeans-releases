@@ -46,7 +46,7 @@ public class LocalsTreeModel implements TreeModel {
     private VariablesUtil myHelper;
     
     private PositionListener myListener;
-    private Vector myListeners = new Vector();
+    private Vector<ModelListener> myListeners = new Vector<ModelListener>();
     
     /**
      * Creates a new instance of BpelVariableTreeModel.
@@ -123,7 +123,7 @@ public class LocalsTreeModel implements TreeModel {
     private static class PositionListener implements PropertyChangeListener {
 
         private BpelDebugger myDebugger;
-        private WeakReference myModel;
+        private WeakReference<LocalsTreeModel> myModel;
 
         // currently waiting / running refresh task
         // there is at most one
@@ -133,7 +133,7 @@ public class LocalsTreeModel implements TreeModel {
                 final LocalsTreeModel model, 
                 final BpelDebugger debugger) {
             myDebugger = debugger;
-            myModel = new WeakReference(model);
+            myModel = new WeakReference<LocalsTreeModel>(model);
             
             debugger.addPropertyChangeListener(this);
         }
@@ -149,8 +149,7 @@ public class LocalsTreeModel implements TreeModel {
         }
 
         private LocalsTreeModel getModel() {
-            final LocalsTreeModel model =
-                    (LocalsTreeModel) myModel.get();
+            final LocalsTreeModel model = myModel.get();
             
             if (model == null) {
                 destroy();

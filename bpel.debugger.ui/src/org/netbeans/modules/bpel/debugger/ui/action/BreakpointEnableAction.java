@@ -42,11 +42,10 @@ import org.openide.windows.WindowManager;
  * @author Alexander Zgursky
  */
 public class BreakpointEnableAction extends BooleanStateAction {
+    
     private BpelBreakpointListener myBreakpointAnnotationListener;
-
-//TODO: the whole class needs refactoring - most of the code was copy-pasted from
-//org.netbeans.modules.bpel.debugger.ui.action.Breakpoint
-
+    
+    @Override
     public boolean isEnabled() {
         LineBreakpoint b = findCurrentBreakpoint();
         if (b != null) {
@@ -61,6 +60,7 @@ public class BreakpointEnableAction extends BooleanStateAction {
         return NbBundle.getMessage(BreakpointEnableAction.class, "CTL_enabled");
     }
     
+    @Override
     public void setBooleanState(boolean value) {
         LineBreakpoint b = findCurrentBreakpoint();
         if (value) {
@@ -123,7 +123,7 @@ public class BreakpointEnableAction extends BooleanStateAction {
         
         return getBreakpointAnnotationListener().findBreakpoint(url, xpath, lineNumber);
     }
-
+    
     private Node getCurrentNode() {
         Node [] nodes = WindowManager.getDefault().getRegistry().getCurrentNodes();
         
@@ -154,5 +154,6 @@ public class BreakpointEnableAction extends BooleanStateAction {
         }
         return myBreakpointAnnotationListener;
     }
-
+    
+    private static final long serialVersionUID = 1L;
 }

@@ -36,6 +36,7 @@ import org.netbeans.modules.bpel.debugger.ui.plinks.models.RoleRefWrapper;
 import org.netbeans.modules.bpel.debugger.ui.plinks.models.RoleRefWrapper.RoleType;
 import org.netbeans.modules.bpel.debugger.ui.util.VariablesUtil;
 import org.netbeans.modules.bpel.debugger.ui.util.XmlUtil;
+import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.PartnerLink;
 import org.netbeans.modules.bpel.model.api.Scope;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -216,7 +217,7 @@ public class PLinksTreeModel implements TreeModel {
         
         final PartnerLink[] pLinks = getStaticPartnerLinks();
         final RuntimePartnerLink[] rLinks = 
-                myDebugger.getCurrentProcessInstance().getRuntimePartnerLinks();
+                processInstance.getRuntimePartnerLinks();
         
         final PartnerLinkWrapper[] result = 
                 new PartnerLinkWrapper[pLinks.length];
@@ -237,11 +238,16 @@ public class PLinksTreeModel implements TreeModel {
     
     private PartnerLink[] getStaticPartnerLinks() {
         final VariablesUtil helper = new VariablesUtil(myDebugger);
+        final BpelModel model = helper.getBpelModel();
+        
+        if (model == null) {
+            return new PartnerLink[0];
+        }
         
         final List<PartnerLink> pLinks = new LinkedList<PartnerLink>();
         
         // Add the variables from the process
-        pLinks.addAll(Arrays.asList(helper.getBpelModel().getProcess().
+        pLinks.addAll(Arrays.asList(model.getProcess().
                 getPartnerLinkContainer().getPartnerLinks()));
         
         final String xpath = myDebugger.getCurrentProcessInstance().

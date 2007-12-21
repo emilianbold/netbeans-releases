@@ -19,6 +19,9 @@
 
 package org.netbeans.modules.bpel.debugger.variables;
 
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 import org.netbeans.modules.bpel.debugger.api.variables.Value;
 import org.netbeans.modules.bpel.debugger.api.variables.XmlElementValue;
 import org.netbeans.modules.bpel.debugger.api.variables.XmlElementVariable;
@@ -68,12 +71,17 @@ public class XmlElementVariableImpl extends VariableSupport implements XmlElemen
         String xpath = XmlElementValue.Helper.xpath(node);
         try {
             varContext.changeVariableSchemaTypeValue(getName(), xpath, newValue);
+            
+            myValueIsInitialized = false;
         } catch (XpathExpressionException ex) {
             //TODO:handle this
             ex.printStackTrace();
         } catch (SchemaViolationException ex) {
             //TODO:handle this
             ex.printStackTrace();
+        } catch (Exception e) {
+            // almost anything can be thrown..
+            e.printStackTrace();
         }
     }
 }

@@ -20,17 +20,8 @@
 
 package org.netbeans.modules.bpel.debugger.ui.breakpoint;
 
-import java.io.File;
-import java.io.FileReader;
 import java.io.StringReader;
-import javax.swing.JEditorPane;
-import org.openide.cookies.EditorCookie;
-import org.openide.cookies.LineCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.text.Line;
+import org.netbeans.modules.bpel.debugger.ui.util.EditorUtil;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
@@ -46,14 +37,9 @@ public class BreakpointTranslator {
         
         try {
             final BPELActivityFinderSaxHandler saxHandler = 
-                    parse(getText(url), lineNumber);
+                    parse(EditorUtil.getText(url), lineNumber);
             
             final BPELNode bpelNode = getValidNode(saxHandler.getFoundNode());
-//            if (lineNumber < saxHandler.getFirstActivity().getLineNumber()) {
-//                bpelnode = saxHandler.getFirstActivity();
-//            } else if (lineNumber > saxHandler.getLastActivity().getLineNumber()) {
-//                bpelnode = saxHandler.getLastActivity();
-//            }
             
             if (bpelNode != null) {
                 return bpelNode.getLineNumber();
@@ -82,8 +68,9 @@ public class BreakpointTranslator {
     }
     
     private static BPELNode getValidNode(BPELNode bpelNode) {
-        if (bpelNode == null)
+        if (bpelNode == null) {
             return null;
+        }
         
         if (bpelNode.isActivity() || 
                 bpelNode.getName().equals("copy") ||
@@ -97,41 +84,5 @@ public class BreakpointTranslator {
             return getValidNode(bpelNode.getParent());            
         }
         
-    }
-    
-    private static String getText(String url) {
-        DataObject dataObject = getDataObject(url);
-        if (dataObject == null) {
-            return "";
-        }  
-        EditorCookie editorCookie = (EditorCookie) dataObject.getCookie(EditorCookie.class);
-        
-        if (editorCookie == null) {
-            return "";
-        }
-        JEditorPane[] editorPanes = editorCookie.getOpenedPanes();
-        
-        if (editorPanes == null) {
-              return "" ;
-        }
-        if (editorPanes.length == 0) {
-            return "";
-        }
-        return editorPanes[0].getText();
-
-        
-    }
-    
-    private static DataObject getDataObject(String url) {
-        FileObject fileObject = FileUtil.toFileObject(new File(url));
-        
-        if (fileObject == null) {
-            return null;
-        }
-        try {
-            return DataObject.find(fileObject);
-        } catch (DataObjectNotFoundException e) {
-            return null;
-        }
     }
 }

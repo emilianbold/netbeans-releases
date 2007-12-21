@@ -64,16 +64,20 @@ public class WsdlMessageVariableImpl extends VariableSupport implements WsdlMess
         String xpath = XmlElementValue.Helper.xpath(node);
         try {
             varContext.changeVariableMessageTypeValue(getName(), part.getName(), xpath, newValue);
+            
+            myValueIsInitialized = false;
         } catch (XpathExpressionException ex) {
             //TODO:handle this
             ex.printStackTrace();
         } catch (SchemaViolationException ex) {
             //TODO:handle this
             ex.printStackTrace();
+        } catch (Exception e) {
+            // almost anything can be thrown..
+            e.printStackTrace();
         }
-
     }
-
+    
     public void setPartSimpleValue(WsdlMessageValue.Part part, String newValue) {
         DebuggableEngine varContext = getBreakPosition().getFrame().getDebuggableEngine();
         

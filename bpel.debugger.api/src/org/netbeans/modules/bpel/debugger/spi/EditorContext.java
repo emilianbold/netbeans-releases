@@ -60,6 +60,8 @@ public interface EditorContext {
      */
     void removeAnnotation(Object annotation);
     
+    boolean isAttached(Object annotation);
+    
     AnnotationType getAnnotationType(Object annotation);
     
     String getXpath(Object annotation);

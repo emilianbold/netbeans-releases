@@ -179,7 +179,7 @@ public class ProcessesActionProvider implements NodeActionsProvider {
             final Object object) {
         
         if (object instanceof ProcessInstance) {
-            object.equals(myDebugger.getCurrentProcessInstance());
+            return !object.equals(myDebugger.getCurrentProcessInstance());
         }
         
         return false;

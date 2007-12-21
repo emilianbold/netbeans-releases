@@ -21,16 +21,15 @@ package org.netbeans.modules.bpel.debugger.ui.variable;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
-import java.util.ResourceBundle;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import org.netbeans.modules.bpel.debugger.api.BpelDebugger;
 import org.netbeans.modules.bpel.debugger.ui.util.AbstractColumn;
 import org.netbeans.modules.bpel.debugger.ui.util.VariablesUtil;
@@ -38,7 +37,6 @@ import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.ui.Constants;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
-import org.openide.util.NbBundle;
 
 /**
  * 
@@ -68,8 +66,9 @@ public final class LocalsColumnModel_Value extends AbstractColumn {
     // Inner Classes
     public static class ColumnPropertyEditor extends PropertyEditorSupport
             implements ExPropertyEditor {
-            
+        
         private VariablesUtil myHelper;
+        private PropertyEnv myPropertyEnv;
         
         public ColumnPropertyEditor(
                 final BpelDebugger debugger) {
@@ -83,54 +82,66 @@ public final class LocalsColumnModel_Value extends AbstractColumn {
         }
         
         @Override
+        public void setAsText(
+                final String value) {
+            
+            myHelper.setValue(getValue(), value);
+        }
+        
+        @Override
         public boolean supportsCustomEditor() {
             return myHelper.supportsCustomEditor(getValue());
         }
         
         @Override
         public Component getCustomEditor() {
-            final String text = 
-                    myHelper.getCustomEditorValue(getValue());
-            final String mimeType = 
-                    myHelper.getCustomEditorMimeType(getValue());
-            final boolean editable = 
-                    !myHelper.isValueReadOnly(getValue());
-            
-            return new ColumnCustomEditor(text, mimeType, editable, this);
+            return new ColumnCustomEditor(
+                    this, myHelper, myPropertyEnv);
         }
         
         public void attachEnv(
                 final PropertyEnv propertyEnv) {
-            // does nothing
+            myPropertyEnv = propertyEnv;
         }
     }
     
-    public static class ColumnCustomEditor extends JPanel {
+    public static class ColumnCustomEditor extends JPanel 
+            implements PropertyChangeListener {
         
         private JEditorPane myEditorPane;
         
-        private String myText;
-        private String myMimeType;
-        private boolean myEditable;
         private ColumnPropertyEditor myEditor;
+        private VariablesUtil myHelper;
+        private PropertyEnv myPropertyEnv;
         
         public ColumnCustomEditor(
-                final String text, 
-                final String mimeType,
-                final boolean editable, 
-                final ColumnPropertyEditor editor) {
-            myText = text;
-            myMimeType = mimeType;
-            myEditable = editable;
+                final ColumnPropertyEditor editor,
+                final VariablesUtil helper,
+                final PropertyEnv propertyEnv) {
+            myHelper = helper;
             myEditor = editor;
+            myPropertyEnv = propertyEnv;
             
             init();
+            
+            myPropertyEnv.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
+            myPropertyEnv.addPropertyChangeListener(this);
         }
         
-        public void init() {
-            final ResourceBundle bundle = 
-                    NbBundle.getBundle(LocalsColumnModel_Value.class);
-            
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && 
+                    (evt.getNewValue() == PropertyEnv.STATE_VALID)) {
+                myEditor.setAsText(myEditorPane.getText());
+            }
+        }
+        
+        private void init() {
+            final String text = 
+                    myHelper.getCustomEditorValue(myEditor.getValue());
+            final String mimeType = 
+                    myHelper.getCustomEditorMimeType(myEditor.getValue());
+            final boolean editable = 
+                    !myHelper.isValueReadOnly(myEditor.getValue());
             
             setLayout(new BorderLayout());
             setBorder(new EmptyBorder(12, 12, 0, 11));
@@ -139,32 +150,32 @@ public final class LocalsColumnModel_Value extends AbstractColumn {
             getAccessibleContext().setAccessibleDescription(
                     "ACSD_BpelVariableCustomEditor"); // NOI18N
             
-            myEditorPane = new JEditorPane(myMimeType, myText); // NOI18N
+            myEditorPane = new JEditorPane(mimeType, text); // NOI18N
             
             myEditorPane.setBorder(
                 new CompoundBorder(myEditorPane.getBorder(),
                 new EmptyBorder(2, 0, 2, 0))
             );
-            myEditorPane.setEditable(myEditable);
-            myEditorPane.setText(myText);
+            myEditorPane.setEditable(editable);
+            myEditorPane.setText(text);
             myEditorPane.requestFocus();
             myEditorPane.setCaretPosition(0);
             
-            myEditorPane.getDocument().addDocumentListener(
-                    new DocumentListener() {
-                public void insertUpdate(DocumentEvent event) {
-                    myEditor.setValue(myEditorPane.getText());
-                }
-                
-                public void removeUpdate(DocumentEvent event) {
-                    myEditor.setValue(myEditorPane.getText());
-                }
-                
-                public void changedUpdate(DocumentEvent event) {
-                    myEditor.setValue(myEditorPane.getText());
-                }
-            });
-            
+//            myEditorPane.getDocument().addDocumentListener(
+//                    new DocumentListener() {
+//                public void insertUpdate(DocumentEvent event) {
+//                    myEditor.setValue(myEditorPane.getText());
+//                }
+//                
+//                public void removeUpdate(DocumentEvent event) {
+//                    myEditor.setValue(myEditorPane.getText());
+//                }
+//                
+//                public void changedUpdate(DocumentEvent event) {
+//                    myEditor.setValue(myEditorPane.getText());
+//                }
+//            });
+//            
             myEditorPane.getAccessibleContext().
                     setAccessibleName("ACS_EditorPane"); // NOI18N
             myEditorPane.getAccessibleContext().
@@ -173,5 +184,7 @@ public final class LocalsColumnModel_Value extends AbstractColumn {
             final JScrollPane scrollPane = new JScrollPane(myEditorPane);
             add(scrollPane, BorderLayout.CENTER);
         }
+        
+        private static final long serialVersionUID = 1L;
     }
 }

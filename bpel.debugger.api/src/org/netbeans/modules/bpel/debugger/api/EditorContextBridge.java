@@ -110,6 +110,10 @@ public final class EditorContextBridge {
         getContext().removeAnnotation(annotation);
     }
     
+    public static boolean isAttached(Object annotation) {
+        return getContext().isAttached(annotation);
+    }
+    
     public static AnnotationType getAnnotationType(Object annotation) {
         return getContext().getAnnotationType(annotation);
     }

@@ -43,7 +43,7 @@ public class LocalsTableModel implements TableModel, Constants {
     private BpelDebugger myDebugger;
     private VariablesUtil myHelper;
     
-    private Vector myListeners = new Vector();
+    private Vector<ModelListener> myListeners = new Vector<ModelListener>();
     
     /**{@inheritDoc}*/
     public LocalsTableModel(
@@ -141,20 +141,16 @@ public class LocalsTableModel implements TableModel, Constants {
     }
     
     // Private /////////////////////////////////////////////////////////////////
-    
-    //TODO:this is neither an effecient nor right way to notify about variable
-    //change. Need to fire event on the BpelDebugger level and subscribe tree
-    //model to listen for "variable changed" events. With this approach 
-    //WatchesTreeModel can subscribe as well
     private void fireTableValueChanged(
             final Object node, 
-            final String propertyName) {
+            final String columnId) {
         
         final Vector clone = (Vector) myListeners.clone();
+        final ModelEvent.TableValueChanged event = 
+                new ModelEvent.TableValueChanged(this, node, columnId);
         
         for (int i = 0; i < clone.size(); i++) {
-            ((ModelListener) clone.get(i)).modelChanged(
-                    new ModelEvent.TreeChanged(this));
+            ((ModelListener) clone.get(i)).modelChanged(event);
         }
     }
 }

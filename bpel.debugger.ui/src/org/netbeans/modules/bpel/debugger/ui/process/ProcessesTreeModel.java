@@ -268,8 +268,8 @@ public class ProcessesTreeModel implements TreeModel {
     private int getProcessInstancesCount(
             final BpelProcess process) {
         if (myDebugger != null) {
-            return myDebugger.
-                    getProcessInstancesModel().getProcessInstances().length;
+            return myDebugger.getProcessInstancesModel().
+                    getProcessInstances(process).length;
         }
         
         return 0;

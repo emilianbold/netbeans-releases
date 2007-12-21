@@ -56,10 +56,14 @@ public class SimpleVariableImpl extends VariableSupport implements SimpleVariabl
                 getBreakPosition().getFrame().getDebuggableEngine();
         try {
             varContext.changeVariableSchemaTypeValue(getName(), newValue);
-            myValue = null;
+            
+            myValueIsInitialized = false;
         } catch (SchemaViolationException ex) {
             //TODO:implement
             ex.printStackTrace();
+        } catch (Exception e) {
+            // almost anything can be thrown..
+            e.printStackTrace();
         }
     }
 }

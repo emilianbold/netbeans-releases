@@ -135,12 +135,12 @@ public class ProcessesNodeModel implements NodeModel {
     
     // Private /////////////////////////////////////////////////////////////////
     private boolean isProcessInstanceCurrent(
-            final ProcessInstance process) {
+            final ProcessInstance instance) {
         
         if (myDebugger == null) {
             return false;
         } else {
-            return process == myDebugger.getCurrentProcessInstance();
+            return instance == myDebugger.getCurrentProcessInstance();
         }
     }
     

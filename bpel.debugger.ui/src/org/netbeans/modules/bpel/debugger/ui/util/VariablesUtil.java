@@ -24,6 +24,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 import javax.xml.namespace.QName;
+import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.bpel.debugger.api.BpelDebugger;
 import org.netbeans.modules.bpel.debugger.api.ProcessInstance;
@@ -464,24 +465,24 @@ public class VariablesUtil {
             final Object object) {
         if (object instanceof NamedValueHost) {
             if (object instanceof WsdlMessageVariable) {
-                return " " + getValue((WsdlMessageVariable) object) + " ";
+                return getValue((WsdlMessageVariable) object);
             }
 
             if (object instanceof WsdlMessageValue.Part) {
-                return " " + getValue((WsdlMessageValue.Part) object) + " ";
+                return getValue((WsdlMessageValue.Part) object);
             }
 
             if (object instanceof XmlElementVariable) {
-                return " " + getValue((XmlElementVariable) object) + " ";
+                return getValue((XmlElementVariable) object);
             }
 
             if (object instanceof SimpleVariable) {
-                return " " + getValue((SimpleVariable) object) + " ";
+                return getValue((SimpleVariable) object);
             }
         }
 
         if (object instanceof Node) {
-            return " " + getValue((Node) object) + " ";
+            return getValue((Node) object);
         }
 
         return NbBundle.getMessage(
@@ -655,7 +656,7 @@ public class VariablesUtil {
     
     private boolean isValueReadOnly(
             final SimpleVariable object) {
-        return false;
+        return object.getValue() == null;
     }
     
     private boolean isValueReadOnly(
@@ -721,6 +722,13 @@ public class VariablesUtil {
     private void setValue(
             final Node object,
             final String value) {
+        if (XmlUtil.isTextOnlyNode(object)) {
+            setValue(object.getChildNodes().item(0), value);
+            return;
+        }
+        
+        object.setNodeValue(value);
+        
         final XmlElementValue xmlValue = XmlElementValue.Helper.find(object);
         final NamedValueHost valueHost = xmlValue.getValueHost();
         
@@ -843,12 +851,23 @@ public class VariablesUtil {
     
     // Miscellaneous ///////////////////////////////////////////////////////////
     public BpelModel getBpelModel() {
-        final SourcePath sourcePath = (SourcePath) DebuggerManager.
-                getDebuggerManager().
-                getCurrentEngine().lookupFirst(null, SourcePath.class);
-
-        return EditorUtil.getBpelModel(sourcePath.getSourcePath(myDebugger.
-                getCurrentProcessInstance().getProcess().getQName()));
+        final DebuggerEngine engine = DebuggerManager.getDebuggerManager().
+                getCurrentEngine();
+        
+        if (engine == null) {
+            return null;
+        }
+        
+        final SourcePath sourcePath = 
+                (SourcePath) engine.lookupFirst(null, SourcePath.class);
+        final ProcessInstance instance = myDebugger.getCurrentProcessInstance();
+        
+        if ((sourcePath == null) || (instance == null)) {
+            return null;
+        }
+        
+        return EditorUtil.getBpelModel(sourcePath.getSourcePath(
+                instance.getProcess().getQName()));
     }
     
     /**
@@ -865,8 +884,14 @@ public class VariablesUtil {
             final String name) {
         final List<Variable> variables = new LinkedList<Variable>();
         
+        final BpelModel model = getBpelModel();
+        
+        if (model == null) {
+            return null;
+        }
+        
         // Add the variables from the process
-        variables.addAll(Arrays.asList(getBpelModel().getProcess().
+        variables.addAll(Arrays.asList(model.getProcess().
                 getVariableContainer().getVariables()));
         
         final String xpath = myDebugger.getCurrentProcessInstance().
@@ -902,7 +927,13 @@ public class VariablesUtil {
     public Scope getScopeEntity(
             final String xpath) {
         
-        BpelEntity currentEntity = getBpelModel().getProcess();
+        final BpelModel model = getBpelModel();
+        
+        if (model == null) {
+            return null;
+        }
+        
+        BpelEntity currentEntity = model.getProcess();
         
         final StringTokenizer tokenizer = 
                 new StringTokenizer(xpath, "/"); // NOI18N

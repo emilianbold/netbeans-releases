@@ -139,9 +139,14 @@ public class BpelDebuggerImpl extends BpelDebugger {
             mStartingThread.interrupt();
             mStartingThread = null;
         }
-
+        
+        Exception disconnectionException = null;
         if (mConnector != null) {
-            mConnector.detach();
+            try {
+                mConnector.detach();
+            } catch (Exception e) {
+                disconnectionException = e;
+            }
         }
         
         if (oldState == BpelDebugger.STATE_STARTING) {
@@ -165,7 +170,13 @@ public class BpelDebuggerImpl extends BpelDebugger {
                         "MSG_SessionFinished")); 
             }
         }
-
+        
+        if (disconnectionException != null) {
+            traceDebugException(NbBundle.getMessage(
+                    BpelDebuggerImpl.class, 
+                    "ERR_ErrorWhileDisconnecting"), disconnectionException);
+        }
+        
         if (myDebuggerEngineProvider.getDestructor() != null) {
             myDebuggerEngineProvider.getDestructor().killEngine();
         }
@@ -414,11 +425,28 @@ public class BpelDebuggerImpl extends BpelDebugger {
     }
 
     public void setCurrentProcessInstance(ProcessInstance processInstance) {
-        ProcessInstanceImpl newProcessInstance = (ProcessInstanceImpl) processInstance;
-        ProcessInstanceImpl oldProcessInstance =
+        ProcessInstanceImpl newProcessInstance = 
+                (ProcessInstanceImpl) processInstance;
+        
+        // Automatically switch oto the first suspended process instance in
+        // case we're about to lose the current one
+        if (newProcessInstance == null) {
+            for (ProcessInstanceImpl instance: 
+                    mProcessInstancesModel.getProcessInstances()) {
+                if (instance.getState() == ProcessInstance.STATE_SUSPENDED) {
+                    newProcessInstance = instance;
+                    break;
+                }
+            }
+        }
+        
+        final ProcessInstanceImpl oldProcessInstance =
                 mCurrentProcessInstanceRef.getAndSet(newProcessInstance);
         
-        firePropertyChange(PROP_CURRENT_PROCESS_INSTANCE, oldProcessInstance, newProcessInstance);
+        firePropertyChange(
+                PROP_CURRENT_PROCESS_INSTANCE, 
+                oldProcessInstance, 
+                newProcessInstance);
         
         if (newProcessInstance != null) {
             setCurrentPosition(newProcessInstance.getCurrentPosition());
@@ -427,8 +455,8 @@ public class BpelDebuggerImpl extends BpelDebugger {
         }
     }
     
-    private void traceDebugException(String message, DebugException dex) {
-        if (dex == null) {
+    private void traceDebugException(String message, Exception exception) {
+        if (exception == null) {
             getTracer().println(message); // the message is already localized
             return;
         }
@@ -440,19 +468,19 @@ public class BpelDebuggerImpl extends BpelDebugger {
         if (message != null) {
             sb.append(message);
         }
-        if (dex.getMessage() != null) {
+        if (exception.getMessage() != null) {
             if (sb.length() > 0) {
                 sb.append(sep);
             }
-            sb.append(dex.getMessage());
+            sb.append(exception.getMessage());
         }
         
-        if (dex.getCause() != null) {
+        if (exception.getCause() != null) {
             Throwable cause;
-            if (dex.getCause() instanceof UndeclaredThrowableException) {
-                cause = dex.getCause().getCause();
+            if (exception.getCause() instanceof UndeclaredThrowableException) {
+                cause = exception.getCause().getCause();
             } else {
-                cause = dex.getCause();
+                cause = exception.getCause();
             }
             
             if (cause.getMessage() != null) {

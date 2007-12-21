@@ -44,6 +44,7 @@ class BpelAnnotation {
     private final AnnotationType myAnnotationType;
     private final DataObject myDataObject;
     private final String myXpath;
+    private final UniqueId myBpelEntityId;
     private final int myLineNumber;
 
     private State myState;
@@ -62,6 +63,8 @@ class BpelAnnotation {
         myAnnotationType = annotationType;
         myDataObject = dataObject;
         myXpath = xpath;
+        myBpelEntityId = ModelUtil.getBpelEntityId(
+                getBpelModel(), xpath);
         myLineNumber = lineNumber;
         
         myPcs = new PropertyChangeSupport(this);
@@ -88,8 +91,6 @@ class BpelAnnotation {
         if (myState == State.DETACHED) {
             return;
         }
-        
-        assert myDiagramAnnotation != null;
         
         removeDiagramAnnotation();
         removeLineAnnotation();
@@ -171,9 +172,16 @@ class BpelAnnotation {
             return;
         }
         
-        updateDiagramAnnotation();
-        updateLineAnnotation();
-        firePropertyChange(null, null, null);
+        // if the bpel entity was deleted -- we need to remove the annotations
+        // and the breakpoint
+        if (getBpelModel().getEntity(myBpelEntityId) == null) {
+            detach();
+        } else {
+            updateDiagramAnnotation();
+            updateLineAnnotation();
+            
+            firePropertyChange(null, null, null);
+        }
     }
 
     /**
@@ -213,8 +221,7 @@ class BpelAnnotation {
                 entityId, myAnnotationType.getType());
         
         final AnnotationManagerCookie annotationManager =
-                (AnnotationManagerCookie) myDataObject.getCookie(
-                AnnotationManagerCookie.class);
+                myDataObject.getCookie(AnnotationManagerCookie.class);
         
         annotationManager.addAnnotation(diagramAnnotation);
         
@@ -228,14 +235,15 @@ class BpelAnnotation {
             return;
         }
         
-        final AnnotationManagerCookie annotationManager =
-                (AnnotationManagerCookie) myDataObject.getCookie(
-                AnnotationManagerCookie.class);
-        
-        annotationManager.removeAnnotation(myDiagramAnnotation);
-        myDiagramAnnotation = null;
-        
-        BpelAnnotationsObserver.unsubscribe(this);
+        if (myDiagramAnnotation != null) {
+            final AnnotationManagerCookie annotationManager =
+                    myDataObject.getCookie(AnnotationManagerCookie.class);
+                    
+            annotationManager.removeAnnotation(myDiagramAnnotation);
+            myDiagramAnnotation = null;
+            
+            BpelAnnotationsObserver.unsubscribe(this);
+        }
     }
     
     private void updateLineAnnotation() {

@@ -192,20 +192,28 @@ public class BpelBreakpointListener extends DebuggerManagerAdapter {
         if (lbp == null) {
             return;
         }
+        
+        // if the annotation is still attached, then we need to just update the 
+        // breakpoint, otherwise we need to remove the breakpoint
+        if (EditorContextBridge.isAttached(annotation)) {
+            final String xpath = 
+                    EditorContextBridge.getXpath(annotation);
+            final int lineNumber = 
+                    EditorContextBridge.getLineNumber(annotation);
 
-        final String xpath = EditorContextBridge.getXpath(annotation);
-        final int lineNumber = EditorContextBridge.getLineNumber(annotation);
-        
-        final LineBreakpoint existing = 
-                findBreakpoint(lbp.getURL(), xpath, lineNumber);
-        
-        if ((existing != null) && !existing.equals(lbp)) {
-            DebuggerManager.getDebuggerManager().removeBreakpoint(lbp);
+            final LineBreakpoint existing = 
+                    findBreakpoint(lbp.getURL(), xpath, lineNumber);
+
+            if ((existing != null) && !existing.equals(lbp)) {
+                DebuggerManager.getDebuggerManager().removeBreakpoint(lbp);
+            } else {
+                lbp.setXpath(xpath);
+                lbp.setLineNumber(lineNumber);
+
+                lbp.touch();
+            }
         } else {
-            lbp.setXpath(xpath);
-            lbp.setLineNumber(lineNumber);
-            
-            lbp.touch();
+            DebuggerManager.getDebuggerManager().removeBreakpoint(lbp);
         }
     }
     
