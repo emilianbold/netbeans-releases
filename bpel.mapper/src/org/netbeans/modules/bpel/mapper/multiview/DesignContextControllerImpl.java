@@ -1,0 +1,418 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ * 
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.modules.bpel.mapper.multiview;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.lang.ref.WeakReference;
+import javax.swing.JTree;
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
+import javax.swing.event.TreeModelEvent;
+import javax.swing.event.TreeModelListener;
+import javax.swing.tree.TreePath;
+import org.netbeans.modules.bpel.mapper.model.BpelMapperModelFactory;
+import org.netbeans.modules.bpel.mapper.model.BpelModelUpdater;
+import org.netbeans.modules.bpel.mapper.tree.TreeExpandedState;
+import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
+import org.netbeans.modules.bpel.model.api.BpelEntity;
+import org.netbeans.modules.bpel.model.api.BpelModel;
+import org.netbeans.modules.bpel.model.api.events.ChangeEvent;
+import org.netbeans.modules.soa.mappercore.Mapper;
+import org.netbeans.modules.soa.mappercore.model.MapperModel;
+import org.netbeans.modules.xml.xam.Model.State;
+import org.openide.nodes.Node;
+import org.openide.windows.TopComponent;
+
+/**
+ * Controls the state of the BPEL mapper and manages different events:
+ * - change of activated node 
+ * - change in the related BPEL model
+ * 
+ * @author nk160297
+ * @author Vitaly Bychkov
+ *
+ */
+public class DesignContextControllerImpl implements DesignContextController {
+
+    private static int RELOAD_DELAY = 100;
+    private static int NODE_UPDATE_DELAY = 200;
+    
+    private BpelDesignContext mContext;
+    
+    private MapperTcContext mMapperTcContext;
+    private BpelModelSynchListener mBpelModelSynchListener;
+    
+    // A new instance of ReloadProcessor is created for each timer event
+    // The field holds the last created processor. 
+    // It is intended to allow the process to be interrupted.
+    private ReloadProcessor mReloadProcessor;
+    
+    private Timer reloadTimer;
+    private Timer nodeUpdateTimer;
+    
+    // Fields which hold parameters for the UpdateProcessor
+    private BpelDesignContext mNewContext;
+    private boolean mNeedReload;
+    
+    // Listens changes in the mapper tree model and updates BPEL model 
+    private TreeModelListener mBpelUpdateListener;
+    
+    private WeakReference<BpelModelUpdater> mBpelModelUpdaterRef;
+    
+    /** Creates a new instance of DesignContextChangeListener */
+    public DesignContextControllerImpl(MapperTcContext mapperTC) {
+        mMapperTcContext = mapperTC;
+        mBpelModelSynchListener = new BpelModelSynchListener(this);
+        //
+        reloadTimer = new Timer(RELOAD_DELAY, new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                //
+                // Create new instance of UpdateProcessor
+                ReloadProcessor reloadProcessor = new ReloadProcessor();
+                synchronized(DesignContextControllerImpl.this) {
+                    mReloadProcessor = reloadProcessor;
+                }
+                //
+                reloadProcessor.reloadMapperImpl();
+                //
+                if (!(reloadProcessor.isInterrupted())) {
+                    // Discard the flag in case the processor 
+                    // hasn't been interrupted.
+                    // The flag has to be discarded here!
+                    synchronized(DesignContextControllerImpl.this) {
+                        mNeedReload = false;
+                    }
+                }
+            }
+        });
+        reloadTimer.setRepeats(false);
+        //
+        nodeUpdateTimer = new Timer(NODE_UPDATE_DELAY, new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                //
+                // Create new instance of UpdateProcessor
+                ReloadProcessor reloadProcessor = new ReloadProcessor();
+                synchronized(DesignContextControllerImpl.this) {
+                    mReloadProcessor = reloadProcessor;
+                }
+                //
+                reloadProcessor.setContextImpl();
+                //
+                if (!(reloadProcessor.isInterrupted())) {
+                    // Discard the flag in case the processor 
+                    // hasn't been interrupted.
+                    // The flag has to be discarded here!
+                    synchronized(DesignContextControllerImpl.this) {
+                        mNeedReload = false;
+                    }
+                }
+            }
+        });
+        nodeUpdateTimer.setRepeats(false);
+        //
+        
+        mBpelUpdateListener = new TreeModelListener() {
+
+            public void treeNodesChanged(TreeModelEvent e) {
+                Object source = e.getSource();
+                if (source instanceof MapperModel) {
+                    BpelDesignContext designContext = getContext();
+                    if (designContext != null) {
+                        BpelEntity contextEntity = designContext.getBpelEntity();
+                        if (contextEntity != null) {
+                            TreePath parentPath = e.getTreePath();
+                            if (parentPath == null) {
+                                return;
+                            }
+                            //
+                            Object[] childrenArr = e.getChildren();
+                            if (childrenArr == null || childrenArr.length == 0) {
+                                return;
+                            }
+                            //
+                            TreePath treePath = parentPath.
+                                    pathByAddingChild(childrenArr[0]);
+                            //
+                            BpelModelUpdater updater = new BpelModelUpdater(
+                                    mMapperTcContext, treePath);
+                            setCurrentBpelModelUpdater(updater);
+                            updater.updateOnChanges();
+                        }
+                    }
+                }
+            }
+
+            public void treeNodesInserted(TreeModelEvent e) {
+            }
+
+            public void treeNodesRemoved(TreeModelEvent e) {
+            }
+
+            public void treeStructureChanged(TreeModelEvent e) {
+            }
+        };
+    }
+    
+    public MapperTcContext getMapperTcContext() {
+        return mMapperTcContext;
+    }
+    
+    private synchronized void setCurrentBpelModelUpdater(BpelModelUpdater newUpdater) {
+        mBpelModelUpdaterRef = new WeakReference<BpelModelUpdater>(newUpdater);
+    }
+    
+    private synchronized BpelModelUpdater getCurrentBpelModelUpdater() {
+        if (mBpelModelUpdaterRef != null) {
+            return mBpelModelUpdaterRef.get();
+        }
+        //
+        return null;
+    }
+    
+    public synchronized BpelDesignContext getContext() {
+        return mContext;
+    }
+    
+    public synchronized void setContext(BpelDesignContext newContext) {
+        if (newContext == null) {
+            return;
+        }
+        Node aNode = newContext.getActivatedNode();
+        if ( aNode != null && mMapperTcContext != null) {
+            TopComponent mapperTc = mMapperTcContext.getTopComponent();
+            if (mapperTc != null) {
+                mapperTc.setActivatedNodes(new Node[] {aNode});
+            }
+        }
+
+        BpelModel model = getCurrBpelModel();
+        BpelEntity newEntity = newContext.getBpelEntity();
+        // avoid entities from another BpelModel
+        if ((model != null && newEntity != null 
+                && !model.equals(newEntity.getBpelModel())) || newEntity == null) 
+        {
+            return;
+        }
+        
+        reloadTimer.stop();
+        nodeUpdateTimer.stop();
+        //
+        if (mReloadProcessor != null) {
+            mReloadProcessor.interrupt();
+        }
+        //
+        mNewContext = newContext;
+        //
+        nodeUpdateTimer.start();
+    }
+    
+    public synchronized void reloadMapper(ChangeEvent event) {
+        //
+        // Ignore reload if is has been initiated by the mapper itself 
+        if (event.getSource() == getCurrentBpelModelUpdater()) {
+            return;
+        }
+        //
+        if (!nodeUpdateTimer.isRunning()) {
+            reloadTimer.stop();
+            //
+            if (mReloadProcessor != null) {
+                mReloadProcessor.interrupt();
+            }
+            //
+            reloadTimer.start();
+        }
+        //
+        // The flag has to be set at the end of the method!
+        mNeedReload = true;
+    }
+    
+    private synchronized BpelModel getCurrBpelModel() {
+        if (mContext != null) {
+            return mContext.getBpelModel();
+        }
+        return null;
+    }
+    
+    private void setMapperModel(MapperModel newMapperModel) {
+        //
+        // Unsubscribe change listener from the old mapper model
+        Mapper oldMapper = mMapperTcContext.getMapper();
+        if (oldMapper != null) {
+            MapperModel oldModel = oldMapper.getModel();
+            if (oldModel != null && mBpelUpdateListener != null) {
+                oldModel.removeTreeModelListener(mBpelUpdateListener);
+            }
+        }
+        //
+        mMapperTcContext.setMapperModel(newMapperModel);
+        //
+        // Add change listener to the new mapper model
+        if (newMapperModel != null && mBpelUpdateListener != null) {
+            newMapperModel.addTreeModelListener(mBpelUpdateListener);
+        }
+    }
+    
+    /**
+     * Processes events from reload and node update timers and 
+     * reloads the mapper content.
+     */
+    private class ReloadProcessor {
+
+        private boolean isInterrupted = false;
+        
+        /**
+         * Sets isInterrupted flag. 
+         */
+        public void interrupt() {
+            isInterrupted = true;
+        }
+        
+        public boolean isInterrupted() {
+            return isInterrupted;
+        }
+        
+        public void reloadMapperImpl() {
+            if (mContext == null) {
+                return;
+            }
+            //
+            if (isModelInvalid()) {
+                disableMapper();
+                return;
+            }
+            //
+            // No need to resubscribe to another BPEL model here 
+            // because of the same design context.
+            //
+            MapperModel newMapperModel = new BpelMapperModelFactory().
+                    constructModel(mMapperTcContext, mContext);
+            //
+            // Save left tree state
+            TreeExpandedState leftTreeState = null;
+            Mapper mapper = mMapperTcContext.getMapper();
+            if (mapper != null) {
+                JTree leftTree = mapper.getLeftTree();
+                if (leftTree != null) {
+                    leftTreeState = new TreeExpandedState(leftTree);
+                    leftTreeState.save();
+                }
+            }
+            //
+            setMapperModel(newMapperModel);
+            //
+            // Restore left tree state
+            final TreeExpandedState state = leftTreeState;
+            if (state != null) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        state.restore();
+                    }
+                });
+                // TODO: restore tree selection, restore right tree, expanded graph
+            }
+        }
+    
+        public void setContextImpl() {
+            // Copy the context to a new local variable at first.
+            BpelDesignContext newContext = mNewContext;
+            //
+            if (newContext == null || newContext.getBpelEntity() == null) {
+                // Hide the mapper if there is not a BPEL entity selected
+                disableMapper();
+                return;
+            } 
+            //
+            if  (isModelInvalid()) {
+                disableMapper();
+                return;
+            } 
+            //
+            if (!newContext.equals(mContext)) {
+                BpelEntity contextEntity = newContext.getBpelEntity();
+                boolean needShow = 
+                        BpelMapperModelFactory.needShowMapper(contextEntity);
+                //
+                if (!needShow) {
+                    disableMapper();
+                } else {
+                    //
+                    // Re subscribe to another BPEL model if necessary.
+                    if (newContext.getBpelModel() != getCurrBpelModel()) {
+                        setListenBpelModel(getCurrBpelModel(), false);
+                        setListenBpelModel(newContext.getBpelModel(), true);
+                    }
+                    //
+                    MapperModel newMapperModel = new BpelMapperModelFactory().
+                            constructModel(mMapperTcContext, newContext);
+                    //
+                    mContext = newContext;
+                    setMapperModel(newMapperModel);
+                    //
+                    mMapperTcContext.showMapperTcGroup(true);
+                }
+            } else {
+                //
+                boolean needReload;
+                synchronized(DesignContextControllerImpl.this) {
+                    needReload = mNeedReload;
+                }
+                if (needReload) {
+                    reloadMapperImpl();
+                }
+            }
+        }
+
+        private void setListenBpelModel(BpelModel bpelModel, boolean isEnabled) {
+            if (bpelModel == null) {
+                return;
+            }
+            //
+            if (isEnabled) {
+                if (mBpelModelSynchListener != null) {
+                    bpelModel.addEntityChangeListener(mBpelModelSynchListener);
+                }
+            } else {
+                if (mBpelModelSynchListener != null) {
+                    bpelModel.removeEntityChangeListener(mBpelModelSynchListener);
+                }
+            }
+        }
+
+        private void disableMapper() {
+            mMapperTcContext.showMapperTcGroup(false);
+            mMapperTcContext.setMapper(null);
+            setListenBpelModel(getCurrBpelModel(), false);
+            //
+            mContext = null;
+        }
+
+        private boolean isModelInvalid() {
+            BpelModel bpelModel = getCurrBpelModel();
+            if (bpelModel != null) {
+                return bpelModel.getState().equals(State.NOT_WELL_FORMED);
+            }
+            return false; // Consider the model valid by default
+        }
+        
+    }
+    
+}

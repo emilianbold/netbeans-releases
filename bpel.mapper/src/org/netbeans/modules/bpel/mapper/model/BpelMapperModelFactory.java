@@ -1,0 +1,486 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ * 
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.modules.bpel.mapper.model;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import javax.swing.tree.TreePath;
+import org.netbeans.modules.bpel.mapper.predicates.PredicateFinderVisitor;
+import org.netbeans.modules.bpel.mapper.predicates.PredicateManager;
+import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContext;
+import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
+import org.netbeans.modules.bpel.mapper.tree.models.ConditionValueTreeModel;
+import org.netbeans.modules.bpel.mapper.tree.models.DateValueTreeModel;
+import org.netbeans.modules.bpel.mapper.tree.models.EmptyTreeModel;
+import org.netbeans.modules.bpel.mapper.tree.models.ForEachConditionsTreeModel;
+import org.netbeans.modules.bpel.mapper.tree.models.PartnerLinkTreeExtModel;
+import org.netbeans.modules.bpel.mapper.tree.models.SimpleTreeInfoProvider;
+import org.netbeans.modules.bpel.mapper.tree.models.VariableTreeModel;
+import org.netbeans.modules.bpel.mapper.tree.search.ResultNodeFinder;
+import org.netbeans.modules.bpel.mapper.tree.spi.MapperModelFactory;
+import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
+import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
+import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemFinder;
+import org.netbeans.modules.bpel.model.api.Assign;
+import org.netbeans.modules.bpel.model.api.AssignChild;
+import org.netbeans.modules.bpel.model.api.BpelEntity;
+import org.netbeans.modules.bpel.model.api.CompletionCondition;
+import org.netbeans.modules.bpel.model.api.ConditionHolder;
+import org.netbeans.modules.bpel.model.api.Copy;
+import org.netbeans.modules.bpel.model.api.DeadlineExpression;
+import org.netbeans.modules.bpel.model.api.ElseIf;
+import org.netbeans.modules.bpel.model.api.Expression;
+import org.netbeans.modules.bpel.model.api.For;
+import org.netbeans.modules.bpel.model.api.ForEach;
+import org.netbeans.modules.bpel.model.api.From;
+import org.netbeans.modules.bpel.model.api.If;
+import org.netbeans.modules.bpel.model.api.OnAlarmEvent;
+import org.netbeans.modules.bpel.model.api.OnAlarmPick;
+import org.netbeans.modules.bpel.model.api.RepeatUntil;
+import org.netbeans.modules.bpel.model.api.TimeEvent;
+import org.netbeans.modules.bpel.model.api.TimeEventHolder;
+import org.netbeans.modules.bpel.model.api.Wait;
+import org.netbeans.modules.bpel.model.api.While;
+import org.netbeans.modules.bpel.model.api.support.XPathModelFactory;
+import org.netbeans.modules.soa.mappercore.model.Graph;
+import org.netbeans.modules.soa.mappercore.model.MapperModel;
+import org.netbeans.modules.soa.mappercore.utils.GraphLayout;
+import org.netbeans.modules.xml.xpath.ext.XPathException;
+import org.netbeans.modules.xml.xpath.ext.XPathExpression;
+import org.netbeans.modules.xml.xpath.ext.XPathModel;
+
+/**
+ * Implementaiton of the MapperModelFactory for the BPEL mapper.
+ * 
+ * @author nk160297
+ */
+public class BpelMapperModelFactory implements MapperModelFactory {
+
+    private static Set<Class> mMappableObjects = new HashSet<Class>();
+    
+    static {
+        mMappableObjects.add(Assign.class);
+        mMappableObjects.add(Copy.class);
+        //
+        mMappableObjects.add(Wait.class);
+        mMappableObjects.add(OnAlarmPick.class);
+        mMappableObjects.add(OnAlarmEvent.class);
+        //
+        mMappableObjects.add(If.class);
+        mMappableObjects.add(ElseIf.class);
+        mMappableObjects.add(While.class);
+        mMappableObjects.add(RepeatUntil.class);
+        //
+        mMappableObjects.add(ForEach.class);
+    }
+   
+    public static boolean needShowMapper(Object source) {
+        if (source instanceof BpelEntity) {
+            Class bpelClass = ((BpelEntity)source).getElementType();
+            return mMappableObjects.contains(bpelClass);
+        }
+        //
+        return false;
+    }
+    
+    /**
+     * Holds all preprocessed XPath expressions
+     */
+    protected ArrayList<PreprocessedExpression> mPreprocessedExprList = 
+            new ArrayList<PreprocessedExpression>();
+
+    public BpelMapperModelFactory() {
+    }
+    
+    public MapperModel constructModel(
+            MapperTcContext mapperTcContext, BpelDesignContext context) {
+        //
+        BpelEntity bpelEntity = context.getBpelEntity();
+        if (bpelEntity instanceof Copy) {
+            Copy copy = (Copy)bpelEntity;
+            //
+            EmptyTreeModel sourceModel = new EmptyTreeModel();
+            VariableTreeModel sourceVariableModel = new VariableTreeModel(context);
+            sourceModel.addExtensionModel(sourceVariableModel);
+            PartnerLinkTreeExtModel pLinkExtModel = 
+                    new PartnerLinkTreeExtModel(copy, true);
+            sourceModel.addExtensionModel(pLinkExtModel);
+            //
+            EmptyTreeModel targetModel = new EmptyTreeModel();
+            VariableTreeModel targetVariableModel = new VariableTreeModel(context);
+            targetModel.addExtensionModel(targetVariableModel);
+            pLinkExtModel = new PartnerLinkTreeExtModel(copy, false);
+            targetModel.addExtensionModel(pLinkExtModel);
+            //
+            BpelMapperModel newMapperModel = new BpelMapperModel(
+                    mapperTcContext, sourceModel, targetModel);
+            //
+            addCopyGraph(copy, newMapperModel);
+            //
+            addPreprocessedExprToGraph(newMapperModel);
+            return newMapperModel;
+            //
+        } else if (bpelEntity instanceof Assign) {
+            Assign assign = (Assign)bpelEntity;
+            //
+            EmptyTreeModel sourceModel = new EmptyTreeModel();
+            VariableTreeModel sourceVariableModel = new VariableTreeModel(context);
+            sourceModel.addExtensionModel(sourceVariableModel);
+            PartnerLinkTreeExtModel pLinkExtModel = 
+                    new PartnerLinkTreeExtModel(assign, true);
+            sourceModel.addExtensionModel(pLinkExtModel);
+            //
+            EmptyTreeModel targetModel = new EmptyTreeModel();
+            VariableTreeModel targetVariableModel = new VariableTreeModel(context);
+            targetModel.addExtensionModel(targetVariableModel);
+            pLinkExtModel = new PartnerLinkTreeExtModel(assign, false);
+            targetModel.addExtensionModel(pLinkExtModel);
+            //
+            BpelMapperModel newMapperModel = new BpelMapperModel(
+                    mapperTcContext, sourceModel, targetModel);
+            for (AssignChild assignChild : assign.getAssignChildren()) {
+                if (assignChild instanceof Copy) {
+                    addCopyGraph((Copy)assignChild, newMapperModel);
+                }
+            }
+            //
+            addPreprocessedExprToGraph(newMapperModel);
+            return newMapperModel;
+            //
+        } else if (bpelEntity instanceof Wait || 
+                bpelEntity instanceof OnAlarmPick || 
+                bpelEntity instanceof OnAlarmEvent) {
+            //
+            TimeEventHolder timeEH = (TimeEventHolder)bpelEntity;
+            //
+            EmptyTreeModel sourceModel = new EmptyTreeModel();
+            VariableTreeModel variableModel = new VariableTreeModel(context);
+            sourceModel.addExtensionModel(variableModel);
+            //
+            DateValueTreeModel targetTreeModel = new DateValueTreeModel(timeEH);
+            SimpleTreeInfoProvider targetIP = new SimpleTreeInfoProvider();
+            //
+            BpelMapperModel newMapperModel = new BpelMapperModel(
+                    mapperTcContext, sourceModel, targetTreeModel);
+            //
+            TimeEvent timeEvent = timeEH.getTimeEvent();
+            if (timeEvent != null) {
+                if (timeEvent instanceof For) {
+                    Expression expr = (For)timeEvent;
+                    addExpressionGraph(expr, newMapperModel, 
+                            DateValueTreeModel.DURATION_CONDITION, timeEH);
+                } else if (timeEvent instanceof DeadlineExpression) {
+                    Expression expr = (DeadlineExpression)timeEvent;
+                    addExpressionGraph(expr, newMapperModel, 
+                            DateValueTreeModel.DEADLINE_CONDITION, timeEH);
+                }
+            }
+            //
+            addPreprocessedExprToGraph(newMapperModel);
+            return newMapperModel;
+            //
+        } else if (bpelEntity instanceof If ||
+                bpelEntity instanceof ElseIf || 
+                bpelEntity instanceof While || 
+                bpelEntity instanceof RepeatUntil) {
+            //
+            EmptyTreeModel sourceModel = new EmptyTreeModel();
+            VariableTreeModel variableModel = new VariableTreeModel(context);
+            sourceModel.addExtensionModel(variableModel);
+            //
+            ConditionValueTreeModel targetTreeModel = 
+                    new ConditionValueTreeModel(bpelEntity);
+            //
+            BpelMapperModel newMapperModel = new BpelMapperModel(
+                    mapperTcContext, sourceModel, targetTreeModel);
+            //
+            // Add Graphs
+            assert bpelEntity instanceof ConditionHolder;
+            Expression expr = ((ConditionHolder)bpelEntity).getCondition();
+            if (expr != null) {
+                addExpressionGraph(expr, newMapperModel, 
+                        ConditionValueTreeModel.BOOLEAN_CONDITION, bpelEntity);
+            }
+            //
+            addPreprocessedExprToGraph(newMapperModel);
+            return newMapperModel;
+            //
+        } else if (bpelEntity instanceof ForEach) {
+            ForEach forEach = (ForEach)bpelEntity;
+            //
+            EmptyTreeModel sourceModel = new EmptyTreeModel();
+            VariableTreeModel variableModel = new VariableTreeModel(context);
+            sourceModel.addExtensionModel(variableModel);
+            //
+            ForEachConditionsTreeModel targetTreeModel = 
+                    new ForEachConditionsTreeModel(forEach);
+            //
+            BpelMapperModel newMapperModel = new BpelMapperModel(
+                    mapperTcContext, sourceModel, targetTreeModel);
+            //
+            // Add Graphs
+            Expression expr = forEach.getStartCounterValue();
+            if (expr != null) {
+                addExpressionGraph(expr, newMapperModel, 
+                        ForEachConditionsTreeModel.START_VALUE, forEach);
+            }
+            //
+            expr = forEach.getFinalCounterValue();
+            if (expr != null) {
+                addExpressionGraph(expr, newMapperModel, 
+                        ForEachConditionsTreeModel.FINAL_VALUE, forEach);
+            }
+            //
+            CompletionCondition cc = forEach.getCompletionCondition();
+            if (cc != null) {
+                expr = cc.getBranches();
+                if (expr != null) {
+                    addExpressionGraph(expr, newMapperModel, 
+                            ForEachConditionsTreeModel.COMPLETION_CONDITION, 
+                            forEach);
+                }
+            }
+            //
+            addPreprocessedExprToGraph(newMapperModel);
+            return newMapperModel;
+            //
+        }
+        //
+        return null;
+    }
+
+    private void addCopyGraph(Copy copy, BpelMapperModel newMapperModel) {
+        //
+        From copyFrom = copy.getFrom();
+        if (copyFrom == null) {
+            return;
+        }
+        //
+        Graph newGraph = new Graph(newMapperModel, copy);
+        //
+        CopyFromProcessor fromProcessor = new CopyFromProcessor(this, copy);
+        MapperSwingTreeModel leftTreeModel = newMapperModel.getLeftTreeModel();
+        newGraph = fromProcessor.populateGraph(newGraph, leftTreeModel);
+        if (newGraph == null) {
+            return;
+        }
+        //
+        MapperSwingTreeModel rightTreeModel = newMapperModel.getRightTreeModel();
+        ArrayList<TreeItemFinder> toNodeFinderList = CopyToProcessor.
+                constructFindersList(rightTreeModel, copy, copy.getTo());
+        TreePath targetTreePath = newMapperModel.getRightTreeModel().
+                findFirstNode(toNodeFinderList);
+        if (targetTreePath == null) {
+            return;
+        }
+        //
+        newMapperModel.addGraph(newGraph, targetTreePath);
+    }
+    
+    private void addExpressionGraph(Expression expr, 
+            BpelMapperModel newMapperModel, 
+            String targetNodeName, 
+            BpelEntity contextEntity) {
+        assert expr != null && newMapperModel != null && targetNodeName != null;
+        //
+        Graph newGraph = new Graph(newMapperModel);
+        //
+        MapperSwingTreeModel leftTreeModel = newMapperModel.getLeftTreeModel();
+        populateGraph(newGraph, leftTreeModel, contextEntity, expr);
+        //
+        List<TreeItemFinder> finderList = Collections.singletonList(
+                (TreeItemFinder)new ResultNodeFinder(targetNodeName));
+        TreePath targetTreePath = newMapperModel.getRightTreeModel().
+                findFirstNode(finderList);
+        if (targetTreePath == null) {
+            return;
+        }
+        //
+        newMapperModel.addGraph(newGraph, targetTreePath);
+    }
+    
+    //==========================================================================
+    // Common methods to populate a graph
+    
+    /**
+     * It has to be called at the end of the mapper model's creation 
+     * @param mapperModel
+     */
+    public void addPreprocessedExprToGraph(BpelMapperModel mapperModel) {
+        // 
+        // Sort expressions by Graphs
+        HashMap<Graph, List<PreprocessedExpression>> map = 
+                new HashMap<Graph, List<PreprocessedExpression>>();
+        //
+        for (PreprocessedExpression expr : mPreprocessedExprList) {
+            Graph graph = expr.getGraph();
+            List<PreprocessedExpression> exprList = map.get(graph);
+            if (exprList == null) {
+                exprList = new ArrayList<PreprocessedExpression>();
+                map.put(graph, exprList);
+            }
+            exprList.add(expr);
+        }
+        //
+        MapperSwingTreeModel leftTreeModel = mapperModel.getLeftTreeModel();
+        //
+        // Add prepared XPath expressions to graphs one by one
+        for (Graph graph : map.keySet()) {
+            List<PreprocessedExpression> exprList = map.get(graph);
+            if (exprList != null && !exprList.isEmpty()) {
+                for (PreprocessedExpression expr : exprList) {
+                    expr.addToGraph(leftTreeModel);
+                }
+                //
+                GraphLayout.layout(graph);            
+            }
+        }
+    }
+    
+    public void populateGraph(Graph graph, 
+            MapperSwingTreeModel leftTreeModel, 
+            BpelEntity contextEntity, Expression expr) {
+        //
+        String exprLang = expr.getExpressionLanguage();
+        String exprText = expr.getContent();
+        boolean isXPathExpr = (exprLang == null || exprLang.length() == 0 ||
+                XPathModelFactory.DEFAULT_EXPR_LANGUAGE.equals(exprLang));
+        //
+        ArrayList<XPathExpression> exprList = new ArrayList<XPathExpression>();
+        boolean hasConnectedExpr = true;
+        if (isXPathExpr && exprText != null && exprText.length() != 0) {
+            if (exprText.contains(XPathModelFactory.XPATH_EXPR_DELIMITER)) {
+                String[] partsArr = exprText.split(
+                        XPathModelFactory.XPATH_EXPR_DELIMITER);
+                boolean isFirst = true;
+                for (String anExprText : partsArr) {
+                    if (anExprText == null || anExprText.length() == 0) {
+                        if (isFirst) {
+                            // The first compartment is empty.
+                            // It means that the first char is ";"
+                            hasConnectedExpr = false;
+                        }
+                    } else {
+                        XPathExpression newXPathExpr = 
+                                parseExpression(contextEntity, exprText);
+                        if (newXPathExpr != null) {
+                            exprList.add(newXPathExpr);
+                        }
+                    }
+                    isFirst = false;
+                }
+            } else {
+                XPathExpression newXPathExpr = 
+                        parseExpression(contextEntity, exprText);
+                if (newXPathExpr != null) {
+                    exprList.add(newXPathExpr);
+                }
+//                preProcessSingleExpr(contextEntity, exprText, graph, 
+//                        leftTreeModel, true);
+            }
+            //
+            // Collecting all predicates first!
+            for (XPathExpression anExpr : exprList) {
+                collectPredicates(anExpr, leftTreeModel);
+            }
+            //
+            // Preprocess XPath expression
+            boolean connectToTargetTree = hasConnectedExpr;
+            for (XPathExpression anExpr : exprList) {
+                PreprocessedExpression newPreprExpr = new PreprocessedExpression(
+                        anExpr, graph, connectToTargetTree);
+                mPreprocessedExprList.add(newPreprExpr);
+                //
+                // Only first expression can be connected
+                connectToTargetTree = false;
+            }
+        }
+    }
+    
+    private XPathExpression parseExpression(
+            BpelEntity contextEntity, String exprText) {
+        //
+        XPathExpression expr = null;
+        try {
+            XPathModel newXPathModel = XPathModelFactory.create(contextEntity);
+            // NOT NEED to specify schema context because of an 
+            // expression with variable is implied here. 
+            //
+            expr = newXPathModel.parseExpression(exprText);
+            //
+        } catch (XPathException ex) {
+            // Do nothing
+            // ErrorManager.getDefault().notify(ex);
+        }
+        return expr;
+    }
+    
+    public static void collectPredicates(
+            XPathExpression expr, MapperSwingTreeModel treeModel) {
+        //
+        MapperTreeModel sourceTreeModel = treeModel.getSourceModel();
+        //
+        // Look for the VariableTreeModel tree extension
+        VariableTreeModel varTreeModel = MapperTreeModel.Utils.findExtensionModel(
+                sourceTreeModel, VariableTreeModel.class);
+        //    
+        if (varTreeModel != null) {
+            PredicateManager predManager = varTreeModel.getPredicateManager();
+            if (predManager != null) {
+                PredicateFinderVisitor predFinderVisitor = 
+                        new PredicateFinderVisitor(predManager);
+                expr.accept(predFinderVisitor);
+            }
+        }
+    }
+    
+    /** 
+     * Holds the data about a Graph before its creation
+     */
+    protected class PreprocessedExpression {
+        private XPathExpression mExpr;
+        private Graph mGraph; 
+        private boolean mConnectToTargetTree;
+        
+        public PreprocessedExpression(XPathExpression expr, Graph graph, 
+                boolean connectToTargetTree) {
+            //
+            mExpr = expr;
+            mGraph = graph;
+            mConnectToTargetTree = connectToTargetTree;
+        }
+        
+        public Graph getGraph() {
+            return mGraph;
+        }
+        
+        public void addToGraph(MapperSwingTreeModel leftTreeModel) {
+            GraphBuilderVisitor graphBuilderVisitor = 
+                    new GraphBuilderVisitor(mGraph, leftTreeModel, 
+                    mConnectToTargetTree);
+            mExpr.accept(graphBuilderVisitor);
+        }
+    }
+    
+}
