@@ -46,7 +46,7 @@ S = content;
 content = (ruby | html)*;
 
 html = <HTML>;
-ruby = <DELIMITER> <RUBY> (<DELIMITER, "%>">);
+ruby = <DELIMITER> (<RUBY> | <RUBYCOMMENT> | <RUBY_EXPR>) (<DELIMITER, "%>">);
 
 ######### navigator
 
