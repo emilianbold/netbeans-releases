@@ -59,7 +59,7 @@ public class MultyViewSwitchMemTest extends org.netbeans.performance.test.utilit
     private Node pagesRoot = null;
     private long oldTimeout;
     private WebFormDesignerOperator designer;
-    
+    private Runtime rt = Runtime.getRuntime();
     public MultyViewSwitchMemTest(String testName) {
         super(testName);
         repeat_memory = 1;        
@@ -100,13 +100,20 @@ public class MultyViewSwitchMemTest extends org.netbeans.performance.test.utilit
             designer.switchToJSPView();            
             designer.switchToCodeView();
             designer.switchToDesignView();
+            logJVMStats(i);
         }
         return null;
 
     }
     @Override
     public void close() {
-        
+        designer.closeDiscard();
+    }
+    private void logJVMStats(int attempt) {
+        long totalmemory = rt.totalMemory();
+        long freememory = rt.freeMemory();
+        long usedmemory = (totalmemory - freememory) / 1024;        
+        log("Attempt: "+attempt+"Used memory: "+usedmemory);
     }
     public void testMem() {
         doMeasurement();
