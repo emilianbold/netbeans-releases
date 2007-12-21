@@ -3,7 +3,7 @@ Version: 1.1.1
 Description: RSpec 1.1.1
 License: MIT
 OSR: 6063
-Files: rspec-1.1.1.gem
+Files: rspec-1.1.1.zip
 Origin: http://rspec.rubyforge.org/
 
 The MIT License

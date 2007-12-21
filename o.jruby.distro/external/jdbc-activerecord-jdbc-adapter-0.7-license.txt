@@ -3,7 +3,7 @@ Version: 0.7
 Description: The JDBC bridge for ActiveRecord
 License: MIT
 OSR: 6063
-Files: jdbc-activerecord-jdbc-adapter-0.7.gem
+Files: jdbc-activerecord-jdbc-adapter-0.7.zip
 Origin: http://rubyforge.org/projects/jruby-extras
 Comment: ActiveRecord-JDBC bridge
 
