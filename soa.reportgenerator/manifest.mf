@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+OpenIDE-Module-Specification-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.soa.reportgenerator
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/reportgenerator/Bundle.properties

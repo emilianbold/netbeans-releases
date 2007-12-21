@@ -46,11 +46,12 @@ import java.awt.Container;
 import java.awt.Image;
 import java.awt.Window;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import javax.swing.RootPaneContainer;
+import javax.swing.SwingUtilities;
 import org.openide.filesystems.FileObject;
-import org.openide.ErrorManager;
 import org.openide.awt.UndoRedo;
 import org.netbeans.modules.soa.ui.form.InitialFocusProvider;
 import org.openide.cookies.SaveCookie;
@@ -58,9 +59,12 @@ import org.openide.cookies.EditorCookie;
 import org.netbeans.modules.xml.api.EncodingUtil;
 import javax.swing.text.Document;
 import javax.swing.text.BadLocationException;
+import org.openide.ErrorManager;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.text.DataEditorSupport;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  * @author nk160297
@@ -314,5 +318,39 @@ public class SoaUiUtil {
         return;
       }
       manager.discardAllEdits();
+    }
+    
+    public static TopComponent safeFindTopComponent(final String tcId) {
+        if (tcId == null || "".equals(tcId)) { // NOI18N
+            return null;
+        }
+        TopComponent tc = null;
+        if (SwingUtilities.isEventDispatchThread()) {
+            tc = WindowManager.getDefault().findTopComponent(tcId);
+        } else {
+            class SafeFindTopComponent implements Runnable {
+                private TopComponent myTopComponent;
+                public void run() {
+                    myTopComponent = WindowManager.getDefault().findTopComponent(tcId);
+                }
+                
+                public TopComponent getTopComponent() {
+                    return myTopComponent;
+                }
+            }
+            SafeFindTopComponent findTc = new SafeFindTopComponent();
+            try {
+                SwingUtilities.invokeAndWait(findTc);
+                tc = findTc.getTopComponent();
+            } catch(InterruptedException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+                return null;
+            } catch (InvocationTargetException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+                return null;
+            }
+        }
+        
+        return tc;
     }
 }

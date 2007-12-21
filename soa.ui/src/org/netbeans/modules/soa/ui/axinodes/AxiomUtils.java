@@ -1,46 +1,26 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
  *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 package org.netbeans.modules.soa.ui.axinodes;
 
+import java.awt.Color;
+import java.awt.ComponentOrientation;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -116,7 +96,8 @@ public class AxiomUtils {
             return new Node[0];
         }
         //
-        NodeFactory nodeFactory = lookup.lookup(NodeFactory.class);
+        NodeFactory nodeFactory =
+                (NodeFactory)lookup.lookup(NodeFactory.class);
         assert nodeFactory != null : "Node factory has to be specified"; // NOI18N
         //
         ArrayList<Node> nodesList = new ArrayList<Node>();
@@ -149,6 +130,72 @@ public class AxiomUtils {
         //
         Node[] nodes = nodesList.toArray(new Node[nodesList.size()]);
         return nodes;
+    }
+    
+    /**
+     * TODO This calculator works wrong because of the
+     * axiComponent.getParentElement() method returns null if the component is
+     * the reference to a global element. So an incomplete XPath can be constructed.
+     * @deprecated
+     */
+    public static String calculateSimpleXPath(AXIComponent axiComponent) {
+        //
+        // Collects Path Items first
+        ArrayList<PathItem> path = new ArrayList<PathItem>();
+        while (axiComponent != null) {
+            String compName = null;
+            //
+            if (axiComponent instanceof Element) {
+                compName = ((Element)axiComponent).getName();
+            } else if (axiComponent instanceof Attribute) {
+                compName = ((Attribute)axiComponent).getName();
+            } else if (axiComponent instanceof AXIType) {
+                compName = ((AXIType)axiComponent).getName();
+            }
+            //
+            String namespace = isUnqualified(axiComponent) ?
+                "" : axiComponent.getTargetNamespace();
+            //
+            if (compName != null && compName.length() != 0) {
+                PathItem pathItem = new PathItem(axiComponent, namespace, compName, null);
+                path.add(pathItem);
+            } else {
+                path.clear();
+            }
+            //
+            axiComponent = axiComponent.getParentElement();
+        }
+        //
+        // Check namespaces.
+        // If namespace of a PathItem is the same as its parent has,
+        // then it doesn't necessary to show it.
+        // If a namespace is necessary, then try to obtain a prefix for it.
+//        ListIterator<PathItem> itr = path.listIterator();
+//        String prevItemNamespace = null;
+//        while (itr.hasNext()) {
+//            PathItem pathItem = itr.next();
+//            //
+//            if (prevItemNamespace != null) {
+//                if (prevItemNamespace.equals(pathItem.myNamespace)) {
+//                    pathItem.myNamespace = null;
+//                    continue;
+//                }
+//            }
+//            //
+////            pathItem.myNamespace;
+//            //
+//            prevItem = pathItem;
+//        }
+        //
+        //
+        StringBuffer result = new StringBuffer();
+        ListIterator<PathItem> itr = path.listIterator(path.size());
+        while (itr.hasPrevious()) {
+            PathItem pathItem = itr.previous();
+            result.append(XPATH_SEPARATOR).append(pathItem.myLocalName);
+        }
+        //
+        return result.toString();
     }
     
     /**
@@ -186,32 +233,21 @@ public class AxiomUtils {
         //
         return path;
     }
-    public static void processNode(AXIComponent axiComponent, 
+    public static void processNode(final AXIComponent axiComponent, 
             String predicate, final ArrayList<PathItem> path) {
         String compName = null;
-        boolean isGlobal = false;
         //
         if (axiComponent instanceof Element) {
-            Element element = (Element)axiComponent;
-            compName = element.getName();
-            if (element.isReference()) {
-                axiComponent = element.getReferent();
-                isGlobal = true;
-            }
+            compName = ((Element)axiComponent).getName();
         } else if (axiComponent instanceof Attribute) {
-            Attribute attr = (Attribute)axiComponent;
-            compName = attr.getName();
-            if (attr.isReference()) {
-                axiComponent = attr.getReferent();
-                isGlobal = true;
-            }
+            compName = ((Attribute)axiComponent).getName();
         } else if (axiComponent instanceof AXIType) {
             compName = ((AXIType)axiComponent).getName();
         }
         //
         if (compName != null && compName.length() != 0) {
-           String namespace = isGlobal || !isUnqualified(axiComponent) ?
-                axiComponent.getTargetNamespace() : null;
+            String namespace = isUnqualified(axiComponent) ?
+                null : axiComponent.getTargetNamespace();
             //
             PathItem pathItem = new PathItem(
                     axiComponent, namespace, compName, predicate);
@@ -501,20 +537,6 @@ public class AxiomUtils {
         //ltl bit paranoic tests to avoid NPEs.
         if (type == null) {
             return false;
-        }
-        
-        if (type instanceof Element) {
-            Element element = (Element)type;
-            if (element.isReference()) {
-                // referent is always global, so it has to be qualified 
-                return false;
-            }
-        } else if (type instanceof Attribute) {
-            Attribute attr = (Attribute)type;
-            if (attr.isReference()) {
-                // referent is always global, so it has to be qualified 
-                return false;
-            }
         }
         
         if (type.isGlobal()){

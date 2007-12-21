@@ -1,0 +1,391 @@
+/*
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ * 
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+package org.netbeans.modules.soa.mappercore;
+
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Insets;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.Stroke;
+import java.awt.dnd.Autoscroll;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import javax.swing.JComponent;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTree;
+import javax.swing.ToolTipManager;
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeExpansionListener;
+import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreePath;
+import org.netbeans.modules.soa.mappercore.model.Link;
+import org.netbeans.modules.soa.mappercore.model.Graph;
+import org.netbeans.modules.soa.mappercore.model.MapperModel;
+import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
+import org.netbeans.modules.soa.mappercore.utils.ScrollPaneWrapper;
+import org.netbeans.modules.xml.xam.ui.search.SearchManager;
+
+/**
+ *
+ * @author anjeleevich
+ */
+public class LeftTree extends JTree implements
+        AdjustmentListener, TreeExpansionListener,
+        Autoscroll 
+{
+
+    private Mapper mapper;
+    private LeftTreeEventHandler eventHandler;
+    public JComponent scrollPaneWrapper;
+    public JScrollPane scrollPane;
+
+    /** Creates a new instance of LeftTree */
+    public LeftTree(Mapper mapper) {
+        super((TreeModel) null);
+        this.mapper = mapper;
+
+        scrollPane = new JScrollPane(this,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+        scrollPane.getVerticalScrollBar().addAdjustmentListener(this);
+
+        // vlv: navigation
+        scrollPaneWrapper = SearchManager.Access.getDefault().createNavigation(this, scrollPane, new ScrollPaneWrapper(scrollPane));
+        
+        addTreeExpansionListener(this);
+        setCellRenderer(new DefaultLeftTreeCellRenderer(mapper));
+        eventHandler = new LeftTreeEventHandler(this);
+
+        this.setRootVisible(false);
+        this.setShowsRootHandles(true);
+
+        //
+        // Add the mouse listener for popup menu
+        MouseListener pupupMouseListener = new MouseAdapter() {
+
+            public void mousePressed(MouseEvent e) {
+                maybeShowPopup(e);
+            }
+
+            public void mouseReleased(MouseEvent e) {
+                maybeShowPopup(e);
+            }
+
+            private void maybeShowPopup(MouseEvent e) {
+                if (e.isPopupTrigger()) {
+                    Object source = e.getSource();
+                    assert source instanceof JTree;
+                    TreePath path = ((JTree) source).getPathForLocation(
+                            e.getX(), e.getY());
+                    if (path != null) {
+                        Object lastComp = path.getLastPathComponent();
+                        JPopupMenu popup = LeftTree.this.mapper.getContext().
+                                getLeftPopupMenu(LeftTree.this.mapper.getModel(),
+                                lastComp);
+                        //
+                        if (popup != null) {
+                            popup.show(e.getComponent(), e.getX(), e.getY());
+                        }
+                    }
+                }
+            }
+        };
+        //
+        this.addMouseListener(pupupMouseListener);
+        
+        ToolTipManager.sharedInstance().registerComponent(this);
+    }
+    
+    
+    @Override
+    public String getToolTipText(MouseEvent event) {
+        MapperModel model = getMapperModel();
+        MapperContext context = getMapper().getContext();
+        
+        if (model == null || context == null) {
+            return null;
+        }
+        
+        TreePath treePath = getPathForLocation(event.getX(), event.getY());
+        if (treePath == null) {
+            return null;
+        }
+        
+        Object value = treePath.getLastPathComponent();
+        if (value == null) {
+            return null;
+        }
+        
+        return context.getLeftToolTipText(model, value);
+    }
+    
+
+    public int yToMapper(int y) {
+        for (Component c = this; c != mapper; c = c.getParent()) {
+            y += c.getY();
+        }
+
+        return y;
+    }
+
+    public int yFromMapper(int y) {
+        for (Component c = this; c != mapper; c = c.getParent()) {
+            y -= c.getY();
+        }
+
+        return y;
+    }
+ 
+    public int getCenterY(TreePath treePath) {
+        Rectangle bounds = getRowBounds(getRowForPath(treePath));
+
+        while (bounds == null) {
+            treePath = treePath.getParentPath();
+            bounds = getRowBounds(getRowForPath(treePath));
+        }
+
+        return bounds.y + bounds.height / 2;
+    }
+
+    public JScrollPane getScrollPane() {
+        return scrollPane;
+    }
+
+    public JComponent getView() {
+        return scrollPaneWrapper;
+    }
+
+    public Mapper getMapper() {
+        return mapper;
+    }
+
+    MapperNode getRoot() {
+        return mapper.getRoot();
+    }
+
+    MapperModel getMapperModel() {
+        return mapper.getModel();
+    }
+
+    public Dimension getPreferredSize() {
+        Dimension size = super.getPreferredSize();
+        size.width += mapper.getStepSize();
+        return size;
+    }
+
+    public void paintComponent(Graphics g) {
+        super.paintComponent(g);
+
+        Set<TreePath> edgeTreePathes = getConnectedTreePathes();
+
+        if (!edgeTreePathes.isEmpty()) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setPaint(MapperStyle.LINK_COLOR_SELECTED_NODE);
+            
+            Object[][] edgePathes = new Object[edgeTreePathes.size()][];
+
+            int x2 = getWidth() - 1;
+
+            int edgePathIndex = 0;
+
+            for (TreePath edgeTreePath : edgeTreePathes) {
+                edgePathes[edgePathIndex++] = edgeTreePath.getPath();
+            }
+
+            int rowCount = getRowCount();
+
+            for (int row = 0; row < rowCount; row++) {
+                int connectedEdges = connectedEdges(row, getPathForRow(row),
+                        edgeTreePathes, edgePathes);
+
+                if (connectedEdges != 0) {
+                    Rectangle rowBounds = getRowBounds(row);
+
+                    int x1 = rowBounds.x + rowBounds.width;
+                    int y = rowBounds.y + rowBounds.height / 2;
+
+                    if (connectedEdges >= 2) {
+                        Stroke oldStroke = g2.getStroke();
+                        g2.setStroke(Mapper.DASHED_STROKE);
+                        g2.drawLine(x1, y, x2, y);
+                        g2.setStroke(oldStroke);
+                    } else {
+                        g2.drawLine(x1, y, x2, y);
+                    }
+                }
+            }
+
+            g2.dispose();
+        }
+
+        getMapper().getLinkTool().paintLeftTree(this, g);
+    }
+
+    private int connectedEdges(int row, TreePath treePath,
+            Set<TreePath> edgeTreePathes, Object[][] edgePathes) {
+        if (getModel().isLeaf(treePath.getLastPathComponent()) || isExpanded(row)) {
+            return (edgeTreePathes.contains(treePath)) ? EDGE_CONNECTED : 0;
+        }
+
+        int result = 0;
+        int treePathLength = treePath.getPathCount();
+
+        for (int i = edgePathes.length - 1; i >= 0; i--) {
+            if (pathStartsWith(edgePathes[i], treePath, treePathLength)) {
+                result |= (edgePathes[i].length == treePathLength)
+                        ? EDGE_CONNECTED
+                        : EDGE_CONNECTED_TO_CHILD;
+            }
+
+            if (result == 3) {
+                return 3;
+            }
+        }
+
+        return result;
+    }
+
+    private boolean pathStartsWith(Object[] path, TreePath treePath,
+            int treePathLength) {
+        int pathLength = path.length;
+
+        if (pathLength < treePathLength) {
+            return false;
+        }
+
+        for (int j = treePathLength - 1; j >= 0; j--) {
+            if (treePath.getLastPathComponent() != path[j]) {
+                return false;
+            }
+
+            treePath = treePath.getParentPath();
+        }
+
+        return true;
+    }
+
+    private Set<TreePath> getConnectedTreePathes() {
+        MapperNode root = getRoot();
+        MapperModel model = getMapperModel();
+
+        Set<TreePath> treePathes = new HashSet<TreePath>();
+
+        if (root != null && model != null) {
+            Set<Graph> connectedGraphs = getRoot().getChildGraphs();
+
+            Graph rootGraph = getRoot().getGraph();
+            if (rootGraph != null) {
+                connectedGraphs.add(rootGraph);
+            }
+
+            if (connectedGraphs != null) {
+                List<Link> edges = new ArrayList<Link>();
+
+                for (Graph graph : connectedGraphs) {
+                    graph.getIngoingLinks(edges);
+
+                    for (int j = edges.size() - 1; j >= 0; j--) {
+                        Link edge = edges.get(j);
+                        TreePath treePath = ((TreeSourcePin) edge.getSource()).getTreePath();
+                        treePathes.add(treePath);
+                    }
+
+                    edges.clear();
+                }
+            }
+        }
+
+        return treePathes;
+    }
+
+    public void adjustmentValueChanged(AdjustmentEvent e) {
+        mapper.getCanvas().repaint();
+    }
+
+    public void treeExpanded(TreeExpansionEvent event) {
+        mapper.getCanvas().repaint();
+    }
+
+    public void treeCollapsed(TreeExpansionEvent event) {
+        mapper.getCanvas().repaint();
+    }
+
+    public String convertValueToText(Object value, boolean selected,
+            boolean expanded, boolean leaf, int row,
+            boolean hasFocus) {
+        MapperContext context = mapper.getContext();
+        MapperModel model = mapper.getModel();
+
+        if (value == null || context == null || model == null) {
+            return super.convertValueToText(value, selected, expanded, leaf, row, hasFocus);
+        }
+        return context.getLeftDysplayText(model, value);
+    }
+
+    public Insets getAutoscrollInsets() {
+        Rectangle rect = scrollPane.getViewport().getViewRect();
+        return new Insets(rect.y + 16, rect.x + 16,
+                getHeight() - rect.y - rect.height + 16,
+                getWidth() - rect.x - rect.width + 16);
+    }
+
+    public void autoscroll(Point cursorLocn) {
+
+        if (scrollPane.getViewport() == null) {
+            return;
+        }
+
+        Insets insets = getAutoscrollInsets();
+
+        Rectangle r = new Rectangle(cursorLocn.x, cursorLocn.y, 1, 1);
+        if (cursorLocn.y > getHeight() - insets.bottom) {
+            r.y = getHeight() - insets.bottom + 16 +
+                    2 * scrollPane.getVerticalScrollBar().getUnitIncrement();
+        }
+        if (cursorLocn.y < insets.top) {
+             r.y = insets.top - 16 -
+                   2 * scrollPane.getVerticalScrollBar().getUnitIncrement();
+        }
+        if (cursorLocn.x > getWidth() - insets.right) {
+            r.x = getWidth() - insets.right + 16 + 
+                   2 * scrollPane.getHorizontalScrollBar().getUnitIncrement();
+        }
+        if (cursorLocn.x < insets.left) {
+            r.x = insets.left - 16 -
+                   2 * scrollPane.getHorizontalScrollBar().getUnitIncrement();
+        }
+        scrollRectToVisible(r);
+    }
+    private static final int EDGE_CONNECTED = 1;
+    private static final int EDGE_CONNECTED_TO_CHILD = 2;
+}
