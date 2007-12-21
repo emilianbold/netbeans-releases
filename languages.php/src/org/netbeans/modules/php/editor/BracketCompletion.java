@@ -166,14 +166,14 @@ class BracketCompletion {
             char ch) {
         Token tokenAtDot = TokenUtils.getPhpToken(doc, dotPos);
 
-        if (TokenUtils.LBRACKET.equals(ch)) {
+        if (TokenUtils.LBRACKET.equals(""+ch)) {
             if ( isTokenTextEquals(tokenAtDot, TokenUtils.RBRACKET) 
                  && !isBalanced(doc, TokenUtils.LBRACKET, TokenUtils.RBRACKET)) 
             {
                 return true;
             }
         } 
-        else if (TokenUtils.LPAREN.equals(ch)) {
+        else if (TokenUtils.LPAREN.equals(""+ch)) {
             if ( isTokenTextEquals(tokenAtDot, TokenUtils.RPAREN) 
                  && !isBalanced(doc, TokenUtils.LPAREN, TokenUtils.RPAREN)) 
             {
