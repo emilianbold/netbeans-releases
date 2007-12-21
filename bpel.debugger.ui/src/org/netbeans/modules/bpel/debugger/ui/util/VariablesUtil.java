@@ -727,8 +727,6 @@ public class VariablesUtil {
             return;
         }
         
-        object.setNodeValue(value);
-        
         final XmlElementValue xmlValue = XmlElementValue.Helper.find(object);
         final NamedValueHost valueHost = xmlValue.getValueHost();
         
@@ -748,6 +746,8 @@ public class VariablesUtil {
                         part, object, value);
             }
         }
+        
+        object.setNodeValue(value);
     }
     
     // Custom editor ///////////////////////////////////////////////////////////
