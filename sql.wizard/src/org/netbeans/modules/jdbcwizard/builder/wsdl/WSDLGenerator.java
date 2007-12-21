@@ -1,57 +1,21 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
-
-/*
- *                 Sun Public License Notice
- *
- * The contents of this file are subject to the Sun Public License
- * Version 1.0 (the "License"). You may not use this file except in
- * compliance with the License. A copy of the License is available at
- * http://www.sun.com/
- *
- * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
- * Microsystems, Inc. All Rights Reserved.
- */
-
 package org.netbeans.modules.jdbcwizard.builder.wsdl;
 
 import java.util.logging.Logger;
@@ -60,16 +24,12 @@ import java.util.List;
 import java.util.Iterator;
 import java.util.HashMap;
 
-
 import java.net.URL;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
 import java.io.Writer;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import java.io.PrintWriter;
 import javax.wsdl.factory.WSDLFactory;
 import javax.wsdl.xml.WSDLWriter;
 import javax.wsdl.xml.WSDLReader;
@@ -84,11 +44,6 @@ import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
@@ -104,9 +59,7 @@ import org.netbeans.modules.jdbcwizard.builder.model.OracleQueryGenerator;
 import org.netbeans.modules.jdbcwizard.builder.model.DB2QueryGenerator;
 import org.netbeans.modules.jdbcwizard.builder.model.SQLServerQueryGenerator;
 import org.netbeans.modules.jdbcwizard.builder.model.JdbcQueryGenerator;
-import org.netbeans.modules.jdbcwizard.builder.util.IOUtil;
 import org.netbeans.modules.jdbcwizard.builder.util.XMLCharUtil;
-import org.netbeans.modules.jdbcwizard.builder.xsd.XSDGenerator;
 
 
 public class WSDLGenerator {
@@ -145,38 +98,38 @@ public class WSDLGenerator {
     private static final String POLL_QUERY = "pollQuery";
     
 //  private static final String JDBC_SQL_ELEMENT = "jdbc:sql";
-	private static final String JDBC_SQL_ELEMENT = "jdbc:input";
+    private static final String JDBC_SQL_ELEMENT = "jdbc:input";
     private static final String SQL_ELEMENT = "sql";
     private static final String PARAM_ORDER = "paramOrder";
     private static final String JDBC_NAMESPACE = "http://schemas.sun.com/jbi/wsdl-extensions/jdbc/";
 
     private static final String SCHEMA_ELE="xsd:schema";
-    private static final String PRIMARYKEY_ATTR = "PKName";	
-	private static final String TRANSACTION  = "Transaction";	
-	private static final String MARK_COLUMN_VALUE = "MarkColumnValue";	
-	private static final String MARK_COLUMN_NAME = "MarkColumnName";	
-	private static final String POLL_POST_PROCESS = "PollingPostProcessing";	
-	private static final String TABLE_NAME = "TableName";
+    private static final String PRIMARYKEY_ATTR = "PKName"; 
+    private static final String TRANSACTION  = "Transaction";   
+    private static final String MARK_COLUMN_VALUE = "MarkColumnValue";  
+    private static final String MARK_COLUMN_NAME = "MarkColumnName";    
+    private static final String POLL_POST_PROCESS = "PollingPostProcessing";    
+    private static final String TABLE_NAME = "TableName";
 
-	private static final String NUMNBER_OF_RECORDS = "numberOfRecords";
-	private static final String MOVEROW_TABLE_NAME ="MoveRowToTableName";
-	private static final String POLLMILLI_SECONDS = "PollMilliSeconds";
-	private static final String OPERATION_TYPE="operationType";
-	
- // private static final String FLAGCOL_ATTR = "FlagColumn";	
+    private static final String NUMNBER_OF_RECORDS = "numberOfRecords";
+    private static final String MOVEROW_TABLE_NAME ="MoveRowToTableName";
+    private static final String POLLMILLI_SECONDS = "PollMilliSeconds";
+    private static final String OPERATION_TYPE="operationType";
+    
+ // private static final String FLAGCOL_ATTR = "FlagColumn";    
     private static final String JNDI_NAME = "jndiname";
     private static final String JNDI_ADD_ELE = "jdbc:address";
     
     private static final String SERVICE_NAME = "Service";
     private static final String PORT_NAME = "Port";
-    	
+        
     private DBTable mTable;
     private String xsdTopEleName;
     private String xsdName;
     private static final String XSD_EXT = ".xsd";
     private String mDBType;
     private String mJNDIName;
-	private String mTableName = null;
+    private String mTableName = null;
 
     private DBConnectionDefinition dbinfo;
     
@@ -219,14 +172,14 @@ public class WSDLGenerator {
      *
      */
     public void setTopEleName(){
-    	this.xsdTopEleName = "ns:" +  XMLCharUtil.makeValidNCName(this.mTable.getName());
+        this.xsdTopEleName = "ns:" +  XMLCharUtil.makeValidNCName(this.mTable.getName());
     }
     /**
      * 
      *
      */
     public void setXSDName(){
-    	this.xsdName = XMLCharUtil.makeValidNCName(this.mTable.getName()) + WSDLGenerator.XSD_EXT;
+        this.xsdName = XMLCharUtil.makeValidNCName(this.mTable.getName()) + WSDLGenerator.XSD_EXT;
     }
     
     public void setDBInfo(DBConnectionDefinition dbinfo){
@@ -287,7 +240,7 @@ public class WSDLGenerator {
         } catch (final IOException e) {
             WSDLGenerator.logger.log(Level.SEVERE, e.getMessage(), e);
         }catch(final Exception e){
-        	WSDLGenerator.logger.log(Level.SEVERE, e.getMessage(), e);
+            WSDLGenerator.logger.log(Level.SEVERE, e.getMessage(), e);
         }
         return this.def;
     }
@@ -301,7 +254,7 @@ public class WSDLGenerator {
         this.modifyName();
         this.modifyTargetNamespace();
         this.modifySchEle();
-        this.modiyMessageEles();	
+        this.modiyMessageEles();    
         this.modifyBindings();
         this.modifyServiceAndPortNames();
         this.modifyJNDIAddress();
@@ -314,9 +267,9 @@ public class WSDLGenerator {
         /* QName q = this.def.getQName();
         q = new QName(q.getNamespaceURI(), this.mWSDLFileName);
         this.def.setQName(q); */
-    	Element rootEle = this.doc.getDocumentElement();
-    	Attr attr = rootEle.getAttributeNode(NAME);
-		attr.setNodeValue(this.mWSDLFileName);
+        Element rootEle = this.doc.getDocumentElement();
+        Attr attr = rootEle.getAttributeNode(NAME);
+        attr.setNodeValue(this.mWSDLFileName);
     }
     
     /**
@@ -324,11 +277,11 @@ public class WSDLGenerator {
      *
      */
     private void modifyTargetNamespace() {
-    	Element rootEle = this.doc.getDocumentElement();
-    	Attr attr = rootEle.getAttributeNode(TARGET_NS);
-		attr.setNodeValue(TARGET_NS_PREFIX_STRING + this.mWSDLFileName);
-    	attr = rootEle.getAttributeNode(TNS_STRING);
-		attr.setNodeValue(TARGET_NS_PREFIX_STRING + this.mWSDLFileName);
+        Element rootEle = this.doc.getDocumentElement();
+        Attr attr = rootEle.getAttributeNode(TARGET_NS);
+        attr.setNodeValue(TARGET_NS_PREFIX_STRING + this.mWSDLFileName);
+        attr = rootEle.getAttributeNode(TNS_STRING);
+        attr.setNodeValue(TARGET_NS_PREFIX_STRING + this.mWSDLFileName);
     }
     
     /**
@@ -337,420 +290,420 @@ public class WSDLGenerator {
      * @throws Exception
      */
     public void modifySchEle() throws WSDLException, Exception{
-    	Element rootEle = this.doc.getDocumentElement();
-    	Element scheEle = null;
-    	final NodeList childNodes = rootEle.getElementsByTagName(WSDLGenerator.SCHEMA_ELE);
-		for (int i = 0; i < childNodes.getLength(); i++) {
-			final Node child = childNodes.item(i);
-			if (child instanceof Element) {
-				scheEle = (Element) child;
-				break;
-			}
-		}
-		//Change schema element targetnamespace
-		Attr attr = scheEle.getAttributeNode(WSDLGenerator.TARGET_NS);
-		attr.setNodeValue(WSDLGenerator.JDBC_NAMESPACE);
-		
-		Element importEle = null;
-		final NodeList childNodesTmp = rootEle.getElementsByTagName(WSDLGenerator.IMPORT_ELEMENT);
-		for (int i = 0; i < childNodesTmp.getLength(); i++) {
-			final Node childTmp = childNodesTmp.item(i);
-			if (childTmp instanceof Element) {
-				importEle = (Element) childTmp;
-				break;
-			}
-		}
-		//Change import element namespace and schemalocation
-		Attr attrimp = importEle.getAttributeNode(WSDLGenerator.NAMESPACE_ATTR);
-		attrimp.setNodeValue(WSDLGenerator.TARGETNAMESPACE);
-		Attr schloc = importEle.getAttributeNode(WSDLGenerator.SCHEMALOCATION_ATTR);
-		schloc.setNodeValue(this.xsdName);
-	}
+        Element rootEle = this.doc.getDocumentElement();
+        Element scheEle = null;
+        final NodeList childNodes = rootEle.getElementsByTagName(WSDLGenerator.SCHEMA_ELE);
+        for (int i = 0; i < childNodes.getLength(); i++) {
+            final Node child = childNodes.item(i);
+            if (child instanceof Element) {
+                scheEle = (Element) child;
+                break;
+            }
+        }
+        //Change schema element targetnamespace
+        Attr attr = scheEle.getAttributeNode(WSDLGenerator.TARGET_NS);
+        attr.setNodeValue(WSDLGenerator.JDBC_NAMESPACE);
+        
+        Element importEle = null;
+        final NodeList childNodesTmp = rootEle.getElementsByTagName(WSDLGenerator.IMPORT_ELEMENT);
+        for (int i = 0; i < childNodesTmp.getLength(); i++) {
+            final Node childTmp = childNodesTmp.item(i);
+            if (childTmp instanceof Element) {
+                importEle = (Element) childTmp;
+                break;
+            }
+        }
+        //Change import element namespace and schemalocation
+        Attr attrimp = importEle.getAttributeNode(WSDLGenerator.NAMESPACE_ATTR);
+        attrimp.setNodeValue(WSDLGenerator.TARGETNAMESPACE);
+        Attr schloc = importEle.getAttributeNode(WSDLGenerator.SCHEMALOCATION_ATTR);
+        schloc.setNodeValue(this.xsdName);
+    }
    public void modiyMessageEles()throws WSDLException, Exception{
-	   Element rootEle = this.doc.getDocumentElement();
-	   final Element inputMsgEle = this.getElementByName(rootEle, WSDLGenerator.INPUTMESSAGE_NAME);
-	   final NodeList partNodes = inputMsgEle.getChildNodes();
-	   Element partEle = null;
-	   for (int i = 0; i < partNodes.getLength(); i++) {
-	 		final Node child = partNodes.item(i);
-			if (child instanceof Element) {
-				partEle = (Element) child;
-				break;
-			}
-		}
-		Attr attrInput = partEle.getAttributeNode(WSDLGenerator.ELEMENT_ATTR);
-		attrInput.setNodeValue(this.xsdTopEleName);
-		
-		Element partOutEle = null;
-		final Element outputMsgEle = this.getElementByName(rootEle, WSDLGenerator.OUTPUTMESSAGE_NAME);
-		final NodeList outPartNodes = outputMsgEle.getChildNodes();
-		for (int i = 0; i < outPartNodes.getLength(); i++) {
-			final Node child = outPartNodes.item(i);
-			if (child instanceof Element) {
-				partOutEle = (Element) child;
-				break;
-			}
-		}
-		Attr attroutput = partOutEle.getAttributeNode(WSDLGenerator.ELEMENT_ATTR);
-		attroutput.setNodeValue(this.xsdTopEleName);
-		this.def = this.reader.readWSDL(this.wsdlFileLocation, rootEle);
+       Element rootEle = this.doc.getDocumentElement();
+       final Element inputMsgEle = this.getElementByName(rootEle, WSDLGenerator.INPUTMESSAGE_NAME);
+       final NodeList partNodes = inputMsgEle.getChildNodes();
+       Element partEle = null;
+       for (int i = 0; i < partNodes.getLength(); i++) {
+            final Node child = partNodes.item(i);
+            if (child instanceof Element) {
+                partEle = (Element) child;
+                break;
+            }
+        }
+        Attr attrInput = partEle.getAttributeNode(WSDLGenerator.ELEMENT_ATTR);
+        attrInput.setNodeValue(this.xsdTopEleName);
+        
+        Element partOutEle = null;
+        final Element outputMsgEle = this.getElementByName(rootEle, WSDLGenerator.OUTPUTMESSAGE_NAME);
+        final NodeList outPartNodes = outputMsgEle.getChildNodes();
+        for (int i = 0; i < outPartNodes.getLength(); i++) {
+            final Node child = outPartNodes.item(i);
+            if (child instanceof Element) {
+                partOutEle = (Element) child;
+                break;
+            }
+        }
+        Attr attroutput = partOutEle.getAttributeNode(WSDLGenerator.ELEMENT_ATTR);
+        attroutput.setNodeValue(this.xsdTopEleName);
+        this.def = this.reader.readWSDL(this.wsdlFileLocation, rootEle);
    }
-	/**
-	 * 
-	 * @throws WSDLException
-	 */
-	public void modifyBindings() throws Exception {
-		try {
-			String insertQuery = null;
-			String updateQuery = null;
-			String deleteQuery = null;
-			String findQuery = null;
-			String poolQuery = null;
+    /**
+     * 
+     * @throws WSDLException
+     */
+    public void modifyBindings() throws Exception {
+        try {
+            String insertQuery = null;
+            String updateQuery = null;
+            String deleteQuery = null;
+            String findQuery = null;
+            String poolQuery = null;
 
-			this.dbDataAccessObject = this.getQueryGenerator();
-			this.dbDataAccessObject.init(this.mTable);
+            this.dbDataAccessObject = this.getQueryGenerator();
+            this.dbDataAccessObject.init(this.mTable);
 
-			this.mTableName = this.mTable.getSchema()+"."+this.mTable.getName();
+            this.mTableName = this.mTable.getSchema()+"."+this.mTable.getName();
 
-			// Generate Queries
-			insertQuery = this.dbDataAccessObject.createInsertQuery();
-			updateQuery = this.dbDataAccessObject.createUpdateQuery();
-			deleteQuery = this.dbDataAccessObject.createDeleteQuery();
-			findQuery = this.dbDataAccessObject.createFindQuery();
-			poolQuery = this.dbDataAccessObject.createPoolQuery();
+            // Generate Queries
+            insertQuery = this.dbDataAccessObject.createInsertQuery();
+            updateQuery = this.dbDataAccessObject.createUpdateQuery();
+            deleteQuery = this.dbDataAccessObject.createDeleteQuery();
+            findQuery = this.dbDataAccessObject.createFindQuery();
+            poolQuery = this.dbDataAccessObject.createPoolQuery();
 
-			this.modifyInsert(this.dbDataAccessObject, insertQuery);
-			this.modifyUpdate(this.dbDataAccessObject, updateQuery);
-			this.modifyDelete(this.dbDataAccessObject, deleteQuery);
-			this.modifyFind(this.dbDataAccessObject, findQuery);
-			this.modifyPoll(this.dbDataAccessObject, poolQuery);
-		} catch (final Exception e) {
-			throw new WSDLException(WSDLException.OTHER_ERROR,
-					"Could not generate the WSDL");
-		}
-	}
-	/**
-	 * 
-	 * @param dao
-	 * @param query
-	 * @throws WSDLException
-	 * @throws Exception
-	 */
-	public void modifyInsert(final DBQueryModel dao, final String query)
-			throws WSDLException, Exception {
-		try {
-			String primaryKey = null;
-			final Element rootEle = this.doc.getDocumentElement();
+            this.modifyInsert(this.dbDataAccessObject, insertQuery);
+            this.modifyUpdate(this.dbDataAccessObject, updateQuery);
+            this.modifyDelete(this.dbDataAccessObject, deleteQuery);
+            this.modifyFind(this.dbDataAccessObject, findQuery);
+            this.modifyPoll(this.dbDataAccessObject, poolQuery);
+        } catch (final Exception e) {
+            throw new WSDLException(WSDLException.OTHER_ERROR,
+                    "Could not generate the WSDL");
+        }
+    }
+    /**
+     * 
+     * @param dao
+     * @param query
+     * @throws WSDLException
+     * @throws Exception
+     */
+    public void modifyInsert(final DBQueryModel dao, final String query)
+            throws WSDLException, Exception {
+        try {
+            String primaryKey = null;
+            final Element rootEle = this.doc.getDocumentElement();
 
-			final Element insSqlEle = this.getElementBySQL(rootEle,
-					WSDLGenerator.INSERT_QUERY);
-			primaryKey = dao.getPrimaryKey();
+            final Element insSqlEle = this.getElementBySQL(rootEle,
+                    WSDLGenerator.INSERT_QUERY);
+            primaryKey = dao.getPrimaryKey();
 
-			Attr optType = insSqlEle
-					.getAttributeNode(WSDLGenerator.OPERATION_TYPE);
-			optType.setNodeValue("insert");
+            Attr optType = insSqlEle
+                    .getAttributeNode(WSDLGenerator.OPERATION_TYPE);
+            optType.setNodeValue("insert");
 
-			Attr attrParamOrder = insSqlEle
-					.getAttributeNode(WSDLGenerator.PARAM_ORDER);
-			attrParamOrder.setNodeValue(dao
-					.getParamOrder(WSDLGenerator.INSERT_QUERY));
+            Attr attrParamOrder = insSqlEle
+                    .getAttributeNode(WSDLGenerator.PARAM_ORDER);
+            attrParamOrder.setNodeValue(dao
+                    .getParamOrder(WSDLGenerator.INSERT_QUERY));
 
-			Attr attrSqlEle = insSqlEle
-					.getAttributeNode(WSDLGenerator.SQL_ELEMENT);
-			attrSqlEle.setNodeValue(query);
+            Attr attrSqlEle = insSqlEle
+                    .getAttributeNode(WSDLGenerator.SQL_ELEMENT);
+            attrSqlEle.setNodeValue(query);
 
-			Attr attrPrmKey = insSqlEle
-					.getAttributeNode(WSDLGenerator.PRIMARYKEY_ATTR);
-			attrPrmKey.setNodeValue(primaryKey);
+            Attr attrPrmKey = insSqlEle
+                    .getAttributeNode(WSDLGenerator.PRIMARYKEY_ATTR);
+            attrPrmKey.setNodeValue(primaryKey);
 
-			Attr attrTrans = insSqlEle
-					.getAttributeNode(WSDLGenerator.TRANSACTION);
-			attrTrans.setNodeValue("NOTransaction");
+            Attr attrTrans = insSqlEle
+                    .getAttributeNode(WSDLGenerator.TRANSACTION);
+            attrTrans.setNodeValue("NOTransaction");
 
-			Attr attrTableName = insSqlEle
-					.getAttributeNode(WSDLGenerator.TABLE_NAME);
-			attrTableName.setNodeValue(this.mTableName);
+            Attr attrTableName = insSqlEle
+                    .getAttributeNode(WSDLGenerator.TABLE_NAME);
+            attrTableName.setNodeValue(this.mTableName);
 
-			Attr attrNumOfRecs = insSqlEle
-					.getAttributeNode(WSDLGenerator.NUMNBER_OF_RECORDS);
-			attrNumOfRecs.setNodeValue("");
+            Attr attrNumOfRecs = insSqlEle
+                    .getAttributeNode(WSDLGenerator.NUMNBER_OF_RECORDS);
+            attrNumOfRecs.setNodeValue("");
 
-			Attr attrMarkColVal = insSqlEle
-					.getAttributeNode(WSDLGenerator.MARK_COLUMN_VALUE);
-			attrMarkColVal.setNodeValue("");
+            Attr attrMarkColVal = insSqlEle
+                    .getAttributeNode(WSDLGenerator.MARK_COLUMN_VALUE);
+            attrMarkColVal.setNodeValue("");
 
-			Attr attrMovRowname = insSqlEle
-					.getAttributeNode(WSDLGenerator.MOVEROW_TABLE_NAME);
-			attrMovRowname.setNodeValue("");
+            Attr attrMovRowname = insSqlEle
+                    .getAttributeNode(WSDLGenerator.MOVEROW_TABLE_NAME);
+            attrMovRowname.setNodeValue("");
 
-			Attr attrMarkColName = insSqlEle
-					.getAttributeNode(WSDLGenerator.MARK_COLUMN_NAME);
-			attrMarkColName.setNodeValue("");
+            Attr attrMarkColName = insSqlEle
+                    .getAttributeNode(WSDLGenerator.MARK_COLUMN_NAME);
+            attrMarkColName.setNodeValue("");
 
-			Attr attrPollMilli = insSqlEle
-					.getAttributeNode(WSDLGenerator.POLLMILLI_SECONDS);
-			attrPollMilli.setNodeValue("5000");
-		} catch (final Exception e) {
-			throw new WSDLException(WSDLException.OTHER_ERROR,
-					"Could not generate the WSDL");
-		}
-	}
-	/**
-	 * 
-	 * @param dao
-	 * @param query
-	 * @throws WSDLException
-	 * @throws Exception
-	 */
-	public void modifyUpdate(final DBQueryModel dao, final String query) throws WSDLException, Exception {
-		try {
-			String primaryKey = null;
-			final Element rootEle = this.doc.getDocumentElement();
+            Attr attrPollMilli = insSqlEle
+                    .getAttributeNode(WSDLGenerator.POLLMILLI_SECONDS);
+            attrPollMilli.setNodeValue("5000");
+        } catch (final Exception e) {
+            throw new WSDLException(WSDLException.OTHER_ERROR,
+                    "Could not generate the WSDL");
+        }
+    }
+    /**
+     * 
+     * @param dao
+     * @param query
+     * @throws WSDLException
+     * @throws Exception
+     */
+    public void modifyUpdate(final DBQueryModel dao, final String query) throws WSDLException, Exception {
+        try {
+            String primaryKey = null;
+            final Element rootEle = this.doc.getDocumentElement();
 
-			final Element updateSqlEle = this.getElementBySQL(rootEle, WSDLGenerator.UPDATE_QUERY);
-			primaryKey = dao.getPrimaryKey();
-			
-			Attr optType = updateSqlEle
-			.getAttributeNode(WSDLGenerator.OPERATION_TYPE);
-			optType.setNodeValue("update");
-		
-			Attr attrParamOrder = updateSqlEle
-					.getAttributeNode(WSDLGenerator.PARAM_ORDER);
-			attrParamOrder.setNodeValue(dao.getParamOrder(WSDLGenerator.UPDATE_QUERY));
+            final Element updateSqlEle = this.getElementBySQL(rootEle, WSDLGenerator.UPDATE_QUERY);
+            primaryKey = dao.getPrimaryKey();
+            
+            Attr optType = updateSqlEle
+            .getAttributeNode(WSDLGenerator.OPERATION_TYPE);
+            optType.setNodeValue("update");
+        
+            Attr attrParamOrder = updateSqlEle
+                    .getAttributeNode(WSDLGenerator.PARAM_ORDER);
+            attrParamOrder.setNodeValue(dao.getParamOrder(WSDLGenerator.UPDATE_QUERY));
 
-			Attr attrSqlEle = updateSqlEle
-					.getAttributeNode(WSDLGenerator.SQL_ELEMENT);
-			attrSqlEle.setNodeValue(query);
-		
-			Attr attrPrmKey = updateSqlEle
-					.getAttributeNode(WSDLGenerator.PRIMARYKEY_ATTR);
-			attrPrmKey.setNodeValue(primaryKey);
-		
-			Attr attrTrans = updateSqlEle
-					.getAttributeNode(WSDLGenerator.TRANSACTION);
-			attrTrans.setNodeValue("NOTransaction");
-		
-			Attr attrTableName = updateSqlEle
-					.getAttributeNode(WSDLGenerator.TABLE_NAME);
-			attrTableName.setNodeValue(this.mTableName);
-		
-			Attr attrNumOfRecs = updateSqlEle
-					.getAttributeNode(WSDLGenerator.NUMNBER_OF_RECORDS);
-			attrNumOfRecs.setNodeValue("");
-		
-			Attr attrMarkColVal = updateSqlEle
-					.getAttributeNode(WSDLGenerator.MARK_COLUMN_VALUE);
-			attrMarkColVal.setNodeValue("");
-		
-			Attr attrMovRowname = updateSqlEle
-					.getAttributeNode(WSDLGenerator.MOVEROW_TABLE_NAME);
-			attrMovRowname.setNodeValue("");
-		
-			Attr attrMarkColName = updateSqlEle
-					.getAttributeNode(WSDLGenerator.MARK_COLUMN_NAME);
-			attrMarkColName.setNodeValue("");
-		
-			Attr attrPollMilli = updateSqlEle
-					.getAttributeNode(WSDLGenerator.POLLMILLI_SECONDS);
-			attrPollMilli.setNodeValue("5000");
-		} catch (final Exception e) {
-			throw new WSDLException(WSDLException.OTHER_ERROR,
-					"Could not generate the WSDL");
-		}
-	}
-	/**
-	 * 
-	 * @param dao
-	 * @param query
-	 * @throws WSDLException
-	 * @throws Exception
-	 */
-	public void modifyDelete(final DBQueryModel dao, final String query) throws WSDLException, Exception {
-		try {
-			String primaryKey = null;
-			final Element rootEle = this.doc.getDocumentElement();
+            Attr attrSqlEle = updateSqlEle
+                    .getAttributeNode(WSDLGenerator.SQL_ELEMENT);
+            attrSqlEle.setNodeValue(query);
+        
+            Attr attrPrmKey = updateSqlEle
+                    .getAttributeNode(WSDLGenerator.PRIMARYKEY_ATTR);
+            attrPrmKey.setNodeValue(primaryKey);
+        
+            Attr attrTrans = updateSqlEle
+                    .getAttributeNode(WSDLGenerator.TRANSACTION);
+            attrTrans.setNodeValue("NOTransaction");
+        
+            Attr attrTableName = updateSqlEle
+                    .getAttributeNode(WSDLGenerator.TABLE_NAME);
+            attrTableName.setNodeValue(this.mTableName);
+        
+            Attr attrNumOfRecs = updateSqlEle
+                    .getAttributeNode(WSDLGenerator.NUMNBER_OF_RECORDS);
+            attrNumOfRecs.setNodeValue("");
+        
+            Attr attrMarkColVal = updateSqlEle
+                    .getAttributeNode(WSDLGenerator.MARK_COLUMN_VALUE);
+            attrMarkColVal.setNodeValue("");
+        
+            Attr attrMovRowname = updateSqlEle
+                    .getAttributeNode(WSDLGenerator.MOVEROW_TABLE_NAME);
+            attrMovRowname.setNodeValue("");
+        
+            Attr attrMarkColName = updateSqlEle
+                    .getAttributeNode(WSDLGenerator.MARK_COLUMN_NAME);
+            attrMarkColName.setNodeValue("");
+        
+            Attr attrPollMilli = updateSqlEle
+                    .getAttributeNode(WSDLGenerator.POLLMILLI_SECONDS);
+            attrPollMilli.setNodeValue("5000");
+        } catch (final Exception e) {
+            throw new WSDLException(WSDLException.OTHER_ERROR,
+                    "Could not generate the WSDL");
+        }
+    }
+    /**
+     * 
+     * @param dao
+     * @param query
+     * @throws WSDLException
+     * @throws Exception
+     */
+    public void modifyDelete(final DBQueryModel dao, final String query) throws WSDLException, Exception {
+        try {
+            String primaryKey = null;
+            final Element rootEle = this.doc.getDocumentElement();
 
-			final Element delSqlEle = this.getElementBySQL(rootEle, WSDLGenerator.DELETE_QUERY);
-			primaryKey = dao.getPrimaryKey();
-			
-			Attr optType = delSqlEle
-			.getAttributeNode(WSDLGenerator.OPERATION_TYPE);
-			optType.setNodeValue("delete");
-		
-			Attr attrParamOrder = delSqlEle
-					.getAttributeNode(WSDLGenerator.PARAM_ORDER);
-			attrParamOrder.setNodeValue("");
+            final Element delSqlEle = this.getElementBySQL(rootEle, WSDLGenerator.DELETE_QUERY);
+            primaryKey = dao.getPrimaryKey();
+            
+            Attr optType = delSqlEle
+            .getAttributeNode(WSDLGenerator.OPERATION_TYPE);
+            optType.setNodeValue("delete");
+        
+            Attr attrParamOrder = delSqlEle
+                    .getAttributeNode(WSDLGenerator.PARAM_ORDER);
+            attrParamOrder.setNodeValue("");
 
-			Attr attrSqlEle = delSqlEle
-					.getAttributeNode(WSDLGenerator.SQL_ELEMENT);
-			attrSqlEle.setNodeValue(query);
-		
-			Attr attrPrmKey = delSqlEle
-					.getAttributeNode(WSDLGenerator.PRIMARYKEY_ATTR);
-			attrPrmKey.setNodeValue(primaryKey);
-		
-			Attr attrTrans = delSqlEle
-					.getAttributeNode(WSDLGenerator.TRANSACTION);
-			attrTrans.setNodeValue("NOTransaction");
-		
-			Attr attrTableName = delSqlEle
-					.getAttributeNode(WSDLGenerator.TABLE_NAME);
-			attrTableName.setNodeValue(this.mTableName);
-		
-			Attr attrNumOfRecs = delSqlEle
-					.getAttributeNode(WSDLGenerator.NUMNBER_OF_RECORDS);
-			attrNumOfRecs.setNodeValue("");
-		
-			Attr attrMarkColVal = delSqlEle
-					.getAttributeNode(WSDLGenerator.MARK_COLUMN_VALUE);
-			attrMarkColVal.setNodeValue("");
-		
-			Attr attrMovRowname = delSqlEle
-					.getAttributeNode(WSDLGenerator.MOVEROW_TABLE_NAME);
-			attrMovRowname.setNodeValue("");
-		
-			Attr attrMarkColName = delSqlEle
-					.getAttributeNode(WSDLGenerator.MARK_COLUMN_NAME);
-			attrMarkColName.setNodeValue("");
-		
-			Attr attrPollMilli = delSqlEle
-					.getAttributeNode(WSDLGenerator.POLLMILLI_SECONDS);
-			attrPollMilli.setNodeValue("5000");
-		} catch (final Exception e) {
-			throw new WSDLException(WSDLException.OTHER_ERROR,
-					"Could not generate the WSDL");
-		}
-	}
-	/**
-	 * 
-	 * @param dao
-	 * @param query
-	 * @throws WSDLException
-	 * @throws Exception
-	 */
-	public void modifyFind(final DBQueryModel dao, final String query) throws WSDLException, Exception {
-		try {
-			String primaryKey = null;
-			final Element rootEle = this.doc.getDocumentElement();
-			final Element findSqlEle = this.getElementBySQL(rootEle, WSDLGenerator.FIND_QUERY);
-			primaryKey = dao.getPrimaryKey();
+            Attr attrSqlEle = delSqlEle
+                    .getAttributeNode(WSDLGenerator.SQL_ELEMENT);
+            attrSqlEle.setNodeValue(query);
+        
+            Attr attrPrmKey = delSqlEle
+                    .getAttributeNode(WSDLGenerator.PRIMARYKEY_ATTR);
+            attrPrmKey.setNodeValue(primaryKey);
+        
+            Attr attrTrans = delSqlEle
+                    .getAttributeNode(WSDLGenerator.TRANSACTION);
+            attrTrans.setNodeValue("NOTransaction");
+        
+            Attr attrTableName = delSqlEle
+                    .getAttributeNode(WSDLGenerator.TABLE_NAME);
+            attrTableName.setNodeValue(this.mTableName);
+        
+            Attr attrNumOfRecs = delSqlEle
+                    .getAttributeNode(WSDLGenerator.NUMNBER_OF_RECORDS);
+            attrNumOfRecs.setNodeValue("");
+        
+            Attr attrMarkColVal = delSqlEle
+                    .getAttributeNode(WSDLGenerator.MARK_COLUMN_VALUE);
+            attrMarkColVal.setNodeValue("");
+        
+            Attr attrMovRowname = delSqlEle
+                    .getAttributeNode(WSDLGenerator.MOVEROW_TABLE_NAME);
+            attrMovRowname.setNodeValue("");
+        
+            Attr attrMarkColName = delSqlEle
+                    .getAttributeNode(WSDLGenerator.MARK_COLUMN_NAME);
+            attrMarkColName.setNodeValue("");
+        
+            Attr attrPollMilli = delSqlEle
+                    .getAttributeNode(WSDLGenerator.POLLMILLI_SECONDS);
+            attrPollMilli.setNodeValue("5000");
+        } catch (final Exception e) {
+            throw new WSDLException(WSDLException.OTHER_ERROR,
+                    "Could not generate the WSDL");
+        }
+    }
+    /**
+     * 
+     * @param dao
+     * @param query
+     * @throws WSDLException
+     * @throws Exception
+     */
+    public void modifyFind(final DBQueryModel dao, final String query) throws WSDLException, Exception {
+        try {
+            String primaryKey = null;
+            final Element rootEle = this.doc.getDocumentElement();
+            final Element findSqlEle = this.getElementBySQL(rootEle, WSDLGenerator.FIND_QUERY);
+            primaryKey = dao.getPrimaryKey();
 
-			Attr optType = findSqlEle
-			.getAttributeNode(WSDLGenerator.OPERATION_TYPE);
-			optType.setNodeValue("find");
-		
-			Attr attrParamOrder = findSqlEle
-					.getAttributeNode(WSDLGenerator.PARAM_ORDER);
-			attrParamOrder.setNodeValue("");
+            Attr optType = findSqlEle
+            .getAttributeNode(WSDLGenerator.OPERATION_TYPE);
+            optType.setNodeValue("find");
+        
+            Attr attrParamOrder = findSqlEle
+                    .getAttributeNode(WSDLGenerator.PARAM_ORDER);
+            attrParamOrder.setNodeValue("");
 
-			Attr attrSqlEle = findSqlEle
-					.getAttributeNode(WSDLGenerator.SQL_ELEMENT);
-			attrSqlEle.setNodeValue(query);
-		
-			Attr attrPrmKey = findSqlEle
-					.getAttributeNode(WSDLGenerator.PRIMARYKEY_ATTR);
-			attrPrmKey.setNodeValue(primaryKey);
-		
-			Attr attrTrans = findSqlEle
-					.getAttributeNode(WSDLGenerator.TRANSACTION);
-			attrTrans.setNodeValue("NOTransaction");
-		
-			Attr attrTableName = findSqlEle
-					.getAttributeNode(WSDLGenerator.TABLE_NAME);
-			attrTableName.setNodeValue(this.mTableName);
-		
-			Attr attrNumOfRecs = findSqlEle
-					.getAttributeNode(WSDLGenerator.NUMNBER_OF_RECORDS);
-			attrNumOfRecs.setNodeValue("");
-		
-			Attr attrMarkColVal = findSqlEle
-					.getAttributeNode(WSDLGenerator.MARK_COLUMN_VALUE);
-			attrMarkColVal.setNodeValue("");
-		
-			Attr attrMovRowname = findSqlEle
-					.getAttributeNode(WSDLGenerator.MOVEROW_TABLE_NAME);
-			attrMovRowname.setNodeValue("");
-		
-			Attr attrMarkColName = findSqlEle
-					.getAttributeNode(WSDLGenerator.MARK_COLUMN_NAME);
-			attrMarkColName.setNodeValue("");
-		
-			Attr attrPollMilli = findSqlEle
-					.getAttributeNode(WSDLGenerator.POLLMILLI_SECONDS);
-			attrPollMilli.setNodeValue("5000");
-		} catch (final Exception e) {
-			throw new WSDLException(WSDLException.OTHER_ERROR,
-					"Could not generate the WSDL");
-		}
-	}
-	/**
-	 * 
-	 * @param dao
-	 * @param query
-	 * @throws WSDLException
-	 * @throws Exception
-	 */
-	public void modifyPoll(final DBQueryModel dao, final String query) throws WSDLException, Exception {
-		try {
-			final Element rootEle = this.doc.getDocumentElement();
-			String primaryKey = null;
-			final Element poolSqlEle = this.getElementBySQL(rootEle, WSDLGenerator.POLL_QUERY);
-			
-			// Create sql element to replace
-			primaryKey = dao.getPrimaryKey();
-			
-			Attr optType = poolSqlEle
-			.getAttributeNode(WSDLGenerator.OPERATION_TYPE);
-			optType.setNodeValue("poll");
-		
-			Attr attrParamOrder = poolSqlEle
-					.getAttributeNode(WSDLGenerator.PARAM_ORDER);
-			attrParamOrder.setNodeValue("");
+            Attr attrSqlEle = findSqlEle
+                    .getAttributeNode(WSDLGenerator.SQL_ELEMENT);
+            attrSqlEle.setNodeValue(query);
+        
+            Attr attrPrmKey = findSqlEle
+                    .getAttributeNode(WSDLGenerator.PRIMARYKEY_ATTR);
+            attrPrmKey.setNodeValue(primaryKey);
+        
+            Attr attrTrans = findSqlEle
+                    .getAttributeNode(WSDLGenerator.TRANSACTION);
+            attrTrans.setNodeValue("NOTransaction");
+        
+            Attr attrTableName = findSqlEle
+                    .getAttributeNode(WSDLGenerator.TABLE_NAME);
+            attrTableName.setNodeValue(this.mTableName);
+        
+            Attr attrNumOfRecs = findSqlEle
+                    .getAttributeNode(WSDLGenerator.NUMNBER_OF_RECORDS);
+            attrNumOfRecs.setNodeValue("");
+        
+            Attr attrMarkColVal = findSqlEle
+                    .getAttributeNode(WSDLGenerator.MARK_COLUMN_VALUE);
+            attrMarkColVal.setNodeValue("");
+        
+            Attr attrMovRowname = findSqlEle
+                    .getAttributeNode(WSDLGenerator.MOVEROW_TABLE_NAME);
+            attrMovRowname.setNodeValue("");
+        
+            Attr attrMarkColName = findSqlEle
+                    .getAttributeNode(WSDLGenerator.MARK_COLUMN_NAME);
+            attrMarkColName.setNodeValue("");
+        
+            Attr attrPollMilli = findSqlEle
+                    .getAttributeNode(WSDLGenerator.POLLMILLI_SECONDS);
+            attrPollMilli.setNodeValue("5000");
+        } catch (final Exception e) {
+            throw new WSDLException(WSDLException.OTHER_ERROR,
+                    "Could not generate the WSDL");
+        }
+    }
+    /**
+     * 
+     * @param dao
+     * @param query
+     * @throws WSDLException
+     * @throws Exception
+     */
+    public void modifyPoll(final DBQueryModel dao, final String query) throws WSDLException, Exception {
+        try {
+            final Element rootEle = this.doc.getDocumentElement();
+            String primaryKey = null;
+            final Element poolSqlEle = this.getElementBySQL(rootEle, WSDLGenerator.POLL_QUERY);
+            
+            // Create sql element to replace
+            primaryKey = dao.getPrimaryKey();
+            
+            Attr optType = poolSqlEle
+            .getAttributeNode(WSDLGenerator.OPERATION_TYPE);
+            optType.setNodeValue("poll");
+        
+            Attr attrParamOrder = poolSqlEle
+                    .getAttributeNode(WSDLGenerator.PARAM_ORDER);
+            attrParamOrder.setNodeValue("");
 
-			Attr attrSqlEle = poolSqlEle
-					.getAttributeNode(WSDLGenerator.SQL_ELEMENT);
-			attrSqlEle.setNodeValue(query);
-		
-			Attr attrPrmKey = poolSqlEle
-					.getAttributeNode(WSDLGenerator.PRIMARYKEY_ATTR);
-			attrPrmKey.setNodeValue(primaryKey);
-		
-			Attr attrTrans = poolSqlEle
-					.getAttributeNode(WSDLGenerator.TRANSACTION);
-			attrTrans.setNodeValue("NOTransaction");
-		
-			Attr attrTableName = poolSqlEle
-					.getAttributeNode(WSDLGenerator.TABLE_NAME);
-			attrTableName.setNodeValue(this.mTableName);
-		
-			Attr attrNumOfRecs = poolSqlEle
-					.getAttributeNode(WSDLGenerator.NUMNBER_OF_RECORDS);
-			attrNumOfRecs.setNodeValue("");
-		
-			Attr attrMarkColVal = poolSqlEle
-					.getAttributeNode(WSDLGenerator.MARK_COLUMN_VALUE);
-			attrMarkColVal.setNodeValue("");
-		
-			Attr attrMovRowname = poolSqlEle
-					.getAttributeNode(WSDLGenerator.MOVEROW_TABLE_NAME);
-			attrMovRowname.setNodeValue("");
-		
-			Attr attrMarkColName = poolSqlEle
-					.getAttributeNode(WSDLGenerator.MARK_COLUMN_NAME);
-			attrMarkColName.setNodeValue("");
-			
-			Attr attrPollPost = poolSqlEle.getAttributeNode(WSDLGenerator.POLL_POST_PROCESS);
-			attrPollPost.setNodeValue("Delete");
-	
-			Attr attrPollMilli = poolSqlEle
-					.getAttributeNode(WSDLGenerator.POLLMILLI_SECONDS);
-			attrPollMilli.setNodeValue("5000");
-			
-		} catch (final Exception e) {
-			throw new WSDLException(WSDLException.OTHER_ERROR,
-					"Could not generate the WSDL");
-		}
-	}
+            Attr attrSqlEle = poolSqlEle
+                    .getAttributeNode(WSDLGenerator.SQL_ELEMENT);
+            attrSqlEle.setNodeValue(query);
+        
+            Attr attrPrmKey = poolSqlEle
+                    .getAttributeNode(WSDLGenerator.PRIMARYKEY_ATTR);
+            attrPrmKey.setNodeValue(primaryKey);
+        
+            Attr attrTrans = poolSqlEle
+                    .getAttributeNode(WSDLGenerator.TRANSACTION);
+            attrTrans.setNodeValue("NOTransaction");
+        
+            Attr attrTableName = poolSqlEle
+                    .getAttributeNode(WSDLGenerator.TABLE_NAME);
+            attrTableName.setNodeValue(this.mTableName);
+        
+            Attr attrNumOfRecs = poolSqlEle
+                    .getAttributeNode(WSDLGenerator.NUMNBER_OF_RECORDS);
+            attrNumOfRecs.setNodeValue("");
+        
+            Attr attrMarkColVal = poolSqlEle
+                    .getAttributeNode(WSDLGenerator.MARK_COLUMN_VALUE);
+            attrMarkColVal.setNodeValue("");
+        
+            Attr attrMovRowname = poolSqlEle
+                    .getAttributeNode(WSDLGenerator.MOVEROW_TABLE_NAME);
+            attrMovRowname.setNodeValue("");
+        
+            Attr attrMarkColName = poolSqlEle
+                    .getAttributeNode(WSDLGenerator.MARK_COLUMN_NAME);
+            attrMarkColName.setNodeValue("");
+            
+            Attr attrPollPost = poolSqlEle.getAttributeNode(WSDLGenerator.POLL_POST_PROCESS);
+            attrPollPost.setNodeValue("Delete");
+    
+            Attr attrPollMilli = poolSqlEle
+                    .getAttributeNode(WSDLGenerator.POLLMILLI_SECONDS);
+            attrPollMilli.setNodeValue("5000");
+            
+        } catch (final Exception e) {
+            throw new WSDLException(WSDLException.OTHER_ERROR,
+                    "Could not generate the WSDL");
+        }
+    }
     
     /**
      * @throws WSDLException
@@ -787,45 +740,45 @@ public class WSDLGenerator {
         }
     }
     
-	/**
-	 * 
-	 * @throws WSDLException
-	 * @throws Exception
-	 */
-	public void modifyJNDIAddress() throws WSDLException, Exception {
-		try {
-			final Element rootEle = this.doc.getDocumentElement();
-			final Element jndiEle = this.getElementByAddress(rootEle, WSDLGenerator.JNDI_NAME);
-			
-			Attr attrJndi = jndiEle.getAttributeNode("jndiName");
-			attrJndi.setNodeValue(this.mJNDIName);
-		} catch (final Exception e) {
-			throw new WSDLException(WSDLException.OTHER_ERROR,
-					"Could not generate the WSDL");
-		}
-	}
+    /**
+     * 
+     * @throws WSDLException
+     * @throws Exception
+     */
+    public void modifyJNDIAddress() throws WSDLException, Exception {
+        try {
+            final Element rootEle = this.doc.getDocumentElement();
+            final Element jndiEle = this.getElementByAddress(rootEle, WSDLGenerator.JNDI_NAME);
+            
+            Attr attrJndi = jndiEle.getAttributeNode("jndiName");
+            attrJndi.setNodeValue(this.mJNDIName);
+        } catch (final Exception e) {
+            throw new WSDLException(WSDLException.OTHER_ERROR,
+                    "Could not generate the WSDL");
+        }
+    }
     
    
-	/**
-	 * 
-	 * @return
-	 */
-	public DBQueryModel getQueryGenerator(){
-		DBQueryModel objDataAccess = null;
-		if(this.mDBType.equalsIgnoreCase("DERBY")){
-			objDataAccess = DerbyQueryGenerator.getInstance();
-		} else if (this.mDBType.equalsIgnoreCase("ORACLE")) {
-			objDataAccess = OracleQueryGenerator.getInstance();
-		} else if (this.mDBType.equalsIgnoreCase("DB2")) {
-			objDataAccess = DB2QueryGenerator.getInstance();
-		} else if (this.mDBType.equalsIgnoreCase("SQLServer")) {
-			objDataAccess = SQLServerQueryGenerator.getInstance();
-		}else {
-			objDataAccess = JdbcQueryGenerator.getInstance();
-		}
-		
-		return objDataAccess;
-	}
+    /**
+     * 
+     * @return
+     */
+    public DBQueryModel getQueryGenerator(){
+        DBQueryModel objDataAccess = null;
+        if(this.mDBType.equalsIgnoreCase("DERBY")){
+            objDataAccess = DerbyQueryGenerator.getInstance();
+        } else if (this.mDBType.equalsIgnoreCase("ORACLE")) {
+            objDataAccess = OracleQueryGenerator.getInstance();
+        } else if (this.mDBType.equalsIgnoreCase("DB2")) {
+            objDataAccess = DB2QueryGenerator.getInstance();
+        } else if (this.mDBType.equalsIgnoreCase("SQLServer")) {
+            objDataAccess = SQLServerQueryGenerator.getInstance();
+        }else {
+            objDataAccess = JdbcQueryGenerator.getInstance();
+        }
+        
+        return objDataAccess;
+    }
   
     /**
      * Helper method to return the Element with the name elementName from a 
@@ -835,34 +788,34 @@ public class WSDLGenerator {
      * @param elementName
      * @return
      */
-	  private Element getElementByName(final Element e, final String elementName) {
-	        if (e.getAttribute("name").equalsIgnoreCase(elementName)) {
-	            return e;
-	        }
-	        final NodeList list = e.getChildNodes();
-	        Element el = null;
-	        Element e2 = null;
-	        for (int i = 0; i < list.getLength(); i++) {
-	            if (e2 == null) {
-	                final Node n = list.item(i);
-	                if (n.getNodeType() == Node.ELEMENT_NODE) {
-	                    el = (Element) n;
-	                    if (el.getAttribute("name").equalsIgnoreCase(elementName)) {
-	                        e2 = el;
-	                        break;
-	                    } else {
-	                        e2 = this.getElementByName(el, elementName);
-	                        if (e2 != null && e2.getAttribute("name").equalsIgnoreCase(elementName)) {
-	                            return e2;
-	                        }
-	                    }
-	                }
-	            } else {
-	                break;
-	            }
-	        }
-	        return e2;
-	    }
+      private Element getElementByName(final Element e, final String elementName) {
+            if (e.getAttribute("name").equalsIgnoreCase(elementName)) {
+                return e;
+            }
+            final NodeList list = e.getChildNodes();
+            Element el = null;
+            Element e2 = null;
+            for (int i = 0; i < list.getLength(); i++) {
+                if (e2 == null) {
+                    final Node n = list.item(i);
+                    if (n.getNodeType() == Node.ELEMENT_NODE) {
+                        el = (Element) n;
+                        if (el.getAttribute("name").equalsIgnoreCase(elementName)) {
+                            e2 = el;
+                            break;
+                        } else {
+                            e2 = this.getElementByName(el, elementName);
+                            if (e2 != null && e2.getAttribute("name").equalsIgnoreCase(elementName)) {
+                                return e2;
+                            }
+                        }
+                    }
+                } else {
+                    break;
+                }
+            }
+            return e2;
+        }
     /**
      * 
      * @param e
@@ -941,39 +894,13 @@ public class WSDLGenerator {
     private void writeWsdl() throws WSDLException {
         try {
             final WSDLWriter writer = WSDLGenerator.factory.newWSDLWriter();
-            final String outputFileName = this.wsdlFileLocation + File.separator + this.mWSDLFileName + ".wsdl";
-            java.io.FileOutputStream fos = new java.io.FileOutputStream(outputFileName);
-            final Writer sink = new java.io.OutputStreamWriter(fos,"UTF-8");
+            final String outputFileName = this.wsdlFileLocation + "/" + this.mWSDLFileName + ".wsdl";
+            final Writer sink = new FileWriter(outputFileName);
             writer.writeWSDL(this.def, sink);
-            String str = IOUtil.getText(outputFileName,"UTF-8");
-    		StringBuffer sb = new StringBuffer(str);
-    		sb.replace(30,35,org.netbeans.modules.jdbcwizard.wizards.SimpleTargetChooserPanelGUI.encoding);
-    		str = sb.toString();
-    		byte[] buf = str.getBytes();
-    		File f = new File(outputFileName);
-    		OutputStream out = new FileOutputStream(f);
-    		out.write(buf, 0, buf.length);
-    		out.close();
-    		f = null;
-    		encodeXSD();
             WSDLGenerator.logger.log(Level.INFO, "Successfully generated wsdl file :" + outputFileName);
         } catch (final Exception e) {
             throw new WSDLException(WSDLException.OTHER_ERROR, e.getMessage());
         }
 
     }
-    
-    public void encodeXSD()throws Exception{
-        String str = IOUtil.getText(XSDGenerator.mFileName,"UTF-8");
-		StringBuffer sb = new StringBuffer(str);
-		sb.replace(30,35,org.netbeans.modules.jdbcwizard.wizards.SimpleTargetChooserPanelGUI.encoding);
-		str = sb.toString();
-		byte[] buf = str.getBytes();
-		File f = new File(XSDGenerator.mFileName);
-		OutputStream out = new FileOutputStream(f);
-		out.write(buf, 0, buf.length);
-		out.close();
-		f = null;
-    }
-    
 }

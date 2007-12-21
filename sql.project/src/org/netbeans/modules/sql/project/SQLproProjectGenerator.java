@@ -56,7 +56,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import java.nio.charset.Charset;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.openide.util.NbBundle;
 
 /**
  * Create a fresh EjbProject from scratch or by importing and exisitng web module 
@@ -165,12 +164,11 @@ public class SQLproProjectGenerator {
 
         //============= Start of IcanPro========================================//
         ep.setProperty(IcanproProjectProperties.JBI_SETYPE_PREFIX, "sun-sql-engine"); // NOI18N
-        ep.setProperty(IcanproProjectProperties.ASSEMBLY_UNIT_ALIAS, "This Service Assembly"); // NOI18N
-        ep.setProperty(IcanproProjectProperties.ASSEMBLY_UNIT_DESCRIPTION, "Represents this Service Assembly"); // NOI18N
-        ep.setProperty(IcanproProjectProperties.APPLICATION_SUB_ASSEMBLY_ALIAS, "This Service Unit"); // NOI18N
-        ep.setProperty(IcanproProjectProperties.APPLICATION_SUB_ASSEMBLY_DESCRIPTION, 
-			NbBundle.getMessage(SQLproProjectGenerator.class, "SERVICE_UNIT")); // NOI18N
-        ep.setProperty(IcanproProjectProperties.JBI_COMPONENT_CONF_ROOT, "nbproject/private");
+        ep.setProperty(IcanproProjectProperties.ASSEMBLY_UNIT_ALIAS, "This Assembly Unit"); // NOI18N
+        ep.setProperty(IcanproProjectProperties.ASSEMBLY_UNIT_DESCRIPTION, "Represents this Assembly Unit"); // NOI18N
+        ep.setProperty(IcanproProjectProperties.APPLICATION_SUB_ASSEMBLY_ALIAS, "This Application Sub-Assembly"); // NOI18N
+        ep.setProperty(IcanproProjectProperties.APPLICATION_SUB_ASSEMBLY_DESCRIPTION, "This represents the Application Sub-Assembly"); // NOI18N
+        ep.setProperty(IcanproProjectProperties.JBI_COMPONENT_CONF_ROOT, "nbproject/private"); // NOI18N
         ep.setProperty(IcanproProjectProperties.JBI_DEPLOYMENT_CONF_ROOT, "nbproject/deployment"); // NOI18N
 
         ep.setProperty(IcanproProjectProperties.BC_DEPLOYMENT_JAR, "${"+IcanproProjectProperties.BUILD_DIR+"}/" + "BCDeployment.jar");

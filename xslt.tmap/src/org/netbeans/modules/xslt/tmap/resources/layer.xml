@@ -57,7 +57,6 @@
         <folder name="MIMEResolver">
             <file name="TMapResolver.xml" url="TMapResolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.tmap.resources.Bundle"/>
-                <attr name="position" intvalue="270"/>
             </file>
         </folder>
     </folder>

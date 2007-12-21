@@ -1,3 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--this is the sqlse wsdl template file -->
 <definitions xmlns="http://schemas.xmlsoap.org/wsdl/"
 	xmlns:slnk="http://schemas.xmlsoap.org/ws/2002/07/service-link/"
 	xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"

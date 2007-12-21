@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.sql.project
 OpenIDE-Module-Layer: org/netbeans/modules/sql/project/ui/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/sql/project/ui/resources/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.2
+OpenIDE-Module-Specification-Version: 1.0
 AutoUpdate-Show-In-Client: false
 
 Name: org/netbeans/modules/sql/project/ui/SQLDataLoader.class

@@ -1,53 +1,31 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 /*
- *
+ * 
  * Copyright 2005 Sun Microsystems, Inc.
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  * 
- * 	http://www.apache.org/licenses/LICENSE-2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
  * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -74,8 +52,6 @@ import javax.swing.event.ChangeEvent;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
-
-import org.openide.util.NbBundle;
 
 import org.netbeans.modules.jdbcwizard.builder.dbmodel.DBColumn;
 import org.netbeans.modules.jdbcwizard.builder.dbmodel.DBTable;
@@ -104,14 +80,14 @@ public class JNDINamePanel extends javax.swing.JPanel implements WizardDescripto
 
     private static final String JNDI_DEFAULT_NAME = "jdbc/__defaultDS";
 
-	private static final String CONNECTION_INFO_FILE = "config\\ConnectionInfo.xml";
+    private static final String CONNECTION_INFO_FILE = "config\\ConnectionInfo.xml";
 
     /** Creates new form JNDINamePanel */
     public JNDINamePanel(final String title) {
         if (title != null && title.trim().length() != 0) {
             this.setName(title);
         }
-		this.initComponents();
+        this.initComponents();
     }
 
     /**
@@ -122,13 +98,13 @@ public class JNDINamePanel extends javax.swing.JPanel implements WizardDescripto
         this.jTextField1 = new javax.swing.JTextField();
         this.jTextField1.setText(JNDINamePanel.JNDI_DEFAULT_NAME);
 
-        this.jLabel1.setText(NbBundle.getMessage( JNDINamePanel.class, "LBL_JNDIName"));
+        this.jLabel1.setText("JNDI Name:");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(
                 layout.createSequentialGroup().add(55, 55, 55).add(this.jLabel1,
-                        org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE,
+                        org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 70,
                         org.jdesktop.layout.GroupLayout.PREFERRED_SIZE).add(28, 28, 28).add(this.jTextField1,
                         org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 179,
                         org.jdesktop.layout.GroupLayout.PREFERRED_SIZE).addContainerGap(68, Short.MAX_VALUE)));
@@ -213,9 +189,9 @@ public class JNDINamePanel extends javax.swing.JPanel implements WizardDescripto
                     while (it.hasNext()) {
                         final DBTable sTable = (DBTable) it.next();
                         if (sTable.isSelected()) {
-                        	//Make the xsd file name as valid name
-                        	//Otherwise this will fail in "schemalocation" of the wsdl
-                        	// the reaso ins schemalocation in wsdl is NCName
+                            //Make the xsd file name as valid name
+                            //Otherwise this will fail in "schemalocation" of the wsdl
+                            // the reaso ins schemalocation in wsdl is NCName
                             xsdGen.generate(sTable.getName(), targetFolderPath + File.separator + XMLCharUtil.makeValidNCName(sTable.getName())
                                     + JNDINamePanel.XSD_EXT, sTable);
                             selTable = sTable;
@@ -224,6 +200,7 @@ public class JNDINamePanel extends javax.swing.JPanel implements WizardDescripto
 
                     // Generate WSDL
                     final String dbType = (String) wd.getProperty(JDBCWizardContext.DBTYPE);
+
                     final GenerateWSDL tsk = new GenerateWSDL();
                     tsk.setSrcDirectoryLocation(targetFolderPath);
                     tsk.setWSDLFileName(collabName);
@@ -232,14 +209,14 @@ public class JNDINamePanel extends javax.swing.JPanel implements WizardDescripto
                     tsk.setJNDIName(jndiName);
                     tsk.setDBInfo((DBConnectionDefinition) wd.getProperty(JDBCWizardContext.CONNECTION_INFO));
                     tsk.execute();
-                   
+
                 } catch (final Exception e) {
 
                 }
             }
         }
     }
-	
+    
     /**
      * @param l
      */

@@ -1,48 +1,26 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 /*
- *
+ * 
  * Copyright 2005 Sun Microsystems, Inc.
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -324,7 +302,7 @@ public class JDBCWizardTablePanel extends JPanel {
 
                 this.setEnabled(true);
                 this.setFocusable(true);
-                this.setText(NbBundle.getMessage( JDBCWizardTablePanel.class, "BTN_Advanced"));
+                this.setText("Advanced..");
             }
             return this.myButPanel;
         }
@@ -371,7 +349,7 @@ public class JDBCWizardTablePanel extends JPanel {
 					this.myButPanel.setBackground(table.getBackground());
 				}
 				this.setFocusable(true);
-				this.setText(NbBundle.getMessage( JDBCWizardTablePanel.class, "BTN_Advanced"));
+				this.setText("Advanced..");
 			}
 			return this.myButPanel;
 		}
@@ -426,13 +404,13 @@ public class JDBCWizardTablePanel extends JPanel {
     }
 
     class ColumnAction implements ActionListener {
-        protected JButton okbutton = new JButton(NbBundle.getMessage( JDBCWizardTablePanel.class, "BTN_OK"));
+        protected JButton okbutton = new JButton("OK");
 
-        protected JButton cancelbutton = new JButton(NbBundle.getMessage( JDBCWizardTablePanel.class, "BTN_Cancel"));
+        protected JButton cancelbutton = new JButton("Cancel");
         
-        protected JButton selectallbutton = new JButton(NbBundle.getMessage( JDBCWizardTablePanel.class, "BTN_SelectAll"));
+        protected JButton selectallbutton = new JButton("Select All");
         
-        protected JButton clearallbutton = new JButton(NbBundle.getMessage( JDBCWizardTablePanel.class, "BTN_ClearAll"));
+        protected JButton clearallbutton = new JButton("Clear All");
 
         protected JPanel buttonpanel = new JPanel();
 
@@ -467,7 +445,7 @@ public class JDBCWizardTablePanel extends JPanel {
         	this.takes = takes;
         	columnDisplayDialog = new ColumnDialog(new JDialog(), true);
         	this.columnDisplayDialog.setAlwaysOnTop(true);
-            this.columnDisplayDialog.setResizable(true);
+            this.columnDisplayDialog.setResizable(false);
             this.columnDisplayDialog.setEnabled(true);
             this.columnDisplayDialog.setFocusable(true);
         }
@@ -507,10 +485,10 @@ public class JDBCWizardTablePanel extends JPanel {
          */
         public void initializeColumn() {
             this.columnDisplayDialog.setTitle(this.title);
-            this.correspInsertCol.setName(NbBundle.getMessage( JDBCWizardTablePanel.class, "LBL_Col_Insert"));
-            this.correspUpdateCol.setName(NbBundle.getMessage( JDBCWizardTablePanel.class, "LBL_Col_Update"));
-            this.correspChosenCol.setName(NbBundle.getMessage( JDBCWizardTablePanel.class, "LBL_Col_Find"));//
-            this.correspPolledCol.setName(NbBundle.getMessage( JDBCWizardTablePanel.class, "LBL_Col_PollRecords"));
+            this.correspInsertCol.setName("Insert");
+            this.correspUpdateCol.setName("Update");
+            this.correspChosenCol.setName("Find");//
+            this.correspPolledCol.setName("PollRecords");
             
             this.myTabpane = new JTabbedPane();
             this.myTabpane.add(this.correspInsertCol);
@@ -666,7 +644,7 @@ public class JDBCWizardTablePanel extends JPanel {
          */
         private static final long serialVersionUID = 1L;
 
-        private final String[] columnNames = { NbBundle.getMessage( JDBCWizardTablePanel.class, "LBL_select_jLabell" ),NbBundle.getMessage( JDBCWizardTablePanel.class, "LBL_tablename_jLabell" ),NbBundle.getMessage( JDBCWizardTablePanel.class, "LBL_properties_jLabell" ) };
+        private final String[] columnNames = { "Select", "Table Name", "Properties" };
 
         private List rowList;
 
@@ -893,10 +871,10 @@ public class JDBCWizardTablePanel extends JPanel {
     }
 
     /* font selection for column data in table body */
-    private static final Font FONT_TABLE_COLUMNS = new Font("Dialog", Font.PLAIN, 12);
+    private static final Font FONT_TABLE_COLUMNS = new Font("Dialog", Font.PLAIN, 10);
 
     /* font selection for column headers in table body */
-    private static final Font FONT_TABLE_HEADER = new Font("Dialog", Font.BOLD, 12);
+    private static final Font FONT_TABLE_HEADER = new Font("Dialog", Font.BOLD, 10);
 
     private JPanel headerPnl;
 
@@ -966,17 +944,17 @@ public class JDBCWizardTablePanel extends JPanel {
     public void resetTable(final List tableNameList) {
         final MyTableModel myMod = new MyTableModel(tableNameList);
         this.metaDataTable.setModel(myMod);
-       	this.metaDataTable.getColumn(NbBundle.getMessage( JDBCWizardTablePanel.class,"LBL_properties_jLabell")).setCellRenderer(new MyButtonRenderer(NbBundle.getMessage( JDBCWizardTablePanel.class, "BTN_Advanced")));
-       	this.metaDataTable.getColumn(NbBundle.getMessage( JDBCWizardTablePanel.class,"LBL_properties_jLabell")).setCellEditor(new MyButtonRenderer(NbBundle.getMessage( JDBCWizardTablePanel.class, "BTN_Advanced")));
+        this.metaDataTable.getColumn("Properties").setCellRenderer(new MyButtonRenderer("Advanced.."));
+        this.metaDataTable.getColumn("Properties").setCellEditor(new MyButtonRenderer("Advanced.."));
         // set checkbox column size
         final TableColumn column = this.metaDataTable.getColumnModel().getColumn(0);
-        column.setResizable(true);
+        column.setResizable(false);
         column.setMinWidth(40);
         column.setPreferredWidth(80);
         column.setMaxWidth(120);
         
         final TableColumn columnAdv = this.metaDataTable.getColumnModel().getColumn(2);
-        columnAdv.setResizable(true);
+        columnAdv.setResizable(false);
         columnAdv.setMinWidth(60);
         columnAdv.setPreferredWidth(80);
         columnAdv.setMaxWidth(100);
@@ -988,19 +966,18 @@ public class JDBCWizardTablePanel extends JPanel {
     public void addTable(final List testList) {
         this.metaDataTable = new MetaTableComponent();
         this.metaDataTable.setFont(JDBCWizardTablePanel.FONT_TABLE_COLUMNS);
-        //this.metaDataTable.getTableHeader().setFont(JDBCWizardTablePanel.FONT_TABLE_HEADER);
         this.metaDataTable.getTableHeader().setFont(JDBCWizardTablePanel.FONT_TABLE_HEADER);
         final MyTableModel myModel = new MyTableModel(testList);
         this.metaDataTable.setModel(myModel);
-       	this.metaDataTable.getColumn(NbBundle.getMessage( JDBCWizardTablePanel.class,"LBL_properties_jLabell")).setCellRenderer(new MyButtonRenderer(NbBundle.getMessage( JDBCWizardTablePanel.class, "BTN_Advanced")));
-       	//this.metaDataTable.getColumn(NbBundle.getMessage( JDBCWizardTablePanel.class,"LBL_properties_jLabell")).setCellEditor(new MyButtonRenderer(NbBundle.getMessage( JDBCWizardTablePanel.class, "BTN_Advanced")));
+        this.metaDataTable.getColumn("Properties").setCellRenderer(new MyButtonRenderer("Advacned.."));
+        this.metaDataTable.getColumn("Properties").setCellEditor(new MyButtonRenderer("Advanced.."));
         this.setLayout(new BorderLayout());
         // add(headerPnl, BorderLayout.NORTH);
-        this.setPreferredSize(new Dimension(150, 150));
-        this.setMaximumSize(new Dimension(250, 250));
+        this.setPreferredSize(new Dimension(100, 100));
+        this.setMaximumSize(new Dimension(150, 150));
         // set checkbox column size
         final TableColumn column = this.metaDataTable.getColumnModel().getColumn(0);
-        column.setResizable(true);
+        column.setResizable(false);
         column.setMinWidth(40);
         column.setPreferredWidth(40);
         column.setMaxWidth(80);

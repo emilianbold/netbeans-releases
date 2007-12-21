@@ -7,6 +7,12 @@
     <xsd:element name="transformmap">
         <xsd:complexType>
             <xsd:sequence>
+                <xsd:element name="import" maxOccurs="unbounded">
+                    <xsd:complexType>
+                        <xsd:attribute name="namespace" type="xsd:anyURI" use="required" />
+                        <xsd:attribute name="location" type="xsd:anyURI" use="required" />
+                    </xsd:complexType>
+                </xsd:element>
                 <xsd:element name="service" maxOccurs="unbounded">
                     <xsd:complexType>
                         <xsd:sequence>

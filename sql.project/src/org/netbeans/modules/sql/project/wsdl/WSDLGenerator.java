@@ -1,42 +1,20 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 /*
@@ -530,7 +508,7 @@ public class WSDLGenerator {
             logger.log(Level.SEVERE, e.getLocalizedMessage(), e);
             JOptionPane.showMessageDialog(frame,
                     NbBundle.getMessage(WSDLGenerator.class,"LBL_MSG"),
-                    NbBundle.getMessage(WSDLGenerator.class,"WARNING"),
+                    "Warning",
                     JOptionPane.WARNING_MESSAGE);
             throw e;
         }
@@ -738,8 +716,8 @@ public class WSDLGenerator {
         	PrepStmt prep = dbmeta.getPrepStmtMetaData();
         	if(dbmeta.getErrPrepStmtMetaData()) {
 				JOptionPane.showMessageDialog(frame,
-                    NbBundle.getMessage(WSDLGenerator.class,"LBL_MSG"),
-                    NbBundle.getMessage(WSDLGenerator.class,"WARNING"),
+                    "Problem in generating the message types for WSDL.Update the generated WSDL if needed.Please see the log for more details.",
+                    "Warning",
                     JOptionPane.WARNING_MESSAGE);
 			}
         	if (requestElement != null) {
@@ -771,8 +749,8 @@ public class WSDLGenerator {
         } catch (Exception e) {
             logger.log(Level.SEVERE, e.getLocalizedMessage());
             JOptionPane.showMessageDialog(frame,
-                    NbBundle.getMessage(WSDLGenerator.class,"LBL_MSG"),
-                    NbBundle.getMessage(WSDLGenerator.class,"WARNING"),
+                    "Problem in generating the message types for WSDL.Update the generated WSDL if needed.Please see the log for more details.",
+                    "Warning",
                     JOptionPane.WARNING_MESSAGE);
         }
     }
@@ -782,8 +760,8 @@ public class WSDLGenerator {
         	PrepStmt prep = dbmeta.getPrepStmtMetaData();
         	if(dbmeta.getErrPrepStmtMetaData()) {
 				JOptionPane.showMessageDialog(frame,
-                    NbBundle.getMessage(WSDLGenerator.class,"LBL_MSG"),
-                    NbBundle.getMessage(WSDLGenerator.class,"WARNING"),
+                    "Problem in generating the message types for WSDL.Update the generated WSDL if needed.Please see the log for more details.",
+                    "Warning",
                     JOptionPane.WARNING_MESSAGE);
 			}
             if (requestElement != null) {
@@ -823,8 +801,8 @@ public class WSDLGenerator {
         	PrepStmt prep = dbmeta.getPrepStmtMetaData();
         	if(dbmeta.getErrPrepStmtMetaData()) {
 				JOptionPane.showMessageDialog(frame,
-                    NbBundle.getMessage(WSDLGenerator.class,"LBL_MSG"),
-                    NbBundle.getMessage(WSDLGenerator.class,"WARNING"),
+                    "Problem in generating the message types for WSDL.Update the generated WSDL if needed.Please see the log for more details.",
+                    "Warning",
                     JOptionPane.WARNING_MESSAGE);
 			}
             if (requestElement != null) {
@@ -864,8 +842,8 @@ public class WSDLGenerator {
         	PrepStmt prep = dbmeta.getPrepStmtMetaData();
         	if(dbmeta.getErrPrepStmtMetaData()) {
 				JOptionPane.showMessageDialog(frame,
-                    NbBundle.getMessage(WSDLGenerator.class,"LBL_MSG"),
-                    NbBundle.getMessage(WSDLGenerator.class,"WARNING"),
+                    "Problem in generating the message types for WSDL.Update the generated WSDL if needed.Please see the log for more details.",
+                    "Warning",
                     JOptionPane.WARNING_MESSAGE);
 			}
             if (requestElement != null) {
@@ -905,8 +883,8 @@ public class WSDLGenerator {
 			PrepStmt prep = dbmeta.getPrepStmtMetaData();
 			if(dbmeta.getErrPrepStmtMetaData()) {
 				JOptionPane.showMessageDialog(frame,
-                    NbBundle.getMessage(WSDLGenerator.class,"LBL_MSG"),
-                    NbBundle.getMessage(WSDLGenerator.class,"WARNING"),
+                    "Problem in generating the message types for WSDL.Update the generated WSDL if needed.Please see the log for more details.",
+                    "Warning",
                     JOptionPane.WARNING_MESSAGE);
 			}
             if (requestElement != null) {
@@ -952,8 +930,8 @@ public class WSDLGenerator {
 			PrepStmt prep = dbmeta.getPrepStmtMetaData();				
 			if(dbmeta.getErrPrepStmtMetaData()) {
 				JOptionPane.showMessageDialog(frame,
-                    NbBundle.getMessage(WSDLGenerator.class,"LBL_MSG"),
-                    NbBundle.getMessage(WSDLGenerator.class,"WARNING"),
+                    "Problem in generating the message types for WSDL.Update the generated WSDL if needed.Please see the log for more details.",
+                    "Warning",
                     JOptionPane.WARNING_MESSAGE);
 			}
 
@@ -1006,8 +984,8 @@ public class WSDLGenerator {
 			Procedure proc = dbmeta.getProcedureMetaData(catalog, schema, procName,"Procedure");
 			if(dbmeta.getErrProcMetaData()) {
 				JOptionPane.showMessageDialog(frame,
-                    NbBundle.getMessage(WSDLGenerator.class,"LBL_MSG"),
-                    NbBundle.getMessage(WSDLGenerator.class,"WARNING"),
+                    "Problem in generating the message types for WSDL.Update the generated WSDL if needed.Please see the log for more details.",
+                    "Warning",
                     JOptionPane.WARNING_MESSAGE);
 			}
         	if(proc.getHasReturn()) {
@@ -1251,21 +1229,9 @@ public class WSDLGenerator {
      */
     private void writeWsdl() throws WSDLException {
         try {
-        	String outputFileName = wsdlFileLocation + File.separator + wsdlFileName + ".wsdl";
             WSDLWriter writer = factory.newWSDLWriter();
-            java.io.FileOutputStream fos = new java.io.FileOutputStream(outputFileName);
-            final Writer sink = new java.io.OutputStreamWriter(fos,"UTF-8");
-            writer.writeWSDL(this.def, sink);
-            String str = IOUtil.getText(outputFileName,"UTF-8");
-            StringBuffer sb = new StringBuffer(str);
-    	    sb.replace(30,35,org.netbeans.modules.sql.project.ui.SQLproLogicalViewProvider.encoding);
-	    str = sb.toString();
-	    byte[] buf = str.getBytes();
-	    File f = new File(wsdlFileLocation + File.separator + wsdlFileName + ".wsdl");
-	    OutputStream out = new FileOutputStream(f);
-	    out.write(buf, 0, buf.length);
-	    out.close();
-	    f = null;
+            Writer sink = new FileWriter(wsdlFileLocation + File.separator + wsdlFileName + ".wsdl");
+            writer.writeWSDL(def, sink);
             logger.log(Level.INFO, "Successfully generated wsdl file:" + wsdlFileName + ".wsdl");
         } catch (Exception e) {
             throw new WSDLException(WSDLException.OTHER_ERROR, e.getMessage());
