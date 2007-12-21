@@ -65,6 +65,7 @@ import org.netbeans.modules.reglib.NbConnectionSupport;
 import org.netbeans.modules.reglib.NbServiceTagSupport;
 import org.netbeans.modules.reglib.StatusData;
 import org.openide.awt.HtmlBrowser;
+import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
 import org.openide.windows.WindowManager;
 
@@ -307,7 +308,9 @@ class NbConnection {
      */
     private static void openOfflineRegisterPage (String product)
             throws IOException {
-        File registerPage = NbServiceTagSupport.getRegistrationHtmlPage(product);
+        File registerPage = 
+        NbServiceTagSupport.getRegistrationHtmlPage
+        (product, new String [] {NbBundle.getMessage(NbConnection.class,"nb.product.name")});
         if (BrowserSupport.isSupported()) {
             try {
                 BrowserSupport.browse(registerPage.toURI());

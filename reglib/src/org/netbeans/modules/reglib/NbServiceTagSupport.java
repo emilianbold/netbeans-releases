@@ -670,7 +670,7 @@ public class NbServiceTagSupport {
      * Returns the File object of the offline registration page localized
      * for the default locale in the $HOME/.netbeans-registration/$NB_VERSION.
      */
-    public static File getRegistrationHtmlPage(String product) throws IOException {
+    public static File getRegistrationHtmlPage(String product, String [] productNames) throws IOException {
         if (!inited) {
             init();
         }
@@ -681,7 +681,7 @@ public class NbServiceTagSupport {
         File f = new File(parent, REGISTRATION_HTML_NAME + ".html");
         if (!f.exists()) {
             // Generate the localized version of the offline registration Page
-            generateRegisterHtml(parent,product);
+            generateRegisterHtml(parent,product,productNames);
         }
 
         String name = REGISTRATION_HTML_NAME;
@@ -772,7 +772,7 @@ public class NbServiceTagSupport {
     private static final String REGISTRATION_PAYLOAD_KEY = "@@REGISTRATION_PAYLOAD@@";
 
     @SuppressWarnings("unchecked")
-    private static void generateRegisterHtml(File parent, String product) throws IOException {
+    private static void generateRegisterHtml(File parent, String product, String [] productNames) throws IOException {
         RegistrationData regData = getRegistrationData();
         String registerURL = NbConnectionSupport.getRegistrationURL(
             regData.getRegistrationURN(), product).toString();
@@ -828,7 +828,15 @@ public class NbServiceTagSupport {
             BufferedReader reader = new BufferedReader(new InputStreamReader(in));
             PrintWriter pw = new PrintWriter(f);
             String line = null;
-            String productName = NbBundle.getMessage(NbServiceTagSupport.class,"product." + product);
+            String productName = "";
+            //= NbBundle.getMessage(NbServiceTagSupport.class,"product." + product);
+            for (int i = 0; i < productNames.length; i++) {
+                if (i > 0) {
+                    productName +=
+                    " " + NbBundle.getMessage(NbServiceTagSupport.class,"MSG_junction") + " ";
+                }
+                productName += "<strong>" + productNames[i] + "</strong>";
+            }
             while ((line = reader.readLine()) != null) {
                 String output = line;
                 if (line.contains(PRODUCT_KEY)) {
