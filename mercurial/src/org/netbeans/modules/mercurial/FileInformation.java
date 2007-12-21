@@ -253,6 +253,8 @@ public class FileInformation implements Serializable {
     }
     
     private void readEntry(File file) {
+        // Fetches File info from .svn directory:
+        // entry = Subversion.getInstance().getClient(true).getSingleStatus(file);
         entry = null;       // TODO: read your detailed information about the file here, or disregard the entry field
     }    
 
