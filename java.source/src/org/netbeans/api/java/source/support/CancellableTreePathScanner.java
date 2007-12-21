@@ -42,6 +42,7 @@ package org.netbeans.api.java.source.support;
 
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePathScanner;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  *
@@ -49,18 +50,36 @@ import com.sun.source.util.TreePathScanner;
  */
 public class CancellableTreePathScanner<R,P> extends TreePathScanner<R,P> {
 
-    private boolean canceled;
+    private final AtomicBoolean internalCanceled;
+    private final AtomicBoolean canceled;
 
-    /** Creates a new instance of CancellableTreeScanner */
+    /**Construct a new CancellableTreePathScanner which can be canceled by calling
+     * the {@link #cancel} method.
+     */
     public CancellableTreePathScanner() {
+        this(null);
     }
 
-    protected synchronized boolean isCanceled() {
-        return canceled;
+    /**Construct a new CancellableTreePath Scanner which can be canceled either by calling
+     * the {@link #cancel} method, or by setting <code>true</code> into the provided
+     * <code>canceled</code> {@link AtomicBoolean}.
+     * 
+     * @param canceled an {@link AtomicBoolean} through which this scanner can be canceled.
+     *                 The scanner never changes the state of the {@link AtomicBoolean}.
+     * @since 0.29
+     */
+    public CancellableTreePathScanner(AtomicBoolean canceled) {
+        this.canceled = canceled;
+        
+        this.internalCanceled = new AtomicBoolean();
     }
 
-    public synchronized void cancel() {
-        canceled = true;
+    protected boolean isCanceled() {
+        return internalCanceled.get() || (canceled != null && canceled.get());
+    }
+
+    public void cancel() {
+        internalCanceled.set(true);
     }
 
     /** @inheritDoc

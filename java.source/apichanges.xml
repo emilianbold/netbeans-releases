@@ -105,6 +105,18 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="CancellableScannerAtomicBoolean">
+            <api name="general"/>
+            <summary>Added CancellableTreePathScanner(AtomicBoolean) and CancellableTreeScanner(AtomicBoolean)</summary>
+            <version major="0" minor="30"/>
+            <date day="21" month="12" year="2007"/>
+            <author login="jlahoda"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+            <description>
+                Added constructors taking AtomicBoolean to the CancellableTreePathScanner and CancellableTreeScanner.
+            </description>
+            <issue number="123762"/>
+        </change>
         <change id="ElementHandle-from">
             <api name="general"/>
             <summary>Added a method to obtain ElementHandles from TypeMirrorHandles representing DeclaredTypes</summary>
