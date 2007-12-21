@@ -16,21 +16,15 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.netbeans.modules.bpel.editors.api.nodes;
+package org.netbeans.modules.bpel.editors.api.diagram;
 
-import java.util.List;
 import org.netbeans.modules.xml.xam.Component;
-import org.openide.nodes.Node;
 
-/**
- *
- * @author vb160295
- * @version 1.0
- */
-public interface RefactoringNodeFactory {
-    
-    Node createNode(Component component);
-    
-    List<Component> getPathFromRoot(Component component);
-    
+public interface DiagramElement {
+
+  void select();
+  String getText();
+  void gotoSource();
+  Component getComponent();
+  void highlight(boolean highlighted);
 }

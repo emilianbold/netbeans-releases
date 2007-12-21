@@ -1,42 +1,20 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.bpel.editors.api.utils;
 
@@ -58,8 +36,10 @@ import org.netbeans.modules.xml.schema.ui.basic.SchemaTreeView;
 import org.netbeans.modules.xml.validation.ShowCookie;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.bpel.editors.api.BpelEditorConstants;
+import org.netbeans.modules.bpel.editors.api.Constants.VariableStereotype;
 import org.netbeans.modules.bpel.editors.api.nodes.FactoryAccess;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
+import org.netbeans.modules.bpel.model.api.AbstractVariableDeclaration;
 import org.netbeans.modules.bpel.model.api.Assign;
 import org.netbeans.modules.bpel.model.api.BooleanExpr;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
@@ -111,6 +91,11 @@ import org.netbeans.modules.bpel.model.api.VariableContainer;
 import org.netbeans.modules.bpel.model.api.Wait;
 import org.netbeans.modules.bpel.model.api.While;
 import org.netbeans.modules.bpel.model.api.BpelModel;
+import org.netbeans.modules.bpel.model.api.ReThrow;
+import org.netbeans.modules.bpel.model.api.references.SchemaReference;
+import org.netbeans.modules.bpel.model.api.references.WSDLReference;
+import org.netbeans.modules.xml.schema.model.GlobalElement;
+import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
@@ -132,7 +117,10 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
+import org.netbeans.modules.xml.wsdl.model.Message;
+import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.w3c.dom.Element;
 
 /**
@@ -140,7 +128,7 @@ import org.w3c.dom.Element;
  * @author vb160295
  * @version 1.0
  */
-public class Util {
+public final class Util {
     
     private static Map<Class<? extends Component>, NodeType> ENTITY_NODETYPE_MAP;
     
@@ -204,6 +192,7 @@ public class Util {
         
         ENTITY_NODETYPE_MAP.put(TerminationHandler.class, NodeType.TERMINATION_HANDLER);
         ENTITY_NODETYPE_MAP.put(Throw.class, NodeType.THROW);
+        ENTITY_NODETYPE_MAP.put(ReThrow.class, NodeType.RETHROW);
         ENTITY_NODETYPE_MAP.put(To.class, NodeType.TO);
         ENTITY_NODETYPE_MAP.put(ToPart.class, NodeType.TO_PART);
 
@@ -212,10 +201,6 @@ public class Util {
 
         ENTITY_NODETYPE_MAP.put(Variable.class, NodeType.VARIABLE);
         ENTITY_NODETYPE_MAP.put(VariableContainer.class, NodeType.VARIABLE_CONTAINER);
-    }
-    
-    
-    private Util() {
     }
     
     /**
@@ -767,6 +752,91 @@ public class Util {
         
         Element enEl = component.getPeer();
         return enEl == null ? null : enEl.getTagName();
+    }
+    
+    public static VariableStereotype
+            getVariableStereotype(AbstractVariableDeclaration var) {
+        if (var == null) {
+            return null;
+        }
+        // if (currentStereotype != null) return currentStereotype;
+        VariableStereotype currentStereotype = null;
+        //
+        SchemaReference<GlobalType> typeRef = var.getType();
+        if (typeRef != null) {
+            GlobalType type = typeRef.get();
+            if (type != null) {
+                currentStereotype = VariableStereotype.recognizeStereotype(type);
+            } else {
+                currentStereotype = VariableStereotype.GLOBAL_TYPE;
+            }
+        } else if (var.getMessageType() != null) {
+            currentStereotype = VariableStereotype.MESSAGE;
+        } else if (var.getElement() != null) {
+            currentStereotype = VariableStereotype.GLOBAL_ELEMENT;
+        } else {
+            currentStereotype = VariableStereotype.MESSAGE;
+        }
+        return currentStereotype;
+    }
+    
+    public static Reference getVariableType(AbstractVariableDeclaration variable) {
+        NamedComponentReference<GlobalElement> elemRef = variable.getElement();
+        if (elemRef != null) {
+            return elemRef;
+        }
+        //
+        NamedComponentReference<GlobalType> typeRef = variable.getType();
+        if (typeRef != null) {
+            return typeRef;
+        }
+        //
+        WSDLReference<Message> msgRef = variable.getMessageType();
+        if (msgRef != null) {
+            return msgRef;
+        }
+        //
+        return null;
+    }
+    
+    public static SchemaComponent getVariableSchemaType(
+            AbstractVariableDeclaration variable) {
+        NamedComponentReference<GlobalElement> elemRef = variable.getElement();
+        if (elemRef != null) {
+            GlobalElement gElem = elemRef.get();
+            if (gElem != null) {
+                return gElem;
+            }
+        }
+        //
+        NamedComponentReference<GlobalType> typeRef = variable.getType();
+        if (typeRef != null) {
+            GlobalType gType = typeRef.get();
+            if (gType != null) {
+                return gType;
+            }
+        }
+        return null;
+    }
+    
+    public static SchemaComponent getPartType(Part part) {
+        NamedComponentReference<GlobalElement> elemRef = part.getElement();
+        if (elemRef != null) {
+            GlobalElement gElem = elemRef.get();
+            if (gElem != null) {
+                return gElem;
+            }
+        }
+        //
+        NamedComponentReference<GlobalType> typeRef = part.getType();
+        if (typeRef != null) {
+            GlobalType gType = typeRef.get();
+            if (gType != null) {
+                return gType;
+            }
+        }
+        //
+        return null;
     }
     
 }

@@ -155,7 +155,7 @@ public class RefactorUtil {
     }
 
     // vlv
-    private static String getType(Component component) {
+    public static String getType(Component component) {
       String type = null;
       
       if (component instanceof BpelEntity) {
@@ -164,8 +164,8 @@ public class RefactorUtil {
       else if (component instanceof SchemaComponent) {
         type = ((SchemaComponent) component).getComponentType().getName();
       }
-      if (type == null) {
-        return null;
+      else {
+        type = component.getClass().getName();
       }
       int k = type.lastIndexOf("."); // NOI18N
 
