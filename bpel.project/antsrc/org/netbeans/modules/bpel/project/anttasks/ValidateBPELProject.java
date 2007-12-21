@@ -375,10 +375,12 @@ public class ValidateBPELProject extends Task {
         private void loadAndValidateExistingBusinessProcess(File bpelFile) throws BuildException {
                 try {
                     validateBPEL(bpelFile);
-                } catch (Throwable e) {
+                }
+                catch (Throwable e) {
                   System.out.println();
                   System.out.println("Exception: " + e);
-//e.printStackTrace();
+                  e.printStackTrace();
+
                   if ( !mAllowBuildWithError) {
                       throw new BuildException(e);
                   }

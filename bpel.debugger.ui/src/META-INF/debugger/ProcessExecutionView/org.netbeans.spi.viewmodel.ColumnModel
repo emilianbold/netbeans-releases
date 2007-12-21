@@ -1,1 +1,2 @@
-org.netbeans.modules.bpel.debugger.ui.execution.ProcessExecutionColumn.createNameColumn()
+org.netbeans.modules.bpel.debugger.ui.execution.ProcessExecutionColumnModel_Name
+org.netbeans.modules.bpel.debugger.ui.execution.ProcessExecutionColumnModel_Thread

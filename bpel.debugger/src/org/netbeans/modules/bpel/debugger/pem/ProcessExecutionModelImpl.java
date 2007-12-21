@@ -1,53 +1,29 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 package org.netbeans.modules.bpel.debugger.pem;
 
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Queue;
 import java.util.Stack;
 import org.netbeans.modules.bpel.debugger.api.pem.PemEntity;
 import org.netbeans.modules.bpel.debugger.api.pem.PemEntity.State;
@@ -69,40 +45,47 @@ import org.netbeans.modules.bpel.debugger.eventlog.ProcessInstanceStartedRecord;
  * @author Alexander Zgursky
  */
 public class ProcessExecutionModelImpl implements ProcessExecutionModel {
+    
     private final ProcessInstanceImpl myProcessInstance;
     private final ProcessStaticModel myPsm;
-    private final EventLog myEventLog;
-    private final EventLogListener myEventLogListener;
-    private final Map<String, Branch> myBranches = new HashMap<String, Branch>();
-    private final List<Listener> myListeners = new LinkedList<Listener>();
+    
+    private final Map<String, BranchImpl> myBranches = 
+            new HashMap<String, BranchImpl>();
+    private BranchImpl myCurrentBranch;
+    
+    private final List<Listener> myListeners = 
+            new LinkedList<Listener>();
     
     private PemEntityImpl myRoot;
-    private int myLastEventIndex = -1;
     private PemEntityImpl myLastStartedEntity;
     
-    //TODO:ugly hack to workaround a bug in the runtime - "while" and "repeatUntil"
-    //produce COMPLETED event for every iteration plus one more real COMPLETED event,
-    //so we need to ignore the iteration events. This set stores the currently started
-    //mentioned activities (see other parts of this hack below)
-    private Set<PemEntityImpl> myLoops = new HashSet<PemEntityImpl>();
-    //end of hack
+    private final EventLog myEventLog;
+    private final EventLogListener myEventLogListener;
+    private int myLastEventIndex = -1;
     
-    public static ProcessExecutionModelImpl build(ProcessInstanceImpl processInstance) {
+    public static ProcessExecutionModelImpl build(
+            final ProcessInstanceImpl processInstance) {
         if (processInstance.getEventLog() == null) {
             return null;
         }
+        
         if (processInstance.getProcess().getProcessStaticModel() == null) {
             return null;
         }
-        ProcessExecutionModelImpl pem = new ProcessExecutionModelImpl(processInstance);
+        
+        final ProcessExecutionModelImpl pem = 
+                new ProcessExecutionModelImpl(processInstance);
         pem.update();
+        
         return pem;
     }
     
     /** Creates a new instance of ProcessExecutionModel */
-    private ProcessExecutionModelImpl(ProcessInstanceImpl processInstance) {
+    private ProcessExecutionModelImpl(
+            final ProcessInstanceImpl processInstance) {
         myProcessInstance = processInstance;
         myPsm = myProcessInstance.getProcess().getProcessStaticModel();
+        
         myEventLog = myProcessInstance.getEventLog();
         myEventLogListener = new EventLogListener();
         myEventLog.addListener(myEventLogListener);
@@ -121,41 +104,88 @@ public class ProcessExecutionModelImpl implements ProcessExecutionModel {
     public PemEntityImpl getLastStartedEntity() {
         return myLastStartedEntity;
     }
-
-    public void addListener(Listener listener) {
+    
+    public Branch[] getBranches() {
+        return myBranches.values().toArray(new Branch[myBranches.size()]);
+    }
+    
+    public Branch[] getBranches(
+            final Branch parent) {
+        
+        final List<Branch> filtered = new LinkedList<Branch>();
+        
+        for (BranchImpl branch: myBranches.values()) {
+            if ((parent == null) && (branch.getParent() == null)) {
+                filtered.add(branch);
+                continue;
+            }
+            
+            if ((parent != null) && 
+                    (branch.getParent() != null) && 
+                    branch.getParent().equals(parent)) {
+                filtered.add(branch);
+            }
+        }
+        
+        return filtered.toArray(new Branch[filtered.size()]);
+    }
+    
+    public Branch getCurrentBranch() {
+        return myCurrentBranch;
+    }
+    
+    public void setCurrentBranch(
+            final String id) {
+        
+        myCurrentBranch = myBranches.get(id);
+        myProcessInstance.stepInto();
+    }
+    
+    public void setCurrentBranchWithoutResume(
+            final String id) {
+        myCurrentBranch = myBranches.get(id);
+    }
+    
+    public void addListener(
+            final Listener listener) {
         synchronized (myListeners) {
             myListeners.add(listener);
         }
     }
-
-    public void removeListener(Listener listener) {
+    
+    public void removeListener(
+            final Listener listener) {
         synchronized (myListeners) {
             myListeners.remove(listener);
         }
     }
     
+    // Private /////////////////////////////////////////////////////////////////
     private void update() {
         boolean modelChanged = false;
+        
         synchronized (this) {
-            int logSize = myEventLog.getSize();
+            final int logSize = myEventLog.getSize();
             if (logSize <= myLastEventIndex + 1) {
                 return;
             }
-            EventRecord[] newRecords = myEventLog.getRecords(myLastEventIndex + 1, logSize);
+            
+            final EventRecord[] newRecords = 
+                    myEventLog.getRecords(myLastEventIndex + 1, logSize);
             for (EventRecord record : newRecords) {
                 myLastEventIndex++;
                 if (record instanceof ActivityStartedRecord) {
-                    update((ActivityStartedRecord)record);
+                    update((ActivityStartedRecord) record);
                 } else if (record instanceof ActivityCompletedRecord) {
-                    update((ActivityCompletedRecord)record);
+                    update((ActivityCompletedRecord) record);
                 } else if (record instanceof BranchStartedRecord) {
-                    update((BranchStartedRecord)record);
+                    update((BranchStartedRecord) record);
                 } else if (record instanceof BranchCompletedRecord) {
-                    update((BranchCompletedRecord)record);
+                    update((BranchCompletedRecord) record);
                 } else if (record instanceof ProcessInstanceStartedRecord) {
-                    update((ProcessInstanceStartedRecord)record);
+                    update((ProcessInstanceStartedRecord) record);
                 } else if (record instanceof ProcessInstanceCompletedRecord) {
-                    update((ProcessInstanceCompletedRecord)record);
+                    update((ProcessInstanceCompletedRecord) record);
                 }
                 modelChanged = true;
             }
@@ -167,13 +197,14 @@ public class ProcessExecutionModelImpl implements ProcessExecutionModel {
         }
     }
     
-    private void update(ActivityStartedRecord record) {
-        PsmEntity psmEntity = myPsm.find(record.getActivityXpath());
+    private void update(
+            final ActivityStartedRecord record) {
+        final PsmEntity psmEntity = myPsm.find(record.getActivityXpath());
         if (psmEntity == null) {
             return;
         }
         
-        Branch branch = myBranches.get(record.getBranchId());
+        final BranchImpl branch = myBranches.get(record.getBranchId());
         if (branch == null) {
             return;
         }
@@ -181,13 +212,14 @@ public class ProcessExecutionModelImpl implements ProcessExecutionModel {
         branch.activityStarted(psmEntity);
     }
     
-    private void update(ActivityCompletedRecord record) {
-        PsmEntity psmEntity = myPsm.find(record.getActivityXpath());
+    private void update(
+            final ActivityCompletedRecord record) {
+        final PsmEntity psmEntity = myPsm.find(record.getActivityXpath());
         if (psmEntity == null) {
             return;
         }
         
-        Branch branch = myBranches.get(record.getBranchId());
+        final BranchImpl branch = myBranches.get(record.getBranchId());
         if (branch == null) {
             return;
         }
@@ -195,33 +227,67 @@ public class ProcessExecutionModelImpl implements ProcessExecutionModel {
         branch.activityCompleted(psmEntity);
     }
     
-    private void update(BranchStartedRecord record) {
-        String parentId = record.getParentBranchId();
-        Branch parentBranch = null;
+    private void update(
+            final BranchStartedRecord record) {
+        final String parentId = record.getParentBranchId();
+        
+        BranchImpl parentBranch = null;
         if (parentId != null) {
             parentBranch = myBranches.get(parentId);
         }
-        Branch branch = new Branch(record.getBranchId(), parentBranch);
-        myBranches.put(record.getBranchId(), branch);
+        
+        final BranchImpl newBranch = 
+                new BranchImpl(record.getBranchId(), parentBranch);
+        
+        if (((newBranch.getParent() == null) && (myCurrentBranch == null)) || 
+                newBranch.getParent().equals(myCurrentBranch)) {
+            myCurrentBranch = newBranch;
+        }
+        
+        newBranch.setState(Branch.State.ACTIVE);
+        
+        myBranches.put(record.getBranchId(), newBranch);
     }
     
-    private void update(BranchCompletedRecord record) {
-        //noop
+    private void update(
+            final BranchCompletedRecord record) {
+        final BranchImpl branch = myBranches.get(record.getBranchId());
+        
+        if (branch != null) {
+            branch.setState(Branch.State.COMPLETED);
+            
+            if ((myCurrentBranch != null ) && branch.equals(myCurrentBranch)) {
+                myCurrentBranch = branch.getParent();
+                
+                if (myCurrentBranch == null) {
+                    for (Branch temp: myBranches.values()) {
+                        if ((temp.getParent() == null) && 
+                                (temp.getState() == Branch.State.ACTIVE)) {
+                            myCurrentBranch = (BranchImpl) temp;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
     }
     
-    private void update(ProcessInstanceStartedRecord record) {
-        PsmEntity psmRoot = myPsm.getRoot();
+    private void update(
+            final ProcessInstanceStartedRecord record) {
+        final PsmEntity psmRoot = myPsm.getRoot();
+        
         myRoot = createEntity(psmRoot, null, true);
         myRoot.setState(State.STARTED);
         myRoot.setLastStartedEventIndex(myLastEventIndex);
     }
     
-    private void update(ProcessInstanceCompletedRecord record) {
+    private void update(
+            final ProcessInstanceCompletedRecord record) {
         myRoot.setState(State.COMPLETED);
     }
     
     private void fireModelUpdated() {
-        Listener[] listeners;
+        final Listener[] listeners;
         synchronized (myListeners) {
             listeners = myListeners.toArray(new Listener[myListeners.size()]);
         }
@@ -232,22 +298,63 @@ public class ProcessExecutionModelImpl implements ProcessExecutionModel {
     }
     
     private PemEntityImpl createEntity(
-            PsmEntity psmEntity, String branchId, boolean isReceivingEvents)
-    {
+            final PsmEntity psmEntity, 
+            final String branchId, 
+            final boolean isReceivingEvents) {
         if (psmEntity.isLoop()) {
-            return new PemLoopEntityImpl(this, psmEntity, branchId, isReceivingEvents);
+            return new PemLoopEntityImpl(
+                    this, psmEntity, branchId, isReceivingEvents);
         } else {
-            return new PemNonLoopEntityImpl(this, psmEntity, branchId, isReceivingEvents);
+            return new PemNonLoopEntityImpl(
+                    this, psmEntity, branchId, isReceivingEvents);
         }
     }
-
-    private class Branch {
+    
+    /**
+     * Returns an array of {@link PemEntityImpl} objects, which correspond to 
+     * the given {@link PsmEntity}. In most cases there would be only one, but
+     * when loops are involved, who can be sure?
+     * 
+     * @param psmEntity {@link PsmEntity} for which the corresponding 
+     *      {@link PemEntityImpl} objects should be found.
+     * @return an array of {@link PemEntityImpl} objects that correspond to the
+     *      given {@link PsmEntity}.
+     */
+    private PemEntityImpl[] find(
+            final PsmEntity psmEntity) {
+        final Queue<PemEntityImpl> queue = new LinkedList<PemEntityImpl>();
+        final List<PemEntityImpl> filtered = new LinkedList<PemEntityImpl>();
+        
+        queue.offer(myRoot);
+        
+        while (queue.peek() != null) {
+            final PemEntityImpl pemEntity = queue.poll();
+            
+            if (pemEntity.getPsmEntity().equals(psmEntity)) {
+                filtered.add(pemEntity);
+            }
+            
+            for (PemEntityImpl child: pemEntity.getChildren()) {
+                queue.offer(child);
+            }
+        }
+        
+        return filtered.toArray(new PemEntityImpl[filtered.size()]);
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // Inner Classes
+    private class BranchImpl implements Branch {
         private String myId;
-        private Branch myParent;
+        private BranchImpl myParent;
         private Stack<PemEntityImpl> myCallStack =
                 new Stack<PemEntityImpl>();
         
-        public Branch(String id, Branch parent) {
+        private Branch.State myState;
+        
+        public BranchImpl(
+                final String id, 
+                final BranchImpl parent) {
             myId = id;
             myParent = parent;
         }
@@ -256,29 +363,266 @@ public class ProcessExecutionModelImpl implements ProcessExecutionModel {
             return myId;
         }
         
-        private PemEntityImpl buildSyntheticEntities(PemEntityImpl parent, PemEntityImpl child) {
+        public BranchImpl getParent() {
+            return myParent;
+        }
+        
+        public Branch.State getState() {
+            return myState;
+        }
+        
+        public PemEntityImpl getCurrentActivity() {
+            if (!myCallStack.empty()) {
+                return myCallStack.peek();
+            }
+            
+            return null;
+        }
+        
+        public Stack<PemEntity> getCallStack() {
+            final Stack<PemEntity> stack = new Stack<PemEntity>();
+            
+            stack.addAll(myCallStack);
+            
+            return stack;
+        }
+        
+        public void activityStarted(final PsmEntity psmEntity) {
+            final PsmEntity psmParent = psmEntity.getParent();
+            final PemEntityImpl pemEntity = createEntity(psmEntity, myId, true);
+            
+            if (!myCallStack.empty()) {
+                final PemEntityImpl pemParent = myCallStack.peek();
+                
+                // Sometimes runtime can set duplicate STARTED events. The most 
+                // common case for this is in while and repeatUntil activities,
+                // where these duplicates are used to differentiate between 
+                // iterations. In this case we simply ignore them, but restore 
+                // the myLastStartedEntity variable's value.
+                if (pemParent.getPsmEntity() == psmEntity) {
+                    // Note that we update the myLastStartedEntity with 
+                    // pemParent, and not pemEntity, as the latter is 
+                    // synthetically constructed and does not belong to the 
+                    // model tree.
+                    myLastStartedEntity = pemParent;
+                    return;
+                }
+                
+                final String psmParentTag = psmParent.getTag();
+                if (psmParentTag.equals("compensationHandler") ||
+                        psmParentTag.equals("terminationHandler")) {
+                    // If the current activity is the direct child of a 
+                    // handler (there can be only one), we need to construct 
+                    // the PEM entity for the handler, register the currently 
+                    // executed one as its child and put the handler itself to 
+                    // the model.
+                    final PsmEntity handlerPsm = psmParent;
+                    final PsmEntity scopePsm = psmParent.getParent();
+                    
+                    final PemEntityImpl handlerPem = 
+                            createEntity(handlerPsm, myId, true);
+                    
+                    handlerPem.addChild(pemEntity);
+                    
+                    // We need to find the PEM entity of the scope which 
+                    // contains this handler. Then we'll attach the newly 
+                    // created handler PEM entity to the scope's one.
+                    final PemEntityImpl[] pems = find(scopePsm);
+                    
+                    if (pems.length == 0) {
+                        return;
+                    }
+                    
+                    // Choose the candidate with the largest index, which does 
+                    // not already have a PEM handler attached. Note that it
+                    // holds true for both compensation and termination 
+                    // handlers as the former get executed in reverse order, 
+                    // and for the latter -- only the latest one (whose scope 
+                    // was terminated) will be executed.
+                    PemEntityImpl scopePem = pems[0];
+                    for (int i = 1; i < pems.length; i++) {
+                        if ((pems[i].getIndex() > scopePem.getIndex()) && 
+                                (pems[i].getChildren(handlerPsm).length == 0)) {
+                            scopePem = pems[i];
+                        }
+                    }
+                    
+                    scopePem.addChild(handlerPem);
+                    myCallStack.push(handlerPem);
+                } else {
+                    // In the general case try to rebuild the 'pem' tree part for 
+                    // the given entity and then attach it to the current parent
+                    final PemEntityImpl pemChild = 
+                            buildSyntheticEntities(pemParent, pemEntity);
+                    if (pemChild != null) {
+                        if (pemChild.getPsmEntity().getTag().equals(
+                                "faultHandlers")) {
+                            addEventHandlersToParent(pemChild);
+                        } else {
+                            pemParent.addChild(pemChild);
+                        }
+                    }
+                }
+            } else {
+                if (myParent == null) {
+                    // It's a root branch or an event handler branch.
+                    if (psmEntity.getTag().equals("onAlarm") || 
+                            psmEntity.getTag().equals("onEvent")) {
+                        // We need to find (or create) a PEM entity of the 
+                        // <eventHandlers> tag. In the latter case we also need
+                        // to attach it to its PEM parent (process or scope).
+                        PemEntityImpl[] pems = find(psmParent);
+                        
+                        final PemEntityImpl handlersPem;
+                        if (pems.length == 0) {
+                            handlersPem = createEntity(psmParent, myId, true);
+                            
+                            pems = find(psmParent.getParent());
+                            
+                            if (pems.length == 0) {
+                                return;
+                            }
+                            
+                            PemEntityImpl scopePem = pems[0];
+                            for (int i = 1; i < pems.length; i++) {
+                                if ((pems[i].getIndex() > scopePem.getIndex()) && 
+                                        (pems[i].getChildren(psmEntity).length == 0)) {
+                                    scopePem = pems[i];
+                                }
+                            }
+                            
+                            scopePem.addChild(handlersPem);
+                        } else {
+                            handlersPem = pems[0];
+                        }
+                        
+                        // Then we need to attach the current (<onAlarm> or 
+                        // <onEvent>) entity to this
+                        handlersPem.addChild(pemEntity);
+                        
+                        myCallStack.push(handlersPem);
+                    } else {
+                        myRoot.addChild(pemEntity);
+                    }
+                } else if (psmParent.getTag().equals("flow")) {
+                    // It's a flow branch
+                    myParent.getCurrentActivity().addChild(pemEntity);
+                }
+            }
+            
+            pemEntity.setState(PemEntity.State.STARTED);
+            pemEntity.setLastStartedEventIndex(myLastEventIndex);
+            
+            myLastStartedEntity = pemEntity;
+            myCallStack.push(pemEntity);
+        }
+        
+        public void activityCompleted(final PsmEntity psmEntity) {
+            if (!myCallStack.isEmpty()) {
+                PemEntityImpl pemEntity = myCallStack.peek();
+                
+                if (pemEntity.getPsmEntity() == psmEntity) {
+                    myCallStack.pop();
+                    
+                    if (pemEntity == myLastStartedEntity) {
+                        myLastStartedEntity = null;
+                    }
+                    pemEntity.setState(PemEntity.State.COMPLETED);
+                    
+                    // If this emptied the stack, no other actions need to be 
+                    // taken. Otherwise -- BUSINESS LOGIC !! ;)
+                    if (myCallStack.size() == 0) {
+                        return;
+                    }
+                    
+                    // If the last activity on call stack is a termination or a 
+                    // compensation handler or event handlers container -- 
+                    // remove it. The runtime does not send any events which 
+                    // would allow us to recognize its completion.
+                    pemEntity = myCallStack.peek();
+                    
+                    final String pemEntityTag = 
+                            pemEntity.getPsmEntity().getTag();
+                    if (pemEntityTag.equals("terminationHandler") || 
+                            pemEntityTag.equals("compensationHandler") ||
+                            pemEntityTag.equals("eventHandlers")) {
+                        myCallStack.pop();
+                        
+                        pemEntity.setState(PemEntity.State.COMPLETED);
+                    }
+                }
+            }
+        }
+        
+        // Private /////////////////////////////////////////////////////////////
+        private void setState(
+                final Branch.State newState) {
+            myState = newState;
+        }
+        
+        private PemEntityImpl findInCallStack(
+                final PsmEntity psmEntity) {
+            
+            if (myCallStack.isEmpty()) {
+                return null;
+            }
+            
+            for (PemEntityImpl candidate : myCallStack) {
+                if (candidate.getPsmEntity() == psmEntity) {
+                    return candidate;
+                }
+            }
+            
+            return null;
+        }
+        
+        private PemEntityImpl findInUpperCallStacks(
+                final PsmEntity psmEntity) {
+            
+            final PemEntityImpl pemEntity = findInCallStack(psmEntity);
+            
+            if (pemEntity != null) {
+                return pemEntity;
+            }
+            
+            if (myParent != null) {
+                return myParent.findInUpperCallStacks(psmEntity);
+            }
+            
+            return null;
+        }
+        
+        private PemEntityImpl buildSyntheticEntities(
+                final PemEntityImpl parent, 
+                final PemEntityImpl child) {
             PemEntityImpl pemChild = child;
-            while (pemChild.getPsmEntity().getParent() != parent.getPsmEntity()) {
-                PsmEntity newPsmEntity = pemChild.getPsmEntity().getParent();
+            
+            while (pemChild.getPsmEntity().getParent() != 
+                    parent.getPsmEntity()) {
+                final PsmEntity newPsmEntity = 
+                        pemChild.getPsmEntity().getParent();
+                
                 if (newPsmEntity == null) {
-                    //reached a root and still didn't found appropriate parent?
-                    //weired...
-//                    System.out.println("Couldn't find parent entity for " +
-//                            pemChild.getPsmEntity().getTag() + "(" +
-//                            pemChild.getPsmEntity().getName() + ")");
+                    // Reached a root and still didn't find an appropriate 
+                    // parent? Wierd...
                     return null;
                 }
-                PemEntityImpl newPemEntity = createEntity(newPsmEntity, myId, false);
+                
+                final PemEntityImpl newPemEntity = 
+                        createEntity(newPsmEntity, myId, false);
                 newPemEntity.addChild(pemChild);
                 pemChild = newPemEntity;
+                
                 if (newPsmEntity.getTag().equals("faultHandlers")) {
                     break;
                 }
             }
+            
             return pemChild;
         }
         
-        private void addEventHandlersToParent(PemEntityImpl pemEventHandlers) {
+        private void addEventHandlersToParent(
+                final PemEntityImpl pemEventHandlers) {
             PemEntityImpl parent;
             if (pemEventHandlers.getPsmEntity().getParent().getTag().equals("process")) {
                 parent = myRoot;
@@ -292,144 +636,6 @@ public class ProcessExecutionModelImpl implements ProcessExecutionModel {
 //                System.out.println("Couldn't find parent entity for " +
 //                        pemEventHandlers.getPsmEntity().getTag() + "(" +
 //                        pemEventHandlers.getPsmEntity().getName() + ")");
-            }
-        }
-        
-        public void activityStarted(PsmEntity psmEntity) {
-            PsmEntity psmParent = psmEntity.getParent();
-            PemEntityImpl pemEntity = createEntity(psmEntity, myId, true);
-            if (!myCallStack.empty()) {
-                PemEntityImpl pemParent = myCallStack.peek();
-                //TODO:ugly hack to workaround a bug in the runtime -
-                //ingore duplicated STARTED events
-                if (pemParent.getPsmEntity() == psmEntity) {
-//                    System.out.println("Duplicated STARTED event received for " + psmEntity.getXpath());
-                    return;
-                }
-                //end of hack
-                
-                //TODO:ugly hack to workaround a bug in the runtime - "while" and "repeatUntil"
-                //produce COMPLETED event for every iteration plus one more real COMPLETED event,
-                //so we need to ignore the iteration events.
-                if ("while".equals(psmParent.getTag()) || "repeatUntil".equals(psmParent.getTag())) {
-                    myLoops.add(pemParent);
-                }
-                //end of hack
-                
-                PemEntityImpl pemChild = buildSyntheticEntities(pemParent, pemEntity);
-                if (pemChild != null) {
-                    if (pemChild.getPsmEntity().getTag().equals("faultHandlers")) {
-                        addEventHandlersToParent(pemChild);
-                    } else {
-                        pemParent.addChild(pemChild);
-                    }
-                }
-            } else {
-                if (myParent == null) {
-                    //it's a root branch
-                    myRoot.addChild(pemEntity);
-                } else if (psmParent.getTag().equals("flow")) {
-                    //it's a flow branch
-                    myParent.getCurrentActivity().addChild(pemEntity);
-                } else {
-                    //it's an event handler branch
-                    PsmEntity eventHandler = psmEntity.getParent();
-                    PsmEntity handlers = eventHandler.getParent();
-                    PsmEntity handlersParent = handlers.getParent();
-                    PemEntityImpl pemHandlersParent;
-                    if (handlersParent.getTag().equals("process")) {
-                        pemHandlersParent = myRoot;
-                    } else {
-                        Branch handlersBranch = myParent;
-                        Branch handlersParentBranch = handlersBranch.getParent();
-                        pemHandlersParent = handlersParentBranch.findInCallStack(handlersParent);
-                    }
-                    
-                    PemEntityImpl pemHandlers;
-                    if (pemHandlersParent.hasChildren(handlers)) {
-                        pemHandlers = pemHandlersParent.getChildren(handlers)[0];
-                    } else {
-                        pemHandlers = createEntity(handlers, myId, false);
-                        pemHandlersParent.addChild(pemHandlers);
-                    }
-                    
-                    PemEntityImpl pemEventHandler;
-                    if (pemHandlers.hasChildren(eventHandler)) {
-                        pemEventHandler = pemHandlers.getChildren(eventHandler)[0];
-                    } else {
-                        pemEventHandler = createEntity(eventHandler, myId, false);
-                        pemHandlers.addChild(pemEventHandler);
-                    }
-                    
-                    pemEventHandler.addChild(pemEntity);
-                }
-            }
-            pemEntity.setState(State.STARTED);
-            pemEntity.setLastStartedEventIndex(myLastEventIndex);
-            myLastStartedEntity = pemEntity;
-            myCallStack.push(pemEntity);
-        }
-        
-        public void activityCompleted(PsmEntity psmEntity) {
-            if (!myCallStack.isEmpty()) {
-                PemEntityImpl pemEntity = myCallStack.peek();
-                
-                //TODO:ugly hack to workaround a bug in the runtime - "while" and "repeatUntil"
-                //produce COMPLETED event for every iteration plus one more real COMPLETED event,
-                //so we need to ignore the iteration events.
-                if ("while".equals(psmEntity.getTag()) || "repeatUntil".equals(psmEntity.getTag())) {
-                    if (myLoops.remove(pemEntity)) {
-                        return;
-                    }
-                }
-                //end of hack
-                
-                if (pemEntity.getPsmEntity() == psmEntity) {
-                    myCallStack.pop();
-                    if (pemEntity == myLastStartedEntity) {
-                        myLastStartedEntity = null;
-                    }
-                    pemEntity.setState(State.COMPLETED);
-                    return;
-                }
-            }
-//            System.out.println("Received 'Activity completed' event for " +
-//                    psmEntity.getTag() + "(" + psmEntity.getName() + ") in frame " +
-//                    myId + ", but it doesn't seem to be running");
-        }
-        
-        public Branch getParent() {
-            return myParent;
-        }
-        
-        public PemEntityImpl getCurrentActivity() {
-            if (!myCallStack.empty()) {
-                return myCallStack.peek();
-            } else {
-                return null;
-            }
-        }
-        
-        public PemEntityImpl findInCallStack(PsmEntity psmEntity) {
-            if (myCallStack.isEmpty()) {
-                return null;
-            }
-            for (PemEntityImpl candidate : myCallStack) {
-                if (candidate.getPsmEntity() == psmEntity) {
-                    return candidate;
-                }
-            }
-            return null;
-        }
-        
-        public PemEntityImpl findInUpperCallStacks(PsmEntity psmEntity) {
-            PemEntityImpl pemEntity = findInCallStack(psmEntity);
-            if (pemEntity != null) {
-                return pemEntity;
-            } else if (myParent != null) {
-                return myParent.findInUpperCallStacks(psmEntity);
-            } else {
-                return null;
             }
         }
     }

@@ -1,44 +1,21 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.bpel.debugger.ui.editor;
 
 import java.beans.PropertyChangeEvent;
@@ -46,7 +23,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,7 +31,7 @@ import javax.xml.namespace.QName;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
-import org.netbeans.modules.bpel.core.validation.SelectBpelElement;
+import org.netbeans.modules.bpel.core.util.SelectBpelElement;
 import org.netbeans.modules.bpel.debugger.ui.breakpoint.BreakpointTranslator;
 import org.netbeans.modules.bpel.debugger.ui.util.Log;
 import org.netbeans.modules.bpel.debugger.ui.util.ModelUtil;
@@ -72,12 +48,14 @@ import org.openide.text.Line;
 
 import org.netbeans.modules.bpel.debugger.api.AnnotationType;
 import org.netbeans.modules.bpel.debugger.spi.EditorContext;
+import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @author Alexander Zgursky
+ * @author Kirill Sorokin
  */
 public class BpelEditorContext implements EditorContext {
     
@@ -94,35 +72,32 @@ public class BpelEditorContext implements EditorContext {
             new EditorObserverListener();
     
     private BreakpointTranslator myTranslator;
-
-//    private PropertyChangeSupport myPcs =
-//            new PropertyChangeSupport(this);
     
     /**{@inheritDoc}*/
-    public Object annotate(
-            String url,
-            String xpath,
-            AnnotationType annotationType)
-    {
-        DataObject dataObject = EditorUtil.getDataObject(url);
+    public Object addAnnotation(
+            final String url,
+            final String xpath,
+            final int lineNumber,
+            final AnnotationType annotationType) {
+        
+        final DataObject dataObject = EditorUtil.getDataObject(url);
         if (dataObject == null) {
             Log.out("DataObject is null: " + url);
             return null;
         }
         
-        BpelModel model = EditorUtil.getBpelModel(dataObject);
+        final BpelModel model = EditorUtil.getBpelModel(dataObject);
         if (model == null) {
             Log.out("BpelModel is null: " + url);
             return null;
         }
         
-        UniqueId bpelEntityId = ModelUtil.getBpelEntityId(model, xpath);
-        if (bpelEntityId == null) {
-            Log.out("BPEL Entity not found: " + dataObject + ", " + xpath);
-            return null;
-        }
+        final BpelAnnotation annotation = new BpelAnnotation(
+                annotationType, 
+                dataObject,
+                xpath, 
+                lineNumber);
         
-        BpelAnnotation annotation = new BpelAnnotation(annotationType, bpelEntityId);
         if (annotation.attach()) {
             return annotation;
         } else {
@@ -136,10 +111,20 @@ public class BpelEditorContext implements EditorContext {
         bpelAnnotation.detach();
     }
     
+    public AnnotationType getAnnotationType(Object annotation) {
+        BpelAnnotation bpelAnnotation = (BpelAnnotation) annotation;
+        return bpelAnnotation.getType();
+    }
+    
     public String getXpath(Object annotation) {
+        BpelAnnotation bpelAnnotation = (BpelAnnotation) annotation;
+        return bpelAnnotation.getXpath();
+    }
+    
+    public int getLineNumber(Object annotation) {
         BpelAnnotation bpelAnnotation = (BpelAnnotation)annotation;
-        UniqueId bpelEntityId = bpelAnnotation.getBpelEntityId();
-        return ModelUtil.getXpath(bpelEntityId);
+        
+        return bpelAnnotation.getLineNumber();
     }
     
     public QName getProcessQName(String url) {
@@ -164,12 +149,14 @@ public class BpelEditorContext implements EditorContext {
     }
     
     public QName getCurrentProcessQName() {
-        TopComponent tc = WindowManager.getDefault().getRegistry().getActivated();
-        if (tc == null) {
+        final Node[] nodes = 
+                WindowManager.getDefault().getRegistry().getActivatedNodes();
+        if ((nodes == null) || (nodes.length == 0)) {
             return null;
         }
         
-        BpelModel model = (BpelModel)tc.getLookup().lookup(BpelModel.class);
+        final BpelModel model = 
+                (BpelModel) nodes[0].getLookup().lookup(BpelModel.class);
         if (model == null) {
             return null;
         }
@@ -249,8 +236,11 @@ public class BpelEditorContext implements EditorContext {
         return true;
     }
 
-    public int translateBreakpointLine(String url, int lineNumber) {
-        return getBreakpointTranslator().translateBreakpointLine(url, lineNumber);
+    public int translateBreakpointLine(
+            final String url, 
+            final int lineNumber) {
+        return getBreakpointTranslator().translateBreakpointLine(
+                url, lineNumber);
     }
     
     public synchronized void addAnnotationListener(Object annotation, PropertyChangeListener l) {
@@ -338,6 +328,7 @@ public class BpelEditorContext implements EditorContext {
 //        }
     }
     
+    // Private /////////////////////////////////////////////////////////////////
     private void notifyAnnotationChanged(EditorCookie editor) {
         PropertyChangeSupport[] changeSupports = null;
         
@@ -477,24 +468,8 @@ public class BpelEditorContext implements EditorContext {
         }
     }
     
-//    private Node getCurrentNode() {
-//        Node [] nodes = WindowManager.getDefault().getRegistry().getCurrentNodes();
-//        
-//        if (nodes == null) {
-//            Log.out("Current nodes are null"); // NOI18N
-//            return null;
-//        }
-//        if (nodes.length == 0) {
-//            Log.out("There is no current node"); // NOI18N
-//            return null;
-//        }
-//        if (nodes.length != 1) {
-//            Log.out("There are too many current nodes"); // NOI18N
-//            return null;
-//        }
-//        return nodes [0];
-//    }
-    
+    ////////////////////////////////////////////////////////////////////////////
+    // Inner Classes
     private class EditorObserverListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent evt) {
             notifyAnnotationChanged((EditorCookie)evt.getSource());

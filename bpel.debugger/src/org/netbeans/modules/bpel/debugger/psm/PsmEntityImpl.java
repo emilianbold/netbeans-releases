@@ -1,42 +1,20 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 package org.netbeans.modules.bpel.debugger.psm;
@@ -49,6 +27,7 @@ import org.netbeans.modules.bpel.debugger.api.psm.PsmEntity;
 /**
  *
  * @author Alexander Zgursky
+ * @author Kirill Sorokin
  */
 public class PsmEntityImpl implements PsmEntity {
     private final String myXpath;
@@ -57,19 +36,27 @@ public class PsmEntityImpl implements PsmEntity {
     private final boolean myIsActivity;
     private final boolean myIsLoop;
     
+    private final ProcessStaticModelImpl myModel;
+    
     private PsmEntityImpl myParent;
     private PsmEntityImpl myLoopChild;
     private List<PsmEntityImpl> myChildren;
     
     /** Creates a new instance of PsmEntityImpl */
-    protected PsmEntityImpl(String xpath, QName qName,
-            String name, boolean isActivity, boolean isLoop)
-    {
+    protected PsmEntityImpl(
+            final String xpath, 
+            final QName qName,
+            final String name, 
+            final boolean isActivity, 
+            final boolean isLoop,
+            final ProcessStaticModelImpl model) {
         myXpath = xpath;
         myQName = qName;
         myName = name;
         myIsActivity = isActivity;
         myIsLoop = isLoop;
+        
+        myModel = model;
     }
     
     public String getXpath() {
@@ -96,10 +83,14 @@ public class PsmEntityImpl implements PsmEntity {
         return myIsLoop;
     }
     
+    public ProcessStaticModelImpl getModel() {
+        return myModel;
+    }
+    
     public PsmEntity getParent() {
         return myParent;
     }
-
+    
     public PsmEntityImpl[] getChildren() {
         if (myChildren != null) {
             return myChildren.toArray(new PsmEntityImpl[myChildren.size()]);
@@ -115,7 +106,7 @@ public class PsmEntityImpl implements PsmEntity {
             return 0;
         }
     }
-
+    
     public boolean hasChildren() {
         return myChildren != null;
     }
@@ -124,19 +115,34 @@ public class PsmEntityImpl implements PsmEntity {
         return myLoopChild;
     }
     
-    
-    protected void addChild(PsmEntityImpl child) {
+    protected void addChild(
+            final PsmEntityImpl child) {
         if (myChildren == null) {
             myChildren = new ArrayList<PsmEntityImpl>();
         }
-        myChildren.add(child);
+        
+        // A minor ugly hack for runtime's not being able to supply children in
+        // a correct order.
+        final String name = myQName.getLocalPart();
+        if (("if".equals(name) || "elseif".equals(name)) && 
+                "condition".equals(child.getQName().getLocalPart())) {
+            
+            // condition should be the first child of <if>/<elseif>
+            myChildren.add(0, child);
+        } else {
+            myChildren.add(child);
+        }
+        
         if (myIsLoop) {
-            assert myLoopChild == null : "Loops can not have more than one child";
+            assert myLoopChild == null : 
+                    "Loops can not have more than one child";
+            
             myLoopChild = child;
         }
+        
         child.setParent(this);
     }
-
+    
     private void setParent(PsmEntityImpl parent) {
         myParent = parent;
     }

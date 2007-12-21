@@ -1,54 +1,32 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 package org.netbeans.modules.bpel.debugger.ui.breakpoint;
 
-import org.netbeans.modules.bpel.debugger.ui.util.ModelUtil;
-import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.bpel.model.api.support.UniqueId;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.modules.bpel.debugger.api.AnnotationType;
+import org.netbeans.modules.bpel.debugger.api.EditorContextBridge;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.modules.bpel.debugger.api.breakpoints.BpelBreakpoint;
 import org.netbeans.modules.bpel.debugger.api.breakpoints.LineBreakpoint;
+import org.netbeans.modules.bpel.debugger.ui.editor.BpelEditorContext;
 import org.netbeans.modules.bpel.debugger.ui.util.EditorUtil;
-import org.openide.loaders.DataObject;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -56,33 +34,58 @@ import org.openide.loaders.DataObject;
  */
 public class BpelLineBreakpointView extends BpelBreakpointView {
     
+    private BpelBreakpointListener myBreakpointListener;
+    
     protected String getName(BpelBreakpoint breakpoint) throws UnknownTypeException {
-        if ( !(breakpoint instanceof LineBreakpoint)) {
+        if (!(breakpoint instanceof LineBreakpoint)) {
             throw new UnknownTypeException(breakpoint);
         }
-        LineBreakpoint lbp = (LineBreakpoint) breakpoint;
-        DataObject dataObject = EditorUtil.getDataObject(lbp.getURL());
-        String strLine = "(broken)";
-        if (dataObject != null) {
-            BpelModel model = EditorUtil.getBpelModel(dataObject);
-            if (model != null) {
-                UniqueId bpelEntityId = ModelUtil.getBpelEntityId(model, lbp.getXpath());
-                if (bpelEntityId != null) {
-                    int lineNumber = ModelUtil.getLineNumber(bpelEntityId);
-                    if (lineNumber > 0) {
-                        strLine = "" + lineNumber;
-                    }
+        
+        if (myBreakpointListener == null) {
+            myBreakpointListener = (BpelBreakpointListener) 
+                    DebuggerManager.getDebuggerManager().lookupFirst 
+                    (null, BpelBreakpointListener.class);
+        }
+        
+        final LineBreakpoint lbp = (LineBreakpoint) breakpoint;
+        final Object annotation = myBreakpointListener.findAnnotation(lbp);
+        
+        String result = EditorUtil.getFileName(lbp.getURL()) +
+                ": " + lbp.getLineNumber();
+        
+        if (annotation != null) {
+            final AnnotationType type = 
+                    EditorContextBridge.getAnnotationType(annotation);
+            
+            if (type != null) {
+                if (AnnotationType.BROKEN_BREAKPOINT.equals(type)) {
+                    result += " (broken)";
                 }
             }
         }
-        return EditorUtil.getFileName(lbp.getURL()) +
-                ": " + strLine; // NOI18N
+        
+        return result;
     }
     
     public String getIconBase(Object object) throws UnknownTypeException {
-        if ( !(object instanceof LineBreakpoint)) {
+        if (!(object instanceof LineBreakpoint)) {
             throw new UnknownTypeException(object);
         }
+        
+        final LineBreakpoint lbp = (LineBreakpoint) object;
+        final Object annotation = myBreakpointListener.findAnnotation(lbp);
+        
+        if (annotation != null) {
+            final AnnotationType type = 
+                    EditorContextBridge.getAnnotationType(annotation);
+            
+            if (type != null) {
+                if (AnnotationType.BROKEN_BREAKPOINT.equals(type)) {
+                    return BROKEN_BREAKPOINT;
+                }
+            }
+        }
+        
         return LINE_BREAKPOINT;
     }
 }

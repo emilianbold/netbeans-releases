@@ -1,61 +1,36 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 package org.netbeans.modules.bpel.debugger.psm;
 
 import java.util.HashMap;
-import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 import javax.xml.namespace.QName;
-import org.netbeans.modules.bpel.debugger.api.BpelProcess;
-import org.netbeans.modules.bpel.debugger.api.EditorContextBridge;
 import org.netbeans.modules.bpel.debugger.api.psm.ProcessStaticModel;
 import org.netbeans.modules.bpel.debugger.bdiclient.impl.BpelProcessImpl;
-import org.netbeans.modules.bpel.debuggerbdi.rmi.api.BPELProcessRef;
 import org.netbeans.modules.bpel.debuggerbdi.rmi.api.XMLElementRef;
 
 /**
  *
  * @author Alexander Zgursky
+ * @author Kirill Sorokin
  */
 public class ProcessStaticModelImpl implements ProcessStaticModel {
     
@@ -63,14 +38,19 @@ public class ProcessStaticModelImpl implements ProcessStaticModel {
     private final BpelProcessImpl myBpelProcess;
     private PsmEntityImpl myRoot;
 
-    public static ProcessStaticModelImpl build(BpelProcessImpl bpelProcess) {
-        ProcessStaticModelImpl psm = new ProcessStaticModelImpl(bpelProcess);
+    public static ProcessStaticModelImpl build(
+            final BpelProcessImpl bpelProcess) {
+        
+        final ProcessStaticModelImpl psm = 
+                new ProcessStaticModelImpl(bpelProcess);
+        
         psm.build();
         return psm;
     }
     
-    /** Creates a new instance of ProcessStaticModelImpl */
-    private ProcessStaticModelImpl(BpelProcessImpl bpelProcess) {
+    private ProcessStaticModelImpl(
+            final BpelProcessImpl bpelProcess) {
+        
         myBpelProcess = bpelProcess;
     }
     
@@ -82,30 +62,38 @@ public class ProcessStaticModelImpl implements ProcessStaticModel {
         return myRoot;
     }
     
-    public PsmEntityImpl find(String xpath) {
+    public PsmEntityImpl find(
+            final String xpath) {
+        
         if (myRoot == null) {
             return null;
         } else if (!xpath.startsWith("/")) {
             return null;
         }
         
-        StringTokenizer tokenizer = new StringTokenizer(xpath, "/", false);
+        final StringTokenizer tokenizer = 
+                new StringTokenizer(xpath, "/", false);
+        
         PsmEntityImpl currentEntity = null;
         while (tokenizer.hasMoreTokens()) {
-            String token = tokenizer.nextToken();
-            String noPrefix = token.substring(token.indexOf(':') + 1);
-            int index;
-            String localPart;
+            final String token = tokenizer.nextToken();
+            final String noPrefix = token.substring(token.indexOf(':') + 1);
+            
+            final int index;
+            final String localPart;
             if (noPrefix.endsWith("]")) {
-                int ind = noPrefix.indexOf('[');
-                localPart = noPrefix.substring(0, ind);
-                index = Integer.parseInt(noPrefix.substring(ind + 1, noPrefix.length() - 1));
+                final int i = noPrefix.indexOf('[');
+                
+                localPart = noPrefix.substring(0, i);
+                index = Integer.parseInt(
+                        noPrefix.substring(i + 1, noPrefix.length() - 1));
             } else {
                 localPart = noPrefix;
                 index = 1;
             }
             
-            if (currentEntity == null && localPart.equals("process") && index == 1) {
+            if ((currentEntity == null) && 
+                    localPart.equals("process") && (index == 1)) {
                 currentEntity = myRoot;
                 continue;
             }
@@ -113,7 +101,7 @@ public class ProcessStaticModelImpl implements ProcessStaticModel {
             if (currentEntity == null) {
                 return null;
             }
-
+            
             int foundIndex = 0;
             for (PsmEntityImpl child : currentEntity.getChildren()) {
                 if (child.getQName().getLocalPart().equals(localPart)) {
@@ -124,60 +112,75 @@ public class ProcessStaticModelImpl implements ProcessStaticModel {
                     }
                 }
             }
+            
             if (foundIndex != index) {
                 return null;
             }
         }
+        
         return currentEntity;
     }
     
     private void build() {
-        XMLElementRef rootRef = myBpelProcess.getProcessRef().getXMLElement();
+        final XMLElementRef rootRef = 
+                myBpelProcess.getProcessRef().getXMLElement();
+        
         assert "process".equals(rootRef.getLocalName());
+        
         initBuilders();
-        AbstractBuilder processBuilder = new EntityBuilder();
+        
+        final AbstractBuilder processBuilder = new EntityBuilder();
         myRoot = processBuilder.build(null, rootRef, 1);
         myBuilders = null;
     }
     
     private void initBuilders() {
-        ActivityBuilder activityBuilder = new ActivityBuilder();
-        LoopActivityBuilder loopActivityBuilder = new LoopActivityBuilder();
-        EventHandlerBuilder eventHandlerBuilder = new EventHandlerBuilder();
-        EventHandlersContainerBuilder eventHandlersContainerBuilder = new EventHandlersContainerBuilder();
-        EntityBuilder entityBuilder = new EntityBuilder();
+        final ActivityBuilder activityBuilder = 
+                new ActivityBuilder();
+        final LoopActivityBuilder loopActivityBuilder = 
+                new LoopActivityBuilder();
+        final EventHandlerBuilder eventHandlerBuilder = 
+                new EventHandlerBuilder();
+        final EventHandlersContainerBuilder eventHandlersContainerBuilder = 
+                new EventHandlersContainerBuilder();
+        final EntityBuilder entityBuilder = 
+                new EntityBuilder();
         
         myBuilders = new HashMap<String, AbstractBuilder>();
         
-        myBuilders.put("empty", activityBuilder);
-        myBuilders.put("invoke", activityBuilder);
-        myBuilders.put("receive", activityBuilder);
-        myBuilders.put("reply", activityBuilder);
         myBuilders.put("assign", activityBuilder);
-        myBuilders.put("wait", activityBuilder);
-        myBuilders.put("throw", activityBuilder);
-        myBuilders.put("terminate", activityBuilder);
-        myBuilders.put("flow", activityBuilder);
-        myBuilders.put("while", loopActivityBuilder);
-        myBuilders.put("sequence", activityBuilder);
-        myBuilders.put("pick", activityBuilder);
-        myBuilders.put("scope", activityBuilder);
-        myBuilders.put("faultHandlers", entityBuilder);
         myBuilders.put("catch", entityBuilder);
         myBuilders.put("catchAll", entityBuilder);
-        myBuilders.put("onMessage", entityBuilder);
-        myBuilders.put("compensationHandler", entityBuilder);
         myBuilders.put("compensate", activityBuilder);
-        myBuilders.put("else", entityBuilder);
-        myBuilders.put("elseIf", entityBuilder);
-        myBuilders.put("validate", activityBuilder);
-        myBuilders.put("terminationHandler", entityBuilder);
-        myBuilders.put("rethrow", activityBuilder);
-        myBuilders.put("repeatUntil", loopActivityBuilder);
-        myBuilders.put("onAlarm", entityBuilder); //pick
+        myBuilders.put("compensateScope", activityBuilder);
+        myBuilders.put("compensationHandler", entityBuilder);
+        myBuilders.put("empty", activityBuilder);
+        myBuilders.put("exit", activityBuilder);
+        myBuilders.put("flow", activityBuilder);
         myBuilders.put("forEach", loopActivityBuilder);
         myBuilders.put("if", activityBuilder);
-        myBuilders.put("compensateScope", activityBuilder);
+        myBuilders.put("invoke", activityBuilder);
+        myBuilders.put("onMessage", entityBuilder);
+        myBuilders.put("pick", activityBuilder);
+        myBuilders.put("receive", activityBuilder);
+        myBuilders.put("reply", activityBuilder);
+        myBuilders.put("repeatUntil", loopActivityBuilder);
+        myBuilders.put("rethrow", activityBuilder);
+        myBuilders.put("scope", activityBuilder);
+        myBuilders.put("sequence", activityBuilder);
+        myBuilders.put("terminate", activityBuilder);
+        myBuilders.put("terminationHandler", entityBuilder);
+        myBuilders.put("throw", activityBuilder);
+        myBuilders.put("validate", activityBuilder);
+        myBuilders.put("wait", activityBuilder);
+        myBuilders.put("while", loopActivityBuilder);
+        
+        myBuilders.put("condition", entityBuilder);
+        myBuilders.put("copy", entityBuilder);
+        myBuilders.put("else", entityBuilder);
+        myBuilders.put("elseif", entityBuilder);
+        
+        myBuilders.put("faultHandlers", entityBuilder);
         
         myBuilders.put("eventHandlers", eventHandlersContainerBuilder);
         myBuilders.put("eventHandlers.onEvent", eventHandlerBuilder);
@@ -185,43 +188,61 @@ public class ProcessStaticModelImpl implements ProcessStaticModel {
     }
     
     private abstract class AbstractBuilder {
-        public PsmEntityImpl build(PsmEntityImpl psmParent, XMLElementRef xmlElementRef, int tagIndex) {
-            String localName = xmlElementRef.getLocalName();
-            String name = xmlElementRef.getNameAttribute();
-            QName qName = new QName(BPEL_NAMESPACE_URI, localName);
-            String parentXpath = psmParent != null ? psmParent.getXpath() : "";
-            String xpath = parentXpath + "/" + BPEL_NAMESPACE_PREFIX + ":" + localName + "[" + tagIndex + "]";
-            PsmEntityImpl psmEntity = createPsmEntity(xpath, qName, name);
+        public PsmEntityImpl build(
+                final PsmEntityImpl psmParent, 
+                final XMLElementRef xmlElementRef, 
+                final int tagIndex) {
+            
+            final String localName = xmlElementRef.getLocalName();
+            final String name = xmlElementRef.getNameAttribute();
+            final QName qName = new QName(BPEL_NAMESPACE_URI, localName);
+            
+            final String parentXpath = 
+                    psmParent != null ? psmParent.getXpath() : "";
+            final String xpath = parentXpath + "/" + 
+                    BPEL_NAMESPACE_PREFIX + ":" + 
+                    localName + "[" + tagIndex + "]";
+            
+            final PsmEntityImpl psmEntity = createPsmEntity(xpath, qName, name);
             if (psmParent != null) {
                 psmParent.addChild(psmEntity);
             }
+            
             buildChildren(psmEntity, xmlElementRef);
+            
             return psmEntity;
         }
         
-        protected void buildChildren(PsmEntityImpl psmParent, XMLElementRef xmlElementRef) {
-            int childrenCount = xmlElementRef.getChildrenCount();
+        protected void buildChildren(
+                final PsmEntityImpl psmParent, 
+                final XMLElementRef xmlElementRef) {
+            
+            final int childrenCount = xmlElementRef.getChildrenCount();
+            
             XMLElementRef eventHandlers = null;
             XMLElementRef faultHandlers = null;
+            
             Map<String, Integer> tagIndexes = new HashMap<String, Integer>();
             for (int i = 0; i < childrenCount; i++) {
-                XMLElementRef childRef = xmlElementRef.getChild(i);
-                String localName = childRef.getLocalName();
+                final XMLElementRef childRef = xmlElementRef.getChild(i);
+                final String localName = childRef.getLocalName();
                 
                 if ("eventHandlers".equals(localName)) {
                     eventHandlers = childRef;
                     continue;
-                } else if ("faultHandlers".equals(localName)) {
+                }
+                
+                if ("faultHandlers".equals(localName)) {
                     faultHandlers = childRef;
                     continue;
                 }
                 
-                AbstractBuilder builder = myBuilders.get(localName);
+                final AbstractBuilder builder = myBuilders.get(localName);
                 if (builder == null) {
                     continue;
                 }
                 
-                int tagIndex;
+                final int tagIndex;
                 if (tagIndexes.containsKey(localName)) {
                     tagIndex = tagIndexes.get(localName) + 1;
                 } else {
@@ -231,54 +252,88 @@ public class ProcessStaticModelImpl implements ProcessStaticModel {
                 
                 builder.build(psmParent, childRef, tagIndex);
             }
+            
             if (faultHandlers != null) {
-                myBuilders.get("faultHandlers").build(psmParent, faultHandlers, 1);
+                myBuilders.get("faultHandlers").build(
+                        psmParent, faultHandlers, 1);
             }
+            
             if (eventHandlers != null) {
-                myBuilders.get("eventHandlers").build(psmParent, eventHandlers, 1);
+                myBuilders.get("eventHandlers").build(
+                        psmParent, eventHandlers, 1);
             }
         }
         
-        protected abstract PsmEntityImpl createPsmEntity(String xpath, QName qName, String name);
+        protected abstract PsmEntityImpl createPsmEntity(
+                final String xpath, 
+                final QName qName, 
+                final String name);
     }
     
     private class ActivityBuilder extends AbstractBuilder {
-        protected PsmEntityImpl createPsmEntity(String xpath, QName qName, String name) {
-            return new PsmEntityImpl(xpath, qName, name, true, false);
+        protected PsmEntityImpl createPsmEntity(
+                final String xpath, 
+                final QName qName, 
+                final String name) {
+            
+            return new PsmEntityImpl(xpath, qName, name, true, false, 
+                    ProcessStaticModelImpl.this);
         }
     }
     
     private class LoopActivityBuilder extends AbstractBuilder {
-        protected PsmEntityImpl createPsmEntity(String xpath, QName qName, String name) {
-            return new PsmEntityImpl(xpath, qName, name, true, true);
+        protected PsmEntityImpl createPsmEntity(
+                final String xpath, 
+                final QName qName, 
+                final String name) {
+            
+            return new PsmEntityImpl(xpath, qName, name, true, true,
+                    ProcessStaticModelImpl.this);
         }
     }
     
     private class EventHandlerBuilder extends AbstractBuilder {
-        protected PsmEntityImpl createPsmEntity(String xpath, QName qName, String name) {
-            return new PsmEntityImpl(xpath, qName, name, false, true);
+        protected PsmEntityImpl createPsmEntity(
+                final String xpath, 
+                final QName qName, 
+                final String name) {
+            
+            return new PsmEntityImpl(xpath, qName, name, false, true,
+                    ProcessStaticModelImpl.this);
         }
     }
     
     private class EntityBuilder extends AbstractBuilder {
-        protected PsmEntityImpl createPsmEntity(String xpath, QName qName, String name) {
-            return new PsmEntityImpl(xpath, qName, name, false, false);
+        protected PsmEntityImpl createPsmEntity(
+                final String xpath, 
+                final QName qName, 
+                final String name) {
+            
+            return new PsmEntityImpl(xpath, qName, name, false, false,
+                    ProcessStaticModelImpl.this);
         }
     }
     
     private class EventHandlersContainerBuilder extends EntityBuilder {
-        protected void buildChildren(PsmEntityImpl psmParent, XMLElementRef xmlElementRef) {
-            int childrenCount = xmlElementRef.getChildrenCount();
+        @Override
+        protected void buildChildren(
+                final PsmEntityImpl psmParent, 
+                final XMLElementRef xmlElementRef) {
+            
+            final int childrenCount = xmlElementRef.getChildrenCount();
+            
             Map<String, Integer> tagIndexes = new HashMap<String, Integer>();
             for (int i = 0; i < childrenCount; i++) {
-                XMLElementRef childRef = xmlElementRef.getChild(i);
-                String localName = childRef.getLocalName();
-                AbstractBuilder builder = myBuilders.get("eventHandlers." + localName);
+                final XMLElementRef childRef = xmlElementRef.getChild(i);
+                final String localName = childRef.getLocalName();
+                
+                final AbstractBuilder builder = 
+                        myBuilders.get("eventHandlers." + localName);
                 if (builder == null) {
                     continue;
                 }
                 
-                int tagIndex;
+                final int tagIndex;
                 if (tagIndexes.containsKey(localName)) {
                     tagIndex = tagIndexes.get(localName) + 1;
                 } else {

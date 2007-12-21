@@ -80,7 +80,6 @@ import org.netbeans.modules.soa.ui.SoaUiUtil;
 public class NewBpelFileIterator implements TemplateWizard.Iterator {
     
     private static final long serialVersionUID = 1L;
-    
     public static final Dimension PREF_SIZE = new Dimension(560,350);
     
     protected WizardDescriptor.Panel[] createPanels(Project project, TemplateWizard wizard) {

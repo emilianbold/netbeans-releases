@@ -1,53 +1,29 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 
 package org.netbeans.modules.bpel.debugger.bdiclient.impl;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.Hashtable;
 import java.util.logging.Logger;
+import org.netbeans.modules.bpel.debugger.BpelDebuggerImpl;
 import org.netbeans.modules.bpel.debugger.api.DebugException;
-
 import org.netbeans.modules.bpel.debuggerbdi.rmi.api.BPELDebugger;
 import org.netbeans.modules.bpel.debuggerbdi.rmi.api.DebugListener;
 import org.netbeans.modules.bpel.debuggerbdi.rmi.wp.ObjectAdapter;
@@ -55,7 +31,7 @@ import org.netbeans.modules.bpel.debuggerbdi.rmi.wp.RMIClient;
 import org.netbeans.modules.bpel.debuggerbdi.rmi.wp.RMIServer;
 import org.netbeans.modules.bpel.debuggerbdi.rmi.wp.RMIService;
 import org.netbeans.modules.bpel.debuggerbdi.rmi.wp.RMIServiceFactory;
-import org.netbeans.modules.bpel.debugger.BpelDebuggerImpl;
+
 
 /**
  * Connector implementation for the Alaska BPEL debugger client.
@@ -63,14 +39,23 @@ import org.netbeans.modules.bpel.debugger.BpelDebuggerImpl;
  * creation of the controller implementation.
  * 
  * @author Sun Microsystems
- * @author Sun Microsystems
- * @author Sun Microsystems
  */
 public class BDIDebugConnector {
 
-    private static Logger LOGGER = Logger.getLogger(BDIDebugConnector.class.getName());
-    private static Hashtable allConnectors = new Hashtable ();
+    private static Logger LOGGER = Logger.getLogger(
+            BDIDebugConnector.class.getName());
     
+    private static Hashtable<String, BDIDebugConnector> allConnectors = 
+            new Hashtable<String, BDIDebugConnector>();
+    
+    public synchronized static BDIDebugConnector getDebugConnector (
+            final String host, 
+            final int port) {
+        return allConnectors.get(host + ":" + port);
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // Instance
     private boolean mIsInitialized;
     private boolean mIsAttached;
     private RMIService mRmiService;
@@ -86,13 +71,11 @@ public class BDIDebugConnector {
     
     private final BpelDebuggerImpl mDebugger;
     
-    
     public BDIDebugConnector(BpelDebuggerImpl debugger) {
         mDebugger = debugger;
         initializeConnectivity();
-        mLocalListener = new ClientDebuggerListernStub();
+        mLocalListener = new ClientDebuggerListenerStub();
     }
-    
     
     private void initializeConnectivity() {
         try {
@@ -109,11 +92,6 @@ public class BDIDebugConnector {
             mIsInitialized = true;
         } catch (Exception e) {
             mException = e;
-            StringWriter strWriter = new StringWriter();
-            PrintWriter writer = new PrintWriter(strWriter);
-            e.printStackTrace(writer);
-            writer.flush();
-            strWriter.flush();
         }
     }
     
@@ -123,10 +101,6 @@ public class BDIDebugConnector {
     
     public Exception getException() {
         return mException;
-    }
-    
-    public synchronized static BDIDebugConnector getDebugConnector (String host, int port) {
-        return (BDIDebugConnector)allConnectors.get(host + ":" + port);
     }
     
     public void attach(final String host, final int port) {
@@ -220,15 +194,27 @@ public class BDIDebugConnector {
         }
     }
     
-    
-    class ClientDebuggerListernStub implements DebugListener {
+    ////////////////////////////////////////////////////////////////////////////
+    // Inner Classes
+    class ClientDebuggerListenerStub implements DebugListener {
         private BPELDebugger bpDebugger = null;
+        
         public void setDebugger(BPELDebugger debugger) {
             bpDebugger = debugger;
         }
+        
         public void socketClosed(Object arg0) {
             if (bpDebugger != null) {
-                bpDebugger.detach();
+                // Supposedly any kind of exception can be thrown from this 
+                // invocation. Since this operation is kind of a clean-up one
+                // we should merely catch them (to avoid showing it to the
+                // user) and log.
+                try {
+                    bpDebugger.detach();
+                } catch (Exception e) {
+                    LOGGER.warning("Exception in " +
+                            "ClientDebuggerListernStub.socketClosed:\n" + e);
+                }
             }
         }
     }

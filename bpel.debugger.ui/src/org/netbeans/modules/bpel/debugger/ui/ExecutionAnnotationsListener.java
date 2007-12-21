@@ -1,59 +1,33 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 package org.netbeans.modules.bpel.debugger.ui;
 
 import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.HashMap;
 import java.util.IdentityHashMap;
-import java.util.Iterator;
 import java.util.Map;
-import javax.swing.SwingUtilities;
-
-import org.netbeans.api.debugger.*;
+import org.netbeans.api.debugger.DebuggerEngine;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.modules.bpel.debugger.api.AnnotationType;
 import org.netbeans.modules.bpel.debugger.api.BpelDebugger;
 import org.netbeans.modules.bpel.debugger.api.EditorContextBridge;
-import org.netbeans.modules.bpel.debugger.api.Position;
 import org.netbeans.modules.bpel.debugger.api.ProcessInstance;
 import org.netbeans.modules.bpel.debugger.api.SourcePath;
 import org.netbeans.modules.bpel.debugger.api.pem.PemEntity;
@@ -61,50 +35,54 @@ import org.netbeans.modules.bpel.debugger.api.pem.ProcessExecutionModel;
 import org.netbeans.modules.bpel.debugger.api.psm.ProcessStaticModel;
 import org.netbeans.modules.bpel.debugger.api.psm.PsmEntity;
 
+import org.netbeans.modules.bpel.debugger.ui.util.EditorUtil;
+import org.netbeans.modules.bpel.debugger.ui.util.ModelUtil;
+import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.openide.util.RequestProcessor;
-
 
 /**
  * @author Alexander Zgursky
  */
 public class ExecutionAnnotationsListener
         extends DebuggerManagerAdapter
-        implements ProcessExecutionModel.Listener
-{
+        implements ProcessExecutionModel.Listener {
 
     // annotation for current line
-    private transient Object                myExecutionAnnotations;
-    private transient Object                myLock = new Object();
-    private ProcessInstance                 myCurrentProcessInstance;
-    private ProcessExecutionModel           myCurrentPem;
-    private BpelDebugger                    myCurrentDebugger;
-    private SourcePath                      mySourcePath;
-    private final AnnotationsHolder         myAnnotationsHolder =
+    private ProcessInstance myCurrentProcessInstance;
+    private ProcessExecutionModel myCurrentPem;
+    private BpelDebugger myCurrentDebugger;
+    private SourcePath mySourcePath;
+    private final AnnotationsHolder myAnnotationsHolder = 
             new AnnotationsHolder();
-
-
+            
+    @Override
     public String[] getProperties () {
         return new String[] {DebuggerManager.PROP_CURRENT_ENGINE};
     }
-
+    
     /**
      * Listens BpelDebuggerImpl and DebuggerManager.
      */
+    @Override
     public void propertyChange (PropertyChangeEvent e) {
-        if (e.getPropertyName() == DebuggerManager.PROP_CURRENT_ENGINE) {
+        if (DebuggerManager.PROP_CURRENT_ENGINE.equals(
+                e.getPropertyName())) {
+            
             updateCurrentDebugger();
             updateCurrentProcessInstance();
             annotate();
-        } else if (e.getPropertyName() == BpelDebugger.PROP_CURRENT_PROCESS_INSTANCE) {
+        } else if (BpelDebugger.PROP_CURRENT_PROCESS_INSTANCE.equals(
+                e.getPropertyName())) {
+            
             updateCurrentProcessInstance();
             annotate();
         }
     }
-
+    
     public void modelUpdated() {
         annotate();
     }
-
+    
     // helper methods ..........................................................
 
     private void updateCurrentDebugger () {
@@ -145,10 +123,12 @@ public class ExecutionAnnotationsListener
 
     private void updateCurrentProcessInstance() {
         if (myCurrentDebugger != null) {
-            myCurrentProcessInstance = myCurrentDebugger.getCurrentProcessInstance();
+            myCurrentProcessInstance = 
+                    myCurrentDebugger.getCurrentProcessInstance();
         } else {
             myCurrentProcessInstance = null;
         }
+        
         updatePem();
     }
     
@@ -156,8 +136,10 @@ public class ExecutionAnnotationsListener
         if (myCurrentPem != null) {
             myCurrentPem.removeListener(this);
         }
+        
         if (myCurrentProcessInstance != null) {
             myCurrentPem = myCurrentProcessInstance.getProcessExecutionModel();
+            
             if (myCurrentPem != null) {
                 myCurrentPem.addListener(this);
             }
@@ -170,13 +152,14 @@ public class ExecutionAnnotationsListener
     
     private void annotate() {
         RequestProcessor.Task dependantTask = null;
+        
         if (myAnnotationTask != null) {
             if (!myAnnotationTask.cancel()) {
                 dependantTask = myAnnotationTask;
             }
         }
         
-        AnnotationRunnable annotationRunnable =
+        final AnnotationRunnable annotationRunnable =
                 new AnnotationRunnable(dependantTask, myCurrentPem);
         myAnnotationTask = RequestProcessor.getDefault().post(
                 annotationRunnable, 200);
@@ -187,9 +170,9 @@ public class ExecutionAnnotationsListener
         private final ProcessExecutionModel myPem;
         
         public AnnotationRunnable(
-                RequestProcessor.Task dependantTask,
-                ProcessExecutionModel pem)
-        {
+                final RequestProcessor.Task dependantTask,
+                final ProcessExecutionModel pem) {
+            
             myDependantTask = dependantTask;
             myPem = pem;
         }
@@ -206,40 +189,48 @@ public class ExecutionAnnotationsListener
     private class AnnotationsHolder {
         private ProcessStaticModel myAnnotatedPsm;
         private String myAnnotatedUrl;
-        private ProcessExecutionModel myCurrentlyAnnotatingPem;
+        private BpelModel myModel;
+        
         private Map<PsmEntity, Object> myAnnotations =
                 new IdentityHashMap<PsmEntity, Object>();
         private Map<PsmEntity, AnnotationType> myAnnotationTypes =
                 new IdentityHashMap<PsmEntity, AnnotationType>();
-//        private Map<PemEntity.State, AnnotationType> myStateToType =
-//                new Ha
-
-        public synchronized void annotate(ProcessExecutionModel pem) {
+                
+        public synchronized void annotate(
+                final ProcessExecutionModel pem) {
+            
             if (pem == null) {
                 clearAll();
                 return;
             }
             
-            ProcessStaticModel psm = pem.getProcessStaticModel();
-            String url = mySourcePath.getSourcePath(psm.getProcessQName());
+            final ProcessStaticModel psm = 
+                    pem.getProcessStaticModel();
+            final String url = 
+                    mySourcePath.getSourcePath(psm.getProcessQName());
+            
             if (url == null) {
                 clearAll();
                 return;
             }
             
-            if (psm != myAnnotatedPsm || url != myAnnotatedUrl) {
+            final BpelModel model = 
+                    EditorUtil.getBpelModel(url);
+            
+            if (!url.equals(myAnnotatedUrl) || 
+                    !psm.equals(myAnnotatedPsm) || 
+                    !model.equals(myModel)) {
                 clearAll();
                 myAnnotatedPsm = psm;
                 myAnnotatedUrl = url;
+                myModel = model;
             }
-
-            myCurrentlyAnnotatingPem = pem;
+            
             if (pem.getRoot() != null) {
                 annotatePemEntity(pem.getRoot());
             } else {
                 annotatePsmEntity(psm.getRoot());
             }
-            myCurrentlyAnnotatingPem = null;
         }
         
         private void clearAll() {
@@ -248,25 +239,35 @@ public class ExecutionAnnotationsListener
                     EditorContextBridge.removeAnnotation(annotation);
                 }
             }
+            
             myAnnotations.clear();
             myAnnotationTypes.clear();
             myAnnotatedPsm = null;
             myAnnotatedUrl = null;
         }
         
-        private void annotatePemEntity(PemEntity pemEntity) {
-            PsmEntity psmEntity = pemEntity.getPsmEntity();
-            AnnotationType annotationType = annotationTypeByState(pemEntity.getState());
+        private void annotatePemEntity(
+                final PemEntity pemEntity) {
+            final PsmEntity psmEntity = pemEntity.getPsmEntity();
+            final AnnotationType annotationType = 
+                    annotationTypeByState(pemEntity.getState());
+            
             updateAnnotation(psmEntity, annotationType);
             annotatePemEntityChildren(pemEntity);
         }
         
-        private void annotatePemEntityChildren(PemEntity pemEntity) {
-            PsmEntity psmEntity = pemEntity.getPsmEntity();
+        private void annotatePemEntityChildren(
+                final PemEntity pemEntity) {
+            final PsmEntity psmEntity = pemEntity.getPsmEntity();
+            
             if (!pemEntity.hasChildren()) {
                 annotatePsmEntityChildren(psmEntity);
-            } else if (psmEntity.isLoop()) {
+                return;
+            }
+            
+            if (psmEntity.isLoop()) {
                 int lastEventIndex = -1;
+                
                 PemEntity childToAnnotate = null;
                 for (PemEntity child : pemEntity.getChildren()) {
                     if (child.getLastStartedEventIndex() > lastEventIndex) {
@@ -274,40 +275,51 @@ public class ExecutionAnnotationsListener
                         lastEventIndex = child.getLastStartedEventIndex();
                     }
                 }
+                
                 annotatePemEntity(childToAnnotate);
-            } else {
-                for (PsmEntity psmChild : psmEntity.getChildren()) {
-                    PemEntity[] pemChildren = pemEntity.getChildren(psmChild);
-                    if (pemChildren.length > 0) {
-                        annotatePemEntity(pemChildren[0]);
-                    } else {
-                        annotatePsmEntity(psmChild);
-                    }
+                return;
+            }
+            
+            for (PsmEntity psmChild : psmEntity.getChildren()) {
+                final PemEntity[] pemChildren = pemEntity.getChildren(psmChild);
+                
+                if (pemChildren.length > 0) {
+                    annotatePemEntity(pemChildren[0]);
+                } else {
+                    annotatePsmEntity(psmChild);
                 }
             }
         }
         
-        private void annotatePsmEntity(PsmEntity psmEntity) {
+        private void annotatePsmEntity(
+                final PsmEntity psmEntity) {
             updateAnnotation(psmEntity, AnnotationType.NEVER_EXECUTED_ELEMENT);
             annotatePsmEntityChildren(psmEntity);
         }
         
-        private void annotatePsmEntityChildren(PsmEntity psmEntity) {
+        private void annotatePsmEntityChildren(
+                final PsmEntity psmEntity) {
             for (PsmEntity child : psmEntity.getChildren()) {
                 annotatePsmEntity(child);
             }
         }
         
-        private void updateAnnotation(PsmEntity psmEntity, AnnotationType annotationType) {
+        private void updateAnnotation(
+                final PsmEntity psmEntity, 
+                final AnnotationType annotationType) {
             if (myAnnotationTypes.get(psmEntity) != annotationType) {
                 Object annotation = myAnnotations.get(psmEntity);
                 if (annotation != null) {
                     EditorContextBridge.removeAnnotation(annotation);
                 }
                 
-                annotation = EditorContextBridge.annotate(
+                final int lineNumber = ModelUtil.getLineNumber(
+                        myModel, psmEntity.getXpath());
+                
+                annotation = EditorContextBridge.addAnnotation(
                         myAnnotatedUrl,
                         psmEntity.getXpath(),
+                        lineNumber,
                         annotationType);
                 
                 myAnnotations.put(psmEntity, annotation);

@@ -1,42 +1,20 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 package org.netbeans.modules.bpel.debugger.bdiclient.impl;
@@ -61,7 +39,6 @@ import org.netbeans.modules.bpel.debugger.eventlog.ActivityStartedRecord;
 import org.netbeans.modules.bpel.debugger.eventlog.BranchCompletedRecord;
 import org.netbeans.modules.bpel.debugger.eventlog.BranchStartedRecord;
 import org.netbeans.modules.bpel.debugger.eventlog.EventLog;
-import org.netbeans.modules.bpel.debugger.eventlog.EventRecord;
 import org.netbeans.modules.bpel.debugger.eventlog.ProcessInstanceCompletedRecord;
 import org.netbeans.modules.bpel.debugger.eventlog.ProcessInstanceStartedRecord;
 import org.netbeans.modules.bpel.debugger.pem.ProcessExecutionModelImpl;
@@ -78,155 +55,224 @@ import org.netbeans.modules.bpel.debuggerbdi.rmi.api.DebuggableEngine;
 import org.netbeans.modules.bpel.debuggerbdi.rmi.api.VirtualBPELEngine;
 import org.netbeans.modules.bpel.debuggerbdi.rmi.api.XpathExpressionException;
 import org.netbeans.modules.bpel.debugger.BpelDebuggerImpl;
-import org.netbeans.modules.bpel.debugger.breakpoints.SBYNBreakpoint;
 import org.netbeans.modules.bpel.debugger.BreakPosition;
+import org.netbeans.modules.bpel.debugger.api.RuntimePartnerLink;
+import org.netbeans.modules.bpel.debugger.api.pem.ProcessExecutionModel.Branch;
+import org.netbeans.modules.bpel.debuggerbdi.rmi.api.BPELPartnerLink;
 import org.w3c.dom.Element;
 
 /**
  *
  * @author Alexander Zgursky
+ * @author Kirill Sorokin
  */
 public class ProcessInstanceImpl implements ProcessInstance {
     
-    private final String mId;
-//    private final QName mProcessQName;
-    private final BpelProcessImpl mBpelProcess;
-    private final ProcessInstancesModelImpl mModel;
-    private final BPELProcessInstanceRef mProcessInstanceRef;
+    private final String myId;
+    private final BpelProcessImpl myBpelProcess;
+    private final ProcessInstancesModelImpl myModel;
+    private final BPELProcessInstanceRef myProcessInstanceRef;
     
-    private BreakPosition mBreakPosition;
-    private Object mWaitLock = new Object();
-    private Object mSyncLock = new Object();
-    private AtomicInteger mState = new AtomicInteger(STATE_RUNNING);
+    private BreakPosition myBreakPosition;
+    private BreakPosition myLastPosition;
+    private Object myWaitLock = new Object();
+    private Object mySyncLock = new Object();
+    private AtomicInteger myState = new AtomicInteger(STATE_RUNNING);
 
-    private boolean mIsUndeployed;
-    private boolean mBreakFlag;
-    private final List<BDIDebugFrame> mFrames = Collections.synchronizedList(
-            new ArrayList<BDIDebugFrame>());
+    private boolean myIsUndeployed;
+    private boolean myStepIntoFlag;
+    private boolean myStepOverFlag;
+    private boolean myStepOutFlag;
+    private boolean myPauseFlag;
+    private final List<BDIDebugFrame> myFrames = 
+            Collections.synchronizedList(new ArrayList<BDIDebugFrame>());
     private EventLog myEventLog;
     private WeakReference<ProcessExecutionModelImpl> myPemRef;
     
     
     /** Creates a new instance of ProcessInstanceImpl */
     public ProcessInstanceImpl(
-            ProcessInstancesModelImpl model,
-            BPELProcessInstanceRef processInstanceRef)
-    {
-        mModel = model;
-        mProcessInstanceRef = processInstanceRef;
-        mBpelProcess = mModel.getProcess(mProcessInstanceRef.template());
-//        String uri = processInstanceRef.template().uri();
-//        mProcessQName = ProcessInstancesModelImpl.makeProcessQName(uri);
-        mId = processInstanceRef.globalID();
+            final ProcessInstancesModelImpl model,
+            final BPELProcessInstanceRef processInstanceRef) {
+        
+        myModel = model;
+        myProcessInstanceRef = processInstanceRef;
+        myBpelProcess = myModel.getProcess(myProcessInstanceRef.template());
+        myId = processInstanceRef.globalID();
     }
     
     public String getName() {
-        return mBpelProcess.getName() + " #" + mId;
+        return myBpelProcess.getName() + " #" + myId;
     }
 
     public int getState() {
-        return mState.get();
+        return myState.get();
     }
 
     public BreakPosition getCurrentPosition() {
-        return mBreakPosition;
+        return myBreakPosition;
+    }
+    
+    public void pause() {
+        myPauseFlag = true;
     }
     
     public void resume() {
-        synchronized (mWaitLock) {
-            mWaitLock.notifyAll();
+        synchronized (myWaitLock) {
+            myWaitLock.notifyAll();
         }
     }
     
     public void stepInto() {
-        mBreakFlag = true;
+        myStepIntoFlag = true;
+        resume();
+    }
+    
+    public void stepOver() {
+        myStepOverFlag = true;
+        myLastPosition = myBreakPosition;
+        
+        resume();
+    }
+    
+    public void stepOut() {
+        myStepOutFlag = true;
+        myLastPosition = myBreakPosition;
+        
         resume();
     }
     
     public void terminate() {
-        BDIDebugger bdiDebugger = getDebugger().getBDIDebugger();
-        if (bdiDebugger != null) {
-            VirtualBPELEngine virtualBPELEngine = bdiDebugger.getVirtualBPELEngine();
-            if (virtualBPELEngine != null) {
-                virtualBPELEngine.terminatePI(mProcessInstanceRef.globalGUID());
+        final BDIDebugger debugger = getDebugger().getBDIDebugger();
+        
+        if (debugger != null) {
+            final VirtualBPELEngine engine = 
+                    debugger.getVirtualBPELEngine();
+            
+            if (engine != null) {
+                engine.terminatePI(myProcessInstanceRef.globalGUID());
             }
         }
     }
 
     public String getId() {
-        return mId;
+        return myId;
     }
     
     public BpelProcessImpl getProcess() {
-        return mBpelProcess;
+        return myBpelProcess;
     }
     
     public QName getProcessQName() {
-        return mBpelProcess.getQName();
+        return myBpelProcess.getQName();
     }
 
     public Variable[] getVariables() {
-        BreakPosition activePosition = mBreakPosition;
-        if (activePosition != null) {
-            BDIDebugFrame currentFrame = activePosition.getFrame();
-            DebuggableEngine engine = currentFrame.getDebuggableEngine();
+        final BreakPosition position = myBreakPosition;
+        
+        if (position != null) {
+            final BDIDebugFrame frame = position.getFrame();
+            final DebuggableEngine engine = frame.getDebuggableEngine();
+            
             if (engine != null) {
-                String[] engineVarNames = engine.getVariables();
-                Variable[] vars = new Variable[engineVarNames.length];
-                for (int i=0; i < engineVarNames.length; i++) {
-                    String varName = engineVarNames[i];
-                    BPELVariable engineVar = engine.getVariable(varName);
+                final String[] names = engine.getVariables();
+                final Variable[] variables = new Variable[names.length];
+                
+                for (int i = 0; i < names.length; i++) {
+                    final String name = names[i];
+                    final BPELVariable engineVar = engine.getVariable(name);
+                    
                     if (engineVar == null) {
-//                        System.out.println("engineVar is null for variable " + varName);
                         continue;
                     }
+                    
                     if (engineVar.isWSDLMessage()) {
-                        vars[i] = new WsdlMessageVariableImpl(varName, activePosition, engineVar);
+                        variables[i] = new WsdlMessageVariableImpl(
+                                name, position, engineVar);
                     } else if (engineVar.isSimpleType()) {
-                        vars[i] = new SimpleVariableImpl(varName, activePosition, engineVar);
+                        variables[i] = new SimpleVariableImpl(
+                                name, position, engineVar);
                     } else {
-                        vars[i] = new XmlElementVariableImpl(varName, activePosition, engineVar);
+                        variables[i] = new XmlElementVariableImpl(
+                                name, position, engineVar);
                     }
                 }
-                return vars;
+                
+                return variables;
             }
         }
+        
         return new Variable[0];
     }
-
-    public Value evaluate(String xpathExpression)
-            throws InvalidStateException, EvaluationException
-    {
-        if (xpathExpression == null || xpathExpression.trim().equals("")) {
+    
+    public RuntimePartnerLink[] getRuntimePartnerLinks() {
+        final BreakPosition position = myBreakPosition;
+        
+        if (position != null) {
+            final BDIDebugFrame frame = position.getFrame();
+            final DebuggableEngine engine = frame.getDebuggableEngine();
+            
+            if (engine != null) {
+                final String[] names = engine.getPartnerLinks();
+                final RuntimePartnerLink[] pLinks = new RuntimePartnerLink[names.length];
+                
+                for (int i = 0; i < names.length; i++) {
+                    final BPELPartnerLink enginePLink = 
+                            engine.getPartnerLink(names[i]);
+                    
+                    if (enginePLink == null) {
+                        continue;
+                    }
+                    
+                    pLinks[i] = new RuntimePartnerLinkImpl(enginePLink);
+                }
+                
+                return pLinks;
+            }
+        }
+        
+        return new RuntimePartnerLink[0];
+    }
+    
+    public Value evaluate(
+            final String expression) 
+            throws InvalidStateException, EvaluationException {
+        
+        if (expression == null || expression.trim().equals("")) {
             return null;
         }
         
-        Value result = null;
-        BreakPosition activePosition = mBreakPosition;
-        if (activePosition != null) {
-            BDIDebugFrame currentFrame = activePosition.getFrame();
-            DebuggableEngine engine = currentFrame.getDebuggableEngine();
+        final BreakPosition position = myBreakPosition;
+        if (position != null) {
+            final BDIDebugFrame frame = position.getFrame();
+            final DebuggableEngine engine = frame.getDebuggableEngine();
+            
             if (engine != null) {
                 try {
-                    String strResult = engine.evaluate(xpathExpression);
-                    if (strResult != null) {
-                        Element element = Util.parseXmlElement(strResult);
+                    final String string = engine.evaluate(expression);
+                    
+                    if (string != null) {
+                        final Element element = Util.parseXmlElement(string);
+                        
                         if (element != null) {
-                            result = new XmlElementValueImpl(element);
+                            return new XmlElementValueImpl(element);
                         } else {
-                            result = new SimpleValueImpl(strResult);
+                            return new SimpleValueImpl(string);
                         }
                     }
                 } catch (XpathExpressionException ex) {
                     //TODO:change to NLS
-                    throw new EvaluationException("Can not evaluate the expression", ex);
+                    throw new EvaluationException(
+                            "Can not evaluate the expression", ex);
                 }
             }
         } else {
             //TODO:change to NLS
-            throw new InvalidStateException("Process instance is not suspended");
+            throw new InvalidStateException(
+                    "Process instance is not suspended");
         }
-        return result;
+        
+        return null;
     }
     
     public EventLog getEventLog() {
@@ -247,70 +293,88 @@ public class ProcessInstanceImpl implements ProcessInstance {
         return pem;
     }
     
-    protected void setUndeployed(boolean isUndeployed) {
-        mIsUndeployed = isUndeployed;
+    protected void setUndeployed(
+            final boolean isUndeployed) {
+        
+        myIsUndeployed = isUndeployed;
     }
     
-    protected void onActivityStarted(BreakPosition breakPosition) {
+    protected void onActivityStarted(
+            final BreakPosition position) {
+        
         //TODO:why do we need this check?
         if (getDebugger().getState() != BpelDebugger.STATE_RUNNING) {
             return;
         }
         
-        if (mIsUndeployed) {
+        if (myIsUndeployed) {
             return;
         }
         
-        synchronized (mSyncLock) {
+        synchronized (mySyncLock) {
             if (myEventLog != null) {
-                EventRecord record = new ActivityStartedRecord(
-                        breakPosition.getFrame().getId(),
-                        breakPosition.getXpath());
-                myEventLog.addRecord(record);
+                myEventLog.addRecord(new ActivityStartedRecord(
+                        position.getFrame().getId(),
+                        position.getXpath()));
             }
             
-            String path = getDebugger().getSourcePath().getSourcePath(breakPosition.getProcessQName());
+            final String path = getDebugger().getSourcePath().getSourcePath(
+                    position.getProcessQName());
             if (path == null) {
                 return;
             }
             
-            if (    mBreakFlag ||
-                    getDebugger().hasBreakpoint(path, breakPosition.getXpath()))
-            {
-                mBreakFlag = false;
+            if (myPauseFlag ||
+                    stepIntoSatisfied(position) || 
+                    stepOverSatisfied(position) ||
+                    stepOutSatisfied(position) ||
+                    getDebugger().hasBreakpoint(path, position.getXpath())) {
+                
+                myPauseFlag = false;
+                myStepIntoFlag = false;
+                myStepOverFlag = false;
+                myStepOutFlag = false;
                 getDebugger().clearRunToCursorBreakpoint();
-
-                mBreakPosition = breakPosition;
+                
+                getProcessExecutionModel().
+                        setCurrentBranchWithoutResume(position.getBranchId());
+                
+                myBreakPosition = position;
                 setState(STATE_SUSPENDED);
                 doWait();
-                mBreakPosition = null;
+                myBreakPosition = null;
                 setState(STATE_RUNNING);
             }
         }
     }
     
-    protected void onActivityCompleted(BreakPosition breakPosition) {
+    protected void onActivityCompleted(
+            final BreakPosition position) {
+        
         if (myEventLog != null) {
-            EventRecord record = new ActivityCompletedRecord(
-                    breakPosition.getFrame().getId(),
-                    breakPosition.getXpath());
-            myEventLog.addRecord(record);
+            myEventLog.addRecord(new ActivityCompletedRecord(
+                    position.getFrame().getId(),
+                    position.getXpath()));
         }
     }
     
-    protected void onFault(BreakPosition breakPosition, String strFaultQName, BPELVariable faultData) {
+    protected void onFault(
+            final BreakPosition position, 
+            final String strFaultQName, 
+            final BPELVariable faultData) {
+        
         //TODO:why do we need this check?
         if (getDebugger().getState() != BpelDebugger.STATE_RUNNING) {
             return;
         }
         
-        if (mIsUndeployed) {
+        if (myIsUndeployed) {
             return;
         }
         
-        synchronized (mSyncLock) {
-            
-            String path = getDebugger().getSourcePath().getSourcePath(breakPosition.getProcessQName());
+        synchronized (mySyncLock) {
+            final String path = getDebugger().getSourcePath().getSourcePath(
+                    position.getProcessQName());
             if (path == null) {
                 return;
             }
@@ -318,20 +382,27 @@ public class ProcessInstanceImpl implements ProcessInstance {
             //TODO:search for Fault Breakpoint is inconsistent with
             //search for Line (Activity) breakpoint - the later uses NB
             //breakpoints
-            Breakpoint[] nbBreakpoints =
+            final Breakpoint[] nbBreakpoints =
                     DebuggerManager.getDebuggerManager().getBreakpoints();
             
-            QName faultQName = ((strFaultQName == null) || (strFaultQName.trim().equals(""))) ?
-                null : QName.valueOf(strFaultQName);
-                
+            final QName faultQName;
+            if ((strFaultQName == null) || strFaultQName.trim().equals("")) {
+                faultQName = null;
+            } else {
+                faultQName = QName.valueOf(strFaultQName);
+            }
+            
             boolean foundfb = false;
             for (Breakpoint nbBreakpoint : nbBreakpoints) {
                 if (nbBreakpoint instanceof BpelFaultBreakpoint) {
-                    BpelFaultBreakpoint fb = (BpelFaultBreakpoint)nbBreakpoint;
+                    final BpelFaultBreakpoint fb = 
+                            (BpelFaultBreakpoint) nbBreakpoint;
+                    
                     if (!nbBreakpoint.isEnabled()) {
                         continue;
                     }
-                    if (fb.getProcessQName().equals(breakPosition.getProcessQName())) {
+                    
+                    if (fb.getProcessQName().equals(position.getProcessQName())) {
                         if (fb.getFaultQName() == null) {
                             foundfb = true;
                             break;
@@ -344,18 +415,20 @@ public class ProcessInstanceImpl implements ProcessInstance {
             }
             
             if (foundfb) {
-                mBreakFlag = false;
+                myStepIntoFlag = false;
                 getDebugger().clearRunToCursorBreakpoint();
-                mBreakPosition = breakPosition;
+                myBreakPosition = position;
                 setState(STATE_SUSPENDED);
                 doWait();
-                mBreakPosition = null;
+                myBreakPosition = null;
                 setState(STATE_RUNNING);
             }
         }
     }
 
-    protected void onXpathException(DebugFrame frame) {
+    protected void onXpathException(
+            final DebugFrame frame) {
+        
         if (getRootFrame() == frame) {
             setState(STATE_FAILED);
         }
@@ -363,68 +436,150 @@ public class ProcessInstanceImpl implements ProcessInstance {
     
     protected void onProcessInstanceStarted() {
         myEventLog = new EventLog();
-        EventRecord record = new ProcessInstanceStartedRecord();
-        myEventLog.addRecord(record);
+        myEventLog.addRecord(new ProcessInstanceStartedRecord());
     }
     
     protected void onProcessInstanceDied() {
         setState(STATE_COMPLETED);
+        
         if (myEventLog != null) {
-            EventRecord record = new ProcessInstanceCompletedRecord();
-            myEventLog.addRecord(record);
+            myEventLog.addRecord(new ProcessInstanceCompletedRecord());
         }
-        mModel.processInstanceCompleted(this);
+        
+        myModel.processInstanceCompleted(this);
     }
-
-    protected void onTerminate(DebugFrame frame) {
+    
+    protected void onTerminate(
+            final DebugFrame frame) {
+        
 //        if (getRootFrame() == frame) {
 //            setState(STATE_TERMINATED);
 //            mModel.processInstanceCompleted(this);
 //        }
     }
-
-    protected void onExit(BDIDebugFrame frame) {
+    
+    protected void onExit(
+            final BDIDebugFrame frame) {
+        
         if (myEventLog != null) {
-            EventRecord record = new BranchCompletedRecord(frame.getId());
-            myEventLog.addRecord(record);
+            myEventLog.addRecord(new BranchCompletedRecord(frame.getId()));
         }
     }
     
-    protected BDIDebugFrame addFrame(String id, String parentFrameId) {
-        BDIDebugFrame frame = new BDIDebugFrame(this, id);
-        mFrames.add(frame);
+    protected BDIDebugFrame addFrame(
+            final String id, 
+            final String parentFrameId) {
+        final BDIDebugFrame frame = new BDIDebugFrame(this, id);
+        
+        myFrames.add(frame);
+        
         if (myEventLog != null) {
-            EventRecord record = new BranchStartedRecord(id, parentFrameId);
-            myEventLog.addRecord(record);
+            myEventLog.addRecord(new BranchStartedRecord(id, parentFrameId));
         }
+        
         return frame;
     }
     
-    private void setState(int newState) {
-        int oldState = mState.getAndSet(newState);
-        mModel.processInstanceStateChanged(this, oldState, newState);
+    // Private /////////////////////////////////////////////////////////////////
+    private void setState(
+            final int newState) {
+        int oldState = myState.getAndSet(newState);
+        myModel.processInstanceStateChanged(this, oldState, newState);
     }
     
     private void doWait() {
         try {
-            synchronized (mWaitLock) {
+            synchronized (myWaitLock) {
                 //TODO:Always put wait() in a condition loop
                 //since wait() can sometimes stop waiting for some reason - see
                 //wait() javadoc.
-                mWaitLock.wait();
+                myWaitLock.wait();
             }
         } catch (InterruptedException ie) {
             // process interrupted
         }
     }
     
+    private boolean stepIntoSatisfied(
+            final BreakPosition position) {
+        if (!myStepIntoFlag) {
+            return false;
+        }
+        
+        // If the current branch is not that of the position -- we should not 
+        // stop
+        final Branch branch = getProcessExecutionModel().getCurrentBranch();
+        if ((branch == null) || 
+                !position.getBranchId().equals(branch.getId())) {
+            return false;
+        }
+        
+        return true;
+    }
+    
+    private boolean stepOverSatisfied(
+            final BreakPosition position) {
+        if (!myStepOverFlag) {
+            return false;
+        }
+        
+        // If the current branch is not that of the position -- we should not 
+        // stop
+        final Branch branch = getProcessExecutionModel().getCurrentBranch();
+        if ((branch == null) || 
+                !position.getBranchId().equals(branch.getId())) {
+            return false;
+        }
+        
+        final String lastXpath = myLastPosition.getXpath();
+        final String currentXpath = position.getXpath();
+        
+        // We stop after step over if the current element is not "inside" the 
+        // last element
+        if (!currentXpath.startsWith(lastXpath) || 
+                currentXpath.equals(lastXpath)) {
+            return true;
+        }
+        
+        return false;
+    }
+    
+    private boolean stepOutSatisfied(
+            final BreakPosition position) {
+        if (!myStepOutFlag) {
+            return false;
+        }
+        
+        // If the current branch is not that of the position -- we should not 
+        // stop
+        final Branch branch = getProcessExecutionModel().getCurrentBranch();
+        if ((branch == null) || 
+                !position.getBranchId().equals(branch.getId())) {
+            return false;
+        }
+        
+        final String lastXpath = myLastPosition.getXpath();
+        final String currentXpath = position.getXpath();
+        
+        final String lastXpathParent = 
+                lastXpath.substring(0, lastXpath.lastIndexOf("/"));
+        
+        // We stop after step out if the current element "contains" the last 
+        // one
+        if (!currentXpath.startsWith(lastXpathParent)) {
+            return true;
+        }
+        
+        return false;
+    }
+    
     //TODO:get rid of the notion of "root frame", since there may be more
     //than one "root frame" e.g. main activity frame and event frame
     private BDIDebugFrame getRootFrame() {
-        return mFrames.get(0);
+        return myFrames.get(0);
     }
     
     private BpelDebuggerImpl getDebugger() {
-        return mModel.getDebugger();
+        return myModel.getDebugger();
     }
 }

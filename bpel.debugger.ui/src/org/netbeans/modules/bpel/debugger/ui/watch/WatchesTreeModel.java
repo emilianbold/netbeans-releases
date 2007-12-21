@@ -1,42 +1,20 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 package org.netbeans.modules.bpel.debugger.ui.watch;
@@ -44,7 +22,6 @@ package org.netbeans.modules.bpel.debugger.ui.watch;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
-import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 import java.util.WeakHashMap;
@@ -53,283 +30,325 @@ import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.Watch;
 
 import org.netbeans.modules.bpel.debugger.api.BpelDebugger;
-import org.netbeans.modules.bpel.debugger.ui.variable.HelperTreeModel;
+import org.netbeans.modules.bpel.debugger.api.variables.NamedValueHost;
+import org.netbeans.modules.bpel.debugger.api.variables.Value;
+import org.netbeans.modules.bpel.debugger.api.variables.XmlElementValue;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.RequestProcessor;
+import org.w3c.dom.Node;
 
 /**
  * Tree model for BPEL variables.
  * 
  * @author Sun Microsystems
- * @author Sun Microsystems
  */
-public class WatchesTreeModel implements TreeModel {
-    public static final String VIEW_NAME = "WatchesView";
-
+public class WatchesTreeModel implements TreeModel, Constants {
+    
+    private ContextProvider myContextProvider;
     private BpelDebugger myDebugger;
+    private Util myHelper;
+    
     private Listener myListener;
     private Vector myListeners = new Vector();
-    private ContextProvider myContextProvider;
-    private HelperTreeModel myHelperTreeModel;
-
-    private Map<Watch, BpelWatchImpl> myWatchToValue =
-            new WeakHashMap<Watch, BpelWatchImpl>();
     
-    /**
-     * Creates a new instance of LocalsTreeModel.
-     *
-     * @param lookupProvider debugger context
-     */
-    public WatchesTreeModel(ContextProvider contextProvider) {
+    private Map<Watch, BpelWatch> myWatchToValue =
+            new WeakHashMap<Watch, BpelWatch>();
+    
+    public WatchesTreeModel(
+            final ContextProvider contextProvider) {
+        
         myContextProvider = contextProvider;
-        myDebugger = 
-            (BpelDebugger) contextProvider.lookupFirst(null, BpelDebugger.class);
+        myDebugger = (BpelDebugger) 
+                contextProvider.lookupFirst(null, BpelDebugger.class);
+        myHelper = new Util(myDebugger);
     }
-
     
+    /**{@inheritDoc}*/
     public Object getRoot() {
         return ROOT;
     }
-
-    public Object[] getChildren(Object object, int from, int to) throws UnknownTypeException {
+    
+    /**{@inheritDoc}*/
+    public Object[] getChildren(
+            final Object object, 
+            final int from, 
+            final int to) throws UnknownTypeException {
+        
         if (object.equals(ROOT)) {
             return getWatches(from, to);
-        } else if (object instanceof BpelWatchImpl) {
-            BpelWatchImpl bpelWatch = (BpelWatchImpl)object;
+        }
+        
+        if (object instanceof BpelWatch) {
+            final BpelWatch bpelWatch = (BpelWatch) object;
+            final Value value = bpelWatch.getValue();
+            
             if (bpelWatch.getValue() != null) {
-                return getHelperTreeModel().getChildren(bpelWatch.getValue(), from, to);
-            } else {
+                if (value instanceof XmlElementValue) {
+                    return myHelper.getChildren((XmlElementValue) value);
+                }
+                
                 return new Object[0];
             }
-        } else {
-            throw new UnknownTypeException(object);
+            
+            // If the watched expression is a variable, handle in a special
+            // way.
+            if (bpelWatch.getExpression().startsWith("$")) {
+                return myHelper.getChildren(bpelWatch.getExpression());
+            }
+            
+            return new Object[0];
         }
+        
+        if (object instanceof NamedValueHost) {
+            return myHelper.getVariablesUtil().getChildren(object);
+        }
+        
+        if (object instanceof Node) {
+            return myHelper.getVariablesUtil().getChildren(object);
+        }
+        
+        throw new UnknownTypeException(object);
     }
 
-    /**
-     * Returns number of children for given node.
-     * 
-     * @param   node the parent node
-     * @throws  UnknownTypeException if this TreeModel implementation is not
-     *          able to resolve children for given node type
-     *
-     * @return  true if node is leaf
-     */
-    public int getChildrenCount(Object object) throws UnknownTypeException {
+    /**{@inheritDoc}*/
+    public int getChildrenCount(
+            final Object object) throws UnknownTypeException {
         if (object.equals(ROOT)) {
             if (myListener == null) {
                 myListener = new Listener(this, myDebugger);
             }
+            
             return getWatchCount();
-        } else if (object instanceof BpelWatchImpl) {
-            BpelWatchImpl bpelWatch = (BpelWatchImpl)object;
+        }
+        
+        if (object instanceof BpelWatch) {
+            final BpelWatch bpelWatch = (BpelWatch) object;
+            final Value value = bpelWatch.getValue();
+            
             if (bpelWatch.getValue() != null) {
-                return getHelperTreeModel().getChildrenCount(bpelWatch.getValue());
-            } else {
+                if (value instanceof XmlElementValue) {
+                    return myHelper.getChildren((XmlElementValue) value).length;
+                }
+                
                 return 0;
             }
-        } else {
-            throw new UnknownTypeException(object);
+            
+            // If the watched expression is a variable, handle in a special
+            // way.
+            if (bpelWatch.getExpression().startsWith("$")) {
+                return myHelper.getChildren(bpelWatch.getExpression()).length;
+            }
+            
+            return 0;
         }
-    }
-
-    public boolean isLeaf(Object object) throws UnknownTypeException {
-        if (object.equals(ROOT)) {
-            return false;
-        } else if (object instanceof BpelWatchImpl) {
-            return getChildrenCount(object) == 0;
-        } else {
-            throw new UnknownTypeException(object);
+        
+        if (object instanceof NamedValueHost) {
+            return myHelper.getVariablesUtil().getChildren(object).length;
         }
+        
+        if (object instanceof Node) {
+            return myHelper.getVariablesUtil().getChildren(object).length;
+        }
+        
+        throw new UnknownTypeException(object);
     }
 
-    public void addModelListener(ModelListener l) {
-        myListeners.add(l);
+    /**{@inheritDoc}*/
+    public boolean isLeaf(
+            final Object object) throws UnknownTypeException {
+        return getChildrenCount(object) == 0;
     }
 
-    public void removeModelListener(ModelListener l) {
-        myListeners.remove(l);
+    /**{@inheritDoc}*/
+    public void addModelListener(
+            final ModelListener listener) {
+        
+        myListeners.add(listener);
+    }
+
+    /**{@inheritDoc}*/
+    public void removeModelListener(
+            final ModelListener listeners) {
+        myListeners.remove(listeners);
     }
     
-    private Object[] getWatches(int from, int to) {
-        Watch[] nbWatches = DebuggerManager.getDebuggerManager().getWatches();
-        BpelWatchImpl[] bpelWatches = new BpelWatchImpl[to - from];
+    // Private /////////////////////////////////////////////////////////////////
+    private Object[] getWatches(
+            final int from, 
+            final int to) {
+        final Watch[] nbWatches = 
+                DebuggerManager.getDebuggerManager().getWatches();
+        final BpelWatch[] bpelWatches = new BpelWatch[to - from];
+        
         int j = 0;
         for (int i = from; i < to; i++) {
-            BpelWatchImpl bpelWatch = myWatchToValue.get(nbWatches[i]);
+            BpelWatch bpelWatch = myWatchToValue.get(nbWatches[i]);
+            
             if (bpelWatch == null) {
-                bpelWatch = new BpelWatchImpl(myDebugger, nbWatches[i]);
+                bpelWatch = new BpelWatch(myDebugger, nbWatches[i]);
                 myWatchToValue.put(nbWatches[i], bpelWatch);
             }
+            
             bpelWatches[j++] = bpelWatch;
         }
-
+        
         if (myListener == null) {
             myListener = new Listener(this, myDebugger);
         }
-
+        
         return bpelWatches;
     }
     
-    private HelperTreeModel getHelperTreeModel() {
-        if (myHelperTreeModel == null) {
-            List models = myContextProvider.lookup(VIEW_NAME, TreeModel.class);
-            for (Object model : models) {
-                if (model instanceof HelperTreeModel) {
-                    myHelperTreeModel = (HelperTreeModel)model;
-                    break;
-                }
-            }
-        }
-        return myHelperTreeModel;
-    }
-
-    private void fireWatchesChanged() {
-        Vector v = (Vector)myListeners.clone();
-        int i, k = v.size();
-        ModelEvent event = new ModelEvent.NodeChanged(
-                this, ROOT, ModelEvent.NodeChanged.CHILDREN_MASK);
-        for (i = 0; i < k; i++) {
-            ((ModelListener)v.get (i)).modelChanged (event);
-        }
-    }
-
-    private void fireTreeChanged () {
-        synchronized (myWatchToValue) {
-            myWatchToValue.clear();
-        }
-        Vector v = (Vector) myListeners.clone();
-        int i, k = v.size();
-        ModelEvent event = new ModelEvent.TreeChanged(this);
-        for (i = 0; i < k; i++) {
-            ((ModelListener) v.get(i)).modelChanged(event);
-        }
-    }
-    
-    void fireTableValueChangedChanged (Object node, String propertyName) {
-        //TODO:ugly hack to fix #82191 - see comments
-        //
-        fireTreeChanged();
-//        synchronized(myWatchToValue) {
-//            for (Object w : myWatchToValue.keySet()) {
-//                if (node.equals(myWatchToValue.get(w))) {
-//                    myWatchToValue.remove(w);
-//                    break;
-//                }
-//            }
-//        }
-//        fireTableValueChangedComputed(node, propertyName);
-    }
-    
-    void fireTableValueChangedComputed (Object node, String propertyName) {
-        Vector v = (Vector)myListeners.clone ();
-        int i, k = v.size();
-        for (i = 0; i < k; i++) {
-            ((ModelListener) v.get(i)).modelChanged(
-                    new ModelEvent.TableValueChanged (this, node, propertyName));
-        }
-    }
-    
-    // private methods .........................................................
-
-    private BpelDebugger getDebugger() {
-        return myDebugger;
-    }
-
     private int getWatchCount() {
         return DebuggerManager.getDebuggerManager().
                 getWatches().length;
     }
-
-
-    // innerclasses ............................................................
-
-    private static class Listener
-            extends DebuggerManagerAdapter 
-            implements PropertyChangeListener
-    {
+    
+    private void fireWatchesChanged() {
+        final Vector clone = (Vector) myListeners.clone();
+        final ModelEvent event = new ModelEvent.NodeChanged(
+                this, ROOT, ModelEvent.NodeChanged.CHILDREN_MASK);
+        
+        for (int i = 0; i < clone.size(); i++) {
+            ((ModelListener) clone.get(i)).modelChanged (event);
+        }
+    }
+    
+    private void fireTreeChanged() {
+        synchronized (myWatchToValue) {
+            myWatchToValue.clear();
+        }
+        
+        final Vector clone = (Vector) myListeners.clone();
+        final ModelEvent event = new ModelEvent.TreeChanged(this);
+        
+        for (int i = 0; i < clone.size(); i++) {
+            ((ModelListener) clone.get(i)).modelChanged(event);
+        }
+    }
+    
+    void fireTableValueChangedChanged(
+            final Object node, 
+            final String propertyName) {
+        fireTreeChanged();
+    }
+    
+    void fireTableValueChangedComputed(
+            final Object node, 
+            final String propertyName) {
+        final Vector clone = (Vector) myListeners.clone ();
+        
+        for (int i = 0; i < clone.size(); i++) {
+            ((ModelListener) clone.get(i)).modelChanged(
+                    new ModelEvent.TableValueChanged(this, node, propertyName));
+        }
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // Inner Classes
+    private static class Listener extends DebuggerManagerAdapter 
+            implements PropertyChangeListener {
+        
         private WeakReference myDebugger;
         private WeakReference myModel;
-
-        private Listener(WatchesTreeModel tm, BpelDebugger debugger) {
-            myModel = new WeakReference(tm);
+        
+        private RequestProcessor.Task task;
+        
+        private Listener(
+                final WatchesTreeModel model, 
+                final BpelDebugger debugger) {
+            myModel = new WeakReference(model);
             myDebugger = new WeakReference(debugger);
             
             DebuggerManager.getDebuggerManager().addDebuggerListener(
                     DebuggerManager.PROP_WATCHES, this);
             debugger.addPropertyChangeListener(this);
-            Watch[] ws = DebuggerManager.getDebuggerManager().getWatches();
-            int i, k = ws.length;
-            for (i = 0; i < k; i++)
+            
+            final Watch[] ws = 
+                    DebuggerManager.getDebuggerManager().getWatches();
+            for (int i = 0; i < ws.length; i++) {
                 ws[i].addPropertyChangeListener(this);
+            }
         }
-
+        
         private WatchesTreeModel getModel() {
-            WatchesTreeModel m = (WatchesTreeModel)myModel.get();
-            if (m == null) {
+            final WatchesTreeModel model = (WatchesTreeModel) myModel.get();
+            
+            if (model == null) {
                 destroy();
             }
-            return m;
-        }
-
-        public void watchAdded(Watch watch) {
-            WatchesTreeModel m = getModel();
-            if (m == null) {
-                return;
-            }
-            watch.addPropertyChangeListener(this);
-            m.fireWatchesChanged();
+            
+            return model;
         }
         
-        public void watchRemoved (Watch watch) {
-            WatchesTreeModel m = getModel();
-            if (m == null) {
+        @Override
+        public void watchAdded(
+                final Watch watch) {
+            final WatchesTreeModel model = getModel();
+            if (model == null) {
                 return;
             }
+            
+            watch.addPropertyChangeListener(this);
+            model.fireWatchesChanged();
+        }
+        
+        @Override
+        public void watchRemoved(
+                final Watch watch) {
+            
+            final WatchesTreeModel model = getModel();
+            if (model == null) {
+                return;
+            }
+            
             watch.removePropertyChangeListener(this);
             //TODO:shouldn't we remove evaluated watch first?
-            m.fireWatchesChanged();
+            model.fireWatchesChanged();
         }
         
-        // currently waiting / running refresh task
-        // there is at most one
-        private RequestProcessor.Task task;
-
-        public void propertyChange(PropertyChangeEvent evt) {
-            String propName = evt.getPropertyName();
+        @Override
+        public void propertyChange(
+                final PropertyChangeEvent event) {
+            
+            final String propName = event.getPropertyName();
             
             // We already have watchAdded & watchRemoved. Ignore PROP_WATCHES:
             if (DebuggerManager.PROP_WATCHES.equals(propName)) {
                 return ;
             }
             
-            final WatchesTreeModel m = getModel();
-            if (m == null) {
+            final WatchesTreeModel model = getModel();
+            if (model == null) {
                 return;
             }
             
-            if (m.myDebugger.getState() == BpelDebugger.STATE_DISCONNECTED) {
+            if (model.myDebugger.getState() == 
+                    BpelDebugger.STATE_DISCONNECTED) {
                 destroy();
                 return;
             }
             
-            if (evt.getSource() instanceof Watch) {
+            if (event.getSource() instanceof Watch) {
                 Object node;
-                synchronized (m.myWatchToValue) {
-                    node = m.myWatchToValue.get(evt.getSource());
+                synchronized (model.myWatchToValue) {
+                    node = model.myWatchToValue.get(event.getSource());
                 }
+                
                 if (node != null) {
-                    m.fireTableValueChangedChanged(node, null);
+                    model.fireTableValueChangedChanged(node, null);
                     return ;
                 }
             }
             
-            if (propName == BpelDebugger.PROP_CURRENT_POSITION) {
+            if (BpelDebugger.PROP_CURRENT_POSITION.equals(propName)) {
                 final WatchesTreeModel wtm = getModel();
+                
                 if (wtm == null) {
                     return;
                 }
@@ -352,15 +371,15 @@ public class WatchesTreeModel implements TreeModel {
             DebuggerManager.getDebuggerManager().removeDebuggerListener (
                     DebuggerManager.PROP_WATCHES, this);
             
-            BpelDebugger d = (BpelDebugger)myDebugger.get();
-            if (d != null) {
-                d.removePropertyChangeListener(this);
+            final BpelDebugger debugger = (BpelDebugger) myDebugger.get();
+            if (debugger != null) {
+                debugger.removePropertyChangeListener(this);
             }
             
-            Watch[] ws = DebuggerManager.getDebuggerManager().getWatches();
-            int i, k = ws.length;
-            for (i = 0; i < k; i++) {
-                ws [i].removePropertyChangeListener(this);
+            final Watch[] ws = 
+                    DebuggerManager.getDebuggerManager().getWatches();
+            for (int i = 0; i < ws.length; i++) {
+                ws[i].removePropertyChangeListener(this);
             }
             
             if (task != null) {

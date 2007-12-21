@@ -1,42 +1,20 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 package org.netbeans.modules.bpel.debugger.ui.util;
@@ -45,15 +23,17 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.Callable;
 import javax.swing.text.StyledDocument;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.NamespaceContext;
+import javax.xml.namespace.QName;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
+import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.bpel.debugger.api.EditorContextBridge;
+import org.netbeans.modules.bpel.debugger.api.SourcePath;
 import org.netbeans.modules.bpel.debugger.api.psm.ProcessStaticModel;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
@@ -73,16 +53,33 @@ import org.w3c.dom.Node;
  */
 public final class ModelUtil {
     private static FindHelper findHelper =
-            (FindHelper)Lookup.getDefault().lookup(FindHelper.class);
+            Lookup.getDefault().lookup(FindHelper.class);
     
     private ModelUtil() {
+        // Does nothing
     }
     
     public static FindHelper getFindHelper() {
         return findHelper;
     }
     
-    public static String getXpath(final UniqueId bpelEntityId) {
+    public static String getUrl(
+            final QName processQName) {
+        final SourcePath sourcePath = (SourcePath) DebuggerManager.
+                getDebuggerManager().
+                getCurrentEngine().lookupFirst(null, SourcePath.class);
+
+        return sourcePath.getSourcePath(processQName);
+    }
+    
+    public static BpelModel getBpelModel(
+            final QName processQName) {
+        return EditorUtil.getBpelModel(getUrl(processQName));
+    }
+    
+    public static String getXpath(
+            final UniqueId bpelEntityId) {
+        
         final BpelModel model = bpelEntityId.getModel();
         
         try {
@@ -91,11 +88,10 @@ public final class ModelUtil {
             return null;
         }
         
-        
-        class MyRunnable implements Runnable{
+        class MyRunnable implements Runnable {
             private String result = null;
             
-            public String getResult(){
+            public String getResult() {
                 return this.result;
             }
             
@@ -103,17 +99,17 @@ public final class ModelUtil {
                 if (!model.getState().equals(BpelModel.State.VALID)) {
                     return;
                 }
-                BpelEntity bpelEntity = model.getEntity(bpelEntityId);
+                
+                final BpelEntity bpelEntity = model.getEntity(bpelEntityId);
+                
                 if (bpelEntity != null) {
                     result = EditorContextBridge.normalizeXpath(
                             findHelper.getXPath(bpelEntity));
                 }
-                
-                
             }
-        };
+        }
         
-        MyRunnable r = new MyRunnable();
+        final MyRunnable r = new MyRunnable();
         
         model.invoke(r);
         
@@ -121,18 +117,19 @@ public final class ModelUtil {
     }
     
     public static UniqueId getBpelEntityId(
-            final BpelModel model, final String xpath)
-    {
+            final BpelModel model, 
+            final String xpath) {
+        
         try {
             model.sync();
         } catch (IOException ex) {
             return null;
         }
         
-        class MyRunnable implements Runnable{
+        class MyRunnable implements Runnable {
             private UniqueId result = null;
             
-            public UniqueId getResult(){
+            public UniqueId getResult() {
                 return this.result;
             }
             
@@ -151,16 +148,19 @@ public final class ModelUtil {
                 }
                 
             }
-        };
+        }
         
-        MyRunnable r = new MyRunnable();
+        final MyRunnable r = new MyRunnable();
         
         model.invoke(r);
         
         return r.getResult();
     }
     
-    private static BpelEntity findBpelEntity(BpelModel model, String xpathExpression) {
+    public static BpelEntity findBpelEntity(
+            final BpelModel model, 
+            final String xpathExpression) {
+        
         if (model.getProcess() == null) {
             return null;
         }
@@ -216,8 +216,9 @@ public final class ModelUtil {
     }
     
     public static UniqueId getBpelEntityId(
-            final BpelModel model, final int offset)
-    {
+            final BpelModel model, 
+            final int offset) {
+        
         try {
             model.sync();
         } catch (IOException ex) {
@@ -225,10 +226,10 @@ public final class ModelUtil {
         }
         
         
-        class MyRunnable implements Runnable{
+        class MyRunnable implements Runnable {
             private UniqueId result = null;
             
-            public UniqueId getResult(){
+            public UniqueId getResult() {
                 return this.result;
             }
             
@@ -242,16 +243,18 @@ public final class ModelUtil {
                 }
                 
             }
-        };
+        }
         
-        MyRunnable r = new MyRunnable();
+        final MyRunnable r = new MyRunnable();
         
         model.invoke(r);
         
         return r.getResult();
     }
     
-    public static int getLineNumber(final UniqueId bpelEntityId) {
+    public static int getLineNumber(
+            final UniqueId bpelEntityId) {
+        
         final BpelModel model = bpelEntityId.getModel();
         
         try {
@@ -260,7 +263,7 @@ public final class ModelUtil {
             return -1;
         }
         
-        class MyRunnable implements Runnable{
+        class MyRunnable implements Runnable {
             private int result = -1;
             
             public int getResult(){
@@ -276,18 +279,25 @@ public final class ModelUtil {
                     result = bpelEntity.findPosition();
                 }
             }
-        };
+        }
         
-        MyRunnable r = new MyRunnable();
+        final MyRunnable r = new MyRunnable();
         model.invoke(r);
+        
         int offset = r.getResult();
         if (offset < 0) {
             return -1;
         }
         
-        StyledDocument doc =(StyledDocument)model.getModelSource().getLookup().
-                lookup(StyledDocument.class);
-
-        return NbDocument.findLineNumber(doc, offset) + 1;
+        final StyledDocument document =
+                model.getModelSource().getLookup().lookup(StyledDocument.class);
+                
+        return NbDocument.findLineNumber(document, offset) + 1;
+    }
+    
+    public static int getLineNumber(
+            final BpelModel model,
+            final String xpath) {
+        return getLineNumber(getBpelEntityId(model, xpath));
     }
 }

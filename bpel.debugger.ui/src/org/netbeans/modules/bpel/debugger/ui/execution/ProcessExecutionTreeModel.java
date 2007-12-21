@@ -1,42 +1,20 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 package org.netbeans.modules.bpel.debugger.ui.execution;
@@ -45,12 +23,10 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.util.Vector;
-
 import org.netbeans.modules.bpel.debugger.api.BpelDebugger;
 import org.netbeans.modules.bpel.debugger.api.ProcessInstance;
 import org.netbeans.modules.bpel.debugger.api.pem.PemEntity;
 import org.netbeans.modules.bpel.debugger.api.pem.ProcessExecutionModel;
-import org.netbeans.modules.bpel.debugger.api.psm.ProcessStaticModel;
 import org.netbeans.modules.bpel.debugger.api.psm.PsmEntity;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.ModelEvent;
@@ -60,68 +36,80 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.RequestProcessor;
 
 /**
- *
+ * Model describing the tree column of the Process Execution View.
+ * 
  * @author Alexander Zgursky
+ * @author Kirill Sorokin
  */
 public class ProcessExecutionTreeModel implements TreeModel {
+    private ContextProvider myContextProvider;
     private BpelDebugger myDebugger;
+    
     private ProcessExecutionModel myPem;
+    
     private Listener myListener;
     private Vector myListeners = new Vector();
-    private ContextProvider myContextProvider;
 
-    
     /**
      * Creates a new instance of ProcessExecutionTreeModel.
      *
      * @param lookupProvider debugger context
      */
-    public ProcessExecutionTreeModel(ContextProvider contextProvider) {
+    public ProcessExecutionTreeModel(
+            final ContextProvider contextProvider) {
         myContextProvider = contextProvider;
-        myDebugger = 
-            (BpelDebugger) contextProvider.lookupFirst(null, BpelDebugger.class);
+        myDebugger = (BpelDebugger) contextProvider.lookupFirst(
+                null, BpelDebugger.class);
     }
 
-    
+    /**{@inheritDoc}*/
     public Object getRoot() {
         return ROOT;
     }
 
-    public Object[] getChildren(Object object, int from, int to) throws UnknownTypeException {
+    /**{@inheritDoc}*/
+    public Object[] getChildren(
+            final Object object, 
+            final int from, 
+            final int to) throws UnknownTypeException {
         if (object.equals(ROOT)) {
-            Object root = getTreeRoot();
+            final Object root = getPemRoot();
+            
             return root != null ? new Object[] {root} : new Object[0];
-        } else if (object instanceof PsmEntity) {
-            return ((PsmEntity)object).getChildren();
-        } else if (object instanceof PemEntity) {
-            return getPemEntityChildren((PemEntity)object, from, to);
-        } else {
-            throw new UnknownTypeException(object);
+        } 
+        
+        if (object instanceof PsmEntity) {
+            return ((PsmEntity) object).getChildren();
+        } 
+        
+        if (object instanceof PemEntity) {
+            return getPemEntityChildren((PemEntity) object);
         }
+        
+        throw new UnknownTypeException(object);
     }
-
-    /**
-     * Returns number of children for given node.
-     * 
-     * @param   node the parent node
-     * @throws  UnknownTypeException if this TreeModel implementation is not
-     *          able to resolve children for given node type
-     *
-     * @return  true if node is leaf
-     */
-    public int getChildrenCount(Object object) throws UnknownTypeException {
+    
+    /**{@inheritDoc}*/
+    public int getChildrenCount(
+            final Object object) throws UnknownTypeException {
         if (object.equals(ROOT)) {
-            return getTreeRoot() != null ? 1 : 0;
-        } else if (object instanceof PsmEntity) {
-            return ((PsmEntity)object).getChildrenCount();
-        } else if (object instanceof PemEntity) {
-            return getPemEntityChildrenCount((PemEntity)object);
-        } else {
-            throw new UnknownTypeException(object);
+            return getPemRoot() != null ? 1 : 0;
         }
+        
+        if (object instanceof PsmEntity) {
+            return ((PsmEntity) object).getChildrenCount();
+        }
+        
+        if (object instanceof PemEntity) {
+            return getPemEntityChildrenCount((PemEntity) object);
+        }
+        
+        throw new UnknownTypeException(object);
     }
 
-    public boolean isLeaf(Object object) throws UnknownTypeException {
+    /**{@inheritDoc}*/
+    public boolean isLeaf(
+            final Object object) throws UnknownTypeException {
         if (object.equals(ROOT)) {
             return false;
         } else if (object instanceof PsmEntity) {
@@ -133,47 +121,44 @@ public class ProcessExecutionTreeModel implements TreeModel {
         }
     }
 
-    public void addModelListener(ModelListener l) {
-        myListeners.add(l);
+    /**{@inheritDoc}*/
+    public void addModelListener(
+            final ModelListener listener) {
+        myListeners.add(listener);
+        
         if (myListener == null) {
-            myListener = new Listener(this, getDebugger());
+            myListener = new Listener(this, myDebugger);
         }
     }
 
-    public void removeModelListener(ModelListener l) {
-        myListeners.remove(l);
+    /**{@inheritDoc}*/
+    public void removeModelListener(
+            final ModelListener listener) {
+        myListeners.remove(listener);
+        
         if (myListeners.size() == 0) {
             myListener.destroy();
             myListener = null;
         }
     }
     
-    void setProcessExecutionModel(ProcessExecutionModel pem) {
+    // Package methods /////////////////////////////////////////////////////////
+    void setProcessExecutionModel(
+            final ProcessExecutionModel pem) {
         myPem = pem;
     }
 
     void fireTreeChanged() {
-        Vector v = (Vector) myListeners.clone();
-        int i, k = v.size();
-        for (i = 0; i < k; i++)
-            ((ModelListener) v.get(i)).modelChanged(new ModelEvent.TreeChanged(this));
+        final Vector clone = (Vector) myListeners.clone();
+        
+        for (int i = 0; i < clone.size(); i++) {
+            ((ModelListener) clone.get(i)).modelChanged(
+                    new ModelEvent.TreeChanged(this));
+        }
     }
 
-    void fireTableValueChangedChanged(Object node, String propertyName) {
-        Vector v = (Vector) myListeners.clone();
-        int i, k = v.size();
-        for (i = 0; i < k; i++)
-            ((ModelListener) v.get(i)).modelChanged(new ModelEvent.TableValueChanged(this, node,
-                    propertyName));
-    }
-
-    // private methods .........................................................
-    
-    private BpelDebugger getDebugger() {
-        return myDebugger;
-    }
-    
-    private Object getTreeRoot() {
+    // Private methods /////////////////////////////////////////////////////////
+    private Object getPemRoot() {
         if (myPem != null) {
             return myPem.getRoot();
         } else {
@@ -181,67 +166,100 @@ public class ProcessExecutionTreeModel implements TreeModel {
         }
     }
     
-    private Object[] getPemEntityChildren(PemEntity pemEntity, int from, int to) {
-        PsmEntity psmEntity = pemEntity.getPsmEntity();
+    private Object[] getPemEntityChildren(
+            final PemEntity pemEntity) {
+        final PsmEntity psmEntity = pemEntity.getPsmEntity();
+        
         if (!pemEntity.hasChildren()) {
             return psmEntity.getChildren();
-        } else if (psmEntity.isLoop()) {
-            return pemEntity.getChildren();
-        } else {
-            Object[] children = new Object[psmEntity.getChildrenCount()];
-            int i = 0;
-            for (PsmEntity psmChild : psmEntity.getChildren()) {
-                PemEntity[] pemChildren = pemEntity.getChildren(psmChild);
-                if (pemChildren.length > 0) {
-                    children[i++] = pemChildren[0];
-                } else {
-                    children[i++] = psmChild;
-                }
-            }
-            return children;
         }
+        
+        if (psmEntity.isLoop()) {
+            return pemEntity.getChildren();
+        }
+        
+        final Object[] children = new Object[psmEntity.getChildrenCount()];
+        int i = 0;
+        for (PsmEntity psmChild : psmEntity.getChildren()) {
+            final PemEntity[] pemChildren = pemEntity.getChildren(psmChild);
+            
+            if (pemChildren.length > 0) {
+                children[i++] = pemChildren[0];
+            } else {
+                children[i++] = psmChild;
+            }
+        }
+        
+        return children;
     }
     
-    private int getPemEntityChildrenCount(PemEntity pemEntity) {
-        PsmEntity psmEntity = pemEntity.getPsmEntity();
+    private int getPemEntityChildrenCount(
+            final PemEntity pemEntity) {
+        final PsmEntity psmEntity = pemEntity.getPsmEntity();
+        
         if (!pemEntity.hasChildren()) {
             return psmEntity.getChildrenCount();
-        } else if (psmEntity.isLoop()) {
-            return pemEntity.getChildrenCount();
-        } else {
-            return psmEntity.getChildrenCount();
         }
+        
+        if (psmEntity.isLoop()) {
+            return pemEntity.getChildrenCount();
+        }
+        
+        return psmEntity.getChildrenCount();
     }
     
-    private boolean isPemEntityLeaf(PemEntity pemEntity) {
-        return !pemEntity.hasChildren() && !pemEntity.getPsmEntity().hasChildren();
+    private boolean isPemEntityLeaf(
+            final PemEntity pemEntity) {
+        return !pemEntity.hasChildren() && 
+                !pemEntity.getPsmEntity().hasChildren();
     }
-
-    // innerclasses ............................................................
-
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // Inner Classes 
     private static class Listener implements
-            ProcessExecutionModel.Listener,
-            PropertyChangeListener
-    {
+            ProcessExecutionModel.Listener, PropertyChangeListener {
         private BpelDebugger myDebugger;
-        private WeakReference myModel;
+        private WeakReference<ProcessExecutionTreeModel> myModel;
         private ProcessExecutionModel myPem;
+        
         // currently waiting / running refresh task
         // there is at most one
         private RequestProcessor.Task myTask;
-        
 
         private Listener (
-                ProcessExecutionTreeModel tm,
-                BpelDebugger debugger)
-        {
+                final ProcessExecutionTreeModel model,
+                final BpelDebugger debugger) {
             myDebugger = debugger;
-            myModel = new WeakReference(tm);
+            myModel = new WeakReference<ProcessExecutionTreeModel>(model);
             myDebugger.addPropertyChangeListener(this);
+            
             init();
         }
         
-        void destroy() {
+        private void init() {
+            final ProcessExecutionTreeModel model = getModel();
+            if (model == null) {
+                return;
+            }
+                
+            if (myPem != null) {
+                myPem.removeListener(this);
+                myPem = null;
+            }
+            
+            final ProcessInstance processInstance = 
+                    myDebugger.getCurrentProcessInstance();
+            if (processInstance != null) {
+                myPem = processInstance.getProcessExecutionModel();
+                if (myPem != null) {
+                    myPem.addListener(this);
+                }
+            }
+            
+            model.setProcessExecutionModel(myPem);
+        }
+        
+        private void destroy() {
             myDebugger.removePropertyChangeListener(this);
             if (myPem != null) {
                 myPem.removeListener(this);
@@ -255,70 +273,51 @@ public class ProcessExecutionTreeModel implements TreeModel {
             }
         }
         
-        private void init() {
-            ProcessExecutionTreeModel model = getModel();
-            if (model == null) {
-                return;
-            }
-                
-            if (myPem != null) {
-                myPem.removeListener(this);
-                myPem = null;
-            }
-            
-            ProcessInstance processInstance = myDebugger.getCurrentProcessInstance();
-            if (processInstance != null) {
-                myPem = processInstance.getProcessExecutionModel();
-                if (myPem != null) {
-                    myPem.addListener(this);
-                }
-            }
-            
-            model.setProcessExecutionModel(myPem);
-        }
-        
         private ProcessExecutionTreeModel getModel() {
-            ProcessExecutionTreeModel tm =
-                    (ProcessExecutionTreeModel)myModel.get();
-            if (tm == null) {
+            final ProcessExecutionTreeModel model = myModel.get();
+            
+            if (model == null) {
                 destroy();
             }
-            return tm;
+            
+            return model;
         }
         
-        public void propertyChange(PropertyChangeEvent e) {
-            if (e.getPropertyName() == BpelDebugger.PROP_CURRENT_PROCESS_INSTANCE) {
+        /**{@iheritDoc}*/
+        public void propertyChange(final PropertyChangeEvent e) {
+            if (BpelDebugger.PROP_CURRENT_PROCESS_INSTANCE.equals(
+                    e.getPropertyName())) {
                 if (myTask != null) {
                     // cancel old task
                     myTask.cancel();
                     myTask = null;
                 }
-
-                init();
-                asyncFireTreeChanged();
                 
-            } else if (e.getPropertyName() == BpelDebugger.PROP_STATE) {
+                init();
+                
+                modelUpdated();
+            } else if (BpelDebugger.PROP_STATE.equals(e.getPropertyName())) {
                 if (myDebugger.getState() == BpelDebugger.STATE_DISCONNECTED) {
                     destroy();
-                    asyncFireTreeChanged();
+                    modelUpdated();
                 }
             }
         }
-
-        public void modelUpdated() {
-            asyncFireTreeChanged();
-        }
         
-        private void asyncFireTreeChanged() {
+        /**{@inheritDoc}*/
+        public void modelUpdated() {
             final ProcessExecutionTreeModel model = getModel();
+            
             if (model == null) {
                 return;
             }
+            
             if (myTask != null) {
                 // cancel old task
                 myTask.cancel();
                 myTask = null;
             }
+            
             myTask = RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     model.fireTreeChanged ();

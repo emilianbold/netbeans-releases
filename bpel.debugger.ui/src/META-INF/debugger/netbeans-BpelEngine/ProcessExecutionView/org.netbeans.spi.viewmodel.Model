@@ -1,2 +1,3 @@
-org.netbeans.modules.bpel.debugger.ui.execution.ProcessExecutionViewModel
+org.netbeans.modules.bpel.debugger.ui.execution.ProcessExecutionNodeModel
+org.netbeans.modules.bpel.debugger.ui.execution.ProcessExecutionTableModel
 org.netbeans.modules.bpel.debugger.ui.execution.ProcessExecutionExpansionModel

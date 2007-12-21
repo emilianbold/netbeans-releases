@@ -1,44 +1,21 @@
 <?xml version="1.0"?>
 <!--
-DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
-
-Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
-
-
-The contents of this file are subject to the terms of either the GNU
-General Public License Version 2 only ("GPL") or the Common
-Development and Distribution License("CDDL") (collectively, the
-"License"). You may not use this file except in compliance with the
-License. You can obtain a copy of the License at
-http://www.netbeans.org/cddl-gplv2.html
-or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
-specific language governing permissions and limitations under the
-License.  When distributing the software, include this License Header
-Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
-particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
-accompanied this code. If applicable, add the following below the
-License Header, with the fields enclosed by brackets [] replaced by
-your own identifying information:
-"Portions Copyrighted [year] [name of copyright owner]"
-
-Contributor(s):
-
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License (the License). You may not use this file except in
+ compliance with the License.
+ 
+ You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ or http://www.netbeans.org/cddl.txt.
+ 
+ When distributing Covered Code, include this CDDL Header Notice in each file
+ and include the License file at http://www.netbeans.org/cddl.txt.
+ If applicable, add the following below the CDDL Header, with the fields
+ enclosed by brackets [] replaced by your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
  The Original Software is NetBeans. The Initial Developer of the Original
  Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  Microsystems, Inc. All Rights Reserved.
-
-If you wish your version of this file to be governed by only the CDDL
-or only the GPL Version 2, indicate your decision by adding
-"[Contributor] elects to include this software in this distribution
-under the [CDDL or GPL Version 2] license." If you do not indicate a
-single choice of license, a recipient has the option to distribute
-your version of this file under either the CDDL, the GPL Version 2 or
-to extend the choice of license to its licensees as provided above.
-However, if you add GPL Version 2 code and therefore, elected the GPL
-Version 2 license, then the option applies only if the new code is
-made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 <filesystem>
@@ -46,10 +23,10 @@ made subject to such option by the copyright holder.
         <folder name="Window">
             <folder name="Debug">
                 <folder name="BPEL">
-                    <file name="org-netbeans-modules-bpel-debugger-ui-action-Variable.instance"/>
                     <file name="org-netbeans-modules-bpel-debugger-ui-action-Process.instance"/>
                     <file name="org-netbeans-modules-bpel-debugger-ui-action-Console.instance"/>
                     <file name="org-netbeans-modules-bpel-debugger-ui-action-ProcessExecution.instance"/>
+                    <file name="org-netbeans-modules-bpel-debugger-ui-action-PLinks.instance"/>
                 </folder>
             </folder>
         </folder>
@@ -65,15 +42,14 @@ made subject to such option by the copyright holder.
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     <attr name="position" intvalue="5000"/>
                 </file>
-                <file name="org-netbeans-modules-bpel-debugger-ui-action-Variable.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Window/Debug/BPEL/org-netbeans-modules-bpel-debugger-ui-action-Variable.instance"/>
+                <file name="org-netbeans-modules-bpel-debugger-ui-action-PLinks.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/Debug/BPEL/org-netbeans-modules-bpel-debugger-ui-action-PLinks.instance"/>
                     <attr name="position" intvalue="5100"/>
                 </file>
                 <file name="org-netbeans-modules-bpel-debugger-ui-action-Process.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/Debug/BPEL/org-netbeans-modules-bpel-debugger-ui-action-Process.instance"/>
                     <attr name="position" intvalue="5200"/>
                 </file>
-
                 <file name="org-netbeans-modules-bpel-debugger-ui-action-ProcessExecution.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/Debug/BPEL/org-netbeans-modules-bpel-debugger-ui-action-ProcessExecution.instance"/>
                     <attr name="position" intvalue="5300"/>
@@ -87,11 +63,14 @@ made subject to such option by the copyright holder.
     </folder>
 
     <folder name="Shortcuts">
-        <file name="SO-0.shadow">
-            <attr name="originalFile" stringvalue="Actions/Window/Debug/BPEL/org-netbeans-modules-bpel-debugger-ui-action-Variable.instance"/>
+        <file name="SO-P.shadow">
+            <attr name="originalFile" stringvalue="Actions/Window/Debug/BPEL/org-netbeans-modules-bpel-debugger-ui-action-PLinks.instance"/>
         </file>
         <file name="SO-I.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/Debug/BPEL/org-netbeans-modules-bpel-debugger-ui-action-Process.instance"/>
+        </file>
+        <file name="SO-E.shadow">
+            <attr name="originalFile" stringvalue="Actions/Window/Debug/BPEL/org-netbeans-modules-bpel-debugger-ui-action-ProcessExecution.instance"/>
         </file>
         <file name="SO-C.shadow">
             <attr name="originalFile" stringvalue="Actions/Window/Debug/BPEL/org-netbeans-modules-bpel-debugger-ui-action-Console.instance"/>
@@ -100,15 +79,14 @@ made subject to such option by the copyright holder.
 
     <folder name="Windows2">
         <folder name="Components">
-            <file name="BpelVariablesView.settings" url="BpelVariablesView.settings"/>
+            <file name="BPELPLinksView.settings" url="plinks.settings"/>
             <file name="ProcessView.settings" url="process.settings"/>
             <file name="ProcessExecutionView.settings" url="processExecution.settings"/>
         </folder>
-
+        
         <folder name="Modes">
-
             <folder name="debugger">
-                <file name="BpelVariablesView.wstcref" url="BpelVariablesView.wstcref">
+                <file name="BPELPLinksView.wstcref" url="plinks.wstcref">
                     <attr name="position" intvalue="400"/>
                 </file>
                 <file name="ProcessView.wstcref" url="process.wstcref">
@@ -122,12 +100,13 @@ made subject to such option by the copyright holder.
         
         <folder name="Groups">
             <folder name="debugger">
-                <file name="BpelVariablesView.wstcgrp" url="BpelVariablesView.wstcgrp"/>
+                <file name="BPELPLinksView.wstcgrp" url="plinks.wstcgrp"/>
                 <file name="ProcessView.wstcgrp" url="process.wstcgrp"/>
                 <file name="ProcessExecutionView.wstcgrp" url="processExecution.wstcgrp"/>
             </folder>
         </folder>
     </folder>
+    
     <folder name="Editors"> 
         <folder name="text">
             <folder name="xml-bpel+xml">
@@ -138,6 +117,7 @@ made subject to such option by the copyright holder.
                 </folder>
             </folder>
         </folder>
+        
         <folder name="AnnotationTypes">
             <!--
             Hide this action for now - see issue 108002
@@ -147,13 +127,12 @@ made subject to such option by the copyright holder.
                 </file>
             </folder>
             -->
-<!--  Don't need activity annotations for source editor (they are used on diagram only
+            <!--  Don't need activity annotations for source editor (they are used on diagram only
             <file name="NeverExecutedElement.xml" url="NeverExecutedElement.xml"/>
             <file name="StartedElement.xml" url="StartedElement.xml"/>
             <file name="CompletedElement.xml" url="CompletedElement.xml"/>
             <file name="FaultedElement.xml" url="FaultedElement.xml"/>
--->    
+            -->    
         </folder>
     </folder>
-    
 </filesystem>

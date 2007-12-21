@@ -1,2 +1,4 @@
-org.netbeans.modules.bpel.debugger.ui.watch.WatchView
-org.netbeans.modules.bpel.debugger.ui.watch.WatchHelperViewModel
+org.netbeans.modules.bpel.debugger.ui.watch.WatchesNodeModel
+org.netbeans.modules.bpel.debugger.ui.watch.WatchesTreeModel
+org.netbeans.modules.bpel.debugger.ui.watch.WatchesTreeExpansionModel
+org.netbeans.modules.bpel.debugger.ui.watch.WatchesTableModel

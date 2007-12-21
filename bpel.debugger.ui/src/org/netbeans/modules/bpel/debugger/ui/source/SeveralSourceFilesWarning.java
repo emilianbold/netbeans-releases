@@ -1,48 +1,28 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 
 package org.netbeans.modules.bpel.debugger.ui.source;
 
 import java.awt.Component;
+import java.util.Arrays;
+import java.util.Comparator;
 import javax.swing.*;
 import javax.xml.namespace.QName;
 
@@ -52,12 +32,15 @@ import javax.xml.namespace.QName;
  */
 public class SeveralSourceFilesWarning extends JPanel {
 
-    public SeveralSourceFilesWarning (QName processQName, String[] sourcePaths) {
+    public SeveralSourceFilesWarning (
+            final QName processQName, 
+            final String[] sourcePaths) {
+        
         initComponents();
         // add MainClassChooser
-        jList1.setModel(new ServerListModel (sourcePaths));
-        jList1.setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
-        jList1.setCellRenderer(new ServersRenderer ());
+        jList1.setModel(new SourceFilesListModel(sourcePaths));
+        jList1.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        jList1.setCellRenderer(new SourceFilesRenderer());
         jList1.setSelectedIndex(0);
         tfTargetNamespace.setText(processQName.getNamespaceURI());
         tfProcessName.setText(processQName.getLocalPart());
@@ -75,6 +58,7 @@ public class SeveralSourceFilesWarning extends JPanel {
         }
     }
     
+    @Override
     public boolean isValid() {
         return jList1.getSelectedIndex() > -1;
     }
@@ -172,8 +156,7 @@ public class SeveralSourceFilesWarning extends JPanel {
                 .add(20, 20, 20))
         );
     }// </editor-fold>//GEN-END:initComponents
-
-
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -185,56 +168,79 @@ public class SeveralSourceFilesWarning extends JPanel {
     private javax.swing.JTextField tfProcessName;
     private javax.swing.JTextField tfTargetNamespace;
     // End of variables declaration//GEN-END:variables
-
-
-    private static final class ServerListModel extends AbstractListModel {
-
-        private String mySourcePaths [];
-
-        public ServerListModel (String[] sourcePaths) {
+        
+    private static final long serialVersionUID = 1L;
+    
+    private static final class SourceFilesListModel 
+            extends AbstractListModel {
+            
+        private String mySourcePaths[];
+        
+        public SourceFilesListModel (String[] sourcePaths) {
             mySourcePaths = sourcePaths;
+            
+            Arrays.sort(mySourcePaths, new Comparator<String>() {
+                public int compare(String o1, String o2) {
+                    return o1.compareTo(o2);
+                }
+            });
+;
         }
-
+        
         public synchronized int getSize() {
             return mySourcePaths.length;
         }
-
+        
         public synchronized Object getElementAt (int index) {
-            if (index >= 0 && index < mySourcePaths.length) {
-                return mySourcePaths [index];
+            if ((index >= 0) && (index < mySourcePaths.length)) {
+                return mySourcePaths[index];
             }
             else {
                 return null;
             }
         }
-
+        
+        private static final long serialVersionUID = 1L;
     }
 
-    private static final class ServersRenderer extends JLabel implements ListCellRenderer {
-        ServersRenderer () {
+    private static final class SourceFilesRenderer 
+            extends JLabel 
+            implements ListCellRenderer {
+        
+        public SourceFilesRenderer () {
             setOpaque (true);
         }
 
-        public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        public Component getListCellRendererComponent(
+                final JList list, 
+                final Object value, 
+                final int index, 
+                final boolean isSelected, 
+                final boolean hasFocus) {
+            
             if (value instanceof String) {
-                setText((String)value);
-//                setIcon (ProjectUtils.getInformation (prj).getIcon ());
+                setText((String) value);
+                //setIcon(ProjectUtils.getInformation(prj).getIcon());
             } else {
                 setText (value.toString ());
                 setIcon (null);
             }
+            
             if (isSelected) {
                 setBackground(list.getSelectionBackground());
                 setForeground(list.getSelectionForeground());
-                //setBorder (BorderFactory.createLineBorder (Color.BLACK));
-            }
-            else {
+                //setBorder (BorderFactory.createLineBorder(Color.BLACK));
+            } else {
                 setBackground(list.getBackground());
                 setForeground(list.getForeground());
-                //setBorder (null);
+                //setBorder(null);
             }
+            
             return this;
         }
+        
+        private static final long serialVersionUID = 1L;
     }
-
+    
+    
 }

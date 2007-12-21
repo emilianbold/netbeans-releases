@@ -1,42 +1,20 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 
@@ -281,7 +259,7 @@ public class BPELNode {
     }    
     
     static {
-        ALL_ACTIVITIES_MAP = new HashMap ();
+        ALL_ACTIVITIES_MAP = new HashMap();
         ALL_ACTIVITIES_MAP.put(RECEIVE, BPELNodeType.RECEIVE_TYPE);
         ALL_ACTIVITIES_MAP.put(REPLY, BPELNodeType.REPLY_TYPE);
         ALL_ACTIVITIES_MAP.put(INVOKE, BPELNodeType.INVOKE_TYPE);
@@ -305,6 +283,12 @@ public class BPELNode {
         ALL_ACTIVITIES_MAP.put(VALIDATE, BPELNodeType.VALIDATE_TYPE);
     }
     
+    public static BPELNodeType getNodeType (String nodeName) {
+        return ALL_ACTIVITIES_MAP.get(nodeName) != null ? 
+            ((BPELNodeType) ALL_ACTIVITIES_MAP.get(nodeName)) : 
+            BPELNodeType.NONE_ACTIVITY_TYPE;
+    }
+    
     private final int mLineNo;
     private final String mName;
     private final String mXpath;
@@ -313,31 +297,32 @@ public class BPELNode {
     private final String mTargetNameSpace;
     private int mClosingNo;
     
-    private List mChildren = new ArrayList ();
+    private List mChildren = new ArrayList();
     private BPELNode mParent;
+    
+    public BPELNode(
+            final String name, 
+            final int lineNumber, 
+            final String targetNamespace, 
+            final BPELNodeType type, 
+            final BPELNode parent) {
+        mName = name;
+        mLineNo = lineNumber;
+        mTargetNameSpace = targetNamespace;
+        mType = type;
+        mActivityFlag = (getNodeType(name) != BPELNodeType.NONE_ACTIVITY_TYPE);
+        mParent = parent;
+        mXpath = constructXpath();
+    }
     
     /**
      * Returns whether he BPEL Node is an Activity type
      * of node
      * @return true if it is 
      */
-    public boolean isActivity () {
+    public boolean isActivity() {
         return mActivityFlag;
     }    
-    
-    public BPELNode (String name, int lineNo, String targetNamespace, BPELNodeType type, BPELNode parent) {
-        mName = name;
-        mLineNo = lineNo;
-        mTargetNameSpace = targetNamespace;
-        mType = type;
-        mActivityFlag =  (getNodeType(name) != BPELNodeType.NONE_ACTIVITY_TYPE);
-        mParent = parent;
-        mXpath = constructXpath ();
-    }
-    
-    public static BPELNodeType getNodeType (String nodeName) {
-        return ALL_ACTIVITIES_MAP.get(nodeName)!=null ? ((BPELNodeType)ALL_ACTIVITIES_MAP.get(nodeName)):BPELNodeType.NONE_ACTIVITY_TYPE;
-    }
 
     private String constructXpath() {
         // TODO Auto-generated method stub
@@ -346,7 +331,7 @@ public class BPELNode {
            return result + mName;
        }
        String xpath = mParent.getXpath();
-       List sibings = mParent.getChildren ();
+       List sibings = mParent.getChildren();
        
        int index = 1;
        for (int i = 0; i < sibings.size(); i++) {
@@ -356,6 +341,10 @@ public class BPELNode {
            }           
        }
       return xpath + "/" + mName + "[" + index + "]";
+    }
+    
+    public String getName() {
+        return mName;
     }
     
     /**
@@ -392,22 +381,23 @@ public class BPELNode {
         // TODO Auto-generated method stub
         return mXpath;
     }
+    
     /**
      * Returns the lineNo of this node
      * @return
      */
-    public int getLineNo () {
+    public int getLineNumber() {
         return mLineNo;
     }
     
-    public BPELNode getParent () {
+    public BPELNode getParent() {
         return mParent;
     }
     
     /**
      * Returns the target name space 
      */
-    public String getTargetNameSpace () {
+    public String getTargetNameSpace() {
         return mTargetNameSpace;
     }
     /**
@@ -415,18 +405,19 @@ public class BPELNode {
      * @param lineNo the line no. for the closing tag line
      */
 
-    public void setClosingNumber (int lineNo) {
-        mClosingNo = lineNo;
+    public void setClosingNumber (int lineNumber) {
+        mClosingNo = lineNumber;
     }
     
     /**
      * Gets the closing number
      * @return the line no. for the closing tag line
      */
-    public int getClosingNumber () {
+    public int getClosingNumber() {
         return mClosingNo;
     }
     
+    @Override
     public boolean equals(Object obj) {
         // TODO Auto-generated method stub
         if (!(obj instanceof BPELNode)) {
@@ -434,18 +425,16 @@ public class BPELNode {
         }
         return ((BPELNode) obj).mTargetNameSpace.equals(mTargetNameSpace) && ((BPELNode) obj).mXpath.equals(mXpath);
     }
-
     
+    @Override
     public int hashCode() {
         // TODO Auto-generated method stub
         return (mXpath.hashCode() + mTargetNameSpace.hashCode()) * 37;
     }
-
-   
+    
+    @Override
     public String toString() {
         // TODO Auto-generated method stub
         return "targetNameSpace:" + mTargetNameSpace + "   name:" + mName + "   lineNo:" + mLineNo + "   xPath:" + mXpath; 
     }
-    
-
 }

@@ -1,2 +1,2 @@
-org.netbeans.modules.bpel.debugger.ui.process.BpelProcessColumn.createProcessNameColumn()
-org.netbeans.modules.bpel.debugger.ui.process.BpelProcessColumn.createProcessStateColumn()
+org.netbeans.modules.bpel.debugger.ui.process.ProcessesColumnModel_Name
+org.netbeans.modules.bpel.debugger.ui.process.ProcessesColumnModel_State

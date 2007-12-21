@@ -1,42 +1,20 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 package org.netbeans.modules.bpel.core;
@@ -45,18 +23,22 @@ import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.resources.ResourcePackageMarker;
+import org.netbeans.modules.bpel.model.ext.logging.api.Trace;
 import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor;
 import org.netbeans.modules.xml.catalog.spi.CatalogListener;
 import org.netbeans.modules.xml.catalog.spi.CatalogReader;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.BPELQName;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.schema.resources.ResourceMarker;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -69,71 +51,128 @@ import org.xml.sax.SAXException;
 public class BPELCatalog implements CatalogReader, CatalogDescriptor,
     EntityResolver  
 {
-	    
+        
     private static final String URL_BPEL_1_1 =
-		"nbres:/" +
+        "nbres:/" +
         ResourcePackageMarker.class.getPackage().getName().
         replace( '.', '/')+ "/" +  
         ResourcePackageMarker.WS_BPEL_1_1_SCHEMA;
     
     private static final String URL_BPEL_1_1_DTD =
-		"nbres:/org/netbeans/modules/bpel/core/resources/" +        // NOI18N
+        "nbres:/org/netbeans/modules/bpel/core/resources/" +        // NOI18N
         "bpel4ws_1_1.dtd";                                          // NOI18N
     
-	private static final String BPEL_1_1 =
-		"http://schemas.xmlsoap.org/ws/2003/03/business-process/";  // NOI18N
+    private static final String BPEL_1_1 =
+        "http://schemas.xmlsoap.org/ws/2003/03/business-process/";  // NOI18N
+
+    //TODO r
+    private static final String WS_ADDRESSING =
+        "http://schemas.xmlsoap.org/ws/2004/08/addressing";  // NOI18N
+    private static final String URL_WS_ADDRESSING =
+        "nbres:/org/netbeans/modules/bpel/core/resources/" +        // NOI18N
+        "ws-addressing.xsd";                                          // NOI18N
 
     private static final String URL_BPEL_2_0 =
-		"nbres:/"+                                                  // NOI18N
+        "nbres:/"+                                                  // NOI18N
         ResourcePackageMarker.class.getPackage().getName().
         replace( '.', '/')+ "/" +                                   // NOI18N
         ResourcePackageMarker.WS_BPEL_SCHEMA; 
     
-	private static final String BPEL_2_0 = BpelEntity.BUSINESS_PROCESS_NS_URI;
-		
-	private static final String SCHEMA = "SCHEMA:";                 // NOI18N
-	//
-	// pseudo DTD for code-completion?
-	// MCF - I am not doing pseudo DTD for BPEL 2.0
-	//
-	private static final String BPEL_1_1_ID = SCHEMA + BPEL_1_1;
-	private static final String BPEL_2_0_ID = SCHEMA + BPEL_2_0;
-	
+    private static final String BPEL_2_0 = BpelEntity.BUSINESS_PROCESS_NS_URI;
+  
+    private static final String URL_TRACE_2_0 =
+        "nbres:/"+                                                  // NOI18N
+        ResourcePackageMarker.class.getPackage().getName().
+        replace( '.', '/')+ "/" +                                   // NOI18N
+        ResourcePackageMarker.TRACE_SCHEMA; 
+
+    private static final String TRACE_2_0 = Trace.LOGGING_NAMESPACE_URI;
+
+    private static final String WS_BPEL_SERVICE_REF = 
+            "http://docs.oasis-open.org/wsbpel/2.0/serviceref"; // NOI18N
+    
+    private static final String URL_WS_BPEL_SERVICE_REF =
+        "nbres:/"+                                                  // NOI18N
+        ResourcePackageMarker.class.getPackage().getName().
+        replace( '.', '/')+ "/" +                                   // NOI18N
+        ResourcePackageMarker.WS_BPEL_SERVICE_REF_SCHEMA; 
+
+    public static final String SCHEMA = "SCHEMA:";                 // NOI18N
+    //
+    // pseudo DTD for code-completion?
+    // MCF - I am not doing pseudo DTD for BPEL 2.0
+    //
+    private static final String BPEL_1_1_ID = SCHEMA + BPEL_1_1;
+    private static final String BPEL_2_0_ID = SCHEMA + BPEL_2_0;
+    private static final String TRACE_2_0_ID = SCHEMA + TRACE_2_0;
+    private static final String WS_BPEL_SERVICE_REF_ID = 
+            SCHEMA + WS_BPEL_SERVICE_REF; 
+    // TODO r
+    private static final String WS_ADDRESSING_ID = SCHEMA + WS_ADDRESSING;
+
+    
     private static final String URL_BPEL_PLT_1_1 =
-		"nbres:/org/netbeans/modules/bpel/core/resources/"          // NOI18N
+        "nbres:/org/netbeans/modules/bpel/core/resources/"          // NOI18N
         +"bpel4ws_1_1_plinkType.xsd";                               // NOI18N
     
-	private static final String BPEL_PLT_1_1 =
-		"http://schemas.xmlsoap.org/ws/2003/05/partner-link/";      // NOI18N
+    private static final String BPEL_PLT_1_1 =
+        "http://schemas.xmlsoap.org/ws/2003/05/partner-link/";      // NOI18N
     
-	private static final String BPEL_PLT_1_1_ID = SCHEMA + BPEL_PLT_1_1;
-	
+    private static final String BPEL_PLT_1_1_ID = SCHEMA + BPEL_PLT_1_1;
+    
     private static final String URL_BPEL_PLT_2_0 =
-		"nbres:/" + ResourceMarker.class.getPackage().getName().     // NOI18N 
+        "nbres:/" + ResourceMarker.class.getPackage().getName().     // NOI18N 
         replace( '.', '/')+ "/" + ResourceMarker.PLNK_SCHEMA;
 
     
-	private static final String BPEL_PLT_2_0 = BPELQName.PLNK_NS;  
+    private static final String BPEL_PLT_2_0 = BPELQName.PLNK_NS;  
     
-	private static final String BPEL_PLT_2_0_ID = SCHEMA + BPEL_PLT_2_0;	
-	
+    private static final String BPEL_PLT_2_0_ID = SCHEMA + BPEL_PLT_2_0;    
+    
     private static final String IMAGE_PATH = 
         "org/netbeans/modules/bpel/core/resources/" +               // NOI18N
         "bpel_catalog.gif";                                         // NOI18N
-	
+    
     public BPELCatalog() {
+    }
+    
+    /**
+     * 
+     * @return BPELCatalog instance founded in Lookup. Could be null
+     */
+    public static BPELCatalog getDefault() {
+            BPELCatalog bpelCatalog = null;
+
+            Lookup.Template templ = new Lookup.Template(CatalogReader.class);
+            Lookup userCatalogLookup = Lookups.forPath("Plugins/XML/UserCatalogs"); // NOI18N
+            
+            Lookup.Result res = userCatalogLookup.lookup(templ);
+            Collection impls = res.allInstances();
+
+            for(Object obj : impls){
+                if (obj instanceof BPELCatalog) {
+                    bpelCatalog = (BPELCatalog)obj;
+                    break;
+                }
+            }
+
+            return bpelCatalog;
     }
     
     /**
      * Get String iterator representing all public IDs registered in catalog.
      * @return null if cannot proceed, try later.
      */
-    public Iterator getPublicIDs() {
+    public Iterator<String> getPublicIDs() {
         List<String> list = new ArrayList<String>();
         list.add(BPEL_1_1_ID);
         list.add(BPEL_PLT_1_1_ID);
         list.add(BPEL_2_0_ID);
         list.add(BPEL_PLT_2_0_ID);
+        list.add(TRACE_2_0_ID);
+        list.add(WS_BPEL_SERVICE_REF_ID);
+        // TODO r
+        list.add(WS_ADDRESSING_ID);
         return list.listIterator();
     }
     
@@ -143,18 +182,27 @@ public class BPELCatalog implements CatalogReader, CatalogDescriptor,
      */
     public String getSystemID(String publicId) {
         if (BPEL_2_0_ID.equals(publicId)) {
-			return URL_BPEL_2_0;
+            return URL_BPEL_2_0;
             // FOR Code Complete? return URL_BPEL_2_0_DTD;
         }
-		else if (BPEL_PLT_2_0_ID.equals(publicId)) {
-			return URL_BPEL_PLT_2_0;
+        else if (BPEL_PLT_2_0_ID.equals(publicId)) {
+            return URL_BPEL_PLT_2_0;
+        }
+        else if (TRACE_2_0_ID.equals(publicId)) {
+            return URL_TRACE_2_0;
         }
         else if (BPEL_1_1_ID.equals(publicId)) {
-			return URL_BPEL_1_1;
+            return URL_BPEL_1_1;
             // FOR Code Complete? return URL_BPEL_1_1_DTD;
         }
-		else if (BPEL_PLT_1_1_ID.equals(publicId)) {
-			return URL_BPEL_PLT_1_1;
+        else if (BPEL_PLT_1_1_ID.equals(publicId)) {
+            return URL_BPEL_PLT_1_1;
+        }
+        else if (WS_BPEL_SERVICE_REF_ID.equals(publicId)) {
+            return URL_WS_BPEL_SERVICE_REF;
+        }
+        else if (WS_ADDRESSING_ID.equals(publicId)) {
+            return URL_WS_ADDRESSING;
         }
         else {
             return null;
@@ -224,14 +272,24 @@ public class BPELCatalog implements CatalogReader, CatalogDescriptor,
         if (BPEL_2_0.equals(systemId)) {
             return new org.xml.sax.InputSource(URL_BPEL_2_0);
         }
-		else if (BPEL_PLT_2_0.equals(systemId)) {
+        else if (BPEL_PLT_2_0.equals(systemId)) {
             return new org.xml.sax.InputSource(URL_BPEL_PLT_2_0);
+        }
+        else if (TRACE_2_0.equals(systemId)) {
+            return new org.xml.sax.InputSource(URL_TRACE_2_0);
         }
         else if (BPEL_1_1.equals(systemId)) {
             return new org.xml.sax.InputSource(URL_BPEL_1_1);
         }
-		else if (BPEL_PLT_1_1.equals(systemId)) {
+        else if (BPEL_PLT_1_1.equals(systemId)) {
             return new org.xml.sax.InputSource(URL_BPEL_PLT_1_1);
+        }
+        else if (WS_BPEL_SERVICE_REF.equals(systemId)) {
+            return new org.xml.sax.InputSource(URL_WS_BPEL_SERVICE_REF);
+        }
+        // TODO r
+        else if (WS_ADDRESSING.equals(systemId)) {
+            return new org.xml.sax.InputSource(URL_WS_ADDRESSING);
         }
         else {
             return null;
@@ -243,17 +301,26 @@ public class BPELCatalog implements CatalogReader, CatalogDescriptor,
      * @return null if not registered
      */
     public String resolveURI(String name) {
-		if(BPEL_2_0.equals(name)) {
-			return BPEL_2_0;
+        if(BPEL_2_0.equals(name)) {
+            return BPEL_2_0;
         }
-		else if(BPEL_PLT_2_0.equals(name)) {
-			return BPEL_PLT_2_0;
+        else if(BPEL_PLT_2_0.equals(name)) {
+            return BPEL_PLT_2_0;
         }
-		else if(BPEL_1_1.equals(name)) {
-			return BPEL_1_1;
+        else if(TRACE_2_0.equals(name)) {
+            return TRACE_2_0;
         }
-		else if(BPEL_PLT_1_1.equals(name)) {
-			return BPEL_PLT_1_1;
+        else if(BPEL_1_1.equals(name)) {
+            return BPEL_1_1;
+        }
+        else if(BPEL_PLT_1_1.equals(name)) {
+            return BPEL_PLT_1_1;
+        }
+        else if(WS_BPEL_SERVICE_REF.equals(name)) {
+            return WS_BPEL_SERVICE_REF;
+        }
+        else if(WS_ADDRESSING.equals(name)) {
+            return WS_ADDRESSING;
         }
         return null;
     }

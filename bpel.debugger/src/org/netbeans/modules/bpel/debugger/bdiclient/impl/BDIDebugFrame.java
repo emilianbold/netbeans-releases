@@ -1,42 +1,20 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 
@@ -60,88 +38,120 @@ import org.netbeans.modules.bpel.debugger.BreakPosition;
  */
 public class BDIDebugFrame implements DebugFrame {
     
-    private ProcessInstanceImpl mProcessInstance;
-    private String mId;
+    private ProcessInstanceImpl myProcessInstance;
+    private String myId;
     
-    private DebuggableEngine mEngine;
+    private DebuggableEngine myDebuggableEngine;
 
-    public BDIDebugFrame(ProcessInstanceImpl processInstance, String id) {
-        mProcessInstance = processInstance;
-        mId = id;
+    public BDIDebugFrame(
+            final ProcessInstanceImpl processInstance, 
+            final String id) {
+        myProcessInstance = processInstance;
+        myId = id;
     }
 
     public String getId() {
-        return mId;
+        return myId;
     }
 
-    //TODO:avoid storing DebuggableEngine in DebugFrame.
-    //Store it in BreakPosition instead
+    // TODO: avoid storing DebuggableEngine in DebugFrame.
+    // Store it in BreakPosition instead
     public DebuggableEngine getDebuggableEngine() {
-        return mEngine;
+        return myDebuggableEngine;
     }
     
     public ProcessInstanceImpl getProcessInstance() {
-        return mProcessInstance;
+        return myProcessInstance;
     }
     
-//  DebugFrame interface methods
-//  DebugFrame interface methods
-//  DebugFrame interface methods
-
-    public void onLineChange(String bpelFile, String uri, int lineNumber, String xpath, DebuggableEngine engine) {
-        if (ignoreEvent(xpath)) {
-            return;
-        }
-        //System.out.println("   Activity started in frame " + mId + ": " + xpath);
-        mEngine = engine;
-        BreakPosition breakPosition = new BreakPosition(this, xpath);
-        mProcessInstance.onActivityStarted(breakPosition);
-    }
-    
-    public void onFault(String bpelFile, String uri, int lineNumber, String xpath) {
-        //mProcessInstance.onFault(this);
+    public void onLineChange(
+            final String bpelFile, 
+            final String uri, 
+            final int lineNumber, 
+            final String xpath, 
+            final DebuggableEngine engine) {
+        System.out.println("- onLineChange(" + lineNumber + ", " + 
+                xpath + ")");
+        
+        myDebuggableEngine = engine;
+        
+        myProcessInstance.onActivityStarted(
+                new BreakPosition(this, xpath, lineNumber));
     }
 
-    public void onXPathException(String bpelFile, String uri, int lineNumber, String message, String xpath) {
-        mProcessInstance.onXpathException(this);
-    }
-
-    public void onTerminate(String bpelFile, String uri, int lineNumber, String xpath) {
-        if (ignoreEvent(xpath)) {
-            return;
-        }
-        //System.out.println("   Activity terminated in frame " + mId + ": " + xpath);
-        mProcessInstance.onTerminate(this);
-    }
-
-    public void onExit(String bpelFile, String uri) {
-        //System.out.println("Exit frame: " + mId);
-        mProcessInstance.onExit(this);
+    public void onXPathException(
+            final String bpelFile, 
+            final String uri, 
+            final int lineNumber, 
+            final String message, 
+            final String xpath) {
+        System.out.println("- onXPathException(" + lineNumber + ", " + 
+                message + ", " + xpath + ")");
+        
+        myProcessInstance.onXpathException(this);
     }
     
-    public void onFault(String bpelFile, String uri, int lineNumber, String xpath, String faultQName, BPELVariable faultData, DebuggableEngine engine) {
-        if (ignoreEvent(xpath)) {
-            return;
-        }
-        //System.out.println("   !!!Fault in frame " + mId + ": " + xpath);
-        mEngine = engine;
-        BreakPosition breakPosition = new BreakPosition(this, xpath);
-        mProcessInstance.onFault(breakPosition, faultQName, faultData);
+    public void onTerminate(
+            final String bpelFile, 
+            final String uri, 
+            final int lineNumber, 
+            final String xpath) {
+        System.out.println("- onTerminate(" + lineNumber + ", " + 
+                xpath + ")");
+        
+        myProcessInstance.onTerminate(this);
     }
     
-    public void onActivityComplete(String bpelFile, String uri, int lineNumber, String xpath) {
-        if (ignoreEvent(xpath)) {
-            return;
-        }
-        //System.out.println("   Activity completed in frame " + mId + ": " + xpath);
-        BreakPosition breakPosition = new BreakPosition(this, xpath);
-        mProcessInstance.onActivityCompleted(breakPosition);
+    public void onExit(
+            final String bpelFile, 
+            final String uri) {
+        System.out.println("- onExit(" + uri + ")");
+        
+        myProcessInstance.onExit(this);
     }
     
-    private boolean ignoreEvent(String xpath) {
-        return  xpath.endsWith("onAlarm") ||
-                xpath.endsWith("onAlarm[1]") ||
-                xpath.endsWith("onEvent") ||
-                xpath.endsWith("onEvent[1]");
+    public void onFault(
+            final String bpelFile, 
+            final String uri, 
+            final int lineNumber, 
+            final String xpath, 
+            final String faultQName, 
+            final BPELVariable faultData, 
+            final DebuggableEngine engine) {
+        System.out.println("- onFault(" + lineNumber + ", " + 
+                xpath + ", " + faultQName + ", " + faultData + ")");
+        
+        myDebuggableEngine = engine;
+        
+        myProcessInstance.onFault(
+                new BreakPosition(this, xpath, lineNumber), 
+                faultQName, 
+                faultData);
+    }
+    
+    public void onActivityComplete(
+            final String bpelFile, 
+            final String uri, 
+            final int lineNumber, 
+            final String xpath) {
+        System.out.println("- onActivityComplete(" + lineNumber + ", " + 
+                xpath + ")");
+        
+        myProcessInstance.onActivityCompleted(
+                new BreakPosition(this, xpath, lineNumber));
+    }
+    
+    public void onSubActivityComplete(
+            final String bpelFile, 
+            final String uri, 
+            final int lineNumber, 
+            final String xpath) {
+        System.out.println("- onSubActivityComplete(" + lineNumber + ", " + 
+                xpath + ")");
+        
+        // We do not differentiate between full-blown activities (<assign>, 
+        // <if>, etc) and subactivities such as <copy>, <elseif>
+        myProcessInstance.onActivityCompleted(
+                new BreakPosition(this, xpath, lineNumber));
     }
 }

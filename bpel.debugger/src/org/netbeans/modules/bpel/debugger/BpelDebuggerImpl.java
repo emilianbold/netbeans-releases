@@ -1,42 +1,20 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 
@@ -55,7 +33,6 @@ import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.bpel.debugger.api.BpelDebugger;
-import org.netbeans.modules.bpel.debugger.BpelDebuggerEngineProvider;
 import org.netbeans.modules.bpel.debugger.api.DebugException;
 import org.netbeans.modules.bpel.debugger.api.ProcessInstance;
 import org.netbeans.modules.bpel.debugger.api.ProcessInstancesModel;
@@ -151,7 +128,7 @@ public class BpelDebuggerImpl extends BpelDebugger {
         
         mProcessInstancesModel.removeListener(mProcessInstancesModelListener);
         for (ProcessInstanceImpl processInstance : mProcessInstancesModel.getProcessInstances()) {
-            if (processInstance.getState() == processInstance.STATE_SUSPENDED) {
+            if (processInstance.getState() == ProcessInstance.STATE_SUSPENDED) {
                 processInstance.resume();
             }
         }
@@ -378,25 +355,42 @@ public class BpelDebuggerImpl extends BpelDebugger {
 //  BpelDebugger interface methods
 //  BpelDebugger interface methods
 //  BpelDebugger interface methods
-
     
-    /**
-     * Causes current process instance to do a step into or does nothing if
-     * there's no current process instance or it's not in the suspended state.
-     */
     public void stepInto() {
-        ProcessInstanceImpl processInstance = getCurrentProcessInstance();
+        final ProcessInstanceImpl processInstance = getCurrentProcessInstance();
+        
         if (processInstance != null) {
             processInstance.stepInto();
         }
     }
 
-    /**
-     * Resumes the execution of the current process instance or does nothing if
-     * there's no current process instance or it's not in the suspended state.
-     */
+    public void stepOver() {
+        final ProcessInstanceImpl processInstance = getCurrentProcessInstance();
+        
+        if (processInstance != null) {
+            processInstance.stepOver();
+        }
+    }
+
+    public void stepOut() {
+        final ProcessInstanceImpl processInstance = getCurrentProcessInstance();
+        
+        if (processInstance != null) {
+            processInstance.stepOut();
+        }
+    }
+    
+    public void pause() {
+        for (ProcessInstanceImpl instance: 
+                mProcessInstancesModel.getProcessInstances()) {
+                    
+            instance.pause();
+        }
+    }
+    
     public void resume() {
-        ProcessInstanceImpl processInstance = getCurrentProcessInstance();
+        final ProcessInstanceImpl processInstance = getCurrentProcessInstance();
+        
         if (processInstance != null) {
             processInstance.resume();
         }
@@ -420,7 +414,7 @@ public class BpelDebuggerImpl extends BpelDebugger {
     }
 
     public void setCurrentProcessInstance(ProcessInstance processInstance) {
-        ProcessInstanceImpl newProcessInstance = (ProcessInstanceImpl)processInstance;
+        ProcessInstanceImpl newProcessInstance = (ProcessInstanceImpl) processInstance;
         ProcessInstanceImpl oldProcessInstance =
                 mCurrentProcessInstanceRef.getAndSet(newProcessInstance);
         
@@ -485,18 +479,30 @@ public class BpelDebuggerImpl extends BpelDebugger {
         resume();
     }
     
-    private class ProcessInstancesModelListener implements ProcessInstancesModel.Listener {
-        public void processInstanceRemoved(ProcessInstance processInstance) {
+    ////////////////////////////////////////////////////////////////////////////
+    // Inner Classes
+    private class ProcessInstancesModelListener 
+            implements ProcessInstancesModel.Listener {
+        
+        public void processInstanceRemoved(
+                final ProcessInstance processInstance) {
+            
             if (processInstance == getCurrentProcessInstance()) {
                 setCurrentProcessInstance(null);
             }
         }
-
-        public void processInstanceAdded(ProcessInstance processInstance) {
-            //Nothing to do
+        
+        public void processInstanceAdded(
+                final ProcessInstance processInstance) {
+            
+            // Does nothing
         }
 
-        public void processInstanceStateChanged(ProcessInstance processInstance, int oldState, int newState) {
+        public void processInstanceStateChanged(
+                final ProcessInstance processInstance, 
+                final int oldState, 
+                final int newState) {
+            
             if (newState == ProcessInstance.STATE_SUSPENDED) {
                 setCurrentProcessInstance(processInstance);
             } else if (processInstance == getCurrentProcessInstance()) {
