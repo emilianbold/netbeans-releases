@@ -47,6 +47,7 @@ import javax.swing.filechooser.FileSystemView;
 import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.xml.catalogsupport.util.ProjectUtilities;
 
 /**
  *
@@ -58,7 +59,7 @@ final class FileDialog extends FileSystemView {
     myDelegatedFileSystemView = getFileSystemView();
     assert project != null;
     myProject = project;
-    mySrcFolder = Util.getSrcFolder(myProject);
+    mySrcFolder = ProjectUtilities.getSrcFolder(myProject);
   }
 
   @Override

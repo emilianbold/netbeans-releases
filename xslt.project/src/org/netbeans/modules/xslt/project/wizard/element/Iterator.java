@@ -56,6 +56,7 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
+import org.openide.cookies.SaveCookie;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.wsdl.model.Message;
@@ -76,9 +77,8 @@ import org.netbeans.modules.xslt.tmap.model.api.Variable;
 import org.netbeans.modules.xslt.tmap.model.api.VariableDeclarator;
 import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
 import org.netbeans.modules.xslt.tmap.model.impl.VariableReferenceImpl;
-import org.openide.cookies.SaveCookie;
+import org.netbeans.modules.xml.catalogsupport.util.ProjectUtilities;
 import org.netbeans.modules.soa.ui.SoaUiUtil;
-import org.openide.loaders.DataFolder;
 import static org.netbeans.modules.print.api.PrintUtil.*;
 
 /**
@@ -100,7 +100,6 @@ public final class Iterator implements TemplateWizard.Iterator {
   /**{@inheritDoc}*/
   public void initialize(TemplateWizard wizard) {
     myPanel = new PanelStartup<WizardDescriptor>(Templates.getProject(wizard), null);
-    myWizard = wizard;
   }
 
   /**{@inheritDoc}*/
@@ -219,18 +218,18 @@ public final class Iterator implements TemplateWizard.Iterator {
         FileObject file = null;
         if (file1 != null) {
             file = createXslFile(
-                    project, file1, createdFos, wizard);
+                    project, file1, createdFos);
         }
 
         if (file2 != null) {
-          file = createXslFile(project, file2, createdFos, wizard);
+          file = createXslFile(project, file2, createdFos);
         }
         return file;
     }
 
     private FileObject createXslFile(
         Project project,
-        String file, List<FileObject> createdFos, TemplateWizard wizard) throws IOException
+        String file, List<FileObject> createdFos) throws IOException
     {
         if (file == null || "".equals(file)) {
             return null;
@@ -264,7 +263,7 @@ public final class Iterator implements TemplateWizard.Iterator {
             i++;
         }
 
-        FileObject dirFo = Util.getSrcFolder(project);
+        FileObject dirFo = ProjectUtilities.getSrcFolder(project);
         boolean isCreatedDir = false;
         if ( numDirs > 1 ) {
             file = dirs[numDirs-1];
@@ -420,7 +419,6 @@ public final class Iterator implements TemplateWizard.Iterator {
                 List<Transform> children =  tMapOp.getTransforms();
                 if (children != null) {
                     for (Transform child : children) {
-//                        System.out.println("child: "+child+";   orig: "+foTransform+"; isEquals::: "+(child.equals(foTransform)));
                         if (child.equals(foTransform)) {
                             foTransform = child;
                             break;
@@ -429,9 +427,7 @@ public final class Iterator implements TemplateWizard.Iterator {
                 }
                 
                List<Invoke> invokes = tMapOp.getInvokes();
-//               System.out.println("invoke before changes: "+invoke);
                invoke = invokes == null || invokes.size() < 1 ? invoke : invokes.get(invokes.size()-1);
-//               System.out.println("invoke after changes: "+invoke);
                 
             }
             
@@ -834,7 +830,6 @@ public final class Iterator implements TemplateWizard.Iterator {
   private static String XSLT_SERVICE = "xslt.service"; // NOI18N
   private static String XSL = "xsl"; // NOI18N
   private Panel<WizardDescriptor> myPanel;
-  private TemplateWizard myWizard;
   
   private static final String DEFAULT_VARIABLE_PREFIX = "var"; // NOI18N
   private static final String INPUT_OPERATION_VARIABLE_PREFIX = "inOpVar"; // NOI18N

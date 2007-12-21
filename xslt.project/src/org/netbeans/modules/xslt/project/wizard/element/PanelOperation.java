@@ -81,6 +81,8 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.wsdl.model.extensions.xsd.WSDLSchema;
+import org.netbeans.modules.xml.wsdl.model.visitor.WSDLModelVisitor;
+import org.netbeans.modules.xml.wsdl.model.visitor.WSDLUtilities;
 import org.netbeans.modules.xml.wsdl.ui.view.ElementOrType;
 import static org.netbeans.modules.print.api.PrintUtil.*;
 
@@ -348,38 +350,24 @@ final class PanelOperation<T> extends Panel<T> {
   }
 
   private PartnerRolePort [] getPartnerRolePorts() {
-    List<PartnerRolePort> list = new ArrayList<PartnerRolePort>();
-    List<WSDLModel> visited = new ArrayList<WSDLModel>();
-    getPartnerRolePorts(myModel, list, visited);
+    final List<PartnerRolePort> list = new ArrayList<PartnerRolePort>();
+
+    WSDLUtilities.visitRecursively(myModel, new WSDLModelVisitor() {
+      public void visit(WSDLModel model) {
+        Definitions definitions = model.getDefinitions();
+        List<ExtensibilityElement> elements = definitions.getExtensibilityElements();
+
+        for (ExtensibilityElement element : elements) {
+          if (element instanceof PartnerLinkType) {
+            PartnerLinkType partnerLinkType = (PartnerLinkType) element;
+            processRole(partnerLinkType, partnerLinkType.getRole1(), list);
+            processRole(partnerLinkType, partnerLinkType.getRole2(), list);
+          }
+        }
+      }
+    });
+
     return list.toArray(new PartnerRolePort [list.size()]);
-  }
-
-  private void getPartnerRolePorts(WSDLModel model, List<PartnerRolePort> list, List<WSDLModel> visited) {
-    if (visited.contains(model)) {
-      return;
-    }
-    visited.add(model);
-    Definitions definitions = model.getDefinitions();
-    List<ExtensibilityElement> elements = definitions.getExtensibilityElements();
-
-    for (ExtensibilityElement element : elements) {
-      if (element instanceof PartnerLinkType) {
-        PartnerLinkType partnerLinkType = (PartnerLinkType) element;
-        processRole(partnerLinkType, partnerLinkType.getRole1(), list);
-        processRole(partnerLinkType, partnerLinkType.getRole2(), list);
-      }
-    }
-    Collection<Import> imports = model.getDefinitions().getImports();
-
-    for (Import _import : imports) {
-      try {
-        WSDLModel next = _import.getImportedWSDLModel();
-        getPartnerRolePorts(next, list, visited);
-      }
-      catch (CatalogModelException e) {
-        continue;
-      }
-    }
   }
 
   private void processRole(

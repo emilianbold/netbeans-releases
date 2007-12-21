@@ -76,6 +76,8 @@ import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.xam.NamedReferenceable;
 import org.netbeans.modules.xslt.project.XsltproConstants;
+import org.netbeans.modules.xml.catalogsupport.util.ProjectUtilities;
+import org.netbeans.modules.xml.catalogsupport.util.ProjectWSDL;
 import static org.netbeans.modules.print.api.PrintUtil.*;
 
 /**
@@ -87,7 +89,7 @@ abstract class Panel<T> implements WizardDescriptor.ValidatingPanel<T> {
     
   Panel(Project project, Panel<T> parent) {
     myProject = project;
-    myFolder = Util.getSrcFolder(project);
+    myFolder = ProjectUtilities.getSrcFolder(project);
     myParent = parent;
     myChangeSupport = new ChangeSupport(this);
   }
@@ -290,8 +292,8 @@ abstract class Panel<T> implements WizardDescriptor.ValidatingPanel<T> {
    {
       super.getListCellRendererComponent(list, value, index, isSelected, hasFocus);
 
-      if (value instanceof Util.WSDLFile) {
-        setText(((Util.WSDLFile) value).getName());
+      if (value instanceof ProjectWSDL) {
+        setText(((ProjectWSDL) value).getName());
       }
       if (value instanceof Operation) {
         setText(((Operation) value).getName());

@@ -46,6 +46,7 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -54,6 +55,9 @@ import javax.swing.JPanel;
 
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.xml.catalogsupport.util.ProjectUtilities;
+import org.netbeans.modules.xml.catalogsupport.util.ProjectWSDL;
+import org.netbeans.modules.xml.wsdl.model.visitor.WSDLUtilities;
 import static org.netbeans.modules.print.api.PrintUtil.*;
 
 /**
@@ -80,7 +84,7 @@ final class PanelWebService<T> extends Panel<T> {
   @Override
   protected Object getResult()
   {
-    return Util.getWSDLModel(myFile);
+    return WSDLUtilities.getWSDLModel(myFile);
   }
 
   @Override
@@ -147,10 +151,10 @@ final class PanelWebService<T> extends Panel<T> {
   protected void update()
   {
     myWSDL.removeAllItems();
-    Util.WSDLFile [] files = Util.getWSDLFiles(getProject());
+    List<ProjectWSDL> wsdls = ProjectUtilities.getProjectWSDLRecursively(getProject());
 
-    for (Util.WSDLFile file : files) {
-      myWSDL.addItem(file);
+    for (ProjectWSDL wsdl : wsdls) {
+      myWSDL.addItem(wsdl);
     }
   }
 
@@ -158,7 +162,7 @@ final class PanelWebService<T> extends Panel<T> {
     if (myWSDL.getItemCount() == 0) {
       return null;
     }
-    return ((Util.WSDLFile) myWSDL.getSelectedItem()).getFile();
+    return ((ProjectWSDL) myWSDL.getSelectedItem()).getFile();
   }
 
   private JButton myBrowse;
