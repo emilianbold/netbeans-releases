@@ -44,8 +44,8 @@ package org.netbeans.modules.compapp.casaeditor.properties;
 import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpointRef;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaExtensibilityElement;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServiceUnit;
-//import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpoint;
 import org.netbeans.modules.compapp.casaeditor.nodes.CasaNode;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
@@ -180,6 +180,58 @@ public abstract class PropertyUtils {
                 attributeName,
                 displayName,
                 displayDescription);
+            propertySet.put(property);
+        } catch (Exception e) {
+            propertySet.put(createErrorProperty(displayName));
+            ErrorManager.getDefault().notify(e);
+        }
+    }
+    
+    /**
+     * Installs a CASA extension property.
+     * 
+     * @param propertySet   target property sheet set
+     * @param node          node corresponding to the extension point component
+     * @param extensionPointComponent a CASA extension point component
+     * @param firstEE       the first (top-level) CASA extensibility element 
+     *                      directly under the CASA extension point component
+     * @param lastEE        the owner CASA extensibility element of the new
+     *                      attribute being installed
+     * @param propertyType
+     * @param type          class type of the attribute
+     * @param attributeName name of the attribute
+     * @param displayname   display name of the attribute
+     * @param description   description of the attribute
+     */
+    public static void installExtensionProperty(
+            Sheet.Set propertySet, 
+            CasaNode node,
+            CasaComponent extensionPointComponent,
+            CasaExtensibilityElement firstEE,
+            CasaExtensibilityElement lastEE,
+            String propertyType, 
+            Class valueType,
+            String attributeName,
+            String displayName,
+            String discription) {
+        
+        if (valueType == null) {
+            System.err.println("Unsupported property type for " + attributeName);
+            valueType = String.class;
+        }
+        
+        try {
+            Node.Property property = ExtensionPropertyFactory.getProperty(
+                node, 
+                extensionPointComponent,
+                firstEE,
+                lastEE,
+                propertyType,
+                valueType,
+                attributeName,
+                displayName,
+                discription);
+            
             propertySet.put(property);
         } catch (Exception e) {
             propertySet.put(createErrorProperty(displayName));

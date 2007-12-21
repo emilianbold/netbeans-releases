@@ -100,6 +100,10 @@ public class RegionUtilities {
             "org/netbeans/modules/compapp/casaeditor/palette/resources/hide16.png");        // NOI18N
     public static final Image IMAGE_WS_POLICY_16_ICON = Utilities.loadImage(
             "org/netbeans/modules/compapp/casaeditor/palette/resources/WSpolicy16.png");    // NOI18N
+    public static final Image IMAGE_ERROR_BADGE_ICON = Utilities.loadImage(
+            "org/netbeans/modules/compapp/casaeditor/palette/resources/badge_error.png");    // NOI18N
+    public static final Image IMAGE_WARNING_BADGE_ICON = Utilities.loadImage(
+            "org/netbeans/modules/compapp/casaeditor/palette/resources/badge_warning.png");    // NOI18N
     
     public enum Directions {
         LEFT, TOP, RIGHT, BOTTOM

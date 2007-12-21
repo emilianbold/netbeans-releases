@@ -135,9 +135,11 @@ public class CasaPalette {
         Collection<? extends InternalProjectTypePlugin> projectPlugins = 
                 Lookup.getDefault().lookupAll(InternalProjectTypePlugin.class);
         for (InternalProjectTypePlugin projectTypePlugin : projectPlugins) {
-            CasaPalettePlugin palettePlugin = 
-                    new InternalProjectTypePalettePlugin(projectTypePlugin);
-            plugins.add(palettePlugin);
+            if (projectTypePlugin.getCategoryName() != null) {
+                CasaPalettePlugin palettePlugin = 
+                        new InternalProjectTypePalettePlugin(projectTypePlugin);
+                plugins.add(palettePlugin);
+            }
         }
         
         return plugins;

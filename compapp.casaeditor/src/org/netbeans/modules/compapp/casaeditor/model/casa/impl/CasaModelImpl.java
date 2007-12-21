@@ -40,15 +40,10 @@
  */
 package org.netbeans.modules.compapp.casaeditor.model.casa.impl;
 
-import java.util.Set;
-import javax.xml.namespace.QName;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.JBIComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.Casa;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponentFactory;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaModel;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaQName;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.impl.JBISyncUpdateVisitor;
 import org.netbeans.modules.xml.xam.ComponentUpdater;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.w3c.dom.Element;

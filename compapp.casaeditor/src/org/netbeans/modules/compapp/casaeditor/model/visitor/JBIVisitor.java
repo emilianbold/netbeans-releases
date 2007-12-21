@@ -135,7 +135,6 @@ public interface JBIVisitor {
         }
         
         protected void visitComponent(JBIComponent component) {
-            ;
         }
     }
     

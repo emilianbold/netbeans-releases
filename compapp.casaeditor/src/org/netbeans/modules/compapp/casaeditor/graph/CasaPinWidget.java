@@ -44,6 +44,8 @@ package org.netbeans.modules.compapp.casaeditor.graph;
 import java.awt.Graphics;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
@@ -55,11 +57,9 @@ import org.netbeans.api.visual.widget.Widget;
 import java.awt.image.FilteredImageSource;
 import java.awt.image.ImageProducer;
 import java.awt.image.RescaleOp;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import javax.swing.GrayFilter;
 import javax.swing.ImageIcon;
@@ -76,7 +76,7 @@ import org.openide.util.Utilities;
  *
  * @author David Kaspar
  */
-public abstract class CasaPinWidget extends Widget {
+public abstract class CasaPinWidget extends ErrableWidget {
     
     public enum AnchorScheme {
         HORIZONTAL, LEFT, RIGHT, VERTICAL, TOP, BOTTOM
@@ -116,6 +116,17 @@ public abstract class CasaPinWidget extends Widget {
         notifyStateChanged(ObjectState.createNormal(), ObjectState.createNormal());
     }
 
+    protected boolean hasPreferredLocation() {
+        return false;
+    }    
+    
+    protected int getErrorBadgeDeltaX() {
+        return getBounds().width + 2;
+    }
+    
+    protected int getErrorBadgeDeltaY() {
+        return 2;
+    }
     
     protected abstract void setPinName(String name);
     

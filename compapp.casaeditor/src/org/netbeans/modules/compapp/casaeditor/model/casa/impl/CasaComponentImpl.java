@@ -44,11 +44,10 @@ import java.util.List;
 import org.netbeans.modules.compapp.casaeditor.model.*;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponentFactory;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponentVisitor;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaModel;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaQName;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaExtensibilityElement;
 import org.netbeans.modules.compapp.casaeditor.model.casa.ReferenceableCasaComponent;
-import org.netbeans.modules.compapp.casaeditor.model.visitor.JBIVisitor;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.dom.Attribute;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
@@ -67,10 +66,12 @@ public abstract class CasaComponentImpl extends AbstractDocumentComponent<CasaCo
         super(model, e);
     }
     
+    @Override
     protected String getNamespaceURI() {
         return CasaQName.CASA_NS_URI;
     }
         
+    @Override
     public CasaModel getModel() {
         return (CasaModel) super.getModel();
     }
@@ -101,7 +102,7 @@ public abstract class CasaComponentImpl extends AbstractDocumentComponent<CasaCo
         return model.getDocument().createElementNS(
                 rq.getQName().getNamespaceURI(), rq.getQualifiedName());
     }
-    
+        
     protected <T extends ReferenceableCasaComponent> NamedComponentReference<T> 
             resolveGlobalReference(            
             Class<T> c, Attribute attrName) {
@@ -114,6 +115,22 @@ public abstract class CasaComponentImpl extends AbstractDocumentComponent<CasaCo
             createReferenceTo(T target, Class<T> type) {
         
         return new GlobalReferenceImpl<T>(target, type, this);
+    }
+        
+    public void removeExtensibilityElement(CasaExtensibilityElement ee) {
+        removeChild(EXTENSIBILITY_ELEMENT_PROPERTY, ee);
+    }
+    
+    public void addExtensibilityElement(CasaExtensibilityElement ee) {
+        appendChild(EXTENSIBILITY_ELEMENT_PROPERTY, ee);
+    }
+    
+    public List<CasaExtensibilityElement> getExtensibilityElements() {
+        return getChildren(CasaExtensibilityElement.class);
+    }
+    
+    public <T extends CasaExtensibilityElement> List<T> getExtensibilityElements(Class<T> type) {
+        return getChildren(type);
     }
 }
 

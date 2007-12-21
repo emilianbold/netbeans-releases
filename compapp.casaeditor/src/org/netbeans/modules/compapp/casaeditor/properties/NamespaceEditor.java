@@ -69,7 +69,8 @@ public class NamespaceEditor extends PropertyEditorSupport {
     
     private final static String EMPTY = Constants.EMPTY_STRING;
     
-    private PropertyQName mPropertySupport;
+    //private PropertyQName mPropertySupport;
+    private BaseCasaProperty<QName> mPropertySupport;
     private String mPropertyName;
     private QName mInitialURI;
     private Collection<PrefixNamespacePair> mURIs;
@@ -79,7 +80,7 @@ public class NamespaceEditor extends PropertyEditorSupport {
     
     
     public NamespaceEditor(
-            PropertyQName propertySupport, 
+            BaseCasaProperty<QName> propertySupport, 
             CasaWrapperModel model, 
             QName initialQName, 
             String propertyName) {
@@ -203,7 +204,7 @@ public class NamespaceEditor extends PropertyEditorSupport {
             }
             if (another != null && another instanceof PrefixNamespacePair) {
                 PrefixNamespacePair anotherPair = (PrefixNamespacePair) another;
-                if (getPrefix().equals(anotherPair.getPrefix()) &&
+                if (//getPrefix().equals(anotherPair.getPrefix()) &&
                         getNamespace().equals(anotherPair.getNamespace())) {
                     return true;
                 }

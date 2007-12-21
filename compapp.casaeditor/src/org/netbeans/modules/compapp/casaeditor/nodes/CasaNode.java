@@ -71,7 +71,10 @@ import org.openide.util.lookup.InstanceContent;
  * @author Josh Sandusky
  */
 public abstract class CasaNode extends AbstractNode
-{
+{    
+    // special flag to mark a property that is always writable
+    protected static final String ALWAYS_WRITABLE_PROPERTY = "[WRITABLE]"; // NOI18N
+    
     private WeakReference mDataReference;
     private static Map<Object, Image> mImageMap = new HashMap<Object, Image>();
 
@@ -97,10 +100,17 @@ public abstract class CasaNode extends AbstractNode
             Sheet sheet, 
             PropertyUtils.PropertiesGroups group)
     {
-        Sheet.Set propSet = sheet.get(group.getDisplayName());
+        return getPropertySet(sheet, group.getDisplayName());
+    }
+    
+    protected Sheet.Set getPropertySet(
+            Sheet sheet, 
+            String displayName) 
+    {
+        Sheet.Set propSet = sheet.get(displayName);
         if (propSet == null) {
             propSet = new Sheet.Set();
-            propSet.setName(group.getDisplayName());
+            propSet.setName(displayName);
             sheet.put(propSet);
         }
         return propSet;

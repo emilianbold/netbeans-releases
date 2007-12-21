@@ -66,6 +66,8 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.JBIServiceUnitTransfer
 import org.netbeans.modules.compapp.casaeditor.palette.CasaCommonAcceptProvider;
 import org.netbeans.modules.compapp.casaeditor.palette.CasaPalette;
 import org.netbeans.modules.compapp.casaeditor.palette.DefaultPluginDropHandler;
+import org.netbeans.modules.compapp.projects.jbi.api.JbiInstalledProjectPluginInfo;
+import org.netbeans.modules.compapp.projects.jbi.api.InternalProjectTypePlugin;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
@@ -118,6 +120,19 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
         }
         return retState;
     }
+
+    private InternalProjectTypePlugin getProjectPluginHandler(Object src) {
+        JbiInstalledProjectPluginInfo plugins = JbiInstalledProjectPluginInfo.getProjectPluginInfo();
+        if (plugins != null) {
+            List<InternalProjectTypePlugin> plist = plugins.getUncategorizedProjectPluginList();
+            for (InternalProjectTypePlugin plugin : plist) {
+                if (plugin.isAcceptableProjectSource(src) == true) {
+                    return plugin;
+                }
+            }
+        }
+        return null;
+    }
     
     private ConnectorState isAcceptableFromOther(Point point, Transferable transferable, boolean bIgnoreRegionCheck) 
     throws Exception {
@@ -128,6 +143,7 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
             if (dfo instanceof Node) {
                 region = getScene().getEngineRegion();
                 Project p = ((Node) dfo).getLookup().lookup(Project.class);
+                /*
                 if (p == null) {
                     DataObject obj = (DataObject) ((Node) dfo).getCookie(DataObject.class);
                     p = getProjectFromDataObject(obj); // ProjectManager.getDefault().findProject(obj.getPrimaryFile());
@@ -138,7 +154,26 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
                     if (!mModel.existingServiceEngineServiceUnit(pname)) {
                         curState = ConnectorState.ACCEPT;
                     } 
-                } 
+                }
+                */
+                if (p != null) { // standard NetBeans projects...
+                    if (mModel.getJbiProjectType(p) != null) {
+                        String pname = p.getProjectDirectory().getName();
+                        // todo: 01/24/07 needs to check for duplicates...
+                        if (!mModel.existingServiceEngineServiceUnit(pname)) {
+                            curState = ConnectorState.ACCEPT;
+                        }
+                    }
+                } else { // nonstandard Nb projects, e.g., jcaps
+                    InternalProjectTypePlugin plugin = getProjectPluginHandler(dfo);
+                    if (plugin != null) {
+                        String pname = ((Node) dfo).getDisplayName();
+                        if (!mModel.existingServiceEngineServiceUnit(pname)) {
+                            curState = ConnectorState.ACCEPT;
+                        }
+                    }
+                }
+
             } else if(dfo instanceof List) {
                 List dfoList = (List) dfo;
                 if(dfoList.size() == 5 &&
@@ -238,6 +273,7 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
         for(Object dfo : getTransferableObjects(transferable)) {
             if (dfo instanceof Node) {
                 Project p = ((Node) dfo).getLookup().lookup(Project.class);
+                /*
                 if (p == null) {
                     DataObject obj = (DataObject) ((Node) dfo).getCookie(DataObject.class);
                     p = getProjectFromDataObject(obj); // ProjectManager.getDefault().findProject(obj.getPrimaryFile());
@@ -245,6 +281,21 @@ public class CasaPaletteAcceptProvider extends CasaCommonAcceptProvider {
                 String type = mModel.getJbiProjectType(p);
                 point = getScene().getEngineRegion().convertSceneToLocal(point);
                 mModel.addJBIModule(p, type, point.x, point.y);
+                */
+                if (p != null) { // standard NetBeans projects
+                    String type = mModel.getJbiProjectType(p);
+                    point = getScene().getEngineRegion().convertSceneToLocal(point);
+                    mModel.addJBIModule(p, type, point.x, point.y);
+                }  else { // non-standard project, e.g., jcaps
+                    InternalProjectTypePlugin plugin = getProjectPluginHandler(dfo);
+                    if (plugin != null) {
+                        String pname = ((Node) dfo).getDisplayName();
+                        String type = plugin.getJbiTargetName();
+                        point = getScene().getEngineRegion().convertSceneToLocal(point);
+                        mModel.addJBIModuleFromPlugin(plugin, pname, type, point.x, point.y);
+                    }
+                }
+
             } else if(dfo instanceof List) {
                 List dfoList = (List) dfo;
                 if (dfoList.size() == 5 &&

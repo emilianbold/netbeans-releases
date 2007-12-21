@@ -144,7 +144,7 @@ public class WsitServerConfigAction extends NodeAction {
         // todo: 08/27/07, add undo manager...
         final UndoManager undoManager = new UndoManager();
         wsdlModel.addUndoableEditListener(undoManager);  //maybe use WeakListener instead
-        final JComponent stc = WSITConfigProvider.getDefault().getWSITServiceConfig(wsdlModel, null, bindings, node);
+        final JComponent stc = WSITConfigProvider.getDefault().getWSITServiceConfig(wsdlModel, undoManager, bindings, node);
 
         SwingUtilities.invokeLater(new Runnable(){
             public void run(){

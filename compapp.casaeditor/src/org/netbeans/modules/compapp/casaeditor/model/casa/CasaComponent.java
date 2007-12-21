@@ -47,32 +47,77 @@ import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 
 /**
- *
+ * Interface for all the components in the CASA model.
+ * 
  * @author jqian
  */
 public interface CasaComponent extends DocumentComponent<CasaComponent> {
     
-//    public static final String EXTENSIBILITY_ELEMENT_PROPERTY = "extensibilityElement";
+    public static final String EXTENSIBILITY_ELEMENT_PROPERTY = "extensibilityElement"; // NOI18N
     
+    /**
+     * Get the owner model of this component.
+     * 
+     * @return  the owner model
+     */
     CasaModel getModel();
     
     void accept(CasaComponentVisitor visitor);
         
     /**
-     * Creates a global reference to the given target casa component.
-     * @param target the target WSDLComponent
-     * @param type actual type of the target
+     * Creates a global reference to the given target CASA component.
+     * 
+     * @param target    the target CasaComponent
+     * @param type      actual type of the target
+     * 
      * @return the global reference.
      */
     <T extends ReferenceableCasaComponent> NamedComponentReference<T> 
             createReferenceTo(T target, Class<T> type);
     
-//    void addExtensibilityElement(ExtensibilityElement ee);
-//    void removeExtensibilityElement(ExtensibilityElement ee);
-//    List<ExtensibilityElement> getExtensibilityElements();
-//    
-//    <T extends ExtensibilityElement> List<T> getExtensibilityElements(Class<T> type);
-//        
-//    String getAnyAttribute(QName qname);
-//    void setAnyAttribute(QName qname, String value);
+    /**
+     * Adds a child extensibility element.
+     * 
+     * @param ee    a new child extensibility element
+     */
+    void addExtensibilityElement(CasaExtensibilityElement ee);
+    
+    /**
+     * Removes an existing child extensibility element.
+     * 
+     * @param ee    an existing child extensibility element
+     */
+    void removeExtensibilityElement(CasaExtensibilityElement ee);
+    
+    /**
+     * Gets a list of all child extensibility elements.
+     * 
+     * @return  a list of all child extensibility elements
+     */
+    List<CasaExtensibilityElement> getExtensibilityElements();
+    
+    /**
+     * Gets a list of child extensibility elements of the given type.
+     * 
+     * @param type  type of child extensibility elements
+     * @return  a list of child extensibility elements of the given type
+     */
+    <T extends CasaExtensibilityElement> List<T> getExtensibilityElements(Class<T> type);
+        
+    /**
+     * Gets the value of an attribute in any namespace.
+     * 
+     * @param qname attribute QName 
+     * 
+     * @return  attribute value
+     */
+    String getAnyAttribute(QName qname);
+    
+    /**
+     * Sets the value of an attribute in any namespace.
+     * 
+     * @param qname attribute QName 
+     * @param value new attribute value
+     */
+    void setAnyAttribute(QName qname, String value);
 }

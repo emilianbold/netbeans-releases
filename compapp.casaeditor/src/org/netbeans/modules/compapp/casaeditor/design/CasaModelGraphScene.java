@@ -58,8 +58,10 @@ import org.netbeans.api.visual.widget.Widget;
 import javax.swing.*;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -91,9 +93,21 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaProvides;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaPort;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaRegion;
+import org.netbeans.modules.compapp.casaeditor.model.casa.validation.CasaValidationListener;
 import org.netbeans.modules.compapp.casaeditor.multiview.CasaGraphMultiViewElement;
 import org.netbeans.modules.compapp.casaeditor.nodes.CasaNode;
 import org.netbeans.modules.compapp.casaeditor.nodes.CasaNodeFactory;
+import org.netbeans.modules.xml.wsdl.model.Binding;
+import org.netbeans.modules.xml.wsdl.model.Definitions;
+import org.netbeans.modules.xml.wsdl.model.Port;
+import org.netbeans.modules.xml.wsdl.model.PortType;
+import org.netbeans.modules.xml.wsdl.model.Service;
+import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
+import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -107,7 +121,7 @@ import org.openide.windows.WindowManager;
  */
 public class CasaModelGraphScene 
 extends CasaGraphAbstractScene<CasaComponent, CasaComponent, CasaComponent>
-implements PropertyChangeListener {
+implements PropertyChangeListener, CasaValidationListener {
 
     private static final Logger LOGGER = Logger.getLogger(CasaModelGraphScene.class.getName());
     
@@ -183,8 +197,13 @@ implements PropertyChangeListener {
         initializeSceneActions();
 
         ToolTipManager.sharedInstance().setInitialDelay(Constants.TOOLTIP_INITIAL_DELAY);
+        
+        model.getValidationController().addValidationListener(this);
     }
-
+    
+    public LayerWidget getGlassLayer() {
+        return mGlassLayer;
+    }
     
     // Our layout is finalized if every node widget's location matches its model location.
     public boolean isModelPositionsFinalized() {
@@ -882,4 +901,177 @@ implements PropertyChangeListener {
         retString.append(String.format("%010d",casaConnection.findPosition()));
         return retString;
     }
+
+    public void validationUpdated(List<ResultItem> validationResults) {
+         
+        clearValidationErrors(this);
+        
+        mModel.clearCache();      
+           
+        // mapping err'ed widgets to list of validation errors/warnings
+        Map<ErrableWidget, List<String>> widget2Errors = 
+                new HashMap<ErrableWidget, List<String>>();
+        
+        // a list of widgets that have real errors
+        Set<ErrableWidget> erredWidgets = new HashSet<ErrableWidget>();
+            
+        // Build list of errors on erred widgets.
+        for (ResultItem resultItem : validationResults) {
+            Component component = resultItem.getComponents();
+            
+            Set<Component> components = new HashSet<Component>();
+            components.add(component);
+                       
+            // convert WSDL component to CASA component(s)
+            if (component instanceof WSDLComponent) {
+                components = getCasaComponents(mModel, (WSDLComponent)component);   
+            }  
+            
+            boolean isError = (resultItem.getType() == ResultType.ERROR);
+            
+            for (Component casaComponent : components) {
+                Widget widget = findWidget(casaComponent);
+                while (widget == null && casaComponent != null) {
+                    casaComponent = casaComponent.getParent();
+                    widget = findWidget(casaComponent);                
+                } 
+
+                if (widget != null && widget instanceof ErrableWidget) {
+                    List<String> errors = widget2Errors.get(widget);
+                    if (errors == null) {
+                        errors = new ArrayList<String>();
+                        widget2Errors.put((ErrableWidget)widget, errors);
+                    }
+                    errors.add(resultItem.getDescription());
+                    
+                    if (isError) {
+                        erredWidgets.add((ErrableWidget)widget);
+                    }
+                }                
+            }
+        }
+            
+        // Set error badge on err'ed widgets.
+        for (ErrableWidget widget : widget2Errors.keySet()) {
+            String errorString = getErrorString(widget2Errors.get(widget));
+            widget.setError(errorString, erredWidgets.contains(widget)); 
+        }  
+        
+        validate();
+    }    
+    
+    private static String getErrorString(List<String> errors) {
+        String errString = null;
+        if (errors.size() == 1) {
+            errString = errors.get(0);
+        } else {
+            errString = getHtmlList(errors);
+        }
+        return errString;
+    }
+     
+    private static String getHtmlList(List<String> strings) {
+        String ret = "<HTML><BODY><UL>"; // NOI18N
+        for (String string : strings) {
+            ret += "<LI>"; // NOI18N
+            ret += string;
+            ret += "</LI>"; // NOI18N
+        }
+        ret += "</UL></BODY></HTML>"; // NOI18N
+        return ret;
+    }
+    
+    // convert WSDL component to corresponding CASA component
+    private static Set<Component> getCasaComponents(CasaWrapperModel casaModel, 
+            WSDLComponent component) {
+        assert component != null;
+        
+        Set<Component> ret = new HashSet<Component>();
+        
+        WSDLModel model = component.getModel();
+        Definitions definitions = model.getDefinitions();
+        while (!(component instanceof Definitions)) {
+            if (component instanceof Port) {
+                CasaPort casaPort = getCasaPort(casaModel, (Port)component);
+                if (casaPort != null) {
+                    ret.add(casaPort);
+                }
+                break;
+            } else if (component instanceof Binding) {
+                // get all the ports that are associated with this binding
+                for (Service service : definitions.getServices()) {
+                    for (Port port : service.getPorts()) {
+                        if (port.getBinding() != null) {
+                            Binding binding = port.getBinding().get();
+                            if (binding == component) {
+                                CasaPort casaPort = getCasaPort(casaModel, port);
+                                if (casaPort != null) {
+                                    ret.add(casaPort);
+                                }
+                            }
+                        }
+                    }
+                }
+                break;
+            } else if (component instanceof PortType) {
+                // get all the ports that are associated with this portType
+                for (Service service : definitions.getServices()) {
+                    for (Port port : service.getPorts()) {
+                        if (port.getBinding() != null) {
+                            Binding binding = port.getBinding().get();
+                            if (binding.getType() != null) {
+                                PortType portType = binding.getType().get();
+                                if (portType == component) {
+                                    CasaPort casaPort = getCasaPort(casaModel, port);
+                                    if (casaPort != null) {
+                                        ret.add(casaPort);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                break;
+            } else {
+                component = component.getParent();
+            }
+        }
+        
+        return ret;
+    }    
+    
+    private static CasaPort getCasaPort(CasaWrapperModel casaModel, Port port) {
+        CasaPort ret = null;
+        
+        WSDLModel wsdlModel = port.getModel();
+        
+        FileObject fo = wsdlModel.getModelSource().getLookup().lookup(FileObject.class);
+        String fileName = fo.getNameExt();
+        String portName = port.getName();
+        String serviceName = ((Service)port.getParent()).getName();
+        for (CasaPort casaPort : casaModel.getCasaPorts()) {
+            String linkHref = casaPort.getLink().getHref();
+            if (linkHref.contains("/" + fileName + 
+                    "#xpointer(/definitions/service[@name='" +  // NOI18N
+                    serviceName + "']/port[@name='" + portName +"'])")) { // NOI18N
+                ret = casaPort;
+                break;
+            }
+        }
+        
+        return ret;
+    }
+    
+    private static void clearValidationErrors(CasaModelGraphScene scene) {
+        List<CasaComponent> components = new ArrayList<CasaComponent>();
+        components.addAll(scene.getNodes());
+        components.addAll(scene.getPins());
+        
+        for (CasaComponent component : components) {
+            Widget widget = scene.findWidget(component);
+            if (widget != null && widget instanceof ErrableWidget) {
+                ((ErrableWidget)widget).setError(null, false); // flag doesn't matter
+            }
+        }
+    }       
 }

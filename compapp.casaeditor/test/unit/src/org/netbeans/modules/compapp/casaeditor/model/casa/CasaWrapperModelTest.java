@@ -11,7 +11,7 @@ import java.beans.PropertyChangeEvent;
 import junit.framework.*;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.net.URL;
+import java.net.URI;
 import java.util.*;
 import javax.xml.namespace.QName;
 import org.netbeans.api.project.Project;
@@ -98,41 +98,17 @@ public class CasaWrapperModelTest extends TestCase {
         super(testName);
     }
 
-    private File getDataDir() {
-        File dataDir = null;
-        try {
-            String className= CasaWrapperModelTest.class.getName();
-            URL url = this.getClass().getResource(className.substring(className.lastIndexOf('.')+1)+".class"); // NOI18N
-            dataDir = new File(url.getFile()).getParentFile();
-            int index = 0;
-            while((index = className.indexOf('.', index)+1) > 0) {
-                dataDir = dataDir.getParentFile();
-            }
-            dataDir = new File(dataDir.getParentFile(), "data"); //NOI18N
-            // System.out.println("xtest.dadDir: "+dataDir.getAbsolutePath());
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        return dataDir;
-    }
-
     protected void setUp() throws Exception {
-        File dataDir = getDataDir();
-
-        //URI uri = CasaWrapperModelTest.class.getResource(
-        //        "resources/SynchronousSampleApplication/conf/SynchronousSampleApplication.casa").toURI();
-        //File casaFile = new File(uri);
-        File casaFile = new File(dataDir,
-                "SynchronousSampleApplication/conf/SynchronousSampleApplication.casa");
+        URI uri = CasaWrapperModelTest.class.getResource(
+                "resources/SynchronousSampleApplication/conf/SynchronousSampleApplication.casa").toURI();
+        File casaFile = new File(uri);
         FileObject casaFileObject = FileUtil.toFileObject(casaFile);
         ModelSource modelSource = TestCatalogModel.getDefault().createModelSource(casaFileObject, true);
         casaWrapperModel = new CasaWrapperModel(modelSource);
         
-        //URI casaWSDLUri = CasaWrapperModelTest.class.getResource(
-        //        "resources/SynchronousSampleApplication/jbiasa/casa.wsdl").toURI();
-        //File casaWSDLFile = new File(casaWSDLUri);
-        File casaWSDLFile = new File(dataDir,
-                "SynchronousSampleApplication/jbiasa/casa.wsdl");
+        URI casaWSDLUri = CasaWrapperModelTest.class.getResource(
+                "resources/SynchronousSampleApplication/jbiasa/casa.wsdl").toURI();
+        File casaWSDLFile = new File(casaWSDLUri);
         FileObject casaWSDLFileObject = FileUtil.toFileObject(casaWSDLFile);
         ModelSource casaWSDLModelSource = TestCatalogModel.getDefault().createModelSource(casaWSDLFileObject, true);
         
@@ -746,7 +722,6 @@ public class CasaWrapperModelTest extends TestCase {
         QName newQName = endPointRef.getServiceQName();
         assertEquals(serviceQName, newQName);
     }
-
 
     /**
      * Test of getCasaRegion method, of class org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel.

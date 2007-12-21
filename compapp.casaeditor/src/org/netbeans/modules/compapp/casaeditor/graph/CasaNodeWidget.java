@@ -53,33 +53,38 @@ import org.netbeans.api.visual.widget.*;
  *
  * @author David Kaspar
  */
-public abstract class CasaNodeWidget extends Widget {
+public abstract class CasaNodeWidget extends ErrableWidget {
     
     protected Widget mContainerWidget;
     
     private boolean mEditable = false;
     private boolean mWSPolicyAttached = false;
-    private DependenciesRegistry mDependenciesRegistry = new DependenciesRegistry(this);
-    
     
     public CasaNodeWidget(Scene scene) {
-        super(scene);
+        super(scene);   
+    }
+           
+    protected boolean hasPreferredLocation() {
+        return true;
     }
     
-    
-    protected void notifyRemoved() {
-        getRegistry().removeAllDependencies();
+    protected int getErrorBadgeDeltaX() {
+        return getBounds().width + 5;
     }
     
+    protected int getErrorBadgeDeltaY() {
+        return -8;
+    }
+        
     public Rectangle getEntireBounds() {
         return new Rectangle(getLocation(), getBounds().getSize());
     }
     
-    /**
-     * Initialization for the glass layer above the widget.
-     * @param layer the glass layer
-     */
-    public abstract void initializeGlassLayer(LayerWidget layer);
+//    /**
+//     * Initialization for the glass layer above the widget.
+//     * @param layer the glass layer
+//     */
+//    public abstract void initializeGlassLayer(LayerWidget layer);
     
     /**
      * Attaches a pin widget to the node widget.
@@ -129,10 +134,6 @@ public abstract class CasaNodeWidget extends Widget {
     
     public void setWSPolicyAttached(boolean bValue) {
         mWSPolicyAttached = bValue;
-    }
-    
-    protected DependenciesRegistry getRegistry() {
-        return mDependenciesRegistry;
     }
     
     public void readjustBounds() {

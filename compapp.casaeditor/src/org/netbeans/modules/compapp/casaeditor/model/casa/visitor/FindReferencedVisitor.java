@@ -91,10 +91,12 @@ public class FindReferencedVisitor<T extends ReferenceableCasaComponent>
         }
     }
     
+    @Override
     public void visit(CasaEndpoints endpoints) { // TMP FIXME
         visitChildren(endpoints);
     }
 
+    @Override
     public void visit(CasaEndpoint target) {
         checkReference(target, true);        
     }    

@@ -308,7 +308,7 @@ implements ActionListener, ListSelectionListener, DocumentListener {
     public void setEditable(boolean isEditable) {
         schemaNamespaceRadioButton.setEnabled(isEditable);
         otherNamespaceRadioButton.setEnabled(isEditable);
-        uriList.setEnabled(isEditable);
+        uriList.setEnabled(isEditable && uriList.isEnabled());
         localNameTextField.setEditable(isEditable);
         prefixTextField.setEditable(isEditable);
         otherNamespaceTextField.setEditable(isEditable);

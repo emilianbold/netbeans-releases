@@ -55,7 +55,6 @@ import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.CloseOperationHandler;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.modules.compapp.casaeditor.multiview.CasaMultiViewFactory;
-import org.openide.ErrorManager;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
@@ -76,15 +75,23 @@ import org.openide.windows.WindowManager;
 
 import java.io.IOException;
 import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.project.Project;
+import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaModel;
 import org.netbeans.modules.compapp.casaeditor.model.jbi.CasaModelFactory;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
+import org.netbeans.modules.compapp.casaeditor.multiview.CasaGraphMultiViewElement;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
+//import org.netbeans.modules.xml.validation.ShowCookie;
 import org.netbeans.modules.xml.xam.ModelSource;
+import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.xam.ui.undo.QuietUndoManager;
+import org.openide.ErrorManager;
 import org.openide.awt.UndoRedo;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.util.TaskListener;
@@ -101,6 +108,7 @@ implements
         EditorCookie.Observable, 
         LineCookie, 
         CloseCookie
+//        ShowCookie
 {
     
     /** Used for managing the prepareTask listener. */
@@ -346,7 +354,7 @@ implements
             ModelSource modelSource = Utilities.getModelSource(dobj.getPrimaryFile(), true);
             if (modelSource != null) {
                 model = (CasaWrapperModel) CasaModelFactory.getInstance().getModel(modelSource);
-                modelMap.put(dobj, model);
+                modelMap.put(dobj, model);               
             }
         }
         return model;
@@ -448,6 +456,87 @@ implements
      */
     public boolean silentClose() {
         return super.close(false);
+    }
+    
+    /**
+     * Implement ShowCookie.
+     */
+    public void show(final ResultItem resultItem) {
+        if (!(resultItem.getModel() instanceof CasaModel))
+            return;
+
+        final CasaComponent casaComponent = 
+                (CasaComponent) resultItem.getComponents();
+
+        // Get the edit and line cookies.
+        DataObject d = getDataObject();
+        LineCookie lc = (LineCookie) d.getCookie(LineCookie.class);
+        final EditCookie ec = (EditCookie) d.getCookie(EditCookie.class);
+        if (lc == null || ec == null) {
+            return;
+        }
+
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                // Opens the editor or brings it into focus
+                // and makes it the activated topcomponent.
+                ec.edit();
+
+                TopComponent tc = WindowManager.getDefault().getRegistry()
+                        .getActivated();
+                MultiViewHandler mvh = MultiViews.findMultiViewHandler(tc);
+
+                if (mvh == null) {
+                    return;
+                }
+
+                // Set annotation or select element in the multiview.
+                MultiViewPerspective mvp = mvh.getSelectedPerspective();
+                if (mvp.preferredID().equals("casa-graphview")) { // NOI18N
+                    List<TopComponent> list = getAssociatedTopComponents();
+                    for (TopComponent topComponent : list) {
+                        // Make sure this is a multiview window, and not just
+                        // some window that has our DataObject (e.g. Projects,
+                        // Files).
+                        MultiViewHandler handler = MultiViews
+                                .findMultiViewHandler(topComponent);
+                        if (handler != null && topComponent != null) {
+                            topComponent.getLookup().lookupAll(Object.class);
+                            CasaGraphMultiViewElement selector =
+                                    topComponent.getLookup().lookup(
+                                    CasaGraphMultiViewElement.class); // FIXME: add new interface
+                            if (selector == null)
+                                return;
+                            selector.select(casaComponent);
+                        }
+                    }
+                }
+            }
+        });
+    }    
+    
+    private List<TopComponent> getAssociatedTopComponents() {
+        // Create a list of TopComponents associated with the
+        // editor's schema data object, starting with the the
+        // active TopComponent. Add all open TopComponents in
+        // any mode that are associated with the DataObject.
+        // [Note that EDITOR_MODE does not contain editors in
+        // split mode.]
+        List<TopComponent> associatedTCs = new ArrayList<TopComponent>();
+        DataObject targetDO = getDataObject();
+        TopComponent activeTC = TopComponent.getRegistry().getActivated();
+        if (activeTC != null
+                && targetDO == activeTC.getLookup().lookup(DataObject.class)) {
+            associatedTCs.add(activeTC);
+        }
+        Set openTCs = TopComponent.getRegistry().getOpened();
+        for (Object tc : openTCs) {
+            TopComponent tcc = (TopComponent) tc;
+            if (targetDO == tcc.getLookup().lookup(DataObject.class)) {
+                associatedTCs.add(tcc);
+            }
+        }
+        return associatedTCs;
     }
     
     /** {@inheritDoc} */

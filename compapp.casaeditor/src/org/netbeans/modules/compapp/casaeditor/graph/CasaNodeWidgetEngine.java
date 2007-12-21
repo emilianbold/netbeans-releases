@@ -163,8 +163,12 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
         addChild(mContainerWidget);
         //getActions().addAction(ActionFactory.createCycleObjectSceneFocusAction());
     }
-
-
+    
+    @Override
+    protected int getErrorBadgeDeltaX() {
+        return getBounds().width - 15;        
+    }
+    
     protected void notifyAdded() {
         super.notifyAdded();
 

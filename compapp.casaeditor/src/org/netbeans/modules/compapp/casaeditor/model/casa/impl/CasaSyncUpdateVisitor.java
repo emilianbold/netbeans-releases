@@ -40,22 +40,8 @@
  */
 package org.netbeans.modules.compapp.casaeditor.model.casa.impl;
 
-import org.netbeans.modules.compapp.casaeditor.model.jbi.Consumes;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.JBI;
-import org.netbeans.modules.compapp.casaeditor.model.casa.Casa;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponentVisitor;
-import org.netbeans.modules.compapp.casaeditor.model.visitor.JBIVisitor;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.Connection;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.Connections;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.Consumer;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.Identification;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.Provider;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.Provides;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.ServiceAssembly;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.ServiceUnit;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.Services;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.Target;
 import org.netbeans.modules.xml.xam.ComponentUpdater;
 import org.netbeans.modules.xml.xam.ComponentUpdater.Operation;
 

@@ -55,6 +55,8 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.modules.compapp.casaeditor.design.CasaDesignView;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaFactory;
 import org.netbeans.modules.compapp.casaeditor.graph.RegionUtilities;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
+import org.netbeans.modules.compapp.casaeditor.nodes.CasaNodeFactory;
 import org.netbeans.modules.compapp.casaeditor.palette.CasaPalette;
 import org.netbeans.modules.xml.xam.ui.multiview.ActivatedNodesMediator;
 import org.netbeans.modules.xml.xam.ui.multiview.CookieProxyLookup;
@@ -120,6 +122,7 @@ public class CasaGraphMultiViewElement extends TopComponent implements MultiView
             }),
             Lookups.singleton(CasaPalette.getPalette(Lookups.fixed(new Object[] { mDataObject, delegate }))),
             nodesMediator.getLookup(),
+            Lookups.singleton(this),
             // The Node delegate Lookup must be the last one in the list
             // for the CookieProxyLookup to work properly.
             delegate.getLookup(),
@@ -309,5 +312,17 @@ public class CasaGraphMultiViewElement extends TopComponent implements MultiView
             mFlag = false;
             return flag;
         }
+    }
+    
+    public void select(CasaComponent casaComponent) {
+        
+        CasaNodeFactory nodeFactory = mDesignView.getScene().getNodeFactory();
+        Node node = nodeFactory.createNodeFor(casaComponent);
+        
+        if (node != null) {
+            setActivatedNodes(new Node[]{node});
+        }
+        
+        requestVisible();
     }
 }

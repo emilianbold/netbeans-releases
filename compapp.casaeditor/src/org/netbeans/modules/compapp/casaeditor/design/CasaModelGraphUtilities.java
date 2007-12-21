@@ -140,7 +140,7 @@ public class CasaModelGraphUtilities {
         scene.validate();
         renderLayout(scene);
         
-        
+//        validateModel(model, scene);
         // add connections last
         for (CasaConnection connection : model.getCasaConnectionList(false)) {
             CasaConsumes consumes = (CasaConsumes) model.getCasaEndpointRef(connection, true);
@@ -459,9 +459,7 @@ public class CasaModelGraphUtilities {
                 priorActions.addAction(0, DISABLER);
             }
         }
-    }
-    
-    
+    }      
     
     private static class DisablingAction extends WidgetAction.LockedAdapter {
         

@@ -40,11 +40,6 @@
  */
 package org.netbeans.modules.compapp.casaeditor.model.casa;
 
-import org.netbeans.modules.compapp.casaeditor.model.casa.impl.CasaEndpointImpl;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.ExtensibilityElement;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.JBIComponent;
-import org.netbeans.modules.compapp.casaeditor.model.visitor.JBIVisitor;
-
 /**
  *
  * @author jqian
@@ -69,6 +64,7 @@ public interface CasaComponentVisitor {
     void visit(CasaLink target);
     void visit(CasaRegions target);
     void visit(CasaRegion target);
+    void visit(CasaExtensibilityElement target);
     
     
     /**
@@ -148,20 +144,24 @@ public interface CasaComponentVisitor {
             visitComponent(target);
         }
         
+        public void visit(CasaExtensibilityElement target) {
+            visitComponent(target);
+        }
+        
         protected void visitComponent(CasaComponent target) {
-            ;
         }
 
     }
-//    
-//    /**
-//     * Deep visitor.
-//     */
-//    public static class Deep extends Default {
-//        protected void visitChild(JBIComponent component) {
-//            for (JBIComponent child : component.getChildren()) {
-//                child.accept(this);
-//            }
-//        }
-//    }
+    
+    /**
+     * Deep visitor.
+     */
+    public static class Deep extends Default {
+        @Override
+        protected void visitComponent(CasaComponent component) {
+            for (CasaComponent child : component.getChildren()) {
+                child.accept(this);
+            }
+        }
+    }
 }

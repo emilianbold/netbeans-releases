@@ -41,16 +41,33 @@
 
 package org.netbeans.modules.compapp.casaeditor.nodes;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Logger;
 import javax.swing.Action;
+import javax.xml.namespace.QName;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponentFactory;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpointRef;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaExtensibilityElement;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaPort;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.model.jbi.impl.JBIAttributes;
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.AddConnectionAction;
 import org.netbeans.modules.compapp.casaeditor.properties.PropertyUtils;
+import org.netbeans.modules.compapp.projects.jbi.api.JbiExtensionAttribute;
+import org.netbeans.modules.compapp.projects.jbi.api.JbiExtensionElement;
+import org.netbeans.modules.compapp.projects.jbi.api.JbiExtensionInfo;
+import org.netbeans.modules.compapp.projects.jbi.api.JbiInstalledExtensionInfo;
 import org.openide.nodes.Children;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 /**
  * Base class for ConsumesNode and ProvidesNode.
@@ -58,24 +75,60 @@ import org.openide.util.actions.SystemAction;
  * @author jqian
  */
 public class EndpointNode extends CasaNode {
-
+    
+    
     public EndpointNode(CasaEndpointRef component, CasaNodeFactory factory) {
         super(component, Children.LEAF, factory);
     }
 
+    @Override
     protected void setupPropertySheet(Sheet sheet) {
-        final CasaEndpointRef endpoint = (CasaEndpointRef) getData();
-        if (endpoint == null) {
+        final CasaEndpointRef endpointRef = (CasaEndpointRef) getData();
+        if (endpointRef == null) {
             return;
         }
 
-        Sheet.Set mainPropertySet = getPropertySet(sheet, PropertyUtils.PropertiesGroups.MAIN_SET);
+        Sheet.Set mainPropertySet = 
+                getPropertySet(sheet, PropertyUtils.PropertiesGroups.MAIN_SET);
 
-        PropertyUtils.installEndpointInterfaceQNameProperty(mainPropertySet, this, endpoint, JBIAttributes.INTERFACE_NAME.getName(), "interfaceQName", NbBundle.getMessage(getClass(), "PROP_InterfaceName"), NbBundle.getMessage(getClass(), "PROP_InterfaceName")); // NOI18N
-        PropertyUtils.installEndpointServiceQNameProperty(mainPropertySet, this, endpoint, JBIAttributes.SERVICE_NAME.getName(), "serviceQName", NbBundle.getMessage(getClass(), "PROP_ServiceName"), NbBundle.getMessage(getClass(), "PROP_ServiceName")); // NOI18N
-        PropertyUtils.installEndpointNameProperty(mainPropertySet, this, endpoint, JBIAttributes.ENDPOINT_NAME.getName(), "endpointName", NbBundle.getMessage(getClass(), "PROP_EndpointName"), NbBundle.getMessage(getClass(), "PROP_EndpointName")); // NOI18N
+        PropertyUtils.installEndpointInterfaceQNameProperty(
+                mainPropertySet,
+                this, 
+                endpointRef, 
+                JBIAttributes.INTERFACE_NAME.getName(),
+                "interfaceQName",  // NOI18N
+                NbBundle.getMessage(getClass(), "PROP_InterfaceName"),  // NOI18N
+                NbBundle.getMessage(getClass(), "PROP_InterfaceName")); // NOI18N
+        
+        PropertyUtils.installEndpointServiceQNameProperty(
+                mainPropertySet,
+                this, 
+                endpointRef, 
+                JBIAttributes.SERVICE_NAME.getName(),
+                "serviceQName",  // NOI18N
+                NbBundle.getMessage(getClass(), "PROP_ServiceName"),  // NOI18N
+                NbBundle.getMessage(getClass(), "PROP_ServiceName")); // NOI18N
+        
+        PropertyUtils.installEndpointNameProperty(
+                mainPropertySet,
+                this, 
+                endpointRef, 
+                JBIAttributes.ENDPOINT_NAME.getName(), 
+                "endpointName",  // NOI18N
+                NbBundle.getMessage(getClass(), "PROP_EndpointName"),  // NOI18N 
+                NbBundle.getMessage(getClass(), "PROP_EndpointName")); // NOI18N
+    
+        // Add JBI extensions
+        CasaWrapperModel model = (CasaWrapperModel) endpointRef.getModel();
+        CasaPort casaPort = model.getCasaPort(endpointRef);
+        if (casaPort != null) {
+            String bcName = model.getBindingComponentName(casaPort);        
+            ExtensionPropertyHelper.setupExtensionPropertySheet(this,
+                    endpointRef, sheet, "endpoint", bcName);
+        }
     }
 
+    @Override
     public String getName() {
         CasaEndpointRef endpoint = (CasaEndpointRef) getData();
         if (endpoint != null) {
@@ -89,7 +142,12 @@ public class EndpointNode extends CasaNode {
         return super.getName();
     }
 
+    @Override
     public boolean isEditable(String propertyType) {
+        if (propertyType.equals(ALWAYS_WRITABLE_PROPERTY)) { 
+            return true;
+        }
+        
         CasaEndpointRef endpoint = (CasaEndpointRef) getData();
         if (endpoint != null) {
             return getModel().isEditable(endpoint, propertyType);
@@ -97,6 +155,7 @@ public class EndpointNode extends CasaNode {
         return false;
     }
 
+    @Override
     public boolean isDeletable() {
         CasaEndpointRef endpoint = (CasaEndpointRef) getData();
         if (endpoint != null) {
@@ -109,4 +168,6 @@ public class EndpointNode extends CasaNode {
     protected void addCustomActions(List<Action> actions) {
         actions.add(SystemAction.get(AddConnectionAction.class));
     }
+      
+  
 }

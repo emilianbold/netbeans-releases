@@ -48,17 +48,36 @@ import org.openide.nodes.Node;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.cookies.SaveCookie;
+import org.openide.loaders.DataObject;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.compapp.casaeditor.nodes.WSDLEndpointNode;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaPort;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.PortNode;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.BindingNode;
 import org.netbeans.modules.xml.wsdl.model.*;
+import org.netbeans.modules.xml.retriever.catalog.Utilities;
+import org.netbeans.modules.xml.xam.ModelSource;
+import org.netbeans.modules.xml.xam.locator.CatalogModel;
+import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.modules.websvc.wsitconf.api.WSITConfigProvider;
+import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.WSITModelSupport;
+import org.netbeans.modules.websvc.wsitmodelext.policy.Policy;
+import org.netbeans.modules.websvc.wsitmodelext.policy.PolicyReference;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.Sources;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.awt.Dialog;
+import java.util.*;
+import java.util.List;
+import java.util.logging.Level;
+import java.awt.*;
+import java.io.IOException;
+import java.io.FileWriter;
 import javax.swing.*;
 import javax.swing.undo.UndoManager;
 
@@ -77,7 +96,7 @@ public class WsitClientConfigAction extends NodeAction {
      * @return DOCUMENT ME!
      */
     protected boolean enable(Node[] activatedNodes) {
-        return false; // true;
+        return true;
     }
 
     /**
@@ -141,10 +160,16 @@ public class WsitClientConfigAction extends NodeAction {
         Collection<Binding> bindings = new HashSet<Binding>();
         bindings.add(b);
 
+        Collection<FileObject> createdFiles = new LinkedList<FileObject>();
+        Project proj = ((CasaWrapperModel) cp.getModel()).getJBIProject();
+        WSDLModel clientModel = getModelForClient(proj, wsdlModel, true, createdFiles);
+        if (clientModel == null) return;
+
         // todo: 08/27/07, add undo manager...
         final UndoManager undoManager = new UndoManager();
         wsdlModel.addUndoableEditListener(undoManager);  //maybe use WeakListener instead
-        final JComponent stc = WSITConfigProvider.getDefault().getWSITServiceConfig(wsdlModel, null, bindings, node);
+        final JComponent stc = WSITConfigProvider.getDefault().getWSITClientConfig(s, clientModel, wsdlModel, node);
+        stc.setPreferredSize(new Dimension(450, 360)); // set a larger initial default size..
 
         SwingUtilities.invokeLater(new Runnable(){
             public void run(){
@@ -154,8 +179,6 @@ public class WsitClientConfigAction extends NodeAction {
                 dialog.setVisible(true);
 
                 // todo: 08/24, we need to decide how to back out changes when CANCEL is selected..
-
-                /* */
                 if(dialogDesc.getValue() == NotifyDescriptor.OK_OPTION){
                     // save
                 } else { // click on cancle..
@@ -173,6 +196,195 @@ public class WsitClientConfigAction extends NodeAction {
                 }
             }
         });
+    }
 
+    public WSDLModel getModelForClient(Project p, WSDLModel originalwsdlmodel, boolean create, Collection<FileObject> createdFiles) {
+        System.out.println("Calling getModelForClient...");
+        WSDLModel model = null;
+
+        try {
+            Sources sources = ProjectUtils.getSources(p);
+            if (sources == null) return null;
+            SourceGroup[] sourceGroups = sources.getSourceGroups(JbiProjectConstants.SOURCES_TYPE_JBI);
+            FileObject srcFolder = sourceGroups[0].getRootFolder();
+            FileObject catalogfo = Utilities.getProjectCatalogFileObject(p);
+            ModelSource catalogms = Utilities.getModelSource(catalogfo, true);
+            CatalogModel cm = Utilities.getCatalogModel(catalogms);
+            FileObject originalWsdlFO = originalwsdlmodel.getModelSource().getLookup().lookup(FileObject.class);
+
+            // check whether config file already exists
+            FileObject configFO = srcFolder.getFileObject(originalWsdlFO.getName(), WSITModelSupport.CONFIG_WSDL_EXTENSION);
+            if ((configFO != null) && (configFO.isValid())) {
+                return getModelFromFO(configFO, true);
+            }
+
+            if (create) {
+                // check whether main config file exists
+                FileObject mainConfigFO = srcFolder.getFileObject(WSITModelSupport.CONFIG_WSDL_CLIENT_PREFIX, WSITModelSupport.MAIN_CONFIG_EXTENSION);
+                if (mainConfigFO == null) {
+                    mainConfigFO = createMainConfig(srcFolder, createdFiles);
+                }
+
+                copyImports(originalwsdlmodel, srcFolder, createdFiles);
+
+                // import the model from client model
+                WSDLModel mainModel = getModelFromFO(mainConfigFO, true);
+                mainModel.startTransaction();
+                try {
+                    WSDLComponentFactory wcf = mainModel.getFactory();
+
+                    FileObject configName = Utilities.getFileObject(originalwsdlmodel.getModelSource());
+                    configFO = srcFolder.getFileObject(configName.getName(), WSITModelSupport.CONFIG_WSDL_EXTENSION);
+
+                    boolean importFound = false;
+                    Collection<Import> imports = mainModel.getDefinitions().getImports();
+                    for (Import i : imports) {
+                        if (i.getLocation().equals(configFO.getNameExt())) {
+                            importFound = true;
+                            break;
+                        }
+                    }
+                    model = getModelFromFO(configFO, true);
+                    if (!importFound) {
+                        org.netbeans.modules.xml.wsdl.model.Import imp = wcf.createImport();
+                        imp.setLocation((configFO).getNameExt());
+                        imp.setNamespace(model.getDefinitions().getTargetNamespace());
+                        Definitions def = mainModel.getDefinitions();
+                        def.setName("mainclientconfig"); //NOI18N
+                        def.addImport(imp);
+                    }
+                } finally {
+                    mainModel.endTransaction();
+                }
+
+                DataObject mainConfigDO = DataObject.find(mainConfigFO);
+                if ((mainConfigDO != null) && (mainConfigDO.isModified())) {
+                    SaveCookie wsdlSaveCookie = mainConfigDO.getCookie(SaveCookie.class);
+                    if(wsdlSaveCookie != null){
+                        wsdlSaveCookie.save();
+                    }
+                    mainConfigDO.setModified(false);
+                }
+
+                DataObject configDO = DataObject.find(configFO);
+                if ((configDO != null) && (configDO.isModified())) {
+                    SaveCookie wsdlSaveCookie = configDO.getCookie(SaveCookie.class);
+                    if(wsdlSaveCookie != null){
+                        wsdlSaveCookie.save();
+                    }
+                    configDO.setModified(false);
+                }
+            }
+        } catch (Exception ex) {
+            // logger.log(Level.INFO, null, ex);
+            ex.printStackTrace();
+        }
+
+        return model;
+    }
+
+    private static FileObject createMainConfig(FileObject folder, Collection<FileObject> createdFiles) {
+        FileObject mainConfig = null;
+        try {
+            mainConfig = FileUtil.createData(folder, WSITModelSupport.CONFIG_WSDL_CLIENT_PREFIX + "." + WSITModelSupport.MAIN_CONFIG_EXTENSION); //NOI18N
+            if ((mainConfig != null) && (mainConfig.isValid()) && !(mainConfig.isVirtual())) {
+                if (createdFiles != null) {
+                    createdFiles.add(mainConfig);
+                }
+                FileWriter fw = new FileWriter(FileUtil.toFile(mainConfig));
+                fw.write(NbBundle.getMessage(WsitClientConfigAction.class, "EMPTY_WSDL"));       //NOI18N
+                fw.close();
+                mainConfig.refresh(true);
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        return mainConfig;
+    }
+
+    private void copyImports(final WSDLModel model, final FileObject srcFolder, Collection<FileObject> createdFiles) throws CatalogModelException {
+
+        FileObject modelFO = Utilities.getFileObject(model.getModelSource());
+
+        try {
+            FileObject configFO = FileUtil.copyFile(modelFO, srcFolder, modelFO.getName(), WSITModelSupport.CONFIG_WSDL_EXTENSION);
+            if (createdFiles != null) {
+                createdFiles.add(configFO);
+            }
+
+            WSDLModel newModel = getModelFromFO(configFO, true);
+
+            removePolicies(newModel);
+            removeTypes(newModel);
+
+            Collection<Import> oldImports = model.getDefinitions().getImports();
+            Collection<Import> newImports = newModel.getDefinitions().getImports();
+            Iterator<Import> newImportsIt = newImports.iterator();
+            for (Import i : oldImports) {
+                WSDLModel oldImportedModel = i.getImportedWSDLModel();
+                FileObject oldImportFO = Utilities.getFileObject(oldImportedModel.getModelSource());
+                newModel.startTransaction();
+                try {
+                    newImportsIt.next().setLocation(oldImportFO.getName() + "." + WSITModelSupport.CONFIG_WSDL_EXTENSION);
+                } finally {
+                    newModel.endTransaction();
+                }
+                copyImports(oldImportedModel, srcFolder, createdFiles);
+            }
+        } catch (IOException e) {
+            // ignore - this happens when files are imported recursively
+            // logger.log(Level.FINE, null, e);
+        }
+    }
+
+    private WSDLModel getModelFromFO(FileObject wsdlFO, boolean editable) {
+        WSDLModel model = null;
+        ModelSource ms = org.netbeans.modules.xml.retriever.catalog.Utilities.getModelSource(wsdlFO, editable);
+        try {
+            model = WSDLModelFactory.getDefault().getModel(ms);
+            if (model != null) {
+                model.sync();
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        return model;
+    }
+
+    private void removeTypes(WSDLModel model) {
+        model.startTransaction();
+        try {
+            Definitions d = model.getDefinitions();
+            Types t = d.getTypes();
+            if (t != null) {
+                t.getSchemas().retainAll(new ArrayList());
+            }
+        } finally {
+            model.endTransaction();
+        }
+    }
+
+    private void removePolicies(WSDLModel model) {
+        model.startTransaction();
+        try {
+            removePolicyElements(model.getDefinitions());
+        } finally {
+            model.endTransaction();
+        }
+    }
+
+    private void removePolicyElements(WSDLComponent c) {
+        List<Policy> policies = c.getExtensibilityElements(Policy.class);
+        for (Policy p : policies) {
+            c.removeExtensibilityElement(p);
+        }
+        List<PolicyReference> policyReferences = c.getExtensibilityElements(PolicyReference.class);
+        for (PolicyReference pr : policyReferences) {
+            c.removeExtensibilityElement(pr);
+        }
+        List<WSDLComponent> children = c.getChildren();
+        for (WSDLComponent ch : children) {
+            removePolicyElements(ch);
+        }
     }
 }

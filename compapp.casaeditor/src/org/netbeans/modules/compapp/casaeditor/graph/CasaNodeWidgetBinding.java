@@ -51,6 +51,7 @@ import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.model.ObjectState;
+import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.openide.util.NbBundle;
 
 /**
@@ -127,11 +128,11 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
         mNameWidget = new LabelWidget(getScene());
         mNameWidget.setFont(CasaFactory.getCasaCustomizer().getFONT_BC_LABEL());
         mNameWidget.setForeground(CasaFactory.getCasaCustomizer().getCOLOR_BC_LABEL());
-        
+                
         regenerateHeaderBorder();
     }
     
-    
+       
     protected void notifyAdded() {
         super.notifyAdded();
         
@@ -162,7 +163,7 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
                 mNameWidget.setPreferredLocation(point);
             }
         };
-        getRegistry().registerDependency(nameLabeler);
+        getDependenciesRegistry().registerDependency(nameLabeler);
     }
     
     protected void notifyRemoved() {

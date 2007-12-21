@@ -67,5 +67,5 @@ public class CasaPinWidgetEngineProvides extends CasaPinWidgetEngine {
     protected Directions getDirection() {
         return Directions.LEFT;
     }
-    
+        
 }

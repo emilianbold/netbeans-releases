@@ -55,6 +55,8 @@ import javax.xml.namespace.QName;
 import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConnection;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpoint;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaPort;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.properties.PropertyUtils;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -130,6 +132,11 @@ public class ConnectionNode extends CasaNode {
         };
         providerProperties.put(providerServiceNameSupport);
         providerProperties.put(providerEndpointNameSupport);
+        
+         
+        // Add JBI extensions on connection
+        ExtensionPropertyHelper.setupExtensionPropertySheet(this,
+                casaConnection, sheet, "connection", "all");
     }
     
     //The navigator title is unable to decode HTML text and showing the encoded chars (&#60;-&#62;) as is...
@@ -192,6 +199,15 @@ public class ConnectionNode extends CasaNode {
         if (connection != null) {
             return getModel().isDeletable(connection);
         }
+        return false;
+    }
+    
+    @Override
+    public boolean isEditable(String propertyType) {
+        if (propertyType.equals(ALWAYS_WRITABLE_PROPERTY)) { 
+            return true;
+        }
+        
         return false;
     }
     

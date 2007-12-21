@@ -55,6 +55,7 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponentFactory;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConnection;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConnections;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpoints;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaExtensibilityElement;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServiceEngineServiceUnit;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaLink;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaModel;
@@ -180,6 +181,7 @@ public class CasaComponentFactoryImpl implements CasaComponentFactory {
             return q.getQName().equals(AbstractDocumentComponent.getQName(e));
         }
         
+        @Override
         public void visit(Casa context) {
             if (isElementQName(CasaQName.SERVICE_UNITS)) {
                 created = new CasaServiceUnitsImpl(context.getModel(), element);
@@ -197,7 +199,8 @@ public class CasaComponentFactoryImpl implements CasaComponentFactory {
                 created = new CasaEndpointsImpl(context.getModel(), element);
             }
         }
-                
+         
+        @Override
         public void visit(CasaServiceUnits context) {
             if (isElementQName(CasaQName.ENGINE_ENGINE_SERVICE_UNIT)) {
                 created = new CasaServiceEngineServiceUnitImpl(context.getModel(), element);
@@ -206,12 +209,14 @@ public class CasaComponentFactoryImpl implements CasaComponentFactory {
             }
         }
         
+        @Override
         public void visit(CasaConnections context) {
             if (isElementQName(CasaQName.CONNECTION)) {
                 created = new CasaConnectionImpl(context.getModel(), element);
             }
         }
-                
+          
+        @Override
         public void visit(CasaServiceEngineServiceUnit context) {
             if (isElementQName(CasaQName.PROVIDES)) {
                 created = new CasaProvidesImpl(context.getModel(), element);
@@ -220,18 +225,21 @@ public class CasaComponentFactoryImpl implements CasaComponentFactory {
             }
         }
         
+        @Override
         public void visit(CasaBindingComponentServiceUnit context) {
             if (isElementQName(CasaQName.PORTS)) {
                 created = new CasaPortsImpl(context.getModel(), element);
             } 
         }
         
+        @Override
         public void visit(CasaPorts context) {
             if (isElementQName(CasaQName.PORT)) {
                 created = new CasaPortImpl(context.getModel(), element);
             }
         }
         
+        @Override
         public void visit(CasaPort context) {
             if (isElementQName(CasaQName.LINK)) {
                 created = new CasaLinkImpl(context.getModel(), element);
@@ -242,55 +250,67 @@ public class CasaComponentFactoryImpl implements CasaComponentFactory {
             }
         }
         
+        @Override
         public void visit(CasaEndpoints context) {
             if (isElementQName(CasaQName.ENDPOINT)) {
                 created = new CasaEndpointImpl(context.getModel(), element);
             } 
         }
-                
+        
+        @Override
         public void visit(CasaRegions context) {
             if (isElementQName(CasaQName.REGION)) {
                 created = new CasaRegionImpl(context.getModel(), element);
             }
         }
         
+        @Override
         public void visit(CasaConnection context) {
-            ;
+            created = new CasaGenericExtensibilityElementImpl(context.getModel(), element);
         }
         
+        @Override
         public void visit(CasaConsumes context) {
-            ;
+            created = new CasaGenericExtensibilityElementImpl(context.getModel(), element);
         }
          
+        @Override
         public void visit(CasaProvides context) {
-            ;
+            created = new CasaGenericExtensibilityElementImpl(context.getModel(), element);
         }
         
+        @Override
+        public void visit(CasaExtensibilityElement context) {
+            created = new CasaGenericExtensibilityElementImpl(context.getModel(), element);
+        }
+         
+        @Override
         public void visit(CasaPortTypes context) {
             visit((CasaLinksContainer) context);
         }
         
+        @Override
         public void visit(CasaBindings context) {
             visit((CasaLinksContainer) context);
         }
         
+        @Override
         public void visit(CasaServices context) {
             visit((CasaLinksContainer) context);
         }
-                        
+        
+        @Override
+        public void visit(CasaLink context) {
+        }
+        
+        @Override
+        public void visit(CasaRegion context) {
+        }        
+        
         private void visit(CasaLinksContainer context) {
             if (isElementQName(CasaQName.LINK)) {
                 created = new CasaLinkImpl(context.getModel(), element);
             }
         }
-        
-        public void visit(CasaLink context) {
-            ;
-        }
-        
-        public void visit(CasaRegion context) {
-            ;
-        }
-        
     }
 }

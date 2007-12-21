@@ -53,8 +53,8 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.nodes.CasaNodeFactory;
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.AutoLayoutAction;
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.BuildAction;
+import org.netbeans.modules.compapp.casaeditor.nodes.actions.CasaValidateAction;
 import org.netbeans.modules.print.api.PrintManager;
-
 import org.openide.util.NbBundle;
 
 /**
@@ -70,6 +70,7 @@ public class CasaDesignView {
     private JToolBar mToolBar;
     private AbstractAction mAutoLayoutAction;
     private AbstractAction mBuildAction;
+    private AbstractAction mValidateAction;
 
     
     public CasaDesignView(CasaDataObject dataObject) {
@@ -79,8 +80,16 @@ public class CasaDesignView {
         mScroller.getVerticalScrollBar().setUnitIncrement(30);
         mScroller.getHorizontalScrollBar().setUnitIncrement(20);
         
-        CasaWrapperModel model = mDataObject.getEditorSupport().getModel();
-
+        final CasaWrapperModel model = mDataObject.getEditorSupport().getModel(); 
+//        if (model != null) {
+//            // validate after casa view is shown
+//            SwingUtilities.invokeLater(new Runnable() {
+//                public void run() {      
+//                    new CasaValidateAction(model).actionPerformed(null);
+//                }
+//            });
+//        }
+      
         JComponent view = null;
         if (model == null) {
             view = getErrorPane();
@@ -101,7 +110,7 @@ public class CasaDesignView {
             mScene.registerModelListener(mModelListener);
         }
     }
-   
+       
     public void render() {
         // Render the model
         CasaWrapperModel model = mDataObject.getEditorSupport().getModel();
@@ -177,6 +186,7 @@ public class CasaDesignView {
     private void setupActions() {
         mAutoLayoutAction = new AutoLayoutAction(mDataObject);
         mBuildAction = new BuildAction(mScene.getModel());
+//        mValidateAction = new CasaValidateAction(mScene.getModel());
     }
 
     private void setupToolBar() {
@@ -191,9 +201,16 @@ public class CasaDesignView {
         mToolBar.add(createButton(mBuildAction,
                                   (String) mBuildAction.getValue(Action.NAME), // NOI18N
                                   (Icon)   mBuildAction.getValue(Action.SMALL_ICON))); // NOI18N
+       
         // vlv: print
         mToolBar.addSeparator();
-        mToolBar.add(PrintManager.getPrintPreviewAction());
+        mToolBar.add(PrintManager.getDefault().getPrintPreviewAction()); 
+        
+//        mToolBar.addSeparator();
+//
+//        mToolBar.add(createButton(mValidateAction,
+//                                  (String) mValidateAction.getValue(Action.NAME), // NOI18N
+//                                  (Icon)   mValidateAction.getValue(Action.SMALL_ICON))); // NOI18N
     }
 
     private JButton createButton(Action action, String tooltip, Icon icon) {
