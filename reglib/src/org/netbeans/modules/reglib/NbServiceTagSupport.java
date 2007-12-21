@@ -234,7 +234,7 @@ public class NbServiceTagSupport {
             getRegistrationData().addServiceTag(st);
             writeRegistrationXml();
         }
-        
+       
         return st;
     }
     
@@ -457,11 +457,10 @@ public class NbServiceTagSupport {
      * @return a service tag for 
      */
     private static ServiceTag getGfServiceTag () throws IOException {
-        String productURN = NbBundle.getMessage(NbServiceTagSupport.class,"servicetag.gf.urn");
         RegistrationData regData = getRegistrationData();
         Collection<ServiceTag> svcTags = regData.getServiceTags();
         for (ServiceTag st : svcTags) {
-            if (productURN.equals(st.getProductURN())) {
+            if (st.getProductName().startsWith("Sun Java System Application Server")) {
                 return st;
             }
         }
@@ -475,11 +474,10 @@ public class NbServiceTagSupport {
      * @return a service tag for 
      */
     private static ServiceTag getJdkServiceTag () throws IOException {
-        String productURN = NbBundle.getMessage(NbServiceTagSupport.class,"servicetag.jdk.urn");
         RegistrationData regData = getRegistrationData();
         Collection<ServiceTag> svcTags = regData.getServiceTags();
         for (ServiceTag st : svcTags) {
-            if (productURN.equals(st.getProductURN())) {
+            if (st.getProductName().startsWith("J2SE") || st.getProductName().startsWith("Java SE")) {
                 return st;
             }
         }
