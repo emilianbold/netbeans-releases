@@ -31,6 +31,7 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
+import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.bpel.debugger.api.EditorContextBridge;
 import org.netbeans.modules.bpel.debugger.api.SourcePath;
@@ -65,16 +66,32 @@ public final class ModelUtil {
     
     public static String getUrl(
             final QName processQName) {
-        final SourcePath sourcePath = (SourcePath) DebuggerManager.
-                getDebuggerManager().
-                getCurrentEngine().lookupFirst(null, SourcePath.class);
-
+        final DebuggerEngine engine = DebuggerManager.
+                getDebuggerManager().getCurrentEngine();
+        
+        if (engine == null) {
+            return null;
+        }
+        
+        final SourcePath sourcePath = 
+                (SourcePath) engine.lookupFirst(null, SourcePath.class);
+                
+        if (sourcePath == null) {
+            return null;
+        }
+        
         return sourcePath.getSourcePath(processQName);
     }
     
     public static BpelModel getBpelModel(
             final QName processQName) {
-        return EditorUtil.getBpelModel(getUrl(processQName));
+        final String url = getUrl(processQName);
+        
+        if (url == null) {
+            return null;
+        }
+        
+        return EditorUtil.getBpelModel(url);
     }
     
     public static String getXpath(

@@ -48,12 +48,6 @@ public final class Helper {
             final String label = makeLabel(
                     psmEntity.getTag(), psmEntity.getName());
             
-            final String url = ModelUtil.getUrl(
-                    psmEntity.getModel().getProcessQName());
-            final BpelModel model = EditorUtil.getBpelModel(url);
-            final int lineNumber = ModelUtil.getLineNumber(
-                    model, psmEntity.getXpath());
-            
             if (showHtml) {
                 return HtmlUtil.toHtml(
                         label, false, false, NEVER_EXECUTED_COLOR);

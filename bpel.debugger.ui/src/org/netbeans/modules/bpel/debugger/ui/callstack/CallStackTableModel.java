@@ -76,7 +76,17 @@ public class CallStackTableModel implements TableModel, Constants {
             if (column.equals(CallStackColumnModel_Line.COLUMN_ID)) {
                 final String url = ModelUtil.getUrl(
                         psmEntity.getModel().getProcessQName());
+                
+                if (url == null) {
+                    return "";
+                }
+                
                 final BpelModel model = EditorUtil.getBpelModel(url);
+                
+                if (model == null) {
+                    return null;
+                }
+                
                 final int lineNumber = ModelUtil.getLineNumber(
                         model, psmEntity.getXpath());
                 

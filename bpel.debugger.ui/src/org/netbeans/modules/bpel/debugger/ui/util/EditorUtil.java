@@ -103,7 +103,8 @@ public final class EditorUtil {
     
     public static BpelModel getBpelModel(
             final String url) {
-        DataObject dataObject = getDataObject(url);
+        
+        final DataObject dataObject = getDataObject(url);
         if (dataObject == null) {
             Log.out("DataObject is null :" + url); // NOI18N
             return null;
@@ -114,7 +115,8 @@ public final class EditorUtil {
     
     public static StyledDocument getDocument(
             final DataObject dataObject) {
-        EditorCookie editorCookie =
+        
+        final EditorCookie editorCookie =
                 dataObject.getCookie(EditorCookie.class);
         if (editorCookie == null) {
             Log.out("Editor cookie is null"); // NOI18N

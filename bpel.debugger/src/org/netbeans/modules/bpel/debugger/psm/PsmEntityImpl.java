@@ -134,6 +134,11 @@ public class PsmEntityImpl implements PsmEntity {
         }
         
         if (myIsLoop) {
+            // Skip <condition> children for while and repeatUntil
+            if (child.getQName().getLocalPart().equals("condition")) {
+                return;
+            }
+            
             assert myLoopChild == null : 
                     "Loops can not have more than one child";
             
