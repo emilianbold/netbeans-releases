@@ -1,0 +1,5 @@
+org.netbeans.modules.debugger.ui.models.ColumnModels.createThreadStateColumn()-hidden
+org.netbeans.modules.debugger.ui.models.ColumnModels.createThreadSuspendedColumn()-hidden
+org.netbeans.modules.debugger.ui.models.ColumnModels.createDefaultThreadColumn()-hidden
+org.netbeans.modules.bpel.debugger.ui.threads.ThreadsColumnModel_Name
+org.netbeans.modules.bpel.debugger.ui.threads.ThreadsColumnModel_State

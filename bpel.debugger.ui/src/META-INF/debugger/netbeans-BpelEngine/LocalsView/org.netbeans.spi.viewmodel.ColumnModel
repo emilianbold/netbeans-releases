@@ -1,0 +1,5 @@
+org.netbeans.modules.debugger.ui.models.ColumnModels.createLocalsTypeColumn()-hidden
+org.netbeans.modules.debugger.ui.models.ColumnModels.createLocalsValueColumn()-hidden
+org.netbeans.modules.debugger.ui.models.ColumnModels.createLocalsToStringColumn()-hidden
+org.netbeans.modules.bpel.debugger.ui.variable.LocalsColumnModel_Type
+org.netbeans.modules.bpel.debugger.ui.variable.LocalsColumnModel_Value
