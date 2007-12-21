@@ -148,6 +148,7 @@ class RegistrationDocument {
     // initialize a document from an input stream 
     private static Document initializeDocument(InputStream in) throws IOException {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setNamespaceAware(true);
         try {
             // XML schema for validation
             SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
