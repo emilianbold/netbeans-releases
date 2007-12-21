@@ -21,29 +21,28 @@ public class NewFlatfileDatabaseWizardPanel implements WizardDescriptor.Panel {
         }
         return component;
     }
-    
+
     public HelpCtx getHelp() {
-        return HelpCtx.DEFAULT_HELP;  
+        return HelpCtx.DEFAULT_HELP;
     }
-    
+
     public boolean isValid() {
         return canAdvance();
     }
-    
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
-    
+
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
-    
+
     public final void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
         }
     }
-    
+
     protected final void fireChangeEvent() {
         Iterator<ChangeListener> it;
         synchronized (listeners) {
@@ -54,21 +53,22 @@ public class NewFlatfileDatabaseWizardPanel implements WizardDescriptor.Panel {
             it.next().stateChanged(ev);
         }
     }
-    
+
     public void readSettings(Object settings) {
-        NewFlatfileDatabaseVisualPanel panel = (NewFlatfileDatabaseVisualPanel)getComponent();
+        NewFlatfileDatabaseVisualPanel panel = (NewFlatfileDatabaseVisualPanel) getComponent();
         panel.clearText();
     }
+
     public void storeSettings(Object settings) {
         if (settings instanceof WizardDescriptor) {
             WizardDescriptor wd = (WizardDescriptor) settings;
-            NewFlatfileDatabaseVisualPanel panel = (NewFlatfileDatabaseVisualPanel)getComponent();
+            NewFlatfileDatabaseVisualPanel panel = (NewFlatfileDatabaseVisualPanel) getComponent();
             wd.putProperty("dbName", panel.getDBName());
         }
     }
-    
+
     private boolean canAdvance() {
-        NewFlatfileDatabaseVisualPanel panel = (NewFlatfileDatabaseVisualPanel)getComponent();
+        NewFlatfileDatabaseVisualPanel panel = (NewFlatfileDatabaseVisualPanel) getComponent();
         return panel.canProceed();
     }
 }

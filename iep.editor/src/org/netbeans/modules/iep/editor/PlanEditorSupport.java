@@ -1,50 +1,30 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 package org.netbeans.modules.iep.editor;
 
 import java.awt.EventQueue;
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Set;
@@ -56,6 +36,9 @@ import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.CloseOperationHandler;
 import org.netbeans.core.spi.multiview.CloseOperationState;
+import org.netbeans.modules.iep.editor.designer.PlanCanvas;
+import org.netbeans.modules.iep.model.IEPModel;
+import org.netbeans.modules.iep.model.IEPModelFactory;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.UndoRedo;
@@ -78,7 +61,9 @@ import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
-
+import org.netbeans.modules.xml.retriever.catalog.Utilities;
+import org.netbeans.modules.xml.xam.ModelSource;
+import org.netbeans.modules.xml.xam.ui.undo.QuietUndoManager;
 
 /**
  *
@@ -91,6 +76,8 @@ public class PlanEditorSupport extends DataEditorSupport
     /** Used for managing the prepareTask listener. */
     private transient Task prepareTask2;
 
+    private PlanDesignViewMultiViewElement mDesignViewElement;
+    
     /**
      *
      *
@@ -238,10 +225,10 @@ public class PlanEditorSupport extends DataEditorSupport
         }
         
         public CloneableEditorSupport findTextEditorSupport() {
-            return getWSDLDataObject().getPlanEditorSupport();
+            return getPlanDataObject().getPlanEditorSupport();
         }
         
-        public PlanDataObject getWSDLDataObject(){
+        public PlanDataObject getPlanDataObject(){
             return (PlanDataObject) getDataObject();
         }
         
@@ -299,5 +286,240 @@ public class PlanEditorSupport extends DataEditorSupport
             }
             return canClose;
         }
+    }
+    
+    public IEPModel getModel() {
+        PlanDataObject dobj = getEnv().getPlanDataObject();
+        ModelSource modelSource = Utilities.getModelSource(dobj.getPrimaryFile(), true);
+        if(modelSource != null) {
+            return IEPModelFactory.getDefault().getModel(modelSource);
+        }
+
+        return null;
+    }
+    
+    /**
+     * Have the IEP model sync with the document.
+     */
+    public void syncModel() {
+        // Only sync the document if the change relates to loss of focus,
+        // which indicates that we are switching from the source view.
+        // Update the tree with the modified text.
+        try {
+            if(getModel() != null) {
+                getModel().sync();
+            }
+        } catch (Throwable ioe) {
+            // The document cannot be parsed
+            NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(PlanEditorSupport.class, "MSG_NotWellformedPlan"), NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(nd);
+        }
+        
+    }
+    
+    
+    @Override
+    protected UndoRedo.Manager createUndoRedoManager() {
+        // Override so the superclass will use our proxy undo manager
+        // instead of the default, then we can intercept edits.
+        return new QuietUndoManager(super.createUndoRedoManager());
+        // Note we cannot set the document on the undo manager right
+        // now, as CES is probably trying to open the document.
+    }
+
+    /**
+     * Returns the UndoRedo.Manager instance managed by this editor support.
+     *
+     * @return UndoRedo.Manager instance.
+     */
+    public QuietUndoManager getUndoManager() {
+        return (QuietUndoManager) getUndoRedo();
+    }
+
+    @Override
+    public Task prepareDocument() {
+        Task task = super.prepareDocument();
+        // Avoid listening to the same task more than once.
+        if (task != prepareTask2) {
+            prepareTask2 = task;
+            task.addTaskListener(new TaskListener() {
+                public void taskFinished(Task task) {
+                    QuietUndoManager undo = getUndoManager();
+                    StyledDocument doc = getDocument();
+                    synchronized (undo) {
+                        // Now that the document is ready, pass it to the manager.
+                        undo.setDocument((AbstractDocument) doc);
+                        if (!undo.isCompound()) {
+                            // The superclass prepareDocument() adds the undo/redo
+                            // manager as a listener -- we need to remove it since
+                            // we will initially listen to the model instead.
+                            doc.removeUndoableEditListener(undo);
+                            // If not listening to document, then listen to model.
+                            addUndoManagerToModel(undo);
+                        }
+                    }
+                    prepareTask2 = null;
+                }
+            });
+        }
+        return task;
+    }
+    
+    @Override
+	public Task reloadDocument() {
+        Task task = super.reloadDocument();
+        task.addTaskListener(new TaskListener() {
+            public void taskFinished(Task task) {
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        QuietUndoManager undo = getUndoManager();
+                        StyledDocument doc = getDocument();
+                        // The superclass reloadDocument() adds the undo
+                        // manager as an undoable edit listener.
+                        synchronized (undo) {
+                            if (!undo.isCompound()) {
+                                doc.removeUndoableEditListener(undo);
+                            }
+                        }
+                    }
+                });
+            }
+        });
+        return task;
+    }
+
+    @Override
+    protected void notifyClosed() {
+        // Stop listening to the undoable edit sources when we are closed.
+        QuietUndoManager undo = getUndoManager();
+        StyledDocument doc = getDocument();
+        synchronized (undo) {
+            // May be null when closing the editor.
+            if (doc != null) {
+                doc.removeUndoableEditListener(undo);
+                undo.endCompound();
+                undo.setDocument(null);
+            }
+            IEPModel model = getModel();
+            if (model != null) {
+            	model.removeUndoableEditListener(undo);
+            }
+            // Must unset the model when no longer listening to it.
+            undo.setModel(null);
+        }
+        super.notifyClosed();
+    }
+    
+    /**
+     * Adds the undo/redo manager to the document as an undoable edit
+     * listener, so it receives the edits onto the queue. The manager
+     * will be removed from the model as an undoable edit listener.
+     *
+     * <p>This method may be called repeatedly.</p>
+     */
+    public void addUndoManagerToDocument() {
+        // This method may be called repeatedly.
+        // Stop the undo manager from listening to the model, as it will
+        // be listening to the document now.
+        QuietUndoManager undo = getUndoManager();
+        StyledDocument doc = getDocument();
+        synchronized (undo) {
+        	IEPModel model = getModel();
+        	if (model != null) {
+        		model.removeUndoableEditListener(undo);
+        	}
+        	// Must unset the model when no longer listening to it.
+        	undo.setModel(null);
+            // Document may be null if the cloned views are not behaving correctly.
+            if (doc != null) {
+                // Ensure the listener is not added twice.
+                doc.removeUndoableEditListener(undo);
+                doc.addUndoableEditListener(undo);
+                // Start the compound mode of the undo manager, such that when
+                // we are hidden, we will treat all of the edits as a single
+                // compound edit. This avoids having the user invoke undo
+                // numerous times when in the model view.
+                undo.beginCompound();
+            }
+        }
+    }
+
+    /**
+     * Removes the undo/redo manager undoable edit listener from the
+     * document, to stop receiving undoable edits. The manager will
+     * be added to the model as an undoable edit listener.
+     *
+     * <p>This method may be called repeatedly.</p>
+     */
+    public void removeUndoManagerFromDocument() {
+        // This method may be called repeatedly.
+        QuietUndoManager undo = getUndoManager();
+        StyledDocument doc = getDocument();
+        synchronized (undo) {
+            // May be null when closing the editor.
+            if (doc != null) {
+                doc.removeUndoableEditListener(undo);
+                undo.endCompound();
+            }
+            // Have the undo manager listen to the model when it is not
+            // listening to the document.
+            addUndoManagerToModel(undo);
+        }
+    }
+
+    /**
+     * Add the undo/redo manager undoable edit listener to the model.
+     *
+     * <p>Caller should synchronize on the undo manager prior to calling
+     * this method, to avoid thread concurrency issues.</p>
+     *
+     * @param  undo  the undo manager.
+     */
+    private void addUndoManagerToModel(QuietUndoManager undo) {
+        // This method may be called repeatedly.
+        IEPModel model = getModel();
+        if (model != null) {
+            // Ensure the listener is not added twice.
+            model.removeUndoableEditListener(undo);
+            model.addUndoableEditListener(undo);
+            // Ensure the model is sync'd when undo/redo is invoked,
+            // otherwise the edits are added to the queue and eventually
+            // cause exceptions.
+            undo.setModel(model);
+        }
+    }
+
+    public void save() {
+        try {
+        	PlanDataObject dataObj = (PlanDataObject) getDataObject();
+            Date planLastModified = dataObj.getPrimaryFile().lastModified();
+            
+            File wsdlFile = getModel().getWsdlFile();
+            // Note that editor saves plan after saving its wsdl
+            // Hence the only way wsdl has later modified time than plan is 
+            // through modification outside editor
+            if (wsdlFile.exists() && planLastModified.before(new Date(wsdlFile.lastModified()))) {
+                String msg = NbBundle.getMessage(PlanCanvas.class, "PlanDesigner.WSDL_HAS_BEEN_MANUALLY_CHANGED_OVERWRITE", wsdlFile.getName());
+                NotifyDescriptor d = new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.YES_NO_CANCEL_OPTION);
+                DialogDisplayer.getDefault().notify(d);
+                if (NotifyDescriptor.YES_OPTION == d.getValue()) {
+                    getModel().saveWsdl();
+                }         
+           } else {
+        	   getModel().saveWsdl();
+           }                  
+           
+           //mStatusBar.setDirty(false);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public void setPlanDesignMultiviewElement(PlanDesignViewMultiViewElement designElement) {
+        this.mDesignViewElement = designElement;
+    }
+    
+    public PlanDesignViewMultiViewElement getPlanDesignMultiviewElement() {
+        return this.mDesignViewElement;
     }
 }

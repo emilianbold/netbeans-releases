@@ -54,6 +54,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.sql.framework.ui.view.conditionbuilder.IConditionGraphViewContainer;
 import org.openide.awt.TabbedPaneFactory;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -61,7 +62,7 @@ import org.openide.windows.WindowManager;
 /**
  * Top component which displays something.
  */
-public final class SQLOutputConditionView extends TopComponent implements PropertyChangeListener {
+public final class SQLOutputConditionView extends TopComponent implements PropertyChangeListener,Lookup.Provider  {
 
     private static SQLOutputConditionView instance;
 

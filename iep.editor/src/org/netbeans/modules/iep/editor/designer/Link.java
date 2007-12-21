@@ -1,58 +1,44 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 package org.netbeans.modules.iep.editor.designer;
 
 import com.nwoods.jgo.*;
-import org.netbeans.modules.iep.editor.tcg.model.TcgComponent;
 import org.netbeans.modules.iep.editor.designer.GuiConstants;
-import org.netbeans.modules.iep.editor.model.Plan;
+import org.netbeans.modules.iep.editor.model.NameGenerator;
 import org.netbeans.modules.iep.editor.tcg.model.TcgModelManager;
+import org.netbeans.modules.iep.model.Component;
+import org.netbeans.modules.iep.model.IEPModel;
+import org.netbeans.modules.iep.model.LinkComponent;
+import org.netbeans.modules.iep.model.LinkComponentContainer;
+import org.netbeans.modules.iep.model.OperatorComponent;
+import org.netbeans.modules.iep.model.lib.TcgComponent;
+
+import java.awt.Color;
+import java.util.Map;
 import java.util.logging.Level;
 
 // Flows are implemented as labeled links
 //
 // For this example app, the only property, Text, is
 // actually just the label's Text.
-public class Link extends JGoLink implements GuiConstants, ComponentHolder {
+public class Link extends JGoLink implements GuiConstants, CanvasWidget {
     private static final java.util.logging.Logger mLog = java.util.logging.Logger.getLogger(Link.class.getName());
 
     private static final JGoPen mPen = JGoPen.black;
@@ -60,11 +46,23 @@ public class Link extends JGoLink implements GuiConstants, ComponentHolder {
     // State
     private transient TcgComponent mComponent;
     
+    private transient LinkComponent mComp;
+    
     // Used for carring content of mComponent during cut, copy, and paste
     private String mComponentXml;
 
     public Link() {
         super();
+    }
+    
+
+    public Link(LinkComponent component, JGoPort from, JGoPort to) {
+        super(from, to);
+        mComp = component;
+    }
+    
+    public Link(JGoPort from, JGoPort to) {
+        super(from, to);
     }
     
     public Link(TcgComponent component, JGoPort from, JGoPort to) {
@@ -96,7 +94,8 @@ public class Link extends JGoLink implements GuiConstants, ComponentHolder {
     */
     public JGoObject copyObject(JGoCopyEnvironment env) {
         Link newObj = (Link)super.copyObject(env);
-        newObj.mComponentXml = mComponent.toXml();
+        //newObj.mComponentXml = mComponent.toXml();
+        newObj.mComp = this.mComp;
         return newObj;
     }
 
@@ -106,6 +105,9 @@ public class Link extends JGoLink implements GuiConstants, ComponentHolder {
         setAvoidsNodes(true);
         setAdjustingStyle(JGoLink.AdjustingStyleStretch);
         setPen(mPen);
+        
+        JGoPen pen = new JGoPen(JGoPen.SOLID, 1, Color.BLUE);
+    	setPen(pen);
     }
     
     public PdModel getDoc() { 
@@ -141,6 +143,10 @@ public class Link extends JGoLink implements GuiConstants, ComponentHolder {
         super.setOrthogonal(bOrtho);
     }
 
+    public Component getModelComponent() {
+    	return this.mComp;
+    }
+    
     //========================================
     public TcgComponent getComponent() {
         return mComponent;
@@ -151,22 +157,72 @@ public class Link extends JGoLink implements GuiConstants, ComponentHolder {
     }
     
     //========================================
-    /**
-     * Used to paste from Clipboard to PdCanvas
-     */
-    public JGoObject copyObjectAndResetContextProperties(JGoCopyEnvironment env, Plan plan) {
-        Link newObj = (Link)super.copyObject(env);
-        TcgComponent component = null;
-        try {
-            component = TcgModelManager.getComponent("Clipboard", mComponentXml);
-        } catch (Exception e) {
-            mLog.log(Level.SEVERE, "copyObjectAndResetContextProperties failed", e);
-            return newObj;
-        }
-        // new id and name for newObj.mComponent
-        newObj.mComponent = plan.copyAndAddLink(component);
-        return newObj;
+//    /**
+//     * Used to paste from Clipboard to PdCanvas
+//     */
+//    public JGoObject copyObjectAndResetContextProperties(JGoCopyEnvironment env, Plan plan) {
+//        Link newObj = (Link)super.copyObject(env);
+//        TcgComponent component = null;
+//        try {
+//            component = TcgModelManager.getComponent("Clipboard", mComponentXml);
+//        } catch (Exception e) {
+//            mLog.log(Level.SEVERE, "copyObjectAndResetContextProperties failed", e);
+//            return newObj;
+//        }
+//        // new id and name for newObj.mComponent
+//        newObj.mComponent = plan.copyAndAddLink(component);
+//        return newObj;
+//    }
+//    
+    
+  /**
+  * Used to paste from Clipboard to PdCanvas
+  */
+ public LinkComponent copyObjectAndResetContextProperties(Map<String, OperatorComponent> oldOperatorIdToNewOperatorMap, 
+		 												  IEPModel targetModel) {
+	 LinkComponent link = (LinkComponent) getModelComponent();
+	 String linkName = link.getName();
+	 
+	 LinkComponent newLink = targetModel.getFactory().createLink(targetModel);
+	 LinkComponentContainer linkContainer = targetModel.getPlanComponent().getLinkComponentContainer();
+	 
+	 LinkComponent existingLink = linkContainer.findLink(linkName);
+	 if(existingLink != null) {
+		 linkName = NameGenerator.generateLinkName(linkContainer);
+	 }
+	 newLink.setName(linkName);
+	 newLink.setTitle(link.getTitle());
+	 newLink.setType(link.getType());
+	 
+	 OperatorComponent fromOperator = link.getFrom();
+	 OperatorComponent toOperator = link.getTo();
+	 
+	 if(fromOperator != null) {
+		 OperatorComponent newFromOperator = oldOperatorIdToNewOperatorMap.get(fromOperator.getId());
+		 if(newFromOperator != null) {
+			 newLink.setFrom(newFromOperator);
+		 }
+	 }
+	 
+	 if(toOperator != null) {
+		 OperatorComponent newToOperator = oldOperatorIdToNewOperatorMap.get(toOperator.getId());
+		 if(newToOperator != null) {
+			 newLink.setTo(newToOperator);
+		 }
+	 }
+	 
+	 return newLink;
+     
+ }
+ 
+    
+    public void showInvalidLink(boolean show) {
+    	if(show) {
+    		JGoPen pen = new JGoPen(JGoPen.DASHED, 1, Color.RED);
+        	setPen(pen);
+    	} else {
+    		JGoPen pen = new JGoPen(JGoPen.DASHED, 1, Color.BLUE);
+        	setPen(pen);
+    	}
     }
-    
-    
 }

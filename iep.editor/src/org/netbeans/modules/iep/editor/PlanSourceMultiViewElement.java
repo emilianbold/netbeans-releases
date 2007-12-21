@@ -1,42 +1,20 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 package org.netbeans.modules.iep.editor;
@@ -62,6 +40,11 @@ import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
+import org.netbeans.modules.iep.model.IEPComponent;
+import org.netbeans.modules.xml.validation.ShowCookie;
+import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.dom.DocumentComponent;
+import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.openide.awt.UndoRedo;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAdapter;
@@ -83,7 +66,7 @@ public class PlanSourceMultiViewElement extends CloneableEditor implements Multi
     
     transient private  JComponent toolbar;
     transient private  MultiViewElementCallback multiViewObserver;
-    private PlanDataObject wsdlDataObject;
+    private PlanDataObject mObj;
     
     
     // Do NOT remove. Only for externalization //
@@ -92,9 +75,9 @@ public class PlanSourceMultiViewElement extends CloneableEditor implements Multi
     }
     
     // Creates new editor //
-    public PlanSourceMultiViewElement(PlanDataObject wsdlDataObject) {
-        super(wsdlDataObject.getPlanEditorSupport());
-        this.wsdlDataObject = wsdlDataObject;
+    public PlanSourceMultiViewElement(PlanDataObject obj) {
+        super(obj.getPlanEditorSupport());
+        this.mObj = obj;
 
 
         // Initialize the editor support properly, which only needs to be
@@ -107,7 +90,7 @@ public class PlanSourceMultiViewElement extends CloneableEditor implements Multi
         // makes the tree view appear.
         // This initialization fixes CR 6380287 by ensuring that the Node
         // listener is registered with the DataObject Node delegate.
-        wsdlDataObject.getPlanEditorSupport().initializeCloneableEditor(this);
+        mObj.getPlanEditorSupport().initializeCloneableEditor(this);
         initialize();
     }
 
@@ -116,6 +99,50 @@ public class PlanSourceMultiViewElement extends CloneableEditor implements Multi
      */
     private void initialize()
     {
+        
+    	ShowCookie showCookie = new ShowCookie()
+        {
+            
+            public void show(ResultItem resultItem) {
+                if(isActiveTC()) {
+                    Component component = resultItem.getComponents();
+                    if (component.getModel() == null) return; //may have been deleted.
+                    
+                    UIUtilities.annotateSourceView(mObj, (DocumentComponent) component, 
+                            resultItem.getDescription(), true);
+                    if(component instanceof IEPComponent) {
+                        int position = ((IEPComponent)component).findPosition();
+                        getEditorPane().setCaretPosition(position);
+                    } else {
+                        int line = resultItem.getLineNumber();
+                        try {
+                            int position = NbDocument.findLineOffset(
+                                    (StyledDocument)getEditorPane().getDocument(),line);
+                            getEditorPane().setCaretPosition(position);
+                        } catch (IndexOutOfBoundsException iob) {
+                            // nothing
+                        }
+                    }
+                }
+            }
+        };
+
+//      create and associate lookup
+        Node delegate = mObj.getNodeDelegate();
+        SourceCookieProxyLookup lookup = new SourceCookieProxyLookup(new Lookup[] {
+            Lookups.fixed(new Object[] {
+                // Need ActionMap in lookup so editor actions work.
+                getActionMap(),
+                // Need the data object registered in the lookup so that the
+                // projectui code will close our open editor windows when the
+                // project is closed.
+                mObj,
+                // The Show Cookie in lookup to show schema component
+                showCookie,
+            }),
+        },delegate);
+        associateLookup(lookup);
+        addPropertyChangeListener("activatedNodes", lookup);
         
         caretListener = new CaretListener() {
             public void caretUpdate(CaretEvent e) {
@@ -143,6 +170,12 @@ public class PlanSourceMultiViewElement extends CloneableEditor implements Multi
             return toolbar;
         }
         return null;
+    }
+    
+    
+    @Override
+    public UndoRedo getUndoRedo() {
+        return mObj.getPlanEditorSupport().getUndoManager();
     }
     
     public JComponent getVisualRepresentation() {
@@ -178,7 +211,7 @@ public class PlanSourceMultiViewElement extends CloneableEditor implements Multi
     
    /* @Override
     public UndoRedo getUndoRedo() {
-        return wsdlDataObject.getWSDLEditorSupport().getUndoManager();
+        return mObj.getWSDLEditorSupport().getUndoManager();
     }*/
 
     /**
@@ -192,7 +225,7 @@ public class PlanSourceMultiViewElement extends CloneableEditor implements Multi
      */ 
     @Override
     protected boolean closeLast() {
-	PlanEditorSupport support = wsdlDataObject.getPlanEditorSupport();
+	PlanEditorSupport support = mObj.getPlanEditorSupport();
 	JEditorPane[] editors = support.getOpenedPanes();
 	if (editors == null || editors.length == 0) {
 	    return support.silentClose();
@@ -222,8 +255,8 @@ public class PlanSourceMultiViewElement extends CloneableEditor implements Multi
             timerSelNodes.restart();
         }
         super.componentActivated();            
-        PlanEditorSupport editor = wsdlDataObject.getPlanEditorSupport();
-        //editor.addUndoManagerToDocument();
+        PlanEditorSupport editor = mObj.getPlanEditorSupport();
+        editor.addUndoManagerToDocument();
     }
     @Override
     public void componentDeactivated() {
@@ -244,11 +277,11 @@ public class PlanSourceMultiViewElement extends CloneableEditor implements Multi
             timerSelNodes.stop();
         }
         super.componentDeactivated();
-        PlanEditorSupport editor = wsdlDataObject.getPlanEditorSupport();
+        PlanEditorSupport editor = mObj.getPlanEditorSupport();
         // Sync model before having undo manager listen to the model,
         // lest we get redundant undoable edits added to the queue.
-        //editor.syncModel();
-        //editor.removeUndoManagerFromDocument();
+        editor.syncModel();
+        editor.removeUndoManagerFromDocument();
     }
     
     @Override
@@ -277,24 +310,24 @@ public class PlanSourceMultiViewElement extends CloneableEditor implements Multi
     @Override
     public void componentShowing() {
         super.componentShowing();
-        PlanEditorSupport editor = wsdlDataObject.getPlanEditorSupport();
-        //editor.addUndoManagerToDocument();
+        PlanEditorSupport editor = mObj.getPlanEditorSupport();
+        editor.addUndoManagerToDocument();
     }
     
     @Override
     public void componentHidden() {
         super.componentHidden();
-        PlanEditorSupport editor = wsdlDataObject.getPlanEditorSupport();
+        PlanEditorSupport editor = mObj.getPlanEditorSupport();
         // Sync model before having undo manager listen to the model,
         // lest we get redundant undoable edits added to the queue.
-        //editor.syncModel();
-        //editor.removeUndoManagerFromDocument();
+        editor.syncModel();
+        editor.removeUndoManagerFromDocument();
     }
     
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
         super.writeExternal(out);
-        out.writeObject(wsdlDataObject);
+        out.writeObject(mObj);
     }
 
     @Override
@@ -303,7 +336,7 @@ public class PlanSourceMultiViewElement extends CloneableEditor implements Multi
         super.readExternal(in);
         Object firstObject = in.readObject();
         if (firstObject instanceof PlanDataObject) {
-            wsdlDataObject = (PlanDataObject) firstObject;
+            mObj = (PlanDataObject) firstObject;
             initialize();
         }
     }

@@ -163,6 +163,8 @@ made subject to such option by the copyright holder.
                 <attr name="OutputParam1_DisplayName" stringvalue="LBL_String_displayname_varconcat_outputparam1"/>
             </file>
             
+           
+            
             <file name="replace">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/replace.gif"/>
@@ -357,7 +359,12 @@ made subject to such option by the copyright holder.
                 <attr name="InputParam1_DisplayName" stringvalue="LBL_String_displayname_trim_inputparam1"/>
                 <attr name="OutputParam1_DisplayName" stringvalue="LBL_String_displayname_trim_outputparam1"/>
             </file>
-                      
+            
+            
+            
+         
+            
+            
             <file name="substring">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.ui.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/sql/framework/ui/resources/images/substring.gif"/>

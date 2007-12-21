@@ -1,42 +1,20 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 package org.netbeans.modules.iep.editor;
@@ -45,6 +23,8 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.Iterator;
 
 import javax.swing.AbstractAction;
@@ -64,6 +44,23 @@ import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
+import org.netbeans.modules.iep.editor.designer.GraphView;
+import org.netbeans.modules.iep.editor.designer.ZoomManager;
+import org.netbeans.modules.iep.editor.designer.actions.AutoLayoutAction;
+import org.netbeans.modules.iep.editor.designer.actions.OverviewAction;
+import org.netbeans.modules.iep.editor.designer.actions.ToggleOrthogonalLinkAction;
+import org.netbeans.modules.iep.editor.designer.actions.ToggleScopeAction;
+import org.netbeans.modules.iep.editor.palette.IepPaletteFactory;
+import org.netbeans.modules.iep.model.IEPModel;
+import org.netbeans.modules.reportgenerator.api.CustomizeReportAction;
+import org.netbeans.modules.reportgenerator.api.GenerateReportAction;
+import org.netbeans.modules.reportgenerator.api.ReportGenerator;
+import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
+import org.netbeans.modules.xml.xam.ui.multiview.ActivatedNodesMediator;
+import org.netbeans.modules.xml.xam.ui.multiview.CookieProxyLookup;
+import org.netbeans.modules.print.api.PrintManager;
+
 import org.openide.actions.FindAction;
 import org.openide.awt.UndoRedo;
 import org.openide.explorer.ExplorerManager;
@@ -79,6 +76,9 @@ import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.TopComponentGroup;
 import org.openide.windows.WindowManager;
+import org.netbeans.modules.xml.validation.ShowCookie;
+import org.netbeans.modules.xml.validation.ValidateAction;
+import org.openide.filesystems.FileUtil;
 
 /**
  * @author radval
@@ -95,7 +95,8 @@ public class PlanDesignViewMultiViewElement extends TopComponent
     private transient MultiViewElementCallback multiViewObserver;
     private transient javax.swing.JLabel errorLabel = new javax.swing.JLabel();
     private transient JToolBar mToolbar;
-
+    private GraphView graphComponent;
+    
     public PlanDesignViewMultiViewElement() {
         super();
     }
@@ -103,6 +104,7 @@ public class PlanDesignViewMultiViewElement extends TopComponent
     public PlanDesignViewMultiViewElement(PlanDataObject dObj) {
         super();
         this.mObj = dObj;
+        this.mObj.getPlanEditorSupport().setPlanDesignMultiviewElement(this);
         initialize();
     }
 
@@ -127,8 +129,37 @@ public class PlanDesignViewMultiViewElement extends TopComponent
         }
         keys.put(key, mapKey);
 
+        //show cookie
+        ShowCookie showCookie = new ShowCookie() {
+            public void show(ResultItem resultItem) {
+                Component component = resultItem.getComponents();
+                //graphComponent.showComponent(component);
+            }
+        };
         
-        Node delegate = mObj.getNodeDelegate();
+        Node delegate = this.mObj.getNodeDelegate();
+       
+        CookieProxyLookup cpl = new CookieProxyLookup(new Lookup[] {
+            Lookups.fixed(new Object[] {
+                // Need the data object registered in the lookup so that the
+                // projectui code will close our open editor windows when the
+                // project is closed.
+                this.mObj,
+                showCookie,
+                // Provides the PrintProvider for printing
+                //new DesignViewPrintProvider(),
+                // Component palette for the partner view.
+                IepPaletteFactory.getPalette(),
+                // This is unusal, not sure why this is here.
+                this,
+            }),
+            // The Node delegate Lookup must be the last one in the list
+            // for the CookieProxyLookup to work properly.
+            delegate.getLookup(),
+        }, delegate);
+        
+        associateLookup(cpl);
+        addPropertyChangeListener(ACTIVATED_NODES, cpl);
         
         setLayout(new BorderLayout());
     }
@@ -145,7 +176,7 @@ public class PlanDesignViewMultiViewElement extends TopComponent
         removeAll();
     }
     public ExplorerManager getExplorerManager() {
-    	return manager;
+        return manager;
     }
 
     @Override
@@ -168,12 +199,8 @@ public class PlanDesignViewMultiViewElement extends TopComponent
                 MultiViewFactory.NOOP_CLOSE_ACTION,
                 MultiViewFactory.NOOP_CLOSE_ACTION);
     }
-/*
-    @Override
-    public UndoRedo getUndoRedo() {
-    return mObj.getWSDLEditorSupport().getUndoManager();
-    }
-*/
+
+   
     @Override
     public void componentHidden() {
         super.componentHidden();
@@ -196,7 +223,7 @@ public class PlanDesignViewMultiViewElement extends TopComponent
     public void componentActivated() {
         super.componentActivated();
         ExplorerUtils.activateActions(manager, true);
-        //mObj.getWSDLEditorSupport().syncModel();
+        mObj.getPlanEditorSupport().syncModel();
         updateGroupVisibility();
     }
     
@@ -275,25 +302,29 @@ public class PlanDesignViewMultiViewElement extends TopComponent
      */
     private void initUI() {
         PlanEditorSupport editor = mObj.getPlanEditorSupport();
-        //WSDLModel wsdlModel = null;
-        String errorMessage = null;
-        /*wsdlModel = editor.getModel();
-        if (wsdlModel != null &&
-        		wsdlModel.getState() == WSDLModel.State.VALID) {
-        	// Construct the standard editor interface.
-        	return;
+        IEPModel iepModel = editor.getModel();
+        if (iepModel != null &&
+                iepModel.getState() == IEPModel.State.VALID) {
+            // Construct the standard editor interface.
+            if (graphComponent == null) {
+                graphComponent = new GraphView(iepModel);
+                ZoomManager manager = new ZoomManager(graphComponent.getPlanCanvas());
+                manager.addToolbarActions((JToolBar)getToolbarRepresentation());
+
+                // vlv: print
+                mToolbar.addSeparator();
+                mToolbar.add(PrintManager.getDefault().getPrintPreviewAction()); 
+            }
+            removeAll();
+            add(graphComponent, BorderLayout.CENTER);
+            return;
         }
-
-        // If it comes here, either the model is not well-formed or invalid.
-        if (wsdlModel == null ||
-        		wsdlModel.getState() == WSDLModel.State.NOT_WELL_FORMED) {
-        	errorMessage = NbBundle.getMessage(
-        			WSDLTreeViewMultiViewElement.class,
-        			"MSG_NotWellformedWsdl");
-        }*/
-
+        
         // Clear the interface and show the error message.
         removeAll();
+
+        String errorMessage = null;
+
         errorLabel.setText("<" + errorMessage + ">");
         errorLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         errorLabel.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -307,28 +338,65 @@ public class PlanDesignViewMultiViewElement extends TopComponent
 
     public javax.swing.JComponent getToolbarRepresentation() {
         if (mToolbar == null) {
-        	/*WSDLModel model = mObj.getWSDLEditorSupport().getModel();
-        	if (model != null && model.getState() == WSDLModel.State.VALID) {
-        		mToolbar = new JToolBar();
-        		mToolbar.setFloatable(false);
-        		// vlv: search
-        		mToolbar.addSeparator();
-        		SearchManager searchManager = SearchManagerAccess.getManager();
-
-        		if (searchManager != null) {
-        			mToolbar.add(searchManager.getSearchAction());
-        		}
-        		mToolbar.addSeparator();
-        		mToolbar.add(new ValidateAction(model));
-        	}*/
+            IEPModel model = mObj.getPlanEditorSupport().getModel();
+            if (model != null && model.getState() == IEPModel.State.VALID) {
+                mToolbar = new JToolBar();
+                mToolbar.setFloatable(false);
+                
+                mToolbar.addSeparator();
+                mToolbar.add(new ValidateAction(model));
+                
+                Action overviewAction = new OverviewAction(graphComponent.getPlanCanvas(), model);
+                mToolbar.add(overviewAction);
+                
+                Action toggleOrthoLinkAction = new ToggleOrthogonalLinkAction(graphComponent.getPlanCanvas(), model);
+                mToolbar.add(toggleOrthoLinkAction);
+                
+                Action autoLayoutAction = new AutoLayoutAction(graphComponent.getPlanCanvas(), model);
+                mToolbar.add(autoLayoutAction);
+                mToolbar.addSeparator();
+                
+//              Action toggleScopeAction = new ToggleScopeAction(graphComponent.getPlanCanvas(), model);
+//              mToolbar.add(toggleScopeAction);
+//                      
+                addGenerateReportAction(mToolbar);
+                addCustomizeReportAction(mToolbar);
+            }
         }
         return mToolbar;
     }
+    
+    private void addGenerateReportAction(JToolBar toolbar) {
+        try {
+            toolbar.add(new GenerateReportAction(mObj));
+        } catch(Exception ex) {
+            ex.printStackTrace();
+        }
+        
+        
+    }
+    
+    private void addCustomizeReportAction(JToolBar toolbar) {
+        CustomizeReportAction action = new CustomizeReportAction(mObj);
+        toolbar.add(action);
+        
+    }
+    
+    @Override
+    public UndoRedo getUndoRedo() {
+        return mObj.getPlanEditorSupport().getUndoManager();
+    }
+
+
     
     public javax.swing.JComponent getVisualRepresentation() {
         return this;
     }   
 
+    public GraphView getGraphView() {
+        return this.graphComponent;
+    }
+    
     /**
      * Find action for WSDL editor.
      *

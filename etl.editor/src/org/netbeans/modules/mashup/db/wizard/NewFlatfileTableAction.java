@@ -99,15 +99,17 @@ public final class NewFlatfileTableAction extends CallableSystemAction {
         return "Add External Table(s)";
     }
     
+    @Override
     protected void initialize() {
         super.initialize();
         putValue("noIconInMenu", Boolean.TRUE);
     }
-    
+
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
-    
+
+    @Override
     protected boolean asynchronous() {
         return false;
     }
