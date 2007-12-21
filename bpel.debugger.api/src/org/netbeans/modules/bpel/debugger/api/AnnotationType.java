@@ -31,13 +31,13 @@ public final class AnnotationType {
             "CurrentPC", "LBL_Current_Position"); // NOI18N
 
     public static final AnnotationType ENABLED_BREAKPOINT = new AnnotationType(
-            "Breakpoint", "LBL_Enabled_Breakpoint"); // NOI18N
+            "BpelBreakpoint_normal", "LBL_Enabled_Breakpoint"); // NOI18N
 
     public static final AnnotationType DISABLED_BREAKPOINT = new AnnotationType(
-            "DisabledBreakpoint", "LBL_Disabled_Breakpoint"); // NOI18N
+            "BpelBreakpoint_disabled", "LBL_Disabled_Breakpoint"); // NOI18N
     
     public static final AnnotationType BROKEN_BREAKPOINT = new AnnotationType(
-            "Breakpoint_broken", "LBL_Broken_Breakpoint", false, true);
+            "BpelBreakpoint_broken", "LBL_Broken_Breakpoint", false, true);
     
     public static final AnnotationType NEVER_EXECUTED_ELEMENT = new AnnotationType(
             "NeverExecutedElement", "LBL_Never_Executed_Element", true, false); // NOI18N

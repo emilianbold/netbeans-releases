@@ -114,6 +114,10 @@ public final class EditorContextBridge {
         return getContext().isAttached(annotation);
     }
     
+    public static boolean isValid(Object annotation) {
+        return getContext().isValid(annotation);
+    }
+    
     public static AnnotationType getAnnotationType(Object annotation) {
         return getContext().getAnnotationType(annotation);
     }

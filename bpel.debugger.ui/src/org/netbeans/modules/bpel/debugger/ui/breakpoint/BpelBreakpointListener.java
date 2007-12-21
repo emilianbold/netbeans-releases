@@ -30,6 +30,7 @@ import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.modules.bpel.debugger.api.AnnotationType;
 import org.netbeans.modules.bpel.debugger.api.EditorContextBridge;
 import org.netbeans.modules.bpel.debugger.api.breakpoints.LineBreakpoint;
+import org.netbeans.modules.bpel.debugger.ui.editor.BpelAnnotationsObserver;
 
 
 /**
@@ -193,8 +194,13 @@ public class BpelBreakpointListener extends DebuggerManagerAdapter {
             return;
         }
         
-        // if the annotation is still attached, then we need to just update the 
-        // breakpoint, otherwise we need to remove the breakpoint
+        if (!EditorContextBridge.isValid(annotation)) {
+            DebuggerManager.getDebuggerManager().removeBreakpoint(lbp);
+            return;
+        }
+        
+        // if the annotation is still attached, then we need to update the 
+        // breakpoint
         if (EditorContextBridge.isAttached(annotation)) {
             final String xpath = 
                     EditorContextBridge.getXpath(annotation);
@@ -212,8 +218,6 @@ public class BpelBreakpointListener extends DebuggerManagerAdapter {
 
                 lbp.touch();
             }
-        } else {
-            DebuggerManager.getDebuggerManager().removeBreakpoint(lbp);
         }
     }
     

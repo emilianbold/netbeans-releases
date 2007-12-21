@@ -365,9 +365,9 @@ public class DebuggerDecorationProvider extends DecorationProvider
     
     public static final String CURRENT_POSITION = "CurrentPC"; //NOI18N
     
-    public static final String ENABLED_BREAKPOINT = "Breakpoint"; //NOI18N
+    public static final String ENABLED_BREAKPOINT = "BpelBreakpoint_normal"; //NOI18N
     
-    public static final String DISABLED_BREAKPOINT = "DisabledBreakpoint"; //NOI18N
+    public static final String DISABLED_BREAKPOINT = "BpelBreakpoint_disabled"; //NOI18N
     
     private static final Decoration DECORATE_CURRENT_POSITION = new Decoration(
             new Descriptor[] {

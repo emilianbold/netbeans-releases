@@ -63,12 +63,17 @@ class BpelAnnotation {
         myAnnotationType = annotationType;
         myDataObject = dataObject;
         myXpath = xpath;
-        myBpelEntityId = ModelUtil.getBpelEntityId(
-                getBpelModel(), xpath);
         myLineNumber = lineNumber;
         
         myPcs = new PropertyChangeSupport(this);
         myState = State.DETACHED;
+        
+        if (xpath != null) {
+            myBpelEntityId = ModelUtil.getBpelEntityId(
+                    getBpelModel(), xpath);
+        } else {
+            myBpelEntityId = null;
+        }
     }
     
     public synchronized boolean attach() {
@@ -104,6 +109,10 @@ class BpelAnnotation {
     
     public String getXpath() {
         return myXpath;
+    }
+    
+    public UniqueId getBpelEntityId() {
+        return myBpelEntityId;
     }
     
     public int getLineNumber() {
@@ -172,16 +181,10 @@ class BpelAnnotation {
             return;
         }
         
-        // if the bpel entity was deleted -- we need to remove the annotations
-        // and the breakpoint
-        if (getBpelModel().getEntity(myBpelEntityId) == null) {
-            detach();
-        } else {
-            updateDiagramAnnotation();
-            updateLineAnnotation();
-            
-            firePropertyChange(null, null, null);
-        }
+        updateDiagramAnnotation();
+        updateLineAnnotation();
+        
+        firePropertyChange(null, null, null);
     }
 
     /**
@@ -201,24 +204,13 @@ class BpelAnnotation {
             return;
         }
         
-        final UniqueId entityId = ModelUtil.getBpelEntityId(
-                EditorUtil.getBpelModel(myDataObject), myXpath);
-        
-        if (myDiagramAnnotation != null) {
-            if (entityId == null) {
-                removeDiagramAnnotation();
-                return;
-            }
-            
-            if (entityId.equals(myDiagramAnnotation.getBpelEntityId())) {
-                return;
-            }
-            
+        if ((myDiagramAnnotation != null) && myDiagramAnnotation.
+                getBpelEntityId().equals(myBpelEntityId)) {
             removeDiagramAnnotation();
         }
         
         final DiagramAnnotation diagramAnnotation = new DiagramAnnotation(
-                entityId, myAnnotationType.getType());
+                myBpelEntityId, myAnnotationType.getType());
         
         final AnnotationManagerCookie annotationManager =
                 myDataObject.getCookie(AnnotationManagerCookie.class);

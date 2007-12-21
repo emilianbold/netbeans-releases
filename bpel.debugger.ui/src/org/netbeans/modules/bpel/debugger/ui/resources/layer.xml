@@ -119,14 +119,16 @@
         </folder>
         
         <folder name="AnnotationTypes">
-            <!--
-            Hide this action for now - see issue 108002
-            <folder name="BreakpointActions">
+            <folder name="BpelBreakpointActions">
                 <file name="org-netbeans-modules-bpel-debugger-ui-action-BreakpointEnableAction.instance">
                     <attr name="position" intvalue="100"/>
                 </file>
             </folder>
-            -->
+            
+            <file name="BpelBreakpoint_normal.xml" url="BpelBreakpoint_normal.xml"/>
+            <file name="BpelBreakpoint_disabled.xml" url="BpelBreakpoint_disabled.xml"/>
+            <file name="BpelBreakpoint_broken.xml" url="BpelBreakpoint_broken.xml"/>
+            
             <!--  Don't need activity annotations for source editor (they are used on diagram only
             <file name="NeverExecutedElement.xml" url="NeverExecutedElement.xml"/>
             <file name="StartedElement.xml" url="StartedElement.xml"/>

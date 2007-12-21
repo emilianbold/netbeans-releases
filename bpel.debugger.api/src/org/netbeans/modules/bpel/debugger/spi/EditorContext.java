@@ -62,6 +62,8 @@ public interface EditorContext {
     
     boolean isAttached(Object annotation);
     
+    boolean isValid(Object annotation);
+    
     AnnotationType getAnnotationType(Object annotation);
     
     String getXpath(Object annotation);

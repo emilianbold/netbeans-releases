@@ -111,6 +111,19 @@ public class BpelEditorContext implements EditorContext {
         return bpelAnnotation.getState() == BpelAnnotation.State.ATTACHED;
     }
     
+    public boolean isValid(Object annotation) {
+        final BpelAnnotation bpelAnnotation = (BpelAnnotation) annotation;
+        
+        if (bpelAnnotation.getType().isForDiagram()) {
+            if (bpelAnnotation.getBpelModel().getEntity(
+                    bpelAnnotation.getBpelEntityId()) == null) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
     public AnnotationType getAnnotationType(Object annotation) {
         BpelAnnotation bpelAnnotation = (BpelAnnotation) annotation;
         return bpelAnnotation.getType();
