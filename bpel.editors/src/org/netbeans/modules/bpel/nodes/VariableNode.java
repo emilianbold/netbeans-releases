@@ -1,42 +1,20 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.bpel.nodes;
 
@@ -49,8 +27,9 @@ import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.references.SchemaReference;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
 import org.netbeans.modules.bpel.properties.Constants;
-import org.netbeans.modules.bpel.properties.Constants.VariableStereotype;
+import org.netbeans.modules.bpel.editors.api.Constants.VariableStereotype;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
+import org.netbeans.modules.bpel.editors.api.utils.Util;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.ElementReference;
 import org.netbeans.modules.bpel.model.api.MessageTypeReference;
@@ -94,52 +73,8 @@ public class VariableNode extends BpelNode<VariableDeclaration>
         super(var, lookup);
     }
     
-    public static Constants.VariableStereotype
-            getVariableStereotype(VariableDeclaration var) {
-        if (var == null) {
-            return null;
-        }
-        // if (currentStereotype != null) return currentStereotype;
-        Constants.VariableStereotype currentStereotype = null;
-        //
-        SchemaReference<GlobalType> typeRef = var.getType();
-        if (typeRef != null) {
-            GlobalType type = typeRef.get();
-            if (type != null) {
-                currentStereotype = VariableStereotype.recognizeStereotype(type);
-            } else {
-                currentStereotype = Constants.VariableStereotype.GLOBAL_TYPE;
-            }
-        } else if (var.getMessageType() != null) {
-            currentStereotype = Constants.VariableStereotype.MESSAGE;
-        } else if (var.getElement() != null) {
-            currentStereotype = Constants.VariableStereotype.GLOBAL_ELEMENT;
-        } else {
-            currentStereotype = Constants.VariableStereotype.MESSAGE;
-        }
-        return currentStereotype;
-    }
-    
-    public static Reference getVariableType(VariableDeclaration variable) {
-        VariableStereotype variableStereotype = getVariableStereotype(variable);
-        //
-        switch (variableStereotype) {
-            case PRIMITIVE_TYPE:
-            case GLOBAL_SIMPLE_TYPE:
-            case GLOBAL_COMPLEX_TYPE:
-            case GLOBAL_TYPE:
-                return variable.getType();
-            case MESSAGE:
-                return variable.getMessageType();
-            case GLOBAL_ELEMENT:
-                return variable.getElement();
-            default:
-                return null;
-        }
-    }
-    
     public static QName getVariableQNameType(VariableDeclaration variable) {
-        VariableStereotype variableStereotype = getVariableStereotype(variable);
+        VariableStereotype variableStereotype = Util.getVariableStereotype(variable);
         //
         switch (variableStereotype) {
             case PRIMITIVE_TYPE:
@@ -192,26 +127,6 @@ public class VariableNode extends BpelNode<VariableDeclaration>
         return (name != null) ? name : "";
     }
     
-//    protected String getImplShortDescription() {
-//        VariableStereotype stereoType = getVariableStereotype();
-//        
-//        if (stereoType != null
-//                && stereoType.equals(Constants.VariableStereotype.MESSAGE)) {
-//            return NbBundle.getMessage(VariableNode.class,
-//                    "LBL_VARIABLE_NODE_TOOLTIP", // NOI18N
-//                    getName(),
-//                    getVariableType() == null ? "" : getVariableType().getRefString()
-//                    );
-//            
-//        }
-//        
-//        return NbBundle.getMessage(VariableNode.class,
-//                "LBL_VARIABLE_NODE_TOOLTIP", // NOI18N
-//                getName(),
-//                getVariableQNameType() == null ? "" : getVariableQNameType().toString()
-//                );
-//    }
-    
     protected String getImplHtmlDisplayName() {
         String result;
         VariableTypeFilter typeFilter =
@@ -240,8 +155,8 @@ public class VariableNode extends BpelNode<VariableDeclaration>
     
     protected Sheet createSheet() {
         Sheet sheet = super.createSheet();
+
         if (getReference() == null) {
-            // The related object has been removed!
             return sheet;
         }
         //
@@ -263,24 +178,22 @@ public class VariableNode extends BpelNode<VariableDeclaration>
         PropertyUtils.registerCalculatedProperty(this, mainPropertySet,
                 VARIABLE_STEREOTYPE, "getVariableStereotype", null); // NOI18N
         //
-//        Property prop = PropertyUtils.registerCalculatedProperty(this,
-//                mainPropertySet, VARIABLE_TYPE,
-//                "getVariableType", "setVariableType"); // NOI18N
-//        prop.setHidden(true);
-        //
         PropertyUtils.registerCalculatedProperty(this, mainPropertySet,
                 VARIABLE_TYPE_QNAME, "getVariableQNameType", null); // NOI18N
+        //
+        PropertyUtils.registerProperty(this, mainPropertySet,
+                DOCUMENTATION, "getDocumentation", "setDocumentation", "removeDocumentation"); // NOI18N
         //
         return sheet;
     }
     
-    public Constants.VariableStereotype getVariableStereotype() {
-        return getVariableStereotype(getReference());
+    public VariableStereotype getVariableStereotype() {
+        return Util.getVariableStereotype(getReference());
     }
     
     public Reference getVariableType() {
         VariableDeclaration variable = getReference();
-        return variable == null ? null : getVariableType(variable);
+        return variable == null ? null : Util.getVariableType(variable);
     }
     
     public QName getVariableQNameType() {
@@ -349,9 +262,9 @@ public class VariableNode extends BpelNode<VariableDeclaration>
             myVar = var;
         }
         
-        public Constants.VariableStereotype getVariableStereotype() {
+        public VariableStereotype getVariableStereotype() {
             if (myVar != null) {
-                return VariableNode.getVariableStereotype(myVar);
+                return Util.getVariableStereotype(myVar);
             } else {
                 return null;
             }
@@ -359,7 +272,7 @@ public class VariableNode extends BpelNode<VariableDeclaration>
         
         public Object getVariableType() {
             if (myVar != null) {
-                return VariableNode.getVariableType(myVar);
+                return Util.getVariableType(myVar);
             } else {
                 return null;
             }

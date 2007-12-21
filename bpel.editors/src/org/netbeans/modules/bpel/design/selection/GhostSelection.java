@@ -1,42 +1,20 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 
@@ -89,7 +67,10 @@ public class GhostSelection implements ActionListener {
     }
     
     
-    public void init(String text, FPoint p) {
+    public void init(String text, Point pt) {
+        
+        FPoint p = designView.getOverlayView().convertScreenToDiagram(pt);
+        
         currentX = p.x;
         currentY = p.y;
 
@@ -105,7 +86,10 @@ public class GhostSelection implements ActionListener {
     }
 
     
-    public void initCentered(Pattern pattern, FPoint p) {
+    public void initCentered(Pattern pattern, Point pt) {
+        
+        FPoint p = designView.getOverlayView().convertScreenToDiagram(pt);
+        
         label = null;
         
         currentX = p.x;
@@ -139,7 +123,10 @@ public class GhostSelection implements ActionListener {
     }
     
 
-    public void init(Pattern pattern, FPoint p) {
+    public void init(Pattern pattern, Point pt) {
+        
+        FPoint p = designView.getOverlayView().convertScreenToDiagram(pt);
+        
         label = null;
         
         currentX = p.x;
@@ -222,54 +209,54 @@ public class GhostSelection implements ActionListener {
     
     
     public void paint(Graphics2D g2) {
-        if (isEmpty()) return;
-
-        Point p = getDesignView().getMousePosition();
-        if (p != null) {
-            FPoint mp = getDesignView().convertScreenToDiagram(p);
-            moveImpl(mp.x, mp.y);
-        }
-        
-        if (ghostArea != null) {
-            g2.setStroke(new FStroke(2, 4, 3).createStroke(g2));
-            g2.setPaint(enabled ? ENABLED_COLOR : DISABLED_COLOR);
-
-            g2.setRenderingHint(
-                    RenderingHints.KEY_STROKE_CONTROL,
-                    RenderingHints.VALUE_STROKE_NORMALIZE);
-            
-            g2.draw(ghostArea);
-        }
-        
-        if (label != null) {
-            Dimension labelSize = label.getPreferredSize();
-            label.setBounds(0, 0, labelSize.width, labelSize.height);
-            
-            double zoom = designView.getCorrectedZoom();
-            
-            double tx = currentX;
-            double ty = currentY;
-
-            Graphics2D lg2 = (Graphics2D) g2.create();
-            lg2.setRenderingHint(
-                    RenderingHints.KEY_STROKE_CONTROL,
-                    RenderingHints.VALUE_STROKE_NORMALIZE);
-            lg2.translate(tx, ty);
-            lg2.scale(1.0 / zoom, 1.0 / zoom);
-            
-            if (lg2.getTransform() != null) {
-                double ctx = lg2.getTransform().getTranslateX();
-                double cty = lg2.getTransform().getTranslateY();
-                lg2.translate(-(ctx - (int) ctx), -(cty - (int) cty));
-            } 
-            
-            lg2.translate(-labelSize.width / 2, -labelSize.height);
-            lg2.setStroke(new BasicStroke(1));
-            
-            label.paint(lg2);
-            
-            lg2.dispose();
-        }
+//        if (isEmpty()) return;
+//
+//        Point p = getDesignView().getMousePosition();
+//        if (p != null) {
+//            FPoint mp = getDesignView().convertScreenToDiagram(p);
+//            moveImpl(mp.x, mp.y);
+//        }
+//        
+//        if (ghostArea != null) {
+//            g2.setStroke(new FStroke(2, 4, 3).createStroke(g2));
+//            g2.setPaint(enabled ? ENABLED_COLOR : DISABLED_COLOR);
+//
+//            g2.setRenderingHint(
+//                    RenderingHints.KEY_STROKE_CONTROL,
+//                    RenderingHints.VALUE_STROKE_NORMALIZE);
+//            
+//            g2.draw(ghostArea);
+//        }
+//        
+//        if (label != null) {
+//            Dimension labelSize = label.getPreferredSize();
+//            label.setBounds(0, 0, labelSize.width, labelSize.height);
+//            
+//            double zoom = designView.getCorrectedZoom();
+//            
+//            double tx = currentX;
+//            double ty = currentY;
+//
+//            Graphics2D lg2 = (Graphics2D) g2.create();
+//            lg2.setRenderingHint(
+//                    RenderingHints.KEY_STROKE_CONTROL,
+//                    RenderingHints.VALUE_STROKE_NORMALIZE);
+//            lg2.translate(tx, ty);
+//            lg2.scale(1.0 / zoom, 1.0 / zoom);
+//            
+//            if (lg2.getTransform() != null) {
+//                double ctx = lg2.getTransform().getTranslateX();
+//                double cty = lg2.getTransform().getTranslateY();
+//                lg2.translate(-(ctx - (int) ctx), -(cty - (int) cty));
+//            } 
+//            
+//            lg2.translate(-labelSize.width / 2, -labelSize.height);
+//            lg2.setStroke(new BasicStroke(1));
+//            
+//            label.paint(lg2);
+//            
+//            lg2.dispose();
+//        }
     }
     
     

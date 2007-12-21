@@ -1,42 +1,20 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 
@@ -233,12 +211,10 @@ public class ProcessPattern extends CompositePattern {
             PartnerLinksPattern plc_pattern =
                     (PartnerLinksPattern) getModel().getPattern(plc);
             if (plc_pattern != null && plc_pattern.isInModel()){
-                FBounds client = plc_pattern.getBounds();
-                manager.setPatternPosition(plc_pattern,
-                        rangeX.min - LayoutManager.HSPACING * 5 - client.width,
-                        0);
+               
+                manager.setPatternPosition(plc_pattern,0 ,0);
                 
-                plc_pattern.optimizePositions(manager);
+                //plc_pattern.optimizePositions(manager);
             }
         }
         
@@ -367,13 +343,7 @@ public class ProcessPattern extends CompositePattern {
             Collection<PlaceHolder> placeHolders) {
         if (draggedPattern == this) return;
         
-        if (draggedPattern instanceof PartnerlinkPattern){
-            //accept DnD only from palette
-            if (draggedPattern.getParent() == null){
-                placeHolders.add(new PartnerlinkPlaceholder(draggedPattern));
-            }
-            //placeHolders.add(new PartnerlinkPlaceholder((DesignView) getView(), this, dndPattern));
-        } else if (draggedPattern instanceof ImportPattern ){
+        if (draggedPattern instanceof ImportPattern ){
             placeHolders.add(new ImportPlaceholder(draggedPattern));
         } else if (draggedPattern.getOMReference() instanceof Activity &&
                 
@@ -464,7 +434,7 @@ public class ProcessPattern extends CompositePattern {
         return a;
     }
     
-    public void relayoutPartnerlinks() {
+    public void reloadPartnerlinks() {
         PartnerLinkContainer plc = ((Process) getOMReference()).getPartnerLinkContainer();
         
         if(plc == null){
@@ -473,56 +443,24 @@ public class ProcessPattern extends CompositePattern {
         
         PartnerLinksPattern plp = (PartnerLinksPattern) getNestedPattern(plc);
         
-        if (plc == null){
-            return;
+        if (plp != null){
+            plp.setParent(null);
         }
         
         
-        //pass one: calculate optimal Y coordinates for all PLs
-        for (Pattern pl: plp.getNestedPatterns() ){
-            float yPos = 0;
-            int count = 0;
-            for (VisualElement element: pl.getElements()){
-                for (Connection conn: element.getAllConnections()){
-                    yPos += (conn.getSource() == element)?
-                        conn.getTarget().getCenterY():
-                        conn.getSource().getCenterY();
-                    count++;
-                }
-            }
-            yPos = yPos / count;
-            FBounds bounds = pl.getBounds();
-            
-            //LayoutManager.translatePattern(pl, 0, yPos - bounds.getCenterY());
-            
+        if (getModel().getFilters().showPartnerlinks() &&
+                plc != null ) {
+            Pattern p = getModel().createPattern(plc);
+            p.setParent(this);
         }
-        //pass two:
         
     }
     
     
     public void updateAccordingToViewFiltersStatus() {
-        PartnerLinksPattern partnerLinks = null;
         
-        for (Pattern p : getNestedPatterns()) {
-            if (p instanceof PartnerLinksPattern) {
-                partnerLinks = (PartnerLinksPattern) p;
-                break;
-            }
-        }
+        reloadPartnerlinks();
         
-        if (getModel().getFilters().showPartnerlinks()) {
-            if (partnerLinks == null) {
-                Process process = (Process) getOMReference();
-                Pattern p = getModel().createPattern(process
-                        .getPartnerLinkContainer());
-                p.setParent(this);
-            }
-        } else {
-            if (partnerLinks != null) {
-                partnerLinks.setParent(null);
-            }
-        }
     }
     
     class ImportPlaceholder extends DefaultPlaceholder {
@@ -548,163 +486,7 @@ public class ProcessPattern extends CompositePattern {
             }
         }
     }
-    class PartnerlinkPlaceholder extends DefaultPlaceholder{
-        
-        
-        
-        public PartnerlinkPlaceholder( Pattern dndPattern) {
-            super( ProcessPattern.this, dndPattern);
-            
-        }
-        
-        public void drop() {
-            
-            final Pattern pattern =  getDraggedPattern();
-            final PartnerLink pl = (PartnerLink) pattern.getOMReference();
-            final Object dndCookie = pl.getCookie(DnDHandler.class);
-            
-            
-            RequestProcessor rp = getRequestProcessor();
-            
-            //Handle the case of dropped WS node.
-            //dndCookie contains the URL of deployed web service
-            if (dndCookie instanceof FileObject){
-                
-                FileObject fo = ((FileObject) dndCookie);
-                
-                if (!isInOurProject(fo)) {
-                    
-                    try {
-                        URL url = fo.getURL();
-                        String name = fo.getName();
-                        rp.post(new RetrieveWSDLTask(url, name, pl, false));
-                    } catch (FileStateInvalidException ex) {
-                        assert false;
-                    }
-                    
-                } else {
-                    pl.setCookie(DnDHandler.class, fo);
-                    
-                }
-                rp.post(new AddPartnerLinkTask(pl, pattern));
-                
-            } else if (dndCookie instanceof WebServiceReference){
-                URL url = ((WebServiceReference) dndCookie).getWsdlURL();
-                String name = ((WebServiceReference) dndCookie).getWebServiceName();
-                if (url != null){
-                    rp.post(new RetrieveWSDLTask(url, name, pl, true));
-                    rp.post(new AddPartnerLinkTask(pl, pattern));
-                } else {
-                    //
-                    String messageText = NbBundle.getMessage(ProcessPattern.class,
-                            "LBL_J2EEWS_NOT_DEPLOYED", // NOI18N
-                            ""
-                            );
-                    UserNotification.showMessageAsinc(messageText);
-                    
-                }
-            } else {
-                rp.post(new AddPartnerLinkTask(pl, pattern));
-            }
-            
-            
-            
-        }
-        private boolean isInOurProject(FileObject fo){
-            
-            
-            FileObject bpel_fo = (FileObject) getModel()
-            .getView()
-            .getBPELModel()
-            .getModelSource()
-            .getLookup()
-            .lookup(FileObject.class);
-            
-            
-            
-            if (bpel_fo == null ){
-                return false;
-            }
-            
-            Project my_project = FileOwnerQuery.getOwner(bpel_fo);
-            Project other_project = FileOwnerQuery.getOwner(fo);
-            
-            return (my_project != null) && my_project.equals(other_project);
-        }
-        class RetrieveWSDLTask implements Runnable{
-            private URL url;
-            private String name;
-            private PartnerLink pl;
-            private boolean retrieveToFlat;
-            public RetrieveWSDLTask(URL url, String name, PartnerLink pl, boolean retrieveToFlat){
-                this.url = url;
-                this.name = name;
-                this.pl = pl;
-                this.retrieveToFlat = retrieveToFlat;
-            }
-            public void run(){
-                DesignView view = getModel().getView();
-                Cursor oldCursor = view.getCursor();
-                view.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                
-                FileObject fo = new PartnerLinkHelper(getModel()).
-                        retrieveWSDL(url, name, retrieveToFlat);
-                pl.setCookie(DnDHandler.class, fo);
-                
-                view.setCursor(oldCursor);
-                
-            }
-            
-        }
-        
-        class AddPartnerLinkTask implements Runnable{
-            private PartnerLink pLink;
-            private Pattern pattern;
-            public AddPartnerLinkTask(PartnerLink pLink, Pattern pattern){
-                this.pLink = pLink;
-                this.pattern = pattern;
-            }
-            public void run() {
-                SwingUtilities.invokeLater(new Runnable(){
-                    public void run() {
-                        
-                        final BpelModel model = getModel().getView().getBPELModel();
-                        try {
-                            model.invoke( new Callable() {
-                                public Object call() throws Exception {
-                                    Process process = model.getProcess();
-                                    PartnerLinkContainer plc = process.getPartnerLinkContainer();
-                                    boolean isPlContainerCreated = false;
-                                    
-                                    if (plc == null){
-                                        plc = model.getBuilder().createPartnerLinkContainer();
-                                        process.setPartnerLinkContainer(plc);
-                                        isPlContainerCreated = true;
-                                    }
-                                    plc.insertPartnerLink(pLink, 0);
-                                    
-                                    if (!getModel().getView().showCustomEditor(
-                                            pattern, CustomNodeEditor.EditingMode.CREATE_NEW_INSTANCE)){
-                                        plc.remove(pLink);
-                                        if (isPlContainerCreated) {
-                                            process.removePartnerLinkContainer();
-                                        }
-                                    }
-                                    return null;
-                                }
-                            }, this);
-                        } catch (Exception ex){
-                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                        }
-                        
-                    }
-                    
-                });
-            }
-        }
-        
-    }
-    class InnerPlaceHolder extends PlaceHolder {
+        class InnerPlaceHolder extends PlaceHolder {
         public InnerPlaceHolder(Pattern draggedPattern) {
             super(ProcessPattern.this, draggedPattern, placeHolder.getCenterX(),
                     placeHolder.getCenterY());
@@ -717,14 +499,7 @@ public class ProcessPattern extends CompositePattern {
         }
     }
     
-    private synchronized RequestProcessor getRequestProcessor(){
-        if (wsdlDnDRequestProcessor == null){
-            wsdlDnDRequestProcessor = new RequestProcessor(getClass().getName());
-        }
-        return wsdlDnDRequestProcessor;
-        
-    }
-    RequestProcessor wsdlDnDRequestProcessor;
+
     
     private static final float INITIAL_SIZE = 200;
     

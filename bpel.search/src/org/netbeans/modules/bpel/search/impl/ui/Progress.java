@@ -43,8 +43,8 @@ package org.netbeans.modules.bpel.search.impl.ui;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 
-import org.netbeans.modules.xml.search.api.SearchEvent;
-import org.netbeans.modules.xml.search.spi.SearchListener;
+import org.netbeans.modules.bpel.search.api.SearchEvent;
+import org.netbeans.modules.bpel.search.spi.SearchListener;
 import static org.netbeans.modules.print.api.PrintUtil.*;
 
 /**

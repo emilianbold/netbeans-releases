@@ -119,7 +119,24 @@
     <!--
                 COMPILATION SECTION
             -->
-    <target name="deps-jar" depends="init" unless="${no.dependencies}"/>
+    <target name="deps-jar" depends="init" unless="${no.dependencies}">
+        <ant target="dist_se" inheritall="false" antfile="${project.TravelReservationService}/build.xml"/>
+        <basename property="TravelReservationService.se.jar.name" file="${reference.TravelReservationService.dist_se}"/>
+        <basename property="TravelReservationService.su.name" file="${project.TravelReservationService}"/>
+        <unzip src="${project.TravelReservationService}/build/${TravelReservationService.se.jar.name}" dest="${src.dir}/../jbiServiceUnits/${TravelReservationService.su.name}">
+            <patternset>
+                <include name="**/*.wsdl"/>
+                <include name="**/*.xsd"/>
+                <include name="META-INF/jbi.xml"/>
+                <include name="META-INF/catalog.xml"/>
+            </patternset>
+        </unzip>
+        <property name="TravelReservationService.su.dir" value="${src.dir}/../jbiServiceUnits/${TravelReservationService.su.name}"/>
+        <move file="${TravelReservationService.su.dir}/META-INF/jbi.xml" todir="${TravelReservationService.su.dir}"/>
+        <move todir="${src.dir}/../jbiServiceUnits/META-INF/TravelReservationService">
+            <fileset dir="${TravelReservationService.su.dir}/META-INF"/>
+        </move>
+    </target>
     <target name="deps-javaee-jar" depends="init" unless="${no.dependencies}"/>
     <target name="pre-pre-compile" depends="init,deps-jar">
         <mkdir dir="${build.classes.dir}"/>
@@ -128,10 +145,14 @@
         <!-- Empty placeholder for easier customization. -->
         <!-- You can override this target in the ../build.xml file. -->
     </target>
-    <target name="library-inclusion-in-archive" depends="compile"/>
+    <target name="library-inclusion-in-archive" depends="compile">
+        <unjar dest="${build.classes.dir}" src="${reference.TravelReservationService.dist_se}"/>
+    </target>
     <target name="library-inclusion-in-manifest" depends="compile">
+        <basename property="included.lib.reference.TravelReservationService.dist_se" file="${reference.TravelReservationService.dist_se}"/>
+        <copy todir="${build.classes.dir}" file="${reference.TravelReservationService.dist_se}"/>
         <manifest file="${build.classes.dir}/META-INF/MANIFEST.MF" mode="update">
-            <attribute name="Class-Path" value=""/>
+            <attribute name="Class-Path" value="${included.lib.reference.TravelReservationService.dist_se}"/>
         </manifest>
     </target>
     <target name="do-compile" depends="init,deps-jar,pre-pre-compile,pre-compile"/>
@@ -245,7 +266,9 @@
     <!--
                 CLEANUP SECTION
             -->
-    <target name="deps-clean" depends="init" unless="${no.dependencies}"/>
+    <target name="deps-clean" depends="init" unless="${no.dependencies}">
+        <ant target="clean" inheritall="false" antfile="${project.TravelReservationService}/build.xml"/>
+    </target>
     <target name="do-clean" depends="init">
         <delete dir="${build.dir}"/>
         <delete dir="${dist.dir}"/>

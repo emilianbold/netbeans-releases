@@ -1,45 +1,21 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
-
-
 package org.netbeans.modules.bpel.design.model;
 
 import java.util.Iterator;
@@ -55,6 +31,8 @@ import org.netbeans.modules.bpel.model.api.OperationReference;
 import org.netbeans.modules.bpel.model.api.PartnerLinkReference;
 import org.netbeans.modules.bpel.model.api.PortTypeReference;
 import org.netbeans.modules.bpel.model.api.Variable;
+import org.netbeans.modules.bpel.model.api.Process;
+
 import org.netbeans.modules.bpel.model.api.events.ArrayUpdateEvent;
 import org.netbeans.modules.bpel.model.api.events.ChangeEvent;
 import org.netbeans.modules.bpel.model.api.events.ChangeEventListener;
@@ -65,6 +43,7 @@ import org.netbeans.modules.bpel.design.DesignView;
 import org.netbeans.modules.bpel.design.model.patterns.CompositePattern;
 import org.netbeans.modules.bpel.design.model.patterns.PartnerlinkPattern;
 import org.netbeans.modules.bpel.design.model.patterns.Pattern;
+import org.netbeans.modules.bpel.design.model.patterns.ProcessPattern;
 import org.netbeans.modules.bpel.design.selection.EntitySelectionModel;
 import org.netbeans.modules.bpel.model.api.events.PropertyRemoveEvent;
 import org.netbeans.modules.bpel.model.api.events.PropertyUpdateEvent;
@@ -74,88 +53,97 @@ import org.openide.ErrorManager;
  *
  * @author Alexey
  */
-public class ModelChangeHandler implements ChangeEventListener{
-    
+public class ModelChangeHandler implements ChangeEventListener {
+
     private DiagramModel model;
-//    private Pattern patternToShow = null;
     private BpelEntity bpelEntityToShow = null;
-   
-    
+
     /** Creates a new instance of ModelChangeHandler */
     public ModelChangeHandler(DiagramModel model) {
         this.model = model;
     }
-    
-    
-    
-    
-    public void notifyPropertyUpdated(final PropertyUpdateEvent event){
+
+    public void notifyPropertyUpdated(final PropertyUpdateEvent event) {
         Runnable r = new Runnable() {
-            public void run() {
-                String name = event.getName();
-                
-                   
-                if (name.equals(BpelModel.STATE)){
-                    
-                    model.getView().reloadModel();
-                    return;
-                }
-                
-                Pattern pattern = getParentPattern(event.getParent());
-             
-                if ( pattern == null ){
-                    return;
-                }
-                
-                if (name.equals(NamedElement.NAME)){
-                    pattern.updateName();
-                
-                } else if ( name.equals(OperationReference.OPERATION) ||
-                        name.equals(PortTypeReference.PORT_TYPE) ||
-                        name.equals(PartnerLinkReference.PARTNER_LINK)) {
-                } else if (pattern instanceof PartnerlinkPattern){
-                    ((PartnerlinkPattern) pattern).reloadOperations();
-                }
-                
-            }
-        };
-        
+
+                    public void run() {
+                        String name = event.getName();
+
+
+                        if (name.equals(BpelModel.STATE)) {
+
+                            model.getView().reloadModel();
+                            return;
+                        }
+
+                        Pattern pattern = getParentPattern(event.getParent());
+
+                        if (pattern == null) {
+                            return;
+                        }
+
+                        if (name.equals(NamedElement.NAME)) {
+                            pattern.updateName();
+                        } else if (pattern instanceof PartnerlinkPattern) {
+                            reloadPartnerlinks();
+                        }
+
+                    }
+
+                    private void reloadPartnerlinks() {
+                        Process ps = model.getView().getBPELModel().getProcess();
+                        ProcessPattern psp = (ProcessPattern) model.getPattern(ps);
+                        if (psp != null){
+                            psp.reloadPartnerlinks();
+                        }
+
+                    }
+                };
+
         executeInAWTThread(r, event);
     }
-    
-    public void notifyEntityRemoved( final EntityRemoveEvent event ) {
+
+    public void notifyEntityRemoved(final EntityRemoveEvent event) {
         Runnable r = new Runnable() {
-            public void run() {
-                Pattern child = model.getPattern(event.getOldValue());
-                if ( child != null){
-                    model.getView().getSelectionModel().fixSelection();
-                    child.setParent(null);
-                    
-                }
-            }
-        };
+
+                    public void run() {
+                        Pattern child = model.getPattern(event.getOldValue());
+                        if (child != null) {
+                            model.getView().getSelectionModel().fixSelection();
+                            child.setParent(null);
+
+                        }
+                    }
+                };
         executeInAWTThread(r, event);
-        
+
     }
-    
-    public void notifyEntityInserted( final EntityInsertEvent event ) {
+
+    public void notifyEntityInserted(final EntityInsertEvent event) {
         Runnable r = new Runnable() {
-            public void run() {
-                BpelEntity child = event.getValue();
-                
-                //filter out elements like variabless and correlation sets
-                if ( child instanceof Variable ||
-                        child instanceof CorrelationSet ||
-                        child instanceof Correlation ||
-                        child instanceof Import) {
-                    return;
-                }
-                
-                updateParent(getParentPattern(event.getParent()),
-                        getChildPattern(child));
-                bpelEntityToShow = child;
-            };
-        };
+
+                    public void run() {
+                        BpelEntity child = event.getValue();
+
+                        //filter out elements like variabless and correlation sets
+                        if (child instanceof Variable ||
+                                child instanceof CorrelationSet ||
+                                child instanceof Correlation ||
+                                child instanceof Import) {
+                            return;
+                        }
+
+                        updateParent(getParentPattern(event.getParent()),
+                                getChildPattern(child));
+                        bpelEntityToShow = child;
+                    }
+                     
+                    
+                ;
+         
+    }
+
+    ;
         executeInAWTThread(r, event);
         
     }
@@ -163,36 +151,43 @@ public class ModelChangeHandler implements ChangeEventListener{
     
     public void notifyEntityUpdated(final EntityUpdateEvent event) {
         Runnable r = new Runnable() {
-            public void run() {
-                /**
+
+                    public void run() {
+                        /**
                  * Remove old pattern
                  **/
-                BpelEntity oldChild = event.getOldValue();
-                if (oldChild != null){
-                    Pattern toRemove = model.getPattern(oldChild);
-                    if (toRemove != null){
-                        toRemove.setParent(null);
+                        BpelEntity oldChild = event.getOldValue();
+                        if (oldChild != null) {
+                            Pattern toRemove = model.getPattern(oldChild);
+                            if (toRemove != null) {
+                                toRemove.setParent(null);
+                            }
+
+                        }
+
+                        BpelEntity parent = event.getParent();
+                        BpelEntity child = event.getNewValue();
+
+                        if (parent == null) {
+                            //root pattern was changed
+                            if (child == null) {
+                                //null child means broken model
+                                model.setRootPattern(null);
+                            } else if (child instanceof Process) {
+                                model.setRootPattern(getChildPattern(child));
+                            }
+                        } else {
+                            updateParent(getParentPattern(parent), getChildPattern(child));
+                            bpelEntityToShow = child;
+                        }
                     }
+                     
                     
-                }
-                
-                BpelEntity parent  = event.getParent();
-                BpelEntity child = event.getNewValue();
-                
-                if ( parent == null ){
-                    //root pattern was changed
-                    if (child == null) {
-                        //null child means broken model
-                        model.setRootPattern(null);
-                    } else if (child instanceof Process){
-                        model.setRootPattern(getChildPattern(child));
-                    }
-                } else {
-                    updateParent(getParentPattern(parent), getChildPattern(child));
-                    bpelEntityToShow = child;
-                }
-            };
-        };
+                ;
+         
+    }
+
+    ;
         executeInAWTThread(r, event);
         
     }
@@ -201,42 +196,43 @@ public class ModelChangeHandler implements ChangeEventListener{
      * but..
      * read comments below
      **/
-    private void executeInAWTThread(final Runnable inner, final ChangeEvent event){
+    private void executeInAWTThread(final Runnable inner, final ChangeEvent event) {
         Runnable outer = new Runnable() {
-            public void run() {
-                try {
-                    if (inner != null) {
-                        inner.run();
-                    }
-                    
-                    DesignView view = model.getView();
-                    if (event.isLastInAtomic()) {
 
-                        
-                        //update diagram
-                        view.diagramChanged();
-                        
-                        //notify the decoration model to update
-                        view.getDecorationManager().updateAllComponents();
-                        
-//                        if (patternToShow != null){
+                    public void run() {
+                        try {
+                            if (inner != null) {
+                                inner.run();
+                            }
+
+                            DesignView view = model.getView();
+                            if (event.isLastInAtomic()) {
+
+
+                                //update diagram
+                                view.diagramChanged();
+
+                                //notify the decoration model to update
+                                view.getDecorationManager().updateAllComponents();
+
+                                //                        if (patternToShow != null){
 //                            view.getSelectionModel().setSelectedPattern(patternToShow);
 //                            view.scrollSelectedToView();
 //                            patternToShow = null;
 //                        }
-                        
-                        if (bpelEntityToShow != null) {
-                            view.getModel().expandToBeVisible(bpelEntityToShow);
-                            view.getSelectionModel().setSelected(bpelEntityToShow);
-                            view.scrollSelectedToView();
-                            bpelEntityToShow = null;
+
+                                if (bpelEntityToShow != null) {
+                                    view.getModel().expandToBeVisible(bpelEntityToShow);
+                                    view.getSelectionModel().setSelected(bpelEntityToShow);
+                                    view.scrollSelectedToView();
+                                    bpelEntityToShow = null;
+                                }
+                            }
+                        } catch (Exception ex) {
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                         }
                     }
-                } catch (Exception ex){
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                }
-            }
-        };
+                };
         /**
          * PROBLEM! Visual OM access is not thread-safe.
          * We can use it only in AWT thread!
@@ -247,19 +243,19 @@ public class ModelChangeHandler implements ChangeEventListener{
          * We can't delegate the event dispatching to AWT.invokeAndWait,
          * because it can cause deadlock
          **/
-        
-        if (SwingUtilities.isEventDispatchThread()){
+
+        if (SwingUtilities.isEventDispatchThread()) {
             outer.run();
         } else {
             SwingUtilities.invokeLater(outer);
         }
-        
+
     }
-    
-    private void updateParent(Pattern parent, Pattern child){
-        if ( parent != null && child != null && parent instanceof CompositePattern){
-            child.setParent((CompositePattern) parent);   
-//            patternToShow = child;
+
+    private void updateParent(Pattern parent, Pattern child) {
+        if (parent != null && child != null && parent instanceof CompositePattern) {
+            child.setParent((CompositePattern) parent);
+        //            patternToShow = child;
         }
     }
     /**
@@ -268,37 +264,37 @@ public class ModelChangeHandler implements ChangeEventListener{
      * so pattern of outer container is used
      * @returns null if entity is not represented on diagram.
      */
-    private Pattern getParentPattern(BpelEntity e){
-        
+
+    private Pattern getParentPattern(BpelEntity e) {
+
         BpelEntity realParent = e;
-        if ( e == null ){
+        if (e == null) {
             //special case for brocken BPEL model
             realParent = null;
-        } else if (e.getElementType() == ActivityHolder.class){
+        } else if (e.getElementType() == ActivityHolder.class) {
             //workaround for problem when Otherwise is not represented as pattern on diagramm
             realParent = e.getParent();
         }
-        
+
         return (realParent != null)
-        ? model.getPattern(realParent)
-        : null;
+                ? model.getPattern(realParent)
+                : null;
     }
-    
+
     private Pattern getChildPattern(BpelEntity e) {
-        
-        if (e == null){
+
+        if (e == null) {
             return null;
         }
-        
-        Pattern result =  model.getPattern(e);
-        
-        if (result == null){
+
+        Pattern result = model.getPattern(e);
+
+        if (result == null) {
             result = model.createPattern(e);
         }
         return result;
     }
-    
-    
+
     public void notifyPropertyRemoved(PropertyRemoveEvent event) {
         /**
          * try to dispatch this event with empty runnable, because it can hold
@@ -306,14 +302,13 @@ public class ModelChangeHandler implements ChangeEventListener{
          **/
         executeInAWTThread(null, event);
     }
-    
+
     public void notifyArrayUpdated(ArrayUpdateEvent event) {
         /**
          * try to dispatch this event with empty runnable, because it can hold
          * "lastInAtomic" flag ON, so it should trigger diagram repaint
          **/
-        
+
         executeInAWTThread(null, event);
     }
-   
 }

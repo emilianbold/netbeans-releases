@@ -1,59 +1,41 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
-
-
 package org.netbeans.modules.bpel.design.model.connections;
-
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.Shape;
+import java.awt.geom.GeneralPath;
+import java.util.HashSet;
 import org.netbeans.modules.bpel.design.DesignView;
-import org.netbeans.modules.bpel.design.geometry.FPath;
-import org.netbeans.modules.bpel.design.layout.LayoutManager;
+import org.netbeans.modules.bpel.design.geometry.FPoint;
+import org.netbeans.modules.bpel.design.geometry.FStroke;
 import org.netbeans.modules.bpel.design.model.DiagramModel;
-import org.netbeans.modules.bpel.design.model.elements.BorderElement;
-import org.netbeans.modules.bpel.design.model.patterns.Pattern;
-import org.netbeans.modules.bpel.design.model.patterns.ProcessPattern;
-import org.netbeans.modules.bpel.design.selection.EntitySelectionModel;
+import org.netbeans.modules.bpel.design.model.PartnerRole;
 
+import org.netbeans.modules.bpel.design.model.patterns.Pattern;
+import org.netbeans.modules.bpel.design.selection.EntitySelectionModel;
+import org.netbeans.modules.bpel.design.DiagramView;
+import org.netbeans.modules.bpel.design.model.patterns.PartnerlinkPattern;
 
 
 /**
@@ -61,73 +43,238 @@ import org.netbeans.modules.bpel.design.selection.EntitySelectionModel;
  * @author aa160298
  */
 public class MessageConnection extends Connection {
-
-    private int number;
-    private int count;
-
+    private static HashSet<Integer> usedSlots = new HashSet<Integer>() ;
     /** 
      * Creates a new instance of MessageConnection.
      */
-    
     public MessageConnection(Pattern p) {
         super(p);
         setPaintCircle(true);
         setPaintDashed(true);
     }
 
-    
-    protected double findXStep(double x1, double dx) {
-        BorderElement border = ((ProcessPattern) getPattern().getModel()
-                .getRootPattern()).getBorder();
-        
-        double xMax = border.getX() - LayoutManager.HSPACING / 4.0;
-        double xMin = xMax - LayoutManager.HSPACING * (3.5);
-        
-        double k = (count == 1) ? 0.5 : (double) number / (count - 1);
-        double x = xMin + k * (xMax - xMin);
-
-        return x;
-    }
-
-    
     private boolean isPatternSelected() {
         Pattern p = getPattern();
-        if (p == null) return false;
-        
+        if (p == null) {
+            return false;
+        }
+
         DiagramModel model = p.getModel();
-        if (model == null) return false;
-        
+        if (model == null) {
+            return false;
+        }
+
         DesignView view = model.getView();
-        if (view == null) return false;
-        
+        if (view == null) {
+            return false;
+        }
+
         EntitySelectionModel selection = view.getSelectionModel();
-        if (selection == null) return false;
-        
+        if (selection == null) {
+            return false;
+        }
+
         return p == selection.getSelectedPattern();
     }
-    
-    
-    public void paint(Graphics2D g2) {
-        Pattern p = getPattern();
-        
-        FPath path = getPath();
-        assert (path != null): "Invalid connection(path is null) found on diagram: " + this;
-        
-        if (isPatternSelected()) {
-            Connection.paintConnection(g2, path, isPaintDashed(), 
-                    isPaintArrow(), isPaintSlash(), isPaintCircle(), 2, COLOR);
-        } else {
-            Connection.paintConnection(g2, path, isPaintDashed(), 
-                    isPaintArrow(), isPaintSlash(), isPaintCircle(), null);
-        }
-    }    
-    
-    
-    public void setNumber(int newNumber, int newCount) {
-        this.number = newNumber;
-        this.count = newCount;
+    public static void resetRoutingInfo(){
+        usedSlots.clear();
     }
-    
-    
-    private static final Color COLOR = new Color(0x5D985C);
+    public void paintPL(Graphics2D g2) {
+        boolean isOutcoming = (getTarget().getPattern() != getPattern());
+
+        FPoint pl_point = isOutcoming ? getEndPoint() : getStartPoint();
+        Direction dir = isOutcoming ? getTargetDirection() : getSourceDirection();
+
+        GeneralPath path = new GeneralPath();
+        
+        path.moveTo(pl_point.x, pl_point.y);
+        
+        path.lineTo(pl_point.x + ((dir == Direction.RIGHT) ? 100 : -100), pl_point.y);
+                
+        paintCurvedConnection(g2, path, 1, COLOR);
+
+    }
+    /*
+     * @paintOnProcess flag identify which view requested this connection 
+     * to be rendered:
+     * true: processView
+     * false: partnerLinkView
+     * */
+
+    @Override
+    public void paint(Graphics2D g2) {
+
+
+        FPoint pt_pl = getPLSidePoint();
+
+        boolean isOutcoming = (getTarget().getPattern() != getPattern());
+
+        Shape path = (isOutcoming) ? 
+            getPath(getStartPoint(), pt_pl) : 
+            getPath(pt_pl, getEndPoint());
+
+        paintCurvedConnection(g2, path, 1, COLOR);
+
+    }
+
+    private FPoint getPLSidePoint() {
+
+        boolean isOutcoming = (getTarget().getPattern() != getPattern());
+
+        FPoint pl_point = isOutcoming ? getEndPoint() : getStartPoint();
+
+
+        Pattern pl_pattern = (isOutcoming) ? getTarget().getPattern() : getSource().getPattern();
+
+        if (pl_pattern == null) {
+            return null;
+        }
+
+
+        DiagramModel model = getPattern().getModel();
+
+        if (model == null) {
+            return null;
+        }
+
+        
+
+        DesignView view = model.getView();
+
+        DiagramView pl_view = pl_pattern.getView();
+
+
+        DiagramView process_view = view.getProcessView();
+
+
+
+        
+        pl_point = process_view.convertPointFromParent(pl_view.convertPointToParent(pl_point));
+
+
+        Point tmp = process_view.convertDiagramToScreen(pl_point);
+        
+        Rectangle r = process_view.getVisibleRect();
+        
+        tmp.x = (((PartnerlinkPattern) pl_pattern).getType() == PartnerRole.PROVIDER) ? (r.x + r.width) : r.x;
+
+
+
+        return process_view.convertScreenToDiagram(tmp);
+
+
+
+
+    }
+    private static int STEP = 8;
+    private static int SLOT_STEP = 4;
+
+    public GeneralPath getPath(FPoint start, FPoint end) {
+        float x1, x2, x6, x5;
+
+        float direction = (start.x < end.x) ? 1 : -1;
+        x1 = start.x;
+        x2 = x1 + STEP * direction;
+
+        x6 = (int) end.x;
+
+        x5 = x6 - STEP * direction;
+        
+        while (usedSlots.contains(new Integer((int)(x5 / SLOT_STEP)))){
+            x5 -= SLOT_STEP * direction;
+        }
+        //usedSlots.add(new Integer((int)(x5 / SLOT_STEP)));
+
+        float d = Math.max((x5 - x2) / 4, STEP * 2) * direction;
+
+        float x3 = x2 + d;
+        float x4 = x5 - d;
+
+        float y1 = start.y;
+        float y2 = end.y;
+
+        float cx = (x3 + x4) / 2f;
+        float cy = (y1 + y2) / 2f;
+
+        
+
+
+        GeneralPath path = new GeneralPath();
+        path.moveTo(x1, y1);
+        path.lineTo(x2, y1);
+        path.quadTo(x3, y1, cx, cy);
+        path.quadTo(x4, y2, x5, y2);
+//        path.lineTo(x5, y1);
+//        path.lineTo(x5, y2);
+        
+        path.lineTo(x6, y2);
+        return path;
+
+
+    }
+
+    public static void paintCurvedConnection(Graphics2D g2, Shape path, double width,
+            Color color) {
+        if (path == null) {
+            return;
+        }
+
+
+        if (color == null) {
+            color = COLOR;
+        }
+
+        g2.setRenderingHint(
+                RenderingHints.KEY_STROKE_CONTROL,
+                RenderingHints.VALUE_STROKE_NORMALIZE);
+
+        g2.setPaint(color);
+        g2.setStroke(new FStroke(width, 3).createStroke(g2));
+
+
+        g2.draw(path);
+
+
+    /*        
+    if (paintDashed) {
+    g2.setStroke(new FStroke(width).createStroke(g2));
+    }
+    /*
+    if (paintArrow) {
+    FCoords coords = path.coords(1.0);
+    FPoint p1 = coords.getPoint(-4.0, 2.0);
+    FPoint p2 = coords.getPoint(-4.0, -2.0);
+    Shape arrowShape = new Triangle(coords.x, coords.y, p1.x, p1.y, 
+    p2.x, p2.y);
+    g2.fill(arrowShape);
+    g2.draw(arrowShape);
+    }
+    if (paintSlash) {
+    FCoords coords = path.coords(0.0);
+    FPoint p1 = coords.getPoint(5.0, -4.0);
+    FPoint p2 = coords.getPoint(11.0, 4.0);
+    g2.draw(new Line2D.Float(p1.x, p1.y, p2.x, p2.y));
+    }
+    if (paintCircle) {
+    FPoint center = path.coords(0.0).getPoint(2.0, 0);
+    Shape s = new Ellipse2D.Double(center.x - 2, center.y - 2, 4, 4);
+    g2.setPaint(CIRCLE_FILL);
+    g2.fill(s);
+    g2.setPaint(color);
+    g2.draw(s);
+    }*/
+    }
+
+    public void paintTail(Graphics2D g2) {
+    /*
+    Pattern p = getPattern();
+    if (isPatternSelected()) {
+    Connection.paintConnection(g2, path, isPaintDashed(), 
+    isPaintArrow(), isPaintSlash(), isPaintCircle(), 2, COLOR);
+    } else {
+    Connection.paintConnection(g2, path, isPaintDashed(), 
+    isPaintArrow(), isPaintSlash(), isPaintCircle(), null);
+    }*/
+    }
+    private static final Color COLOR_SELECTED = new Color(0x5D985C);
 }

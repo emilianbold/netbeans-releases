@@ -46,11 +46,11 @@ import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.bpel.editors.api.utils.Util;
 
-import org.netbeans.modules.xml.search.api.SearchException;
-import org.netbeans.modules.xml.search.api.SearchMatch;
-import org.netbeans.modules.xml.search.api.SearchOption;
-import org.netbeans.modules.xml.search.api.SearchTarget;
-import org.netbeans.modules.xml.search.spi.SearchEngine;
+import org.netbeans.modules.bpel.search.api.SearchException;
+import org.netbeans.modules.bpel.search.api.SearchMatch;
+import org.netbeans.modules.bpel.search.api.SearchOption;
+import org.netbeans.modules.bpel.search.api.SearchTarget;
+import org.netbeans.modules.bpel.search.spi.SearchEngine;
 import static org.netbeans.modules.print.api.PrintUtil.*;
 
 /**
@@ -133,11 +133,11 @@ public final class Engine extends SearchEngine.Adapter {
   }
 
   public String getDisplayName() {
-    return i18n(Engine.class, "CTL_Engine_Display_Name"); // NOI18N
+    return i18n(Engine.class, "LBL_Engine_Display_Name"); // NOI18N
   }
 
   public String getShortDescription() {
-    return i18n(Engine.class, "CTL_Engine_Short_Description"); // NOI18N
+    return i18n(Engine.class, "LBL_Engine_Short_Description"); // NOI18N
   }
 
   private List myList;

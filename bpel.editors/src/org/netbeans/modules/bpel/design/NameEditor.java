@@ -1,42 +1,20 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 package org.netbeans.modules.bpel.design;
@@ -73,13 +51,14 @@ import org.netbeans.modules.bpel.design.model.elements.BorderElement;
 import org.netbeans.modules.bpel.design.model.elements.ProcessBorder;
 import org.netbeans.modules.bpel.design.model.elements.VisualElement;
 import org.netbeans.modules.bpel.design.model.patterns.Pattern;
+import org.netbeans.modules.bpel.design.DiagramView;
 import org.openide.util.NbBundle;
 
 public class NameEditor extends JTextField 
         implements FocusListener, ActionListener, DocumentListener
 {
 
-    private DesignView designView;
+    private DiagramView DiagramView;
     private VisualElement textElement;
     
     private int startWidth;
@@ -87,8 +66,8 @@ public class NameEditor extends JTextField
     private static final long serialVersionUID = 1;
     
     
-    public NameEditor(DesignView designView) {
-        this.designView = designView;
+    public NameEditor(DiagramView DiagramView) {
+        this.DiagramView = DiagramView;
         
         final Object esc = "cancel-name-editing"; // NOI18N
         getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), esc);
@@ -100,13 +79,13 @@ public class NameEditor extends JTextField
     
 
     public void startEdit(Point p) {
-        FPoint fp = getDesignView().convertScreenToDiagram(p);
+        FPoint fp = getDiagramView().convertScreenToDiagram(p);
         startEdit(fp.x, fp.y);
     }
     
     
     public void startEdit(double x, double y) {
-        VisualElement element = getDesignView().findElement(x, y);
+        VisualElement element = getDiagramView().findElement(x, y);
         if (element == null) return;
         if (!element.textContains(x, y)) return;
         startEdit(element);
@@ -120,7 +99,7 @@ public class NameEditor extends JTextField
     
     
     public void startEdit(VisualElement element) {
-        if (getDesignView().getModel().isReadOnly()) return;
+        if (getDiagramView().getDesignView().getModel().isReadOnly()) return;
         
         if (element == null) return;
         if (!element.getPattern().isTextElement(element)) return;
@@ -129,17 +108,17 @@ public class NameEditor extends JTextField
         String text = element.getText();
         
         setText(text == null ? "" : text); // NOI18N
-//        setFont(getDesignView().getZoomedDiagramFont());
+//        setFont(getDiagramView().getZoomedDiagramFont());
 //        
 //        FRectangle bounds = element.getTextBounds();
 //
 //        if (bounds == null) {
 //            JLabel measurer = new JLabel("        "); // NOI18N
-//            measurer.setFont(getDesignView().getZoomedDiagramFont());
+//            measurer.setFont(getDiagramView().getZoomedDiagramFont());
 //        
 //            Dimension size = measurer.getPreferredSize();
 //            
-//            float correctedZoom = getDesignView().getCorrectedZoom();
+//            float correctedZoom = getDiagramView().getCorrectedZoom();
 //
 //            float w = ((float) size.width) / correctedZoom;
 //            float h = ((float) size.height) / correctedZoom;
@@ -161,7 +140,7 @@ public class NameEditor extends JTextField
 //            bounds = new FRectangle(x, y, w, h);
 //        }
 //        
-//        float zoom = getDesignView().getCorrectedZoom();
+//        float zoom = getDiagramView().getCorrectedZoom();
 //
 //        Dimension size = getPreferredSize();
 //        Insets insets = getInsets();
@@ -172,10 +151,10 @@ public class NameEditor extends JTextField
 //
 //        int height = size.height;
 //        
-//        Point topLeft = designView.convertDiagramToScreen(
+//        Point topLeft = DiagramView.convertDiagramToScreen(
 //                new FPoint(bounds.x, bounds.y));
 //        
-//        Point center = designView.convertDiagramToScreen(
+//        Point center = DiagramView.convertDiagramToScreen(
 //                new FPoint(bounds.getCenterX(), bounds.getCenterY()));
 //        
 //        int x1;
@@ -197,8 +176,8 @@ public class NameEditor extends JTextField
 //            x1 = 0;
 //        }
 //        
-//        if (x1 + width > getDesignView().getWidth()) {
-//            width = getDesignView().getWidth() - x1;
+//        if (x1 + width > getDiagramView().getWidth()) {
+//            width = getDiagramView().getWidth() - x1;
 //        }
 //        
 //        
@@ -210,7 +189,7 @@ public class NameEditor extends JTextField
         
         textElement = element;
         
-        getDesignView().add(this);
+        getDiagramView().add(this);
         selectAll();
         requestFocusInWindow();
         
@@ -231,9 +210,9 @@ public class NameEditor extends JTextField
 //        removeActionListener(this);
 //        removeFocusListener(this);
 //        
-//        getDesignView().remove(this);
-//        getDesignView().revalidate();
-//        getDesignView().repaint();
+//        getDiagramView().remove(this);
+//        getDiagramView().revalidate();
+//        getDiagramView().repaint();
 //        
 //        textElement = null;
 //        
@@ -245,9 +224,9 @@ public class NameEditor extends JTextField
     public void cancelEdit() {
         if (!isActive()) return;
         
-        getDesignView().remove(this);
-        getDesignView().revalidate();
-        getDesignView().repaint();
+        getDiagramView().remove(this);
+        getDiagramView().revalidate();
+        getDiagramView().repaint();
         
         textElement = null;
         
@@ -293,7 +272,7 @@ public class NameEditor extends JTextField
 ////              ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
 //            
 //            JOptionPane.showMessageDialog(SwingUtilities.getRootPane(
-//                    getDesignView()), ex.getMessage(), 
+//                    getDiagramView()), ex.getMessage(), 
 //                    "Invalid Name", JOptionPane.ERROR_MESSAGE);
 //
 //            setText(oldValue);
@@ -305,8 +284,8 @@ public class NameEditor extends JTextField
 //    }
     
     
-    public DesignView getDesignView() {
-        return designView;
+    public DiagramView getDiagramView() {
+        return DiagramView;
     }
     
 
@@ -338,7 +317,7 @@ public class NameEditor extends JTextField
                 .getOMReference();
         
         if (!newValue.equals(oldValue)) {
-            if (getDesignView().getModel().isReadOnly()) {
+            if (getDiagramView().getDesignView().getModel().isReadOnly()) {
                 showErrorMessage(NbBundle.getMessage(getClass(), 
                         "LBL_RenameReadOnlyMessage")); // NOI18N
                 cancelEdit();
@@ -378,13 +357,13 @@ public class NameEditor extends JTextField
                 .getOMReference();
         
         if (!newValue.equals(oldValue)) {
-            if (getDesignView().getModel().isReadOnly()) {
+            if (getDiagramView().getDesignView().getModel().isReadOnly()) {
                 showErrorMessage(NbBundle.getMessage(getClass(), 
                         "LBL_RenameReadOnlyMessage")); // NOI18N
                 cancelEdit();
                 addFocusListener(this);
                 addActionListener(this);
-                getDesignView().requestFocusInWindow();
+                getDiagramView().requestFocusInWindow();
                 return;
             }
             
@@ -412,7 +391,7 @@ public class NameEditor extends JTextField
         addFocusListener(this);
         addActionListener(this);
         
-        getDesignView().requestFocusInWindow();
+        getDiagramView().requestFocusInWindow();
     }
     
 
@@ -426,7 +405,9 @@ public class NameEditor extends JTextField
         return getText().trim();
     }
 
-    
+    private DesignView getDesignView(){
+        return getDiagramView().getDesignView();
+    }
     public void updateBounds() {
         if (!isActive()) return;
         
@@ -473,10 +454,10 @@ public class NameEditor extends JTextField
 
         int height = size.height;
         
-        Point topLeft = designView.convertDiagramToScreen(
+        Point topLeft = DiagramView.convertDiagramToScreen(
                 new FPoint(bounds.x, bounds.y));
         
-        Point center = designView.convertDiagramToScreen(
+        Point center = DiagramView.convertDiagramToScreen(
                 new FPoint(bounds.getCenterX(), bounds.getCenterY()));
         
         int x1;
@@ -498,8 +479,8 @@ public class NameEditor extends JTextField
             x1 = 0;
         }
         
-        if (x1 + width > getDesignView().getWidth()) {
-            width = getDesignView().getWidth() - x1;
+        if (x1 + width > getDiagramView().getWidth()) {
+            width = getDiagramView().getWidth() - x1;
         }
         
         startWidth = width;
@@ -507,7 +488,7 @@ public class NameEditor extends JTextField
 
         setBounds(x1, y1, width, height);
         scrollToBeVisible();
-        getDesignView().repaint();
+        getDiagramView().repaint();
 
         
 //        Dimension size = getPreferredSize();
@@ -525,8 +506,8 @@ public class NameEditor extends JTextField
 //            newX = 0;
 //        }
 //        
-//        if (newX + newWidth > getDesignView().getWidth()) {
-//            newWidth = getDesignView().getWidth() - newX;
+//        if (newX + newWidth > getDiagramView().getWidth()) {
+//            newWidth = getDiagramView().getWidth() - newX;
 //        }
 //        
 //        setBounds(newX, oldY, newWidth, oldHeight);
@@ -537,7 +518,7 @@ public class NameEditor extends JTextField
     
     private void showErrorMessage(String message) {
         JOptionPane.showMessageDialog(SwingUtilities.getRootPane(
-                getDesignView()), message, 
+                getDiagramView()), message, 
                 NbBundle.getMessage(getClass(), "LBL_NameEditorInvalidName"), // NOI18N
                 JOptionPane.ERROR_MESSAGE);
     }
@@ -559,7 +540,7 @@ public class NameEditor extends JTextField
     
     
     private void scrollToBeVisible() {
-        JViewport port = (JViewport) getDesignView().getParent();
+        JViewport port = (JViewport) getDiagramView().getParent();
         
         Rectangle vr = port.getViewRect();
         Rectangle er = getBounds();
@@ -597,7 +578,7 @@ public class NameEditor extends JTextField
 //        System.out.println("tx = " + tx);        
 //        System.out.println("ty = " + ty);
         port.setViewPosition(new Point(vr.x + tx, vr.y + ty));
-        getDesignView().repaint();
+        getDiagramView().repaint();
     }
     
     
@@ -605,7 +586,7 @@ public class NameEditor extends JTextField
         private static final long serialVersionUID = 1;
         public void actionPerformed(ActionEvent e) {
             cancelEdit();
-            getDesignView().requestFocus();
+            getDiagramView().requestFocus();
         }
     }
 }

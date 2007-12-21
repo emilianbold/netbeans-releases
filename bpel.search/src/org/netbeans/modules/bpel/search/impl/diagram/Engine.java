@@ -41,12 +41,12 @@
 package org.netbeans.modules.bpel.search.impl.diagram;
 
 import java.util.List;
-import org.netbeans.modules.bpel.editors.api.Diagram;
-import org.netbeans.modules.bpel.editors.api.DiagramElement;
+import org.netbeans.modules.bpel.editors.api.diagram.Diagram;
+import org.netbeans.modules.bpel.editors.api.diagram.DiagramElement;
 
-import org.netbeans.modules.xml.search.api.SearchException;
-import org.netbeans.modules.xml.search.api.SearchOption;
-import org.netbeans.modules.xml.search.spi.SearchEngine;
+import org.netbeans.modules.bpel.search.api.SearchException;
+import org.netbeans.modules.bpel.search.api.SearchOption;
+import org.netbeans.modules.bpel.search.spi.SearchEngine;
 import static org.netbeans.modules.print.api.PrintUtil.*;
 
 /**
@@ -83,10 +83,10 @@ public class Engine extends SearchEngine.Adapter {
   }
 
   public String getDisplayName() {
-    return i18n(Engine.class, "CTL_Engine_Display_Name"); // NOI18N
+    return i18n(Engine.class, "LBL_Engine_Display_Name"); // NOI18N
   }
 
   public String getShortDescription() {
-    return i18n(Engine.class, "CTL_Engine_Short_Description"); // NOI18N
+    return i18n(Engine.class, "LBL_Engine_Short_Description"); // NOI18N
   }
 }

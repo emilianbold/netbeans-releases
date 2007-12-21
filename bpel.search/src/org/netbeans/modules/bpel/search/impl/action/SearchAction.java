@@ -47,18 +47,13 @@ import java.io.IOException;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.Action;
 
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 
-import org.openide.util.Lookup;
-import org.openide.util.HelpCtx;
-import org.openide.util.actions.NodeAction;
-
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ui.ModelCookie;
-import org.netbeans.modules.xml.search.api.SearchManagerAccess;
-import org.netbeans.modules.xml.search.api.SearchTarget;
 
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.ui.basic.SchemaColumnsView;
@@ -66,7 +61,12 @@ import org.netbeans.modules.xml.schema.ui.basic.SchemaTreeView;
 import org.netbeans.modules.xml.validation.ShowCookie;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 
+import org.netbeans.modules.xml.xam.ui.search.SearchManager;
+import org.netbeans.modules.bpel.core.helper.api.CoreUtil;
 import org.netbeans.modules.bpel.model.api.BpelModel;
+import org.netbeans.modules.bpel.search.api.SearchTarget;
+import org.netbeans.modules.bpel.search.impl.core.Manager;
+import org.netbeans.modules.bpel.search.impl.ui.Search;
 import org.netbeans.modules.bpel.search.impl.util.Util;
 import static org.netbeans.modules.print.api.PrintUtil.*;
 
@@ -74,15 +74,23 @@ import static org.netbeans.modules.print.api.PrintUtil.*;
  * @author Vladimir Yaroslavskiy
  * @version 2006.11.13
  */
-public final class SearchAction extends NodeAction {
+public final class SearchAction extends IconAction {
 
-  @Override
-  protected void performAction(Node [] nodes)
-  { 
-    performAction(nodes [0]);
+  public SearchAction() {
+    this(null, "TLT_Search_Action", "search"); // NOI18N
   }
 
-  private static synchronized void performAction(Node node) {
+  private SearchAction(String name, String toolTip, String icon) {
+    super(
+      i18n(SearchAction.class, name),
+      i18n(SearchAction.class, toolTip),
+      icon(Util.class, icon)
+    );
+    setEnabled(false);
+  }
+
+  public void actionPerformed(ActionEvent event) {
+    Node node = getActiveNode();
     Model model = getModel(node);
     ShowCookie cookie = getShowCookie(node);
     Object view = getView();
@@ -95,10 +103,11 @@ public final class SearchAction extends NodeAction {
     list.add(cookie);
     list.add(view);
 
-    SearchManagerAccess.getManager().createSearch(list, getTargets(model), null, true);
+    ((Manager) SearchManager.Access.getDefault()).
+      createSearch(list, getTargets(model), null, true);
   }
 
-  private static ShowCookie getShowCookie(Node node) {
+  private ShowCookie getShowCookie(Node node) {
     DataObject data = getDataObject(node);
 
     if (data == null) {
@@ -107,7 +116,7 @@ public final class SearchAction extends NodeAction {
     return data.getCookie(ShowCookie.class);
   }
 
-  private static Object getView() {
+  private Object getView() {
     Container container = getActivateTopComponent();
     Object view = getTreeView(container, "  "); // NOI18N
 
@@ -117,7 +126,7 @@ public final class SearchAction extends NodeAction {
     return getColumnView(container, "  "); // NOI18N
   }
 
-  private static SchemaTreeView getTreeView(Container container, String indent) {
+  private SchemaTreeView getTreeView(Container container, String indent) {
 //out(indent + container.getClass().getName());
     if (container instanceof SchemaTreeView) {
       return (SchemaTreeView) container;
@@ -137,7 +146,7 @@ public final class SearchAction extends NodeAction {
     return null;
   }
 
-  private static SchemaColumnsView getColumnView(
+  private SchemaColumnsView getColumnView(
     Container container,
     String indent)
   {
@@ -160,7 +169,7 @@ public final class SearchAction extends NodeAction {
     return null;
   }
   
-  private static SearchTarget [] getTargets(Model model) {
+  private SearchTarget [] getTargets(Model model) {
     if (model instanceof BpelModel) {
       return Target.BPEL;
     }
@@ -173,22 +182,18 @@ public final class SearchAction extends NodeAction {
     return new SearchTarget [] {};
   }
 
-  @Override
-  protected boolean enable(Node [] nodes)
-  {
-    if (nodes == null || nodes.length != 1) {
-      return false;
-    }
-    return getModel(nodes [0]) != null;
-  }
-
-  private static Model getModel(Node node) {
+  private Model getModel(Node node) {
+//out();
+//out("get model");
+//out("node: " + node);
     DataObject data = getDataObject(node);
+//out("data: " + data);
 
     if (data == null) {
       return null;
     }
-    Model model = getBpelModel(data);
+    Model model = CoreUtil.getBpelModel(data);
+//out("model: " + model);
 
     if (model != null) {
       return model;
@@ -206,67 +211,12 @@ public final class SearchAction extends NodeAction {
     }
   }
 
-  private static BpelModel getBpelModel(DataObject data) {
-    if (data instanceof Lookup.Provider) {
-      Lookup.Provider provider = (Lookup.Provider) data;
-
-      // # 100277
-      try {
-        return (BpelModel) provider.getLookup().lookup(BpelModel.class);
-      }
-      catch (IllegalStateException e) {
-        return null;
-      }
-    }
-    return null;
-  }
-
-  private static DataObject getDataObject(Node node) {
-    if (node == null) {
-      return null;
-    }
-    return (DataObject) node.getLookup().lookup(DataObject.class);
-  }
-
   @Override
-  protected boolean asynchronous()
+  public boolean isEnabled()
   {
-    return false;
+    return true;
   }
 
-  @Override
-  public String getName()
-  {
-    return i18n(SearchAction.class, "CTL_Search_Action"); // NOI18N
-  }
-  
-  @Override
-  public HelpCtx getHelpCtx()
-  {
-    return HelpCtx.DEFAULT_HELP;
-  }
-
-  @Override
-  protected String iconResource()
-  {
-    return "org/netbeans/modules/bpel/search/impl/util/image/search.gif"; // NOI18N
-  }
-
-  // ----------------------------------------------------------
-  public static final class Manager
-    extends org.netbeans.modules.print.api.PrintUtil.IconAction
-  {
-    public Manager() {
-      super(
-        null,
-        i18n(Manager.class, "TLT_Search_Action"), // NOI18N
-        icon(Util.class, "search")); // NOI18N
-    }
-
-    public void actionPerformed(ActionEvent event) {
-      performAction(getActiveNode());
-    }
-  }
-
-  private org.netbeans.modules.bpel.search.impl.ui.Search mySearch;
+  private Search mySearch;
+  public static final Action DEFAULT = new SearchAction();
 }

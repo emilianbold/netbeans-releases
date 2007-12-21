@@ -1,45 +1,21 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
-
-
 package org.netbeans.modules.bpel.design.model;
 
 import java.util.ArrayList;
@@ -92,6 +68,7 @@ import org.netbeans.modules.bpel.design.model.patterns.AssignPattern;
 import org.netbeans.modules.bpel.design.model.patterns.CatchAllPattern;
 import org.netbeans.modules.bpel.design.model.patterns.CatchPattern;
 import org.netbeans.modules.bpel.design.model.patterns.CompensatePattern;
+import org.netbeans.modules.bpel.design.model.patterns.CompensateScopePattern;
 import org.netbeans.modules.bpel.design.model.patterns.CompensationHandlerPattern;
 import org.netbeans.modules.bpel.design.model.patterns.ElseIfPattern;
 import org.netbeans.modules.bpel.design.model.patterns.ElsePattern;
@@ -118,103 +95,67 @@ import org.netbeans.modules.bpel.design.model.patterns.ImportPattern;
 import org.netbeans.modules.bpel.design.model.patterns.ThrowPattern;
 import org.netbeans.modules.bpel.design.model.patterns.WaitPattern;
 import org.netbeans.modules.bpel.design.model.patterns.WhilePattern;
+import org.netbeans.modules.bpel.design.model.patterns.ReThrowPattern;
+import org.netbeans.modules.bpel.model.api.CompensateScope;
 import org.netbeans.modules.bpel.model.api.ForEach;
 import org.netbeans.modules.bpel.model.api.Import;
+import org.netbeans.modules.bpel.model.api.ReThrow;
 import org.netbeans.modules.bpel.model.api.support.UniqueId;
 import org.netbeans.modules.xml.xam.ui.XAMUtils;
-
-
 
 /**
  *
  * @author Alexey Yarmolenko
  */
 public class DiagramModel {
+
     private DesignView view;
     private Pattern rootPattern;
     private ModelChangeHandler changeHandler;
-    
     private Object patternKey = new Object();
     private Object collapsedKey = new Object();
-    
     private ViewFilters filters = new ViewFilters();
-    
-    private BpelModel bpelModel; 
-    
-    
-    public DiagramModel(DesignView view){
+    private BpelModel bpelModel;
+
+    public DiagramModel(DesignView view) {
         this.view = view;
-        
+
         changeHandler = new ModelChangeHandler(this);
-        
+
         bpelModel = view.getBPELModel();
-        
+
         if (LAST_USED_COLLAPSED_KEY != null) {
-            copyCollapsedState(bpelModel.getProcess(), 
+            copyCollapsedState(bpelModel.getProcess(),
                     LAST_USED_COLLAPSED_KEY, collapsedKey);
         }
-        
+
         BpelModel model = view.getBPELModel();
-        
+
         model.addEntityChangeListener(changeHandler);
     }
-    
-    
-    
+
     public Pattern getRootPattern() {
         return rootPattern;
     }
-    
-    
+
     public void setActivated() {
         LAST_USED_COLLAPSED_KEY = collapsedKey;
     }
-    
-    
+
     public static boolean isVisualizable(BpelEntity o) {
-        return (o instanceof Process) 
-                || (o instanceof Sequence)
-                || (o instanceof If) 
-                || (o instanceof ElseIf)
-                || (o instanceof Else)
-                || (o instanceof ForEach)
-                || (o instanceof Assign)
-                || (o instanceof Receive)
-                || (o instanceof Reply)
-                || (o instanceof Invoke)
-                || (o instanceof Flow)
-                || (o instanceof While)
-                || (o instanceof RepeatUntil)
-                || (o instanceof Wait)
-                || (o instanceof Exit)
-                || (o instanceof Throw)
-                || (o instanceof Scope)
-                || (o instanceof Pick)
-                || (o instanceof OnMessage)
-                || (o instanceof OnEvent)
-                || (o instanceof OnAlarmPick)
-                || (o instanceof Empty)
-                || (o instanceof OnAlarmEvent)
-                || (o instanceof CompensationHandler)
-                || (o instanceof TerminationHandler)
-                || (o instanceof Compensate)
-                || (o instanceof EventHandlers)
-                || (o instanceof FaultHandlers)
-                || (o instanceof Catch)
-                || (o instanceof CompensatableActivityHolder)
-                || (o instanceof Activity) 
-                || (o instanceof PartnerLink)
-                || (o instanceof Import)
-                || (o instanceof PartnerLinkContainer);
+        return (o instanceof Process) || (o instanceof Sequence) || (o instanceof If) || (o instanceof ElseIf) || (o instanceof Else) || (o instanceof ForEach) || (o instanceof Assign) || (o instanceof Receive) || (o instanceof Reply) || (o instanceof Invoke) || (o instanceof Flow) || (o instanceof While) || (o instanceof RepeatUntil) || (o instanceof Wait) || (o instanceof Exit) || (o instanceof Throw) || (o instanceof Scope) || (o instanceof Pick) || (o instanceof OnMessage) || (o instanceof OnEvent) || (o instanceof OnAlarmPick) || (o instanceof Empty) || (o instanceof OnAlarmEvent) || (o instanceof CompensationHandler) || (o instanceof TerminationHandler) || (o instanceof Compensate) || (o instanceof EventHandlers) || (o instanceof FaultHandlers) || (o instanceof Catch) || (o instanceof CompensatableActivityHolder) || (o instanceof Activity) || (o instanceof PartnerLink) || (o instanceof Import) || (o instanceof PartnerLinkContainer);
     }
-    
-    
-    public Pattern createPattern(BpelEntity o){
+
+    public Pattern createPattern(BpelEntity o) {
         Pattern result = null;
-        
+
         if (isCollapsed(o)) {
-            result = new CollapsedPattern(this);
-        } else if ( o instanceof Process ){
+            if(o instanceof PartnerLink){
+                result = new PartnerlinkPattern(this, true);
+            } else {
+                result = new CollapsedPattern(this);
+            }
+        } else if (o instanceof Process) {
             result = new ProcessPattern(this);
         } else if (o instanceof Sequence) {
             result = new SequencePattern(this);
@@ -246,6 +187,8 @@ public class DiagramModel {
             result = new ExitPattern(this);
         } else if (o instanceof Throw) {
             result = new ThrowPattern(this);
+        } else if (o instanceof ReThrow) {
+            result = new ReThrowPattern(this);
         } else if (o instanceof Scope) {
             result = new ScopePattern(this);
         } else if (o instanceof Pick) {
@@ -264,8 +207,10 @@ public class DiagramModel {
             result = new CompensationHandlerPattern(this);
         } else if (o instanceof TerminationHandler) {
             result = new TerminationHandlerPattern(this);
-        } else if (o instanceof Compensate){
+        } else if (o instanceof Compensate) {
             result = new CompensatePattern(this);
+        } else if (o instanceof CompensateScope) {
+            result = new CompensateScopePattern(this);
         } else if (o instanceof EventHandlers) {
             result = new EventHandlersPattern(this);
         } else if (o instanceof FaultHandlers) {
@@ -276,46 +221,66 @@ public class DiagramModel {
             result = new CatchAllPattern(this);
         } else if (o instanceof Activity) {
             result = new UnsupportedPattern(this);
-        } else if (o instanceof PartnerLink){
+        } else if (o instanceof PartnerLink) {
             result = new PartnerlinkPattern(this);
-        } else if (o instanceof Import){
+        } else if (o instanceof Import) {
             result = new ImportPattern(this);
-        } else if (o instanceof PartnerLinkContainer){
+        } else if (o instanceof PartnerLinkContainer) {
             result = new PartnerLinksPattern(this);
         } else {
             return null;
         }
-        
+
         o.setCookie(patternKey, result);
         result.initPattern(o);
         assert result != null;
         return result;
     }
-    
-    public DesignView getView(){
+
+    public DesignView getView() {
         return view;
     }
-    
-    
+
+    public List<Pattern> getPartnerLinks(PartnerRole mode) {
+        Process ps = view.getBPELModel().getProcess();
+
+        if (ps != null) {
+
+            PartnerLinkContainer plc = ps.getPartnerLinkContainer();
+
+            if (plc != null) {
+
+                PartnerLinksPattern pls = (PartnerLinksPattern) getPattern(plc);
+
+                if (pls != null) {
+
+                    return (mode == mode.CONSUMER) ? pls.getConsumers() : pls.getProviders();
+                }
+            }
+        }
+        return new ArrayList<Pattern>();
+    }
+
     public void expandToBeVisible(BpelEntity bpelEntity) {
         while ((bpelEntity != null) && !isVisualizable(bpelEntity)) {
             bpelEntity = bpelEntity.getParent();
         }
 
-        if (bpelEntity == null) return;
-        
+        if (bpelEntity == null) {
+            return;
+        }
+
         boolean somethingWasExpanded = false;
-        
-        for (BpelEntity entity = bpelEntity.getParent(); 
+
+        for (BpelEntity entity = bpelEntity.getParent();
                 entity != null;
-                entity = entity.getParent())
-        {
+                entity = entity.getParent()) {
             if (entity.getCookie(collapsedKey) != null) {
                 entity.removeCookie(collapsedKey);
                 somethingWasExpanded = true;
             }
         }
-        
+
         if (somethingWasExpanded) {
             view.reloadModel();
             view.diagramChanged();
@@ -323,13 +288,11 @@ public class DiagramModel {
             view.getValidationDecorationProvider().updateDecorations();
         }
     }
-    
-    
+
     public void expandAll() {
         expandAll(bpelModel.getProcess());
     }
-    
-    
+
     public void expandAll(BpelEntity root) {
         if (expandRecursively(root)) {
             view.reloadModel();
@@ -338,34 +301,30 @@ public class DiagramModel {
             view.getValidationDecorationProvider().updateDecorations();
         }
     }
-    
-    
+
     private boolean expandRecursively(BpelEntity parent) {
         if (parent == null) {
             return false;
         }
-        
+
         boolean somethingWasExpanded = false;
-        
+
         List<BpelEntity> children = parent.getChildren();
 
         if (children != null) {
             for (BpelEntity child : children) {
-                somethingWasExpanded = expandRecursively(child) 
-                        || somethingWasExpanded;
+                somethingWasExpanded = expandRecursively(child) || somethingWasExpanded;
             }
         }
-        
+
         if (parent.getCookie(collapsedKey) != null) {
             parent.removeCookie(collapsedKey);
             somethingWasExpanded = true;
         }
-        
+
         return somethingWasExpanded;
     }
-    
-    
-    
+
     public void setCollapsed(BpelEntity bpelEntity, boolean value) {
         if (value) {
             bpelEntity.setCookie(collapsedKey, VALUE_COLLAPSED);
@@ -374,84 +333,73 @@ public class DiagramModel {
                 bpelEntity.removeCookie(collapsedKey);
             }
         }
-        
+
         view.reloadModel();
         view.diagramChanged();
         view.getDecorationManager().decorationChanged(null);
         view.getValidationDecorationProvider().updateDecorations();
     }
-    
-    
+
     public boolean isCollapsed(BpelEntity bpelEntity) {
         Object collapsedValue = bpelEntity.getCookie(collapsedKey);
         return (collapsedValue != null);
     }
-    
-    
-    public Pattern getPattern(BpelEntity entity){
+
+    public Pattern getPattern(BpelEntity entity) {
         assert entity != null;
         return (Pattern) entity.getCookie(patternKey);
     }
-    
-    public ViewFilters getFilters(){
+
+    public ViewFilters getFilters() {
         return filters;
     }
-    
+
     public void release() {
-       bpelModel.removeEntityChangeListener(changeHandler);
-        
+        bpelModel.removeEntityChangeListener(changeHandler);
+
         //releasing the cookie key will trigger removal of all cookie references.
         patternKey = null;
         collapsedKey = null;
-        
+
         view = null;
-        
+
         rootPattern = null;
     }
-    
-    
+
     public boolean isReadOnly() {
         return !XAMUtils.isWritable(bpelModel);
     }
-    
-    
+
     public void setRootPattern(Pattern rootPattern) {
-        this.rootPattern =  rootPattern;
+        this.rootPattern = rootPattern;
     }
 
     public BpelEntity getEntity(UniqueId id) {
-        return (id != null) ? 
-            bpelModel.getEntity(id) : null;
+        return (id != null) ? bpelModel.getEntity(id) : null;
     }
 
-    
-    
     private static void copyCollapsedState(
-            BpelEntity bpelEntity, 
-            Object oldCollapsedKey, 
-            Object newCollapsedKey) 
-    {
+            BpelEntity bpelEntity,
+            Object oldCollapsedKey,
+            Object newCollapsedKey) {
         if (bpelEntity == null) {
             return;
         }
-        
+
         Object value = bpelEntity.getCookie(oldCollapsedKey);
-        
+
         if (value != null) {
             bpelEntity.setCookie(newCollapsedKey, value);
         }
-        
+
         List<BpelEntity> children = bpelEntity.getChildren();
-        
+
         if (children != null) {
             for (BpelEntity child : children) {
                 copyCollapsedState(child, oldCollapsedKey, newCollapsedKey);
             }
         }
     }
-            
-    
-    
     private static final Object VALUE_COLLAPSED = new Object();
     private static Object LAST_USED_COLLAPSED_KEY = null;
 }

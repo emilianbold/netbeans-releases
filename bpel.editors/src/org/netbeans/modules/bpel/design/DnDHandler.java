@@ -1,46 +1,25 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 package org.netbeans.modules.bpel.design;
 
+import java.awt.Component;
 import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -60,6 +39,8 @@ import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import org.netbeans.modules.bpel.design.decoration.components.LinkToolButton;
 import org.netbeans.modules.bpel.design.geometry.FPoint;
@@ -70,7 +51,6 @@ import org.netbeans.modules.bpel.model.api.BPELElementsBuilder;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.design.model.patterns.Pattern;
 import org.netbeans.modules.bpel.design.selection.GhostSelection;
-import org.netbeans.modules.bpel.design.selection.PlaceHolderManager;
 import org.netbeans.modules.bpel.model.api.For;
 import org.netbeans.modules.bpel.model.api.ForEach;
 import org.netbeans.modules.bpel.model.api.PartnerLink;
@@ -104,13 +84,27 @@ public class DnDHandler implements DragSourceListener , DragGestureListener, Dro
     
     private MessageFlowDataFlavor flowDataFlavor = new MessageFlowDataFlavor();
     private BpelDataFlavor bpelDataFlavor = new BpelDataFlavor();
-    
+    private List<DiagramView> views;
     
     public DnDHandler(DesignView designView) {
-        dropTarget = new DropTarget(designView, DnDConstants.ACTION_MOVE, (DropTargetListener)this, true);
-        dragSource = DragSource.getDefaultDragSource();// new DragSource();
-        dragSource.createDefaultDragGestureRecognizer(designView, DnDConstants.ACTION_MOVE, this);
         this.designView = designView;
+        
+        views = new ArrayList<DiagramView>(3);
+        views.add(designView.getProcessView());
+        views.add(designView.getConsumersView());
+        views.add(designView.getProvidersView());
+
+        
+        dropTarget = new DropTarget(designView.getOverlayView(), DnDConstants.ACTION_MOVE, (DropTargetListener)this, true);
+        dragSource = DragSource.getDefaultDragSource();// new DragSource();
+        
+
+        
+        for (DiagramView view: views){
+             dragSource.createDefaultDragGestureRecognizer(view, DnDConstants.ACTION_MOVE, this);
+        
+        }
+        
     }
     
     
@@ -138,10 +132,13 @@ public class DnDHandler implements DragSourceListener , DragGestureListener, Dro
         dse.getDragSourceContext().setCursor(dragSource.DefaultMoveNoDrop);
     }
 
-    
+
+            
     public void dragDropEnd(DragSourceDropEvent dsde) {
         getGhostSelection().clear();
-        getPlaceHolderManager().clear();
+        for(DiagramView view : views){
+            view.getPlaceholderManager().clear();
+        }
         getFlowLinkTool().clear();
         
 //      System.out.println("DragSource.dragDropEnd");
@@ -163,8 +160,15 @@ public class DnDHandler implements DragSourceListener , DragGestureListener, Dro
                     new Point(0, 0),
                     new MessageFlowTransferable((LinkToolButton) src), this);
         } else {
-            FPoint location = designView.convertScreenToDiagram(dge.getDragOrigin());
-            Pattern clicked = designView.findPattern(dge.getDragOrigin());
+           
+            if (dge.getComponent() instanceof DiagramView){
+                
+            DiagramView view = (DiagramView) dge.getComponent();
+            Pattern clicked = view.findPattern(dge.getDragOrigin());
+            
+            
+
+             
             Pattern selected  = designView.getSelectionModel().getSelectedPattern();
             
             if (clicked == null) {
@@ -178,7 +182,7 @@ public class DnDHandler implements DragSourceListener , DragGestureListener, Dro
             if (clicked == selected || clicked.isNestedIn(selected)){
                 //start a move tool
                 if (!getDesignView().getModel().isReadOnly()) {
-                    getGhostSelection().init(selected, location);
+                     getGhostSelection().init(selected,  dge.getDragOrigin());
                 }
                 
                 
@@ -187,6 +191,7 @@ public class DnDHandler implements DragSourceListener , DragGestureListener, Dro
                         new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB),
                         new Point(0, 0),
                         new BpelTransferable(selected), this);
+            }
             }
         }
     }
@@ -205,16 +210,16 @@ public class DnDHandler implements DragSourceListener , DragGestureListener, Dro
 
                 if (designView.getModel().isReadOnly()) {
                     getGhostSelection().init(NbBundle.getMessage(getClass(), 
-                            "LBL_ReadOnly"), designView //NOI18N
-                            .convertScreenToDiagram(dtde.getLocation()));
+                            "LBL_ReadOnly"), //NOI18N
+                            dtde.getLocation());
                     dtde.rejectDrag();
                     return;
                 }
                 
                 if (!designView.getModel().getFilters().showPartnerlinks()) {
                     getGhostSelection().init(NbBundle.getMessage(getClass(), 
-                            "LBL_CanNotCreateMessageFlow"), designView //NOI18N
-                            .convertScreenToDiagram(dtde.getLocation()));
+                            "LBL_CanNotCreateMessageFlow"),  //NOI18N
+                            dtde.getLocation());
                     dtde.rejectDrag();
                 }
             } catch (UnsupportedFlavorException ex) {
@@ -237,40 +242,41 @@ public class DnDHandler implements DragSourceListener , DragGestureListener, Dro
             
             if (designView.getModel().isReadOnly()) {
                 getGhostSelection().init(NbBundle.getMessage(getClass(), 
-                        "LBL_ReadOnly"), designView //NOI18N
-                        .convertScreenToDiagram(dtde.getLocation()));
+                        "LBL_ReadOnly"), //NOI18N
+                        dtde.getLocation());
                 dtde.rejectDrag();
                 return;
             }
             
-            FPoint location = designView.convertScreenToDiagram(dtde.getLocation());
-
+           
             if (!designView.getModel().getFilters().showImplicitSequences() 
                 && (entity instanceof Sequence))
             {
                 getGhostSelection().init(NbBundle.getMessage(getClass(), 
-                        "LBL_CanNotAddSequence"), location); // NOI18N
+                        "LBL_CanNotAddSequence"), dtde.getLocation()); // NOI18N
                 dtde.rejectDrag();
             } else if (!designView.getModel().getFilters().showPartnerlinks() 
                 && (entity instanceof PartnerLink)) 
             {
                 getGhostSelection().init(NbBundle.getMessage(getClass(), 
-                        "LBL_CanNotAddPartnerLink"), location); // NOI18N
+                        "LBL_CanNotAddPartnerLink"), dtde.getLocation()); // NOI18N
                 dtde.rejectDrag();
             } else {
                 Pattern pattern = designView.getModel().getPattern(entity);
 
                 if (pattern == null){
                     pattern = designView.getModel().createPattern(entity);
-                    designView.getLayoutManager().layout(pattern, 0, 0);
-                    location  = new FPoint(0,0);
+                    //designView.getLayoutManager().layout(pattern, 0, 0);
+                    
                 }
 
                 if (getGhostSelection().isEmpty()) {
-                    getGhostSelection().initCentered(pattern, location);
+                    getGhostSelection().initCentered(pattern, dtde.getLocation());
                 }
 
-                getPlaceHolderManager().init(pattern);
+                for (DiagramView view : views){
+                    view.getPlaceholderManager().init(pattern);
+                }
 
                 dtde.acceptDrag(DnDConstants.ACTION_MOVE);
             }
@@ -280,25 +286,37 @@ public class DnDHandler implements DragSourceListener , DragGestureListener, Dro
     public void dragOver(DropTargetDragEvent dtde) {
 //      System.out.println("DropTarget.DragOver");
         Transferable tr = dtde.getTransferable();
-        FPoint mp = designView.convertScreenToDiagram(dtde.getLocation());
         
-        boolean isValid = false;
+            
+        
+        
+
         DnDTool tool = null;
+        
         if (tr.isDataFlavorSupported(flowDataFlavor)) {
-            tool = getFlowLinkTool();
+           //FIXME tool = getFlowLinkTool();
         } else {
             if (!getGhostSelection().isEmpty()){
-                tool = getPlaceHolderManager();
-                getGhostSelection().move(mp);
-                getGhostSelection().setEnabled(tool.isValidLocation());
+                
+                
+        
+                
+                DiagramView view = designView.getView(dtde.getLocation());
+                if (view != null){
+                    FPoint mp = view.convertPointFromParent(dtde.getLocation());
+
+                    tool = view.getPlaceholderManager();
+
+                    tool.move(mp);
+
+                    getGhostSelection().move(mp);
+                    getGhostSelection().setEnabled(tool.isValidLocation());
+                }
                 
             }
         }
         
-        if (tool != null){
-            tool.move(mp);
-        }
-        
+               
         if (tool != null && tool.isValidLocation()) {
             dtde.acceptDrag(DnDConstants.ACTION_MOVE);
         } else {
@@ -312,7 +330,9 @@ public class DnDHandler implements DragSourceListener , DragGestureListener, Dro
     public void dragExit(DropTargetEvent dte) {
 //      System.out.println("DropTarget.DragExit");
         getGhostSelection().clear();
-        getPlaceHolderManager().clear();
+        for(DiagramView view : views){
+            view.getPlaceholderManager().clear();
+        }
         getFlowLinkTool().clear();
     }
     
@@ -325,8 +345,14 @@ public class DnDHandler implements DragSourceListener , DragGestureListener, Dro
         getDesignView().requestFocusInWindow();
         
         getGhostSelection().clear();
+        final DiagramView view = designView.getView(dtde.getLocation());
         
-        final FPoint location = designView.convertScreenToDiagram(dtde.getLocation());
+        if (view == null){
+            return;
+        }
+        
+        final FPoint location = view.convertPointFromParent(dtde.getLocation());
+        
         
         Callable<Object> callable = null;
         if(dtde.isDataFlavorSupported(flowDataFlavor)){
@@ -342,7 +368,7 @@ public class DnDHandler implements DragSourceListener , DragGestureListener, Dro
             callable = new Callable<Object>(){
                 
                 public Object call() {
-                    getPlaceHolderManager().drop(location);
+                    view.getPlaceholderManager().drop(location);
                     return null;
                 }
             };
@@ -484,10 +510,7 @@ public class DnDHandler implements DragSourceListener , DragGestureListener, Dro
     private GhostSelection getGhostSelection(){
         return designView.getGhost();
     }
-    private PlaceHolderManager getPlaceHolderManager(){
-        return designView.getPlaceHolderManager();
-    }
-    
+       
     private BpelEntity getPaletteItem(Node data){
         // assuming to be item from palette
         String item = data.getName();
@@ -545,8 +568,12 @@ public class DnDHandler implements DragSourceListener , DragGestureListener, Dro
             return builder.createExit();
         } else if (item.equals("throw")) { // NOI18N
             return builder.createThrow();
+        } else if (item.equals("rethrow")) { // NOI18N
+            return builder.createRethrow();
         } else if (item.equals("compensate")) { // NOI18N
             return builder.createCompensate();
+        } else if (item.equals("compensatescope")) { // NOI18N
+            return builder.createCompensateScope();
         } else if (item.equals("empty")) { // NOI18N
             return builder.createEmpty();
         } else if (item.equals("partner")) { // NOI18N

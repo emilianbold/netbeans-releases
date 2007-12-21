@@ -48,11 +48,9 @@ import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 
-import org.netbeans.modules.xml.search.api.SearchManager;
-import org.netbeans.modules.xml.search.api.SearchMatch;
-import org.netbeans.modules.xml.search.api.SearchPattern;
-import org.netbeans.modules.xml.search.api.SearchTarget;
-import org.netbeans.modules.xml.search.spi.SearchEngine;
+import org.netbeans.modules.xml.xam.ui.search.SearchManager;
+import org.netbeans.modules.bpel.search.api.SearchTarget;
+import org.netbeans.modules.bpel.search.spi.SearchEngine;
 
 import org.netbeans.modules.bpel.search.impl.action.SearchAction;
 import org.netbeans.modules.bpel.search.impl.ui.Find;
@@ -68,6 +66,10 @@ public final class Manager implements SearchManager {
   public Manager() {
     myEngines = Util.getInstances(SearchEngine.class);
     mySearch = new Search();
+  }
+
+  public Component createSearch(Object source, JComponent parent) {
+    return createSearch(source, null, parent, false);
   }
 
   public Component createSearch(
@@ -90,18 +92,6 @@ public final class Manager implements SearchManager {
     }
   }
 
-  public SearchPattern getPattern(
-    String text,
-    SearchMatch match,
-    boolean caseSensitive)
-  {
-    return new Pattern(text, match, caseSensitive);
-  }
-
-  public Action getSearchAction() {
-    return new SearchAction.Manager();
-  }
-
   private List<SearchEngine> getEngines(Object source) {
     List<SearchEngine> engines = new ArrayList<SearchEngine>();
 
@@ -119,6 +109,10 @@ public final class Manager implements SearchManager {
     JComponent component)
   {
     return new Navigation(tree, scrollPane, component);
+  }
+
+  public Action getSearchAction() {
+    return SearchAction.DEFAULT;
   }
 
   private Search mySearch;

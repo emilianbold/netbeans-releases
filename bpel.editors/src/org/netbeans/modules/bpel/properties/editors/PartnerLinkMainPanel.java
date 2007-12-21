@@ -1,42 +1,20 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.bpel.properties.editors;
 
@@ -60,8 +38,9 @@ import javax.swing.ImageIcon;
 import javax.swing.JList;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.bpel.core.helper.api.BusinessProcessHelper;
+import org.openide.loaders.DataObject;
 import org.netbeans.modules.bpel.design.DnDHandler;
 import org.netbeans.modules.bpel.design.model.PartnerLinkHelper;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
@@ -92,6 +71,8 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.BPELComponentFactory;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
+import org.netbeans.modules.xml.wsdl.model.visitor.WSDLUtilities;
+import org.netbeans.modules.xml.wsdl.model.visitor.WSDLModelVisitor;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
@@ -100,6 +81,8 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.bpel.properties.importchooser.WSDLFileImportDialog;
+import org.netbeans.modules.xml.catalogsupport.util.ProjectUtilities;
+import org.netbeans.modules.xml.catalogsupport.util.ProjectWSDL;
 import org.netbeans.modules.xml.schema.ui.basic.UIUtilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -134,21 +117,19 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
         fldPartnerLinkName.putClientProperty(
                 CustomNodeEditor.PROPERTY_BINDER, NAME);
     }
+
+    private Project getProject() {
+      return FileOwnerQuery.getOwner(((DataObject) myEditor.getLookup().lookup(DataObject.class)).getPrimaryFile());
+    }
     
     public void createContent() {
         initComponents();
         bindControls2PropertyNames();
-        Lookup lookup = myEditor.getLookup();
-        //
-        // Load WSDL combo-box
-        BusinessProcessHelper bpHelper = (BusinessProcessHelper)lookup.
-                lookup(BusinessProcessHelper.class);
-        Collection<FileObject> wsdlFiles = bpHelper.getWSDLFilesInProject();
-        
-        FileObject[] wsdlFilesArr =
-                wsdlFiles.toArray(new FileObject[wsdlFiles.size()]);
+
+        // vlv
+        List<ProjectWSDL> wsdlFiles = ProjectUtilities.getProjectWSDLRecursively(getProject());
+        ProjectWSDL[] wsdlFilesArr = wsdlFiles.toArray(new ProjectWSDL[wsdlFiles.size()]);
         cbxWsdlFile.setModel(new DefaultComboBoxModel(wsdlFilesArr));
-        //
         cbxWsdlFile.setRenderer(new WsdlFileRenderer());
         //
         cbxProcessPortType.setRenderer(new PortTypeRenderer());
@@ -357,7 +338,7 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
             //
             // Set selection to the WSDL file combo-box
             if (resultWsdlFile != null) {
-                cbxWsdlFile.setSelectedItem(resultWsdlFile);
+                cbxWsdlFile.setSelectedItem(new ProjectWSDL(resultWsdlFile, getProject()));
             } else {
                 if (cbxWsdlFile.getModel().getSize() > 0) {
                     cbxWsdlFile.setSelectedIndex(0);
@@ -414,16 +395,11 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
         setWrapper(getCurrentWsdlFile());
         //
         boolean isThereAnyPLT = false;
+
+        // vlv
         WSDLModel wsdlModel = getCurrentWsdlModel();
-        //
-        if (wsdlModel != null) {
-            Definitions definitions = wsdlModel.getDefinitions();
-            if (definitions != null) {
-                List<PartnerLinkType> pltList = definitions.
-                        getExtensibilityElements(PartnerLinkType.class);
-                isThereAnyPLT = !pltList.isEmpty();
-            }
-        }
+        List<PartnerLinkType> pltList = getPartnerLinkTypeRecursively(wsdlModel);
+        isThereAnyPLT = !pltList.isEmpty();
         //
         if (isThereAnyPLT) {
             rbtnUseExistingPLT.setSelected(true);
@@ -440,43 +416,38 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
     }
 
     private void setDefaultParamsForNewPLT(final WSDLModel wsdlModel) {
-        Definitions definitions = wsdlModel.getDefinitions();
-        if (definitions != null) {
-            Collection<PortType> portTypeList = definitions.getPortTypes();
-            if (!portTypeList.isEmpty()) {
-                PortType portType = portTypeList.iterator().next();
-                String portTypeName = portType.getName();
-                //
-                // Try correct the name by cutting the unnecessary suffix
-                String suffixToRemove = "PortType"; // NOI18N
-                if (portTypeName != null &&
-                        portTypeName.endsWith(suffixToRemove)) {
-                    int index = portTypeName.length() - suffixToRemove.length();
-                    String correctedName = portTypeName.substring(0, index);
-                    if (correctedName.length() != 0) {
-                        portTypeName = correctedName;
-                    }
-                }
-                //
-                chbxPartnerWillImpement.setSelected(true);
-                fldNewPLTName.setText(portTypeName + "LinkType"); // NOI18N
-                fldPartnerRoleName.setText(portTypeName + "Role"); // NOI18N
-                cbxPartnerPortType.setSelectedItem(portType);
+        // vlv
+        List<PortType> portTypeList = getPortTypeRecursively(wsdlModel);
+
+        if (portTypeList.isEmpty()) {
+          return;
+        }
+        PortType portType = portTypeList.iterator().next();
+        String portTypeName = portType.getName();
+        //
+        // Try correct the name by cutting the unnecessary suffix
+        String suffixToRemove = "PortType"; // NOI18N
+        if (portTypeName != null && portTypeName.endsWith(suffixToRemove)) {
+            int index = portTypeName.length() - suffixToRemove.length();
+            String correctedName = portTypeName.substring(0, index);
+
+            if (correctedName.length() != 0) {
+                portTypeName = correctedName;
             }
         }
+        //
+        chbxPartnerWillImpement.setSelected(true);
+        fldNewPLTName.setText(portTypeName + "LinkType"); // NOI18N
+        fldPartnerRoleName.setText(portTypeName + "Role"); // NOI18N
+        cbxPartnerPortType.setSelectedItem(portType);
     }
     
     private void reloadPartnerLinkTypes() {
-        WSDLModel wsdlModel = getCurrentWsdlModel();
-        if (wsdlModel != null) {
-            List<PartnerLinkType> pltList = wsdlModel.getDefinitions().
-                    getExtensibilityElements(PartnerLinkType.class);
-            if (pltList != null && pltList.size() > 0){
-                cbxPartnerLinkType.setModel(
-                        new DefaultComboBoxModel(pltList.toArray()));
-                // remove selection to guarantee that selection will always send event
-                cbxPartnerLinkType.setSelectedIndex(-1);
-            }
+        List<PartnerLinkType> pltList = getPartnerLinkTypeRecursively(getCurrentWsdlModel());
+
+        if (pltList != null && pltList.size() > 0) {
+            cbxPartnerLinkType.setModel(new DefaultComboBoxModel(pltList.toArray()));
+            cbxPartnerLinkType.setSelectedIndex(-1);
         }
     }
     
@@ -582,18 +553,12 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
     }
     
     private void reloadPortTypes() {
-        WSDLModel wsdlModel = getCurrentWsdlModel();
-        if (wsdlModel != null) {
-            Collection<PortType> portTypeList =
-                    wsdlModel.getDefinitions().getPortTypes();
-            if (portTypeList != null && portTypeList.size() > 0){
-                cbxProcessPortType.setModel(
-                        new DefaultComboBoxModel(portTypeList.toArray()));
-                cbxPartnerPortType.setModel(
-                        new DefaultComboBoxModel(portTypeList.toArray()));
-            }
+        List<PortType> portTypeList = getPortTypeRecursively(getCurrentWsdlModel());
+        
+        if (portTypeList != null && portTypeList.size() > 0){
+            cbxProcessPortType.setModel(new DefaultComboBoxModel(portTypeList.toArray()));
+            cbxPartnerPortType.setModel(new DefaultComboBoxModel(portTypeList.toArray()));
         }
-        //
         getValidator().revalidate(true);
     }
     
@@ -648,11 +613,7 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
     }
     
     // vlv
-    private void addImport(
-            WSDLModel model,
-            FileObject file,
-            WSDLModel importedModel,
-            FileObject importedFile) {
+    private void addImport(WSDLModel model, FileObject file, WSDLModel importedModel, FileObject importedFile) {
         if (file.equals(importedFile)) {
             return;
         }
@@ -724,7 +685,12 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
     }
     
     private FileObject getCurrentWsdlFile() {
-        return (FileObject)cbxWsdlFile.getSelectedItem();
+      Object object = cbxWsdlFile.getSelectedItem();
+
+      if (object == null) {
+        return null;
+      }
+      return ((ProjectWSDL) object).getFile();
     }
     
     private PartnerLinkType tuneFromNewPLT(final PartnerLink pLink) {
@@ -742,8 +708,7 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
             try {
                 boolean isFirstRoleOccupied = false;
                 BPELComponentFactory factory = new BPELComponentFactory(wsdlModel);
-                plType = factory.createPartnerLinkType(
-                        wsdlModel.getDefinitions());
+                plType = factory.createPartnerLinkType(wsdlModel.getDefinitions());
                 //
                 String newPLTypeName = fldNewPLTName.getText();
                 plType.setName(newPLTypeName);
@@ -988,7 +953,7 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
         return new HelpCtx(helpId);
     }
     
-    private class WsdlFileRenderer extends DefaultListCellRenderer {
+    private static class WsdlFileRenderer extends DefaultListCellRenderer {
         static final long serialVersionUID = 1L;
         
         public WsdlFileRenderer() {
@@ -996,22 +961,11 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
             setIcon(new ImageIcon(NodeType.WSDL_FILE.getImage()));
         }
         
-        public Component getListCellRendererComponent(
-                JList list, Object value, int index,
-                boolean isSelected, boolean cellHasFocus) {
-            super.getListCellRendererComponent(
-                    list, value, index, isSelected, cellHasFocus);
-            if (value instanceof FileObject) {
-                FileObject fo = (FileObject)value;
-                BpelModel bpelModel = myEditor.getLookup().lookup(BpelModel.class);
-                Project modelProject = ResolverUtility.safeGetProject(bpelModel);
-                String relativePath = ResolverUtility.safeGetRelativePath(fo, modelProject);
-                String result = relativePath != null ? relativePath : fo.getPath();
-                setText(result);
-                //
-//                    String wsdlFileName = ((FileObject)value).getName();
-//                    setText(wsdlFileName);
-                // setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 2));
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+
+            if (value instanceof ProjectWSDL) {
+              setText(((ProjectWSDL) value).getName());
             }
             return this;
         }
@@ -1387,7 +1341,42 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
     private void out(Object object) {
         System.out.println("*** " + object); // NOI18N
     }
-    
+
+    // vlv
+    private List<PartnerLinkType> getPartnerLinkTypeRecursively(WSDLModel model) {
+      final List<PartnerLinkType> partners = new ArrayList<PartnerLinkType>();
+
+      WSDLUtilities.visitRecursively(model, new WSDLModelVisitor () {
+        public void visit(WSDLModel model) {
+          Definitions definitions = model.getDefinitions();
+
+          if (definitions == null) {
+            return;
+          }
+          partners.addAll(definitions.getExtensibilityElements(PartnerLinkType.class));
+        }
+      });
+
+      return partners;
+    }
+
+    private List<PortType> getPortTypeRecursively(WSDLModel model) {
+      final List<PortType> ports = new ArrayList<PortType>();
+
+      WSDLUtilities.visitRecursively(model, new WSDLModelVisitor () {
+        public void visit(WSDLModel model) {
+          Definitions definitions = model.getDefinitions();
+
+          if (definitions == null) {
+            return;
+          }
+          ports.addAll(definitions.getPortTypes());
+        }
+      });
+
+      return ports;
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnSwapRoles;
     private javax.swing.ButtonGroup btngrPLT;

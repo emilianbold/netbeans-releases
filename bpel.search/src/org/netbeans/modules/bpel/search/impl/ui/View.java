@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.bpel.search.impl.ui;
 
-import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
@@ -51,8 +50,8 @@ import javax.swing.JToolBar;
 
 import org.openide.util.HelpCtx;
 import org.openide.windows.TopComponent;
+import org.netbeans.modules.xml.xam.ui.search.SearchManager;
 import org.netbeans.modules.print.api.PrintManager;
-import org.netbeans.modules.xml.search.api.SearchManagerAccess;
 import org.netbeans.modules.bpel.search.impl.util.Util;
 import static org.netbeans.modules.print.api.PrintUtil.*;
 
@@ -88,8 +87,8 @@ public final class View extends TopComponent {
     c.fill = GridBagConstraints.BOTH;
     c.weightx = 1.0;
     c.weighty = 1.0;
-    add(SearchManagerAccess.getManager().createNavigation(
-      myTree, scrollPane, scrollPane), c);
+    add(SearchManager.Access.getDefault().
+      createNavigation(myTree, scrollPane, scrollPane), c);
 
     revalidate();
     repaint();
@@ -120,7 +119,7 @@ public final class View extends TopComponent {
         }
       }
     );
-    setSize(button);
+    setImageSize(button);
     toolBar.add(button);
 
     // previous occurence
@@ -133,7 +132,7 @@ public final class View extends TopComponent {
         }
       }
     );
-    setSize(button);
+    setImageSize(button);
     toolBar.add(button);
 
     // next occurence
@@ -146,7 +145,7 @@ public final class View extends TopComponent {
         }
       }
     );
-    setSize(button);
+    setImageSize(button);
     toolBar.add(button);
 
     // export
@@ -159,23 +158,17 @@ public final class View extends TopComponent {
         }
       }
     );
-    setSize(button);
+    setImageSize(button);
     toolBar.add(button);
 
     // vlv: print
-    button = createButton(PrintManager.getPrintPreviewAction());
-    setSize(button);
+    button = createButton(PrintManager.getDefault().getPrintPreviewAction());
+    setImageSize(button);
     toolBar.add(button);
 
     return toolBar;
   }
 
-  private void setSize(JButton button) {
-    button.setMaximumSize(IMAGE_BUTTON_SIZE);
-    button.setMinimumSize(IMAGE_BUTTON_SIZE);
-    button.setPreferredSize(IMAGE_BUTTON_SIZE);
-  }
-  
   @Override
   public HelpCtx getHelpCtx()
   {
@@ -197,13 +190,13 @@ public final class View extends TopComponent {
   @Override
   public String getDisplayName()
   {
-    return i18n(View.class, "CTL_Search_Results_Name"); // NOI18N
+    return i18n(View.class, "LBL_Search_Results_Name"); // NOI18N
   }
 
   @Override
   public String getToolTipText()
   {
-    return i18n(View.class, "CTL_Search_Results_Tooltip"); // NOI18N
+    return i18n(View.class, "LBL_Search_Results_Tooltip"); // NOI18N
   }
 
   @Override
@@ -220,6 +213,5 @@ public final class View extends TopComponent {
   }
 
   private Tree myTree;
-  private static final Dimension IMAGE_BUTTON_SIZE = new Dimension(24, 24);
   public static final String NAME = "search"; // NOI18N
 }

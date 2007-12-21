@@ -46,11 +46,11 @@ import org.w3c.dom.Node;
 
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
-import org.netbeans.modules.bpel.editors.api.Diagram;
-import org.netbeans.modules.bpel.editors.api.DiagramElement;
+import org.netbeans.modules.bpel.editors.api.diagram.Diagram;
+import org.netbeans.modules.bpel.editors.api.diagram.DiagramElement;
 
-import org.netbeans.modules.xml.search.api.SearchException;
-import org.netbeans.modules.xml.search.api.SearchOption;
+import org.netbeans.modules.bpel.search.api.SearchException;
+import org.netbeans.modules.bpel.search.api.SearchOption;
 import static org.netbeans.modules.print.api.PrintUtil.*;
 
 /**
@@ -109,10 +109,10 @@ public final class Construct extends Engine {
   }
 
   public String getDisplayName() {
-    return i18n(Engine.class, "CTL_Construct_Display_Name"); // NOI18N
+    return i18n(Engine.class, "LBL_Construct_Display_Name"); // NOI18N
   }
 
   public String getShortDescription() {
-    return i18n(Engine.class, "CTL_Construct_Short_Description"); // NOI18N
+    return i18n(Engine.class, "LBL_Construct_Short_Description"); // NOI18N
   }
 }

@@ -1,42 +1,20 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.bpel.nodes;
 
@@ -65,6 +43,7 @@ import org.netbeans.modules.bpel.properties.ImportRegistrationHelper;
 import org.netbeans.modules.bpel.properties.PropertyType;
 import org.netbeans.modules.bpel.properties.props.CustomEditorProperty;
 import org.netbeans.modules.bpel.properties.props.PropertyUtils;
+import static org.netbeans.modules.bpel.properties.PropertyType.*;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
@@ -108,44 +87,23 @@ public class OnEventNode extends BpelNode<OnEvent> {
         && entity.getElementType() == CorrelationContainer.class;
     }
     
-//    protected String getImplShortDescription() {
-//        OnEvent ref = getReference();
-//        StringBuffer result = new StringBuffer();
-//        result.append(getName());
-//        result.append(ref==null || ref.getMessageExchange() == null ? EMPTY_STRING
-//                : MESSAGE_EXCHANGE_EQ+ref.getMessageExchange().getRefString());
-//        
-//        return NbBundle.getMessage(OnEventNode.class,
-//                "LBL_ON_EVENT_NODE_TOOLTIP", // NOI18N
-//                result.toString()
-//                );
-//    }
-    
     protected Sheet createSheet() {
         Sheet sheet = super.createSheet();
+
         if (getReference() == null) {
-            // The related object has been removed!
             return sheet;
         }
         //
         Sheet.Set messagePropertySet =
                 getPropertySet(sheet, Constants.PropertiesGroups.MESSAGE_SET);
         //
+        Sheet.Set mainPropertySet =
+                getPropertySet(sheet, Constants.PropertiesGroups.MAIN_SET);
+        //
         CustomEditorProperty customizer = new CustomEditorProperty(this);
         messagePropertySet.put(customizer);
         //
         Node.Property property;
-        //
-        
-// Issue 85553 start        
-//        property = PropertyUtils.registerAttributeProperty(this, 
-//                messagePropertySet,
-//                MessageExchangeReference.MESSAGE_EXCHANGE, MESSAGE_EXCHANGE,
-//                "getMessageExchange", "setMessageExchange",  // NOI18N
-//                "removeMessageExchange"); // NOI18N
-//        property.setValue("canEditAsText", Boolean.FALSE); // NOI18N
-// Issue 85553 end        
-        
         //
         property = PropertyUtils.registerAttributeProperty(this, 
                 messagePropertySet,
@@ -189,6 +147,9 @@ public class OnEventNode extends BpelNode<OnEvent> {
                 "getVariableTypeQName", null, null); // NOI18N
         property.setValue("canEditAsText", Boolean.FALSE); // NOI18N
         //
+        PropertyUtils.registerProperty(this, mainPropertySet,
+                DOCUMENTATION, "getDocumentation", "setDocumentation", "removeDocumentation"); // NOI18N
+        //
         return sheet;
     }
     
@@ -202,6 +163,8 @@ public class OnEventNode extends BpelNode<OnEvent> {
             ActionType.SEPARATOR,
             ActionType.GO_TO_SOURCE,
             ActionType.GO_TO_DIAGRAMM,
+            ActionType.SEPARATOR,
+            ActionType.TOGGLE_BREAKPOINT,
             ActionType.SEPARATOR,
 //            ActionType.CYCLE_MEX, // Issue 85553
 //            ActionType.SEPARATOR,

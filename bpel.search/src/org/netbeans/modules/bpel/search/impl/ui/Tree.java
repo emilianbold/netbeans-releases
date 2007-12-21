@@ -78,9 +78,9 @@ import javax.swing.tree.TreeSelectionModel;
 
 import org.openide.windows.WindowManager;
 import org.netbeans.modules.print.api.PrintManager;
-import org.netbeans.modules.xml.search.api.SearchElement;
-import org.netbeans.modules.xml.search.api.SearchEvent;
-import org.netbeans.modules.xml.search.spi.SearchListener;
+import org.netbeans.modules.bpel.search.api.SearchElement;
+import org.netbeans.modules.bpel.search.api.SearchEvent;
+import org.netbeans.modules.bpel.search.spi.SearchListener;
 
 import org.netbeans.modules.bpel.search.impl.util.Util;
 import static org.netbeans.modules.print.api.PrintUtil.*;
@@ -293,7 +293,7 @@ final class Tree extends JTree implements SearchListener {
     item.setIcon(getPrintIcon());
     item.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent event) {
-        PrintManager.getPrintPreviewAction().actionPerformed(event);
+        PrintManager.getDefault().getPrintPreviewAction().actionPerformed(event);
       }
     });
     item.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P,
@@ -354,7 +354,8 @@ final class Tree extends JTree implements SearchListener {
   }
 
   private Icon getPrintIcon() {
-    Object object = PrintManager.getPrintPreviewAction().getValue(Action.SMALL_ICON);
+    Object object = PrintManager.getDefault().
+      getPrintPreviewAction().getValue(Action.SMALL_ICON);
 
     if (object instanceof Icon) {
       return (Icon) object;

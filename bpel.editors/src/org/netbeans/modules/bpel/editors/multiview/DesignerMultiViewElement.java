@@ -1,42 +1,20 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.bpel.editors.multiview;
 
@@ -48,6 +26,7 @@ import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import javax.swing.Action;
 import javax.swing.Box;
 import javax.swing.JComboBox;
 import javax.swing.JToggleButton;
@@ -62,13 +41,10 @@ import org.netbeans.modules.bpel.design.PartnerLinkFilterButton;
 import org.netbeans.modules.bpel.design.SequenceFilterButton;
 import org.netbeans.modules.bpel.diagram.DiagramImpl;
 import org.openide.awt.UndoRedo;
-import org.openide.loaders.DataNode;
 import org.openide.windows.TopComponent;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -84,8 +60,8 @@ import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
-import org.netbeans.modules.bpel.core.validation.BPELValidationController;
-import org.netbeans.modules.bpel.core.validation.SelectBpelElement;
+import org.netbeans.modules.bpel.core.util.BPELValidationController;
+import org.netbeans.modules.bpel.core.util.SelectBpelElement;
 import org.netbeans.modules.bpel.design.ZoomManager;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.model.api.Assign;
@@ -152,13 +128,15 @@ import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.xam.ui.undo.QuietUndoManager;
 import org.netbeans.modules.print.api.PrintManager;
-import org.netbeans.modules.xml.search.api.SearchManager;
-import org.netbeans.modules.xml.search.api.SearchManagerAccess;
+import org.netbeans.modules.xml.xam.ui.search.SearchManager;
 import org.netbeans.modules.xml.xam.ui.multiview.ActivatedNodesMediator;
 import org.netbeans.modules.xml.xam.ui.multiview.CookieProxyLookup;
+import org.netbeans.modules.reportgenerator.api.CustomizeReportAction;
+import org.netbeans.modules.reportgenerator.api.GenerateReportAction;
+import org.netbeans.modules.bpel.documentation.DocumentationCookie;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
-import org.openide.loaders.DataObject;
+import org.openide.loaders.DataNode;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponentGroup;
@@ -410,7 +388,7 @@ public class DesignerMultiViewElement extends TopComponent
             toolbar.add(Box.createHorizontalStrut(1));
             toolbar.add(new SequenceFilterButton(myDesignView));
             toolbar.addSeparator();
-            toolbar.add(myDesignView.createExpandAllPatternsToolBarButton());
+            //FIXME toolbar.add(myDesignView.createExpandAllPatternsToolBarButton());
             toolbar.addSeparator();
 
             NavigationTools navigationTools = myDesignView.getNavigationTools();
@@ -420,11 +398,17 @@ public class DesignerMultiViewElement extends TopComponent
                     toolbar.add(Box.createHorizontalStrut(1));
                 }
             }
-            
             toolbar.addSeparator();
             
+            // vlv: report
+            toolbar.add(new GenerateReportAction(myDataObject,
+              new DocumentationCookie(myDataObject, getDesignView().getProcessView())));
+            toolbar.add(new CustomizeReportAction(myDataObject));
+            toolbar.addSeparator();
+
+            // zoom
             ZoomManager zoomManager = myDesignView.getZoomManager();
-            
+
             for (int i = 0; i < zoomManager.getComponentCount(); i++) {
                 toolbar.add(zoomManager.getComponent(i));
                 
@@ -434,15 +418,16 @@ public class DesignerMultiViewElement extends TopComponent
             }
             // vlv: print
             toolbar.addSeparator();
-            toolbar.add(PrintManager.getPrintPreviewAction());
+            toolbar.add(PrintManager.getDefault().getPrintPreviewAction());
 
             // vlv: search
-            SearchManager manager = SearchManagerAccess.getManager();
+            SearchManager manager = SearchManager.Access.getDefault();
 
             if (manager != null) {
+              toolbar.addSeparator();
               toolbar.add(manager.getSearchAction());
             }
-            // valdiation
+            // vlv: valdiation
             toolbar.addSeparator();
             toolbar.add(new BPELValidateAction(myDesignView.getBPELModel()));
             
@@ -454,7 +439,6 @@ public class DesignerMultiViewElement extends TopComponent
                             maxButtonHeight);
                 }
             }
-            
             for (Component c : toolbar.getComponents()) {
                 if (c instanceof JButton || c instanceof JToggleButton) {
                     Dimension size = c.getMaximumSize();
@@ -474,14 +458,12 @@ public class DesignerMultiViewElement extends TopComponent
             }
             myToolBarPanel = toolbar;
         }
-        
         return myToolBarPanel;
     }
 
     public UndoRedo getUndoRedo() {
         return getDataObject().getEditorSupport().getUndoManager();
     }
-    
     
     public JComponent getVisualRepresentation() {
         return this;
@@ -510,7 +492,14 @@ public class DesignerMultiViewElement extends TopComponent
     protected boolean closeLast() {
         return true;
     }
-    
+    private JButton createExpandAllPatternsToolBarButton() {
+        //FIXME
+        return null;
+//        JButton button = new JButton(new ExpandAllPatternsAction(myDesignView));
+//        button.setText(null);
+//        button.setFocusable(false);
+//        return button;
+    }
     private DesignView createDesignView() {
         DesignView view = new DesignView(getLookup()); // got TC's lookup or no Palette
         return view;
@@ -528,38 +517,59 @@ public class DesignerMultiViewElement extends TopComponent
         setLayout(new BorderLayout());
         
         myDesignView = createDesignView();
+
+//FIXME        ThumbScrollPane scroll = new ThumbScrollPane(myDesignView.getView());
+//        scroll.setBorder(null);
+//        scroll.getVerticalScrollBar().setUnitIncrement(16);
+//        scroll.getHorizontalScrollBar().setUnitIncrement(16);
+//        add(scroll, BorderLayout.CENTER);
         
+        add(myDesignView, BorderLayout.CENTER);
         // add copy, cut, paste actions into actionMap to be visible in external menus
         ActionMap map = getActionMap();
         ActionMap designViewMap = myDesignView.getActionMap();
         map.setParent(designViewMap);
         
-//        designViewMap.put(DefaultEditorKit.copyAction, designViewMap.get("copy-pattern"));
-//        designViewMap.put(DefaultEditorKit.cutAction, designViewMap.get("cut-pattern"));
-//        designViewMap.put(DefaultEditorKit.pasteAction, designViewMap.get("paste-pattern"));
+        designViewMap.put(DefaultEditorKit.copyAction, designViewMap.get("copy-pattern"));
+        designViewMap.put(DefaultEditorKit.cutAction, designViewMap.get("cut-pattern"));
+        designViewMap.put(DefaultEditorKit.pasteAction, designViewMap.get("paste-pattern"));
         map.put("delete", designViewMap.get("delete-something"));
-        
-        ThumbScrollPane scroll = new ThumbScrollPane(myDesignView.getView());
-        scroll.setBorder(null);
-        scroll.getVerticalScrollBar().setUnitIncrement(16);
-        scroll.getHorizontalScrollBar().setUnitIncrement(16);
-        add(scroll, BorderLayout.CENTER);
         add(myDesignView.getRightStripe(), BorderLayout.EAST);
 
         // vlv: find
-        SearchManager manager = SearchManagerAccess.getManager();
-
-        if (manager != null) {
-          Component search = manager.createSearch(new DiagramImpl(getDesignView()), null, getDesignView(), false);
+        SearchManager manager = SearchManager.Access.getDefault();
         
-          if (search != null) {
-            search.setVisible(false);
-            add(search, BorderLayout.SOUTH);
-          }
+        if (manager != null) {
+          Component search = manager.createSearch(new DiagramImpl(getDesignView()), getDesignView());
+          search.setVisible(false);
+          add(search, BorderLayout.SOUTH);
         }
+        initActiveNodeContext();
         setVisible(true);
     }
 
+    private void initActiveNodeContext() {
+
+        Node[] aNodes = getActivatedNodes();
+
+        // activate cur node
+        // data node is the node associated with dataobject(BPELDataObject)
+        if (aNodes == null || aNodes.length == 0 || aNodes[0] instanceof DataNode) {
+            Node node = null;
+            
+            node = node != null ? node : myDesignView != null 
+                    ? myDesignView.getNodeForPattern(myDesignView.getRootPattern()) : null;
+
+            if (node != null) {
+                aNodes = new Node[] { node };
+            }
+        }
+
+        if (aNodes != null && aNodes.length > 0) {
+            setActivatedNodes(aNodes);
+        }
+    }
+    
     /**
      *  Open or close the bpel_designer TopComponentGroup.
      */

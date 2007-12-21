@@ -57,13 +57,13 @@ import org.netbeans.modules.xml.xam.ui.search.SearchControlPanel;
 import org.netbeans.modules.xml.xam.ui.search.SearchProvider;
 import org.netbeans.modules.xml.xam.ui.search.Query;
 
-import org.netbeans.modules.xml.search.api.SearchElement;
-import org.netbeans.modules.xml.search.api.SearchEvent;
-import org.netbeans.modules.xml.search.api.SearchException;
-import org.netbeans.modules.xml.search.api.SearchMatch;
-import org.netbeans.modules.xml.search.api.SearchOption;
-import org.netbeans.modules.xml.search.spi.SearchEngine;
-import org.netbeans.modules.xml.search.spi.SearchListener;
+import org.netbeans.modules.bpel.search.api.SearchElement;
+import org.netbeans.modules.bpel.search.api.SearchEvent;
+import org.netbeans.modules.bpel.search.api.SearchException;
+import org.netbeans.modules.bpel.search.api.SearchMatch;
+import org.netbeans.modules.bpel.search.api.SearchOption;
+import org.netbeans.modules.bpel.search.spi.SearchEngine;
+import org.netbeans.modules.bpel.search.spi.SearchListener;
 import static org.netbeans.modules.print.api.PrintUtil.*;
 
 /**
@@ -142,7 +142,7 @@ public final class Find extends SearchControlPanel {
     }
 
     public String getInputDescription() {
-      return i18n(Provider.class, "CTL_Input_Description"); // NOI18N
+      return i18n(Provider.class, "LBL_Input_Description"); // NOI18N
     }
 
     public List<Object> search(Query query)
