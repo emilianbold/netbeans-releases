@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.netbeans.api.project.Project;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.openide.filesystems.FileObject;
@@ -136,30 +137,36 @@ public class Generator {
         return location;
     }
 
-    public String getUsage(final RubyPlatform platform) {
+    public String getUsage(Project project) {
         if (this == NONE) {
             return null;
         }
 
         File generatorDir = null;
 
+        RubyPlatform platform = RubyPlatform.platformFor(project);
         if (location == null) {
             // Lazy evaluation for the builtin generators
             // Generator dir
             File gemLocation = null;
-            
-            String version = platform.getGemManager().getVersion("rails"); // NOI18N
-            
-            if (version != null) {
-                gemLocation =
-                    new File(platform.getGemManager().getGemDir() + File.separator +
-                        "gems" + File.separator + "rails" + "-" + version); // NOI18N
-            } else if (!Utilities.isWindows()) {
-                File rubyHome = platform.getHome();
-                if (rubyHome != null) {
-                    File railsDir = new File(rubyHome, "/share/rails/railties"); // NOI18N
-                    if (railsDir.exists()) {
-                        gemLocation = railsDir;
+
+            FileObject railsInstall = project.getProjectDirectory().getFileObject("vendor/rails/railties"); // NOI18N
+            if (railsInstall != null) {
+                gemLocation = FileUtil.toFile(railsInstall);
+            } else {
+                String version = platform.getGemManager().getVersion("rails"); // NOI18N
+                if (version != null) {
+                    gemLocation =
+                        new File(platform.getGemManager().getGemDir() + File.separator +
+                            "gems" + File.separator + "rails" + "-" + version); // NOI18N
+                } else if (!Utilities.isWindows()) {
+                    // XXX This is suspicious
+                    File rubyHome = platform.getHome();
+                    if (rubyHome != null) {
+                        File railsDir = new File(rubyHome, "/share/rails/railties"); // NOI18N
+                        if (railsDir.exists()) {
+                            gemLocation = railsDir;
+                        }
                     }
                 }
             }

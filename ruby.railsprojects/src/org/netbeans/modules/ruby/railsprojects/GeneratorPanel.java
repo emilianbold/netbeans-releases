@@ -345,8 +345,8 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
 
         // Add in the builtins first (since they provide some more specific
         // UI configuration for known generators (labelling the arguments etc.)
-        String railsVersion = gemManager.getVersion("rails"); // NOI18N
-        
+        String railsVersion = RailsProjectUtil.getRailsVersion(project);
+
         List<Generator> builtins = Generator.getBuiltinGenerators(railsVersion);
         for (Generator builtin : builtins) {
             if (!added.contains(builtin.getName())) {
@@ -355,22 +355,21 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
             }
         }
 
-        if (gemDir != null) {
+        FileObject railsInstall = project.getProjectDirectory().getFileObject("vendor/rails/railties"); // NOI18N
+        if (railsInstall != null) {
+            scan(generators, railsInstall, 
+                "lib/rails_generator/generators/components", null, added); // NOI18N
+        } else if (gemDir != null) {
+            railsVersion = gemManager.getVersion("rails"); // NOI18N
             if (railsVersion != null) {
                 File railsDir = new File(gemDir, "rails" + "-" + railsVersion); // NOI18N
                 assert railsDir.exists();
-                FileObject railsInstall = FileUtil.toFileObject(railsDir);
-                assert railsInstall != null;
-                scan(generators, railsInstall, 
-                    "lib/rails_generator/generators/components", null, added); // NOI18N
+                railsInstall = FileUtil.toFileObject(railsDir);
+                if (railsInstall != null) {
+                    scan(generators, railsInstall, 
+                        "lib/rails_generator/generators/components", null, added); // NOI18N
+                }
             }
-        } else if (!Utilities.isWindows()) {
-            // On some Linux distros the Rails distribution is quite different
-            FileObject railsInstall = project.getProjectDirectory().getFileObject("vendor/rails/railties"); // NOI18N
-            if (railsInstall != null) {
-                scan(generators, railsInstall, 
-                    "lib/rails_generator/generators/components", null, added); // NOI18N
-            }            
         }
 
         return generators;
@@ -402,7 +401,7 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
     private void showUsage(Generator generator) {
         // Look up the Rails directory and read the USAGE file, then stick
         // it into the usageText.
-        String usage = generator.getUsage(RubyPlatform.platformFor(project));
+        String usage = generator.getUsage(project);
 
         if (usage != null) {
             usageText.setText(usage);

@@ -47,10 +47,7 @@ import org.netbeans.spi.gsfpath.classpath.PathResourceImplementation;
 import org.netbeans.spi.gsfpath.classpath.support.ClassPathSupport;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
@@ -66,6 +63,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.netbeans.api.ruby.platform.RubyPlatformProvider;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
+import org.netbeans.modules.ruby.railsprojects.RailsProjectUtil;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
@@ -377,7 +375,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
             if (lib.exists()) {
                 File versionFile = new File(lib, middleName + File.separator + "version.rb");
                 if (versionFile.exists()) {
-                    String version = getVersionString(versionFile);
+                    String version = RailsProjectUtil.getVersionString(versionFile);
                     if (version != null) {
                         try {
                             URL url = lib.toURI().toURL();
@@ -389,48 +387,6 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
                 }
             }
         }
-    }
-    
-    private static String getVersionString(File version) {
-        try {
-            Pattern VERSION_ELEMENT = Pattern.compile("\\s*[A-Z]+\\s*=\\s*(\\d+)\\s*");
-            BufferedReader br = new BufferedReader(new FileReader(version));
-            StringBuilder sb = new StringBuilder();
-            int major = 0;
-            int minor = 0;
-            int tiny = 0;
-            for (int line = 0; line < 10; line++) {
-                String s = br.readLine();
-                if (s == null) {
-                    break;
-                }
-
-                if (s.indexOf("MAJOR") != -1) {
-                    Matcher m = VERSION_ELEMENT.matcher(s);
-                    if (m.matches()) {
-                        major = Integer.parseInt(m.group(1));
-                    }
-                } else if (s.indexOf("MINOR") != -1) {
-                    Matcher m = VERSION_ELEMENT.matcher(s);
-                    if (m.matches()) {
-                        minor = Integer.parseInt(m.group(1));
-                    }
-                } else if (s.indexOf("TINY") != -1) {
-                    Matcher m = VERSION_ELEMENT.matcher(s);
-                    if (m.matches()) {
-                        tiny = Integer.parseInt(m.group(1));
-                    }
-                }
-            }
-            br.close();
-            
-        
-            return major + "." + minor + "." + tiny;
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-        }
-        
-        return null;
     }
     
     private List<URL> getVendorPlugins(File vendor) {

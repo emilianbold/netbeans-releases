@@ -41,14 +41,22 @@
 
 package org.netbeans.modules.ruby.railsprojects;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  * Miscellaneous utilities for the Rails project module.
@@ -57,6 +65,70 @@ import org.openide.filesystems.FileUtil;
 public class RailsProjectUtil {
     
     private RailsProjectUtil () {}
+
+    /** Get the version string out of a ruby version.rb file */
+    public static String getVersionString(File versionFile) {
+        try {
+            Pattern VERSION_ELEMENT = Pattern.compile("\\s*[A-Z]+\\s*=\\s*(\\d+)\\s*");
+            BufferedReader br = new BufferedReader(new FileReader(versionFile));
+            StringBuilder sb = new StringBuilder();
+            int major = 0;
+            int minor = 0;
+            int tiny = 0;
+            for (int line = 0; line < 10; line++) {
+                String s = br.readLine();
+                if (s == null) {
+                    break;
+                }
+
+                if (s.indexOf("MAJOR") != -1) {
+                    Matcher m = VERSION_ELEMENT.matcher(s);
+                    if (m.matches()) {
+                        major = Integer.parseInt(m.group(1));
+                    }
+                } else if (s.indexOf("MINOR") != -1) {
+                    Matcher m = VERSION_ELEMENT.matcher(s);
+                    if (m.matches()) {
+                        minor = Integer.parseInt(m.group(1));
+                    }
+                } else if (s.indexOf("TINY") != -1) {
+                    Matcher m = VERSION_ELEMENT.matcher(s);
+                    if (m.matches()) {
+                        tiny = Integer.parseInt(m.group(1));
+                    }
+                }
+            }
+            br.close();
+            
+        
+            return major + "." + minor + "." + tiny;
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        }
+        
+        return null;
+    }
+    
+    public static String getRailsVersion(Project project) {
+        GemManager gemManager = RubyPlatform.gemManagerFor(project);
+        // Add in the builtins first (since they provide some more specific
+        // UI configuration for known generators (labelling the arguments etc.)
+        String railsVersion = gemManager.getVersion("rails"); // NOI18N
+
+        FileObject railsPlugin = project.getProjectDirectory().getFileObject("vendor/rails/railties"); // NOI18N
+        if (railsPlugin != null) {
+            FileObject versionFo = railsPlugin.getFileObject("lib/rails/version.rb"); // NOI18N
+            if (versionFo != null) {
+                File versionFile = FileUtil.toFile(versionFo);
+                String version = RailsProjectUtil.getVersionString(versionFile);
+                if (version != null) {
+                    railsVersion = version;
+                }
+            }
+        }
+        
+        return railsVersion;
+    }
     
     /**
      * Returns the property value evaluated by RailsProject's PropertyEvaluator.
