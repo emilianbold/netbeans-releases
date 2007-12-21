@@ -249,7 +249,7 @@ public class AnnotateAction extends AbstractAction {
         
         AnnotateLine [] lines = new AnnotateLine[annotations.size()];
         int i = 0;
-        Pattern p = Pattern.compile("^\\s*(\\w+\\b)\\s+(\\d+)\\s+(\\b.*):\\s+(.*)$"); //NOI18N
+        Pattern p = Pattern.compile("^\\s*(\\w+\\b)\\s+(\\d+)\\s+(\\b.*):\\s(.*)$"); //NOI18N
         for (String line : annotations) {
             Matcher m = p.matcher(line);
             if (!m.matches()){
