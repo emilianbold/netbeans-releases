@@ -105,7 +105,7 @@ public class WSModuleConfiguration implements ModuleConfiguration {
                 try {
                     cfolder = FileUtil.toFileObject(parentFile.getParentFile()).createFolder(parentFile.getName());
                 } catch (IOException ioe) {
-                    throw new ConfigurationException(NbBundle.getMessage(WSDeploymentConfiguration.class, "MSG_FailedToCreateConfigFolder", parentFile.getAbsolutePath()));
+                    throw new ConfigurationException(NbBundle.getMessage(WSModuleConfiguration.class, "MSG_FailedToCreateConfigFolder", parentFile.getAbsolutePath()));
                 }
             }
             final FileObject folder = cfolder;

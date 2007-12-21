@@ -271,17 +271,7 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages>
-                <package>org.netbeans.modules.j2ee.websphere6</package>
-                <package>org.netbeans.modules.j2ee.websphere6.config</package>
-                <package>org.netbeans.modules.j2ee.websphere6.j2ee</package>
-                <package>org.netbeans.modules.j2ee.websphere6.optional</package>
-                <package>org.netbeans.modules.j2ee.websphere6.ui</package>
-                <package>org.netbeans.modules.j2ee.websphere6.ui.nodes</package>
-                <package>org.netbeans.modules.j2ee.websphere6.ui.nodes.editors</package>
-                <package>org.netbeans.modules.j2ee.websphere6.ui.wizard</package>
-                <package>org.netbeans.modules.j2ee.websphere6.util</package>
-            </public-packages>
+            <public-packages/>
         </data>
     </configuration>
 </project>

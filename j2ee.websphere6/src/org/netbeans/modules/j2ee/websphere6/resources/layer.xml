@@ -41,12 +41,10 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-
 <!--
  Changes by Dileep
  For porting to 6.0 all the api need to be changed to spi due to retouche.
 -->
-
 <filesystem>
     <folder name="J2EE">
         <folder name="DeploymentPlugins">
@@ -113,11 +111,6 @@ made subject to such option by the copyright holder.
                     <!-- Dileep attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.OptionalDeploymentManagerFactory"/ -->
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory"/>
                 </file>
-                <file name="ConfigurationSupportImpl.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.websphere6.config.ConfigurationSupportImpl"/>
-                    <!-- Dileep attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.ConfigurationSupport"/ -->
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.ConfigurationSupport"/>
-                </file>
                 <file name="WSModuleConfigurationFactory.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.websphere6.config.WSModuleConfigurationFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory"/>
@@ -164,10 +157,6 @@ made subject to such option by the copyright holder.
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.websphere6.optional.WSOptionalDeploymentManagerFactory"/>
                     <!-- Dileep attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.OptionalDeploymentManagerFactory"/ -->
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory"/>
-                </file>
-                <file name="ConfigurationSupportImpl.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.websphere6.config.ConfigurationSupportImpl"/>                    
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.ConfigurationSupport"/>
                 </file>
                 <file name="WSModuleConfigurationFactory.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.websphere6.config.WSModuleConfigurationFactory"/>

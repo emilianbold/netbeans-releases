@@ -269,7 +269,7 @@ public class WSWarModuleConfiguration extends WSModuleConfiguration
             }
             ctxRoot = buf.toString();
             NotifyDescriptor desc = new NotifyDescriptor.Message(
-                    NbBundle.getMessage(WarDeploymentConfiguration.class, "MSG_invalidCP", contextPath),
+                    NbBundle.getMessage(WSWarModuleConfiguration.class, "MSG_invalidCP", contextPath),
                     NotifyDescriptor.Message.INFORMATION_MESSAGE);
             DialogDisplayer.getDefault().notify(desc);
             contextPath = ctxRoot;

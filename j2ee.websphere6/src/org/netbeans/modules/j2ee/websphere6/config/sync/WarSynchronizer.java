@@ -50,12 +50,12 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 //dkumar -- import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarProvider;
+import org.netbeans.modules.j2ee.websphere6.config.WSWarModuleConfiguration;
 import org.netbeans.modules.j2ee.websphere6.dd.beans.DDXmiConstants;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.filesystems.FileUtil;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
-import static org.netbeans.modules.j2ee.websphere6.config.WarDeploymentConfiguration.WEB_APP_ID;
 
 /**
  *
@@ -111,9 +111,9 @@ public class WarSynchronizer extends Synchronizer{
         }
     }
     private void syncRootId(Document webDocument,Document ibmwebbndDocument) {
-        if (!WEB_APP_ID.equals(webDocument.getDocumentElement().getAttribute("id"))) {
+        if (!WSWarModuleConfiguration.WEB_APP_ID.equals(webDocument.getDocumentElement().getAttribute("id"))) {
             Attr attribute = webDocument.createAttribute("id");
-            attribute.setValue(WEB_APP_ID);
+            attribute.setValue(WSWarModuleConfiguration.WEB_APP_ID);
             webDocument.getDocumentElement().getAttributes().setNamedItem(attribute);
             saveWebXmlNeeded = true;
         }
