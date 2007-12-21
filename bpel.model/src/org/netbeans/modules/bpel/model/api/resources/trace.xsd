@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Trace" xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/process/executable" targetNamespace="http://www.sun.com/wsbpel/2.0/process/executable/SUNExtension/Trace" elementFormDefault="qualified">
+	<import namespace="http://docs.oasis-open.org/wsbpel/2.0/process/executable" schemaLocation="http://docs.oasis-open.org/wsbpel/2.0/OS/process/executable/ws-bpel_executable.xsd"/>
+	<import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="http://www.w3.org/2001/xml.xsd"/>
+	<simpleType name="tLocation">
+		<restriction base="string">
+			<enumeration value="onStart"/>
+			<enumeration value="onComplete"/>
+		</restriction>
+	</simpleType>
+	<complexType name="tTrace">
+		<sequence>
+			<element ref="tns:log" minOccurs="0" maxOccurs="unbounded"/>
+			<element ref="tns:alert" minOccurs="0" maxOccurs="unbounded"/>
+		</sequence>
+	</complexType>
+	<complexType name="tLog">
+		<sequence>
+			<element ref="bpws:from"/>
+		</sequence>
+		<attribute name="level">
+			<simpleType>
+				<restriction base="string">
+					<enumeration value="severe"/>
+					<enumeration value="warning"/>
+					<enumeration value="info"/>
+					<enumeration value="config"/>
+					<enumeration value="fine"/>
+					<enumeration value="finer"/>
+					<enumeration value="finest"/>
+				</restriction>
+			</simpleType>
+		</attribute>
+		<attribute ref="tns:location"/>
+	</complexType>
+	<complexType name="tAlert">
+		<sequence>
+			<element ref="bpws:from"/>
+		</sequence>
+		<attribute name="level">
+			<simpleType>
+				<restriction base="string">
+					<enumeration value="critical"/>
+					<enumeration value="major"/>
+					<enumeration value="minor"/>
+					<enumeration value="warning"/>
+					<enumeration value="info"/>
+				</restriction>
+			</simpleType>
+		</attribute>
+		<attribute ref="tns:location"/>
+	</complexType>
+	<element name="log" type="tns:tLog"/>
+	<element name="alert" type="tns:tAlert"/>
+	<element name="trace" type="tns:tTrace"/>
+	<attribute name="location" type="tns:tLocation"/>
+</schema>
+
