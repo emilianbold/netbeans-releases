@@ -42,6 +42,7 @@ package org.netbeans.modules.php.model.impl;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -75,10 +76,17 @@ class ReferenceImpl<T extends SourceElement> implements Reference<T> {
      * @see org.netbeans.modules.php.model.Reference#get()
      */
     public T get() {
-        ReferenceResolver resolver = getResolver();
-        assert resolver != null;
-        List<T> result= resolver.resolve( getSource(), getIdentifier(), getType(), 
-                true );
+        List<ReferenceResolver> resolvers = getResolvers();
+        assert resolvers != null;
+        List<T> result = null;
+        for (ReferenceResolver resolver : resolvers) {
+            List<T> found = resolver.resolve( getSource(), getIdentifier(), 
+                    getType(), true );
+            if ( found != null && found.size() >0 ){
+                result = add( result , found );
+            }
+        }
+            
         if ( result != null && result.size() >0 ) {
             return result.get( result.size() -1 );
         }
@@ -99,24 +107,50 @@ class ReferenceImpl<T extends SourceElement> implements Reference<T> {
         return mySource;
     }
     
-    private Class<T> getType(){
-        return myClass;
-    }
-    
-    private ReferenceResolver getResolver() {
-        ReferenceResolver result = myResovers.get( getType());
+    protected <S extends SourceElement> List<ReferenceResolver> getResolvers( 
+            Class<S> clazz) 
+    {
+        List<ReferenceResolver> result = myResovers.get( clazz);
         if ( result != null ) {
             return result;
         }
         Collection<? extends ReferenceResolver> collection= 
             Lookup.getDefault().lookupAll( ReferenceResolver.class );
         for ( ReferenceResolver resolver : collection) {
-            if ( resolver.isApplicable( getType() )) {
-                result =  resolver;
+            if ( resolver.isApplicable( clazz )) {
+                result = add( result , resolver );
             }
         }
-        myResovers.put(getType(), result );
+        myResovers.put( clazz, result );
         return result;
+    }
+    
+    private List<T> add( List<T> list , List<T> elements ){
+        if ( list == null ){
+            list = new LinkedList<T>();
+        }
+        list.addAll( elements );
+        return list;
+    }
+    
+    private List<ReferenceResolver> add( List<ReferenceResolver> list, 
+            ReferenceResolver resolver )
+    {
+        if ( list == null ){
+            list = new LinkedList<ReferenceResolver>();
+        }
+        list.add( resolver );
+        return list;
+    }
+
+    
+    private Class<T> getType(){
+        return myClass;
+    }
+    
+    private List<ReferenceResolver> getResolvers() {
+
+        return getResolvers( getType() );
     }
     
     private String myIdentifier;
@@ -125,7 +159,7 @@ class ReferenceImpl<T extends SourceElement> implements Reference<T> {
     
     private SourceElementImpl mySource;
     
-    private Map<Class<T>, ReferenceResolver> myResovers = 
-        new HashMap<Class<T>, ReferenceResolver>();
+    private Map<Class<? extends SourceElement>, List<ReferenceResolver>> myResovers = 
+        new HashMap<Class<? extends SourceElement>, List<ReferenceResolver>>();
 
 }

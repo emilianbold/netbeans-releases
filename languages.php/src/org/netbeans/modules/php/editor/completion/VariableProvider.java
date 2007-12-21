@@ -122,9 +122,8 @@ public class VariableProvider implements CompletionResultProvider {
 
         addSuperglobal(list, caretOffset, prefix, formatter);
 
-        ReferenceResolver resolver = getResolver();
-        assert resolver != null;
-        if (resolver != null) {
+        List<ReferenceResolver> resolvers = getResolvers();
+        for( ReferenceResolver resolver : resolvers ){
             List<VariableAppearance> vars = resolver.resolve(currentElement,
                     prefix, VariableAppearance.class, false);
             for (VariableAppearance appearance : vars) {
@@ -189,18 +188,19 @@ public class VariableProvider implements CompletionResultProvider {
         }
     }
 
-    private ReferenceResolver getResolver() {
-        if (myResolver != null) {
-            return myResolver;
+    private List<ReferenceResolver> getResolvers() {
+        if (myResolvers != null) {
+            return myResolvers;
         }
+        myResolvers = new LinkedList<ReferenceResolver>();
         Collection<? extends ReferenceResolver> collection =
                 Lookup.getDefault().lookupAll(ReferenceResolver.class);
         for (ReferenceResolver resolver : collection) {
             if (resolver.isApplicable(VariableAppearance.class)) {
-                myResolver = resolver;
+                myResolvers.add(resolver);
             }
         }
-        return myResolver;
+        return myResolvers;
     }
     /**
      * List of the 'superglobal', or automatic global, variable names.
@@ -221,5 +221,5 @@ public class VariableProvider implements CompletionResultProvider {
         SUPERGLOBAL_VARIABLE_NAMES.add(REQUEST);
         SUPERGLOBAL_VARIABLE_NAMES.add(SESSION);
     }
-    private ReferenceResolver myResolver;
+    private List<ReferenceResolver> myResolvers;
 }

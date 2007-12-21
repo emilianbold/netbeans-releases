@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.php.model.impl;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import org.netbeans.api.languages.ASTItem;
@@ -48,6 +49,7 @@ import org.netbeans.api.languages.ASTToken;
 import org.netbeans.modules.php.model.ClassMemberReference;
 import org.netbeans.modules.php.model.ObjectDefinition;
 import org.netbeans.modules.php.model.SourceElement;
+import org.netbeans.modules.php.model.refs.ReferenceResolver;
 
 
 /**
@@ -57,24 +59,22 @@ import org.netbeans.modules.php.model.SourceElement;
  * @author ads
  *
  */
-class ClassMemberReferenceImpl<T extends SourceElement> implements ClassMemberReference<T> {
+class ClassMemberReferenceImpl<T extends SourceElement> extends ReferenceImpl<T>     
+    implements ClassMemberReference<T> 
+{
     
     ClassMemberReferenceImpl( SourceElementImpl source , ASTNode identifierNode  )
     {
-        myNode = identifierNode;
-        mySource = source;
+        this( source , identifierNode , null );
     }
     
     ClassMemberReferenceImpl( SourceElementImpl source , ASTNode identifierNode  , 
             Class<T> clazz)
     {
+        super( source , identifierNode.getAsText().trim() , clazz );
         myNode = identifierNode;
-        mySource = source;
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.model.ClassReference#getMemberName()
-     */
     public String getMemberName() {
         if ( myMemberName == null ) {
             initIds();
@@ -86,7 +86,16 @@ class ClassMemberReferenceImpl<T extends SourceElement> implements ClassMemberRe
      * @see org.netbeans.modules.php.model.ClassReference#getObject()
      */
     public ObjectDefinition getObject() {
-        // TODO Auto-generated method stub
+        List<ReferenceResolver> resolvers = getResolvers( ObjectDefinition.class );
+        List<ObjectDefinition> result = null;
+        for (ReferenceResolver referenceResolver : resolvers) {
+            List<ObjectDefinition> list= referenceResolver.resolve( getSource(), 
+                    getIdentifier(), ObjectDefinition.class , true );
+            result = add( result , list);
+        }
+        if ( result != null && result.size() >0 ){
+            return result.get( result.size() -1 );
+        }
         return null;
     }
 
@@ -107,19 +116,15 @@ class ClassMemberReferenceImpl<T extends SourceElement> implements ClassMemberRe
         // TODO Auto-generated method stub
         return null;
     }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.model.Reference#getIdentifier()
-     */
-    public String getIdentifier() {
-        return myNode.getAsText().trim();
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.model.Reference#getSource()
-     */
-    public SourceElement getSource() {
-        return mySource;
+    
+    private List<ObjectDefinition> add( List<ObjectDefinition> list , 
+            List<ObjectDefinition> elements )
+    {
+        if ( list == null ){
+            list = new LinkedList<ObjectDefinition>();
+        }
+        list.addAll( elements );
+        return list;
     }
     
     private void initIds() {
@@ -147,7 +152,6 @@ class ClassMemberReferenceImpl<T extends SourceElement> implements ClassMemberRe
     
     private String myMemberName;
     
-    private SourceElementImpl mySource;
-    
     private final ASTNode myNode;
+    
 }

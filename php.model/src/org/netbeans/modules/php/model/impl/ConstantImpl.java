@@ -85,7 +85,8 @@ public class ConstantImpl extends SourceElementImpl implements Constant {
         if ( nt.equals( StaticExpressionBuilder.CLASS_STATIC ) && 
                 getNarrowNode().getTokenType( Utils.OPERATOR ) != null ) 
         {
-            return new ClassMemberReferenceImpl<SourceElement>( this , getNarrowNode() );
+            return new ClassMemberReferenceImpl<SourceElement>( this , 
+                    getNarrowNode() );
         }
         return null;
     }
