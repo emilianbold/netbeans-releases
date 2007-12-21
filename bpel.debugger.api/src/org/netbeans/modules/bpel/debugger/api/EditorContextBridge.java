@@ -1,47 +1,24 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
- * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
- * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
- * License. You can obtain a copy of the License at
- * http://www.netbeans.org/cddl-gplv2.html
- * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
- * specific language governing permissions and limitations under the
- * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
- * accompanied this code. If applicable, add the following below the
- * License Header, with the fields enclosed by brackets [] replaced by
- * your own identifying information:
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
+ * compliance with the License.
+ * 
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+ * or http://www.netbeans.org/cddl.txt.
+ * 
+ * When distributing Covered Code, include this CDDL Header Notice in each file
+ * and include the License file at http://www.netbeans.org/cddl.txt.
+ * If applicable, add the following below the CDDL Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
+ * 
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of this file to be governed by only the CDDL
- * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include this software in this distribution
- * under the [CDDL or GPL Version 2] license." If you do not indicate a
- * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
- * to extend the choice of license to its licensees as provided above.
- * However, if you add GPL Version 2 code and therefore, elected the GPL
- * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder.
  */
 
 package org.netbeans.modules.bpel.debugger.api;
 
-import java.awt.Color;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -113,10 +90,14 @@ public final class EditorContextBridge {
      *         be supplied as a parameter to subsequent
      *         {@link #removeAnnotation} call
      */
-    public static Object annotate(
-            String url, String xpath, AnnotationType annotationType)
-    {
-        return getContext().annotate(url, xpath, annotationType);
+    public static Object addAnnotation(
+            final String url, 
+            final String xpath, 
+            final int lineNumber,
+            final AnnotationType annotationType) {
+        
+        return getContext().addAnnotation(
+                url, xpath, lineNumber, annotationType);
     }
     
     /**
@@ -129,8 +110,16 @@ public final class EditorContextBridge {
         getContext().removeAnnotation(annotation);
     }
     
+    public static AnnotationType getAnnotationType(Object annotation) {
+        return getContext().getAnnotationType(annotation);
+    }
+    
     public static String getXpath(Object annotation) {
         return getContext().getXpath(annotation);
+    }
+    
+    public static int getLineNumber(Object annotation) {
+        return getContext().getLineNumber(annotation);
     }
     
     public static QName getProcessQName(String url) {
@@ -172,111 +161,4 @@ public final class EditorContextBridge {
         }
         return context;
     }
-    
-//    /**
-//     * Context provider that embeds two given Context Providers and
-//     * delegates methods calls to them.
-//     */
-//    private static class CompoundContextProvider implements EditorContext {
-//        
-//        /** First of the two embeded Context Providers. */
-//        private EditorContext myContext1;
-//        
-//        /** Second of the two embeded Context Providers. */
-//        private EditorContext myContext2;
-//        
-//        CompoundContextProvider(EditorContext context1, EditorContext context2) {
-//            myContext1 = context1;
-//            myContext2 = context2;
-//        }
-//        
-//        public boolean showSource(String url, Position position) {
-//            return  myContext1.showSource(url, position) |
-//                    myContext2.showSource(url, position);
-//        }
-//        
-//        public Object annotate(
-//                String url, Position position, AnnotationType annotationType)
-//        {
-//            CompoundAnnotation ca = new CompoundAnnotation(
-//                        annotate(url, position, annotationType),
-//                        annotate(url, position, annotationType)
-//                    );
-//            return ca;
-//        }
-//        
-//        public void removeAnnotation(Object annotation) {
-//            CompoundAnnotation ca = (CompoundAnnotation) annotation;
-//            myContext1.removeAnnotation(ca.getAnnotation1());
-//            myContext2.removeAnnotation(ca.getAnnotation2());
-//        }
-//        
-//        public int getLineNumber(Object annotation) {
-//            int ln = myContext1.getLineNumber(annotation);
-//            if (ln >= 0) {
-//                return ln;
-//            } else {
-//                return myContext2.getLineNumber(annotation);
-//            }
-//        }
-//
-//        /**
-//         * Returns the more appropriate line number for the
-//         * given the url and line number.
-//         */
-//        public int translateBreakpointLine(String url, int lineNumber) {
-//            int newLineNumber = myContext1.translateBreakpointLine(url, lineNumber);
-//            if (newLineNumber < 0) {
-//                newLineNumber = myContext2.translateBreakpointLine(url, lineNumber);
-//            }
-//            return newLineNumber;
-//        }
-//        
-//        public void addAnnotationListener(Object annotation, PropertyChangeListener l) {
-//            //TODO: implement this
-//            //the following commented impl will not do since the subscriber
-//            //would receive events for the different annotation object from
-//            //it has subscribed for
-//            
-//            CompoundAnnotation ca = (CompoundAnnotation) annotation;
-//            myContext1.addAnnotationListener(ca.getAnnotation1(), l);
-//            myContext2.addAnnotationListener(ca.getAnnotation2(), l);
-//            
-//            throw new UnsupportedOperationException(
-//                    "Not supported for compound context");  //NOI18N
-//            
-//        }
-//
-//        public void removeAnnotationListener(Object annotation, PropertyChangeListener l) {
-//            //TODO: implement this
-//            //the following commented impl will not do since the subscriber
-//            //would receive events for the different annotation object from
-//            //it has subscribed for
-//            
-////            CompoundAnnotation ca = (CompoundAnnotation) annotation;
-////            myCp1.removeAnnotationListener(ca.getAnnotation1(), l);
-////            myCp2.removeAnnotationListener(ca.getAnnotation2(), l);
-//            
-//            throw new UnsupportedOperationException(
-//                    "Not supported for compound context");  //NOI18N
-//        }
-//    }
-    
-//    private static final class CompoundAnnotation {
-//        private Object myAnnotation1;
-//        private Object myAnnotation2;
-//        
-//        public CompoundAnnotation(Object annotation1, Object annotation2) {
-//            myAnnotation1 = annotation1;
-//            myAnnotation2 = annotation2;
-//        }
-//        
-//        public Object getAnnotation1() {
-//            return myAnnotation1;
-//        }
-//        
-//        public Object getAnnotation2() {
-//            return myAnnotation2;
-//        }
-//    }
 }
