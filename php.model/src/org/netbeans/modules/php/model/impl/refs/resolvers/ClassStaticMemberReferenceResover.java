@@ -38,80 +38,64 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.php.model.impl;
+package org.netbeans.modules.php.model.impl.refs.resolvers;
 
-import org.netbeans.api.languages.ASTItem;
-import org.netbeans.api.languages.ASTNode;
-import org.netbeans.api.languages.ASTToken;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.php.model.ClassMemberReference;
-import org.netbeans.modules.php.model.Constant;
-import org.netbeans.modules.php.model.PhpModelVisitor;
+import java.util.Collections;
+import java.util.List;
+
+import org.netbeans.modules.php.model.ClassBody;
+import org.netbeans.modules.php.model.ClassDefinition;
+import org.netbeans.modules.php.model.ClassStatement;
+import org.netbeans.modules.php.model.InterfaceDefinition;
 import org.netbeans.modules.php.model.Reference;
 import org.netbeans.modules.php.model.SourceElement;
-import org.netbeans.modules.php.model.impl.builders.StaticExpressionBuilder;
+import org.netbeans.modules.php.model.VariableAppearance;
 
 
 /**
  * @author ads
  *
  */
-public class ConstantImpl extends SourceElementImpl implements Constant {
+public class ClassStaticMemberReferenceResover 
+    extends StaticMemberReferenceResolver 
+{
 
-    public ConstantImpl( SourceElement parent, ASTNode node, 
-            ASTNode realNode ,TokenSequence sequence ) {
-        super(parent, node, realNode , sequence);
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.php.model.refs.ReferenceResolver#isApplicable(java.lang.Class)
+     */
+    public <T extends SourceElement> boolean isApplicable( Class<T> clazz ) {
+        return VariableAppearance.class.isAssignableFrom( clazz ) 
+            || ClassStatement.class.isAssignableFrom( clazz );
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.php.model.SourceElement#getElementType()
+     * @see org.netbeans.modules.php.model.impl.refs.resolvers.StaticMemberReferenceResolver#getOwnType()
      */
-    public Class<? extends SourceElement> getElementType() {
-        return Constant.class;
+    @Override
+    protected Class<? extends SourceElement> getOwnType() {
+        return ClassDefinition.class;
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.php.model.Acceptor#accept(org.netbeans.modules.php.model.PhpModelVisitor)
+     * @see org.netbeans.modules.php.model.impl.refs.resolvers.StaticMemberReferenceResolver#resolve(org.netbeans.modules.php.model.SourceElement, java.lang.String, java.lang.Class, org.netbeans.modules.php.model.SourceElement, boolean)
      */
-    public void accept( PhpModelVisitor visitor ) {
-        visitor.visit( this );
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.model.Constant#getClassConstant()
-     */
-    public ClassMemberReference<SourceElement> getClassConstant() {
-        String nt = getNarrowNode().getNT();
-        if ( nt.equals( StaticExpressionBuilder.CLASS_STATIC ) && 
-                getNarrowNode().getTokenType( Utils.OPERATOR ) != null ) 
-        {
-            return new ClassMemberReferenceImpl<SourceElement>( this , 
-                    getNarrowNode(), SourceElement.class );
+    @Override
+    protected <T extends SourceElement> List<T> resolve( SourceElement source,
+            String memberName, Class<T> clazz, T owner, boolean exactComparison )
+    {
+        ClassDefinition statement = (ClassDefinition)owner;
+        ClassBody body = statement.getBody();
+        if ( body == null){
+            return Collections.EMPTY_LIST;
         }
-        return null;
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.model.Constant#getSourceElement()
-     */
-    public Reference<SourceElement> getSourceElement() {
-        String id = getTokenText();
-        if ( id == null ) {
-            return null;
-        }
-        return new ConstantReferenceImpl( this , id );
-    }
-
-    private String getTokenText() {
-        String nt = getNarrowNode().getNT();
-        if ( nt.equals( StaticExpressionBuilder.CLASS_STATIC ) && 
-                getNarrowNode().getChildren().size() ==1 ) 
-        {
-            ASTItem item = getNarrowNode().getChildren().get( 0 );
-            assert item instanceof ASTToken;
-            assert ((ASTToken) item).getTypeName().equals( Utils.IDENTIFIER );
-            return ((ASTToken) item).getIdentifier();
-        }
+        // TODO
+        
+        Reference<ClassDefinition> superClass = statement.getSuperClass();
+        // TODO : search in super class
+        
+        List<Reference<InterfaceDefinition>> ifaces = 
+            statement.getImplementedInterfaces();
+        // TODO : search in implemented interfaces 
         return null;
     }
 

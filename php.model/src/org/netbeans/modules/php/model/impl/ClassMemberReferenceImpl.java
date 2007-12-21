@@ -47,6 +47,8 @@ import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTToken;
 import org.netbeans.modules.php.model.ClassMemberReference;
+import org.netbeans.modules.php.model.ClassStatement;
+import org.netbeans.modules.php.model.InterfaceStatement;
 import org.netbeans.modules.php.model.ObjectDefinition;
 import org.netbeans.modules.php.model.SourceElement;
 import org.netbeans.modules.php.model.refs.ReferenceResolver;
@@ -62,11 +64,6 @@ import org.netbeans.modules.php.model.refs.ReferenceResolver;
 class ClassMemberReferenceImpl<T extends SourceElement> extends ReferenceImpl<T>     
     implements ClassMemberReference<T> 
 {
-    
-    ClassMemberReferenceImpl( SourceElementImpl source , ASTNode identifierNode  )
-    {
-        this( source , identifierNode , null );
-    }
     
     ClassMemberReferenceImpl( SourceElementImpl source , ASTNode identifierNode  , 
             Class<T> clazz)
@@ -86,15 +83,23 @@ class ClassMemberReferenceImpl<T extends SourceElement> extends ReferenceImpl<T>
      * @see org.netbeans.modules.php.model.ClassReference#getObject()
      */
     public ObjectDefinition getObject() {
-        List<ReferenceResolver> resolvers = getResolvers( ObjectDefinition.class );
-        List<ObjectDefinition> result = null;
-        for (ReferenceResolver referenceResolver : resolvers) {
-            List<ObjectDefinition> list= referenceResolver.resolve( getSource(), 
-                    getIdentifier(), ObjectDefinition.class , true );
-            result = add( result , list);
+        T result = get();
+        if ( result == null ){
+            return resolveObject();
         }
-        if ( result != null && result.size() >0 ){
-            return result.get( result.size() -1 );
+        else {
+            return findOwner( result );
+        }
+    }
+
+
+    private ObjectDefinition findOwner( T result ) {
+        SourceElement current = result;
+        while (current != null) {
+            if (current instanceof ObjectDefinition) {
+                return (ObjectDefinition) current;
+            }
+            current = current.getParent();
         }
         return null;
     }
@@ -113,7 +118,48 @@ class ClassMemberReferenceImpl<T extends SourceElement> extends ReferenceImpl<T>
      * @see org.netbeans.modules.php.model.Reference#get()
      */
     public T get() {
-        // TODO Auto-generated method stub
+        ObjectDefinition objDef = getObject();
+        return get( objDef );
+    }
+    
+    private ObjectDefinition resolveObject(){
+        if ( myObject != null ){
+            return myObject;
+        }
+        List<ReferenceResolver> resolvers = getResolvers( ObjectDefinition.class );
+        List<ObjectDefinition> result = null;
+        for (ReferenceResolver referenceResolver : resolvers) {
+            List<ObjectDefinition> list= referenceResolver.resolve( getSource(), 
+                    getIdentifier(), ObjectDefinition.class , true );
+            result = add( result , list);
+        }
+        if ( result != null && result.size() >0 ){
+            return result.get( result.size() -1 );
+        }
+        return null;
+    }
+    
+    private T get( ObjectDefinition definition ){
+        T result = get( definition , ClassStatement.class );
+        if ( result == null ){
+            return get( definition , InterfaceStatement.class );
+        }
+        return null;
+    }
+    
+    private T get( ObjectDefinition definition , 
+            Class<? extends SourceElement> clazz )
+    {
+        List<ReferenceResolver> classResolvers = 
+            getResolvers( clazz );
+        for (ReferenceResolver referenceResolver : classResolvers) {
+            List<? extends SourceElement> statements = 
+                referenceResolver.resolve( getSource(), getIdentifier(), clazz,
+                        true );
+            if ( statements.size() > 0 ){
+                return getType().cast( statements.get(0));
+            }
+        }
         return null;
     }
     
@@ -151,6 +197,8 @@ class ClassMemberReferenceImpl<T extends SourceElement> extends ReferenceImpl<T>
     private String myClassName;
     
     private String myMemberName;
+    
+    private ObjectDefinition myObject;
     
     private final ASTNode myNode;
     

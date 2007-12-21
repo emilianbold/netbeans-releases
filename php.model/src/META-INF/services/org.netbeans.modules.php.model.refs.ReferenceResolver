@@ -1,2 +1,5 @@
-org.netbeans.modules.php.model.impl.refs.VariableReferenceResolver
-org.netbeans.modules.php.model.impl.refs.ClassReferenceResolver
+org.netbeans.modules.php.model.impl.refs.resolvers.VariableReferenceResolver
+org.netbeans.modules.php.model.impl.refs.resolvers.ClassReferenceResolver
+org.netbeans.modules.php.model.impl.refs.resolvers.InterfaceReferenceResolver
+org.netbeans.modules.php.model.impl.refs.resolvers.ClassStaticMemberReferenceResover
+org.netbeans.modules.php.model.impl.refs.resolvers.InterfaceStaticMemberReferenceResover

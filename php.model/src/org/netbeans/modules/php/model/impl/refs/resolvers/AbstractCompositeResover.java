@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.php.model.impl;
+package org.netbeans.modules.php.model.impl.refs.resolvers;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -46,67 +46,17 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.netbeans.modules.php.model.Reference;
 import org.netbeans.modules.php.model.SourceElement;
 import org.netbeans.modules.php.model.refs.ReferenceResolver;
 import org.openide.util.Lookup;
 
 
 /**
- * Reference implementation for classes and interfaces identifiers.
- * 
  * @author ads
  *
  */
-class ReferenceImpl<T extends SourceElement> implements Reference<T> {
+abstract class AbstractCompositeResover implements ReferenceResolver {
 
-    /**
-     * @param source element from which reference should be resolved  
-     * ( <code>source</code> element has this reference ) 
-     */
-    ReferenceImpl( SourceElementImpl source, String identifier , 
-            Class<T> clazz )
-    {
-        mySource = source;
-        myIdentifier = identifier;
-        myClass = clazz;
-    }
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.model.Reference#get()
-     */
-    public T get() {
-        List<ReferenceResolver> resolvers = getResolvers();
-        assert resolvers != null;
-        List<T> result = null;
-        for (ReferenceResolver resolver : resolvers) {
-            List<T> found = resolver.resolve( getSource(), getIdentifier(), 
-                    getType(), true );
-            if ( found != null && found.size() >0 ){
-                result = add( result , found );
-            }
-        }
-            
-        if ( result != null && result.size() >0 ) {
-            return result.get( result.size() -1 );
-        }
-        return null;
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.model.Reference#getIdentifier()
-     */
-    public String getIdentifier() {
-        return myIdentifier;
-    }
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.php.model.Reference#getSource()
-     */
-    public SourceElement getSource() {
-        return mySource;
-    }
-    
     protected <S extends SourceElement> List<ReferenceResolver> getResolvers( 
             Class<S> clazz) 
     {
@@ -125,14 +75,6 @@ class ReferenceImpl<T extends SourceElement> implements Reference<T> {
         return result;
     }
     
-    private List<T> add( List<T> list , List<T> elements ){
-        if ( list == null ){
-            list = new LinkedList<T>();
-        }
-        list.addAll( elements );
-        return list;
-    }
-    
     private List<ReferenceResolver> add( List<ReferenceResolver> list, 
             ReferenceResolver resolver )
     {
@@ -142,22 +84,7 @@ class ReferenceImpl<T extends SourceElement> implements Reference<T> {
         list.add( resolver );
         return list;
     }
-
     
-    protected Class<T> getType(){
-        return myClass;
-    }
-    
-    private List<ReferenceResolver> getResolvers() {
-
-        return getResolvers( getType() );
-    }
-    
-    private String myIdentifier;
-    
-    private Class<T> myClass;
-    
-    private SourceElementImpl mySource;
     
     private Map<Class<? extends SourceElement>, List<ReferenceResolver>> myResovers = 
         new HashMap<Class<? extends SourceElement>, List<ReferenceResolver>>();

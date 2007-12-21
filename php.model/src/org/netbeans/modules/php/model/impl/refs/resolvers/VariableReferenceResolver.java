@@ -135,10 +135,6 @@ public class VariableReferenceResolver implements  ReferenceResolver
             String identifier, FunctionDefinition definition ,  Class<T> clazz, 
             boolean exactComparison) 
     {
-        if ( !clazz.isAssignableFrom( FormalParameter.class )){
-            return null;
-        }
-        
         FunctionDeclaration decl = definition.getDeclaration();
         if ( decl == null ) {
             return null;
@@ -150,6 +146,9 @@ public class VariableReferenceResolver implements  ReferenceResolver
         List<T> result = new LinkedList<T>();
         List<FormalParameter> parameters = params.getParameters();
         for (FormalParameter parameter : parameters) {
+            if ( !clazz.isAssignableFrom( parameter.getElementType() )){
+                continue;
+            }
             String name = parameter.getName();
             if ( name == null ) {
                 continue;

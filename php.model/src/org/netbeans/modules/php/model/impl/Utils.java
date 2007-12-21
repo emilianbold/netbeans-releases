@@ -74,6 +74,8 @@ public final class Utils {
     
     public  static final String OPERATOR         = "php_operator";       // NOI18N
     
+    public  static final String NS_OPERATOR      = "::";         // NOI18N
+    
     // avoid inst-ion
     private Utils(){
     }
