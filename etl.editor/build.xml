@@ -19,14 +19,4 @@
 -->
 <project name="etl.editor" default="netbeans" basedir=".">
     <import file="../../../nbbuild/templates/projectized.xml"/>
-
-    <target name="netbeans-extra" depends="init">
-        <mkdir dir="${cluster}/modules/ext/etl" />
-        <copy todir="${cluster}/modules/ext/etl">
-            <fileset dir="../external">
-                <include name="*.jar" />
-                <include name="*.zip" />
-            </fileset>
-        </copy>
-    </target>
 </project>
