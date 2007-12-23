@@ -61,13 +61,9 @@ public class GrailsProjectEncodingQueryImpl extends FileEncodingQueryImplementat
     }
     
     public Charset getEncoding(FileObject file) {
-        
-        System.out.println("### getEncoding : " + file);
-        
         assert file != null;
         synchronized (this) {
             if (cache != null) {
-                System.out.println("### 111 -> " + cache);
                 return cache;
             }
         }
@@ -80,15 +76,12 @@ public class GrailsProjectEncodingQueryImpl extends FileEncodingQueryImplementat
                     //should work for most users.
                     cache = enc == null ? Charset.defaultCharset() : Charset.forName(enc);
                 } catch (IllegalCharsetNameException exception) {
-                    System.out.println("### 222 -> null");
                     return null;
                 }
                 catch (UnsupportedCharsetException exception) {                    
-                    System.out.println("### 333 -> null");
                     return null;
                 }
             }
-            System.out.println("### 444 -> " + cache);
             return cache;
         }
     }
