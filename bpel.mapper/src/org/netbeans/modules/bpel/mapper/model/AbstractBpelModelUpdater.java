@@ -442,7 +442,7 @@ public class AbstractBpelModelUpdater {
                      // do nothing
                 }
                 //
-                if (result != null) {
+                if (result == null) {
                     try {
                         Double literalValue = Double.valueOf(textValue);
                         result = xPathModel.getFactory().
@@ -452,7 +452,7 @@ public class AbstractBpelModelUpdater {
                     }
                 }
                 //
-                if (result != null) {
+                if (result == null) {
                     try {
                         Float literalValue = Float.valueOf(textValue);
                         result = xPathModel.getFactory().

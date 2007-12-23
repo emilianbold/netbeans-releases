@@ -19,12 +19,11 @@
 package org.netbeans.modules.bpel.mapper.logging.model;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.bpel.mapper.logging.tree.LogAlertType;
 import org.netbeans.modules.bpel.mapper.logging.tree.model.LoggingAlertingTreeModel;
+import org.netbeans.modules.bpel.mapper.model.BpelChangeProcessor;
 import org.netbeans.modules.bpel.mapper.model.BpelMapperModel;
 import org.netbeans.modules.bpel.mapper.model.BpelMapperModelFactory;
 import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContext;
@@ -33,24 +32,14 @@ import org.netbeans.modules.bpel.mapper.tree.models.EmptyTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.models.PartnerLinkTreeExtModel;
 import org.netbeans.modules.bpel.mapper.tree.models.VariableTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.search.LoggingNodeFinder;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperModelFactory;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
-import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemFinder;
 import org.netbeans.modules.bpel.model.api.Assign;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.Copy;
-import org.netbeans.modules.bpel.model.api.ElseIf;
 import org.netbeans.modules.bpel.model.api.Expression;
 import org.netbeans.modules.bpel.model.api.ExtensibleElements;
-import org.netbeans.modules.bpel.model.api.ForEach;
 import org.netbeans.modules.bpel.model.api.From;
-import org.netbeans.modules.bpel.model.api.If;
-import org.netbeans.modules.bpel.model.api.OnAlarmEvent;
-import org.netbeans.modules.bpel.model.api.OnAlarmPick;
-import org.netbeans.modules.bpel.model.api.RepeatUntil;
-import org.netbeans.modules.bpel.model.api.Wait;
-import org.netbeans.modules.bpel.model.api.While;
 import org.netbeans.modules.bpel.model.ext.logging.api.Alert;
 import org.netbeans.modules.bpel.model.ext.logging.api.Location;
 import org.netbeans.modules.bpel.model.ext.logging.api.Log;
@@ -86,6 +75,11 @@ public class LoggingMapperModelFactory extends BpelMapperModelFactory {
     public MapperModel constructModel(
             MapperTcContext mapperTcContext, BpelDesignContext context) {
         //
+        BpelChangeProcessor changeProcessor = 
+                new BpelChangeProcessor(mapperTcContext);
+        mapperTcContext.getDesignContextController().
+                setBpelModelUpdateSource(changeProcessor);
+        //
         BpelEntity bpelEntity = context.getBpelEntity();
         if (!(bpelEntity instanceof ExtensibleElements)) {
             return null;
@@ -104,7 +98,7 @@ public class LoggingMapperModelFactory extends BpelMapperModelFactory {
             sourceModel.addExtensionModel(pLinkExtModel);
             //
             BpelMapperModel newMapperModel = new BpelMapperModel(
-                    mapperTcContext, sourceModel, targetModel);
+                    mapperTcContext, changeProcessor, sourceModel, targetModel);
             //
             addTraceGraph(copy, newMapperModel);
             addPreprocessedExprToGraph(newMapperModel);
@@ -122,7 +116,7 @@ public class LoggingMapperModelFactory extends BpelMapperModelFactory {
             sourceModel.addExtensionModel(pLinkExtModel);
             //
             BpelMapperModel newMapperModel = new BpelMapperModel(
-                    mapperTcContext, sourceModel, targetModel);
+                    mapperTcContext, changeProcessor, sourceModel, targetModel);
             addTraceGraph(assign, newMapperModel);
             addPreprocessedExprToGraph(newMapperModel);
             //
@@ -135,7 +129,7 @@ public class LoggingMapperModelFactory extends BpelMapperModelFactory {
             sourceModel.addExtensionModel(sourceVariableModel);
             //
             BpelMapperModel newMapperModel = new BpelMapperModel(
-                    mapperTcContext, sourceModel, targetModel);
+                    mapperTcContext, changeProcessor, sourceModel, targetModel);
 
             addTraceGraph((ExtensibleElements)bpelEntity, newMapperModel);
             addPreprocessedExprToGraph(newMapperModel);

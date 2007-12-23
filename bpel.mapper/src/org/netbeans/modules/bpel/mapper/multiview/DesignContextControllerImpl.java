@@ -25,11 +25,7 @@ import java.lang.ref.WeakReference;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
-import javax.swing.event.TreeModelEvent;
-import javax.swing.event.TreeModelListener;
-import javax.swing.tree.TreePath;
 import org.netbeans.modules.bpel.mapper.model.BpelMapperModelFactory;
-import org.netbeans.modules.bpel.mapper.model.BpelModelUpdater;
 import org.netbeans.modules.bpel.mapper.tree.TreeExpandedState;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
@@ -72,10 +68,7 @@ public class DesignContextControllerImpl implements DesignContextController {
     private BpelDesignContext mNewContext;
     private boolean mNeedReload;
     
-    // Listens changes in the mapper tree model and updates BPEL model 
-    private TreeModelListener mBpelUpdateListener;
-    
-    private WeakReference<BpelModelUpdater> mBpelModelUpdaterRef;
+    private WeakReference<Object> mBpelModelUpdateSourceRef;
     
     /** Creates a new instance of DesignContextChangeListener */
     public DesignContextControllerImpl(MapperTcContext mapperTC) {
@@ -127,61 +120,19 @@ public class DesignContextControllerImpl implements DesignContextController {
             }
         });
         nodeUpdateTimer.setRepeats(false);
-        //
-        
-        mBpelUpdateListener = new TreeModelListener() {
-
-            public void treeNodesChanged(TreeModelEvent e) {
-                Object source = e.getSource();
-                if (source instanceof MapperModel) {
-                    BpelDesignContext designContext = getContext();
-                    if (designContext != null) {
-                        BpelEntity contextEntity = designContext.getBpelEntity();
-                        if (contextEntity != null) {
-                            TreePath parentPath = e.getTreePath();
-                            if (parentPath == null) {
-                                return;
-                            }
-                            //
-                            Object[] childrenArr = e.getChildren();
-                            if (childrenArr == null || childrenArr.length == 0) {
-                                return;
-                            }
-                            //
-                            TreePath treePath = parentPath.
-                                    pathByAddingChild(childrenArr[0]);
-                            //
-                            BpelModelUpdater updater = new BpelModelUpdater(
-                                    mMapperTcContext, treePath);
-                            setCurrentBpelModelUpdater(updater);
-                            updater.updateOnChanges();
-                        }
-                    }
-                }
-            }
-
-            public void treeNodesInserted(TreeModelEvent e) {
-            }
-
-            public void treeNodesRemoved(TreeModelEvent e) {
-            }
-
-            public void treeStructureChanged(TreeModelEvent e) {
-            }
-        };
     }
     
     public MapperTcContext getMapperTcContext() {
         return mMapperTcContext;
     }
     
-    private synchronized void setCurrentBpelModelUpdater(BpelModelUpdater newUpdater) {
-        mBpelModelUpdaterRef = new WeakReference<BpelModelUpdater>(newUpdater);
+    public synchronized void setBpelModelUpdateSource(Object source) {
+        mBpelModelUpdateSourceRef = new WeakReference<Object>(source);
     }
     
-    private synchronized BpelModelUpdater getCurrentBpelModelUpdater() {
-        if (mBpelModelUpdaterRef != null) {
-            return mBpelModelUpdaterRef.get();
+    private synchronized Object getBpelModelUpdateSource() {
+        if (mBpelModelUpdateSourceRef != null) {
+            return mBpelModelUpdateSourceRef.get();
         }
         //
         return null;
@@ -227,7 +178,7 @@ public class DesignContextControllerImpl implements DesignContextController {
     public synchronized void reloadMapper(ChangeEvent event) {
         //
         // Ignore reload if is has been initiated by the mapper itself 
-        if (event.getSource() == getCurrentBpelModelUpdater()) {
+        if (event.getSource() == getBpelModelUpdateSource()) {
             return;
         }
         //
@@ -253,22 +204,7 @@ public class DesignContextControllerImpl implements DesignContextController {
     }
     
     private void setMapperModel(MapperModel newMapperModel) {
-        //
-        // Unsubscribe change listener from the old mapper model
-        Mapper oldMapper = mMapperTcContext.getMapper();
-        if (oldMapper != null) {
-            MapperModel oldModel = oldMapper.getModel();
-            if (oldModel != null && mBpelUpdateListener != null) {
-                oldModel.removeTreeModelListener(mBpelUpdateListener);
-            }
-        }
-        //
         mMapperTcContext.setMapperModel(newMapperModel);
-        //
-        // Add change listener to the new mapper model
-        if (newMapperModel != null && mBpelUpdateListener != null) {
-            newMapperModel.addTreeModelListener(mBpelUpdateListener);
-        }
     }
     
     /**

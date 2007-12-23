@@ -86,6 +86,13 @@ public final class MapperTreeNode<DataObject> {
         return mChildren;
     }
     
+    public boolean removeChild(Object child) {
+        if (mChildren != null) {
+            return mChildren.remove(child);
+        }
+        return false;
+    }
+    
     public void setChildren(List<MapperTreeNode> newChildren) {
         mChildren = newChildren;
     }

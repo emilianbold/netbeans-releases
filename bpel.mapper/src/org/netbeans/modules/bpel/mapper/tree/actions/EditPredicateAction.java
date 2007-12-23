@@ -84,7 +84,7 @@ public class EditPredicateAction extends MapperAction<RestartableIterator<Object
         if (PredicateEditor.showDlg(editor)) {
             PredicateUpdater updater = new PredicateUpdater(mMapperTcContext, 
                     predMModel, pred, sContext, mInLeftTree, mTreePath);
-            updater.updateOnChanges();
+            updater.updatePredicate();
         }
     }
     

@@ -116,6 +116,11 @@ public class BpelMapperModelFactory implements MapperModelFactory {
     public MapperModel constructModel(
             MapperTcContext mapperTcContext, BpelDesignContext context) {
         //
+        BpelChangeProcessor changeProcessor = 
+                new BpelChangeProcessor(mapperTcContext);
+        mapperTcContext.getDesignContextController().
+                setBpelModelUpdateSource(changeProcessor);
+        //
         BpelEntity bpelEntity = context.getBpelEntity();
         if (bpelEntity instanceof Copy) {
             Copy copy = (Copy)bpelEntity;
@@ -134,7 +139,7 @@ public class BpelMapperModelFactory implements MapperModelFactory {
             targetModel.addExtensionModel(pLinkExtModel);
             //
             BpelMapperModel newMapperModel = new BpelMapperModel(
-                    mapperTcContext, sourceModel, targetModel);
+                    mapperTcContext, changeProcessor, sourceModel, targetModel);
             //
             addCopyGraph(copy, newMapperModel);
             //
@@ -158,7 +163,7 @@ public class BpelMapperModelFactory implements MapperModelFactory {
             targetModel.addExtensionModel(pLinkExtModel);
             //
             BpelMapperModel newMapperModel = new BpelMapperModel(
-                    mapperTcContext, sourceModel, targetModel);
+                    mapperTcContext, changeProcessor, sourceModel, targetModel);
             for (AssignChild assignChild : assign.getAssignChildren()) {
                 if (assignChild instanceof Copy) {
                     addCopyGraph((Copy)assignChild, newMapperModel);
@@ -182,7 +187,7 @@ public class BpelMapperModelFactory implements MapperModelFactory {
             SimpleTreeInfoProvider targetIP = new SimpleTreeInfoProvider();
             //
             BpelMapperModel newMapperModel = new BpelMapperModel(
-                    mapperTcContext, sourceModel, targetTreeModel);
+                    mapperTcContext, changeProcessor, sourceModel, targetTreeModel);
             //
             TimeEvent timeEvent = timeEH.getTimeEvent();
             if (timeEvent != null) {
@@ -213,7 +218,7 @@ public class BpelMapperModelFactory implements MapperModelFactory {
                     new ConditionValueTreeModel(bpelEntity);
             //
             BpelMapperModel newMapperModel = new BpelMapperModel(
-                    mapperTcContext, sourceModel, targetTreeModel);
+                    mapperTcContext, changeProcessor, sourceModel, targetTreeModel);
             //
             // Add Graphs
             assert bpelEntity instanceof ConditionHolder;
@@ -237,7 +242,7 @@ public class BpelMapperModelFactory implements MapperModelFactory {
                     new ForEachConditionsTreeModel(forEach);
             //
             BpelMapperModel newMapperModel = new BpelMapperModel(
-                    mapperTcContext, sourceModel, targetTreeModel);
+                    mapperTcContext, changeProcessor, sourceModel, targetTreeModel);
             //
             // Add Graphs
             Expression expr = forEach.getStartCounterValue();
@@ -383,7 +388,7 @@ public class BpelMapperModelFactory implements MapperModelFactory {
                         }
                     } else {
                         XPathExpression newXPathExpr = 
-                                parseExpression(contextEntity, exprText);
+                                parseExpression(contextEntity, anExprText);
                         if (newXPathExpr != null) {
                             exprList.add(newXPathExpr);
                         }

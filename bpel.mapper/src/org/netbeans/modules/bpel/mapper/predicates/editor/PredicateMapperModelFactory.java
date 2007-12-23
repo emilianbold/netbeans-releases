@@ -57,8 +57,8 @@ public class PredicateMapperModelFactory {
         //
         PredicateExprTreeModel targetModel = new PredicateExprTreeModel(1);
         //
-        BpelMapperModel newMapperModel = 
-                new BpelMapperModel(mapperTcContext, sourceModel, targetModel);
+        BpelMapperModel newMapperModel = new BpelMapperModel(
+                mapperTcContext, null, sourceModel, targetModel);
         //
         return newMapperModel;
     }
@@ -78,8 +78,8 @@ public class PredicateMapperModelFactory {
         PredicateExprTreeModel targetModel = 
                 new PredicateExprTreeModel(predicateArr.length);
         //
-        BpelMapperModel newMapperModel = 
-                new BpelMapperModel(mapperTcContext, sourceModel, targetModel);
+        BpelMapperModel newMapperModel = new BpelMapperModel(
+                mapperTcContext, null, sourceModel, targetModel);
         //
         MapperSwingTreeModel rightTreeModel = newMapperModel.getRightTreeModel();
         List<TreePath> targetTreePathList = 

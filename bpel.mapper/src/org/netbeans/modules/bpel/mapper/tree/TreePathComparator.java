@@ -40,46 +40,67 @@ class TreePathComparator implements Comparator<TreePath> {
     }
     
     public int compare(TreePath path1, TreePath path2) {
-        List<MapperTreeNode> nodeList1 = getInversedPathList(path1);
-        List<MapperTreeNode> nodeList2 = getInversedPathList(path2);
+        List<Object> nodeList1 = getInversedPathList(path1);
+        List<Object> nodeList2 = getInversedPathList(path2);
         //
-        Iterator<MapperTreeNode> nodeListItr1 = nodeList1.iterator();
-        Iterator<MapperTreeNode> nodeListItr2 = nodeList2.iterator();
+        Iterator<Object> nodeListItr1 = nodeList1.iterator();
+        Iterator<Object> nodeListItr2 = nodeList2.iterator();
         //
-        MapperTreeNode n1 = null;
-        MapperTreeNode n2 = null;
-        MapperTreeNode parent = null;
+        Object n1 = null;
+        Object n2 = null;
+        Object commonParent = null;
         while (nodeListItr1.hasNext() && nodeListItr2.hasNext()) {
+            //
+            // If the previous nodes were the same (n1 == n2) then 
+            // now they are the common parent (commonParent == n1 == n2)
+            commonParent = n1; 
+            //
             n1 = nodeListItr1.next();
             n2 = nodeListItr2.next();
-            Object dObj1 = n1.getDataObject();
-            Object dObj2 = n2.getDataObject();
             //
-            if (dObj1.equals(dObj2)) {
-                parent = n1;
-            } else {
+            if (n1 != n2) {
                 break;
             }
         }
         //
         assert (n1 != null) && (n2 != null);
         //
-        assert parent == n2.getParent();
+        if (commonParent == null) {
+            // The previous while does only one step! 
+            // nodeListItr1.hasNext() == false || nodeListItr2.hasNext() == false
+            //
+            boolean list1HasNext = nodeListItr1.hasNext();
+            boolean list2HasNext = nodeListItr2.hasNext();
+            //
+            // Both nodes are the same and both are root
+            if (!list1HasNext && !list2HasNext) {
+                if (n1 == n2) {
+                    return 0; // The roots are the same
+                } else {
+                    assert false : "trying to compare TreePath from different trees"; // NOI18N
+                }
+            } else if (list1HasNext) {
+                return 1; // the second is the root but the first isn't
+            } else if (list2HasNext) {
+                return -1; // the first is the root but the secon isn't
+            }
+        }
         //
-        int n1Index = mTreeModel.getIndexOfChild(parent, n1);
-        int n2Index = mTreeModel.getIndexOfChild(parent, n2);
+        assert commonParent != null;
+        //
+        int n1Index = mTreeModel.getIndexOfChild(commonParent, n1);
+        int n2Index = mTreeModel.getIndexOfChild(commonParent, n2);
         //
         return n1Index - n2Index;
     }
     
-    public List<MapperTreeNode> getInversedPathList(TreePath treePath) {
-        LinkedList<MapperTreeNode> result = new LinkedList<MapperTreeNode>();
+    public List<Object> getInversedPathList(TreePath treePath) {
+        LinkedList<Object> result = new LinkedList<Object>();
         //
         TreePath path = treePath;
         while (path != null) {
             Object obj = path.getLastPathComponent();
-            assert obj instanceof MapperTreeNode;
-            result.addFirst((MapperTreeNode)obj);
+            result.addFirst((Object)obj);
             path = path.getParentPath();
         }
         //

@@ -20,7 +20,6 @@
 package org.netbeans.modules.bpel.mapper.model;
 
 import java.util.List;
-import java.util.concurrent.Callable;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.models.DateValueTreeModel;
@@ -59,21 +58,16 @@ import org.netbeans.modules.xml.xpath.ext.XPathExpression;
 import org.netbeans.modules.xml.xpath.ext.XPathLocationPath;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
 import org.netbeans.modules.xml.wsdl.model.Part;
-import org.openide.ErrorManager;
 
 /**
  * 
  * 
  * @author nk160297
  */
-public class BpelModelUpdater extends AbstractBpelModelUpdater implements Callable {
+public class BpelModelUpdater extends AbstractBpelModelUpdater {
         
-    protected TreePath mTreePath;
-   
-    public BpelModelUpdater(MapperTcContext mapperTcContext, TreePath treePath) {
+    public BpelModelUpdater(MapperTcContext mapperTcContext) {
         super(mapperTcContext);
-        assert treePath != null;
-        mTreePath = treePath;
     }
 
     /**
@@ -81,34 +75,25 @@ public class BpelModelUpdater extends AbstractBpelModelUpdater implements Callab
      * @return
      * @throws java.lang.Exception
      */
-    public Object call() throws Exception {
+    public Object updateOnChanges(TreePath treePath) throws Exception {
         //
         BpelEntity bpelEntity = getDesignContext().getBpelEntity();
         //
         if (bpelEntity instanceof Copy) {
-            updateCopy(mTreePath, (Copy) bpelEntity);
+            updateCopy(treePath, (Copy) bpelEntity);
         } else if (bpelEntity instanceof Assign) {
-            updateAssign(mTreePath, (Assign) bpelEntity);
+            updateAssign(treePath, (Assign) bpelEntity);
         } else if (bpelEntity instanceof TimeEventHolder) {
             // Wait || OnAlarmPick || OnAlarmEvent
-            updateTimeEventHolder(mTreePath, (TimeEventHolder)bpelEntity);
+            updateTimeEventHolder(treePath, (TimeEventHolder)bpelEntity);
         } else if (bpelEntity instanceof ConditionHolder) {
             // If, ElseIf, While, RepeatUntil
-            updateConditionHolder(mTreePath, (ConditionHolder)bpelEntity);
+            updateConditionHolder(treePath, (ConditionHolder)bpelEntity);
         } else if (bpelEntity instanceof ForEach) {
-            updateForEach(mTreePath, (ForEach)bpelEntity);
+            updateForEach(treePath, (ForEach)bpelEntity);
         }
         //
         return null; // TODO: return some result flag
-    }
-    
-    public void updateOnChanges() {
-        try {
-            BpelModel bpelModel = getDesignContext().getBpelModel();
-            bpelModel.invoke(this, this);
-        } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ex);
-        }
     }
     
     //==========================================================================

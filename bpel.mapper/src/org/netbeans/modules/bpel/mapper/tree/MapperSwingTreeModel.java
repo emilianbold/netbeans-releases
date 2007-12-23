@@ -31,6 +31,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.event.EventListenerList;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
+import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.bpel.mapper.predicates.editor.PathConverter;
@@ -139,7 +140,20 @@ public class MapperSwingTreeModel implements TreeModel, MapperTcContext.Provider
                 new MapperTreeNode((MapperTreeNode)parentNode, itemDataObject);
         childrenList.add(index, newChildNode);
         //
-        fareTreeNodesInserted(this, parentPath, index, newChildNode);
+        fireTreeNodesInserted(this, parentPath, index, newChildNode);
+    }
+    
+    public void remove(TreePath treePath) {
+        TreePath parentTreePath = treePath.getParentPath();
+        Object parentComp = parentTreePath.getLastPathComponent();
+        assert parentComp instanceof MapperTreeNode;
+        //
+        Object lastComp = treePath.getLastPathComponent();
+        int childIndex = getIndexOfChild(parentComp, lastComp);
+        //
+        ((MapperTreeNode)parentComp).removeChild(lastComp);
+        //
+        fireTreeNodesRemoved(this, parentTreePath, childIndex, lastComp);
     }
     
     public MapperTreeModel getSourceModel() {
@@ -263,7 +277,8 @@ public class MapperSwingTreeModel implements TreeModel, MapperTcContext.Provider
                     // Reload cached data object
                     ((MapperTreeNode)lastComp).discardCachedData();
                     //
-                    int childIndex = getChildIndex(parentTreePath, lastComp);
+                    int childIndex = getIndexOfChild(
+                            parentTreePath.getLastPathComponent(), lastComp);
                     //
                     e = new TreeModelEvent(source, parentTreePath, 
                             new int[] {childIndex}, 
@@ -274,7 +289,8 @@ public class MapperSwingTreeModel implements TreeModel, MapperTcContext.Provider
         }
     }
     
-    public void fareTreeNodesRemoved(Object source, TreePath tPath) {
+    protected void fireTreeNodesRemoved(Object source, 
+            TreePath parentTreePath, int childIndex, Object removedObj) {
         // Guaranteed to return a non-null array
         Object[] listeners = listenerList.getListenerList();
         TreeModelEvent e = null;
@@ -284,25 +300,17 @@ public class MapperSwingTreeModel implements TreeModel, MapperTcContext.Provider
             if (listeners[i]==TreeModelListener.class) {
                 // Lazily create the event:
                 if (e == null) {
-                    TreePath parentTreePath = tPath.getParentPath();
-                    Object lastComp = tPath.getLastPathComponent();
-                    assert lastComp instanceof MapperTreeNode;
-                    //
-                    // Reload cached data object
-                    // ((MapperTreeNode)lastComp).discardCachedData();
-                    //
-                    int childIndex = getChildIndex(parentTreePath, lastComp);
                     //
                     e = new TreeModelEvent(source, parentTreePath, 
                             new int[] {childIndex}, 
-                            new Object[] {lastComp});
+                            new Object[] {removedObj});
                 }
                 ((TreeModelListener)listeners[i+1]).treeNodesRemoved(e);
             }          
         }
     }
     
-    public void fareTreeNodesInserted(Object source, 
+    protected void fireTreeNodesInserted(Object source, 
             TreePath parentTreePath, int childIndex, Object inserted) {
         // Guaranteed to return a non-null array
         Object[] listeners = listenerList.getListenerList();
@@ -322,20 +330,6 @@ public class MapperSwingTreeModel implements TreeModel, MapperTcContext.Provider
         }
     }
     
-    public int getChildIndex(TreePath parentTreePath, Object child) {
-        Object parent = parentTreePath.getLastPathComponent();
-        if (parent instanceof MapperTreeNode && child instanceof MapperTreeNode) {
-            MapperTreeNode parentNode = (MapperTreeNode)parent;
-            List<MapperTreeNode> children = getChildren(parentNode);
-            if (children != null) {
-                int result = children.indexOf(child);
-                return result;
-            }
-        }
-        //
-        return -1;
-    }
-
     /**
      * Returns an iterator, which provides a tree path from the specifed node to 
      * the tree root. The path consists not from the MapperTreeNode objects, but 

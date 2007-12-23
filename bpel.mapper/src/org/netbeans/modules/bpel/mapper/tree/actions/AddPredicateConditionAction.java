@@ -59,8 +59,9 @@ public class AddPredicateConditionAction extends MapperAction<TreePath> {
         //
         TreePath treePath = getActionSubject();
         TreePath parentPath = treePath.getParentPath();
-        int childIndex = treeModel.getChildIndex(
-                parentPath, treePath.getLastPathComponent());
+        int childIndex = treeModel.getIndexOfChild(
+                parentPath.getLastPathComponent(), 
+                treePath.getLastPathComponent());
         treeModel.insertChild(parentPath, childIndex + 1, dataObject);
     }
     

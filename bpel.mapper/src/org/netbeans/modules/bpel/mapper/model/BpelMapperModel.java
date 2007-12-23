@@ -57,16 +57,19 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
     public final Graph STUB_GRAPH;
     
     private MapperTcContext mMapperTcContext;
+    private GraphChangeProcessor mChangeProcessor;
     private MapperSwingTreeModel mLeftTreeModel;
     private MapperSwingTreeModel mRightTreeModel;
     
     // Maps a TreePath to a Graph
     private Map<TreePath, Graph> mPathGraphMap = new HashMap<TreePath, Graph>();
 
-    public BpelMapperModel(MapperTcContext mapperTcContext,
+    public BpelMapperModel(MapperTcContext mapperTcContext, 
+            GraphChangeProcessor changeProcessor, 
             MapperTreeModel leftModel, MapperTreeModel rightModel) {
         //
         mMapperTcContext = mapperTcContext;
+        mChangeProcessor = changeProcessor;
         //
         mLeftTreeModel = new MapperSwingTreeModel(mMapperTcContext, leftModel);
         //
@@ -122,6 +125,7 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
 
     public void addGraph(Graph newGraph, TreePath treePath) {
         mPathGraphMap.put(treePath, newGraph);
+        // fireGraphChanged(treePath);
         mRightTreeModel.fireTreeChanged(this, treePath);
     }
 
@@ -306,6 +310,7 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
         Link newLink = new Link(source, target);
         resultGraph.addLink(newLink);
         //
+        fireGraphChanged(treePath);
         mRightTreeModel.fireTreeChanged(this, treePath);
     }
 
@@ -376,8 +381,9 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
             Link link = graphSubset.getLink(i);
             graph.addLink(link);
         }
+        fireGraphChanged(treePath);
         mRightTreeModel.fireTreeChanged(this, treePath);
-
+        //
         return true;
     }
 
@@ -405,19 +411,20 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
 
             }
         }
-
+        //
+        fireGraphChanged(treePath);
         mRightTreeModel.fireTreeChanged(this, treePath);
-
-
     }
 
     public void fireGraphChanged(TreePath treePath) {
-        mRightTreeModel.fireTreeChanged(this, treePath);
+        if (mChangeProcessor != null) {
+            mChangeProcessor.processChanges(treePath);
+        }
     }
 
     public void fireGraphsChanged(List<TreePath> treePathList) {
-        for (TreePath treePath : treePathList) {
-            mRightTreeModel.fireTreeChanged(this, treePath);
+        if (mChangeProcessor != null) {
+            mChangeProcessor.processChanges(treePathList);
         }
     }
     
@@ -461,6 +468,7 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
             Object newValue) 
     {
         vertexItem.setValue(newValue);
+        fireGraphChanged(treePath);
         mRightTreeModel.fireTreeChanged(this, treePath);
     }
     

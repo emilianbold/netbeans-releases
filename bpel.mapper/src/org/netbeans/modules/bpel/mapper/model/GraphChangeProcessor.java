@@ -16,34 +16,18 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.netbeans.modules.bpel.mapper.multiview;
+package org.netbeans.modules.bpel.mapper.model;
 
-import org.netbeans.modules.bpel.model.api.events.ChangeEvent;
+import java.util.Collection;
+import javax.swing.tree.TreePath;
 
 /**
- * Controls the state of the BPEL mapper and manages different events:
- * - change of activated node 
- * - change in the related BPEL model
- * 
- * @author nk160297
- * @author Vitaly Bychkov
  *
+ * @author nk160297
  */
-public interface DesignContextController {
+public interface GraphChangeProcessor {
 
-    BpelDesignContext getContext();
+    void processChanges(TreePath graphTreePath);
     
-    void setContext(BpelDesignContext newContext);
-    
-    void reloadMapper(ChangeEvent event);
-
-    /**
-     * The BpelModel.invoke() method has a parameter source. 
-     * It allows to trace the souce of changes through a transaction. 
-     * The method specifies such source in order the controller can 
-     * make a desicion if it necessary to process event from the BPEL model. 
-     * 
-     * @param source
-     */
-    void setBpelModelUpdateSource(Object source);
+    void processChanges(Collection<TreePath> graphTreePathList);
 }

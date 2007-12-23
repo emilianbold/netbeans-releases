@@ -101,8 +101,9 @@ public class PredicateUpdater extends AbstractBpelModelUpdater {
         //
         // Update tree
         TreePath parentPath = mTreePath.getParentPath();
-        int childIndex = treeModel.getChildIndex(
-                parentPath, mTreePath.getLastPathComponent());
+        int childIndex = treeModel.getIndexOfChild(
+                parentPath.getLastPathComponent(), 
+                mTreePath.getLastPathComponent());
         treeModel.insertChild(parentPath, childIndex + 1, mPred);
         //
         // Set selection to the added predicate item
@@ -116,7 +117,7 @@ public class PredicateUpdater extends AbstractBpelModelUpdater {
         }
     }
     
-    public void updateOnChanges() {
+    public void updatePredicate() {
         recalculatePredicates();
         //
         BpelMapperModel mModel = getMapperModel();
@@ -174,8 +175,8 @@ public class PredicateUpdater extends AbstractBpelModelUpdater {
             mModel.removeGraph(mTreePath);
         }
         //
-        // Update tree
-        treeModel.fareTreeNodesRemoved(this, mTreePath);
+        // Remove node from the tree
+        treeModel.remove(mTreePath);
 //        //
 //        // Set selection to the added predicate item
 //        TreePath newSelection = treeModel.findChildByIndex(

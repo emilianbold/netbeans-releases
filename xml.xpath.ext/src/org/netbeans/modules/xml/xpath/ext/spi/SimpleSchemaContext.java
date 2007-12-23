@@ -73,8 +73,6 @@ public class SimpleSchemaContext implements XPathSchemaContext {
     public SimpleSchemaContext(XPathSchemaContext parentContext, 
             SchemaComponent sComp) {
         //
-        assert sComp instanceof GlobalType || sComp instanceof GlobalElement;
-        //
         if (parentContext == null) {
             mParentContext = null;
             mSchemaCompPair = new SchemaCompPair(sComp, null);

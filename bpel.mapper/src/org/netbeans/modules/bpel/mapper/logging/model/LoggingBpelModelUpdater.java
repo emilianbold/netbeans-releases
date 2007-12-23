@@ -22,9 +22,7 @@ import java.util.List;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.bpel.mapper.logging.tree.AlertItem;
 import org.netbeans.modules.bpel.mapper.logging.tree.LogItem;
-import org.netbeans.modules.bpel.mapper.model.BpelMapperModel;
 import org.netbeans.modules.bpel.mapper.model.BpelModelUpdater;
-import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContext;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
@@ -52,23 +50,17 @@ public class LoggingBpelModelUpdater extends BpelModelUpdater {
 //    private BpelDesignContext mDesignContext;
 //    private TreePath mTreePath;
     
-    public LoggingBpelModelUpdater(MapperTcContext mapperTcContext, 
-            TreePath treePath) {
-        super(mapperTcContext, treePath);
+    public LoggingBpelModelUpdater(MapperTcContext mapperTcContext) {
+        super(mapperTcContext);
     }
 
-    /**
-     * Implements Callable interface
-     * @return
-     * @throws java.lang.Exception
-     */
     @Override
-    public Object call() throws Exception {
+    public Object updateOnChanges(TreePath treePath) throws Exception {
         //
         BpelEntity bpelEntity = getDesignContext().getBpelEntity();
         //
         if (bpelEntity instanceof ExtensibleElements) {
-            updateExtensileElements(mTreePath, (ExtensibleElements)bpelEntity);
+            updateExtensileElements(treePath, (ExtensibleElements)bpelEntity);
         }
         //
         return null; // TODO: return some result flag
