@@ -22,9 +22,8 @@ package org.netbeans.modules.compapp.projects.base.ui.wizards;
 
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 import org.openide.WizardDescriptor;
-import org.openide.util.NbBundle;
 
-public class PanelOptionsVisual
+class PanelOptionsVisual
     extends javax.swing.JPanel
     implements org.netbeans.modules.compapp.projects.base.IcanproConstants {
 

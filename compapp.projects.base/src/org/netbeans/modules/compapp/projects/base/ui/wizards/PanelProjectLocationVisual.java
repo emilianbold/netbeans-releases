@@ -36,7 +36,7 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
-public class PanelProjectLocationVisual
+class PanelProjectLocationVisual
     extends SettingsPanel
     implements DocumentListener, org.netbeans.modules.compapp.projects.base.IcanproConstants {
     
@@ -162,6 +162,7 @@ public class PanelProjectLocationVisual
         }
     }//GEN-LAST:event_browseLocationAction
     
+    @Override
     public void addNotify() {
         super.addNotify();
         //same problem as in 31086, initial focus on Cancel button
