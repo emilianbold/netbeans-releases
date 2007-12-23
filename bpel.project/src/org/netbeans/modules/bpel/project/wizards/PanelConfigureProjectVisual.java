@@ -24,7 +24,7 @@ import javax.swing.JPanel;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
-public class PanelConfigureProjectVisual
+class PanelConfigureProjectVisual
     extends JPanel
     implements org.netbeans.modules.bpel.project.IcanproConstants {
 

@@ -31,11 +31,10 @@ import org.netbeans.modules.bpel.project.ui.FoldersListSettings;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
-public class PanelProjectLocationVisual extends SettingsPanel implements DocumentListener {
+class PanelProjectLocationVisual extends SettingsPanel implements DocumentListener {
 
     public static final String PROP_PROJECT_NAME = "projectName";      //NOI18N
 
@@ -159,6 +158,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         }
     }//GEN-LAST:event_browseLocationAction
 
+    @Override
     public void addNotify() {
         super.addNotify();
         //same problem as in 31086, initial focus on Cancel button
