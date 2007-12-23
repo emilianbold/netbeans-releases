@@ -39,7 +39,7 @@
         <folder name="Tools">
             <folder name="PaletteManager">
                 <file name="org.netbeans.modules.iep.editor.palette.IepPaletteCustomizerAction.instance">
-                    <attr name="position" intvalue="500"/>
+                    <attr name="position" intvalue="450"/>
                 </file>
             </folder>
         </folder>

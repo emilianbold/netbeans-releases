@@ -62,15 +62,14 @@ made subject to such option by the copyright holder.
         <folder name="text">
             <folder name="x-etl+xml">
                 <folder name="Actions">
-                    <attr name="org-openide-actions-RenameAction.instance/org-netbeans-modules-etl-ui-view-graph-actions-separatorBefore.instance" boolvalue="true"/>
                     <file name="org-netbeans-modules-etl-ui-view-graph-actions-separatorBefore.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1053"/>
                     </file>
-                    <attr name="org-netbeans-modules-etl-ui-view-graph-actions-separatorBefore.instance/org-netbeans-modules-etl-ui-view-graph-actions-ConfigureParametersAction.shadow" boolvalue="true"/>
                     <file name="org-netbeans-modules-etl-ui-view-graph-actions-ConfigureParametersAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/ETLActions/org-netbeans-modules-etl-ui-view-graph-actions-ConfigureParametersAction.instance"/>
+                        <attr name="position" intvalue="1054"/>
                     </file>
-                    <attr name="org-netbeans-modules-etl-ui-view-graph-actions-ConfigureParametersAction.shadow/sep-3.instance" boolvalue="true"/>
                 </folder>
             </folder>
         </folder>
@@ -79,6 +78,7 @@ made subject to such option by the copyright holder.
         <folder name="Tools">
             <file name="NewFFDBAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.mashup.db.wizard.NewFFDBAction"/>
+                <attr name="position" intvalue="1250"/>
             </file>
         </folder>
     </folder>
@@ -104,6 +104,7 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-etl-mime-resolver.xml" url="mime-resolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.etl.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/etl/ui/resources/images/ETLDefinition.png"/>
+                <attr name="position" intvalue="447"/>
             </file>
         </folder>
     </folder>
@@ -1610,7 +1611,9 @@ made subject to such option by the copyright holder.
         </folder>
         <folder name="Modes">
             <folder name="output">
-                <file name="ETLOutputWindowTopComponent.wstcref" url="ETLOutputWindowTopComponentWstcref.xml"/>
+                <file name="ETLOutputWindowTopComponent.wstcref" url="ETLOutputWindowTopComponentWstcref.xml">
+                    <attr name="position" intvalue="317"/>
+                </file>
             </folder>
         </folder>
     </folder>
