@@ -26,7 +26,7 @@ import java.io.IOException;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
-public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeListener {
+class PanelOptionsVisual extends SettingsPanel implements PropertyChangeListener {
     
 //    private static boolean lastMainClassCheck = false; // XXX Store somewhere
     
