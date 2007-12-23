@@ -52,6 +52,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.groovy.grailsproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.groovy.grailsproject.classpath.SourceRoots;
+import org.netbeans.modules.groovy.grailsproject.queries.GrailsProjectEncodingQueryImpl;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.filesystems.FileObject;
@@ -96,6 +97,7 @@ public final class GrailsProject implements Project {
                 new GrailsServerState(),
                 new GrailsProjectCustomizerProvider(this),
                 new GrailsProjectDeleteImplementation(this),
+                new GrailsProjectEncodingQueryImpl(),
                 // new TemplatesImpl(),
                 logicalView, //Logical view of project implementation
                 cpProvider
