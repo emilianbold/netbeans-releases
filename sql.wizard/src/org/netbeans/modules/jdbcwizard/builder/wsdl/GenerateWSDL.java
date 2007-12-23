@@ -19,13 +19,11 @@
 package org.netbeans.modules.jdbcwizard.builder.wsdl;
 
 import java.io.File;
-import org.apache.tools.ant.Task;
-import org.apache.tools.ant.BuildException;
 
 import org.netbeans.modules.jdbcwizard.builder.dbmodel.DBTable;
 import org.netbeans.modules.jdbcwizard.builder.dbmodel.DBConnectionDefinition;
 
-public class GenerateWSDL extends Task {
+public class GenerateWSDL {
     private String mSrcDirectoryLocation;
     private String mBuildDirectoryLocation;
     private String mWSDLFileName;
@@ -79,20 +77,16 @@ public class GenerateWSDL extends Task {
         this.dbinfo = dbinfo;
     }
 
-    public void execute() throws BuildException {
+    public void execute() {
         final File srcDir = new File(this.mSrcDirectoryLocation);
         if (!srcDir.exists()) {
-            throw new BuildException("Directory " + this.mSrcDirectoryLocation + " does not exit.");
+            throw new IllegalArgumentException("Directory " + this.mSrcDirectoryLocation + " does not exist.");
         }
-        try {
-            final String srcDirPath = srcDir.getAbsolutePath();
-            final WSDLGenerator wsdlgen = new WSDLGenerator(this.mTable, this.mWSDLFileName, srcDirPath, this.mDBType, this.mJNDIName);
-            wsdlgen.setTopEleName();
-            wsdlgen.setXSDName();
-            wsdlgen.setDBInfo(this.dbinfo);
-            wsdlgen.generateWSDL();
-        } catch (final Exception e) {
-            throw new BuildException(e.getMessage());
-        }
+        final String srcDirPath = srcDir.getAbsolutePath();
+        final WSDLGenerator wsdlgen = new WSDLGenerator(this.mTable, this.mWSDLFileName, srcDirPath, this.mDBType, this.mJNDIName);
+        wsdlgen.setTopEleName();
+        wsdlgen.setXSDName();
+        wsdlgen.setDBInfo(this.dbinfo);
+        wsdlgen.generateWSDL();
     }
 }

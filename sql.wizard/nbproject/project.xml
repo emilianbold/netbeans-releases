@@ -23,15 +23,6 @@
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.modules.sql.wizard</code-name-base>
             <module-dependencies>
-                    <dependency>
-                    <code-name-base>org.apache.tools.ant.module</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>3</release-version>
-                        <specification-version>3.24.21.1</specification-version>
-                    </run-dependency>
-                </dependency>
             <dependency>
                     <code-name-base>org.netbeans.soa.libs.wsdl4j</code-name-base>
                     <build-prerequisite/>
@@ -179,10 +170,6 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>       
-            <class-path-extension>
-                <runtime-relative-path>ext/sql/ant.jar</runtime-relative-path>
-                <binary-origin>"${harness.dir}/../java1/ant/lib/ant.jar"</binary-origin>
-            </class-path-extension>
             <public-packages/>
         </data>
     </configuration>
