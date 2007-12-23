@@ -19,14 +19,4 @@
 -->
 <project name="reportgenerator" default="netbeans" basedir="." >
     <import file="../../../nbbuild/templates/projectized.xml"/>
-    
-    <target name="netbeans-extra" depends="copy-libs">
-    </target>
-    
-    <target name="copy-libs" >
-      <mkdir dir="${cluster}/modules/ext/reportgenerator"/>
-        <copy todir="${cluster}/modules/ext/reportgenerator">
-            <fileset dir="external" />
-        </copy>
-     </target>  
 </project>
