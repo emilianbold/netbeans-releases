@@ -19,13 +19,4 @@
 -->
 <project name="help" default="netbeans" basedir=".">
     <import file="../../../nbbuild/templates/projectized.xml"/>
-
-    <target name="netbeans-extra">
-        <mkdir dir="${cluster}/modules/ext/sql"/>
-        <copy todir="${cluster}/modules/ext/sql">
-            <fileset dir="${cluster}/../java1/ant/lib">
-                <include name="ant.jar"/>
-            </fileset>
-        </copy>
-    </target>
 </project>
