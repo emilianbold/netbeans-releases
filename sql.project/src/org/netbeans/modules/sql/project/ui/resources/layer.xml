@@ -79,7 +79,7 @@
         <folder name="MIMEResolver">
             <file name="SQLResolver.xml" url="SQLResolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.sql.project.ui.resources.Bundle"/>
-                <attr name="position" intvalue="195"/>
+                <attr name="position" intvalue="198"/>
             </file>
         </folder>
     </folder>
