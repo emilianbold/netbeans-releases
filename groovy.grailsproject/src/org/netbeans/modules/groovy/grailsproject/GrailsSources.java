@@ -102,7 +102,7 @@ public class GrailsSources implements Sources {
         } else if ("scripts".equals(type)) {
             result.add(new Group(projectDir.getFileObject("scripts"), "Scripts", null, null, SourceCategory.VIEWS));
         } else {
-            if(! type.startsWith(".")) { // we have to filter-out hidden directories like .settings etc.
+            if(!type.startsWith(".") && !type.startsWith("grails-app/.")) { // we have to filter-out hidden directories like .settings etc.
                 FileObject fileObject = projectDir.getFileObject(type);
                 if (fileObject != null) {
                     result.add(new Group(fileObject, fileObject.getName(), null, null, SourceCategory.NONE));
