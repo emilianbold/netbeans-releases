@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.Action;
+import javax.swing.JSeparator;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -77,6 +78,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -261,8 +263,22 @@ public class GrailsLogicalViewProvider implements LogicalViewProvider {
             actions.add(new GrailsProjectDeleteAction(project));
             actions.add(CommonProjectActions.customizeProjectAction());
             
+            // honor 57874 contact
+            addFromLayers(actions, "Projects/Actions"); //NOI18N
+            
             return actions.toArray(new Action[actions.size()]);
             
+        }
+
+        private void addFromLayers(List<Action> actions, String path) {
+            Lookup look = Lookups.forPath(path);
+            for (Object next : look.lookupAll(Object.class)) {
+                if (next instanceof Action) {
+                    actions.add((Action) next);
+                } else if (next instanceof JSeparator) {
+                    actions.add(null);
+                }
+            }
         }
 
     }
