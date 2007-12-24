@@ -188,6 +188,7 @@ public class GoToElementAction extends AbstractAction implements GoToElementPane
     }   
    
     private void cleanup() {
+	cancel();
         if ( dialog != null ) { // Closing event for some reson sent twice
         
             // Save dialog size     
@@ -203,6 +204,20 @@ public class GoToElementAction extends AbstractAction implements GoToElementPane
 	
     }
 
+    private void cancel() {
+	RequestProcessor.Task theTask = this.task;
+	if( theTask != null ) {
+	    theTask.cancel();
+	}
+	Worker theWorker = this.running;
+	running = null;
+        if ( theWorker != null ) {
+            theWorker.cancel();
+        }
+        for (ElementProvider provider : elementProviders) {
+            provider.cancel();
+        }
+    }
     
     // Implementation of content provider --------------------------------------
     
@@ -216,12 +231,7 @@ public class GoToElementAction extends AbstractAction implements GoToElementPane
         if (okButton != null) {
             okButton.setEnabled (false);
         }
-        if ( running != null ) {
-            running.cancel();
-            task.cancel();
-            running = null;
-        }
-        
+	cancel();
         if ( text == null ) {
             panel.setModel(EMPTY_LIST_MODEL);
             return;

@@ -55,26 +55,14 @@ public abstract class BaseProvider implements ElementProvider {
         Collection<? extends ElementDescriptor> getResult();
     }
     
-//    private class ResultSetImpl implements ResultSet {
-//
-//        List<ElementDescriptor> data = new ArrayList<ElementDescriptor>();
-//        
-//        public void add(ElementDescriptor descriptor) {
-//            data.add(descriptor);
-//        }
-//
-//        public Collection<? extends ElementDescriptor> getResult() {
-//            return data;
-//        }
-//        
-//    }
-    
     private class ResultSetImpl implements ResultSet {
 
         Map<ElementDescriptor, Boolean> data = new HashMap<ElementDescriptor, Boolean>();
         
         public void add(ElementDescriptor descriptor) {
-            if( ! data.containsKey(descriptor) || ! currentProject.isArtificial() ) {
+	    // There might be several instances that correspond to the same declaration (IZ #116478);
+	    // in this case instance that belongs to non-artificial project is stronger
+            if( ! data.containsKey(descriptor) || ! isArtificial(currentProject) ) {
                 data.put(descriptor, Boolean.TRUE);
             }
         }
@@ -82,13 +70,22 @@ public abstract class BaseProvider implements ElementProvider {
         public Collection<? extends ElementDescriptor> getResult() {
             return new ArrayList<ElementDescriptor>(data.keySet());
         }
+	
+	private boolean isArtificial(CsmProject project) {
+	    return project != null && project.isArtificial();
+	}
         
     }
     
     private boolean isCancelled = false;
+    
     protected static final boolean PROCESS_LIBRARIES = true; // Boolean.getBoolean("cnd.type.provider.libraries");
     protected static final boolean TRACE = Boolean.getBoolean("cnd.goto.fv.trace");
+
+    /** To not process same libararies twice */
     private Set<CsmProject> processedProjects = new HashSet<CsmProject>();
+
+    /** Project that is currently being processed. */
     private CsmProject currentProject;
 
     public void cancel() {
