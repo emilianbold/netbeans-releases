@@ -1,10 +1,11 @@
 Name: Proguard Obfuscator
 Version: 3.7
-License: GPL
+License: GPL-with-Proguard-exception
 Origin: http://proguard.sourceforge.net/
 Source: proguard3.7-src.zip
 Files: proguard3.7-src.zip, proguard3.7.jar
 OSR: 5748
+Comment: ProGuard JAR must not be linked with any part of IDE. Should be used only as executable binary. For more information about license see THIRDPARTYLICENSEREADME.txt.
 
 		    GNU GENERAL PUBLIC LICENSE
 		       Version 2, June 1991
@@ -345,3 +346,37 @@ proprietary programs.  If your program is a subroutine library, you may
 consider it more useful to permit linking proprietary applications with the
 library.  If this is what you want to do, use the GNU Lesser General
 Public License instead of this License.
+
+
+Special Exception to the GNU General Public License
+
+Copyright © 2002-2006 Eric Lafortune
+
+This program is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation; either version 2 of the License, or (at your option) any later
+version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+Place, Suite 330, Boston, MA 02111-1307 USA
+
+In addition, as a special exception, Eric Lafortune gives permission to link
+the code of this program with the following stand-alone applications:
+
+    * Apache Ant,
+    * Apache Maven,
+    * the Eclipse IDE,
+    * the Sun NetBeans IDE,
+    * the Sun J2ME Wireless Toolkit, and
+    * the Javaground Tools,
+
+and distribute linked combinations including the two. You must obey the GNU
+General Public License in all respects for all of the code used other than
+these programs. If you modify this file, you may extend this exception to your
+version of the file, but you are not obligated to do so. If you do not wish to
+do so, delete this exception statement from your version.

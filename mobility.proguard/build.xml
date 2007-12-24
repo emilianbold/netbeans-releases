@@ -42,13 +42,4 @@ made subject to such option by the copyright holder.
 -->
 <project basedir="." default="netbeans" name="mobility/proguard">
     <import file="../../nbbuild/templates/projectized.xml"/>
-    <target name="netbeans-extra" depends="release"/>
-
-    <target name="release" depends="init">
-        <mkdir dir="${cluster}/external/proguard"/>
-        <copy file="external/notice.txt" todir="${cluster}/external/proguard"/>
-        <copy file="external/proguard3.7-license.txt" todir="${cluster}/external/proguard"/>
-        <copy file="external/proguard3.7-license-exception.txt" todir="${cluster}/external/proguard"/>
-        <copy file="external/proguard3.7.jar" todir="${cluster}/external/proguard"/>
-    </target>
 </project>
