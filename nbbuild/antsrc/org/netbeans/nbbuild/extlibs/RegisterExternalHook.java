@@ -48,9 +48,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
@@ -75,15 +73,7 @@ public class RegisterExternalHook extends Task {
         this.hook = hook;
     }
 
-    private static final String PREFIX = "*/external/*.";
-    private static final String[] EXTENSIONS = {
-        "zip",
-        "jar",
-        "gz",
-        "bz2",
-        "gem",
-        "dll",
-    };
+    private static final String BINARIES = "*/external/*.{zip,jar,gz,bz2,gem,dll}";
 
     @Override
     public void execute() throws BuildException {
@@ -138,26 +128,18 @@ public class RegisterExternalHook extends Task {
                     pw.println("[extensions]");
                     pw.println("external = " + hookInstalled);
                     pw.println("[encode]");
-                    for (String extension : EXTENSIONS) {
-                        // XXX check for username/password in default push path and copy if found
-                        // E.g.: https://jhacker:secret@hg.netbeans.org/binaries/upload
-                        pw.println(PREFIX + extension + " = upload: https://hg.netbeans.org/binaries/upload");
-                    }
+                    // XXX check for username/password in default push path and copy if found
+                    pw.println("# To preauthenticate, use: https://jhacker:secret@hg.netbeans.org/binaries/upload");
+                    pw.println(BINARIES + " = upload: https://hg.netbeans.org/binaries/upload");
                     pw.println("[decode]");
-                    for (String extension : EXTENSIONS) {
-                        pw.println(PREFIX + extension + " = download: http://hg.netbeans.org/binaries/");
-                    }
+                    pw.println(BINARIES + " = download: http://hg.netbeans.org/binaries/");
                     pw.flush();
                     pw.close();
                 } finally {
                     os.close();
                 }
                 log("Looking for external binaries in " + repo + " which need to be checked out again using decoder");
-                List<String> command = new ArrayList<String>(Arrays.asList("hg", "locate"));
-                for (String extension : EXTENSIONS) {
-                    command.add(PREFIX + extension);
-                }
-                Process p = new ProcessBuilder(command).directory(repo).start();
+                Process p = new ProcessBuilder("hg", "locate", BINARIES).directory(repo).start();
                 BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
                 boolean doCheckout = false;
                 String binary;
