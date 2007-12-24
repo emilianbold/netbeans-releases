@@ -159,7 +159,7 @@ public class RegisterExternalHook extends Task {
                 }
                 Process p = new ProcessBuilder(command).directory(repo).start();
                 BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
-                List<String> binaries = new ArrayList<String>();
+                boolean doCheckout = false;
                 String binary;
                 while ((binary = r.readLine()) != null) {
                     File f = new File(root, binary);
@@ -173,18 +173,16 @@ public class RegisterExternalHook extends Task {
                         is.read(buf);
                         if (Arrays.equals(buf, rawheader)) {
                             f.delete();
-                            binaries.add(binary);
+                            doCheckout = true;
                         }
                     } finally {
                         is.close();
                     }
                 }
-                if (!binaries.isEmpty()) {
-                    log("Will check out fresh: " + binaries);
+                if (doCheckout) {
+                    log("Will check out external binaries fresh");
                     log("(This could take a while as binaries are downloaded into your cache.)");
-                    command = new ArrayList<String>(Arrays.asList("hg", "checkout"));
-                    command.addAll(binaries);
-                    new ProcessBuilder(command).directory(repo).start().waitFor();
+                    new ProcessBuilder("hg", "checkout").directory(repo).start().waitFor();
                 }
             }
         } catch (IOException x) {
