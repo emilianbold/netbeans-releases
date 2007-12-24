@@ -43,6 +43,7 @@ package org.netbeans.modules.php.lexer;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.InputAttributes;
@@ -56,7 +57,8 @@ import org.netbeans.spi.lexer.LanguageProvider;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 import org.openide.util.Lookup;
-import org.openide.util.Lookup.Result;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 
 
 /**
@@ -92,7 +94,7 @@ public enum PhpTokenId implements TokenId {
     }
     
     public static Language getPhpLanguage() {
-        return Language.find(EMBED_MIME_TYPE);
+        return getPurePhpLanguage();
     }
     
     private static class PhpLanguageHierarchy extends LanguageHierarchy<PhpTokenId> {
@@ -119,8 +121,8 @@ public enum PhpTokenId implements TokenId {
                     return LanguageEmbedding.create(
                             HTMLTokenId.language(), 0, 0, true);
                 case PHP:
-                    Language<?> lang = Language.find(EMBED_MIME_TYPE);
-                    return LanguageEmbedding.create(lang, 0, 0, true);
+                    return LanguageEmbedding.create( getPurePhpLanguage(), 
+                            0, 0, true);
                 default:
                     return null;
             }
@@ -132,8 +134,56 @@ public enum PhpTokenId implements TokenId {
         
     }
     
+    private static final Language<?> getPurePhpLanguage(){
+        Language<?> lang = myPurePhp.get();
+        if ( lang == null){
+            LookupListener listener = new LookupListener(){
+                public void resultChanged( LookupEvent arg0 ) {
+                    synchronized( myLock ){
+                        myLock.notify();
+                    }
+                }
+            };
+            Lookup.Result<LanguageProvider> lookupResult = 
+                Lookup.getDefault().lookup(
+                        new Lookup.Template<LanguageProvider>(
+                                LanguageProvider.class));
+            lookupResult.addLookupListener( listener );
+            int count = 0;
+            while( count <100 ){
+                lang = Language.find( EMBED_MIME_TYPE );
+                if ( lang == null ){
+                    synchronized ( myLock ) {
+                        try {
+                            myLock.wait( 100 );
+                        }
+                        catch (InterruptedException e) {
+                            // just ignore
+                        }
+                    }
+                }
+                else {
+                    myPurePhp.compareAndSet( null , lang );
+                    return lang;
+                }
+                count++;
+            }
+            lookupResult.removeLookupListener( listener );
+            if ( lang == null ){
+                throw new RuntimeException( "Language for mime-type " +
+                        EMBED_MIME_TYPE +" is not found");      // NOI18N
+            }
+        }
+        return lang;
+    }
+    
     private static final Language<PhpTokenId> LANGUAGE = 
         new PhpLanguageHierarchy().language();
     
     private String myCategory;
+    
+    private static AtomicReference<Language<?>> myPurePhp = 
+        new AtomicReference<Language<?>>();
+    
+    private static final Object myLock = new Object();
 }
