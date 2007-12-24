@@ -78,15 +78,21 @@ made subject to such option by the copyright holder.
     </fail>
 
     <property file="build.properties"/>
+
+    <mkdir dir="build/antclasses"/>
+    <javac srcdir="antsrc" destdir="build/antclasses" deprecation="true" debug="${build.compiler.debug}" source="1.5" target="1.5">
+        <classpath>
+            <pathelement location="${ant.core.lib}"/>
+        </classpath>
+        <include name="org/netbeans/nbbuild/extlibs/RegisterExternalHook.java"/>
+        <compilerarg line="-Xlint -Xlint:-serial"/>
+    </javac>
+    <taskdef name="registerexternalhook" classname="org.netbeans.nbbuild.extlibs.RegisterExternalHook" classpath="build/antclasses"/>
+    <registerexternalhook root=".." hook="antsrc/org/netbeans/nbbuild/extlibs/external.py"/>
+
     <echo message="Bootstrapping NetBeans-specific Ant extensions..."/>
-    <available property="ant.jar" value="${ant.home}/lib/ant.jar" file="${ant.home}/lib/ant.jar"/>
-    <!-- if the previous location is not correct than find the ant.jar from the java.class.path value -->
-    <pathconvert property="ant.jar">
-        <mapper type="regexp" from="${path.separator}([^${path.separator}]*ant.jar)${path.separator}" to="\1"/>
-        <path location="${path.separator}${java.class.path}${path.separator}"/>
-    </pathconvert>
     <path id="bootstrap-cp">
-     <pathelement location="${ant.jar}"/>
+     <pathelement location="${ant.core.lib}"/>
      <fileset dir="..">
         <!-- For JavaHelp indexing: -->
         <include name="apisupport/harness/external/jsearch*.jar"/>
@@ -112,7 +118,6 @@ made subject to such option by the copyright holder.
         Probably you failed to clean your sources before updating them from CVS.
     </fail>
     <!-- OK, continue: -->
-    <mkdir dir="build/antclasses"/>
     <available property="have.javahelp" file="../apisupport/harness/external" type="dir"/>
     <javac srcdir="antsrc" destdir="build/antclasses" deprecation="true" debug="${build.compiler.debug}" source="1.5" target="1.5">
       <classpath refid="bootstrap-cp"/>
