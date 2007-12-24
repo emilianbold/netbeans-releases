@@ -92,18 +92,6 @@ class ClassMemberReferenceImpl<T extends SourceElement> extends ReferenceImpl<T>
         }
     }
 
-
-    private ObjectDefinition findOwner( T result ) {
-        SourceElement current = result;
-        while (current != null) {
-            if (current instanceof ObjectDefinition) {
-                return (ObjectDefinition) current;
-            }
-            current = current.getParent();
-        }
-        return null;
-    }
-
     /* (non-Javadoc)
      * @see org.netbeans.modules.php.model.ClassReference#getObjectName()
      */
@@ -118,8 +106,11 @@ class ClassMemberReferenceImpl<T extends SourceElement> extends ReferenceImpl<T>
      * @see org.netbeans.modules.php.model.Reference#get()
      */
     public T get() {
-        ObjectDefinition objDef = getObject();
-        return get( objDef );
+        T result = get( ClassStatement.class );
+        if ( result == null ){
+            return get( InterfaceStatement.class );
+        }
+        return null;
     }
     
     private ObjectDefinition resolveObject(){
@@ -130,7 +121,7 @@ class ClassMemberReferenceImpl<T extends SourceElement> extends ReferenceImpl<T>
         List<ObjectDefinition> result = null;
         for (ReferenceResolver referenceResolver : resolvers) {
             List<ObjectDefinition> list= referenceResolver.resolve( getSource(), 
-                    getIdentifier(), ObjectDefinition.class , true );
+                    getObjectName(), ObjectDefinition.class , true );
             result = add( result , list);
         }
         if ( result != null && result.size() >0 ){
@@ -139,26 +130,30 @@ class ClassMemberReferenceImpl<T extends SourceElement> extends ReferenceImpl<T>
         return null;
     }
     
-    private T get( ObjectDefinition definition ){
-        T result = get( definition , ClassStatement.class );
-        if ( result == null ){
-            return get( definition , InterfaceStatement.class );
-        }
-        return null;
-    }
-    
-    private T get( ObjectDefinition definition , 
-            Class<? extends SourceElement> clazz )
-    {
+    private T get( Class<? extends SourceElement> clazz ){
         List<ReferenceResolver> classResolvers = 
             getResolvers( clazz );
         for (ReferenceResolver referenceResolver : classResolvers) {
             List<? extends SourceElement> statements = 
                 referenceResolver.resolve( getSource(), getIdentifier(), clazz,
                         true );
-            if ( statements.size() > 0 ){
-                return getType().cast( statements.get(0));
+            for( SourceElement statement : statements ) {
+                if ( getType().isAssignableFrom( statement.getElementType() )){
+                    T result = getType().cast(statements.get(0));
+                    return result;
+                }
             }
+        }
+        return null;
+    }
+    
+    private ObjectDefinition findOwner( T result ) {
+        SourceElement current = result;
+        while (current != null) {
+            if (current instanceof ObjectDefinition) {
+                return (ObjectDefinition) current;
+            }
+            current = current.getParent();
         }
         return null;
     }

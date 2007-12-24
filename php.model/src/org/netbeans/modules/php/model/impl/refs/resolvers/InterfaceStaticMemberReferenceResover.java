@@ -40,13 +40,18 @@
  */
 package org.netbeans.modules.php.model.impl.refs.resolvers;
 
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
+import org.netbeans.modules.php.model.ClassConst;
+import org.netbeans.modules.php.model.ClassFunctionDeclaration;
+import org.netbeans.modules.php.model.ConstDeclaration;
+import org.netbeans.modules.php.model.InterfaceBody;
 import org.netbeans.modules.php.model.InterfaceDefinition;
 import org.netbeans.modules.php.model.InterfaceStatement;
 import org.netbeans.modules.php.model.Reference;
 import org.netbeans.modules.php.model.SourceElement;
-import org.netbeans.modules.php.model.refs.ReferenceResolver;
 
 
 /**
@@ -76,14 +81,93 @@ public class InterfaceStaticMemberReferenceResover
      * @see org.netbeans.modules.php.model.impl.refs.resolvers.StaticMemberReferenceResolver#resolve(org.netbeans.modules.php.model.SourceElement, java.lang.String, java.lang.Class, org.netbeans.modules.php.model.SourceElement, boolean)
      */
     @Override
-    protected <T extends SourceElement> List<T> resolve( SourceElement source,
-            String memberName, Class<T> clazz, T owner, boolean exactComparison )
+    protected <T extends SourceElement> List<T> resolve( String memberName, 
+            Class<T> clazz, SourceElement owner, boolean exactComparison )
     {
+        if ( !(  owner instanceof InterfaceDefinition )){
+            return Collections.EMPTY_LIST;
+        }
+        List<T> result = new LinkedList<T>();
         InterfaceDefinition definition = (InterfaceDefinition) owner;
-        // TODO
+        InterfaceBody body = definition.getBody();
+        if ( body == null ){
+            return Collections.EMPTY_LIST;
+        }
+        List<InterfaceStatement> statements = body.getStatements();
+        for (InterfaceStatement interfaceStatement : statements) {
+            findInStatement( memberName , interfaceStatement , clazz,  result , 
+                    exactComparison);
+        }
+        
+        if ( exactComparison && result.size() >0 ){
+            return result;
+        }
+        
         List<Reference<InterfaceDefinition>> superIfaces = definition.getSuperInterfaces();
-        // TODO search in super
-        return null;
+        for (Reference<InterfaceDefinition> reference : superIfaces) {
+            InterfaceDefinition def = reference.get();
+            if ( def == null ){
+                continue;
+            }
+            
+            List<T> list = resolve(memberName, clazz, def, exactComparison);
+            result.addAll( list );
+            
+            if ( exactComparison && result.size() >0 ){
+                return result;
+            }
+        }
+        return result;
+    }
+    
+    
+    protected <T extends SourceElement> void handleFunctionDecl( String name,
+            ClassFunctionDeclaration decl, Class<T> clazz, List<T> collected,
+            boolean exactComparison )
+    {
+        if (!clazz.isAssignableFrom(decl.getElementType())) {
+            return;
+        }
+        String declName = decl.getName();
+        if (exactComparison && name.equals(declName)) {
+            collected.add(clazz.cast(decl));
+        }
+        if (!exactComparison && declName.startsWith(name)) {
+            collected.add(clazz.cast(decl));
+        }
+    }
+    
+    protected <T extends SourceElement> void handleConstDecl( String name, 
+            ConstDeclaration decl , Class<T> clazz, List<T> collected ,
+            boolean exactComparison) {
+        List<ClassConst> consts = decl.getDeclaredConstants();
+        for (ClassConst cnst : consts) {
+            if ( !clazz.isAssignableFrom( cnst.getElementType())){
+                continue;
+            }
+            String attrName = cnst.getName();
+            if ( exactComparison && name.equals( attrName ) ){
+                collected.add( clazz.cast( cnst ));
+            }
+            if ( !exactComparison && attrName.startsWith( name ) ){
+                collected.add(clazz.cast( cnst ));
+            }
+        }
     }
 
+    private <T extends SourceElement>  void findInStatement(  String name, 
+            InterfaceStatement statement, Class<T> clazz, List<T> collected ,
+            boolean exactComparison)
+    {
+        if ( statement.getElementType().equals( ClassFunctionDeclaration.class )){
+            handleFunctionDecl(name, (ClassFunctionDeclaration)statement, 
+                    clazz, collected, exactComparison);
+        }
+        else if ( statement.getElementType().equals( ConstDeclaration.class )){
+            handleConstDecl(name, (ConstDeclaration)statement, clazz, 
+                    collected, exactComparison);
+        }
+    }
+    
+    
 }

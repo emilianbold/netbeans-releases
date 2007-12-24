@@ -76,8 +76,8 @@ abstract class StaticMemberReferenceResolver extends AbstractCompositeResover
                     true ) );
         }
         if ( list.size() > 0 ){
-            T element = clazz.cast(list.get( list.size() -1 ));
-            return resolve(source, memberName, clazz, element , exactComparison);
+            SourceElement element = list.get( list.size() -1 );
+            return resolve(memberName, clazz, element , exactComparison);
         }
         return Collections.EMPTY_LIST;
     }
@@ -85,7 +85,7 @@ abstract class StaticMemberReferenceResolver extends AbstractCompositeResover
     protected abstract Class<? extends SourceElement> getOwnType();
     
     protected abstract <T extends SourceElement> List<T> resolve( 
-            SourceElement source ,  String memberName, Class<T> clazz, T owner , 
-            boolean exactComparison )  ;
+            String memberName, Class<T> clazz, SourceElement owner , 
+            boolean exactComparison ) ;
     
 }
