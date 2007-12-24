@@ -147,6 +147,9 @@ public final class ProjectImpl extends ProjectBase {
     }
     
     private void addToQueue(FileBuffer buf, FileImpl file) {
+        if( isDisposing() ) {
+            return;
+        }
         if (TraceFlags.USE_DEEP_REPARSING) {
             DeepReparsingUtils.reparseOnEdit(file,this);
         } else {
@@ -372,4 +375,12 @@ public final class ProjectImpl extends ProjectBase {
         task.schedule(DELAY);        
     }
 
+    @Override
+    public void setDisposed() {
+        super.setDisposed();
+        if( task != null ) {
+            task.cancel();
+        }
+    }
+    
 }
