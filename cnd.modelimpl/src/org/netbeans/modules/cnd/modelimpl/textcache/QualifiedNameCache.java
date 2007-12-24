@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.textcache;
 
-import org.netbeans.modules.cnd.apt.utils.APTStringManager;
+import org.netbeans.modules.cnd.utils.cache.APTStringManager;
 
 /**
  * help class to share deserialized project names

@@ -42,7 +42,7 @@
 package org.netbeans.modules.cnd.modelimpl.uid;
 
 import org.netbeans.modules.cnd.api.model.CsmUID;
-import org.netbeans.modules.cnd.apt.utils.WeakSharedSet;
+import org.netbeans.modules.cnd.utils.cache.WeakSharedSet;
 
 /**
  *

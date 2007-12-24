@@ -47,7 +47,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
-import org.netbeans.modules.cnd.apt.utils.TextCache;
+import org.netbeans.modules.cnd.utils.cache.TextCache;
 
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;

@@ -47,7 +47,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.cnd.apt.utils.FilePathCache;
+import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 
 /**
  *

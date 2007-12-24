@@ -45,7 +45,7 @@ import antlr.Token;
 import antlr.collections.AST;
 import java.io.Serializable;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
-import org.netbeans.modules.cnd.apt.utils.TextCache;
+import org.netbeans.modules.cnd.utils.cache.TextCache;
 
 /**
  * Fake AST managing text
@@ -60,6 +60,7 @@ public class NamedFakeAST extends FakeAST implements Serializable {
     }
 
     /** Set the token text for this node */
+    @Override
     public void setText(String text_) {
         if (APTTraceFlags.APT_SHARE_TEXT) {
             text_ = TextCache.getString(text_);
@@ -68,20 +69,24 @@ public class NamedFakeAST extends FakeAST implements Serializable {
     } 
 
     /** Get the token text for this node */
+    @Override
     public String getText() {
         return text;
     }
 
+    @Override
     public void initialize(int t, String txt) {
         setType(t);
         setText(txt);
     }
 
+    @Override
     public void initialize(AST t) {
         setText(t.getText());
         setType(t.getType());
     }
 
+    @Override
     public void initialize(Token tok) {
         setText(tok.getText());
         setType(tok.getType());

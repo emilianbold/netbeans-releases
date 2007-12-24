@@ -44,7 +44,7 @@ package org.netbeans.modules.cnd.apt.support;
 import antlr.CommonToken;
 import antlr.Token;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
-import org.netbeans.modules.cnd.apt.utils.TextCache;
+import org.netbeans.modules.cnd.utils.cache.TextCache;
 
 /**
  * token to be used in APT infrastructure

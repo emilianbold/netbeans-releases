@@ -45,7 +45,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.apt.utils.TextCache;
+import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 
 
@@ -70,6 +70,7 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
 	this.name = name;
     }
     
+    @Override
     public void write(DataOutput aStream) throws IOException {
 	super.write(aStream);
 	aStream.writeInt(this.startOffset);
@@ -90,10 +91,12 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
 	assert this.name != null;
     }
     
+    @Override
     public String toString() {
 	return name + "[" + kind + " " + startOffset + "-" + endOffset + "] {" + getFileNameSafe() + "; " + getProjectName() + "}"; // NOI18N
     }
     
+    @Override
     public boolean equals(Object obj) {
 	if (!super.equals(obj)) {
 	    return false;
@@ -105,6 +108,7 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
 		this.name.equals(other.name);
     }
     
+    @Override
     public int hashCode() {
 	int retValue;
 	
@@ -136,10 +140,12 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
 	}
     }
     
+    @Override
     public int getDepth() {
 	return super.getDepth() + 2;
     }
     
+    @Override
     public String getAt(int level) {
 	int superDepth = super.getDepth();
 	if (level < superDepth) {

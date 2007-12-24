@@ -39,28 +39,33 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.dwarfdiscovery.provider;
-
-import org.netbeans.modules.cnd.utils.cache.APTStringManager;
+package org.netbeans.modules.cnd.utils.cache;
 
 /**
- *
- * @author Alexander Simon
+ * cache entry
+ * @author Vladimir Voskresensky
  */
-public class PathCache {
-    private static final APTStringManager instance = APTStringManager.instance("DWARF_PATH_CACHE"); // NOI18N
+public class TextCache {
 
-    private PathCache() {
+    private static final int CAPACITY = 31; // primary number for better distribution
+    private static final APTStringManager.APTCompoundStringManager instance = new APTStringManager.APTCompoundStringManager(CAPACITY);
+    
+    /** Creates a new instance of TextCache */
+    private TextCache() {
     }
     
     public static String getString(String text) {
-        if (text == null){
-            return text;
-        }
+        if (text == null) {
+            throw new NullPointerException("null string is illegal to share"); // NOI18N
+        }        
         return instance.getString(text);
     }
     
     public static void dispose() {
         instance.dispose();
+    }    
+
+    public static APTStringManager getManager() {
+        return instance;
     }    
 }

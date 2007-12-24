@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.cnd.classview;
 
-import org.netbeans.modules.cnd.apt.utils.APTStringManager;
+import org.netbeans.modules.cnd.utils.cache.APTStringManager;
 
 
 public class NameCache {

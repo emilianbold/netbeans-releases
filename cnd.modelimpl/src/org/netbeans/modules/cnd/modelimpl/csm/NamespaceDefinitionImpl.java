@@ -49,7 +49,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.*;
-import org.netbeans.modules.cnd.apt.utils.TextCache;
+import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
@@ -138,6 +138,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         return getContainingFile();
     }
 
+    @Override
     public void dispose() {
         super.dispose();
         onDispose();
@@ -176,6 +177,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     
+    @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);  
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();

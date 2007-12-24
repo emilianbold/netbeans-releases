@@ -46,7 +46,7 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
 import java.io.DataInput;
-import org.netbeans.modules.cnd.apt.utils.TextCache;
+import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
@@ -122,6 +122,7 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
         return ResolverFactory.createResolver(this, resolver).resolve(nameParts, Resolver.CLASSIFIER);
     }
 
+    @Override
     public void dispose() {
         super.dispose();
 	unregisterInProject();
@@ -135,6 +136,7 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
 
+    @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
         assert this.name != null;

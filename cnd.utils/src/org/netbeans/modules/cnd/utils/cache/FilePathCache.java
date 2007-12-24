@@ -39,28 +39,27 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.dwarfdiscovery.provider;
-
-import org.netbeans.modules.cnd.utils.cache.APTStringManager;
+package org.netbeans.modules.cnd.utils.cache;
 
 /**
- *
- * @author Alexander Simon
+ * cache entry
+ * @author Vladimir Voskresensky
  */
-public class PathCache {
-    private static final APTStringManager instance = APTStringManager.instance("DWARF_PATH_CACHE"); // NOI18N
-
-    private PathCache() {
+public class FilePathCache {
+    private static final APTStringManager instance = APTStringManager.instance(APTStringManager.FILE_PATH_MANAGER, APTStringManager.FILE_PATH_MANAGER_INITIAL_CAPACITY);
+    
+    private FilePathCache() {
     }
     
     public static String getString(String text) {
-        if (text == null){
-            return text;
-        }
         return instance.getString(text);
     }
     
     public static void dispose() {
         instance.dispose();
-    }    
+    }
+
+    public static APTStringManager getManager() {
+        return instance;
+    }
 }

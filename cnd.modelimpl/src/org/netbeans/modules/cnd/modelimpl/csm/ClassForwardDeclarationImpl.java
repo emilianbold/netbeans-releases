@@ -46,7 +46,7 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
 import java.io.DataInput;
-import org.netbeans.modules.cnd.apt.utils.TextCache;
+import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
@@ -110,6 +110,7 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
 
+    @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
         assert this.name != null;

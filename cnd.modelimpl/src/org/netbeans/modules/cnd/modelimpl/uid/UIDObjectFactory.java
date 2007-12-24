@@ -49,7 +49,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmUID;
-import org.netbeans.modules.cnd.apt.utils.APTStringManager;
+import org.netbeans.modules.cnd.utils.cache.APTStringManager;
 import org.netbeans.modules.cnd.modelimpl.csm.BuiltinTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.BuiltinTypes.BuiltInUID;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FixedString;

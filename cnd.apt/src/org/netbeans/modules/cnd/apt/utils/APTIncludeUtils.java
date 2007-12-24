@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.apt.utils;
 
+import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import java.io.File;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;

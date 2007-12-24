@@ -47,7 +47,7 @@ import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import org.netbeans.modules.cnd.apt.utils.TextCache;
+import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
@@ -118,6 +118,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         return null;
     }
     
+    @Override
     public String getQualifiedName() {
 	if( qualifiedName == null ) {
 	    qualifiedName = findQualifiedName();
@@ -157,6 +158,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
 	}
     }
     
+    @Override
     protected void registerInProject() {
 	super.registerInProject();
 	if( qualifiedNameIsFake ) {
@@ -200,6 +202,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     
+    @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
         // can be null

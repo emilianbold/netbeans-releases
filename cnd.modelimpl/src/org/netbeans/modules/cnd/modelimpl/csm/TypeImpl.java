@@ -51,7 +51,7 @@ import antlr.collections.AST;
 import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.*;
-import org.netbeans.modules.cnd.apt.utils.TextCache;
+import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
@@ -65,9 +65,9 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
  */
 public class TypeImpl extends OffsetableBase implements CsmType {
 
-    private final int pointerDepth;
+    private final byte pointerDepth;
     private final boolean reference;
-    private final int arrayDepth;
+    private final byte arrayDepth;
     private final boolean _const;
     private final String classifierText;
     
@@ -80,9 +80,9 @@ public class TypeImpl extends OffsetableBase implements CsmType {
     TypeImpl(CsmClassifier classifier, int pointerDepth, boolean reference, int arrayDepth, AST ast, CsmFile file) {
         super(ast, file);
         this._setClassifier(classifier);
-        this.pointerDepth = pointerDepth;
+        this.pointerDepth = (byte) pointerDepth;
         this.reference = reference;
-        this.arrayDepth = arrayDepth;
+        this.arrayDepth = (byte) arrayDepth;
         _const = initIsConst(ast);
         if (classifier == null) {
             this._setClassifier(initClassifier(ast));
@@ -101,9 +101,9 @@ public class TypeImpl extends OffsetableBase implements CsmType {
     TypeImpl(AST classifier, CsmFile file, int pointerDepth, boolean reference, int arrayDepth) {
         super(classifier, file);
         //setAst(classifier);
-        this.pointerDepth = pointerDepth;
+        this.pointerDepth = (byte) pointerDepth;
         this.reference = reference;
-        this.arrayDepth = arrayDepth;
+        this.arrayDepth = (byte) arrayDepth;
         _const = initIsConst(classifier);
         this._setClassifier(initClassifier(classifier));
         this.classifierText = initClassifierText(classifier);
@@ -403,9 +403,9 @@ public class TypeImpl extends OffsetableBase implements CsmType {
 
     public TypeImpl(DataInput input) throws IOException {
         super(input);
-        this.pointerDepth = input.readInt();
+        this.pointerDepth = (byte) input.readInt();
         this.reference = input.readBoolean();
-        this.arrayDepth= input.readInt();
+        this.arrayDepth= (byte) input.readInt();
         this._const = input.readBoolean();
         this.classifierText = TextCache.getString(input.readUTF());
         assert this.classifierText != null;
