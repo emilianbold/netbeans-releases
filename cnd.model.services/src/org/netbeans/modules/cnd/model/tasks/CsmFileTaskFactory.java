@@ -40,15 +40,12 @@
  */
 package org.netbeans.modules.cnd.model.tasks;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
@@ -65,8 +62,8 @@ import org.openide.util.RequestProcessor;
  * @author Sergey Grinev
  */
 public abstract class CsmFileTaskFactory {
-    private final Map<FileObject, Runnable> file2Task = new HashMap<FileObject, Runnable>();
-    private final Map<FileObject, CsmFile> file2csm = new HashMap<FileObject, CsmFile>();
+    private final Map<FileObject, CsmFile> fobj2csm = new HashMap<FileObject, CsmFile>();
+    private final Map<CsmFile, Runnable> csm2task = new HashMap<CsmFile, Runnable>();
     private final ProgressListener progressListener;
 
     protected CsmFileTaskFactory() {
@@ -90,26 +87,28 @@ public abstract class CsmFileTaskFactory {
     }
 
     private void stateChangedImpl(List<FileObject> currentFiles) {
+        //System.err.println("stateChangedImpl, newFiles: " + currentFiles.size() + ", file2Tasks: " + fobj2csm.size());
         Map<CsmFile, Runnable> toRemove = new HashMap<CsmFile, Runnable>();
         Map<CsmFile, Runnable> toAdd = new HashMap<CsmFile, Runnable>();
 
         synchronized (this) {
             List<FileObject> addedFiles = new ArrayList<FileObject>(currentFiles);
-            List<FileObject> removedFiles = new ArrayList<FileObject>(file2Task.keySet());
+            List<FileObject> removedFiles = new ArrayList<FileObject>(fobj2csm.keySet());
 
-            addedFiles.removeAll(file2Task.keySet());
+            addedFiles.removeAll(fobj2csm.keySet());
             removedFiles.removeAll(currentFiles);
 
             //remove old tasks:
             for (FileObject r : removedFiles) {
-                CsmFile source = file2csm.remove(r);
+                CsmFile csmFile = fobj2csm.remove(r);
+                csm2task.remove(csmFile);
 
-                if (source == null) {
+                if (csmFile == null) {
                     //TODO: log
                     continue;
                 }
 
-                toRemove.put(source, file2Task.remove(r));
+                toRemove.put(csmFile, csm2task.remove(r));
             }
 
             //add new tasks:
@@ -127,40 +126,40 @@ public abstract class CsmFileTaskFactory {
 
                     toAdd.put(csmFile, task);
 
-                    file2Task.put(fileObject, task);
-                    file2csm.put(fileObject, csmFile);
+                    fobj2csm.put(fileObject, csmFile);
+                    csm2task.put(csmFile, task);
                 }
             }
         }
 
 
         for (Entry<CsmFile, Runnable> e : toRemove.entrySet()) {
-            scheduler.removeParseCompletionTask(e.getKey(), e.getValue());
+            //System.err.println("### removing file from taskfactory " + e.getKey().getName());
+            // XXX: we need remove event
+            //scheduler.removeParseCompletionTask(e.getKey(), e.getValue());
         }
 
         for (Entry<CsmFile, Runnable> e : toAdd.entrySet()) {
-            try {
-                scheduler.addParseCompletionTask(e.getKey(), e.getValue());
-            } catch (IOException ex) {
-
-            }
+             WORKER.post(e.getValue());
         }
     }
 
-    protected final synchronized void reschedule(FileObject file) throws IllegalArgumentException {
-        CsmFile source = file2csm.get(file);
+    public final synchronized void reschedule(FileObject file) throws IllegalArgumentException {
+        CsmFile source = fobj2csm.get(file);
 
         if (source == null) {
             return;
         }
-
-        Runnable task = file2Task.get(file);
-
-        if (task == null) {
-            return;
+        
+        runTask(source);
+    }
+    
+    private final void runTask(CsmFile file) {
+        Runnable task = csm2task.get(file);
+        
+        if (task!=null) {
+            WORKER.post(task);
         }
-
-        scheduler.rescheduleTask(source, task);
     }
     
     private static RequestProcessor WORKER = new RequestProcessor("CsmFileTaskFactory", 1); //NOI18N
@@ -172,87 +171,13 @@ public abstract class CsmFileTaskFactory {
                 f.fileObjectsChanged();
             }
         };
-
-        scheduler = new Scheduler();
-
     }
 
-    private static class Scheduler {
-
-        public void addParseCompletionTask(CsmFile js, Runnable task) throws IOException {
-            Logger.getLogger(CsmFileTaskFactory.class.getName()).log(Level.FINE, "addParseCompletionTask for " + js.getAbsolutePath());
-            List<TaskPair> taskPairs = csmFile2task.get(js);
-            if (taskPairs == null) {
-                taskPairs = new ArrayList<TaskPair>();
-                csmFile2task.put(js, taskPairs); 
-            }
-            RequestProcessor.Task rpTask = RequestProcessor.getDefault().create(task, true);
-            taskPairs.add(new TaskPair(task, rpTask));
-            if (js.isParsed()) {
-                reschedule(rpTask);
-            }
-        }
-
-        public void removeParseCompletionTask(CsmFile js, Runnable task) {
-            Logger.getLogger(CsmFileTaskFactory.class.getName()).log(Level.FINE, "removeParseCompletionTask for " + js.getAbsolutePath());
-            List<TaskPair> taskPairs = csmFile2task.get(js);
-            assert taskPairs != null;
-            for (TaskPair taskPair : taskPairs) {
-                if (taskPair.task == task) {
-                    taskPairs.remove(taskPair);
-                    break;
-                }
-            }
-            if (taskPairs.isEmpty()) {
-                csmFile2task.remove(js);
-            }
-            //csmFile2task.put(js, taskPairs); // do we need this?*/
-        }
-        
-        public void rescheduleTask(CsmFile js, Runnable task) {
-            List<TaskPair> taskPairs = csmFile2task.get(js);
-            for (TaskPair taskPair : taskPairs) {
-                if (taskPair.task == task) {
-                    reschedule(taskPair.rpTask);
-                    break;
-                }
-            }
-        }
-        
-        private void reschedule(RequestProcessor.Task rpTask) {
-            rpTask.cancel();
-            rpTask.run();
-        }
-
-        public void reschedule(CsmFile file) {
-            List<TaskPair> tasks = csmFile2task.get(file);
-            if (tasks != null) {
-                for (TaskPair taskPair : tasks) {
-                    reschedule(taskPair.rpTask);
-                }
-
-            }
-        }
-        private final Map<CsmFile, List<TaskPair>> csmFile2task = new HashMap<CsmFile, List<TaskPair>>();
-        
-        private final class TaskPair {
-
-            TaskPair(Runnable task, RequestProcessor.Task rpTask) {
-                this.task = task;
-                this.rpTask = rpTask;
-            }
-            
-            Runnable task;
-            RequestProcessor.Task rpTask;
-        }
-    }
-    static Scheduler scheduler;
-
-    private static class ProgressListener extends CsmProgressAdapter {
+    private class ProgressListener extends CsmProgressAdapter {
 
         @Override
         public void fileParsingFinished(CsmFile file) {
-            scheduler.reschedule(file);
+            runTask(file);
         }
     }
 }
