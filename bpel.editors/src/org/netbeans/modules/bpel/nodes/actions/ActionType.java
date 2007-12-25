@@ -48,6 +48,8 @@ public enum ActionType {
     SWAP_ELSE_IF_WITH_MAIN,
     ADD_VARIABLE,
     ADD_CORRELATION_SET,
+    CREATE_CORRELATION_SET,
+    
     ADD_COPY_RULE,
     ADD_PROPERTY,
     
