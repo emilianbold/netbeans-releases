@@ -61,14 +61,17 @@
         debuggerjpda
         diff
         editor
+        enterprise
         graph
         j2ee
         j2eeserver
         java
         lexer
         libs
+        nbbuild
         openide
         openidex
+        print
         projects
         refactoring
         schema2beans
@@ -77,9 +80,6 @@
         web
         websvc
         xml
-        nbbuild
-        print
-        enterprise
     "/>
     <property name="sources.cvs.branch" value="-A"/>
     <property name="sources.cvs.date" value="-D now"/>
