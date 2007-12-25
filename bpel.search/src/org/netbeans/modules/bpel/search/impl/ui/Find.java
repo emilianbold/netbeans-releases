@@ -99,7 +99,7 @@ public final class Find extends SearchControlPanel {
   @Override
   protected void showSearchResult(Object object)
   {
-//out("show");
+//out("show result");
     if ( !(object instanceof SearchElement)) {
       return;
     }
