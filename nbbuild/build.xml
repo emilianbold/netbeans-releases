@@ -66,6 +66,13 @@ made subject to such option by the copyright holder.
       </fail>
   </target>
   
+    <available property="ant.jar" value="${ant.home}/lib/ant.jar" file="${ant.home}/lib/ant.jar"/>
+    <!-- if the previous location is not correct than find the ant.jar from the java.class.path value -->
+    <pathconvert property="ant.jar">
+        <mapper type="regexp" from="${path.separator}([^${path.separator}]*ant.jar)${path.separator}" to="\1"/>
+        <path location="${path.separator}${java.class.path}${path.separator}"/>
+    </pathconvert>
+    
   <target name="bootstrap"
           description="Bootstrap NetBeans-specific Ant extensions."
           depends="-jdk-init,assure-ant">
