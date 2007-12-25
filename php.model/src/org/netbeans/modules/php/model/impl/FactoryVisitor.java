@@ -120,7 +120,7 @@ import org.netbeans.modules.php.model.impl.factory.FunctionDeclarationFactory;
 import org.netbeans.modules.php.model.impl.factory.FunctionDefFactory;
 import org.netbeans.modules.php.model.impl.factory.IfStatementFactory;
 import org.netbeans.modules.php.model.impl.factory.InterfaceBodyFactory;
-import org.netbeans.modules.php.model.impl.factory.SimpleVariableFactory;
+import org.netbeans.modules.php.model.impl.factory.VariableFactory;
 import org.netbeans.modules.php.model.impl.factory.StatementsListFactory;
 import org.netbeans.modules.php.model.impl.factory.SwitchStatementFactory;
 import org.netbeans.modules.php.model.impl.factory.WhileStatementFactory;
@@ -228,7 +228,7 @@ public class FactoryVisitor extends PhpModelVisitorAdaptor {
                 buildExpression(var);
             }
             else {
-                mySource = SimpleVariableFactory.getInstance().build( var , 
+                mySource = VariableFactory.getInstance().build( var , 
                         getNode() , mySequence  );
             }
         }
@@ -241,7 +241,7 @@ public class FactoryVisitor extends PhpModelVisitorAdaptor {
                 buildExpression(declaration);
             }
             else {
-                mySource = SimpleVariableFactory.getInstance().build( declaration , 
+                mySource = VariableFactory.getInstance().build( declaration , 
                         getNode() , mySequence  );
             }
         }

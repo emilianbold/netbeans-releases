@@ -77,7 +77,14 @@ import org.netbeans.modules.php.model.VariableAppearance;
 public class VariableImpl extends SourceElementImpl implements Variable {
     
     public VariableImpl( SourceElement parent, ASTNode node, ASTNode realNode ,
-            TokenSequence sequence ) {
+            TokenSequence sequence ) 
+    {
+        /*
+         *  TODO : need special builder for variable because it can be built
+         *  based on SimpleVariable that is child of Variable in sense of AST
+         *  but the same node by essence. 
+         */ 
+        
         super(parent, node, realNode , sequence);
     }
 
@@ -99,22 +106,25 @@ public class VariableImpl extends SourceElementImpl implements Variable {
      * @see org.netbeans.modules.php.model.Variable#getAppearance()
      */
     public Reference<VariableAppearance> getAppearance() {
+
+        String variable = getText();
+        if ( variable.contains( Utils.NS_OPERATOR )){
+            return new ClassMemberReferenceImpl<VariableAppearance>(this ,
+                  getNarrowNode() , VariableAppearance.class );
+        }
+        
+        int indx = variable.lastIndexOf( '$' );
+        if ( indx >0 ) {
+            return null;
+        }
+
         /*
-         * First of all : skip references for complex varaibles ( variable variable ).
+         * Skip references for complex variables ( variable variable ).
          * We consider only simple variables : $var.
          */
         Expression expr = getName();
         if ( ! expr.getElementType().equals( Literal.class ) ) {
             return null;
-        }
-        String variable = getText();
-        int indx = variable.lastIndexOf( '$' );
-        if ( indx >0 ) {
-            return null;
-        }
-        if ( variable.contains( Utils.NS_OPERATOR )){
-            return new ClassMemberReferenceImpl<VariableAppearance>(this ,
-                  getNarrowNode() , VariableAppearance.class );
         }
         return new ReferenceImpl<VariableAppearance>( this , variable , 
                 VariableAppearance.class);

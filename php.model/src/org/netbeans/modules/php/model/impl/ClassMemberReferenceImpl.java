@@ -46,11 +46,11 @@ import java.util.List;
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTToken;
+import org.netbeans.modules.php.model.ClassConst;
 import org.netbeans.modules.php.model.ClassMemberReference;
-import org.netbeans.modules.php.model.ClassStatement;
-import org.netbeans.modules.php.model.InterfaceStatement;
 import org.netbeans.modules.php.model.ObjectDefinition;
 import org.netbeans.modules.php.model.SourceElement;
+import org.netbeans.modules.php.model.VariableAppearance;
 import org.netbeans.modules.php.model.refs.ReferenceResolver;
 
 
@@ -106,11 +106,16 @@ class ClassMemberReferenceImpl<T extends SourceElement> extends ReferenceImpl<T>
      * @see org.netbeans.modules.php.model.Reference#get()
      */
     public T get() {
-        T result = get( ClassStatement.class );
-        if ( result == null ){
-            return get( InterfaceStatement.class );
+        // TODO : this works ONLY for variables. Need to catch case of fucntions.
+        String id = getIdentifier();
+        T result = null;
+        if ( id.contains( "$") ){
+            result = get( VariableAppearance.class );
         }
-        return null;
+        else {
+            result = get( ClassConst.class );
+        }
+        return result;
     }
     
     private ObjectDefinition resolveObject(){
@@ -171,6 +176,7 @@ class ClassMemberReferenceImpl<T extends SourceElement> extends ReferenceImpl<T>
     private void initIds() {
         List<ASTItem> children = myNode.getChildren();
         byte count = 0;
+        boolean nodeIsFound= false;
         for (ASTItem item : children) {
             if ( item instanceof ASTToken ) {
                 ASTToken token = (ASTToken) item;
@@ -183,8 +189,13 @@ class ClassMemberReferenceImpl<T extends SourceElement> extends ReferenceImpl<T>
                 else {
                     myClassName = token.getIdentifier();
                 }
-                count++;
                 assert count <2;
+                count++;
+            }
+            if ( item instanceof ASTNode ){
+                assert !nodeIsFound;
+                myMemberName = ((ASTNode) item).getAsText().trim();
+                nodeIsFound = true;
             }
         }
     }

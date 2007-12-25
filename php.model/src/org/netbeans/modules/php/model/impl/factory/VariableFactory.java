@@ -38,50 +38,50 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.php.model.resources;
+package org.netbeans.modules.php.model.impl.factory;
 
-import java.io.InputStream;
+import org.netbeans.api.languages.ASTNode;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.php.model.SourceElement;
+import org.netbeans.modules.php.model.VariableAppearance;
+import org.netbeans.modules.php.model.impl.VariableImpl;
+import org.netbeans.modules.php.model.impl.builders.LiteralBuilder;
+import org.netbeans.modules.php.model.impl.builders.StaticExpressionBuilder;
 
 
 /**
  * @author ads
  *
  */
-public final class ResourceMarker {
+public class VariableFactory {
 
-    private ResourceMarker(){
+    private static final String SIMPLE_VARIABLE = "SimpleVariable";     // NOI18N
+
+    private VariableFactory() {
     }
     
-    public static final String STATEMENTS   = "statements.php";           // NOI18N 
-    
-    public static final String SEPARATED    = "separated.php";            // NOI18N
-    
-    public static final String BROKEN1      = "brokenTopLevelStats.php";  // NOI18N 
-    
-    public static final String CALL_EXPRESSION
-                                            = "callExpression.php";       // NOI18N  
-    
-    public static final String EXPRESSION   = "expression.php";           // NOI18N  
-    
-    public static final String INTERFACE    = "interface.php";            // NOI18N  
-    
-    public static final String CLASS        = "class.php";                // NOI18N  
-    
-    public static final String MEMBER       = "member.php";               // NOI18N
-    
-    public static final String VARIABLE     = "variable.php";             // NOI18N
-    
-    public static final String DECLARE      = "declare.php";              // NOI18N
-    
-    public static final String ARRAY        = "array.php";                // NOI18N
-    
-    public static final String CLASS_REF    = "classReference.php";       // NOI18N
-    
-    public static final String STATIC_REF   = "staticReferences.php";     // NOI18N     
-    
-    public static InputStream getStream( String relativeResourceName ){
-        /*String pack = ResourceMarker.class.getPackage().getName().
-            replace( '.', '/');*/
-        return ResourceMarker.class.getResourceAsStream(  relativeResourceName );
+    public static VariableFactory getInstance() {
+        return INSTANCE;
     }
+    
+    public SourceElement build( VariableAppearance var, ASTNode node, 
+            TokenSequence sequence ) 
+    {
+        if (  node.getNT().equals( SIMPLE_VARIABLE ) ) {
+            return LiteralBuilder.getInstance().build( var , node , node , 
+                    sequence );
+        }
+        else if ( node.getNT().equals( StaticExpressionBuilder.VARIABLE)){
+            return new VariableImpl( var , node , node , sequence );
+        }
+        else {
+            assert false : node.getNT();
+            return null;
+        } 
+    }
+
+    private static final VariableFactory INSTANCE = 
+        new VariableFactory();
+
+
 }

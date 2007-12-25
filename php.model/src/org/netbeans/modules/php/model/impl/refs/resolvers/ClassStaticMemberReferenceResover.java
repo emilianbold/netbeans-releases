@@ -47,6 +47,7 @@ import java.util.List;
 import org.netbeans.modules.php.model.Attribute;
 import org.netbeans.modules.php.model.AttributesDeclaration;
 import org.netbeans.modules.php.model.ClassBody;
+import org.netbeans.modules.php.model.ClassConst;
 import org.netbeans.modules.php.model.ClassDefinition;
 import org.netbeans.modules.php.model.ClassFunctionDeclaration;
 import org.netbeans.modules.php.model.ClassFunctionDefinition;
@@ -72,7 +73,9 @@ public class ClassStaticMemberReferenceResover
      */
     public <T extends SourceElement> boolean isApplicable( Class<T> clazz ) {
         return VariableAppearance.class.isAssignableFrom( clazz ) 
-            || ClassStatement.class.isAssignableFrom( clazz );
+            || ClassStatement.class.isAssignableFrom( clazz )
+            || ClassConst.class.isAssignableFrom( clazz )
+            || Attribute.class.isAssignableFrom( clazz );
     }
 
     /* (non-Javadoc)
@@ -110,11 +113,13 @@ public class ClassStaticMemberReferenceResover
         }
         
         Reference<ClassDefinition> superClassRef = statement.getSuperClass();
-        ClassDefinition superClass =  superClassRef.get();
-        if ( superClass != null ){
-            List<T> list = resolve( memberName,  clazz, superClass , 
-                    exactComparison);
-            result.addAll( list );
+        if (superClassRef != null) {
+            ClassDefinition superClass = superClassRef.get();
+            if (superClass != null) {
+                List<T> list = resolve(memberName, clazz, superClass,
+                        exactComparison);
+                result.addAll(list);
+            }
         }
         
         if ( exactComparison && result.size() >0 ){

@@ -66,7 +66,8 @@ public class InterfaceStaticMemberReferenceResover
      * @see org.netbeans.modules.php.model.refs.ReferenceResolver#isApplicable(java.lang.Class)
      */
     public <T extends SourceElement> boolean isApplicable( Class<T> clazz ) {
-        return InterfaceStatement.class.isAssignableFrom( clazz );
+        return InterfaceStatement.class.isAssignableFrom( clazz ) ||
+            ClassConst.class.isAssignableFrom( clazz );
     }
 
     /* (non-Javadoc)
