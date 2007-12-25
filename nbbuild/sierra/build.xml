@@ -1,0 +1,392 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+  Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+
+  The contents of this file are subject to the terms of either the GNU
+  General Public License Version 2 only ("GPL") or the Common
+  Development and Distribution License("CDDL") (collectively, the
+  "License"). You may not use this file except in compliance with the
+  License. You can obtain a copy of the License at
+  http://www.netbeans.org/cddl-gplv2.html
+  or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+  specific language governing permissions and limitations under the
+  License.  When distributing the software, include this License Header
+  Notice in each file and include the License file at
+  nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+  particular file as subject to the "Classpath" exception as provided
+  by Sun in the GPL Version 2 section of the License file that
+  accompanied this code. If applicable, add the following below the
+  License Header, with the fields enclosed by brackets [] replaced by
+  your own identifying information:
+  "Portions Copyrighted [year] [name of copyright owner]"
+
+  Contributor(s):
+
+  The Original Software is NetBeans. The Initial Developer of the Original
+  Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+  Microsystems, Inc. All Rights Reserved.
+
+  If you wish your version of this file to be governed by only the CDDL
+  or only the GPL Version 2, indicate your decision by adding
+  "[Contributor] elects to include this software in this distribution
+  under the [CDDL or GPL Version 2] license." If you do not indicate a
+  single choice of license, a recipient has the option to distribute
+  your version of this file under either the CDDL, the GPL Version 2 or
+  to extend the choice of license to its licensees as provided above.
+  However, if you add GPL Version 2 code and therefore, elected the GPL
+  Version 2 license, then the option applies only if the new code is
+  made subject to such option by the copyright holder.
+-->
+<project name="sierra" default="all" basedir=".">
+    <import file="build.pro"/>
+    
+    <target name="all" depends="init,get-netbeans,get-modules,build"/>
+    <target name="hudson" depends="init,get-netbeans,run-daily,clean,build-fcs,create-zip-init,create-zip,create-zip-fcs,build-dev,create-zip-dev,test-soa"/>
+    
+    <target name="init">
+        <property name="env.BUILD_NUMBER" value=""/>
+        <tstamp>
+            <format property="long_stamp" pattern="yyyyMMdd_HHmm"/>
+        </tstamp>
+        <tstamp>
+            <format property="short_stamp" pattern="yyyyMMdd"/>
+        </tstamp>
+
+        <ant dir="${home}/nbbuild" target="bootstrap"/>
+    </target>
+
+    <!-- netbeans -->
+    <target name="get-netbeans">
+        <java jar="build.jar" fork="true" classpath="." outputproperty="netbeans.file">
+            <sysproperty key="url" value="${netbeans.host}/${netbeans.path}"/>
+        </java>
+
+        <mkdir dir="${netbeans}"/>
+        <property name="netbeans.url" value="${netbeans.host}/${netbeans.path}/${netbeans.file}"/>
+        <get src="${netbeans.url}" dest="${netbeans}/netbeans.zip" usetimestamp="true"/>
+
+        <delete dir="${home}/nbbuild/netbeans"/>
+        <unzip src="${netbeans}/netbeans.zip" dest="${home}/nbbuild"/>
+        <echo file="${build.number}" message="netbeans hudson build: ${netbeans.file}${line.separator}" append="true"/>
+    </target>
+
+    <target name="get-modules">
+        <cvs package="${sources.cvs.modules}" cvsRoot="${sources.cvs.root}" dest="${home}" command="-q co -P ${sources.cvs.branch} ${sources.cvs.date}" failonerror="true"/>
+    </target>
+
+    <!-- zip -->
+    <target name="create-zip-init">
+        <delete dir="${dist}"/>
+        <mkdir dir="${dist}"/>
+        <delete dir="${latest}"/>
+        <mkdir dir="${latest}"/>
+
+        <replace file="${home}/nbbuild/netbeans/etc/netbeans.conf" token="${netbeans.dir}" value="${sierra.dir}"/>
+        <property name="env.BUILD_NUMBER" value=""/>
+
+        <echo file="${build.number}" message="sierra hudson: ${env.BUILD_NUMBER}${line.separator}" append="true"/>
+        <echo file="${build.number}" message=" sierra build: ${long_stamp}${line.separator}" append="true"/>
+
+        <chmod file="${home}/nbbuild/netbeans/bin/netbeans" perm="ugo+rx"/>
+    </target>
+
+    <target name="create-zip">
+        <zip destfile="${dist}/sierra_${env.BUILD_NUMBER}_${short_stamp}.zip">
+            <zipfileset dir="${home}/nbbuild">
+                <include name="netbeans/bin/**"/>
+                <include name="netbeans/enterprise4/**"/>
+                <include name="netbeans/etc/**"/>
+                <include name="netbeans/harness/**"/>
+                <include name="netbeans/ide8/**"/>
+                <include name="netbeans/java1/**"/>
+                <include name="netbeans/nb6.0/**"/>
+                <include name="netbeans/platform7/**"/>
+                <include name="netbeans/soa1/**"/>
+                <include name="netbeans/xml1/**"/>
+                <exclude name="netbeans/soa1/**/*-etl-*"/>
+            </zipfileset>
+        </zip>
+    </target>
+
+    <target name="create-zip-fcs">
+        <zip destfile="${latest}/sierra.zip">
+            <zipfileset dir="${home}/nbbuild">
+                <include name="netbeans/**"/>
+                <exclude name="netbeans/soa1/**/*-xslt-*"/>
+            </zipfileset>
+        </zip>
+
+        <copy file="${latest}/sierra.zip" tofile="${dist}/sierra_${env.BUILD_NUMBER}_${long_stamp}.zip"/>
+    </target>
+
+    <target name="create-zip-dev">
+        <zip destfile="${latest}/sierra_dev.zip">
+            <zipfileset dir="${home}/nbbuild">
+                <include name="netbeans/**"/>
+            </zipfileset>
+        </zip>
+
+        <copy file="${latest}/sierra_dev.zip" tofile="${dist}/sierra_${env.BUILD_NUMBER}_${long_stamp}_dev.zip"/>
+    </target>
+
+    <!-- daily -->
+    <target name="run-daily" depends="check-daily,do-daily"/>
+    
+    <target name="check-daily">
+        <mkdir dir="${lock}"/>
+
+        <tstamp>
+            <format property="daily" pattern="yyyyMMdd"/>
+        </tstamp>
+
+        <available property="lock.available" file="${lock}/${daily}"/>
+    </target>
+
+    <target name="do-daily" unless="lock.available">
+        <delete>
+            <fileset dir="${lock}" includes="*"/>
+        </delete>
+
+        <echo file="${lock}/${daily}" message="${daily}"/>
+
+        <antcall target="get-test"/>
+    </target>
+
+    <!-- test -->
+    <target name="get-test">
+        <cvs package="${test.cvs.modules}" cvsRoot="${test.cvs.root}" dest="${test}" command="-q co -P ${test.cvs.branch}" failonerror="false"/>
+    </target>
+
+    <target name="test-soa">
+        <subant target="default" inheritAll="false">
+            <property name="caps.netbeans.home" location="${home}/nbbuild/netbeans"/>
+            <buildpath location="${soa}/BluePrint1/BluePrint1/build.xml"/>
+            <buildpath location="${soa}/BluePrint2/BluePrint2/build.xml"/>
+            <buildpath location="${soa}/BluePrint3/BluePrint3/build.xml"/>
+            <buildpath location="${soa}/BluePrint4/BluePrint4/build.xml"/>
+            <buildpath location="${soa}/BluePrint5/BluePrint5/build.xml"/>
+            <buildpath location="${soa}/AsynchronousSample/AsynchronousSample/build.xml"/>
+            <buildpath location="${soa}/SynchronousSample/SynchronousSample/build.xml"/>
+            <buildpath location="${soa}/TravelReservationService/TravelReservationService/build.xml"/>
+        </subant>
+    </target>
+
+    <target name="test-jbi-1">
+        <!-- assign -->
+        <antcall target="do-test-jbi"><param name="dir" value="assign/ActivateBilling_Simple"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="assign/AssignBpel"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="assign/AssignNamespaces"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="assign/AtomicAssign"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="assign/CopyByValue/CopyByValueBpel"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="assign/DataTypes"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="assign/MessageWithNoParts"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="assign/predicates"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="assign/VariableAssignments"/></antcall>
+
+        <!-- benchmark -->
+        <antcall target="do-test-jbi"><param name="dir" value="benchmark/BenchmarkBpel"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="benchmark/Ericsson/AlarmIRPBpel2"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="benchmark/purchaseOrderCoordinator"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="benchmark/PurchaseOrderService"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="benchmark/TravelReservationService/TravelReservationService"/></antcall>
+    </target>
+        
+    <target name="test-jbi-2">
+        <!-- dynamicpartnerlink -->
+        <antcall target="do-test-jbi"><param name="dir" value="dynamicpartnerlink/dynamicPartnerLinkBPEL"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="dynamicpartnerlink/justhttpAndBPEL"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="dynamicpartnerlink/JustHTTPandBPEL2"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="dynamicpartnerlink/sendCallBackInfo"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="dynamicpartnerlink/SyncSampleEPRAssign"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="dynamicpartnerlink/SyncSampleEPRLiteral"/></antcall>
+        
+        <!-- MessageExchange -->
+        <antcall target="do-test-jbi"><param name="dir" value="MessageExchange/MessageExchangeBpel"/></antcall>
+        
+        <!-- PartnerLinks -->
+        <antcall target="do-test-jbi"><param name="dir" value="PartnerLinks/DuplicateProject1"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="PartnerLinks/DuplicateProject2"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="PartnerLinks/OneBP"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="PartnerLinks/PLTLocalNamespace"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="PartnerLinks/TwoBPDuplicateImpl"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="PartnerLinks/TwoBPs"/></antcall>
+    </target>
+        
+    <target name="test-jbi-3">
+        <!-- SchemaElemDecl -->
+        <antcall target="do-test-jbi"><param name="dir" value="SchemaElemDecl/BPwithElemRef"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="SchemaElemDecl/BPwithMsgElement"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="SchemaElemDecl/BPwithMsgElemQualified"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="SchemaElemDecl/BPwithNestedElem"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="SchemaElemDecl/BPwithNestedElemQualified"/></antcall>
+        
+        <!-- ScopeTermination -->
+        <antcall target="do-test-jbi"><param name="dir" value="ScopeTermination/ScopeTerminationBpel"/></antcall>
+        
+        <!-- xslt -->
+        <antcall target="do-test-jbi"><param name="dir" value="xslt/DoXslTransformBPEL"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="xslt/InOutBPXSLT/InOutBP"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="xslt/InOutBPXSLT/InOutXSLT"/></antcall>
+    </target>
+
+    <target name="do-test-jbi">
+        <ant antfile="${jbi}/${dir}/build.xml" target="clean" inheritAll="false">
+            <property name="caps.netbeans.home" location="${home}/nbbuild/netbeans"/>
+        </ant>
+        <ant antfile="${jbi}/${dir}/build.xml" inheritAll="false">
+            <property name="caps.netbeans.home" location="${home}/nbbuild/netbeans"/>
+        </ant>
+    </target>
+
+    <!-- clean & build -->
+    <target name="build" depends="build-fcs,build-dev"/>
+    <target name="clean" depends="clean-fcs,clean-dev"/>
+
+    <target name="build-fcs" depends="build-print,build-libs,build-compapp,build-soa,build-bpel, build-etl, build-xslt"/>
+    <target name="clean-fcs" depends="build-print,clean-libs,clean-compapp,clean-soa,clean-bpel, clean-etl, clean-xslt"/>
+
+    <target name="build-dev" depends="build-iep,build-openesbaddons,build-sql,build-wsdlextensions"/>
+    <target name="clean-dev" depends="clean-iep,clean-openesbaddons,clean-sql,clean-wsdlextensions"/>
+
+    <!-- print -->
+    <target name="build-print"><antcall target="do-print"><param name="action" value="netbeans"/></antcall></target>
+    <target name="clean-print"><antcall target="do-print"><param name="action" value="clean"/></antcall></target>
+    <target name="do-print">
+        <subant target="${action}" inheritAll="false">
+            <buildpath location="${home}/print"/>
+        </subant>
+    </target>
+
+    <!-- libs -->
+    <target name="build-libs"><antcall target="do-libs"><param name="action" value="netbeans"/></antcall></target>
+    <target name="clean-libs"><antcall target="do-libs"><param name="action" value="clean"/></antcall></target>
+    <target name="do-libs">
+        <subant target="${action}" inheritAll="false">
+            <buildpath location="${enterprise}/libs/httpunit/build.xml"/>
+            <buildpath location="${enterprise}/libs/jbiadmincommon/build.xml"/>
+            <buildpath location="${enterprise}/libs/jgo/build.xml"/>
+            <buildpath location="${enterprise}/libs/wsdl4j/build.xml"/>
+            <buildpath location="${enterprise}/libs/xmlbeans/build.xml"/>
+            <buildpath location="${enterprise}/libs/xmlunit/build.xml"/>
+        </subant>
+    </target>
+    
+    <!-- compapp -->
+    <target name="build-compapp"><antcall target="do-compapp"><param name="action" value="netbeans"/></antcall></target>
+    <target name="clean-compapp"><antcall target="do-compapp"><param name="action" value="clean"/></antcall></target>
+    <target name="do-compapp">
+        <subant target="${action}" inheritAll="false">
+            <buildpath location="${enterprise}/compapp/capshelp/build.xml"/>
+            <buildpath location="${enterprise}/compapp/jbimanager/build.xml"/>
+            <buildpath location="${enterprise}/compapp/projectjbi/build.xml"/>
+            <buildpath location="${enterprise}/compapp/casaeditor/build.xml"/>
+            <buildpath location="${enterprise}/compapp/projectbase/build.xml"/>
+            <buildpath location="${enterprise}/compapp/projectwizard/build.xml"/>
+        </subant>
+    </target>
+
+    <!-- soa -->
+    <target name="build-soa"><antcall target="do-soa"><param name="action" value="netbeans"/></antcall></target>
+    <target name="clean-soa"><antcall target="do-soa"><param name="action" value="clean"/></antcall></target>
+    <target name="do-soa">
+        <subant target="${action}" inheritAll="false">
+            <buildpath location="${enterprise}/soa/ui/build.xml"/>
+            <buildpath location="${enterprise}/soa/mappercore/build.xml"/>
+            <buildpath location="${enterprise}/soa/mapper/build.xml"/>
+            <buildpath location="${enterprise}/soa/reportgenerator/build.xml"/>
+        </subant>
+    </target>
+
+    <!-- bpel -->
+    <target name="build-bpel"><antcall target="do-bpel"><param name="action" value="netbeans"/></antcall></target>
+    <target name="clean-bpel"><antcall target="do-bpel"><param name="action" value="clean"/></antcall></target>
+    <target name="do-bpel">
+        <subant target="${action}" inheritAll="false">
+            <buildpath location="${enterprise}/bpel/help/build.xml"/>
+            <buildpath location="${enterprise}/bpel/model/build.xml"/>
+            <buildpath location="${enterprise}/bpel/editorsapi/build.xml"/>
+            <buildpath location="${enterprise}/bpel/debuggerapi/build.xml"/>
+            <buildpath location="${enterprise}/bpel/project/build.xml"/>
+            <buildpath location="${enterprise}/bpel/core/build.xml"/>
+            <buildpath location="${enterprise}/bpel/debuggerbdi/build.xml"/>
+            <buildpath location="${enterprise}/bpel/debugger/build.xml"/>
+            <buildpath location="${enterprise}/bpel/debuggerui/build.xml"/>
+            <buildpath location="${enterprise}/bpel/mapper/build.xml"/>
+            <buildpath location="${enterprise}/bpel/search/build.xml"/>
+            <buildpath location="${enterprise}/bpel/editors/build.xml"/>
+            <buildpath location="${enterprise}/bpel/refactoring/build.xml"/>
+            <buildpath location="${enterprise}/bpel/samples/build.xml"/>
+            <buildpath location="${enterprise}/bpel/validation/build.xml"/>
+        </subant>
+    </target>
+
+    <!-- etl -->
+    <target name="build-etl"><antcall target="do-etl"><param name="action" value="netbeans"/></antcall></target>
+    <target name="clean-etl"><antcall target="do-etl"><param name="action" value="clean"/></antcall></target>
+    <target name="do-etl">
+        <subant target="${action}" inheritAll="false">
+            <buildpath location="${enterprise}/dataintegrator/eTLEditor/build.xml"/>
+            <buildpath location="${enterprise}/dataintegrator/etlpro/build.xml"/>
+        </subant>
+    </target>
+
+    <!-- iep -->
+    <target name="build-iep"><antcall target="do-iep"><param name="action" value="netbeans"/></antcall></target>
+    <target name="clean-iep"><antcall target="do-iep"><param name="action" value="clean"/></antcall></target>
+    <target name="do-iep">
+        <subant target="${action}" inheritAll="false">
+            <buildpath location="${enterprise}/iep/model/build.xml"/>
+            <buildpath location="${enterprise}/iep/editor/build.xml"/>
+            <buildpath location="${enterprise}/iep/help/build.xml"/>
+            <buildpath location="${enterprise}/iep/project/build.xml"/>
+        </subant>
+    </target>
+
+    <!-- openesbaddons -->
+    <target name="build-openesbaddons"><antcall target="do-openesbaddons"><param name="action" value="netbeans"/></antcall></target>
+    <target name="clean-openesbaddons"><antcall target="do-openesbaddons"><param name="action" value="clean"/></antcall></target>
+    <target name="do-openesbaddons">
+        <subant target="${action}" inheritAll="false">
+            <buildpath location="${enterprise}/openesbaddons/ftp/build.xml"/>
+            <buildpath location="${enterprise}/openesbaddons/snmp/build.xml"/>
+            <buildpath location="${enterprise}/openesbaddons/configextension/build.xml"/>
+        </subant>
+    </target>
+    
+    <!-- sql -->
+    <target name="build-sql"><antcall target="do-sql"><param name="action" value="netbeans"/></antcall></target>
+    <target name="clean-sql"><antcall target="do-sql"><param name="action" value="clean"/></antcall></target>
+    <target name="do-sql">
+        <subant target="${action}" inheritAll="false">
+            <buildpath location="${enterprise}/sql/jdbchelp/build.xml"/>
+            <buildpath location="${enterprise}/sql/jdbcwizard/build.xml"/>
+            <buildpath location="${enterprise}/sql/project/build.xml"/>
+        </subant>
+    </target>
+  
+    <!-- wsdlextensions -->
+    <target name="build-wsdlextensions"><antcall target="do-wsdlextensions"><param name="action" value="netbeans"/></antcall></target>
+    <target name="clean-wsdlextensions"><antcall target="do-wsdlextensions"><param name="action" value="clean"/></antcall></target>
+    <target name="do-wsdlextensions">
+        <subant target="${action}" inheritAll="false">
+            <buildpath location="${enterprise}/wsdlextensions/file/build.xml"/>
+            <buildpath location="${enterprise}/wsdlextensions/jms/build.xml"/>
+        </subant>
+    </target>
+  
+    <!-- xslt -->
+    <target name="build-xslt"><antcall target="do-xslt"><param name="action" value="netbeans"/></antcall></target>
+    <target name="clean-xslt"><antcall target="do-xslt"><param name="action" value="clean"/></antcall></target>
+    <target name="do-xslt">
+        <subant target="${action}" inheritAll="false">
+            <buildpath location="${enterprise}/xslt/model/build.xml"/>
+            <buildpath location="${enterprise}/xslt/mapper/build.xml"/>
+            <buildpath location="${enterprise}/xslt/tmap/build.xml"/>
+            <buildpath location="${enterprise}/xslt/project/build.xml"/>
+            <buildpath location="${enterprise}/xslt/core/build.xml"/>
+            <buildpath location="${enterprise}/xslt/help/build.xml"/>
+        </subant>
+    </target>
+</project>
