@@ -53,13 +53,15 @@ import org.openide.filesystems.FileObject;
  */
 public final class GrailsProjectFactory implements ProjectFactory {
 
-    public static final String GRAILS_APP_DIR = "grails-app";
+    public static final String GRAILS_APP_DIR = "grails-app"; // NOI18N
+    public static final String WEB_APP_DIR = "web-app"; // NOI18N
 
     public GrailsProjectFactory() {
     }
 
     public boolean isProject(FileObject projectDirectory) {
-        return projectDirectory.getFileObject(GRAILS_APP_DIR) != null;
+        return projectDirectory.getFileObject(GRAILS_APP_DIR) != null &&
+                projectDirectory.getFileObject(WEB_APP_DIR) != null;
     }
 
     public Project loadProject(FileObject projectDirectory, ProjectState projectState) throws IOException {
