@@ -467,6 +467,11 @@ public abstract class OperationMetadataImpl implements OperationMetadata {
         }
 
         public String getName() {
+            return "-"; // NOI18N
+        }
+        
+        @Override
+        public String getId() {
             return "negative"; // NOI18N
         }
         
