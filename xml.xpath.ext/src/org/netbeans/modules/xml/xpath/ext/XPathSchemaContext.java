@@ -345,6 +345,21 @@ public interface XPathSchemaContext {
                 stepsList.add(originalStep);
             }
             //
+            // Add SELF step (.) if there is not other steps 
+            // and the last step of the absolute path has the same schema 
+            // context as that which is used to calculate relative path. 
+            // This check can be done at the beginning of the method
+            // but it is very rare case.
+            if (stepsList.size() == 0) {
+                if (lastStepContext.equalsChain(context)) {
+                    LocationStep selfStep = factory.newLocationStep(
+                            XPathAxis.SELF, 
+                            new StepNodeTypeTest(StepNodeTestType.NODETYPE_NODE), 
+                            null);
+                    stepsList.add(selfStep);
+                }
+            }
+            //
             XPathLocationPath result = factory.newXPathLocationPath(
                     stepsList.toArray(new LocationStep[stepsList.size()]));
             //
