@@ -193,6 +193,10 @@ public class ReceiveNode extends BpelNode<Receive> {
             ActionType.SEPARATOR,
             ActionType.SHOW_POPERTY_EDITOR,
             ActionType.SEPARATOR,
+            
+            ActionType.CREATE_CORRELATION_SET,
+            ActionType.SEPARATOR,
+            
             ActionType.MOVE_UP,
             ActionType.MOVE_DOWN,
             ActionType.SEPARATOR,

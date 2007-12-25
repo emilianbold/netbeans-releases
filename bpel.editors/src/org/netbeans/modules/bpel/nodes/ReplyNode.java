@@ -196,13 +196,16 @@ public class ReplyNode extends BpelNode<Reply> {
         return new ActionType[] {
             ActionType.GO_TO_SOURCE,
             ActionType.GO_TO_DIAGRAMM,
-            ActionType.SEPARATOR,
             ActionType.WRAP,
             ActionType.SEPARATOR,
+            ActionType.SHOW_POPERTY_EDITOR,
+            ActionType.SEPARATOR,
+            
+            ActionType.CREATE_CORRELATION_SET,
+            ActionType.SEPARATOR,
+            
             ActionType.MOVE_UP,
             ActionType.MOVE_DOWN,
-            ActionType.SEPARATOR,
-            ActionType.SHOW_POPERTY_EDITOR,
             ActionType.SEPARATOR,
             ActionType.TOGGLE_BREAKPOINT,
             ActionType.SEPARATOR,
@@ -211,7 +214,6 @@ public class ReplyNode extends BpelNode<Reply> {
             ActionType.PROPERTIES
         };
     }    
-
     protected void updateComplexProperties(ChangeEvent event) {
         if (event instanceof PropertyUpdateEvent) {
             BpelEntity parentEvent = event.getParent();
