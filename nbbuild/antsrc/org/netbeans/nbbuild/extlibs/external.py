@@ -77,7 +77,7 @@ def upload(s, cmd, filename=None, ui=None, repo=None, **kwargs):
         if m:
             url = m.group(1) + m.group(6)
             pm.add_password(None, url, m.group(3), m.group(5))
-        ui.status('Uploading %s to %s\n' % (filename, url))
+        ui.status('Uploading %s to %s (%s Kb)\n' % (filename, url, len(s) / 1024))
         auth = urllib2.HTTPBasicAuthHandler(pm)
         try:
             data = {'file': open(repo.wjoin(filename))}
