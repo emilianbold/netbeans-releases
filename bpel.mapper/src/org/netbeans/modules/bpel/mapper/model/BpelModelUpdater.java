@@ -27,6 +27,7 @@ import org.netbeans.modules.bpel.mapper.tree.models.ForEachConditionsTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
 import org.netbeans.modules.bpel.model.api.Assign;
 import org.netbeans.modules.bpel.model.api.BooleanExpr;
+import org.netbeans.modules.bpel.model.api.BpelContainer;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.Branches;
@@ -107,15 +108,15 @@ public class BpelModelUpdater extends AbstractBpelModelUpdater {
         GraphInfoCollector graphInfo = new GraphInfoCollector(graph);
         //
         //=====================================================================
-//        // Remove copy if there is not any content in the graph 
-//        // TODO: Check if it is appropriate behaviour!
-//        //
-//        if (graphInfo.noLinksAtAll()) {
-//            // Remove copy from the BPEL model
-//            BpelContainer copyOwner = copy.getParent();
-//            copyOwner.remove(copy);
-//            return; // NOTHING TO DO FURTHER
-//        }
+        //
+        // Remove copy if there is not any content in the graph 
+        //
+        if (graphInfo.noLinksAtAll()) {
+            // Remove copy from the BPEL model
+            BpelContainer copyOwner = copy.getParent();
+            copyOwner.remove(copy);
+            return; // NOTHING TO DO FURTHER
+        }
         //
         //=====================================================================
         // Populate FROM
