@@ -46,7 +46,9 @@ import java.util.List;
 import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTToken;
+import org.netbeans.modules.php.model.CallExpression;
 import org.netbeans.modules.php.model.ClassConst;
+import org.netbeans.modules.php.model.ClassFunctionDefinition;
 import org.netbeans.modules.php.model.ClassMemberReference;
 import org.netbeans.modules.php.model.ObjectDefinition;
 import org.netbeans.modules.php.model.SourceElement;
@@ -106,14 +108,24 @@ class ClassMemberReferenceImpl<T extends SourceElement> extends ReferenceImpl<T>
      * @see org.netbeans.modules.php.model.Reference#get()
      */
     public T get() {
-        // TODO : this works ONLY for variables. Need to catch case of fucntions.
+        // TODO : this works ONLY for variables. Need to catch case of functions.
         String id = getIdentifier();
         T result = null;
         if ( id.contains( "$") ){
             result = get( VariableAppearance.class );
         }
         else {
-            result = get( ClassConst.class );
+            SourceElement parent = getSource().getParent();
+            if ( parent instanceof CallExpression ){
+                /*
+                 *  Do not try search method in interface because interface 
+                 *  cannot have static methods.
+                 */
+                result = get( ClassFunctionDefinition.class );
+            }
+            else {
+                result = get( ClassConst.class );
+            }
         }
         return result;
     }
@@ -184,10 +196,10 @@ class ClassMemberReferenceImpl<T extends SourceElement> extends ReferenceImpl<T>
                     continue;
                 }
                 if ( count > 0 ) {
-                    myMemberName = token.getIdentifier();
+                    myMemberName = token.getIdentifier().trim();
                 }
                 else {
-                    myClassName = token.getIdentifier();
+                    myClassName = token.getIdentifier().trim();
                 }
                 assert count <2;
                 count++;

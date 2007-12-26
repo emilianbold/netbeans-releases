@@ -10,6 +10,6 @@ class Clazz {
 
 Clazz::$var;
 Clazz::CONST;
-Cazz::method();
+Clazz::method();
 
 ?>

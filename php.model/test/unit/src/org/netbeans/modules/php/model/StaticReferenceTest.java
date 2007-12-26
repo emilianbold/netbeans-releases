@@ -112,7 +112,7 @@ public class StaticReferenceTest extends BaseCase {
         model.readLock();
         try {
             List<Statement> list = model.getStatements();
-            assert list.size() > 2 :"Expected to find at least 2 statements," +
+            assert list.size() > 2 :"Expected to find at least 3 statements," +
                     " found :" +list.size();
             Statement statement = list.get( 2 );
             assert statement instanceof ExpressionStatement;
@@ -160,4 +160,80 @@ public class StaticReferenceTest extends BaseCase {
             model.readUnlock();
         }
     }
+    
+    public void testMethod() throws Exception{
+        PhpModel model = getModel( ResourceMarker.STATIC_REF) ;
+        model.sync();
+        model.readLock();
+        try {
+            List<Statement> list = model.getStatements();
+            assert list.size() > 3 :"Expected to find at least 4 statements," +
+                    " found :" +list.size();
+            Statement statement = list.get( 3 );
+            assert statement instanceof ExpressionStatement;
+            ExpressionStatement expressionStatement = (ExpressionStatement)statement;
+            Expression expression = expressionStatement.getExpression();
+            
+            assert expression!=null;
+            assert expression.getElementType().equals( CallExpression.class ) :
+                "Expected to find call expression m but found :" +
+                expression.getElementType();
+            CallExpression callExpression = (CallExpression) expression;
+            
+            IdentifierExpression id = callExpression.getName();
+            assert id!= null;
+            assert id.getElementType().equals( Constant.class ) :"Expected to " +
+            		"find constant as name identifier for call expression, " +
+            		"but found :" +id.getElementType();
+            
+            Constant constant = (Constant) id;
+            Reference<SourceElement> sourceRef = constant.getSourceElement();
+            assert sourceRef == null :"Unexpected reference to non-class member";
+            
+            ClassMemberReference<SourceElement> ref = constant.getClassConstant();
+            assert ref != null : "Reference to class constant is null, but should not be";
+            
+            assert ref.getIdentifier().equals( "Clazz::method") : "Expected " +
+            		"identifier string in reference is 'Clazz::method', but found :"
+                    +ref.getIdentifier();
+            
+            assert ref.getMemberName().equals( "method" ):"Expected to find " +
+            		"'method' as member name in reference , but found :" +
+            		ref.getMemberName();
+            
+            assert ref.getObjectName().equals( "Clazz" ) :"Expected to find "+
+                    "'Clazz' as owner class name in reference, but found :" +
+                    ref.getObjectName();
+            
+            SourceElement resolved = ref.get();
+            assert resolved != null :"Unable to resolve class method name";
+            
+            assert resolved.getElementType().equals( ClassFunctionDefinition.class ):
+                "Expected to find ClassFunctionDefinition, but found :" +
+                resolved.getElementType();
+            ClassFunctionDefinition def = (ClassFunctionDefinition)resolved;
+            
+            assert def.getDeclaration().getName().equals( "method" ) :"Expected " +
+            		"'method' name in resolved element via reference, but found :" +
+            		def.getDeclaration();
+            
+            ObjectDefinition objectDefinition = ref.getObject();
+            assert objectDefinition != null :"Expected to find not null owner " +
+            		"object in reference";
+            
+            assert objectDefinition.getElementType().equals( ClassDefinition.class ):
+                "Expected to find ClassDefinition as element type for owner object," +
+                "but found :"+objectDefinition.getElementType();
+            
+            ClassDefinition classDef = (ClassDefinition)objectDefinition;
+            assert classDef.getName().equals( "Clazz") :"Expected to find 'Clazz'" +
+            		" as name for owner object resolved via reference, but found :" +
+            		classDef.getName();
+            
+        }
+        finally {
+            model.readUnlock();
+        }
+    }
+        
 }
