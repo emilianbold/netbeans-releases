@@ -1238,7 +1238,7 @@ public class Canvas extends MapperPanel implements VertexCanvas,
             VertexItem sVertexItem = selectionModel.getSelectedVertexItem();
             
             // vertex is select
-            if (sVertexeces != null && sVertexeces.size() >= 0)
+            if (sVertexeces != null && sVertexeces.size() > 0)
             {
                 Vertex vertex = sVertexeces.get(0);
                 Link link = vertex.getOutgoingLink();
@@ -1248,7 +1248,7 @@ public class Canvas extends MapperPanel implements VertexCanvas,
                 return;
             }
             // Link is select
-            if (sLinks != null && sLinks.size() >= 0) {
+            if (sLinks != null && sLinks.size() > 0) {
                 int count = sLinks.size();
                 Link link = sLinks.get(0);
                 
