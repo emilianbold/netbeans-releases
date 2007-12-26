@@ -50,7 +50,18 @@
     <property name="env.NB_USER" value="anoncvs"/>
     <property name="sierra.dir"  value=".netbeans/sierra"/>
 
+    <property name="modules.cvs.root" value=":pserver:${env.NB_USER}@cvs.netbeans.org:/cvs"/>
+    <property name="modules.cvs.branch" value="-A"/>
+    <property name="modules.cvs.date" value="-D now"/>
+    <property name="modules.cvs.modules" value="
+        enterprise
+        nbbuild
+        print
+    "/>
+
     <property name="sources.cvs.root" value=":pserver:${env.NB_USER}@cvs.netbeans.org:/cvs"/>
+    <property name="sources.cvs.branch" value="-A"/>
+    <property name="sources.cvs.date" value="-D now"/>
     <property name="sources.cvs.modules" value="
         ant
         apisupport
@@ -61,17 +72,14 @@
         debuggerjpda
         diff
         editor
-        enterprise
         graph
         j2ee
         j2eeserver
         java
         lexer
         libs
-        nbbuild
         openide
         openidex
-        print
         projects
         refactoring
         schema2beans
@@ -81,8 +89,6 @@
         websvc
         xml
     "/>
-    <property name="sources.cvs.branch" value="-A"/>
-    <property name="sources.cvs.date" value="-D now"/>
 
     <property name="test.cvs.root" value=":pserver:guest@cvs.dev.java.net:/cvs"/>
     <property name="test.cvs.path" value="open-jbi-components/driver-tests/bpelse"/>
@@ -98,7 +104,7 @@
         ${test.cvs.path}/xslt
     "/>
     <property name="home" value="../.."/>
-    <property name="cache" value="${home}/_cache"/>
+    <property name="cache" value="${home}/.cache"/>
     <property name="dist" value="${cache}/dist"/>
     <property name="lock" value="${cache}/lock"/>
     <property name="test" value="${cache}/test"/>

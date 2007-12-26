@@ -42,8 +42,7 @@
 <project name="sierra" default="all" basedir=".">
     <import file="build.pro"/>
     
-    <target name="all" depends="init,get-netbeans,get-modules,build"/>
-    <target name="hudson" depends="init,get-netbeans,run-daily,clean,build-fcs,create-zip-init,create-zip,create-zip-fcs,build-dev,create-zip-dev,test-soa"/>
+    <target name="all" depends="init,get-netbeans,run-daily,get-modules,clean,build-fcs,create-zip-init,create-zip,create-zip-fcs,build-dev,create-zip-dev"/>
     
     <target name="init">
         <property name="env.BUILD_NUMBER" value=""/>
@@ -73,6 +72,10 @@
     </target>
 
     <target name="get-modules">
+        <cvs package="${modules.cvs.modules}" cvsRoot="${modules.cvs.root}" dest="${home}" command="-q co -P ${modules.cvs.branch} ${modules.cvs.date}" failonerror="true"/>
+    </target>
+
+    <target name="get-sources">
         <cvs package="${sources.cvs.modules}" cvsRoot="${sources.cvs.root}" dest="${home}" command="-q co -P ${sources.cvs.branch} ${sources.cvs.date}" failonerror="true"/>
     </target>
 
@@ -151,6 +154,7 @@
 
         <echo file="${lock}/${daily}" message="${daily}"/>
 
+        <antcall target="get-sources"/>
         <antcall target="get-test"/>
     </target>
 
@@ -159,7 +163,9 @@
         <cvs package="${test.cvs.modules}" cvsRoot="${test.cvs.root}" dest="${test}" command="-q co -P ${test.cvs.branch}" failonerror="false"/>
     </target>
 
-    <target name="test-soa">
+    <target name="test" depends="test-0,test-1,test-2,test-3"/>
+
+    <target name="test-0">
         <subant target="default" inheritAll="false">
             <property name="caps.netbeans.home" location="${home}/nbbuild/netbeans"/>
             <buildpath location="${soa}/BluePrint1/BluePrint1/build.xml"/>
@@ -173,7 +179,7 @@
         </subant>
     </target>
 
-    <target name="test-jbi-1">
+    <target name="test-1">
         <!-- assign -->
         <antcall target="do-test-jbi"><param name="dir" value="assign/ActivateBilling_Simple"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="assign/AssignBpel"/></antcall>
@@ -193,7 +199,7 @@
         <antcall target="do-test-jbi"><param name="dir" value="benchmark/TravelReservationService/TravelReservationService"/></antcall>
     </target>
         
-    <target name="test-jbi-2">
+    <target name="test-2">
         <!-- dynamicpartnerlink -->
         <antcall target="do-test-jbi"><param name="dir" value="dynamicpartnerlink/dynamicPartnerLinkBPEL"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="dynamicpartnerlink/justhttpAndBPEL"/></antcall>
@@ -214,7 +220,7 @@
         <antcall target="do-test-jbi"><param name="dir" value="PartnerLinks/TwoBPs"/></antcall>
     </target>
         
-    <target name="test-jbi-3">
+    <target name="test-3">
         <!-- SchemaElemDecl -->
         <antcall target="do-test-jbi"><param name="dir" value="SchemaElemDecl/BPwithElemRef"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="SchemaElemDecl/BPwithMsgElement"/></antcall>
