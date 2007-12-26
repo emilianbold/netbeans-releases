@@ -28,11 +28,9 @@
 package org.netbeans.modules.cnd.gotodeclaration.type;
 
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.gotodeclaration.util.ContextUtil;
-import org.netbeans.modules.cnd.gotodeclaration.util.EmptyIcon;
 
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
@@ -40,7 +38,6 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  * 
@@ -72,10 +69,10 @@ class CppTypeDescriptor extends TypeDescriptor {
             CsmFile file = ((CsmOffsetable) classifier).getContainingFile();
 	    if( file != null ) {
                 project = file.getProject();
-                filePath = file.getAbsolutePath();
+                filePath = file.getAbsolutePath().toString();
 	    }
 	}
-	simpleName = classifier.getName();
+	simpleName = classifier.getName().toString();
 	typeName = simpleName;
 	
 	contextName = ContextUtil.getContextName(classifier);
@@ -114,7 +111,7 @@ class CppTypeDescriptor extends TypeDescriptor {
     }
 
     public String getProjectName() {
-        return project.getName();
+        return project.getName().toString();
     }
 
     public Icon getProjectIcon() {

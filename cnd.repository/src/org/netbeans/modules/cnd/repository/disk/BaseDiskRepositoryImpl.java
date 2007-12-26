@@ -98,7 +98,7 @@ public class BaseDiskRepositoryImpl extends AbstractDiskRepository {
             } 
         } catch (Throwable ex) {
             RepositoryListenersManager.getInstance().fireAnException(
-                    id.getUnit(), new RepositoryExceptionImpl(ex));
+                    id.getUnit().toString(), new RepositoryExceptionImpl(ex));
         } finally {
             if (fos != null) {
                 fos.getLock().writeLock().unlock();
@@ -128,7 +128,7 @@ public class BaseDiskRepositoryImpl extends AbstractDiskRepository {
             }
         }  catch (Throwable ex) {
             RepositoryListenersManager.getInstance().fireAnException(
-                    id.getUnit(), new RepositoryExceptionImpl(ex));
+                    id.getUnit().toString(), new RepositoryExceptionImpl(ex));
         } finally {
             if (fis != null) {
                 fis.getLock().readLock().unlock();
@@ -144,7 +144,7 @@ public class BaseDiskRepositoryImpl extends AbstractDiskRepository {
         theFilesHelper.removeObjForKey(id);
         } catch (Throwable ex) {
             RepositoryListenersManager.getInstance().fireAnException(
-                    id.getUnit(), new RepositoryExceptionImpl(ex));
+                    id.getUnit().toString(), new RepositoryExceptionImpl(ex));
         }
     }
 

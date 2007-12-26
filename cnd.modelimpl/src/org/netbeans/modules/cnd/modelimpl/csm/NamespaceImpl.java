@@ -49,7 +49,6 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.api.model.*;
 import java.util.*;
-import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
@@ -59,6 +58,9 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.netbeans.modules.cnd.utils.cache.NameCache;
+import org.netbeans.modules.cnd.utils.cache.UniqueNameCache;
 
 /**
  * CsmNamespace implementation
@@ -67,6 +69,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer,
         Persistent, SelfPersistent, Disposable {
     
+    private static final CharSequence GLOBAL = CharSequenceKey.create("$Global$"); // NOI18N)
     // only one of project/projectUID must be used (based on USE_UID_TO_CONTAINER)
     private /*final*/ ProjectBase projectRef;// can be set in onDispose or contstructor only
     private final CsmUID<CsmProject> projectUID;
@@ -75,25 +78,25 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     private /*final*/ CsmNamespace parentRef;// can be set in onDispose or contstructor only
     private final CsmUID<CsmNamespace> parentUID;
     
-    private final String name;
-    private final String qualifiedName;
+    private final CharSequence name;
+    private final CharSequence qualifiedName;
     
     /** maps namespaces FQN to namespaces */
-    private Map<String, CsmUID<CsmNamespace>> nestedMap = new ConcurrentHashMap<String, CsmUID<CsmNamespace>>();
+    private Map<CharSequence, CsmUID<CsmNamespace>> nestedMap = new ConcurrentHashMap<CharSequence, CsmUID<CsmNamespace>>();
     
-    private Map<String,CsmUID<CsmOffsetableDeclaration>> declarations = new ConcurrentHashMap<String,CsmUID<CsmOffsetableDeclaration>>();
+    private Map<CharSequence,CsmUID<CsmOffsetableDeclaration>> declarations = new ConcurrentHashMap<CharSequence,CsmUID<CsmOffsetableDeclaration>>();
     //private Collection/*<CsmNamespace>*/ nestedNamespaces = Collections.synchronizedList(new ArrayList/*<CsmNamespace>*/());
     
 //    private Collection/*<CsmNamespaceDefinition>*/ definitions = new ArrayList/*<CsmNamespaceDefinition>*/();
-    private Map<String,CsmUID<CsmNamespaceDefinition>> nsDefinitions = new TreeMap<String,CsmUID<CsmNamespaceDefinition>>();
+    private Map<CharSequence,CsmUID<CsmNamespaceDefinition>> nsDefinitions = new TreeMap<CharSequence,CsmUID<CsmNamespaceDefinition>>();
     private ReadWriteLock nsDefinitionsLock = new ReentrantReadWriteLock();
     
     private final boolean global;
     
     /** Constructor used for global namespace */
     public NamespaceImpl(ProjectBase project) {
-        this.name = "$Global$"; // NOI18N
-        this.qualifiedName = ""; // NOI18N
+        this.name = GLOBAL;
+        this.qualifiedName = CharSequenceKey.empty(); // NOI18N
         this.parentUID = null;
         this.parentRef = null;
         this.global = true;
@@ -109,7 +112,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     private static final boolean CHECK_PARENT = false;
     
     public NamespaceImpl(ProjectBase project, NamespaceImpl parent, String name, String qualifiedName) {
-        this.name = name;
+        this.name = CharSequenceKey.create(name);
         this.global = false;
         assert project != null;
         
@@ -117,7 +120,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         assert this.projectUID != null;
 
         this.projectRef = null;
-        this.qualifiedName = qualifiedName;
+        this.qualifiedName = CharSequenceKey.create(qualifiedName);
         // TODO: rethink once more
         // now all classes do have namespaces
 //        // TODO: this makes parent-child relationships assymetric, that's bad;
@@ -205,7 +208,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         return global;
     }
     
-    public String getQualifiedName() {
+    public CharSequence getQualifiedName() {
         return qualifiedName;
     }
     
@@ -221,11 +224,12 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         return impl;
     }
     
-    public String getName() {
+    public CharSequence getName() {
         return name;
     }
     
-    private NamespaceImpl _getNestedNamespace(String fqn) {
+    private NamespaceImpl _getNestedNamespace(CharSequence fqn) {
+        fqn = CharSequenceKey.create(fqn);
         CsmUID<CsmNamespace> nestedNsUid = nestedMap.get(fqn);
         NamespaceImpl out = (NamespaceImpl)UIDCsmConverter.UIDtoNamespace(nestedNsUid);
         assert out != null || nestedNsUid == null;
@@ -246,7 +250,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         assert nestedNsUid != null;
         // handle unnamed namespace index
         if (nsp.getName().length() == 0) {
-            String fqn = nsp.getQualifiedName();
+            String fqn = nsp.getQualifiedName().toString();
             int greaterInd = fqn.lastIndexOf('>');
             assert greaterInd >= 0;
             if (greaterInd + 1 < fqn.length()) {
@@ -278,7 +282,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
             }
         }
 
-        String uniqueName = declaration.getUniqueName();
+        CharSequence uniqueName = declaration.getUniqueName();
         CsmOffsetableDeclaration oldDecl;
         
         CsmUID<CsmOffsetableDeclaration> oldDeclarationUid = declarations.get(uniqueName);
@@ -470,9 +474,9 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         theFactory.writeUID(this.parentUID, output);
         
         assert this.name != null;
-        output.writeUTF(this.name);
+        output.writeUTF(this.name.toString());
         assert this.qualifiedName != null;
-        output.writeUTF(this.qualifiedName);
+        output.writeUTF(this.qualifiedName.toString());
         theFactory.writeStringToUIDMap(this.nestedMap, output, true);
         theFactory.writeStringToUIDMap(this.declarations, output, true);
         try {
@@ -497,12 +501,12 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         this.parentRef = null;
        
 
-        this.name = TextCache.getString(input.readUTF());
+        this.name = NameCache.getString(input.readUTF());
         assert this.name != null;
         this.qualifiedName = QualifiedNameCache.getString(input.readUTF());
         assert this.qualifiedName != null;
         theFactory.readStringToUIDMap(this.nestedMap, input, QualifiedNameCache.getManager());
-        theFactory.readStringToUIDMap(this.declarations, input, TextCache.getManager());
+        theFactory.readStringToUIDMap(this.declarations, input, UniqueNameCache.getManager());
         theFactory.readStringToUIDMap(this.nsDefinitions, input, QualifiedNameCache.getManager());
     }
     

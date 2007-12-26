@@ -94,7 +94,7 @@ public class Utils {
         return sb.toString();
     }
       
-    public static String getNestedNamespaceQualifiedName(String name, NamespaceImpl parent, boolean createForEmptyNames) {
+    public static String getNestedNamespaceQualifiedName(CharSequence name, NamespaceImpl parent, boolean createForEmptyNames) {
 	StringBuilder sb = new StringBuilder(name);
         if (parent != null) {
             if (name.length() == 0 && createForEmptyNames) {

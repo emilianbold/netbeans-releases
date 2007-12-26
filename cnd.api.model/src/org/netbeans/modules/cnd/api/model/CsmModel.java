@@ -99,7 +99,7 @@ public interface CsmModel {
      * @param task task to run
      * @param name name that would be added to the thread name
      */
-    void enqueue(Runnable task, String name);
+    void enqueue(Runnable task, CharSequence name);
     
     /**
      * Find project that contains file.
@@ -117,7 +117,7 @@ public interface CsmModel {
      *
      * @param absPath absolute file path
      */
-    CsmFile findFile(String absPath);
+    CsmFile findFile(CharSequence absPath);
     
     /**
      * Returns the state of the model

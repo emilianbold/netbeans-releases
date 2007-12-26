@@ -254,7 +254,7 @@ public class Diagnostic {
         }
     }
     
-    public static void onUnresolvedError(String[] nameTokens, CsmFile file, int offset) {
+    public static void onUnresolvedError(CharSequence[] nameTokens, CsmFile file, int offset) {
         if( STATISTICS_LEVEL > 0 ) {
             getDiagnosticUnresolved().onUnresolved(nameTokens, file, offset);
         }

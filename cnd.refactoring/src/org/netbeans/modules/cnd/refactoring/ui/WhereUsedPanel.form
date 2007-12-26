@@ -274,7 +274,7 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="scopeLabel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="scope" pref="287" max="32767" attributes="0"/>
+                  <Component id="scope" pref="288" max="32767" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
           </Group>

@@ -133,8 +133,8 @@ public class HierarchyChildren extends Children.Keys<CsmClass> {
     
     private static class MyComparator implements Comparator<CsmClass> {
         public int compare(CsmClass o1, CsmClass o2) {
-            String n1 = o1.getName();
-            String n2 = o2.getName();
+            String n1 = o1.getName().toString();
+            String n2 = o2.getName().toString();
             return n1.compareTo(n2);
         }
     }

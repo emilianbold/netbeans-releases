@@ -64,16 +64,14 @@ public class ConfigurationFactory {
     private ConfigurationFactory() {
     }
     
-    public static ProjectConfigurationImpl makeRoot(ProjectProperties project, String rootFolder, boolean cutResult){
+    public static ProjectConfigurationImpl makeRoot(ProjectProperties project, String rootFolder){
         Collection<FolderProperties> folders = project.getConfiguredFolders();
         FolderConfigurationImpl root = new FolderConfigurationImpl("");
         for(FolderProperties folder : folders){
-            if (!cutResult || (cutResult && folder.getItemPath().startsWith(rootFolder))) {
-                FolderConfigurationImpl fo = addChild(folder.getItemPath(), root);
-                for(SourceFileProperties file : folder.getFiles()){
-                    FileConfigurationImpl fi = new FileConfigurationImpl(file);
-                    fo.addFile(fi);
-                }
+            FolderConfigurationImpl fo = addChild(folder.getItemPath(), root);
+            for (SourceFileProperties file : folder.getFiles()) {
+                FileConfigurationImpl fi = new FileConfigurationImpl(file);
+                fo.addFile(fi);
             }
         }
         // remove empty root

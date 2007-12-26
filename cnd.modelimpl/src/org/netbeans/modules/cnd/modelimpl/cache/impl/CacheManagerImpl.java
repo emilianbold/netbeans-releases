@@ -143,7 +143,7 @@ public final class CacheManagerImpl {
         }
         ProjectCache prjCache = getProjectCache(file.getProject(), false);
         if (prjCache != null) {
-            prjCache.invalidateFile(file.getAbsolutePath());
+            prjCache.invalidateFile(file.getAbsolutePath().toString());
         }
     }    
 
@@ -222,9 +222,9 @@ public final class CacheManagerImpl {
         File out = null;
         if (prjRelDir != null) {
             String baseDir = cacheDir + File.separatorChar + prjRelDir; 
-            String fileName = getProjectCache(file.getProject(), true).getValidCacheFileName((FileImpl) file, save);
+            CharSequence fileName = getProjectCache(file.getProject(), true).getValidCacheFileName((FileImpl) file, save);
             if (fileName != null) {
-                out = new File(baseDir, fileName);
+                out = new File(baseDir, fileName.toString());
             }
         } else {
             if (TraceFlags.TRACE_CACHE) {
@@ -366,6 +366,7 @@ public final class CacheManagerImpl {
             this.path = path;
         }
         
+        @Override
         public String toString() {
             return "read/write cache lock for " + path; // NOI18N
         }        
@@ -385,7 +386,7 @@ public final class CacheManagerImpl {
         return fileLock;
     }
     
-    private Map/*<String, Object>*/ fileLocks = new HashMap();
+    private Map<CharSequence, Object> fileLocks = new HashMap();
     
     ///////////////////////////////////////////////////////////////////////////
     // save load main cache info

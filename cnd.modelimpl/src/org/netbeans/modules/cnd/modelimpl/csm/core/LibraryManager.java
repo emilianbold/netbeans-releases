@@ -353,9 +353,9 @@ public final class LibraryManager {
     /*package-local*/ void readProjectLibraries(CsmUID<CsmProject> project, DataInput aStream) throws IOException {
         ModelImpl model = (ModelImpl) CsmModelAccessor.getModel();
         assert aStream != null;
-        Collection<String> res = PersistentUtils.readCollectionStrings(aStream,null);
-        for(String folder : res){
-            LibraryEntry entry = getOrCreateLibrary(model, folder);
+        Collection<CharSequence> res = PersistentUtils.readCollectionStrings(aStream,null);
+        for(CharSequence folder : res){
+            LibraryEntry entry = getOrCreateLibrary(model, folder.toString());
             entry.addProject(project);
         }
     }

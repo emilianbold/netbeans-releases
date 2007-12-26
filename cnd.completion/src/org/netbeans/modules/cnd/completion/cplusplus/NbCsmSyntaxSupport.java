@@ -43,10 +43,7 @@ package org.netbeans.modules.cnd.completion.cplusplus;
 
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmSyntaxSupport;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmFinder;
-import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClass;
-import org.netbeans.modules.cnd.api.model.CsmClassifier;
-import org.netbeans.modules.cnd.api.model.CsmConstructor;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
@@ -65,7 +62,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.nodes.Node;
 
 /**
 * Support methods for syntax analyzes
@@ -364,7 +360,7 @@ public class NbCsmSyntaxSupport extends CsmSyntaxSupport {
 
     private DataObject getDataObject(CsmClass cls) {
 //XXX
-	String name = cls.getQualifiedName().replace('.', '/');
+	String name = cls.getQualifiedName().toString().replace('.', '/');
         FileObject fo = findResource(name+".java"); // NOI18N
         if (fo != null) {
             return getDataObject(fo);
@@ -494,20 +490,20 @@ public class NbCsmSyntaxSupport extends CsmSyntaxSupport {
         ArrayList urlList = new ArrayList();
         if (obj instanceof CsmNamespace) {
             CsmNamespace pkg = (CsmNamespace)obj;
-            URL u = getDocFileObjects(pkg.getName(), PACKAGE_SUMMARY);
+            URL u = getDocFileObjects(pkg.getName().toString(), PACKAGE_SUMMARY);
             if (u != null) {
                 urlList.add(u);
             }
         } else if (obj instanceof CsmClass) {
             CsmClass cls = (CsmClass)obj;
-            URL u = getDocFileObjects(cls.getQualifiedName(), null);
+            URL u = getDocFileObjects(cls.getQualifiedName().toString(), null);
             if (u != null) {
                 urlList.add(u);
             }
         } else if (obj instanceof CsmMethod) { // covers CsmConstructor too
             CsmMethod ctr = (CsmMethod)obj;
             CsmClass cls = ctr.getContainingClass();
-            URL url = getDocFileObjects(cls.getQualifiedName(), null);
+            URL url = getDocFileObjects(cls.getQualifiedName().toString(), null);
             if (url != null) {
                     StringBuilder sb = new StringBuilder("#"); // NOI18N
                     sb.append((obj instanceof CsmMethod) ? ((CsmMethod)ctr).getName() : cls.getName());
@@ -532,7 +528,7 @@ public class NbCsmSyntaxSupport extends CsmSyntaxSupport {
         } else if (obj instanceof CsmField) {
             CsmField fld = (CsmField)obj;
             CsmClass cls = fld.getContainingClass();
-            URL u = getDocFileObjects(cls.getQualifiedName(), null);
+            URL u = getDocFileObjects(cls.getQualifiedName().toString(), null);
             if (u != null) {
                 try {
                     urlList.add(new URL(u.toExternalForm() + '#' + fld.getName()));

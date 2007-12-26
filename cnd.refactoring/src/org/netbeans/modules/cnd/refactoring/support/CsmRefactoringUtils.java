@@ -115,11 +115,11 @@ public class CsmRefactoringUtils {
         String text = "";
         if (element != null) {
             if (CsmKindUtilities.isNamedElement(element)) {
-                text = ((CsmNamedElement) element).getName();
+                text = ((CsmNamedElement) element).getName().toString();
             } else if (CsmKindUtilities.isStatement((CsmObject)element)) {
-                text = ((CsmStatement)element).getText();
+                text = ((CsmStatement)element).getText().toString();
             } else if (CsmKindUtilities.isOffsetable(element) ) {
-                text = ((CsmOffsetable)element).getText();
+                text = ((CsmOffsetable)element).getText().toString();
             }
         }
         return text;
@@ -184,7 +184,7 @@ public class CsmRefactoringUtils {
         if (CsmKindUtilities.isOffsetable(obj)) {
             return getHtml((CsmOffsetable)obj);
         } else if (CsmKindUtilities.isFile(obj)) {
-            return htmlize(((CsmFile)obj).getName());
+            return htmlize(((CsmFile)obj).getName().toString());
         } else {
             return obj.toString();
         }
@@ -253,7 +253,7 @@ public class CsmRefactoringUtils {
             }            
         }
         if (displayText == null) {
-            displayText = htmlize(obj.getText());
+            displayText = htmlize(obj.getText().toString());
         }
         return displayText;
     }

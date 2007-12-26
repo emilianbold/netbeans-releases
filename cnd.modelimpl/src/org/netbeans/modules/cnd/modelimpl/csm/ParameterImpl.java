@@ -65,7 +65,8 @@ public final class ParameterImpl extends VariableImpl<CsmParameter> implements C
         return varArg;
     }
     
-    public String getDisplayText() {
+    @Override
+    public CharSequence getDisplayText() {
 	return isVarArgs() ? "..." : super.getDisplayText(); //NOI18N
     }
     
@@ -73,6 +74,7 @@ public final class ParameterImpl extends VariableImpl<CsmParameter> implements C
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     
+    @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);      
         output.writeBoolean(this.varArg);

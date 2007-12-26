@@ -540,7 +540,7 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
             }
         }
         guessList.setText(buf.toString());
-        getObjectFile(found, incl.getContainingFile().getAbsolutePath());
+        getObjectFile(found, incl.getContainingFile().getAbsolutePath().toString());
     }
     
     private void getObjectFile(String searchFor, String in){
@@ -637,12 +637,12 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
         HashSet<String> set = new HashSet<String>();
         for (Iterator it = prj.getSourceFiles().iterator(); it.hasNext();){
             CsmFile file = (CsmFile)it.next();
-            File f = new File(file.getAbsolutePath());
+            File f = new File(file.getAbsolutePath().toString());
             set.add(f.getParentFile().getAbsolutePath());
         }
         for (Iterator it = prj.getHeaderFiles().iterator(); it.hasNext();){
             CsmFile file = (CsmFile)it.next();
-            File f = new File(file.getAbsolutePath());
+            File f = new File(file.getAbsolutePath().toString());
             set.add(f.getParentFile().getAbsolutePath());
         }
         ArrayList<String> list = new ArrayList<String>(set);

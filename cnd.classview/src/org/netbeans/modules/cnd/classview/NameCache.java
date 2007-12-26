@@ -49,7 +49,7 @@ public class NameCache {
     private NameCache() {
     }
     
-    public static String getString(String text) {
+    public static CharSequence getString(CharSequence text) {
         if (text == null){
             return text;
         }

@@ -29,7 +29,6 @@ package org.netbeans.modules.cnd.gotodeclaration.element.providers;
 
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.*;
-import org.netbeans.modules.cnd.gotodeclaration.element.spi.ElementDescriptor;
 import org.netbeans.modules.cnd.gotodeclaration.element.spi.ElementProvider;
 import org.netbeans.modules.cnd.gotodeclaration.util.NameMatcher;
 import org.openide.util.NbBundle;
@@ -73,7 +72,7 @@ public class FuncVarElementProvider extends BaseProvider implements ElementProvi
     private void processDeclaration(CsmDeclaration decl, ResultSet result, NameMatcher comparator) {
         switch (decl.getKind()) {
             case FUNCTION_DEFINITION:
-		if( comparator.matches(decl.getName()) ) {
+		if( comparator.matches(decl.getName().toString()) ) {
 		    CsmFunctionDefinition fdef = (CsmFunctionDefinition) decl;
 //		    CsmFunction fdecl = fdef.getDeclaration();
 //		    if( fdecl == null || fdecl == fdef) {
@@ -82,7 +81,7 @@ public class FuncVarElementProvider extends BaseProvider implements ElementProvi
 		}
 		break;
             case FUNCTION:
-		if( comparator.matches(decl.getName()) ) {
+		if( comparator.matches(decl.getName().toString()) ) {
                     CsmFunction fdecl = (CsmFunction) decl;
                     CsmFunctionDefinition fdef = fdecl.getDefinition();
                     if( fdef == null || fdef.equals(fdecl) ) {
@@ -91,7 +90,7 @@ public class FuncVarElementProvider extends BaseProvider implements ElementProvi
 		}
 		break;
             case VARIABLE:
-		if( comparator.matches(decl.getName()) ) {
+		if( comparator.matches(decl.getName().toString()) ) {
                     result.add(new VariableElementDescriptor((CsmVariable) decl));
 		}
 		break;

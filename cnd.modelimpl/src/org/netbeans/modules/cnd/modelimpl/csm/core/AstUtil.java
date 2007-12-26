@@ -169,7 +169,7 @@ public class AstUtil {
                             if( next != null ) {
                                 sb.append(next.getText());
                             }
-                            return TextCache.getString(sb.toString());
+                            return TextCache.getString(sb.toString()).toString();
                         } else if (first.getType() == CPPTokenTypes.ID){
                             return first.getText();
                         }

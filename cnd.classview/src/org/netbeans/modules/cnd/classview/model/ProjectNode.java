@@ -68,8 +68,8 @@ public class ProjectNode extends NPNode {
     }
     
     private void init(CsmProject project){
-        setName(project.getName());
-        setDisplayName(project.getName());
+        setName(project.getName().toString());
+        setDisplayName(project.getName().toString());
     }
     
     protected CsmNamespace getNamespace() {

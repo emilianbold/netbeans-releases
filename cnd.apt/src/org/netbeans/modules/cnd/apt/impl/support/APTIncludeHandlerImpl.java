@@ -281,7 +281,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             int size = input.readInt();
             for (int i = 0; i < size; i++) {
                 String path = input.readUTF();
-                path = (pathManager == null) ? path : pathManager.getString(path);
+                path = (pathManager == null) ? path : pathManager.getString(path).toString();
                 systemIncludePaths.add(i, path);
             }
             
@@ -289,7 +289,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             size = input.readInt();
             for (int i = 0; i < size; i++) {
                 String path = input.readUTF();
-                path = (pathManager == null) ? path : pathManager.getString(path);
+                path = (pathManager == null) ? path : pathManager.getString(path).toString();
                 userIncludePaths.add(i, path);                
             }
             
@@ -301,7 +301,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
                 
                 for (int i = 0; i < size; i++) {
                     String key = input.readUTF();
-                    key = (pathManager == null) ? key : pathManager.getString(key);
+                    key = (pathManager == null) ? key : pathManager.getString(key).toString();
                     final Integer value = new Integer(input.readInt());
                     
                     recurseIncludes.put(key, value);
@@ -426,7 +426,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             final APTStringManager pathManager = FilePathCache.getManager();
             
             String readPath = input.readUTF();
-            this.path = (pathManager == null)? readPath: pathManager.getString(readPath);
+            this.path = (pathManager == null)? readPath: pathManager.getString(readPath).toString();
             
             directiveLine = input.readInt();
             

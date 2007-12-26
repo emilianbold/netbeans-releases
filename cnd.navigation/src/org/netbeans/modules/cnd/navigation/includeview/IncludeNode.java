@@ -76,7 +76,7 @@ public class IncludeNode extends AbstractCsmNode {
         if (recursion) {
             setName(element.getName()+" "+getString("CTL_Recuesion")); // NOI18N
         } else {
-            setName(element.getName());
+            setName(element.getName().toString());
         }
         this.model = model;
         object = element;
@@ -148,7 +148,7 @@ public class IncludeNode extends AbstractCsmNode {
     @Override
     public String getShortDescription() {
         if (object.isValid()) {
-            return object.getAbsolutePath();
+            return object.getAbsolutePath().toString();
         }
         return super.getShortDescription();
     }

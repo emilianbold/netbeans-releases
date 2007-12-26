@@ -41,15 +41,17 @@
 
 package org.netbeans.modules.cnd.classview;
 
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+
 /**
  *
  * @author Alexander Simon
  */
 public class SortedName implements Comparable<SortedName> {
     private byte prefix;
-    private String name;
+    private CharSequence name;
     private byte suffix;
-    public SortedName(int prefix, String name, int suffix){
+    public SortedName(int prefix, CharSequence name, int suffix){
         this.prefix = (byte)prefix;
         this.name = name;
         this.suffix = (byte)suffix;
@@ -62,7 +64,7 @@ public class SortedName implements Comparable<SortedName> {
     public int compareTo(SortedName o) {
         int i = prefix - o.prefix;
         if (i == 0){
-            i = name.compareTo(o.name);
+            i = CharSequenceKey.Comparator.compare(name, o.name);
             if (i == 0){
                 i = suffix - o.suffix;
             }

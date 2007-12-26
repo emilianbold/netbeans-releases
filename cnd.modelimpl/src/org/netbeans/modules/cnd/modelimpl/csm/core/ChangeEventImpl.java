@@ -70,8 +70,8 @@ public class ChangeEventImpl extends CsmChangeEvent {
     
     protected Set<CsmProject>   changedProjects;
     
-    protected Map<String, CsmNamespace>   newNamespaces;
-    protected Map<String, CsmNamespace>   removedNamespaces;
+    protected Map<CharSequence, CsmNamespace>   newNamespaces;
+    protected Map<CharSequence, CsmNamespace>   removedNamespaces;
     
     public ChangeEventImpl(Object source) {
 	super(source);
@@ -205,16 +205,16 @@ public class ChangeEventImpl extends CsmChangeEvent {
         }
     }   
     
-    private Map<String, CsmNamespace> _getRemovedNamespaces() {
+    private Map<CharSequence, CsmNamespace> _getRemovedNamespaces() {
         if (removedNamespaces == null) {
-            removedNamespaces = new HashMap<String, CsmNamespace>();            
+            removedNamespaces = new HashMap<CharSequence, CsmNamespace>();            
         }
         return removedNamespaces;
     }
     
-    private Map<String,CsmNamespace> _getNewNamespaces() {
+    private Map<CharSequence,CsmNamespace> _getNewNamespaces() {
         if (newNamespaces == null) {
-            newNamespaces = new HashMap<String, CsmNamespace>();            
+            newNamespaces = new HashMap<CharSequence, CsmNamespace>();            
         }
         return newNamespaces;
     }    

@@ -323,7 +323,7 @@ public final class ReferencesSupport {
     static BaseDocument getDocument(CsmFile file) {
         BaseDocument doc = null;
         try {
-            doc = ReferencesSupport.getBaseDocument(file.getAbsolutePath());
+            doc = ReferencesSupport.getBaseDocument(file.getAbsolutePath().toString());
         } catch (DataObjectNotFoundException ex) {
             ex.printStackTrace(System.err);
         } catch (IOException ex) {

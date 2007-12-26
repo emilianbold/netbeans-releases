@@ -64,6 +64,7 @@ public final class ConstructorImpl extends MethodImpl<CsmConstructor> implements
         return Collections.EMPTY_LIST;
     }
         
+    @Override
     public CsmType getReturnType() {
         return NoType.instance();
     }
@@ -71,6 +72,7 @@ public final class ConstructorImpl extends MethodImpl<CsmConstructor> implements
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
     
+    @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
     }

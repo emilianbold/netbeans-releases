@@ -77,7 +77,7 @@ public class GuardDefTestCase extends TraceModelTestBase {
         performModelTest(testFile, System.out, System.err);
         boolean checked = false;
         for(FileImpl file : getProject().getAllFileImpls()){
-            if ("cstdlib.h".equals(file.getName())){ // NOI18N
+            if ("cstdlib.h".equals(file.getName().toString())){ // NOI18N
                 assertTrue("Guard guard block not defined", file.getMacros().size()==0); // NOI18N
                 String guard = file.testGetGuardState().testGetGuardName();
                 assertTrue("Guard guard block name not _STDLIB_H", "_STDLIB_H".equals(guard)); // NOI18N

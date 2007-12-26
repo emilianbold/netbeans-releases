@@ -57,7 +57,7 @@ public class GlobalFuncNode extends ObjectNode {
     }
     
     private void init(CsmFunction fun){
-        String text = CVUtil.getSignature(fun);
+        String text = CVUtil.getSignature(fun).toString();
         setName(text);
         setDisplayName(text);
         setShortDescription(text);

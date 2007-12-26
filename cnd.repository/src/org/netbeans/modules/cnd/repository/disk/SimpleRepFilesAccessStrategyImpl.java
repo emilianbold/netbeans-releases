@@ -136,7 +136,8 @@ public class SimpleRepFilesAccessStrategyImpl implements RepFilesAccessStrategy 
 	    }
 	    else {
 		for (int i = 0 ; i < size; ++i) {
-		    nameBuffer.append(id.getAt(i) + SEPARATOR_CHAR);
+		    nameBuffer.append(id.getAt(i));
+		    nameBuffer.append(SEPARATOR_CHAR);
 		}
 	    }
             
@@ -148,7 +149,7 @@ public class SimpleRepFilesAccessStrategyImpl implements RepFilesAccessStrategy 
             
             fileName = URLEncoder.encode(fileName, Stats.ENCODING);
             
-            fileName = StorageAllocator.getInstance().getUnitStorageName(id.getUnit()) + 
+            fileName = StorageAllocator.getInstance().getUnitStorageName(id.getUnit().toString()) + 
                     StorageAllocator.getInstance().reduceString(fileName);
 
             theCache.putCacheName(id, fileName);

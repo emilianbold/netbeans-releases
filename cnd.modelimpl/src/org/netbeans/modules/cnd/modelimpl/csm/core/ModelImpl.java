@@ -201,8 +201,8 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
                     putProject2Map(id,  prj);
 		    fireOpened = true;
                 } else {
-                    String expectedUniqueName = ProjectBase.getUniqueName(id);
-                    String defactoUniqueName = prj.getUniqueName();
+                    String expectedUniqueName = ProjectBase.getUniqueName(id).toString();
+                    String defactoUniqueName = prj.getUniqueName().toString();
                     if( ! defactoUniqueName.equals(expectedUniqueName) ) {
                         new IllegalStateException("Existing project unique name differ: " + defactoUniqueName + " - expected " + expectedUniqueName).printStackTrace(System.err); // NOI18N
                     }
@@ -322,7 +322,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
     
     /*package-local*/ void disposeProject(final ProjectBase prj, boolean cleanRepository) {
         assert prj != null;
-        String name = prj.getName();
+        CharSequence name = prj.getName();
         if (TraceFlags.TRACE_CLOSE_PROJECT) System.err.println("dispose project " + name);
         prj.setDisposed();
         fireProjectClosed(prj);
@@ -435,7 +435,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
     private final String clientTaskPrefix = "Code Model Client Request"; // NOI18N
     private static final String modelTaskPrefix = "Code Model Request Processor"; // NOI18N
     
-    public void enqueue(Runnable task, String name) {
+    public void enqueue(Runnable task, CharSequence name) {
         enqueue(RequestProcessor.getDefault(), task, clientTaskPrefix + " :" + name); // NOI18N
     }
 
@@ -470,7 +470,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
         });
     }
     
-    public CsmFile findFile(String absPath){
+    public CsmFile findFile(CharSequence absPath){
         Collection/*<CsmProject>*/ projects = projects();
         for (Iterator it = projects.iterator(); it.hasNext();) {
              CsmProject curPrj = (CsmProject) it.next();
@@ -487,7 +487,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
         // try the same with canonical path
         String canonical;
         try {
-            canonical = new File(absPath).getCanonicalPath();
+            canonical = new File(absPath.toString()).getCanonicalPath();
         } catch (IOException ex) {
             canonical=null;
         }

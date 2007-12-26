@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
  * Storage for project classifiers. Class was extracted from ProjectBase.
@@ -62,8 +63,8 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  */
 /*package-local*/ class ClassifierContainer implements Persistent, SelfPersistent {
 
-    private Map<String, CsmUID<CsmClassifier>> classifiers = new ConcurrentHashMap<String, CsmUID<CsmClassifier>>();
-    private Map<String, CsmUID<CsmClassifier>> typedefs = new ConcurrentHashMap<String, CsmUID<CsmClassifier>>();
+    private Map<CharSequence, CsmUID<CsmClassifier>> classifiers = new ConcurrentHashMap<CharSequence, CsmUID<CsmClassifier>>();
+    private Map<CharSequence, CsmUID<CsmClassifier>> typedefs = new ConcurrentHashMap<CharSequence, CsmUID<CsmClassifier>>();
     
     /** Creates a new instance of ClassifierContainer */
     public ClassifierContainer() {
@@ -73,8 +74,9 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 	read(input);
     }
     
-    public CsmClassifier getClassifier(String qualifiedName) {
+    public CsmClassifier getClassifier(CharSequence qualifiedName) {
         CsmClassifier result;
+        qualifiedName = CharSequenceKey.create(qualifiedName);
         CsmUID<CsmClassifier> uid = classifiers.get(qualifiedName);
         if (uid == null) {
             uid = typedefs.get(qualifiedName);
@@ -84,8 +86,8 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
     }
     
     public boolean putClassifier(CsmClassifier decl) {
-        String qn = decl.getQualifiedName();
-        Map<String, CsmUID<CsmClassifier>> map;
+        CharSequence qn = decl.getQualifiedName();
+        Map<CharSequence, CsmUID<CsmClassifier>> map;
         if (isTypedef(decl)) {
             map = typedefs;
         } else {
@@ -102,7 +104,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
     }
 
     public void removeClassifier(CsmDeclaration decl) {
-        Map<String, CsmUID<CsmClassifier>> map;
+        Map<CharSequence, CsmUID<CsmClassifier>> map;
         if (isTypedef(decl)) {
             map = typedefs;
         } else {

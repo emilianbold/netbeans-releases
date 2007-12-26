@@ -47,19 +47,20 @@ import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
-import org.netbeans.modules.cnd.utils.cache.TextCache;
 
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.netbeans.modules.cnd.utils.cache.NameCache;
 
 /**
  * CsmEnumerator implementation
  * @author Vladimir Kvashin
  */
 public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerator> implements CsmEnumerator {
-    private final String name;
+    private final CharSequence name;
     
     // only one of enumerationRef/enumerationUID must be used (USE_UID_TO_CONTAINER)    
     private /*final*/ CsmEnum enumerationRef;// can be set in onDispose or contstructor only
@@ -67,7 +68,7 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
 
     public EnumeratorImpl(AST ast, EnumImpl enumeration) {
         super(ast, enumeration.getContainingFile());
-        this.name = ast.getText();
+        this.name = CharSequenceKey.create(ast.getText());
         
         // set parent enum, do it in constructor to have final fields
         this.enumerationUID = UIDCsmConverter.declarationToUID((CsmEnum)enumeration);
@@ -76,7 +77,7 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
         enumeration.addEnumerator(this);
     }
     
-    public String getName() {
+    public CharSequence getName() {
         return name;
     }
 
@@ -96,8 +97,8 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
         return CsmDeclaration.Kind.ENUMERATOR;
     }
 
-    public String getQualifiedName() {
-	    return _getEnumeration().getQualifiedName() + "::" + getQualifiedNamePostfix(); // NOI18N    
+    public CharSequence getQualifiedName() {
+	return CharSequenceKey.create(_getEnumeration().getQualifiedName() + "::" + getQualifiedNamePostfix()); // NOI18N    
     }
 
     private CsmEnum _getEnumeration() {
@@ -129,7 +130,7 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
     public void write(DataOutput output) throws IOException {
         super.write(output);
         assert this.name != null;
-        output.writeUTF(this.name);
+        output.writeUTF(this.name.toString());
     
         // not null UID
         assert this.enumerationUID != null;
@@ -138,7 +139,7 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
     
     public EnumeratorImpl(DataInput input) throws IOException {
         super(input);
-        this.name = TextCache.getString(input.readUTF());
+        this.name = NameCache.getString(input.readUTF());
         assert this.name != null;
         this.enumerationUID = UIDObjectFactory.getDefaultFactory().readUID(input);
         // not null UID

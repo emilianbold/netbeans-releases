@@ -52,7 +52,7 @@ public class FileNameCache {
     private FileNameCache() {
     }
     
-    public static String getString(String text) {
+    public static CharSequence getString(CharSequence text) {
         return instance.getString(text);
     }
     

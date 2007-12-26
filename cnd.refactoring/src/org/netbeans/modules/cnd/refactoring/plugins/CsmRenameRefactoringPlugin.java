@@ -394,7 +394,7 @@ public class CsmRenameRefactoringPlugin extends CsmRefactoringPlugin {
             CloneableEditorSupport ces = CsmUtilities.findCloneableEditorSupport(csmFile);
             String newName = refactoring.getNewName();
             for (CsmReference ref : sortedRefs) {
-                String oldName = ref.getText();
+                String oldName = ref.getText().toString();
                 String descr = getDescription(ref, oldName);
                 Difference diff = rename(ref, ces, oldName, newName, descr);
                 assert diff != null;
@@ -411,7 +411,7 @@ public class CsmRenameRefactoringPlugin extends CsmRefactoringPlugin {
     private Difference rename(CsmReference ref, CloneableEditorSupport ces,
             String oldName, String newName, String descr) {
         if (oldName == null) {
-            oldName = ref.getText();
+            oldName = ref.getText().toString();
         }
         if (newName == null) {
             newName = refactoring.getNewName();

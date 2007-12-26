@@ -63,7 +63,7 @@ public class NamedFakeAST extends FakeAST implements Serializable {
     @Override
     public void setText(String text_) {
         if (APTTraceFlags.APT_SHARE_TEXT) {
-            text_ = TextCache.getString(text_);
+            text_ = TextCache.getString(text_).toString();
         }
         text = text_;
     } 

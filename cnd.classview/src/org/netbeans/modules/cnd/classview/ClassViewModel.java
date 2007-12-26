@@ -141,7 +141,7 @@ import org.openide.nodes.Node;
         CsmFile file = decl.getContainingFile();
         CsmProject project = file.getProject();
         children.ensureAddNotify();
-        ProjectNode projectNode = (ProjectNode) children.findChild(project.getName());
+        ProjectNode projectNode = (ProjectNode) children.findChild(project.getName().toString());
         if (projectNode == null) {
             return null;
         }

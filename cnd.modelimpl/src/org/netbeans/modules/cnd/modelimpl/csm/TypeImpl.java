@@ -69,10 +69,10 @@ public class TypeImpl extends OffsetableBase implements CsmType {
     private final boolean reference;
     private final byte arrayDepth;
     private final boolean _const;
-    private final String classifierText;
+    private final CharSequence classifierText;
     
     // FIX for lazy resolver calls
-    private String[] qname = null;
+    private CharSequence[] qname = null;
     private int firstOffset;
     private CsmUID<CsmClassifier> classifierUID;
     
@@ -88,7 +88,7 @@ public class TypeImpl extends OffsetableBase implements CsmType {
             this._setClassifier(initClassifier(ast));
             this.classifierText = initClassifierText(ast);
         } else {
-            String typeName = classifier.getName();
+            CharSequence typeName = classifier.getName();
             if (typeName == null || typeName.length()==0){
                 this.classifierText = initClassifierText(ast);
             } else {
@@ -169,12 +169,12 @@ public class TypeImpl extends OffsetableBase implements CsmType {
     }
     
     @Override
-    public String getText() {
+    public CharSequence getText() {
 	// TODO: resolve typedefs
 	return getText(false, null).toString();
     }
     
-    protected StringBuilder getText(boolean canonical, String variableNameToInsert) {
+    protected StringBuilder getText(boolean canonical, CharSequence variableNameToInsert) {
 	StringBuilder sb = new StringBuilder();
 	if( isConst() ) {
 	    sb.append("const "); // NOI18N
@@ -196,7 +196,7 @@ public class TypeImpl extends OffsetableBase implements CsmType {
 	return sb;
     }
     
-    private String initClassifierText(AST node) {
+    private CharSequence initClassifierText(AST node) {
         if( node == null ) {
             CsmClassifier classifier = _getClassifier();
             return classifier == null ? "" : classifier.getName();
@@ -225,7 +225,7 @@ public class TypeImpl extends OffsetableBase implements CsmType {
         return getClassifier(null);
     }
 
-    protected String getClassifierText() {
+    protected CharSequence getClassifierText() {
 	return classifierText;
     }
     
@@ -238,13 +238,13 @@ public class TypeImpl extends OffsetableBase implements CsmType {
             if (qname != null) {
                 _setClassifier(renderClassifier(qname, parent));
             } else if (classifierText.length() > 0) {
-                _setClassifier(renderClassifier(new String[] { classifierText }, parent ));
+                _setClassifier(renderClassifier(new CharSequence[] { classifierText }, parent ));
             }
         }
         return _getClassifier();
     }
     
-    private CsmClassifier renderClassifier(String[] qname, Resolver parent) {
+    private CsmClassifier renderClassifier(CharSequence[] qname, Resolver parent) {
         CsmClassifier result = null;
         Resolver resolver = ResolverFactory.createResolver(getContainingFile(), firstOffset, parent);
         CsmObject o = resolver.resolve(qname, Resolver.CLASSIFIER);
@@ -394,7 +394,7 @@ public class TypeImpl extends OffsetableBase implements CsmType {
         output.writeInt(arrayDepth);
         output.writeBoolean(_const);
         assert this.classifierText != null;
-        output.writeUTF(classifierText);
+        output.writeUTF(classifierText.toString());
         
         PersistentUtils.writeStrings(qname, output);
         output.writeInt(firstOffset);

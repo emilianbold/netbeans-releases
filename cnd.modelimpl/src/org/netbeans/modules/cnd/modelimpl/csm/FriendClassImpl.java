@@ -50,22 +50,24 @@ import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
  *
  * @author Vladimir Kvasihn
  */
 public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> implements CsmFriendClass {
-    private final String name;
-    private final String[] nameParts;
+    private final CharSequence name;
+    private final CharSequence[] nameParts;
     private final CsmUID<CsmClass> parentUID;
     
     public FriendClassImpl(AST ast, FileImpl file, CsmClass parent) {
         super(ast, file);
         this.parentUID = parent.getUID();
         AST qid = AstUtil.findSiblingOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
-        name = (qid == null) ? "" : AstRenderer.getQualifiedName(qid);
+        name = (qid == null) ? CharSequenceKey.empty() : CharSequenceKey.create(AstRenderer.getQualifiedName(qid));
         nameParts = initNameParts(qid);
         registerInProject();
     }
@@ -85,15 +87,15 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
         return getContainingClass();
     }
 
-    public String getName() {
+    public CharSequence getName() {
         return name;
     }
 
-    public String getQualifiedName() {
+    public CharSequence getQualifiedName() {
         CsmClass cls = getContainingClass();
-        String clsQName = cls.getQualifiedName();
+        CharSequence clsQName = cls.getQualifiedName();
 	if( clsQName != null && clsQName.length() > 0 ) {
-            return clsQName + "::" + getQualifiedNamePostfix(); // NOI18N
+            return CharSequenceKey.create(clsQName.toString() + "::" + getQualifiedNamePostfix()); // NOI18N
 	}
         return getName();
     }
@@ -140,7 +142,7 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
     public void write(DataOutput output) throws IOException {
         super.write(output);
         assert this.name != null;
-        output.writeUTF(this.name);
+        output.writeUTF(this.name.toString());
         PersistentUtils.writeStrings(this.nameParts, output);
         UIDObjectFactory.getDefaultFactory().writeUID(this.parentUID, output);    
     }
@@ -148,7 +150,7 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
 
     public FriendClassImpl(DataInput input) throws IOException {
         super(input);
-        this.name = TextCache.getString(input.readUTF());
+        this.name = QualifiedNameCache.getString(input.readUTF());
         assert this.name != null;
         this.nameParts = PersistentUtils.readStrings(input, TextCache.getManager());
         this.parentUID = UIDObjectFactory.getDefaultFactory().readUID(input);

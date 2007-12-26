@@ -57,8 +57,8 @@ public class FriendClassNode extends ObjectNode {
     }
     
     private void init(CsmFriendClass cls){
-        String shortName = cls.getName();
-        String longName = cls.getQualifiedName();
+        String shortName = cls.getName().toString();
+        String longName = cls.getQualifiedName().toString();
         setName(shortName);
         setDisplayName(shortName);
         setShortDescription(longName);

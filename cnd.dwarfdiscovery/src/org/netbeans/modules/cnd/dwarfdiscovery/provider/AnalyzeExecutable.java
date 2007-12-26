@@ -110,6 +110,46 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
                 return ProviderProperty.PropertyKind.BinaryFiles;
             }
         });
+        myProperties.put(RESTRICT_SOURCE_ROOT, new ProviderProperty(){
+            private String myPath="";
+            public String getName() {
+                return i18n("RESTRICT_SOURCE_ROOT"); // NOI18N
+            }
+            public String getDescription() {
+                return i18n("RESTRICT_SOURCE_ROOT"); // NOI18N
+            }
+            public Object getValue() {
+                return myPath;
+            }
+            public void setValue(Object value) {
+                if (value instanceof String){
+                    myPath = (String)value;
+                }
+            }
+            public ProviderProperty.PropertyKind getKind() {
+                return ProviderProperty.PropertyKind.String;
+            }
+        });
+        myProperties.put(RESTRICT_COMPILE_ROOT, new ProviderProperty(){
+            private String myPath="";
+            public String getName() {
+                return i18n("RESTRICT_COMPILE_ROOT"); // NOI18N
+            }
+            public String getDescription() {
+                return i18n("RESTRICT_COMPILE_ROOT"); // NOI18N
+            }
+            public Object getValue() {
+                return myPath;
+            }
+            public void setValue(Object value) {
+                if (value instanceof String){
+                    myPath = (String)value;
+                }
+            }
+            public ProviderProperty.PropertyKind getKind() {
+                return ProviderProperty.PropertyKind.String;
+            }
+        });
     }
     
     public String getID() {
@@ -184,8 +224,10 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
                             if (isStoped) {
                                 break;
                             }
-                            set.addAll( ((DwarfSource)source).getIncludedFiles() );
-                            set.add(source.getItemPath());
+                            if (source instanceof DwarfSource) {
+                                set.addAll( ((DwarfSource)source).getIncludedFiles() );
+                                set.add(source.getItemPath());
+                            }
                         }
                         HashSet<String> unique = new HashSet<String>();
                         for(String path : set){

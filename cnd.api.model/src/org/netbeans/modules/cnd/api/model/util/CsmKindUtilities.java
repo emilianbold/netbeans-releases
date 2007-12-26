@@ -291,7 +291,7 @@ public class CsmKindUtilities {
             CsmDeclaration.Kind kind = ((CsmDeclaration)obj).getKind();
             if (kind == CsmDeclaration.Kind.FUNCTION ||
                 kind == CsmDeclaration.Kind.FUNCTION_DEFINITION) {
-                String name = ((CsmDeclaration)obj).getName();
+                String name = ((CsmDeclaration)obj).getName().toString();
                 return name != null && name.startsWith("operator "); // NOI18N
             }
         }

@@ -71,7 +71,7 @@ public class ProjectTreeElement implements TreeElement {
             this.icon = pi.getIcon();
         } else {
             this.icon = CsmImageLoader.getProjectIcon(csmPrj, false);
-            this.name = csmPrj.getName();
+            this.name = csmPrj.getName().toString();
         }
         prjUID = CsmRefactoringUtils.getHandler(csmPrj);
     }

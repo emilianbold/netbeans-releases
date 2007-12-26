@@ -77,12 +77,12 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 /*package-local*/ class FileContainer extends ProjectComponent implements Persistent, SelfPersistent {
     private static final boolean TRACE_PP_STATE_OUT = DebugUtils.getBoolean("cnd.dump.preproc.state", false);
     private final Object lock = new Object();
-    private Map<String, MyFile> myFiles = new ConcurrentHashMap<String, MyFile>();
-    private Map<String, Object/*String or String[]*/> canonicFiles = new ConcurrentHashMap<String, Object/*String or String[]*/>();
+    private Map<CharSequence, MyFile> myFiles = new ConcurrentHashMap<CharSequence, MyFile>();
+    private Map<CharSequence, Object/*String or String[]*/> canonicFiles = new ConcurrentHashMap<CharSequence, Object/*String or String[]*/>();
     
     /** Creates a new instance of FileContainer */
     public FileContainer(ProjectBase project) {
-	super(new FileContainerKey(project.getUniqueName()));
+	super(new FileContainerKey(project.getUniqueName().toString()));
 	put();
     }
     
@@ -257,13 +257,13 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
     
     public void read(DataInput aStream) throws IOException {
         UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
-        HashMap<String,CsmUID<CsmFile>> files = new HashMap<String,CsmUID<CsmFile>>();
-        HashMap<String,APTPreprocHandler.State> handlers = new HashMap<String,APTPreprocHandler.State>();
+        HashMap<CharSequence,CsmUID<CsmFile>> files = new HashMap<CharSequence,CsmUID<CsmFile>>();
+        HashMap<CharSequence,APTPreprocHandler.State> handlers = new HashMap<CharSequence,APTPreprocHandler.State>();
         aFactory.readStringToUIDMap(files, aStream, FilePathCache.getManager());
         PersistentUtils.readStringToStateMap(handlers, aStream);
         myFiles.clear();
         System.err.println("NEED TO UPDATE DESERIALIZATION");
-        for(Map.Entry<String, CsmUID<CsmFile>> entry : files.entrySet()){
+        for(Map.Entry<CharSequence, CsmUID<CsmFile>> entry : files.entrySet()){
             APTPreprocHandler.State state = handlers.get(entry.getValue());
             MyFile file = new MyFile(entry.getValue(),state, entry.getKey());
             myFiles.put(entry.getKey(),file);
@@ -281,7 +281,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
         } else {
             key = file.getAbsolutePath();
         }
-        return sharedText ? FilePathCache.getString(key) : key;
+        return sharedText ? FilePathCache.getString(key).toString() : key;
     }
     
 
@@ -312,7 +312,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
         return f;
     }
     
-    private void addAlternativeFileKey(String primaryKey, String canonicKey) {
+    private void addAlternativeFileKey(String primaryKey, CharSequence canonicKey) {
         Object out = canonicFiles.get(canonicKey);
         Object newVal;
         if (out == null) {
@@ -346,7 +346,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
         }                
     }
     
-    private void removeAlternativeFileKey(String canonicKey, String primaryKey) {
+    private void removeAlternativeFileKey(CharSequence canonicKey, String primaryKey) {
         Object out = canonicFiles.get(canonicKey);
         assert out != null : "no entry for " + canonicKey + " of " + primaryKey;
         Object newVal;
@@ -382,7 +382,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
     }
     
     private static void writeStringToMyFileMap (
-            final DataOutput output, Map<String, MyFile> aMap) throws IOException {
+            final DataOutput output, Map<CharSequence, MyFile> aMap) throws IOException {
         assert output != null;
         assert aMap != null;
         int size = aMap.size();
@@ -391,19 +391,19 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
         output.writeInt(size);
         
         // write the map
-        final Set<Entry<String, MyFile>> entrySet = aMap.entrySet();
-        final Iterator <Entry<String, MyFile>> setIterator = entrySet.iterator();
+        final Set<Entry<CharSequence, MyFile>> entrySet = aMap.entrySet();
+        final Iterator <Entry<CharSequence, MyFile>> setIterator = entrySet.iterator();
         while (setIterator.hasNext()) {
-            final Entry<String, MyFile> anEntry = setIterator.next();
+            final Entry<CharSequence, MyFile> anEntry = setIterator.next();
 
-            output.writeUTF(anEntry.getKey());
+            output.writeUTF(anEntry.getKey().toString());
             assert anEntry.getValue() != null;
             anEntry.getValue().write(output);
         }
     }
     
     private static void  readStringToMyFileMap(
-            final DataInput input, Map<String, MyFile> aMap) throws IOException {
+            final DataInput input, Map<CharSequence, MyFile> aMap) throws IOException {
         
         assert input != null; 
         assert aMap != null;
@@ -415,7 +415,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
         
         for (int i = 0; i < size; i++) {
             String key = input.readUTF();
-            key = pathManager == null? key: pathManager.getString(key);
+            key = pathManager == null? key: pathManager.getString(key).toString();
             MyFile value = new MyFile(input);
             
             assert key != null;
@@ -426,7 +426,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
     }
     
     private static void writeStringToStringsArrMap (
-            final DataOutput output, final Map<String, Object/*String or String[]*/> aMap) throws IOException {
+            final DataOutput output, final Map<CharSequence, Object/*String or String[]*/> aMap) throws IOException {
         
         assert output != null;
         assert aMap != null;
@@ -434,20 +434,20 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
         final int size = aMap.size();
         output.writeInt(size);
         
-        final Set<Entry<String, Object>> entrySet = aMap.entrySet();
-        final Iterator<Entry<String, Object>> setIterator = entrySet.iterator();
+        final Set<Entry<CharSequence, Object>> entrySet = aMap.entrySet();
+        final Iterator<Entry<CharSequence, Object>> setIterator = entrySet.iterator();
         
         while (setIterator.hasNext()) {
-            final Entry<String, Object> anEntry = setIterator.next();
+            final Entry<CharSequence, Object> anEntry = setIterator.next();
             assert anEntry != null;
             
-            final String key = anEntry.getKey();
+            final CharSequence key = anEntry.getKey();
             final Object value = anEntry.getValue();
             assert key != null;
             assert value != null;
-            assert ((value instanceof String) || (value instanceof String[]));
+            assert ((value instanceof CharSequence) || (value instanceof CharSequence[]));
             
-            output.writeUTF(key);
+            output.writeUTF(key.toString());
             
             if (value instanceof String ) {
                 output.writeInt(1);
@@ -465,7 +465,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
     }
     
     private static void readStringToStringsArrMap (
-            final DataInput input, Map<String, Object/*String or String[]*/> aMap) throws IOException {
+            final DataInput input, Map<CharSequence, Object/*String or String[]*/> aMap) throws IOException {
         assert input != null;
         assert aMap != null;
         
@@ -477,7 +477,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
         
         for (int i = 0; i < size; i++) {
             String key = input.readUTF();
-            key = pathManager == null ? key : pathManager.getString(key);
+            key = pathManager == null ? key : pathManager.getString(key).toString();
             assert key != null;
             
             final int arraySize = input.readInt();
@@ -487,10 +487,10 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 		aMap.put(key, input.readUTF());
 	    }
 	    else {
-		final String[] value = new String[arraySize];
+		final CharSequence[] value = new CharSequence[arraySize];
 		for (int j = 0; j < arraySize; j++) {
 		    String path = input.readUTF();
-		    path = pathManager == null ? path : pathManager.getString(path);
+		    path = pathManager == null ? path : pathManager.getString(path).toString();
 		    assert path != null;
 
 		    value[j] = path;
@@ -502,7 +502,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
     
     private static class MyFile implements Persistent, SelfPersistent {
         private final CsmUID<CsmFile> fileNew;
-        private final String canonical;
+        private final CharSequence canonical;
         private APTPreprocHandler.State state;
         
         private MyFile (final DataInput input) throws IOException {
@@ -513,7 +513,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
             }
         }
         
-        private MyFile(CsmUID<CsmFile> fileNew, APTPreprocHandler.State state, String fileKey) {
+        private MyFile(CsmUID<CsmFile> fileNew, APTPreprocHandler.State state, CharSequence fileKey) {
             this.fileNew = fileNew;
             this.state = state;
             this.canonical = getCanonicalKey(fileKey);
@@ -521,7 +521,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
         
         public void write(final DataOutput output) throws IOException {
             UIDObjectFactory.getDefaultFactory().writeUID(fileNew, output);
-            output.writeUTF(canonical);
+            output.writeUTF(canonical.toString());
             output.writeBoolean(state != null);
             if (state != null) {
                 PersistentUtils.writePreprocState(state, output);
@@ -529,15 +529,13 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
         }
     }
     
-    private static final String getCanonicalKey(String fileKey) {
+    private static final CharSequence getCanonicalKey(CharSequence fileKey) {
         try {
-            String res = new File(fileKey).getCanonicalPath();
+            String res = new File(fileKey.toString()).getCanonicalPath();
             if (fileKey.equals(res)) {
-                res = fileKey;
-            } else {
-                res = FilePathCache.getString(res);
+                return fileKey;
             }
-            return res;
+            return FilePathCache.getString(res);
         } catch (IOException e) {
             // skip exception
             return fileKey;

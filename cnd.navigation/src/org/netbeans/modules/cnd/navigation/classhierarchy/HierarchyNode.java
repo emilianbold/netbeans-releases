@@ -69,7 +69,7 @@ public class HierarchyNode extends AbstractCsmNode{
         if (recursion) {
             setName(element.getName()+" "+getString("CTL_Recuesion")); // NOI18N
         } else {
-            setName(element.getName());
+            setName(element.getName().toString());
         }
         object = element;
         this.model = model;

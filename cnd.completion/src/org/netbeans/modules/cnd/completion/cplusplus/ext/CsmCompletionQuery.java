@@ -1628,15 +1628,15 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             if (CsmKindUtilities.isCsmObject(dataItem)) { 
                 CsmObject csmObj = (CsmObject)dataItem;
                 if (CsmKindUtilities.isClass(csmObj)) {
-                    text = ((CsmClass)csmObj).getName();
+                    text = ((CsmClass)csmObj).getName().toString();
                     if (classDisplayOffset > 0 && classDisplayOffset < text.length()) { // Only the last name for inner classes
                         text = text.substring(classDisplayOffset);
                     }
                 } else if (CsmKindUtilities.isVariable(csmObj)) {
-                    text = ((CsmVariable)csmObj).getName();
+                    text = ((CsmVariable)csmObj).getName().toString();
                 } else if (CsmKindUtilities.isFunctionDeclaration(csmObj)) {
                     CsmFunction mtd = (CsmFunction)csmObj;
-                    text = mtd.getName();
+                    text = mtd.getName().toString();
                 }
             }
             return text;
@@ -1734,7 +1734,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             if (CsmKindUtilities.isCsmObject(replacement)) {
                 CsmObject csmRepl = (CsmObject)replacement;
                 if (CsmKindUtilities.isClass(csmRepl)) {
-                    text = ((CsmClass)csmRepl).getName();
+                    text = ((CsmClass)csmRepl).getName().toString();
                     if (classDisplayOffset > 0
                             && classDisplayOffset < text.length()
                        ) { // Only the last name for inner classes
@@ -1742,7 +1742,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                     }
 
                 } else if (CsmKindUtilities.isVariable(csmRepl)) {
-                    text = ((CsmVariable)csmRepl).getName();
+                    text = ((CsmVariable)csmRepl).getName().toString();
 
                 } else if (CsmKindUtilities.isFunctionDeclaration(csmRepl)) {
                     CsmFunction mtd = (CsmFunction)csmRepl;

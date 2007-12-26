@@ -109,7 +109,7 @@ public abstract class HyperlinkBaseTestCase extends ProjectBasedTestCase {
         CsmOffsetable targetObject = findTargetObject(doc, offset, jumpToken);
         assertNotNull("Hyperlink target is not found for " + jumpToken.getText() + //NOI18N
                 " in file " + testSourceFile + " on position (" + lineIndex + ", " + colIndex + ")", targetObject);//NOI18N
-        String destResultFileAbsPath = targetObject.getContainingFile().getAbsolutePath();
+        String destResultFileAbsPath = targetObject.getContainingFile().getAbsolutePath().toString();
         Position resultPos = targetObject.getStartPosition();
         int resultOffset = resultPos.getOffset();
         int resultLine = resultPos.getLine();

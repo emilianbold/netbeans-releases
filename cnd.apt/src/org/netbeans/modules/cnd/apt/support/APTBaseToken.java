@@ -121,7 +121,7 @@ public class APTBaseToken extends CommonToken implements APTToken {
     
     public void setText(String t) {
         if (APTTraceFlags.APT_SHARE_TEXT) {
-            t = TextCache.getString(t);
+            t = TextCache.getString(t).toString();
         }
         super.setText(t);
     }

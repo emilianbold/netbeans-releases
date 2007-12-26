@@ -768,7 +768,7 @@ public class NbCompletionJavaDoc extends CompletionJavaDoc {
             if (csmClass == null) {
                 javaDocNotFound();
             } else {
-                setCsmDoc(csmClass.getQualifiedName());
+                setCsmDoc(csmClass.getQualifiedName().toString());
             }
         }
         

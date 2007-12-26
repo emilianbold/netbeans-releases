@@ -66,7 +66,7 @@ public class CsmRefactoringElementImpl extends
     }
         
     public String getText() {
-        return elem.getText();
+        return elem.getText().toString();
     }
 
     public String getDisplayText() {

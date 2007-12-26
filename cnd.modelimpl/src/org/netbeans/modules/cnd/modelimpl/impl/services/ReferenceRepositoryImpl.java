@@ -162,7 +162,7 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
             boolean includeSelfDeclarations, int startOffset, int endOffset) {
         assert targetDecl != null;
         assert file != null;
-        String name = "";
+        CharSequence name = "";
         if (CsmKindUtilities.isNamedElement(targetDecl)) {
             name = ((CsmNamedElement)targetDecl).getName();
         }
@@ -180,7 +180,7 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
         if (TraceFlags.TRACE_XREF_REPOSITORY) {
             time = System.currentTimeMillis();
         }
-        Collection<APTToken> tokens = getTokensToResolve(file, name, startOffset, endOffset);
+        Collection<APTToken> tokens = getTokensToResolve(file, name.toString(), startOffset, endOffset);
         if (TraceFlags.TRACE_XREF_REPOSITORY) {
             time = System.currentTimeMillis() - time;
             System.err.println("collecting tokens");

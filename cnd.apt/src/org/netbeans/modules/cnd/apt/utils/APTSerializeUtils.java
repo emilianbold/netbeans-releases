@@ -302,7 +302,7 @@ public class APTSerializeUtils {
     public static void readStringToMacroMap(Map<String, APTMacro> macros, DataInput input) throws IOException {
         int collSize = input.readInt();
         for (int i = 0; i < collSize; ++i) {
-            String key = TextCache.getString(input.readUTF());
+            String key = TextCache.getString(input.readUTF()).toString();
             assert key != null;
             APTMacro macro = readMacro(input);
             assert macro != null;

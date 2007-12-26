@@ -47,12 +47,14 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.netbeans.modules.cnd.utils.cache.NameCache;
 
 /**
  * Implements CsmUsingDirective
@@ -60,9 +62,9 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
  */
 public class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsingDirective> implements CsmUsingDirective, RawNamable {
 
-    private final String name;
+    private final CharSequence name;
     private final int startOffset;
-    private final String[] rawName;
+    private final CharSequence[] rawName;
     // TODO: don't store declaration here since the instance might change
     private CsmUID<CsmNamespace> referencedNamespaceUID = null;
     
@@ -72,7 +74,7 @@ public class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsingDirect
         startOffset = ((CsmAST)ast.getFirstChild()).getOffset();
         rawName = AstUtil.getRawNameInChildren(ast);
         
-        name = ast.getText();
+        name = CharSequenceKey.create(ast.getText());
     }
     
     public CsmNamespace getReferencedNamespace() {
@@ -118,15 +120,15 @@ public class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsingDirect
         return CsmDeclaration.Kind.USING_DIRECTIVE;
     }
     
-    public String getName() {
+    public CharSequence getName() {
         return name;
     }
     
-    public String getQualifiedName() {
+    public CharSequence getQualifiedName() {
         return getName();
     }
     
-    public String[] getRawName() {
+    public CharSequence[] getRawName() {
         return rawName;
     }
     
@@ -142,7 +144,7 @@ public class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsingDirect
     public void write(DataOutput output) throws IOException {
         super.write(output);
         assert this.name != null;
-        output.writeUTF(this.name);
+        output.writeUTF(this.name.toString());
         output.writeInt(this.startOffset);
         PersistentUtils.writeStrings(this.rawName, output);
         
@@ -152,10 +154,10 @@ public class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsingDirect
     
     public UsingDirectiveImpl(DataInput input) throws IOException {
         super(input);
-        this.name = TextCache.getString(input.readUTF());
+        this.name = NameCache.getString(input.readUTF());
         assert this.name != null;
         this.startOffset = input.readInt();
-        this.rawName = PersistentUtils.readStrings(input, TextCache.getManager());
+        this.rawName = PersistentUtils.readStrings(input, QualifiedNameCache.getManager());
         
         // read cached namespace
         this.referencedNamespaceUID = UIDObjectFactory.getDefaultFactory().readUID(input);        

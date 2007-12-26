@@ -59,7 +59,7 @@ public class FriendFunctionNode extends ObjectNode {
     }
     
     private void init(CsmFriendFunction fun){
-        String text = CVUtil.getSignature(fun);
+        String text = CVUtil.getSignature(fun).toString();
         setName(text);
         setDisplayName(text);
         setShortDescription(text);

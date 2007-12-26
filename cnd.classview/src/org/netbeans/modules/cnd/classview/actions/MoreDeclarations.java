@@ -107,7 +107,7 @@ public class MoreDeclarations extends AbstractAction implements Presenter.Popup 
     private JMenuItem createItem(final CsmOffsetableDeclaration decl) {
         JMenuItem item = new JMenuItem();
         CsmFile file = decl.getContainingFile();
-        item.setText(file.getName());
+        item.setText(file.getName().toString());
         item.putClientProperty(PROP_DECLARATION, decl);
         item.addActionListener(this);
         return item;
@@ -125,7 +125,7 @@ public class MoreDeclarations extends AbstractAction implements Presenter.Popup 
         private CsmOffsetableDeclaration decl;
         private ItemWrapper(CsmOffsetableDeclaration decl){
             this.decl = decl;
-            name = decl.getContainingFile().getName();
+            name = decl.getContainingFile().getName().toString();
         }
         public int compareTo(MoreDeclarations.ItemWrapper o) {
             return name.compareTo(o.name);

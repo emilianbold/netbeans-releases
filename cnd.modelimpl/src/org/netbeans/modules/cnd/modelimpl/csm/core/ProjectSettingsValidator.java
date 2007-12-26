@@ -116,7 +116,7 @@ public class ProjectSettingsValidator {
         }
 	updateMap(headers);
 	updateMap(sources);
-	Key key = new ProjectSettingsValidatorKey(csmProject.getUniqueName());
+	Key key = new ProjectSettingsValidatorKey(csmProject.getUniqueName().toString());
 	RepositoryUtils.put(key, data);
 	if( TraceFlags.TIMING ) {
 	    time = System.currentTimeMillis() - time;
@@ -135,7 +135,7 @@ public class ProjectSettingsValidator {
 	if( nativeProject == null ) {
 	    return;
 	}
-	Key key = new ProjectSettingsValidatorKey(csmProject.getUniqueName());
+	Key key = new ProjectSettingsValidatorKey(csmProject.getUniqueName().toString());
 	data = (Data) RepositoryUtils.get(key);
 	assert data != null : "Can not get project settings validator data by the key " + key; //NOI18N
     }

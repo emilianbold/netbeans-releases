@@ -85,7 +85,7 @@ public final class PersistentKey {
         }
     }
     
-    private PersistentKey(String id, CsmProject host, byte type, boolean state) {
+    private PersistentKey(CharSequence id, CsmProject host, byte type, boolean state) {
         key = id;
         project = host;
         kind = type;
@@ -101,7 +101,7 @@ public final class PersistentKey {
     public static PersistentKey createKey(CsmIdentifiable object){
         if (object instanceof CsmNamespace){
             CsmNamespace ns = (CsmNamespace) object;
-            String uniq = ns.getQualifiedName();
+            CharSequence uniq = ns.getQualifiedName();
             CsmProject project = ns.getProject();
             if (project != null) {
                 return new PersistentKey(NameCache.getString(uniq), project, NAMESPACE, false);
@@ -110,15 +110,15 @@ public final class PersistentKey {
             // special hack.
         } else if (object instanceof CsmOffsetableDeclaration){
             CsmOffsetableDeclaration decl = (CsmOffsetableDeclaration) object;
-            String name = decl.getName();
-            String uniq = decl.getUniqueName();
+            CharSequence name = decl.getName();
+            CharSequence uniq = decl.getUniqueName();
             CsmScope scope = decl.getScope();
             if ((scope instanceof CsmCompoundClassifier) && name.length() > 0) {
                 CsmCompoundClassifier cls = (CsmCompoundClassifier) scope;
                 name = cls.getName();
             }
             CsmProject project = decl.getContainingFile().getProject();
-            if (name.length() > 0 && uniq.indexOf("::::") < 0 && project != null){ // NOI18N
+            if (name.length() > 0 && uniq.toString().indexOf("::::") < 0 && project != null){ // NOI18N
                 return new PersistentKey(NameCache.getString(uniq), project, DECLARATION, getStateBit(object));
             } else {
                 //System.out.println("Skip "+uniq);
@@ -151,9 +151,9 @@ public final class PersistentKey {
             case PROXY:
                 return (CsmIdentifiable) key;
             case NAMESPACE:
-                return project.findNamespace((String)key);
+                return project.findNamespace((CharSequence)key);
             case DECLARATION:
-                return project.findDeclaration((String)key);
+                return project.findDeclaration((CharSequence)key);
             case PROJECT:
                 return project;
         }

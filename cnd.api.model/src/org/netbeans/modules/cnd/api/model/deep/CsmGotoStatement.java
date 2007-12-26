@@ -48,5 +48,5 @@ package org.netbeans.modules.cnd.api.model.deep;
 public interface CsmGotoStatement extends CsmStatement {
 
     /** Gets label name (without trailing ":") */
-    String getLabel();
+    CharSequence getLabel();
 }

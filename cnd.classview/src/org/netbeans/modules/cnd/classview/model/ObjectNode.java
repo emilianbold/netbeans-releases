@@ -98,7 +98,7 @@ public abstract class ObjectNode extends BaseNode implements ChangeListener {
         Action action = createOpenAction();
         if (action != null){
             CsmOffsetableDeclaration decl = getObject();
-            String name = decl.getUniqueName();
+            String name = decl.getUniqueName().toString();
             CsmProject project = decl.getContainingFile().getProject();
             if (project != null){
                 Collection<CsmOffsetableDeclaration> arr = project.findDeclarations(name);

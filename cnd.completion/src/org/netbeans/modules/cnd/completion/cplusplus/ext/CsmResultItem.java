@@ -194,7 +194,7 @@ public abstract class CsmResultItem
 
     protected static String getTypeName(CsmType typ) {
 //        return typ.format(false);
-        return typ.getText();
+        return typ.getText().toString();
     }
     
     /**
@@ -346,7 +346,7 @@ public abstract class CsmResultItem
         
         public MacroResultItem(CsmMacro mac, int priotity) {
             super(mac, priotity);
-            this.macName = mac.getName();
+            this.macName = mac.getName().toString();
             this.params = mac.getParameters();
         }
 
@@ -393,7 +393,7 @@ public abstract class CsmResultItem
         
         public VariableResultItem(CsmVariable fld, int priotity) {
             super(fld, priotity);
-            this.fldName = fld.getName();
+            this.fldName = fld.getName().toString();
             this.modifiers = convertCsmModifiers(fld);
             this.typeName = getTypeName(fld.getType());
             this.typeColor = getTypeColor(fld.getType());
@@ -464,7 +464,7 @@ public abstract class CsmResultItem
         public MethodResultItem(CsmFunction mtd, CsmCompletionExpression substituteExp, int priotity){
             super(mtd, substituteExp, priotity);
             typeName = CsmResultItem.getTypeName(mtd.getReturnType());
-            mtdName = mtd.getName();
+            mtdName = mtd.getName().toString();
             typeColor = CsmResultItem.getTypeColor(mtd.getReturnType());
         }
         
@@ -548,13 +548,13 @@ public abstract class CsmResultItem
                 if (type == null) {
                     // only var args parameters could have null types
                     assert (prm.isVarArgs());
-                    params.add(new ParamStr("", "" , prm.getName(), true, KEYWORD_COLOR)); //NOI18N
+                    params.add(new ParamStr("", "" , prm.getName().toString(), true, KEYWORD_COLOR)); //NOI18N
                     varArgIndex = i;
                 } else {
                     // XXX may be need full name as the first param
                     // FIXUP: too expensive to call getClassifier here!
-                    String strFullName = type.getText();// type.getClassifier().getName();
-                    params.add(new ParamStr(strFullName, type.getText() , prm.getName(), false, TYPE_COLOR /*getTypeColor(type.getClassifier())*/));
+                    String strFullName = type.getText().toString();// type.getClassifier().getName();
+                    params.add(new ParamStr(strFullName, type.getText().toString() , prm.getName().toString(), false, TYPE_COLOR /*getTypeColor(type.getClassifier())*/));
                 }
             }           
             // TODO
@@ -590,7 +590,7 @@ public abstract class CsmResultItem
         
         public String getName(){
             // TODO review the output
-            return ctr.getName();
+            return ctr.getName().toString();
         }
         
         public List getParams(){
@@ -979,7 +979,7 @@ public abstract class CsmResultItem
         
         public String getItemText() {
             // TODO review the output
-            return ctr.getName();
+            return ctr.getName().toString();
         }
         
         protected CsmPaintComponent.ConstructorPaintComponent createPaintComponent(){
@@ -1010,11 +1010,11 @@ public abstract class CsmResultItem
         public NamespaceAliasResultItem(CsmNamespaceAlias alias, boolean displayFullNamespacePath, int priotity){
             super(alias, priotity);
             this.alias = alias;
-            this.aliasName = alias.getAlias();
+            this.aliasName = alias.getAlias().toString();
         }        
         
         public String getItemText() {
-            return alias.getAlias();
+            return alias.getAlias().toString();
         }
         
         protected CsmPaintComponent.NamespaceAliasPaintComponent createPaintComponent(){
@@ -1043,12 +1043,12 @@ public abstract class CsmResultItem
             super(pkg, priotity);
             this.pkg = pkg;
             this.displayFullNamespacePath = displayFullNamespacePath;
-            this.pkgName = pkg.getName();
+            this.pkgName = pkg.getName().toString();
         }
         
         
         public String getItemText() {
-            return displayFullNamespacePath ? pkg.getQualifiedName() : pkg.getName();
+            return displayFullNamespacePath ? pkg.getQualifiedName().toString() : pkg.getName().toString();
         }
         
         protected CsmPaintComponent.NamespacePaintComponent createPaintComponent(){
@@ -1090,7 +1090,7 @@ public abstract class CsmResultItem
         
         
         protected String getName(){
-            return enm.getName();
+            return enm.getName().toString();
         }
         
         protected String getReplaceText(){
@@ -1104,7 +1104,7 @@ public abstract class CsmResultItem
         }
         
         public String getItemText() {
-            return displayFQN ? enm.getQualifiedName() : enm.getName();
+            return displayFQN ? enm.getQualifiedName().toString() : enm.getName().toString();
         }
         
         protected CsmPaintComponent.EnumPaintComponent createPaintComponent(){
@@ -1144,7 +1144,7 @@ public abstract class CsmResultItem
         
         
         protected String getName(){
-            return enmtr.getName();
+            return enmtr.getName().toString();
         }
         
         protected String getReplaceText(){
@@ -1204,7 +1204,7 @@ public abstract class CsmResultItem
         
         
         protected String getName(){
-            return cls.isTemplate() ? ((CsmTemplate)cls).getDisplayName() : cls.getName(); 
+            return cls.isTemplate() ? ((CsmTemplate)cls).getDisplayName().toString() : cls.getName().toString(); 
         }
         
         protected String getReplaceText(){
@@ -1218,7 +1218,7 @@ public abstract class CsmResultItem
         }
         
         public String getItemText() {
-            return displayFQN ? cls.getQualifiedName() : getName();
+            return displayFQN ? cls.getQualifiedName().toString() : getName();
         }
         
         protected CsmPaintComponent.StructPaintComponent createStructPaintComponent(){
@@ -1284,7 +1284,7 @@ public abstract class CsmResultItem
         
         
         protected String getName(){
-            return def.getName();
+            return def.getName().toString();
         }
         
         protected String getReplaceText(){
@@ -1298,7 +1298,7 @@ public abstract class CsmResultItem
         }
         
         public String getItemText() {
-            return displayFQN ? def.getQualifiedName() : def.getName();
+            return displayFQN ? def.getQualifiedName().toString() : def.getName().toString();
         }     
         
         protected CsmPaintComponent.TypedefPaintComponent createTypedefPaintComponent(){

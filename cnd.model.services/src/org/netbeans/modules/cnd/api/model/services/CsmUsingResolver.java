@@ -127,7 +127,7 @@ public abstract class CsmUsingResolver {
         for (CsmUsingDirective decl : decls) {
             CsmNamespace ref = decl.getReferencedNamespace();
             if (ref != null) {
-                String name = decl.getName();
+                String name = decl.getName().toString();
                 // remove previous inclusion
                 out.remove(name);
                 out.put(name, ref);
@@ -146,7 +146,7 @@ public abstract class CsmUsingResolver {
         for (CsmUsingDeclaration decl : decls) {
             CsmDeclaration ref = decl.getReferencedDeclaration();
             if (ref != null) {
-                String name = decl.getName();
+                String name = decl.getName().toString();
                 // remove previous inclusion
                 out.remove(name);
                 out.put(name, ref);

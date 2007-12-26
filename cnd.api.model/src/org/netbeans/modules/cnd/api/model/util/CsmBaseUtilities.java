@@ -155,7 +155,7 @@ public class CsmBaseUtilities {
         CsmClassifier cls = null;
         if (ns != null) {
             CsmUID uid = out.getUID();
-            String fqn = out.getQualifiedName();
+            CharSequence fqn = out.getQualifiedName();
             for (CsmDeclaration decl : ns.getDeclarations()) {
                 if (CsmKindUtilities.isClassifier(decl) && decl.getQualifiedName().equals(fqn)) {
                     if (!decl.getUID().equals(uid)) {

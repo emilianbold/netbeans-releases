@@ -48,13 +48,13 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.utils.cache.NameCache;
 
 /**
  * CsmInheritance implementation
@@ -69,7 +69,7 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
     
     private CsmUID<CsmClassifier> classifierCacheUID;
     
-    private String ancestorName;
+    private CharSequence ancestorName;
     
     public InheritanceImpl(AST ast, CsmFile file) {
         super(ast, file);
@@ -151,14 +151,14 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
                     }
                     //CsmObject o = ResolverFactory.createResolver(this).resolve(new String[] { token.getText() } );
                     this.ancestorName = ancNameBuffer.toString();
-                    this.ancestorName = counter == 0 ? TextCache.getString(this.ancestorName) : QualifiedNameCache.getString(this.ancestorName);
+                    this.ancestorName = counter == 0 ? NameCache.getString(this.ancestorName) : QualifiedNameCache.getString(this.ancestorName);
                     return; // it's definitely the last!; besides otherwise we get NPE in for 
                     //break;
             }
         }
     }
 
-    private CsmClassifier renderClassifier(String ancName, Resolver parent) {
+    private CsmClassifier renderClassifier(CharSequence ancName, Resolver parent) {
         CsmClassifier result = null;
         CsmObject o = ResolverFactory.createResolver(this, parent).resolve(ancName, Resolver.CLASSIFIER);
         if( CsmKindUtilities.isClassifier(o) ) {
@@ -198,7 +198,7 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
         PersistentUtils.writeVisibility(this.visibility, output);
         output.writeBoolean(this.virtual);
         assert this.ancestorName != null;
-        output.writeUTF(ancestorName);        
+        output.writeUTF(ancestorName.toString());        
 
         // save cache
         UIDObjectFactory.getDefaultFactory().writeUID(classifierCacheUID, output);     
@@ -214,7 +214,7 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
         this.visibility = PersistentUtils.readVisibility(input);
         this.virtual = input.readBoolean();
         this.ancestorName = input.readUTF();
-        this.ancestorName = ancestorName.indexOf("::") == -1 ? TextCache.getString(ancestorName) : QualifiedNameCache.getString(ancestorName); // NOI18N
+        this.ancestorName = ancestorName.toString().indexOf("::") == -1 ? NameCache.getString(ancestorName) : QualifiedNameCache.getString(ancestorName); // NOI18N
         assert this.ancestorName != null;
 
         // restore cached value

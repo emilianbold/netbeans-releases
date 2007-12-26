@@ -86,6 +86,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 import org.openide.util.Cancellable;
 
 /**
@@ -129,7 +130,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
     
     protected static void cleanRepository(Object platformProject, boolean articicial) {
-        Key key = KeyUtilities.createProjectKey(getUniqueName(platformProject));
+        Key key = KeyUtilities.createProjectKey(getUniqueName(platformProject).toString());
         RepositoryUtils.closeUnit(key, null, true);
     }
     
@@ -142,7 +143,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
         
         assert TraceFlags.PERSISTENT_REPOSITORY;
-        Key key = KeyUtilities.createProjectKey(getUniqueName(platformProject));
+        Key key = KeyUtilities.createProjectKey(getUniqueName(platformProject).toString());
         RepositoryUtils.openUnit(key);
         Persistent o = RepositoryUtils.get(key);
         if( o != null ) {
@@ -166,7 +167,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return _getGlobalNamespace();
     }
     
-    public String getName() {
+    public CharSequence getName() {
         return name;
     }
     
@@ -179,14 +180,14 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      * One should never rely on this name structure, 
      * just use it as in unique identifier
      */
-    public String getUniqueName() {
+    public CharSequence getUniqueName() {
         if (this.uniqueName == null) {
             this.uniqueName = getUniqueName(getPlatformProject());
         }
         return this.uniqueName;
     }
     
-    public static String getUniqueName(Object platformProject) {
+    public static CharSequence getUniqueName(Object platformProject) {
 	String result;
         if (platformProject instanceof NativeProject) {
             result = ((NativeProject)platformProject).getProjectRoot() + 'N';
@@ -227,19 +228,19 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
     
     /** Finds namespace by its qualified name */
-    public CsmNamespace findNamespace( String qualifiedName ) {
+    public CsmNamespace findNamespace( CharSequence qualifiedName ) {
         CsmNamespace nsp = _getNamespace( qualifiedName );
         return nsp;
     }
     
-    public NamespaceImpl findNamespaceCreateIfNeeded(NamespaceImpl parent, String name) {
+    public NamespaceImpl findNamespaceCreateIfNeeded(NamespaceImpl parent, CharSequence name) {
         String qualifiedName = Utils.getNestedNamespaceQualifiedName(name, parent, true);
         NamespaceImpl nsp = _getNamespace(qualifiedName);
         if( nsp == null ) {
             synchronized (namespaceLock){
                 nsp = _getNamespace(qualifiedName);
                 if( nsp == null ) {
-                    nsp = new NamespaceImpl(this, parent, name, qualifiedName);
+                    nsp = new NamespaceImpl(this, parent, name.toString(), qualifiedName);
                 }
             }
         }
@@ -254,7 +255,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         _unregisterNamespace(namespace);
     }
     
-    public CsmClassifier findClassifier(String qualifiedName, boolean findInLibraries) {
+    public CsmClassifier findClassifier(CharSequence qualifiedName, boolean findInLibraries) {
         CsmClassifier result = findClassifier(qualifiedName);
         if( result == null && findInLibraries ) {
             for (Iterator it = getLibraries().iterator(); it.hasNext();) {
@@ -268,16 +269,16 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return result;
     }
     
-    public CsmClassifier findClassifier(String qualifiedName) {
+    public CsmClassifier findClassifier(CharSequence qualifiedName) {
         CsmClassifier result = classifierContainer.getClassifier(qualifiedName);
         return result;
     }
     
-    public CsmDeclaration findDeclaration(String uniqueName) {
+    public CsmDeclaration findDeclaration(CharSequence uniqueName) {
         return getDeclarationsSorage().getDeclaration(uniqueName);
     }
     
-    public Collection<CsmOffsetableDeclaration> findDeclarations(String uniqueName) {
+    public Collection<CsmOffsetableDeclaration> findDeclarations(CharSequence uniqueName) {
         return getDeclarationsSorage().findDeclarations(uniqueName);
     }
     
@@ -334,7 +335,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         getDeclarationsSorage().putDeclaration(decl);
         
         if( decl instanceof CsmClassifier ) {
-            String qn = decl.getQualifiedName();
+            CharSequence qn = decl.getQualifiedName();
             if (!classifierContainer.putClassifier((CsmClassifier)decl) && TraceFlags.CHECK_DECLARATIONS) {
                 CsmClassifier old = classifierContainer.getClassifier(qn);
                 if (old != null && old != decl) {
@@ -981,11 +982,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return state;
     }
     
-    public ProjectBase findFileProject(String absPath) {
+    public ProjectBase findFileProject(CharSequence absPath) {
         // check own files
         // Wait while files are created. Otherwise project file will be recognized as library file.
         ensureFilesCreated();
-        File file = new File(absPath);
+        File file = new File(absPath.toString());
         if (getFile(file) != null) {
             return this;
         } else {
@@ -1022,8 +1023,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         onFileRemoved(getFile(nativeFile));
     }
     
-    public CsmFile findFile(String absolutePath) {
-        File file = new File(absolutePath);
+    public CsmFile findFile(CharSequence absolutePath) {
+        File file = new File(absolutePath.toString());
         APTPreprocHandler preprocHandler = null;
         if (getPreprocState(file) == null){
 	    NativeFileItem nativeFile = null;
@@ -1148,7 +1149,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         List<Key> res = new ArrayList<Key>();
         if (platformProject instanceof NativeProject){
             for(NativeProject nativeLib : ((NativeProject)platformProject).getDependences()){
-                final Key key = KeyUtilities.createProjectKey(getUniqueName(nativeLib));
+                final Key key = KeyUtilities.createProjectKey(getUniqueName(nativeLib).toString());
                 if (key != null) {
                     res.add(key);
                 }
@@ -1213,7 +1214,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      * @param file file that contains unresolved name (used for the purpose of statictics)
      * @param name offset that contains unresolved name (used for the purpose of statictics)
      */
-    public CsmClass getDummyForUnresolved(String[] nameTokens, CsmFile file, int offset) {
+    public CsmClass getDummyForUnresolved(CharSequence[] nameTokens, CsmFile file, int offset) {
         if (Diagnostic.needStatistics()) Diagnostic.onUnresolvedError(nameTokens, file, offset);
         return getUnresolved().getDummyForUnresolved(nameTokens);
     }
@@ -1301,7 +1302,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     protected Set<String> getRequiredUnits() {
         Set<String> requiredUnits = new HashSet<String>();
         for(Key dependent: this.getLibrariesKeys()) {
-            requiredUnits.add(dependent.getUnit());
+            requiredUnits.add(dependent.getUnit().toString());
         }
         return requiredUnits;
     }
@@ -1329,7 +1330,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return ns;
     }
     
-    private NamespaceImpl _getNamespace( String key ) {
+    private NamespaceImpl _getNamespace( CharSequence key ) {
+        key = CharSequenceKey.create(key);
         CsmUID<CsmNamespace> nsUID = namespaces.get(key);
         NamespaceImpl ns = (NamespaceImpl) UIDCsmConverter.UIDtoNamespace(nsUID);
         return ns;
@@ -1337,7 +1339,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     
     private void _registerNamespace(NamespaceImpl ns ) {
         assert (ns != null);
-        String key = ns.getQualifiedName();
+        CharSequence key = ns.getQualifiedName();
         assert (key != null);
         CsmUID<CsmNamespace> nsUID = RepositoryUtils.put(ns);
         assert nsUID != null;
@@ -1347,7 +1349,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private void _unregisterNamespace(NamespaceImpl ns ) {
         assert (ns != null);
         assert !ns.isGlobal();
-        String key = ns.getQualifiedName();
+        CharSequence key = ns.getQualifiedName();
         assert (key != null);
         CsmUID<CsmNamespace> nsUID = namespaces.remove(key);
         assert nsUID != null;
@@ -1448,7 +1450,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     
     @Override
     public String toString() {
-        return getName() + ' ' + getClass().getName() + " @" + hashCode(); // NOI18N
+        return getName().toString() + ' ' + getClass().getName() + " @" + hashCode(); // NOI18N
     }
     
     /** 
@@ -1853,7 +1855,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     
     private ModelImpl model;
     private Unresolved unresolved;
-    private String name;
+    private CharSequence name;
     
     private final CsmUID<CsmNamespace> globalNamespaceUID;
     
@@ -1888,9 +1890,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private boolean disposing;
     private ReadWriteLock disposeLock = new ReentrantReadWriteLock();
     
-    private String uniqueName = null; // lazy initialized
+    private CharSequence uniqueName = null; // lazy initialized
     
-    private Map<String, CsmUID<CsmNamespace>> namespaces =new ConcurrentHashMap<String, CsmUID<CsmNamespace>>();
+    private Map<CharSequence, CsmUID<CsmNamespace>> namespaces =new ConcurrentHashMap<CharSequence, CsmUID<CsmNamespace>>();
    
     private ClassifierContainer classifierContainer = new ClassifierContainer();
     
@@ -1933,8 +1935,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
         assert aFactory != null;
         assert this.name != null;
-        aStream.writeUTF(this.name);
-        aStream.writeUTF(RepositoryUtils.getUnitName(getUID()));
+        aStream.writeUTF(this.name.toString());
+        aStream.writeUTF(RepositoryUtils.getUnitName(getUID()).toString());
         aFactory.writeUID(this.globalNamespaceUID, aStream);
         aFactory.writeStringToUIDMap(this.namespaces, aStream, false);
         classifierContainer.write(aStream);
@@ -1943,7 +1945,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         ProjectComponent.writeKey(declarationsSorageKey, aStream);
         ProjectComponent.writeKey(graphStorageKey, aStream);
 	
-	PersistentUtils.writeUTF(this.uniqueName, aStream);
+	PersistentUtils.writeUTF(this.uniqueName.toString(), aStream);
     }
     
     protected ProjectBase(DataInput aStream) throws IOException {

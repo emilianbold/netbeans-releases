@@ -59,7 +59,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.*;
  */
 public class TypeFunPtrImpl extends TypeImpl {
 
-    private String functionPointerParamList;
+    private CharSequence functionPointerParamList;
     private short functionPointerDepth;
     
     private static class Pair {
@@ -76,7 +76,7 @@ public class TypeFunPtrImpl extends TypeImpl {
     }
     
     @Override
-    protected StringBuilder getText(boolean canonical, String variableNameToInsert) {
+    protected StringBuilder getText(boolean canonical, CharSequence variableNameToInsert) {
 	StringBuilder sb = new StringBuilder();
 	if( isConst() ) {
 	    sb.append("const "); // NOI18N
@@ -208,7 +208,7 @@ public class TypeFunPtrImpl extends TypeImpl {
         super.write(output);
 	assert functionPointerParamList != null;
 	output.writeShort(functionPointerDepth);
-	output.writeUTF(this.functionPointerParamList);
+	output.writeUTF(this.functionPointerParamList.toString());
     }
 
     public TypeFunPtrImpl(DataInput input) throws IOException {

@@ -51,9 +51,9 @@ class MacroElementDescriptor extends BaseElementDescriptor implements ElementDes
     
     MacroElementDescriptor(CsmMacro macro) {
 	this.macro = macro;
-	List<String> params = macro.getParameters();
+	List<? extends CharSequence> params = macro.getParameters();
 	if( params == null || params.size() == 0 ) {
-            displayName = macro.getName();
+            displayName = macro.getName().toString();
 	}
 	else {
 	    StringBuilder sb = new StringBuilder(macro.getName());
@@ -67,7 +67,7 @@ class MacroElementDescriptor extends BaseElementDescriptor implements ElementDes
 	    sb.append(')');
 	    displayName = sb.toString();
 	}
-	contextName = macro.getContainingFile().getName();
+	contextName = macro.getContainingFile().getName().toString();
 	if( icon == null ) {
             icon = new ImageIcon(CsmImageLoader.getImage(macro));
 	}

@@ -57,15 +57,16 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Disposable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
  * Implements CsmTypedef
@@ -73,7 +74,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
  */
 public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef>  implements CsmTypedef, Disposable, CsmScopeElement {
     
-    private final String name;
+    private final CharSequence name;
     private final CsmType type;
     private boolean typeUnnamed = false;
     
@@ -100,7 +101,7 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef>  implemen
         } else {
             this.type = type;
         }
-        this.name = name;
+        this.name = CharSequenceKey.create(name);
     }
 
     public boolean isTypeUnnamed(){
@@ -154,21 +155,21 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef>  implemen
         }
     }
 
-    public String getQualifiedName() {
+    public CharSequence getQualifiedName() {
         CsmObject container = _getContainer();
         if( CsmKindUtilities.isClass(container) ) {
-	    return ((CsmClass) container).getQualifiedName() + "::" + getQualifiedNamePostfix(); // NOI18N
+	    return CharSequenceKey.create(((CsmClass) container).getQualifiedName() + "::" + getQualifiedNamePostfix()); // NOI18N
 	}
 	else if( CsmKindUtilities.isNamespace(container) ) {
-	    String nsName = ((CsmNamespace) container).getQualifiedName();
+	    CharSequence nsName = ((CsmNamespace) container).getQualifiedName();
 	    if( nsName != null && nsName.length() > 0 ) {
-		return nsName + "::" + getQualifiedNamePostfix(); // NOI18N
+		return CharSequenceKey.create(nsName.toString() + "::" + getQualifiedNamePostfix()); // NOI18N
 	    }
 	}
         return getName();
     }
 
-    public String getName() {
+    public CharSequence getName() {
         /*if( name == null ) {
             AST tokId = null;
             for( AST token = getAst().getFirstChild(); token != null; token = token.getNextSibling() ) {
@@ -248,7 +249,7 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef>  implemen
     public void write(DataOutput output) throws IOException {
         super.write(output);
         assert this.name != null;
-        output.writeUTF(this.name);
+        output.writeUTF(this.name.toString());
         output.writeBoolean(typeUnnamed);
         assert this.type != null;
         PersistentUtils.writeType(this.type, output);
@@ -260,7 +261,7 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef>  implemen
     
     public TypedefImpl(DataInput input) throws IOException {
         super(input);
-        this.name = TextCache.getString(input.readUTF());
+        this.name = QualifiedNameCache.getString(input.readUTF());
         assert this.name != null;
         typeUnnamed = input.readBoolean();
         this.type = PersistentUtils.readType(input);

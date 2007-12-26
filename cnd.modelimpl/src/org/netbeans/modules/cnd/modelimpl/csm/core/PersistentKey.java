@@ -70,17 +70,17 @@ public final class PersistentKey {
         kind = UID;
     }
     
-    private PersistentKey(String id, CsmProject host,  byte type) {
+    private PersistentKey(CharSequence id, CsmProject host,  byte type) {
         key = id;
         project = host;
         kind = type;
     }
     
     public static PersistentKey createKey(CsmOffsetableDeclaration decl){
-        String name = decl.getName();
-        String uniq = decl.getUniqueName();
+        CharSequence name = decl.getName();
+        CharSequence uniq = decl.getUniqueName();
         CsmProject project = decl.getContainingFile().getProject();
-        if (name.length() > 0 && uniq.indexOf("::::") < 0 && project != null){ // NOI18N
+        if (name.length() > 0 && uniq.toString().indexOf("::::") < 0 && project != null){ // NOI18N
             return new PersistentKey(uniq, project, DECLARATION);
         } else {
             //System.out.println("Skip "+uniq);

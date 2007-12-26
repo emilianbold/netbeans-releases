@@ -94,5 +94,5 @@ public interface CsmType extends CsmOffsetable {
      * This canonical representation is used to form signatures
      * and compare types with each other
      */
-    String getCanonicalText();
+    CharSequence getCanonicalText();
 }

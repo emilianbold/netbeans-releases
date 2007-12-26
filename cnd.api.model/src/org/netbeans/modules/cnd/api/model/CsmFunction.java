@@ -50,7 +50,7 @@ import java.util.List;
 public interface CsmFunction<T> extends CsmOffsetableDeclaration<T>, CsmScope {
 
     /** Gets this function's declaration text */
-    String getDeclarationText();
+    CharSequence getDeclarationText();
 
     /**
      * Gets this function definition
@@ -74,5 +74,5 @@ public interface CsmFunction<T> extends CsmOffsetableDeclaration<T>, CsmScope {
      * Gets this function signature string representation.
      * Used to identify overrides, etc.
      */
-    String getSignature();
+    CharSequence getSignature();
 }

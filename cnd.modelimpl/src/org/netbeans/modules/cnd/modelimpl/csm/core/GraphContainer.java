@@ -70,7 +70,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
     
     /** Creates a new instance of GraphContainer */
     public GraphContainer(ProjectBase project) {
-	super(new GraphContainerKey(project.getUniqueName()));
+	super(new GraphContainerKey(project.getUniqueName().toString()));
         graph = new HashMap<CsmUID<CsmFile>, NodeLink>();
         put();
     }

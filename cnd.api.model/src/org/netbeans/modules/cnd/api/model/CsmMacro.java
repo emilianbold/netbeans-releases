@@ -49,9 +49,9 @@ import java.util.List;
  */
 public interface CsmMacro extends CsmNamedElement, CsmOffsetable, CsmIdentifiable<CsmMacro> {
 
-    List<String> getParameters();
+    List<? extends CharSequence> getParameters();
     
-    String getBody();
+    CharSequence getBody();
     
     /**
      * flag for system macros, such macro can't be undefined or changed

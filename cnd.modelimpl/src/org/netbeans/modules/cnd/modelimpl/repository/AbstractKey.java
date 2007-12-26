@@ -52,13 +52,16 @@ public abstract class AbstractKey implements Key, SelfPersistent {
     /**
      * must be implemented in child
      */
+    @Override
     public abstract String toString();
     
     /**
      * must be implemented in child
      */
+    @Override
     public abstract int hashCode();
     
+    @Override
     public boolean equals(Object obj) {
 	if (this == obj) {
 	    return true;
@@ -75,9 +78,9 @@ public abstract class AbstractKey implements Key, SelfPersistent {
     
     public abstract int getSecondaryAt(int level);
     
-    public abstract String getAt(int level);
+    public abstract CharSequence getAt(int level);
     
-    public abstract String getUnit();
+    public abstract CharSequence getUnit();
     
     public abstract int getSecondaryDepth();
     

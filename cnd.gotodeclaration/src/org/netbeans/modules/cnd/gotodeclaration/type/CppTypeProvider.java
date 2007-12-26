@@ -161,7 +161,7 @@ public class CppTypeProvider implements TypeProvider {
             case UNION:
             case STRUCT:
                 CsmClass cls = (CsmClass) decl;
-		if( comparator.matches(decl.getName()) ) {
+		if( comparator.matches(decl.getName().toString()) ) {
                     result.add(createTypeDescriptor(cls));
 		}
                 if( ! isCancelled ) {
@@ -174,7 +174,7 @@ public class CppTypeProvider implements TypeProvider {
                 break;
             case ENUM:
             case TYPEDEF:
-		if( comparator.matches(decl.getName()) ) {
+		if( comparator.matches(decl.getName().toString()) ) {
                     result.add(createTypeDescriptor((CsmClassifier) decl));
 		}
                 break;

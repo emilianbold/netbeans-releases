@@ -91,7 +91,7 @@ public final class DiskRepositoryManager extends AbstractDiskRepository implemen
     private AbstractDiskRepository getCreateRepository(Key key) throws IOException {
         assert key != null;
 
-        final String unitName = key.getUnit();
+        final String unitName = key.getUnit().toString();
         assert unitName != null;
         
         UnitDiskRepository repository = repositories.get(unitName);
@@ -130,7 +130,7 @@ public final class DiskRepositoryManager extends AbstractDiskRepository implemen
             }
         } catch (Throwable ex) {
             RepositoryListenersManager.getInstance().fireAnException(
-                    key.getUnit(),new RepositoryExceptionImpl(ex));
+                    key.getUnit().toString(),new RepositoryExceptionImpl(ex));
         }
     }    
     
@@ -144,7 +144,7 @@ public final class DiskRepositoryManager extends AbstractDiskRepository implemen
             }
         } catch (Throwable ex) {
             RepositoryListenersManager.getInstance().fireAnException(
-                    key.getUnit(),new RepositoryExceptionImpl(ex));
+                    key.getUnit().toString(),new RepositoryExceptionImpl(ex));
         }
        
        return null;

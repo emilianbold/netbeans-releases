@@ -59,7 +59,7 @@ public final class StartEntry implements Persistent, SelfPersistent{
     //private boolean isCPP; // TODO: flag to be used for understanding C/C++ lang
     private final Key startFileProject;
     public StartEntry(String startFile, Key startFileProject) {
-        this.startFile = FilePathCache.getString(startFile);
+        this.startFile = FilePathCache.getString(startFile).toString();
         this.startFileProject = startFileProject;
     }
     

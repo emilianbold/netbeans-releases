@@ -43,14 +43,12 @@ package org.netbeans.modules.cnd.completion.cplusplus;
 import java.util.Set;
 import org.netbeans.modules.cnd.completion.csm.CsmProjectContentResolver;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
-import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
-import java.util.TreeSet;
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsChangeEvent;
 import org.netbeans.editor.SettingsChangeListener;
@@ -210,7 +208,7 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
                     ArrayList list = new ArrayList();
                     for (Iterator it = subpackages.iterator(); it.hasNext();) {
                         CsmNamespace subPackage = (CsmNamespace) it.next();
-                        String spName = caseSensitive ? subPackage.getName() : subPackage.getName().toUpperCase();
+                        String spName = caseSensitive ? subPackage.getName().toString() : subPackage.getName().toString().toUpperCase();
                         String csName = caseSensitive ? name : name.toUpperCase();
                         if (spName.startsWith(csName)) {
                             list.add(subPackage);

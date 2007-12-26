@@ -28,15 +28,12 @@
 package org.netbeans.modules.cnd.gotodeclaration.element.providers;
 
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import org.netbeans.modules.cnd.gotodeclaration.element.spi.ElementDescriptor;
 
 import org.netbeans.modules.cnd.api.model.*;
-import org.netbeans.modules.cnd.gotodeclaration.util.EmptyIcon;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  * Acommon base class for functions, variables, macros, etc. descriptors
@@ -63,7 +60,7 @@ public abstract class BaseElementDescriptor implements ElementDescriptor {
 
     public String getAbsoluteFileName() {
 	CsmOffsetable element = getElement();
-	return (element == null) ? null : element.getContainingFile().getAbsolutePath();
+	return (element == null) ? null : element.getContainingFile().getAbsolutePath().toString();
     }
 
     protected CsmProject getProject() {
@@ -77,7 +74,7 @@ public abstract class BaseElementDescriptor implements ElementDescriptor {
 
     public String getProjectName() {
 	CsmProject project = getProject();
-	return (project == null) ? "" : project.getName();
+	return (project == null) ? "" : project.getName().toString();
     }
 
     public void open() {
@@ -127,7 +124,7 @@ public abstract class BaseElementDescriptor implements ElementDescriptor {
         }
         else {
             int hash = 5;
-            String path = element.getContainingFile().getAbsolutePath();
+            String path = element.getContainingFile().getAbsolutePath().toString();
             hash = 19 * hash + ((path == null) ? 0 : path.hashCode());
             hash = 19 * hash + element.getStartOffset();
             return hash;

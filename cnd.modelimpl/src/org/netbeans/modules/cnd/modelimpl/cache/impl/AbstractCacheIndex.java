@@ -64,7 +64,7 @@ abstract class AbstractCacheIndex implements Serializable {
     private static final long serialVersionUID = -7790789617759717718L;
 
     private Object indexLock = new Object();
-    private Map<String, Object> index;
+    private Map<CharSequence, Object> index;
 
     protected AbstractCacheIndex() {
         index = new HashMap();
@@ -74,20 +74,20 @@ abstract class AbstractCacheIndex implements Serializable {
     // index content support
     
     /** returns string key for caching object */
-    protected abstract String getIndexKey(Object obj2cache);
+    protected abstract CharSequence getIndexKey(Object obj2cache);
     
     /** creates value object from cacheName */
-    protected abstract Object createValue(String cacheName, Object obj2cache);
+    protected abstract Object createValue(CharSequence cacheName, Object obj2cache);
     
     /** get base cache name for the object */
-    protected abstract String getBaseCacheName(Object obj2cache);
+    protected abstract CharSequence getBaseCacheName(Object obj2cache);
     
     /** checks if cacheName the same as defined in current value */
-    protected abstract boolean isEqual(Object value, String checkCacheName);
+    protected abstract boolean isEqual(Object value, CharSequence checkCacheName);
     
     /** gets relative cache file for object in this indexer */
     protected Object get(Object obj) {
-        String key = getIndexKey(obj);
+        CharSequence key = getIndexKey(obj);
         assert (key != null);
         synchronized (indexLock) {
             assert (index != null);
@@ -97,8 +97,8 @@ abstract class AbstractCacheIndex implements Serializable {
 
     /** put object in indexer and returns relative cache file */
     protected Object put(Object obj) {
-        String key = getIndexKey(obj);
-        String baseValue = getBaseCacheName(obj);
+        CharSequence key = getIndexKey(obj);
+        CharSequence baseValue = getBaseCacheName(obj);
         Object value = createUniqValueImpl(baseValue, obj);
         assert (key != null && key.length() > 0);
         assert (value != null);
@@ -109,11 +109,11 @@ abstract class AbstractCacheIndex implements Serializable {
         return value;
     } 
     
-    private Object createUniqValueImpl(String baseValue, Object obj2cache) {
+    private Object createUniqValueImpl(CharSequence baseValue, Object obj2cache) {
         assert (baseValue != null);
         assert (baseValue.length() > 0);
         int postfix = 0;
-        String value = baseValue;
+        CharSequence value = baseValue;
         while (true) {
             boolean found = false;
             synchronized (indexLock) {
@@ -127,7 +127,7 @@ abstract class AbstractCacheIndex implements Serializable {
             if (!found) {
                 return createValue(value, obj2cache);
             }  else {
-                value = baseValue + postfix++;
+                value = baseValue.toString() + postfix++;
             }
         }
     }      

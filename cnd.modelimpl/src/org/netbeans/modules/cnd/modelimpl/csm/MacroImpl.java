@@ -57,6 +57,8 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableIdentifiableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.netbeans.modules.cnd.utils.cache.NameCache;
 
 /**
  * Implements CsmMacro
@@ -70,13 +72,13 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements CsmMacro {
     
     /** name of macros, i.e. SUM or MACRO */
-    private final String name;
+    private final CharSequence name;
     
     /** 
      * body of macros, 
      * i.e. ((a)+(b)) or VALUE, or empty string
      */
-    private final String body;
+    private final CharSequence body;
     
     /** 
      * flag to distinguish system and other types of macros 
@@ -88,7 +90,7 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
      * immutable list of parameters, 
      * i.e. [a, b] or null if macros without parameters
      */
-    private final List<String> params;
+    private final List<? extends CharSequence> params;
     
     /** Creates new instance of MacroImpl based on macro information and specified position */
     public MacroImpl(String macroName, List<String> macroParams, String macroBody, CsmOffsetable macroPos) {
@@ -111,7 +113,7 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
         assert(macroName != null);
         assert(macroName.length() > 0);
         assert(macroBody != null);
-        this.name = macroName;
+        this.name = CharSequenceKey.create(macroName);
         this.system = system;
         this.body = macroBody;
         if (macroParams != null) {
@@ -125,11 +127,11 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
         this(macroName, macroParams, macroBody, containingFile, macroPos, false);
     }
     
-    public List<String> getParameters() {
+    public List<? extends CharSequence> getParameters() {
         return params;
     }
     
-    public String getBody() {
+    public CharSequence getBody() {
         // see APTParseFileWalker.createMacro() for details.
         return body;
     }
@@ -138,7 +140,7 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
         return system;
     }
     
-    public String getName() {
+    public CharSequence getName() {
         return name;
     }
 
@@ -181,7 +183,7 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
     private static final boolean equals(MacroImpl one, MacroImpl other) {
         // compare only name and start offset
         return (one.getStartOffset() == other.getStartOffset()) && 
-                (one.getName().compareTo(other.getName()) == 0);
+                (CharSequenceKey.Comparator.compare(one.getName(), other.getName()) == 0);
     }
     
     public @Override int hashCode() {
@@ -194,9 +196,9 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
     public @Override void write(DataOutput output) throws IOException {
         super.write(output);
         assert this.name != null;
-        output.writeUTF(this.name);
+        output.writeUTF(this.name.toString());
         assert this.body != null;
-        output.writeUTF(this.body);
+        output.writeUTF(this.body.toString());
         output.writeBoolean(this.system);
         String[] out = this.params == null?null:this.params.toArray(new String[params.size()]);
         PersistentUtils.writeStrings(out, output);
@@ -204,12 +206,12 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
 
     public MacroImpl(DataInput input) throws IOException {
         super(input);
-        this.name = TextCache.getString(input.readUTF());
+        this.name = NameCache.getString(input.readUTF());
         assert this.name != null;
         this.body = TextCache.getString(input.readUTF());
         assert this.body != null;
         this.system = input.readBoolean();
-        String[] out = PersistentUtils.readStrings(input, TextCache.getManager());
+        CharSequence[] out = PersistentUtils.readStrings(input, TextCache.getManager());
         this.params = out == null ? null : Collections.unmodifiableList(Arrays.asList(out));
     }
 

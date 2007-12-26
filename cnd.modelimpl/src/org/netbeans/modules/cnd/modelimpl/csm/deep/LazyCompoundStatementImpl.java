@@ -180,13 +180,14 @@ public final class LazyCompoundStatementImpl extends StatementBase implements Cs
         if( ! TraceFlags.REPORT_PARSING_ERRORS || TraceFlags.DEBUG ) {
             flags |= CPPParserEx.CPP_SUPPRESS_ERRORS;
         }            
-        CPPParserEx parser = CPPParserEx.getInstance(getContainingFile().getName(), tokenStream, flags);
+        CPPParserEx parser = CPPParserEx.getInstance(getContainingFile().getName().toString(), tokenStream, flags);
         parser.setLazyCompound(false);
         parser.compound_statement();
         AST out = parser.getAST();
         return out;
     }
     
+    @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
         output.writeInt(this.firstTokenOffset);

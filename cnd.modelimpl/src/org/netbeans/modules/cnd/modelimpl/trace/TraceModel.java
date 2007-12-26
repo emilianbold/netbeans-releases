@@ -80,6 +80,7 @@ import org.netbeans.modules.cnd.editor.parser.FoldingParser;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 import org.openide.util.Lookup;
 
 /**
@@ -529,17 +530,17 @@ public class TraceModel extends TraceModelBase {
 	    }
 	    if (listFilesAtEnd) {
 		print("\n========== User project files =========="); // NOI18N
-		List<String> l = new ArrayList<String>(getProject().getAllFiles().size());
+		List<CharSequence> l = new ArrayList<CharSequence>(getProject().getAllFiles().size());
 		for (Iterator it = getProject().getAllFiles().iterator(); it.hasNext();) {
 		    CsmFile file = (CsmFile) it.next();
 		    l.add(file.getAbsolutePath());
 		}
-		Collections.sort(l);
+		Collections.sort(l, CharSequenceKey.Comparator);
 		for (Iterator it = l.iterator(); it.hasNext();) {
 		    print((String) it.next());
 		}
 		print("\n========== Library files =========="); // NOI18N
-		l = new ArrayList<String>();
+		l = new ArrayList<CharSequence>();
 		for (Iterator it1 = getProject().getLibraries().iterator(); it1.hasNext();) {
 		    ProjectBase lib = (ProjectBase) it1.next();
 		    for (Iterator it2 = lib.getAllFiles().iterator(); it2.hasNext();) {
@@ -547,7 +548,7 @@ public class TraceModel extends TraceModelBase {
 			l.add(file.getAbsolutePath());
 		    }
 		}
-		Collections.sort(l);
+		Collections.sort(l, CharSequenceKey.Comparator);
 		for (Iterator it = l.iterator(); it.hasNext();) {
 		    print((String) it.next());
 		}
@@ -1244,7 +1245,7 @@ public class TraceModel extends TraceModelBase {
 	    //! fileImpl.getIncludes().isEmpty() ) {
 	    return -1;
 	}
-	String text = fileImpl.getText();
+	CharSequence text = fileImpl.getText();
 	long cnt = 0;
 	for (int pos = 0; pos < text.length(); pos++) {
 	    if (text.charAt(pos) == '\n') {

@@ -81,6 +81,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
  * CsmFile implementations
@@ -111,7 +112,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     /** 
      * It's a map since we need to eliminate duplications 
      */
-    private Map<String, CsmUID<CsmOffsetableDeclaration>> declarations = new TreeMap<String, CsmUID<CsmOffsetableDeclaration>>();
+    private Map<CharSequence, CsmUID<CsmOffsetableDeclaration>> declarations = new TreeMap<CharSequence, CsmUID<CsmOffsetableDeclaration>>();
     private ReadWriteLock  declarationsLock = new ReentrantReadWriteLock();
 
     private Set<CsmUID<CsmInclude>> includes = createIncludes();
@@ -213,7 +214,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     // TODO: consider using macro map and __cplusplus here instead of just checking file name
     public APTLanguageFilter getLanguageFilter() {        
         String lang  = APTLanguageSupport.GNU_CPP;
-        String name =  getName();
+        String name =  getName().toString();
                       
         if (name.length() > 2 && name.endsWith(".c")) { // NOI18N
             lang = APTLanguageSupport.GNU_C;                  
@@ -384,7 +385,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         try {
             declarationsLock.writeLock().lock();
             uids = declarations.values();
-            declarations = new TreeMap<String, CsmUID<CsmOffsetableDeclaration>>();
+            declarations = new TreeMap<CharSequence, CsmUID<CsmOffsetableDeclaration>>();
         }   finally {
             declarationsLock.writeLock().unlock();
         }
@@ -741,8 +742,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return _getProject(true);
     }
 
-    public String getName() {
-        return fileBuffer.getFile().getName();
+    public CharSequence getName() {
+        return CharSequenceKey.create(fileBuffer.getFile().getName());
     }
 
     public List<CsmInclude> getIncludes() {

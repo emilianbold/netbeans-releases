@@ -175,7 +175,7 @@ public class CsmContextUtilities {
             //if (macro.getStartOffset() > offsetInScope) {
             //    break;
             //}
-            String name = macro.getName();
+            String name = macro.getName().toString();
             if (!alredyInList.contains(name) && CsmSortUtilities.matchName(name, strPrefix, match, caseSensitive)) {
                 res.add(macro);
                 alredyInList.add(name);

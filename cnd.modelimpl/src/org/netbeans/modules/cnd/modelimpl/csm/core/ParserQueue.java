@@ -676,7 +676,7 @@ public final class ParserQueue {
             synchronized (projectLocks) {
                 prjWaitEmptyLock = projectLocks.get(project);
                 if (prjWaitEmptyLock == null) {
-                    prjWaitEmptyLock = new String(project.getName());
+                    prjWaitEmptyLock = new String(project.getName().toString());
                     projectLocks.put(project, prjWaitEmptyLock);
                 }
             }

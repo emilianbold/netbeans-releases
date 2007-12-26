@@ -191,7 +191,7 @@ public class DiagnosticUnresolved {
         this.level = level;
     }
     
-    private static String glueName(String[] nameTokens) {
+    private static String glueName(CharSequence[] nameTokens) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < nameTokens.length; i++) {
             if( i > 0 ) {
@@ -202,7 +202,7 @@ public class DiagnosticUnresolved {
         return sb.toString();
     }
     
-    public void onUnresolved(String[] nameTokens, CsmFile file, int offset) {
+    public void onUnresolved(CharSequence[] nameTokens, CsmFile file, int offset) {
         if( level < 1 ) {
             return;
         }

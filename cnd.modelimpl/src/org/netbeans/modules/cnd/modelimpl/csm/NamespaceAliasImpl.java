@@ -50,7 +50,9 @@ import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
  * Implements CsmNamespaceAlias
@@ -58,16 +60,16 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
  */
 public class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNamespaceAlias> implements CsmNamespaceAlias, RawNamable {
 
-    private final String alias;
-    private final String namespace;
-    private final String[] rawName;
+    private final CharSequence alias;
+    private final CharSequence namespace;
+    private final CharSequence[] rawName;
     
     private CsmUID<CsmNamespace> referencedNamespaceUID = null;
     
     public NamespaceAliasImpl(AST ast, CsmFile file) {
         super(ast, file);
         rawName = createRawName(ast);
-        alias = ast.getText();
+        alias = CharSequenceKey.create(ast.getText());
         AST token = ast.getFirstChild();
         while( token != null && token.getType() != CPPTokenTypes.ASSIGNEQUAL ) {
             token = token.getNextSibling();
@@ -97,7 +99,7 @@ public class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNamespaceAl
 
     public CsmNamespace getReferencedNamespace() {
 //        if (!Boolean.getBoolean("cnd.modelimpl.resolver2"))
-        assert ResolverFactory.resolver != 2;
+        //assert ResolverFactory.resolver != 2;
         return getContainingFile().getProject().findNamespace(namespace);
     }
 
@@ -105,15 +107,15 @@ public class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNamespaceAl
         return CsmDeclaration.Kind.NAMESPACE_ALIAS;
     }
 
-    public String getAlias() {
+    public CharSequence getAlias() {
         return alias;
     }
 
-    public String getName() {
+    public CharSequence getName() {
         return getAlias();
     }
     
-    public String getQualifiedName() {
+    public CharSequence getQualifiedName() {
         return getName();
     }
     
@@ -131,7 +133,7 @@ public class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNamespaceAl
         return new String[0];
     }
 
-    public String[] getRawName() {
+    public CharSequence[] getRawName() {
         return rawName;
     }
     
@@ -152,9 +154,9 @@ public class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNamespaceAl
     public void write(DataOutput output) throws IOException {
         super.write(output);
         assert this.alias != null;
-        output.writeUTF(this.alias);
+        output.writeUTF(this.alias.toString());
         assert this.namespace != null;
-        output.writeUTF(this.namespace);
+        output.writeUTF(this.namespace.toString());
         PersistentUtils.writeStrings(this.rawName, output);
         
         // save cached namespace
@@ -163,7 +165,7 @@ public class NamespaceAliasImpl extends OffsetableDeclarationBase<CsmNamespaceAl
     
     public NamespaceAliasImpl(DataInput input) throws IOException {
         super(input);
-        this.alias = TextCache.getString(input.readUTF());
+        this.alias = QualifiedNameCache.getString(input.readUTF());
         assert this.alias != null;
         this.namespace = TextCache.getString(input.readUTF());
         assert this.namespace != null;

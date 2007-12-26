@@ -47,14 +47,15 @@ import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
  *
@@ -63,7 +64,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
  */
 public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements CsmVariable<T>, Disposable {
     
-    private final String name;
+    private final CharSequence name;
     private final CsmType type;
     private boolean _static = false;
     
@@ -98,7 +99,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         initInitialValue(ast);
         _static = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_static);
         _extern = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_extern);
-        this.name = name;
+        this.name = CharSequenceKey.create(name);
         this.type = type;
 	_setScope(scope);
         if (registerInProject) {
@@ -125,20 +126,20 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     /** Gets this element name 
      * @return 
      */
-    public String getName() {
+    public CharSequence getName() {
         return name;
     }
     
-    public String getQualifiedName() {
+    public CharSequence getQualifiedName() {
         CsmScope scope = getScope();
         if( (scope instanceof CsmNamespace) || (scope instanceof CsmClass) ) {
-            return ((CsmQualifiedNamedElement) scope).getQualifiedName() + "::" + getQualifiedNamePostfix(); // NOI18N
+            return CharSequenceKey.create(((CsmQualifiedNamedElement) scope).getQualifiedName() + "::" + getQualifiedNamePostfix()); // NOI18N
         }
         return getName();
     }
     
     @Override
-    public String getUniqueNameWithoutPrefix() {
+    public CharSequence getUniqueNameWithoutPrefix() {
         if (isExtern()) {
             return getQualifiedName() + " (EXTERN)"; // NOI18N
         } else {
@@ -289,7 +290,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         }
     }
     
-    public String getDisplayText() {
+    public CharSequence getDisplayText() {
 	StringBuilder sb = new StringBuilder();
 	CsmType _type = getType();
 	if( _type instanceof TypeImpl ) {
@@ -297,7 +298,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
 	}
 	else if( _type != null ) {
 	    sb.append(_type.getText());
-	    String _name = getName();
+	    CharSequence _name = getName();
 	    if (_name != null && _name.length() >0) {
 		sb.append(' ');
 		sb.append(_name);
@@ -313,7 +314,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     public void write(DataOutput output) throws IOException {
         super.write(output); 
         assert this.name != null;
-        output.writeUTF(this.name);
+        output.writeUTF(this.name.toString());
         output.writeBoolean(this._static);
         output.writeBoolean(this._extern);
         PersistentUtils.writeExpression(initExpr, output);
@@ -325,7 +326,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     
     public VariableImpl(DataInput input) throws IOException {
         super(input);
-        this.name = TextCache.getString(input.readUTF());
+        this.name = QualifiedNameCache.getString(input.readUTF());
         assert this.name != null;
         this._static = input.readBoolean();
         this._extern = input.readBoolean();

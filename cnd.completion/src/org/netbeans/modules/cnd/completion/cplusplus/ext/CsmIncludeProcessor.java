@@ -59,7 +59,6 @@ import java.util.Map;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.cnd.editor.cplusplus.CCSyntax;
 import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
 
@@ -86,7 +85,7 @@ public class CsmIncludeProcessor implements TokenProcessor {
     private static final int INSIDE_MIXED_EXP = 3;
 
     /** Short names to classes map */
-    private HashMap name2Class = new HashMap(501);
+    private HashMap<String,CsmClassifier> name2Class = new HashMap<String,CsmClassifier>(501);
 
     private char[] buffer;
 
@@ -232,7 +231,7 @@ public class CsmIncludeProcessor implements TokenProcessor {
         Iterator it = name2Class.values().iterator();
         while(it.hasNext()){
             CsmClass cls = (CsmClass)it.next();
-            if (cls != null && cls.getQualifiedName().endsWith("."+innerClassName)){ //NOI18N
+            if (cls != null && cls.getQualifiedName().toString().endsWith("."+innerClassName)){ //NOI18N
                 return cls;
             }
         }
@@ -247,7 +246,7 @@ public class CsmIncludeProcessor implements TokenProcessor {
         while(it.hasNext()){
             CsmClass cls = (CsmClass)it.next();
             if (cls != null && 
-                cls.getName().indexOf(".") >0 ){ //NOI18N
+                cls.getName().toString().indexOf(".") >0 ){ //NOI18N
                 ret.add(cls);
             }
         }
@@ -291,9 +290,9 @@ public class CsmIncludeProcessor implements TokenProcessor {
         if (ret == null) {
             ret = finder.getExactClassifier(className);
         }else{
-            if (finder.getExactClassifier(ret.getQualifiedName()) != null){
+            if (finder.getExactClassifier(ret.getQualifiedName().toString()) != null){
                 // get updated class (#23649)
-                ret = finder.getExactClassifier(ret.getQualifiedName());
+                ret = finder.getExactClassifier(ret.getQualifiedName().toString());
             }
         }
         return ret;
@@ -320,7 +319,7 @@ public class CsmIncludeProcessor implements TokenProcessor {
             info.cls = cls;
             if (star) { // !!! dodelat
             } else { // only this single class
-                name2Class.put(cls.getName(), cls);
+                name2Class.put(cls.getName().toString(), cls);
             }
         } else { // not a direct class, try package
             CsmNamespace pkg = finder.getExactNamespace(importExp);
@@ -367,7 +366,7 @@ public class CsmIncludeProcessor implements TokenProcessor {
                         if (star) {
                             // don't add in this case, can change in the future
                         } else {
-                            name2Class.put(cls.getName(), cls);
+                            name2Class.put(cls.getName().toString(), cls);
                         }
                     }
                 }

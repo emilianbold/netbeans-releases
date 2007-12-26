@@ -45,7 +45,6 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.openide.util.NbBundle;
 
@@ -120,7 +119,7 @@ final class ParsingProgress {
                 return;
             }
             try {
-                handle.progress(file.getName(), curWorkedUnits++);
+                handle.progress(file.getName().toString(), curWorkedUnits++);
                 //assert(curWorkedUnits <= maxWorkUnits);
             } catch (NullPointerException ex) {
                 // very strange... but do not interrupt process

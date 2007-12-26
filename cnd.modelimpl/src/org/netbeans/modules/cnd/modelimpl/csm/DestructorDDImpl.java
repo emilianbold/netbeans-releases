@@ -46,6 +46,7 @@ import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
  * @author Vladimir Kvasihn
@@ -56,17 +57,20 @@ public final class DestructorDDImpl extends MethodDDImpl {
         super(ast, cls, visibility, true);
     }
 
+    @Override
     public CsmType getReturnType() {
         return NoType.instance();
     }
 
-    public String getName() {
-        return DestructorImpl.getDestructorName(this);
+    @Override
+    public CharSequence getName() {
+        return CharSequenceKey.create(DestructorImpl.getDestructorName(this));
     }
     
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
     
+    @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
     }

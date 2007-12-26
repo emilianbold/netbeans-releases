@@ -138,7 +138,7 @@ public class OffsetableBase implements CsmOffsetable, Disposable {
         return _getFile();
     }
 
-    public String getText() {
+    public CharSequence getText() {
         return getContainingFile().getText(getStartOffset(), getEndOffset());
     }
 

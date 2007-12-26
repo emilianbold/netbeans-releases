@@ -196,12 +196,12 @@ final class ProjectCache {
         return file;        
     }
 
-    public String getValidCacheFileName(FileImpl file, boolean updateEntry) {
+    public CharSequence getValidCacheFileName(FileImpl file, boolean updateEntry) {
         ProjectIndex index = getIndex();
         if (index == null) {
             return null;
         }
-        String out = null;
+        CharSequence out = null;
         // return cache only for file based buffers
         // and with correct modified date
         if (file.getBuffer().isFileBased()) {

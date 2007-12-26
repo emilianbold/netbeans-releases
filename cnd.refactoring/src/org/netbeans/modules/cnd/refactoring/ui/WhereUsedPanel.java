@@ -122,8 +122,8 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
     /*package*/ String getBaseMethodDescription() {
         if (baseVirtualMethod != null) {
             CsmVisibility vis = baseVirtualMethod.getVisibility();
-            String functionDisplayName = baseVirtualMethod.getSignature();
-            String displayClassName = methodDeclaringSuperClass.getName();
+            String functionDisplayName = baseVirtualMethod.getSignature().toString();
+            String displayClassName = methodDeclaringSuperClass.getName().toString();
             return getString("DSC_MethodUsages", functionDisplayName, displayClassName); // NOI18N
         } else {
             return name;
@@ -160,20 +160,20 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         boolean _needClassPanel = false;
         if (CsmKindUtilities.isMethod(refObject)) {
 //            CsmVisibility vis = ((CsmMember)refObject).getVisibility();
-            String functionDisplayName = ((CsmMethod)refObject).getSignature();
+            String functionDisplayName = ((CsmMethod)refObject).getSignature().toString();
             methodDeclaringClass = ((CsmMember)refObject).getContainingClass();
-            String displayClassName = methodDeclaringClass.getName();
+            String displayClassName = methodDeclaringClass.getName().toString();
             labelText = getString("DSC_MethodUsages", functionDisplayName, displayClassName); // NOI18N
             if (((CsmMethod)refObject).isVirtual()) {
                 baseVirtualMethod = getOriginalVirtualMethod((CsmMethod)refObject);
                 methodDeclaringSuperClass = baseVirtualMethod.getContainingClass();
                 if (!refObject.equals(baseVirtualMethod)) {
-                    _isBaseClassText = getString("LBL_UsagesOfBaseClass", methodDeclaringSuperClass.getName()); // NOI18N
+                    _isBaseClassText = getString("LBL_UsagesOfBaseClass", methodDeclaringSuperClass.getName().toString()); // NOI18N
                 }
                 _needVirtualMethodPanel = true;
             }
         } else if (CsmKindUtilities.isFunction(refObject)) {
-            String functionFQN = ((CsmFunction)refObject).getSignature();
+            String functionFQN = ((CsmFunction)refObject).getSignature().toString();
             labelText = getString("DSC_FunctionUsages", functionFQN); // NOI18N
         } else if (CsmKindUtilities.isClass(refObject)) {
             CsmDeclaration.Kind classKind = ((CsmDeclaration)refObject).getKind();
@@ -185,28 +185,28 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
             } else {
                 key = "DSC_ClassUsages"; // NOI18N
             }
-            labelText = getString(key, ((CsmClassifier)refObject).getQualifiedName());
+            labelText = getString(key, ((CsmClassifier)refObject).getQualifiedName().toString());
             _needClassPanel = true;
         } else if (CsmKindUtilities.isTypedef(refObject)) {
-            String tdName = ((CsmTypedef)refObject).getQualifiedName();
+            String tdName = ((CsmTypedef)refObject).getQualifiedName().toString();
             labelText = getString("DSC_TypedefUsages", tdName); // NOI18N
         } else if (CsmKindUtilities.isEnum(refObject)) {
-            labelText = getString("DSC_EnumUsages", ((CsmEnum)refObject).getQualifiedName()); // NOI18N
+            labelText = getString("DSC_EnumUsages", ((CsmEnum)refObject).getQualifiedName().toString()); // NOI18N
         } else if (CsmKindUtilities.isEnumerator(refObject)) {
             CsmEnumerator enmtr = ((CsmEnumerator)refObject);
-            labelText = getString("DSC_EnumeratorUsages", enmtr.getName(), enmtr.getEnumeration().getName()); // NOI18N
+            labelText = getString("DSC_EnumeratorUsages", enmtr.getName().toString(), enmtr.getEnumeration().getName().toString()); // NOI18N
         } else if (CsmKindUtilities.isField(refObject)) {
-            String fieldName = ((CsmField)refObject).getName();
-            String displayClassName = ((CsmField)refObject).getContainingClass().getName();
+            String fieldName = ((CsmField)refObject).getName().toString();
+            String displayClassName = ((CsmField)refObject).getContainingClass().getName().toString();
             labelText = getString("DSC_FieldUsages", fieldName, displayClassName); // NOI18N
         } else if (CsmKindUtilities.isVariable(refObject)) {
-            String varName = ((CsmVariable)refObject).getName();
+            String varName = ((CsmVariable)refObject).getName().toString();
             labelText = getString("DSC_VariableUsages", varName); // NOI18N
         } else if (CsmKindUtilities.isFile(refObject)) {
-            String fileName = ((CsmFile)refObject).getName();
+            String fileName = ((CsmFile)refObject).getName().toString();
             labelText = getString("DSC_FileUsages", fileName); // NOI18N
         } else if (CsmKindUtilities.isNamespace(refObject)) {
-            String nsName = ((CsmNamespace)refObject).getQualifiedName();
+            String nsName = ((CsmNamespace)refObject).getQualifiedName().toString();
             labelText = getString("DSC_NamespaceUsages", nsName); // NOI18N
 //        } else if (element.getKind() == ElementKind.CONSTRUCTOR) {
 //            String methodName = element.getName();
@@ -216,7 +216,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
             StringBuilder macroName = new StringBuilder(((CsmMacro)refObject).getName());
             if (((CsmMacro)refObject).getParameters() != null) {
                 macroName.append("("); // NOI18N
-                Iterator<String> params = ((CsmMacro)refObject).getParameters().iterator();
+                Iterator<? extends CharSequence> params = ((CsmMacro)refObject).getParameters().iterator();
                 if (params.hasNext()) {
                     macroName.append(params.next());
                     while (params.hasNext()) {
@@ -228,7 +228,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
             }
             labelText = getString("DSC_MacroUsages", macroName.toString()); // NOI18N
         } else if (CsmKindUtilities.isQualified(refObject)) {
-            labelText = ((CsmQualifiedNamedElement)refObject).getQualifiedName();
+            labelText = ((CsmQualifiedNamedElement)refObject).getQualifiedName().toString();
         } else {
             labelText = this.name;
         }
@@ -608,7 +608,7 @@ searchInComments.addItemListener(new java.awt.event.ItemListener() {
     private String getSearchElementName(CsmObject csmObj, String defaultName) {
         String objName;
         if (CsmKindUtilities.isNamedElement(csmObj)) {
-            objName = ((CsmNamedElement)csmObj).getName();
+            objName = ((CsmNamedElement)csmObj).getName().toString();
         } else {
             System.err.println("Unhandled name for object " + csmObj);
             objName = defaultName;

@@ -469,8 +469,8 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
         if (fromCls.equals(toCls)) {
             return true; // equal classes
         }
-        String tfrom = from.getCanonicalText().replaceAll("const", "").trim(); // NOI18N
-        String tto = to.getCanonicalText().replaceAll("const", "").trim(); // NOI18N
+        String tfrom = from.getCanonicalText().toString().replaceAll("const", "").trim(); // NOI18N
+        String tto = to.getCanonicalText().toString().replaceAll("const", "").trim(); // NOI18N
             
         if (tfrom.equals(tto)) {
             return true;
@@ -505,8 +505,8 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
         }
         
         // The following part
-        TokenID cls1Kwd = CCTokenContext.getKeyword(typ1.getClassifier().getName());
-        TokenID cls2Kwd = CCTokenContext.getKeyword(typ2.getClassifier().getName());
+        TokenID cls1Kwd = CCTokenContext.getKeyword(typ1.getClassifier().getName().toString());
+        TokenID cls2Kwd = CCTokenContext.getKeyword(typ2.getClassifier().getName().toString());
         if (cls1Kwd == null && cls2Kwd == null) { // non-primitive classes
             if (isAssignable(typ1, typ2)) {
                 return typ1;
@@ -740,7 +740,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
                 CsmClass innerClass = null;
                 CsmClass outerCls = sup.getClass(decVarNameOffset);
                 if (outerCls != null){
-                    String outerClassName = outerCls.getQualifiedName();
+                    String outerClassName = outerCls.getQualifiedName().toString();
                     CsmClassifier innerClassifier = sup.getFinder().getExactClassifier(outerClassName+CsmCompletion.SCOPE+decType);
                     innerClass = CsmKindUtilities.isClass(innerClassifier) ? (CsmClass)innerClassifier : null;
                     if (innerClass != null){
@@ -1164,7 +1164,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
             Object elem = it.next();
             if (elem instanceof CsmVariable) {
                 CsmVariable var = (CsmVariable) elem;
-                res.put(var.getName(), var.getType());
+                res.put(var.getName().toString(), var.getType());
             }
         }
         return res;
@@ -1392,8 +1392,8 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
         if (t.equals(mpt)) {
             return true;
         } else if (mpt != null) {
-            String t1 = t.getCanonicalText();
-            String t2 = mpt.getCanonicalText();
+            String t1 = t.getCanonicalText().toString();
+            String t2 = mpt.getCanonicalText().toString();
             return t1.equals(t2);
         }
         return false;

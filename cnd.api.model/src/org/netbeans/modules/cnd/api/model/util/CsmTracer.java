@@ -47,6 +47,7 @@ import java.util.*;
 
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
  * Misc. static methods used for tracing of code model objects
@@ -307,7 +308,7 @@ public class CsmTracer {
 	if( file == null ) {
 	    return NULL_TEXT; // NOI18N
 	}
-        File parent = new File(file.getAbsolutePath()).getParentFile();
+        File parent = new File(file.getAbsolutePath().toString()).getParentFile();
         return (parent != null ? parent.getName() +"/" : "") + file.getName(); // NOI18N
     }
     
@@ -335,7 +336,7 @@ public class CsmTracer {
 	if( fun == null ) {
 	    return NULL_TEXT; // NOI18N
 	} else {
-	    return (signature ? fun.getSignature() : fun.getName()) + ' ' + getOffsetString(fun, signature);
+	    return (signature ? fun.getSignature().toString() : fun.getName().toString()) + ' ' + getOffsetString(fun, signature);
 	}
     }
     
@@ -576,7 +577,7 @@ public class CsmTracer {
 	indent();
 	for( Iterator iter = nsp.getDefinitions().iterator(); iter.hasNext(); ) {
 	    CsmNamespaceDefinition def = (CsmNamespaceDefinition) iter.next();
-	    print(def.getContainingFile().getName() + ' ' + getOffsetString(def, false));
+	    print(def.getContainingFile().getName().toString() + ' ' + getOffsetString(def, false));
 	}
 	unindent();
     }
@@ -613,7 +614,7 @@ public class CsmTracer {
     }
     
     private Iterator<CsmNamespace> getSortedNestedNamespaces(CsmNamespace nsp) {
-	SortedMap<String,CsmNamespace> map = new TreeMap<String,CsmNamespace>();
+	SortedMap<CharSequence,CsmNamespace> map = new TreeMap<CharSequence,CsmNamespace>(CharSequenceKey.Comparator);
 	for( CsmNamespace decl : nsp.getNestedNamespaces() ) {
 	    map.put(decl.getQualifiedName(), decl);
 	}
@@ -730,7 +731,7 @@ public class CsmTracer {
     }
     
     public void checkUniqueName(CsmDeclaration decl) {
-	String uname = decl.getUniqueName();
+	CharSequence uname = decl.getUniqueName();
 	if( (decl instanceof CsmOffsetableDeclaration) &&  needsCheckUniqueName(decl) ) {
 	    CsmProject project = ((CsmOffsetable) decl).getContainingFile().getProject();
 	    CsmDeclaration found = project.findDeclaration(uname);
@@ -740,7 +741,7 @@ public class CsmTracer {
 		print("Unique name check failed: declaration found in project differs " + uname); // NOI18N
 	    }
 	}
-	if( ! uname.startsWith(decl.getKind().toString()) ) {
+	if( ! uname.toString().startsWith(decl.getKind().toString()) ) {
 	    print("Warning: unique name '" + uname + "' desn't start with " + decl.getKind().toString()); // NOI18N
 	}
     }
@@ -816,14 +817,14 @@ public class CsmTracer {
     
     public void dumpModel(CsmNamespaceAlias alias) {
 	CsmNamespace referencedNamespace = alias.getReferencedNamespace();
-	String refNsName = (referencedNamespace == null) ? NULL_TEXT : referencedNamespace.getQualifiedName(); // NOI18N
+	String refNsName = (referencedNamespace == null) ? NULL_TEXT : referencedNamespace.getQualifiedName().toString(); // NOI18N
 	print("ALIAS " + alias.getAlias() + ' ' + refNsName + ' ' + getOffsetString(alias, false) + // NOI18N
 		' ' + getScopeString(alias)); // NOI18N
     }
     
     public void dumpModel(CsmUsingDeclaration ud) {
 	CsmOffsetableDeclaration decl = (CsmOffsetableDeclaration) ud.getReferencedDeclaration();
-	String qname = decl == null ? NULL_TEXT : decl.getQualifiedName(); // NOI18N
+	String qname = decl == null ? NULL_TEXT : decl.getQualifiedName().toString(); // NOI18N
 	print("USING DECL. " + ud.getName() + ' ' + getOffsetString(ud, false) + "; REF DECL: " + qname + // NOI18N
 		' ' + getOffsetString(decl, false)  + ' ' + getScopeString(ud)); // NOI18N
     }
@@ -908,7 +909,7 @@ public class CsmTracer {
                     print(sb.toString());
                     indent();
                     CsmClass refClass = frClass.getReferencedClass();
-                    print("REFERENCED CLASS: " + refClass == null ? "*UNRESOLVED*" : refClass.getUniqueName()); // NOI18N
+                    print("REFERENCED CLASS: " + refClass == null ? "*UNRESOLVED*" : refClass.getUniqueName().toString()); // NOI18N
                     unindent();
                 } else if( friend.getKind() == CsmDeclaration.Kind.FUNCTION ) {
                     dumpModel((CsmFunction) friend);
@@ -977,7 +978,7 @@ public class CsmTracer {
 	if( ! files.isEmpty() ) {
 	    for( Iterator iter = files.iterator(); iter.hasNext(); ) {
 		CsmFile file = (CsmFile) iter.next();
-		print(file == null ? NULL_TEXT : file.getAbsolutePath()); // NOI18N
+		print(file == null ? NULL_TEXT : file.getAbsolutePath().toString()); // NOI18N
 	    }
 	}
     }
@@ -1013,7 +1014,7 @@ public class CsmTracer {
 	if( ! namespaces.isEmpty() ) {
 	    for( Iterator iter = namespaces.iterator(); iter.hasNext(); ) {
 		CsmNamespace nsp = (CsmNamespace) iter.next();
-		print(nsp == null ? NULL_TEXT : nsp.getQualifiedName()); // NOI18N
+		print(nsp == null ? NULL_TEXT : nsp.getQualifiedName().toString()); // NOI18N
 	    }
 	}
     }

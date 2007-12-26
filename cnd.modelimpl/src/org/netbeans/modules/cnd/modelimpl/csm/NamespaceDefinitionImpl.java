@@ -49,12 +49,13 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.*;
-import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.netbeans.modules.cnd.utils.cache.NameCache;
 
 /**
  * Implements CsmNamespaceDefinition
@@ -65,7 +66,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
 
     private List<CsmUID<CsmOffsetableDeclaration>> declarations = Collections.synchronizedList(new ArrayList<CsmUID<CsmOffsetableDeclaration>>());
     
-    private final String name;
+    private final CharSequence name;
     
     // only one of namespaceRef/namespaceUID must be used (based on USE_REPOSITORY/USE_UID_TO_CONTAINER)
     private /*final*/ NamespaceImpl namespaceRef;// can be set in onDispose or contstructor only
@@ -74,7 +75,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
     public NamespaceDefinitionImpl(AST ast, CsmFile file, NamespaceImpl parent) {
         super(ast, file);
         assert ast.getType() == CPPTokenTypes.CSM_NAMESPACE_DECLARATION;
-        name = ast.getText();
+        name = CharSequenceKey.create(ast.getText());
         NamespaceImpl nsImpl = ((ProjectBase) file.getProject()).findNamespaceCreateIfNeeded(parent, name);
         
         // set parent ns, do it in constructor to have final fields
@@ -117,7 +118,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         RepositoryUtils.put(this);
     }
 
-    public String getQualifiedName() {
+    public CharSequence getQualifiedName() {
         return getNamespace().getQualifiedName();
     }
     
@@ -130,7 +131,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         return _getNamespaceImpl();
     }
 
-    public String getName() {
+    public CharSequence getName() {
         return name;
     }
 
@@ -188,7 +189,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         factory.writeUID(this.namespaceUID, output);
         
         assert this.name != null;
-        output.writeUTF(this.name);
+        output.writeUTF(this.name.toString());
     }  
     
     public NamespaceDefinitionImpl(DataInput input) throws IOException {
@@ -201,7 +202,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         assert this.namespaceUID != null;
         this.namespaceRef = null;    
         
-        this.name = TextCache.getString(input.readUTF());
+        this.name = NameCache.getString(input.readUTF());
         assert this.name != null;
     }      
 }

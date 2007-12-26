@@ -29,7 +29,6 @@ package org.netbeans.modules.cnd.gotodeclaration.element.providers;
 
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.*;
-import org.netbeans.modules.cnd.gotodeclaration.element.spi.ElementDescriptor;
 import org.netbeans.modules.cnd.gotodeclaration.element.spi.ElementProvider;
 import org.netbeans.modules.cnd.gotodeclaration.util.NameMatcher;
 import org.openide.util.NbBundle;
@@ -63,7 +62,7 @@ public class MacroProvider extends BaseProvider implements ElementProvider {
                 if( isCancelled() ) {
                     return;
                 }
-		if( comparator.matches(macro.getName()) ) {
+		if( comparator.matches(macro.getName().toString()) ) {
 		    result.add(new MacroElementDescriptor(macro));
 		}
 	    }

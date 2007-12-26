@@ -67,27 +67,27 @@ public interface CsmProject extends CsmIdentifiable<CsmProject>, CsmNamedElement
      * Now we assume that these namespaces are represented via different instances.
      * Probably this is not correct
      */
-    CsmNamespace findNamespace( String qualifiedName );
+    CsmNamespace findNamespace( CharSequence qualifiedName );
     
     /**
      * Finds compound classifier (clas or enum) by its qualified name
      */
-    CsmClassifier findClassifier(String qualifiedName);
+    CsmClassifier findClassifier(CharSequence qualifiedName);
     
     /**
      * Finds declaration by its nuique name
      */
-    CsmDeclaration findDeclaration(String uniqueName);
+    CsmDeclaration findDeclaration(CharSequence uniqueName);
     
     /**
      * Finds declarations by its nuique name
      */
-    Collection<CsmOffsetableDeclaration> findDeclarations(String uniqueName);
+    Collection<CsmOffsetableDeclaration> findDeclarations(CharSequence uniqueName);
 
     /**
      * Finds file by its absolute path
      */
-    CsmFile findFile(String absolutePath);
+    CsmFile findFile(CharSequence absolutePath);
 
     /**
      * Gets the collection of source project files.

@@ -61,7 +61,6 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
-import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ResolverFactory;
@@ -70,6 +69,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
  *
@@ -78,8 +78,8 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefinition> implements CsmVariableDefinition {
     
     private CsmUID<CsmVariable> declarationUID;
-    private String qualifiedName;
-    private final String[] classOrNspNames;
+    private CharSequence qualifiedName;
+    private final CharSequence[] classOrNspNames;
 
     /** Creates a new instance of VariableDefinitionImpl */
     public VariableDefinitionImpl(AST ast, CsmFile file, CsmType type, String name) {
@@ -122,9 +122,9 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
     }
     
     @Override
-    public String getQualifiedName() {
+    public CharSequence getQualifiedName() {
 	if( qualifiedName == null ) {
-	    qualifiedName = findQualifiedName();
+	    qualifiedName = CharSequenceKey.create(findQualifiedName());
 	}
 	return qualifiedName;
     }
@@ -132,14 +132,14 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
     private String findQualifiedName() {
         CsmVariable declaration = _getDeclaration();
 	if( declaration != null ) {
-	    return declaration.getQualifiedName();
+	    return declaration.getQualifiedName().toString();
 	}
 	CsmObject owner = findOwner();
 	if( owner instanceof CsmQualifiedNamedElement  ) {
 	    return ((CsmQualifiedNamedElement) owner).getQualifiedName() + "::" + getQualifiedNamePostfix(); // NOI18N
 	}
 	else {
-	    String[] cnn = classOrNspNames;
+	    CharSequence[] cnn = classOrNspNames;
 	    CsmNamespaceDefinition nsd = findNamespaceDefinition();
 	    StringBuilder sb = new StringBuilder();
 	    if( nsd != null ) {
@@ -198,7 +198,7 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
         return (CsmVariable) def;
     }
 
-    private CsmVariable findByName(Collection/*CsmDeclaration*/ declarations, String name) {
+    private CsmVariable findByName(Collection/*CsmDeclaration*/ declarations, CharSequence name) {
 	for (Iterator it = declarations.iterator(); it.hasNext();) {
 	    CsmDeclaration decl = (CsmDeclaration) it.next();
 	    if( decl.getName().equals(name) ) {
@@ -212,7 +212,7 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
 
     /** @return either class or namespace */
     private CsmObject findOwner() {
-	String[] cnn = classOrNspNames;
+	CharSequence[] cnn = classOrNspNames;
 	if( cnn != null ) {
 	    CsmObject obj = ResolverFactory.createResolver(this).resolve(cnn, Resolver.CLASSIFIER | Resolver.NAMESPACE);
 	    if( obj instanceof CsmClass ) {
@@ -269,7 +269,7 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
     public void write(DataOutput output) throws IOException {
         super.write(output);    
         assert this.qualifiedName != null;
-        output.writeUTF(this.qualifiedName);
+        output.writeUTF(this.qualifiedName.toString());
         PersistentUtils.writeStrings(this.classOrNspNames, output);
         
         UIDObjectFactory.getDefaultFactory().writeUID(this.declarationUID, output);
@@ -279,7 +279,7 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
         super(input);
         this.qualifiedName = QualifiedNameCache.getString(input.readUTF());
         assert this.qualifiedName != null;
-        this.classOrNspNames = PersistentUtils.readStrings(input, TextCache.getManager());
+        this.classOrNspNames = PersistentUtils.readStrings(input, QualifiedNameCache.getManager());
         
         this.declarationUID = UIDObjectFactory.getDefaultFactory().readUID(input);
     }     

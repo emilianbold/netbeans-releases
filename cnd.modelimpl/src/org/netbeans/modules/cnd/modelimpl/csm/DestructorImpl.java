@@ -46,6 +46,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
  * @author Vladimir Kvasihn
@@ -62,8 +63,8 @@ public final class DestructorImpl extends MethodImpl{
     }
 
     @Override
-    public String getName() {
-        return DestructorImpl.getDestructorName(this);
+    public CharSequence getName() {
+        return CharSequenceKey.create(DestructorImpl.getDestructorName(this));
     }
 
     public static String getDestructorName(CsmMethod method) {

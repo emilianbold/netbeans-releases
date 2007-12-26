@@ -98,7 +98,7 @@ final class MasterIndex extends AbstractCacheIndex implements Serializable {
     // index map content support
     
     protected String getIndexKey(Object obj) {
-        return ((ProjectBase) obj).getUniqueName();
+        return ((ProjectBase) obj).getUniqueName().toString();
     }  
 
     protected String getBaseCacheName(Object obj) {
@@ -108,11 +108,11 @@ final class MasterIndex extends AbstractCacheIndex implements Serializable {
         return base;
     }
     
-    protected Object createValue(String cacheName, Object obj2cache) {
+    protected Object createValue(CharSequence cacheName, Object obj2cache) {
         return cacheName;
     }
 
-    protected boolean isEqual(Object value, String checkCacheName) {
+    protected boolean isEqual(Object value, CharSequence checkCacheName) {
         return ((String)value).equals(checkCacheName);
     }
 }

@@ -62,8 +62,8 @@ public class TypedefNode extends ObjectNode {
     }
     
     private void init(CsmTypedef typedef){
-        String shortName = typedef.getName();
-        String longName = typedef.getQualifiedName();
+        String shortName = typedef.getName().toString();
+        String longName = typedef.getQualifiedName().toString();
         setName(shortName);
         setDisplayName(shortName);
         setShortDescription(longName);

@@ -163,7 +163,7 @@ public class CppUpToDateStatusProvider extends UpToDateStatusProvider implements
     }
 
     private boolean mightBeMine(CsmFile file) {
-	return getPath().endsWith(file.getName());
+	return getPath().endsWith(file.getName().toString());
     }
     
     private boolean mightBeMine(Collection<CsmFile> files) {

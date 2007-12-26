@@ -51,7 +51,6 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
@@ -59,6 +58,8 @@ import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.netbeans.modules.cnd.utils.cache.NameCache;
 
 /**
  * Common ancestor for ClassImpl and EnumImpl
@@ -66,9 +67,9 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
  */
 public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> implements Disposable, CsmCompoundClassifier<T>, CsmMember<T> {
     
-    private final String name;
+    private final CharSequence name;
     
-    private /*final*/ String qualifiedName;
+    private /*final*/ CharSequence qualifiedName;
     
     // only one of scopeRef/scopeAccessor must be used (based on USE_REPOSITORY)
     private CsmScope scopeRef;// can be set in onDispose or contstructor only
@@ -82,10 +83,10 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
     
     protected ClassEnumBase(String name, CsmFile file, AST ast) {
         super(ast, file);
-        this.name = (name == null) ? "" : name;
+        this.name = (name == null) ? CharSequenceKey.empty() : CharSequenceKey.create(name);
     }
     
-    public String getName() {
+    public CharSequence getName() {
         return name;
     }
     
@@ -106,9 +107,9 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
 	    this.scopeRef = scope;
 	}
 	
-	String qualifiedNamePostfix = getQualifiedNamePostfix();
+	CharSequence qualifiedNamePostfix = getQualifiedNamePostfix();
         if(  CsmKindUtilities.isNamespace(scope) ) {
-            qualifiedName = Utils.getQualifiedName(qualifiedNamePostfix, (CsmNamespace) scope);
+            qualifiedName = Utils.getQualifiedName(qualifiedNamePostfix.toString(), (CsmNamespace) scope);
         }
 	else if( CsmKindUtilities.isClass(scope) ) {
             qualifiedName = ((CsmClass) scope).getQualifiedName() + "::" + qualifiedNamePostfix; // NOI18N
@@ -116,6 +117,7 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         else  {
 	    qualifiedName = qualifiedNamePostfix;
         }
+        qualifiedName = CharSequenceKey.create(qualifiedName);
         // can't register here, because descendant class' constructor hasn't yet finished!
         // so registering is a descendant class' responsibility
     }
@@ -152,7 +154,7 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
 	return (scope instanceof NamespaceImpl) ? (NamespaceImpl) scope : null;
     }
     
-    public String getQualifiedName() {
+    public CharSequence getQualifiedName() {
         return qualifiedName;
     }
 
@@ -166,6 +168,7 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         return scope;
     }
 
+    @Override
     public void dispose() {
         super.dispose();
         onDispose();
@@ -217,15 +220,16 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     
+    @Override
     public void write(DataOutput output) throws IOException {
         super.write(output); 
         output.writeBoolean(this.isValid);
 	
         assert this.name != null;
-        output.writeUTF(this.name);
+        output.writeUTF(this.name.toString());
 	
         assert this.qualifiedName != null;
-        output.writeUTF(this.qualifiedName);
+        output.writeUTF(this.qualifiedName.toString());
         
 	UIDObjectFactory.getDefaultFactory().writeUID(this.scopeUID, output);
         
@@ -245,7 +249,7 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         super(input);
         this.isValid = input.readBoolean();
 	
-        this.name = TextCache.getString(input.readUTF());
+        this.name = NameCache.getString(input.readUTF());
         assert this.name != null;
 	
         this.qualifiedName = QualifiedNameCache.getString(input.readUTF());

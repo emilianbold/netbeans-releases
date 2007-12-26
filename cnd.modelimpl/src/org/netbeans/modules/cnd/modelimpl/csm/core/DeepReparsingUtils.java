@@ -177,7 +177,7 @@ public final class DeepReparsingUtils {
         Set<CsmFile> resolved = new HashSet<CsmFile>();
         for(CsmFile file : project.getSourceFiles()){
             for(CsmInclude incl : file.getIncludes()){
-                if (incl.getIncludeName().endsWith(name)/* && incl.getIncludeFile() == null*/){
+                if (incl.getIncludeName().toString().endsWith(name)/* && incl.getIncludeFile() == null*/){
                     resolved.add(file);
                     break;
                 }
@@ -222,7 +222,7 @@ public final class DeepReparsingUtils {
 
     private static void findResolved(final Set<String> names, final Set<CsmFile> resolved, final CsmFile file) {
         for(CsmInclude incl : file.getIncludes()){
-            String name = incl.getIncludeName();
+            String name = incl.getIncludeName().toString();
             int i = Math.max(name.lastIndexOf('\\'),name.lastIndexOf('/'));
             if (i > 0){
                 name = name.substring(i);

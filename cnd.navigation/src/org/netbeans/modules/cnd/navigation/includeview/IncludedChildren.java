@@ -133,8 +133,8 @@ public class IncludedChildren extends Children.Keys<CsmFile> {
     
     private static class MyComparator implements Comparator<CsmFile> {
         public int compare(CsmFile o1, CsmFile o2) {
-            String n1 = o1.getName();
-            String n2 = o2.getName();
+            String n1 = o1.getName().toString();
+            String n2 = o2.getName().toString();
             return n1.compareTo(n2);
         }
     }

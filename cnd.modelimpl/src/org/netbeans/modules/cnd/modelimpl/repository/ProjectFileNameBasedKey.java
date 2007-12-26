@@ -44,8 +44,6 @@ package org.netbeans.modules.cnd.modelimpl.repository;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 
@@ -73,7 +71,7 @@ abstract class ProjectFileNameBasedKey extends ProjectNameBasedKey {
 	assert (file != null);
 	ProjectBase prj = file.getProjectImpl();
 	assert (prj != null);
-	return prj == null ? "<No Project Name>" : prj.getUniqueName();  // NOI18N
+	return prj == null ? "<No Project Name>" : prj.getUniqueName().toString();  // NOI18N
     }
     
     @Override
@@ -120,7 +118,7 @@ abstract class ProjectFileNameBasedKey extends ProjectNameBasedKey {
     }
     
     @Override
-    public String getAt(int level) {
+    public CharSequence getAt(int level) {
 	assert super.getDepth() == 0 && level < getDepth();
 	return getFileName();
     }

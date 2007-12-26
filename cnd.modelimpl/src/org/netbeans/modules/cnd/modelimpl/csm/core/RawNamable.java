@@ -46,5 +46,5 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
  * @author vk155633
  */
 public interface RawNamable {
-    String[] getRawName();
+    CharSequence[] getRawName();
 }

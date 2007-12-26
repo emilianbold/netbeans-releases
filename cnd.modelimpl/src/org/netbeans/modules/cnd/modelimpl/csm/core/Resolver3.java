@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.TypeImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.UsingDeclarationImpl;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
  * @author Vladimir Kvasihn
@@ -64,17 +65,17 @@ public class Resolver3 implements Resolver {
     private final int origOffset;
     private Resolver parentResolver;
     
-    private List usedNamespaces = new ArrayList();
-    private Map namespaceAliases = new HashMap()/*<String, CsmNamespace>*/;
-    private Map usingDeclarations = new HashMap()/*<String, CsmDeclaration>*/;
+    private List<CharSequence> usedNamespaces = new ArrayList<CharSequence>();
+    private Map<CharSequence, CsmNamespace> namespaceAliases = new HashMap<CharSequence, CsmNamespace>();
+    private Map<CharSequence, CsmDeclaration> usingDeclarations = new HashMap<CharSequence, CsmDeclaration>();
     
     private CsmTypedef currTypedef;
     
-    private String[] names;
+    private CharSequence[] names;
     private int currNamIdx;
     private int interestedKind;
     
-    private String currName() {
+    private CharSequence currName() {
         return (names != null && currNamIdx < names.length) ? names[currNamIdx] : "";
     }
     
@@ -121,7 +122,7 @@ public class Resolver3 implements Resolver {
         this.project = (ProjectBase) context.getContainingFile().getProject();
     }
     
-    private CsmClassifier findClassifier(CsmNamespace ns, String qulifiedNamePart) {
+    private CsmClassifier findClassifier(CsmNamespace ns, CharSequence qulifiedNamePart) {
         CsmClassifier result = null;
         while ( ns != null  && result == null) {
             String fqn = ns.getQualifiedName() + "::" + qulifiedNamePart; // NOI18N
@@ -130,7 +131,7 @@ public class Resolver3 implements Resolver {
         }
         return result;
     }
-    private CsmClassifier findClassifier(String qualifiedName) {
+    private CsmClassifier findClassifier(CharSequence qualifiedName) {
         CsmClassifier result = project.findClassifier(qualifiedName);
         if( result == null ) {
             for (Iterator iter = project.getLibraries().iterator(); iter.hasNext() && result == null;) {
@@ -141,7 +142,7 @@ public class Resolver3 implements Resolver {
         return result;
     }
     
-    public CsmNamespace findNamespace(String qualifiedName) {
+    public CsmNamespace findNamespace(CharSequence qualifiedName) {
         CsmNamespace result = project.findNamespace(qualifiedName);
         if( result == null ) {
             for (Iterator iter = project.getLibraries().iterator(); iter.hasNext() && result == null;) {
@@ -340,7 +341,7 @@ public class Resolver3 implements Resolver {
         } else if( kind == CsmDeclaration.Kind.USING_DECLARATION ) {
             CsmDeclaration decl = resolveUsingDeclaration((CsmUsingDeclaration) element);
             if( decl != null ) {
-                String id;
+                CharSequence id;
                 if( decl.getKind() == CsmDeclaration.Kind.FUNCTION || decl.getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION ) {
                     // TODO: decide how to resolve functions
                     id = ((CsmFunction) decl).getSignature();
@@ -381,8 +382,8 @@ public class Resolver3 implements Resolver {
     }
     
     
-    public CsmObject resolve(String qualified, int interestedKind) {
-        return resolve(Utils.splitQualifiedName(qualified), interestedKind);
+    public CsmObject resolve(CharSequence qualified, int interestedKind) {
+        return resolve(Utils.splitQualifiedName(qualified.toString()), interestedKind);
     }
     
     /**
@@ -400,7 +401,7 @@ public class Resolver3 implements Resolver {
      *  CsmEnum
      *  CsmNamespace
      */
-    public CsmObject resolve(String[] nameTokens, int interestedKind) {
+    public CsmObject resolve(CharSequence[] nameTokens, int interestedKind) {
         CsmObject result = null;
         
         names = nameTokens;
@@ -437,15 +438,15 @@ public class Resolver3 implements Resolver {
                 }
                 
                 if( result == null ) {
-                    CsmDeclaration decl = (CsmDeclaration) usingDeclarations.get(nameTokens[0]);
+                    CsmDeclaration decl = (CsmDeclaration) usingDeclarations.get(CharSequenceKey.create(nameTokens[0]));
                     if( decl != null ) {
                         result = decl;
                     }
                 }
                 
                 if( result == null && needClassifiers()) {
-                    for (Iterator iter = usedNamespaces.iterator(); iter.hasNext();) {
-                        String nsp = (String) iter.next();
+                    for (Iterator<CharSequence> iter = usedNamespaces.iterator(); iter.hasNext();) {
+                        String nsp = iter.next().toString();
                         String fqn = nsp + "::" + nameTokens[0]; // NOI18N
                         result = findClassifier(fqn);
                         if (result == null) {
@@ -458,15 +459,15 @@ public class Resolver3 implements Resolver {
                 }
                 
                 if( result == null && needNamespaces()) {
-                    Object o = namespaceAliases.get(nameTokens[0]);
+                    Object o = namespaceAliases.get(CharSequenceKey.create(nameTokens[0]));
                     if( o instanceof CsmNamespace ) {
                         result = (CsmNamespace) o;
                     }
                 }
 
                 if( result == null && needNamespaces()) {
-                    for (Iterator iter = usedNamespaces.iterator(); iter.hasNext();) {
-                        String nsp = (String) iter.next();
+                    for (Iterator<CharSequence> iter = usedNamespaces.iterator(); iter.hasNext();) {
+                        String nsp = iter.next().toString();
                         String fqn = nsp + "::" + nameTokens[0]; // NOI18N
                         result = findNamespace(fqn);
                         if( result != null ) {
@@ -546,11 +547,11 @@ public class Resolver3 implements Resolver {
         return type.getClassifier();
     }
     
-    private CsmObject resolveInBaseClasses(CsmClass cls, String name) {
+    private CsmObject resolveInBaseClasses(CsmClass cls, CharSequence name) {
         return _resolveInBaseClasses(cls, name, new HashSet<CsmClass>());
     }
     
-    private CsmObject _resolveInBaseClasses(CsmClass cls, String name, Set<CsmClass> antiLoop) {
+    private CsmObject _resolveInBaseClasses(CsmClass cls, CharSequence name, Set<CsmClass> antiLoop) {
         if( cls != null && cls.isValid()) {
             for( CsmInheritance inh : cls.getBaseClasses() ) {
                 CsmClass base = getInheritanceClass(inh);
@@ -580,7 +581,7 @@ public class Resolver3 implements Resolver {
         return inh.getCsmClass();
     }
     
-    private CsmObject resolveInClass(CsmClass cls, String name) {
+    private CsmObject resolveInClass(CsmClass cls, CharSequence name) {
         if( cls != null && cls.isValid()) {
             String fqn = cls.getQualifiedName() + "::" + name; // NOI18N
             return findClassifier(fqn);

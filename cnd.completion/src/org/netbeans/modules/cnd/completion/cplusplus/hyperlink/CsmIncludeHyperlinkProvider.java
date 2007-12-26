@@ -156,7 +156,7 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         }
         
         public String getText() {
-            return include.getIncludeName();
+            return include.getIncludeName().toString();
         }
         
     }

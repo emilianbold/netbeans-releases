@@ -49,6 +49,6 @@ package org.netbeans.modules.cnd.api.model;
 public interface CsmQualifiedNamedElement extends CsmNamedElement {
 
     /** Gets this element qualified name */
-    String getQualifiedName();
+    CharSequence getQualifiedName();
 
 }

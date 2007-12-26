@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
@@ -333,7 +332,7 @@ public class Notificator {
         //removed.addAll(rightRemoved);
         if (rightRemoved.size() > 0){
             for(CsmOffsetableDeclaration decl : rightRemoved) {
-                String uniqueName = decl.getUniqueName();
+                CharSequence uniqueName = decl.getUniqueName();
                 CsmProject project = decl.getContainingFile().getProject();
                 CsmOffsetableDeclaration duplicated = (CsmOffsetableDeclaration) project.findDeclaration(uniqueName);
                 if (duplicated != null){

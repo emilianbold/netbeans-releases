@@ -61,13 +61,13 @@ public class NamespaceNode extends NPNode {
     }
 
     private void init(CsmNamespace ns){
-        id = ns.getQualifiedName();
+        id = ns.getQualifiedName().toString();
         project = ns.getProject();
-        String name = ns.getQualifiedName();
-        String displayName = CVUtil.getNamesapceDisplayName(ns);
+        String name = ns.getQualifiedName().toString();
+        String displayName = CVUtil.getNamesapceDisplayName(ns).toString();
         setName(name);
         setDisplayName(displayName);
-        setShortDescription(ns.getQualifiedName());
+        setShortDescription(ns.getQualifiedName().toString());
     }
 
     public CsmNamespace getNamespace() {

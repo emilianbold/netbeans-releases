@@ -196,7 +196,7 @@ public class ModelSource implements SourceFileProperties {
                     }
                 }
             } else {
-                includedFiles.add(resolved.getAbsolutePath());
+                includedFiles.add(resolved.getAbsolutePath().toString());
                 if (level < 5) {
                     analyzeUnresolved(res, resolved, level+1);
                 }
@@ -205,7 +205,7 @@ public class ModelSource implements SourceFileProperties {
     }
     
     private String guessPath(CsmInclude include){
-        String name = include.getIncludeName();
+        String name = include.getIncludeName().toString();
         String found = name.replace('\\','/');
         String prefix = null;
         String back = null;

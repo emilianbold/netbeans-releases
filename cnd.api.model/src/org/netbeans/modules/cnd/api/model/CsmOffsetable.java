@@ -69,5 +69,5 @@ public interface CsmOffsetable extends CsmObject {
     Position getEndPosition();
     
     /** gets this object's text */
-    String getText();
+    CharSequence getText();
 }

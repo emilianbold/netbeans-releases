@@ -47,11 +47,12 @@ import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.IOException;
-import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
+import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.ObjectBasedUID;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
  * Implementation for built-in types
@@ -61,23 +62,23 @@ public class BuiltinTypes {
 
     private static class BuiltinImpl implements CsmBuiltIn {
 
-        private final String name;
+        private final CharSequence name;
         private final CsmUID<CsmBuiltIn> uid;
         
-        private BuiltinImpl(String name) {
-            this.name = TextCache.getString(name);
+        private BuiltinImpl(CharSequence name) {
+            this.name =name;
             this.uid = new BuiltInUID(this);
         }
         
-        public String getQualifiedName() {
+        public CharSequence getQualifiedName() {
             return getName();
         }
 
-        public String getUniqueName() {
-            return Utils.getCsmDeclarationKindkey(getKind()) + OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR +  getQualifiedName();
+        public CharSequence getUniqueName() {
+            return CharSequenceKey.create(Utils.getCsmDeclarationKindkey(getKind()) + OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR +  getQualifiedName());
         }
         
-        public String getName() {
+        public CharSequence getName() {
             assert name != null && name.length() > 0;
             return name;
         }
@@ -120,7 +121,7 @@ public class BuiltinTypes {
         
     }
     
-    private static Map<String, CsmBuiltIn> types = new HashMap();
+    private static Map<CharSequence, CsmBuiltIn> types = new HashMap();
     
     public static CsmBuiltIn getBuiltIn(AST ast) {
         assert ast.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN;
@@ -135,11 +136,12 @@ public class BuiltinTypes {
         return getBuiltIn(sb.toString());
     }
     
-    public static CsmBuiltIn getBuiltIn(String text) {
+    public static CsmBuiltIn getBuiltIn(CharSequence text) {
+        text = QualifiedNameCache.getString(text);
         CsmBuiltIn builtIn = (CsmBuiltIn) types.get(text);
         if( builtIn == null ) {
             builtIn = new BuiltinImpl(text);
-            types.put(TextCache.getString(text), builtIn);
+            types.put(text, builtIn);
         }
         return builtIn;
     }
@@ -171,7 +173,7 @@ public class BuiltinTypes {
             BuiltinImpl ref = (BuiltinImpl) getObject();
             assert ref != null;
             assert ref.getName() != null;
-            output.writeUTF(ref.getName());
+            output.writeUTF(ref.getName().toString());
         }
     }     
 }

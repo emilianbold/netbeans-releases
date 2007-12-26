@@ -82,7 +82,7 @@ public class TypeTestCase extends TraceModelTestBase {
         performModelTest(testFile, System.out, System.err);
         boolean found = false;
         for (FileImpl file : getProject().getAllFileImpls()) {
-            if ("type.cc".equals(file.getName())) { // NOI18N
+            if ("type.cc".equals(file.getName().toString())) { // NOI18N
                 found = true;
                 checkFile(file);
             }
@@ -94,7 +94,7 @@ public class TypeTestCase extends TraceModelTestBase {
         for (CsmOffsetableDeclaration decl : file.getDeclarations()) {
             if (CsmKindUtilities.isClass(decl)) {
                 CsmClass cls = (CsmClass) decl;
-                if ("base".equals(cls.getName())) {
+                if ("base".equals(cls.getName().toString())) {
                     {
                         Collection<CsmReference> col = CsmTypeHierarchyResolver.getDefault().getSubTypes(cls, true);
                         boolean sub1 = false;
@@ -104,7 +104,7 @@ public class TypeTestCase extends TraceModelTestBase {
                         for (CsmReference ref : col) {
                             CsmClass c = (CsmClass) ref.getOwner();
                             assertNotNull("Reference should have owner", c); // NOI18N
-                            String name = c.getName();
+                            String name = c.getName().toString();
                             if ("sub1".equals(name)) {
                                 sub1 = true;
                                 i++;
@@ -132,7 +132,7 @@ public class TypeTestCase extends TraceModelTestBase {
                         for (CsmReference ref : col) {
                             CsmClass c = (CsmClass) ref.getOwner();
                             assertNotNull("Reference should have owner", c); // NOI18N
-                            String name = c.getName();
+                            String name = c.getName().toString();
                             if ("sub1".equals(name)) {
                                 sub1 = true;
                                 i++;

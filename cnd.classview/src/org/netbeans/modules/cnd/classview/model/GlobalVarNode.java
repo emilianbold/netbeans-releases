@@ -57,7 +57,7 @@ public class GlobalVarNode extends ObjectNode {
     }
     
     private void init(CsmVariable var){
-        String name = var.getName();
+        String name = var.getName().toString();
         setName(name);
         setDisplayName(name);
         setShortDescription(name);

@@ -29,7 +29,6 @@ package org.netbeans.modules.cnd.gotodeclaration.element.providers;
 
 import javax.swing.Icon;
 import org.netbeans.modules.cnd.api.model.*;
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.gotodeclaration.element.spi.ElementDescriptor;
 import org.netbeans.modules.cnd.gotodeclaration.util.ContextUtil;
 
@@ -52,7 +51,7 @@ class FunctionElementDescriptor extends BaseElementDescriptor implements Element
     @SuppressWarnings("unchecked")
     FunctionElementDescriptor(CsmFunction func) {
 	uid = func.getUID();
-	displayName = func.getSignature();
+	displayName = func.getSignature().toString();
 	contextName = ContextUtil.getContextName(func);
         isForward = ! func.equals(func.getDefinition());
     }

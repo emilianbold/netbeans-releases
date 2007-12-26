@@ -58,7 +58,7 @@ public interface CsmVariable<T> extends CsmOffsetableDeclaration<T> {
     CsmExpression getInitialValue();
 
     //TODO: create an interface to place getDeclarationText() in
-    String getDeclarationText();
+    CharSequence getDeclarationText();
 
     /**
      * Gets this (static) variable definition
@@ -82,6 +82,6 @@ public interface CsmVariable<T> extends CsmOffsetableDeclaration<T> {
      * for which just typeName+' '+variableName does not work
      * TODO: move it to one of the ancestors?
      */
-    String getDisplayText();
+    CharSequence getDisplayText();
     
 }

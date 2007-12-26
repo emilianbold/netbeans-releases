@@ -60,13 +60,14 @@ abstract class ProjectNameBasedKey extends AbstractKey {
     }
     
     public String toString() {
-	return getProjectName();
+	return getProjectName().toString();
     }
     
     public int hashCode() {
 	return unitIndex;
     }
     
+    @Override
     public boolean equals(Object obj) {
 	if (!super.equals(obj)) {
 	    return false;
@@ -76,7 +77,7 @@ abstract class ProjectNameBasedKey extends AbstractKey {
 	return this.unitIndex==other.unitIndex;
     }
     
-    protected String getProjectName() {
+    protected CharSequence getProjectName() {
 	return getUnit();
     }
     
@@ -92,11 +93,11 @@ abstract class ProjectNameBasedKey extends AbstractKey {
 	return 0;
     }
     
-    public String getAt(int level) {
+    public CharSequence getAt(int level) {
 	throw new UnsupportedOperationException();
     }
     
-    public String getUnit() {
+    public CharSequence getUnit() {
 	// having this functionality here to be sure unit is the same thing as project
 	return KeyUtilities.getUnitName(this.unitIndex);
     }

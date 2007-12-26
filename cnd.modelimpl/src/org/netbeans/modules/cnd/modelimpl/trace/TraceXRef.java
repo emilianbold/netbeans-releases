@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.impl.services.ReferenceRepositoryImpl;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 import org.openide.filesystems.FileUtil;
 
 
@@ -260,9 +261,9 @@ public class TraceXRef extends TraceModel {
             }
             CsmOffsetable i1 = (CsmOffsetable)o1;
             CsmOffsetable i2 = (CsmOffsetable)o2; 
-            String path1 = i1.getContainingFile().getAbsolutePath();
-            String path2 = i2.getContainingFile().getAbsolutePath();
-            int res = path1.compareTo(path2);
+            CharSequence path1 = i1.getContainingFile().getAbsolutePath();
+            CharSequence path2 = i2.getContainingFile().getAbsolutePath();
+            int res = CharSequenceKey.Comparator.compare(path1,path2);
             if (res == 0) {
                 int ofs1 = i1.getStartOffset();
                 int ofs2 = i2.getStartOffset();
@@ -271,10 +272,12 @@ public class TraceXRef extends TraceModel {
             return res;
         }   
         
+        @Override
         public boolean equals(Object obj) {
             return super.equals(obj);
         }
 
+        @Override
         public int hashCode() {
             return 11; // any dummy value
         }          

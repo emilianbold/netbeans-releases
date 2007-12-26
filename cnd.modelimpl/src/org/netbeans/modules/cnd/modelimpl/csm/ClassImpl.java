@@ -342,7 +342,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         super(AstUtil.findId(ast, CPPTokenTypes.RCURLY, true), file, ast); 
 	kind = findKind(ast);
     }
-    
+
     @Override
     protected void init(CsmScope scope, AST ast) {
 	super.init(scope, ast);
@@ -453,7 +453,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         return CsmDeclaration.Kind.CLASS;
     }
 
-    public String getDisplayName() {
+    public CharSequence getDisplayName() {
 	return isTemplate() ? getName() + "<>" : getName(); // NOI18N
     }
 

@@ -49,16 +49,16 @@ import java.util.List;
 public interface CsmFile extends CsmNamedElement, CsmScope, CsmValidable, CsmIdentifiable<CsmFile> {
 
     /** Gets this file absolute path */
-    String getAbsolutePath();
+    CharSequence getAbsolutePath();
 
     /** Gets the project, to which the file belongs*/
     CsmProject getProject();
 
     /** Gets this file text */
-    String getText();
+    CharSequence getText();
 
     /** Gets this file text */
-    String getText(int start, int end);
+    CharSequence getText(int start, int end);
 
     /** Sorted (by start offset) list of #include directives in the file */
     List<CsmInclude> getIncludes();

@@ -49,13 +49,13 @@ public class ContextUtil {
 	if( CsmKindUtilities.isClass(scope) ) {
 	    CsmClass cls = ((CsmClass) scope);
 	    CsmNamespace ns = getClassNamespace(cls);
-	    return ns.getQualifiedName();
+	    return ns.getQualifiedName().toString();
 	}
 	else if( CsmKindUtilities.isNamespace(scope) ) {
-	    return ((CsmNamespace) scope).getQualifiedName();
+	    return ((CsmNamespace) scope).getQualifiedName().toString();
 	}
 	else if( CsmKindUtilities.isFile(scope) ) {
-	    return ((CsmFile) scope).getName();
+	    return ((CsmFile) scope).getName().toString();
 	}
 	return "";
     }

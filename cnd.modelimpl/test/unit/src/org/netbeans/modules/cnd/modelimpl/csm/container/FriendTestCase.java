@@ -126,15 +126,15 @@ public class FriendTestCase extends TraceModelTestBase {
         CsmFriendFunction friendSoo = null;
         CsmFriendFunction friendSoo2= null;
         for(CsmFriend friend : friends){
-            if ("A2".equals(friend.getName())){ // NOI18N
+            if ("A2".equals(friend.getName().toString())){ // NOI18N
                 friendA2 = (CsmFriendClass) friend;
-            } else if ("moo2".equals(friend.getName())){ // NOI18N
+            } else if ("moo2".equals(friend.getName().toString())){ // NOI18N
                 friendMoo2 =  (CsmFriendFunction) friend;
-            } else if ("moo".equals(friend.getName())){ // NOI18N
+            } else if ("moo".equals(friend.getName().toString())){ // NOI18N
                 friendMoo =  (CsmFriendFunction) friend;
-            } else if ("soo".equals(friend.getName())){ // NOI18N
+            } else if ("soo".equals(friend.getName().toString())){ // NOI18N
                 friendSoo =  (CsmFriendFunction) friend;
-            } else if ("soo2".equals(friend.getName())){ // NOI18N
+            } else if ("soo2".equals(friend.getName().toString())){ // NOI18N
                 friendSoo2 =  (CsmFriendFunction) friend;
             }
         }
@@ -171,7 +171,7 @@ public class FriendTestCase extends TraceModelTestBase {
         Collection<CsmOffsetableDeclaration> declarations = project.findDeclarationsByPrefix("");
         Set<String> set = new HashSet<String>();
         for(CsmOffsetableDeclaration decl : declarations){
-            String uName = decl.getUniqueName();
+            String uName = decl.getUniqueName().toString();
             System.out.println(uName + " \t" + getClassName(decl.getClass())); // NOI18N
             if ("F:moo2(int)".equals(uName)){
                 assertTrue("moo2(int) is not friend B", FriendResolverImpl.getDefault().isFriend(decl,clsB)); // NOI18N

@@ -52,7 +52,7 @@ import java.io.ObjectOutputStream;
  */
 public class CacheUtil {
 
-    public static String mangleName(String fileName, char filler) {
+    public static String mangleName(CharSequence fileName, char filler) {
         StringBuilder sb = new StringBuilder();
         for( int i = 0; i < fileName.length(); i++ ) {
             char c = fileName.charAt(i);

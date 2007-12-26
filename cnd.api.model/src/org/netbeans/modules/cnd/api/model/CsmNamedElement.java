@@ -48,5 +48,5 @@ package org.netbeans.modules.cnd.api.model;
 public interface CsmNamedElement extends CsmObject {
 
     /** Gets this element name */
-    String getName();
+    CharSequence getName();
 }

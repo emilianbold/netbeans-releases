@@ -56,7 +56,7 @@ import java.util.Map;
  */
 public abstract class APTStringManager  {
     
-    public abstract String getString(String text);
+    public abstract CharSequence getString(CharSequence text);
     public abstract void dispose();
 
     private static final Map<String, APTSingleStringManager> instances = Collections.synchronizedMap(new HashMap<String, APTSingleStringManager>());
@@ -82,11 +82,11 @@ public abstract class APTStringManager  {
     }  
         
     /*package*/ static final class APTSingleStringManager extends APTStringManager {
-        private final WeakSharedSet<String> storage;
+        private final WeakSharedSet<CharSequence> storage;
 
         /** Creates a new instance of APTStringManager */
         private APTSingleStringManager(int initialCapacity) {
-            storage = new WeakSharedSet<String>(initialCapacity);
+            storage = new WeakSharedSet<CharSequence>(initialCapacity);
         }
 
         // we need exclusive copy of string => use "new String(String)" constructor
@@ -100,11 +100,11 @@ public abstract class APTStringManager  {
          * @exception NullPointerException If the <code>text</code> parameter
          *                                 is <code>null</code>.
          */
-        public final String getString(String text) {
+        public final CharSequence getString(CharSequence text) {
             if (text == null) {
                 throw new NullPointerException("null string is illegal to share"); // NOI18N
             }
-            String outText = null;
+            CharSequence outText = null;
             synchronized (lock) {
                 outText = storage.addOrGet(text);
             }
@@ -129,7 +129,7 @@ public abstract class APTStringManager  {
             }
         }
         
-        private APTStringManager getDelegate(String text) {
+        private APTStringManager getDelegate(CharSequence text) {
             if (text == null) {
                 throw new NullPointerException("null string is illegal to share"); // NOI18N
             }            
@@ -140,7 +140,7 @@ public abstract class APTStringManager  {
             return instances[index];
         }
         
-        public final String getString(String text) {
+        public final CharSequence getString(CharSequence text) {
             return getDelegate(text).getString(text);
         }
 

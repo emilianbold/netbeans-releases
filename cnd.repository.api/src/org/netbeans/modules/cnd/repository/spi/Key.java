@@ -56,7 +56,7 @@ public interface Key {
      *  projects in the IDE
      * @return the unit
      */
-    String getUnit();
+    CharSequence getUnit();
     
     /** Behaviors allow repository to optimize
      *  storaging files
@@ -80,7 +80,7 @@ public interface Key {
      * @param level n
      * @return n-th primary element
      */
-    String getAt(int level);
+    CharSequence getAt(int level);
     
     /** returns depth of secondary key's hierarchy *
      * @return secondary depth

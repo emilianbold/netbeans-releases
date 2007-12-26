@@ -55,7 +55,7 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 /*package*/
 final class NamespaceKey extends ProjectNameBasedKey {
     
-    private final String fqn;
+    private final CharSequence fqn;
     
     public NamespaceKey(CsmNamespace ns) {
 	super(getProjectName(ns));
@@ -65,7 +65,7 @@ final class NamespaceKey extends ProjectNameBasedKey {
     private static String getProjectName(CsmNamespace ns) {
 	ProjectBase prj = (ProjectBase) ns.getProject();
 	assert (prj != null) : "no project in namespace";
-	return prj == null ? "<No Project Name>" : prj.getUniqueName();  // NOI18N
+	return prj == null ? "<No Project Name>" : prj.getUniqueName().toString();  // NOI18N
     }
     
     @Override
@@ -97,7 +97,7 @@ final class NamespaceKey extends ProjectNameBasedKey {
     public void write(DataOutput aStream) throws IOException {
 	super.write(aStream);
 	assert fqn != null;
-	aStream.writeUTF(fqn);
+	aStream.writeUTF(fqn.toString());
     }
     
     /*package*/ NamespaceKey(DataInput aStream) throws IOException {
@@ -113,7 +113,7 @@ final class NamespaceKey extends ProjectNameBasedKey {
     }
     
     @Override
-    public String getAt(int level) {
+    public CharSequence getAt(int level) {
 	assert super.getDepth() == 0 && level < getDepth();
 	return this.fqn;
     }

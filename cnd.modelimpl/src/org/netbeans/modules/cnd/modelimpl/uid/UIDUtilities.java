@@ -62,10 +62,8 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
-import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
-import org.netbeans.modules.cnd.modelimpl.csm.core.Unresolved;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 
 /**
@@ -198,6 +196,7 @@ public class UIDUtilities {
             super(aStream);
         }
 
+        @Override
         public String toString() {
             String retValue = getToStringPrefix() + ":" + super.toString(); // NOI18N
             return retValue;
@@ -226,6 +225,7 @@ public class UIDUtilities {
             super(aStream);
         }
         
+        @Override
         protected String getToStringPrefix() {
             return "TypedefUID"; // NOI18N
         }
@@ -270,6 +270,7 @@ public class UIDUtilities {
             super(aStream);
         }
         
+        @Override
         protected String getToStringPrefix() {
             return "DeclarationUID"; // NOI18N
         }
@@ -288,6 +289,7 @@ public class UIDUtilities {
             super(aStream);
         }
         
+        @Override
         protected String getToStringPrefix() {
             return "ClassifierUID"; // NOI18N
         }
@@ -306,6 +308,7 @@ public class UIDUtilities {
             super(aStream);
         }
         
+        @Override
         protected String getToStringPrefix() {
             return "<UNNAMED CLASSIFIER UID>"; // NOI18N
         }        
@@ -323,6 +326,7 @@ public class UIDUtilities {
             super(aStream);
         }
         
+        @Override
         protected String getToStringPrefix() {
             return "<UNNAMED OFFS-DECL UID>"; // NOI18N
         }        

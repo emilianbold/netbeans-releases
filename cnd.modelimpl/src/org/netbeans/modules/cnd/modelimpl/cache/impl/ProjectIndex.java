@@ -78,6 +78,7 @@ final class ProjectIndex extends AbstractCacheIndex implements Serializable {
     ////////////////////////////////////////////////////////////////////////////
     // save/load implmentation
 
+    @Override
     protected void loadData(ObjectInputStream ois) throws IOException, ClassNotFoundException {
         int version = ois.readInt();
         if (version >= 1) {
@@ -87,6 +88,7 @@ final class ProjectIndex extends AbstractCacheIndex implements Serializable {
         }
     }
 
+    @Override
     protected void saveData(ObjectOutputStream oos) throws IOException {
         int version = 1;
         oos.writeInt(version);
@@ -99,9 +101,9 @@ final class ProjectIndex extends AbstractCacheIndex implements Serializable {
     ////////////////////////////////////////////////////////////////////////////
     // index map content support
 
-    protected String getIndexKey(Object obj) {
+    protected CharSequence getIndexKey(Object obj) {
         // use absolute path os the key
-        String key;
+        CharSequence key;
         if (obj instanceof String) {
             key = (String)obj;
         } else {
@@ -111,18 +113,18 @@ final class ProjectIndex extends AbstractCacheIndex implements Serializable {
         return FilePathCache.getString(key);
     }  
 
-    protected String getBaseCacheName(Object obj) {
+    protected CharSequence getBaseCacheName(Object obj) {
         // use name for the file
         CsmFile file = (CsmFile)obj;
-        String base = file.getName();
+        CharSequence base = file.getName();
         return base;
     }   
 
-    protected Object createValue(String cacheName, Object obj2cache) {
+    protected Object createValue(CharSequence cacheName, Object obj2cache) {
         return new Entry(cacheName, 0/*((FileImpl)obj2cache).getBuffer().getFile().lastModified()*/);
     }
     
-    protected boolean isEqual(Object value, String checkCacheName) {
+    protected boolean isEqual(Object value, CharSequence checkCacheName) {
         return ((Entry)value).getCacheFileName().equals(checkCacheName);
     }
     
@@ -131,19 +133,19 @@ final class ProjectIndex extends AbstractCacheIndex implements Serializable {
    final static class Entry implements Serializable {
         private static final long serialVersionUID = -7790789617759717723L;
        
-        transient private String cacheFileName;
+        transient private CharSequence cacheFileName;
         transient private long lastModified;
         
-        private Entry(String name, long modified) {
+        private Entry(CharSequence name, long modified) {
             setCacheFileName(name);
             setLastModified(modified);
         }
 
-        public String getCacheFileName() {
+        public CharSequence getCacheFileName() {
             return cacheFileName;
         }
 
-        public void setCacheFileName(String cacheFileName) {
+        public void setCacheFileName(CharSequence cacheFileName) {
             this.cacheFileName = cacheFileName;
         }
 
@@ -155,6 +157,7 @@ final class ProjectIndex extends AbstractCacheIndex implements Serializable {
             this.lastModified = lastModified;
         }
 
+        @Override
         public String toString() {
             String retValue;
             

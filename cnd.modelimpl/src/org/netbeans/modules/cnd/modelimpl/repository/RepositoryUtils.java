@@ -217,10 +217,10 @@ public class RepositoryUtils {
         }
     }
     
-    public static String getUnitName(CsmUID uid) {
+    public static CharSequence getUnitName(CsmUID uid) {
         Key key = UIDtoKey(uid);
         assert key != null;
-        String unitName = key.getUnit();
+        CharSequence unitName = key.getUnit();
 
         return unitName;
     }
@@ -261,13 +261,12 @@ public class RepositoryUtils {
     
     public static void closeUnit(Key key, Set<String> requiredUnits, boolean cleanRepository) {
         assert key != null;
-        String unitName = key.getUnit();
-        RepositoryAccessor.getRepository().closeUnit(unitName, cleanRepository, requiredUnits);
+        RepositoryAccessor.getRepository().closeUnit(key.getUnit().toString(), cleanRepository, requiredUnits);
     }
     
     public static void onProjectDeleted(NativeProject nativeProject) {
 	Key key = KeyUtilities.createProjectKey(nativeProject);
-	RepositoryAccessor.getRepository().removeUnit(key.getUnit());
+	RepositoryAccessor.getRepository().removeUnit(key.getUnit().toString());
     }
 
     public static void openUnit(ProjectBase project) {
@@ -278,7 +277,7 @@ public class RepositoryUtils {
     }
     
     public static void openUnit(Key key) {
-	openUnit(key.getUnit());
+	openUnit(key.getUnit().toString());
     }
     
     private static void openUnit(String unitName) {

@@ -121,7 +121,7 @@ public final class CsmModelAccessor {
 	    return null;
 	}
 	
-	public CsmFile findFile(String absPath) {
+	public CsmFile findFile(CharSequence absPath) {
 	    return null;
 	}
         
@@ -140,7 +140,7 @@ public final class CsmModelAccessor {
 	
 	public void addProgressListener(CsmProgressListener listener) {}
 	
-	public void enqueue(Runnable task, String name) {}
+	public void enqueue(Runnable task, CharSequence name) {}
 
         public void removeModelStateListener(CsmModelStateListener listener) {}
 

@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
  *
@@ -69,17 +70,18 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 public class FunctionImpl<T> extends OffsetableDeclarationBase<T> 
         implements CsmFunction<T>, Disposable, RawNamable, CsmTemplate {
     
-    private String name;
+    private static final CharSequence NULL = CharSequenceKey.create("<null>"); // NOI18N
+    private CharSequence name;
     private final CsmType returnType;
     private final List<CsmUID<CsmParameter>>  parameters;
     private final boolean isVoidParameterList;
-    private String signature;
+    private CharSequence signature;
     
     // only one of scopeRef/scopeAccessor must be used 
     private /*final*/ CsmScope scopeRef;// can be set in onDispose or contstructor only
     private final CsmUID<CsmScope> scopeUID;
     
-    private final String[] rawName;
+    private final CharSequence[] rawName;
     
     /** see comments to isConst() */
     private final boolean _const;
@@ -97,7 +99,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         assert (this.scopeUID != null || scope == null);
         this.scopeRef = null;
         
-        name = initName(ast);
+        name = CharSequenceKey.create(initName(ast));
         rawName = AstUtil.getRawNameInChildren(ast);
 	
         RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
@@ -120,7 +122,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         }
         
         if( name == null ) {
-            name = "<null>"; // just to avoid NPE // NOI18N
+            name = NULL; // just to avoid NPE
         }
         if (register) {
             registerInProject();
@@ -221,7 +223,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         return findFunctionName(node);
     }
     
-    public String getDisplayName() {
+    public CharSequence getDisplayName() {
         return isTemplate() ? getName() + templateSuffix : getName();
     }
     
@@ -295,34 +297,32 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     /** Gets this element name
      * @return name
      */
-    public String getName() {
+    public CharSequence getName() {
         return name;
     }
     
-    protected final void setName(String name) {
-        this.name = name;
+    protected final void setName(CharSequence name) {
+        this.name = CharSequenceKey.create(name);
     }
     
-    public String getQualifiedName() {
+    public CharSequence getQualifiedName() {
         CsmScope scope = getScope();
         if( (scope instanceof CsmNamespace) || (scope instanceof CsmClass) ) {
-            String scopeQName = ((CsmQualifiedNamedElement) scope).getQualifiedName();
+            CharSequence scopeQName = ((CsmQualifiedNamedElement) scope).getQualifiedName();
             if( scopeQName != null && scopeQName.length() > 0 ) {
-                return scopeQName + getScopeSuffix() + "::" + getQualifiedNamePostfix(); // NOI18N
-            } else {
-                return getName();
+                return CharSequenceKey.create(scopeQName.toString() + getScopeSuffix() + "::" + getQualifiedNamePostfix()); // NOI18N
             }
         }
         return getName();
     }
     
-    public String[] getRawName() {
+    public CharSequence[] getRawName() {
         return rawName;
     }
     
     @Override
-    public String getUniqueNameWithoutPrefix() {
-        return getQualifiedName() + (template ? templateSuffix : "") + getSignature().substring(getName().length());
+    public CharSequence getUniqueNameWithoutPrefix() {
+        return getQualifiedName().toString() + (template ? templateSuffix : "") + getSignature().toString().substring(getName().length());
     }
     
     public Kind getKind() {
@@ -483,9 +483,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         return _getScope();
     }
     
-    public String getSignature() {
+    public CharSequence getSignature() {
         if( signature == null ) {
-            signature = createSignature();
+            signature = CharSequenceKey.create(createSignature());
         }
         return signature;
     }
@@ -592,7 +592,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     public void write(DataOutput output) throws IOException {
         super.write(output);
         assert this.name != null;
-        output.writeUTF(this.name);
+        output.writeUTF(this.name.toString());
         PersistentUtils.writeType(this.returnType, output);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         factory.writeUIDCollection(this.parameters, output, false);
@@ -603,7 +603,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         assert !CHECK_SCOPE || this.scopeUID != null;
         UIDObjectFactory.getDefaultFactory().writeUID(this.scopeUID, output);
         
-        PersistentUtils.writeUTF(this.signature, output);
+        PersistentUtils.writeUTF(this.signature.toString(), output);
         output.writeBoolean(isVoidParameterList);
         output.writeUTF(this.getScopeSuffix());
         output.writeBoolean(this.template);
@@ -620,7 +620,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
 
     public FunctionImpl(DataInput input) throws IOException {
         super(input);
-        this.name = TextCache.getString(input.readUTF());
+        this.name = QualifiedNameCache.getString(input.readUTF());
         assert this.name != null;
         this.returnType = PersistentUtils.readType(input);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();

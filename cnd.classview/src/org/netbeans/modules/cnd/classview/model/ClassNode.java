@@ -57,7 +57,7 @@ public class ClassNode extends ClassifierNode {
     }
     
     private void init(CsmClass cls){
-        String shortName = cls.isTemplate() ? ((CsmTemplate)cls).getDisplayName() : cls.getName(); // NOI18N
+        String shortName = cls.isTemplate() ? ((CsmTemplate)cls).getDisplayName().toString() : cls.getName().toString(); 
         String longName = cls.getQualifiedName() + (cls.isTemplate() ? "<>" : ""); // NOI18N
         setName(shortName);
         setDisplayName(shortName);

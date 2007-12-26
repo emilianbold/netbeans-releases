@@ -48,6 +48,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
  *
@@ -61,11 +62,11 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         super(ast, file);
     }
     
-    public String getUniqueName() {
-        return Utils.getCsmDeclarationKindkey(getKind()) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
+    public CharSequence getUniqueName() {
+        return CharSequenceKey.create(Utils.getCsmDeclarationKindkey(getKind()) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix());
     }
     
-    public String getUniqueNameWithoutPrefix() {
+    public CharSequence getUniqueNameWithoutPrefix() {
         return getQualifiedName();
     }
     
@@ -75,7 +76,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         return file != null ? file.getProject() : null;
     }    
     
-    protected String getQualifiedNamePostfix() {
+    protected CharSequence getQualifiedNamePostfix() {
         if (TraceFlags.SET_UNNAMED_QUALIFIED_NAME && (getName().length() == 0)) {
             return getOffsetBasedName();
         } else {
@@ -94,6 +95,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     
+    @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
     }  
@@ -102,6 +104,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         super(input);
     }    
 
+    @Override
     public String toString() {
         return "" + getKind() + ' ' + getName()  + getOffsetString(); // NOI18N
     }    

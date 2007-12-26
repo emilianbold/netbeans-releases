@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.FileNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
  * Implements CsmInclude
@@ -59,7 +60,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
  *         Vladimir Voskresensky
  */
 public class IncludeImpl extends OffsetableIdentifiableBase<CsmInclude> implements CsmInclude {
-    private final String name;
+    private final CharSequence name;
     private final boolean system;
     
     private CsmUID<CsmFile> includeFileUID;
@@ -76,7 +77,7 @@ public class IncludeImpl extends OffsetableIdentifiableBase<CsmInclude> implemen
         return _getIncludeFile();
     }
 
-    public String getIncludeName() {
+    public CharSequence getIncludeName() {
         return name;
     }
 
@@ -111,7 +112,7 @@ public class IncludeImpl extends OffsetableIdentifiableBase<CsmInclude> implemen
     
     private static final boolean equals(IncludeImpl one, IncludeImpl other) {
         // compare only name, type and start offset
-        return (one.getIncludeName().compareTo(other.getIncludeName()) == 0) &&
+        return (CharSequenceKey.Comparator.compare(one.getIncludeName(),other.getIncludeName()) == 0) &&
                 (one.system == other.system) && 
                 (one.getStartOffset() == other.getStartOffset());
     }
@@ -163,7 +164,7 @@ public class IncludeImpl extends OffsetableIdentifiableBase<CsmInclude> implemen
     public void write(DataOutput output) throws IOException {
         super.write(output);
         assert this.name != null;
-        output.writeUTF(this.name);
+        output.writeUTF(this.name.toString());
         output.writeBoolean(this.system);
         UIDObjectFactory.getDefaultFactory().writeUID(this.includeFileUID, output);
     }

@@ -149,7 +149,7 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
 		if (function != null && !function.equals(object) &&  CsmKindUtilities.isClassMember(function)){
 		    CsmClass cls = ((CsmMember)function).getContainingClass();
 		    if (cls != null && cls.getName().length()>0) {
-			String name = cls.getName().replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;"); // NOI18N
+			String name = cls.getName().toString().replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;"); // NOI18N
 			String displayName = getDisplayName().replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;"); // NOI18N
 			String in = NbBundle.getMessage(getClass(), "LBL_inClass"); //NOI18N                    
 			return displayName+"<font color='!controlShadow'>  " + in + " " + name; // NOI18N
@@ -228,16 +228,16 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
                 if (cls != null && cls.getName().length()==0 &&
                    (cls instanceof CsmCompoundClassifier)) {
                     node = new CppDeclarationNode((CsmOffsetableDeclaration)element, model, (CsmCompoundClassifier) cls);
-                    node.setName(((CsmDeclaration)element).getName());
+                    node.setName(((CsmDeclaration)element).getName().toString());
                     return node;
                 }
             }
             node = new CppDeclarationNode(Children.LEAF,(CsmOffsetableDeclaration)element,model,isFriend);
-            node.setName(((CsmDeclaration)element).getName());
+            node.setName(((CsmDeclaration)element).getName().toString());
             model.addOffset(node, (CsmOffsetable)element);
             return node;
         } else if (CsmKindUtilities.isClassifier(element)){
-            String name = ((CsmClassifier)element).getName();
+            String name = ((CsmClassifier)element).getName().toString();
             if (name.length()==0 && (element instanceof CsmCompoundClassifier)) {
                 Collection list = ((CsmCompoundClassifier)element).getEnclosingTypedefs();
                 if (list.size() > 0) {
@@ -247,40 +247,40 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
             node = new CppDeclarationNode((CsmOffsetableDeclaration)element, model);
             if (CsmKindUtilities.isClass(element)) {
                 CsmClass cls = (CsmClass)element;
-                node.setName(cls.isTemplate() ? ((CsmTemplate)cls).getDisplayName() : cls.getName());
+                node.setName(cls.isTemplate() ? ((CsmTemplate)cls).getDisplayName().toString() : cls.getName().toString());
             } else {
-                node.setName(((CsmClassifier)element).getName());
+                node.setName(((CsmClassifier)element).getName().toString());
             }
             model.addOffset(node, (CsmOffsetable)element);
             return node;
         } else if(CsmKindUtilities.isNamespaceDefinition(element)){
             node = new CppDeclarationNode((CsmNamespaceDefinition)element, model);
-            node.setName(((CsmNamespaceDefinition)element).getName());
+            node.setName(((CsmNamespaceDefinition)element).getName().toString());
             model.addOffset(node, (CsmOffsetable)element);
             return node;
         } else if(CsmKindUtilities.isDeclaration(element)){
             node = new CppDeclarationNode(Children.LEAF,(CsmOffsetableDeclaration)element,model,isFriend);
-            node.setName(((CsmDeclaration)element).getName());
+            node.setName(((CsmDeclaration)element).getName().toString());
             if(CsmKindUtilities.isFunction(element)){
                 node.setName(CsmUtilities.getSignature((CsmFunction)element, true));
             } else {
-                node.setName(((CsmDeclaration)element).getName());
+                node.setName(((CsmDeclaration)element).getName().toString());
             }
             model.addOffset(node, (CsmOffsetable)element);
             return node;
         } else if(CsmKindUtilities.isEnumerator(element)){
             node = new CppDeclarationNode(Children.LEAF,(CsmEnumerator)element,model);
-            node.setName(((CsmEnumerator)element).getName());
+            node.setName(((CsmEnumerator)element).getName().toString());
             model.addOffset(node, (CsmOffsetable)element);
             return node;
         } else if(CsmKindUtilities.isMacro(element)){
             node = new CppDeclarationNode(Children.LEAF,(CsmMacro)element,model);
-            node.setName(((CsmMacro)element).getName());
+            node.setName(((CsmMacro)element).getName().toString());
             model.addOffset(node, (CsmOffsetable)element);
             return node;
         } else if(element instanceof CsmInclude){
             node = new CppDeclarationNode(Children.LEAF,(CsmInclude)element,model);
-            node.setName(((CsmInclude)element).getIncludeName());
+            node.setName(((CsmInclude)element).getIncludeName().toString());
             model.addOffset(node, (CsmOffsetable)element);
             return node;
         }

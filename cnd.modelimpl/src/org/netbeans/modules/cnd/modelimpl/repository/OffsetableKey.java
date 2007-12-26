@@ -47,6 +47,7 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.utils.cache.NameCache;
 
 
 /**
@@ -60,9 +61,9 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
     private final int endOffset;
     
     private final String kind;
-    private final String name;
+    private final CharSequence name;
     
-    protected OffsetableKey(CsmOffsetable obj, String kind, String name) {
+    protected OffsetableKey(CsmOffsetable obj, String kind, CharSequence name) {
 	super((FileImpl) obj.getContainingFile());
 	this.startOffset = obj.getStartOffset();
 	this.endOffset = obj.getEndOffset();
@@ -78,16 +79,16 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
 	assert this.kind != null;
 	aStream.writeUTF(this.kind);
 	assert this.name != null;
-	aStream.writeUTF(this.name);
+	aStream.writeUTF(this.name.toString());
     }
     
     protected OffsetableKey(DataInput aStream) throws IOException {
 	super(aStream);
 	this.startOffset = aStream.readInt();
 	this.endOffset = aStream.readInt();
-	this.kind = TextCache.getString(aStream.readUTF());
+	this.kind = TextCache.getString(aStream.readUTF()).toString();
 	assert this.kind != null;
-	this.name = TextCache.getString(aStream.readUTF());
+	this.name = NameCache.getString(aStream.readUTF());
 	assert this.name != null;
     }
     
@@ -146,7 +147,7 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
     }
     
     @Override
-    public String getAt(int level) {
+    public CharSequence getAt(int level) {
 	int superDepth = super.getDepth();
 	if (level < superDepth) {
 	    return super.getAt(level);

@@ -181,7 +181,7 @@ public final class CsmProjectContentResolver {
                 if (elemEnum != null) {
                     for (Iterator enmtrIter = elemEnum.getEnumerators().iterator(); enmtrIter.hasNext();) {
                         CsmEnumerator elem = (CsmEnumerator) enmtrIter.next();
-                        if (matchName(elem.getName(), strPrefix, match)) {
+                        if (matchName(elem.getName().toString(), strPrefix, match)) {
                             res.add(elem);
                         }
                     }
@@ -479,7 +479,7 @@ public final class CsmProjectContentResolver {
         for (Iterator it = ns.getNestedNamespaces().iterator(); it.hasNext();) {
             CsmNamespace nestedNs = (CsmNamespace) it.next();
             // TODO: consider when we add nested namespaces
-            if (nestedNs.getName().length() != 0 && matchName(nestedNs.getName(), strPrefix, match)) {
+            if (nestedNs.getName().length() != 0 && matchName(nestedNs.getName().toString(), strPrefix, match)) {
                 res.add(nestedNs);
             }
         }  
@@ -659,11 +659,11 @@ public final class CsmProjectContentResolver {
             if (isKindOf(member.getKind(), kinds) &&
                     (!staticOnly || member.isStatic()) &&
                     matchVisibility(member, minVisibility) &&
-                    matchName(member.getName(), strPrefix, match)) {
+                    matchName(member.getName().toString(), strPrefix, match)) {
                 if (CsmKindUtilities.isFunction(member)) {
-                    res.put(((CsmFunction)member).getSignature(), member);
+                    res.put(((CsmFunction)member).getSignature().toString(), member);
                 } else {
-                    res.put(member.getQualifiedName(), member);
+                    res.put(member.getQualifiedName().toString(), member);
                 }
             }
         }
@@ -741,7 +741,7 @@ public final class CsmProjectContentResolver {
         while (in.hasNext()) {
             CsmDeclaration decl = (CsmDeclaration) in.next();
             if (isKindOf(decl.getKind(), kinds) &&
-                    matchName(decl.getName(), strPrefix, match)) {
+                    matchName(decl.getName().toString(), strPrefix, match)) {
                 out.add(decl);
             }
         }
@@ -777,7 +777,7 @@ public final class CsmProjectContentResolver {
         if (newList != null && newList.size() > 0) {
             for (CsmObject object : newList) {
                 assert CsmKindUtilities.isQualified(object);
-                String fqn = ((CsmQualifiedNamedElement)object).getQualifiedName();
+                String fqn = ((CsmQualifiedNamedElement)object).getQualifiedName().toString();
                 orig.put(fqn, object);
             }
         }
@@ -805,7 +805,7 @@ public final class CsmProjectContentResolver {
     private List filterVariables(List<CsmVariable> res) {
         Map<String,CsmVariable> out = new HashMap<String, CsmVariable>(res.size());
         for (CsmVariable var : res) {
-            String fqn = var.getQualifiedName();
+            String fqn = var.getQualifiedName().toString();
             CsmVariable old = out.get(fqn);
             // replace extern variable by normal one if needed
             if (old == null || !CsmKindUtilities.isExternVariable(var)) {

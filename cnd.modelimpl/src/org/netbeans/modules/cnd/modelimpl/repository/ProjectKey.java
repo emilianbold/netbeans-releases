@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.modelimpl.repository;
 
 import java.io.DataInput;
 import java.io.IOException;
-import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.repository.spi.Key;
@@ -58,7 +57,7 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 final class ProjectKey extends ProjectNameBasedKey {
     
     public ProjectKey(ProjectBase project) {
-	super(project.getUniqueName());
+	super(project.getUniqueName().toString());
     }
     
     public ProjectKey(String projectUniqueName) {

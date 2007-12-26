@@ -57,8 +57,8 @@ public class EnumNode extends ClassifierNode {
     }
     
     private void init(CsmEnum enumeration){
-        String shortName = enumeration.getName();
-        String longName = enumeration.getQualifiedName();
+        String shortName = enumeration.getName().toString();
+        String longName = enumeration.getQualifiedName().toString();
         setName(shortName);
         setDisplayName(shortName);
         setShortDescription(longName);

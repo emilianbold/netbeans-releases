@@ -54,14 +54,14 @@ import org.openide.nodes.*;
 public class CVUtil {
     private static final boolean showParamNames = getBoolean("cnd.classview.show-param-names", true); // NOI18N
     
-    public static String getSignature(CsmFunction fun) {
+    public static CharSequence getSignature(CsmFunction fun) {
 	return NameCache.getString(CsmUtilities.getSignature(fun, showParamNames));
     }
         
-    public static String getNamesapceDisplayName(CsmNamespace ns){
-        String displayName = ns.getName();
+    public static CharSequence getNamesapceDisplayName(CsmNamespace ns){
+        String displayName = ns.getName().toString();
         if (displayName.length() == 0) {
-            displayName = ns.getQualifiedName();
+            displayName = ns.getQualifiedName().toString();
             int scope = displayName.lastIndexOf("::"); // NOI18N
             if (scope != -1) {
                 displayName = displayName.substring(scope + 2);

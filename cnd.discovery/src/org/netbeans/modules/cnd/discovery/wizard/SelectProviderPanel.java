@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
+import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -74,6 +75,7 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
         initComponents();
         if (!SHOW_RESTRICT){
             restrictSources.setVisible(false);
+            restrictCompile.setVisible(false);
         }
         addListeners();
     }
@@ -113,6 +115,7 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
         prividersComboBox = new javax.swing.JComboBox();
         labelForProviders = new javax.swing.JLabel();
         restrictSources = new javax.swing.JCheckBox();
+        restrictCompile = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.GridBagLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -154,7 +157,7 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
@@ -205,6 +208,17 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         add(restrictSources, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(restrictCompile, org.openide.util.NbBundle.getMessage(SelectProviderPanel.class, "RESTRICT_COMPILE_PATH")); // NOI18N
+        restrictCompile.setBorder(null);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        add(restrictCompile, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     
     private void prividersComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_prividersComboBoxItemStateChanged
@@ -253,6 +267,7 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
     private javax.swing.JLabel labelForProviders;
     private javax.swing.JLabel labelForRoot;
     private javax.swing.JComboBox prividersComboBox;
+    private javax.swing.JCheckBox restrictCompile;
     private javax.swing.JCheckBox restrictSources;
     private javax.swing.JTextField rootFolder;
     private javax.swing.JButton rootFolderButton;
@@ -290,7 +305,6 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
             path = path.replace('/', File.separatorChar);
         }
         rootFolder.setText(path);
-        restrictSources.setSelected(wizardDescriptor.isCutResult());
     }
     
     private ProviderItem getDefaultProvider(List<ProviderItem> list, ProjectProxy proxy, DiscoveryDescriptor wizardDescriptor){
@@ -322,7 +336,22 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
         ProviderItem provider = (ProviderItem)prividersComboBox.getSelectedItem();
         wizardDescriptor.setProvider(provider.getProvider());
         wizardDescriptor.setRootFolder(rootFolder.getText());
-        wizardDescriptor.setCutResult(restrictSources.isSelected());
+        ProviderProperty p = provider.getProvider().getProperty("restrict_source_root"); // NOI18N
+        if (p != null) {
+            if (restrictSources.isSelected()){
+                p.setValue(rootFolder.getText());
+            } else {
+                p.setValue(""); // NOI18N
+            }
+        }
+        p = provider.getProvider().getProperty("restrict_compile_root"); // NOI18N
+        if (p != null) {
+            if (restrictCompile.isSelected()){
+                p.setValue(rootFolder.getText());
+            } else {
+                p.setValue(""); // NOI18N
+            }
+        }
     }
     
     boolean valid(DiscoveryDescriptor wizardDescriptor) {

@@ -63,7 +63,7 @@ public class ErrorFilesModel implements ListModel{
         Map<String, CsmInclude> tree = new TreeMap<String,CsmInclude>();
         for (Iterator<CsmInclude> it = includes.iterator(); it.hasNext(); ){
             CsmInclude incl = it.next();
-            String name = incl.getContainingFile().getAbsolutePath();
+            String name = incl.getContainingFile().getAbsolutePath().toString();
             tree.put(name,incl);
         }
         for (Iterator<Entry<String, CsmInclude>> it = tree.entrySet().iterator(); it.hasNext(); ){

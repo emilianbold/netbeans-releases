@@ -120,7 +120,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
         return (CsmFunction) def;
     }
     
-    private static CsmFunction findByName(Collection/*CsmDeclaration*/ declarations, String name) {
+    private static CsmFunction findByName(Collection/*CsmDeclaration*/ declarations, CharSequence name) {
 	for (Iterator it = declarations.iterator(); it.hasNext();) {
 	    CsmDeclaration decl = (CsmDeclaration) it.next();
 	    if( decl.getName().equals(name) ) {
@@ -141,11 +141,9 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
     protected String findQualifiedName() {
         CsmFunction declaration= _getDeclaration();
 	if( declaration != null ) {
-	    return declaration.getQualifiedName();
+	    return declaration.getQualifiedName().toString();
 	}
-	else {
-	    return super.findQualifiedName();
-	}
+        return super.findQualifiedName();
     }
     
     @Override

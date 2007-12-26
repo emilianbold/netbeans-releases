@@ -51,7 +51,7 @@ public interface CsmInclude extends CsmOffsetable, CsmIdentifiable<CsmInclude> {
      * Returns the name that of the included file,
      * '"', "<" and ">" characters are not included.
      */
-    String getIncludeName();
+    CharSequence getIncludeName();
 
     /** Gets include file */
     CsmFile getIncludeFile();

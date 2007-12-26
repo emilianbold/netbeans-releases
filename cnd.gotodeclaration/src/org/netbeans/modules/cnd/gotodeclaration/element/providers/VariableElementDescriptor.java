@@ -50,7 +50,7 @@ class VariableElementDescriptor extends BaseElementDescriptor implements Element
     @SuppressWarnings("unchecked")
     VariableElementDescriptor(CsmVariable var) {
 	uid = var.getUID();
-	displayName = var.getName();
+	displayName = var.getName().toString();
 	contextName = ContextUtil.getContextName(var);
     }
     

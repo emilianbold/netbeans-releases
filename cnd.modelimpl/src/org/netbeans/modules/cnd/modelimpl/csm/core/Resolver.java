@@ -64,7 +64,7 @@ public interface Resolver {
      *  CsmClassifier (CsmClass, CsmEnum, CsmTypedef)
      *  CsmNamespace
      */
-    public CsmObject resolve(String[] nameTokens, int interestedKind);
+    public CsmObject resolve(CharSequence[] nameTokens, int interestedKind);
     
     /**
      * Resolves classifier (class/enum/typedef) or namespace name.
@@ -77,6 +77,6 @@ public interface Resolver {
      *  CsmClassifier (CsmClass, CsmEnum, CsmTypedef)
      *  CsmNamespace
      */
-    public CsmObject resolve(String qualifiedName, int interestedKind);
+    public CsmObject resolve(CharSequence qualifiedName, int interestedKind);
 
 }

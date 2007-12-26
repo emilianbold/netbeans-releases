@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.ProjectUtil;
+import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
@@ -69,6 +70,8 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
     
     private static final boolean TRACE_READ_EXCEPTIONS = Boolean.getBoolean("cnd.dwarfdiscovery.trace.read.errors"); // NOI18N
     private static final boolean FULL_TRACE = Boolean.getBoolean("cnd.dwarfdiscovery.trace.read.source"); // NOI18N
+    public static final String RESTRICT_SOURCE_ROOT = "restrict_source_root"; // NOI18N
+    public static final String RESTRICT_COMPILE_ROOT = "restrict_compile_root"; // NOI18N
     protected boolean isStoped = false;
     
     public BaseDwarfProvider() {
@@ -122,11 +125,26 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                 if (isStoped) {
                     break;
                 }
-                for(SourceFileProperties f : getSourceFileProperties(PathCache.getString(file), map)){
+                for(SourceFileProperties f : getSourceFileProperties(file, map)){
                     if (isStoped) {
                         break;
                     }
-                    String name = PathCache.getString(f.getItemPath());
+                    ProviderProperty p = getProperty(RESTRICT_SOURCE_ROOT);
+                    if (p != null) {
+                        String s = (String)p.getValue();
+                        if (!f.getItemPath().startsWith(s)){
+                            continue;
+                        }
+                    }
+                    p = getProperty(RESTRICT_COMPILE_ROOT);
+                    if (p != null) {
+                        String s = (String)p.getValue();
+                        if (!f.getCompilePath().startsWith(s)){
+                            continue;
+                        }
+                    }
+                    
+                    String name = f.getItemPath();
                     if (new File(name).exists()){
                         SourceFileProperties existed = map.get(name);
                         if (existed == null) {
@@ -159,7 +177,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     if (cu.getRoot() == null || cu.getSourceFileName() == null) {
                         continue;
                     }
-                    String lang = PathCache.getString(cu.getSourceLanguage());
+                    String lang = cu.getSourceLanguage();
                     if (lang == null) {
                         continue;
                     }
@@ -204,7 +222,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                         if (TRACE_READ_EXCEPTIONS) System.out.println("Compilation unit has broken name in file "+objFileName);  // NOI18N
                         continue;
                     }
-                    String lang = PathCache.getString(cu.getSourceLanguage());
+                    String lang = cu.getSourceLanguage();
                     if (lang == null) {
                         if (TRACE_READ_EXCEPTIONS) System.out.println("Compilation unit has unresolved language in file "+objFileName);  // NOI18N
                         continue;
@@ -221,7 +239,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                         // Ignore other languages
                     }
                     if (source != null) {
-                        String name = PathCache.getString(source.getItemPath());
+                        String name = source.getItemPath();
                         SourceFileProperties old = map.get(name);
                         if (old != null && old.getUserInludePaths().size() > 0) {
                             if (FULL_TRACE) System.out.println("Compilation unit already exist. Skip "+name);  // NOI18N
@@ -240,6 +258,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
             if (TRACE_READ_EXCEPTIONS) System.out.println("File not found "+objFileName+": "+ex.getMessage());  // NOI18N
         } catch (WrongFileFormatException ex) {
             if (TRACE_READ_EXCEPTIONS) System.out.println("Unsuported format of file "+objFileName+": "+ex.getMessage());  // NOI18N
+            list = new LogReader(objFileName).getResults();
         } catch (IOException ex) {
             if (TRACE_READ_EXCEPTIONS){
                 System.err.println("Exception in file "+objFileName);  // NOI18N

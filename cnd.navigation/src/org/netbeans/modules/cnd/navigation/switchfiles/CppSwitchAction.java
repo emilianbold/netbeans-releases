@@ -175,19 +175,19 @@ public final class CppSwitchAction extends BaseAction {
     }
 
     /*package*/ static CsmFile findHeader(CsmFile source) {
-        String name = getName(source.getAbsolutePath());
+        String name = getName(source.getAbsolutePath().toString());
         // first look at the list of includes
         for (CsmInclude h : source.getIncludes()) {
-            if (h.getIncludeFile() != null && name.equals(getName(h.getIncludeFile().getAbsolutePath()))) {
+            if (h.getIncludeFile() != null && name.equals(getName(h.getIncludeFile().getAbsolutePath().toString()))) {
                 return h.getIncludeFile();
             }
         }
 
-        String path = trimExtension(source.getAbsolutePath());
+        String path = trimExtension(source.getAbsolutePath().toString());
         CsmFile namesake = null;
         for (CsmFile f : source.getProject().getHeaderFiles()) {
-            if (getName(f.getAbsolutePath()).equals(name)) {
-                if (path.equals(trimExtension(f.getAbsolutePath()))) {
+            if (getName(f.getAbsolutePath().toString()).equals(name)) {
+                if (path.equals(trimExtension(f.getAbsolutePath().toString()))) {
                     // we got namesake in the same directory. Best hit.
                     // TODO: actually this is pretty common issue, should we
                     // make a special check for such files?
@@ -204,12 +204,12 @@ public final class CppSwitchAction extends BaseAction {
     }
 
     /*package*/ static CsmFile findSource(CsmFile header) {
-        String name = getName(header.getAbsolutePath());
+        String name = getName(header.getAbsolutePath().toString());
 
         Collection<CsmFile> includers = CsmIncludeHierarchyResolver.getDefault().getFiles(header);
 
         for (CsmFile f : includers) {
-            if (getName(f.getAbsolutePath()).equals(name)) {
+            if (getName(f.getAbsolutePath().toString()).equals(name)) {
                 // we found source file with the same name
                 // as header and with dependency to it. Best shot.
                 return f;
@@ -218,7 +218,7 @@ public final class CppSwitchAction extends BaseAction {
 
         // look for random namesake
         for (CsmFile f : header.getProject().getSourceFiles()) {
-            if (getName(f.getAbsolutePath()).equals(name)) {
+            if (getName(f.getAbsolutePath().toString()).equals(name)) {
                 return f;
             }
         }

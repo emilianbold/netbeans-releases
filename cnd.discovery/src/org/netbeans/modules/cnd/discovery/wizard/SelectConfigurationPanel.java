@@ -363,7 +363,6 @@ public final class SelectConfigurationPanel extends JPanel {
         String rootFolder = wizardDescriptor.getRootFolder();
         DiscoveryProvider provider = wizardDescriptor.getProvider();
         String consolidation = wizardDescriptor.getLevel();
-        boolean cutResult = wizardDescriptor.isCutResult();
         List<Configuration> configs = provider.analyze(new ProjectProxy() {
             public boolean createSubProjects() {
                 return false;
@@ -380,7 +379,7 @@ public final class SelectConfigurationPanel extends JPanel {
             includedFiles.addAll(conf.getIncludedFiles());
             List<ProjectProperties> langList = conf.getProjectConfiguration();
             for (Iterator<ProjectProperties> it2 = langList.iterator(); it2.hasNext();) {
-                ProjectConfigurationImpl project = ConfigurationFactory.makeRoot(it2.next(), rootFolder, cutResult);
+                ProjectConfigurationImpl project = ConfigurationFactory.makeRoot(it2.next(), rootFolder);
                 consolidateModel(project, consolidation);
                 projectConfigurations.add(project);
             }

@@ -54,7 +54,7 @@ import org.netbeans.modules.cnd.utils.cache.FilePathCache;
  * @author Vladimir Voskresensky
  */
 public abstract class AbstractFileBuffer implements FileBuffer {
-    private final String absPath;
+    private final CharSequence absPath;
     
     protected AbstractFileBuffer(File file) {
         this.absPath = FilePathCache.getString(file.getAbsolutePath());
@@ -67,7 +67,7 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     }
 
     public File getFile() {
-        return new File(absPath);
+        return new File(absPath.toString());
     }
     
     public abstract int getLength();
@@ -82,7 +82,7 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     
     protected void write(DataOutput output) throws IOException {
         assert this.absPath != null;
-        output.writeUTF(this.absPath);
+        output.writeUTF(this.absPath.toString());
     }  
     
     protected AbstractFileBuffer(DataInput input) throws IOException {

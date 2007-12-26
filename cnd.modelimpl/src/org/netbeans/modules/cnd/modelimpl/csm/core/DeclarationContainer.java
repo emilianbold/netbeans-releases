@@ -66,13 +66,14 @@ import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.netbeans.modules.cnd.modelimpl.repository.DeclarationContainerKey;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.netbeans.modules.cnd.utils.cache.UniqueNameCache;
 
 /**
  * Storage for project declarations. Class was extracted from ProjectBase.
@@ -80,14 +81,14 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  */
 /*package-local*/ class DeclarationContainer extends ProjectComponent implements Persistent, SelfPersistent {
     
-    private SortedMap<FixedString, Object> declarations = new TreeMap<FixedString, Object>();
+    private SortedMap<CharSequence, Object> declarations = new TreeMap<CharSequence, Object>(CharSequenceKey.Comparator);
     private ReadWriteLock declarationsLock = new ReentrantReadWriteLock();
     
-    private Map<String, Set<CsmUID<? extends CsmFriend>>> friends = new ConcurrentHashMap<String, Set<CsmUID<? extends CsmFriend>>>();
+    private Map<CharSequence, Set<CsmUID<? extends CsmFriend>>> friends = new ConcurrentHashMap<CharSequence, Set<CsmUID<? extends CsmFriend>>>();
 
     /** Creates a new instance of ProjectDeclarations */
     public DeclarationContainer(ProjectBase project) {
-	super(new DeclarationContainerKey(project.getUniqueName()));
+	super(new DeclarationContainerKey(project.getUniqueName().toString()));
 	put();
     }
     
@@ -97,7 +98,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
     }
 
     public void removeDeclaration(CsmDeclaration decl) {
-	FixedString uniqueName = new FixedString(decl.getUniqueName());
+	CharSequence uniqueName = UniqueNameCache.getString(decl.getUniqueName());
 //	synchronized(declarations){
 	Object o = null;
 	try {
@@ -150,7 +151,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
     private void removeFriend(CsmDeclaration decl){
         if (CsmKindUtilities.isFriendClass(decl)) {
             CsmFriendClass cls = (CsmFriendClass) decl;
-            String name = cls.getName();
+            CharSequence name = CharSequenceKey.create(cls.getName());
             Set<CsmUID<? extends CsmFriend>> set = friends.get(name);
             if (set != null) {
                 set.remove(cls.getUID());
@@ -160,7 +161,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
             }
         } else if (CsmKindUtilities.isFriendMethod(decl)) {
             CsmFriendFunction fun = (CsmFriendFunction) decl;
-            String name = fun.getSignature();
+            CharSequence name = CharSequenceKey.create(fun.getSignature());
             Set<CsmUID<? extends CsmFriend>> set = friends.get(name);
             if (set != null) {
                 set.remove(fun.getUID());
@@ -172,7 +173,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
     }
 
     public void putDeclaration(CsmOffsetableDeclaration decl) {
-	FixedString name = new FixedString(decl.getUniqueName());
+	CharSequence name = UniqueNameCache.getString(decl.getUniqueName());
         @SuppressWarnings("unchecked")
 	CsmUID<CsmOffsetableDeclaration> uid = RepositoryUtils.put(decl);
 	assert uid != null;
@@ -223,7 +224,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
     private void putFriend(CsmDeclaration decl){
         if (CsmKindUtilities.isFriendClass(decl)) {
             CsmFriendClass cls = (CsmFriendClass) decl;
-            String name = cls.getName();
+            CharSequence name = CharSequenceKey.create(cls.getName());
             Set<CsmUID<? extends CsmFriend>> set = friends.get(name);
             if (set == null) {
                 set = new HashSet<CsmUID<? extends CsmFriend>>();
@@ -232,7 +233,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
             set.add(cls.getUID());
         } else if (CsmKindUtilities.isFriendMethod(decl)) {
             CsmFriendFunction fun = (CsmFriendFunction) decl;
-            String name = fun.getSignature();
+            CharSequence name = CharSequenceKey.create(fun.getSignature());
             Set<CsmUID<? extends CsmFriend>> set = friends.get(name);
             if (set == null) {
                 set = new HashSet<CsmUID<? extends CsmFriend>>();
@@ -243,13 +244,13 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 	put();
     }
     
-    public Collection<CsmOffsetableDeclaration> getDeclarationsRange(String from_, String to_) {
+    public Collection<CsmOffsetableDeclaration> getDeclarationsRange(CharSequence from, CharSequence to) {
         List<CsmUID<CsmOffsetableDeclaration>> list = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
-        FixedString from = new FixedString(from_);
-        FixedString to = new FixedString(to_);
+        from = UniqueNameCache.getString(from);
+        to = UniqueNameCache.getString(to);
         try {
             declarationsLock.readLock().lock();
-            for (Map.Entry<FixedString, Object> entry : declarations.subMap(from, to).entrySet()){
+            for (Map.Entry<CharSequence, Object> entry : declarations.subMap(from, to).entrySet()){
                 Object o = entry.getValue();
                 if (o instanceof CsmUID[]) {
                     CsmUID[] uids = (CsmUID[])o;
@@ -267,7 +268,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
     }
     
     public Collection<CsmFriend> findFriends(CsmOffsetableDeclaration decl){
-        String name = null;
+        CharSequence name = null;
         if (CsmKindUtilities.isClass(decl)) {
             CsmClass cls = (CsmClass) decl;
             name = cls.getName();
@@ -276,6 +277,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
             name = fun.getSignature();
         }
         if (name != null) {
+            name = CharSequenceKey.create(name);
             List<CsmUID<? extends CsmFriend>> list = new ArrayList<CsmUID<? extends CsmFriend>>();
             try {
                 declarationsLock.readLock().lock();
@@ -308,9 +310,9 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
         return Collections.<CsmFriend>emptyList();
     }
     
-    public Collection<CsmOffsetableDeclaration> findDeclarations(String uniqueName_) {
+    public Collection<CsmOffsetableDeclaration> findDeclarations(CharSequence uniqueName) {
         List<CsmUID<CsmOffsetableDeclaration>> list = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
-        FixedString uniqueName = new FixedString(uniqueName_);
+        uniqueName = UniqueNameCache.getString(uniqueName);
         try {
             declarationsLock.readLock().lock();
             Object o = declarations.get(uniqueName);
@@ -328,10 +330,10 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
         return UIDCsmConverter.UIDsToDeclarations(list);
     }
     
-    public CsmDeclaration getDeclaration(String uniqueName_) {
+    public CsmDeclaration getDeclaration(CharSequence uniqueName) {
         CsmDeclaration result;
         CsmUID<CsmDeclaration> uid = null;
-        FixedString uniqueName = new FixedString(uniqueName_);
+        uniqueName = UniqueNameCache.getString(uniqueName);
         try {
             declarationsLock.readLock().lock();
             Object o = declarations.get(uniqueName);
@@ -364,14 +366,14 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 	super.write(aStream);
         try {
             declarationsLock.readLock().lock();
-            UIDObjectFactory.getDefaultFactory().writeFixedStringToArrayUIDMap(declarations, aStream, false);
+            UIDObjectFactory.getDefaultFactory().writeStringToArrayUIDMap(declarations, aStream, false);
         } finally {
             declarationsLock.readLock().unlock();
         }
     }
     
     private void read(DataInput aStream) throws IOException {
-        UIDObjectFactory.getDefaultFactory().readFixedStringToArrayUIDMap(declarations, aStream, TextCache.getManager());
+        UIDObjectFactory.getDefaultFactory().readStringToArrayUIDMap(declarations, aStream, UniqueNameCache.getManager());
     }
     
     private boolean isSameFile(CsmUID<CsmOffsetableDeclaration> uid1, CsmUID<CsmOffsetableDeclaration> uid2){

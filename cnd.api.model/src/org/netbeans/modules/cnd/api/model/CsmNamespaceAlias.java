@@ -52,6 +52,6 @@ public interface CsmNamespaceAlias extends CsmOffsetableDeclaration<CsmNamespace
 
     CsmNamespace getReferencedNamespace();
 
-    String getAlias();
+    CharSequence getAlias();
 
 }

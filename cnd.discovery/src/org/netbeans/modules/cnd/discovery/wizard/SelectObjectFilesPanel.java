@@ -71,11 +71,20 @@ public final class SelectObjectFilesPanel extends JPanel {
             boolean first = true;
             for(String key : provider.getPropertyKeys()){
                 ProviderProperty property = provider.getProperty(key);
-                ProviderControl pc = new ProviderControl(property,wizardDescriptor,providerPanel, wizard);
-                controls.add(pc);
-                if (first) {
-                    instructionsTextArea.setText(property.getDescription());
-                    first = false;
+                switch(property.getKind()) {
+                    case BinaryFile:
+                    case Folder:
+                    case BinaryFiles:
+                        ProviderControl pc = new ProviderControl(property, wizardDescriptor, providerPanel, wizard);
+                        controls.add(pc);
+                        if (first) {
+                            instructionsTextArea.setText(property.getDescription());
+                            first = false;
+                        }
+                        break;
+                    default:
+                        // unsuported UI
+                        break;
                 }
             }
         }

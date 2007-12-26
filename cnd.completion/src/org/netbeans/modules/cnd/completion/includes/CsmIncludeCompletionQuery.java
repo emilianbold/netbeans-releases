@@ -70,7 +70,7 @@ public class CsmIncludeCompletionQuery {
             return results.values();
         }
         if (docFile != null) {
-            usrFilePath = docFile.getAbsolutePath();
+            usrFilePath = docFile.getAbsolutePath().toString();
             usrPaths = getFileIncludes(docFile, false);
             sysPaths = getFileIncludes(docFile, true);
         } else {

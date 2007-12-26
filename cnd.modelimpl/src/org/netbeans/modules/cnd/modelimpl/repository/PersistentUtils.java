@@ -101,15 +101,15 @@ public class PersistentUtils {
         FileBuffer buffer;
         int handler = input.readInt();
         assert handler == FILE_BUFFER_FILE;
-        String absPath = FilePathCache.getString(input.readUTF());
-        buffer = new FileBufferFile(new File(absPath));
+        CharSequence absPath = FilePathCache.getString(input.readUTF());
+        buffer = new FileBufferFile(new File(absPath.toString()));
         return buffer;
     }
     
     ////////////////////////////////////////////////////////////////////////////
     // support string (arrays)
     
-    public static void writeStrings(String[] arr, DataOutput output) throws IOException {
+    public static void writeStrings(CharSequence[] arr, DataOutput output) throws IOException {
         if (arr == null) {
             output.writeInt(AbstractObjectFactory.NULL_POINTER);
         } else {
@@ -117,7 +117,7 @@ public class PersistentUtils {
             output.writeInt(len);
             for (int i = 0; i < len; i++) {
                 assert arr[i] != null;
-                output.writeUTF(arr[i]);
+                output.writeUTF(arr[i].toString());
             }
         }
     }
@@ -135,11 +135,11 @@ public class PersistentUtils {
         }
     }
     
-    public static String[] readStrings(DataInput input, APTStringManager manager) throws IOException {
-        String[] arr = null;
+    public static CharSequence[] readStrings(DataInput input, APTStringManager manager) throws IOException {
+        CharSequence[] arr = null;
         int len = input.readInt();
         if (len != AbstractObjectFactory.NULL_POINTER) {
-            arr = new String[len];
+            arr = new CharSequence[len];
             for (int i = 0; i < len; i++) {
                 String str = input.readUTF();
                 assert str != null;
@@ -149,11 +149,11 @@ public class PersistentUtils {
         return arr;
     }   
 
-    public static Collection<String> readCollectionStrings(DataInput input, APTStringManager manager) throws IOException {
-        List<String> arr = null;
+    public static Collection<CharSequence> readCollectionStrings(DataInput input, APTStringManager manager) throws IOException {
+        List<CharSequence> arr = null;
         int len = input.readInt();
         if (len != AbstractObjectFactory.NULL_POINTER) {
-            arr = new ArrayList<String>(len);
+            arr = new ArrayList<CharSequence>(len);
             for (int i = 0; i < len; i++) {
                 String str = input.readUTF();
                 assert str != null;
@@ -440,12 +440,12 @@ public class PersistentUtils {
 //        }         
 //    }
 
-    public static void readStringToStateMap(Map<String, APTPreprocHandler.State> filesHandlers, DataInput input) throws IOException {
+    public static void readStringToStateMap(Map<CharSequence, APTPreprocHandler.State> filesHandlers, DataInput input) throws IOException {
         assert filesHandlers != null;
         int collSize = input.readInt();
         
         for (int i = 0; i < collSize; i++) {
-            String key = FilePathCache.getString(input.readUTF());
+            CharSequence key = FilePathCache.getString(input.readUTF());
             assert key != null;
             APTPreprocHandler.State state = readPreprocState(input);
             assert state != null;

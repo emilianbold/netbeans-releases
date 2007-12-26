@@ -62,7 +62,7 @@ public class EnumeratorNode extends ObjectNode {
     }
     
     private void init(CsmEnumerator enumerator){
-        String name = enumerator.getName();
+        String name = enumerator.getName().toString();
         setName(name);
         setDisplayName(name);
         setShortDescription(name);

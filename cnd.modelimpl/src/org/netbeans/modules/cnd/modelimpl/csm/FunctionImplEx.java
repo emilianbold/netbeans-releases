@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
  * A class that 
@@ -63,9 +64,9 @@ import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
  */
 public class FunctionImplEx<T>  extends FunctionImpl<T> {
 
-    private String qualifiedName;
+    private CharSequence qualifiedName;
     private boolean qualifiedNameIsFake = false;
-    private final String[] classOrNspNames;
+    private final CharSequence[] classOrNspNames;
     
     public FunctionImplEx(AST ast, CsmFile file, CsmScope scope) {
         this(ast, file, scope, true);
@@ -82,7 +83,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
 
     /** @return either class or namespace */
     protected CsmObject findOwner(Resolver parent) {
-	String[] cnn = classOrNspNames;
+	CharSequence[] cnn = classOrNspNames;
 	if( cnn != null ) {
 	    CsmObject obj = ResolverFactory.createResolver(this, parent).resolve(cnn, Resolver.CLASSIFIER | Resolver.NAMESPACE);
 	    if( obj instanceof CsmClass ) {
@@ -119,9 +120,9 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     }
     
     @Override
-    public String getQualifiedName() {
+    public CharSequence getQualifiedName() {
 	if( qualifiedName == null ) {
-	    qualifiedName = findQualifiedName();
+	    qualifiedName = CharSequenceKey.create(findQualifiedName());
 	}
 	return qualifiedName;
     }
@@ -134,7 +135,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
 	}
 	else {
 	    qualifiedNameIsFake = true;
-	    String[] cnn = classOrNspNames;
+	    CharSequence[] cnn = classOrNspNames;
 	    CsmNamespaceDefinition nsd = findNamespaceDefinition();
 	    StringBuilder sb = new StringBuilder();
 	    if( nsd != null ) {
@@ -167,8 +168,8 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     }
     
     public void fixFakeRegistration() {
-	String newQname = findQualifiedName();
-	if( ! newQname.equals(qualifiedName) ) {
+	CharSequence newQname = CharSequenceKey.create(findQualifiedName());
+	if( !newQname.equals(qualifiedName) ) {
 	    ProjectBase aProject = ((FileImpl) getContainingFile()).getProjectImpl();
             aProject.unregisterDeclaration(this);
             this.cleanUID();
@@ -206,7 +207,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     public void write(DataOutput output) throws IOException {
         super.write(output);
         // can be null
-        PersistentUtils.writeUTF(this.qualifiedName, output);
+        PersistentUtils.writeUTF(this.qualifiedName.toString(), output);
         output.writeBoolean(this.qualifiedNameIsFake);
         PersistentUtils.writeStrings(this.classOrNspNames, output);
     }

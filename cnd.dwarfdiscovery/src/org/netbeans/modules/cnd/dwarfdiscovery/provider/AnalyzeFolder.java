@@ -93,6 +93,46 @@ public class AnalyzeFolder extends BaseDwarfProvider {
                 return ProviderProperty.PropertyKind.Folder;
             }
         });
+        myProperties.put(RESTRICT_SOURCE_ROOT, new ProviderProperty(){
+            private String myPath="";
+            public String getName() {
+                return i18n("RESTRICT_SOURCE_ROOT"); // NOI18N
+            }
+            public String getDescription() {
+                return i18n("RESTRICT_SOURCE_ROOT"); // NOI18N
+            }
+            public Object getValue() {
+                return myPath;
+            }
+            public void setValue(Object value) {
+                if (value instanceof String){
+                    myPath = (String)value;
+                }
+            }
+            public ProviderProperty.PropertyKind getKind() {
+                return ProviderProperty.PropertyKind.String;
+            }
+        });
+        myProperties.put(RESTRICT_COMPILE_ROOT, new ProviderProperty(){
+            private String myPath="";
+            public String getName() {
+                return i18n("RESTRICT_COMPILE_ROOT"); // NOI18N
+            }
+            public String getDescription() {
+                return i18n("RESTRICT_COMPILE_ROOT"); // NOI18N
+            }
+            public Object getValue() {
+                return myPath;
+            }
+            public void setValue(Object value) {
+                if (value instanceof String){
+                    myPath = (String)value;
+                }
+            }
+            public ProviderProperty.PropertyKind getKind() {
+                return ProviderProperty.PropertyKind.String;
+            }
+        });
     }
     
     public String getID() {

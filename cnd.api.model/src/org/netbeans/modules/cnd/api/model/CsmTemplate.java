@@ -68,5 +68,5 @@ public interface CsmTemplate extends CsmObject {
     /*
      * Returns the name including template specialization part
      */
-    String getDisplayName();
+    CharSequence getDisplayName();
 }

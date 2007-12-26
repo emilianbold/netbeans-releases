@@ -175,7 +175,7 @@ public final class LibProjectImpl extends ProjectBase {
     
     public LibProjectImpl (DataInput aStream)  throws IOException {
         super(aStream);
-        this.includePath = FilePathCache.getString(aStream.readUTF());
+        this.includePath = FilePathCache.getString(aStream.readUTF()).toString();
         assert this.includePath != null;
         setPlatformProject(this.includePath);
     }

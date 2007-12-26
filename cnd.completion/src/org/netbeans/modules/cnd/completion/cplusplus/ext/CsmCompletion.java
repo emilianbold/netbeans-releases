@@ -152,7 +152,7 @@ abstract public class CsmCompletion extends Completion {
         };
 
         for (int i = types.length - 1; i >= 0; i--) {
-            String typeName = types[i].getClassifier().getName();
+            String typeName = types[i].getClassifier().getName().toString();
             str2PrimitiveClass.put(typeName, types[i].getClassifier());
             str2PrimitiveType.put(typeName, types[i]);
         }
@@ -163,7 +163,7 @@ abstract public class CsmCompletion extends Completion {
         };
 
         for (int i = types.length - 1; i >= 0; i--) {
-            String typeName = types[i].getClassifier().getName();
+            String typeName = types[i].getClassifier().getName().toString();
             str2PredefinedType.put(typeName, types[i]);
             str2PredefinedType.put(types[i].getClassifier().getQualifiedName(), types[i]);
             str2PredefinedType.put(types[i].format(true), types[i]);
@@ -251,7 +251,7 @@ abstract public class CsmCompletion extends Completion {
     public static boolean isPrimitiveClass(CsmClassifier c) {
 //        return (c.getPackageName().length() == 0)
 //               && isPrimitiveClassName(c.getName());
-        return isPrimitiveClassName(c.getName());
+        return isPrimitiveClassName(c.getName().toString());
     }
 
     public static CsmClassifier getPrimitiveClass(String s) {
@@ -286,7 +286,7 @@ abstract public class CsmCompletion extends Completion {
 //    }
 
     public static CsmClassifier getSimpleClass(CsmClassifier clazz) {
-        String fullClassName = clazz.getQualifiedName();
+        CharSequence fullClassName = clazz.getQualifiedName();
         CsmClassifier cls = null;//(CsmClassifier)classCache.get(fullClassName);
         if (clazz != null 
 //        if (cls == null// not in cache yet
@@ -462,11 +462,11 @@ abstract public class CsmCompletion extends Completion {
 
     public static class SimpleClass implements CsmClassifier {
 
-        protected String name;
+        protected CharSequence name;
 
         protected String packageName = "";
 
-        protected String fullName;
+        protected CharSequence fullName;
 
         protected CsmDeclaration.Kind kind;
         
@@ -509,7 +509,7 @@ abstract public class CsmCompletion extends Completion {
                 name = fullName.substring(packageNameLen + 1);
                 packageName = fullName.substring(0, packageNameLen);
                 if (intern) {
-                    name = name.intern();
+                    name = ((String)name).intern();
                     packageName = packageName.intern();
                 }
             }
@@ -518,7 +518,7 @@ abstract public class CsmCompletion extends Completion {
         SimpleClass() {
         }
 
-        public final String getName() {
+        public final CharSequence getName() {
             if (clazz != null) {
                 return clazz.getName();
             }
@@ -529,7 +529,7 @@ abstract public class CsmCompletion extends Completion {
             return packageName;
         }
 
-        public String getQualifiedName() {
+        public CharSequence getQualifiedName() {
             if (clazz != null) {
                 return clazz.getQualifiedName();
             }
@@ -539,7 +539,7 @@ abstract public class CsmCompletion extends Completion {
             return fullName;
         }
 	
-        public String getUniqueName() {
+        public CharSequence getUniqueName() {
             return getQualifiedName();
         }
 
@@ -584,7 +584,7 @@ abstract public class CsmCompletion extends Completion {
 //XXX            int order = packageName.compareTo(c.getPackageName());
             int order = 0;
             if (order == 0) {
-                order = name.compareTo(c.getName());
+                order = name.toString().compareTo(c.getName().toString());
             }
             return order;
         }
@@ -599,8 +599,8 @@ abstract public class CsmCompletion extends Completion {
             }
             if (o instanceof CsmClassifier) {
                 CsmClassifier c = (CsmClassifier)o;
-                String className = (c.getName() == null) ? null : c.getName().replace('.','$');
-                String thisName = name.replace('.','$');
+                String className = (c.getName() == null) ? null : c.getName().toString().replace('.','$');
+                String thisName = name.toString().replace('.','$');
                 return thisName.equals(className);//XXX && packageName.equals(c.getPackageName());
             }
             return false;
@@ -609,8 +609,8 @@ abstract public class CsmCompletion extends Completion {
         public String toString() {
             if (stringValue == null) {
                 stringValue = (getPackageName().length() > 0)
-                       ? getPackageName() + '.' + getName().replace('.', '$')
-                       : getName().replace('.', '$');
+                       ? getPackageName() + '.' + getName().toString().replace('.', '$')
+                       : getName().toString().replace('.', '$');
             }
             return stringValue;
         }
@@ -807,7 +807,7 @@ abstract public class CsmCompletion extends Completion {
                 return 0;
             }
             CsmType t = (CsmType)o;
-            int order = clazz.getQualifiedName().compareTo(t.getClassifier().getQualifiedName());
+            int order = clazz.getQualifiedName().toString().compareTo(t.getClassifier().getQualifiedName().toString());
             if (order == 0) {
                 order = arrayDepth - t.getArrayDepth();
             }

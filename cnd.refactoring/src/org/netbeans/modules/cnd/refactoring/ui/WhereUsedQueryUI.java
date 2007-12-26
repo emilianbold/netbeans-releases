@@ -234,9 +234,9 @@ public class WhereUsedQueryUI implements RefactoringUI {
         assert csmObj != null;
         String objName;
         if (csmObj instanceof CsmReference) {
-            objName = ((CsmReference)csmObj).getText();
+            objName = ((CsmReference)csmObj).getText().toString();
         } else if (CsmKindUtilities.isNamedElement(csmObj)) {
-            objName = ((CsmNamedElement)csmObj).getName();
+            objName = ((CsmNamedElement)csmObj).getName().toString();
         } else if (csmObj != null) {
             objName = "<UNNAMED ELEMENT>"; // NOI18N
         } else {

@@ -378,9 +378,9 @@ public class CsmUtilities {
         if (csmFile != null) {
             try {
                 try {
-                    fo = FileUtil.toFileObject(new File(csmFile.getAbsolutePath()).getCanonicalFile());
+                    fo = FileUtil.toFileObject(new File(csmFile.getAbsolutePath().toString()).getCanonicalFile());
                 } catch (IOException e) {
-                    fo = FileUtil.toFileObject(FileUtil.normalizeFile(new File(csmFile.getAbsolutePath())));
+                    fo = FileUtil.toFileObject(FileUtil.normalizeFile(new File(csmFile.getAbsolutePath().toString())));
                 }
             } catch (IllegalArgumentException ex) {
                 ex.printStackTrace();
@@ -452,7 +452,7 @@ public class CsmUtilities {
     
     public static boolean isHeaderFile(CsmFile file) {
         assert (file != null) : "can't be null file";
-        String path = file.getAbsolutePath();
+        String path = file.getAbsolutePath().toString();
         String ext = FileUtil.getExtension(path);
         return isHeaderExt(ext);
     }
@@ -472,7 +472,7 @@ public class CsmUtilities {
     private static final char EXT_SEP = '.';
     
     protected static CsmFile findCsmFile(CsmFile file, boolean header) {
-        String path = file.getAbsolutePath();
+        String path = file.getAbsolutePath().toString();
         String ext = FileUtil.getExtension(path);
         CsmFile outFile = null;
         if (ext.length() > 0) {
@@ -687,11 +687,11 @@ public class CsmUtilities {
         String text = "";
         if (element != null) {
             if (CsmKindUtilities.isNamedElement(element)) {
-                text = ((CsmNamedElement) element).getName();
+                text = ((CsmNamedElement) element).getName().toString();
             } else if (CsmKindUtilities.isStatement((CsmObject)element)) {
-                text = ((CsmStatement)element).getText();
+                text = ((CsmStatement)element).getText().toString();
             } else if (CsmKindUtilities.isOffsetable(element) ) {
-                text = ((CsmOffsetable)element).getText();
+                text = ((CsmOffsetable)element).getText().toString();
             }
             if (text.length() > 0) {
                 text = "\"" + text + "\""; // NOI18N

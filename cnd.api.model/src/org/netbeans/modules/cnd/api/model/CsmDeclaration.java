@@ -94,5 +94,5 @@ public interface CsmDeclaration<T> extends CsmQualifiedNamedElement,
      * @see CsmProject#findDeclaration
      * @see CsmProject#findDeclarations
      */
-    String getUniqueName();
+    CharSequence getUniqueName();
 }

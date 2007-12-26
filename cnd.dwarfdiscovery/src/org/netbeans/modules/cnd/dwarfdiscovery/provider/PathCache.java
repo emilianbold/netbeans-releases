@@ -57,7 +57,7 @@ public class PathCache {
         if (text == null){
             return text;
         }
-        return instance.getString(text);
+        return instance.getString(text).toString();
     }
     
     public static void dispose() {

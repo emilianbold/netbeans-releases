@@ -82,7 +82,7 @@ public class IntToStringCache {
 	int size = stream.readInt();
 	
 	for (int i = 0; i < size; i++) {
-	    String value = FilePathCache.getString(stream.readUTF());
+	    String value = FilePathCache.getString(stream.readUTF()).toString();
 	    if (value.equals("")) {
 		value = null;
 	    }
