@@ -52,7 +52,6 @@
 
     <property name="modules.cvs.root" value=":pserver:${env.NB_USER}@cvs.netbeans.org:/cvs"/>
     <property name="modules.cvs.branch" value="-A"/>
-    <property name="modules.cvs.date" value="-D now"/>
     <property name="modules.cvs.modules" value="
         enterprise
         print
@@ -60,7 +59,6 @@
 
     <property name="sources.cvs.root" value=":pserver:${env.NB_USER}@cvs.netbeans.org:/cvs"/>
     <property name="sources.cvs.branch" value="-A"/>
-    <property name="sources.cvs.date" value="-D now"/>
     <property name="sources.cvs.modules" value="
         ant
         apisupport
