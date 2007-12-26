@@ -63,6 +63,7 @@ import org.netbeans.modules.soa.mappercore.graphics.Grid;
 import org.netbeans.modules.soa.mappercore.graphics.VerticalGradient;
 import org.netbeans.modules.soa.mappercore.graphics.XRange;
 import org.netbeans.modules.soa.mappercore.model.Constant;
+import org.netbeans.modules.soa.mappercore.model.Function;
 import org.netbeans.modules.soa.mappercore.model.Operation;
 import org.netbeans.modules.soa.mappercore.model.Vertex;
 import org.netbeans.modules.soa.mappercore.model.VertexItem;
@@ -75,8 +76,8 @@ import org.netbeans.modules.soa.mappercore.utils.Utils;
  */
 public class Canvas extends MapperPanel implements VertexCanvas,
         FocusListener,
-        Autoscroll {
-
+        Autoscroll 
+{
     private CanvasEventHandler eventHandler;
     private double graphViewPositionX = 0;
     private CanvasScrollPane scrollPane;
@@ -121,16 +122,54 @@ public class Canvas extends MapperPanel implements VertexCanvas,
         
         iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), 
                 "start-inplace-editor");
-        aMap.put("start-inplace-editor", new AbstractAction() {
-            public void actionPerformed(ActionEvent event) {
-                SelectionModel selectionModel = getSelectionModel();
-                TreePath treePath = selectionModel.getSelectedPath();
-                VertexItem vertexItem = selectionModel.getSelectedVertexItem();
-                if (vertexItem != null && treePath != null) {
-                     startEdit(treePath, vertexItem);
-                }
-            }
-        });
+        aMap.put("start-inplace-editor", new StartAction());
+        
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0),
+                "right-step");
+        aMap.put("right-step", new RightAction());
+        
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0),
+                "left-step");
+        aMap.put("left-step", new LeftAction());
+        
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), 
+                "press-moveSelectionDown");
+        aMap.put("press-moveSelectionDown", new DownAction());
+        
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0),
+                "press-moveSelectionUp");
+        aMap.put("press-moveSelectionUp", new UpAction());
+        
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 2),
+                "press-moveSelectionVertaxItemUp");
+        aMap.put("press-moveSelectionVertaxItemUp", new UpControlAction());
+        
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 2),
+                "press-moveSelectionVertexItemDown");
+        aMap.put("press-moveSelectionVertexItemDown", new DownControlAction());
+        
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 2),
+                "press-left+control");
+        aMap.put("press-left+control", new LeftControlAction());
+        
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 2),
+                "press-right+control");
+        aMap.put("press-right+control", new RightControlAction());
+        
+        
+        
+        
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 1), "auto-scroll-down"); 
+        aMap.put("auto-scroll-down", new AutoScrollDown());
+        
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 1), "auto-scroll-up"); 
+        aMap.put("auto-scroll-up", new AutoScrollUp());
+        
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 1), "auto-scroll-left"); 
+        aMap.put("auto-scroll-left", new AutoScrollLeft());
+        
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 1), "auto-scroll-right"); 
+        aMap.put("auto-scroll-right", new AutoScrollRight());
     }
 
     public CanvasRendererContext getDefaultRendererContext() {
@@ -861,31 +900,6 @@ public class Canvas extends MapperPanel implements VertexCanvas,
         }
     }
 
-    private class UpAction extends AbstractAction {
-
-        public void actionPerformed(ActionEvent event) {
-
-        }
-    }
-
-    private class DownAction extends AbstractAction {
-        public void actionPerformed(ActionEvent event) {
-
-        }
-    }
-
-    private class LeftAction extends AbstractAction {
-        public void actionPerformed(ActionEvent event) {
-
-        }
-    }
-
-    private class RightAction extends AbstractAction {
-        public void actionPerformed(ActionEvent event) {
-
-        }
-    }
-
     public Insets getAutoscrollInsets() {
         Rectangle rect = scrollPane.getViewport().getViewRect();
         return new Insets(rect.y + 16, rect.x + 16,
@@ -918,5 +932,403 @@ public class Canvas extends MapperPanel implements VertexCanvas,
                     2 * scrollPane.getHorizontalScrollBar().getUnitIncrement();
         }
         scrollRectToVisible(r);
+    }
+    
+    private class StartAction extends AbstractAction {
+        public void actionPerformed(ActionEvent event) {
+            SelectionModel selectionModel = getSelectionModel();
+            TreePath treePath = selectionModel.getSelectedPath();
+            VertexItem vertexItem = selectionModel.getSelectedVertexItem();
+            if (vertexItem != null && treePath != null) {
+                startEdit(treePath, vertexItem);
+            }
+        }
+    }
+    
+    private class RightAction extends AbstractAction {
+        public void actionPerformed(ActionEvent e) {
+            SelectionModel selectionModel = getSelectionModel();
+            TreePath treePath = selectionModel.getSelectedPath();
+            if (treePath == null) return;
+            
+            Graph graph = selectionModel.getSelectedGraph();
+            if (graph == null || graph.isEmpty()) return; 
+            
+            List<Vertex> sVertexeces = selectionModel.getSelectedVerteces();
+            List<Link> sLinks = selectionModel.getSelectedLinks();
+            VertexItem sVertexItem = selectionModel.getSelectedVertexItem();
+            
+            // Vertex is select
+            if (sVertexeces != null && sVertexeces.size() >= 0) {
+                int count = sVertexeces.size();
+                Vertex vertex = sVertexeces.get(count - 1);
+                Vertex nextVertex = vertex.getGraph().getNextVertex(vertex);
+                if (nextVertex == null) return;  
+                
+                selectionModel.setSelected(treePath, nextVertex);
+                return;
+            }
+            // Link is select
+            if (sLinks != null && sLinks.size() >= 0) {
+                int count = sLinks.size();
+                Link link = sLinks.get(0);
+                
+                if (link.getTarget().getClass() == VertexItem.class) {
+                
+                    VertexItem vertexItem = (VertexItem) link.getTarget();
+                    if (vertexItem == null) { return;}
+                   
+                    Vertex vertex = vertexItem.getVertex();
+                            
+                    selectionModel.setSelected(treePath, vertex);
+                } else {
+                    getRightTree().requestFocus();
+                }
+                return; 
+            }
+            // VertexItem is select
+            if (sVertexItem != null) {
+                // v razrabotke
+                return;
+            }
+            
+            selectionModel.setSelected(treePath, graph.getVertex(0));
+        }
+    }
+    
+    private class LeftAction extends AbstractAction {
+        public void actionPerformed(ActionEvent e) {
+            SelectionModel selectionModel = getSelectionModel();
+            
+            TreePath treePath = selectionModel.getSelectedPath();
+            if (treePath == null) return;
+            
+            Graph graph = selectionModel.getSelectedGraph();
+            if (graph == null || graph.isEmpty())  return;
+            
+            List<Vertex> sVertexeces = selectionModel.getSelectedVerteces();
+            List<Link> sLinks = selectionModel.getSelectedLinks();
+            VertexItem sVertexItem = selectionModel.getSelectedVertexItem();
+            
+            // Vertex is select
+            if (sVertexeces != null && sVertexeces.size() >= 0) {
+                Vertex vertex = sVertexeces.get(0);
+
+                Vertex prevVertex = vertex.getGraph().getPrevVertex(vertex);
+                if (prevVertex == null)  return;
+
+                selectionModel.setSelected(treePath, prevVertex);
+                return;
+            }
+            // Link is select
+            if (sLinks != null && sLinks.size() >= 0) {
+                int count = sLinks.size();
+                Link link = sLinks.get(0);
+                
+                if (link.getSource().getClass() == Vertex.class ||
+                        link.getSource().getClass() == Function.class ||
+                        link.getSource().getClass() == Operation.class ||
+                        link.getSource().getClass() == Constant.class)
+                {
+                    Vertex vertex = (Vertex) link.getSource();
+                    if (vertex == null)  return;
+                    
+                    selectionModel.setSelected(treePath, vertex);
+                } else {
+                    TreePath leftTreePath = ((TreeSourcePin) link.getSource()).getTreePath();
+                    getLeftTree().setSelectionPath(leftTreePath);
+                    getLeftTree().requestFocus();
+                }
+                return;
+            }
+            // VertexItem is select
+            if (sVertexItem != null) {
+                // v razrabotke
+                return;
+            }
+                        
+            selectionModel.setSelected(treePath, 
+                    graph.getVertex(graph.getVertexCount() - 1));
+        }
+    }
+        private class UpAction extends AbstractAction {
+        public void actionPerformed(ActionEvent event) {
+            Mapper mapper = Canvas.this.getMapper();
+            SelectionModel selectionModel = getSelectionModel();
+            TreePath CurrentTreePath = selectionModel.getSelectedPath();
+            if (CurrentTreePath != null && CurrentTreePath != mapper.getRoot().getTreePath()) {
+                MapperNode currentNode = mapper.getNode(CurrentTreePath, true);
+                MapperNode prevNode = currentNode.getPrevVisibleNode();
+                if (prevNode != null && prevNode != mapper.getRoot()) {
+                    selectionModel.setSelected(prevNode.getTreePath());
+                }
+            } else if (mapper.getRoot() != null 
+                    && mapper.getRoot().getChildCount() > 0) 
+            {
+                mapper.setSelectedNode(mapper.getRoot().getChild(0));
+            }
+        }
+    }   
+    
+    private class DownAction extends AbstractAction {
+        public void actionPerformed(ActionEvent event) {
+            Mapper mapper = Canvas.this.getMapper();
+            SelectionModel selectionModel = getSelectionModel();
+            TreePath currentTreePath = selectionModel.getSelectedPath();
+            if (currentTreePath != null) {
+                MapperNode currentNode = mapper.getNode(currentTreePath, true);
+                MapperNode nextNode = currentNode.getNextVisibleNode();
+                if (nextNode != null) {
+                    selectionModel.setSelected(nextNode.getTreePath());
+                }
+            } else if (mapper.getRoot() != null 
+                    && mapper.getRoot().getChildCount() > 0) 
+            {
+                mapper.setSelectedNode(mapper.getRoot().getChild(0));
+            }
+        }
+    }
+    
+    private class UpControlAction extends AbstractAction {
+        public void actionPerformed(ActionEvent event) {
+            SelectionModel selectionModel = getSelectionModel();
+            TreePath treePath = selectionModel.getSelectedPath();
+            if (treePath == null) return;
+            
+            Graph graph = selectionModel.getSelectedGraph();
+            if (graph == null || graph.isEmpty())  return;
+            
+            List<Vertex> sVertexeces = selectionModel.getSelectedVerteces();
+            List<Link> sLinks = selectionModel.getSelectedLinks();
+            VertexItem sVertexItem = selectionModel.getSelectedVertexItem();
+            
+            // vertex is select
+            if (sVertexeces != null && sVertexeces.size() >= 0) {
+                Vertex vertex = sVertexeces.get(0) ;
+                int count = vertex.getItemCount();
+                if (count == 0) return;
+                
+                selectionModel.setSelected(treePath, vertex.getItem(count - 1));
+            }
+            // link is select
+            if (sLinks != null && sLinks.size() >= 0) {
+                return;
+            }   
+            // vertexItem is select
+            if (sVertexItem != null) {
+                Vertex vertex = sVertexItem.getVertex();
+                int index = vertex.getItemIndex(sVertexItem);
+                if (index == 0) return;
+                
+                VertexItem prevVertexItem = vertex.getItem(index - 1);
+                selectionModel.setSelected(treePath, prevVertexItem);
+            } 
+        }
+    }
+
+    private class DownControlAction extends AbstractAction {
+        public void actionPerformed(ActionEvent event) {
+            SelectionModel selectionModel = getSelectionModel();
+            TreePath treePath = selectionModel.getSelectedPath();
+            if (treePath == null) return;
+            
+            Graph graph = selectionModel.getSelectedGraph();
+            if (graph == null || graph.isEmpty())  return;
+            
+            List<Vertex> sVertexeces = selectionModel.getSelectedVerteces();
+            List<Link> sLinks = selectionModel.getSelectedLinks();
+            VertexItem sVertexItem = selectionModel.getSelectedVertexItem();
+            
+            // veretex is select
+            if (sVertexeces != null && sVertexeces.size() >= 0) {
+                Vertex vertex = sVertexeces.get(0);
+                selectionModel.setSelected(treePath, vertex.getItem(0));
+                return;
+            }
+            // link is select
+            if (sLinks != null && !sLinks.isEmpty()) {
+                return;
+            }
+            // vertexItem is select
+            if (sVertexItem != null) {
+                Vertex vertex = sVertexItem.getVertex();
+                int index = vertex.getItemIndex(sVertexItem);
+                if (index >= vertex.getItemCount() - 1) return;
+                
+                VertexItem nextVertexItem = vertex.getItem(index + 1);
+                selectionModel.setSelected(treePath, nextVertexItem);
+                return;
+            } 
+        }
+    }
+
+    private class LeftControlAction extends AbstractAction {
+        public void actionPerformed(ActionEvent e) {
+            SelectionModel selectionModel = getSelectionModel();
+            
+            TreePath treePath = selectionModel.getSelectedPath();
+            if (treePath == null) return;
+            
+            Graph graph = selectionModel.getSelectedGraph();
+            if (graph == null || graph.isEmpty()) return;
+            
+            List<Vertex> sVertexeces = selectionModel.getSelectedVerteces();
+            List<Link> sLinks = selectionModel.getSelectedLinks();
+            VertexItem sVertexItem = selectionModel.getSelectedVertexItem();
+            
+            // vertex is select
+            if (sVertexeces != null && sVertexeces.size() >= 0) {
+                Vertex vertex = sVertexeces.get(0);
+                if (vertex.getItemCount() == 0) return;
+                
+                for (int i = 0; i < vertex.getItemCount(); i++) {
+                    Link link = vertex.getItem(i).getIngoingLink();
+                    if (link != null) {
+                        selectionModel.setSelected(treePath, link);
+                        break;
+                    }
+                }
+                return;
+            }
+            // Link is select
+            if (sLinks != null && sLinks.size() >= 0) {
+                int count = sLinks.size();
+                Link link = sLinks.get(0);
+                
+                if (link.getSource().getClass() == Vertex.class ||
+                        link.getSource().getClass() == Function.class ||
+                        link.getSource().getClass() == Operation.class ||
+                        link.getSource().getClass() == Constant.class)
+                {
+                    Vertex vertex = (Vertex) link.getSource();
+                    if (vertex == null) return;
+                                                            
+                    selectionModel.setSelected(treePath, vertex);
+                } else {
+                    TreePath leftTreePath = ((TreeSourcePin) link.getSource()).getTreePath();
+                    getLeftTree().setSelectionPath(leftTreePath);
+                    getLeftTree().requestFocus();
+                }
+                return;
+            }
+            // vertexItem is select
+            if (sVertexItem != null) {
+                Link link = sVertexItem.getIngoingLink();
+                if (link == null) return;
+                
+                selectionModel.setSelected(treePath, link);
+                return;
+            }
+        }
+        
+    }
+    
+    private class RightControlAction extends AbstractAction {
+        public void actionPerformed(ActionEvent e) {
+            SelectionModel selectionModel = getSelectionModel();
+            
+            TreePath treePath = selectionModel.getSelectedPath();
+            if (treePath == null) return;
+            
+            Graph graph = selectionModel.getSelectedGraph();
+            if (graph == null || graph.isEmpty())  return;
+            
+            List<Vertex> sVertexeces = selectionModel.getSelectedVerteces();
+            List<Link> sLinks = selectionModel.getSelectedLinks();
+            VertexItem sVertexItem = selectionModel.getSelectedVertexItem();
+            
+            // vertex is select
+            if (sVertexeces != null && sVertexeces.size() >= 0)
+            {
+                Vertex vertex = sVertexeces.get(0);
+                Link link = vertex.getOutgoingLink();
+                if (link == null) return;
+                
+                selectionModel.setSelected(treePath, link);
+                return;
+            }
+            // Link is select
+            if (sLinks != null && sLinks.size() >= 0) {
+                int count = sLinks.size();
+                Link link = sLinks.get(0);
+                
+                if (link.getTarget().getClass() == VertexItem.class) {
+                    VertexItem vertexItem = (VertexItem) link.getTarget();
+                    if (vertexItem == null) return;
+                                                            
+                    selectionModel.setSelected(treePath, vertexItem);
+                } else {
+                    getRightTree().requestFocus();
+                }
+                return;
+            }
+            // vertexItem is select
+            if (sVertexItem != null) {
+                selectionModel.setSelected(treePath, sVertexItem.getVertex());
+                return;
+            }
+        }
+        
+    }
+    
+    
+    private class AutoScrollDown extends AbstractAction {
+        public void actionPerformed(ActionEvent event) {
+            if (scrollPane.getViewport() == null) {
+                return;
+            }
+
+            Insets insets = getAutoscrollInsets();
+            int x = getScrollPane().getViewport().getViewRect().x;
+            Rectangle r = new Rectangle(x, 0, 1, 1);
+            r.y = getHeight() - insets.bottom + 16 +
+                    2 * scrollPane.getVerticalScrollBar().getUnitIncrement();
+            Canvas.this.scrollRectToVisible(r);
+        }
+    }
+
+    private class AutoScrollUp extends AbstractAction {
+        public void actionPerformed(ActionEvent event) {
+            if (scrollPane.getViewport() == null) {
+                return;
+            }
+
+            Insets insets = getAutoscrollInsets();
+            int x = getScrollPane().getViewport().getViewRect().x;
+            Rectangle r = new Rectangle(x, 0, 1, 1);
+            r.y = insets.top - 16 -
+                    2 * scrollPane.getVerticalScrollBar().getUnitIncrement();
+            Canvas.this.scrollRectToVisible(r);
+        }
+    }
+    
+    private class AutoScrollLeft extends AbstractAction {
+        public void actionPerformed(ActionEvent event) {
+            if (scrollPane.getViewport() == null) {
+                return;
+            }
+
+            Insets insets = getAutoscrollInsets();
+            int y = getScrollPane().getViewport().getViewRect().y;
+            Rectangle r = new Rectangle(0, y, 1, 1);
+            r.x = insets.left - 16 -
+                    2 * scrollPane.getHorizontalScrollBar().getUnitIncrement();            
+            Canvas.this.scrollRectToVisible(r);
+        }
+    }
+    
+    private class AutoScrollRight extends AbstractAction {
+        public void actionPerformed(ActionEvent event) {
+            if (scrollPane.getViewport() == null) {
+                return;
+            }
+
+            Insets insets = getAutoscrollInsets();
+            int y = getScrollPane().getViewport().getViewRect().y;
+            Rectangle r = new Rectangle(0, y, 1, 1);
+            r.x = getWidth() - insets.right + 16 +
+                    2 * scrollPane.getHorizontalScrollBar().getUnitIncrement();            
+            Canvas.this.scrollRectToVisible(r);
+        }
     }
 }

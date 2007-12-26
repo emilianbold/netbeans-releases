@@ -19,13 +19,11 @@
 package org.netbeans.modules.soa.mappercore;
 
 import java.awt.Dimension;
-import java.awt.Rectangle;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import javax.swing.JPopupMenu;
 import javax.swing.tree.TreePath;
-import org.netbeans.modules.soa.mappercore.event.MapperSelectionEvent;
-import org.netbeans.modules.soa.mappercore.event.MapperSelectionListener;
 import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
 
@@ -139,7 +137,24 @@ public class RightTreeEventHandler extends AbstractMapperEventHandler {
             reset();
         }
     }
+    
+    @Override
+    public void mouseClicked(MouseEvent e) {
+        int y = e.getY();
+        Mapper mapper = getMapper();
+        MapperNode node = mapper.getNodeAt(y);
+        if (node != null && e.getClickCount() == 2) {
+            if (node.isLeaf()) {
+                return;
+            } else if (node.isCollapsed()) {
+                mapper.expandNode(node);
+            } else {
+                mapper.collapseNode(node);
+            }
+        }
+    }
 
+    
     private void showPopupMenu(MouseEvent event) {
         MapperContext context = getMapper().getContext();
         MapperModel model = getMapperModel();

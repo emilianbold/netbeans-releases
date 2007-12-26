@@ -581,22 +581,35 @@ class MapperNode implements GraphListener {
     
     public boolean mustDrawLine() {
         MapperNode nextNode = getNextVisibleNode(this);
-        return (this.getGraph() != null && !this.getGraph().isEmpty() ||
+        // graph or nextGraph is not Empty
+        if (this.getGraph() != null && !this.getGraph().isEmpty() ||
                     (nextNode != null && nextNode.getGraph() != null &&
-                    !nextNode.getGraph().isEmpty() )) ||
-                    (this.isSelected() || (nextNode != null &&
+                    !nextNode.getGraph().isEmpty() )) 
+        {
+            return true; 
+        }
+        // node or nextNode is Selected or dndSelected
+        if (this.isSelected() || (nextNode != null &&
                     nextNode.isSelected()) ||
                     (this.isDnDSelected() || (nextNode != null &&
-                    nextNode.isDnDSelected()))) ||
-                    this.isCollapsed() && this.getHeight() != this.getContentHeight() ||
-                    nextNode != null && nextNode.isCollapsed() && 
-                    nextNode.getHeight() != nextNode.getContentHeight(); 
+                    nextNode.isDnDSelected()))) 
+        {
+            return true;
+        }
+        // node or nextNode have [...]
+        if (isCollapsed() && getHeight() != getContentHeight() ||
+                nextNode != null && nextNode.isCollapsed() && 
+                nextNode.getHeight() != nextNode.getContentHeight())
+        {
+            return true;
+        }
+        return false;
     }
     
     public boolean mustDrawDottedLine() {
-        return getGraph() != null && !getGraph().isEmpty() || isSelected() || 
-                    isCollapsed() && getHeight() != getContentHeight();
-                     }
+        return  isCollapsed() && getHeight() != getContentHeight(); 
+    }
+    
     public MapperNode getNextVisibleNode() {
         return  getNextVisibleNode(this);
     }
@@ -605,7 +618,7 @@ class MapperNode implements GraphListener {
         return getPrevVisibleNode(this); 
     }
     
-    public MapperNode getPrevVisibleNode(MapperNode node) {
+    private MapperNode getPrevVisibleNode(MapperNode node) {
         if (node == mapper.getRoot()) {return null;}
         
         if (node == this) {

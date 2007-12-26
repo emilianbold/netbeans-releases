@@ -76,7 +76,7 @@ public class LinkToolCanvasRendererContext implements CanvasRendererContext {
         if (vertexItem.getIngoingLink() != null) {
             return false;
         }
-        
+
         if (linkTool.isActive()) {
             return linkTool.getActivePins().contains(treePath, vertexItem) 
                     && linkTool.getTargetPin() != vertexItem;

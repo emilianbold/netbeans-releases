@@ -510,6 +510,9 @@ public class Mapper extends JPanel {
             if (!load && !node.isLoaded()) {
                 return null;
             }
+            if (model.getIndexOfChild(node.getValue(), path[i]) == -1) {
+                System.out.println("Blah");
+            }
             node = node.getChild(model.getIndexOfChild(node.getValue(), path[i]));
         }
 

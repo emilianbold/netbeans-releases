@@ -20,6 +20,7 @@ package org.netbeans.modules.soa.mappercore;
 
 import java.awt.datatransfer.Transferable;
 import java.awt.event.MouseEvent;
+import javax.naming.directory.SearchResult;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.soa.mappercore.model.GraphItem;
 import org.netbeans.modules.soa.mappercore.model.Vertex;
@@ -64,14 +65,13 @@ public class CanvasEventHandler extends AbstractMapperEventHandler {
     public void mousePressed(MouseEvent e) {
         reset();
 
-        SelectionModel selectionModel = getSelectionModel();
-
         Canvas canvas = getCanvas();
-
-
+        
         if (!canvas.hasFocus()) {
             canvas.requestFocusInWindow();
         }
+
+        SelectionModel selectionModel = getSelectionModel();
 
         int y = e.getY();
         int x = e.getX();
@@ -94,7 +94,6 @@ public class CanvasEventHandler extends AbstractMapperEventHandler {
             }
 
         }
-
         this.initialEvent = e;
     }
 
@@ -140,6 +139,16 @@ public class CanvasEventHandler extends AbstractMapperEventHandler {
             if (item instanceof VertexItem) {
                 getCanvas().startEdit(searchResult.getTreePath(),
                         (VertexItem) item);
+            }
+            Mapper mapper = getMapper();
+            MapperNode node = mapper.getNodeAt(y);
+            if (node != null  && node.getGraph() != null) {
+                if (node.isGraphCollapsed()) {
+                    mapper.setExpandedGraphState(node.getTreePath(), true);
+                } else if (searchResult == null ||
+                        searchResult.getGraphItem() == null) {
+                    mapper.setExpandedGraphState(node.getTreePath(), false);
+                }
             }
         }
     }

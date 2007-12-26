@@ -28,8 +28,10 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.dnd.Autoscroll;
+import java.awt.event.ActionEvent;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -37,10 +39,14 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
+import javax.swing.KeyStroke;
 import javax.swing.ToolTipManager;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
@@ -122,6 +128,13 @@ public class LeftTree extends JTree implements
         this.addMouseListener(pupupMouseListener);
         
         ToolTipManager.sharedInstance().registerComponent(this);
+        
+        InputMap iMap = getInputMap();
+        ActionMap aMap = getActionMap();
+        
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 2),
+                "press-right-control");
+        aMap.put("press-right-control", new RightControlAction());
     }
     
     
@@ -388,4 +401,19 @@ public class LeftTree extends JTree implements
     }
     private static final int EDGE_CONNECTED = 1;
     private static final int EDGE_CONNECTED_TO_CHILD = 2;
+
+    private class RightControlAction extends AbstractAction {
+        public void actionPerformed(ActionEvent event) {
+            Mapper mapper = LeftTree.this.getMapper();
+                mapper.getCanvas().requestFocus();
+                //getSelectionPath()
+                //List<Vertex> verteces = node.getGraph().getVerteces();
+                //if (verteces == null || verteces.size() <= 0) return;
+                
+                //Vertex vertex = verteces.get(verteces.size() - 1);
+                //mapper.getSelectionModel().setSelected(treePath, vertex);
+            
+        }
+    }
+
 }

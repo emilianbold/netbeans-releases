@@ -33,6 +33,8 @@ import javax.swing.JTree;
 import javax.swing.Timer;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.soa.mappercore.dnd.*;
+import org.netbeans.modules.soa.mappercore.model.Graph;
+import org.netbeans.modules.soa.mappercore.model.GraphItem;
 import org.netbeans.modules.soa.mappercore.utils.Utils;
 
 /**
@@ -82,6 +84,7 @@ public abstract class AbstractMapperEventHandler extends MapperPropertyAccess
     public void drag(JComponent component, DropTargetDragEvent dtde) {
         autoExpand(component, dtde);
         setSelected(component, dtde);
+        setMoveOnTop(component, dtde);
         boolean processed = false;
         if (!processed) {
             processed = getLinkTool().drag(component, dtde);
@@ -245,12 +248,29 @@ public abstract class AbstractMapperEventHandler extends MapperPropertyAccess
             timer = null;
         }
     }
+
+    private void setMoveOnTop(JComponent component, DropTargetDragEvent dtde) {
+        Canvas canvas = getCanvas();
+
+        if (component == canvas) {
+            Point p = dtde.getLocation();
+            CanvasSearchResult searchResult = getCanvas().find(p.x, p.y);
+            
+            if (searchResult != null) {
+                 GraphItem selectedItem = searchResult.getGraphItem();
+                if (selectedItem != null) {
+                    selectedItem.moveOnTop();
+                }
+            }
+        }
+    }
+    
      private void setSelected(JComponent component, DropTargetDragEvent dtde) {
         Canvas canvas = getCanvas();
         RightTree rightTree = getRightTree();
-        Point point = dtde.getLocation();
         
         if (component == canvas || component == rightTree) {
+            Point point = dtde.getLocation();
             TreePath treePath = rightTree.getTreePath(point.y);
             canvas.getMapper().setSelectedDndPath(treePath);
             canvas.getMapper().repaint();

@@ -36,6 +36,7 @@ import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.List;
 import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
@@ -54,6 +55,7 @@ import org.netbeans.modules.soa.mappercore.model.Link;
 import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.graphics.VerticalGradient;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
+import org.netbeans.modules.soa.mappercore.model.Vertex;
 import org.netbeans.modules.soa.mappercore.utils.ScrollPaneWrapper;
 
 /**
@@ -61,8 +63,8 @@ import org.netbeans.modules.soa.mappercore.utils.ScrollPaneWrapper;
  * @author anjeleevich
  */
 public class RightTree extends MapperPanel implements
-        FocusListener, Autoscroll {
-
+        FocusListener, Autoscroll 
+{
     private RightTreeEventHandler eventHandler;
     private JScrollPane scrollPane;
     private ScrollPaneWrapper scrollPaneWrapper;
@@ -121,6 +123,18 @@ public class RightTree extends MapperPanel implements
         iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 2),
                 "press-right-collapseGraph");
         aMap.put("press-right-collapseGraph", new PressRightCollapseGraph());
+        
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 1), "auto-scroll-down"); 
+        aMap.put("auto-scroll-down", new AutoScrollDown());
+        
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 1), "auto-scroll-up"); 
+        aMap.put("auto-scroll-up", new AutoScrollUp());
+        
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 1), "auto-scroll-left"); 
+        aMap.put("auto-scroll-left", new AutoScrollLeft());
+        
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 1), "auto-scroll-right"); 
+        aMap.put("auto-scroll-right", new AutoScrollRight());
         
         ToolTipManager.sharedInstance().registerComponent(this);
     }
@@ -564,7 +578,6 @@ public class RightTree extends MapperPanel implements
             if (e.isPopupTrigger()) {
                 return;
             }
-
             int y = e.getY();
             int x = e.getX();
 
@@ -691,107 +704,171 @@ public class RightTree extends MapperPanel implements
             Mapper mapper = RightTree.this.getMapper();
             SelectionModel selectionModel = getSelectionModel();
             TreePath CurrentTreePath = selectionModel.getSelectedPath();
-            if (CurrentTreePath != null) {
+            if (CurrentTreePath != null && CurrentTreePath != mapper.getRoot().getTreePath()) {
                 MapperNode currentNode = mapper.getNode(CurrentTreePath, true);
                 MapperNode prevNode = currentNode.getPrevVisibleNode();
                 if (prevNode != null && prevNode != mapper.getRoot()) {
-                    TreePath prevTreePath = prevNode.getTreePath();
-                    if (CurrentTreePath != null && prevTreePath != null) {
-                        selectionModel.setSelected(prevTreePath);
-                    }
+                    selectionModel.setSelected(prevNode.getTreePath());
                 }
+            } else if (mapper.getRoot() != null 
+                    && mapper.getRoot().getChildCount() > 0) 
+            {
+                mapper.setSelectedNode(mapper.getRoot().getChild(0));
             }
         }
     }   
     
     private class MoveSelectionDown extends AbstractAction {
-            public void actionPerformed(ActionEvent event) {
-                Mapper mapper = RightTree.this.getMapper();
-                SelectionModel selectionModel = getSelectionModel();
-                TreePath CurrentTreePath = selectionModel.getSelectedPath();
-                if (CurrentTreePath != null) {
-                    MapperNode currentNode = mapper.getNode(CurrentTreePath, true);
-                    MapperNode nextNode = currentNode.getNextVisibleNode();
-                    if (nextNode != null) {
-                        TreePath nextTreePath = nextNode.getTreePath();
-                        if (CurrentTreePath != null && nextTreePath != null) {
-                             selectionModel.setSelected(nextTreePath);
-                        }
-                    }
+        public void actionPerformed(ActionEvent event) {
+            Mapper mapper = RightTree.this.getMapper();
+            SelectionModel selectionModel = getSelectionModel();
+            TreePath currentTreePath = selectionModel.getSelectedPath();
+            if (currentTreePath != null) {
+                MapperNode currentNode = mapper.getNode(currentTreePath, true);
+                MapperNode nextNode = currentNode.getNextVisibleNode();
+                if (nextNode != null) {
+                    selectionModel.setSelected(nextNode.getTreePath());
                 }
+            } else if (mapper.getRoot() != null 
+                    && mapper.getRoot().getChildCount() > 0) 
+            {
+                mapper.setSelectedNode(mapper.getRoot().getChild(0));
             }
         }
+    }
     
     private class PressLeftExpand extends AbstractAction {
         public void actionPerformed(ActionEvent event) {
             Mapper mapper = RightTree.this.getMapper();
             SelectionModel selectionModel = getSelectionModel();
-            TreePath CurrentTreePath = selectionModel.getSelectedPath();
-            MapperNode currentNode = mapper.getNode(CurrentTreePath, true);
-            if (CurrentTreePath != null) {
+            TreePath currentTreePath = selectionModel.getSelectedPath();
+            MapperNode currentNode = mapper.getNode(currentTreePath, true);
+            if (currentTreePath != null) {
                 if (currentNode.isLeaf()) {
                     if (currentNode.getNextVisibleNode() != null) {
-                        selectionModel.setSelected(currentNode.getNextVisibleNode().getTreePath());
+                        mapper.setSelectedNode(currentNode.getNextVisibleNode());
                     }
-                } else {
-                    if (currentNode.isCollapsed()) {
-                        mapper.expandNode(currentNode);
-                    } else {
-                        if (currentNode.getChildCount() > 0) {
-                            selectionModel.setSelected(currentNode.getChild(0).getTreePath());
-                        }
-                    }
+                } else if (currentNode.isCollapsed()) {
+                    mapper.expandNode(currentNode);
+                } else if (currentNode.getChildCount() > 0) {
+                    mapper.setSelectedNode(currentNode.getChild(0));
                 }
+            } else if (mapper.getRoot() != null 
+                    && mapper.getRoot().getChildCount() > 0) 
+            {
+                mapper.setSelectedNode(mapper.getRoot().getChild(0));
             }
         }
     }
     
     private class PressRightCollapse extends AbstractAction {
-            public void actionPerformed(ActionEvent event) {
-                Mapper mapper = RightTree.this.getMapper();
-                SelectionModel selectionModel = getSelectionModel();
-                TreePath CurrentTreePath = selectionModel.getSelectedPath();
-                MapperNode currentNode = mapper.getNode(CurrentTreePath, true);
-                if (CurrentTreePath != null ) {
-                    if ( currentNode.isExpanded() && !currentNode.isLeaf()) {
-                        mapper.collapseNode(currentNode);
-                    } else {
-                        if (currentNode.getParent() != mapper.getRoot()) {
-                            selectionModel.setSelected(currentNode.getParent().getTreePath());
-                        }
-                    }
-                                 
+        public void actionPerformed(ActionEvent event) {
+            Mapper mapper = RightTree.this.getMapper();
+            SelectionModel selectionModel = getSelectionModel();
+            TreePath treePath = selectionModel.getSelectedPath();
+            MapperNode node = mapper.getNode(treePath, true);
+            if (treePath != null && treePath != mapper.getRoot().getTreePath()) {
+                if (node.isExpanded() && !node.isLeaf()) {
+                    mapper.collapseNode(node);
+                } else if (node.getParent() != mapper.getRoot()) {
+                    mapper.setSelectedNode(node.getParent());  
                 }
+            } else if (mapper.getRoot() != null 
+                    && mapper.getRoot().getChildCount() > 0) 
+            {
+                mapper.setSelectedNode(mapper.getRoot().getChild(0));
             }
         }
+    }
     
-        private class PressLeftExpandGraph extends AbstractAction {
-            public void actionPerformed(ActionEvent event) {
-                Mapper mapper = RightTree.this.getMapper();
-                SelectionModel selectionModel = getSelectionModel();
-                TreePath CurrentTreePath = selectionModel.getSelectedPath();
-                MapperNode currentNode = mapper.getNode(CurrentTreePath, true);
-                if (CurrentTreePath != null) {
-                    
-                    if (currentNode.isGraphCollapsed()) { 
-                        currentNode.setGraphExpanded(true);
-                    }
-                 }
+    private class PressLeftExpandGraph extends AbstractAction {
+        public void actionPerformed(ActionEvent event) {
+            TreePath treePath = getSelectionModel().getSelectedPath();
+            if (treePath == null) return;
+            
+            Mapper mapper = RightTree.this.getMapper();
+            MapperNode node = mapper.getNode(treePath, true);
+            if (node.isGraphCollapsed() && !node.isLeaf()) {
+                mapper.setExpandedGraphState(node.getTreePath(), true);
+            } else {
+                getCanvas().requestFocus();
+                List<Vertex> verteces = node.getGraph().getVerteces();
+                if (verteces == null || verteces.size() <= 0) return;
+                
+                Vertex vertex = verteces.get(verteces.size() - 1);
+                mapper.getSelectionModel().setSelected(treePath, vertex);
             }
         }
+    }
                       
-        private class PressRightCollapseGraph extends AbstractAction {
-            public void actionPerformed(ActionEvent event) {
-                Mapper mapper = RightTree.this.getMapper();
-                SelectionModel selectionModel = getSelectionModel();
-                TreePath CurrentTreePath = selectionModel.getSelectedPath();
-                MapperNode currentNode = mapper.getNode(CurrentTreePath, true);
-                if (CurrentTreePath != null) {
-                    
-                    if (currentNode.isGraphExpanded()) { 
-                        currentNode.setGraphCollapsed(true);
-                    }
-                 }
+    private class PressRightCollapseGraph extends AbstractAction {
+        public void actionPerformed(ActionEvent event) {
+            Mapper mapper = RightTree.this.getMapper();
+            TreePath treePath = getSelectionModel().getSelectedPath();
+            MapperNode node = mapper.getNode(treePath, true);
+            if (treePath != null && node.isGraphExpanded()) {
+                mapper.setExpandedGraphState(treePath, false); 
             }
         }
+    }
+    
+    private class AutoScrollDown extends AbstractAction {
+        public void actionPerformed(ActionEvent event) {
+            if (scrollPane.getViewport() == null) {
+                return;
+            }
+
+            Insets insets = getAutoscrollInsets();
+            int x = getScrollPane().getViewport().getViewRect().x;
+            Rectangle r = new Rectangle(x, 0, 1, 1);
+            r.y = getHeight() - insets.bottom + 16 +
+                    scrollPane.getVerticalScrollBar().getUnitIncrement();
+            RightTree.this.scrollRectToVisible(r);
+        }
+    }
+
+    private class AutoScrollUp extends AbstractAction {
+        public void actionPerformed(ActionEvent event) {
+            if (scrollPane.getViewport() == null) {
+                return;
+            }
+
+            Insets insets = getAutoscrollInsets();
+            int x = getScrollPane().getViewport().getViewRect().x;
+            Rectangle r = new Rectangle(x, 0, 1, 1);
+            r.y = insets.top - 16 -
+                    scrollPane.getVerticalScrollBar().getUnitIncrement();
+            RightTree.this.scrollRectToVisible(r);
+        }
+    }
+    
+    private class AutoScrollLeft extends AbstractAction {
+        public void actionPerformed(ActionEvent event) {
+            if (scrollPane.getViewport() == null) {
+                return;
+            }
+
+            Insets insets = getAutoscrollInsets();
+            int y = getScrollPane().getViewport().getViewRect().y;
+            Rectangle r = new Rectangle(0, y, 1, 1);
+            r.x = insets.left - 16 -
+                    scrollPane.getHorizontalScrollBar().getUnitIncrement();            
+            RightTree.this.scrollRectToVisible(r);
+        }
+    }
+    
+    private class AutoScrollRight extends AbstractAction {
+        public void actionPerformed(ActionEvent event) {
+            if (scrollPane.getViewport() == null) {
+                return;
+            }
+
+            Insets insets = getAutoscrollInsets();
+            int y = getScrollPane().getViewport().getViewRect().y;
+            Rectangle r = new Rectangle(0, y, 1, 1);
+            r.x = getWidth() - insets.right + 16 +
+                    scrollPane.getHorizontalScrollBar().getUnitIncrement();            
+            RightTree.this.scrollRectToVisible(r);
+        }
+    }
 }
