@@ -26,7 +26,6 @@ import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import javax.swing.Action;
 import javax.swing.Box;
 import javax.swing.JComboBox;
 import javax.swing.JToggleButton;
@@ -291,6 +290,12 @@ public class DesignerMultiViewElement extends TopComponent
 //        addUndoManager();
         myDesignView.getView().requestFocusInWindow();
         myDesignView.getModel().setActivated();
+        
+        // push NodeAction.Listener update context state
+        Node[] aNodes = getActivatedNodes();
+        setActivatedNodes(new Node[0]);
+        setActivatedNodes(aNodes);
+        
         getValidationController().triggerValidation( true );
     }
     
