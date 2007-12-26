@@ -55,7 +55,6 @@
     <property name="modules.cvs.date" value="-D now"/>
     <property name="modules.cvs.modules" value="
         enterprise
-        nbbuild
         print
     "/>
 
