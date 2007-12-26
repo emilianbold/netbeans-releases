@@ -959,7 +959,7 @@ public class Canvas extends MapperPanel implements VertexCanvas,
             VertexItem sVertexItem = selectionModel.getSelectedVertexItem();
             
             // Vertex is select
-            if (sVertexeces != null && sVertexeces.size() >= 0) {
+            if (sVertexeces != null && sVertexeces.size() > 0) {
                 int count = sVertexeces.size();
                 Vertex vertex = sVertexeces.get(count - 1);
                 Vertex nextVertex = vertex.getGraph().getNextVertex(vertex);
@@ -969,7 +969,7 @@ public class Canvas extends MapperPanel implements VertexCanvas,
                 return;
             }
             // Link is select
-            if (sLinks != null && sLinks.size() >= 0) {
+            if (sLinks != null && sLinks.size() > 0) {
                 int count = sLinks.size();
                 Link link = sLinks.get(0);
                 
@@ -1011,7 +1011,7 @@ public class Canvas extends MapperPanel implements VertexCanvas,
             VertexItem sVertexItem = selectionModel.getSelectedVertexItem();
             
             // Vertex is select
-            if (sVertexeces != null && sVertexeces.size() >= 0) {
+            if (sVertexeces != null && sVertexeces.size() > 0) {
                 Vertex vertex = sVertexeces.get(0);
 
                 Vertex prevVertex = vertex.getGraph().getPrevVertex(vertex);
@@ -1021,7 +1021,7 @@ public class Canvas extends MapperPanel implements VertexCanvas,
                 return;
             }
             // Link is select
-            if (sLinks != null && sLinks.size() >= 0) {
+            if (sLinks != null && sLinks.size() > 0) {
                 int count = sLinks.size();
                 Link link = sLinks.get(0);
                 
@@ -1103,7 +1103,7 @@ public class Canvas extends MapperPanel implements VertexCanvas,
             VertexItem sVertexItem = selectionModel.getSelectedVertexItem();
             
             // vertex is select
-            if (sVertexeces != null && sVertexeces.size() >= 0) {
+            if (sVertexeces != null && sVertexeces.size() > 0) {
                 Vertex vertex = sVertexeces.get(0) ;
                 int count = vertex.getItemCount();
                 if (count == 0) return;
@@ -1111,7 +1111,7 @@ public class Canvas extends MapperPanel implements VertexCanvas,
                 selectionModel.setSelected(treePath, vertex.getItem(count - 1));
             }
             // link is select
-            if (sLinks != null && sLinks.size() >= 0) {
+            if (sLinks != null && sLinks.size() > 0) {
                 return;
             }   
             // vertexItem is select
@@ -1140,13 +1140,13 @@ public class Canvas extends MapperPanel implements VertexCanvas,
             VertexItem sVertexItem = selectionModel.getSelectedVertexItem();
             
             // veretex is select
-            if (sVertexeces != null && sVertexeces.size() >= 0) {
+            if (sVertexeces != null && sVertexeces.size() > 0) {
                 Vertex vertex = sVertexeces.get(0);
                 selectionModel.setSelected(treePath, vertex.getItem(0));
                 return;
             }
             // link is select
-            if (sLinks != null && !sLinks.isEmpty()) {
+            if (sLinks != null && sLinks.size() > 0) {
                 return;
             }
             // vertexItem is select
@@ -1177,7 +1177,7 @@ public class Canvas extends MapperPanel implements VertexCanvas,
             VertexItem sVertexItem = selectionModel.getSelectedVertexItem();
             
             // vertex is select
-            if (sVertexeces != null && sVertexeces.size() >= 0) {
+            if (sVertexeces != null && sVertexeces.size() > 0) {
                 Vertex vertex = sVertexeces.get(0);
                 if (vertex.getItemCount() == 0) return;
                 
@@ -1191,7 +1191,7 @@ public class Canvas extends MapperPanel implements VertexCanvas,
                 return;
             }
             // Link is select
-            if (sLinks != null && sLinks.size() >= 0) {
+            if (sLinks != null && sLinks.size() > 0) {
                 int count = sLinks.size();
                 Link link = sLinks.get(0);
                 
