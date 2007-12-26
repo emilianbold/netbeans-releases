@@ -52,6 +52,7 @@ import java.util.Arrays;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
+import org.apache.tools.ant.taskdefs.ExecTask;
 import org.apache.tools.ant.util.FileUtils;
 
 /**
@@ -145,31 +146,45 @@ public class RegisterExternalHook extends Task {
                 String binary;
                 while ((binary = r.readLine()) != null) {
                     File f = new File(root, binary);
+                    log("Examining: " + f, Project.MSG_DEBUG);
                     if (!f.isFile()) {
+                        log("No such file checked out: " + f, Project.MSG_VERBOSE);
+                        doCheckout = true; // in case raw files got deleted last time
                         continue;
                     }
+                    byte[] rawheader = "<<<EXTERNAL ".getBytes();
+                    byte[] buf = new byte[rawheader.length];
                     InputStream is = new FileInputStream(f);
                     try {
-                        byte[] rawheader = "<<<EXTERNAL ".getBytes();
-                        byte[] buf = new byte[rawheader.length];
                         is.read(buf);
-                        if (Arrays.equals(buf, rawheader)) {
-                            f.delete();
-                            doCheckout = true;
-                        }
                     } finally {
                         is.close();
+                    }
+                    if (Arrays.equals(buf, rawheader)) {
+                        if (!f.delete()) {
+                            throw new IOException("Failed to delete " + f);
+                        }
+                        doCheckout = true;
+                    } else {
+                        log("Does not look like a raw file: " + f, Project.MSG_VERBOSE);
                     }
                 }
                 if (doCheckout) {
                     log("Will check out external binaries fresh");
                     log("(This could take a while as binaries are downloaded into your cache.)");
-                    new ProcessBuilder("hg", "checkout").directory(repo).start().waitFor();
+                    ExecTask x = (ExecTask) getProject().createTask("exec");
+                    x.setProject(getProject());
+                    x.setExecutable("hg");
+                    x.createArg().setValue("checkout");
+                    x.setDir(repo);
+                    x.setFailonerror(true);
+                    x.init();
+                    x.setLocation(getLocation());
+                    x.execute();
                 }
             }
         } catch (IOException x) {
-            throw new BuildException(x, getLocation());
-        } catch (InterruptedException x) {
+            hookInstalled.delete(); // try again next time
             throw new BuildException(x, getLocation());
         }
     }
