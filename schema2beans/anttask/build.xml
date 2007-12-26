@@ -53,11 +53,10 @@ made subject to such option by the copyright holder.
   </target>
 
   <target name="compile">
-    <property name="ant.jar" value="${ant.home}/lib/ant.jar"/>
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" target="1.4" source="1.4" >
 	  <classpath>
                 <!-- cmdline Ant -->
-                <pathelement location="${ant.jar}"/>
+                <pathelement location="${ant.core.lib}"/>
                 <!-- Ant in NB -->
                 <!-- Note: in NB 4.0, ${ant.home}/lib/ant.jar will work as is -->
                 <pathelement path="${netbeans.library.path}"/>
