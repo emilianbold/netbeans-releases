@@ -224,11 +224,13 @@ public class ImageViewer extends CloneableTopComponent {
             }
 
         };
+        // vlv: print
+        panel.putClientProperty(java.awt.print.Printable.class, getToolTipText());
+
         storedImage.setImageObserver(panel);
         panel.setPreferredSize(new Dimension(storedImage.getIconWidth(), storedImage.getIconHeight() ));
-        JScrollPane scroll = new JScrollPane(panel);
-        
-        return scroll;
+
+        return new JScrollPane(panel);
     }
     
     /**
