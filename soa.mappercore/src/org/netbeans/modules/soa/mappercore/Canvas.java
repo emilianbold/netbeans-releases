@@ -344,7 +344,7 @@ public class Canvas extends MapperPanel implements VertexCanvas,
         }
     }
 
-    public void paintNodeLinks(MapperNode node, boolean selectedFilter,
+    void paintNodeLinks(MapperNode node, boolean selectedFilter,
             int nodeY, Graphics2D g2, CanvasRendererContext rendererContext) {
         boolean nodeIsSelected = node.isSelected();
         int step = rendererContext.getStep();
@@ -676,7 +676,7 @@ public class Canvas extends MapperPanel implements VertexCanvas,
     }
     
 
-    public void paintNodeVerteces(MapperNode node, boolean selectedFilter,
+    void paintNodeVerteces(MapperNode node, boolean selectedFilter,
             int nodeY, Graphics2D g2, CanvasRendererContext rendererContext) {
         boolean nodeIsSelected = Utils.equal(getSelectionModel().getSelectedPath(), node.getTreePath());
 
