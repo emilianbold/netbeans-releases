@@ -68,7 +68,7 @@ public class TestSingleFileStorage extends BaseTest {
 	
 	storageFile = new File("/tmp/sfs.dat"); // NOI18N
 	System.out.printf("Testing FileStorage. Storage file: %s RWAccess: %d\n", storageFile.getAbsolutePath(), -1 /*Stats.fileRWAccess*/); // NOI18N
-	sfs = FileStorage.create(storageFile);
+	sfs = FileStorage.create(storageFile.getAbsolutePath());
 	
 	simpleTest1();
 	simpleTest2();
@@ -84,7 +84,7 @@ public class TestSingleFileStorage extends BaseTest {
 	
 	System.out.printf("Compacting...\n"); // NOI18N
 	long t = System.currentTimeMillis();
-	sfs.defragment();
+	sfs.maintenance(-1);
 	t = System.currentTimeMillis() - t;
 	System.out.printf("Compacting took %d seconds\n", t/1000); // NOI18N
 	
@@ -131,7 +131,7 @@ public class TestSingleFileStorage extends BaseTest {
 	TestObject obj2 = new TestObject("TestObject2b", "aaa", "bb", "c"); // NOI18N
 	testWriteAndReadImmediately(obj2); // NOI18N
 	sfs.dump(System.out);
-	sfs.defragment();
+	sfs.maintenance(-1);
 	sfs.dump(System.out);
 	testRead(obj1);
 	testRead(obj2);
@@ -166,7 +166,7 @@ public class TestSingleFileStorage extends BaseTest {
 	readCycle(objects);
 	
 	System.out.printf("Compacting (size %d)...\n", sfs.getSize()); // NOI18N
-	sfs.defragment();
+	sfs.maintenance(-1);
 	System.out.printf("\tCompacting (size %d) done\n", sfs.getSize()); // NOI18N
 	
 	readCycle(objects);
@@ -249,7 +249,7 @@ public class TestSingleFileStorage extends BaseTest {
 
     private void put(TestObject obj) throws IOException {
 	if( verbose ) System.out.printf("Putting %s\n        %s\n", obj.key, obj.toString()); // NOI18N
-	sfs.put(obj.key, obj);
+	sfs.write(obj.key, obj);
     }
     
     private TestObject get(Key key) throws IOException {

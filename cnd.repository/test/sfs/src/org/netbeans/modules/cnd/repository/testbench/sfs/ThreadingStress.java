@@ -114,14 +114,14 @@ public class ThreadingStress extends BaseTest {
 	    System.out.printf("%s: starting write cycle %d \n", Thread.currentThread().getName(), cycleId); // NOI18N
 	    for (writtenThisCycle = 0; writtenThisCycle < objects.length; writtenThisCycle++) {
 		TestObject obj = objects[writtenThisCycle];
-		sfs.put(obj.getKey(), obj);
+		sfs.write(obj.getKey(), obj);
 	    }
 	    if( compact ) {
 		status = WriterStatus.Defragmenting;
 		long time = (cycleId % 2 == 0) ? 1000 : 0;
 		String kind = (time == 0) ? "Full" : "Partial"; // NOI18N
 		System.out.printf("%s compacting (cycle %d size %d)...\n", kind, cycleId, sfs.getSize()); // NOI18N
-		sfs.defragment(time);
+		sfs.maintenance(time);
 		System.out.printf("\t%s compacting (cycle %d size %d) done\n", kind, cycleId, sfs.getSize()); // NOI18N
 	    }
 	}
@@ -166,7 +166,7 @@ public class ThreadingStress extends BaseTest {
 	
 	File storageFile = new File("/tmp/stress.dat"); // NOI18N
 	System.out.printf("Testing FileStorage threading. Storage file: %s\n", storageFile.getAbsolutePath()); // NOI18N
-	sfs = FileStorage.create(storageFile);
+	sfs = FileStorage.create(storageFile.getAbsolutePath());
 
 	writer = new Writer();
 	readers = new ArrayList<Reader>();
