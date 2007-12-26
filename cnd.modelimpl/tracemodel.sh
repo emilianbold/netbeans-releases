@@ -97,6 +97,7 @@ function classpath() {
     CP=${CP}${path_sep}${cnddist}/modules/org-netbeans-modules-cnd-folding.jar
     CP=${CP}${path_sep}${cnddist}/modules/org-netbeans-modules-cnd-repository-api.jar
     CP=${CP}${path_sep}${cnddist}/modules/org-netbeans-modules-cnd-repository.jar
+    CP=${CP}${path_sep}${cnddist}/modules/org-netbeans-modules-cnd-utils.jar
 
     XREF_CP=""
     if [ -n "${XREF}" ]; then
