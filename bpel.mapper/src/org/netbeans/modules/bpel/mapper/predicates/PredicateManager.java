@@ -72,6 +72,13 @@ public class PredicateManager {
     }
     
     public void addPredicate(List<Object> parentPath, AbstractPredicate pred) {
+        for (CachedPredicate cPred : mPredicates) {
+            if (cPred.hasSameLocation(parentPath) && cPred.hasSamePredicate(pred)) {
+                // the same predicate already in cache
+                return;
+            }
+        }
+        //
         CachedPredicate cPredicate = new CachedPredicate(parentPath, pred);
         mPredicates.add(cPredicate);
     }
@@ -187,20 +194,29 @@ public class PredicateManager {
                     pComp.hasSamePredicates(predArr);
         }
         
-        public boolean hasSameParams(AbstractPredicate pred) {
+        public boolean hasSamePredicate(AbstractPredicate pred) {
             AbstractPredicate pComp = getPredicate();
             return pComp.equals(pred);
         }
         
         public boolean hasSameLocation(RestartableIterator parentPathItr) {
             parentPathItr.restart();
+            return hasSameLocationImpl(parentPathItr);
+        }
+        
+        public boolean hasSameLocation(List<Object> parentPath) {
+            Iterator externalItr = parentPath.iterator();
+            return hasSameLocationImpl(externalItr);
+        }
+        
+        private boolean hasSameLocationImpl(Iterator externalItr) {
             //
             Iterator internalItr = mParentPath.iterator();
             boolean theSame = true;
-            while (parentPathItr.hasNext() && internalItr.hasNext()) {
-                Object parentPathStep = parentPathItr.next();
+            while (externalItr.hasNext() && internalItr.hasNext()) {
+                Object externalPathStep = externalItr.next();
                 Object internalPathStep = internalItr.next();
-                if (!parentPathStep.equals(internalPathStep)) {
+                if (!externalPathStep.equals(internalPathStep)) {
                     theSame = false;
                     break;
                 }
