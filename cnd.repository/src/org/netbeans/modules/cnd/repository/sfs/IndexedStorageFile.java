@@ -41,6 +41,10 @@
 
 package org.netbeans.modules.cnd.repository.sfs;
 
+import org.netbeans.modules.cnd.repository.sfs.index.FileIndexFactory;
+import org.netbeans.modules.cnd.repository.sfs.index.SimpleFileIndex;
+import org.netbeans.modules.cnd.repository.sfs.index.FileIndex;
+import org.netbeans.modules.cnd.repository.sfs.index.ChunkInfo;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;

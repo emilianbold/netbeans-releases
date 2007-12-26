@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.repository.sfs;
 
+import org.netbeans.modules.cnd.repository.sfs.index.ChunkInfo;
 import java.io.*;
 import java.util.HashMap;
 import java.util.Iterator;
