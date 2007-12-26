@@ -56,9 +56,14 @@ public class PartnerLinkFilterButton extends JToggleButton
     
     
     private void updateView(){
+        boolean showPLs = isSelected();
+        designView.getConsumersView().setVisible(showPLs);
+        designView.getProvidersView().setVisible(showPLs);
+        
         designView.reloadModel();
         designView.diagramChanged();
         designView.getValidationDecorationProvider().updateDecorations();
+        
     }
     
     
