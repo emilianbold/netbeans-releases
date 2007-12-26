@@ -42,7 +42,8 @@
 <project name="sierra" default="all" basedir=".">
     <import file="build.pro"/>
     
-    <target name="all" depends="init,get-netbeans,run-daily,get-modules,clean,build-fcs,create-zip-init,create-zip,create-zip-fcs,build-dev,create-zip-dev"/>
+    <target name="all" depends="init,get-modules,run-daily,get-netbeans,clean,build-and-create"/>
+    <target name="build-and-create" depends="build-fcs,create-zip-init,create-zip,create-zip-fcs,build-dev,create-zip-dev"/>
     
     <target name="init">
         <property name="env.BUILD_NUMBER" value=""/>
