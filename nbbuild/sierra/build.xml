@@ -73,11 +73,11 @@
     </target>
 
     <target name="get-modules">
-        <cvs package="${modules.cvs.modules}" cvsRoot="${modules.cvs.root}" dest="${home}" command="-q co -P ${modules.cvs.branch} ${modules.cvs.date}" failonerror="true"/>
+        <cvs package="${modules.cvs.modules}" cvsRoot="${modules.cvs.root}" dest="${home}" command="-q co -P ${modules.cvs.branch}" failonerror="true"/>
     </target>
 
     <target name="get-sources">
-        <cvs package="${sources.cvs.modules}" cvsRoot="${sources.cvs.root}" dest="${home}" command="-q co -P ${sources.cvs.branch} ${sources.cvs.date}" failonerror="true"/>
+        <cvs package="${sources.cvs.modules}" cvsRoot="${sources.cvs.root}" dest="${home}" command="-q co -P ${sources.cvs.branch}" failonerror="true"/>
     </target>
 
     <!-- zip -->
