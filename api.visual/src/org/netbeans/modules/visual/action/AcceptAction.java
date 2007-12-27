@@ -58,6 +58,19 @@ public final class AcceptAction extends WidgetAction.Adapter {
         this.provider = provider;
     }
 
+    public State dragEnter (Widget widget, WidgetDropTargetDragEvent event) {
+        ConnectorState acceptable = provider.isAcceptable (widget, event.getPoint (), event.getTransferable ());
+
+        if (acceptable == ConnectorState.ACCEPT) {
+            event.acceptDrag (DnDConstants.ACTION_COPY_OR_MOVE);
+            return State.CONSUMED;
+        } else if (acceptable == ConnectorState.REJECT_AND_STOP) {
+            event.rejectDrag ();
+            return State.CONSUMED;
+        }
+        return State.REJECTED;
+    }
+
     public State dragOver (Widget widget, WidgetDropTargetDragEvent event) {
         ConnectorState acceptable = provider.isAcceptable (widget, event.getPoint (), event.getTransferable ());
 
