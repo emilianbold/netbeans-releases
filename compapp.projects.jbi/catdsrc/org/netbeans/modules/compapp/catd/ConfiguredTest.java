@@ -96,9 +96,9 @@ import javax.xml.transform.TransformerException;
 import javax.xml.parsers.ParserConfigurationException;
 import junit.framework.TestCase;
 import junit.framework.TestResult;
-import org.custommonkey.xmlunit.Diff;
-import org.custommonkey.xmlunit.DifferenceListener;
-import org.custommonkey.xmlunit.IgnoreTextAndAttributeValuesDifferenceListener;
+//import org.custommonkey.xmlunit.Diff;
+//import org.custommonkey.xmlunit.DifferenceListener;
+//import org.custommonkey.xmlunit.IgnoreTextAndAttributeValuesDifferenceListener;
 import org.xml.sax.SAXException;
 import org.w3c.dom.Node;
 import org.w3c.dom.Element;
@@ -313,11 +313,11 @@ public class ConfiguredTest extends TestCase {
     }
 
     protected static String stackTraceElementToString( StackTraceElement [] ste ) {
-    	String s = "";
-    	for ( int i = 0; i < ste.length; i++ ) {
-    	    s = s  + ste[i].toString() + "\n";
-    	}
-    	return s;
+        String s = "";
+        for ( int i = 0; i < ste.length; i++ ) {
+            s = s  + ste[i].toString() + "\n";
+        }
+        return s;
     }
     
     protected static void initSuite(String testSuitePath, String suiteName ) throws Exception {
@@ -328,7 +328,7 @@ public class ConfiguredTest extends TestCase {
     }
     
     protected static void initTest(String testSuitePath, String suiteName, String testName ) throws Exception {
-    	String testDir = testSuitePath + File.separator + suiteName + File.separator + testName;
+        String testDir = testSuitePath + File.separator + suiteName + File.separator + testName;
         boolean success = (new File(testDir)).mkdir();
         if ( !success ) {
             throw new Exception("Failed to create directory " + testDir);
@@ -337,7 +337,7 @@ public class ConfiguredTest extends TestCase {
     
     protected static void copyTestResourceFile(File srcFile, File destFile)  throws Exception {
 
-    	InputStream in = null;
+        InputStream in = null;
         OutputStream out = null;
 
         boolean isExists = destFile.exists();
@@ -345,8 +345,8 @@ public class ConfiguredTest extends TestCase {
             destFile.delete();
         }
         destFile.createNewFile();
-		
-    	try {
+        
+        try {
 
             in = new FileInputStream(srcFile);
             out = new FileOutputStream(destFile);
@@ -359,7 +359,7 @@ public class ConfiguredTest extends TestCase {
             }
             out.close();
             in.close();
-    	} catch ( Throwable th ) {
+        } catch ( Throwable th ) {
             try { 
                 if ( out != null ) {
                         out.close();
@@ -369,7 +369,7 @@ public class ConfiguredTest extends TestCase {
                 }
             } catch ( Throwable th2 ) {
             }
-    	}
+        }
     }
 
     protected static void writeStringToFile(File destFile, String content) throws Exception  {
@@ -383,7 +383,7 @@ public class ConfiguredTest extends TestCase {
         OutputStream out = null;
         OutputStreamWriter ow = null;
 
-    	try {
+        try {
 
             out = new FileOutputStream(destFile);
             ow = new OutputStreamWriter(out);
@@ -393,7 +393,7 @@ public class ConfiguredTest extends TestCase {
             ow.close();
 
             out.close();
-    	} catch ( Throwable th ) {
+        } catch ( Throwable th ) {
             try { 
                 if (out != null) {
                     out.close();
@@ -401,9 +401,9 @@ public class ConfiguredTest extends TestCase {
                 if (ow != null) {
                     ow.close();
                 }
-            } catch ( Throwable th2 ) {    			
-            }    		
-    	}
+            } catch ( Throwable th2 ) {             
+            }           
+        }
     }
     
     protected static void logResultsForBuild(Properties properties, String suitePath, String suiteName, String testName, String value, String errorString) throws Exception {    
@@ -414,12 +414,12 @@ public class ConfiguredTest extends TestCase {
             }
         } catch ( Exception e) {
             throw e;
-    	}
+        }
     }
 
     protected static void logResults(Properties properties, String suitePath, String suiteName, String testName, String aValue, String errorString) throws Exception {
-    	// first, copy all the files to a given dir 
-    	String destDir = suitePath + File.separator + suiteName + File.separator + testName;
+        // first, copy all the files to a given dir 
+        String destDir = suitePath + File.separator + suiteName + File.separator + testName;
         String srcDir = (String)properties.get("absoluteinputdir");
 
         File source = new File(srcDir);
@@ -441,12 +441,12 @@ public class ConfiguredTest extends TestCase {
             writeStringToFile(errorFile, errorString);
         }
         
-    	// Comment the cycle part. It will be used Later
-    	//String valuePropertyFile = mSuitePath + File.separator + mCycle + "." + value + ".properties";
-    	String valuePropertyFile = suitePath + File.separator + aValue + ".properties";
-    	    	
-    	// create one if is does not exists
-    	boolean exists = (new File(valuePropertyFile)).exists();
+        // Comment the cycle part. It will be used Later
+        //String valuePropertyFile = mSuitePath + File.separator + mCycle + "." + value + ".properties";
+        String valuePropertyFile = suitePath + File.separator + aValue + ".properties";
+                
+        // create one if is does not exists
+        boolean exists = (new File(valuePropertyFile)).exists();
         if (exists) {
  
         } else {
@@ -994,7 +994,7 @@ public class ConfiguredTest extends TestCase {
             Iterator itr =  properties.entrySet().iterator();
 
             while ( itr.hasNext() ) {
-            	Map<String, String> prop = (Map<String, String>)((Map.Entry)itr.next()).getValue();                
+                Map<String, String> prop = (Map<String, String>)((Map.Entry)itr.next()).getValue();                
                 individualPropMaps.add(prop);
             }    
             
@@ -2235,7 +2235,7 @@ public class ConfiguredTest extends TestCase {
                     System.out.println(logPrefix + " Success: response matches expected output.");
                 }
             }
-        } else if (comparisonType.equals(COMPARISON_TYPE_SKELETON)) {
+        }/* else if (comparisonType.equals(COMPARISON_TYPE_SKELETON)) {
             DifferenceListener myDifferenceListener = new IgnoreTextAndAttributeValuesDifferenceListener();
             Diff difference = new Diff(controlXML, testXML);
             difference.overrideDifferenceListener(myDifferenceListener);
@@ -2250,7 +2250,7 @@ public class ConfiguredTest extends TestCase {
                 //--assertTrue("Response 'skeleton' is not similar enough to be considered 'equal' to expected output skelton. \nreceived: " + testXML + "\nexpected: " + controlXML + "\ndifference:" + difference, difference.similar());
                 assertTrue(timeStampPrefix + " The response 'skeleton' is not similar enough to be considered 'equal' to expected output skelton.", isSimilar);
             }
-        }
+        }*/
     }
     
     private static File getActualOutputFile(File actualOutputDir, boolean success) {
@@ -2718,7 +2718,7 @@ public class ConfiguredTest extends TestCase {
         }
         return invokePropertiesMap;
     }
-	
+    
 
     private void concurrentCorrelationAddToInvokeList(Map invokePropertiesMap, String key) throws Exception {
         String inputFileTemplateString = "";
@@ -2735,8 +2735,8 @@ public class ConfiguredTest extends TestCase {
         // also read the substitution values
         String soapAction = mProperties.getProperty(key + ".soapAction");
         if ( soapAction == null ) {
-        	soapAction = "";
-        	//throw new Exception("soapAction not defined for " + key );
+            soapAction = "";
+            //throw new Exception("soapAction not defined for " + key );
         }
 
         // also read the substitution values
@@ -2777,7 +2777,7 @@ public class ConfiguredTest extends TestCase {
                 if ( in != null ) in.close();
                 if ( fileReader != null ) fileReader.close();
 
-            } catch ( Exception e2 ) {				
+            } catch ( Exception e2 ) {              
             }
             throw e;
         }
@@ -2836,7 +2836,7 @@ public class ConfiguredTest extends TestCase {
             // Put all these values in a Property Object and return
             Map singleInvokeMap = new HashMap();
 
-            singleInvokeMap.put("inputfile","input." + key + "." + i + ".xml");    			
+            singleInvokeMap.put("inputfile","input." + key + "." + i + ".xml");             
             singleInvokeMap.put("soapaction",soapAction);
             singleInvokeMap.put("destination",destination);
 
@@ -2908,7 +2908,7 @@ public class ConfiguredTest extends TestCase {
     }
 
     String replaceValue(String string, String id, String value) { 
-		return string.replaceFirst("#" + id + "#", value);
+        return string.replaceFirst("#" + id + "#", value);
     }
     
     
@@ -3429,7 +3429,7 @@ public class ConfiguredTest extends TestCase {
                 }
             }
         }
-    	
+        
     }
     
     class RegexFileFilter implements FileFilter {

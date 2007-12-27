@@ -52,9 +52,7 @@ import org.xml.sax.InputSource;
 
 import org.w3c.dom.Document;
 import com.meterware.httpunit.*;
-
 import junit.framework.*;
-import org.custommonkey.xmlunit.*;
 
 /**
  * An example of testing servlets using httpunit and JUnit.
