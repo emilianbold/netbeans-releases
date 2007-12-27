@@ -90,6 +90,7 @@ public final class RectangularSelectAction extends WidgetAction.LockedAdapter {
             move (widget, event.getPoint ());
             selectionWidget.getParentWidget ().removeChild (selectionWidget);
             provider.performSelection (selectionSceneRectangle);
+            selectionWidget = null;
             selectionSceneRectangle = null;
         }
         return State.REJECTED;
