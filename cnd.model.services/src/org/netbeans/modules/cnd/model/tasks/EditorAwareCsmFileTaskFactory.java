@@ -43,37 +43,30 @@ package org.netbeans.modules.cnd.model.tasks;
 import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.model.CsmModelListener;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.openide.filesystems.FileObject;
 
-/**A {@link JavaSourceTaskFactorySupport} that registers tasks to all files that are
- * opened in the editor and are visible.
+/**A CsmFileTaskFactory that registers tasks to all files that are
+ * opened in the editor and are visible. Mimiced from EditorAwareJavaSourceTaskFactory
  *
- * @author Jan Lahoda
  */
 public abstract class EditorAwareCsmFileTaskFactory extends CsmFileTaskFactory {
     
     private String[] supportedMimeTypes;
     
-    /**Construct the EditorAwareJavaSourceTaskFactory with given {@link Phase} and {@link Priority}.
-     *
-     * @param phase phase to use for tasks created by {@link #createTask}
-     * @param priority priority to use for tasks created by {@link #createTask}
-     */
     protected EditorAwareCsmFileTaskFactory() {
         this( (String[]) null);
     }
     
-    /**Construct the EditorAwareJavaSourceTaskFactory with given {@link Phase} and {@link Priority}.
-     *
-     * @param phase phase to use for tasks created by {@link #createTask}
-     * @param priority priority to use for tasks created by {@link #createTask}
-     * @param supportedMimeTypes a list of mime types on which the tasks created by this factory should be run
-     * @since 0.21
-     */
+    private ModelListenerImpl modelListener = new ModelListenerImpl();
+    
     protected EditorAwareCsmFileTaskFactory( String... supportedMimeTypes) {
         super();
-        //XXX: weak, or something like this:
         OpenedEditors.getDefault().addChangeListener(new ChangeListenerImpl());
+        CsmModelAccessor.getModel().addModelListener(modelListener);
         this.supportedMimeTypes = supportedMimeTypes != null ? supportedMimeTypes.clone() : null;
     }
     
@@ -90,4 +83,21 @@ public abstract class EditorAwareCsmFileTaskFactory extends CsmFileTaskFactory {
         }
     }
 
+    private class ModelListenerImpl implements CsmModelListener {
+
+        public void projectOpened(CsmProject project) {
+            fileObjectsChanged();
+        }
+
+        public void projectClosed(CsmProject project) {
+            fileObjectsChanged();
+        }
+
+        public void modelChanged(CsmChangeEvent e) {
+            if (e.getRemovedFiles().size() > 0 || e.getNewFiles().size() > 0) {
+                fileObjectsChanged();
+            }
+        }
+        
+    }
 }

@@ -71,7 +71,22 @@ public abstract class CsmFileTaskFactory {
         CsmModelAccessor.getModel().addProgressListener(progressListener);
     }
 
+    // XXX: to be cleaned up soon. Literally. Tomorrow.
     protected abstract Runnable createTask(FileObject file);
+    protected /*abstract*/ PhaseRunner createTask2(FileObject file){
+        final Runnable run = createTask(file);
+        return new PhaseRunner() {
+
+            public void cleanAfterYourself() {
+                //do nothing
+            }
+
+            public void run() {
+                run.run();
+            }
+            
+        };
+    }
 
     protected abstract Collection<FileObject> getFileObjects();
 
@@ -101,14 +116,13 @@ public abstract class CsmFileTaskFactory {
             //remove old tasks:
             for (FileObject r : removedFiles) {
                 CsmFile csmFile = fobj2csm.remove(r);
-                csm2task.remove(csmFile);
 
                 if (csmFile == null) {
                     //TODO: log
                     continue;
                 }
 
-                toRemove.put(csmFile, csm2task.remove(r));
+                toRemove.put(csmFile, csm2task.remove(csmFile));
             }
 
             //add new tasks:
@@ -122,7 +136,7 @@ public abstract class CsmFileTaskFactory {
                 CsmFile csmFile = CsmUtilities.getCsmFile(fileObject, false);
 
                 if (csmFile != null) {
-                    Runnable task = createTask(fileObject);
+                    Runnable task = createTask2(fileObject);
 
                     toAdd.put(csmFile, task);
 
@@ -134,9 +148,9 @@ public abstract class CsmFileTaskFactory {
 
 
         for (Entry<CsmFile, Runnable> e : toRemove.entrySet()) {
-            //System.err.println("### removing file from taskfactory " + e.getKey().getName());
-            // XXX: we need remove event
-            //scheduler.removeParseCompletionTask(e.getKey(), e.getValue());
+            if (e!=null && e.getValue()!=null ) {
+                ((PhaseRunner)e.getValue()).cleanAfterYourself();
+            }
         }
 
         for (Entry<CsmFile, Runnable> e : toAdd.entrySet()) {
@@ -179,5 +193,9 @@ public abstract class CsmFileTaskFactory {
         public void fileParsingFinished(CsmFile file) {
             runTask(file);
         }
+    }
+    
+    public interface PhaseRunner extends Runnable {
+        void cleanAfterYourself();
     }
 }
