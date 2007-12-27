@@ -106,7 +106,7 @@ class OpenedEditors implements PropertyChangeListener {
         List<ChangeListener> listenersCopy = null;
 
         synchronized (this) {
-            listenersCopy = new ArrayList(listeners);
+            listenersCopy = new ArrayList<ChangeListener>(listeners);
         }
 
         for (ChangeListener l : listenersCopy) {
@@ -222,8 +222,9 @@ class OpenedEditors implements PropertyChangeListener {
         for (FileObject f : files) {
             Logger.getLogger(OpenedEditors.class.getName()).log(Level.FINER, "analyzing={0}", f);
             
-            if (CsmUtilities.getCsmFile(f, false) == null)
+            if (CsmUtilities.getCsmFile(f, false) == null) {
                 continue;
+            }
             
             if (allowAll) {
                 result.add(f);
@@ -249,13 +250,15 @@ class OpenedEditors implements PropertyChangeListener {
             while (true) {
                 int slash = shorterMimeType.indexOf('/');
                 
-                if (slash == (-1))
+                if (slash == (-1)) {
                     break;
+                }
                 
                 int plus  = shorterMimeType.indexOf('+', slash);
                 
-                if (plus == (-1))
+                if (plus == (-1)) {
                     break;
+                }
                 
                 shorterMimeType = shorterMimeType.substring(0, slash + 1) + shorterMimeType.substring(plus + 1);
                 
