@@ -149,6 +149,7 @@ public class ComponentWidget extends Widget {
         Scene scene = getScene ();
         if (! componentAdded) {
             scene.getView ().add (component);
+            scene.getView ().revalidate ();
             component.addComponentListener (componentListener);
             componentAdded = true;
         }
@@ -163,6 +164,7 @@ public class ComponentWidget extends Widget {
         if (componentAdded) {
             component.removeComponentListener (componentListener);
             scene.getView ().remove (component);
+            scene.getView ().revalidate ();
             componentAdded = false;
         }
     }
