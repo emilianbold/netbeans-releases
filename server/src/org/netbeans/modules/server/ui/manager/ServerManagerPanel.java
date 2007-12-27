@@ -58,7 +58,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.netbeans.modules.server.ServerRegistry;
 import org.netbeans.modules.server.ui.wizard.AddServerInstanceWizard;
@@ -66,7 +65,7 @@ import org.netbeans.spi.server.ServerInstance;
 import org.netbeans.spi.server.ServerInstanceProvider;
 import org.openide.nodes.Node;
 import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.view.ListView;
+import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
@@ -83,6 +82,8 @@ import org.openide.util.NbBundle;
  */
 public class ServerManagerPanel extends javax.swing.JPanel implements PropertyChangeListener, VetoableChangeListener, ExplorerManager.Provider {
 
+    private static final String SERVERS_ICON = "org/netbeans/modules/server/ui/resources/servers.png"; // NOI18N
+
     private static final Logger LOGGER = Logger.getLogger(ServerManagerPanel.class.getName());
 
     private static final Dimension MINIMUM_SIZE = new Dimension(750, 450);
@@ -98,11 +99,15 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
         serverName.setColumns(30);
         serverType.setColumns(30);
         // set the preferred width, height is not very important here
-        servers.setPreferredSize(new Dimension(200,200));
+        serversView.setPreferredSize(new Dimension(200,200));
         this.initialInstance = initialInstance;
         setPreferredSize(MINIMUM_SIZE);
     }
 
+    public void addNotify() {
+        super.addNotify();
+        expandServers(initialInstance);
+    }
 
     public void propertyChange(PropertyChangeEvent evt) {
         if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
@@ -127,7 +132,7 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
     public synchronized ExplorerManager getExplorerManager() {
         if (this.manager == null) {
             this.manager = new ExplorerManager();
-            this.manager.setRootContext(new AbstractNode(Children.create(getChildren(), false)));
+            this.manager.setRootContext(new ServersNode(Children.create(getChildren(), false)));
             this.manager.addPropertyChangeListener(this);
             this.manager.addVetoableChangeListener(this);
         }
@@ -144,11 +149,11 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
         java.awt.GridBagConstraints gridBagConstraints;
 
         jPanel3 = new javax.swing.JPanel();
-        servers = new org.openide.explorer.view.ListView();
+        serversView = new org.openide.explorer.view.BeanTreeView();
         addButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
         cardsPanel = new javax.swing.JPanel();
-        messagePanel = new javax.swing.JPanel();
+        emptyPanel = new javax.swing.JPanel();
         customizerPanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         serverName = new javax.swing.JTextField();
@@ -157,10 +162,10 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
         clientPanel = new javax.swing.JPanel();
         serversLabel = new javax.swing.JLabel();
 
-        servers.setBorder(UIManager.getBorder("Nb.ScrollPane.border"));
-        servers.setPopupAllowed(false);
-        servers.setPreferredSize(new java.awt.Dimension(220, 400));
-        servers.setSelectionMode(0);
+        serversView.setBorder(UIManager.getBorder("Nb.ScrollPane.border"));
+        serversView.setPopupAllowed(false);
+        serversView.setPreferredSize(new java.awt.Dimension(220, 400));
+        serversView.setSelectionMode(0);
 
         org.openide.awt.Mnemonics.setLocalizedText(addButton, NbBundle.getMessage(ServerManagerPanel.class, "CTL_AddServer")); // NOI18N
         addButton.addActionListener(new java.awt.event.ActionListener() {
@@ -179,8 +184,8 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
 
         cardsPanel.setLayout(new java.awt.CardLayout());
 
-        messagePanel.setLayout(new java.awt.GridBagLayout());
-        cardsPanel.add(messagePanel, "card3");
+        emptyPanel.setLayout(new java.awt.GridBagLayout());
+        cardsPanel.add(emptyPanel, "card3");
 
         customizerPanel.setLayout(new java.awt.GridBagLayout());
 
@@ -235,7 +240,7 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
 
         cardsPanel.add(customizerPanel, "card2");
 
-        serversLabel.setLabelFor(servers);
+        serversLabel.setLabelFor(serversView);
         org.openide.awt.Mnemonics.setLocalizedText(serversLabel, org.openide.util.NbBundle.getMessage(ServerManagerPanel.class, "CTL_Servers")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -248,7 +253,7 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
                     .add(serversLabel)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                            .add(servers, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                            .add(serversView, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                                 .add(addButton)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -265,7 +270,7 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, cardsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, servers, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, serversView, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(addButton)
@@ -273,8 +278,8 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
                 .addContainerGap())
         );
 
-        servers.getAccessibleContext().setAccessibleName("null");
-        servers.getAccessibleContext().setAccessibleDescription("null");
+        serversView.getAccessibleContext().setAccessibleName("null");
+        serversView.getAccessibleContext().setAccessibleDescription("null");
         addButton.getAccessibleContext().setAccessibleName("null");
         addButton.getAccessibleContext().setAccessibleDescription("null");
         removeButton.getAccessibleContext().setAccessibleName("null");
@@ -289,9 +294,9 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
 
     private void removeServer(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeServer
         Node[] nodes = getExplorerManager().getSelectedNodes();
-        assert nodes.length != 1 : "Illegal number of selected nodes"; // NOI18N
+        //assert nodes.length != 1 : "Illegal number of selected nodes"; // NOI18N
         LOGGER.log(Level.FINE, "----Remove");
-            
+
         if (nodes[0] instanceof ServerNode) {
             ServerInstance serverInstance = ((ServerNode) nodes[0]).getServerInstance();
             if (serverInstance.isRemovable()) {
@@ -307,18 +312,18 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
 //                        try {
 //                            Thread.sleep(5000);
 //                        } catch (InterruptedException ex) {}
-                        SwingUtilities.invokeLater(new Runnable() {
-                            public void run() {
-                                expandServers(null);
-                            }
-                        });
+//                        SwingUtilities.invokeLater(new Runnable() {
+//                            public void run() {
+//                                expandServers(null);
+//                            }
+//                        });
 
 //                    }
 //
 //                }.start();
                 //LOGGER.log(Level.FINE, "Refresh called");
                 LOGGER.log(Level.FINE, "Expanding servers");
-                //expandServers(null);
+                expandServers(null);
                 //LOGGER.log(Level.FINE, "Servers expanded");
             }
         }
@@ -336,16 +341,16 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
 //                        try {
 //                            Thread.sleep(5000);
 //                        } catch (InterruptedException ex) {}
-                        SwingUtilities.invokeLater(new Runnable() {
-                            public void run() {
-                                expandServers(instance);
-                            }
-                        });
+//                        SwingUtilities.invokeLater(new Runnable() {
+//                            public void run() {
+//                                expandServers(instance);
+//                            }
+//                        });
 //
 //                    }
 //
 //                }.start();
-            //expandServers(instance);
+            expandServers(instance);
         }
     }//GEN-LAST:event_addServer
 
@@ -422,10 +427,10 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
     private void expandServers(ServerInstance servInst) {
         ExplorerManager mgr = this.getExplorerManager();
         Node node = mgr.getRootContext();
-        expandAllNodes(servers, node, mgr, servInst);
+        expandAllNodes(serversView, node, mgr, servInst);
     }
 
-    private static void expandAllNodes(ListView btv, Node node, ExplorerManager mgr, ServerInstance servInst) {
+    private static void expandAllNodes(BeanTreeView btv, Node node, ExplorerManager mgr, ServerInstance servInst) {
         //btv.expandNode(node);
 
         Children ch = node.getChildren();
@@ -468,17 +473,31 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
     private javax.swing.JPanel cardsPanel;
     private javax.swing.JPanel clientPanel;
     private javax.swing.JPanel customizerPanel;
+    private javax.swing.JPanel emptyPanel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel3;
-    private javax.swing.JPanel messagePanel;
     private javax.swing.JButton removeButton;
     private javax.swing.JTextField serverName;
     private javax.swing.JTextField serverType;
-    private org.openide.explorer.view.ListView servers;
     private javax.swing.JLabel serversLabel;
+    private org.openide.explorer.view.BeanTreeView serversView;
     // End of variables declaration//GEN-END:variables
 
+
+    private static class ServersNode extends AbstractNode {
+
+        public ServersNode(Children children) {
+            super(children);
+
+            setName(""); // NOI18N
+            setDisplayName(NbBundle.getMessage(ServerManagerPanel.class, "Server_Registry_Node_Name"));
+            setShortDescription(NbBundle.getMessage(ServerManagerPanel.class, "Server_Registry_Node_Short_Description"));
+            setIconBaseWithExtension(SERVERS_ICON);
+        }
+
+
+    }
 
     private static class ServersChildren extends ChildFactory<ServerInstance> {
 
