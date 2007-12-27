@@ -59,7 +59,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
-import org.netbeans.modules.cnd.utils.cache.NameCache;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 
 /**
  * Common ancestor for ClassImpl and EnumImpl
@@ -83,7 +83,7 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
     
     protected ClassEnumBase(String name, CsmFile file, AST ast) {
         super(ast, file);
-        this.name = (name == null) ? CharSequenceKey.empty() : CharSequenceKey.create(name);
+        this.name = (name == null) ? CharSequenceKey.empty() : NameCache.getString(name);
     }
     
     public CharSequence getName() {
@@ -117,7 +117,7 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         else  {
 	    qualifiedName = qualifiedNamePostfix;
         }
-        qualifiedName = CharSequenceKey.create(qualifiedName);
+        qualifiedName = QualifiedNameCache.getString(qualifiedName);
         // can't register here, because descendant class' constructor hasn't yet finished!
         // so registering is a descendant class' responsibility
     }

@@ -53,8 +53,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
-import org.netbeans.modules.cnd.utils.cache.NameCache;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 
 /**
  * Implements CsmUsingDirective
@@ -74,7 +73,7 @@ public class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsingDirect
         startOffset = ((CsmAST)ast.getFirstChild()).getOffset();
         rawName = AstUtil.getRawNameInChildren(ast);
         
-        name = CharSequenceKey.create(ast.getText());
+        name = NameCache.getString(ast.getText());
     }
     
     public CsmNamespace getReferencedNamespace() {

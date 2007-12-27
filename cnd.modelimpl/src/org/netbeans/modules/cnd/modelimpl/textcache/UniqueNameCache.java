@@ -39,53 +39,35 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.modelimpl.repository;
+package org.netbeans.modules.cnd.modelimpl.textcache;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
-import org.netbeans.modules.cnd.repository.spi.Key;
-import org.netbeans.modules.cnd.repository.spi.Persistent;
-import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
-import org.netbeans.modules.cnd.repository.support.SelfPersistent;
+import org.netbeans.modules.cnd.utils.cache.APTStringManager;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
- * Key for FileContainer data
- * @author Vladimir Kvashin
+ * cache entry
+ * @author Alexander Simon
  */
-public class FileContainerKey extends ProjectNameBasedKey {
+public class UniqueNameCache {
+    private static final APTStringManager instance = APTStringManager.instance("Shared Unique Names"); // NOI18N    
     
-    public FileContainerKey(String project) {
-	super(project);
-	//System.err.printf(">>>>> new FileContainerKey %s \n", project);
+    /** Creates a new instance of TextCache */
+    private UniqueNameCache() {
     }
     
-    public FileContainerKey(DataInput in) throws IOException {
-	super(in);
+    public static CharSequence getString(CharSequence text) {
+        if (text == null) {
+            throw new NullPointerException("null string is illegal to share"); // NOI18N
+        }        
+        text = CharSequenceKey.create(text);
+        return instance.getString(text);
     }
     
-    public int getSecondaryDepth() {
-	return 1;
-    }
-    
-    @Override
-    public String toString() {
-	return "FileContainerKey " + getProjectName(); // NOI18N
-    }
-    
-    public int getSecondaryAt(int level) {
-	assert (level == 0);
-	return KeyObjectFactory.KEY_FILE_CONTAINER_KEY;
-    }
-    
-    public PersistentFactory getPersistentFactory() {
-	return CsmObjectFactory.instance();
-    }
+    public static void dispose() {
+        instance.dispose();
+    }    
 
-    @Override
-    public Key.Behavior getBehavior() {
-	return Key.Behavior.LargeAndMutable;
-    }
-    
+    public static APTStringManager getManager() {
+        return instance;
+    }    
 }

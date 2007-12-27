@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
  * A class that 
@@ -122,7 +121,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     @Override
     public CharSequence getQualifiedName() {
 	if( qualifiedName == null ) {
-	    qualifiedName = CharSequenceKey.create(findQualifiedName());
+	    qualifiedName = QualifiedNameCache.getString(findQualifiedName());
 	}
 	return qualifiedName;
     }
@@ -168,7 +167,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     }
     
     public void fixFakeRegistration() {
-	CharSequence newQname = CharSequenceKey.create(findQualifiedName());
+	CharSequence newQname = QualifiedNameCache.getString(findQualifiedName());
 	if( !newQname.equals(qualifiedName) ) {
 	    ProjectBase aProject = ((FileImpl) getContainingFile()).getProjectImpl();
             aProject.unregisterDeclaration(this);

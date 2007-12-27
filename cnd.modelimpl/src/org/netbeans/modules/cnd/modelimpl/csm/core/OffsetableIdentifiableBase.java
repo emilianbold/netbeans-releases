@@ -88,6 +88,7 @@ public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase imple
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     
+    @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
     }

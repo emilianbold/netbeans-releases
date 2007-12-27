@@ -59,8 +59,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
-import org.netbeans.modules.cnd.utils.cache.NameCache;
-import org.netbeans.modules.cnd.utils.cache.UniqueNameCache;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 
 /**
  * CsmNamespace implementation
@@ -112,7 +111,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     private static final boolean CHECK_PARENT = false;
     
     public NamespaceImpl(ProjectBase project, NamespaceImpl parent, String name, String qualifiedName) {
-        this.name = CharSequenceKey.create(name);
+        this.name = NameCache.getString(name);
         this.global = false;
         assert project != null;
         
@@ -120,7 +119,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         assert this.projectUID != null;
 
         this.projectRef = null;
-        this.qualifiedName = CharSequenceKey.create(qualifiedName);
+        this.qualifiedName = QualifiedNameCache.getString(qualifiedName);
         // TODO: rethink once more
         // now all classes do have namespaces
 //        // TODO: this makes parent-child relationships assymetric, that's bad;
@@ -506,7 +505,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         this.qualifiedName = QualifiedNameCache.getString(input.readUTF());
         assert this.qualifiedName != null;
         theFactory.readStringToUIDMap(this.nestedMap, input, QualifiedNameCache.getManager());
-        theFactory.readStringToUIDMap(this.declarations, input, UniqueNameCache.getManager());
+        theFactory.readStringToUIDMap(this.declarations, input, QualifiedNameCache.getManager());
         theFactory.readStringToUIDMap(this.nsDefinitions, input, QualifiedNameCache.getManager());
     }
     

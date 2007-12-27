@@ -44,8 +44,11 @@ package org.netbeans.modules.cnd.modelimpl.repository;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 
 
@@ -57,11 +60,7 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 final class MacroKey extends OffsetableKey {
     
     public MacroKey(CsmMacro obj) {
-	super(obj, "Macro", obj.getName()); // NOI18N
-    }
-    
-    public void write(DataOutput aStream) throws IOException {
-	super.write(aStream);
+	super(obj, Utils.getCsmDeclarationKindkey(Kind.MACRO), NameCache.getString(obj.getName())); // NOI18N
     }
     
     /*package*/ MacroKey(DataInput aStream) throws IOException {
@@ -73,6 +72,7 @@ final class MacroKey extends OffsetableKey {
 	return CsmObjectFactory.instance();
     }
     
+    @Override
     public String toString() {
 	String retValue;
 	
@@ -80,10 +80,12 @@ final class MacroKey extends OffsetableKey {
 	return retValue;
     }
     
+    @Override
     public int getSecondaryDepth() {
 	return super.getSecondaryDepth() + 1;
     }
     
+    @Override
     public int getSecondaryAt(int level) {
 	if (level == 0) {
 	    return KeyObjectFactory.KEY_MACRO_KEY;

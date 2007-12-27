@@ -46,8 +46,9 @@ import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
-import org.netbeans.modules.cnd.utils.cache.NameCache;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 
 
 /**
@@ -58,19 +59,14 @@ import org.netbeans.modules.cnd.utils.cache.NameCache;
 final class OffsetableDeclarationKey extends OffsetableKey {
     
     public OffsetableDeclarationKey(OffsetableDeclarationBase obj) {
-	super(obj, obj.getKind().toString(), obj.getName());
+	super(obj, Utils.getCsmDeclarationKindkey(obj.getKind()), obj.getName());
 	// we use name, because all other (FQN and UniqueName) could change
 	// and name is fixed value
     }
     
     public OffsetableDeclarationKey(OffsetableDeclarationBase obj, int index) {
-	super(obj, obj.getKind().toString(), NameCache.getString(Integer.toString(index)));
+	super(obj, Utils.getCsmDeclarationKindkey(obj.getKind()), NameCache.getString(Integer.toString(index)));
 	// we use index for unnamed objects
-    }
-    
-    @Override
-    public void write(DataOutput aStream) throws IOException {
-	super.write(aStream);
     }
     
     /*package*/ OffsetableDeclarationKey(DataInput aStream) throws IOException {

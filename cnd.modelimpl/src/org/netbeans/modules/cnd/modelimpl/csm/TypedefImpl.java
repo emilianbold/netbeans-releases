@@ -101,7 +101,7 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef>  implemen
         } else {
             this.type = type;
         }
-        this.name = CharSequenceKey.create(name);
+        this.name = QualifiedNameCache.getString(name);
     }
 
     public boolean isTypeUnnamed(){

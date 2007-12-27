@@ -46,6 +46,8 @@ import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 
 /**
@@ -56,11 +58,7 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 final class IncludeKey extends OffsetableKey {
     
     public IncludeKey(CsmInclude obj) {
-	super(obj, "Include", obj.getIncludeName()); // NOI18N
-    }
-    
-    public void write(DataOutput aStream) throws IOException {
-	super.write(aStream);
+	super(obj, Utils.getCsmIncludeKindkey(), NameCache.getString(obj.getIncludeName())); // NOI18N
     }
     
     /*package*/ IncludeKey(DataInput aStream) throws IOException {
@@ -72,6 +70,7 @@ final class IncludeKey extends OffsetableKey {
 	return CsmObjectFactory.instance();
     }
     
+    @Override
     public String toString() {
 	String retValue;
 	
@@ -79,10 +78,12 @@ final class IncludeKey extends OffsetableKey {
 	return retValue;
     }
     
+    @Override
     public int getSecondaryDepth() {
 	return super.getSecondaryDepth() + 1;
     }
     
+    @Override
     public int getSecondaryAt(int level) {
 	if (level == 0) {
 	    return KeyObjectFactory.KEY_INCLUDE_KEY;

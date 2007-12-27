@@ -68,6 +68,7 @@ public class GraphContainerKey extends ProjectNameBasedKey {
 	return 1;
     }
     
+    @Override
     public String toString() {
 	return "GraphContainerKey " + getProjectName(); // NOI18N
     }
@@ -81,10 +82,7 @@ public class GraphContainerKey extends ProjectNameBasedKey {
 	return CsmObjectFactory.instance();
     }
 
-    public void write(DataOutput aStream) throws IOException {
-	super.write(aStream);
-    }
-    
+    @Override
     public Key.Behavior getBehavior() {
 	return Key.Behavior.LargeAndMutable;
     }

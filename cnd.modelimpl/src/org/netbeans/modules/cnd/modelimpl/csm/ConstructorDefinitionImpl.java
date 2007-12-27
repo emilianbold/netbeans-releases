@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
 import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 
 /**
@@ -56,16 +55,13 @@ public final class ConstructorDefinitionImpl extends FunctionDefinitionImpl {
         super(ast, file, scope, true);
     }
     
+    @Override
     public CsmType getReturnType() {
         return NoType.instance();
     }
     
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
-    
-    public void write(DataOutput output) throws IOException {
-        super.write(output);
-    }
     
     public ConstructorDefinitionImpl(DataInput input) throws IOException {
         super(input);

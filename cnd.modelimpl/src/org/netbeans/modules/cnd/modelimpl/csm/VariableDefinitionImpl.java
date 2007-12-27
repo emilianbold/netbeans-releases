@@ -69,7 +69,6 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
  *
@@ -124,7 +123,7 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
     @Override
     public CharSequence getQualifiedName() {
 	if( qualifiedName == null ) {
-	    qualifiedName = CharSequenceKey.create(findQualifiedName());
+	    qualifiedName = QualifiedNameCache.getString(findQualifiedName());
 	}
 	return qualifiedName;
     }

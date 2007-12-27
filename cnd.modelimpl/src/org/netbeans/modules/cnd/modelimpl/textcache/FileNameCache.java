@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.modelimpl.textcache;
 
 import org.netbeans.modules.cnd.utils.cache.APTStringManager;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
  * help class to share file names for #include directives
@@ -53,6 +54,7 @@ public class FileNameCache {
     }
     
     public static CharSequence getString(CharSequence text) {
+        text = CharSequenceKey.create(text);
         return instance.getString(text);
     }
     

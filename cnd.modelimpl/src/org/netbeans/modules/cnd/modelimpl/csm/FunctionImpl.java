@@ -99,7 +99,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         assert (this.scopeUID != null || scope == null);
         this.scopeRef = null;
         
-        name = CharSequenceKey.create(initName(ast));
+        name = QualifiedNameCache.getString(initName(ast));
         rawName = AstUtil.getRawNameInChildren(ast);
 	
         RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
@@ -302,7 +302,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     }
     
     protected final void setName(CharSequence name) {
-        this.name = CharSequenceKey.create(name);
+        this.name = QualifiedNameCache.getString(name);
     }
     
     public CharSequence getQualifiedName() {
@@ -485,7 +485,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     
     public CharSequence getSignature() {
         if( signature == null ) {
-            signature = CharSequenceKey.create(createSignature());
+            signature = QualifiedNameCache.getString(createSignature());
         }
         return signature;
     }

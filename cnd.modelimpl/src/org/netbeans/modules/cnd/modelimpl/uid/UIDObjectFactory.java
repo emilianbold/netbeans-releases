@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.utils.cache.APTStringManager;
 import org.netbeans.modules.cnd.modelimpl.csm.BuiltinTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.BuiltinTypes.BuiltInUID;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.ClassifierUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.DeclarationUID;
@@ -148,6 +149,21 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         }
         
     }
+
+    public <T> void writeSortedStringToUIDMap(Map <FileImpl.SortedKey, CsmUID<T>> aMap, DataOutput aStream, boolean sync) throws IOException {
+        assert aMap != null;
+        assert aStream != null;
+        aMap = sync ? copySyncMap(aMap) : aMap;
+        int collSize = aMap.size();
+        aStream.writeInt(collSize);
+        
+        for (Map.Entry<FileImpl.SortedKey, CsmUID<T>> anEntry : aMap.entrySet()) {
+            anEntry.getKey().write(aStream);
+            CsmUID anUID = anEntry.getValue();
+            assert anUID != null;
+            writeUID(anUID, aStream);
+        }
+    }
     
     public void writeStringToArrayUIDMap(Map <CharSequence, Object> aMap, DataOutput aStream, boolean sync) throws IOException {
         assert aMap != null;
@@ -200,6 +216,21 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         for (int i = 0; i < collSize; ++i) {
             CharSequence key = aStream.readUTF();
             key = manager == null ? key : manager.getString(key);
+            assert key != null;
+            CsmUID uid = readUID(aStream);
+            assert uid != null;
+            aMap.put(key, uid);
+        }
+    }
+
+    public <T> void readSortedStringToUIDMap(Map <FileImpl.SortedKey, CsmUID<T>> aMap, DataInput aStream, APTStringManager manager) throws IOException {
+        assert aMap != null;
+        assert aStream != null;
+        
+        int collSize = aStream.readInt();
+        
+        for (int i = 0; i < collSize; ++i) {
+            FileImpl.SortedKey key = new FileImpl.SortedKey(aStream);
             assert key != null;
             CsmUID uid = readUID(aStream);
             assert uid != null;

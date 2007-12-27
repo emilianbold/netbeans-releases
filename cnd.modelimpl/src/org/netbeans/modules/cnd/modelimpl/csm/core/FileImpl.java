@@ -76,6 +76,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.apt.GuardBlockWalker;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
@@ -112,7 +113,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     /** 
      * It's a map since we need to eliminate duplications 
      */
-    private Map<CharSequence, CsmUID<CsmOffsetableDeclaration>> declarations = new TreeMap<CharSequence, CsmUID<CsmOffsetableDeclaration>>();
+    private Map<SortedKey, CsmUID<CsmOffsetableDeclaration>> declarations = new TreeMap<SortedKey, CsmUID<CsmOffsetableDeclaration>>();
     private ReadWriteLock  declarationsLock = new ReentrantReadWriteLock();
 
     private Set<CsmUID<CsmInclude>> includes = createIncludes();
@@ -385,7 +386,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         try {
             declarationsLock.writeLock().lock();
             uids = declarations.values();
-            declarations = new TreeMap<CharSequence, CsmUID<CsmOffsetableDeclaration>>();
+            declarations = new TreeMap<SortedKey, CsmUID<CsmOffsetableDeclaration>>();
         }   finally {
             declarationsLock.writeLock().unlock();
         }
@@ -846,26 +847,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         RepositoryUtils.put(this);
     }
     
-    public static String getSortKey(CsmDeclaration declaration) {
-        StringBuilder sb = new StringBuilder();
-        if( declaration instanceof CsmOffsetable ) {
-            int start = ((CsmOffsetable) declaration).getStartOffset();
-            String s = Integer.toString(start);
-            int gap = 8 - s.length();
-            while( gap-- > 0 ) {
-                sb.append('0');
-            }
-            sb.append(s);
-            sb.append(declaration.getName());
-        }
-        else {
-            assert false;
-            // actually this never happens 
-            // since of all declarations only CsmBuiltin isn't CsmOffsetable
-            // and CsmBuiltin is never added to any file
-            sb.append(declaration.getUniqueName());
-        }
-        return sb.toString();
+    private SortedKey getSortKey(CsmOffsetableDeclaration declaration) {
+        return new SortedKey(declaration);
     }
     
     public String getAbsolutePath() {
@@ -994,7 +977,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         try {
             declarationsLock.readLock().lock();
-            factory.writeStringToUIDMap(this.declarations, output, false);
+            factory.writeSortedStringToUIDMap(this.declarations, output, false);
         } finally {
             declarationsLock.readLock().unlock();
         }
@@ -1026,7 +1009,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         this.fileBuffer = PersistentUtils.readBuffer(input);
         
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();        
-        factory.readStringToUIDMap(this.declarations, input, null);
+        factory.readSortedStringToUIDMap(this.declarations, input, null);
         factory.readUIDCollection(this.includes, input);
         factory.readUIDCollection(this.macros, input);
         factory.readUIDCollection(this.fakeRegistrationUIDs, input);
@@ -1168,4 +1151,31 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }        
         return lineCol;
     }
+
+    public static class SortedKey implements Comparable<SortedKey>, Persistent, SelfPersistent {
+        private int start = 0;
+        private CharSequence name;
+        private SortedKey(CsmOffsetableDeclaration declaration){
+            start = ((CsmOffsetable) declaration).getStartOffset();
+            name = declaration.getName();
+        }
+        public int compareTo(SortedKey o) {
+            int res = start - o.start;
+            if (res == 0){
+                res = CharSequenceKey.Comparator.compare(name, o.name);
+            }
+            return res;
+        }
+
+        public void write(DataOutput output) throws IOException {
+            output.writeInt(start);
+            output.writeUTF(name.toString());
+        }
+        
+        public SortedKey(DataInput input) throws IOException {
+            start = input.readInt();
+            name = NameCache.getString(input.readUTF());
+        }
+    }
+    
 }

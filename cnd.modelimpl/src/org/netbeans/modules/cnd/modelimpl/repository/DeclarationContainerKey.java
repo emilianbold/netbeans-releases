@@ -42,13 +42,10 @@
 package org.netbeans.modules.cnd.modelimpl.repository;
 
 import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.Key;
-import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
-import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 /**
  * Key for DeclarationContainer data
@@ -68,6 +65,7 @@ public class DeclarationContainerKey extends ProjectNameBasedKey {
 	return 1;
     }
     
+    @Override
     public String toString() {
 	return "DeclarationContainerKey " + getProjectName(); // NOI18N
     }
@@ -81,12 +79,9 @@ public class DeclarationContainerKey extends ProjectNameBasedKey {
 	return CsmObjectFactory.instance();
     }
 
+    @Override
     public Key.Behavior getBehavior() {
 	return Key.Behavior.LargeAndMutable;
     }
 
-    public void write(DataOutput aStream) throws IOException {
-	super.write(aStream);
-    }
-    
 }

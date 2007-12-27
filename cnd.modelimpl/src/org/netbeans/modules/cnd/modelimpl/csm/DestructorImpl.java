@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 
 import antlr.collections.AST;
 import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
@@ -73,11 +72,6 @@ public final class DestructorImpl extends MethodImpl{
     
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
-    
-    @Override
-    public void write(DataOutput output) throws IOException {
-        super.write(output);
-    }
     
     public DestructorImpl(DataInput input) throws IOException {
         super(input);

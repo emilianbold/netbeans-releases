@@ -58,7 +58,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
-import org.netbeans.modules.cnd.utils.cache.NameCache;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 
 /**
  * Implements CsmMacro
@@ -113,7 +113,7 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
         assert(macroName != null);
         assert(macroName.length() > 0);
         assert(macroBody != null);
-        this.name = CharSequenceKey.create(macroName);
+        this.name = NameCache.getString(macroName);
         this.system = system;
         this.body = macroBody;
         if (macroParams != null) {

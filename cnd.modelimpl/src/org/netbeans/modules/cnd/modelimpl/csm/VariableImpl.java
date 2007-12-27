@@ -99,7 +99,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         initInitialValue(ast);
         _static = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_static);
         _extern = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_extern);
-        this.name = CharSequenceKey.create(name);
+        this.name = QualifiedNameCache.getString(name);
         this.type = type;
 	_setScope(scope);
         if (registerInProject) {

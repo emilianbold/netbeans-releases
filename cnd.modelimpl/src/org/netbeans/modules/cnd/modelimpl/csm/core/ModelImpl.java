@@ -67,8 +67,10 @@ import org.netbeans.modules.cnd.modelimpl.options.CodeAssistanceOptions;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.FileNameCache;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.ProjectNameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
+import org.netbeans.modules.cnd.modelimpl.textcache.UniqueNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDManager;
 import org.openide.util.Cancellable;
@@ -737,6 +739,8 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
         TextCache.dispose();
         FilePathCache.dispose();
         QualifiedNameCache.dispose();
+        NameCache.dispose();
+        UniqueNameCache.dispose();
         FileNameCache.dispose();
         ProjectNameCache.dispose();
         if (TraceFlags.USE_AST_CACHE) {

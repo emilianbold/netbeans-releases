@@ -73,7 +73,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
-import org.netbeans.modules.cnd.utils.cache.UniqueNameCache;
+import org.netbeans.modules.cnd.modelimpl.textcache.UniqueNameCache;
 
 /**
  * Storage for project declarations. Class was extracted from ProjectBase.
@@ -98,7 +98,7 @@ import org.netbeans.modules.cnd.utils.cache.UniqueNameCache;
     }
 
     public void removeDeclaration(CsmDeclaration decl) {
-	CharSequence uniqueName = UniqueNameCache.getString(decl.getUniqueName());
+	CharSequence uniqueName = CharSequenceKey.create(decl.getUniqueName());
 //	synchronized(declarations){
 	Object o = null;
 	try {
@@ -246,8 +246,8 @@ import org.netbeans.modules.cnd.utils.cache.UniqueNameCache;
     
     public Collection<CsmOffsetableDeclaration> getDeclarationsRange(CharSequence from, CharSequence to) {
         List<CsmUID<CsmOffsetableDeclaration>> list = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
-        from = UniqueNameCache.getString(from);
-        to = UniqueNameCache.getString(to);
+        from = CharSequenceKey.create(from);
+        to = CharSequenceKey.create(to);
         try {
             declarationsLock.readLock().lock();
             for (Map.Entry<CharSequence, Object> entry : declarations.subMap(from, to).entrySet()){
@@ -312,7 +312,7 @@ import org.netbeans.modules.cnd.utils.cache.UniqueNameCache;
     
     public Collection<CsmOffsetableDeclaration> findDeclarations(CharSequence uniqueName) {
         List<CsmUID<CsmOffsetableDeclaration>> list = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
-        uniqueName = UniqueNameCache.getString(uniqueName);
+        uniqueName = CharSequenceKey.create(uniqueName);
         try {
             declarationsLock.readLock().lock();
             Object o = declarations.get(uniqueName);
@@ -333,7 +333,7 @@ import org.netbeans.modules.cnd.utils.cache.UniqueNameCache;
     public CsmDeclaration getDeclaration(CharSequence uniqueName) {
         CsmDeclaration result;
         CsmUID<CsmDeclaration> uid = null;
-        uniqueName = UniqueNameCache.getString(uniqueName);
+        uniqueName = CharSequenceKey.create(uniqueName);
         try {
             declarationsLock.readLock().lock();
             Object o = declarations.get(uniqueName);

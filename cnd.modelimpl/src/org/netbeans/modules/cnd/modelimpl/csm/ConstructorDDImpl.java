@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 import org.netbeans.modules.cnd.api.model.*;
 import antlr.collections.AST;
 import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -68,11 +67,6 @@ public final class ConstructorDDImpl extends MethodDDImpl<CsmConstructor> implem
     }    
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
-    
-    @Override
-    public void write(DataOutput output) throws IOException {
-        super.write(output);
-    }
     
     public ConstructorDDImpl(DataInput input) throws IOException {
         super(input);
