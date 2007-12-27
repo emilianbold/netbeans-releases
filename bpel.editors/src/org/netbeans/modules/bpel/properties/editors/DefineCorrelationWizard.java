@@ -41,6 +41,7 @@ package org.netbeans.modules.bpel.properties.editors;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.text.MessageFormat;
 import java.util.*;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -58,6 +59,12 @@ import org.openide.util.HelpCtx;
  */
 public class DefineCorrelationWizard implements WizardProperties {
     private static final Dimension LEFT_DIMENSION_VALUE = new Dimension(100, 300);
+    private static final Dimension PANEL_DIMENSION_VALUE = new Dimension(400, 400);
+    private static final String[] WIZARD_STEP_NAMES = new String[] {
+        PrintUtil.i18n(DefineCorrelationWizard.class, "LBL_Wizard_Step_Select_Messaging_Activity"),
+        PrintUtil.i18n(DefineCorrelationWizard.class, "LBL_Wizard_Step_Define_Correlation"),
+        PrintUtil.i18n(DefineCorrelationWizard.class, "LBL_Wizard_Step_Correlation_Configuration")
+    };
     
     private WizardDescriptor wizardDescriptor;
     private BpelNode mainBpelNode;
@@ -74,7 +81,11 @@ public class DefineCorrelationWizard implements WizardProperties {
         wizardDescriptor.putProperty(PROPERTY_CONTENT_NUMBERED, true);
         wizardDescriptor.putProperty(PROPERTY_HELP_DISPLAYED, false);
         wizardDescriptor.putProperty(PROPERTY_LEFT_DIMENSION, LEFT_DIMENSION_VALUE);
+        wizardDescriptor.putProperty(PROPERTY_CONTENT_DATA, WIZARD_STEP_NAMES);
         
+        wizardDescriptor.setTitleFormat(new MessageFormat(
+            PrintUtil.i18n(DefineCorrelationWizard.class, 
+            "LBL_DefineCorrelation_Wizard_Title_Format")));
         wizardDescriptor.setTitle(PrintUtil.i18n(DefineCorrelationWizard.class, 
             "LBL_DefineCorrelation_Wizard_Title"));
     }
@@ -84,9 +95,15 @@ public class DefineCorrelationWizard implements WizardProperties {
     }
     
     private List<Panel> getWizardPanelList() {
-        List<Panel> panelList = new ArrayList<Panel>(2);
-        panelList.add(new WizardStartPanel());
-        panelList.add(new WizardFinishPanel());
+        List<Panel> panelList = new ArrayList<Panel>(WIZARD_STEP_NAMES.length);
+        panelList.add(new WizardSelectMessagingActivityPanel());
+        panelList.add(new WizardDefineCorrelationPanel());
+        panelList.add(new WizardCorrelationConfigurationPanel());
+        for (int i = 0; i < panelList.size(); ++i) {
+            JPanel jPanel = (JPanel) panelList.get(i);
+            jPanel.setName(WIZARD_STEP_NAMES[i]);
+            jPanel.putClientProperty(PROPERTY_CONTENT_SELECTED_INDEX, i);
+        }
         return panelList;
     }
 
@@ -106,51 +123,66 @@ public class DefineCorrelationWizard implements WizardProperties {
         public void readSettings(Object settings) {}
         public void storeSettings(Object settings) {}
         
+        
+        
         @Override
         public boolean isValid() {return true;};
     }
     //========================================================================//
-    public class WizardStartPanel extends WizardAbstractPanel {
-        public WizardStartPanel() {
+    public class WizardSelectMessagingActivityPanel extends WizardAbstractPanel {
+        public WizardSelectMessagingActivityPanel() {
             super();
-            setName(getComponentName());
-            putClientProperty(PROPERTY_CONTENT_SELECTED_INDEX, 0);
-/******???????*/ putClientProperty(PROPERTY_CONTENT_DATA, new String[] {"Start Panel", "Finish Panel"});
-/******???????*/ putClientProperty(PROPERTY_ERROR_MESSAGE, "Start Panel: Error Message");
 
+putClientProperty(PROPERTY_ERROR_MESSAGE, "SelectMessagingActivity");
 add(new JLabel((String)getClientProperty(PROPERTY_ERROR_MESSAGE)));
         }
-        
+
         @Override
         public Component getComponent() {return this;}
         @Override
-        protected String getComponentName() {return "Start Panel";}
+        protected String getComponentName() {return getName();}
 
         @Override
         public Dimension getPreferredSize() {
-            return new Dimension(200, 200);
+            return PANEL_DIMENSION_VALUE;
         }
     }
     //========================================================================//
-    public class WizardFinishPanel extends WizardAbstractPanel implements WizardDescriptor.FinishablePanel {
-        public WizardFinishPanel() {
+    public class WizardDefineCorrelationPanel extends WizardAbstractPanel implements WizardDescriptor.Panel {
+        public WizardDefineCorrelationPanel() {
             super();
-            setName(getComponentName());
-            putClientProperty(PROPERTY_CONTENT_SELECTED_INDEX, 1);
-/******???????*/ putClientProperty(PROPERTY_CONTENT_DATA, new String[] {"Start Panel", "Finish Panel"});
-/******???????*/ putClientProperty(PROPERTY_ERROR_MESSAGE, "Finish Panel: Error Message");
 
+putClientProperty(PROPERTY_ERROR_MESSAGE, "DefineCorrelationPanel");
 add(new JLabel((String)getClientProperty(PROPERTY_ERROR_MESSAGE)));
         }
 
         @Override
         public Component getComponent() {return this;}
         @Override
-        protected String getComponentName() {return "Finish Panel";}
+        protected String getComponentName() {return getName();}
 
         @Override
         public Dimension getPreferredSize() {
-            return new Dimension(200, 200);
+            return PANEL_DIMENSION_VALUE;
+        }
+    }
+    //========================================================================//
+    public class WizardCorrelationConfigurationPanel extends WizardAbstractPanel implements WizardDescriptor.FinishablePanel {
+        public WizardCorrelationConfigurationPanel() {
+            super();
+
+putClientProperty(PROPERTY_ERROR_MESSAGE, "CorrelationConfiguration Panel");
+add(new JLabel((String)getClientProperty(PROPERTY_ERROR_MESSAGE)));
+        }
+
+        @Override
+        public Component getComponent() {return this;}
+        @Override
+        protected String getComponentName() {return getName();}
+
+        @Override
+        public Dimension getPreferredSize() {
+            return PANEL_DIMENSION_VALUE;
         }
         public boolean isFinishPanel() {return true;}
     }
