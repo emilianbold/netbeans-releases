@@ -54,18 +54,20 @@ import org.openide.loaders.DataObjectNotFoundException;
 public class SemanticHighlighterFactory extends EditorAwareCsmFileTaskFactory {
 
     @Override
-    protected Runnable createTask(final FileObject fo) {
+    protected PhaseRunner createTask2(final FileObject fo) {
         try {
             DataObject dobj = DataObject.find(fo);
-            EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);
+            EditorCookie ec = dobj.getCookie(EditorCookie.class);
             return new SemanticHighlighter(ec.getDocument());
         } catch (DataObjectNotFoundException ex)  {
-            return new Runnable() {
-                public void run() {
-                    // do nothing
-                }
-            };
+            ex.printStackTrace();
         }
+        return null;
+    }
+
+    @Override
+    protected Runnable createTask(FileObject file) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

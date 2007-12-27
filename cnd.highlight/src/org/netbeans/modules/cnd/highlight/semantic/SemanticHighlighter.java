@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.highlight.semantic.HighlighterBase;
 import org.netbeans.modules.cnd.highlight.semantic.options.SemanticHighlightingOptions;
+import org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory.PhaseRunner;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 
@@ -72,7 +73,7 @@ import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
  *
  * @author Sergey Grinev
  */
-public class SemanticHighlighter extends HighlighterBase {
+public class SemanticHighlighter extends HighlighterBase implements PhaseRunner {
 
     private final static String COLORS_INACTIVE = "cc-highlighting-inactive"; // NOI18N
     private final static String COLORS_MACRO = "cc-highlighting-macros-user"; // NOI18N
@@ -82,7 +83,7 @@ public class SemanticHighlighter extends HighlighterBase {
     private AttributeSet macroColors; //= AttributesUtilities.createImmutable(StyleConstants.Foreground, new Color(0, 105, 0));
     private AttributeSet sysMacroColors; //= AttributesUtilities.createImmutable(StyleConstants.Foreground, new Color(150, 105, 0));
     private AttributeSet fieldsColors; //= AttributesUtilities.createImmutable(StyleConstants.Foreground, new Color(175, 175, 0));
-    private AttributeSet functionsColors = AttributesUtilities.createImmutable(StyleConstants.Bold, Boolean.TRUE);
+    private AttributeSet functionsColors; // = AttributesUtilities.createImmutable(StyleConstants.Bold, Boolean.TRUE);
     private final AttributeSet cleanUp = AttributesUtilities.createImmutable(
             StyleConstants.Underline, null,
             StyleConstants.StrikeThrough, null,
@@ -99,10 +100,15 @@ public class SemanticHighlighter extends HighlighterBase {
         sysMacroColors = AttributesUtilities.createComposite(fcs.getTokenFontColors(COLORS_SYSMACRO), cleanUp);
         if (SemanticHighlightingOptions.SEMANTIC_ADVANCED) {
             fieldsColors = AttributesUtilities.createComposite(fcs.getTokenFontColors(COLORS_FIELDS), cleanUp);
+            functionsColors = AttributesUtilities.createImmutable(StyleConstants.Bold, Boolean.TRUE);
         }
     }
 
     public static OffsetsBag getHighlightsBag(Document doc) {
+        if (doc == null) {
+            return null;
+        }
+        
         OffsetsBag bag = (OffsetsBag) doc.getProperty(SemanticHighlighter.class);
 
         if (bag == null) {
@@ -230,6 +236,14 @@ public class SemanticHighlighter extends HighlighterBase {
             ex.printStackTrace();
         } catch (Exception ex) {
             ex.printStackTrace();
+        }
+    }
+
+    public void cleanAfterYourself() {
+        BaseDocument doc = getDocument();
+        if (doc != null) {
+            //System.err.println("cleanAfterYourself");
+            getHighlightsBag(doc).clear();
         }
     }
 }
