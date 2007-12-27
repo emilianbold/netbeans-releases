@@ -201,7 +201,7 @@ public class ReplyNode extends BpelNode<Reply> {
             ActionType.SHOW_POPERTY_EDITOR,
             ActionType.SEPARATOR,
             
-            ActionType.CREATE_CORRELATION_SET,
+            ActionType.DEFINE_CORRELATION,
             ActionType.SEPARATOR,
             
             ActionType.MOVE_UP,

@@ -80,7 +80,7 @@ import org.netbeans.modules.bpel.nodes.actions.AddCatchAllAction;
 import org.netbeans.modules.bpel.nodes.actions.AddCompensationHandlerAction;
 import org.netbeans.modules.bpel.nodes.actions.AddElseIfAction;
 import org.netbeans.modules.bpel.nodes.actions.AddCorrelationSetAction;
-import org.netbeans.modules.bpel.nodes.actions.CreateCorrelationSetAction;
+import org.netbeans.modules.bpel.nodes.actions.DefineCorrelationAction;
 import org.netbeans.modules.bpel.nodes.actions.AddMessageExchangeAction;
 import org.netbeans.modules.bpel.nodes.actions.AddOnAlarmAction;
 import org.netbeans.modules.bpel.nodes.actions.AddOnEventAction;
@@ -276,9 +276,8 @@ public abstract class BpelNode<T>
                   SystemAction.get(AddWsdlImportAction.class));
         ACTION_TYPE_MAP.put(ActionType.ADD_SCHEMA_IMPORT,
                   SystemAction.get(AddSchemaImportAction.class));
-        ACTION_TYPE_MAP.put(ActionType.CREATE_CORRELATION_SET,
-                  SystemAction.get(CreateCorrelationSetAction.class));
-        
+        ACTION_TYPE_MAP.put(ActionType.DEFINE_CORRELATION,
+                  SystemAction.get(DefineCorrelationAction.class));
     }
     
     private Object reference;
