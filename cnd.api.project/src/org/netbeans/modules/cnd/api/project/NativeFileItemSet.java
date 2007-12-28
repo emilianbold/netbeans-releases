@@ -40,9 +40,13 @@
  */
 package org.netbeans.modules.cnd.api.project;
 
-import java.util.Set;
+import java.util.Collection;
 import org.openide.nodes.Node;
 
-public interface NativeFileItemSet extends Set<NativeFileItem>, Node.Cookie {
+public interface NativeFileItemSet extends Node.Cookie {
+    Collection<NativeFileItem> getItems();
+    void add(NativeFileItem item);
+    void remove(NativeFileItem item);
+    boolean isEmpty();
 }
 

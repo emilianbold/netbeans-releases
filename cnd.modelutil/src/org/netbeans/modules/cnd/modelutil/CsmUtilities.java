@@ -314,8 +314,8 @@ public class CsmUtilities {
                         }
                     }
                 } else {
-                    List<CsmFile> l = new ArrayList<CsmFile>(set.size());
-                    for (NativeFileItem item : set) {
+                    List<CsmFile> l = new ArrayList<CsmFile>(set.getItems().size());
+                    for (NativeFileItem item : set.getItems()) {
                         CsmProject csmProject = CsmModelAccessor.getModel().getProject(item.getNativeProject());
                         if (csmProject != null) {
                             CsmFile file = csmProject.findFile(item.getFile().getAbsolutePath());

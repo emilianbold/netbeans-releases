@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.modelimpl.trace;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -301,9 +302,24 @@ public final class NativeProjectProvider {
         }
     }
     
-    private static class NativeFileItemSetImpl extends HashSet<NativeFileItem> implements NativeFileItemSet {
+    private static class NativeFileItemSetImpl implements NativeFileItemSet {
+        private List<NativeFileItem> items = new ArrayList<NativeFileItem>(1);
+        public Collection<NativeFileItem> getItems() {
+            return new ArrayList<NativeFileItem>(items);
+        }
+        public void add(NativeFileItem item){
+            if (!items.contains(item)) {
+                items.add(item);
+            }
+        }
+        public void remove(NativeFileItem item){
+            items.remove(item);
+        }
+        public boolean isEmpty() {
+            return items.isEmpty();
+        }
     }
-    
+
     private static final class NativeFileItemImpl implements NativeFileItem {
 	
         private final File file;

@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -260,7 +261,7 @@ public class Folder {
                     myNativeFileItemSet = new MyNativeFileItemSet();
                     dataObject.addCookie(myNativeFileItemSet);
                 }
-                myNativeFileItemSet.add(item);
+                myNativeFileItemSet.items.add(item);
             }
         }
         
@@ -704,7 +705,22 @@ public class Folder {
         configurationDescriptor.setModified();
     }
     
-    class MyNativeFileItemSet extends HashSet<NativeFileItem> implements NativeFileItemSet {
+    static private class MyNativeFileItemSet implements NativeFileItemSet {
+        private List<NativeFileItem> items = new ArrayList<NativeFileItem>(1);
+        public Collection<NativeFileItem> getItems() {
+            return new ArrayList<NativeFileItem>(items);
+        }
+        public synchronized void add(NativeFileItem item){
+            if (!items.contains(item)) {
+                items.add(item);
+            }
+        }
+        public synchronized void remove(NativeFileItem item){
+            items.remove(item);
+        }
+        public boolean isEmpty() {
+            return items.isEmpty();
+        }
     }
     
     /** Look up i18n strings here */

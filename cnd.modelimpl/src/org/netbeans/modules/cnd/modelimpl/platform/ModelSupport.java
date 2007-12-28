@@ -678,7 +678,7 @@ public class ModelSupport implements PropertyChangeListener {
                 set = findCanonicalSet(curObj);
             }
 	    
-	    if( set != null && ! set.isEmpty() ) {
+	    if( set != null && ! set.getItems().isEmpty() ) {
 		
 		EditorCookie editor = curObj.getCookie(EditorCookie.class);
 		Document doc = editor != null ? editor.getDocument() : null;
@@ -686,7 +686,7 @@ public class ModelSupport implements PropertyChangeListener {
 		File file = FileUtil.toFile(primaryFile);
 		final FileBufferDoc buffer = new FileBufferDoc(file, doc);
 		
-		for( NativeFileItem nativeFile : set ) {
+		for( NativeFileItem nativeFile : set.getItems() ) {
 		    ProjectBase csmProject = (ProjectBase) model.getProject(nativeFile.getNativeProject());
                     if (csmProject != null) { // this could be null when code assistance is turned off for project
                         addBufNP(curObj, new BufAndProj(buffer, csmProject, nativeFile));
@@ -751,7 +751,7 @@ public class ModelSupport implements PropertyChangeListener {
 			    }
 			    else {
 				Diagnostic.trace("NativeFileItemSet:"); // NOI18N
-				for( NativeFileItem item : set ) {
+				for( NativeFileItem item : set.getItems() ) {
 				    Diagnostic.trace("\t" + item.getNativeProject().getProjectDisplayName()); // NOI18N
 				}
 			    }
