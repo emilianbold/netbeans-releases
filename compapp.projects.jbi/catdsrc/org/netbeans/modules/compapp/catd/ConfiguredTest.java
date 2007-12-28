@@ -96,9 +96,9 @@ import javax.xml.transform.TransformerException;
 import javax.xml.parsers.ParserConfigurationException;
 import junit.framework.TestCase;
 import junit.framework.TestResult;
-//import org.custommonkey.xmlunit.Diff;
-//import org.custommonkey.xmlunit.DifferenceListener;
-//import org.custommonkey.xmlunit.IgnoreTextAndAttributeValuesDifferenceListener;
+import org.custommonkey.xmlunit.Diff;
+import org.custommonkey.xmlunit.DifferenceListener;
+import org.custommonkey.xmlunit.IgnoreTextAndAttributeValuesDifferenceListener;
 import org.xml.sax.SAXException;
 import org.w3c.dom.Node;
 import org.w3c.dom.Element;
@@ -2235,7 +2235,7 @@ public class ConfiguredTest extends TestCase {
                     System.out.println(logPrefix + " Success: response matches expected output.");
                 }
             }
-        }/* else if (comparisonType.equals(COMPARISON_TYPE_SKELETON)) {
+        } else if (comparisonType.equals(COMPARISON_TYPE_SKELETON)) {
             DifferenceListener myDifferenceListener = new IgnoreTextAndAttributeValuesDifferenceListener();
             Diff difference = new Diff(controlXML, testXML);
             difference.overrideDifferenceListener(myDifferenceListener);
@@ -2250,7 +2250,7 @@ public class ConfiguredTest extends TestCase {
                 //--assertTrue("Response 'skeleton' is not similar enough to be considered 'equal' to expected output skelton. \nreceived: " + testXML + "\nexpected: " + controlXML + "\ndifference:" + difference, difference.similar());
                 assertTrue(timeStampPrefix + " The response 'skeleton' is not similar enough to be considered 'equal' to expected output skelton.", isSimilar);
             }
-        }*/
+        }
     }
     
     private static File getActualOutputFile(File actualOutputDir, boolean success) {
