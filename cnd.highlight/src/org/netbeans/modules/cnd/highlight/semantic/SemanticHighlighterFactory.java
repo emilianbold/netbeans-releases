@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.highlight.semantic;
 
+import javax.swing.text.Document;
 import org.netbeans.modules.cnd.model.tasks.EditorAwareCsmFileTaskFactory;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -55,14 +56,25 @@ public class SemanticHighlighterFactory extends EditorAwareCsmFileTaskFactory {
 
     @Override
     protected PhaseRunner createTask2(final FileObject fo) {
+        PhaseRunner pr = null;
         try {
             DataObject dobj = DataObject.find(fo);
             EditorCookie ec = dobj.getCookie(EditorCookie.class);
-            return new SemanticHighlighter(ec.getDocument());
+            Document doc = ec.getDocument();
+            if (doc != null) {
+                pr = new SemanticHighlighter(doc);
+            }
         } catch (DataObjectNotFoundException ex)  {
             ex.printStackTrace();
         }
-        return null;
+        return pr != null ? pr : new PhaseRunner() {
+            public void run() {
+                // do nothing 
+            }
+            public void cleanAfterYourself() {
+                // do nothing either
+            }
+        };
     }
 
     @Override
