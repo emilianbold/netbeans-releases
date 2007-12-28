@@ -101,7 +101,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     /** Creates a new instance of CsmProjectImpl */
     protected ProjectBase(ModelImpl model, Object platformProject, String name) {
         setStatus(Status.Initial);
-        this.name = ProjectNameCache.getString(name);
+        this.name = ProjectNameCache.getManager().getString(name);
         init(model, platformProject);
         NamespaceImpl ns = new NamespaceImpl(this);
         assert ns != null;
@@ -198,7 +198,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         } else {
 	    throw new IllegalArgumentException("Incorrect platform project class: " + platformProject.getClass()); // NOI18N
         }
-        return ProjectNameCache.getString(result);
+        return ProjectNameCache.getManager().getString(result);
     }
     
     /** Gets an object, which represents correspondent IDE project */
@@ -1340,7 +1340,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private void _registerNamespace(NamespaceImpl ns ) {
         assert (ns != null);
         CharSequence key = ns.getQualifiedName();
-        assert (key != null);
+        assert (key != null && !(key instanceof String) );
         CsmUID<CsmNamespace> nsUID = RepositoryUtils.put(ns);
         assert nsUID != null;
         namespaces.put(key, nsUID);
@@ -1350,7 +1350,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         assert (ns != null);
         assert !ns.isGlobal();
         CharSequence key = ns.getQualifiedName();
-        assert (key != null);
+        assert (key != null && !(key instanceof String));
         CsmUID<CsmNamespace> nsUID = namespaces.remove(key);
         assert nsUID != null;
         RepositoryUtils.remove(nsUID);
@@ -1956,7 +1956,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
         assert aFactory != null : "default UID factory can not be bull";
         
-        this.name = ProjectNameCache.getString(aStream.readUTF());
+        this.name = ProjectNameCache.getManager().getString(aStream.readUTF());
         assert this.name != null : "project name can not be null";
 	
         String unitName = aStream.readUTF();

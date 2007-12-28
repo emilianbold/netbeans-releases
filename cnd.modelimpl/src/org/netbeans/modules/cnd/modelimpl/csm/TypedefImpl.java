@@ -101,7 +101,7 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef>  implemen
         } else {
             this.type = type;
         }
-        this.name = QualifiedNameCache.getString(name);
+        this.name = QualifiedNameCache.getManager().getString(name);
     }
 
     public boolean isTypeUnnamed(){
@@ -261,7 +261,7 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef>  implemen
     
     public TypedefImpl(DataInput input) throws IOException {
         super(input);
-        this.name = QualifiedNameCache.getString(input.readUTF());
+        this.name = QualifiedNameCache.getManager().getString(input.readUTF());
         assert this.name != null;
         typeUnnamed = input.readBoolean();
         this.type = PersistentUtils.readType(input);

@@ -59,6 +59,7 @@ import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Formatter;
 import java.util.Iterator;
+import org.netbeans.modules.cnd.repository.sfs.index.CompactFileIndex;
 import org.netbeans.modules.cnd.repository.sfs.statistics.FileStatistics;
 import org.netbeans.modules.cnd.repository.sfs.statistics.RangeStatistics;
 import org.netbeans.modules.cnd.repository.spi.Key;
@@ -105,8 +106,8 @@ class IndexedStorageFile extends FileStorage {
         } 
         
         if (recreate) {            
-            //index = Stats.useCompactIndex ? new CompactFileIndex() : new SimpleFileIndex();            
-            index = new SimpleFileIndex();            
+            index = Stats.useCompactIndex ? new CompactFileIndex() : new SimpleFileIndex();            
+            //index = new SimpleFileIndex();            
             fileRWAccess.truncate(0);
             
             if (indexFile.exists()) {

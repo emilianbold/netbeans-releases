@@ -99,7 +99,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         initInitialValue(ast);
         _static = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_static);
         _extern = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_extern);
-        this.name = QualifiedNameCache.getString(name);
+        this.name = QualifiedNameCache.getManager().getString(name);
         this.type = type;
 	_setScope(scope);
         if (registerInProject) {
@@ -326,7 +326,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     
     public VariableImpl(DataInput input) throws IOException {
         super(input);
-        this.name = QualifiedNameCache.getString(input.readUTF());
+        this.name = QualifiedNameCache.getManager().getString(input.readUTF());
         assert this.name != null;
         this._static = input.readBoolean();
         this._extern = input.readBoolean();

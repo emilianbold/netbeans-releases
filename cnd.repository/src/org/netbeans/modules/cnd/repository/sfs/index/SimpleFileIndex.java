@@ -45,7 +45,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -60,70 +59,11 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  * @author Vladimir Kvashin
  */
 public class SimpleFileIndex implements FileIndex, SelfPersistent {
-    
-    final private Map<Key, ChunkInfoBase> map = new ConcurrentHashMap<Key, ChunkInfoBase>(DEFAULT_INDEX_CAPACITY);   
+    private static final int DEFAULT_INDEX_CAPACITY = 53711;
+    private final Map<Key, ChunkInfoBase> map = new ConcurrentHashMap<Key, ChunkInfoBase>(DEFAULT_INDEX_CAPACITY);   
     
     public SimpleFileIndex (){
-        
     }
-    
-    /**
-     * Represents a file extent
-     *
-     * Should we keep size in index? 
-     * keeping size in index waistes memory;
-     * on the other hand, it allows to allocate buffer easily and effectively 
-     */
-    private static final class ChunkInfoBase implements ChunkInfo, Comparable, SelfPersistent {
-
-	private long offset;
-	private int size;
-	
-	public ChunkInfoBase(long offset, int size) {
-	    this.offset = offset;
-	    this.size = size;
-	}
-        
-        public ChunkInfoBase (DataInput input) throws IOException {
-            this.offset = input.readLong();
-            this.size   = input.readInt();                    
-        }
-	
-	public String toString() {
-	    StringBuilder sb = new StringBuilder("ChunkInfo ["); // NOI18N
-	    sb.append("offset="); // NOI18N
-	    sb.append(getOffset());
-	    sb.append(" size="); // NOI18N
-	    sb.append(getSize());
-	    sb.append(']');
-	    return sb.toString();
-	}
-
-	public int compareTo(Object o) {
-	    if (o instanceof ChunkInfo) {
-		return (this.getOffset()  < ((ChunkInfo) o).getOffset()) ? -1 : 1;
-	    }
-	    return 1;
-	}
-
-	public long getOffset() {
-	    return offset;
-	}
-	
-	public int getSize() {
-	    return size;
-	}
-	
-	public void setOffset(long offset) {
-	    this.offset = offset;
-	}
-
-        public void write(DataOutput output) throws IOException {
-            output.writeLong(this.offset);
-            output.writeInt(this.size);
-        }
-    }
-    
    
     public SimpleFileIndex (DataInput input) throws IOException {
         int size = input.readInt();
@@ -173,5 +113,62 @@ public class SimpleFileIndex implements FileIndex, SelfPersistent {
             anEntry.getValue().write(output);
         }
     }
-    final static private int DEFAULT_INDEX_CAPACITY = 53711;
+
+    /**
+     * Represents a file extent
+     *
+     * Should we keep size in index? 
+     * keeping size in index waistes memory;
+     * on the other hand, it allows to allocate buffer easily and effectively 
+     */
+    private static final class ChunkInfoBase implements ChunkInfo, Comparable, SelfPersistent {
+
+	private long offset;
+	private int size;
+	
+	public ChunkInfoBase(long offset, int size) {
+	    this.offset = offset;
+	    this.size = size;
+	}
+        
+        public ChunkInfoBase (DataInput input) throws IOException {
+            this.offset = input.readLong();
+            this.size   = input.readInt();                    
+        }
+	
+        @Override
+	public String toString() {
+	    StringBuilder sb = new StringBuilder("ChunkInfo ["); // NOI18N
+	    sb.append("offset="); // NOI18N
+	    sb.append(getOffset());
+	    sb.append(" size="); // NOI18N
+	    sb.append(getSize());
+	    sb.append(']');
+	    return sb.toString();
+	}
+
+	public int compareTo(Object o) {
+	    if (o instanceof ChunkInfo) {
+		return (this.getOffset()  < ((ChunkInfo) o).getOffset()) ? -1 : 1;
+	    }
+	    return 1;
+	}
+
+	public long getOffset() {
+	    return offset;
+	}
+	
+	public int getSize() {
+	    return size;
+	}
+	
+	public void setOffset(long offset) {
+	    this.offset = offset;
+	}
+
+        public void write(DataOutput output) throws IOException {
+            output.writeLong(this.offset);
+            output.writeInt(this.size);
+        }
+    }
 }

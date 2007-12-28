@@ -123,7 +123,7 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
     @Override
     public CharSequence getQualifiedName() {
 	if( qualifiedName == null ) {
-	    qualifiedName = QualifiedNameCache.getString(findQualifiedName());
+	    qualifiedName = QualifiedNameCache.getManager().getString(findQualifiedName());
 	}
 	return qualifiedName;
     }
@@ -276,7 +276,7 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
     
     public VariableDefinitionImpl(DataInput input) throws IOException {
         super(input);
-        this.qualifiedName = QualifiedNameCache.getString(input.readUTF());
+        this.qualifiedName = QualifiedNameCache.getManager().getString(input.readUTF());
         assert this.qualifiedName != null;
         this.classOrNspNames = PersistentUtils.readStrings(input, QualifiedNameCache.getManager());
         

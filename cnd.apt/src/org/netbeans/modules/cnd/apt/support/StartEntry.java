@@ -55,7 +55,7 @@ import org.netbeans.modules.cnd.utils.cache.FilePathCache;
  * @author Alexander Simon
  */
 public final class StartEntry implements Persistent, SelfPersistent{
-    private final String startFile;
+    private final CharSequence startFile;
     //private boolean isCPP; // TODO: flag to be used for understanding C/C++ lang
     private final Key startFileProject;
     public StartEntry(String startFile, Key startFileProject) {
@@ -64,7 +64,7 @@ public final class StartEntry implements Persistent, SelfPersistent{
     }
     
     public String getStartFile(){
-        return startFile;
+        return startFile.toString();
     }
 
     public Key getStartFileProject(){
@@ -73,13 +73,13 @@ public final class StartEntry implements Persistent, SelfPersistent{
     
     public void write(DataOutput output) throws IOException {
         assert output != null;
-        output.writeUTF(startFile);
+        output.writeUTF(startFile.toString());
         KeyFactory.getDefaultFactory().writeKey(startFileProject, output);
     }
     
     public StartEntry(final DataInput input) throws IOException {
         assert input != null;
-        startFile = input.readUTF();
+        startFile = FilePathCache.getString(input.readUTF());
         startFileProject = KeyFactory.getDefaultFactory().readKey(input);
     }
 

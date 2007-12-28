@@ -1174,7 +1174,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         
         public SortedKey(DataInput input) throws IOException {
             start = input.readInt();
-            name = NameCache.getString(input.readUTF());
+            name = NameCache.getManager().getString(input.readUTF());
         }
     }
     

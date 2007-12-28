@@ -65,7 +65,7 @@ final class OffsetableDeclarationKey extends OffsetableKey {
     }
     
     public OffsetableDeclarationKey(OffsetableDeclarationBase obj, int index) {
-	super(obj, Utils.getCsmDeclarationKindkey(obj.getKind()), NameCache.getString(Integer.toString(index)));
+	super(obj, Utils.getCsmDeclarationKindkey(obj.getKind()), NameCache.getManager().getString(Integer.toString(index)));
 	// we use index for unnamed objects
     }
     

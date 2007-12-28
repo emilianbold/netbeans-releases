@@ -42,25 +42,29 @@
 package org.netbeans.modules.cnd.modelimpl.textcache;
 
 import org.netbeans.modules.cnd.utils.cache.APTStringManager;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
  * help class to share deserialized project names
  * @author Vladimir Voskresensky
  */
-public final class ProjectNameCache {
-    private static final APTStringManager instance = APTStringManager.instance("Shared Project Names"); // NOI18N    
+public final class ProjectNameCache extends APTStringManager {
+    private static final APTStringManager manager = new ProjectNameCache();
+    private final APTStringManager instance = APTStringManager.instance("Shared Project Names"); // NOI18N;
+
     private ProjectNameCache() {
     }
     
-    public static CharSequence getString(CharSequence text) {
+    public CharSequence getString(CharSequence text) {
+        text = CharSequenceKey.create(text);
         return instance.getString(text);
     }
     
-    public static void dispose() {
+    public void dispose() {
         instance.dispose();
     }
     
     public static APTStringManager getManager() {
-        return instance;
-    }    
+        return manager;
+    }
 }    

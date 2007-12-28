@@ -45,7 +45,7 @@ import java.util.Comparator;
  *
  * @author Alexander Simon
  */
-public final class CharSequenceKey implements CharSequence {
+public final class CharSequenceKey implements CharSequence, Comparable<CharSequenceKey> {
     private static final CharSequenceKey EMPTY = new CharSequenceKey("");
     public static final Comparator<CharSequence> Comparator = new CharSequenceComparator();
     public static final Comparator<CharSequence> ComparatorIgnoreCase = new CharSequenceComparatorIgnoreCase();
@@ -178,6 +178,10 @@ public final class CharSequenceKey implements CharSequence {
             }
             return len1 - len2;
         }
+    }
+
+    public int compareTo(CharSequenceKey o) {
+        return Comparator.compare(this, o);
     }
 
     private static class CharSequenceComparatorIgnoreCase implements Comparator<CharSequence> {

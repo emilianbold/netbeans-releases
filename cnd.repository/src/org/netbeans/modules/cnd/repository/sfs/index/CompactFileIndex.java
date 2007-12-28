@@ -45,6 +45,8 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.support.KeyFactory;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
@@ -55,10 +57,13 @@ import org.netbeans.modules.cnd.repository.util.LongHashMap;
  * @author Vladimir Kvashin
  */
 public class CompactFileIndex implements FileIndex, SelfPersistent {
-    private static final long mask = 0x000000FFFFFFFFFFL;
-    private static final int shift = 40;
+    private static final int shift = 37;
+    private static final long mask = (1L<<shift)-1;
+    private static final int DEFAULT_INDEX_CAPACITY = 53711;
+
+    private ReadWriteLock lock = new ReentrantReadWriteLock();
     
-    final LongHashMap<Key> map = new LongHashMap<Key>();;
+    final LongHashMap<Key> map = new LongHashMap<Key>(DEFAULT_INDEX_CAPACITY);
     
     public CompactFileIndex () {
     }
@@ -75,65 +80,47 @@ public class CompactFileIndex implements FileIndex, SelfPersistent {
         }
     }
     
-    
-    
-    private static class LongChunkInfo implements ChunkInfo, Comparable, SelfPersistent {
-	
-	long entry;
-
-	public LongChunkInfo(final long entry) {
-	    this.entry = entry;
-	}
-	
-	public int getSize() {
-	    return convertToSize(entry);
-	}
-	
-	public long getOffset() {
-	    return convertToOffset(entry);
-	}
-	
-	public int compareTo(final Object o) {
-	    if (o instanceof ChunkInfo) {
-		return (this.getOffset()  < ((ChunkInfo) o).getOffset()) ? -1 : 1;
-	    }
-	    return 1;
-	}
-	
-	public void setOffset(final long offset) {
-	    entry = convertToLongData(offset, getSize());
-	}
-	
-	public String toString() {
-	    final Formatter f = new Formatter();
-	    f.format("ChunkInfo [offset=%d (%H) size=%d long=%d]", getOffset(), getSize(), entry); // NOI18N
-	    return f.toString();
-	}
-
-        public void write(final DataOutput output) throws IOException {
-            output.writeLong(entry);
-        }
-    }
-    
     public int size() {
-	return map.size();
+        try {
+            lock.readLock().lock();
+            return map.size();
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     public Collection<Key> keySet() {
-	return map.keySet();
+        try {
+            lock.readLock().lock();
+            return new ArrayList(map.keySet());
+        } finally {
+            lock.readLock().unlock();
+        }
     }
     
     public Iterator<Key> getKeySetIterator() {
-	return map.keySet().iterator();
+        return keySet().iterator();
     }
     
     public int remove(final Key key) {
-	final long data = map.remove(key);
-	return (data == LongHashMap.NO_VALUE) ? 0 : convertToSize(data);
+        long data = LongHashMap.NO_VALUE;
+        try {
+            lock.writeLock().lock();
+            data = map.remove(key);
+        } finally {
+            lock.writeLock().unlock();
+        }
+        return (data == LongHashMap.NO_VALUE) ? 0 : convertToSize(data);
     }
 
     public int put(final Key key, final long offset, final int size) {
-	final long data = map.put(key, convertToLongData(offset, size));
+        long data = LongHashMap.NO_VALUE;
+        try {
+            lock.writeLock().lock();
+            data = map.put(key, convertToLongData(offset, size));
+        } finally {
+            lock.writeLock().unlock();
+        }
 	return (data == LongHashMap.NO_VALUE) ? 0 : convertToSize(data);
     }
 
@@ -171,6 +158,44 @@ public class CompactFileIndex implements FileIndex, SelfPersistent {
             final LongHashMap.Entry<Key> entry = setIterator.next();
             KeyFactory.getDefaultFactory().writeKey(entry.getKey(), output);
             output.writeLong(entry.getValue());
+        }
+    }
+
+    private static class LongChunkInfo implements ChunkInfo, Comparable, SelfPersistent {
+	long entry;
+
+	public LongChunkInfo(final long entry) {
+	    this.entry = entry;
+	}
+	
+	public int getSize() {
+	    return convertToSize(entry);
+	}
+	
+	public long getOffset() {
+	    return convertToOffset(entry);
+	}
+	
+	public int compareTo(final Object o) {
+	    if (o instanceof ChunkInfo) {
+		return (this.getOffset()  < ((ChunkInfo) o).getOffset()) ? -1 : 1;
+	    }
+	    return 1;
+	}
+	
+	public void setOffset(final long offset) {
+	    entry = convertToLongData(offset, getSize());
+	}
+	
+        @Override
+	public String toString() {
+	    final Formatter f = new Formatter();
+	    f.format("ChunkInfo [offset=%d (%H) size=%d long=%d]", getOffset(), getSize(), entry); // NOI18N
+	    return f.toString();
+	}
+
+        public void write(final DataOutput output) throws IOException {
+            output.writeLong(entry);
         }
     }
 }

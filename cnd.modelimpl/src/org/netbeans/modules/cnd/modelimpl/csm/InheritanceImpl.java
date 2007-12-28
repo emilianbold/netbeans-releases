@@ -151,7 +151,7 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
                     }
                     //CsmObject o = ResolverFactory.createResolver(this).resolve(new String[] { token.getText() } );
                     this.ancestorName = ancNameBuffer.toString();
-                    this.ancestorName = counter == 0 ? NameCache.getString(this.ancestorName) : QualifiedNameCache.getString(this.ancestorName);
+                    this.ancestorName = counter == 0 ? NameCache.getManager().getString(this.ancestorName) : QualifiedNameCache.getManager().getString(this.ancestorName);
                     return; // it's definitely the last!; besides otherwise we get NPE in for 
                     //break;
             }
@@ -214,7 +214,7 @@ public class InheritanceImpl extends OffsetableBase implements CsmInheritance {
         this.visibility = PersistentUtils.readVisibility(input);
         this.virtual = input.readBoolean();
         this.ancestorName = input.readUTF();
-        this.ancestorName = ancestorName.toString().indexOf("::") == -1 ? NameCache.getString(ancestorName) : QualifiedNameCache.getString(ancestorName); // NOI18N
+        this.ancestorName = ancestorName.toString().indexOf("::") == -1 ? NameCache.getManager().getString(ancestorName) : QualifiedNameCache.getManager().getString(ancestorName); // NOI18N
         assert this.ancestorName != null;
 
         // restore cached value

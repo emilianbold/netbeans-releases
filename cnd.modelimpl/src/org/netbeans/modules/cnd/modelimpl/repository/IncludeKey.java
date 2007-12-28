@@ -58,7 +58,7 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 final class IncludeKey extends OffsetableKey {
     
     public IncludeKey(CsmInclude obj) {
-	super(obj, Utils.getCsmIncludeKindkey(), NameCache.getString(obj.getIncludeName())); // NOI18N
+	super(obj, Utils.getCsmIncludeKindkey(), NameCache.getManager().getString(obj.getIncludeName())); // NOI18N
     }
     
     /*package*/ IncludeKey(DataInput aStream) throws IOException {

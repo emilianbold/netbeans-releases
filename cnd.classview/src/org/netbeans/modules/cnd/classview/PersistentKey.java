@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.*;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
  *
@@ -95,7 +96,7 @@ public final class PersistentKey {
     }
     
     public static PersistentKey createGlobalNamespaceKey(CsmProject project){
-        return new PersistentKey("", project, NAMESPACE, false); // NOI18N
+        return new PersistentKey(CharSequenceKey.empty(), project, NAMESPACE, false); // NOI18N
     }
     
     public static PersistentKey createKey(CsmIdentifiable object){

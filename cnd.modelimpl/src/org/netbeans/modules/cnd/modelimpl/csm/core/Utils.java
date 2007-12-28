@@ -150,6 +150,7 @@ public class Utils {
     }
     
     public static String getCsmDeclarationKindkey(CsmDeclaration.Kind kind) {
+        // Returned string should be differed from getCsmIncludeKindkey()
 	switch( kind ) {
 	    case BUILT_IN:		    return "B"; // NOI18N
 	    case CLASS:			    return "C"; // NOI18N

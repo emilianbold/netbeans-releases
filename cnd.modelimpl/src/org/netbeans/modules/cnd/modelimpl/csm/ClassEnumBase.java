@@ -83,7 +83,7 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
     
     protected ClassEnumBase(String name, CsmFile file, AST ast) {
         super(ast, file);
-        this.name = (name == null) ? CharSequenceKey.empty() : NameCache.getString(name);
+        this.name = (name == null) ? CharSequenceKey.empty() : NameCache.getManager().getString(name);
     }
     
     public CharSequence getName() {
@@ -117,7 +117,7 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         else  {
 	    qualifiedName = qualifiedNamePostfix;
         }
-        qualifiedName = QualifiedNameCache.getString(qualifiedName);
+        qualifiedName = QualifiedNameCache.getManager().getString(qualifiedName);
         // can't register here, because descendant class' constructor hasn't yet finished!
         // so registering is a descendant class' responsibility
     }
@@ -249,10 +249,10 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         super(input);
         this.isValid = input.readBoolean();
 	
-        this.name = NameCache.getString(input.readUTF());
+        this.name = NameCache.getManager().getString(input.readUTF());
         assert this.name != null;
 	
-        this.qualifiedName = QualifiedNameCache.getString(input.readUTF());
+        this.qualifiedName = QualifiedNameCache.getManager().getString(input.readUTF());
         assert this.qualifiedName != null;
 	
         this.scopeUID = UIDObjectFactory.getDefaultFactory().readUID(input);

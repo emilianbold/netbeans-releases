@@ -99,7 +99,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         assert (this.scopeUID != null || scope == null);
         this.scopeRef = null;
         
-        name = QualifiedNameCache.getString(initName(ast));
+        name = QualifiedNameCache.getManager().getString(initName(ast));
         rawName = AstUtil.getRawNameInChildren(ast);
 	
         RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
@@ -302,7 +302,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     }
     
     protected final void setName(CharSequence name) {
-        this.name = QualifiedNameCache.getString(name);
+        this.name = QualifiedNameCache.getManager().getString(name);
     }
     
     public CharSequence getQualifiedName() {
@@ -485,7 +485,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     
     public CharSequence getSignature() {
         if( signature == null ) {
-            signature = QualifiedNameCache.getString(createSignature());
+            signature = QualifiedNameCache.getManager().getString(createSignature());
         }
         return signature;
     }
@@ -620,7 +620,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
 
     public FunctionImpl(DataInput input) throws IOException {
         super(input);
-        this.name = QualifiedNameCache.getString(input.readUTF());
+        this.name = QualifiedNameCache.getManager().getString(input.readUTF());
         assert this.name != null;
         this.returnType = PersistentUtils.readType(input);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
@@ -635,7 +635,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         
         this.signature = PersistentUtils.readUTF(input);
         if (this.signature != null) {
-            this.signature = QualifiedNameCache.getString(this.signature);
+            this.signature = QualifiedNameCache.getManager().getString(this.signature);
         }
         this.isVoidParameterList = input.readBoolean();
         this.classTemplateSuffix = input.readUTF();

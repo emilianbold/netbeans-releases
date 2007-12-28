@@ -48,14 +48,14 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  * cache entry
  * @author Alexander Simon
  */
-public class NameCache {
-    private static final APTStringManager instance = APTStringManager.instance("Shared Names"); // NOI18N    
-    
-    /** Creates a new instance of TextCache */
+public class NameCache extends APTStringManager {
+    private static final APTStringManager manager = new NameCache();
+    private final APTStringManager instance = APTStringManager.instance("Shared Names"); // NOI18N;
+
     private NameCache() {
     }
     
-    public static CharSequence getString(CharSequence text) {
+    public CharSequence getString(CharSequence text) {
         if (text == null) {
             throw new NullPointerException("null string is illegal to share"); // NOI18N
         }        
@@ -63,11 +63,11 @@ public class NameCache {
         return instance.getString(text);
     }
     
-    public static void dispose() {
+    public void dispose() {
         instance.dispose();
-    }    
-
+    }
+    
     public static APTStringManager getManager() {
-        return instance;
-    }    
+        return manager;
+    }
 }

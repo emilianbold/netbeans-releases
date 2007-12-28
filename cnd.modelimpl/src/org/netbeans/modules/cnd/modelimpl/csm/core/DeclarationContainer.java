@@ -173,7 +173,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.UniqueNameCache;
     }
 
     public void putDeclaration(CsmOffsetableDeclaration decl) {
-	CharSequence name = UniqueNameCache.getString(decl.getUniqueName());
+	CharSequence name = UniqueNameCache.getManager().getString(decl.getUniqueName());
         @SuppressWarnings("unchecked")
 	CsmUID<CsmOffsetableDeclaration> uid = RepositoryUtils.put(decl);
 	assert uid != null;

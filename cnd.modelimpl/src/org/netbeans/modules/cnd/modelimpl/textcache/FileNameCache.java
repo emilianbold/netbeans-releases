@@ -48,21 +48,23 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  * help class to share file names for #include directives
  * @author Vladimir Voskresensky
  */
-public class FileNameCache {
-    private static final APTStringManager instance = APTStringManager.instance("Shared File Names"); // NOI18N    
+public class FileNameCache extends APTStringManager {
+    private static final APTStringManager manager = new FileNameCache();
+    private final APTStringManager instance = APTStringManager.instance("Shared File Names"); // NOI18N;
+
     private FileNameCache() {
     }
     
-    public static CharSequence getString(CharSequence text) {
+    public CharSequence getString(CharSequence text) {
         text = CharSequenceKey.create(text);
         return instance.getString(text);
     }
     
-    public static void dispose() {
+    public void dispose() {
         instance.dispose();
-    }    
+    }
     
     public static APTStringManager getManager() {
-        return instance;
-    }    
+        return manager;
+    }
 }

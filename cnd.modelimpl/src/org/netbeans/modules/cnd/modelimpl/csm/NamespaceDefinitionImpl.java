@@ -74,7 +74,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
     public NamespaceDefinitionImpl(AST ast, CsmFile file, NamespaceImpl parent) {
         super(ast, file);
         assert ast.getType() == CPPTokenTypes.CSM_NAMESPACE_DECLARATION;
-        name = NameCache.getString(ast.getText());
+        name = NameCache.getManager().getString(ast.getText());
         NamespaceImpl nsImpl = ((ProjectBase) file.getProject()).findNamespaceCreateIfNeeded(parent, name);
         
         // set parent ns, do it in constructor to have final fields
@@ -201,7 +201,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         assert this.namespaceUID != null;
         this.namespaceRef = null;    
         
-        this.name = NameCache.getString(input.readUTF());
+        this.name = NameCache.getManager().getString(input.readUTF());
         assert this.name != null;
     }      
 }

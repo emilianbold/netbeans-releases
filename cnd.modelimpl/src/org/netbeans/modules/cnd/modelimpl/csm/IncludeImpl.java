@@ -67,7 +67,7 @@ public class IncludeImpl extends OffsetableIdentifiableBase<CsmInclude> implemen
     
     public IncludeImpl(String name, boolean system, CsmFile includeFile, CsmFile containingFile, CsmOffsetable inclPos) {
         super(containingFile, inclPos);
-        this.name = FileNameCache.getString(name);
+        this.name = FileNameCache.getManager().getString(name);
         this.system = system;
         this.includeFileUID = UIDCsmConverter.fileToUID(includeFile);
         assert (includeFileUID != null || includeFile == null);
@@ -171,7 +171,7 @@ public class IncludeImpl extends OffsetableIdentifiableBase<CsmInclude> implemen
 
     public IncludeImpl(DataInput input) throws IOException {
         super(input);
-        this.name = FileNameCache.getString(input.readUTF());
+        this.name = FileNameCache.getManager().getString(input.readUTF());
         assert this.name != null;
         this.system = input.readBoolean();
         this.includeFileUID = UIDObjectFactory.getDefaultFactory().readUID(input);

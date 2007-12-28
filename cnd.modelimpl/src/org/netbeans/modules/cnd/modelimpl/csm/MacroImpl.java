@@ -113,7 +113,7 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
         assert(macroName != null);
         assert(macroName.length() > 0);
         assert(macroBody != null);
-        this.name = NameCache.getString(macroName);
+        this.name = NameCache.getManager().getString(macroName);
         this.system = system;
         this.body = macroBody;
         if (macroParams != null) {
@@ -206,7 +206,7 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
 
     public MacroImpl(DataInput input) throws IOException {
         super(input);
-        this.name = NameCache.getString(input.readUTF());
+        this.name = NameCache.getManager().getString(input.readUTF());
         assert this.name != null;
         this.body = TextCache.getString(input.readUTF());
         assert this.body != null;

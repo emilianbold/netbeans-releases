@@ -121,7 +121,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     @Override
     public CharSequence getQualifiedName() {
 	if( qualifiedName == null ) {
-	    qualifiedName = QualifiedNameCache.getString(findQualifiedName());
+	    qualifiedName = QualifiedNameCache.getManager().getString(findQualifiedName());
 	}
 	return qualifiedName;
     }
@@ -167,7 +167,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     }
     
     public void fixFakeRegistration() {
-	CharSequence newQname = QualifiedNameCache.getString(findQualifiedName());
+	CharSequence newQname = QualifiedNameCache.getManager().getString(findQualifiedName());
 	if( !newQname.equals(qualifiedName) ) {
 	    ProjectBase aProject = ((FileImpl) getContainingFile()).getProjectImpl();
             aProject.unregisterDeclaration(this);
@@ -215,7 +215,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
 	super(input);
         // can be null
         String read = PersistentUtils.readUTF(input);
-        this.qualifiedName = read == null ? null : QualifiedNameCache.getString(read);
+        this.qualifiedName = read == null ? null : QualifiedNameCache.getManager().getString(read);
         this.qualifiedNameIsFake = input.readBoolean();
         this.classOrNspNames = PersistentUtils.readStrings(input, TextCache.getManager());
     }

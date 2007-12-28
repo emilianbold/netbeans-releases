@@ -67,7 +67,7 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
         super(ast, file);
         this.parentUID = parent.getUID();
         AST qid = AstUtil.findSiblingOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
-        name = (qid == null) ? CharSequenceKey.empty() : QualifiedNameCache.getString(AstRenderer.getQualifiedName(qid));
+        name = (qid == null) ? CharSequenceKey.empty() : QualifiedNameCache.getManager().getString(AstRenderer.getQualifiedName(qid));
         nameParts = initNameParts(qid);
         registerInProject();
     }
@@ -150,7 +150,7 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
 
     public FriendClassImpl(DataInput input) throws IOException {
         super(input);
-        this.name = QualifiedNameCache.getString(input.readUTF());
+        this.name = QualifiedNameCache.getManager().getString(input.readUTF());
         assert this.name != null;
         this.nameParts = PersistentUtils.readStrings(input, TextCache.getManager());
         this.parentUID = UIDObjectFactory.getDefaultFactory().readUID(input);

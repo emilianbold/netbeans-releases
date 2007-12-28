@@ -87,7 +87,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     //private Collection/*<CsmNamespace>*/ nestedNamespaces = Collections.synchronizedList(new ArrayList/*<CsmNamespace>*/());
     
 //    private Collection/*<CsmNamespaceDefinition>*/ definitions = new ArrayList/*<CsmNamespaceDefinition>*/();
-    private Map<CharSequence,CsmUID<CsmNamespaceDefinition>> nsDefinitions = new TreeMap<CharSequence,CsmUID<CsmNamespaceDefinition>>();
+    private Map<CharSequence,CsmUID<CsmNamespaceDefinition>> nsDefinitions = new TreeMap<CharSequence,CsmUID<CsmNamespaceDefinition>>(CharSequenceKey.Comparator);
     private ReadWriteLock nsDefinitionsLock = new ReentrantReadWriteLock();
     
     private final boolean global;
@@ -111,7 +111,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     private static final boolean CHECK_PARENT = false;
     
     public NamespaceImpl(ProjectBase project, NamespaceImpl parent, String name, String qualifiedName) {
-        this.name = NameCache.getString(name);
+        this.name = NameCache.getManager().getString(name);
         this.global = false;
         assert project != null;
         
@@ -119,7 +119,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         assert this.projectUID != null;
 
         this.projectRef = null;
-        this.qualifiedName = QualifiedNameCache.getString(qualifiedName);
+        this.qualifiedName = QualifiedNameCache.getManager().getString(qualifiedName);
         // TODO: rethink once more
         // now all classes do have namespaces
 //        // TODO: this makes parent-child relationships assymetric, that's bad;
@@ -500,9 +500,9 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         this.parentRef = null;
        
 
-        this.name = NameCache.getString(input.readUTF());
+        this.name = NameCache.getManager().getString(input.readUTF());
         assert this.name != null;
-        this.qualifiedName = QualifiedNameCache.getString(input.readUTF());
+        this.qualifiedName = QualifiedNameCache.getManager().getString(input.readUTF());
         assert this.qualifiedName != null;
         theFactory.readStringToUIDMap(this.nestedMap, input, QualifiedNameCache.getManager());
         theFactory.readStringToUIDMap(this.declarations, input, QualifiedNameCache.getManager());

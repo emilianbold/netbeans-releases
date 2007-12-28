@@ -71,22 +71,28 @@ public abstract class APTStringManager  {
     public static APTStringManager instance(String kind) {
         return instance(kind, STRING_MANAGER_DEFAULT_CAPACITY);
     }
-    
+
     /*package*/ static APTSingleStringManager instance(String kind, int initialCapacity) {
         APTSingleStringManager instance = instances.get(kind);
         if (instance == null) {
-            instance = new APTSingleStringManager(initialCapacity);
+            instance = new APTSingleStringManager(kind, initialCapacity);
             instances.put(kind, instance);
         }
         return instance;
     }  
-        
+
     /*package*/ static final class APTSingleStringManager extends APTStringManager {
         private final WeakSharedSet<CharSequence> storage;
+        private final int initialCapacity;
+        // To gebug
+        private final String kind;
 
         /** Creates a new instance of APTStringManager */
-        private APTSingleStringManager(int initialCapacity) {
+        private APTSingleStringManager(String kind, int initialCapacity) {
             storage = new WeakSharedSet<CharSequence>(initialCapacity);
+            this.initialCapacity = initialCapacity;
+            // To gebug
+            this.kind = kind;
         }
 
         // we need exclusive copy of string => use "new String(String)" constructor
@@ -114,7 +120,25 @@ public abstract class APTStringManager  {
         }
 
         public final void dispose() {
+            if (false){
+                System.out.println("Dispose cache "+kind+" "+getClass().getName());
+                Object[] arr = storage.toArray();
+                Map<Class, Integer> classes = new HashMap<Class,Integer>();
+                for(Object o : arr){
+                    Integer i = classes.get(o.getClass());
+                    if (i != null) {
+                        i = new Integer(i.intValue()+1);
+                    } else {
+                        i = new Integer(1);
+                    }
+                    classes.put(o.getClass(),i);
+                }
+                for(Map.Entry<Class,Integer> e:classes.entrySet()){
+                    System.out.println("   "+e.getValue()+" of "+e.getKey().getName());
+                }
+            }
             storage.clear();
+            storage.resize(initialCapacity);
         }
     }
     

@@ -73,7 +73,7 @@ public class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsingDirect
         startOffset = ((CsmAST)ast.getFirstChild()).getOffset();
         rawName = AstUtil.getRawNameInChildren(ast);
         
-        name = NameCache.getString(ast.getText());
+        name = NameCache.getManager().getString(ast.getText());
     }
     
     public CsmNamespace getReferencedNamespace() {
@@ -153,7 +153,7 @@ public class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsingDirect
     
     public UsingDirectiveImpl(DataInput input) throws IOException {
         super(input);
-        this.name = NameCache.getString(input.readUTF());
+        this.name = NameCache.getManager().getString(input.readUTF());
         assert this.name != null;
         this.startOffset = input.readInt();
         this.rawName = PersistentUtils.readStrings(input, QualifiedNameCache.getManager());

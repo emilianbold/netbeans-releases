@@ -130,6 +130,11 @@ public class WeakSharedSet <E> extends AbstractSet<E> implements Set<E> {
     public boolean contains(Object o) { return m.containsKey(o); }
     @Override
     public boolean remove(Object o)   { return m.remove(o) != null; }
+    void resize(int newCapacity){
+        if (size()==0) {
+            m.resize(newCapacity);
+        }
+    }
     
     /**
      * it is expected that method addOrGet is used instead of add

@@ -738,11 +738,11 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
     private void cleanCaches() {
         TextCache.dispose();
         FilePathCache.dispose();
-        QualifiedNameCache.dispose();
-        NameCache.dispose();
-        UniqueNameCache.dispose();
-        FileNameCache.dispose();
-        ProjectNameCache.dispose();
+        QualifiedNameCache.getManager().dispose();
+        NameCache.getManager().dispose();
+        UniqueNameCache.getManager().dispose();
+        FileNameCache.getManager().dispose();
+        ProjectNameCache.getManager().dispose();
         if (TraceFlags.USE_AST_CACHE) {
             CacheManager.getInstance().close();
         } else {

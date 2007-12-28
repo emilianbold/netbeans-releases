@@ -86,7 +86,7 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
 	this.startOffset = aStream.readInt();
 	this.endOffset = aStream.readInt();
 	this.kind = aStream.readChar();
-	this.name = NameCache.getString(aStream.readUTF());
+	this.name = NameCache.getManager().getString(aStream.readUTF());
 	assert this.name != null;
     }
     
