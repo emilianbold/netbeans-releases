@@ -206,7 +206,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     public void write(DataOutput output) throws IOException {
         super.write(output);
         // can be null
-        PersistentUtils.writeUTF(this.qualifiedName.toString(), output);
+        PersistentUtils.writeUTF(this.qualifiedName, output);
         output.writeBoolean(this.qualifiedNameIsFake);
         PersistentUtils.writeStrings(this.classOrNspNames, output);
     }

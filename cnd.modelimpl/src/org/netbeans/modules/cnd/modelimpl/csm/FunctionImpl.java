@@ -603,7 +603,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         assert !CHECK_SCOPE || this.scopeUID != null;
         UIDObjectFactory.getDefaultFactory().writeUID(this.scopeUID, output);
         
-        PersistentUtils.writeUTF(this.signature.toString(), output);
+        PersistentUtils.writeUTF(this.signature, output);
         output.writeBoolean(isVoidParameterList);
         output.writeUTF(this.getScopeSuffix());
         output.writeBoolean(this.template);

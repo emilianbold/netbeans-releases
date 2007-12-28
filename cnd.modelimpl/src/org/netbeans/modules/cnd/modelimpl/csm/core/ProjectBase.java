@@ -1945,7 +1945,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         ProjectComponent.writeKey(declarationsSorageKey, aStream);
         ProjectComponent.writeKey(graphStorageKey, aStream);
 	
-	PersistentUtils.writeUTF(this.uniqueName.toString(), aStream);
+	PersistentUtils.writeUTF(this.uniqueName, aStream);
     }
     
     protected ProjectBase(DataInput aStream) throws IOException {
@@ -1978,6 +1978,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 	
 	this.uniqueName = PersistentUtils.readUTF(aStream);
 	assert uniqueName != null : "uniqueName can not be null";
+        this.uniqueName = ProjectNameCache.getManager().getString(this.uniqueName);
         
         this.model = (ModelImpl) CsmModelAccessor.getModel();
     }

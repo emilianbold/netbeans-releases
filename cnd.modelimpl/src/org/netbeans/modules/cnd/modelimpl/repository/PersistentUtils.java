@@ -167,11 +167,11 @@ public class PersistentUtils {
         return arr;
     }   
     
-    public static void writeUTF(String st, DataOutput aStream) throws IOException
+    public static void writeUTF(CharSequence st, DataOutput aStream) throws IOException
     {
         if (st != null) {
             aStream.writeBoolean(true);
-            aStream.writeUTF(st);
+            aStream.writeUTF(st.toString());
         } else {
             aStream.writeBoolean(false);
         }
