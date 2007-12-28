@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.apt.utils.APTIncludeUtils;
 import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -142,7 +143,11 @@ public final class ProjectImpl extends ProjectBase {
                 }
             }
             file.setBuffer(buf);
-            addToQueue(buf, file);
+            if (TraceFlags.USE_DEEP_REPARSING) {
+                DeepReparsingUtils.reparseOnEdit(file, this);
+            } else {
+                ParserQueue.instance().addFirst(file, getPreprocHandler(buf.getFile()).getState(), false);
+            }
         }
     }
     
@@ -150,10 +155,10 @@ public final class ProjectImpl extends ProjectBase {
         if( isDisposing() ) {
             return;
         }
-        if (TraceFlags.USE_DEEP_REPARSING) {
-            DeepReparsingUtils.reparseOnEdit(file,this);
-        } else {
-            ParserQueue.instance().addFirst(file, getPreprocHandler(buf.getFile()).getState(), false);
+        try {
+            file.scheduleParsing(true);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
     
