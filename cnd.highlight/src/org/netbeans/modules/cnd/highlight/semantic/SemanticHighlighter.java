@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.cnd.highlight.semantic;
 
-import org.netbeans.modules.cnd.highlight.semantic.ifdef.*;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.text.AttributeSet;
@@ -61,7 +60,6 @@ import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
-import org.netbeans.modules.cnd.highlight.semantic.HighlighterBase;
 import org.netbeans.modules.cnd.highlight.semantic.options.SemanticHighlightingOptions;
 import org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory.PhaseRunner;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
