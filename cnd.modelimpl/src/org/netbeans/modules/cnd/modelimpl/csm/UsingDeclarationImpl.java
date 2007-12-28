@@ -91,7 +91,7 @@ public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDecl
             referencedDeclaration = prjBase.findClassifier(name, true);
             if (referencedDeclaration == null && rawName != null && rawName.length > 1) {
                 // resolve all before last ::
-                String[] partial = new String[rawName.length - 1];
+                CharSequence[] partial = new CharSequence[rawName.length - 1];
                 System.arraycopy(rawName, 0, partial, 0, rawName.length - 1);
                 CsmObject result = ResolverFactory.createResolver(getContainingFile(), startOffset, resolver).resolve(partial, Resolver.NAMESPACE);
                 if (CsmKindUtilities.isNamespace(result)) {
