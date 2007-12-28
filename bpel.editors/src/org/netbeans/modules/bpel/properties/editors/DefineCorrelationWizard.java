@@ -51,6 +51,8 @@ import org.netbeans.modules.print.api.PrintUtil;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
+import org.openide.WizardDescriptor.ValidatingPanel;
+import org.openide.WizardValidationException;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 
@@ -100,91 +102,68 @@ public class DefineCorrelationWizard implements WizardProperties {
         panelList.add(new WizardDefineCorrelationPanel());
         panelList.add(new WizardCorrelationConfigurationPanel());
         for (int i = 0; i < panelList.size(); ++i) {
-            JPanel jPanel = (JPanel) panelList.get(i);
-            jPanel.setName(WIZARD_STEP_NAMES[i]);
-            jPanel.putClientProperty(PROPERTY_CONTENT_SELECTED_INDEX, i);
+            ((WizardAbstractPanel) panelList.get(i)).setPanelNameIndex(
+                WIZARD_STEP_NAMES[i], i);
         }
         return panelList;
     }
 
     //========================================================================//
-    public abstract class WizardAbstractPanel extends JPanel implements WizardDescriptor.Panel {
+    public abstract class WizardAbstractPanel implements WizardDescriptor.ValidatingPanel {
+        protected JPanel wizardPanel = createWizardPanel();
         private ChangeSupport changeSupport = new ChangeSupport(this);
         
-        public abstract Component getComponent();
-        protected abstract String getComponentName();
-        public HelpCtx getHelp() {return null;}
+        protected JPanel createWizardPanel() {
+            JPanel panel = new JPanel();
+            panel.setPreferredSize(PANEL_DIMENSION_VALUE);
+            return panel;
+        }
+        
+        protected void setPanelNameIndex(String name, int index) {
+            wizardPanel.setName(name);
+            wizardPanel.putClientProperty(PROPERTY_CONTENT_SELECTED_INDEX, index);
+        }
+        
+        public Component getComponent() {
+            return wizardPanel;
+        }
+        
+        public HelpCtx getHelp() {
+            return null;
+        }
         public void addChangeListener(ChangeListener listener) {
             changeSupport.addChangeListener(listener);
         }
         public void removeChangeListener(ChangeListener listener) {
             changeSupport.removeChangeListener(listener);
         }
+        
         public void readSettings(Object settings) {}
         public void storeSettings(Object settings) {}
-        
-        
-        
-        @Override
-        public boolean isValid() {return true;};
+
+        public void validate() throws WizardValidationException {}
+
+        public boolean isValid() {
+            return true;
+        }
     }
     //========================================================================//
     public class WizardSelectMessagingActivityPanel extends WizardAbstractPanel {
         public WizardSelectMessagingActivityPanel() {
             super();
-
-putClientProperty(PROPERTY_ERROR_MESSAGE, "SelectMessagingActivity");
-add(new JLabel((String)getClientProperty(PROPERTY_ERROR_MESSAGE)));
-        }
-
-        @Override
-        public Component getComponent() {return this;}
-        @Override
-        protected String getComponentName() {return getName();}
-
-        @Override
-        public Dimension getPreferredSize() {
-            return PANEL_DIMENSION_VALUE;
         }
     }
     //========================================================================//
-    public class WizardDefineCorrelationPanel extends WizardAbstractPanel implements WizardDescriptor.Panel {
+    public class WizardDefineCorrelationPanel extends WizardAbstractPanel {
         public WizardDefineCorrelationPanel() {
             super();
-
-putClientProperty(PROPERTY_ERROR_MESSAGE, "DefineCorrelationPanel");
-add(new JLabel((String)getClientProperty(PROPERTY_ERROR_MESSAGE)));
-        }
-
-        @Override
-        public Component getComponent() {return this;}
-        @Override
-        protected String getComponentName() {return getName();}
-
-        @Override
-        public Dimension getPreferredSize() {
-            return PANEL_DIMENSION_VALUE;
         }
     }
     //========================================================================//
-    public class WizardCorrelationConfigurationPanel extends WizardAbstractPanel implements WizardDescriptor.FinishablePanel {
+    public class WizardCorrelationConfigurationPanel extends WizardAbstractPanel {
         public WizardCorrelationConfigurationPanel() {
             super();
-
-putClientProperty(PROPERTY_ERROR_MESSAGE, "CorrelationConfiguration Panel");
-add(new JLabel((String)getClientProperty(PROPERTY_ERROR_MESSAGE)));
         }
-
-        @Override
-        public Component getComponent() {return this;}
-        @Override
-        protected String getComponentName() {return getName();}
-
-        @Override
-        public Dimension getPreferredSize() {
-            return PANEL_DIMENSION_VALUE;
-        }
-        public boolean isFinishPanel() {return true;}
     }
 }
 
