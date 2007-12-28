@@ -131,12 +131,11 @@ made subject to such option by the copyright holder.
     </folder> <!-- Services -->
   </folder> <!-- UI -->
 
-    <folder name="org.netbeans.modules.beans">
-        <folder name="Templates">        
-            <file name="AddProperty.freemarker" url="templates/AddProperty.freemarker">
-                <attr name="template" boolvalue="true"/>
-            </file>
-        </folder>
+    <folder name="org.netbeans.modules.java.codestyle">
+        <file name="AddProperty.freemarker" url="templates/AddProperty.freemarker">
+            <attr name="template" boolvalue="true"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.beans.Bundle"/>
+        </file>
     </folder>
     
     <folder name="Editors">

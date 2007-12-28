@@ -45,7 +45,7 @@ package org.netbeans.modules.beans.addproperty;
  */
 public class AddPropertyConfig {
     // Default Add Property template path
-    public static final String DEFAULT_TEMPLATE_PATH = "org.netbeans.modules.beans/Templates/AddProperty.freemarker"; // NOI18N
+    public static final String DEFAULT_TEMPLATE_PATH = "org.netbeans.modules.java.codestyle/AddProperty.freemarker"; // NOI18N
     
     private String TEMPLATE_PATH = DEFAULT_TEMPLATE_PATH; // NOI18N
 
