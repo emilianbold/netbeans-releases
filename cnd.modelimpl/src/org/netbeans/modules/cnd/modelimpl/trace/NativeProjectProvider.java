@@ -304,15 +304,16 @@ public final class NativeProjectProvider {
     
     private static class NativeFileItemSetImpl implements NativeFileItemSet {
         private List<NativeFileItem> items = new ArrayList<NativeFileItem>(1);
-        public Collection<NativeFileItem> getItems() {
+        
+        public synchronized Collection<NativeFileItem> getItems() {
             return new ArrayList<NativeFileItem>(items);
         }
-        public void add(NativeFileItem item){
+        public synchronized void add(NativeFileItem item){
             if (!items.contains(item)) {
                 items.add(item);
             }
         }
-        public void remove(NativeFileItem item){
+        public synchronized void remove(NativeFileItem item){
             items.remove(item);
         }
         public boolean isEmpty() {

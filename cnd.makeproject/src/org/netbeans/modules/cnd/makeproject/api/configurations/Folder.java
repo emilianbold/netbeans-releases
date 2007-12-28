@@ -261,7 +261,7 @@ public class Folder {
                     myNativeFileItemSet = new MyNativeFileItemSet();
                     dataObject.addCookie(myNativeFileItemSet);
                 }
-                myNativeFileItemSet.items.add(item);
+                myNativeFileItemSet.add(item);
             }
         }
         
@@ -707,7 +707,8 @@ public class Folder {
     
     static private class MyNativeFileItemSet implements NativeFileItemSet {
         private List<NativeFileItem> items = new ArrayList<NativeFileItem>(1);
-        public Collection<NativeFileItem> getItems() {
+        
+        public synchronized Collection<NativeFileItem> getItems() {
             return new ArrayList<NativeFileItem>(items);
         }
         public synchronized void add(NativeFileItem item){
