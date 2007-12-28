@@ -19,44 +19,17 @@
 
 package org.netbeans.modules.bpel.model.ext.logging.impl;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import org.netbeans.modules.bpel.model.ext.logging.xam.LoggingTypesEnum;
 import java.util.List;
-import java.util.Set;
-import org.netbeans.modules.bpel.model.api.Assign;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
-import org.netbeans.modules.bpel.model.api.Catch;
-import org.netbeans.modules.bpel.model.api.CatchAll;
-import org.netbeans.modules.bpel.model.api.Compensate;
-import org.netbeans.modules.bpel.model.api.CompensateScope;
-import org.netbeans.modules.bpel.model.api.Empty;
-import org.netbeans.modules.bpel.model.api.Exit;
 import org.netbeans.modules.bpel.model.api.ExtensibleElements;
 import org.netbeans.modules.bpel.model.api.ExtensionEntity;
-import org.netbeans.modules.bpel.model.api.Flow;
-import org.netbeans.modules.bpel.model.api.ForEach;
-import org.netbeans.modules.bpel.model.api.If;
-import org.netbeans.modules.bpel.model.api.Invoke;
-import org.netbeans.modules.bpel.model.api.Pick;
-import org.netbeans.modules.bpel.model.api.ReThrow;
-import org.netbeans.modules.bpel.model.api.Receive;
-import org.netbeans.modules.bpel.model.api.RepeatUntil;
-import org.netbeans.modules.bpel.model.api.Reply;
-import org.netbeans.modules.bpel.model.api.Scope;
-import org.netbeans.modules.bpel.model.api.Sequence;
-import org.netbeans.modules.bpel.model.api.Throw;
-import org.netbeans.modules.bpel.model.api.Validate;
-import org.netbeans.modules.bpel.model.api.Wait;
-import org.netbeans.modules.bpel.model.api.While;
-import org.netbeans.modules.bpel.model.api.support.BpelModelVisitor;
 import org.netbeans.modules.bpel.model.api.support.EntityUpdater;
 import org.netbeans.modules.bpel.model.ext.logging.api.Alert;
 import org.netbeans.modules.bpel.model.ext.logging.api.Log;
 import org.netbeans.modules.bpel.model.ext.logging.api.Trace;
 import org.netbeans.modules.bpel.model.ext.logging.xam.LoggingElements;
 import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl;
-import org.netbeans.modules.bpel.model.impl.BpelContainerImpl;
 import org.netbeans.modules.bpel.model.impl.BpelModelImpl;
 import org.netbeans.modules.xml.xam.ComponentUpdater.Operation;
 import org.netbeans.modules.xml.xam.dom.Attribute;
@@ -80,7 +53,7 @@ public class TraceImpl extends LoggingEntityImpl implements Trace {
      * 
      * @see org.netbeans.modules.soa.model.bpel2020.api.BpelEntity#getElementType()
      */
-    public Class<? extends Trace> getElementType() {
+    public Class<? extends ExtensionEntity> getElementType() {
         return Trace.class;
     }
 

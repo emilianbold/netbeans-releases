@@ -11,10 +11,8 @@ package org.netbeans.modules.bpel.model.ext.logging.impl;
 
 import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
-import org.netbeans.modules.bpel.model.api.ExtensibleElements;
 import org.netbeans.modules.bpel.model.api.ExtensionEntity;
 import org.netbeans.modules.bpel.model.api.From;
-import org.netbeans.modules.bpel.model.api.support.BpelModelVisitor;
 import org.netbeans.modules.bpel.model.api.support.EntityUpdater;
 import org.netbeans.modules.bpel.model.ext.logging.api.Alert;
 import org.netbeans.modules.bpel.model.ext.logging.api.AlertLevel;
@@ -23,7 +21,6 @@ import org.netbeans.modules.bpel.model.ext.logging.api.Location;
 import org.netbeans.modules.bpel.model.ext.logging.xam.LoggingAttributes;
 import org.netbeans.modules.bpel.model.ext.logging.xam.LoggingElements;
 import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl;
-import org.netbeans.modules.bpel.model.impl.BpelContainerImpl;
 import org.netbeans.modules.bpel.model.impl.BpelModelImpl;
 import org.netbeans.modules.bpel.model.impl.FromImpl;
 import org.netbeans.modules.bpel.model.xam.BpelElements;
@@ -63,7 +60,7 @@ public class AlertImpl extends LoggingEntityImpl implements Alert {
         return myAttributes.get();
     }
 
-    public Class<? extends Alert> getElementType() {
+    public Class<? extends ExtensionEntity> getElementType() {
         return Alert.class;
     }
 
