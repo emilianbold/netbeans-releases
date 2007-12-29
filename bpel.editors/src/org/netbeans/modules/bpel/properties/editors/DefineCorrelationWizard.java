@@ -40,18 +40,24 @@
 package org.netbeans.modules.bpel.properties.editors;
 
 import java.awt.Component;
+import java.awt.Dialog;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.Insets;
 import java.text.MessageFormat;
 import java.util.*;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
+import javax.swing.plaf.basic.BasicComboBoxRenderer;
 import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.print.api.PrintUtil;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
-import org.openide.WizardDescriptor.ValidatingPanel;
 import org.openide.WizardValidationException;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
@@ -70,13 +76,13 @@ public class DefineCorrelationWizard implements WizardProperties {
     
     private WizardDescriptor wizardDescriptor;
     private BpelNode mainBpelNode;
+    private Panel[] wizardPanels;
     
     public DefineCorrelationWizard(BpelNode mainBpelNode) {
         this.mainBpelNode = mainBpelNode;
         
-        WizardDescriptor.Iterator panelIterator = new WizardDescriptor.ArrayIterator(
-            getWizardPanelList());
-        wizardDescriptor = new WizardDescriptor(panelIterator);
+        wizardPanels = getWizardPanelList().toArray(new Panel[] {});
+        wizardDescriptor = new WizardDescriptor(wizardPanels);
         
         wizardDescriptor.putProperty(PROPERTY_AUTO_WIZARD_STYLE, true);
         wizardDescriptor.putProperty(PROPERTY_CONTENT_DISPLAYED, true);
@@ -93,7 +99,9 @@ public class DefineCorrelationWizard implements WizardProperties {
     }
     
     public void showWizardDialog() {
-        DialogDisplayer.getDefault().createDialog(wizardDescriptor).setVisible(true);
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
+        wizardPanels[0].isValid();
+        dialog.setVisible(true);
     }
     
     private List<Panel> getWizardPanelList() {
@@ -107,11 +115,12 @@ public class DefineCorrelationWizard implements WizardProperties {
         }
         return panelList;
     }
-
     //========================================================================//
     public abstract class WizardAbstractPanel implements WizardDescriptor.ValidatingPanel {
         protected JPanel wizardPanel = createWizardPanel();
-        private ChangeSupport changeSupport = new ChangeSupport(this);
+        protected ChangeSupport changeSupport = new ChangeSupport(this);
+        protected GridBagConstraints gbc = new GridBagConstraints();
+        protected int insetX = 5, insetY = 5;
         
         protected JPanel createWizardPanel() {
             JPanel panel = new JPanel();
@@ -146,11 +155,62 @@ public class DefineCorrelationWizard implements WizardProperties {
         public boolean isValid() {
             return true;
         }
+        
+        protected void initializeGridBagConstraints() {
+            gbc.gridx = 0; gbc.gridy = 0;
+            gbc.gridwidth = 1; gbc.gridheight = 1;
+            gbc.ipadx = 0; gbc.ipady = 0;
+            gbc.fill = GridBagConstraints.NONE;
+            gbc.anchor = GridBagConstraints.NORTHWEST;
+            gbc.insets = new Insets(insetY, insetX, insetY, insetX);
+            gbc.weightx = 1.0; gbc.weighty = 1.0;
+        }
     }
     //========================================================================//
     public class WizardSelectMessagingActivityPanel extends WizardAbstractPanel {
+        private final Dimension COMBOBOX_DIMENSION = new Dimension(220, 20);
+        private final JComboBox activityComboBox = new JComboBox();
+        private Object previousSelectedActivity, currentSelectedActivity;
+            
         public WizardSelectMessagingActivityPanel() {
             super();
+            wizardPanel.setLayout(new FlowLayout(FlowLayout.LEFT, insetX, insetY));
+            wizardPanel.add(new JLabel(PrintUtil.i18n(
+                WizardSelectMessagingActivityPanel.class, "LBL_Initiated_Messaging_Activities")));
+
+            activityComboBox.setRenderer(new ComboBoxRenderer());
+            activityComboBox.setEditable(false);
+            activityComboBox.setMinimumSize(COMBOBOX_DIMENSION);
+            activityComboBox.setPreferredSize(activityComboBox.getMinimumSize());
+            wizardPanel.add(activityComboBox);
+        }
+
+        @Override
+        public boolean isValid() {
+            boolean isOK = ((activityComboBox.getItemCount() > 0) &&
+                            (activityComboBox.getSelectedItem() != null));
+            
+            wizardDescriptor.putProperty(PROPERTY_ERROR_MESSAGE, isOK ? null :
+                PrintUtil.i18n(WizardSelectMessagingActivityPanel.class, "LBL_ErrMsg_No_Activity_For_Correlation"));                              
+            return isOK;
+        }
+
+        @Override
+        public void validate() throws WizardValidationException {
+            previousSelectedActivity = currentSelectedActivity;
+            currentSelectedActivity = activityComboBox.getSelectedItem();
+        }
+        //====================================================================//
+        private class ComboBoxRenderer extends BasicComboBoxRenderer.UIResource {
+            @Override
+            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                Component component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if ((value != null) && (value instanceof BpelNode) &&
+                    (component != null) && (component instanceof JLabel)) {
+                    ((JLabel) component).setText(((BpelNode) value).getName());
+                }
+                return component;
+            }
         }
     }
     //========================================================================//
@@ -158,6 +218,20 @@ public class DefineCorrelationWizard implements WizardProperties {
         public WizardDefineCorrelationPanel() {
             super();
         }
+/*
+wizardPanel.setPreferredSize(null);
+wizardPanel.setLayout(new GridBagLayout());
+initializeGridBagConstraints();
+wizardPanel.add(new JLabel(PrintUtil.i18n(
+    WizardSelectMessagingActivityPanel.class, "LBL_Initiated_Messaging_Activities")), 
+    gbc);
+
+gbc.gridx = 1;
+JComboBox activityComboBox = new JComboBox();
+activityComboBox.setMinimumSize(new Dimension(200, 20));
+activityComboBox.setPreferredSize(activityComboBox.getMinimumSize());
+wizardPanel.add(activityComboBox, gbc);
+*/
     }
     //========================================================================//
     public class WizardCorrelationConfigurationPanel extends WizardAbstractPanel {
@@ -185,4 +259,3 @@ interface WizardProperties {
         PROPERTY_HELP_DISPLAYED = "WizardPanel_helpDisplayed", // NOI18N
         PROPERTY_HELP_URL = "WizardPanel_helpURL"; // NOI18N
 }
-    
