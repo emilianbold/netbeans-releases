@@ -67,11 +67,12 @@ import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 
 /**
  * Semantic C/C++ code highlighter responsible for "graying out"
- * inactive code due to preprocessor definitions
+ * inactive code due to preprocessor definitions and highlighting of unobvious
+ * language elements.
  *
  * @author Sergey Grinev
  */
-public class SemanticHighlighter extends HighlighterBase implements PhaseRunner {
+public class SemanticHighlighter extends HighlighterBase {
 
     private final static String COLORS_INACTIVE = "cc-highlighting-inactive"; // NOI18N
     private final static String COLORS_MACRO = "cc-highlighting-macros-user"; // NOI18N

@@ -42,16 +42,12 @@
 package org.netbeans.modules.cnd.highlight.semantic;
 
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
-import javax.swing.text.Position;
-import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.model.tasks.CaretAwareCsmFileTaskFactory;
@@ -64,9 +60,6 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.text.Annotation;
-import org.openide.text.NbDocument;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -181,6 +174,10 @@ public class MarkOccurrencesHighlighter extends HighlighterBase {
     @Override
     protected void initFontColors(FontColorSettings fcs) {
         defaultColors = fcs.getTokenFontColors(COLORS);
+    }
+
+    public void cleanAfterYourself() {
+        // removeAnnotations();
     }
 
     // annotations stuff

@@ -46,6 +46,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory.PhaseRunner;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -56,7 +57,7 @@ import org.openide.util.WeakListeners;
  *
  * @author Sergey Grinev
  */
-public abstract class HighlighterBase implements LookupListener, Runnable {
+public abstract class HighlighterBase implements LookupListener, PhaseRunner {
 
     private final String mime;
     private final OffsetsBag bag;

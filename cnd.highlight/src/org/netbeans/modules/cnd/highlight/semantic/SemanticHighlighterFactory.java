@@ -55,7 +55,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 public class SemanticHighlighterFactory extends EditorAwareCsmFileTaskFactory {
 
     @Override
-    protected PhaseRunner createTask2(final FileObject fo) {
+    protected PhaseRunner createTask(final FileObject fo) {
         PhaseRunner pr = null;
         try {
             DataObject dobj = DataObject.find(fo);
@@ -67,19 +67,6 @@ public class SemanticHighlighterFactory extends EditorAwareCsmFileTaskFactory {
         } catch (DataObjectNotFoundException ex)  {
             ex.printStackTrace();
         }
-        return pr != null ? pr : new PhaseRunner() {
-            public void run() {
-                // do nothing 
-            }
-            public void cleanAfterYourself() {
-                // do nothing either
-            }
-        };
+        return pr != null ? pr : lazyRunner();
     }
-
-    @Override
-    protected Runnable createTask(FileObject file) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
 }

@@ -71,23 +71,8 @@ public abstract class CsmFileTaskFactory {
         CsmModelAccessor.getModel().addProgressListener(progressListener);
     }
 
-    // XXX: to be cleaned up soon. Literally. Tomorrow.
-    protected abstract Runnable createTask(FileObject file);
-    protected /*abstract*/ PhaseRunner createTask2(FileObject file){
-        final Runnable run = createTask(file);
-        return new PhaseRunner() {
-
-            public void cleanAfterYourself() {
-                //do nothing
-            }
-
-            public void run() {
-                run.run();
-            }
-            
-        };
-    }
-
+    protected abstract PhaseRunner createTask(FileObject fo);
+    
     protected abstract Collection<FileObject> getFileObjects();
 
     protected final void fileObjectsChanged() {
@@ -136,7 +121,7 @@ public abstract class CsmFileTaskFactory {
                 CsmFile csmFile = CsmUtilities.getCsmFile(fileObject, false);
 
                 if (csmFile != null) {
-                    Runnable task = createTask2(fileObject);
+                    Runnable task = createTask(fileObject);
 
                     toAdd.put(csmFile, task);
 
@@ -198,4 +183,16 @@ public abstract class CsmFileTaskFactory {
     public interface PhaseRunner extends Runnable {
         void cleanAfterYourself();
     }
+
+    protected static PhaseRunner lazyRunner() {
+        return new PhaseRunner() {
+            public void run() {
+                // do nothing 
+            }
+            public void cleanAfterYourself() {
+                // do nothing either
+            }
+        };
+    }
+
 }

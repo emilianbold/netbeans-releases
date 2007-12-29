@@ -55,23 +55,17 @@ import org.openide.util.Exceptions;
 public class MarkOccurrencesHighlighterFactory extends CaretAwareCsmFileTaskFactory {
 
     @Override
-    protected Runnable createTask(final FileObject fo) {
-        MarkOccurrencesHighlighter moh = null;
+    protected PhaseRunner createTask(final FileObject fo) {
+        MarkOccurrencesHighlighter ph = null;
         if (SemanticHighlightingOptions.getEnableMarkOccurences()) {
             try {
                 DataObject dobj = DataObject.find(fo);
-                EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);
-                moh = new MarkOccurrencesHighlighter(ec.getDocument());
+                EditorCookie ec = dobj.getCookie(EditorCookie.class);
+                ph = new MarkOccurrencesHighlighter(ec.getDocument());
             } catch (DataObjectNotFoundException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
-        return moh != null ? moh : new Runnable() {
-
-            public void run() {
-            // do nothing
-            }
-            };
-
+        return ph != null ? ph : lazyRunner();
     }
 }
