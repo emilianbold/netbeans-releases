@@ -132,6 +132,10 @@ public abstract class TreeRuleTestBase extends NbTestCase {
     
     protected abstract List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path);
     
+    protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path, int offset) {
+        return computeErrors(info, path);
+    }
+    
     protected String toDebugString(CompilationInfo info, Fix f) {
         return f.toString();
     }
@@ -149,7 +153,7 @@ public abstract class TreeRuleTestBase extends NbTestCase {
         
         TreePath path = info.getTreeUtilities().pathFor(pos);
         
-        List<ErrorDescription> errors = computeErrors(info, path);
+        List<ErrorDescription> errors = computeErrors(info, path, pos);
         List<String> errorsNames = new LinkedList<String>();
         
         errors = errors != null ? errors : Collections.<ErrorDescription>emptyList();
@@ -178,7 +182,7 @@ public abstract class TreeRuleTestBase extends NbTestCase {
         
         TreePath path = info.getTreeUtilities().pathFor(pos);
         
-        List<ErrorDescription> errors = computeErrors(info, path);
+        List<ErrorDescription> errors = computeErrors(info, path, pos);
         
         ErrorDescription toFix = null;
         
