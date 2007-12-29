@@ -71,6 +71,31 @@ public class ConvertConditionalsTest extends HintTestBase {
         findHints(this, new ConvertConditionals(), "testfiles/conditionals3.rb", "i^f jd >= commercial_to_jd");
     }
     
+    public void testNoHint7() throws Exception {
+        findHints(this, new ConvertConditionals(), "testfiles/elsif.rb", 
+                "elsi^f !str.blank?");
+    }
+
+    public void testNoHint8() throws Exception {
+        findHints(this, new ConvertConditionals(), "testfiles/elsif.rb", 
+                "elsif !str.bla^nk?");
+    }
+
+    public void testNoHint9() throws Exception {
+        findHints(this, new ConvertConditionals(), "testfiles/elsif.rb", 
+                "if st^r != 'something'");
+    }
+
+    public void testNoHint10() throws Exception {
+        findHints(this, new ConvertConditionals(), "testfiles/emptybody.rb", 
+                "if !^x");
+    }
+
+    public void testNoHint11() throws Exception {
+        findHints(this, new ConvertConditionals(), "testfiles/emptybody.rb", 
+                "if !^y");
+    }
+
     public void testHint2() throws Exception {
         findHints(this, new ConvertConditionals(), "testfiles/conditionals.rb", "if tr^ue");
     }

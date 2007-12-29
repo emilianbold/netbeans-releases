@@ -101,6 +101,12 @@ public class ConvertIfToUnless implements AstRule {
             // (typically while editing)
             return;
         }
+        
+        // Can't convert if !x/elseif blocks
+        if (ifNode.getElseBody() != null && ifNode.getElseBody().nodeId == NodeTypes.IFNODE) {
+            return;
+        }
+        
         if (condition.nodeId == NodeTypes.NOTNODE ||
                 (condition.nodeId == NodeTypes.NEWLINENODE &&
                 condition.childNodes().size() == 1 &&
@@ -140,8 +146,14 @@ public class ConvertIfToUnless implements AstRule {
                     }
                 }
 
-                Fix fix = new ConvertToUnlessFix(info, ifNode);
-                List<Fix> fixes = Collections.singletonList(fix);
+                ConvertToUnlessFix fix = new ConvertToUnlessFix(info, ifNode);
+                
+                // Make sure we can actually perform the edit
+                if (fix.getEditList() == null) {
+                    return;
+                }
+                
+                List<Fix> fixes = Collections.<Fix>singletonList(fix);
 
                 String displayName = NbBundle.getMessage(ConvertIfToUnless.class,
                         "ConvertIfToUnless");
@@ -198,7 +210,16 @@ public class ConvertIfToUnless implements AstRule {
         }
 
         String statement = doc.getText(lexIfOffset, 2);
-        if (statement.equals("if") || statement.equals("un")) {
+        if (statement.equals("if")) {
+            // Make sure it's not "elsif"
+            if (lexIfOffset > 3) {
+                statement = doc.getText(lexIfOffset-3, 5);
+                if ("elsif".equals(statement)) {
+                    return -1;
+                }
+            }
+            return lexIfOffset;
+        } else if (statement.equals("un")) {
             return lexIfOffset;
         } else {
             // Probably a statement modifier - gotta adjust the if offset
@@ -206,6 +227,10 @@ public class ConvertIfToUnless implements AstRule {
             int lineStart = Utilities.getRowFirstNonWhite(doc, conditionStart);
             if (lineStart != -1 && lineStart < conditionStart) {
                 String line = doc.getText(lineStart, conditionStart-lineStart).trim();
+                if (line.endsWith("elsif")) { // NO!I8N
+                    // Can't perform conversions on elsif!
+                    return -1;
+                }
                 if (line.endsWith("if")) { // NOI18N
                     return lineStart + line.length() - 2;
                 } else if (line.endsWith("unless")) { // NOI18N

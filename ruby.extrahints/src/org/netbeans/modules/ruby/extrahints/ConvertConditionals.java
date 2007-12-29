@@ -100,6 +100,16 @@ public class ConvertConditionals implements AstRule {
             return;
         }
 
+        if (body == null && elseNode == null) {
+            // Can't convert empty conditions
+            return;
+        }
+
+        // Can't convert if !x/elseif blocks
+        if (ifNode.getElseBody() != null && ifNode.getElseBody().nodeId == NodeTypes.IFNODE) {
+            return;
+        }
+        
         int start = ifNode.getPosition().getStartOffset();
         if (body != null && (
                 // Can't convert blocks with multiple statements
@@ -164,8 +174,13 @@ public class ConvertConditionals implements AstRule {
         }
         
         
-        Fix fix = new ConvertToModifier(info, ifNode);
-        List<Fix> fixes = Collections.singletonList(fix);
+        ConvertToModifier fix = new ConvertToModifier(info, ifNode);
+        
+        if (fix.getEditList() == null) {
+            return;
+        }
+
+        List<Fix> fixes = Collections.<Fix>singletonList(fix);
 
         String displayName = NbBundle.getMessage(ConvertConditionals.class, "ConvertConditionals");
         Description desc = new Description(this, displayName, info.getFileObject(), range,

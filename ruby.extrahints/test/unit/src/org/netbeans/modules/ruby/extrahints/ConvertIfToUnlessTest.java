@@ -45,7 +45,7 @@ public class ConvertIfToUnlessTest extends HintTestBase {
     public ConvertIfToUnlessTest(String testName) {
         super(testName);
     }            
-
+    
     public void testNoHint1() throws Exception {
         findHints(this, new ConvertIfToUnless(), "testfiles/reverseif.rb", null);
     }
@@ -73,6 +73,31 @@ public class ConvertIfToUnlessTest extends HintTestBase {
         findHints(this, new ConvertIfToUnless(), "testfiles/emptycondition.rb", "if (^)");
     }
     
+    public void testNoHint7() throws Exception {
+        findHints(this, new ConvertIfToUnless(), "testfiles/elsif.rb", 
+                "elsi^f !str.blank?");
+    }
+
+    public void testNoHint8() throws Exception {
+        findHints(this, new ConvertIfToUnless(), "testfiles/elsif.rb", 
+                "elsif !str.bla^nk?");
+    }
+
+    public void testNoHint9() throws Exception {
+        findHints(this, new ConvertIfToUnless(), "testfiles/elsif.rb", 
+                "if st^r != 'something'");
+    }
+
+//    public void testNoHint10() throws Exception {
+//        findHints(this, new ConvertIfToUnless(), "testfiles/emptybody.rb", 
+//                "if !^x");
+//    }
+//
+//    public void testNoHint11() throws Exception {
+//        findHints(this, new ConvertIfToUnless(), "testfiles/emptybody.rb", 
+//                "if !^y");
+//    }
+
     public void testHint2() throws Exception {
         findHints(this, new ConvertIfToUnless(), "testfiles/reverseif.rb", "if !tr^ue");
     }
