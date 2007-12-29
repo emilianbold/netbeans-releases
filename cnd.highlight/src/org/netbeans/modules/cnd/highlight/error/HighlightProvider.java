@@ -40,49 +40,36 @@
  */
 package org.netbeans.modules.cnd.highlight.error;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
-import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
-import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
-import org.netbeans.modules.cnd.api.model.CsmModelListener;
-import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.openide.loaders.DataObject;
 import org.openide.text.NbDocument;
 import org.netbeans.editor.BaseDocument;
 import javax.swing.text.Position;
 import org.netbeans.api.editor.EditorRegistry;
-import org.netbeans.modules.cnd.highlight.CppHighlightsLayerFactory;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.text.Annotation;
 import org.openide.util.NbBundle;
-import org.openide.windows.TopComponent;
 
 /**
  *
  * @author Alexander Simon
  */
-public class HighlightProvider implements CsmModelListener, CsmProgressListener, PropertyChangeListener {
+public class HighlightProvider  {
     
     public static final boolean TRACE_ANNOTATIONS = Boolean.getBoolean("cnd.highlight.trace.annotations"); // NOI18N
     
     private static final HighlightProvider instance = new HighlightProvider();
-    
-    private static final String threadName = "Error highlighting provider thread"; //NOI18N
     
     public static HighlightProvider getInstance(){
         return instance;
@@ -90,123 +77,19 @@ public class HighlightProvider implements CsmModelListener, CsmProgressListener,
     
     /** Creates a new instance of HighlightProvider */
     private HighlightProvider() {
-        CsmModelAccessor.getModel().addModelListener(this);
-        CsmModelAccessor.getModel().addProgressListener(this);
-        TopComponent.getRegistry().addPropertyChangeListener(this);
     }
     
-    public void startup() {
-// we don't need this: projectOpened is empty!
-// (iz #112280)	
-//        for(Object o : CsmModelAccessor.getModel().projects()){
-//            CsmProject project = (CsmProject)o;
-//            projectOpened(project);
-//        }
+    /* package */ void update(CsmFile file, Document doc) {
+        checkFile(file, doc);
     }
     
-    public void shutdown() {
-        CsmModelAccessor.getModel().removeModelListener(this);
-        TopComponent.getRegistry().removePropertyChangeListener(this);
-        List<CsmFile> toDelete = new ArrayList<CsmFile>(annotations.keySet());
-        for(CsmFile file : toDelete) {
-            removeAnnotations(file);
-        }
-        BadgeProvider.getInstance().removeAllProjects();
-    }
-    
-    public void close() {
-    }
-    
-    public void projectOpened(CsmProject project) {
-    }
-    
-    public void projectClosed(CsmProject project) {
-        List<CsmFile> toDelete = new ArrayList<CsmFile>();
-        for(Iterator it = annotations.keySet().iterator(); it.hasNext();){
-            CsmFile file = (CsmFile)it.next();
-            if (file.getProject() == project){
-                toDelete.add(file);
-            }
-        }
-        for( CsmFile file : toDelete ) {
-            removeAnnotations(file);
-        }
-        BadgeProvider.getInstance().removeProject(project);
-    }
-    
-    public void modelChanged(CsmChangeEvent e) {
-        for(Iterator it = e.getRemovedFiles().iterator(); it.hasNext();){
-            CsmFile file = (CsmFile)it.next();
-            if (TRACE_ANNOTATIONS)  System.out.println("Removed file: "+file.getName()); // NOI18N
-            removeAnnotations(file);
-            BadgeProvider.getInstance().onFileRemoved(file);
-        }
-    }
-
-    public void projectParsingStarted(CsmProject project) {
-    }
-
-    public void projectFilesCounted(CsmProject project, int filesCount) {
-    }
-
-    public void projectParsingFinished(CsmProject project) {
-    }
-
-    public void projectParsingCancelled(CsmProject project) {
-    }
-
-    public void fileInvalidated(CsmFile file) {
-    }
-
-    public void fileParsingStarted(CsmFile file) {
-    }
-
-    public void fileParsingFinished(CsmFile file) {
-        checkFile(file, null);
-        BadgeProvider.getInstance().invalidateFile(file);
-    }
-
-    public void projectLoaded(CsmProject project) {
-	checkNodes();
-	long time = 0;
-	if( TRACE_ANNOTATIONS ) {
-	    System.err.printf("HighlightProvider.projectLoaded - start checking files for %s\n", project.getName()); //NOI18N
-	    time = System.currentTimeMillis();
-	}
-        BadgeProvider.getInstance().invalidateProject(project);
-	if( TRACE_ANNOTATIONS ) {
-	    time = System.currentTimeMillis() - time;
-	    System.err.printf("HighlightProvider checking files for %s took %d ms\n", project.getName(), time); //NOI18N
-	}
-    }
-    
-    public void parserIdle() {
-    }
-    
-    public void propertyChange(PropertyChangeEvent evt) {
-	Runnable r = null;
-        if (TopComponent.Registry.PROP_CURRENT_NODES.equals(evt.getPropertyName())){
-	    r = new Runnable() {
-		public void run() {
-		    checkNodes();
-		}
-	    };
-        } else if (TopComponent.Registry.PROP_OPENED.equals(evt.getPropertyName())){
-	    r = new Runnable() {
-		public void run() {
-		    checkClosed();
-		}
-	    };
-//        } else if (TopComponent.Registry.PROP_ACTIVATED_NODES.equals(evt.getPropertyName())){
-//            checkClosed();
-        }
-	if( r != null ) {
-	    CsmModelAccessor.getModel().enqueue(r, threadName);
-	}
+    /* package */ void clear(CsmFile file) {
+        removeAnnotations(file);
     }
     
     private void checkFile(CsmFile file, Document doc) {
         if (doc == null) {
+            // actually, we should never get here...
             doc = findDocument(file);
         }
         if (doc instanceof BaseDocument){
@@ -219,8 +102,6 @@ public class HighlightProvider implements CsmModelListener, CsmProgressListener,
         if (dao == null) {
             return null;
         }
-//        EditorCookie editor = dao.getCookie(EditorCookie.class);
-//        return editor != null ? editor.getDocument() : null;
         for (JTextComponent component : EditorRegistry.componentList()) {
             if (component.isShowing()) {
                 Document doc = component.getDocument();
@@ -233,54 +114,6 @@ public class HighlightProvider implements CsmModelListener, CsmProgressListener,
         return null;
     }
     
-    private void checkClosed(){
-        checkClosed(EditorRegistry.componentList());
-    }
-
-    private void checkClosed(List<? extends JTextComponent> panes) {
-        if (annotations.size() == 0) {
-            return;
-        }
-        Set<CsmFile> opened = new HashSet<CsmFile>();
-        for (JTextComponent component : panes) {
-            if (component.isShowing()) {
-                Document doc = component.getDocument();
-                CsmFile file = CsmUtilities.getCsmFile(doc, false);
-                if (file != null && file.isParsed()) {
-                    opened.add(file);
-                }
-            }
-        }
-        List<CsmFile> toDelete = new ArrayList<CsmFile>();
-        for(Iterator<CsmFile> it = annotations.keySet().iterator(); it.hasNext();){
-            CsmFile file = it.next();
-            if (!opened.contains(file)){
-                toDelete.add(file);
-            }
-        }
-        for( Iterator<CsmFile> it = toDelete.iterator(); it.hasNext(); ) {
-            CsmFile file = it.next();
-            removeAnnotations(file);
-        }
-    }
-    
-    private void checkNodes(){
-        checkNodes(EditorRegistry.componentList());
-    }
-
-    private void checkNodes(List<? extends JTextComponent> panes){
-        for (JTextComponent component : panes) {
-            if (component.isShowing()) {
-                Document doc = component.getDocument();
-                CsmFile file = CsmUtilities.getCsmFile(doc, false);
-                if (file != null && file.isParsed()) {
-                    //if (TRACE_ANNOTATIONS)  System.out.println("Activate node: "+file.getName()); // NOI18N
-                    checkFile(file, doc);
-                }
-            }
-        }
-    }
-
     private boolean isNeededUpdateAnnotations(BaseDocument doc, CsmFile file) {
         if (doc == null || file == null) {
             return false;
