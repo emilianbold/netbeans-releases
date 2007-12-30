@@ -491,7 +491,7 @@ public class CPPParserEx extends CPPParser {
         */
     }
 
-    protected final boolean isValidIdentifier(String id) { 
+    private final boolean isValidIdentifier(String id) { 
         if( id != null && id.length() > 0 ) {
             if( Character.isJavaIdentifierStart(id.charAt(0)) ) {
                 for( int i = 1; i < id.length(); i++ ) {
