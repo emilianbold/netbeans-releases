@@ -42,7 +42,10 @@ package org.netbeans.modules.groovy.grailsproject.classpath;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -60,17 +63,26 @@ public class SourceRoots {
     }
     
     public FileObject[] getRoots() {
-        return new FileObject[] {
-            projectRoot.getFileObject("src/java"), // NOI18N
-            projectRoot.getFileObject("src/groovy"), // NOI18N
-            projectRoot.getFileObject("grails-app/conf"), // NOI18N
-            projectRoot.getFileObject("grails-app/controllers"), // NOI18N
-            projectRoot.getFileObject("grails-app/domain"), // NOI18N
-            projectRoot.getFileObject("grails-app/services"), // NOI18N
-            projectRoot.getFileObject("grails-app/taglib"), // NOI18N
-            projectRoot.getFileObject("test/integration"), // NOI18N
-            projectRoot.getFileObject("test/unit") // NOI18N
+        String[] paths = new String[] {
+            "src/java", // NOI18N
+            "src/groovy", // NOI18N
+            "grails-app/conf", // NOI18N
+            "grails-app/controllers", // NOI18N
+            "grails-app/domain", // NOI18N
+            "grails-app/services", // NOI18N
+            "grails-app/taglib", // NOI18N
+            "test/integration", // NOI18N
+            "test/unit" // NOI18N
         };
+        
+        Set<FileObject> roots = new HashSet<FileObject>();
+        for (String path : paths) {
+            FileObject fo = projectRoot.getFileObject(path); // NOI18N
+            if (fo != null) {
+                roots.add(fo);
+            }
+        }
+        return roots.toArray(new FileObject[roots.size()]);
     }
     
     public List<URL> getRootURLs() {
