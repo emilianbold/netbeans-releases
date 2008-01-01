@@ -69,18 +69,47 @@ public final class CndLexerUtilities {
         if (!escapedLF) {
             return text;
         } else {
-            return text;
+            StringBuilder buffer = new StringBuilder();
+            int lengthM1 = text.length() - 1;
+            for (int i = 0; i <= lengthM1; i++) {
+                char c = text.charAt(i);
+                boolean append = true;
+                if (c == '\\') { // check escaped LF
+                    if ((i < lengthM1) && (text.charAt(i+1) == '\r')) {
+                        i++;
+                        append = false;
+                    }
+                    if ((i < lengthM1) && (text.charAt(i+1) == '\n')) {
+                        i++;
+                        append = false;
+                    }                    
+                }
+                if (append) {
+                    buffer.append(c);
+                }
+            }
+            return buffer.toString();
         }
     }
+    
     // filters
     private static Filter<CppTokenId> FILTER_STD_C;
     private static Filter<CppTokenId> FILTER_GCC_C;
     private static Filter<CppTokenId> FILTER_STD_CPP;
+    private static Filter<CppTokenId> FILTER_PREPRPOCESSOR;
 
     public static Filter<CppTokenId> getDefatultFilter(boolean cpp) {
         return cpp ? getStdCppFilter() : getStdCFilter();
     }
 
+    public synchronized static Filter<CppTokenId> getPreprocFilter() {
+        if (FILTER_PREPRPOCESSOR == null) {
+            FILTER_PREPRPOCESSOR = new Filter<CppTokenId>();
+            addPreprocKeywords(FILTER_PREPRPOCESSOR);
+        }
+        return FILTER_PREPRPOCESSOR;
+    }
+    
     public synchronized static Filter<CppTokenId> getStdCFilter() {
         if (FILTER_STD_C == null) {
             FILTER_STD_C = new Filter<CppTokenId>();
@@ -111,6 +140,27 @@ public final class CndLexerUtilities {
 
     ////////////////////////////////////////////////////////////////////////////
     // help methods
+    
+    private static void addPreprocKeywords(Filter<CppTokenId> filterToModify) {
+        CppTokenId[] ids = new CppTokenId[]{
+            CppTokenId.PREPROCESSOR_IF,
+            CppTokenId.PREPROCESSOR_IFDEF,
+            CppTokenId.PREPROCESSOR_IFNDEF,
+            CppTokenId.PREPROCESSOR_ELSE,
+            CppTokenId.PREPROCESSOR_ELIF,
+            CppTokenId.PREPROCESSOR_ENDIF,
+            CppTokenId.PREPROCESSOR_DEFINE,
+            CppTokenId.PREPROCESSOR_UNDEF,
+            CppTokenId.PREPROCESSOR_INCLUDE,
+            CppTokenId.PREPROCESSOR_INCLUDE_NEXT,
+            CppTokenId.PREPROCESSOR_LINE,
+            CppTokenId.PREPROCESSOR_PRAGMA,
+            CppTokenId.PREPROCESSOR_WARNING,
+            CppTokenId.PREPROCESSOR_ERROR,
+        };
+        addToFilter(ids, filterToModify);        
+    }
+    
     private static void addCommonCCKeywords(Filter<CppTokenId> filterToModify) {
         CppTokenId[] ids = new CppTokenId[]{
             CppTokenId.AUTO,

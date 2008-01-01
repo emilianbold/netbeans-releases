@@ -101,43 +101,30 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
         input.consumeNewline();
     }
     
-    protected void newline() {
-    }
-    
     @SuppressWarnings("fallthrough")
     public Token<CppTokenId> nextToken() {
         while (true) {
             int c = read(true);
             switch (c) {
-                case '"': // string literal
-                    while (true) {
-                        switch (read(true)) {
-                            case '"': // NOI18N
-                                return token(CppTokenId.STRING_LITERAL);
-//                            case '\\':
-//                                read(true); // read escaped symbol
-//                                break;
-                            case '\r':
-                                input.consumeNewline();
-                            case '\n':
-                                newline();
-                            case EOF:
-                                return tokenPart(CppTokenId.STRING_LITERAL, PartType.START);
-                        }
-                    }
-
+                case '"': 
+                {
+                    Token<CppTokenId> out = finishDblQuote();
+                    assert out != null : "not handled dobule quote";
+                    return out;
+                }
                 case '\'': // char literal
                     while (true) {
                         switch (read(true)) {
                             case '\'': // NOI18N
                                 return token(CppTokenId.CHAR_LITERAL);
-//                            case '\\':
-//                                read(true); // read escaped char
-//                                break;
+                            case '\\':
+                                if (read(false) == '\r') { // read escaped char
+                                    input.consumeNewline();
+                                }
+                                break;
                             case '\r':
                                 input.consumeNewline();
                             case '\n':
-                                newline();
                             case EOF:
                                 return tokenPart(CppTokenId.CHAR_LITERAL, PartType.START);
                         }
@@ -145,17 +132,8 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
                     
                 case '#': 
                 {
-                    Token<CppTokenId> out = handleSharp();
-                    if (out == null) {
-                        CppTokenId id = CppTokenId.SHARP;
-                        if (read(true) == '#') {
-                            id = CppTokenId.DBL_SHARP;
-                        } else {
-                            input.backup(1);
-                        }
-                        out = token(id);
-                    }
-                    assert out != null;
+                    Token<CppTokenId> out = finishSharp();
+                    assert out != null : "not handled #";
                     return out;
                 }
                     
@@ -167,7 +145,6 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
                                     case '\r':
                                         input.consumeNewline();
                                     case '\n':
-                                        newline();
                                     case EOF:
                                         return token(CppTokenId.LINE_COMMENT);
                                 }
@@ -234,18 +211,10 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
                     return token(CppTokenId.GT);
 
                 case '<':
-                    switch (read(true)) {
-                        case '<': // after <<
-                            if (read(true) == '=') {
-                                return token(CppTokenId.LTLTEQ);
-                            }
-                            input.backup(1);
-                            return token(CppTokenId.LTLT);
-                        case '=': // <=
-                            return token(CppTokenId.LTEQ);
-                    }
-                    input.backup(1);
-                    return token(CppTokenId.LT);
+                {
+                    Token<CppTokenId> out = finishLT();
+                    assert out != null : "not handled '<'";
+                }
 
                 case '+':
                     switch (read(true)) {
@@ -431,52 +400,8 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
                 case '9':
                     return finishNumberLiteral(read(true), false);
 
-
-                // Keywords lexing    
-                case 'a':
-
-
-                // Rest of lowercase letters starting identifiers
-                case 'h':
-                case 'j':
-                case 'k':
-                case 'm':
-                case 'o':
-                case 'q':
-                case 'u':
-                case 'x':
-                case 'y':
-                case 'z':
-                // Uppercase letters starting identifiers
-                case 'A':
-                case 'B':
-                case 'C':
-                case 'D':
-                case 'E':
-                case 'F':
-                case 'G':
-                case 'H':
-                case 'I':
-                case 'J':
-                case 'K':
-                case 'L':
-                case 'M':
-                case 'N':
-                case 'O':
-                case 'P':
-                case 'Q':
-                case 'R':
-                case 'S':
-                case 'T':
-                case 'U':
-                case 'V':
-                case 'W':
-                case 'X':
-                case 'Y':
-                case 'Z':
                 case '$':
-                case '_':
-                    return finishIdentifier();
+                    return token(CppTokenId.DOLLAR);
 
                 // All Character.isWhitespace(c) below 0x80 follow
                 // ['\t' - '\r'] and [0x1c - ' ']
@@ -494,7 +419,7 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
                     c = read(true);
                     if (c == EOF || !Character.isWhitespace(c)) { // Return single space as flyweight token
                         input.backup(1);
-                        return tokenWS(true);
+                        return tokenWhitespace();
                     }
                     return finishWhitespace();
 
@@ -502,14 +427,12 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
                     return null;
 
                 default:
-                    if (c >= 0x80) { // lowSurr ones already handled above
-                        c = translateSurrogates(c);
-                        if (CndLexerUtilities.isCppIdentifierStart(c)) {
-                            return finishIdentifier();
-                        }
-                        if (Character.isWhitespace(c)) {
-                            return finishWhitespace();
-                        }
+                    c = translateSurrogates(c);
+                    if (CndLexerUtilities.isCppIdentifierStart(c)) {
+                        return keywordOrIdentifier(c);
+                    }
+                    if (Character.isWhitespace(c)) {
+                        return finishWhitespace();
                     }
 
                     // Invalid char
@@ -517,6 +440,8 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
             } // end of switch (c)
         } // end of while(true)
     }
+
+    protected abstract CppTokenId getKeywordOrIdentifierID(CharSequence text);
 
     private int translateSurrogates(int c) {
         if (Character.isHighSurrogate((char) c)) {
@@ -543,38 +468,25 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
             // so do not call translateSurrogates()
             if (c == EOF || !Character.isWhitespace(c)) {
                 input.backup(1);
-                return tokenWS(false);
+                return tokenWhitespace();
             }
         }
     }
 
-    private Token<CppTokenId> finishIdentifier() {
-        return finishIdentifier(read(true));
-    }
-
-    private Token<CppTokenId> finishIdentifier(int c) {
+    private Token<CppTokenId> keywordOrIdentifier(int c) {
+        StringBuilder idText = new StringBuilder();
+        idText.append((char)c);
         while (true) {
+            c = read(true);
             if (c == EOF || !CndLexerUtilities.isCppIdentifierPart(c = translateSurrogates(c))) {
                 // For surrogate 2 chars must be backed up
                 input.backup((c >= Character.MIN_SUPPLEMENTARY_CODE_POINT) ? 2 : 1);
-                return token(CppTokenId.IDENTIFIER);
+                CppTokenId id = getKeywordOrIdentifierID(idText.toString());
+                assert id != null : "must be valid id for " + idText;
+                return token(id);
+            } else {
+                idText.append((char)c);
             }
-            c = read(true);
-        }
-    }
-
-    private Token<CppTokenId> keywordOrIdentifier(CppTokenId keywordId) {
-        return keywordOrIdentifier(keywordId, read(true));
-    }
-
-    private Token<CppTokenId> keywordOrIdentifier(CppTokenId keywordId, int c) {
-        // Check whether the given char is non-ident and if so then return keyword
-        if (c == EOF || !CndLexerUtilities.isCppIdentifierPart(c = translateSurrogates(c))) {
-            // For surrogate 2 chars must be backed up
-            input.backup((c >= Character.MIN_SUPPLEMENTARY_CODE_POINT) ? 2 : 1);
-            return token(keywordId);
-        } else {// c is identifier part        
-            return finishIdentifier();
         }
     }
 
@@ -591,12 +503,15 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
                 case 'l':
                 case 'L': // 0l or 0L
                     return token(CppTokenId.LONG_LITERAL);
-                case 'd':
-                case 'D':
-                    return token(CppTokenId.DOUBLE_LITERAL);
+//                case 'd':
+//                case 'D':
+//                    return token(CppTokenId.DOUBLE_LITERAL);
                 case 'f':
                 case 'F':
                     return token(CppTokenId.FLOAT_LITERAL);
+                case 'u':
+                case 'U':
+                    return token(CppTokenId.UNSIGNED_LITERAL);
                 case '0':
                 case '1':
                 case '2':
@@ -632,9 +547,9 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
             c = read(true);
         } while ('0' <= c && c <= '9'); // reading exponent
         switch (c) {
-            case 'd':
-            case 'D':
-                return token(CppTokenId.DOUBLE_LITERAL);
+//            case 'd':
+//            case 'D':
+//                return token(CppTokenId.DOUBLE_LITERAL);
             case 'f':
             case 'F':
                 return token(CppTokenId.FLOAT_LITERAL);
@@ -644,32 +559,88 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
         }
     }
 
-    protected Token<CppTokenId> token(CppTokenId id) {
-        String fixedText = id.fixedText();
-        Token<CppTokenId> out = (fixedText != null && !isEscapedLF())
-                ? tokenFactory.getFlyweightToken(id, fixedText)
-                : tokenFactory.createToken(id);
-        escapedLF = false;
-        return out;
+    protected final Token<CppTokenId> token(CppTokenId id) {
+        return token(id, id.fixedText(), PartType.COMPLETE);
     }
-
-    private Token<CppTokenId> tokenWS(boolean checkSingleWS) {
-        if (checkSingleWS && (input.readLength() == 1)) {
+    
+    protected final Token<CppTokenId> tokenWhitespace() {
+        if (input.readLength() == 1) {
             // Return single space as flyweight token
-            escapedLF = false;
-            return tokenFactory.getFlyweightToken(CppTokenId.WHITESPACE, " ");
+            return token(CppTokenId.WHITESPACE, " ", PartType.COMPLETE);
         } else {
-            escapedLF = false;
-            return tokenFactory.createToken(CppTokenId.WHITESPACE);
+            return token(CppTokenId.WHITESPACE, null, PartType.COMPLETE);
         }
     }
 
-    private Token<CppTokenId> tokenPart(CppTokenId id, PartType part) {
+    protected final Token<CppTokenId> tokenPart(CppTokenId id, PartType part) {
+        return token(id, null, part);
+    }  
+    
+    private Token<CppTokenId> token(CppTokenId id, String fixedText, PartType part) {
+        assert id != null : "id must be not null";
+        Token<CppTokenId> token = null;
+        if (fixedText != null && !isEscapedLF()) {
+            // create flyweight token
+            token = tokenFactory.getFlyweightToken(id, fixedText);
+        } else {
+            if (part != PartType.COMPLETE) {
+                token = tokenFactory.createToken(id, input.readLength(), part);
+            } else {
+                token = tokenFactory.createToken(id);
+            }
+        }
         escapedLF = false;
-        return tokenFactory.createToken(id, input.readLength(), part);
-    }    
+        assert token != null : "token must be created as result for " + id;
+        postTokenCreate(id);
+        return token;
+    }  
 
-    protected abstract Token<CppTokenId> handleSharp();
+    protected Token<CppTokenId> finishSharp() {
+        if (read(true) == '#') {
+            return token(CppTokenId.DBL_SHARP);
+        }
+        input.backup(1);
+        return token(CppTokenId.SHARP);
+    }
+    
+    @SuppressWarnings("fallthrough")
+    protected Token<CppTokenId> finishDblQuote() {
+        while (true) { // string literal
+            switch (read(true)) {
+                case '"': // NOI18N
+                    return token(CppTokenId.STRING_LITERAL);
+                case '\\':
+                    if (read(false) == '\r') { // read escaped char
+                        input.consumeNewline();
+                    }
+                    break;
+                case '\r':
+                    input.consumeNewline();
+                case '\n':
+                case EOF:
+                    return tokenPart(CppTokenId.STRING_LITERAL, PartType.START);
+            }
+        }   
+    }
+
+    protected Token<CppTokenId> finishLT() {
+        switch (read(true)) {
+            case '<': // after <<
+                if (read(true) == '=') {
+                    return token(CppTokenId.LTLTEQ);
+                }
+                input.backup(1);
+                return token(CppTokenId.LTLT);
+            case '=': // <=
+                return token(CppTokenId.LTEQ);
+        }
+        input.backup(1);
+        return token(CppTokenId.LT);
+    }
+    
+    protected void postTokenCreate(CppTokenId id) {
+        
+    }
     
     public void release() {
     }

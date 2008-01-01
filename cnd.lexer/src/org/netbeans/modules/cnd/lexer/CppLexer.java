@@ -63,25 +63,32 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
  */
 public class CppLexer extends CndLexer {
 
-    private final Filter lexerFilter;
-    public CppLexer(Filter defaultFilter, LexerRestartInfo<CppTokenId> info) {
+    private final Filter<CppTokenId> lexerFilter;
+    public CppLexer(Filter<CppTokenId> defaultFilter, LexerRestartInfo<CppTokenId> info) {
         super(info);
-        Filter filter = (Filter) info.getAttributeValue("lexer-filter"); // NOI18N
+        Filter<CppTokenId> filter = (Filter<CppTokenId>) info.getAttributeValue("lexer-filter"); // NOI18N
         this.lexerFilter = filter != null ? filter : defaultFilter;
     }
-    
+        
     @SuppressWarnings("fallthrough")
-    protected final Token<CppTokenId> handleSharp() {
+    @Override
+    protected Token<CppTokenId> finishSharp() {
         // one prerpocessor directive block
         while (true) {
             switch (read(true)) {
-                case '\r':
-                    consumeNewline();
+                case '\r': 
+                    consumeNewline(); 
                     // nobreak
                 case '\n':
                 case EOF:
                     return token(CppTokenId.PREPROCESSOR_DIRECTIVE);
             }
         }
-    }    
+    }
+
+    @Override
+    protected CppTokenId getKeywordOrIdentifierID(CharSequence text) {
+        CppTokenId id = lexerFilter.check(text);
+        return id != null ? id : CppTokenId.IDENTIFIER;
+    }
 }

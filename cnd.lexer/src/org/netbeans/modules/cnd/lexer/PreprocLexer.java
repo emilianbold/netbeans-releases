@@ -52,8 +52,12 @@
 
 package org.netbeans.modules.cnd.lexer;
 
+import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.cnd.api.lexer.Filter;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /**
@@ -64,14 +68,22 @@ public final class PreprocLexer extends CndLexer {
     private static final int INIT               = 0;
     private static final int DIRECTIVE_NAME     = INIT + 1;
     private static final int MACRO_NAME         = DIRECTIVE_NAME + 1;
-    private static final int MACRO_PARAMS       = MACRO_NAME + 1;
-    private static final int MACRO_BODY         = MACRO_PARAMS + 1;
+    private static final int MACRO_BODY         = MACRO_NAME + 1;
     private static final int EXPRESSION         = MACRO_BODY + 1;
+    private static final int INCLUDE_DIRECTIVE  = EXPRESSION + 1;
+    private static final int OTHER              = INCLUDE_DIRECTIVE + 1;
+    private static final int ERROR              = OTHER + 1;
+    
+    private static final String WHITESPACE_CATEGORY = CppTokenId.WHITESPACE.primaryCategory();
+    private static final String COMMENT_CATEGORY = CppTokenId.LINE_COMMENT.primaryCategory();
+    private static final String PREPROC_KEYWORD_CATEGORY = CppTokenId.PREPROCESSOR_PRAGMA.primaryCategory();
     
     private int state = INIT;
+    private final Filter<CppTokenId> preprocFilter;
 
     public PreprocLexer(LexerRestartInfo<CppTokenId> info) {
         super(info);
+        this.preprocFilter = CndLexerUtilities.getPreprocFilter();
         fromState(info.state()); // last line in contstructor
     }
 
@@ -85,10 +97,97 @@ public final class PreprocLexer extends CndLexer {
     }
 
     @Override
-    protected Token<CppTokenId> handleSharp() {
-        if (state == INIT) {
+    protected Token<CppTokenId> finishSharp() {
+        if (state == INIT) { 
+            // the first sharp in preprocessor directive has own id            
             return token(CppTokenId.PREPROCESSOR_START);
         }
-        return null;
+        return super.finishSharp();
+    }
+
+    @SuppressWarnings("fallthrough")
+    @Override
+    protected Token<CppTokenId> finishDblQuote() {
+        if (state == INCLUDE_DIRECTIVE) {
+            while (true) { // user include literal
+                switch (read(true)) {
+                    case '"': // NOI18N
+                        return token(CppTokenId.PREPROCESSOR_USER_INCLUDE);
+                    case '\r':
+                        consumeNewline();
+                    case '\n':
+                    case EOF:
+                        return tokenPart(CppTokenId.PREPROCESSOR_USER_INCLUDE, PartType.START);
+                }
+            }              
+        }
+        return super.finishDblQuote();
+    }
+
+    @SuppressWarnings("fallthrough")
+    @Override
+    protected Token<CppTokenId> finishLT() {
+        if (state == INCLUDE_DIRECTIVE) {
+            while (true) { // system include literal
+                switch (read(true)) {
+                    case '>': // NOI18N
+                        return token(CppTokenId.PREPROCESSOR_SYS_INCLUDE);
+                    case '\r':
+                        consumeNewline();
+                    case '\n':
+                    case EOF:
+                        return tokenPart(CppTokenId.PREPROCESSOR_SYS_INCLUDE, PartType.START);
+                }
+            }              
+        }        
+        return super.finishLT();
+    }
+    
+    @Override
+    protected CppTokenId getKeywordOrIdentifierID(CharSequence text) {
+        CppTokenId id = null;
+        if (state == DIRECTIVE_NAME) {
+            id = preprocFilter.check(text);
+        } else if (state == EXPRESSION) {
+            if (CharSequenceUtilities.textEquals(CppTokenId.PREPROCESSOR_DEFINED.fixedText(), text)) {
+                id = CppTokenId.PREPROCESSOR_DEFINED;
+            }
+        }
+        return id != null ? id : CppTokenId.PREPROCESSOR_IDENTIFIER;
+    }
+
+    @Override
+    protected void postTokenCreate(CppTokenId id) {
+        assert id != null;
+        switch (state) { // change state of lexer
+            case INIT:
+                assert id == CppTokenId.PREPROCESSOR_START : 
+                    "in INIT state only CppTokenId.PREPROCESSOR_START is possible: " + id; //NOI18N
+                state = DIRECTIVE_NAME;
+                break;
+            case DIRECTIVE_NAME:
+                if (PREPROC_KEYWORD_CATEGORY.equals(id.primaryCategory())) {
+                    if (id == CppTokenId.PREPROCESSOR_DEFINE ||
+                        id == CppTokenId.PREPROCESSOR_UNDEF) {
+                        state = MACRO_NAME;
+                    }
+                } else if (!WHITESPACE_CATEGORY.equals(id.primaryCategory()) &&
+                           !COMMENT_CATEGORY.equals(id.primaryCategory())) {
+                    state = OTHER;
+                }
+                break;
+            case MACRO_NAME:
+                if (!WHITESPACE_CATEGORY.equals(id.primaryCategory()) &&
+                        !COMMENT_CATEGORY.equals(id.primaryCategory())) {
+                    state = MACRO_BODY;
+                }
+                break;
+            case MACRO_BODY:                
+            case INCLUDE_DIRECTIVE:                
+            case EXPRESSION:                
+            case OTHER:                
+            case ERROR:
+                // do not change state
+        }
     }
 }

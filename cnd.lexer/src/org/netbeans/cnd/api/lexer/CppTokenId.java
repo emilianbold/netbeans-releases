@@ -141,6 +141,7 @@ public enum CppTokenId implements TokenId {
     LONG_LITERAL(null, "number"),
     FLOAT_LITERAL(null, "number"),
     DOUBLE_LITERAL(null, "number"),
+    UNSIGNED_LITERAL(null, "number"),
     CHAR_LITERAL(null, "character"),
     STRING_LITERAL(null, "string"),
     
@@ -200,6 +201,7 @@ public enum CppTokenId implements TokenId {
     
     ELLIPSIS("...", "special"),
     AT("@", "special"),
+    DOLLAR("$", "special"),
     SHARP("#", "special"),
     DBL_SHARP("##", "special"),
     
@@ -228,6 +230,10 @@ public enum CppTokenId implements TokenId {
     PREPROCESSOR_WARNING("warning", "preprpocessor-keyword-directive"),
     PREPROCESSOR_ERROR("error", "preprpocessor-keyword-directive"),
     PREPROCESSOR_DEFINED("defined", "preprpocessor-operator"),
+    
+    PREPROCESSOR_USER_INCLUDE(null, "preprpocessor-user-include-literal"),
+    PREPROCESSOR_SYS_INCLUDE(null, "preprpocessor-system-include-literal"),
+    PREPROCESSOR_IDENTIFIER(null, "preprpocessor-identifier"),
     
     // Errors
     INVALID_COMMENT_END("*/", "error"),
