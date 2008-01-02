@@ -72,7 +72,7 @@ public class GroovyLexerBatchTest extends TestCase {
     }
 
     public void testDiv() {
-        String text = "def s = 4 / 2";
+        String text = "def s = 4 / 2\n";
         TokenHierarchy<?> hi = TokenHierarchy.create(text,GroovyTokenId.language());
         TokenSequence<?> ts = hi.tokenSequence();
         assertTrue(ts.moveNext());
@@ -97,6 +97,8 @@ public class GroovyLexerBatchTest extends TestCase {
         LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.WHITESPACE, " ", -1);
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.NUM_INT, "2", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.NLS, "\n", -1);
     }
     
     public void testGstringsWithoutNewLine() {
