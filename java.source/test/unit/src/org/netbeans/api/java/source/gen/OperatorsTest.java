@@ -209,6 +209,84 @@ public class OperatorsTest extends GeneratorTestMDRCompat {
         System.err.println(res);
         assertEquals(golden, res);
     }
+    
+    public void testChangeBinaryOperator2() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n\n" +
+            "import java.io.*;\n\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "        Object o = null;\n" +
+            "        boolean c = o == null && o instanceof String;\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden = 
+            "package hierbas.del.litoral;\n\n" +
+            "import java.io.*;\n\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "        Object o = null;\n" +
+            "        boolean c = o != null || !(o instanceof String);\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                VariableTree lvd = (VariableTree) method.getBody().getStatements().get(1);
+                ExpressionTree orig = lvd.getInitializer();
+                ExpressionTree nue = negate(workingCopy, orig);
+                workingCopy.rewrite(orig, nue);
+            }
+            
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    private static ExpressionTree negate(WorkingCopy wc, ExpressionTree input) {
+        TreeMaker make = wc.getTreeMaker();
+
+        switch (input.getKind()) {
+            case CONDITIONAL_AND:
+                BinaryTree andT = (BinaryTree) input;
+
+                return make.Binary(Kind.CONDITIONAL_OR, negate(wc, andT.getLeftOperand()), negate(wc, andT.getRightOperand()));
+            case CONDITIONAL_OR:
+                BinaryTree orT = (BinaryTree) input;
+
+                return make.Binary(Kind.CONDITIONAL_AND, negate(wc, orT.getLeftOperand()), negate(wc, orT.getRightOperand()));
+                
+            case EQUAL_TO:
+                BinaryTree eqT = (BinaryTree) input;
+
+                return make.Binary(Kind.NOT_EQUAL_TO, eqT.getLeftOperand(), eqT.getRightOperand());
+
+            case PARENTHESIZED:
+                return make.Parenthesized(negate(wc, ((ParenthesizedTree) input).getExpression()));
+
+            case LOGICAL_COMPLEMENT:
+                ExpressionTree withoutComplement = ((UnaryTree) input).getExpression();
+
+                if (withoutComplement.getKind() == Kind.PARENTHESIZED) {
+                    withoutComplement = ((ParenthesizedTree) withoutComplement).getExpression();
+                }
+
+                return withoutComplement;
+
+            default:
+                return make.Unary(Kind.LOGICAL_COMPLEMENT, make.Parenthesized(input));
+        }
+    }
+            
     String getGoldenPckg() {
         return "";
     }
