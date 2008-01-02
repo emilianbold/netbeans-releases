@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -40,10 +40,13 @@
  */
 package org.netbeans.api.ruby.platform;
 
+import java.util.logging.Logger;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 
 public final class RubyPlatformProvider {
 
+    private static final Logger LOGGER = Logger.getLogger(RubyPlatformProvider.class.getName());
+    
     private final PropertyEvaluator evaluator;
 
     public RubyPlatformProvider(final PropertyEvaluator evaluator) {
@@ -52,6 +55,11 @@ public final class RubyPlatformProvider {
 
     public RubyPlatform getPlatform() {
         String id = evaluator.getProperty("platform.active"); // NOI18N
-        return id == null ? RubyPlatformManager.getDefaultPlatform() : RubyPlatformManager.getPlatformByID(id);
+        RubyPlatform platform = id == null ? RubyPlatformManager.getDefaultPlatform() : RubyPlatformManager.getPlatformByID(id);
+        if (platform == null) {
+            LOGGER.info("Platform with id '" + id + "' does not exist. Using default platform.");
+            platform = RubyPlatformManager.getDefaultPlatform();
+        }
+        return platform;
     }
 }
