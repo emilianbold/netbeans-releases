@@ -13,9 +13,7 @@
         <zip basedir="samples_src/InterceptorStateless" excludes="${excludes}" destfile="${examples}/InterceptorStateless.zip"/>
         <zip basedir="samples_src/ServletStateless" excludes="${excludes}" destfile="${examples}/ServletStateless.zip"/>
         <zip basedir="samples_src/LotteryAnnotation" excludes="${excludes}" destfile="${examples}/LotteryAnnotation.zip"/>
-<!-- XXX tslota forgot to add the replacement dir
         <zip basedir="samples_src/AnnotOvdInterceptor" excludes="${excludes}" destfile="${examples}/AnnotOvdInterceptor.zip"/>
--->
         <zip basedir="samples_src/JsfJpa" excludes="${excludes}" destfile="${examples}/JsfJpa.zip"/>
         <zip basedir="samples_src/JsfJpaCrud" excludes="${excludes}" destfile="${examples}/JsfJpaCrud.zip"/>
         <zip basedir="samples_src/WebJpa" excludes="${excludes}" destfile="${examples}/WebJpa.zip"/>
