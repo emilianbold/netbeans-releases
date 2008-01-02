@@ -58,9 +58,9 @@ import org.openide.DialogDisplayer;
 * @author Marek Slama
 */
 public class RegisterAction extends CallableSystemAction implements ActionListener {
-    private JButton registerNow = new JButton("Register Now");
-    private JButton registerLater = new JButton("Register Later");
-    private JButton registerNever = new JButton("Never Register");
+    private JButton registerNow = new JButton();
+    private JButton registerLater = new JButton();
+    private JButton registerNever = new JButton();
     private ActionListener l = new ActionListener () {
         public void actionPerformed (ActionEvent ev) {
             cmd = ev.getActionCommand();
@@ -71,12 +71,18 @@ public class RegisterAction extends CallableSystemAction implements ActionListen
     
     public RegisterAction () {
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+        
         registerNow.addActionListener(l);
         registerNow.setActionCommand(StatusData.STATUS_REGISTERED);
+        registerNow.setText(NbBundle.getMessage(RegisterAction.class,"LBL_RegisterNow"));
+        
         registerLater.addActionListener(l);
         registerLater.setActionCommand(StatusData.STATUS_LATER);
+        registerLater.setText(NbBundle.getMessage(RegisterAction.class,"LBL_RegisterLater"));
+        
         registerNever.addActionListener(l);
         registerNever.setActionCommand(StatusData.STATUS_NEVER);
+        registerNever.setText(NbBundle.getMessage(RegisterAction.class,"LBL_RegisterNever"));
     }
 
     public void performAction () {
