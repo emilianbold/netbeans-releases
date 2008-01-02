@@ -44,12 +44,11 @@ package org.netbeans.modules.groovy.editor.parser;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyClassLoader;
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.CompileUnit;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.control.CompilationUnit;
@@ -59,7 +58,6 @@ import org.codehaus.groovy.control.Phases;
 import org.codehaus.groovy.control.messages.SimpleMessage;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.syntax.SyntaxException;
-import org.codehaus.groovy.tools.javac.JavaAwareCompilationUnit;
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.Element;
 import org.netbeans.api.gsf.ElementHandle;
@@ -76,13 +74,15 @@ import org.netbeans.api.gsf.SourceFileReader;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.groovy.editor.AstNodeAdapter;
 import org.netbeans.modules.groovy.editor.AstUtilities;
+import org.netbeans.modules.groovy.editor.elements.AstElement;
 import org.netbeans.modules.groovy.editor.elements.AstRootElement;
+import org.netbeans.modules.groovy.editor.elements.CommentElement;
+import org.netbeans.modules.groovy.editor.elements.IndexedElement;
+import org.netbeans.modules.groovy.editor.elements.KeywordElement;
 import org.netbeans.spi.gsf.DefaultError;
 import org.netbeans.spi.gsf.DefaultPosition;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -131,11 +131,77 @@ public class GroovyParser implements Parser {
         return finder;
     }
 
-    public <T extends Element> ElementHandle<T> createHandle(CompilationInfo info, T element) {
-        return null;
+    public <T extends Element> ElementHandle<T> createHandle(CompilationInfo info, T object) {
+        if (object instanceof KeywordElement || object instanceof CommentElement) {
+            // Not tied to an AST - just pass it around
+            return new GroovyElementHandle(null, object, info.getFileObject());
+        }
+
+        // TODO - check for Ruby
+        if (object instanceof IndexedElement) {
+            // Probably a function in a "foreign" file (not parsed from AST),
+            // such as a signature returned from the index of the Ruby libraries.
+// TODO - make sure this is infrequent! getFileObject is expensive!            
+// Alternatively, do this in a delayed fashion - e.g. pass in null and in getFileObject
+// look up from index            
+            return new GroovyElementHandle(null, object, ((IndexedElement)object).getFileObject());
+        }
+
+        if (!(object instanceof AstElement)) {
+            return null;
+        }
+
+        ParserResult result = info.getParserResult();
+
+        if (result == null) {
+            return null;
+        }
+
+        ParserResult.AstTreeNode ast = result.getAst();
+
+        if (ast == null) {
+            return null;
+        }
+
+        ASTNode root = AstUtilities.getRoot(info);
+
+        return new GroovyElementHandle(root, object, info.getFileObject());
     }
 
     public <T extends Element> T resolveHandle(CompilationInfo info, ElementHandle<T> handle) {
+        if (handle instanceof ElementHandle.UrlHandle) {
+            return (T)handle;
+        }
+
+        GroovyElementHandle h = (GroovyElementHandle)handle;
+        ASTNode oldRoot = h.root;
+        ASTNode oldNode;
+
+        if (h.object instanceof KeywordElement || h.object instanceof IndexedElement || h.object instanceof CommentElement) {
+            // Not tied to a tree
+            return (T)h.object;
+        }
+
+        if (h.object instanceof AstElement) {
+            oldNode = ((AstElement)h.object).getNode(); // XXX Make it work for DefaultComObjects...
+        } else {
+            return null;
+        }
+
+        ASTNode newRoot = AstUtilities.getRoot(info);
+        if (newRoot == null) {
+            return null;
+        }
+
+        // Find newNode
+        ASTNode newNode = find(oldRoot, oldNode, newRoot);
+
+        if (newNode != null) {
+            Element co = AstElement.create(newNode);
+
+            return (T)co;
+        }
+
         return null;
     }
 
@@ -230,6 +296,68 @@ public class GroovyParser implements Parser {
         }
     }
     
+    private ASTNode find(ASTNode oldRoot, ASTNode oldObject, ASTNode newRoot) {
+        // Walk down the tree to locate oldObject, and in the process, pick the same child for newRoot
+        @SuppressWarnings("unchecked")
+        List<?extends ASTNode> oldChildren = AstUtilities.children(oldRoot);
+        @SuppressWarnings("unchecked")
+        List<?extends ASTNode> newChildren = AstUtilities.children(newRoot);
+        Iterator<?extends ASTNode> itOld = oldChildren.iterator();
+        Iterator<?extends ASTNode> itNew = newChildren.iterator();
+
+        while (itOld.hasNext()) {
+            if (!itNew.hasNext()) {
+                return null; // No match - the trees have changed structure
+            }
+
+            ASTNode o = itOld.next();
+            ASTNode n = itNew.next();
+
+            if (o == oldObject) {
+                // Found it!
+                return n;
+            }
+
+            // Recurse
+            ASTNode match = find(o, oldObject, n);
+
+            if (match != null) {
+                return match;
+            }
+        }
+
+        if (itNew.hasNext()) {
+            return null; // No match - the trees have changed structure
+        }
+
+        return null;
+    }
+
+    private static class GroovyElementHandle<T extends Element> extends ElementHandle<T> {
+        private final ASTNode root;
+        private final T object;
+        private final FileObject fileObject;
+
+        private GroovyElementHandle(ASTNode root, T object, FileObject fileObject) {
+            this.root = root;
+            this.object = object;
+            this.fileObject = fileObject;
+        }
+
+        public boolean signatureEquals(ElementHandle handle) {
+            // XXX TODO
+            return false;
+        }
+
+        public FileObject getFileObject() {
+            if (object instanceof IndexedElement) {
+                return ((IndexedElement)object).getFileObject();
+            }
+
+            return fileObject;
+        }
+    }
+
     /** Parsing context */
     public static final class Context {
         private final ParserFile file;

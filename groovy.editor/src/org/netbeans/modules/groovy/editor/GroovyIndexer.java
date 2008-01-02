@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,59 +38,24 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.groovy.editor;
 
-package org.netbeans.modules.groovy.editor.elements;
-
-import java.util.Collections;
-import java.util.Set;
-import org.codehaus.groovy.ast.ASTNode;
-import org.codehaus.groovy.ast.MethodNode;
-import org.netbeans.api.gsf.Element;
-import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.gsf.Modifier;
+import java.io.IOException;
+import org.netbeans.api.gsf.Index;
+import org.netbeans.api.gsf.Indexer;
+import org.netbeans.api.gsf.ParserFile;
+import org.netbeans.api.gsf.ParserResult;
 
 /**
- *
  * @author Martin Adamek
  */
-public abstract class AstElement implements Element {
+public class GroovyIndexer implements Indexer {
 
-    protected final ASTNode node;
-    protected String name;
-    protected Set<Modifier> modifiers;
-    private String in;
-    
-    public AstElement(ASTNode node) {
-        this.node = node;
+    public boolean isIndexable(ParserFile file) {
+        return false;
+    }
+
+    public void updateIndex(Index index, ParserResult result) throws IOException {
     }
     
-    public abstract String getName();
-
-    public ASTNode getNode() {
-        return node;
-    }
-    
-    public String getIn() {
-        return in;
-    }
-
-    public ElementKind getKind() {
-        return ElementKind.OTHER;
-    }
-
-    public Set<Modifier> getModifiers() {
-        return Collections.<Modifier>emptySet();
-    }
-
-    public void setIn(String in) {
-        this.in = in;
-    }
-    
-    public static AstElement create(ASTNode node) {
-        if (node instanceof MethodNode) {
-            return new AstMethodElement(node);
-        }
-        return null;
-    }
-
 }

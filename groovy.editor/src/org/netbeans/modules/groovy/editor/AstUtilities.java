@@ -41,25 +41,73 @@
 
 package org.netbeans.modules.groovy.editor;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javax.swing.text.Document;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
-import org.codehaus.groovy.ast.expr.Expression;
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.api.gsf.ParserResult;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.parser.GroovyParserResult;
+import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Martin Adamek
  */
 public class AstUtilities {
+
+    public static BaseDocument getBaseDocument(FileObject fileObject, boolean forceOpen) {
+        DataObject dobj;
+
+        try {
+            dobj = DataObject.find(fileObject);
+
+            EditorCookie ec = dobj.getCookie(EditorCookie.class);
+
+            if (ec == null) {
+                throw new IOException("Can't open " + fileObject.getNameExt());
+            }
+
+            Document document;
+
+            if (forceOpen) {
+                document = ec.openDocument();
+            } else {
+                document = ec.getDocument();
+            }
+
+            if (document instanceof BaseDocument) {
+                return ((BaseDocument)document);
+            } else {
+                // Must be testsuite execution
+                try {
+                    Class c = Class.forName("org.netbeans.modules.ruby.RubyTestBase");
+                    if (c != null) {
+                        @SuppressWarnings("unchecked")
+                        java.lang.reflect.Method m = c.getMethod("getDocumentFor", new Class[] { FileObject.class });
+                        return (BaseDocument) m.invoke(null, (Object[])new FileObject[] { fileObject });
+                    }
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        }
+
+        return null;
+    }
 
     // TODO use this from all the various places that have this inlined...
     public static ASTNode getRoot(CompilationInfo info) {

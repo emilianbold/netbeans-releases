@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,59 +38,24 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.groovy.editor.elements;
 
-import java.util.Collections;
-import java.util.Set;
-import org.codehaus.groovy.ast.ASTNode;
-import org.codehaus.groovy.ast.MethodNode;
+import java.util.List;
+
 import org.netbeans.api.gsf.Element;
-import org.netbeans.api.gsf.ElementKind;
-import org.netbeans.api.gsf.Modifier;
+
 
 /**
+ * RubyElements that correspond to methods will implement this interface
+ * whether they are from an AST or from an index
  *
- * @author Martin Adamek
+ * @author Tor Norbye
  */
-public abstract class AstElement implements Element {
+public interface MethodElement extends Element {
+    boolean isDeprecated();
 
-    protected final ASTNode node;
-    protected String name;
-    protected Set<Modifier> modifiers;
-    private String in;
-    
-    public AstElement(ASTNode node) {
-        this.node = node;
-    }
-    
-    public abstract String getName();
-
-    public ASTNode getNode() {
-        return node;
-    }
-    
-    public String getIn() {
-        return in;
-    }
-
-    public ElementKind getKind() {
-        return ElementKind.OTHER;
-    }
-
-    public Set<Modifier> getModifiers() {
-        return Collections.<Modifier>emptySet();
-    }
-
-    public void setIn(String in) {
-        this.in = in;
-    }
-    
-    public static AstElement create(ASTNode node) {
-        if (node instanceof MethodNode) {
-            return new AstMethodElement(node);
-        }
-        return null;
-    }
-
+    List<String> getParameters();
+    boolean isTopLevel();
+    String getIn();
+    boolean isInherited();
 }
