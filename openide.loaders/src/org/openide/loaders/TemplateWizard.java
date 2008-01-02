@@ -1030,7 +1030,7 @@ public class TemplateWizard extends WizardDescriptor {
             Set<DataObject> resultSet = new LinkedHashSet<DataObject>(workSet.size());
             while (it.hasNext ()) {
                 obj = it.next ();
-                assert obj != null;
+                assert obj != null : "Null DataObject provided by " + instantiatingIterator;
                 if (obj instanceof DataObject) {
                     // XXX what?? aren't we adding it?
                     continue;
