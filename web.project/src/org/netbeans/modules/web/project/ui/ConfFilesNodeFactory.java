@@ -69,6 +69,7 @@ import org.netbeans.modules.web.api.webmodule.WebFrameworks;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.project.ProjectWebModule;
 import org.netbeans.modules.web.project.WebProject;
+import org.netbeans.modules.web.project.ui.DocBaseNodeFactory.VisibilityQueryDataFilter;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
@@ -87,6 +88,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Children;
+import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
@@ -463,6 +465,10 @@ public final class ConfFilesNodeFactory implements NodeFactory {
                 try {
                     DataObject dataObject = DataObject.find(fo);
                     n = dataObject.getNodeDelegate().cloneNode();
+                    if (fo.isFolder()) {
+                        DataFolder dataFolder = DataFolder.findFolder(fo);
+                        n = new FilterNode(n, dataFolder.createNodeChildren(new VisibilityQueryDataFilter()));
+                    }
                 } catch (DataObjectNotFoundException dnfe) {
                 }
             }
