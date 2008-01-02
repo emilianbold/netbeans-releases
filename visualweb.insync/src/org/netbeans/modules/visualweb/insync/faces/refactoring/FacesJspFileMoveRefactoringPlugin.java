@@ -401,6 +401,20 @@ public class FacesJspFileMoveRefactoringPlugin extends FacesRefactoringPlugin {
                                         if (!iFacesModel.isBusted()) {
                                             if (iFacesModel.isPageBean()) {
                                                 FileObject iFacesModelMarkupFileObject = iFacesModel.getMarkupFile();
+                                                MarkupUnit iFacesModelMarkupUnit = iFacesModel.getMarkupUnit();
+                                                if (iFacesModelMarkupUnit != null)
+                                                {
+                                                    Document iFacesModelMarkupDocument = iFacesModelMarkupUnit.getSourceDom();
+                                                    int referenceCount = scanner.getReferenceCount(iFacesModelMarkupDocument,
+                                                            FacesRefactoringUtils.FACES_SERVLET_URL_PATTERN_PREFIX + oldRelativePagePath);
+                                                    if (referenceCount > 0) {
+                                                        refactoringElements.add(getRefactoring(),
+                                                                new RenameResourceReferencesRefactoringElement(iFacesModelMarkupFileObject,
+                                                                        iFacesModelMarkupUnit,
+                                                                        FacesRefactoringUtils.FACES_SERVLET_URL_PATTERN_PREFIX + oldRelativePagePath,
+                                                                        FacesRefactoringUtils.FACES_SERVLET_URL_PATTERN_PREFIX + newRelativePagePath));
+                                                    }
+                                                }
                                                 if (iFacesModelMarkupFileObject == null || refactoringSourcefileObject.equals(iFacesModelMarkupFileObject)) {
                                                     continue;
                                                 }
@@ -412,7 +426,6 @@ public class FacesJspFileMoveRefactoringPlugin extends FacesRefactoringPlugin {
                                                     String toRelativePath = FacesRefactoringUtils.computeRelativePath(iFacesModelMarkupParentFileObject.getPath(),
                                                             refactoringSourcefileObject.getPath());
                                                     if (toRelativePath != null) {
-                                                        MarkupUnit iFacesModelMarkupUnit = iFacesModel.getMarkupUnit();
                                                         if (iFacesModelMarkupUnit != null)
                                                         {
                                                             Document iFacesModelMarkupDocument = iFacesModelMarkupUnit.getSourceDom();
@@ -450,7 +463,7 @@ public class FacesJspFileMoveRefactoringPlugin extends FacesRefactoringPlugin {
                                                             }
                                                         }
                                                     }                                        
-                                                }
+                                                }                                                
                                             }
                                         }
                                     }

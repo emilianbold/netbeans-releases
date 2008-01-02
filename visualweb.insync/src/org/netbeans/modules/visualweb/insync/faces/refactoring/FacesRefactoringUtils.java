@@ -100,6 +100,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 
 final class FacesRefactoringUtils {
+    static final String FACES_SERVLET_URL_PATTERN_PREFIX = "/faces/"; // NOI18N
     
     private static final String JSP_MIME_TYPE = "text/x-jsp"; // NOI18N
     private static final String JAVA_MIME_TYPE = "text/x-java"; // NOI18N
