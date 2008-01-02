@@ -45,7 +45,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.codehaus.groovy.ast.ASTNode;
+import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.expr.ClosureExpression;
+import org.codehaus.groovy.ast.expr.Expression;
 import org.netbeans.api.gsf.ColoringAttributes;
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.OffsetRange;
@@ -134,6 +137,16 @@ public class GroovySemanticAnalyzer implements SemanticAnalyzer {
         if (node instanceof MethodNode) {
             OffsetRange range = AstUtilities.getRange(node, text);
             highlights.put(range, ColoringAttributes.METHOD);
+        } else if (node instanceof FieldNode) {
+            FieldNode fieldNode = (FieldNode) node;
+            Expression expression = fieldNode.getInitialExpression();
+            if (expression instanceof ClosureExpression) {
+                OffsetRange range = AstUtilities.getRange(node, text);
+                highlights.put(range, ColoringAttributes.METHOD);
+            } else {
+                OffsetRange range = AstUtilities.getRange(node, text);
+                highlights.put(range, ColoringAttributes.FIELD);
+            }
         }
 
         List<ASTNode> list = AstUtilities.children(node);

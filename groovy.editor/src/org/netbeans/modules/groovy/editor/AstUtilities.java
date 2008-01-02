@@ -46,8 +46,10 @@ import java.util.Collections;
 import java.util.List;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
+import org.codehaus.groovy.ast.expr.Expression;
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.api.gsf.ParserResult;
@@ -96,6 +98,13 @@ public class AstUtilities {
             }
             MethodNode methodNode = (MethodNode) node;
             return new OffsetRange(start, start + methodNode.getName().length());
+        } else if (node instanceof FieldNode) {
+            int start = getOffset(text, node.getLineNumber(), node.getColumnNumber());
+            if (start < 0) {
+                start = 0;
+            }
+            FieldNode fieldNode = (FieldNode) node;
+            return new OffsetRange(start, start + fieldNode.getName().length());
         } else {
             int start = getOffset(text, node.getLineNumber(), node.getColumnNumber());
             int end = getOffset(text, node.getLastLineNumber(), node.getLastColumnNumber());
@@ -111,18 +120,24 @@ public class AstUtilities {
             return moduleNode.getClasses();
         } else if (root instanceof ClassNode) {
             ClassNode classNode = (ClassNode) root;
-            List methods = new ArrayList();
+            List children = new ArrayList();
             for (Object object : classNode.getMethods()) {
                 MethodNode method = (MethodNode) object;
                 // getMethods() returns all methods also from superclasses
                 // how to get only methods from source?
                 // for now, just check line number, if < 0 it is not from source
                 if (method.getLineNumber() >= 0) {
-                    methods.add(method);
+                    children.add(method);
+                }
+            }
+            for (Object object : classNode.getFields()) {
+                FieldNode field = (FieldNode) object;
+                if (field.getLineNumber() >= 0) {
+                    children.add(field);
                 }
             }
 
-            return methods;
+            return children;
         } else {
             return Collections.<ASTNode>emptyList();
         }
