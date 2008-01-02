@@ -857,7 +857,7 @@ public class J2EEUtils {
                     VariableTree par = make.Variable(parMods, "listener", make.QualIdent(changeListenerElement), null); // NOI18N
                     TypeElement changeSupportElement = wc.getElements().getTypeElement("java.beans.PropertyChangeSupport"); // NOI18N
                     VariableTree changeSupport = make.Variable(parMods, "changeSupport", make.QualIdent(changeSupportElement), null); // NOI18N
-                    MemberSelectTree removeCall = make.MemberSelect(make.Identifier(changeSupport.getName()), "addPropertyChangeListener"); // NOI18N
+                    MemberSelectTree removeCall = make.MemberSelect(make.Identifier(changeSupport.getName()), "removePropertyChangeListener"); // NOI18N
                     MethodInvocationTree removeInvocation = make.MethodInvocation(Collections.EMPTY_LIST, removeCall, Collections.singletonList(make.Identifier(par.getName())));
                     MethodTree removeMethod = make.Method(
                         make.Modifiers(Modifier.PUBLIC, Collections.EMPTY_LIST),
