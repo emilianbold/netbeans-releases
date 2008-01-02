@@ -39,10 +39,10 @@
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/samples/EARProjectIcon.gif"/>
                     </file>
                         
-                    <file name="AnnotationOverrideInterceptor" url="AnnotationOverrideInterceptor.zip">
+                    <file name="AnnotOvdInterceptor" url="AnnotOvdInterceptor.zip">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.samples.Bundle"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2ee.samples.JavaEESamplesWizardIterator.createIterator"/>
-                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/samples/descriptions/AnnotationOverrideInterceptor.html"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/samples/descriptions/AnnotOvdInterceptor.html"/>
                         <attr name="template" boolvalue="true"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/samples/EARProjectIcon.gif"/>
                     </file>
