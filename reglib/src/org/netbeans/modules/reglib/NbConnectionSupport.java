@@ -97,9 +97,8 @@ public class NbConnectionSupport {
     public static URL getRegistrationURL(String registrationURN, String product) {
         String url = System.getProperty("nb.registration.host");
         if (url == null) {
-            url = SANDBOX_TESTING_HOST + "/RegistrationWeb/register";
+            url = NB_REGISTRATION_HOST + "/RegistrationWeb/register";
         }
-        //url = NB_REGISTRATION_URL;
 
         // trim whitespaces 
         url = url.trim(); 
@@ -123,9 +122,8 @@ public class NbConnectionSupport {
     public static String getRegistrationQueryHost () {
         String url = System.getProperty("nb.registration.host");
         if (url == null) {
-            url = SANDBOX_TESTING_HOST;
+            url = NB_REGISTRATION_HOST;
         }
-        //url = NB_REGISTRATION_URL;
 
         // trim whitespaces 
         url = url.trim(); 
