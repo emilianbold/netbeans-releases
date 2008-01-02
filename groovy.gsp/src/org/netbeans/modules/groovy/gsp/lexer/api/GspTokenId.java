@@ -118,7 +118,7 @@ public enum GspTokenId implements TokenId {
                                   LanguagePath languagePath, InputAttributes inputAttributes) {
             switch(token.id()) {
                 case HTML:
-                    return LanguageEmbedding.create(HTMLTokenId.language(), 0, 0, false);
+                    return LanguageEmbedding.create(HTMLTokenId.language(), 0, 0, true);
                 case GROOVY_EXPR:
                 case GROOVY:
                     return LanguageEmbedding.create(GroovyTokenId.language(), 0, 0, false);

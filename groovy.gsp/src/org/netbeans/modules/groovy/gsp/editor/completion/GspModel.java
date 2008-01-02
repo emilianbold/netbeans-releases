@@ -228,7 +228,7 @@ public class GspModel {
                 if (text.endsWith("-")) { // NOI18N
                     text = text.substring(0, text.length()-1);
                     skipNewline = true;
-                }
+            }
                 buffer.append(text);
                 int generatedEnd = buffer.length();
 
@@ -237,7 +237,7 @@ public class GspModel {
 
 // Make code sanitizing work better:  buffer.append("\n).to_s;"); // NOI18N
                 buffer.append(").to_s;"); // NOI18N
-            }
+        }
         }
 
         // Close off the class

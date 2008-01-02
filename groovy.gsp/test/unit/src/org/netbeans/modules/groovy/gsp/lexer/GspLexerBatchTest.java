@@ -113,7 +113,7 @@ public class GspLexerBatchTest extends TestCase {
         assertTrue(sequence.moveNext());
         LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.DELIMITER, "${", -1);
         assertTrue(sequence.moveNext());
-        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.GROOVY_EXPR, "e.s", -1);
+        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.GROOVY, "e.s", -1);
         assertTrue(sequence.moveNext());
         LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.DELIMITER, "}", -1);
         assertTrue(sequence.moveNext());
@@ -130,6 +130,22 @@ public class GspLexerBatchTest extends TestCase {
     }
 
     public void testPercent() {
+        String text = "<a class=\"home\" href=\"${createLinkTo(dir:'')}\">Home</a>";
+        TokenHierarchy<?> hierarchy = TokenHierarchy.create(text, GspTokenId.language());
+        TokenSequence<?> sequence = hierarchy.tokenSequence();
+        assertTrue(sequence.moveNext());
+        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.HTML, "<a class=\"home\" href=\"", -1);
+        assertTrue(sequence.moveNext());
+        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.DELIMITER, "${", -1);
+        assertTrue(sequence.moveNext());
+        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.GROOVY, "createLinkTo(dir:'')", -1);
+        assertTrue(sequence.moveNext());
+        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.DELIMITER, "}", -1);
+        assertTrue(sequence.moveNext());
+        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.HTML, "\">Home</a>", -1);
+    }
+
+    public void testExpressionInValue() {
         String text = 
                 "<%@ page import=\"org.grails.bookmarks.*\" %>" +
                 "<style type=\"text/css\">.searchbar {width:97%;}</style>";
@@ -138,7 +154,7 @@ public class GspLexerBatchTest extends TestCase {
         assertTrue(sequence.moveNext());
         LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.DELIMITER, "<%@", -1);
         assertTrue(sequence.moveNext());
-        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.GROOVY_EXPR, " page import=\"org.grails.bookmarks.*\" ", -1);
+        LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.GROOVY, " page import=\"org.grails.bookmarks.*\" ", -1);
         assertTrue(sequence.moveNext());
         LexerTestUtilities.assertTokenEquals(sequence,GspTokenId.DELIMITER, "%>", -1);
         assertTrue(sequence.moveNext());

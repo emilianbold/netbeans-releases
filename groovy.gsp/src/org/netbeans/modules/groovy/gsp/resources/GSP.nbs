@@ -42,10 +42,11 @@
 ######### grammar
 
 S = content;
-content = (groovy | html)*;
+content = (groovy | html | gtag)*;
 
 html = <HTML>;
-groovy = <DELIMITER> <GROOVY> (<DELIMITER, "%>">);
+gtag = <GTAG>;
+groovy = <DELIMITER> <GROOVY> (<DELIMITER, "}">);
 
 ######### navigator
 
