@@ -59,12 +59,12 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JComponent.AccessibleJComponent;
+import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
+import javax.swing.text.html.HTMLEditorKit;
 import org.openide.util.NbBundle;
 
 
@@ -75,7 +75,7 @@ import org.openide.util.NbBundle;
  */
 class DescriptionComponent extends JComponent implements ActionListener, MouseListener, Accessible {
     private static int fontHeight = -1;
-    private JTextArea jta;
+    private JEditorPane jep;
     private JLabel lbl;
     private JButton btn;
     private JToolBar toolbar;
@@ -89,21 +89,31 @@ class DescriptionComponent extends JComponent implements ActionListener, MouseLi
     private void init() {
         setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
 
-        jta = new JTextArea();
-        jta.setLineWrap(true);
-        jta.setWrapStyleWord(true);
-        jta.setOpaque(false);
-        jta.setBackground(getBackground());
-        jta.setEditable(false);
-        jta.setOpaque(false);
-        jta.getAccessibleContext().setAccessibleName( NbBundle.getMessage(DescriptionComponent.class, "ACS_Description") );
-        jta.getAccessibleContext().setAccessibleDescription( NbBundle.getMessage(DescriptionComponent.class, "ACSD_Description") );
+        jep = new JEditorPane();
+        jep.setOpaque(false);
+        jep.setBackground(getBackground());
+        jep.setEditable(false);
+        jep.setOpaque(false);
+        jep.getAccessibleContext().setAccessibleName( NbBundle.getMessage(DescriptionComponent.class, "ACS_Description") );
+        jep.getAccessibleContext().setAccessibleDescription( NbBundle.getMessage(DescriptionComponent.class, "ACSD_Description") );
+
+        HTMLEditorKit htmlKit = new HTMLEditorKit();
+        if (htmlKit.getStyleSheet().getStyleSheets() == null) {
+            javax.swing.text.html.StyleSheet css = new javax.swing.text.html.StyleSheet();
+            java.awt.Font f = new JLabel().getFont();
+            css.addRule(new StringBuffer("body { font-size: ").append(f.getSize()) // NOI18N
+                        .append("; font-family: ").append(f.getName()).append("; }").toString()); // NOI18N
+            css.addStyleSheet(htmlKit.getStyleSheet());
+            htmlKit.setStyleSheet(css);
+        }
+        jep.setEditorKit( htmlKit );
+
 
         //We use a JScrollPane to suppress the changes in layout that will be
         //caused by adding the raw JTextArea directly - JTextAreas can fire
         //preferred size changes from within their paint methods, leading to
         //cyclic revalidation problems
-        jsc = new JScrollPane(jta);
+        jsc = new JScrollPane(jep);
         jsc.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         jsc.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
         jsc.setBorder(BorderFactory.createEmptyBorder());
@@ -111,12 +121,6 @@ class DescriptionComponent extends JComponent implements ActionListener, MouseLi
         jsc.setOpaque(false);
         jsc.setBackground(getBackground());
         jsc.getViewport().setOpaque(false);
-
-        Font f = UIManager.getFont("Tree.font"); //NOI18N
-
-        if (f != null) {
-            jta.setFont(f);
-        }
 
         if (!PropUtils.psNoHelpButton) {
             Image help = Utilities.loadImage("org/openide/resources/propertysheet/propertySheetHelp.png", true); //NOI18N
@@ -142,7 +146,7 @@ class DescriptionComponent extends JComponent implements ActionListener, MouseLi
         if (!PropUtils.psNoHelpButton) {
             add(toolbar);
         }
-        jta.addMouseListener(this);
+        jep.addMouseListener(this);
         jsc.addMouseListener(this);
         lbl.addMouseListener(this);
         if (!PropUtils.psNoHelpButton) {
@@ -151,6 +155,7 @@ class DescriptionComponent extends JComponent implements ActionListener, MouseLi
         jsc.getViewport().addMouseListener(this);
     }
 
+    @Override
     public void doLayout() {
         Insets ins = getInsets();
         Dimension lbll = lbl.getPreferredSize();
@@ -178,9 +183,9 @@ class DescriptionComponent extends JComponent implements ActionListener, MouseLi
         lbl.setText(title);
 
         if (title.equals(txt)) {
-            jta.setText("");
+            jep.setText("");
         } else {
-            jta.setText(txt);
+            jep.setText(txt);
         }
     }
 
@@ -193,6 +198,7 @@ class DescriptionComponent extends JComponent implements ActionListener, MouseLi
     /**
      * Overridden to calculate a font height on the first paint
      */
+    @Override
     public void paint(Graphics g) {
         if (fontHeight == -1) {
             fontHeight = g.getFontMetrics(lbl.getFont()).getHeight();
@@ -203,6 +209,7 @@ class DescriptionComponent extends JComponent implements ActionListener, MouseLi
 
     /** Overridden to ensure the description area doesn't grow too big
      * with large amounts of text */
+    @Override
     public Dimension getPreferredSize() {
         Dimension d = new Dimension(super.getPreferredSize());
 
@@ -216,6 +223,7 @@ class DescriptionComponent extends JComponent implements ActionListener, MouseLi
         return d;
     }
 
+    @Override
     public Dimension getMinimumSize() {
         if (fontHeight < 0) {
             return super.getMinimumSize();
@@ -269,14 +277,16 @@ class DescriptionComponent extends JComponent implements ActionListener, MouseLi
         }
     }
 
+    @Override
     public AccessibleContext getAccessibleContext() {
 
         if( null == accessibleContext ) {
             accessibleContext = new AccessibleJComponent() {
-                        public AccessibleRole getAccessibleRole() {
-                            return AccessibleRole.SWING_COMPONENT;
-                        }
-                    };
+                @Override
+                public AccessibleRole getAccessibleRole() {
+                    return AccessibleRole.SWING_COMPONENT;
+                }
+            };
         
             accessibleContext.setAccessibleName( NbBundle.getMessage(DescriptionComponent.class, "ACS_Description") );
             accessibleContext.setAccessibleDescription( NbBundle.getMessage(DescriptionComponent.class, "ACSD_Description") );
