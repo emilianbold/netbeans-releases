@@ -1,5 +1,5 @@
 #API master signature file
-#Version 1.5.0_11
+#Version 1.11.1
 CLSS public abstract org.netbeans.spi.palette.DragAndDropHandler
 cons public DragAndDropHandler()
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
@@ -32,6 +32,8 @@ meth public boolean java.lang.Object.equals(java.lang.Object)
 meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
 meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
 meth public java.lang.String java.lang.Object.toString()
+meth public javax.swing.Action org.netbeans.spi.palette.PaletteActions.getRefreshAction()
+meth public javax.swing.Action org.netbeans.spi.palette.PaletteActions.getResetAction()
 meth public native final java.lang.Class java.lang.Object.getClass()
 meth public native final void java.lang.Object.notify()
 meth public native final void java.lang.Object.notifyAll()
@@ -102,3 +104,43 @@ meth public native final void java.lang.Object.notifyAll()
 meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
 meth public native int java.lang.Object.hashCode()
 supr java.lang.Object
+CLSS public org.netbeans.spi.palette.PaletteModule
+cons public PaletteModule()
+intf java.io.Externalizable
+intf java.io.Serializable
+meth protected boolean org.openide.modules.ModuleInstall.clearSharedData()
+meth protected final java.lang.Object org.openide.util.SharedClassObject.getLock()
+meth protected final java.lang.Object org.openide.util.SharedClassObject.getProperty(java.lang.Object)
+meth protected final java.lang.Object org.openide.util.SharedClassObject.putProperty(java.lang.Object,java.lang.Object)
+meth protected final java.lang.Object org.openide.util.SharedClassObject.putProperty(java.lang.String,java.lang.Object,boolean)
+meth protected final void org.openide.util.SharedClassObject.finalize() throws java.lang.Throwable
+meth protected java.lang.Object org.openide.util.SharedClassObject.writeReplace()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void org.openide.util.SharedClassObject.addNotify()
+meth protected void org.openide.util.SharedClassObject.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth protected void org.openide.util.SharedClassObject.initialize()
+meth protected void org.openide.util.SharedClassObject.removeNotify()
+meth protected void org.openide.util.SharedClassObject.reset()
+meth public boolean org.openide.modules.ModuleInstall.closing()
+meth public final boolean org.openide.util.SharedClassObject.equals(java.lang.Object)
+meth public final int org.openide.util.SharedClassObject.hashCode()
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void org.openide.util.SharedClassObject.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public final void org.openide.util.SharedClassObject.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public static org.openide.util.SharedClassObject org.openide.util.SharedClassObject.findObject(java.lang.Class)
+meth public static org.openide.util.SharedClassObject org.openide.util.SharedClassObject.findObject(java.lang.Class,boolean)
+meth public void org.netbeans.spi.palette.PaletteModule.restored()
+meth public void org.openide.modules.ModuleInstall.close()
+meth public void org.openide.modules.ModuleInstall.installed()
+meth public void org.openide.modules.ModuleInstall.uninstalled()
+meth public void org.openide.modules.ModuleInstall.updated(int,java.lang.String)
+meth public void org.openide.modules.ModuleInstall.validate() throws java.lang.IllegalStateException
+meth public void org.openide.util.SharedClassObject.readExternal(java.io.ObjectInput) throws java.io.IOException,java.lang.ClassNotFoundException
+meth public void org.openide.util.SharedClassObject.writeExternal(java.io.ObjectOutput) throws java.io.IOException
+supr org.openide.modules.ModuleInstall

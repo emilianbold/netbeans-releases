@@ -1,5 +1,57 @@
 #API master signature file
-#Version 1.5.0_11
+#Version 1.11.1
+CLSS public static final org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE
+fld  public static final org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE.EQUAL
+fld  public static final org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE.GREATER
+fld  public static final org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE.MULTIPLE
+intf java.io.Serializable
+intf java.lang.Comparable
+meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public final boolean java.lang.Enum.equals(java.lang.Object)
+meth public final int java.lang.Enum.compareTo(java.lang.Enum)
+meth public final int java.lang.Enum.hashCode()
+meth public final int java.lang.Enum.ordinal()
+meth public final java.lang.Class java.lang.Enum.getDeclaringClass()
+meth public final java.lang.String java.lang.Enum.name()
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Enum.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public static final [Lorg.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE; org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE.values()
+meth public static java.lang.Enum java.lang.Enum.valueOf(java.lang.Class,java.lang.String)
+meth public static org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE.valueOf(java.lang.String)
+meth public volatile int java.lang.Enum.compareTo(java.lang.Object)
+supr java.lang.Enum
+CLSS public static final org.netbeans.api.debugger.Breakpoint$VALIDITY
+fld  public static final org.netbeans.api.debugger.Breakpoint$VALIDITY org.netbeans.api.debugger.Breakpoint$VALIDITY.INVALID
+fld  public static final org.netbeans.api.debugger.Breakpoint$VALIDITY org.netbeans.api.debugger.Breakpoint$VALIDITY.UNKNOWN
+fld  public static final org.netbeans.api.debugger.Breakpoint$VALIDITY org.netbeans.api.debugger.Breakpoint$VALIDITY.VALID
+intf java.io.Serializable
+intf java.lang.Comparable
+meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public final boolean java.lang.Enum.equals(java.lang.Object)
+meth public final int java.lang.Enum.compareTo(java.lang.Enum)
+meth public final int java.lang.Enum.hashCode()
+meth public final int java.lang.Enum.ordinal()
+meth public final java.lang.Class java.lang.Enum.getDeclaringClass()
+meth public final java.lang.String java.lang.Enum.name()
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Enum.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public static final [Lorg.netbeans.api.debugger.Breakpoint$VALIDITY; org.netbeans.api.debugger.Breakpoint$VALIDITY.values()
+meth public static java.lang.Enum java.lang.Enum.valueOf(java.lang.Class,java.lang.String)
+meth public static org.netbeans.api.debugger.Breakpoint$VALIDITY org.netbeans.api.debugger.Breakpoint$VALIDITY.valueOf(java.lang.String)
+meth public volatile int java.lang.Enum.compareTo(java.lang.Object)
+supr java.lang.Enum
 CLSS public org.netbeans.api.debugger.DebuggerEngine$Destructor
 cons public Destructor(org.netbeans.api.debugger.DebuggerEngine)
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
@@ -34,6 +86,7 @@ fld  public static final java.lang.Object org.netbeans.api.debugger.ActionsManag
 fld  public static final java.lang.Object org.netbeans.api.debugger.ActionsManager.ACTION_RUN_TO_CURSOR
 fld  public static final java.lang.Object org.netbeans.api.debugger.ActionsManager.ACTION_START
 fld  public static final java.lang.Object org.netbeans.api.debugger.ActionsManager.ACTION_STEP_INTO
+fld  public static final java.lang.Object org.netbeans.api.debugger.ActionsManager.ACTION_STEP_OPERATION
 fld  public static final java.lang.Object org.netbeans.api.debugger.ActionsManager.ACTION_STEP_OUT
 fld  public static final java.lang.Object org.netbeans.api.debugger.ActionsManager.ACTION_STEP_OVER
 fld  public static final java.lang.Object org.netbeans.api.debugger.ActionsManager.ACTION_TOGGLE_BREAKPOINT
@@ -89,6 +142,11 @@ cons public Breakpoint()
 fld  constant public static final java.lang.String org.netbeans.api.debugger.Breakpoint.PROP_DISPOSED
 fld  constant public static final java.lang.String org.netbeans.api.debugger.Breakpoint.PROP_ENABLED
 fld  constant public static final java.lang.String org.netbeans.api.debugger.Breakpoint.PROP_GROUP_NAME
+fld  constant public static final java.lang.String org.netbeans.api.debugger.Breakpoint.PROP_HIT_COUNT_FILTER
+fld  constant public static final java.lang.String org.netbeans.api.debugger.Breakpoint.PROP_VALIDITY
+innr public static final org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE
+innr public static final org.netbeans.api.debugger.Breakpoint$VALIDITY
+meth protected final void org.netbeans.api.debugger.Breakpoint.setValidity(org.netbeans.api.debugger.Breakpoint$VALIDITY,java.lang.String)
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
 meth protected void java.lang.Object.finalize() throws java.lang.Throwable
 meth protected void org.netbeans.api.debugger.Breakpoint.dispose()
@@ -99,6 +157,7 @@ meth public abstract void org.netbeans.api.debugger.Breakpoint.enable()
 meth public boolean java.lang.Object.equals(java.lang.Object)
 meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
 meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void org.netbeans.api.debugger.Breakpoint.setHitCountFilter(int,org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE)
 meth public java.lang.String java.lang.Object.toString()
 meth public java.lang.String org.netbeans.api.debugger.Breakpoint.getGroupName()
 meth public native final java.lang.Class java.lang.Object.getClass()
@@ -106,6 +165,10 @@ meth public native final void java.lang.Object.notify()
 meth public native final void java.lang.Object.notifyAll()
 meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
 meth public native int java.lang.Object.hashCode()
+meth public synchronized final int org.netbeans.api.debugger.Breakpoint.getHitCountFilter()
+meth public synchronized final java.lang.String org.netbeans.api.debugger.Breakpoint.getValidityMessage()
+meth public synchronized final org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE org.netbeans.api.debugger.Breakpoint.getHitCountFilteringStyle()
+meth public synchronized final org.netbeans.api.debugger.Breakpoint$VALIDITY org.netbeans.api.debugger.Breakpoint.getValidity()
 meth public synchronized void org.netbeans.api.debugger.Breakpoint.addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public synchronized void org.netbeans.api.debugger.Breakpoint.removePropertyChangeListener(java.beans.PropertyChangeListener)
 meth public void org.netbeans.api.debugger.Breakpoint.addPropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)

@@ -1,5 +1,5 @@
 #API master signature file
-#Version 1.5.0_11
+#Version 1.10.1
 CLSS public final org.netbeans.api.progress.ProgressHandle
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
 meth protected void java.lang.Object.finalize() throws java.lang.Throwable
@@ -21,6 +21,7 @@ meth public void org.netbeans.api.progress.ProgressHandle.setInitialDelay(int)
 meth public void org.netbeans.api.progress.ProgressHandle.start()
 meth public void org.netbeans.api.progress.ProgressHandle.start(int)
 meth public void org.netbeans.api.progress.ProgressHandle.start(int,long)
+meth public void org.netbeans.api.progress.ProgressHandle.suspend(java.lang.String)
 meth public void org.netbeans.api.progress.ProgressHandle.switchToDeterminate(int)
 meth public void org.netbeans.api.progress.ProgressHandle.switchToDeterminate(int,long)
 meth public void org.netbeans.api.progress.ProgressHandle.switchToIndeterminate()
@@ -38,6 +39,8 @@ meth public native final void java.lang.Object.notifyAll()
 meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
 meth public native int java.lang.Object.hashCode()
 meth public static javax.swing.JComponent org.netbeans.api.progress.ProgressHandleFactory.createProgressComponent(org.netbeans.api.progress.ProgressHandle)
+meth public static javax.swing.JLabel org.netbeans.api.progress.ProgressHandleFactory.createDetailLabelComponent(org.netbeans.api.progress.ProgressHandle)
+meth public static javax.swing.JLabel org.netbeans.api.progress.ProgressHandleFactory.createMainLabelComponent(org.netbeans.api.progress.ProgressHandle)
 meth public static org.netbeans.api.progress.ProgressHandle org.netbeans.api.progress.ProgressHandleFactory.createHandle(java.lang.String)
 meth public static org.netbeans.api.progress.ProgressHandle org.netbeans.api.progress.ProgressHandleFactory.createHandle(java.lang.String,javax.swing.Action)
 meth public static org.netbeans.api.progress.ProgressHandle org.netbeans.api.progress.ProgressHandleFactory.createHandle(java.lang.String,org.openide.util.Cancellable)
@@ -59,6 +62,8 @@ meth public native final void java.lang.Object.notifyAll()
 meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
 meth public native int java.lang.Object.hashCode()
 meth public static javax.swing.JComponent org.netbeans.api.progress.aggregate.AggregateProgressFactory.createProgressComponent(org.netbeans.api.progress.aggregate.AggregateProgressHandle)
+meth public static javax.swing.JLabel org.netbeans.api.progress.aggregate.AggregateProgressFactory.createDetailLabelComponent(org.netbeans.api.progress.aggregate.AggregateProgressHandle)
+meth public static javax.swing.JLabel org.netbeans.api.progress.aggregate.AggregateProgressFactory.createMainLabelComponent(org.netbeans.api.progress.aggregate.AggregateProgressHandle)
 meth public static org.netbeans.api.progress.aggregate.AggregateProgressHandle org.netbeans.api.progress.aggregate.AggregateProgressFactory.createHandle(java.lang.String,[Lorg.netbeans.api.progress.aggregate.ProgressContributor;,org.openide.util.Cancellable,javax.swing.Action)
 meth public static org.netbeans.api.progress.aggregate.AggregateProgressHandle org.netbeans.api.progress.aggregate.AggregateProgressFactory.createSystemHandle(java.lang.String,[Lorg.netbeans.api.progress.aggregate.ProgressContributor;,org.openide.util.Cancellable,javax.swing.Action)
 meth public static org.netbeans.api.progress.aggregate.ProgressContributor org.netbeans.api.progress.aggregate.AggregateProgressFactory.createProgressContributor(java.lang.String)
@@ -82,6 +87,7 @@ meth public void org.netbeans.api.progress.aggregate.AggregateProgressHandle.set
 meth public void org.netbeans.api.progress.aggregate.AggregateProgressHandle.setInitialDelay(int)
 meth public void org.netbeans.api.progress.aggregate.AggregateProgressHandle.setMonitor(org.netbeans.api.progress.aggregate.ProgressMonitor)
 meth public void org.netbeans.api.progress.aggregate.AggregateProgressHandle.start()
+meth public void org.netbeans.api.progress.aggregate.AggregateProgressHandle.suspend(java.lang.String)
 supr java.lang.Object
 CLSS public final org.netbeans.api.progress.aggregate.ProgressContributor
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException

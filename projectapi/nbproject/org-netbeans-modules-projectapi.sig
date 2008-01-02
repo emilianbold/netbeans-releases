@@ -1,8 +1,64 @@
 #API master signature file
-#Version 1.5.0_11
+#Version 1.13.1
+CLSS public static abstract org.openide.util.Lookup$Item
+cons public Item()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public abstract java.lang.Class org.openide.util.Lookup$Item.getType()
+meth public abstract java.lang.Object org.openide.util.Lookup$Item.getInstance()
+meth public abstract java.lang.String org.openide.util.Lookup$Item.getDisplayName()
+meth public abstract java.lang.String org.openide.util.Lookup$Item.getId()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String org.openide.util.Lookup$Item.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+supr java.lang.Object
 CLSS public static abstract interface org.openide.util.Lookup$Provider
 meth public abstract org.openide.util.Lookup org.openide.util.Lookup$Provider.getLookup()
 supr null
+CLSS public static abstract org.openide.util.Lookup$Result
+cons public Result()
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public abstract java.util.Collection org.openide.util.Lookup$Result.allInstances()
+meth public abstract void org.openide.util.Lookup$Result.addLookupListener(org.openide.util.LookupListener)
+meth public abstract void org.openide.util.Lookup$Result.removeLookupListener(org.openide.util.LookupListener)
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public java.util.Collection org.openide.util.Lookup$Result.allItems()
+meth public java.util.Set org.openide.util.Lookup$Result.allClasses()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+supr java.lang.Object
+CLSS public static final org.openide.util.Lookup$Template
+cons public Template()
+cons public Template(java.lang.Class)
+cons public Template(java.lang.Class,java.lang.String,java.lang.Object)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean org.openide.util.Lookup$Template.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public int org.openide.util.Lookup$Template.hashCode()
+meth public java.lang.Class org.openide.util.Lookup$Template.getType()
+meth public java.lang.Object org.openide.util.Lookup$Template.getInstance()
+meth public java.lang.String org.openide.util.Lookup$Template.getId()
+meth public java.lang.String org.openide.util.Lookup$Template.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+supr java.lang.Object
 CLSS public static abstract interface org.openide.util.Mutex$Action
 intf org.openide.util.Mutex$ExceptionAction
 meth public abstract java.lang.Object org.openide.util.Mutex$Action.run()
@@ -150,12 +206,34 @@ CLSS public abstract interface org.netbeans.spi.project.FileOwnerQueryImplementa
 meth public abstract org.netbeans.api.project.Project org.netbeans.spi.project.FileOwnerQueryImplementation.getOwner(java.net.URI)
 meth public abstract org.netbeans.api.project.Project org.netbeans.spi.project.FileOwnerQueryImplementation.getOwner(org.openide.filesystems.FileObject)
 supr null
+CLSS public abstract interface org.netbeans.spi.project.LookupMerger
+meth public abstract java.lang.Class org.netbeans.spi.project.LookupMerger.getMergeableClass()
+meth public abstract java.lang.Object org.netbeans.spi.project.LookupMerger.merge(org.openide.util.Lookup)
+supr null
+CLSS public abstract interface org.netbeans.spi.project.LookupProvider
+meth public abstract org.openide.util.Lookup org.netbeans.spi.project.LookupProvider.createAdditionalLookup(org.openide.util.Lookup)
+supr null
 CLSS public abstract interface org.netbeans.spi.project.MoveOperationImplementation
 intf org.netbeans.spi.project.DataFilesProviderImplementation
 meth public abstract java.util.List org.netbeans.spi.project.DataFilesProviderImplementation.getDataFiles()
 meth public abstract java.util.List org.netbeans.spi.project.DataFilesProviderImplementation.getMetadataFiles()
 meth public abstract void org.netbeans.spi.project.MoveOperationImplementation.notifyMoved(org.netbeans.api.project.Project,java.io.File,java.lang.String) throws java.io.IOException
 meth public abstract void org.netbeans.spi.project.MoveOperationImplementation.notifyMoving() throws java.io.IOException
+supr null
+CLSS public abstract interface org.netbeans.spi.project.ProjectConfiguration
+meth public abstract java.lang.String org.netbeans.spi.project.ProjectConfiguration.getDisplayName()
+supr null
+CLSS public abstract interface org.netbeans.spi.project.ProjectConfigurationProvider
+fld  constant public static final java.lang.String org.netbeans.spi.project.ProjectConfigurationProvider.PROP_CONFIGURATIONS
+fld  constant public static final java.lang.String org.netbeans.spi.project.ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE
+meth public abstract boolean org.netbeans.spi.project.ProjectConfigurationProvider.configurationsAffectAction(java.lang.String)
+meth public abstract boolean org.netbeans.spi.project.ProjectConfigurationProvider.hasCustomizer()
+meth public abstract java.util.Collection org.netbeans.spi.project.ProjectConfigurationProvider.getConfigurations()
+meth public abstract org.netbeans.spi.project.ProjectConfiguration org.netbeans.spi.project.ProjectConfigurationProvider.getActiveConfiguration()
+meth public abstract void org.netbeans.spi.project.ProjectConfigurationProvider.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public abstract void org.netbeans.spi.project.ProjectConfigurationProvider.customize()
+meth public abstract void org.netbeans.spi.project.ProjectConfigurationProvider.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public abstract void org.netbeans.spi.project.ProjectConfigurationProvider.setActiveConfiguration(org.netbeans.spi.project.ProjectConfiguration) throws java.io.IOException,java.lang.IllegalArgumentException
 supr null
 CLSS public abstract interface org.netbeans.spi.project.ProjectFactory
 meth public abstract boolean org.netbeans.spi.project.ProjectFactory.isProject(org.openide.filesystems.FileObject)
@@ -185,6 +263,21 @@ meth public native final void java.lang.Object.wait(long) throws java.lang.Inter
 meth public native int java.lang.Object.hashCode()
 meth public static org.netbeans.api.project.SourceGroup org.netbeans.spi.project.support.GenericSources.group(org.netbeans.api.project.Project,org.openide.filesystems.FileObject,java.lang.String,java.lang.String,javax.swing.Icon,javax.swing.Icon)
 meth public static org.netbeans.api.project.Sources org.netbeans.spi.project.support.GenericSources.genericOnly(org.netbeans.api.project.Project)
+supr java.lang.Object
+CLSS public final org.netbeans.spi.project.support.LookupProviderSupport
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static org.netbeans.spi.project.LookupMerger org.netbeans.spi.project.support.LookupProviderSupport.createSourcesMerger()
+meth public static org.openide.util.Lookup org.netbeans.spi.project.support.LookupProviderSupport.createCompositeLookup(org.openide.util.Lookup,java.lang.String)
 supr java.lang.Object
 CLSS public final org.netbeans.spi.project.support.ProjectOperations
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException

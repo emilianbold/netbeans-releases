@@ -1,132 +1,34 @@
 #API master signature file
-#Version 1.5.0_11
-CLSS protected java.awt.Canvas$AccessibleAWTCanvas
-cons protected AccessibleAWTCanvas(java.awt.Canvas)
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
-fld  protected java.awt.event.ComponentListener java.awt.Component$AccessibleAWTComponent.accessibleAWTComponentHandler
-fld  protected java.awt.event.FocusListener java.awt.Component$AccessibleAWTComponent.accessibleAWTFocusHandler
-fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleDescription
-fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleName
-fld  protected javax.accessibility.Accessible javax.accessibility.AccessibleContext.accessibleParent
-innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler
-innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler
-intf java.io.Serializable
-intf javax.accessibility.AccessibleComponent
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public [Ljavax.accessibility.AccessibleIcon; javax.accessibility.AccessibleContext.getAccessibleIcon()
-meth public boolean java.awt.Component$AccessibleAWTComponent.contains(java.awt.Point)
-meth public boolean java.awt.Component$AccessibleAWTComponent.isEnabled()
-meth public boolean java.awt.Component$AccessibleAWTComponent.isFocusTraversable()
-meth public boolean java.awt.Component$AccessibleAWTComponent.isShowing()
-meth public boolean java.awt.Component$AccessibleAWTComponent.isVisible()
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public int java.awt.Component$AccessibleAWTComponent.getAccessibleChildrenCount()
-meth public int java.awt.Component$AccessibleAWTComponent.getAccessibleIndexInParent()
-meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getBackground()
-meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getForeground()
-meth public java.awt.Cursor java.awt.Component$AccessibleAWTComponent.getCursor()
-meth public java.awt.Dimension java.awt.Component$AccessibleAWTComponent.getSize()
-meth public java.awt.Font java.awt.Component$AccessibleAWTComponent.getFont()
-meth public java.awt.FontMetrics java.awt.Component$AccessibleAWTComponent.getFontMetrics(java.awt.Font)
-meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocation()
-meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocationOnScreen()
-meth public java.awt.Rectangle java.awt.Component$AccessibleAWTComponent.getBounds()
-meth public java.lang.String java.awt.Component$AccessibleAWTComponent.getAccessibleDescription()
-meth public java.lang.String java.awt.Component$AccessibleAWTComponent.getAccessibleName()
-meth public java.lang.String java.lang.Object.toString()
-meth public java.util.Locale java.awt.Component$AccessibleAWTComponent.getLocale()
-meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleAt(java.awt.Point)
-meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleChild(int)
-meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleParent()
-meth public javax.accessibility.AccessibleAction javax.accessibility.AccessibleContext.getAccessibleAction()
-meth public javax.accessibility.AccessibleComponent java.awt.Component$AccessibleAWTComponent.getAccessibleComponent()
-meth public javax.accessibility.AccessibleEditableText javax.accessibility.AccessibleContext.getAccessibleEditableText()
-meth public javax.accessibility.AccessibleRelationSet javax.accessibility.AccessibleContext.getAccessibleRelationSet()
-meth public javax.accessibility.AccessibleRole java.awt.Canvas$AccessibleAWTCanvas.getAccessibleRole()
-meth public javax.accessibility.AccessibleSelection javax.accessibility.AccessibleContext.getAccessibleSelection()
-meth public javax.accessibility.AccessibleStateSet java.awt.Component$AccessibleAWTComponent.getAccessibleStateSet()
-meth public javax.accessibility.AccessibleTable javax.accessibility.AccessibleContext.getAccessibleTable()
-meth public javax.accessibility.AccessibleText javax.accessibility.AccessibleContext.getAccessibleText()
-meth public javax.accessibility.AccessibleValue javax.accessibility.AccessibleContext.getAccessibleValue()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public void java.awt.Component$AccessibleAWTComponent.addFocusListener(java.awt.event.FocusListener)
-meth public void java.awt.Component$AccessibleAWTComponent.addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void java.awt.Component$AccessibleAWTComponent.removeFocusListener(java.awt.event.FocusListener)
-meth public void java.awt.Component$AccessibleAWTComponent.removePropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void java.awt.Component$AccessibleAWTComponent.requestFocus()
-meth public void java.awt.Component$AccessibleAWTComponent.setBackground(java.awt.Color)
-meth public void java.awt.Component$AccessibleAWTComponent.setBounds(java.awt.Rectangle)
-meth public void java.awt.Component$AccessibleAWTComponent.setCursor(java.awt.Cursor)
-meth public void java.awt.Component$AccessibleAWTComponent.setEnabled(boolean)
-meth public void java.awt.Component$AccessibleAWTComponent.setFont(java.awt.Font)
-meth public void java.awt.Component$AccessibleAWTComponent.setForeground(java.awt.Color)
-meth public void java.awt.Component$AccessibleAWTComponent.setLocation(java.awt.Point)
-meth public void java.awt.Component$AccessibleAWTComponent.setSize(java.awt.Dimension)
-meth public void java.awt.Component$AccessibleAWTComponent.setVisible(boolean)
-meth public void javax.accessibility.AccessibleContext.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
-meth public void javax.accessibility.AccessibleContext.setAccessibleDescription(java.lang.String)
-meth public void javax.accessibility.AccessibleContext.setAccessibleName(java.lang.String)
-meth public void javax.accessibility.AccessibleContext.setAccessibleParent(javax.accessibility.Accessible)
-supr java.awt.Component$AccessibleAWTComponent
+#Version 6.7.1
 CLSS protected abstract java.awt.Component$AccessibleAWTComponent
 cons protected AccessibleAWTComponent(java.awt.Component)
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
 fld  protected java.awt.event.ComponentListener java.awt.Component$AccessibleAWTComponent.accessibleAWTComponentHandler
 fld  protected java.awt.event.FocusListener java.awt.Component$AccessibleAWTComponent.accessibleAWTFocusHandler
 fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleDescription
 fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleName
 fld  protected javax.accessibility.Accessible javax.accessibility.AccessibleContext.accessibleParent
-innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler
-innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
 intf java.io.Serializable
 intf javax.accessibility.AccessibleComponent
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
@@ -192,132 +94,36 @@ meth public void javax.accessibility.AccessibleContext.setAccessibleDescription(
 meth public void javax.accessibility.AccessibleContext.setAccessibleName(java.lang.String)
 meth public void javax.accessibility.AccessibleContext.setAccessibleParent(javax.accessibility.Accessible)
 supr javax.accessibility.AccessibleContext
-CLSS protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler
-cons protected AccessibleAWTComponentHandler(java.awt.Component$AccessibleAWTComponent)
-intf java.awt.event.ComponentListener
-intf java.util.EventListener
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public void java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler.componentHidden(java.awt.event.ComponentEvent)
-meth public void java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler.componentMoved(java.awt.event.ComponentEvent)
-meth public void java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler.componentResized(java.awt.event.ComponentEvent)
-meth public void java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler.componentShown(java.awt.event.ComponentEvent)
-supr java.lang.Object
-CLSS protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler
-cons protected AccessibleAWTFocusHandler(java.awt.Component$AccessibleAWTComponent)
-intf java.awt.event.FocusListener
-intf java.util.EventListener
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public void java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler.focusGained(java.awt.event.FocusEvent)
-meth public void java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler.focusLost(java.awt.event.FocusEvent)
-supr java.lang.Object
-CLSS protected java.awt.Component$BltBufferStrategy
-cons protected BltBufferStrategy(java.awt.Component,int,java.awt.BufferCapabilities)
-fld  protected [Ljava.awt.image.VolatileImage; java.awt.Component$BltBufferStrategy.backBuffers
-fld  protected boolean java.awt.Component$BltBufferStrategy.validatedContents
-fld  protected int java.awt.Component$BltBufferStrategy.height
-fld  protected int java.awt.Component$BltBufferStrategy.width
-fld  protected java.awt.BufferCapabilities java.awt.Component$BltBufferStrategy.caps
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.awt.Component$BltBufferStrategy.createBackBuffers(int)
-meth protected void java.awt.Component$BltBufferStrategy.revalidate()
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.awt.Component$BltBufferStrategy.contentsLost()
-meth public boolean java.awt.Component$BltBufferStrategy.contentsRestored()
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.awt.BufferCapabilities java.awt.Component$BltBufferStrategy.getCapabilities()
-meth public java.awt.Graphics java.awt.Component$BltBufferStrategy.getDrawGraphics()
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public void java.awt.Component$BltBufferStrategy.show()
-supr java.awt.image.BufferStrategy
-CLSS protected java.awt.Component$FlipBufferStrategy
-cons protected FlipBufferStrategy(java.awt.Component,int,java.awt.BufferCapabilities) throws java.awt.AWTException
-fld  protected boolean java.awt.Component$FlipBufferStrategy.validatedContents
-fld  protected int java.awt.Component$FlipBufferStrategy.numBuffers
-fld  protected java.awt.BufferCapabilities java.awt.Component$FlipBufferStrategy.caps
-fld  protected java.awt.Image java.awt.Component$FlipBufferStrategy.drawBuffer
-fld  protected java.awt.image.VolatileImage java.awt.Component$FlipBufferStrategy.drawVBuffer
-meth protected java.awt.Image java.awt.Component$FlipBufferStrategy.getBackBuffer()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.awt.Component$FlipBufferStrategy.createBuffers(int,java.awt.BufferCapabilities) throws java.awt.AWTException
-meth protected void java.awt.Component$FlipBufferStrategy.destroyBuffers()
-meth protected void java.awt.Component$FlipBufferStrategy.flip(java.awt.BufferCapabilities$FlipContents)
-meth protected void java.awt.Component$FlipBufferStrategy.revalidate()
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.awt.Component$FlipBufferStrategy.contentsLost()
-meth public boolean java.awt.Component$FlipBufferStrategy.contentsRestored()
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.awt.BufferCapabilities java.awt.Component$FlipBufferStrategy.getCapabilities()
-meth public java.awt.Graphics java.awt.Component$FlipBufferStrategy.getDrawGraphics()
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public void java.awt.Component$FlipBufferStrategy.show()
-supr java.awt.image.BufferStrategy
 CLSS protected java.awt.Container$AccessibleAWTContainer
 cons protected AccessibleAWTContainer(java.awt.Container)
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
 fld  protected java.awt.event.ComponentListener java.awt.Component$AccessibleAWTComponent.accessibleAWTComponentHandler
 fld  protected java.awt.event.ContainerListener java.awt.Container$AccessibleAWTContainer.accessibleContainerHandler
 fld  protected java.awt.event.FocusListener java.awt.Component$AccessibleAWTComponent.accessibleAWTFocusHandler
 fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleDescription
 fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleName
 fld  protected javax.accessibility.Accessible javax.accessibility.AccessibleContext.accessibleParent
-innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler
-innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler
-innr protected java.awt.Container$AccessibleAWTContainer$AccessibleContainerHandler
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
 intf java.io.Serializable
 intf javax.accessibility.AccessibleComponent
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
@@ -383,641 +189,8 @@ meth public void javax.accessibility.AccessibleContext.setAccessibleDescription(
 meth public void javax.accessibility.AccessibleContext.setAccessibleName(java.lang.String)
 meth public void javax.accessibility.AccessibleContext.setAccessibleParent(javax.accessibility.Accessible)
 supr java.awt.Component$AccessibleAWTComponent
-CLSS protected java.awt.Container$AccessibleAWTContainer$AccessibleContainerHandler
-cons protected AccessibleContainerHandler(java.awt.Container$AccessibleAWTContainer)
-intf java.awt.event.ContainerListener
-intf java.util.EventListener
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public void java.awt.Container$AccessibleAWTContainer$AccessibleContainerHandler.componentAdded(java.awt.event.ContainerEvent)
-meth public void java.awt.Container$AccessibleAWTContainer$AccessibleContainerHandler.componentRemoved(java.awt.event.ContainerEvent)
-supr java.lang.Object
-CLSS protected java.beans.beancontext.BeanContextSupport$BCSChild
-intf java.io.Serializable
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-supr java.lang.Object
-CLSS protected static final java.beans.beancontext.BeanContextSupport$BCSIterator
-intf java.util.Iterator
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.beans.beancontext.BeanContextSupport$BCSIterator.hasNext()
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.Object java.beans.beancontext.BeanContextSupport$BCSIterator.next()
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public void java.beans.beancontext.BeanContextSupport$BCSIterator.remove()
-supr java.lang.Object
-CLSS public static abstract java.io.ObjectInputStream$GetField
-cons public GetField()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public abstract boolean java.io.ObjectInputStream$GetField.defaulted(java.lang.String) throws java.io.IOException
-meth public abstract boolean java.io.ObjectInputStream$GetField.get(java.lang.String,boolean) throws java.io.IOException
-meth public abstract byte java.io.ObjectInputStream$GetField.get(java.lang.String,byte) throws java.io.IOException
-meth public abstract char java.io.ObjectInputStream$GetField.get(java.lang.String,char) throws java.io.IOException
-meth public abstract double java.io.ObjectInputStream$GetField.get(java.lang.String,double) throws java.io.IOException
-meth public abstract float java.io.ObjectInputStream$GetField.get(java.lang.String,float) throws java.io.IOException
-meth public abstract int java.io.ObjectInputStream$GetField.get(java.lang.String,int) throws java.io.IOException
-meth public abstract java.io.ObjectStreamClass java.io.ObjectInputStream$GetField.getObjectStreamClass()
-meth public abstract java.lang.Object java.io.ObjectInputStream$GetField.get(java.lang.String,java.lang.Object) throws java.io.IOException
-meth public abstract long java.io.ObjectInputStream$GetField.get(java.lang.String,long) throws java.io.IOException
-meth public abstract short java.io.ObjectInputStream$GetField.get(java.lang.String,short) throws java.io.IOException
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-supr java.lang.Object
-CLSS public static final java.lang.Thread$State
-fld  public static final java.lang.Thread$State java.lang.Thread$State.BLOCKED
-fld  public static final java.lang.Thread$State java.lang.Thread$State.NEW
-fld  public static final java.lang.Thread$State java.lang.Thread$State.RUNNABLE
-fld  public static final java.lang.Thread$State java.lang.Thread$State.TERMINATED
-fld  public static final java.lang.Thread$State java.lang.Thread$State.TIMED_WAITING
-fld  public static final java.lang.Thread$State java.lang.Thread$State.WAITING
-intf java.io.Serializable
-intf java.lang.Comparable
-meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public final boolean java.lang.Enum.equals(java.lang.Object)
-meth public final int java.lang.Enum.compareTo(java.lang.Enum)
-meth public final int java.lang.Enum.hashCode()
-meth public final int java.lang.Enum.ordinal()
-meth public final java.lang.Class java.lang.Enum.getDeclaringClass()
-meth public final java.lang.String java.lang.Enum.name()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Enum.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public static final [Ljava.lang.Thread$State; java.lang.Thread$State.values()
-meth public static java.lang.Enum java.lang.Enum.valueOf(java.lang.Class,java.lang.String)
-meth public static java.lang.Thread$State java.lang.Thread$State.valueOf(java.lang.String)
-meth public volatile int java.lang.Enum.compareTo(java.lang.Object)
-supr java.lang.Enum
-CLSS public static abstract interface java.lang.Thread$UncaughtExceptionHandler
-meth public abstract void java.lang.Thread$UncaughtExceptionHandler.uncaughtException(java.lang.Thread,java.lang.Throwable)
-supr null
-CLSS public static java.text.AttributedCharacterIterator$Attribute
-cons protected Attribute(java.lang.String)
-fld  public static final java.text.AttributedCharacterIterator$Attribute java.text.AttributedCharacterIterator$Attribute.INPUT_METHOD_SEGMENT
-fld  public static final java.text.AttributedCharacterIterator$Attribute java.text.AttributedCharacterIterator$Attribute.LANGUAGE
-fld  public static final java.text.AttributedCharacterIterator$Attribute java.text.AttributedCharacterIterator$Attribute.READING
-intf java.io.Serializable
-meth protected java.lang.Object java.text.AttributedCharacterIterator$Attribute.readResolve() throws java.io.InvalidObjectException
-meth protected java.lang.String java.text.AttributedCharacterIterator$Attribute.getName()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public final boolean java.text.AttributedCharacterIterator$Attribute.equals(java.lang.Object)
-meth public final int java.text.AttributedCharacterIterator$Attribute.hashCode()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.text.AttributedCharacterIterator$Attribute.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-supr java.lang.Object
-CLSS protected abstract javax.swing.AbstractButton$AccessibleAbstractButton
-cons protected AccessibleAbstractButton(javax.swing.AbstractButton)
-fld  constant public static final int javax.accessibility.AccessibleText.CHARACTER
-fld  constant public static final int javax.accessibility.AccessibleText.SENTENCE
-fld  constant public static final int javax.accessibility.AccessibleText.WORD
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
-fld  protected java.awt.event.ComponentListener java.awt.Component$AccessibleAWTComponent.accessibleAWTComponentHandler
-fld  protected java.awt.event.ContainerListener javax.swing.JComponent$AccessibleJComponent.accessibleContainerHandler
-fld  protected java.awt.event.FocusListener java.awt.Component$AccessibleAWTComponent.accessibleAWTFocusHandler
-fld  protected java.awt.event.FocusListener javax.swing.JComponent$AccessibleJComponent.accessibleFocusHandler
-fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleDescription
-fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleName
-fld  protected javax.accessibility.Accessible javax.accessibility.AccessibleContext.accessibleParent
-fld  public static final java.lang.String javax.accessibility.AccessibleAction.DECREMENT
-fld  public static final java.lang.String javax.accessibility.AccessibleAction.INCREMENT
-fld  public static final java.lang.String javax.accessibility.AccessibleAction.TOGGLE_EXPAND
-innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler
-innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler
-innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleContainerHandler
-innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleFocusHandler
-intf java.io.Serializable
-intf javax.accessibility.AccessibleAction
-intf javax.accessibility.AccessibleComponent
-intf javax.accessibility.AccessibleExtendedComponent
-intf javax.accessibility.AccessibleText
-intf javax.accessibility.AccessibleValue
-meth protected java.lang.String javax.swing.JComponent$AccessibleJComponent.getBorderTitle(javax.swing.border.Border)
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public [Ljavax.accessibility.AccessibleIcon; javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleIcon()
-meth public boolean java.awt.Component$AccessibleAWTComponent.contains(java.awt.Point)
-meth public boolean java.awt.Component$AccessibleAWTComponent.isEnabled()
-meth public boolean java.awt.Component$AccessibleAWTComponent.isFocusTraversable()
-meth public boolean java.awt.Component$AccessibleAWTComponent.isShowing()
-meth public boolean java.awt.Component$AccessibleAWTComponent.isVisible()
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public boolean javax.swing.AbstractButton$AccessibleAbstractButton.doAccessibleAction(int)
-meth public boolean javax.swing.AbstractButton$AccessibleAbstractButton.setCurrentAccessibleValue(java.lang.Number)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public int java.awt.Component$AccessibleAWTComponent.getAccessibleIndexInParent()
-meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleActionCount()
-meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getCaretPosition()
-meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getCharCount()
-meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getIndexAtPoint(java.awt.Point)
-meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getSelectionEnd()
-meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getSelectionStart()
-meth public int javax.swing.JComponent$AccessibleJComponent.getAccessibleChildrenCount()
-meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getBackground()
-meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getForeground()
-meth public java.awt.Cursor java.awt.Component$AccessibleAWTComponent.getCursor()
-meth public java.awt.Dimension java.awt.Component$AccessibleAWTComponent.getSize()
-meth public java.awt.Font java.awt.Component$AccessibleAWTComponent.getFont()
-meth public java.awt.FontMetrics java.awt.Component$AccessibleAWTComponent.getFontMetrics(java.awt.Font)
-meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocation()
-meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocationOnScreen()
-meth public java.awt.Rectangle java.awt.Component$AccessibleAWTComponent.getBounds()
-meth public java.awt.Rectangle javax.swing.AbstractButton$AccessibleAbstractButton.getCharacterBounds(int)
-meth public java.lang.Number javax.swing.AbstractButton$AccessibleAbstractButton.getCurrentAccessibleValue()
-meth public java.lang.Number javax.swing.AbstractButton$AccessibleAbstractButton.getMaximumAccessibleValue()
-meth public java.lang.Number javax.swing.AbstractButton$AccessibleAbstractButton.getMinimumAccessibleValue()
-meth public java.lang.String java.lang.Object.toString()
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleActionDescription(int)
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleName()
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAfterIndex(int,int)
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAtIndex(int,int)
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getBeforeIndex(int,int)
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getSelectedText()
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getTitledBorderText()
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getToolTipText()
-meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getAccessibleDescription()
-meth public java.util.Locale java.awt.Component$AccessibleAWTComponent.getLocale()
-meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleParent()
-meth public javax.accessibility.Accessible java.awt.Container$AccessibleAWTContainer.getAccessibleAt(java.awt.Point)
-meth public javax.accessibility.Accessible javax.swing.JComponent$AccessibleJComponent.getAccessibleChild(int)
-meth public javax.accessibility.AccessibleAction javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleAction()
-meth public javax.accessibility.AccessibleComponent java.awt.Component$AccessibleAWTComponent.getAccessibleComponent()
-meth public javax.accessibility.AccessibleEditableText javax.accessibility.AccessibleContext.getAccessibleEditableText()
-meth public javax.accessibility.AccessibleKeyBinding javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleKeyBinding()
-meth public javax.accessibility.AccessibleRelationSet javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleRelationSet()
-meth public javax.accessibility.AccessibleRole javax.swing.JComponent$AccessibleJComponent.getAccessibleRole()
-meth public javax.accessibility.AccessibleSelection javax.accessibility.AccessibleContext.getAccessibleSelection()
-meth public javax.accessibility.AccessibleStateSet javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleStateSet()
-meth public javax.accessibility.AccessibleTable javax.accessibility.AccessibleContext.getAccessibleTable()
-meth public javax.accessibility.AccessibleText javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleText()
-meth public javax.accessibility.AccessibleValue javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleValue()
-meth public javax.swing.text.AttributeSet javax.swing.AbstractButton$AccessibleAbstractButton.getCharacterAttribute(int)
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public void java.awt.Component$AccessibleAWTComponent.addFocusListener(java.awt.event.FocusListener)
-meth public void java.awt.Component$AccessibleAWTComponent.removeFocusListener(java.awt.event.FocusListener)
-meth public void java.awt.Component$AccessibleAWTComponent.requestFocus()
-meth public void java.awt.Component$AccessibleAWTComponent.setBackground(java.awt.Color)
-meth public void java.awt.Component$AccessibleAWTComponent.setBounds(java.awt.Rectangle)
-meth public void java.awt.Component$AccessibleAWTComponent.setCursor(java.awt.Cursor)
-meth public void java.awt.Component$AccessibleAWTComponent.setEnabled(boolean)
-meth public void java.awt.Component$AccessibleAWTComponent.setFont(java.awt.Font)
-meth public void java.awt.Component$AccessibleAWTComponent.setForeground(java.awt.Color)
-meth public void java.awt.Component$AccessibleAWTComponent.setLocation(java.awt.Point)
-meth public void java.awt.Component$AccessibleAWTComponent.setSize(java.awt.Dimension)
-meth public void java.awt.Component$AccessibleAWTComponent.setVisible(boolean)
-meth public void javax.accessibility.AccessibleContext.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
-meth public void javax.accessibility.AccessibleContext.setAccessibleDescription(java.lang.String)
-meth public void javax.accessibility.AccessibleContext.setAccessibleName(java.lang.String)
-meth public void javax.accessibility.AccessibleContext.setAccessibleParent(javax.accessibility.Accessible)
-meth public void javax.swing.JComponent$AccessibleJComponent.addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void javax.swing.JComponent$AccessibleJComponent.removePropertyChangeListener(java.beans.PropertyChangeListener)
-supr javax.swing.JComponent$AccessibleJComponent
-CLSS protected javax.swing.AbstractButton$ButtonChangeListener
-intf java.io.Serializable
-intf java.util.EventListener
-intf javax.swing.event.ChangeListener
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public void javax.swing.AbstractButton$ButtonChangeListener.stateChanged(javax.swing.event.ChangeEvent)
-supr java.lang.Object
-CLSS protected javax.swing.ImageIcon$AccessibleImageIcon
-cons protected AccessibleImageIcon(javax.swing.ImageIcon)
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
-fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleDescription
-fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleName
-fld  protected javax.accessibility.Accessible javax.accessibility.AccessibleContext.accessibleParent
-intf java.io.Serializable
-intf javax.accessibility.AccessibleIcon
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public [Ljavax.accessibility.AccessibleIcon; javax.accessibility.AccessibleContext.getAccessibleIcon()
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public int javax.swing.ImageIcon$AccessibleImageIcon.getAccessibleChildrenCount()
-meth public int javax.swing.ImageIcon$AccessibleImageIcon.getAccessibleIconHeight()
-meth public int javax.swing.ImageIcon$AccessibleImageIcon.getAccessibleIconWidth()
-meth public int javax.swing.ImageIcon$AccessibleImageIcon.getAccessibleIndexInParent()
-meth public java.lang.String java.lang.Object.toString()
-meth public java.lang.String javax.accessibility.AccessibleContext.getAccessibleDescription()
-meth public java.lang.String javax.accessibility.AccessibleContext.getAccessibleName()
-meth public java.lang.String javax.swing.ImageIcon$AccessibleImageIcon.getAccessibleIconDescription()
-meth public java.util.Locale javax.swing.ImageIcon$AccessibleImageIcon.getLocale() throws java.awt.IllegalComponentStateException
-meth public javax.accessibility.Accessible javax.swing.ImageIcon$AccessibleImageIcon.getAccessibleChild(int)
-meth public javax.accessibility.Accessible javax.swing.ImageIcon$AccessibleImageIcon.getAccessibleParent()
-meth public javax.accessibility.AccessibleAction javax.accessibility.AccessibleContext.getAccessibleAction()
-meth public javax.accessibility.AccessibleComponent javax.accessibility.AccessibleContext.getAccessibleComponent()
-meth public javax.accessibility.AccessibleEditableText javax.accessibility.AccessibleContext.getAccessibleEditableText()
-meth public javax.accessibility.AccessibleRelationSet javax.accessibility.AccessibleContext.getAccessibleRelationSet()
-meth public javax.accessibility.AccessibleRole javax.swing.ImageIcon$AccessibleImageIcon.getAccessibleRole()
-meth public javax.accessibility.AccessibleSelection javax.accessibility.AccessibleContext.getAccessibleSelection()
-meth public javax.accessibility.AccessibleStateSet javax.swing.ImageIcon$AccessibleImageIcon.getAccessibleStateSet()
-meth public javax.accessibility.AccessibleTable javax.accessibility.AccessibleContext.getAccessibleTable()
-meth public javax.accessibility.AccessibleText javax.accessibility.AccessibleContext.getAccessibleText()
-meth public javax.accessibility.AccessibleValue javax.accessibility.AccessibleContext.getAccessibleValue()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public void javax.accessibility.AccessibleContext.addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void javax.accessibility.AccessibleContext.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
-meth public void javax.accessibility.AccessibleContext.removePropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void javax.accessibility.AccessibleContext.setAccessibleDescription(java.lang.String)
-meth public void javax.accessibility.AccessibleContext.setAccessibleName(java.lang.String)
-meth public void javax.accessibility.AccessibleContext.setAccessibleParent(javax.accessibility.Accessible)
-meth public void javax.swing.ImageIcon$AccessibleImageIcon.setAccessibleIconDescription(java.lang.String)
-supr javax.accessibility.AccessibleContext
-CLSS protected javax.swing.JButton$AccessibleJButton
-cons protected AccessibleJButton(javax.swing.JButton)
-fld  constant public static final int javax.accessibility.AccessibleText.CHARACTER
-fld  constant public static final int javax.accessibility.AccessibleText.SENTENCE
-fld  constant public static final int javax.accessibility.AccessibleText.WORD
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
-fld  protected java.awt.event.ComponentListener java.awt.Component$AccessibleAWTComponent.accessibleAWTComponentHandler
-fld  protected java.awt.event.ContainerListener javax.swing.JComponent$AccessibleJComponent.accessibleContainerHandler
-fld  protected java.awt.event.FocusListener java.awt.Component$AccessibleAWTComponent.accessibleAWTFocusHandler
-fld  protected java.awt.event.FocusListener javax.swing.JComponent$AccessibleJComponent.accessibleFocusHandler
-fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleDescription
-fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleName
-fld  protected javax.accessibility.Accessible javax.accessibility.AccessibleContext.accessibleParent
-fld  public static final java.lang.String javax.accessibility.AccessibleAction.DECREMENT
-fld  public static final java.lang.String javax.accessibility.AccessibleAction.INCREMENT
-fld  public static final java.lang.String javax.accessibility.AccessibleAction.TOGGLE_EXPAND
-innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler
-innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler
-innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleContainerHandler
-innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleFocusHandler
-intf java.io.Serializable
-intf javax.accessibility.AccessibleAction
-intf javax.accessibility.AccessibleComponent
-intf javax.accessibility.AccessibleExtendedComponent
-intf javax.accessibility.AccessibleText
-intf javax.accessibility.AccessibleValue
-meth protected java.lang.String javax.swing.JComponent$AccessibleJComponent.getBorderTitle(javax.swing.border.Border)
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public [Ljavax.accessibility.AccessibleIcon; javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleIcon()
-meth public boolean java.awt.Component$AccessibleAWTComponent.contains(java.awt.Point)
-meth public boolean java.awt.Component$AccessibleAWTComponent.isEnabled()
-meth public boolean java.awt.Component$AccessibleAWTComponent.isFocusTraversable()
-meth public boolean java.awt.Component$AccessibleAWTComponent.isShowing()
-meth public boolean java.awt.Component$AccessibleAWTComponent.isVisible()
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public boolean javax.swing.AbstractButton$AccessibleAbstractButton.doAccessibleAction(int)
-meth public boolean javax.swing.AbstractButton$AccessibleAbstractButton.setCurrentAccessibleValue(java.lang.Number)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public int java.awt.Component$AccessibleAWTComponent.getAccessibleIndexInParent()
-meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleActionCount()
-meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getCaretPosition()
-meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getCharCount()
-meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getIndexAtPoint(java.awt.Point)
-meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getSelectionEnd()
-meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getSelectionStart()
-meth public int javax.swing.JComponent$AccessibleJComponent.getAccessibleChildrenCount()
-meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getBackground()
-meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getForeground()
-meth public java.awt.Cursor java.awt.Component$AccessibleAWTComponent.getCursor()
-meth public java.awt.Dimension java.awt.Component$AccessibleAWTComponent.getSize()
-meth public java.awt.Font java.awt.Component$AccessibleAWTComponent.getFont()
-meth public java.awt.FontMetrics java.awt.Component$AccessibleAWTComponent.getFontMetrics(java.awt.Font)
-meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocation()
-meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocationOnScreen()
-meth public java.awt.Rectangle java.awt.Component$AccessibleAWTComponent.getBounds()
-meth public java.awt.Rectangle javax.swing.AbstractButton$AccessibleAbstractButton.getCharacterBounds(int)
-meth public java.lang.Number javax.swing.AbstractButton$AccessibleAbstractButton.getCurrentAccessibleValue()
-meth public java.lang.Number javax.swing.AbstractButton$AccessibleAbstractButton.getMaximumAccessibleValue()
-meth public java.lang.Number javax.swing.AbstractButton$AccessibleAbstractButton.getMinimumAccessibleValue()
-meth public java.lang.String java.lang.Object.toString()
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleActionDescription(int)
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleName()
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAfterIndex(int,int)
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAtIndex(int,int)
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getBeforeIndex(int,int)
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getSelectedText()
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getTitledBorderText()
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getToolTipText()
-meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getAccessibleDescription()
-meth public java.util.Locale java.awt.Component$AccessibleAWTComponent.getLocale()
-meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleParent()
-meth public javax.accessibility.Accessible java.awt.Container$AccessibleAWTContainer.getAccessibleAt(java.awt.Point)
-meth public javax.accessibility.Accessible javax.swing.JComponent$AccessibleJComponent.getAccessibleChild(int)
-meth public javax.accessibility.AccessibleAction javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleAction()
-meth public javax.accessibility.AccessibleComponent java.awt.Component$AccessibleAWTComponent.getAccessibleComponent()
-meth public javax.accessibility.AccessibleEditableText javax.accessibility.AccessibleContext.getAccessibleEditableText()
-meth public javax.accessibility.AccessibleKeyBinding javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleKeyBinding()
-meth public javax.accessibility.AccessibleRelationSet javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleRelationSet()
-meth public javax.accessibility.AccessibleRole javax.swing.JButton$AccessibleJButton.getAccessibleRole()
-meth public javax.accessibility.AccessibleSelection javax.accessibility.AccessibleContext.getAccessibleSelection()
-meth public javax.accessibility.AccessibleStateSet javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleStateSet()
-meth public javax.accessibility.AccessibleTable javax.accessibility.AccessibleContext.getAccessibleTable()
-meth public javax.accessibility.AccessibleText javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleText()
-meth public javax.accessibility.AccessibleValue javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleValue()
-meth public javax.swing.text.AttributeSet javax.swing.AbstractButton$AccessibleAbstractButton.getCharacterAttribute(int)
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public void java.awt.Component$AccessibleAWTComponent.addFocusListener(java.awt.event.FocusListener)
-meth public void java.awt.Component$AccessibleAWTComponent.removeFocusListener(java.awt.event.FocusListener)
-meth public void java.awt.Component$AccessibleAWTComponent.requestFocus()
-meth public void java.awt.Component$AccessibleAWTComponent.setBackground(java.awt.Color)
-meth public void java.awt.Component$AccessibleAWTComponent.setBounds(java.awt.Rectangle)
-meth public void java.awt.Component$AccessibleAWTComponent.setCursor(java.awt.Cursor)
-meth public void java.awt.Component$AccessibleAWTComponent.setEnabled(boolean)
-meth public void java.awt.Component$AccessibleAWTComponent.setFont(java.awt.Font)
-meth public void java.awt.Component$AccessibleAWTComponent.setForeground(java.awt.Color)
-meth public void java.awt.Component$AccessibleAWTComponent.setLocation(java.awt.Point)
-meth public void java.awt.Component$AccessibleAWTComponent.setSize(java.awt.Dimension)
-meth public void java.awt.Component$AccessibleAWTComponent.setVisible(boolean)
-meth public void javax.accessibility.AccessibleContext.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
-meth public void javax.accessibility.AccessibleContext.setAccessibleDescription(java.lang.String)
-meth public void javax.accessibility.AccessibleContext.setAccessibleName(java.lang.String)
-meth public void javax.accessibility.AccessibleContext.setAccessibleParent(javax.accessibility.Accessible)
-meth public void javax.swing.JComponent$AccessibleJComponent.addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void javax.swing.JComponent$AccessibleJComponent.removePropertyChangeListener(java.beans.PropertyChangeListener)
-supr javax.swing.AbstractButton$AccessibleAbstractButton
-CLSS protected javax.swing.JCheckBoxMenuItem$AccessibleJCheckBoxMenuItem
-cons protected AccessibleJCheckBoxMenuItem(javax.swing.JCheckBoxMenuItem)
-fld  constant public static final int javax.accessibility.AccessibleText.CHARACTER
-fld  constant public static final int javax.accessibility.AccessibleText.SENTENCE
-fld  constant public static final int javax.accessibility.AccessibleText.WORD
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
-fld  protected java.awt.event.ComponentListener java.awt.Component$AccessibleAWTComponent.accessibleAWTComponentHandler
-fld  protected java.awt.event.ContainerListener javax.swing.JComponent$AccessibleJComponent.accessibleContainerHandler
-fld  protected java.awt.event.FocusListener java.awt.Component$AccessibleAWTComponent.accessibleAWTFocusHandler
-fld  protected java.awt.event.FocusListener javax.swing.JComponent$AccessibleJComponent.accessibleFocusHandler
-fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleDescription
-fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleName
-fld  protected javax.accessibility.Accessible javax.accessibility.AccessibleContext.accessibleParent
-fld  public static final java.lang.String javax.accessibility.AccessibleAction.DECREMENT
-fld  public static final java.lang.String javax.accessibility.AccessibleAction.INCREMENT
-fld  public static final java.lang.String javax.accessibility.AccessibleAction.TOGGLE_EXPAND
-innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler
-innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler
-innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleContainerHandler
-innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleFocusHandler
-intf java.io.Serializable
-intf java.util.EventListener
-intf javax.accessibility.AccessibleAction
-intf javax.accessibility.AccessibleComponent
-intf javax.accessibility.AccessibleExtendedComponent
-intf javax.accessibility.AccessibleText
-intf javax.accessibility.AccessibleValue
-intf javax.swing.event.ChangeListener
-meth protected java.lang.String javax.swing.JComponent$AccessibleJComponent.getBorderTitle(javax.swing.border.Border)
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public [Ljavax.accessibility.AccessibleIcon; javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleIcon()
-meth public boolean java.awt.Component$AccessibleAWTComponent.contains(java.awt.Point)
-meth public boolean java.awt.Component$AccessibleAWTComponent.isEnabled()
-meth public boolean java.awt.Component$AccessibleAWTComponent.isFocusTraversable()
-meth public boolean java.awt.Component$AccessibleAWTComponent.isShowing()
-meth public boolean java.awt.Component$AccessibleAWTComponent.isVisible()
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public boolean javax.swing.AbstractButton$AccessibleAbstractButton.doAccessibleAction(int)
-meth public boolean javax.swing.AbstractButton$AccessibleAbstractButton.setCurrentAccessibleValue(java.lang.Number)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public int java.awt.Component$AccessibleAWTComponent.getAccessibleIndexInParent()
-meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleActionCount()
-meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getCaretPosition()
-meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getCharCount()
-meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getIndexAtPoint(java.awt.Point)
-meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getSelectionEnd()
-meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getSelectionStart()
-meth public int javax.swing.JComponent$AccessibleJComponent.getAccessibleChildrenCount()
-meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getBackground()
-meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getForeground()
-meth public java.awt.Cursor java.awt.Component$AccessibleAWTComponent.getCursor()
-meth public java.awt.Dimension java.awt.Component$AccessibleAWTComponent.getSize()
-meth public java.awt.Font java.awt.Component$AccessibleAWTComponent.getFont()
-meth public java.awt.FontMetrics java.awt.Component$AccessibleAWTComponent.getFontMetrics(java.awt.Font)
-meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocation()
-meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocationOnScreen()
-meth public java.awt.Rectangle java.awt.Component$AccessibleAWTComponent.getBounds()
-meth public java.awt.Rectangle javax.swing.AbstractButton$AccessibleAbstractButton.getCharacterBounds(int)
-meth public java.lang.Number javax.swing.AbstractButton$AccessibleAbstractButton.getCurrentAccessibleValue()
-meth public java.lang.Number javax.swing.AbstractButton$AccessibleAbstractButton.getMaximumAccessibleValue()
-meth public java.lang.Number javax.swing.AbstractButton$AccessibleAbstractButton.getMinimumAccessibleValue()
-meth public java.lang.String java.lang.Object.toString()
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleActionDescription(int)
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleName()
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAfterIndex(int,int)
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAtIndex(int,int)
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getBeforeIndex(int,int)
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getSelectedText()
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getTitledBorderText()
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getToolTipText()
-meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getAccessibleDescription()
-meth public java.util.Locale java.awt.Component$AccessibleAWTComponent.getLocale()
-meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleParent()
-meth public javax.accessibility.Accessible java.awt.Container$AccessibleAWTContainer.getAccessibleAt(java.awt.Point)
-meth public javax.accessibility.Accessible javax.swing.JComponent$AccessibleJComponent.getAccessibleChild(int)
-meth public javax.accessibility.AccessibleAction javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleAction()
-meth public javax.accessibility.AccessibleComponent java.awt.Component$AccessibleAWTComponent.getAccessibleComponent()
-meth public javax.accessibility.AccessibleEditableText javax.accessibility.AccessibleContext.getAccessibleEditableText()
-meth public javax.accessibility.AccessibleKeyBinding javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleKeyBinding()
-meth public javax.accessibility.AccessibleRelationSet javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleRelationSet()
-meth public javax.accessibility.AccessibleRole javax.swing.JCheckBoxMenuItem$AccessibleJCheckBoxMenuItem.getAccessibleRole()
-meth public javax.accessibility.AccessibleSelection javax.accessibility.AccessibleContext.getAccessibleSelection()
-meth public javax.accessibility.AccessibleStateSet javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleStateSet()
-meth public javax.accessibility.AccessibleTable javax.accessibility.AccessibleContext.getAccessibleTable()
-meth public javax.accessibility.AccessibleText javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleText()
-meth public javax.accessibility.AccessibleValue javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleValue()
-meth public javax.swing.text.AttributeSet javax.swing.AbstractButton$AccessibleAbstractButton.getCharacterAttribute(int)
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public void java.awt.Component$AccessibleAWTComponent.addFocusListener(java.awt.event.FocusListener)
-meth public void java.awt.Component$AccessibleAWTComponent.removeFocusListener(java.awt.event.FocusListener)
-meth public void java.awt.Component$AccessibleAWTComponent.requestFocus()
-meth public void java.awt.Component$AccessibleAWTComponent.setBackground(java.awt.Color)
-meth public void java.awt.Component$AccessibleAWTComponent.setBounds(java.awt.Rectangle)
-meth public void java.awt.Component$AccessibleAWTComponent.setCursor(java.awt.Cursor)
-meth public void java.awt.Component$AccessibleAWTComponent.setEnabled(boolean)
-meth public void java.awt.Component$AccessibleAWTComponent.setFont(java.awt.Font)
-meth public void java.awt.Component$AccessibleAWTComponent.setForeground(java.awt.Color)
-meth public void java.awt.Component$AccessibleAWTComponent.setLocation(java.awt.Point)
-meth public void java.awt.Component$AccessibleAWTComponent.setSize(java.awt.Dimension)
-meth public void java.awt.Component$AccessibleAWTComponent.setVisible(boolean)
-meth public void javax.accessibility.AccessibleContext.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
-meth public void javax.accessibility.AccessibleContext.setAccessibleDescription(java.lang.String)
-meth public void javax.accessibility.AccessibleContext.setAccessibleName(java.lang.String)
-meth public void javax.accessibility.AccessibleContext.setAccessibleParent(javax.accessibility.Accessible)
-meth public void javax.swing.JComponent$AccessibleJComponent.addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void javax.swing.JComponent$AccessibleJComponent.removePropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void javax.swing.JMenuItem$AccessibleJMenuItem.stateChanged(javax.swing.event.ChangeEvent)
-supr javax.swing.JMenuItem$AccessibleJMenuItem
 CLSS public abstract javax.swing.JComponent$AccessibleJComponent
 cons protected AccessibleJComponent(javax.swing.JComponent)
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
 fld  protected java.awt.event.ComponentListener java.awt.Component$AccessibleAWTComponent.accessibleAWTComponentHandler
 fld  protected java.awt.event.ContainerListener javax.swing.JComponent$AccessibleJComponent.accessibleContainerHandler
 fld  protected java.awt.event.FocusListener java.awt.Component$AccessibleAWTComponent.accessibleAWTFocusHandler
@@ -1025,10 +198,28 @@ fld  protected java.awt.event.FocusListener javax.swing.JComponent$AccessibleJCo
 fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleDescription
 fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleName
 fld  protected javax.accessibility.Accessible javax.accessibility.AccessibleContext.accessibleParent
-innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler
-innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler
-innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleContainerHandler
-innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleFocusHandler
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
 intf java.io.Serializable
 intf javax.accessibility.AccessibleComponent
 intf javax.accessibility.AccessibleExtendedComponent
@@ -1099,821 +290,8 @@ meth public void javax.accessibility.AccessibleContext.setAccessibleParent(javax
 meth public void javax.swing.JComponent$AccessibleJComponent.addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public void javax.swing.JComponent$AccessibleJComponent.removePropertyChangeListener(java.beans.PropertyChangeListener)
 supr java.awt.Container$AccessibleAWTContainer
-CLSS protected javax.swing.JComponent$AccessibleJComponent$AccessibleContainerHandler
-cons protected AccessibleContainerHandler(javax.swing.JComponent$AccessibleJComponent)
-intf java.awt.event.ContainerListener
-intf java.util.EventListener
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public void javax.swing.JComponent$AccessibleJComponent$AccessibleContainerHandler.componentAdded(java.awt.event.ContainerEvent)
-meth public void javax.swing.JComponent$AccessibleJComponent$AccessibleContainerHandler.componentRemoved(java.awt.event.ContainerEvent)
-supr java.lang.Object
-CLSS protected javax.swing.JComponent$AccessibleJComponent$AccessibleFocusHandler
-cons protected AccessibleFocusHandler(javax.swing.JComponent$AccessibleJComponent)
-intf java.awt.event.FocusListener
-intf java.util.EventListener
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public void javax.swing.JComponent$AccessibleJComponent$AccessibleFocusHandler.focusGained(java.awt.event.FocusEvent)
-meth public void javax.swing.JComponent$AccessibleJComponent$AccessibleFocusHandler.focusLost(java.awt.event.FocusEvent)
-supr java.lang.Object
-CLSS protected javax.swing.JLabel$AccessibleJLabel
-cons protected AccessibleJLabel(javax.swing.JLabel)
-fld  constant public static final int javax.accessibility.AccessibleText.CHARACTER
-fld  constant public static final int javax.accessibility.AccessibleText.SENTENCE
-fld  constant public static final int javax.accessibility.AccessibleText.WORD
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
-fld  protected java.awt.event.ComponentListener java.awt.Component$AccessibleAWTComponent.accessibleAWTComponentHandler
-fld  protected java.awt.event.ContainerListener javax.swing.JComponent$AccessibleJComponent.accessibleContainerHandler
-fld  protected java.awt.event.FocusListener java.awt.Component$AccessibleAWTComponent.accessibleAWTFocusHandler
-fld  protected java.awt.event.FocusListener javax.swing.JComponent$AccessibleJComponent.accessibleFocusHandler
-fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleDescription
-fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleName
-fld  protected javax.accessibility.Accessible javax.accessibility.AccessibleContext.accessibleParent
-innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler
-innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler
-innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleContainerHandler
-innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleFocusHandler
-intf java.io.Serializable
-intf javax.accessibility.AccessibleComponent
-intf javax.accessibility.AccessibleExtendedComponent
-intf javax.accessibility.AccessibleText
-meth protected java.lang.String javax.swing.JComponent$AccessibleJComponent.getBorderTitle(javax.swing.border.Border)
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public [Ljavax.accessibility.AccessibleIcon; javax.swing.JLabel$AccessibleJLabel.getAccessibleIcon()
-meth public boolean java.awt.Component$AccessibleAWTComponent.contains(java.awt.Point)
-meth public boolean java.awt.Component$AccessibleAWTComponent.isEnabled()
-meth public boolean java.awt.Component$AccessibleAWTComponent.isFocusTraversable()
-meth public boolean java.awt.Component$AccessibleAWTComponent.isShowing()
-meth public boolean java.awt.Component$AccessibleAWTComponent.isVisible()
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public int java.awt.Component$AccessibleAWTComponent.getAccessibleIndexInParent()
-meth public int javax.swing.JComponent$AccessibleJComponent.getAccessibleChildrenCount()
-meth public int javax.swing.JLabel$AccessibleJLabel.getCaretPosition()
-meth public int javax.swing.JLabel$AccessibleJLabel.getCharCount()
-meth public int javax.swing.JLabel$AccessibleJLabel.getIndexAtPoint(java.awt.Point)
-meth public int javax.swing.JLabel$AccessibleJLabel.getSelectionEnd()
-meth public int javax.swing.JLabel$AccessibleJLabel.getSelectionStart()
-meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getBackground()
-meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getForeground()
-meth public java.awt.Cursor java.awt.Component$AccessibleAWTComponent.getCursor()
-meth public java.awt.Dimension java.awt.Component$AccessibleAWTComponent.getSize()
-meth public java.awt.Font java.awt.Component$AccessibleAWTComponent.getFont()
-meth public java.awt.FontMetrics java.awt.Component$AccessibleAWTComponent.getFontMetrics(java.awt.Font)
-meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocation()
-meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocationOnScreen()
-meth public java.awt.Rectangle java.awt.Component$AccessibleAWTComponent.getBounds()
-meth public java.awt.Rectangle javax.swing.JLabel$AccessibleJLabel.getCharacterBounds(int)
-meth public java.lang.String java.lang.Object.toString()
-meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getAccessibleDescription()
-meth public java.lang.String javax.swing.JLabel$AccessibleJLabel.getAccessibleName()
-meth public java.lang.String javax.swing.JLabel$AccessibleJLabel.getAfterIndex(int,int)
-meth public java.lang.String javax.swing.JLabel$AccessibleJLabel.getAtIndex(int,int)
-meth public java.lang.String javax.swing.JLabel$AccessibleJLabel.getBeforeIndex(int,int)
-meth public java.lang.String javax.swing.JLabel$AccessibleJLabel.getSelectedText()
-meth public java.lang.String javax.swing.JLabel$AccessibleJLabel.getTitledBorderText()
-meth public java.lang.String javax.swing.JLabel$AccessibleJLabel.getToolTipText()
-meth public java.util.Locale java.awt.Component$AccessibleAWTComponent.getLocale()
-meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleParent()
-meth public javax.accessibility.Accessible java.awt.Container$AccessibleAWTContainer.getAccessibleAt(java.awt.Point)
-meth public javax.accessibility.Accessible javax.swing.JComponent$AccessibleJComponent.getAccessibleChild(int)
-meth public javax.accessibility.AccessibleAction javax.accessibility.AccessibleContext.getAccessibleAction()
-meth public javax.accessibility.AccessibleComponent java.awt.Component$AccessibleAWTComponent.getAccessibleComponent()
-meth public javax.accessibility.AccessibleEditableText javax.accessibility.AccessibleContext.getAccessibleEditableText()
-meth public javax.accessibility.AccessibleKeyBinding javax.swing.JLabel$AccessibleJLabel.getAccessibleKeyBinding()
-meth public javax.accessibility.AccessibleRelationSet javax.swing.JLabel$AccessibleJLabel.getAccessibleRelationSet()
-meth public javax.accessibility.AccessibleRole javax.swing.JLabel$AccessibleJLabel.getAccessibleRole()
-meth public javax.accessibility.AccessibleSelection javax.accessibility.AccessibleContext.getAccessibleSelection()
-meth public javax.accessibility.AccessibleStateSet javax.swing.JComponent$AccessibleJComponent.getAccessibleStateSet()
-meth public javax.accessibility.AccessibleTable javax.accessibility.AccessibleContext.getAccessibleTable()
-meth public javax.accessibility.AccessibleText javax.swing.JLabel$AccessibleJLabel.getAccessibleText()
-meth public javax.accessibility.AccessibleValue javax.accessibility.AccessibleContext.getAccessibleValue()
-meth public javax.swing.text.AttributeSet javax.swing.JLabel$AccessibleJLabel.getCharacterAttribute(int)
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public void java.awt.Component$AccessibleAWTComponent.addFocusListener(java.awt.event.FocusListener)
-meth public void java.awt.Component$AccessibleAWTComponent.removeFocusListener(java.awt.event.FocusListener)
-meth public void java.awt.Component$AccessibleAWTComponent.requestFocus()
-meth public void java.awt.Component$AccessibleAWTComponent.setBackground(java.awt.Color)
-meth public void java.awt.Component$AccessibleAWTComponent.setBounds(java.awt.Rectangle)
-meth public void java.awt.Component$AccessibleAWTComponent.setCursor(java.awt.Cursor)
-meth public void java.awt.Component$AccessibleAWTComponent.setEnabled(boolean)
-meth public void java.awt.Component$AccessibleAWTComponent.setFont(java.awt.Font)
-meth public void java.awt.Component$AccessibleAWTComponent.setForeground(java.awt.Color)
-meth public void java.awt.Component$AccessibleAWTComponent.setLocation(java.awt.Point)
-meth public void java.awt.Component$AccessibleAWTComponent.setSize(java.awt.Dimension)
-meth public void java.awt.Component$AccessibleAWTComponent.setVisible(boolean)
-meth public void javax.accessibility.AccessibleContext.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
-meth public void javax.accessibility.AccessibleContext.setAccessibleDescription(java.lang.String)
-meth public void javax.accessibility.AccessibleContext.setAccessibleName(java.lang.String)
-meth public void javax.accessibility.AccessibleContext.setAccessibleParent(javax.accessibility.Accessible)
-meth public void javax.swing.JComponent$AccessibleJComponent.addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void javax.swing.JComponent$AccessibleJComponent.removePropertyChangeListener(java.beans.PropertyChangeListener)
-supr javax.swing.JComponent$AccessibleJComponent
-CLSS protected javax.swing.JList$AccessibleJList
-cons public AccessibleJList(javax.swing.JList)
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
-fld  protected java.awt.event.ComponentListener java.awt.Component$AccessibleAWTComponent.accessibleAWTComponentHandler
-fld  protected java.awt.event.ContainerListener javax.swing.JComponent$AccessibleJComponent.accessibleContainerHandler
-fld  protected java.awt.event.FocusListener java.awt.Component$AccessibleAWTComponent.accessibleAWTFocusHandler
-fld  protected java.awt.event.FocusListener javax.swing.JComponent$AccessibleJComponent.accessibleFocusHandler
-fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleDescription
-fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleName
-fld  protected javax.accessibility.Accessible javax.accessibility.AccessibleContext.accessibleParent
-innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler
-innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler
-innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleContainerHandler
-innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleFocusHandler
-innr protected javax.swing.JList$AccessibleJList$AccessibleJListChild
-intf java.beans.PropertyChangeListener
-intf java.io.Serializable
-intf java.util.EventListener
-intf javax.accessibility.AccessibleComponent
-intf javax.accessibility.AccessibleExtendedComponent
-intf javax.accessibility.AccessibleSelection
-intf javax.swing.event.ListDataListener
-intf javax.swing.event.ListSelectionListener
-meth protected java.lang.String javax.swing.JComponent$AccessibleJComponent.getBorderTitle(javax.swing.border.Border)
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public [Ljavax.accessibility.AccessibleIcon; javax.accessibility.AccessibleContext.getAccessibleIcon()
-meth public boolean java.awt.Component$AccessibleAWTComponent.contains(java.awt.Point)
-meth public boolean java.awt.Component$AccessibleAWTComponent.isEnabled()
-meth public boolean java.awt.Component$AccessibleAWTComponent.isFocusTraversable()
-meth public boolean java.awt.Component$AccessibleAWTComponent.isShowing()
-meth public boolean java.awt.Component$AccessibleAWTComponent.isVisible()
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public boolean javax.swing.JList$AccessibleJList.isAccessibleChildSelected(int)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public int java.awt.Component$AccessibleAWTComponent.getAccessibleIndexInParent()
-meth public int javax.swing.JList$AccessibleJList.getAccessibleChildrenCount()
-meth public int javax.swing.JList$AccessibleJList.getAccessibleSelectionCount()
-meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getBackground()
-meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getForeground()
-meth public java.awt.Cursor java.awt.Component$AccessibleAWTComponent.getCursor()
-meth public java.awt.Dimension java.awt.Component$AccessibleAWTComponent.getSize()
-meth public java.awt.Font java.awt.Component$AccessibleAWTComponent.getFont()
-meth public java.awt.FontMetrics java.awt.Component$AccessibleAWTComponent.getFontMetrics(java.awt.Font)
-meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocation()
-meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocationOnScreen()
-meth public java.awt.Rectangle java.awt.Component$AccessibleAWTComponent.getBounds()
-meth public java.lang.String java.lang.Object.toString()
-meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getAccessibleDescription()
-meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getAccessibleName()
-meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getTitledBorderText()
-meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getToolTipText()
-meth public java.util.Locale java.awt.Component$AccessibleAWTComponent.getLocale()
-meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleParent()
-meth public javax.accessibility.Accessible javax.swing.JList$AccessibleJList.getAccessibleAt(java.awt.Point)
-meth public javax.accessibility.Accessible javax.swing.JList$AccessibleJList.getAccessibleChild(int)
-meth public javax.accessibility.Accessible javax.swing.JList$AccessibleJList.getAccessibleSelection(int)
-meth public javax.accessibility.AccessibleAction javax.accessibility.AccessibleContext.getAccessibleAction()
-meth public javax.accessibility.AccessibleComponent java.awt.Component$AccessibleAWTComponent.getAccessibleComponent()
-meth public javax.accessibility.AccessibleEditableText javax.accessibility.AccessibleContext.getAccessibleEditableText()
-meth public javax.accessibility.AccessibleKeyBinding javax.swing.JComponent$AccessibleJComponent.getAccessibleKeyBinding()
-meth public javax.accessibility.AccessibleRelationSet javax.accessibility.AccessibleContext.getAccessibleRelationSet()
-meth public javax.accessibility.AccessibleRole javax.swing.JList$AccessibleJList.getAccessibleRole()
-meth public javax.accessibility.AccessibleSelection javax.swing.JList$AccessibleJList.getAccessibleSelection()
-meth public javax.accessibility.AccessibleStateSet javax.swing.JList$AccessibleJList.getAccessibleStateSet()
-meth public javax.accessibility.AccessibleTable javax.accessibility.AccessibleContext.getAccessibleTable()
-meth public javax.accessibility.AccessibleText javax.accessibility.AccessibleContext.getAccessibleText()
-meth public javax.accessibility.AccessibleValue javax.accessibility.AccessibleContext.getAccessibleValue()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public void java.awt.Component$AccessibleAWTComponent.addFocusListener(java.awt.event.FocusListener)
-meth public void java.awt.Component$AccessibleAWTComponent.removeFocusListener(java.awt.event.FocusListener)
-meth public void java.awt.Component$AccessibleAWTComponent.requestFocus()
-meth public void java.awt.Component$AccessibleAWTComponent.setBackground(java.awt.Color)
-meth public void java.awt.Component$AccessibleAWTComponent.setBounds(java.awt.Rectangle)
-meth public void java.awt.Component$AccessibleAWTComponent.setCursor(java.awt.Cursor)
-meth public void java.awt.Component$AccessibleAWTComponent.setEnabled(boolean)
-meth public void java.awt.Component$AccessibleAWTComponent.setFont(java.awt.Font)
-meth public void java.awt.Component$AccessibleAWTComponent.setForeground(java.awt.Color)
-meth public void java.awt.Component$AccessibleAWTComponent.setLocation(java.awt.Point)
-meth public void java.awt.Component$AccessibleAWTComponent.setSize(java.awt.Dimension)
-meth public void java.awt.Component$AccessibleAWTComponent.setVisible(boolean)
-meth public void javax.accessibility.AccessibleContext.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
-meth public void javax.accessibility.AccessibleContext.setAccessibleDescription(java.lang.String)
-meth public void javax.accessibility.AccessibleContext.setAccessibleName(java.lang.String)
-meth public void javax.accessibility.AccessibleContext.setAccessibleParent(javax.accessibility.Accessible)
-meth public void javax.swing.JComponent$AccessibleJComponent.addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void javax.swing.JComponent$AccessibleJComponent.removePropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void javax.swing.JList$AccessibleJList.addAccessibleSelection(int)
-meth public void javax.swing.JList$AccessibleJList.clearAccessibleSelection()
-meth public void javax.swing.JList$AccessibleJList.contentsChanged(javax.swing.event.ListDataEvent)
-meth public void javax.swing.JList$AccessibleJList.intervalAdded(javax.swing.event.ListDataEvent)
-meth public void javax.swing.JList$AccessibleJList.intervalRemoved(javax.swing.event.ListDataEvent)
-meth public void javax.swing.JList$AccessibleJList.propertyChange(java.beans.PropertyChangeEvent)
-meth public void javax.swing.JList$AccessibleJList.removeAccessibleSelection(int)
-meth public void javax.swing.JList$AccessibleJList.selectAllAccessibleSelection()
-meth public void javax.swing.JList$AccessibleJList.valueChanged(javax.swing.event.ListSelectionEvent)
-supr javax.swing.JComponent$AccessibleJComponent
-CLSS protected javax.swing.JList$AccessibleJList$AccessibleJListChild
-cons public AccessibleJListChild(javax.swing.JList$AccessibleJList,javax.swing.JList,int)
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
-fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleDescription
-fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleName
-fld  protected javax.accessibility.Accessible javax.accessibility.AccessibleContext.accessibleParent
-intf javax.accessibility.Accessible
-intf javax.accessibility.AccessibleComponent
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public [Ljavax.accessibility.AccessibleIcon; javax.swing.JList$AccessibleJList$AccessibleJListChild.getAccessibleIcon()
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public boolean javax.swing.JList$AccessibleJList$AccessibleJListChild.contains(java.awt.Point)
-meth public boolean javax.swing.JList$AccessibleJList$AccessibleJListChild.isEnabled()
-meth public boolean javax.swing.JList$AccessibleJList$AccessibleJListChild.isFocusTraversable()
-meth public boolean javax.swing.JList$AccessibleJList$AccessibleJListChild.isShowing()
-meth public boolean javax.swing.JList$AccessibleJList$AccessibleJListChild.isVisible()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public int javax.swing.JList$AccessibleJList$AccessibleJListChild.getAccessibleChildrenCount()
-meth public int javax.swing.JList$AccessibleJList$AccessibleJListChild.getAccessibleIndexInParent()
-meth public java.awt.Color javax.swing.JList$AccessibleJList$AccessibleJListChild.getBackground()
-meth public java.awt.Color javax.swing.JList$AccessibleJList$AccessibleJListChild.getForeground()
-meth public java.awt.Cursor javax.swing.JList$AccessibleJList$AccessibleJListChild.getCursor()
-meth public java.awt.Dimension javax.swing.JList$AccessibleJList$AccessibleJListChild.getSize()
-meth public java.awt.Font javax.swing.JList$AccessibleJList$AccessibleJListChild.getFont()
-meth public java.awt.FontMetrics javax.swing.JList$AccessibleJList$AccessibleJListChild.getFontMetrics(java.awt.Font)
-meth public java.awt.Point javax.swing.JList$AccessibleJList$AccessibleJListChild.getLocation()
-meth public java.awt.Point javax.swing.JList$AccessibleJList$AccessibleJListChild.getLocationOnScreen()
-meth public java.awt.Rectangle javax.swing.JList$AccessibleJList$AccessibleJListChild.getBounds()
-meth public java.lang.String java.lang.Object.toString()
-meth public java.lang.String javax.swing.JList$AccessibleJList$AccessibleJListChild.getAccessibleDescription()
-meth public java.lang.String javax.swing.JList$AccessibleJList$AccessibleJListChild.getAccessibleName()
-meth public java.util.Locale javax.swing.JList$AccessibleJList$AccessibleJListChild.getLocale()
-meth public javax.accessibility.Accessible javax.accessibility.AccessibleContext.getAccessibleParent()
-meth public javax.accessibility.Accessible javax.swing.JList$AccessibleJList$AccessibleJListChild.getAccessibleAt(java.awt.Point)
-meth public javax.accessibility.Accessible javax.swing.JList$AccessibleJList$AccessibleJListChild.getAccessibleChild(int)
-meth public javax.accessibility.AccessibleAction javax.swing.JList$AccessibleJList$AccessibleJListChild.getAccessibleAction()
-meth public javax.accessibility.AccessibleComponent javax.swing.JList$AccessibleJList$AccessibleJListChild.getAccessibleComponent()
-meth public javax.accessibility.AccessibleContext javax.swing.JList$AccessibleJList$AccessibleJListChild.getAccessibleContext()
-meth public javax.accessibility.AccessibleEditableText javax.accessibility.AccessibleContext.getAccessibleEditableText()
-meth public javax.accessibility.AccessibleRelationSet javax.accessibility.AccessibleContext.getAccessibleRelationSet()
-meth public javax.accessibility.AccessibleRole javax.swing.JList$AccessibleJList$AccessibleJListChild.getAccessibleRole()
-meth public javax.accessibility.AccessibleSelection javax.swing.JList$AccessibleJList$AccessibleJListChild.getAccessibleSelection()
-meth public javax.accessibility.AccessibleStateSet javax.swing.JList$AccessibleJList$AccessibleJListChild.getAccessibleStateSet()
-meth public javax.accessibility.AccessibleTable javax.accessibility.AccessibleContext.getAccessibleTable()
-meth public javax.accessibility.AccessibleText javax.swing.JList$AccessibleJList$AccessibleJListChild.getAccessibleText()
-meth public javax.accessibility.AccessibleValue javax.swing.JList$AccessibleJList$AccessibleJListChild.getAccessibleValue()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public void javax.accessibility.AccessibleContext.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
-meth public void javax.accessibility.AccessibleContext.setAccessibleParent(javax.accessibility.Accessible)
-meth public void javax.swing.JList$AccessibleJList$AccessibleJListChild.addFocusListener(java.awt.event.FocusListener)
-meth public void javax.swing.JList$AccessibleJList$AccessibleJListChild.addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void javax.swing.JList$AccessibleJList$AccessibleJListChild.removeFocusListener(java.awt.event.FocusListener)
-meth public void javax.swing.JList$AccessibleJList$AccessibleJListChild.removePropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void javax.swing.JList$AccessibleJList$AccessibleJListChild.requestFocus()
-meth public void javax.swing.JList$AccessibleJList$AccessibleJListChild.setAccessibleDescription(java.lang.String)
-meth public void javax.swing.JList$AccessibleJList$AccessibleJListChild.setAccessibleName(java.lang.String)
-meth public void javax.swing.JList$AccessibleJList$AccessibleJListChild.setBackground(java.awt.Color)
-meth public void javax.swing.JList$AccessibleJList$AccessibleJListChild.setBounds(java.awt.Rectangle)
-meth public void javax.swing.JList$AccessibleJList$AccessibleJListChild.setCursor(java.awt.Cursor)
-meth public void javax.swing.JList$AccessibleJList$AccessibleJListChild.setEnabled(boolean)
-meth public void javax.swing.JList$AccessibleJList$AccessibleJListChild.setFont(java.awt.Font)
-meth public void javax.swing.JList$AccessibleJList$AccessibleJListChild.setForeground(java.awt.Color)
-meth public void javax.swing.JList$AccessibleJList$AccessibleJListChild.setLocation(java.awt.Point)
-meth public void javax.swing.JList$AccessibleJList$AccessibleJListChild.setSize(java.awt.Dimension)
-meth public void javax.swing.JList$AccessibleJList$AccessibleJListChild.setVisible(boolean)
-supr javax.accessibility.AccessibleContext
-CLSS protected javax.swing.JMenu$AccessibleJMenu
-cons protected AccessibleJMenu(javax.swing.JMenu)
-fld  constant public static final int javax.accessibility.AccessibleText.CHARACTER
-fld  constant public static final int javax.accessibility.AccessibleText.SENTENCE
-fld  constant public static final int javax.accessibility.AccessibleText.WORD
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
-fld  protected java.awt.event.ComponentListener java.awt.Component$AccessibleAWTComponent.accessibleAWTComponentHandler
-fld  protected java.awt.event.ContainerListener javax.swing.JComponent$AccessibleJComponent.accessibleContainerHandler
-fld  protected java.awt.event.FocusListener java.awt.Component$AccessibleAWTComponent.accessibleAWTFocusHandler
-fld  protected java.awt.event.FocusListener javax.swing.JComponent$AccessibleJComponent.accessibleFocusHandler
-fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleDescription
-fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleName
-fld  protected javax.accessibility.Accessible javax.accessibility.AccessibleContext.accessibleParent
-fld  public static final java.lang.String javax.accessibility.AccessibleAction.DECREMENT
-fld  public static final java.lang.String javax.accessibility.AccessibleAction.INCREMENT
-fld  public static final java.lang.String javax.accessibility.AccessibleAction.TOGGLE_EXPAND
-innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler
-innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler
-innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleContainerHandler
-innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleFocusHandler
-intf java.io.Serializable
-intf java.util.EventListener
-intf javax.accessibility.AccessibleAction
-intf javax.accessibility.AccessibleComponent
-intf javax.accessibility.AccessibleExtendedComponent
-intf javax.accessibility.AccessibleSelection
-intf javax.accessibility.AccessibleText
-intf javax.accessibility.AccessibleValue
-intf javax.swing.event.ChangeListener
-meth protected java.lang.String javax.swing.JComponent$AccessibleJComponent.getBorderTitle(javax.swing.border.Border)
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public [Ljavax.accessibility.AccessibleIcon; javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleIcon()
-meth public boolean java.awt.Component$AccessibleAWTComponent.contains(java.awt.Point)
-meth public boolean java.awt.Component$AccessibleAWTComponent.isEnabled()
-meth public boolean java.awt.Component$AccessibleAWTComponent.isFocusTraversable()
-meth public boolean java.awt.Component$AccessibleAWTComponent.isShowing()
-meth public boolean java.awt.Component$AccessibleAWTComponent.isVisible()
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public boolean javax.swing.AbstractButton$AccessibleAbstractButton.doAccessibleAction(int)
-meth public boolean javax.swing.AbstractButton$AccessibleAbstractButton.setCurrentAccessibleValue(java.lang.Number)
-meth public boolean javax.swing.JMenu$AccessibleJMenu.isAccessibleChildSelected(int)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public int java.awt.Component$AccessibleAWTComponent.getAccessibleIndexInParent()
-meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleActionCount()
-meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getCaretPosition()
-meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getCharCount()
-meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getIndexAtPoint(java.awt.Point)
-meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getSelectionEnd()
-meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getSelectionStart()
-meth public int javax.swing.JMenu$AccessibleJMenu.getAccessibleChildrenCount()
-meth public int javax.swing.JMenu$AccessibleJMenu.getAccessibleSelectionCount()
-meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getBackground()
-meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getForeground()
-meth public java.awt.Cursor java.awt.Component$AccessibleAWTComponent.getCursor()
-meth public java.awt.Dimension java.awt.Component$AccessibleAWTComponent.getSize()
-meth public java.awt.Font java.awt.Component$AccessibleAWTComponent.getFont()
-meth public java.awt.FontMetrics java.awt.Component$AccessibleAWTComponent.getFontMetrics(java.awt.Font)
-meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocation()
-meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocationOnScreen()
-meth public java.awt.Rectangle java.awt.Component$AccessibleAWTComponent.getBounds()
-meth public java.awt.Rectangle javax.swing.AbstractButton$AccessibleAbstractButton.getCharacterBounds(int)
-meth public java.lang.Number javax.swing.AbstractButton$AccessibleAbstractButton.getCurrentAccessibleValue()
-meth public java.lang.Number javax.swing.AbstractButton$AccessibleAbstractButton.getMaximumAccessibleValue()
-meth public java.lang.Number javax.swing.AbstractButton$AccessibleAbstractButton.getMinimumAccessibleValue()
-meth public java.lang.String java.lang.Object.toString()
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleActionDescription(int)
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleName()
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAfterIndex(int,int)
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAtIndex(int,int)
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getBeforeIndex(int,int)
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getSelectedText()
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getTitledBorderText()
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getToolTipText()
-meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getAccessibleDescription()
-meth public java.util.Locale java.awt.Component$AccessibleAWTComponent.getLocale()
-meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleParent()
-meth public javax.accessibility.Accessible java.awt.Container$AccessibleAWTContainer.getAccessibleAt(java.awt.Point)
-meth public javax.accessibility.Accessible javax.swing.JMenu$AccessibleJMenu.getAccessibleChild(int)
-meth public javax.accessibility.Accessible javax.swing.JMenu$AccessibleJMenu.getAccessibleSelection(int)
-meth public javax.accessibility.AccessibleAction javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleAction()
-meth public javax.accessibility.AccessibleComponent java.awt.Component$AccessibleAWTComponent.getAccessibleComponent()
-meth public javax.accessibility.AccessibleEditableText javax.accessibility.AccessibleContext.getAccessibleEditableText()
-meth public javax.accessibility.AccessibleKeyBinding javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleKeyBinding()
-meth public javax.accessibility.AccessibleRelationSet javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleRelationSet()
-meth public javax.accessibility.AccessibleRole javax.swing.JMenu$AccessibleJMenu.getAccessibleRole()
-meth public javax.accessibility.AccessibleSelection javax.swing.JMenu$AccessibleJMenu.getAccessibleSelection()
-meth public javax.accessibility.AccessibleStateSet javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleStateSet()
-meth public javax.accessibility.AccessibleTable javax.accessibility.AccessibleContext.getAccessibleTable()
-meth public javax.accessibility.AccessibleText javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleText()
-meth public javax.accessibility.AccessibleValue javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleValue()
-meth public javax.swing.text.AttributeSet javax.swing.AbstractButton$AccessibleAbstractButton.getCharacterAttribute(int)
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public void java.awt.Component$AccessibleAWTComponent.addFocusListener(java.awt.event.FocusListener)
-meth public void java.awt.Component$AccessibleAWTComponent.removeFocusListener(java.awt.event.FocusListener)
-meth public void java.awt.Component$AccessibleAWTComponent.requestFocus()
-meth public void java.awt.Component$AccessibleAWTComponent.setBackground(java.awt.Color)
-meth public void java.awt.Component$AccessibleAWTComponent.setBounds(java.awt.Rectangle)
-meth public void java.awt.Component$AccessibleAWTComponent.setCursor(java.awt.Cursor)
-meth public void java.awt.Component$AccessibleAWTComponent.setEnabled(boolean)
-meth public void java.awt.Component$AccessibleAWTComponent.setFont(java.awt.Font)
-meth public void java.awt.Component$AccessibleAWTComponent.setForeground(java.awt.Color)
-meth public void java.awt.Component$AccessibleAWTComponent.setLocation(java.awt.Point)
-meth public void java.awt.Component$AccessibleAWTComponent.setSize(java.awt.Dimension)
-meth public void java.awt.Component$AccessibleAWTComponent.setVisible(boolean)
-meth public void javax.accessibility.AccessibleContext.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
-meth public void javax.accessibility.AccessibleContext.setAccessibleDescription(java.lang.String)
-meth public void javax.accessibility.AccessibleContext.setAccessibleName(java.lang.String)
-meth public void javax.accessibility.AccessibleContext.setAccessibleParent(javax.accessibility.Accessible)
-meth public void javax.swing.JComponent$AccessibleJComponent.addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void javax.swing.JComponent$AccessibleJComponent.removePropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void javax.swing.JMenu$AccessibleJMenu.addAccessibleSelection(int)
-meth public void javax.swing.JMenu$AccessibleJMenu.clearAccessibleSelection()
-meth public void javax.swing.JMenu$AccessibleJMenu.removeAccessibleSelection(int)
-meth public void javax.swing.JMenu$AccessibleJMenu.selectAllAccessibleSelection()
-meth public void javax.swing.JMenuItem$AccessibleJMenuItem.stateChanged(javax.swing.event.ChangeEvent)
-supr javax.swing.JMenuItem$AccessibleJMenuItem
-CLSS protected javax.swing.JMenu$WinListener
-cons public WinListener(javax.swing.JMenu,javax.swing.JPopupMenu)
-intf java.awt.event.WindowFocusListener
-intf java.awt.event.WindowListener
-intf java.awt.event.WindowStateListener
-intf java.io.Serializable
-intf java.util.EventListener
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public void java.awt.event.WindowAdapter.windowActivated(java.awt.event.WindowEvent)
-meth public void java.awt.event.WindowAdapter.windowClosed(java.awt.event.WindowEvent)
-meth public void java.awt.event.WindowAdapter.windowDeactivated(java.awt.event.WindowEvent)
-meth public void java.awt.event.WindowAdapter.windowDeiconified(java.awt.event.WindowEvent)
-meth public void java.awt.event.WindowAdapter.windowGainedFocus(java.awt.event.WindowEvent)
-meth public void java.awt.event.WindowAdapter.windowIconified(java.awt.event.WindowEvent)
-meth public void java.awt.event.WindowAdapter.windowLostFocus(java.awt.event.WindowEvent)
-meth public void java.awt.event.WindowAdapter.windowOpened(java.awt.event.WindowEvent)
-meth public void java.awt.event.WindowAdapter.windowStateChanged(java.awt.event.WindowEvent)
-meth public void javax.swing.JMenu$WinListener.windowClosing(java.awt.event.WindowEvent)
-supr java.awt.event.WindowAdapter
-CLSS protected javax.swing.JMenuBar$AccessibleJMenuBar
-cons protected AccessibleJMenuBar(javax.swing.JMenuBar)
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
-fld  protected java.awt.event.ComponentListener java.awt.Component$AccessibleAWTComponent.accessibleAWTComponentHandler
-fld  protected java.awt.event.ContainerListener javax.swing.JComponent$AccessibleJComponent.accessibleContainerHandler
-fld  protected java.awt.event.FocusListener java.awt.Component$AccessibleAWTComponent.accessibleAWTFocusHandler
-fld  protected java.awt.event.FocusListener javax.swing.JComponent$AccessibleJComponent.accessibleFocusHandler
-fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleDescription
-fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleName
-fld  protected javax.accessibility.Accessible javax.accessibility.AccessibleContext.accessibleParent
-innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler
-innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler
-innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleContainerHandler
-innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleFocusHandler
-intf java.io.Serializable
-intf javax.accessibility.AccessibleComponent
-intf javax.accessibility.AccessibleExtendedComponent
-intf javax.accessibility.AccessibleSelection
-meth protected java.lang.String javax.swing.JComponent$AccessibleJComponent.getBorderTitle(javax.swing.border.Border)
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public [Ljavax.accessibility.AccessibleIcon; javax.accessibility.AccessibleContext.getAccessibleIcon()
-meth public boolean java.awt.Component$AccessibleAWTComponent.contains(java.awt.Point)
-meth public boolean java.awt.Component$AccessibleAWTComponent.isEnabled()
-meth public boolean java.awt.Component$AccessibleAWTComponent.isFocusTraversable()
-meth public boolean java.awt.Component$AccessibleAWTComponent.isShowing()
-meth public boolean java.awt.Component$AccessibleAWTComponent.isVisible()
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public boolean javax.swing.JMenuBar$AccessibleJMenuBar.isAccessibleChildSelected(int)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public int java.awt.Component$AccessibleAWTComponent.getAccessibleIndexInParent()
-meth public int javax.swing.JComponent$AccessibleJComponent.getAccessibleChildrenCount()
-meth public int javax.swing.JMenuBar$AccessibleJMenuBar.getAccessibleSelectionCount()
-meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getBackground()
-meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getForeground()
-meth public java.awt.Cursor java.awt.Component$AccessibleAWTComponent.getCursor()
-meth public java.awt.Dimension java.awt.Component$AccessibleAWTComponent.getSize()
-meth public java.awt.Font java.awt.Component$AccessibleAWTComponent.getFont()
-meth public java.awt.FontMetrics java.awt.Component$AccessibleAWTComponent.getFontMetrics(java.awt.Font)
-meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocation()
-meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocationOnScreen()
-meth public java.awt.Rectangle java.awt.Component$AccessibleAWTComponent.getBounds()
-meth public java.lang.String java.lang.Object.toString()
-meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getAccessibleDescription()
-meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getAccessibleName()
-meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getTitledBorderText()
-meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getToolTipText()
-meth public java.util.Locale java.awt.Component$AccessibleAWTComponent.getLocale()
-meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleParent()
-meth public javax.accessibility.Accessible java.awt.Container$AccessibleAWTContainer.getAccessibleAt(java.awt.Point)
-meth public javax.accessibility.Accessible javax.swing.JComponent$AccessibleJComponent.getAccessibleChild(int)
-meth public javax.accessibility.Accessible javax.swing.JMenuBar$AccessibleJMenuBar.getAccessibleSelection(int)
-meth public javax.accessibility.AccessibleAction javax.accessibility.AccessibleContext.getAccessibleAction()
-meth public javax.accessibility.AccessibleComponent java.awt.Component$AccessibleAWTComponent.getAccessibleComponent()
-meth public javax.accessibility.AccessibleEditableText javax.accessibility.AccessibleContext.getAccessibleEditableText()
-meth public javax.accessibility.AccessibleKeyBinding javax.swing.JComponent$AccessibleJComponent.getAccessibleKeyBinding()
-meth public javax.accessibility.AccessibleRelationSet javax.accessibility.AccessibleContext.getAccessibleRelationSet()
-meth public javax.accessibility.AccessibleRole javax.swing.JMenuBar$AccessibleJMenuBar.getAccessibleRole()
-meth public javax.accessibility.AccessibleSelection javax.swing.JMenuBar$AccessibleJMenuBar.getAccessibleSelection()
-meth public javax.accessibility.AccessibleStateSet javax.swing.JMenuBar$AccessibleJMenuBar.getAccessibleStateSet()
-meth public javax.accessibility.AccessibleTable javax.accessibility.AccessibleContext.getAccessibleTable()
-meth public javax.accessibility.AccessibleText javax.accessibility.AccessibleContext.getAccessibleText()
-meth public javax.accessibility.AccessibleValue javax.accessibility.AccessibleContext.getAccessibleValue()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public void java.awt.Component$AccessibleAWTComponent.addFocusListener(java.awt.event.FocusListener)
-meth public void java.awt.Component$AccessibleAWTComponent.removeFocusListener(java.awt.event.FocusListener)
-meth public void java.awt.Component$AccessibleAWTComponent.requestFocus()
-meth public void java.awt.Component$AccessibleAWTComponent.setBackground(java.awt.Color)
-meth public void java.awt.Component$AccessibleAWTComponent.setBounds(java.awt.Rectangle)
-meth public void java.awt.Component$AccessibleAWTComponent.setCursor(java.awt.Cursor)
-meth public void java.awt.Component$AccessibleAWTComponent.setEnabled(boolean)
-meth public void java.awt.Component$AccessibleAWTComponent.setFont(java.awt.Font)
-meth public void java.awt.Component$AccessibleAWTComponent.setForeground(java.awt.Color)
-meth public void java.awt.Component$AccessibleAWTComponent.setLocation(java.awt.Point)
-meth public void java.awt.Component$AccessibleAWTComponent.setSize(java.awt.Dimension)
-meth public void java.awt.Component$AccessibleAWTComponent.setVisible(boolean)
-meth public void javax.accessibility.AccessibleContext.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
-meth public void javax.accessibility.AccessibleContext.setAccessibleDescription(java.lang.String)
-meth public void javax.accessibility.AccessibleContext.setAccessibleName(java.lang.String)
-meth public void javax.accessibility.AccessibleContext.setAccessibleParent(javax.accessibility.Accessible)
-meth public void javax.swing.JComponent$AccessibleJComponent.addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void javax.swing.JComponent$AccessibleJComponent.removePropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void javax.swing.JMenuBar$AccessibleJMenuBar.addAccessibleSelection(int)
-meth public void javax.swing.JMenuBar$AccessibleJMenuBar.clearAccessibleSelection()
-meth public void javax.swing.JMenuBar$AccessibleJMenuBar.removeAccessibleSelection(int)
-meth public void javax.swing.JMenuBar$AccessibleJMenuBar.selectAllAccessibleSelection()
-supr javax.swing.JComponent$AccessibleJComponent
-CLSS protected javax.swing.JMenuItem$AccessibleJMenuItem
-fld  constant public static final int javax.accessibility.AccessibleText.CHARACTER
-fld  constant public static final int javax.accessibility.AccessibleText.SENTENCE
-fld  constant public static final int javax.accessibility.AccessibleText.WORD
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
-fld  protected java.awt.event.ComponentListener java.awt.Component$AccessibleAWTComponent.accessibleAWTComponentHandler
-fld  protected java.awt.event.ContainerListener javax.swing.JComponent$AccessibleJComponent.accessibleContainerHandler
-fld  protected java.awt.event.FocusListener java.awt.Component$AccessibleAWTComponent.accessibleAWTFocusHandler
-fld  protected java.awt.event.FocusListener javax.swing.JComponent$AccessibleJComponent.accessibleFocusHandler
-fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleDescription
-fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleName
-fld  protected javax.accessibility.Accessible javax.accessibility.AccessibleContext.accessibleParent
-fld  public static final java.lang.String javax.accessibility.AccessibleAction.DECREMENT
-fld  public static final java.lang.String javax.accessibility.AccessibleAction.INCREMENT
-fld  public static final java.lang.String javax.accessibility.AccessibleAction.TOGGLE_EXPAND
-innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler
-innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler
-innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleContainerHandler
-innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleFocusHandler
-intf java.io.Serializable
-intf java.util.EventListener
-intf javax.accessibility.AccessibleAction
-intf javax.accessibility.AccessibleComponent
-intf javax.accessibility.AccessibleExtendedComponent
-intf javax.accessibility.AccessibleText
-intf javax.accessibility.AccessibleValue
-intf javax.swing.event.ChangeListener
-meth protected java.lang.String javax.swing.JComponent$AccessibleJComponent.getBorderTitle(javax.swing.border.Border)
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public [Ljavax.accessibility.AccessibleIcon; javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleIcon()
-meth public boolean java.awt.Component$AccessibleAWTComponent.contains(java.awt.Point)
-meth public boolean java.awt.Component$AccessibleAWTComponent.isEnabled()
-meth public boolean java.awt.Component$AccessibleAWTComponent.isFocusTraversable()
-meth public boolean java.awt.Component$AccessibleAWTComponent.isShowing()
-meth public boolean java.awt.Component$AccessibleAWTComponent.isVisible()
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public boolean javax.swing.AbstractButton$AccessibleAbstractButton.doAccessibleAction(int)
-meth public boolean javax.swing.AbstractButton$AccessibleAbstractButton.setCurrentAccessibleValue(java.lang.Number)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public int java.awt.Component$AccessibleAWTComponent.getAccessibleIndexInParent()
-meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleActionCount()
-meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getCaretPosition()
-meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getCharCount()
-meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getIndexAtPoint(java.awt.Point)
-meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getSelectionEnd()
-meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getSelectionStart()
-meth public int javax.swing.JComponent$AccessibleJComponent.getAccessibleChildrenCount()
-meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getBackground()
-meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getForeground()
-meth public java.awt.Cursor java.awt.Component$AccessibleAWTComponent.getCursor()
-meth public java.awt.Dimension java.awt.Component$AccessibleAWTComponent.getSize()
-meth public java.awt.Font java.awt.Component$AccessibleAWTComponent.getFont()
-meth public java.awt.FontMetrics java.awt.Component$AccessibleAWTComponent.getFontMetrics(java.awt.Font)
-meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocation()
-meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocationOnScreen()
-meth public java.awt.Rectangle java.awt.Component$AccessibleAWTComponent.getBounds()
-meth public java.awt.Rectangle javax.swing.AbstractButton$AccessibleAbstractButton.getCharacterBounds(int)
-meth public java.lang.Number javax.swing.AbstractButton$AccessibleAbstractButton.getCurrentAccessibleValue()
-meth public java.lang.Number javax.swing.AbstractButton$AccessibleAbstractButton.getMaximumAccessibleValue()
-meth public java.lang.Number javax.swing.AbstractButton$AccessibleAbstractButton.getMinimumAccessibleValue()
-meth public java.lang.String java.lang.Object.toString()
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleActionDescription(int)
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleName()
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAfterIndex(int,int)
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAtIndex(int,int)
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getBeforeIndex(int,int)
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getSelectedText()
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getTitledBorderText()
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getToolTipText()
-meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getAccessibleDescription()
-meth public java.util.Locale java.awt.Component$AccessibleAWTComponent.getLocale()
-meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleParent()
-meth public javax.accessibility.Accessible java.awt.Container$AccessibleAWTContainer.getAccessibleAt(java.awt.Point)
-meth public javax.accessibility.Accessible javax.swing.JComponent$AccessibleJComponent.getAccessibleChild(int)
-meth public javax.accessibility.AccessibleAction javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleAction()
-meth public javax.accessibility.AccessibleComponent java.awt.Component$AccessibleAWTComponent.getAccessibleComponent()
-meth public javax.accessibility.AccessibleEditableText javax.accessibility.AccessibleContext.getAccessibleEditableText()
-meth public javax.accessibility.AccessibleKeyBinding javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleKeyBinding()
-meth public javax.accessibility.AccessibleRelationSet javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleRelationSet()
-meth public javax.accessibility.AccessibleRole javax.swing.JMenuItem$AccessibleJMenuItem.getAccessibleRole()
-meth public javax.accessibility.AccessibleSelection javax.accessibility.AccessibleContext.getAccessibleSelection()
-meth public javax.accessibility.AccessibleStateSet javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleStateSet()
-meth public javax.accessibility.AccessibleTable javax.accessibility.AccessibleContext.getAccessibleTable()
-meth public javax.accessibility.AccessibleText javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleText()
-meth public javax.accessibility.AccessibleValue javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleValue()
-meth public javax.swing.text.AttributeSet javax.swing.AbstractButton$AccessibleAbstractButton.getCharacterAttribute(int)
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public void java.awt.Component$AccessibleAWTComponent.addFocusListener(java.awt.event.FocusListener)
-meth public void java.awt.Component$AccessibleAWTComponent.removeFocusListener(java.awt.event.FocusListener)
-meth public void java.awt.Component$AccessibleAWTComponent.requestFocus()
-meth public void java.awt.Component$AccessibleAWTComponent.setBackground(java.awt.Color)
-meth public void java.awt.Component$AccessibleAWTComponent.setBounds(java.awt.Rectangle)
-meth public void java.awt.Component$AccessibleAWTComponent.setCursor(java.awt.Cursor)
-meth public void java.awt.Component$AccessibleAWTComponent.setEnabled(boolean)
-meth public void java.awt.Component$AccessibleAWTComponent.setFont(java.awt.Font)
-meth public void java.awt.Component$AccessibleAWTComponent.setForeground(java.awt.Color)
-meth public void java.awt.Component$AccessibleAWTComponent.setLocation(java.awt.Point)
-meth public void java.awt.Component$AccessibleAWTComponent.setSize(java.awt.Dimension)
-meth public void java.awt.Component$AccessibleAWTComponent.setVisible(boolean)
-meth public void javax.accessibility.AccessibleContext.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
-meth public void javax.accessibility.AccessibleContext.setAccessibleDescription(java.lang.String)
-meth public void javax.accessibility.AccessibleContext.setAccessibleName(java.lang.String)
-meth public void javax.accessibility.AccessibleContext.setAccessibleParent(javax.accessibility.Accessible)
-meth public void javax.swing.JComponent$AccessibleJComponent.addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void javax.swing.JComponent$AccessibleJComponent.removePropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void javax.swing.JMenuItem$AccessibleJMenuItem.stateChanged(javax.swing.event.ChangeEvent)
-supr javax.swing.AbstractButton$AccessibleAbstractButton
 CLSS protected javax.swing.JPanel$AccessibleJPanel
 cons protected AccessibleJPanel(javax.swing.JPanel)
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
 fld  protected java.awt.event.ComponentListener java.awt.Component$AccessibleAWTComponent.accessibleAWTComponentHandler
 fld  protected java.awt.event.ContainerListener javax.swing.JComponent$AccessibleJComponent.accessibleContainerHandler
 fld  protected java.awt.event.FocusListener java.awt.Component$AccessibleAWTComponent.accessibleAWTFocusHandler
@@ -1921,10 +299,28 @@ fld  protected java.awt.event.FocusListener javax.swing.JComponent$AccessibleJCo
 fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleDescription
 fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleName
 fld  protected javax.accessibility.Accessible javax.accessibility.AccessibleContext.accessibleParent
-innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler
-innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler
-innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleContainerHandler
-innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleFocusHandler
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
+fld  public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
 intf java.io.Serializable
 intf javax.accessibility.AccessibleComponent
 intf javax.accessibility.AccessibleExtendedComponent
@@ -1995,1682 +391,18 @@ meth public void javax.accessibility.AccessibleContext.setAccessibleParent(javax
 meth public void javax.swing.JComponent$AccessibleJComponent.addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public void javax.swing.JComponent$AccessibleJComponent.removePropertyChangeListener(java.beans.PropertyChangeListener)
 supr javax.swing.JComponent$AccessibleJComponent
-CLSS protected javax.swing.JPopupMenu$AccessibleJPopupMenu
-cons protected AccessibleJPopupMenu(javax.swing.JPopupMenu)
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
-fld  protected java.awt.event.ComponentListener java.awt.Component$AccessibleAWTComponent.accessibleAWTComponentHandler
-fld  protected java.awt.event.ContainerListener javax.swing.JComponent$AccessibleJComponent.accessibleContainerHandler
-fld  protected java.awt.event.FocusListener java.awt.Component$AccessibleAWTComponent.accessibleAWTFocusHandler
-fld  protected java.awt.event.FocusListener javax.swing.JComponent$AccessibleJComponent.accessibleFocusHandler
-fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleDescription
-fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleName
-fld  protected javax.accessibility.Accessible javax.accessibility.AccessibleContext.accessibleParent
-innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler
-innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler
-innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleContainerHandler
-innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleFocusHandler
-intf java.beans.PropertyChangeListener
-intf java.io.Serializable
-intf java.util.EventListener
-intf javax.accessibility.AccessibleComponent
-intf javax.accessibility.AccessibleExtendedComponent
-meth protected java.lang.String javax.swing.JComponent$AccessibleJComponent.getBorderTitle(javax.swing.border.Border)
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public [Ljavax.accessibility.AccessibleIcon; javax.accessibility.AccessibleContext.getAccessibleIcon()
-meth public boolean java.awt.Component$AccessibleAWTComponent.contains(java.awt.Point)
-meth public boolean java.awt.Component$AccessibleAWTComponent.isEnabled()
-meth public boolean java.awt.Component$AccessibleAWTComponent.isFocusTraversable()
-meth public boolean java.awt.Component$AccessibleAWTComponent.isShowing()
-meth public boolean java.awt.Component$AccessibleAWTComponent.isVisible()
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public int java.awt.Component$AccessibleAWTComponent.getAccessibleIndexInParent()
-meth public int javax.swing.JComponent$AccessibleJComponent.getAccessibleChildrenCount()
-meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getBackground()
-meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getForeground()
-meth public java.awt.Cursor java.awt.Component$AccessibleAWTComponent.getCursor()
-meth public java.awt.Dimension java.awt.Component$AccessibleAWTComponent.getSize()
-meth public java.awt.Font java.awt.Component$AccessibleAWTComponent.getFont()
-meth public java.awt.FontMetrics java.awt.Component$AccessibleAWTComponent.getFontMetrics(java.awt.Font)
-meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocation()
-meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocationOnScreen()
-meth public java.awt.Rectangle java.awt.Component$AccessibleAWTComponent.getBounds()
-meth public java.lang.String java.lang.Object.toString()
-meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getAccessibleDescription()
-meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getAccessibleName()
-meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getTitledBorderText()
-meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getToolTipText()
-meth public java.util.Locale java.awt.Component$AccessibleAWTComponent.getLocale()
-meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleParent()
-meth public javax.accessibility.Accessible java.awt.Container$AccessibleAWTContainer.getAccessibleAt(java.awt.Point)
-meth public javax.accessibility.Accessible javax.swing.JComponent$AccessibleJComponent.getAccessibleChild(int)
-meth public javax.accessibility.AccessibleAction javax.accessibility.AccessibleContext.getAccessibleAction()
-meth public javax.accessibility.AccessibleComponent java.awt.Component$AccessibleAWTComponent.getAccessibleComponent()
-meth public javax.accessibility.AccessibleEditableText javax.accessibility.AccessibleContext.getAccessibleEditableText()
-meth public javax.accessibility.AccessibleKeyBinding javax.swing.JComponent$AccessibleJComponent.getAccessibleKeyBinding()
-meth public javax.accessibility.AccessibleRelationSet javax.accessibility.AccessibleContext.getAccessibleRelationSet()
-meth public javax.accessibility.AccessibleRole javax.swing.JPopupMenu$AccessibleJPopupMenu.getAccessibleRole()
-meth public javax.accessibility.AccessibleSelection javax.accessibility.AccessibleContext.getAccessibleSelection()
-meth public javax.accessibility.AccessibleStateSet javax.swing.JComponent$AccessibleJComponent.getAccessibleStateSet()
-meth public javax.accessibility.AccessibleTable javax.accessibility.AccessibleContext.getAccessibleTable()
-meth public javax.accessibility.AccessibleText javax.accessibility.AccessibleContext.getAccessibleText()
-meth public javax.accessibility.AccessibleValue javax.accessibility.AccessibleContext.getAccessibleValue()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public void java.awt.Component$AccessibleAWTComponent.addFocusListener(java.awt.event.FocusListener)
-meth public void java.awt.Component$AccessibleAWTComponent.removeFocusListener(java.awt.event.FocusListener)
-meth public void java.awt.Component$AccessibleAWTComponent.requestFocus()
-meth public void java.awt.Component$AccessibleAWTComponent.setBackground(java.awt.Color)
-meth public void java.awt.Component$AccessibleAWTComponent.setBounds(java.awt.Rectangle)
-meth public void java.awt.Component$AccessibleAWTComponent.setCursor(java.awt.Cursor)
-meth public void java.awt.Component$AccessibleAWTComponent.setEnabled(boolean)
-meth public void java.awt.Component$AccessibleAWTComponent.setFont(java.awt.Font)
-meth public void java.awt.Component$AccessibleAWTComponent.setForeground(java.awt.Color)
-meth public void java.awt.Component$AccessibleAWTComponent.setLocation(java.awt.Point)
-meth public void java.awt.Component$AccessibleAWTComponent.setSize(java.awt.Dimension)
-meth public void java.awt.Component$AccessibleAWTComponent.setVisible(boolean)
-meth public void javax.accessibility.AccessibleContext.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
-meth public void javax.accessibility.AccessibleContext.setAccessibleDescription(java.lang.String)
-meth public void javax.accessibility.AccessibleContext.setAccessibleName(java.lang.String)
-meth public void javax.accessibility.AccessibleContext.setAccessibleParent(javax.accessibility.Accessible)
-meth public void javax.swing.JComponent$AccessibleJComponent.addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void javax.swing.JComponent$AccessibleJComponent.removePropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void javax.swing.JPopupMenu$AccessibleJPopupMenu.propertyChange(java.beans.PropertyChangeEvent)
-supr javax.swing.JComponent$AccessibleJComponent
-CLSS public static javax.swing.JPopupMenu$Separator
-cons public Separator()
-fld  constant public static final float java.awt.Component.BOTTOM_ALIGNMENT
-fld  constant public static final float java.awt.Component.CENTER_ALIGNMENT
-fld  constant public static final float java.awt.Component.LEFT_ALIGNMENT
-fld  constant public static final float java.awt.Component.RIGHT_ALIGNMENT
-fld  constant public static final float java.awt.Component.TOP_ALIGNMENT
-fld  constant public static final int java.awt.image.ImageObserver.ABORT
-fld  constant public static final int java.awt.image.ImageObserver.ALLBITS
-fld  constant public static final int java.awt.image.ImageObserver.ERROR
-fld  constant public static final int java.awt.image.ImageObserver.FRAMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.HEIGHT
-fld  constant public static final int java.awt.image.ImageObserver.PROPERTIES
-fld  constant public static final int java.awt.image.ImageObserver.SOMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.WIDTH
-fld  constant public static final int javax.swing.JComponent.UNDEFINED_CONDITION
-fld  constant public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
-fld  constant public static final int javax.swing.JComponent.WHEN_FOCUSED
-fld  constant public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
-fld  constant public static final int javax.swing.SwingConstants.BOTTOM
-fld  constant public static final int javax.swing.SwingConstants.CENTER
-fld  constant public static final int javax.swing.SwingConstants.EAST
-fld  constant public static final int javax.swing.SwingConstants.HORIZONTAL
-fld  constant public static final int javax.swing.SwingConstants.LEADING
-fld  constant public static final int javax.swing.SwingConstants.LEFT
-fld  constant public static final int javax.swing.SwingConstants.NEXT
-fld  constant public static final int javax.swing.SwingConstants.NORTH
-fld  constant public static final int javax.swing.SwingConstants.NORTH_EAST
-fld  constant public static final int javax.swing.SwingConstants.NORTH_WEST
-fld  constant public static final int javax.swing.SwingConstants.PREVIOUS
-fld  constant public static final int javax.swing.SwingConstants.RIGHT
-fld  constant public static final int javax.swing.SwingConstants.SOUTH
-fld  constant public static final int javax.swing.SwingConstants.SOUTH_EAST
-fld  constant public static final int javax.swing.SwingConstants.SOUTH_WEST
-fld  constant public static final int javax.swing.SwingConstants.TOP
-fld  constant public static final int javax.swing.SwingConstants.TRAILING
-fld  constant public static final int javax.swing.SwingConstants.VERTICAL
-fld  constant public static final int javax.swing.SwingConstants.WEST
-fld  constant public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
-fld  protected javax.accessibility.AccessibleContext javax.swing.JComponent.accessibleContext
-fld  protected javax.swing.event.EventListenerList javax.swing.JComponent.listenerList
-fld  protected transient javax.swing.plaf.ComponentUI javax.swing.JComponent.ui
-innr protected abstract java.awt.Component$AccessibleAWTComponent
-innr protected java.awt.Component$BltBufferStrategy
-innr protected java.awt.Component$FlipBufferStrategy
-innr protected java.awt.Container$AccessibleAWTContainer
-innr protected javax.swing.JSeparator$AccessibleJSeparator
-innr public abstract javax.swing.JComponent$AccessibleJComponent
-intf java.awt.MenuContainer
-intf java.awt.image.ImageObserver
-intf java.io.Serializable
-intf javax.accessibility.Accessible
-intf javax.swing.SwingConstants
-meth protected boolean javax.swing.JComponent.processKeyBinding(javax.swing.KeyStroke,java.awt.event.KeyEvent,int,boolean)
-meth protected boolean javax.swing.JComponent.requestFocusInWindow(boolean)
-meth protected final void java.awt.Component.disableEvents(long)
-meth protected final void java.awt.Component.enableEvents(long)
-meth protected java.awt.AWTEvent java.awt.Component.coalesceEvents(java.awt.AWTEvent,java.awt.AWTEvent)
-meth protected java.awt.Graphics javax.swing.JComponent.getComponentGraphics(java.awt.Graphics)
-meth protected java.lang.String javax.swing.JSeparator.paramString()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.awt.Component.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
-meth protected void java.awt.Component.processComponentEvent(java.awt.event.ComponentEvent)
-meth protected void java.awt.Component.processFocusEvent(java.awt.event.FocusEvent)
-meth protected void java.awt.Component.processHierarchyBoundsEvent(java.awt.event.HierarchyEvent)
-meth protected void java.awt.Component.processHierarchyEvent(java.awt.event.HierarchyEvent)
-meth protected void java.awt.Component.processInputMethodEvent(java.awt.event.InputMethodEvent)
-meth protected void java.awt.Component.processMouseWheelEvent(java.awt.event.MouseWheelEvent)
-meth protected void java.awt.Container.addImpl(java.awt.Component,java.lang.Object,int)
-meth protected void java.awt.Container.processContainerEvent(java.awt.event.ContainerEvent)
-meth protected void java.awt.Container.processEvent(java.awt.AWTEvent)
-meth protected void java.awt.Container.validateTree()
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void javax.swing.JComponent.fireVetoableChange(java.lang.String,java.lang.Object,java.lang.Object) throws java.beans.PropertyVetoException
-meth protected void javax.swing.JComponent.paintBorder(java.awt.Graphics)
-meth protected void javax.swing.JComponent.paintChildren(java.awt.Graphics)
-meth protected void javax.swing.JComponent.paintComponent(java.awt.Graphics)
-meth protected void javax.swing.JComponent.printBorder(java.awt.Graphics)
-meth protected void javax.swing.JComponent.printChildren(java.awt.Graphics)
-meth protected void javax.swing.JComponent.printComponent(java.awt.Graphics)
-meth protected void javax.swing.JComponent.processComponentKeyEvent(java.awt.event.KeyEvent)
-meth protected void javax.swing.JComponent.processKeyEvent(java.awt.event.KeyEvent)
-meth protected void javax.swing.JComponent.processMouseEvent(java.awt.event.MouseEvent)
-meth protected void javax.swing.JComponent.processMouseMotionEvent(java.awt.event.MouseEvent)
-meth protected void javax.swing.JComponent.setUI(javax.swing.plaf.ComponentUI)
-meth public [Ljava.awt.Component; java.awt.Container.getComponents()
-meth public [Ljava.util.EventListener; javax.swing.JComponent.getListeners(java.lang.Class)
-meth public [Ljavax.swing.KeyStroke; javax.swing.JComponent.getRegisteredKeyStrokes()
-meth public [Ljavax.swing.event.AncestorListener; javax.swing.JComponent.getAncestorListeners()
-meth public boolean java.awt.Component.action(java.awt.Event,java.lang.Object)
-meth public boolean java.awt.Component.contains(java.awt.Point)
-meth public boolean java.awt.Component.getFocusTraversalKeysEnabled()
-meth public boolean java.awt.Component.getIgnoreRepaint()
-meth public boolean java.awt.Component.gotFocus(java.awt.Event,java.lang.Object)
-meth public boolean java.awt.Component.handleEvent(java.awt.Event)
-meth public boolean java.awt.Component.hasFocus()
-meth public boolean java.awt.Component.imageUpdate(java.awt.Image,int,int,int,int,int)
-meth public boolean java.awt.Component.inside(int,int)
-meth public boolean java.awt.Component.isBackgroundSet()
-meth public boolean java.awt.Component.isCursorSet()
-meth public boolean java.awt.Component.isDisplayable()
-meth public boolean java.awt.Component.isEnabled()
-meth public boolean java.awt.Component.isFocusOwner()
-meth public boolean java.awt.Component.isFocusTraversable()
-meth public boolean java.awt.Component.isFocusable()
-meth public boolean java.awt.Component.isFontSet()
-meth public boolean java.awt.Component.isForegroundSet()
-meth public boolean java.awt.Component.isLightweight()
-meth public boolean java.awt.Component.isMaximumSizeSet()
-meth public boolean java.awt.Component.isMinimumSizeSet()
-meth public boolean java.awt.Component.isPreferredSizeSet()
-meth public boolean java.awt.Component.isShowing()
-meth public boolean java.awt.Component.isValid()
-meth public boolean java.awt.Component.isVisible()
-meth public boolean java.awt.Component.keyDown(java.awt.Event,int)
-meth public boolean java.awt.Component.keyUp(java.awt.Event,int)
-meth public boolean java.awt.Component.lostFocus(java.awt.Event,java.lang.Object)
-meth public boolean java.awt.Component.mouseDown(java.awt.Event,int,int)
-meth public boolean java.awt.Component.mouseDrag(java.awt.Event,int,int)
-meth public boolean java.awt.Component.mouseEnter(java.awt.Event,int,int)
-meth public boolean java.awt.Component.mouseExit(java.awt.Event,int,int)
-meth public boolean java.awt.Component.mouseMove(java.awt.Event,int,int)
-meth public boolean java.awt.Component.mouseUp(java.awt.Event,int,int)
-meth public boolean java.awt.Component.postEvent(java.awt.Event)
-meth public boolean java.awt.Component.prepareImage(java.awt.Image,int,int,java.awt.image.ImageObserver)
-meth public boolean java.awt.Component.prepareImage(java.awt.Image,java.awt.image.ImageObserver)
-meth public boolean java.awt.Container.areFocusTraversalKeysSet(int)
-meth public boolean java.awt.Container.isAncestorOf(java.awt.Component)
-meth public boolean java.awt.Container.isFocusCycleRoot()
-meth public boolean java.awt.Container.isFocusCycleRoot(java.awt.Container)
-meth public boolean java.awt.Container.isFocusTraversalPolicySet()
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public boolean javax.swing.JComponent.contains(int,int)
-meth public boolean javax.swing.JComponent.getAutoscrolls()
-meth public boolean javax.swing.JComponent.getInheritsPopupMenu()
-meth public boolean javax.swing.JComponent.getVerifyInputWhenFocusTarget()
-meth public boolean javax.swing.JComponent.isDoubleBuffered()
-meth public boolean javax.swing.JComponent.isManagingFocus()
-meth public boolean javax.swing.JComponent.isOpaque()
-meth public boolean javax.swing.JComponent.isOptimizedDrawingEnabled()
-meth public boolean javax.swing.JComponent.isPaintingTile()
-meth public boolean javax.swing.JComponent.isRequestFocusEnabled()
-meth public boolean javax.swing.JComponent.isValidateRoot()
-meth public boolean javax.swing.JComponent.requestDefaultFocus()
-meth public boolean javax.swing.JComponent.requestFocus(boolean)
-meth public boolean javax.swing.JComponent.requestFocusInWindow()
-meth public final boolean java.awt.Container.isFocusTraversalPolicyProvider()
-meth public final int java.awt.Container.getComponentZOrder(java.awt.Component)
-meth public final java.lang.Object java.awt.Component.getTreeLock()
-meth public final java.lang.Object javax.swing.JComponent.getClientProperty(java.lang.Object)
-meth public final javax.swing.ActionMap javax.swing.JComponent.getActionMap()
-meth public final javax.swing.InputMap javax.swing.JComponent.getInputMap()
-meth public final javax.swing.InputMap javax.swing.JComponent.getInputMap(int)
-meth public final void java.awt.Component.dispatchEvent(java.awt.AWTEvent)
-meth public final void java.awt.Container.setComponentZOrder(java.awt.Component,int)
-meth public final void java.awt.Container.setFocusTraversalPolicyProvider(boolean)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public final void javax.swing.JComponent.putClientProperty(java.lang.Object,java.lang.Object)
-meth public final void javax.swing.JComponent.setActionMap(javax.swing.ActionMap)
-meth public final void javax.swing.JComponent.setInputMap(int,javax.swing.InputMap)
-meth public float javax.swing.JComponent.getAlignmentX()
-meth public float javax.swing.JComponent.getAlignmentY()
-meth public int java.awt.Component.checkImage(java.awt.Image,int,int,java.awt.image.ImageObserver)
-meth public int java.awt.Component.checkImage(java.awt.Image,java.awt.image.ImageObserver)
-meth public int java.awt.Container.countComponents()
-meth public int java.awt.Container.getComponentCount()
-meth public int javax.swing.JComponent.getConditionForKeyStroke(javax.swing.KeyStroke)
-meth public int javax.swing.JComponent.getDebugGraphicsOptions()
-meth public int javax.swing.JComponent.getHeight()
-meth public int javax.swing.JComponent.getWidth()
-meth public int javax.swing.JComponent.getX()
-meth public int javax.swing.JComponent.getY()
-meth public int javax.swing.JSeparator.getOrientation()
-meth public java.awt.Color java.awt.Component.getBackground()
-meth public java.awt.Color java.awt.Component.getForeground()
-meth public java.awt.Component java.awt.Container.add(java.awt.Component)
-meth public java.awt.Component java.awt.Container.add(java.awt.Component,int)
-meth public java.awt.Component java.awt.Container.add(java.lang.String,java.awt.Component)
-meth public java.awt.Component java.awt.Container.findComponentAt(int,int)
-meth public java.awt.Component java.awt.Container.findComponentAt(java.awt.Point)
-meth public java.awt.Component java.awt.Container.getComponent(int)
-meth public java.awt.Component java.awt.Container.getComponentAt(int,int)
-meth public java.awt.Component java.awt.Container.getComponentAt(java.awt.Point)
-meth public java.awt.Component java.awt.Container.locate(int,int)
-meth public java.awt.Component javax.swing.JComponent.getNextFocusableComponent()
-meth public java.awt.ComponentOrientation java.awt.Component.getComponentOrientation()
-meth public java.awt.Container java.awt.Component.getFocusCycleRootAncestor()
-meth public java.awt.Container java.awt.Component.getParent()
-meth public java.awt.Container javax.swing.JComponent.getTopLevelAncestor()
-meth public java.awt.Cursor java.awt.Component.getCursor()
-meth public java.awt.Dimension java.awt.Component.getSize()
-meth public java.awt.Dimension java.awt.Component.size()
-meth public java.awt.Dimension java.awt.Container.minimumSize()
-meth public java.awt.Dimension java.awt.Container.preferredSize()
-meth public java.awt.Dimension javax.swing.JComponent.getMaximumSize()
-meth public java.awt.Dimension javax.swing.JComponent.getMinimumSize()
-meth public java.awt.Dimension javax.swing.JComponent.getPreferredSize()
-meth public java.awt.Dimension javax.swing.JComponent.getSize(java.awt.Dimension)
-meth public java.awt.FocusTraversalPolicy java.awt.Container.getFocusTraversalPolicy()
-meth public java.awt.Font java.awt.Component.getFont()
-meth public java.awt.FontMetrics javax.swing.JComponent.getFontMetrics(java.awt.Font)
-meth public java.awt.Graphics javax.swing.JComponent.getGraphics()
-meth public java.awt.GraphicsConfiguration java.awt.Component.getGraphicsConfiguration()
-meth public java.awt.Image java.awt.Component.createImage(int,int)
-meth public java.awt.Image java.awt.Component.createImage(java.awt.image.ImageProducer)
-meth public java.awt.Insets java.awt.Container.insets()
-meth public java.awt.Insets javax.swing.JComponent.getInsets()
-meth public java.awt.Insets javax.swing.JComponent.getInsets(java.awt.Insets)
-meth public java.awt.LayoutManager java.awt.Container.getLayout()
-meth public java.awt.Point java.awt.Component.getLocation()
-meth public java.awt.Point java.awt.Component.getLocationOnScreen()
-meth public java.awt.Point java.awt.Component.getMousePosition() throws java.awt.HeadlessException
-meth public java.awt.Point java.awt.Component.location()
-meth public java.awt.Point java.awt.Container.getMousePosition(boolean) throws java.awt.HeadlessException
-meth public java.awt.Point javax.swing.JComponent.getLocation(java.awt.Point)
-meth public java.awt.Point javax.swing.JComponent.getPopupLocation(java.awt.event.MouseEvent)
-meth public java.awt.Point javax.swing.JComponent.getToolTipLocation(java.awt.event.MouseEvent)
-meth public java.awt.Rectangle java.awt.Component.bounds()
-meth public java.awt.Rectangle java.awt.Component.getBounds()
-meth public java.awt.Rectangle javax.swing.JComponent.getBounds(java.awt.Rectangle)
-meth public java.awt.Rectangle javax.swing.JComponent.getVisibleRect()
-meth public java.awt.Toolkit java.awt.Component.getToolkit()
-meth public java.awt.event.ActionListener javax.swing.JComponent.getActionForKeyStroke(javax.swing.KeyStroke)
-meth public java.awt.im.InputContext java.awt.Component.getInputContext()
-meth public java.awt.im.InputMethodRequests java.awt.Component.getInputMethodRequests()
-meth public java.awt.image.ColorModel java.awt.Component.getColorModel()
-meth public java.awt.image.VolatileImage java.awt.Component.createVolatileImage(int,int)
-meth public java.awt.image.VolatileImage java.awt.Component.createVolatileImage(int,int,java.awt.ImageCapabilities) throws java.awt.AWTException
-meth public java.awt.peer.ComponentPeer java.awt.Component.getPeer()
-meth public java.lang.String java.awt.Component.getName()
-meth public java.lang.String java.awt.Component.toString()
-meth public java.lang.String javax.swing.JComponent.getToolTipText()
-meth public java.lang.String javax.swing.JComponent.getToolTipText(java.awt.event.MouseEvent)
-meth public java.lang.String javax.swing.JPopupMenu$Separator.getUIClassID()
-meth public java.util.Locale java.awt.Component.getLocale()
-meth public java.util.Set java.awt.Container.getFocusTraversalKeys(int)
-meth public javax.accessibility.AccessibleContext javax.swing.JSeparator.getAccessibleContext()
-meth public javax.swing.InputVerifier javax.swing.JComponent.getInputVerifier()
-meth public javax.swing.JPopupMenu javax.swing.JComponent.getComponentPopupMenu()
-meth public javax.swing.JRootPane javax.swing.JComponent.getRootPane()
-meth public javax.swing.JToolTip javax.swing.JComponent.createToolTip()
-meth public javax.swing.TransferHandler javax.swing.JComponent.getTransferHandler()
-meth public javax.swing.border.Border javax.swing.JComponent.getBorder()
-meth public javax.swing.plaf.SeparatorUI javax.swing.JSeparator.getUI()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public static boolean javax.swing.JComponent.isLightweightComponent(java.awt.Component)
-meth public static java.util.Locale javax.swing.JComponent.getDefaultLocale()
-meth public static void javax.swing.JComponent.setDefaultLocale(java.util.Locale)
-meth public synchronized [Ljava.awt.event.ComponentListener; java.awt.Component.getComponentListeners()
-meth public synchronized [Ljava.awt.event.ContainerListener; java.awt.Container.getContainerListeners()
-meth public synchronized [Ljava.awt.event.FocusListener; java.awt.Component.getFocusListeners()
-meth public synchronized [Ljava.awt.event.HierarchyBoundsListener; java.awt.Component.getHierarchyBoundsListeners()
-meth public synchronized [Ljava.awt.event.HierarchyListener; java.awt.Component.getHierarchyListeners()
-meth public synchronized [Ljava.awt.event.InputMethodListener; java.awt.Component.getInputMethodListeners()
-meth public synchronized [Ljava.awt.event.KeyListener; java.awt.Component.getKeyListeners()
-meth public synchronized [Ljava.awt.event.MouseListener; java.awt.Component.getMouseListeners()
-meth public synchronized [Ljava.awt.event.MouseMotionListener; java.awt.Component.getMouseMotionListeners()
-meth public synchronized [Ljava.awt.event.MouseWheelListener; java.awt.Component.getMouseWheelListeners()
-meth public synchronized [Ljava.beans.PropertyChangeListener; java.awt.Component.getPropertyChangeListeners()
-meth public synchronized [Ljava.beans.PropertyChangeListener; java.awt.Component.getPropertyChangeListeners(java.lang.String)
-meth public synchronized [Ljava.beans.VetoableChangeListener; javax.swing.JComponent.getVetoableChangeListeners()
-meth public synchronized java.awt.dnd.DropTarget java.awt.Component.getDropTarget()
-meth public synchronized void java.awt.Component.add(java.awt.PopupMenu)
-meth public synchronized void java.awt.Component.addComponentListener(java.awt.event.ComponentListener)
-meth public synchronized void java.awt.Component.addFocusListener(java.awt.event.FocusListener)
-meth public synchronized void java.awt.Component.addInputMethodListener(java.awt.event.InputMethodListener)
-meth public synchronized void java.awt.Component.addKeyListener(java.awt.event.KeyListener)
-meth public synchronized void java.awt.Component.addMouseListener(java.awt.event.MouseListener)
-meth public synchronized void java.awt.Component.addMouseMotionListener(java.awt.event.MouseMotionListener)
-meth public synchronized void java.awt.Component.addMouseWheelListener(java.awt.event.MouseWheelListener)
-meth public synchronized void java.awt.Component.remove(java.awt.MenuComponent)
-meth public synchronized void java.awt.Component.removeComponentListener(java.awt.event.ComponentListener)
-meth public synchronized void java.awt.Component.removeFocusListener(java.awt.event.FocusListener)
-meth public synchronized void java.awt.Component.removeInputMethodListener(java.awt.event.InputMethodListener)
-meth public synchronized void java.awt.Component.removeKeyListener(java.awt.event.KeyListener)
-meth public synchronized void java.awt.Component.removeMouseListener(java.awt.event.MouseListener)
-meth public synchronized void java.awt.Component.removeMouseMotionListener(java.awt.event.MouseMotionListener)
-meth public synchronized void java.awt.Component.removeMouseWheelListener(java.awt.event.MouseWheelListener)
-meth public synchronized void java.awt.Component.removePropertyChangeListener(java.beans.PropertyChangeListener)
-meth public synchronized void java.awt.Component.removePropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
-meth public synchronized void java.awt.Component.setDropTarget(java.awt.dnd.DropTarget)
-meth public synchronized void java.awt.Container.addContainerListener(java.awt.event.ContainerListener)
-meth public synchronized void java.awt.Container.removeContainerListener(java.awt.event.ContainerListener)
-meth public synchronized void javax.swing.JComponent.addVetoableChangeListener(java.beans.VetoableChangeListener)
-meth public synchronized void javax.swing.JComponent.removeVetoableChangeListener(java.beans.VetoableChangeListener)
-meth public void java.awt.Component.addHierarchyBoundsListener(java.awt.event.HierarchyBoundsListener)
-meth public void java.awt.Component.addHierarchyListener(java.awt.event.HierarchyListener)
-meth public void java.awt.Component.enable(boolean)
-meth public void java.awt.Component.enableInputMethods(boolean)
-meth public void java.awt.Component.firePropertyChange(java.lang.String,byte,byte)
-meth public void java.awt.Component.firePropertyChange(java.lang.String,double,double)
-meth public void java.awt.Component.firePropertyChange(java.lang.String,float,float)
-meth public void java.awt.Component.firePropertyChange(java.lang.String,long,long)
-meth public void java.awt.Component.firePropertyChange(java.lang.String,short,short)
-meth public void java.awt.Component.hide()
-meth public void java.awt.Component.list()
-meth public void java.awt.Component.list(java.io.PrintStream)
-meth public void java.awt.Component.list(java.io.PrintWriter)
-meth public void java.awt.Component.move(int,int)
-meth public void java.awt.Component.nextFocus()
-meth public void java.awt.Component.paintAll(java.awt.Graphics)
-meth public void java.awt.Component.removeHierarchyBoundsListener(java.awt.event.HierarchyBoundsListener)
-meth public void java.awt.Component.removeHierarchyListener(java.awt.event.HierarchyListener)
-meth public void java.awt.Component.repaint()
-meth public void java.awt.Component.repaint(int,int,int,int)
-meth public void java.awt.Component.repaint(long)
-meth public void java.awt.Component.resize(int,int)
-meth public void java.awt.Component.resize(java.awt.Dimension)
-meth public void java.awt.Component.setBounds(int,int,int,int)
-meth public void java.awt.Component.setBounds(java.awt.Rectangle)
-meth public void java.awt.Component.setComponentOrientation(java.awt.ComponentOrientation)
-meth public void java.awt.Component.setCursor(java.awt.Cursor)
-meth public void java.awt.Component.setFocusTraversalKeysEnabled(boolean)
-meth public void java.awt.Component.setFocusable(boolean)
-meth public void java.awt.Component.setIgnoreRepaint(boolean)
-meth public void java.awt.Component.setLocale(java.util.Locale)
-meth public void java.awt.Component.setLocation(int,int)
-meth public void java.awt.Component.setLocation(java.awt.Point)
-meth public void java.awt.Component.setName(java.lang.String)
-meth public void java.awt.Component.setSize(int,int)
-meth public void java.awt.Component.setSize(java.awt.Dimension)
-meth public void java.awt.Component.show()
-meth public void java.awt.Component.show(boolean)
-meth public void java.awt.Component.transferFocus()
-meth public void java.awt.Component.transferFocusUpCycle()
-meth public void java.awt.Container.add(java.awt.Component,java.lang.Object)
-meth public void java.awt.Container.add(java.awt.Component,java.lang.Object,int)
-meth public void java.awt.Container.addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void java.awt.Container.addPropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
-meth public void java.awt.Container.applyComponentOrientation(java.awt.ComponentOrientation)
-meth public void java.awt.Container.deliverEvent(java.awt.Event)
-meth public void java.awt.Container.doLayout()
-meth public void java.awt.Container.invalidate()
-meth public void java.awt.Container.layout()
-meth public void java.awt.Container.list(java.io.PrintStream,int)
-meth public void java.awt.Container.list(java.io.PrintWriter,int)
-meth public void java.awt.Container.paintComponents(java.awt.Graphics)
-meth public void java.awt.Container.printComponents(java.awt.Graphics)
-meth public void java.awt.Container.remove(int)
-meth public void java.awt.Container.remove(java.awt.Component)
-meth public void java.awt.Container.removeAll()
-meth public void java.awt.Container.setFocusCycleRoot(boolean)
-meth public void java.awt.Container.setFocusTraversalPolicy(java.awt.FocusTraversalPolicy)
-meth public void java.awt.Container.setLayout(java.awt.LayoutManager)
-meth public void java.awt.Container.transferFocusBackward()
-meth public void java.awt.Container.transferFocusDownCycle()
-meth public void java.awt.Container.validate()
-meth public void javax.swing.JComponent.addAncestorListener(javax.swing.event.AncestorListener)
-meth public void javax.swing.JComponent.addNotify()
-meth public void javax.swing.JComponent.computeVisibleRect(java.awt.Rectangle)
-meth public void javax.swing.JComponent.disable()
-meth public void javax.swing.JComponent.enable()
-meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,boolean,boolean)
-meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,char,char)
-meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,int,int)
-meth public void javax.swing.JComponent.grabFocus()
-meth public void javax.swing.JComponent.paint(java.awt.Graphics)
-meth public void javax.swing.JComponent.paintImmediately(int,int,int,int)
-meth public void javax.swing.JComponent.paintImmediately(java.awt.Rectangle)
-meth public void javax.swing.JComponent.print(java.awt.Graphics)
-meth public void javax.swing.JComponent.printAll(java.awt.Graphics)
-meth public void javax.swing.JComponent.registerKeyboardAction(java.awt.event.ActionListener,java.lang.String,javax.swing.KeyStroke,int)
-meth public void javax.swing.JComponent.registerKeyboardAction(java.awt.event.ActionListener,javax.swing.KeyStroke,int)
-meth public void javax.swing.JComponent.removeAncestorListener(javax.swing.event.AncestorListener)
-meth public void javax.swing.JComponent.removeNotify()
-meth public void javax.swing.JComponent.repaint(java.awt.Rectangle)
-meth public void javax.swing.JComponent.repaint(long,int,int,int,int)
-meth public void javax.swing.JComponent.requestFocus()
-meth public void javax.swing.JComponent.resetKeyboardActions()
-meth public void javax.swing.JComponent.reshape(int,int,int,int)
-meth public void javax.swing.JComponent.revalidate()
-meth public void javax.swing.JComponent.scrollRectToVisible(java.awt.Rectangle)
-meth public void javax.swing.JComponent.setAlignmentX(float)
-meth public void javax.swing.JComponent.setAlignmentY(float)
-meth public void javax.swing.JComponent.setAutoscrolls(boolean)
-meth public void javax.swing.JComponent.setBackground(java.awt.Color)
-meth public void javax.swing.JComponent.setBorder(javax.swing.border.Border)
-meth public void javax.swing.JComponent.setComponentPopupMenu(javax.swing.JPopupMenu)
-meth public void javax.swing.JComponent.setDebugGraphicsOptions(int)
-meth public void javax.swing.JComponent.setDoubleBuffered(boolean)
-meth public void javax.swing.JComponent.setEnabled(boolean)
-meth public void javax.swing.JComponent.setFocusTraversalKeys(int,java.util.Set)
-meth public void javax.swing.JComponent.setFont(java.awt.Font)
-meth public void javax.swing.JComponent.setForeground(java.awt.Color)
-meth public void javax.swing.JComponent.setInheritsPopupMenu(boolean)
-meth public void javax.swing.JComponent.setInputVerifier(javax.swing.InputVerifier)
-meth public void javax.swing.JComponent.setMaximumSize(java.awt.Dimension)
-meth public void javax.swing.JComponent.setMinimumSize(java.awt.Dimension)
-meth public void javax.swing.JComponent.setNextFocusableComponent(java.awt.Component)
-meth public void javax.swing.JComponent.setOpaque(boolean)
-meth public void javax.swing.JComponent.setPreferredSize(java.awt.Dimension)
-meth public void javax.swing.JComponent.setRequestFocusEnabled(boolean)
-meth public void javax.swing.JComponent.setToolTipText(java.lang.String)
-meth public void javax.swing.JComponent.setTransferHandler(javax.swing.TransferHandler)
-meth public void javax.swing.JComponent.setVerifyInputWhenFocusTarget(boolean)
-meth public void javax.swing.JComponent.setVisible(boolean)
-meth public void javax.swing.JComponent.unregisterKeyboardAction(javax.swing.KeyStroke)
-meth public void javax.swing.JComponent.update(java.awt.Graphics)
-meth public void javax.swing.JSeparator.setOrientation(int)
-meth public void javax.swing.JSeparator.setUI(javax.swing.plaf.SeparatorUI)
-meth public void javax.swing.JSeparator.updateUI()
-supr javax.swing.JSeparator
-CLSS protected javax.swing.JSeparator$AccessibleJSeparator
-cons protected AccessibleJSeparator(javax.swing.JSeparator)
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
-fld  protected java.awt.event.ComponentListener java.awt.Component$AccessibleAWTComponent.accessibleAWTComponentHandler
-fld  protected java.awt.event.ContainerListener javax.swing.JComponent$AccessibleJComponent.accessibleContainerHandler
-fld  protected java.awt.event.FocusListener java.awt.Component$AccessibleAWTComponent.accessibleAWTFocusHandler
-fld  protected java.awt.event.FocusListener javax.swing.JComponent$AccessibleJComponent.accessibleFocusHandler
-fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleDescription
-fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleName
-fld  protected javax.accessibility.Accessible javax.accessibility.AccessibleContext.accessibleParent
-innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler
-innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler
-innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleContainerHandler
-innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleFocusHandler
-intf java.io.Serializable
-intf javax.accessibility.AccessibleComponent
-intf javax.accessibility.AccessibleExtendedComponent
-meth protected java.lang.String javax.swing.JComponent$AccessibleJComponent.getBorderTitle(javax.swing.border.Border)
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public [Ljavax.accessibility.AccessibleIcon; javax.accessibility.AccessibleContext.getAccessibleIcon()
-meth public boolean java.awt.Component$AccessibleAWTComponent.contains(java.awt.Point)
-meth public boolean java.awt.Component$AccessibleAWTComponent.isEnabled()
-meth public boolean java.awt.Component$AccessibleAWTComponent.isFocusTraversable()
-meth public boolean java.awt.Component$AccessibleAWTComponent.isShowing()
-meth public boolean java.awt.Component$AccessibleAWTComponent.isVisible()
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public int java.awt.Component$AccessibleAWTComponent.getAccessibleIndexInParent()
-meth public int javax.swing.JComponent$AccessibleJComponent.getAccessibleChildrenCount()
-meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getBackground()
-meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getForeground()
-meth public java.awt.Cursor java.awt.Component$AccessibleAWTComponent.getCursor()
-meth public java.awt.Dimension java.awt.Component$AccessibleAWTComponent.getSize()
-meth public java.awt.Font java.awt.Component$AccessibleAWTComponent.getFont()
-meth public java.awt.FontMetrics java.awt.Component$AccessibleAWTComponent.getFontMetrics(java.awt.Font)
-meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocation()
-meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocationOnScreen()
-meth public java.awt.Rectangle java.awt.Component$AccessibleAWTComponent.getBounds()
-meth public java.lang.String java.lang.Object.toString()
-meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getAccessibleDescription()
-meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getAccessibleName()
-meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getTitledBorderText()
-meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getToolTipText()
-meth public java.util.Locale java.awt.Component$AccessibleAWTComponent.getLocale()
-meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleParent()
-meth public javax.accessibility.Accessible java.awt.Container$AccessibleAWTContainer.getAccessibleAt(java.awt.Point)
-meth public javax.accessibility.Accessible javax.swing.JComponent$AccessibleJComponent.getAccessibleChild(int)
-meth public javax.accessibility.AccessibleAction javax.accessibility.AccessibleContext.getAccessibleAction()
-meth public javax.accessibility.AccessibleComponent java.awt.Component$AccessibleAWTComponent.getAccessibleComponent()
-meth public javax.accessibility.AccessibleEditableText javax.accessibility.AccessibleContext.getAccessibleEditableText()
-meth public javax.accessibility.AccessibleKeyBinding javax.swing.JComponent$AccessibleJComponent.getAccessibleKeyBinding()
-meth public javax.accessibility.AccessibleRelationSet javax.accessibility.AccessibleContext.getAccessibleRelationSet()
-meth public javax.accessibility.AccessibleRole javax.swing.JSeparator$AccessibleJSeparator.getAccessibleRole()
-meth public javax.accessibility.AccessibleSelection javax.accessibility.AccessibleContext.getAccessibleSelection()
-meth public javax.accessibility.AccessibleStateSet javax.swing.JComponent$AccessibleJComponent.getAccessibleStateSet()
-meth public javax.accessibility.AccessibleTable javax.accessibility.AccessibleContext.getAccessibleTable()
-meth public javax.accessibility.AccessibleText javax.accessibility.AccessibleContext.getAccessibleText()
-meth public javax.accessibility.AccessibleValue javax.accessibility.AccessibleContext.getAccessibleValue()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public void java.awt.Component$AccessibleAWTComponent.addFocusListener(java.awt.event.FocusListener)
-meth public void java.awt.Component$AccessibleAWTComponent.removeFocusListener(java.awt.event.FocusListener)
-meth public void java.awt.Component$AccessibleAWTComponent.requestFocus()
-meth public void java.awt.Component$AccessibleAWTComponent.setBackground(java.awt.Color)
-meth public void java.awt.Component$AccessibleAWTComponent.setBounds(java.awt.Rectangle)
-meth public void java.awt.Component$AccessibleAWTComponent.setCursor(java.awt.Cursor)
-meth public void java.awt.Component$AccessibleAWTComponent.setEnabled(boolean)
-meth public void java.awt.Component$AccessibleAWTComponent.setFont(java.awt.Font)
-meth public void java.awt.Component$AccessibleAWTComponent.setForeground(java.awt.Color)
-meth public void java.awt.Component$AccessibleAWTComponent.setLocation(java.awt.Point)
-meth public void java.awt.Component$AccessibleAWTComponent.setSize(java.awt.Dimension)
-meth public void java.awt.Component$AccessibleAWTComponent.setVisible(boolean)
-meth public void javax.accessibility.AccessibleContext.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
-meth public void javax.accessibility.AccessibleContext.setAccessibleDescription(java.lang.String)
-meth public void javax.accessibility.AccessibleContext.setAccessibleName(java.lang.String)
-meth public void javax.accessibility.AccessibleContext.setAccessibleParent(javax.accessibility.Accessible)
-meth public void javax.swing.JComponent$AccessibleJComponent.addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void javax.swing.JComponent$AccessibleJComponent.removePropertyChangeListener(java.beans.PropertyChangeListener)
-supr javax.swing.JComponent$AccessibleJComponent
-CLSS protected javax.swing.JToggleButton$AccessibleJToggleButton
-cons public AccessibleJToggleButton(javax.swing.JToggleButton)
-fld  constant public static final int javax.accessibility.AccessibleText.CHARACTER
-fld  constant public static final int javax.accessibility.AccessibleText.SENTENCE
-fld  constant public static final int javax.accessibility.AccessibleText.WORD
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
-fld  protected java.awt.event.ComponentListener java.awt.Component$AccessibleAWTComponent.accessibleAWTComponentHandler
-fld  protected java.awt.event.ContainerListener javax.swing.JComponent$AccessibleJComponent.accessibleContainerHandler
-fld  protected java.awt.event.FocusListener java.awt.Component$AccessibleAWTComponent.accessibleAWTFocusHandler
-fld  protected java.awt.event.FocusListener javax.swing.JComponent$AccessibleJComponent.accessibleFocusHandler
-fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleDescription
-fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleName
-fld  protected javax.accessibility.Accessible javax.accessibility.AccessibleContext.accessibleParent
-fld  public static final java.lang.String javax.accessibility.AccessibleAction.DECREMENT
-fld  public static final java.lang.String javax.accessibility.AccessibleAction.INCREMENT
-fld  public static final java.lang.String javax.accessibility.AccessibleAction.TOGGLE_EXPAND
-innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler
-innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler
-innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleContainerHandler
-innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleFocusHandler
-intf java.awt.event.ItemListener
-intf java.io.Serializable
-intf java.util.EventListener
-intf javax.accessibility.AccessibleAction
-intf javax.accessibility.AccessibleComponent
-intf javax.accessibility.AccessibleExtendedComponent
-intf javax.accessibility.AccessibleText
-intf javax.accessibility.AccessibleValue
-meth protected java.lang.String javax.swing.JComponent$AccessibleJComponent.getBorderTitle(javax.swing.border.Border)
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public [Ljavax.accessibility.AccessibleIcon; javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleIcon()
-meth public boolean java.awt.Component$AccessibleAWTComponent.contains(java.awt.Point)
-meth public boolean java.awt.Component$AccessibleAWTComponent.isEnabled()
-meth public boolean java.awt.Component$AccessibleAWTComponent.isFocusTraversable()
-meth public boolean java.awt.Component$AccessibleAWTComponent.isShowing()
-meth public boolean java.awt.Component$AccessibleAWTComponent.isVisible()
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public boolean javax.swing.AbstractButton$AccessibleAbstractButton.doAccessibleAction(int)
-meth public boolean javax.swing.AbstractButton$AccessibleAbstractButton.setCurrentAccessibleValue(java.lang.Number)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public int java.awt.Component$AccessibleAWTComponent.getAccessibleIndexInParent()
-meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleActionCount()
-meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getCaretPosition()
-meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getCharCount()
-meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getIndexAtPoint(java.awt.Point)
-meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getSelectionEnd()
-meth public int javax.swing.AbstractButton$AccessibleAbstractButton.getSelectionStart()
-meth public int javax.swing.JComponent$AccessibleJComponent.getAccessibleChildrenCount()
-meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getBackground()
-meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getForeground()
-meth public java.awt.Cursor java.awt.Component$AccessibleAWTComponent.getCursor()
-meth public java.awt.Dimension java.awt.Component$AccessibleAWTComponent.getSize()
-meth public java.awt.Font java.awt.Component$AccessibleAWTComponent.getFont()
-meth public java.awt.FontMetrics java.awt.Component$AccessibleAWTComponent.getFontMetrics(java.awt.Font)
-meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocation()
-meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocationOnScreen()
-meth public java.awt.Rectangle java.awt.Component$AccessibleAWTComponent.getBounds()
-meth public java.awt.Rectangle javax.swing.AbstractButton$AccessibleAbstractButton.getCharacterBounds(int)
-meth public java.lang.Number javax.swing.AbstractButton$AccessibleAbstractButton.getCurrentAccessibleValue()
-meth public java.lang.Number javax.swing.AbstractButton$AccessibleAbstractButton.getMaximumAccessibleValue()
-meth public java.lang.Number javax.swing.AbstractButton$AccessibleAbstractButton.getMinimumAccessibleValue()
-meth public java.lang.String java.lang.Object.toString()
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleActionDescription(int)
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleName()
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAfterIndex(int,int)
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getAtIndex(int,int)
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getBeforeIndex(int,int)
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getSelectedText()
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getTitledBorderText()
-meth public java.lang.String javax.swing.AbstractButton$AccessibleAbstractButton.getToolTipText()
-meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getAccessibleDescription()
-meth public java.util.Locale java.awt.Component$AccessibleAWTComponent.getLocale()
-meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleParent()
-meth public javax.accessibility.Accessible java.awt.Container$AccessibleAWTContainer.getAccessibleAt(java.awt.Point)
-meth public javax.accessibility.Accessible javax.swing.JComponent$AccessibleJComponent.getAccessibleChild(int)
-meth public javax.accessibility.AccessibleAction javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleAction()
-meth public javax.accessibility.AccessibleComponent java.awt.Component$AccessibleAWTComponent.getAccessibleComponent()
-meth public javax.accessibility.AccessibleEditableText javax.accessibility.AccessibleContext.getAccessibleEditableText()
-meth public javax.accessibility.AccessibleKeyBinding javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleKeyBinding()
-meth public javax.accessibility.AccessibleRelationSet javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleRelationSet()
-meth public javax.accessibility.AccessibleRole javax.swing.JToggleButton$AccessibleJToggleButton.getAccessibleRole()
-meth public javax.accessibility.AccessibleSelection javax.accessibility.AccessibleContext.getAccessibleSelection()
-meth public javax.accessibility.AccessibleStateSet javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleStateSet()
-meth public javax.accessibility.AccessibleTable javax.accessibility.AccessibleContext.getAccessibleTable()
-meth public javax.accessibility.AccessibleText javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleText()
-meth public javax.accessibility.AccessibleValue javax.swing.AbstractButton$AccessibleAbstractButton.getAccessibleValue()
-meth public javax.swing.text.AttributeSet javax.swing.AbstractButton$AccessibleAbstractButton.getCharacterAttribute(int)
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public void java.awt.Component$AccessibleAWTComponent.addFocusListener(java.awt.event.FocusListener)
-meth public void java.awt.Component$AccessibleAWTComponent.removeFocusListener(java.awt.event.FocusListener)
-meth public void java.awt.Component$AccessibleAWTComponent.requestFocus()
-meth public void java.awt.Component$AccessibleAWTComponent.setBackground(java.awt.Color)
-meth public void java.awt.Component$AccessibleAWTComponent.setBounds(java.awt.Rectangle)
-meth public void java.awt.Component$AccessibleAWTComponent.setCursor(java.awt.Cursor)
-meth public void java.awt.Component$AccessibleAWTComponent.setEnabled(boolean)
-meth public void java.awt.Component$AccessibleAWTComponent.setFont(java.awt.Font)
-meth public void java.awt.Component$AccessibleAWTComponent.setForeground(java.awt.Color)
-meth public void java.awt.Component$AccessibleAWTComponent.setLocation(java.awt.Point)
-meth public void java.awt.Component$AccessibleAWTComponent.setSize(java.awt.Dimension)
-meth public void java.awt.Component$AccessibleAWTComponent.setVisible(boolean)
-meth public void javax.accessibility.AccessibleContext.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
-meth public void javax.accessibility.AccessibleContext.setAccessibleDescription(java.lang.String)
-meth public void javax.accessibility.AccessibleContext.setAccessibleName(java.lang.String)
-meth public void javax.accessibility.AccessibleContext.setAccessibleParent(javax.accessibility.Accessible)
-meth public void javax.swing.JComponent$AccessibleJComponent.addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void javax.swing.JComponent$AccessibleJComponent.removePropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void javax.swing.JToggleButton$AccessibleJToggleButton.itemStateChanged(java.awt.event.ItemEvent)
-supr javax.swing.AbstractButton$AccessibleAbstractButton
-CLSS public static javax.swing.JToggleButton$ToggleButtonModel
-cons public ToggleButtonModel()
-fld  constant public static final int javax.swing.DefaultButtonModel.ARMED
-fld  constant public static final int javax.swing.DefaultButtonModel.ENABLED
-fld  constant public static final int javax.swing.DefaultButtonModel.PRESSED
-fld  constant public static final int javax.swing.DefaultButtonModel.ROLLOVER
-fld  constant public static final int javax.swing.DefaultButtonModel.SELECTED
-fld  protected int javax.swing.DefaultButtonModel.mnemonic
-fld  protected int javax.swing.DefaultButtonModel.stateMask
-fld  protected java.lang.String javax.swing.DefaultButtonModel.actionCommand
-fld  protected javax.swing.ButtonGroup javax.swing.DefaultButtonModel.group
-fld  protected javax.swing.event.EventListenerList javax.swing.DefaultButtonModel.listenerList
-fld  protected transient javax.swing.event.ChangeEvent javax.swing.DefaultButtonModel.changeEvent
-intf java.awt.ItemSelectable
-intf java.io.Serializable
-intf javax.swing.ButtonModel
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void javax.swing.DefaultButtonModel.fireActionPerformed(java.awt.event.ActionEvent)
-meth protected void javax.swing.DefaultButtonModel.fireItemStateChanged(java.awt.event.ItemEvent)
-meth protected void javax.swing.DefaultButtonModel.fireStateChanged()
-meth public [Ljava.awt.event.ActionListener; javax.swing.DefaultButtonModel.getActionListeners()
-meth public [Ljava.awt.event.ItemListener; javax.swing.DefaultButtonModel.getItemListeners()
-meth public [Ljava.lang.Object; javax.swing.DefaultButtonModel.getSelectedObjects()
-meth public [Ljava.util.EventListener; javax.swing.DefaultButtonModel.getListeners(java.lang.Class)
-meth public [Ljavax.swing.event.ChangeListener; javax.swing.DefaultButtonModel.getChangeListeners()
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public boolean javax.swing.DefaultButtonModel.isArmed()
-meth public boolean javax.swing.DefaultButtonModel.isEnabled()
-meth public boolean javax.swing.DefaultButtonModel.isPressed()
-meth public boolean javax.swing.DefaultButtonModel.isRollover()
-meth public boolean javax.swing.JToggleButton$ToggleButtonModel.isSelected()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public int javax.swing.DefaultButtonModel.getMnemonic()
-meth public java.lang.String java.lang.Object.toString()
-meth public java.lang.String javax.swing.DefaultButtonModel.getActionCommand()
-meth public javax.swing.ButtonGroup javax.swing.DefaultButtonModel.getGroup()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public void javax.swing.DefaultButtonModel.addActionListener(java.awt.event.ActionListener)
-meth public void javax.swing.DefaultButtonModel.addChangeListener(javax.swing.event.ChangeListener)
-meth public void javax.swing.DefaultButtonModel.addItemListener(java.awt.event.ItemListener)
-meth public void javax.swing.DefaultButtonModel.removeActionListener(java.awt.event.ActionListener)
-meth public void javax.swing.DefaultButtonModel.removeChangeListener(javax.swing.event.ChangeListener)
-meth public void javax.swing.DefaultButtonModel.removeItemListener(java.awt.event.ItemListener)
-meth public void javax.swing.DefaultButtonModel.setActionCommand(java.lang.String)
-meth public void javax.swing.DefaultButtonModel.setArmed(boolean)
-meth public void javax.swing.DefaultButtonModel.setEnabled(boolean)
-meth public void javax.swing.DefaultButtonModel.setGroup(javax.swing.ButtonGroup)
-meth public void javax.swing.DefaultButtonModel.setMnemonic(int)
-meth public void javax.swing.DefaultButtonModel.setRollover(boolean)
-meth public void javax.swing.JToggleButton$ToggleButtonModel.setPressed(boolean)
-meth public void javax.swing.JToggleButton$ToggleButtonModel.setSelected(boolean)
-supr javax.swing.DefaultButtonModel
-CLSS protected javax.swing.JToolBar$AccessibleJToolBar
-cons protected AccessibleJToolBar(javax.swing.JToolBar)
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CARET_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_CHILD_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_HYPERTEXT_OFFSET
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_INVALIDATE_CHILDREN
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_STATE_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_CAPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_MODEL_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TABLE_SUMMARY_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_TEXT_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VALUE_PROPERTY
-fld  constant public static final java.lang.String javax.accessibility.AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY
-fld  protected java.awt.event.ComponentListener java.awt.Component$AccessibleAWTComponent.accessibleAWTComponentHandler
-fld  protected java.awt.event.ContainerListener javax.swing.JComponent$AccessibleJComponent.accessibleContainerHandler
-fld  protected java.awt.event.FocusListener java.awt.Component$AccessibleAWTComponent.accessibleAWTFocusHandler
-fld  protected java.awt.event.FocusListener javax.swing.JComponent$AccessibleJComponent.accessibleFocusHandler
-fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleDescription
-fld  protected java.lang.String javax.accessibility.AccessibleContext.accessibleName
-fld  protected javax.accessibility.Accessible javax.accessibility.AccessibleContext.accessibleParent
-innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTComponentHandler
-innr protected java.awt.Component$AccessibleAWTComponent$AccessibleAWTFocusHandler
-innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleContainerHandler
-innr protected javax.swing.JComponent$AccessibleJComponent$AccessibleFocusHandler
-intf java.io.Serializable
-intf javax.accessibility.AccessibleComponent
-intf javax.accessibility.AccessibleExtendedComponent
-meth protected java.lang.String javax.swing.JComponent$AccessibleJComponent.getBorderTitle(javax.swing.border.Border)
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public [Ljavax.accessibility.AccessibleIcon; javax.accessibility.AccessibleContext.getAccessibleIcon()
-meth public boolean java.awt.Component$AccessibleAWTComponent.contains(java.awt.Point)
-meth public boolean java.awt.Component$AccessibleAWTComponent.isEnabled()
-meth public boolean java.awt.Component$AccessibleAWTComponent.isFocusTraversable()
-meth public boolean java.awt.Component$AccessibleAWTComponent.isShowing()
-meth public boolean java.awt.Component$AccessibleAWTComponent.isVisible()
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public int java.awt.Component$AccessibleAWTComponent.getAccessibleIndexInParent()
-meth public int javax.swing.JComponent$AccessibleJComponent.getAccessibleChildrenCount()
-meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getBackground()
-meth public java.awt.Color java.awt.Component$AccessibleAWTComponent.getForeground()
-meth public java.awt.Cursor java.awt.Component$AccessibleAWTComponent.getCursor()
-meth public java.awt.Dimension java.awt.Component$AccessibleAWTComponent.getSize()
-meth public java.awt.Font java.awt.Component$AccessibleAWTComponent.getFont()
-meth public java.awt.FontMetrics java.awt.Component$AccessibleAWTComponent.getFontMetrics(java.awt.Font)
-meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocation()
-meth public java.awt.Point java.awt.Component$AccessibleAWTComponent.getLocationOnScreen()
-meth public java.awt.Rectangle java.awt.Component$AccessibleAWTComponent.getBounds()
-meth public java.lang.String java.lang.Object.toString()
-meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getAccessibleDescription()
-meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getAccessibleName()
-meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getTitledBorderText()
-meth public java.lang.String javax.swing.JComponent$AccessibleJComponent.getToolTipText()
-meth public java.util.Locale java.awt.Component$AccessibleAWTComponent.getLocale()
-meth public javax.accessibility.Accessible java.awt.Component$AccessibleAWTComponent.getAccessibleParent()
-meth public javax.accessibility.Accessible java.awt.Container$AccessibleAWTContainer.getAccessibleAt(java.awt.Point)
-meth public javax.accessibility.Accessible javax.swing.JComponent$AccessibleJComponent.getAccessibleChild(int)
-meth public javax.accessibility.AccessibleAction javax.accessibility.AccessibleContext.getAccessibleAction()
-meth public javax.accessibility.AccessibleComponent java.awt.Component$AccessibleAWTComponent.getAccessibleComponent()
-meth public javax.accessibility.AccessibleEditableText javax.accessibility.AccessibleContext.getAccessibleEditableText()
-meth public javax.accessibility.AccessibleKeyBinding javax.swing.JComponent$AccessibleJComponent.getAccessibleKeyBinding()
-meth public javax.accessibility.AccessibleRelationSet javax.accessibility.AccessibleContext.getAccessibleRelationSet()
-meth public javax.accessibility.AccessibleRole javax.swing.JToolBar$AccessibleJToolBar.getAccessibleRole()
-meth public javax.accessibility.AccessibleSelection javax.accessibility.AccessibleContext.getAccessibleSelection()
-meth public javax.accessibility.AccessibleStateSet javax.swing.JToolBar$AccessibleJToolBar.getAccessibleStateSet()
-meth public javax.accessibility.AccessibleTable javax.accessibility.AccessibleContext.getAccessibleTable()
-meth public javax.accessibility.AccessibleText javax.accessibility.AccessibleContext.getAccessibleText()
-meth public javax.accessibility.AccessibleValue javax.accessibility.AccessibleContext.getAccessibleValue()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public void java.awt.Component$AccessibleAWTComponent.addFocusListener(java.awt.event.FocusListener)
-meth public void java.awt.Component$AccessibleAWTComponent.removeFocusListener(java.awt.event.FocusListener)
-meth public void java.awt.Component$AccessibleAWTComponent.requestFocus()
-meth public void java.awt.Component$AccessibleAWTComponent.setBackground(java.awt.Color)
-meth public void java.awt.Component$AccessibleAWTComponent.setBounds(java.awt.Rectangle)
-meth public void java.awt.Component$AccessibleAWTComponent.setCursor(java.awt.Cursor)
-meth public void java.awt.Component$AccessibleAWTComponent.setEnabled(boolean)
-meth public void java.awt.Component$AccessibleAWTComponent.setFont(java.awt.Font)
-meth public void java.awt.Component$AccessibleAWTComponent.setForeground(java.awt.Color)
-meth public void java.awt.Component$AccessibleAWTComponent.setLocation(java.awt.Point)
-meth public void java.awt.Component$AccessibleAWTComponent.setSize(java.awt.Dimension)
-meth public void java.awt.Component$AccessibleAWTComponent.setVisible(boolean)
-meth public void javax.accessibility.AccessibleContext.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
-meth public void javax.accessibility.AccessibleContext.setAccessibleDescription(java.lang.String)
-meth public void javax.accessibility.AccessibleContext.setAccessibleName(java.lang.String)
-meth public void javax.accessibility.AccessibleContext.setAccessibleParent(javax.accessibility.Accessible)
-meth public void javax.swing.JComponent$AccessibleJComponent.addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void javax.swing.JComponent$AccessibleJComponent.removePropertyChangeListener(java.beans.PropertyChangeListener)
-supr javax.swing.JComponent$AccessibleJComponent
-CLSS public static javax.swing.JToolBar$Separator
-cons public Separator()
-cons public Separator(java.awt.Dimension)
-fld  constant public static final float java.awt.Component.BOTTOM_ALIGNMENT
-fld  constant public static final float java.awt.Component.CENTER_ALIGNMENT
-fld  constant public static final float java.awt.Component.LEFT_ALIGNMENT
-fld  constant public static final float java.awt.Component.RIGHT_ALIGNMENT
-fld  constant public static final float java.awt.Component.TOP_ALIGNMENT
-fld  constant public static final int java.awt.image.ImageObserver.ABORT
-fld  constant public static final int java.awt.image.ImageObserver.ALLBITS
-fld  constant public static final int java.awt.image.ImageObserver.ERROR
-fld  constant public static final int java.awt.image.ImageObserver.FRAMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.HEIGHT
-fld  constant public static final int java.awt.image.ImageObserver.PROPERTIES
-fld  constant public static final int java.awt.image.ImageObserver.SOMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.WIDTH
-fld  constant public static final int javax.swing.JComponent.UNDEFINED_CONDITION
-fld  constant public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
-fld  constant public static final int javax.swing.JComponent.WHEN_FOCUSED
-fld  constant public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
-fld  constant public static final int javax.swing.SwingConstants.BOTTOM
-fld  constant public static final int javax.swing.SwingConstants.CENTER
-fld  constant public static final int javax.swing.SwingConstants.EAST
-fld  constant public static final int javax.swing.SwingConstants.HORIZONTAL
-fld  constant public static final int javax.swing.SwingConstants.LEADING
-fld  constant public static final int javax.swing.SwingConstants.LEFT
-fld  constant public static final int javax.swing.SwingConstants.NEXT
-fld  constant public static final int javax.swing.SwingConstants.NORTH
-fld  constant public static final int javax.swing.SwingConstants.NORTH_EAST
-fld  constant public static final int javax.swing.SwingConstants.NORTH_WEST
-fld  constant public static final int javax.swing.SwingConstants.PREVIOUS
-fld  constant public static final int javax.swing.SwingConstants.RIGHT
-fld  constant public static final int javax.swing.SwingConstants.SOUTH
-fld  constant public static final int javax.swing.SwingConstants.SOUTH_EAST
-fld  constant public static final int javax.swing.SwingConstants.SOUTH_WEST
-fld  constant public static final int javax.swing.SwingConstants.TOP
-fld  constant public static final int javax.swing.SwingConstants.TRAILING
-fld  constant public static final int javax.swing.SwingConstants.VERTICAL
-fld  constant public static final int javax.swing.SwingConstants.WEST
-fld  constant public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
-fld  protected javax.accessibility.AccessibleContext javax.swing.JComponent.accessibleContext
-fld  protected javax.swing.event.EventListenerList javax.swing.JComponent.listenerList
-fld  protected transient javax.swing.plaf.ComponentUI javax.swing.JComponent.ui
-innr protected abstract java.awt.Component$AccessibleAWTComponent
-innr protected java.awt.Component$BltBufferStrategy
-innr protected java.awt.Component$FlipBufferStrategy
-innr protected java.awt.Container$AccessibleAWTContainer
-innr protected javax.swing.JSeparator$AccessibleJSeparator
-innr public abstract javax.swing.JComponent$AccessibleJComponent
-intf java.awt.MenuContainer
-intf java.awt.image.ImageObserver
-intf java.io.Serializable
-intf javax.accessibility.Accessible
-intf javax.swing.SwingConstants
-meth protected boolean javax.swing.JComponent.processKeyBinding(javax.swing.KeyStroke,java.awt.event.KeyEvent,int,boolean)
-meth protected boolean javax.swing.JComponent.requestFocusInWindow(boolean)
-meth protected final void java.awt.Component.disableEvents(long)
-meth protected final void java.awt.Component.enableEvents(long)
-meth protected java.awt.AWTEvent java.awt.Component.coalesceEvents(java.awt.AWTEvent,java.awt.AWTEvent)
-meth protected java.awt.Graphics javax.swing.JComponent.getComponentGraphics(java.awt.Graphics)
-meth protected java.lang.String javax.swing.JSeparator.paramString()
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.awt.Component.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
-meth protected void java.awt.Component.processComponentEvent(java.awt.event.ComponentEvent)
-meth protected void java.awt.Component.processFocusEvent(java.awt.event.FocusEvent)
-meth protected void java.awt.Component.processHierarchyBoundsEvent(java.awt.event.HierarchyEvent)
-meth protected void java.awt.Component.processHierarchyEvent(java.awt.event.HierarchyEvent)
-meth protected void java.awt.Component.processInputMethodEvent(java.awt.event.InputMethodEvent)
-meth protected void java.awt.Component.processMouseWheelEvent(java.awt.event.MouseWheelEvent)
-meth protected void java.awt.Container.addImpl(java.awt.Component,java.lang.Object,int)
-meth protected void java.awt.Container.processContainerEvent(java.awt.event.ContainerEvent)
-meth protected void java.awt.Container.processEvent(java.awt.AWTEvent)
-meth protected void java.awt.Container.validateTree()
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void javax.swing.JComponent.fireVetoableChange(java.lang.String,java.lang.Object,java.lang.Object) throws java.beans.PropertyVetoException
-meth protected void javax.swing.JComponent.paintBorder(java.awt.Graphics)
-meth protected void javax.swing.JComponent.paintChildren(java.awt.Graphics)
-meth protected void javax.swing.JComponent.paintComponent(java.awt.Graphics)
-meth protected void javax.swing.JComponent.printBorder(java.awt.Graphics)
-meth protected void javax.swing.JComponent.printChildren(java.awt.Graphics)
-meth protected void javax.swing.JComponent.printComponent(java.awt.Graphics)
-meth protected void javax.swing.JComponent.processComponentKeyEvent(java.awt.event.KeyEvent)
-meth protected void javax.swing.JComponent.processKeyEvent(java.awt.event.KeyEvent)
-meth protected void javax.swing.JComponent.processMouseEvent(java.awt.event.MouseEvent)
-meth protected void javax.swing.JComponent.processMouseMotionEvent(java.awt.event.MouseEvent)
-meth protected void javax.swing.JComponent.setUI(javax.swing.plaf.ComponentUI)
-meth public [Ljava.awt.Component; java.awt.Container.getComponents()
-meth public [Ljava.util.EventListener; javax.swing.JComponent.getListeners(java.lang.Class)
-meth public [Ljavax.swing.KeyStroke; javax.swing.JComponent.getRegisteredKeyStrokes()
-meth public [Ljavax.swing.event.AncestorListener; javax.swing.JComponent.getAncestorListeners()
-meth public boolean java.awt.Component.action(java.awt.Event,java.lang.Object)
-meth public boolean java.awt.Component.contains(java.awt.Point)
-meth public boolean java.awt.Component.getFocusTraversalKeysEnabled()
-meth public boolean java.awt.Component.getIgnoreRepaint()
-meth public boolean java.awt.Component.gotFocus(java.awt.Event,java.lang.Object)
-meth public boolean java.awt.Component.handleEvent(java.awt.Event)
-meth public boolean java.awt.Component.hasFocus()
-meth public boolean java.awt.Component.imageUpdate(java.awt.Image,int,int,int,int,int)
-meth public boolean java.awt.Component.inside(int,int)
-meth public boolean java.awt.Component.isBackgroundSet()
-meth public boolean java.awt.Component.isCursorSet()
-meth public boolean java.awt.Component.isDisplayable()
-meth public boolean java.awt.Component.isEnabled()
-meth public boolean java.awt.Component.isFocusOwner()
-meth public boolean java.awt.Component.isFocusTraversable()
-meth public boolean java.awt.Component.isFocusable()
-meth public boolean java.awt.Component.isFontSet()
-meth public boolean java.awt.Component.isForegroundSet()
-meth public boolean java.awt.Component.isLightweight()
-meth public boolean java.awt.Component.isMaximumSizeSet()
-meth public boolean java.awt.Component.isMinimumSizeSet()
-meth public boolean java.awt.Component.isPreferredSizeSet()
-meth public boolean java.awt.Component.isShowing()
-meth public boolean java.awt.Component.isValid()
-meth public boolean java.awt.Component.isVisible()
-meth public boolean java.awt.Component.keyDown(java.awt.Event,int)
-meth public boolean java.awt.Component.keyUp(java.awt.Event,int)
-meth public boolean java.awt.Component.lostFocus(java.awt.Event,java.lang.Object)
-meth public boolean java.awt.Component.mouseDown(java.awt.Event,int,int)
-meth public boolean java.awt.Component.mouseDrag(java.awt.Event,int,int)
-meth public boolean java.awt.Component.mouseEnter(java.awt.Event,int,int)
-meth public boolean java.awt.Component.mouseExit(java.awt.Event,int,int)
-meth public boolean java.awt.Component.mouseMove(java.awt.Event,int,int)
-meth public boolean java.awt.Component.mouseUp(java.awt.Event,int,int)
-meth public boolean java.awt.Component.postEvent(java.awt.Event)
-meth public boolean java.awt.Component.prepareImage(java.awt.Image,int,int,java.awt.image.ImageObserver)
-meth public boolean java.awt.Component.prepareImage(java.awt.Image,java.awt.image.ImageObserver)
-meth public boolean java.awt.Container.areFocusTraversalKeysSet(int)
-meth public boolean java.awt.Container.isAncestorOf(java.awt.Component)
-meth public boolean java.awt.Container.isFocusCycleRoot()
-meth public boolean java.awt.Container.isFocusCycleRoot(java.awt.Container)
-meth public boolean java.awt.Container.isFocusTraversalPolicySet()
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public boolean javax.swing.JComponent.contains(int,int)
-meth public boolean javax.swing.JComponent.getAutoscrolls()
-meth public boolean javax.swing.JComponent.getInheritsPopupMenu()
-meth public boolean javax.swing.JComponent.getVerifyInputWhenFocusTarget()
-meth public boolean javax.swing.JComponent.isDoubleBuffered()
-meth public boolean javax.swing.JComponent.isManagingFocus()
-meth public boolean javax.swing.JComponent.isOpaque()
-meth public boolean javax.swing.JComponent.isOptimizedDrawingEnabled()
-meth public boolean javax.swing.JComponent.isPaintingTile()
-meth public boolean javax.swing.JComponent.isRequestFocusEnabled()
-meth public boolean javax.swing.JComponent.isValidateRoot()
-meth public boolean javax.swing.JComponent.requestDefaultFocus()
-meth public boolean javax.swing.JComponent.requestFocus(boolean)
-meth public boolean javax.swing.JComponent.requestFocusInWindow()
-meth public final boolean java.awt.Container.isFocusTraversalPolicyProvider()
-meth public final int java.awt.Container.getComponentZOrder(java.awt.Component)
-meth public final java.lang.Object java.awt.Component.getTreeLock()
-meth public final java.lang.Object javax.swing.JComponent.getClientProperty(java.lang.Object)
-meth public final javax.swing.ActionMap javax.swing.JComponent.getActionMap()
-meth public final javax.swing.InputMap javax.swing.JComponent.getInputMap()
-meth public final javax.swing.InputMap javax.swing.JComponent.getInputMap(int)
-meth public final void java.awt.Component.dispatchEvent(java.awt.AWTEvent)
-meth public final void java.awt.Container.setComponentZOrder(java.awt.Component,int)
-meth public final void java.awt.Container.setFocusTraversalPolicyProvider(boolean)
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public final void javax.swing.JComponent.putClientProperty(java.lang.Object,java.lang.Object)
-meth public final void javax.swing.JComponent.setActionMap(javax.swing.ActionMap)
-meth public final void javax.swing.JComponent.setInputMap(int,javax.swing.InputMap)
-meth public float javax.swing.JComponent.getAlignmentX()
-meth public float javax.swing.JComponent.getAlignmentY()
-meth public int java.awt.Component.checkImage(java.awt.Image,int,int,java.awt.image.ImageObserver)
-meth public int java.awt.Component.checkImage(java.awt.Image,java.awt.image.ImageObserver)
-meth public int java.awt.Container.countComponents()
-meth public int java.awt.Container.getComponentCount()
-meth public int javax.swing.JComponent.getConditionForKeyStroke(javax.swing.KeyStroke)
-meth public int javax.swing.JComponent.getDebugGraphicsOptions()
-meth public int javax.swing.JComponent.getHeight()
-meth public int javax.swing.JComponent.getWidth()
-meth public int javax.swing.JComponent.getX()
-meth public int javax.swing.JComponent.getY()
-meth public int javax.swing.JSeparator.getOrientation()
-meth public java.awt.Color java.awt.Component.getBackground()
-meth public java.awt.Color java.awt.Component.getForeground()
-meth public java.awt.Component java.awt.Container.add(java.awt.Component)
-meth public java.awt.Component java.awt.Container.add(java.awt.Component,int)
-meth public java.awt.Component java.awt.Container.add(java.lang.String,java.awt.Component)
-meth public java.awt.Component java.awt.Container.findComponentAt(int,int)
-meth public java.awt.Component java.awt.Container.findComponentAt(java.awt.Point)
-meth public java.awt.Component java.awt.Container.getComponent(int)
-meth public java.awt.Component java.awt.Container.getComponentAt(int,int)
-meth public java.awt.Component java.awt.Container.getComponentAt(java.awt.Point)
-meth public java.awt.Component java.awt.Container.locate(int,int)
-meth public java.awt.Component javax.swing.JComponent.getNextFocusableComponent()
-meth public java.awt.ComponentOrientation java.awt.Component.getComponentOrientation()
-meth public java.awt.Container java.awt.Component.getFocusCycleRootAncestor()
-meth public java.awt.Container java.awt.Component.getParent()
-meth public java.awt.Container javax.swing.JComponent.getTopLevelAncestor()
-meth public java.awt.Cursor java.awt.Component.getCursor()
-meth public java.awt.Dimension java.awt.Component.getSize()
-meth public java.awt.Dimension java.awt.Component.size()
-meth public java.awt.Dimension java.awt.Container.minimumSize()
-meth public java.awt.Dimension java.awt.Container.preferredSize()
-meth public java.awt.Dimension javax.swing.JComponent.getSize(java.awt.Dimension)
-meth public java.awt.Dimension javax.swing.JToolBar$Separator.getMaximumSize()
-meth public java.awt.Dimension javax.swing.JToolBar$Separator.getMinimumSize()
-meth public java.awt.Dimension javax.swing.JToolBar$Separator.getPreferredSize()
-meth public java.awt.Dimension javax.swing.JToolBar$Separator.getSeparatorSize()
-meth public java.awt.FocusTraversalPolicy java.awt.Container.getFocusTraversalPolicy()
-meth public java.awt.Font java.awt.Component.getFont()
-meth public java.awt.FontMetrics javax.swing.JComponent.getFontMetrics(java.awt.Font)
-meth public java.awt.Graphics javax.swing.JComponent.getGraphics()
-meth public java.awt.GraphicsConfiguration java.awt.Component.getGraphicsConfiguration()
-meth public java.awt.Image java.awt.Component.createImage(int,int)
-meth public java.awt.Image java.awt.Component.createImage(java.awt.image.ImageProducer)
-meth public java.awt.Insets java.awt.Container.insets()
-meth public java.awt.Insets javax.swing.JComponent.getInsets()
-meth public java.awt.Insets javax.swing.JComponent.getInsets(java.awt.Insets)
-meth public java.awt.LayoutManager java.awt.Container.getLayout()
-meth public java.awt.Point java.awt.Component.getLocation()
-meth public java.awt.Point java.awt.Component.getLocationOnScreen()
-meth public java.awt.Point java.awt.Component.getMousePosition() throws java.awt.HeadlessException
-meth public java.awt.Point java.awt.Component.location()
-meth public java.awt.Point java.awt.Container.getMousePosition(boolean) throws java.awt.HeadlessException
-meth public java.awt.Point javax.swing.JComponent.getLocation(java.awt.Point)
-meth public java.awt.Point javax.swing.JComponent.getPopupLocation(java.awt.event.MouseEvent)
-meth public java.awt.Point javax.swing.JComponent.getToolTipLocation(java.awt.event.MouseEvent)
-meth public java.awt.Rectangle java.awt.Component.bounds()
-meth public java.awt.Rectangle java.awt.Component.getBounds()
-meth public java.awt.Rectangle javax.swing.JComponent.getBounds(java.awt.Rectangle)
-meth public java.awt.Rectangle javax.swing.JComponent.getVisibleRect()
-meth public java.awt.Toolkit java.awt.Component.getToolkit()
-meth public java.awt.event.ActionListener javax.swing.JComponent.getActionForKeyStroke(javax.swing.KeyStroke)
-meth public java.awt.im.InputContext java.awt.Component.getInputContext()
-meth public java.awt.im.InputMethodRequests java.awt.Component.getInputMethodRequests()
-meth public java.awt.image.ColorModel java.awt.Component.getColorModel()
-meth public java.awt.image.VolatileImage java.awt.Component.createVolatileImage(int,int)
-meth public java.awt.image.VolatileImage java.awt.Component.createVolatileImage(int,int,java.awt.ImageCapabilities) throws java.awt.AWTException
-meth public java.awt.peer.ComponentPeer java.awt.Component.getPeer()
-meth public java.lang.String java.awt.Component.getName()
-meth public java.lang.String java.awt.Component.toString()
-meth public java.lang.String javax.swing.JComponent.getToolTipText()
-meth public java.lang.String javax.swing.JComponent.getToolTipText(java.awt.event.MouseEvent)
-meth public java.lang.String javax.swing.JToolBar$Separator.getUIClassID()
-meth public java.util.Locale java.awt.Component.getLocale()
-meth public java.util.Set java.awt.Container.getFocusTraversalKeys(int)
-meth public javax.accessibility.AccessibleContext javax.swing.JSeparator.getAccessibleContext()
-meth public javax.swing.InputVerifier javax.swing.JComponent.getInputVerifier()
-meth public javax.swing.JPopupMenu javax.swing.JComponent.getComponentPopupMenu()
-meth public javax.swing.JRootPane javax.swing.JComponent.getRootPane()
-meth public javax.swing.JToolTip javax.swing.JComponent.createToolTip()
-meth public javax.swing.TransferHandler javax.swing.JComponent.getTransferHandler()
-meth public javax.swing.border.Border javax.swing.JComponent.getBorder()
-meth public javax.swing.plaf.SeparatorUI javax.swing.JSeparator.getUI()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public static boolean javax.swing.JComponent.isLightweightComponent(java.awt.Component)
-meth public static java.util.Locale javax.swing.JComponent.getDefaultLocale()
-meth public static void javax.swing.JComponent.setDefaultLocale(java.util.Locale)
-meth public synchronized [Ljava.awt.event.ComponentListener; java.awt.Component.getComponentListeners()
-meth public synchronized [Ljava.awt.event.ContainerListener; java.awt.Container.getContainerListeners()
-meth public synchronized [Ljava.awt.event.FocusListener; java.awt.Component.getFocusListeners()
-meth public synchronized [Ljava.awt.event.HierarchyBoundsListener; java.awt.Component.getHierarchyBoundsListeners()
-meth public synchronized [Ljava.awt.event.HierarchyListener; java.awt.Component.getHierarchyListeners()
-meth public synchronized [Ljava.awt.event.InputMethodListener; java.awt.Component.getInputMethodListeners()
-meth public synchronized [Ljava.awt.event.KeyListener; java.awt.Component.getKeyListeners()
-meth public synchronized [Ljava.awt.event.MouseListener; java.awt.Component.getMouseListeners()
-meth public synchronized [Ljava.awt.event.MouseMotionListener; java.awt.Component.getMouseMotionListeners()
-meth public synchronized [Ljava.awt.event.MouseWheelListener; java.awt.Component.getMouseWheelListeners()
-meth public synchronized [Ljava.beans.PropertyChangeListener; java.awt.Component.getPropertyChangeListeners()
-meth public synchronized [Ljava.beans.PropertyChangeListener; java.awt.Component.getPropertyChangeListeners(java.lang.String)
-meth public synchronized [Ljava.beans.VetoableChangeListener; javax.swing.JComponent.getVetoableChangeListeners()
-meth public synchronized java.awt.dnd.DropTarget java.awt.Component.getDropTarget()
-meth public synchronized void java.awt.Component.add(java.awt.PopupMenu)
-meth public synchronized void java.awt.Component.addComponentListener(java.awt.event.ComponentListener)
-meth public synchronized void java.awt.Component.addFocusListener(java.awt.event.FocusListener)
-meth public synchronized void java.awt.Component.addInputMethodListener(java.awt.event.InputMethodListener)
-meth public synchronized void java.awt.Component.addKeyListener(java.awt.event.KeyListener)
-meth public synchronized void java.awt.Component.addMouseListener(java.awt.event.MouseListener)
-meth public synchronized void java.awt.Component.addMouseMotionListener(java.awt.event.MouseMotionListener)
-meth public synchronized void java.awt.Component.addMouseWheelListener(java.awt.event.MouseWheelListener)
-meth public synchronized void java.awt.Component.remove(java.awt.MenuComponent)
-meth public synchronized void java.awt.Component.removeComponentListener(java.awt.event.ComponentListener)
-meth public synchronized void java.awt.Component.removeFocusListener(java.awt.event.FocusListener)
-meth public synchronized void java.awt.Component.removeInputMethodListener(java.awt.event.InputMethodListener)
-meth public synchronized void java.awt.Component.removeKeyListener(java.awt.event.KeyListener)
-meth public synchronized void java.awt.Component.removeMouseListener(java.awt.event.MouseListener)
-meth public synchronized void java.awt.Component.removeMouseMotionListener(java.awt.event.MouseMotionListener)
-meth public synchronized void java.awt.Component.removeMouseWheelListener(java.awt.event.MouseWheelListener)
-meth public synchronized void java.awt.Component.removePropertyChangeListener(java.beans.PropertyChangeListener)
-meth public synchronized void java.awt.Component.removePropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
-meth public synchronized void java.awt.Component.setDropTarget(java.awt.dnd.DropTarget)
-meth public synchronized void java.awt.Container.addContainerListener(java.awt.event.ContainerListener)
-meth public synchronized void java.awt.Container.removeContainerListener(java.awt.event.ContainerListener)
-meth public synchronized void javax.swing.JComponent.addVetoableChangeListener(java.beans.VetoableChangeListener)
-meth public synchronized void javax.swing.JComponent.removeVetoableChangeListener(java.beans.VetoableChangeListener)
-meth public void java.awt.Component.addHierarchyBoundsListener(java.awt.event.HierarchyBoundsListener)
-meth public void java.awt.Component.addHierarchyListener(java.awt.event.HierarchyListener)
-meth public void java.awt.Component.enable(boolean)
-meth public void java.awt.Component.enableInputMethods(boolean)
-meth public void java.awt.Component.firePropertyChange(java.lang.String,byte,byte)
-meth public void java.awt.Component.firePropertyChange(java.lang.String,double,double)
-meth public void java.awt.Component.firePropertyChange(java.lang.String,float,float)
-meth public void java.awt.Component.firePropertyChange(java.lang.String,long,long)
-meth public void java.awt.Component.firePropertyChange(java.lang.String,short,short)
-meth public void java.awt.Component.hide()
-meth public void java.awt.Component.list()
-meth public void java.awt.Component.list(java.io.PrintStream)
-meth public void java.awt.Component.list(java.io.PrintWriter)
-meth public void java.awt.Component.move(int,int)
-meth public void java.awt.Component.nextFocus()
-meth public void java.awt.Component.paintAll(java.awt.Graphics)
-meth public void java.awt.Component.removeHierarchyBoundsListener(java.awt.event.HierarchyBoundsListener)
-meth public void java.awt.Component.removeHierarchyListener(java.awt.event.HierarchyListener)
-meth public void java.awt.Component.repaint()
-meth public void java.awt.Component.repaint(int,int,int,int)
-meth public void java.awt.Component.repaint(long)
-meth public void java.awt.Component.resize(int,int)
-meth public void java.awt.Component.resize(java.awt.Dimension)
-meth public void java.awt.Component.setBounds(int,int,int,int)
-meth public void java.awt.Component.setBounds(java.awt.Rectangle)
-meth public void java.awt.Component.setComponentOrientation(java.awt.ComponentOrientation)
-meth public void java.awt.Component.setCursor(java.awt.Cursor)
-meth public void java.awt.Component.setFocusTraversalKeysEnabled(boolean)
-meth public void java.awt.Component.setFocusable(boolean)
-meth public void java.awt.Component.setIgnoreRepaint(boolean)
-meth public void java.awt.Component.setLocale(java.util.Locale)
-meth public void java.awt.Component.setLocation(int,int)
-meth public void java.awt.Component.setLocation(java.awt.Point)
-meth public void java.awt.Component.setName(java.lang.String)
-meth public void java.awt.Component.setSize(int,int)
-meth public void java.awt.Component.setSize(java.awt.Dimension)
-meth public void java.awt.Component.show()
-meth public void java.awt.Component.show(boolean)
-meth public void java.awt.Component.transferFocus()
-meth public void java.awt.Component.transferFocusUpCycle()
-meth public void java.awt.Container.add(java.awt.Component,java.lang.Object)
-meth public void java.awt.Container.add(java.awt.Component,java.lang.Object,int)
-meth public void java.awt.Container.addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void java.awt.Container.addPropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
-meth public void java.awt.Container.applyComponentOrientation(java.awt.ComponentOrientation)
-meth public void java.awt.Container.deliverEvent(java.awt.Event)
-meth public void java.awt.Container.doLayout()
-meth public void java.awt.Container.invalidate()
-meth public void java.awt.Container.layout()
-meth public void java.awt.Container.list(java.io.PrintStream,int)
-meth public void java.awt.Container.list(java.io.PrintWriter,int)
-meth public void java.awt.Container.paintComponents(java.awt.Graphics)
-meth public void java.awt.Container.printComponents(java.awt.Graphics)
-meth public void java.awt.Container.remove(int)
-meth public void java.awt.Container.remove(java.awt.Component)
-meth public void java.awt.Container.removeAll()
-meth public void java.awt.Container.setFocusCycleRoot(boolean)
-meth public void java.awt.Container.setFocusTraversalPolicy(java.awt.FocusTraversalPolicy)
-meth public void java.awt.Container.setLayout(java.awt.LayoutManager)
-meth public void java.awt.Container.transferFocusBackward()
-meth public void java.awt.Container.transferFocusDownCycle()
-meth public void java.awt.Container.validate()
-meth public void javax.swing.JComponent.addAncestorListener(javax.swing.event.AncestorListener)
-meth public void javax.swing.JComponent.addNotify()
-meth public void javax.swing.JComponent.computeVisibleRect(java.awt.Rectangle)
-meth public void javax.swing.JComponent.disable()
-meth public void javax.swing.JComponent.enable()
-meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,boolean,boolean)
-meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,char,char)
-meth public void javax.swing.JComponent.firePropertyChange(java.lang.String,int,int)
-meth public void javax.swing.JComponent.grabFocus()
-meth public void javax.swing.JComponent.paint(java.awt.Graphics)
-meth public void javax.swing.JComponent.paintImmediately(int,int,int,int)
-meth public void javax.swing.JComponent.paintImmediately(java.awt.Rectangle)
-meth public void javax.swing.JComponent.print(java.awt.Graphics)
-meth public void javax.swing.JComponent.printAll(java.awt.Graphics)
-meth public void javax.swing.JComponent.registerKeyboardAction(java.awt.event.ActionListener,java.lang.String,javax.swing.KeyStroke,int)
-meth public void javax.swing.JComponent.registerKeyboardAction(java.awt.event.ActionListener,javax.swing.KeyStroke,int)
-meth public void javax.swing.JComponent.removeAncestorListener(javax.swing.event.AncestorListener)
-meth public void javax.swing.JComponent.removeNotify()
-meth public void javax.swing.JComponent.repaint(java.awt.Rectangle)
-meth public void javax.swing.JComponent.repaint(long,int,int,int,int)
-meth public void javax.swing.JComponent.requestFocus()
-meth public void javax.swing.JComponent.resetKeyboardActions()
-meth public void javax.swing.JComponent.reshape(int,int,int,int)
-meth public void javax.swing.JComponent.revalidate()
-meth public void javax.swing.JComponent.scrollRectToVisible(java.awt.Rectangle)
-meth public void javax.swing.JComponent.setAlignmentX(float)
-meth public void javax.swing.JComponent.setAlignmentY(float)
-meth public void javax.swing.JComponent.setAutoscrolls(boolean)
-meth public void javax.swing.JComponent.setBackground(java.awt.Color)
-meth public void javax.swing.JComponent.setBorder(javax.swing.border.Border)
-meth public void javax.swing.JComponent.setComponentPopupMenu(javax.swing.JPopupMenu)
-meth public void javax.swing.JComponent.setDebugGraphicsOptions(int)
-meth public void javax.swing.JComponent.setDoubleBuffered(boolean)
-meth public void javax.swing.JComponent.setEnabled(boolean)
-meth public void javax.swing.JComponent.setFocusTraversalKeys(int,java.util.Set)
-meth public void javax.swing.JComponent.setFont(java.awt.Font)
-meth public void javax.swing.JComponent.setForeground(java.awt.Color)
-meth public void javax.swing.JComponent.setInheritsPopupMenu(boolean)
-meth public void javax.swing.JComponent.setInputVerifier(javax.swing.InputVerifier)
-meth public void javax.swing.JComponent.setMaximumSize(java.awt.Dimension)
-meth public void javax.swing.JComponent.setMinimumSize(java.awt.Dimension)
-meth public void javax.swing.JComponent.setNextFocusableComponent(java.awt.Component)
-meth public void javax.swing.JComponent.setOpaque(boolean)
-meth public void javax.swing.JComponent.setPreferredSize(java.awt.Dimension)
-meth public void javax.swing.JComponent.setRequestFocusEnabled(boolean)
-meth public void javax.swing.JComponent.setToolTipText(java.lang.String)
-meth public void javax.swing.JComponent.setTransferHandler(javax.swing.TransferHandler)
-meth public void javax.swing.JComponent.setVerifyInputWhenFocusTarget(boolean)
-meth public void javax.swing.JComponent.setVisible(boolean)
-meth public void javax.swing.JComponent.unregisterKeyboardAction(javax.swing.KeyStroke)
-meth public void javax.swing.JComponent.update(java.awt.Graphics)
-meth public void javax.swing.JSeparator.setOrientation(int)
-meth public void javax.swing.JSeparator.setUI(javax.swing.plaf.SeparatorUI)
-meth public void javax.swing.JSeparator.updateUI()
-meth public void javax.swing.JToolBar$Separator.setSeparatorSize(java.awt.Dimension)
-supr javax.swing.JSeparator
 CLSS public static abstract interface javax.swing.text.AttributeSet$CharacterAttribute
 supr null
-CLSS public static javax.swing.text.DefaultEditorKit$BeepAction
-cons public BeepAction()
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
-fld  protected boolean javax.swing.AbstractAction.enabled
-fld  protected javax.swing.event.SwingPropertyChangeSupport javax.swing.AbstractAction.changeSupport
-intf java.awt.event.ActionListener
-intf java.io.Serializable
-intf java.lang.Cloneable
-intf java.util.EventListener
-intf javax.swing.Action
-meth protected final javax.swing.text.JTextComponent javax.swing.text.TextAction.getFocusedComponent()
-meth protected final javax.swing.text.JTextComponent javax.swing.text.TextAction.getTextComponent(java.awt.event.ActionEvent)
-meth protected java.lang.Object javax.swing.AbstractAction.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void javax.swing.AbstractAction.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
-meth public [Ljava.lang.Object; javax.swing.AbstractAction.getKeys()
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public boolean javax.swing.AbstractAction.isEnabled()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.Object javax.swing.AbstractAction.getValue(java.lang.String)
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public static final [Ljavax.swing.Action; javax.swing.text.TextAction.augmentList([Ljavax.swing.Action;,[Ljavax.swing.Action;)
-meth public synchronized [Ljava.beans.PropertyChangeListener; javax.swing.AbstractAction.getPropertyChangeListeners()
-meth public synchronized void javax.swing.AbstractAction.addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public synchronized void javax.swing.AbstractAction.removePropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void javax.swing.AbstractAction.putValue(java.lang.String,java.lang.Object)
-meth public void javax.swing.AbstractAction.setEnabled(boolean)
-meth public void javax.swing.text.DefaultEditorKit$BeepAction.actionPerformed(java.awt.event.ActionEvent)
-supr javax.swing.text.TextAction
-CLSS public static javax.swing.text.DefaultEditorKit$CopyAction
-cons public CopyAction()
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
-fld  protected boolean javax.swing.AbstractAction.enabled
-fld  protected javax.swing.event.SwingPropertyChangeSupport javax.swing.AbstractAction.changeSupport
-intf java.awt.event.ActionListener
-intf java.io.Serializable
-intf java.lang.Cloneable
-intf java.util.EventListener
-intf javax.swing.Action
-meth protected final javax.swing.text.JTextComponent javax.swing.text.TextAction.getFocusedComponent()
-meth protected final javax.swing.text.JTextComponent javax.swing.text.TextAction.getTextComponent(java.awt.event.ActionEvent)
-meth protected java.lang.Object javax.swing.AbstractAction.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void javax.swing.AbstractAction.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
-meth public [Ljava.lang.Object; javax.swing.AbstractAction.getKeys()
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public boolean javax.swing.AbstractAction.isEnabled()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.Object javax.swing.AbstractAction.getValue(java.lang.String)
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public static final [Ljavax.swing.Action; javax.swing.text.TextAction.augmentList([Ljavax.swing.Action;,[Ljavax.swing.Action;)
-meth public synchronized [Ljava.beans.PropertyChangeListener; javax.swing.AbstractAction.getPropertyChangeListeners()
-meth public synchronized void javax.swing.AbstractAction.addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public synchronized void javax.swing.AbstractAction.removePropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void javax.swing.AbstractAction.putValue(java.lang.String,java.lang.Object)
-meth public void javax.swing.AbstractAction.setEnabled(boolean)
-meth public void javax.swing.text.DefaultEditorKit$CopyAction.actionPerformed(java.awt.event.ActionEvent)
-supr javax.swing.text.TextAction
-CLSS public static javax.swing.text.DefaultEditorKit$CutAction
-cons public CutAction()
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
-fld  protected boolean javax.swing.AbstractAction.enabled
-fld  protected javax.swing.event.SwingPropertyChangeSupport javax.swing.AbstractAction.changeSupport
-intf java.awt.event.ActionListener
-intf java.io.Serializable
-intf java.lang.Cloneable
-intf java.util.EventListener
-intf javax.swing.Action
-meth protected final javax.swing.text.JTextComponent javax.swing.text.TextAction.getFocusedComponent()
-meth protected final javax.swing.text.JTextComponent javax.swing.text.TextAction.getTextComponent(java.awt.event.ActionEvent)
-meth protected java.lang.Object javax.swing.AbstractAction.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void javax.swing.AbstractAction.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
-meth public [Ljava.lang.Object; javax.swing.AbstractAction.getKeys()
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public boolean javax.swing.AbstractAction.isEnabled()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.Object javax.swing.AbstractAction.getValue(java.lang.String)
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public static final [Ljavax.swing.Action; javax.swing.text.TextAction.augmentList([Ljavax.swing.Action;,[Ljavax.swing.Action;)
-meth public synchronized [Ljava.beans.PropertyChangeListener; javax.swing.AbstractAction.getPropertyChangeListeners()
-meth public synchronized void javax.swing.AbstractAction.addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public synchronized void javax.swing.AbstractAction.removePropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void javax.swing.AbstractAction.putValue(java.lang.String,java.lang.Object)
-meth public void javax.swing.AbstractAction.setEnabled(boolean)
-meth public void javax.swing.text.DefaultEditorKit$CutAction.actionPerformed(java.awt.event.ActionEvent)
-supr javax.swing.text.TextAction
-CLSS public static javax.swing.text.DefaultEditorKit$DefaultKeyTypedAction
-cons public DefaultKeyTypedAction()
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
-fld  protected boolean javax.swing.AbstractAction.enabled
-fld  protected javax.swing.event.SwingPropertyChangeSupport javax.swing.AbstractAction.changeSupport
-intf java.awt.event.ActionListener
-intf java.io.Serializable
-intf java.lang.Cloneable
-intf java.util.EventListener
-intf javax.swing.Action
-meth protected final javax.swing.text.JTextComponent javax.swing.text.TextAction.getFocusedComponent()
-meth protected final javax.swing.text.JTextComponent javax.swing.text.TextAction.getTextComponent(java.awt.event.ActionEvent)
-meth protected java.lang.Object javax.swing.AbstractAction.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void javax.swing.AbstractAction.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
-meth public [Ljava.lang.Object; javax.swing.AbstractAction.getKeys()
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public boolean javax.swing.AbstractAction.isEnabled()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.Object javax.swing.AbstractAction.getValue(java.lang.String)
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public static final [Ljavax.swing.Action; javax.swing.text.TextAction.augmentList([Ljavax.swing.Action;,[Ljavax.swing.Action;)
-meth public synchronized [Ljava.beans.PropertyChangeListener; javax.swing.AbstractAction.getPropertyChangeListeners()
-meth public synchronized void javax.swing.AbstractAction.addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public synchronized void javax.swing.AbstractAction.removePropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void javax.swing.AbstractAction.putValue(java.lang.String,java.lang.Object)
-meth public void javax.swing.AbstractAction.setEnabled(boolean)
-meth public void javax.swing.text.DefaultEditorKit$DefaultKeyTypedAction.actionPerformed(java.awt.event.ActionEvent)
-supr javax.swing.text.TextAction
-CLSS public static javax.swing.text.DefaultEditorKit$InsertBreakAction
-cons public InsertBreakAction()
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
-fld  protected boolean javax.swing.AbstractAction.enabled
-fld  protected javax.swing.event.SwingPropertyChangeSupport javax.swing.AbstractAction.changeSupport
-intf java.awt.event.ActionListener
-intf java.io.Serializable
-intf java.lang.Cloneable
-intf java.util.EventListener
-intf javax.swing.Action
-meth protected final javax.swing.text.JTextComponent javax.swing.text.TextAction.getFocusedComponent()
-meth protected final javax.swing.text.JTextComponent javax.swing.text.TextAction.getTextComponent(java.awt.event.ActionEvent)
-meth protected java.lang.Object javax.swing.AbstractAction.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void javax.swing.AbstractAction.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
-meth public [Ljava.lang.Object; javax.swing.AbstractAction.getKeys()
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public boolean javax.swing.AbstractAction.isEnabled()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.Object javax.swing.AbstractAction.getValue(java.lang.String)
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public static final [Ljavax.swing.Action; javax.swing.text.TextAction.augmentList([Ljavax.swing.Action;,[Ljavax.swing.Action;)
-meth public synchronized [Ljava.beans.PropertyChangeListener; javax.swing.AbstractAction.getPropertyChangeListeners()
-meth public synchronized void javax.swing.AbstractAction.addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public synchronized void javax.swing.AbstractAction.removePropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void javax.swing.AbstractAction.putValue(java.lang.String,java.lang.Object)
-meth public void javax.swing.AbstractAction.setEnabled(boolean)
-meth public void javax.swing.text.DefaultEditorKit$InsertBreakAction.actionPerformed(java.awt.event.ActionEvent)
-supr javax.swing.text.TextAction
-CLSS public static javax.swing.text.DefaultEditorKit$InsertContentAction
-cons public InsertContentAction()
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
-fld  protected boolean javax.swing.AbstractAction.enabled
-fld  protected javax.swing.event.SwingPropertyChangeSupport javax.swing.AbstractAction.changeSupport
-intf java.awt.event.ActionListener
-intf java.io.Serializable
-intf java.lang.Cloneable
-intf java.util.EventListener
-intf javax.swing.Action
-meth protected final javax.swing.text.JTextComponent javax.swing.text.TextAction.getFocusedComponent()
-meth protected final javax.swing.text.JTextComponent javax.swing.text.TextAction.getTextComponent(java.awt.event.ActionEvent)
-meth protected java.lang.Object javax.swing.AbstractAction.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void javax.swing.AbstractAction.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
-meth public [Ljava.lang.Object; javax.swing.AbstractAction.getKeys()
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public boolean javax.swing.AbstractAction.isEnabled()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.Object javax.swing.AbstractAction.getValue(java.lang.String)
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public static final [Ljavax.swing.Action; javax.swing.text.TextAction.augmentList([Ljavax.swing.Action;,[Ljavax.swing.Action;)
-meth public synchronized [Ljava.beans.PropertyChangeListener; javax.swing.AbstractAction.getPropertyChangeListeners()
-meth public synchronized void javax.swing.AbstractAction.addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public synchronized void javax.swing.AbstractAction.removePropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void javax.swing.AbstractAction.putValue(java.lang.String,java.lang.Object)
-meth public void javax.swing.AbstractAction.setEnabled(boolean)
-meth public void javax.swing.text.DefaultEditorKit$InsertContentAction.actionPerformed(java.awt.event.ActionEvent)
-supr javax.swing.text.TextAction
-CLSS public static javax.swing.text.DefaultEditorKit$InsertTabAction
-cons public InsertTabAction()
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
-fld  protected boolean javax.swing.AbstractAction.enabled
-fld  protected javax.swing.event.SwingPropertyChangeSupport javax.swing.AbstractAction.changeSupport
-intf java.awt.event.ActionListener
-intf java.io.Serializable
-intf java.lang.Cloneable
-intf java.util.EventListener
-intf javax.swing.Action
-meth protected final javax.swing.text.JTextComponent javax.swing.text.TextAction.getFocusedComponent()
-meth protected final javax.swing.text.JTextComponent javax.swing.text.TextAction.getTextComponent(java.awt.event.ActionEvent)
-meth protected java.lang.Object javax.swing.AbstractAction.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void javax.swing.AbstractAction.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
-meth public [Ljava.lang.Object; javax.swing.AbstractAction.getKeys()
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public boolean javax.swing.AbstractAction.isEnabled()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.Object javax.swing.AbstractAction.getValue(java.lang.String)
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public static final [Ljavax.swing.Action; javax.swing.text.TextAction.augmentList([Ljavax.swing.Action;,[Ljavax.swing.Action;)
-meth public synchronized [Ljava.beans.PropertyChangeListener; javax.swing.AbstractAction.getPropertyChangeListeners()
-meth public synchronized void javax.swing.AbstractAction.addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public synchronized void javax.swing.AbstractAction.removePropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void javax.swing.AbstractAction.putValue(java.lang.String,java.lang.Object)
-meth public void javax.swing.AbstractAction.setEnabled(boolean)
-meth public void javax.swing.text.DefaultEditorKit$InsertTabAction.actionPerformed(java.awt.event.ActionEvent)
-supr javax.swing.text.TextAction
-CLSS public static javax.swing.text.DefaultEditorKit$PasteAction
-cons public PasteAction()
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
-fld  protected boolean javax.swing.AbstractAction.enabled
-fld  protected javax.swing.event.SwingPropertyChangeSupport javax.swing.AbstractAction.changeSupport
-intf java.awt.event.ActionListener
-intf java.io.Serializable
-intf java.lang.Cloneable
-intf java.util.EventListener
-intf javax.swing.Action
-meth protected final javax.swing.text.JTextComponent javax.swing.text.TextAction.getFocusedComponent()
-meth protected final javax.swing.text.JTextComponent javax.swing.text.TextAction.getTextComponent(java.awt.event.ActionEvent)
-meth protected java.lang.Object javax.swing.AbstractAction.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void javax.swing.AbstractAction.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
-meth public [Ljava.lang.Object; javax.swing.AbstractAction.getKeys()
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public boolean javax.swing.AbstractAction.isEnabled()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.Object javax.swing.AbstractAction.getValue(java.lang.String)
-meth public java.lang.String java.lang.Object.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public static final [Ljavax.swing.Action; javax.swing.text.TextAction.augmentList([Ljavax.swing.Action;,[Ljavax.swing.Action;)
-meth public synchronized [Ljava.beans.PropertyChangeListener; javax.swing.AbstractAction.getPropertyChangeListeners()
-meth public synchronized void javax.swing.AbstractAction.addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public synchronized void javax.swing.AbstractAction.removePropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void javax.swing.AbstractAction.putValue(java.lang.String,java.lang.Object)
-meth public void javax.swing.AbstractAction.setEnabled(boolean)
-meth public void javax.swing.text.DefaultEditorKit$PasteAction.actionPerformed(java.awt.event.ActionEvent)
-supr javax.swing.text.TextAction
 CLSS public static abstract org.netbeans.modules.openide.util.ActionsBridge$ActionRunnable
 cons public ActionRunnable(java.awt.event.ActionEvent,org.openide.util.actions.SystemAction,boolean)
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
+fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
+fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
+fld  public static final java.lang.String javax.swing.Action.DEFAULT
+fld  public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
+fld  public static final java.lang.String javax.swing.Action.NAME
+fld  public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.SMALL_ICON
 intf java.awt.event.ActionListener
 intf java.util.EventListener
 intf javax.swing.Action
@@ -3996,6 +728,7 @@ supr java.lang.Object
 CLSS public static org.openide.WizardDescriptor$ArrayIterator
 cons public ArrayIterator()
 cons public ArrayIterator([Lorg.openide.WizardDescriptor$Panel;)
+cons public ArrayIterator(java.util.List)
 intf org.openide.WizardDescriptor$Iterator
 meth protected [Lorg.openide.WizardDescriptor$Panel; org.openide.WizardDescriptor$ArrayIterator.initializePanels()
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
@@ -4101,6 +834,23 @@ meth public abstract void org.openide.WizardDescriptor$Panel.readSettings(java.l
 meth public abstract void org.openide.WizardDescriptor$Panel.removeChangeListener(javax.swing.event.ChangeListener)
 meth public abstract void org.openide.WizardDescriptor$Panel.storeSettings(java.lang.Object)
 supr null
+CLSS public static abstract interface org.openide.WizardDescriptor$ProgressInstantiatingIterator
+intf org.openide.WizardDescriptor$AsynchronousInstantiatingIterator
+intf org.openide.WizardDescriptor$InstantiatingIterator
+intf org.openide.WizardDescriptor$Iterator
+meth public abstract boolean org.openide.WizardDescriptor$Iterator.hasNext()
+meth public abstract boolean org.openide.WizardDescriptor$Iterator.hasPrevious()
+meth public abstract java.lang.String org.openide.WizardDescriptor$Iterator.name()
+meth public abstract java.util.Set org.openide.WizardDescriptor$AsynchronousInstantiatingIterator.instantiate() throws java.io.IOException
+meth public abstract java.util.Set org.openide.WizardDescriptor$ProgressInstantiatingIterator.instantiate(org.netbeans.api.progress.ProgressHandle) throws java.io.IOException
+meth public abstract org.openide.WizardDescriptor$Panel org.openide.WizardDescriptor$Iterator.current()
+meth public abstract void org.openide.WizardDescriptor$InstantiatingIterator.initialize(org.openide.WizardDescriptor)
+meth public abstract void org.openide.WizardDescriptor$InstantiatingIterator.uninitialize(org.openide.WizardDescriptor)
+meth public abstract void org.openide.WizardDescriptor$Iterator.addChangeListener(javax.swing.event.ChangeListener)
+meth public abstract void org.openide.WizardDescriptor$Iterator.nextPanel()
+meth public abstract void org.openide.WizardDescriptor$Iterator.previousPanel()
+meth public abstract void org.openide.WizardDescriptor$Iterator.removeChangeListener(javax.swing.event.ChangeListener)
+supr null
 CLSS public static abstract interface org.openide.WizardDescriptor$ValidatingPanel
 intf org.openide.WizardDescriptor$Panel
 meth public abstract boolean org.openide.WizardDescriptor$Panel.isValid()
@@ -4121,64 +871,12 @@ meth public abstract [Lorg.openide.util.actions.SystemAction; org.openide.action
 meth public abstract void org.openide.actions.ToolsAction$Model.addChangeListener(javax.swing.event.ChangeListener)
 meth public abstract void org.openide.actions.ToolsAction$Model.removeChangeListener(javax.swing.event.ChangeListener)
 supr null
+CLSS public static abstract interface org.openide.awt.Actions$ButtonActionConnector
+meth public abstract boolean org.openide.awt.Actions$ButtonActionConnector.connect(javax.swing.AbstractButton,javax.swing.Action)
+meth public abstract boolean org.openide.awt.Actions$ButtonActionConnector.connect(javax.swing.JMenuItem,javax.swing.Action,boolean)
+supr null
 CLSS public static org.openide.awt.Actions$CheckboxMenuItem
 cons public CheckboxMenuItem(org.openide.util.actions.BooleanStateAction,boolean)
-fld  constant public static final float java.awt.Component.BOTTOM_ALIGNMENT
-fld  constant public static final float java.awt.Component.CENTER_ALIGNMENT
-fld  constant public static final float java.awt.Component.LEFT_ALIGNMENT
-fld  constant public static final float java.awt.Component.RIGHT_ALIGNMENT
-fld  constant public static final float java.awt.Component.TOP_ALIGNMENT
-fld  constant public static final int java.awt.image.ImageObserver.ABORT
-fld  constant public static final int java.awt.image.ImageObserver.ALLBITS
-fld  constant public static final int java.awt.image.ImageObserver.ERROR
-fld  constant public static final int java.awt.image.ImageObserver.FRAMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.HEIGHT
-fld  constant public static final int java.awt.image.ImageObserver.PROPERTIES
-fld  constant public static final int java.awt.image.ImageObserver.SOMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.WIDTH
-fld  constant public static final int javax.swing.JComponent.UNDEFINED_CONDITION
-fld  constant public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
-fld  constant public static final int javax.swing.JComponent.WHEN_FOCUSED
-fld  constant public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
-fld  constant public static final int javax.swing.SwingConstants.BOTTOM
-fld  constant public static final int javax.swing.SwingConstants.CENTER
-fld  constant public static final int javax.swing.SwingConstants.EAST
-fld  constant public static final int javax.swing.SwingConstants.HORIZONTAL
-fld  constant public static final int javax.swing.SwingConstants.LEADING
-fld  constant public static final int javax.swing.SwingConstants.LEFT
-fld  constant public static final int javax.swing.SwingConstants.NEXT
-fld  constant public static final int javax.swing.SwingConstants.NORTH
-fld  constant public static final int javax.swing.SwingConstants.NORTH_EAST
-fld  constant public static final int javax.swing.SwingConstants.NORTH_WEST
-fld  constant public static final int javax.swing.SwingConstants.PREVIOUS
-fld  constant public static final int javax.swing.SwingConstants.RIGHT
-fld  constant public static final int javax.swing.SwingConstants.SOUTH
-fld  constant public static final int javax.swing.SwingConstants.SOUTH_EAST
-fld  constant public static final int javax.swing.SwingConstants.SOUTH_WEST
-fld  constant public static final int javax.swing.SwingConstants.TOP
-fld  constant public static final int javax.swing.SwingConstants.TRAILING
-fld  constant public static final int javax.swing.SwingConstants.VERTICAL
-fld  constant public static final int javax.swing.SwingConstants.WEST
-fld  constant public static final java.lang.String javax.swing.AbstractButton.BORDER_PAINTED_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.CONTENT_AREA_FILLED_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.DISABLED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.DISABLED_SELECTED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.FOCUS_PAINTED_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_ALIGNMENT_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_TEXT_POSITION_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.MARGIN_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.MNEMONIC_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.MODEL_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.PRESSED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ENABLED_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_SELECTED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.SELECTED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.TEXT_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.VERTICAL_ALIGNMENT_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.VERTICAL_TEXT_POSITION_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
 fld  protected java.awt.event.ActionListener javax.swing.AbstractButton.actionListener
 fld  protected java.awt.event.ItemListener javax.swing.AbstractButton.itemListener
 fld  protected javax.accessibility.AccessibleContext javax.swing.JComponent.accessibleContext
@@ -4187,15 +885,62 @@ fld  protected javax.swing.event.ChangeListener javax.swing.AbstractButton.chang
 fld  protected javax.swing.event.EventListenerList javax.swing.JComponent.listenerList
 fld  protected transient javax.swing.event.ChangeEvent javax.swing.AbstractButton.changeEvent
 fld  protected transient javax.swing.plaf.ComponentUI javax.swing.JComponent.ui
-innr protected abstract java.awt.Component$AccessibleAWTComponent
-innr protected abstract javax.swing.AbstractButton$AccessibleAbstractButton
-innr protected java.awt.Component$BltBufferStrategy
-innr protected java.awt.Component$FlipBufferStrategy
-innr protected java.awt.Container$AccessibleAWTContainer
-innr protected javax.swing.AbstractButton$ButtonChangeListener
-innr protected javax.swing.JCheckBoxMenuItem$AccessibleJCheckBoxMenuItem
-innr protected javax.swing.JMenuItem$AccessibleJMenuItem
-innr public abstract javax.swing.JComponent$AccessibleJComponent
+fld  public static final float java.awt.Component.BOTTOM_ALIGNMENT
+fld  public static final float java.awt.Component.CENTER_ALIGNMENT
+fld  public static final float java.awt.Component.LEFT_ALIGNMENT
+fld  public static final float java.awt.Component.RIGHT_ALIGNMENT
+fld  public static final float java.awt.Component.TOP_ALIGNMENT
+fld  public static final int java.awt.image.ImageObserver.ABORT
+fld  public static final int java.awt.image.ImageObserver.ALLBITS
+fld  public static final int java.awt.image.ImageObserver.ERROR
+fld  public static final int java.awt.image.ImageObserver.FRAMEBITS
+fld  public static final int java.awt.image.ImageObserver.HEIGHT
+fld  public static final int java.awt.image.ImageObserver.PROPERTIES
+fld  public static final int java.awt.image.ImageObserver.SOMEBITS
+fld  public static final int java.awt.image.ImageObserver.WIDTH
+fld  public static final int javax.swing.JComponent.UNDEFINED_CONDITION
+fld  public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
+fld  public static final int javax.swing.JComponent.WHEN_FOCUSED
+fld  public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
+fld  public static final int javax.swing.SwingConstants.BOTTOM
+fld  public static final int javax.swing.SwingConstants.CENTER
+fld  public static final int javax.swing.SwingConstants.EAST
+fld  public static final int javax.swing.SwingConstants.HORIZONTAL
+fld  public static final int javax.swing.SwingConstants.LEADING
+fld  public static final int javax.swing.SwingConstants.LEFT
+fld  public static final int javax.swing.SwingConstants.NEXT
+fld  public static final int javax.swing.SwingConstants.NORTH
+fld  public static final int javax.swing.SwingConstants.NORTH_EAST
+fld  public static final int javax.swing.SwingConstants.NORTH_WEST
+fld  public static final int javax.swing.SwingConstants.PREVIOUS
+fld  public static final int javax.swing.SwingConstants.RIGHT
+fld  public static final int javax.swing.SwingConstants.SOUTH
+fld  public static final int javax.swing.SwingConstants.SOUTH_EAST
+fld  public static final int javax.swing.SwingConstants.SOUTH_WEST
+fld  public static final int javax.swing.SwingConstants.TOP
+fld  public static final int javax.swing.SwingConstants.TRAILING
+fld  public static final int javax.swing.SwingConstants.VERTICAL
+fld  public static final int javax.swing.SwingConstants.WEST
+fld  public static final java.lang.String javax.swing.AbstractButton.BORDER_PAINTED_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.CONTENT_AREA_FILLED_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.DISABLED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.DISABLED_SELECTED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.FOCUS_PAINTED_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_ALIGNMENT_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_TEXT_POSITION_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.MARGIN_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.MNEMONIC_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.MODEL_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.PRESSED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ENABLED_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_SELECTED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.SELECTED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.TEXT_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.VERTICAL_ALIGNMENT_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.VERTICAL_TEXT_POSITION_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
 intf java.awt.ItemSelectable
 intf java.awt.MenuContainer
 intf java.awt.image.ImageObserver
@@ -4661,62 +1406,6 @@ supr javax.swing.JCheckBoxMenuItem
 CLSS public static org.openide.awt.Actions$MenuItem
 cons public MenuItem(javax.swing.Action,boolean)
 cons public MenuItem(org.openide.util.actions.SystemAction,boolean)
-fld  constant public static final float java.awt.Component.BOTTOM_ALIGNMENT
-fld  constant public static final float java.awt.Component.CENTER_ALIGNMENT
-fld  constant public static final float java.awt.Component.LEFT_ALIGNMENT
-fld  constant public static final float java.awt.Component.RIGHT_ALIGNMENT
-fld  constant public static final float java.awt.Component.TOP_ALIGNMENT
-fld  constant public static final int java.awt.image.ImageObserver.ABORT
-fld  constant public static final int java.awt.image.ImageObserver.ALLBITS
-fld  constant public static final int java.awt.image.ImageObserver.ERROR
-fld  constant public static final int java.awt.image.ImageObserver.FRAMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.HEIGHT
-fld  constant public static final int java.awt.image.ImageObserver.PROPERTIES
-fld  constant public static final int java.awt.image.ImageObserver.SOMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.WIDTH
-fld  constant public static final int javax.swing.JComponent.UNDEFINED_CONDITION
-fld  constant public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
-fld  constant public static final int javax.swing.JComponent.WHEN_FOCUSED
-fld  constant public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
-fld  constant public static final int javax.swing.SwingConstants.BOTTOM
-fld  constant public static final int javax.swing.SwingConstants.CENTER
-fld  constant public static final int javax.swing.SwingConstants.EAST
-fld  constant public static final int javax.swing.SwingConstants.HORIZONTAL
-fld  constant public static final int javax.swing.SwingConstants.LEADING
-fld  constant public static final int javax.swing.SwingConstants.LEFT
-fld  constant public static final int javax.swing.SwingConstants.NEXT
-fld  constant public static final int javax.swing.SwingConstants.NORTH
-fld  constant public static final int javax.swing.SwingConstants.NORTH_EAST
-fld  constant public static final int javax.swing.SwingConstants.NORTH_WEST
-fld  constant public static final int javax.swing.SwingConstants.PREVIOUS
-fld  constant public static final int javax.swing.SwingConstants.RIGHT
-fld  constant public static final int javax.swing.SwingConstants.SOUTH
-fld  constant public static final int javax.swing.SwingConstants.SOUTH_EAST
-fld  constant public static final int javax.swing.SwingConstants.SOUTH_WEST
-fld  constant public static final int javax.swing.SwingConstants.TOP
-fld  constant public static final int javax.swing.SwingConstants.TRAILING
-fld  constant public static final int javax.swing.SwingConstants.VERTICAL
-fld  constant public static final int javax.swing.SwingConstants.WEST
-fld  constant public static final java.lang.String javax.swing.AbstractButton.BORDER_PAINTED_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.CONTENT_AREA_FILLED_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.DISABLED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.DISABLED_SELECTED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.FOCUS_PAINTED_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_ALIGNMENT_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_TEXT_POSITION_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.MARGIN_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.MNEMONIC_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.MODEL_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.PRESSED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ENABLED_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_SELECTED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.SELECTED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.TEXT_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.VERTICAL_ALIGNMENT_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.VERTICAL_TEXT_POSITION_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
 fld  protected java.awt.event.ActionListener javax.swing.AbstractButton.actionListener
 fld  protected java.awt.event.ItemListener javax.swing.AbstractButton.itemListener
 fld  protected javax.accessibility.AccessibleContext javax.swing.JComponent.accessibleContext
@@ -4725,14 +1414,62 @@ fld  protected javax.swing.event.ChangeListener javax.swing.AbstractButton.chang
 fld  protected javax.swing.event.EventListenerList javax.swing.JComponent.listenerList
 fld  protected transient javax.swing.event.ChangeEvent javax.swing.AbstractButton.changeEvent
 fld  protected transient javax.swing.plaf.ComponentUI javax.swing.JComponent.ui
-innr protected abstract java.awt.Component$AccessibleAWTComponent
-innr protected abstract javax.swing.AbstractButton$AccessibleAbstractButton
-innr protected java.awt.Component$BltBufferStrategy
-innr protected java.awt.Component$FlipBufferStrategy
-innr protected java.awt.Container$AccessibleAWTContainer
-innr protected javax.swing.AbstractButton$ButtonChangeListener
-innr protected javax.swing.JMenuItem$AccessibleJMenuItem
-innr public abstract javax.swing.JComponent$AccessibleJComponent
+fld  public static final float java.awt.Component.BOTTOM_ALIGNMENT
+fld  public static final float java.awt.Component.CENTER_ALIGNMENT
+fld  public static final float java.awt.Component.LEFT_ALIGNMENT
+fld  public static final float java.awt.Component.RIGHT_ALIGNMENT
+fld  public static final float java.awt.Component.TOP_ALIGNMENT
+fld  public static final int java.awt.image.ImageObserver.ABORT
+fld  public static final int java.awt.image.ImageObserver.ALLBITS
+fld  public static final int java.awt.image.ImageObserver.ERROR
+fld  public static final int java.awt.image.ImageObserver.FRAMEBITS
+fld  public static final int java.awt.image.ImageObserver.HEIGHT
+fld  public static final int java.awt.image.ImageObserver.PROPERTIES
+fld  public static final int java.awt.image.ImageObserver.SOMEBITS
+fld  public static final int java.awt.image.ImageObserver.WIDTH
+fld  public static final int javax.swing.JComponent.UNDEFINED_CONDITION
+fld  public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
+fld  public static final int javax.swing.JComponent.WHEN_FOCUSED
+fld  public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
+fld  public static final int javax.swing.SwingConstants.BOTTOM
+fld  public static final int javax.swing.SwingConstants.CENTER
+fld  public static final int javax.swing.SwingConstants.EAST
+fld  public static final int javax.swing.SwingConstants.HORIZONTAL
+fld  public static final int javax.swing.SwingConstants.LEADING
+fld  public static final int javax.swing.SwingConstants.LEFT
+fld  public static final int javax.swing.SwingConstants.NEXT
+fld  public static final int javax.swing.SwingConstants.NORTH
+fld  public static final int javax.swing.SwingConstants.NORTH_EAST
+fld  public static final int javax.swing.SwingConstants.NORTH_WEST
+fld  public static final int javax.swing.SwingConstants.PREVIOUS
+fld  public static final int javax.swing.SwingConstants.RIGHT
+fld  public static final int javax.swing.SwingConstants.SOUTH
+fld  public static final int javax.swing.SwingConstants.SOUTH_EAST
+fld  public static final int javax.swing.SwingConstants.SOUTH_WEST
+fld  public static final int javax.swing.SwingConstants.TOP
+fld  public static final int javax.swing.SwingConstants.TRAILING
+fld  public static final int javax.swing.SwingConstants.VERTICAL
+fld  public static final int javax.swing.SwingConstants.WEST
+fld  public static final java.lang.String javax.swing.AbstractButton.BORDER_PAINTED_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.CONTENT_AREA_FILLED_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.DISABLED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.DISABLED_SELECTED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.FOCUS_PAINTED_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_ALIGNMENT_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_TEXT_POSITION_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.MARGIN_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.MNEMONIC_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.MODEL_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.PRESSED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ENABLED_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_SELECTED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.SELECTED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.TEXT_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.VERTICAL_ALIGNMENT_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.VERTICAL_TEXT_POSITION_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
 intf java.awt.ItemSelectable
 intf java.awt.MenuContainer
 intf java.awt.image.ImageObserver
@@ -5200,62 +1937,6 @@ CLSS public static org.openide.awt.Actions$SubMenu
 cons public SubMenu(javax.swing.Action,org.openide.awt.Actions$SubMenuModel,boolean)
 cons public SubMenu(org.openide.util.actions.SystemAction,org.openide.awt.Actions$SubMenuModel)
 cons public SubMenu(org.openide.util.actions.SystemAction,org.openide.awt.Actions$SubMenuModel,boolean)
-fld  constant public static final float java.awt.Component.BOTTOM_ALIGNMENT
-fld  constant public static final float java.awt.Component.CENTER_ALIGNMENT
-fld  constant public static final float java.awt.Component.LEFT_ALIGNMENT
-fld  constant public static final float java.awt.Component.RIGHT_ALIGNMENT
-fld  constant public static final float java.awt.Component.TOP_ALIGNMENT
-fld  constant public static final int java.awt.image.ImageObserver.ABORT
-fld  constant public static final int java.awt.image.ImageObserver.ALLBITS
-fld  constant public static final int java.awt.image.ImageObserver.ERROR
-fld  constant public static final int java.awt.image.ImageObserver.FRAMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.HEIGHT
-fld  constant public static final int java.awt.image.ImageObserver.PROPERTIES
-fld  constant public static final int java.awt.image.ImageObserver.SOMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.WIDTH
-fld  constant public static final int javax.swing.JComponent.UNDEFINED_CONDITION
-fld  constant public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
-fld  constant public static final int javax.swing.JComponent.WHEN_FOCUSED
-fld  constant public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
-fld  constant public static final int javax.swing.SwingConstants.BOTTOM
-fld  constant public static final int javax.swing.SwingConstants.CENTER
-fld  constant public static final int javax.swing.SwingConstants.EAST
-fld  constant public static final int javax.swing.SwingConstants.HORIZONTAL
-fld  constant public static final int javax.swing.SwingConstants.LEADING
-fld  constant public static final int javax.swing.SwingConstants.LEFT
-fld  constant public static final int javax.swing.SwingConstants.NEXT
-fld  constant public static final int javax.swing.SwingConstants.NORTH
-fld  constant public static final int javax.swing.SwingConstants.NORTH_EAST
-fld  constant public static final int javax.swing.SwingConstants.NORTH_WEST
-fld  constant public static final int javax.swing.SwingConstants.PREVIOUS
-fld  constant public static final int javax.swing.SwingConstants.RIGHT
-fld  constant public static final int javax.swing.SwingConstants.SOUTH
-fld  constant public static final int javax.swing.SwingConstants.SOUTH_EAST
-fld  constant public static final int javax.swing.SwingConstants.SOUTH_WEST
-fld  constant public static final int javax.swing.SwingConstants.TOP
-fld  constant public static final int javax.swing.SwingConstants.TRAILING
-fld  constant public static final int javax.swing.SwingConstants.VERTICAL
-fld  constant public static final int javax.swing.SwingConstants.WEST
-fld  constant public static final java.lang.String javax.swing.AbstractButton.BORDER_PAINTED_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.CONTENT_AREA_FILLED_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.DISABLED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.DISABLED_SELECTED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.FOCUS_PAINTED_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_ALIGNMENT_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_TEXT_POSITION_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.MARGIN_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.MNEMONIC_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.MODEL_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.PRESSED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ENABLED_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_SELECTED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.SELECTED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.TEXT_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.VERTICAL_ALIGNMENT_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.VERTICAL_TEXT_POSITION_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
 fld  protected java.awt.event.ActionListener javax.swing.AbstractButton.actionListener
 fld  protected java.awt.event.ItemListener javax.swing.AbstractButton.itemListener
 fld  protected javax.accessibility.AccessibleContext javax.swing.JComponent.accessibleContext
@@ -5265,16 +1946,62 @@ fld  protected javax.swing.event.ChangeListener javax.swing.AbstractButton.chang
 fld  protected javax.swing.event.EventListenerList javax.swing.JComponent.listenerList
 fld  protected transient javax.swing.event.ChangeEvent javax.swing.AbstractButton.changeEvent
 fld  protected transient javax.swing.plaf.ComponentUI javax.swing.JComponent.ui
-innr protected abstract java.awt.Component$AccessibleAWTComponent
-innr protected abstract javax.swing.AbstractButton$AccessibleAbstractButton
-innr protected java.awt.Component$BltBufferStrategy
-innr protected java.awt.Component$FlipBufferStrategy
-innr protected java.awt.Container$AccessibleAWTContainer
-innr protected javax.swing.AbstractButton$ButtonChangeListener
-innr protected javax.swing.JMenu$AccessibleJMenu
-innr protected javax.swing.JMenu$WinListener
-innr protected javax.swing.JMenuItem$AccessibleJMenuItem
-innr public abstract javax.swing.JComponent$AccessibleJComponent
+fld  public static final float java.awt.Component.BOTTOM_ALIGNMENT
+fld  public static final float java.awt.Component.CENTER_ALIGNMENT
+fld  public static final float java.awt.Component.LEFT_ALIGNMENT
+fld  public static final float java.awt.Component.RIGHT_ALIGNMENT
+fld  public static final float java.awt.Component.TOP_ALIGNMENT
+fld  public static final int java.awt.image.ImageObserver.ABORT
+fld  public static final int java.awt.image.ImageObserver.ALLBITS
+fld  public static final int java.awt.image.ImageObserver.ERROR
+fld  public static final int java.awt.image.ImageObserver.FRAMEBITS
+fld  public static final int java.awt.image.ImageObserver.HEIGHT
+fld  public static final int java.awt.image.ImageObserver.PROPERTIES
+fld  public static final int java.awt.image.ImageObserver.SOMEBITS
+fld  public static final int java.awt.image.ImageObserver.WIDTH
+fld  public static final int javax.swing.JComponent.UNDEFINED_CONDITION
+fld  public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
+fld  public static final int javax.swing.JComponent.WHEN_FOCUSED
+fld  public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
+fld  public static final int javax.swing.SwingConstants.BOTTOM
+fld  public static final int javax.swing.SwingConstants.CENTER
+fld  public static final int javax.swing.SwingConstants.EAST
+fld  public static final int javax.swing.SwingConstants.HORIZONTAL
+fld  public static final int javax.swing.SwingConstants.LEADING
+fld  public static final int javax.swing.SwingConstants.LEFT
+fld  public static final int javax.swing.SwingConstants.NEXT
+fld  public static final int javax.swing.SwingConstants.NORTH
+fld  public static final int javax.swing.SwingConstants.NORTH_EAST
+fld  public static final int javax.swing.SwingConstants.NORTH_WEST
+fld  public static final int javax.swing.SwingConstants.PREVIOUS
+fld  public static final int javax.swing.SwingConstants.RIGHT
+fld  public static final int javax.swing.SwingConstants.SOUTH
+fld  public static final int javax.swing.SwingConstants.SOUTH_EAST
+fld  public static final int javax.swing.SwingConstants.SOUTH_WEST
+fld  public static final int javax.swing.SwingConstants.TOP
+fld  public static final int javax.swing.SwingConstants.TRAILING
+fld  public static final int javax.swing.SwingConstants.VERTICAL
+fld  public static final int javax.swing.SwingConstants.WEST
+fld  public static final java.lang.String javax.swing.AbstractButton.BORDER_PAINTED_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.CONTENT_AREA_FILLED_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.DISABLED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.DISABLED_SELECTED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.FOCUS_PAINTED_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_ALIGNMENT_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_TEXT_POSITION_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.MARGIN_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.MNEMONIC_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.MODEL_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.PRESSED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ENABLED_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_SELECTED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.SELECTED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.TEXT_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.VERTICAL_ALIGNMENT_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.VERTICAL_TEXT_POSITION_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
 intf java.awt.ItemSelectable
 intf java.awt.MenuContainer
 intf java.awt.image.ImageObserver
@@ -5782,62 +2509,6 @@ supr null
 CLSS public static org.openide.awt.Actions$ToolbarButton
 cons public ToolbarButton(javax.swing.Action)
 cons public ToolbarButton(org.openide.util.actions.SystemAction)
-fld  constant public static final float java.awt.Component.BOTTOM_ALIGNMENT
-fld  constant public static final float java.awt.Component.CENTER_ALIGNMENT
-fld  constant public static final float java.awt.Component.LEFT_ALIGNMENT
-fld  constant public static final float java.awt.Component.RIGHT_ALIGNMENT
-fld  constant public static final float java.awt.Component.TOP_ALIGNMENT
-fld  constant public static final int java.awt.image.ImageObserver.ABORT
-fld  constant public static final int java.awt.image.ImageObserver.ALLBITS
-fld  constant public static final int java.awt.image.ImageObserver.ERROR
-fld  constant public static final int java.awt.image.ImageObserver.FRAMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.HEIGHT
-fld  constant public static final int java.awt.image.ImageObserver.PROPERTIES
-fld  constant public static final int java.awt.image.ImageObserver.SOMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.WIDTH
-fld  constant public static final int javax.swing.JComponent.UNDEFINED_CONDITION
-fld  constant public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
-fld  constant public static final int javax.swing.JComponent.WHEN_FOCUSED
-fld  constant public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
-fld  constant public static final int javax.swing.SwingConstants.BOTTOM
-fld  constant public static final int javax.swing.SwingConstants.CENTER
-fld  constant public static final int javax.swing.SwingConstants.EAST
-fld  constant public static final int javax.swing.SwingConstants.HORIZONTAL
-fld  constant public static final int javax.swing.SwingConstants.LEADING
-fld  constant public static final int javax.swing.SwingConstants.LEFT
-fld  constant public static final int javax.swing.SwingConstants.NEXT
-fld  constant public static final int javax.swing.SwingConstants.NORTH
-fld  constant public static final int javax.swing.SwingConstants.NORTH_EAST
-fld  constant public static final int javax.swing.SwingConstants.NORTH_WEST
-fld  constant public static final int javax.swing.SwingConstants.PREVIOUS
-fld  constant public static final int javax.swing.SwingConstants.RIGHT
-fld  constant public static final int javax.swing.SwingConstants.SOUTH
-fld  constant public static final int javax.swing.SwingConstants.SOUTH_EAST
-fld  constant public static final int javax.swing.SwingConstants.SOUTH_WEST
-fld  constant public static final int javax.swing.SwingConstants.TOP
-fld  constant public static final int javax.swing.SwingConstants.TRAILING
-fld  constant public static final int javax.swing.SwingConstants.VERTICAL
-fld  constant public static final int javax.swing.SwingConstants.WEST
-fld  constant public static final java.lang.String javax.swing.AbstractButton.BORDER_PAINTED_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.CONTENT_AREA_FILLED_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.DISABLED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.DISABLED_SELECTED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.FOCUS_PAINTED_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_ALIGNMENT_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_TEXT_POSITION_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.MARGIN_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.MNEMONIC_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.MODEL_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.PRESSED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ENABLED_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_SELECTED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.SELECTED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.TEXT_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.VERTICAL_ALIGNMENT_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.VERTICAL_TEXT_POSITION_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
 fld  protected java.awt.event.ActionListener javax.swing.AbstractButton.actionListener
 fld  protected java.awt.event.ItemListener javax.swing.AbstractButton.itemListener
 fld  protected javax.accessibility.AccessibleContext javax.swing.JComponent.accessibleContext
@@ -5846,14 +2517,62 @@ fld  protected javax.swing.event.ChangeListener javax.swing.AbstractButton.chang
 fld  protected javax.swing.event.EventListenerList javax.swing.JComponent.listenerList
 fld  protected transient javax.swing.event.ChangeEvent javax.swing.AbstractButton.changeEvent
 fld  protected transient javax.swing.plaf.ComponentUI javax.swing.JComponent.ui
-innr protected abstract java.awt.Component$AccessibleAWTComponent
-innr protected abstract javax.swing.AbstractButton$AccessibleAbstractButton
-innr protected java.awt.Component$BltBufferStrategy
-innr protected java.awt.Component$FlipBufferStrategy
-innr protected java.awt.Container$AccessibleAWTContainer
-innr protected javax.swing.AbstractButton$ButtonChangeListener
-innr protected javax.swing.JButton$AccessibleJButton
-innr public abstract javax.swing.JComponent$AccessibleJComponent
+fld  public static final float java.awt.Component.BOTTOM_ALIGNMENT
+fld  public static final float java.awt.Component.CENTER_ALIGNMENT
+fld  public static final float java.awt.Component.LEFT_ALIGNMENT
+fld  public static final float java.awt.Component.RIGHT_ALIGNMENT
+fld  public static final float java.awt.Component.TOP_ALIGNMENT
+fld  public static final int java.awt.image.ImageObserver.ABORT
+fld  public static final int java.awt.image.ImageObserver.ALLBITS
+fld  public static final int java.awt.image.ImageObserver.ERROR
+fld  public static final int java.awt.image.ImageObserver.FRAMEBITS
+fld  public static final int java.awt.image.ImageObserver.HEIGHT
+fld  public static final int java.awt.image.ImageObserver.PROPERTIES
+fld  public static final int java.awt.image.ImageObserver.SOMEBITS
+fld  public static final int java.awt.image.ImageObserver.WIDTH
+fld  public static final int javax.swing.JComponent.UNDEFINED_CONDITION
+fld  public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
+fld  public static final int javax.swing.JComponent.WHEN_FOCUSED
+fld  public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
+fld  public static final int javax.swing.SwingConstants.BOTTOM
+fld  public static final int javax.swing.SwingConstants.CENTER
+fld  public static final int javax.swing.SwingConstants.EAST
+fld  public static final int javax.swing.SwingConstants.HORIZONTAL
+fld  public static final int javax.swing.SwingConstants.LEADING
+fld  public static final int javax.swing.SwingConstants.LEFT
+fld  public static final int javax.swing.SwingConstants.NEXT
+fld  public static final int javax.swing.SwingConstants.NORTH
+fld  public static final int javax.swing.SwingConstants.NORTH_EAST
+fld  public static final int javax.swing.SwingConstants.NORTH_WEST
+fld  public static final int javax.swing.SwingConstants.PREVIOUS
+fld  public static final int javax.swing.SwingConstants.RIGHT
+fld  public static final int javax.swing.SwingConstants.SOUTH
+fld  public static final int javax.swing.SwingConstants.SOUTH_EAST
+fld  public static final int javax.swing.SwingConstants.SOUTH_WEST
+fld  public static final int javax.swing.SwingConstants.TOP
+fld  public static final int javax.swing.SwingConstants.TRAILING
+fld  public static final int javax.swing.SwingConstants.VERTICAL
+fld  public static final int javax.swing.SwingConstants.WEST
+fld  public static final java.lang.String javax.swing.AbstractButton.BORDER_PAINTED_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.CONTENT_AREA_FILLED_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.DISABLED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.DISABLED_SELECTED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.FOCUS_PAINTED_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_ALIGNMENT_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_TEXT_POSITION_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.MARGIN_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.MNEMONIC_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.MODEL_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.PRESSED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ENABLED_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_SELECTED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.SELECTED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.TEXT_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.VERTICAL_ALIGNMENT_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.VERTICAL_TEXT_POSITION_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
 intf java.awt.ItemSelectable
 intf java.awt.MenuContainer
 intf java.awt.image.ImageObserver
@@ -6293,62 +3012,6 @@ meth public void org.openide.awt.ToolbarButton.processMouseEvent(java.awt.event.
 supr org.openide.awt.ToolbarButton
 CLSS public static org.openide.awt.Actions$ToolbarToggleButton
 cons public ToolbarToggleButton(org.openide.util.actions.BooleanStateAction)
-fld  constant public static final float java.awt.Component.BOTTOM_ALIGNMENT
-fld  constant public static final float java.awt.Component.CENTER_ALIGNMENT
-fld  constant public static final float java.awt.Component.LEFT_ALIGNMENT
-fld  constant public static final float java.awt.Component.RIGHT_ALIGNMENT
-fld  constant public static final float java.awt.Component.TOP_ALIGNMENT
-fld  constant public static final int java.awt.image.ImageObserver.ABORT
-fld  constant public static final int java.awt.image.ImageObserver.ALLBITS
-fld  constant public static final int java.awt.image.ImageObserver.ERROR
-fld  constant public static final int java.awt.image.ImageObserver.FRAMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.HEIGHT
-fld  constant public static final int java.awt.image.ImageObserver.PROPERTIES
-fld  constant public static final int java.awt.image.ImageObserver.SOMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.WIDTH
-fld  constant public static final int javax.swing.JComponent.UNDEFINED_CONDITION
-fld  constant public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
-fld  constant public static final int javax.swing.JComponent.WHEN_FOCUSED
-fld  constant public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
-fld  constant public static final int javax.swing.SwingConstants.BOTTOM
-fld  constant public static final int javax.swing.SwingConstants.CENTER
-fld  constant public static final int javax.swing.SwingConstants.EAST
-fld  constant public static final int javax.swing.SwingConstants.HORIZONTAL
-fld  constant public static final int javax.swing.SwingConstants.LEADING
-fld  constant public static final int javax.swing.SwingConstants.LEFT
-fld  constant public static final int javax.swing.SwingConstants.NEXT
-fld  constant public static final int javax.swing.SwingConstants.NORTH
-fld  constant public static final int javax.swing.SwingConstants.NORTH_EAST
-fld  constant public static final int javax.swing.SwingConstants.NORTH_WEST
-fld  constant public static final int javax.swing.SwingConstants.PREVIOUS
-fld  constant public static final int javax.swing.SwingConstants.RIGHT
-fld  constant public static final int javax.swing.SwingConstants.SOUTH
-fld  constant public static final int javax.swing.SwingConstants.SOUTH_EAST
-fld  constant public static final int javax.swing.SwingConstants.SOUTH_WEST
-fld  constant public static final int javax.swing.SwingConstants.TOP
-fld  constant public static final int javax.swing.SwingConstants.TRAILING
-fld  constant public static final int javax.swing.SwingConstants.VERTICAL
-fld  constant public static final int javax.swing.SwingConstants.WEST
-fld  constant public static final java.lang.String javax.swing.AbstractButton.BORDER_PAINTED_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.CONTENT_AREA_FILLED_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.DISABLED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.DISABLED_SELECTED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.FOCUS_PAINTED_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_ALIGNMENT_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_TEXT_POSITION_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.MARGIN_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.MNEMONIC_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.MODEL_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.PRESSED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ENABLED_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_SELECTED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.SELECTED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.TEXT_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.VERTICAL_ALIGNMENT_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.VERTICAL_TEXT_POSITION_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
 fld  protected java.awt.event.ActionListener javax.swing.AbstractButton.actionListener
 fld  protected java.awt.event.ItemListener javax.swing.AbstractButton.itemListener
 fld  protected javax.accessibility.AccessibleContext javax.swing.JComponent.accessibleContext
@@ -6357,15 +3020,62 @@ fld  protected javax.swing.event.ChangeListener javax.swing.AbstractButton.chang
 fld  protected javax.swing.event.EventListenerList javax.swing.JComponent.listenerList
 fld  protected transient javax.swing.event.ChangeEvent javax.swing.AbstractButton.changeEvent
 fld  protected transient javax.swing.plaf.ComponentUI javax.swing.JComponent.ui
-innr protected abstract java.awt.Component$AccessibleAWTComponent
-innr protected abstract javax.swing.AbstractButton$AccessibleAbstractButton
-innr protected java.awt.Component$BltBufferStrategy
-innr protected java.awt.Component$FlipBufferStrategy
-innr protected java.awt.Container$AccessibleAWTContainer
-innr protected javax.swing.AbstractButton$ButtonChangeListener
-innr protected javax.swing.JToggleButton$AccessibleJToggleButton
-innr public abstract javax.swing.JComponent$AccessibleJComponent
-innr public static javax.swing.JToggleButton$ToggleButtonModel
+fld  public static final float java.awt.Component.BOTTOM_ALIGNMENT
+fld  public static final float java.awt.Component.CENTER_ALIGNMENT
+fld  public static final float java.awt.Component.LEFT_ALIGNMENT
+fld  public static final float java.awt.Component.RIGHT_ALIGNMENT
+fld  public static final float java.awt.Component.TOP_ALIGNMENT
+fld  public static final int java.awt.image.ImageObserver.ABORT
+fld  public static final int java.awt.image.ImageObserver.ALLBITS
+fld  public static final int java.awt.image.ImageObserver.ERROR
+fld  public static final int java.awt.image.ImageObserver.FRAMEBITS
+fld  public static final int java.awt.image.ImageObserver.HEIGHT
+fld  public static final int java.awt.image.ImageObserver.PROPERTIES
+fld  public static final int java.awt.image.ImageObserver.SOMEBITS
+fld  public static final int java.awt.image.ImageObserver.WIDTH
+fld  public static final int javax.swing.JComponent.UNDEFINED_CONDITION
+fld  public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
+fld  public static final int javax.swing.JComponent.WHEN_FOCUSED
+fld  public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
+fld  public static final int javax.swing.SwingConstants.BOTTOM
+fld  public static final int javax.swing.SwingConstants.CENTER
+fld  public static final int javax.swing.SwingConstants.EAST
+fld  public static final int javax.swing.SwingConstants.HORIZONTAL
+fld  public static final int javax.swing.SwingConstants.LEADING
+fld  public static final int javax.swing.SwingConstants.LEFT
+fld  public static final int javax.swing.SwingConstants.NEXT
+fld  public static final int javax.swing.SwingConstants.NORTH
+fld  public static final int javax.swing.SwingConstants.NORTH_EAST
+fld  public static final int javax.swing.SwingConstants.NORTH_WEST
+fld  public static final int javax.swing.SwingConstants.PREVIOUS
+fld  public static final int javax.swing.SwingConstants.RIGHT
+fld  public static final int javax.swing.SwingConstants.SOUTH
+fld  public static final int javax.swing.SwingConstants.SOUTH_EAST
+fld  public static final int javax.swing.SwingConstants.SOUTH_WEST
+fld  public static final int javax.swing.SwingConstants.TOP
+fld  public static final int javax.swing.SwingConstants.TRAILING
+fld  public static final int javax.swing.SwingConstants.VERTICAL
+fld  public static final int javax.swing.SwingConstants.WEST
+fld  public static final java.lang.String javax.swing.AbstractButton.BORDER_PAINTED_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.CONTENT_AREA_FILLED_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.DISABLED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.DISABLED_SELECTED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.FOCUS_PAINTED_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_ALIGNMENT_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_TEXT_POSITION_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.MARGIN_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.MNEMONIC_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.MODEL_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.PRESSED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ENABLED_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_SELECTED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.SELECTED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.TEXT_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.VERTICAL_ALIGNMENT_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.VERTICAL_TEXT_POSITION_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
 intf java.awt.ItemSelectable
 intf java.awt.MenuContainer
 intf java.awt.image.ImageObserver
@@ -6898,31 +3608,26 @@ supr java.awt.event.MouseAdapter
 CLSS public static org.openide.awt.SplittedPanel$EmptySplitter
 cons public EmptySplitter()
 cons public EmptySplitter(int)
-fld  constant public static final float java.awt.Component.BOTTOM_ALIGNMENT
-fld  constant public static final float java.awt.Component.CENTER_ALIGNMENT
-fld  constant public static final float java.awt.Component.LEFT_ALIGNMENT
-fld  constant public static final float java.awt.Component.RIGHT_ALIGNMENT
-fld  constant public static final float java.awt.Component.TOP_ALIGNMENT
-fld  constant public static final int java.awt.image.ImageObserver.ABORT
-fld  constant public static final int java.awt.image.ImageObserver.ALLBITS
-fld  constant public static final int java.awt.image.ImageObserver.ERROR
-fld  constant public static final int java.awt.image.ImageObserver.FRAMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.HEIGHT
-fld  constant public static final int java.awt.image.ImageObserver.PROPERTIES
-fld  constant public static final int java.awt.image.ImageObserver.SOMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.WIDTH
-fld  constant public static final int javax.swing.JComponent.UNDEFINED_CONDITION
-fld  constant public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
-fld  constant public static final int javax.swing.JComponent.WHEN_FOCUSED
-fld  constant public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
-fld  constant public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
 fld  protected javax.swing.event.EventListenerList javax.swing.JComponent.listenerList
 fld  protected transient javax.swing.plaf.ComponentUI javax.swing.JComponent.ui
-innr protected abstract java.awt.Component$AccessibleAWTComponent
-innr protected java.awt.Component$BltBufferStrategy
-innr protected java.awt.Component$FlipBufferStrategy
-innr protected java.awt.Container$AccessibleAWTContainer
-innr public abstract javax.swing.JComponent$AccessibleJComponent
+fld  public static final float java.awt.Component.BOTTOM_ALIGNMENT
+fld  public static final float java.awt.Component.CENTER_ALIGNMENT
+fld  public static final float java.awt.Component.LEFT_ALIGNMENT
+fld  public static final float java.awt.Component.RIGHT_ALIGNMENT
+fld  public static final float java.awt.Component.TOP_ALIGNMENT
+fld  public static final int java.awt.image.ImageObserver.ABORT
+fld  public static final int java.awt.image.ImageObserver.ALLBITS
+fld  public static final int java.awt.image.ImageObserver.ERROR
+fld  public static final int java.awt.image.ImageObserver.FRAMEBITS
+fld  public static final int java.awt.image.ImageObserver.HEIGHT
+fld  public static final int java.awt.image.ImageObserver.PROPERTIES
+fld  public static final int java.awt.image.ImageObserver.SOMEBITS
+fld  public static final int java.awt.image.ImageObserver.WIDTH
+fld  public static final int javax.swing.JComponent.UNDEFINED_CONDITION
+fld  public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
+fld  public static final int javax.swing.JComponent.WHEN_FOCUSED
+fld  public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
+fld  public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
 intf java.awt.MenuContainer
 intf java.awt.image.ImageObserver
 intf java.io.Serializable
@@ -7361,9 +4066,9 @@ meth public void org.openide.awt.UndoRedo$Empty.undo() throws javax.swing.undo.C
 supr java.lang.Object
 CLSS public static org.openide.awt.UndoRedo$Manager
 cons public Manager()
-fld  constant protected static final java.lang.String javax.swing.undo.AbstractUndoableEdit.RedoName
-fld  constant protected static final java.lang.String javax.swing.undo.AbstractUndoableEdit.UndoName
 fld  protected java.util.Vector javax.swing.undo.CompoundEdit.edits
+fld  protected static final java.lang.String javax.swing.undo.AbstractUndoableEdit.RedoName
+fld  protected static final java.lang.String javax.swing.undo.AbstractUndoableEdit.UndoName
 fld  public static final org.openide.awt.UndoRedo org.openide.awt.UndoRedo.NONE
 innr public static final org.openide.awt.UndoRedo$Empty
 innr public static org.openide.awt.UndoRedo$Manager
@@ -7478,62 +4183,6 @@ cons public Menu(org.openide.nodes.Node,org.openide.explorer.view.MenuView$Accep
 cons public Menu(org.openide.nodes.Node,org.openide.explorer.view.MenuView$Acceptor,boolean)
 cons public Menu(org.openide.nodes.Node,org.openide.nodes.NodeAcceptor)
 cons public Menu(org.openide.nodes.Node,org.openide.nodes.NodeAcceptor,boolean)
-fld  constant public static final float java.awt.Component.BOTTOM_ALIGNMENT
-fld  constant public static final float java.awt.Component.CENTER_ALIGNMENT
-fld  constant public static final float java.awt.Component.LEFT_ALIGNMENT
-fld  constant public static final float java.awt.Component.RIGHT_ALIGNMENT
-fld  constant public static final float java.awt.Component.TOP_ALIGNMENT
-fld  constant public static final int java.awt.image.ImageObserver.ABORT
-fld  constant public static final int java.awt.image.ImageObserver.ALLBITS
-fld  constant public static final int java.awt.image.ImageObserver.ERROR
-fld  constant public static final int java.awt.image.ImageObserver.FRAMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.HEIGHT
-fld  constant public static final int java.awt.image.ImageObserver.PROPERTIES
-fld  constant public static final int java.awt.image.ImageObserver.SOMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.WIDTH
-fld  constant public static final int javax.swing.JComponent.UNDEFINED_CONDITION
-fld  constant public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
-fld  constant public static final int javax.swing.JComponent.WHEN_FOCUSED
-fld  constant public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
-fld  constant public static final int javax.swing.SwingConstants.BOTTOM
-fld  constant public static final int javax.swing.SwingConstants.CENTER
-fld  constant public static final int javax.swing.SwingConstants.EAST
-fld  constant public static final int javax.swing.SwingConstants.HORIZONTAL
-fld  constant public static final int javax.swing.SwingConstants.LEADING
-fld  constant public static final int javax.swing.SwingConstants.LEFT
-fld  constant public static final int javax.swing.SwingConstants.NEXT
-fld  constant public static final int javax.swing.SwingConstants.NORTH
-fld  constant public static final int javax.swing.SwingConstants.NORTH_EAST
-fld  constant public static final int javax.swing.SwingConstants.NORTH_WEST
-fld  constant public static final int javax.swing.SwingConstants.PREVIOUS
-fld  constant public static final int javax.swing.SwingConstants.RIGHT
-fld  constant public static final int javax.swing.SwingConstants.SOUTH
-fld  constant public static final int javax.swing.SwingConstants.SOUTH_EAST
-fld  constant public static final int javax.swing.SwingConstants.SOUTH_WEST
-fld  constant public static final int javax.swing.SwingConstants.TOP
-fld  constant public static final int javax.swing.SwingConstants.TRAILING
-fld  constant public static final int javax.swing.SwingConstants.VERTICAL
-fld  constant public static final int javax.swing.SwingConstants.WEST
-fld  constant public static final java.lang.String javax.swing.AbstractButton.BORDER_PAINTED_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.CONTENT_AREA_FILLED_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.DISABLED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.DISABLED_SELECTED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.FOCUS_PAINTED_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_ALIGNMENT_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_TEXT_POSITION_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.MARGIN_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.MNEMONIC_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.MODEL_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.PRESSED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ENABLED_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_SELECTED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.SELECTED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.TEXT_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.VERTICAL_ALIGNMENT_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.VERTICAL_TEXT_POSITION_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
 fld  protected java.awt.event.ActionListener javax.swing.AbstractButton.actionListener
 fld  protected java.awt.event.ItemListener javax.swing.AbstractButton.itemListener
 fld  protected javax.accessibility.AccessibleContext javax.swing.JComponent.accessibleContext
@@ -7545,16 +4194,62 @@ fld  protected org.openide.nodes.Node org.openide.explorer.view.MenuView$Menu.no
 fld  protected org.openide.nodes.NodeAcceptor org.openide.explorer.view.MenuView$Menu.action
 fld  protected transient javax.swing.event.ChangeEvent javax.swing.AbstractButton.changeEvent
 fld  protected transient javax.swing.plaf.ComponentUI javax.swing.JComponent.ui
-innr protected abstract java.awt.Component$AccessibleAWTComponent
-innr protected abstract javax.swing.AbstractButton$AccessibleAbstractButton
-innr protected java.awt.Component$BltBufferStrategy
-innr protected java.awt.Component$FlipBufferStrategy
-innr protected java.awt.Container$AccessibleAWTContainer
-innr protected javax.swing.AbstractButton$ButtonChangeListener
-innr protected javax.swing.JMenu$AccessibleJMenu
-innr protected javax.swing.JMenu$WinListener
-innr protected javax.swing.JMenuItem$AccessibleJMenuItem
-innr public abstract javax.swing.JComponent$AccessibleJComponent
+fld  public static final float java.awt.Component.BOTTOM_ALIGNMENT
+fld  public static final float java.awt.Component.CENTER_ALIGNMENT
+fld  public static final float java.awt.Component.LEFT_ALIGNMENT
+fld  public static final float java.awt.Component.RIGHT_ALIGNMENT
+fld  public static final float java.awt.Component.TOP_ALIGNMENT
+fld  public static final int java.awt.image.ImageObserver.ABORT
+fld  public static final int java.awt.image.ImageObserver.ALLBITS
+fld  public static final int java.awt.image.ImageObserver.ERROR
+fld  public static final int java.awt.image.ImageObserver.FRAMEBITS
+fld  public static final int java.awt.image.ImageObserver.HEIGHT
+fld  public static final int java.awt.image.ImageObserver.PROPERTIES
+fld  public static final int java.awt.image.ImageObserver.SOMEBITS
+fld  public static final int java.awt.image.ImageObserver.WIDTH
+fld  public static final int javax.swing.JComponent.UNDEFINED_CONDITION
+fld  public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
+fld  public static final int javax.swing.JComponent.WHEN_FOCUSED
+fld  public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
+fld  public static final int javax.swing.SwingConstants.BOTTOM
+fld  public static final int javax.swing.SwingConstants.CENTER
+fld  public static final int javax.swing.SwingConstants.EAST
+fld  public static final int javax.swing.SwingConstants.HORIZONTAL
+fld  public static final int javax.swing.SwingConstants.LEADING
+fld  public static final int javax.swing.SwingConstants.LEFT
+fld  public static final int javax.swing.SwingConstants.NEXT
+fld  public static final int javax.swing.SwingConstants.NORTH
+fld  public static final int javax.swing.SwingConstants.NORTH_EAST
+fld  public static final int javax.swing.SwingConstants.NORTH_WEST
+fld  public static final int javax.swing.SwingConstants.PREVIOUS
+fld  public static final int javax.swing.SwingConstants.RIGHT
+fld  public static final int javax.swing.SwingConstants.SOUTH
+fld  public static final int javax.swing.SwingConstants.SOUTH_EAST
+fld  public static final int javax.swing.SwingConstants.SOUTH_WEST
+fld  public static final int javax.swing.SwingConstants.TOP
+fld  public static final int javax.swing.SwingConstants.TRAILING
+fld  public static final int javax.swing.SwingConstants.VERTICAL
+fld  public static final int javax.swing.SwingConstants.WEST
+fld  public static final java.lang.String javax.swing.AbstractButton.BORDER_PAINTED_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.CONTENT_AREA_FILLED_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.DISABLED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.DISABLED_SELECTED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.FOCUS_PAINTED_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_ALIGNMENT_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_TEXT_POSITION_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.MARGIN_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.MNEMONIC_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.MODEL_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.PRESSED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ENABLED_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_SELECTED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.SELECTED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.TEXT_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.VERTICAL_ALIGNMENT_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.VERTICAL_TEXT_POSITION_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
 intf java.awt.ItemSelectable
 intf java.awt.MenuContainer
 intf java.awt.image.ImageObserver
@@ -8382,6 +5077,7 @@ meth public org.openide.filesystems.FileObject org.openide.loaders.FileEntry$Fol
 meth public org.openide.filesystems.FileObject org.openide.loaders.FileEntry$Folder.createFromTemplate(org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException
 meth public org.openide.filesystems.FileObject org.openide.loaders.FileEntry$Folder.move(org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException
 meth public org.openide.filesystems.FileObject org.openide.loaders.FileEntry$Folder.rename(java.lang.String) throws java.io.IOException
+meth public org.openide.filesystems.FileObject org.openide.loaders.MultiDataObject$Entry.copyRename(org.openide.filesystems.FileObject,java.lang.String,java.lang.String) throws java.io.IOException
 meth public void org.openide.loaders.FileEntry$Folder.delete() throws java.io.IOException
 supr org.openide.loaders.MultiDataObject$Entry
 CLSS public static abstract org.openide.loaders.FileEntry$Format
@@ -8410,6 +5106,7 @@ meth public native final void java.lang.Object.wait(long) throws java.lang.Inter
 meth public org.openide.filesystems.FileLock org.openide.loaders.MultiDataObject$Entry.takeLock() throws java.io.IOException
 meth public org.openide.filesystems.FileObject org.openide.loaders.FileEntry$Format.createFromTemplate(org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException
 meth public org.openide.filesystems.FileObject org.openide.loaders.FileEntry.copy(org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException
+meth public org.openide.filesystems.FileObject org.openide.loaders.FileEntry.copyRename(org.openide.filesystems.FileObject,java.lang.String,java.lang.String) throws java.io.IOException
 meth public org.openide.filesystems.FileObject org.openide.loaders.FileEntry.move(org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException
 meth public org.openide.filesystems.FileObject org.openide.loaders.FileEntry.rename(java.lang.String) throws java.io.IOException
 meth public void org.openide.loaders.FileEntry.delete() throws java.io.IOException
@@ -8438,6 +5135,7 @@ meth public org.openide.filesystems.FileObject org.openide.loaders.FileEntry$Num
 meth public org.openide.filesystems.FileObject org.openide.loaders.FileEntry$Numb.createFromTemplate(org.openide.filesystems.FileObject,java.lang.String)
 meth public org.openide.filesystems.FileObject org.openide.loaders.FileEntry$Numb.move(org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException
 meth public org.openide.filesystems.FileObject org.openide.loaders.FileEntry$Numb.rename(java.lang.String) throws java.io.IOException
+meth public org.openide.filesystems.FileObject org.openide.loaders.MultiDataObject$Entry.copyRename(org.openide.filesystems.FileObject,java.lang.String,java.lang.String) throws java.io.IOException
 meth public void org.openide.loaders.FileEntry$Numb.delete() throws java.io.IOException
 supr org.openide.loaders.MultiDataObject$Entry
 CLSS public static org.openide.loaders.InstanceSupport$Instance
@@ -8487,6 +5185,7 @@ meth public native final void java.lang.Object.notify()
 meth public native final void java.lang.Object.notifyAll()
 meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
 meth public org.openide.filesystems.FileLock org.openide.loaders.MultiDataObject$Entry.takeLock() throws java.io.IOException
+meth public org.openide.filesystems.FileObject org.openide.loaders.MultiDataObject$Entry.copyRename(org.openide.filesystems.FileObject,java.lang.String,java.lang.String) throws java.io.IOException
 supr java.lang.Object
 CLSS public static org.openide.loaders.OpenSupport$Env
 cons public Env(org.openide.loaders.DataObject)
@@ -8663,6 +5362,7 @@ meth public native final void java.lang.Object.notifyAll()
 meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
 meth public native int java.lang.Object.hashCode()
 meth public org.openide.nodes.Node org.openide.nodes.Children.findChild(java.lang.String)
+meth public static org.openide.nodes.Children org.openide.nodes.Children.create(org.openide.nodes.ChildFactory,boolean)
 supr org.openide.nodes.Children
 CLSS public static abstract org.openide.nodes.Children$Keys
 cons public Keys()
@@ -8705,6 +5405,7 @@ meth public native final void java.lang.Object.notifyAll()
 meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
 meth public native int java.lang.Object.hashCode()
 meth public org.openide.nodes.Node org.openide.nodes.Children.findChild(java.lang.String)
+meth public static org.openide.nodes.Children org.openide.nodes.Children.create(org.openide.nodes.ChildFactory,boolean)
 supr org.openide.nodes.Children$Array
 CLSS public static org.openide.nodes.Children$Map
 cons protected Map(java.util.Map)
@@ -8746,6 +5447,7 @@ meth public native final void java.lang.Object.notifyAll()
 meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
 meth public native int java.lang.Object.hashCode()
 meth public org.openide.nodes.Node org.openide.nodes.Children.findChild(java.lang.String)
+meth public static org.openide.nodes.Children org.openide.nodes.Children.create(org.openide.nodes.ChildFactory,boolean)
 supr org.openide.nodes.Children
 CLSS public static org.openide.nodes.Children$SortedArray
 cons protected SortedArray(java.util.Collection)
@@ -8784,6 +5486,7 @@ meth public native final void java.lang.Object.notifyAll()
 meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
 meth public native int java.lang.Object.hashCode()
 meth public org.openide.nodes.Node org.openide.nodes.Children.findChild(java.lang.String)
+meth public static org.openide.nodes.Children org.openide.nodes.Children.create(org.openide.nodes.ChildFactory,boolean)
 meth public void org.openide.nodes.Children$SortedArray.setComparator(java.util.Comparator)
 supr org.openide.nodes.Children$Array
 CLSS public static org.openide.nodes.Children$SortedMap
@@ -8827,8 +5530,12 @@ meth public native final void java.lang.Object.notifyAll()
 meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
 meth public native int java.lang.Object.hashCode()
 meth public org.openide.nodes.Node org.openide.nodes.Children.findChild(java.lang.String)
+meth public static org.openide.nodes.Children org.openide.nodes.Children.create(org.openide.nodes.ChildFactory,boolean)
 meth public void org.openide.nodes.Children$SortedMap.setComparator(java.util.Comparator)
 supr org.openide.nodes.Children$Map
+CLSS public static abstract interface org.openide.nodes.CookieSet$Before
+meth public abstract void org.openide.nodes.CookieSet$Before.beforeLookup(java.lang.Class)
+supr null
 CLSS public static abstract interface org.openide.nodes.CookieSet$Factory
 meth public abstract org.openide.nodes.Node$Cookie org.openide.nodes.CookieSet$Factory.createCookie(java.lang.Class)
 supr null
@@ -8844,7 +5551,7 @@ innr public static org.openide.nodes.Children$Map
 innr public static org.openide.nodes.Children$SortedArray
 innr public static org.openide.nodes.Children$SortedMap
 intf java.lang.Cloneable
-meth protected [Lorg.openide.nodes.Node; org.openide.nodes.FilterNode$Children.createNodes(java.lang.Object)
+meth protected [Lorg.openide.nodes.Node; org.openide.nodes.FilterNode$Children.createNodes(org.openide.nodes.Node)
 meth protected final boolean org.openide.nodes.Children.isInitialized()
 meth protected final org.openide.nodes.Node org.openide.nodes.Children.getNode()
 meth protected final void org.openide.nodes.Children$Array.refresh()
@@ -8862,6 +5569,7 @@ meth protected void org.openide.nodes.FilterNode$Children.filterChildrenRemoved(
 meth protected void org.openide.nodes.FilterNode$Children.filterChildrenReordered(org.openide.nodes.NodeReorderEvent)
 meth protected void org.openide.nodes.FilterNode$Children.finalize()
 meth protected void org.openide.nodes.FilterNode$Children.removeNotify()
+meth protected volatile [Lorg.openide.nodes.Node; org.openide.nodes.FilterNode$Children.createNodes(java.lang.Object)
 meth public [Lorg.openide.nodes.Node; org.openide.nodes.FilterNode$Children.getNodes(boolean)
 meth public boolean java.lang.Object.equals(java.lang.Object)
 meth public boolean org.openide.nodes.FilterNode$Children.add([Lorg.openide.nodes.Node;)
@@ -8879,6 +5587,7 @@ meth public native final void java.lang.Object.notifyAll()
 meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
 meth public native int java.lang.Object.hashCode()
 meth public org.openide.nodes.Node org.openide.nodes.FilterNode$Children.findChild(java.lang.String)
+meth public static org.openide.nodes.Children org.openide.nodes.Children.create(org.openide.nodes.ChildFactory,boolean)
 supr org.openide.nodes.Children$Keys
 CLSS protected static org.openide.nodes.FilterNode$NodeAdapter
 cons public NodeAdapter(org.openide.nodes.FilterNode)
@@ -8941,10 +5650,11 @@ intf org.openide.nodes.Node$Cookie
 meth protected final boolean org.openide.nodes.Children.isInitialized()
 meth protected final org.openide.nodes.Node org.openide.nodes.Children.getNode()
 meth protected final void org.openide.nodes.Children$Array.refresh()
-meth protected java.util.Collection org.openide.nodes.Index$ArrayChildren.initCollection()
+meth protected java.util.List org.openide.nodes.Index$ArrayChildren.initCollection()
 meth protected void java.lang.Object.finalize() throws java.lang.Throwable
 meth protected void org.openide.nodes.Children.addNotify()
 meth protected void org.openide.nodes.Children.removeNotify()
+meth protected volatile java.util.Collection org.openide.nodes.Index$ArrayChildren.initCollection()
 meth public [Lorg.openide.nodes.Node; org.openide.nodes.Children.getNodes(boolean)
 meth public boolean java.lang.Object.equals(java.lang.Object)
 meth public boolean org.openide.nodes.Children$Array.add([Lorg.openide.nodes.Node;)
@@ -8963,6 +5673,7 @@ meth public native final void java.lang.Object.notifyAll()
 meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
 meth public native int java.lang.Object.hashCode()
 meth public org.openide.nodes.Node org.openide.nodes.Children.findChild(java.lang.String)
+meth public static org.openide.nodes.Children org.openide.nodes.Children.create(org.openide.nodes.ChildFactory,boolean)
 meth public void org.openide.nodes.Index$ArrayChildren.addChangeListener(javax.swing.event.ChangeListener)
 meth public void org.openide.nodes.Index$ArrayChildren.exchange(int,int)
 meth public void org.openide.nodes.Index$ArrayChildren.move(int,int)
@@ -9019,6 +5730,7 @@ meth public native final void java.lang.Object.wait(long) throws java.lang.Inter
 meth public native int java.lang.Object.hashCode()
 meth public org.openide.nodes.Index org.openide.nodes.Index$KeysChildren.getIndex()
 meth public org.openide.nodes.Node org.openide.nodes.Children.findChild(java.lang.String)
+meth public static org.openide.nodes.Children org.openide.nodes.Children.create(org.openide.nodes.ChildFactory,boolean)
 supr org.openide.nodes.Children$Keys
 CLSS public static abstract org.openide.nodes.Index$Support
 cons public Support()
@@ -9199,12 +5911,12 @@ meth public int org.openide.nodes.Node$Property.hashCode()
 meth public java.beans.PropertyEditor org.openide.nodes.Node$Property.getPropertyEditor()
 meth public java.lang.Class org.openide.nodes.Node$Property.getValueType()
 meth public java.lang.Object java.beans.FeatureDescriptor.getValue(java.lang.String)
-meth public java.lang.Object org.openide.nodes.PropertySupport$Name.getValue() throws java.lang.IllegalAccessException,java.lang.IllegalArgumentException,java.lang.reflect.InvocationTargetException
 meth public java.lang.String java.beans.FeatureDescriptor.getDisplayName()
 meth public java.lang.String java.beans.FeatureDescriptor.getName()
 meth public java.lang.String java.beans.FeatureDescriptor.getShortDescription()
 meth public java.lang.String java.lang.Object.toString()
 meth public java.lang.String org.openide.nodes.Node$Property.getHtmlDisplayName()
+meth public java.lang.String org.openide.nodes.PropertySupport$Name.getValue() throws java.lang.IllegalAccessException,java.lang.IllegalArgumentException,java.lang.reflect.InvocationTargetException
 meth public java.util.Enumeration java.beans.FeatureDescriptor.attributeNames()
 meth public native final java.lang.Class java.lang.Object.getClass()
 meth public native final void java.lang.Object.notify()
@@ -9218,7 +5930,9 @@ meth public void java.beans.FeatureDescriptor.setPreferred(boolean)
 meth public void java.beans.FeatureDescriptor.setShortDescription(java.lang.String)
 meth public void java.beans.FeatureDescriptor.setValue(java.lang.String,java.lang.Object)
 meth public void org.openide.nodes.Node$Property.restoreDefaultValue() throws java.lang.IllegalAccessException,java.lang.reflect.InvocationTargetException
-meth public void org.openide.nodes.PropertySupport$Name.setValue(java.lang.Object) throws java.lang.IllegalAccessException,java.lang.IllegalArgumentException,java.lang.reflect.InvocationTargetException
+meth public void org.openide.nodes.PropertySupport$Name.setValue(java.lang.String) throws java.lang.IllegalAccessException,java.lang.IllegalArgumentException,java.lang.reflect.InvocationTargetException
+meth public volatile java.lang.Object org.openide.nodes.PropertySupport$Name.getValue() throws java.lang.IllegalAccessException,java.lang.reflect.InvocationTargetException
+meth public volatile void org.openide.nodes.PropertySupport$Name.setValue(java.lang.Object) throws java.lang.IllegalAccessException,java.lang.IllegalArgumentException,java.lang.reflect.InvocationTargetException
 supr org.openide.nodes.PropertySupport
 CLSS public static abstract org.openide.nodes.PropertySupport$ReadOnly
 cons public ReadOnly(java.lang.String,java.lang.Class,java.lang.String,java.lang.String)
@@ -9397,7 +6111,6 @@ meth public void org.openide.nodes.Node$Property.restoreDefaultValue() throws ja
 supr org.openide.nodes.PropertySupport
 CLSS public static org.openide.text.AttributedCharacters$AttributedCharacterIteratorImpl
 cons public AttributedCharacterIteratorImpl([C,[Ljava.awt.Font;,[Ljava.awt.Color;,[I,[I)
-fld  constant public static final char java.text.CharacterIterator.DONE
 fld  protected [C org.openide.text.AttributedCharacters$AttributedCharacterIteratorImpl.chars
 fld  protected [I org.openide.text.AttributedCharacters$AttributedCharacterIteratorImpl.runLimit
 fld  protected [I org.openide.text.AttributedCharacters$AttributedCharacterIteratorImpl.runStart
@@ -9405,7 +6118,7 @@ fld  protected [Ljava.awt.Color; org.openide.text.AttributedCharacters$Attribute
 fld  protected [Ljava.awt.Font; org.openide.text.AttributedCharacters$AttributedCharacterIteratorImpl.fonts
 fld  protected int org.openide.text.AttributedCharacters$AttributedCharacterIteratorImpl.current
 fld  protected java.util.Set org.openide.text.AttributedCharacters$AttributedCharacterIteratorImpl.singleton
-innr public static java.text.AttributedCharacterIterator$Attribute
+fld  public static final char java.text.CharacterIterator.DONE
 intf java.lang.Cloneable
 intf java.text.AttributedCharacterIterator
 intf java.text.CharacterIterator
@@ -9533,40 +6246,35 @@ CLSS public static org.openide.text.EditorSupport$Editor
 cons public Editor()
 cons public Editor(org.openide.loaders.DataObject)
 cons public Editor(org.openide.loaders.DataObject,org.openide.text.EditorSupport)
-fld  constant public static final float java.awt.Component.BOTTOM_ALIGNMENT
-fld  constant public static final float java.awt.Component.CENTER_ALIGNMENT
-fld  constant public static final float java.awt.Component.LEFT_ALIGNMENT
-fld  constant public static final float java.awt.Component.RIGHT_ALIGNMENT
-fld  constant public static final float java.awt.Component.TOP_ALIGNMENT
-fld  constant public static final int java.awt.image.ImageObserver.ABORT
-fld  constant public static final int java.awt.image.ImageObserver.ALLBITS
-fld  constant public static final int java.awt.image.ImageObserver.ERROR
-fld  constant public static final int java.awt.image.ImageObserver.FRAMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.HEIGHT
-fld  constant public static final int java.awt.image.ImageObserver.PROPERTIES
-fld  constant public static final int java.awt.image.ImageObserver.SOMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.WIDTH
-fld  constant public static final int javax.swing.JComponent.UNDEFINED_CONDITION
-fld  constant public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
-fld  constant public static final int javax.swing.JComponent.WHEN_FOCUSED
-fld  constant public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
 fld  constant public static final int org.openide.windows.TopComponent.CLOSE_EACH
 fld  constant public static final int org.openide.windows.TopComponent.CLOSE_LAST
 fld  constant public static final int org.openide.windows.TopComponent.PERSISTENCE_ALWAYS
 fld  constant public static final int org.openide.windows.TopComponent.PERSISTENCE_NEVER
 fld  constant public static final int org.openide.windows.TopComponent.PERSISTENCE_ONLY_OPENED
-fld  constant public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
 fld  protected javax.accessibility.AccessibleContext javax.swing.JComponent.accessibleContext
 fld  protected javax.swing.JEditorPane org.openide.text.CloneableEditor.pane
 fld  protected javax.swing.event.EventListenerList javax.swing.JComponent.listenerList
 fld  protected org.openide.loaders.DataObject org.openide.text.EditorSupport$Editor.obj
 fld  protected transient javax.swing.plaf.ComponentUI javax.swing.JComponent.ui
+fld  public static final float java.awt.Component.BOTTOM_ALIGNMENT
+fld  public static final float java.awt.Component.CENTER_ALIGNMENT
+fld  public static final float java.awt.Component.LEFT_ALIGNMENT
+fld  public static final float java.awt.Component.RIGHT_ALIGNMENT
+fld  public static final float java.awt.Component.TOP_ALIGNMENT
+fld  public static final int java.awt.image.ImageObserver.ABORT
+fld  public static final int java.awt.image.ImageObserver.ALLBITS
+fld  public static final int java.awt.image.ImageObserver.ERROR
+fld  public static final int java.awt.image.ImageObserver.FRAMEBITS
+fld  public static final int java.awt.image.ImageObserver.HEIGHT
+fld  public static final int java.awt.image.ImageObserver.PROPERTIES
+fld  public static final int java.awt.image.ImageObserver.SOMEBITS
+fld  public static final int java.awt.image.ImageObserver.WIDTH
+fld  public static final int javax.swing.JComponent.UNDEFINED_CONDITION
+fld  public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
+fld  public static final int javax.swing.JComponent.WHEN_FOCUSED
+fld  public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
+fld  public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
 fld  public static final org.openide.windows.CloneableTopComponent$Ref org.openide.windows.CloneableTopComponent.EMPTY
-innr protected abstract java.awt.Component$AccessibleAWTComponent
-innr protected java.awt.Component$BltBufferStrategy
-innr protected java.awt.Component$FlipBufferStrategy
-innr protected java.awt.Container$AccessibleAWTContainer
-innr public abstract javax.swing.JComponent$AccessibleJComponent
 innr public static abstract interface org.openide.windows.TopComponent$Cloneable
 innr public static abstract interface org.openide.windows.TopComponent$Registry
 innr public static org.openide.windows.CloneableTopComponent$Ref
@@ -9628,10 +6336,10 @@ meth protected void org.openide.windows.TopComponent.componentHidden()
 meth protected void org.openide.windows.TopComponent.openNotify()
 meth public [Ljava.awt.Component; java.awt.Container.getComponents()
 meth public [Ljava.util.EventListener; javax.swing.JComponent.getListeners(java.lang.Class)
-meth public [Ljavax.swing.Action; org.openide.windows.TopComponent.getActions()
+meth public [Ljavax.swing.Action; org.openide.text.CloneableEditor.getActions()
 meth public [Ljavax.swing.KeyStroke; javax.swing.JComponent.getRegisteredKeyStrokes()
 meth public [Ljavax.swing.event.AncestorListener; javax.swing.JComponent.getAncestorListeners()
-meth public [Lorg.openide.util.actions.SystemAction; org.openide.text.CloneableEditor.getSystemActions()
+meth public [Lorg.openide.util.actions.SystemAction; org.openide.windows.TopComponent.getSystemActions()
 meth public boolean java.awt.Component.action(java.awt.Event,java.lang.Object)
 meth public boolean java.awt.Component.contains(java.awt.Point)
 meth public boolean java.awt.Component.getFocusTraversalKeysEnabled()
@@ -9699,6 +6407,7 @@ meth public final boolean org.openide.windows.TopComponent.isOpened()
 meth public final boolean org.openide.windows.TopComponent.isOpened(org.openide.windows.Workspace)
 meth public final int java.awt.Container.getComponentZOrder(java.awt.Component)
 meth public final int org.openide.windows.TopComponent.getCloseOperation()
+meth public final int org.openide.windows.TopComponent.getTabPosition()
 meth public final java.lang.Object java.awt.Component.getTreeLock()
 meth public final java.lang.Object javax.swing.JComponent.getClientProperty(java.lang.Object)
 meth public final java.lang.Object org.openide.windows.CloneableTopComponent.clone()
@@ -9716,6 +6425,7 @@ meth public final void javax.swing.JComponent.putClientProperty(java.lang.Object
 meth public final void javax.swing.JComponent.setActionMap(javax.swing.ActionMap)
 meth public final void javax.swing.JComponent.setInputMap(int,javax.swing.InputMap)
 meth public final void org.openide.windows.TopComponent.cancelRequestAttention()
+meth public final void org.openide.windows.TopComponent.openAtTabPosition(int)
 meth public final void org.openide.windows.TopComponent.requestAttention(boolean)
 meth public final void org.openide.windows.TopComponent.setActivatedNodes([Lorg.openide.nodes.Node;)
 meth public final void org.openide.windows.TopComponent.setCloseOperation(int)
@@ -10037,8 +6747,8 @@ meth public native final void java.lang.Object.wait(long) throws java.lang.Inter
 meth public native int java.lang.Object.hashCode()
 supr java.lang.Object
 CLSS public static abstract interface org.openide.text.NbDocument$Annotatable
-fld  constant public static final java.lang.String javax.swing.text.Document.StreamDescriptionProperty
-fld  constant public static final java.lang.String javax.swing.text.Document.TitleProperty
+fld  public static final java.lang.String javax.swing.text.Document.StreamDescriptionProperty
+fld  public static final java.lang.String javax.swing.text.Document.TitleProperty
 intf javax.swing.text.Document
 meth public abstract [Ljavax.swing.text.Element; javax.swing.text.Document.getRootElements()
 meth public abstract int javax.swing.text.Document.getLength()
@@ -10061,8 +6771,8 @@ meth public abstract void org.openide.text.NbDocument$Annotatable.addAnnotation(
 meth public abstract void org.openide.text.NbDocument$Annotatable.removeAnnotation(org.openide.text.Annotation)
 supr null
 CLSS public static abstract interface org.openide.text.NbDocument$CustomEditor
-fld  constant public static final java.lang.String javax.swing.text.Document.StreamDescriptionProperty
-fld  constant public static final java.lang.String javax.swing.text.Document.TitleProperty
+fld  public static final java.lang.String javax.swing.text.Document.StreamDescriptionProperty
+fld  public static final java.lang.String javax.swing.text.Document.TitleProperty
 intf javax.swing.text.Document
 meth public abstract [Ljavax.swing.text.Element; javax.swing.text.Document.getRootElements()
 meth public abstract int javax.swing.text.Document.getLength()
@@ -10084,8 +6794,8 @@ meth public abstract void javax.swing.text.Document.removeUndoableEditListener(j
 meth public abstract void javax.swing.text.Document.render(java.lang.Runnable)
 supr null
 CLSS public static abstract interface org.openide.text.NbDocument$CustomToolbar
-fld  constant public static final java.lang.String javax.swing.text.Document.StreamDescriptionProperty
-fld  constant public static final java.lang.String javax.swing.text.Document.TitleProperty
+fld  public static final java.lang.String javax.swing.text.Document.StreamDescriptionProperty
+fld  public static final java.lang.String javax.swing.text.Document.TitleProperty
 intf javax.swing.text.Document
 meth public abstract [Ljavax.swing.text.Element; javax.swing.text.Document.getRootElements()
 meth public abstract int javax.swing.text.Document.getLength()
@@ -10107,8 +6817,8 @@ meth public abstract void javax.swing.text.Document.removeUndoableEditListener(j
 meth public abstract void javax.swing.text.Document.render(java.lang.Runnable)
 supr null
 CLSS public static abstract interface org.openide.text.NbDocument$PositionBiasable
-fld  constant public static final java.lang.String javax.swing.text.Document.StreamDescriptionProperty
-fld  constant public static final java.lang.String javax.swing.text.Document.TitleProperty
+fld  public static final java.lang.String javax.swing.text.Document.StreamDescriptionProperty
+fld  public static final java.lang.String javax.swing.text.Document.TitleProperty
 intf javax.swing.text.Document
 meth public abstract [Ljavax.swing.text.Element; javax.swing.text.Document.getRootElements()
 meth public abstract int javax.swing.text.Document.getLength()
@@ -10130,8 +6840,8 @@ meth public abstract void javax.swing.text.Document.removeUndoableEditListener(j
 meth public abstract void javax.swing.text.Document.render(java.lang.Runnable)
 supr null
 CLSS public static abstract interface org.openide.text.NbDocument$Printable
-fld  constant public static final java.lang.String javax.swing.text.Document.StreamDescriptionProperty
-fld  constant public static final java.lang.String javax.swing.text.Document.TitleProperty
+fld  public static final java.lang.String javax.swing.text.Document.StreamDescriptionProperty
+fld  public static final java.lang.String javax.swing.text.Document.TitleProperty
 intf javax.swing.text.Document
 meth public abstract [Ljava.text.AttributedCharacterIterator; org.openide.text.NbDocument$Printable.createPrintIterators()
 meth public abstract [Ljavax.swing.text.Element; javax.swing.text.Document.getRootElements()
@@ -10153,8 +6863,8 @@ meth public abstract void javax.swing.text.Document.removeUndoableEditListener(j
 meth public abstract void javax.swing.text.Document.render(java.lang.Runnable)
 supr null
 CLSS public static abstract interface org.openide.text.NbDocument$WriteLockable
-fld  constant public static final java.lang.String javax.swing.text.Document.StreamDescriptionProperty
-fld  constant public static final java.lang.String javax.swing.text.Document.TitleProperty
+fld  public static final java.lang.String javax.swing.text.Document.StreamDescriptionProperty
+fld  public static final java.lang.String javax.swing.text.Document.TitleProperty
 intf javax.swing.text.Document
 meth public abstract [Ljavax.swing.text.Element; javax.swing.text.Document.getRootElements()
 meth public abstract int javax.swing.text.Document.getLength()
@@ -10176,66 +6886,32 @@ meth public abstract void javax.swing.text.Document.render(java.lang.Runnable)
 meth public abstract void org.openide.text.NbDocument$WriteLockable.runAtomic(java.lang.Runnable)
 meth public abstract void org.openide.text.NbDocument$WriteLockable.runAtomicAsUser(java.lang.Runnable) throws javax.swing.text.BadLocationException
 supr null
-CLSS public static org.openide.text.PrintSettings$AlignmentEditor
-cons public AlignmentEditor()
-intf java.beans.PropertyEditor
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+CLSS public static final org.openide.text.PrintPreferences$Alignment
+fld  public static final org.openide.text.PrintPreferences$Alignment org.openide.text.PrintPreferences$Alignment.CENTER
+fld  public static final org.openide.text.PrintPreferences$Alignment org.openide.text.PrintPreferences$Alignment.LEFT
+fld  public static final org.openide.text.PrintPreferences$Alignment org.openide.text.PrintPreferences$Alignment.RIGHT
+intf java.io.Serializable
+intf java.lang.Comparable
+meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
 meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public [Ljava.lang.String; org.openide.text.PrintSettings$AlignmentEditor.getTags()
-meth public boolean java.beans.PropertyEditorSupport.isPaintable()
-meth public boolean java.beans.PropertyEditorSupport.supportsCustomEditor()
-meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final boolean java.lang.Enum.equals(java.lang.Object)
+meth public final int java.lang.Enum.compareTo(java.lang.Enum)
+meth public final int java.lang.Enum.hashCode()
+meth public final int java.lang.Enum.ordinal()
+meth public final java.lang.Class java.lang.Enum.getDeclaringClass()
+meth public final java.lang.String java.lang.Enum.name()
 meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
 meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.awt.Component java.beans.PropertyEditorSupport.getCustomEditor()
-meth public java.lang.Object java.beans.PropertyEditorSupport.getSource()
-meth public java.lang.Object java.beans.PropertyEditorSupport.getValue()
-meth public java.lang.String java.beans.PropertyEditorSupport.getJavaInitializationString()
-meth public java.lang.String java.lang.Object.toString()
-meth public java.lang.String org.openide.text.PrintSettings$AlignmentEditor.getAsText()
+meth public java.lang.String java.lang.Enum.toString()
 meth public native final java.lang.Class java.lang.Object.getClass()
 meth public native final void java.lang.Object.notify()
 meth public native final void java.lang.Object.notifyAll()
 meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public synchronized void java.beans.PropertyEditorSupport.addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public synchronized void java.beans.PropertyEditorSupport.removePropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void java.beans.PropertyEditorSupport.firePropertyChange()
-meth public void java.beans.PropertyEditorSupport.paintValue(java.awt.Graphics,java.awt.Rectangle)
-meth public void java.beans.PropertyEditorSupport.setSource(java.lang.Object)
-meth public void java.beans.PropertyEditorSupport.setValue(java.lang.Object)
-meth public void org.openide.text.PrintSettings$AlignmentEditor.setAsText(java.lang.String)
-supr java.beans.PropertyEditorSupport
-CLSS public static org.openide.text.PrintSettings$PageFormatEditor
-cons public PageFormatEditor()
-intf java.beans.PropertyEditor
-meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public [Ljava.lang.String; java.beans.PropertyEditorSupport.getTags()
-meth public boolean java.beans.PropertyEditorSupport.isPaintable()
-meth public boolean java.lang.Object.equals(java.lang.Object)
-meth public boolean org.openide.text.PrintSettings$PageFormatEditor.supportsCustomEditor()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.awt.Component org.openide.text.PrintSettings$PageFormatEditor.getCustomEditor()
-meth public java.lang.Object java.beans.PropertyEditorSupport.getSource()
-meth public java.lang.Object java.beans.PropertyEditorSupport.getValue()
-meth public java.lang.String java.beans.PropertyEditorSupport.getJavaInitializationString()
-meth public java.lang.String java.lang.Object.toString()
-meth public java.lang.String org.openide.text.PrintSettings$PageFormatEditor.getAsText()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
-meth public synchronized void java.beans.PropertyEditorSupport.addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public synchronized void java.beans.PropertyEditorSupport.removePropertyChangeListener(java.beans.PropertyChangeListener)
-meth public void java.beans.PropertyEditorSupport.firePropertyChange()
-meth public void java.beans.PropertyEditorSupport.paintValue(java.awt.Graphics,java.awt.Rectangle)
-meth public void java.beans.PropertyEditorSupport.setAsText(java.lang.String) throws java.lang.IllegalArgumentException
-meth public void java.beans.PropertyEditorSupport.setSource(java.lang.Object)
-meth public void java.beans.PropertyEditorSupport.setValue(java.lang.Object)
-supr java.beans.PropertyEditorSupport
+meth public static final [Lorg.openide.text.PrintPreferences$Alignment; org.openide.text.PrintPreferences$Alignment.values()
+meth public static java.lang.Enum java.lang.Enum.valueOf(java.lang.Class,java.lang.String)
+meth public static org.openide.text.PrintPreferences$Alignment org.openide.text.PrintPreferences$Alignment.valueOf(java.lang.String)
+meth public volatile int java.lang.Enum.compareTo(java.lang.Object)
+supr java.lang.Enum
 CLSS public static abstract interface org.openide.util.Enumerations$Processor
 meth public abstract java.lang.Object org.openide.util.Enumerations$Processor.process(java.lang.Object,java.util.Collection)
 supr null
@@ -10451,6 +7127,8 @@ fld  constant public static final java.lang.String org.openide.windows.TopCompon
 fld  constant public static final java.lang.String org.openide.windows.TopComponent$Registry.PROP_ACTIVATED_NODES
 fld  constant public static final java.lang.String org.openide.windows.TopComponent$Registry.PROP_CURRENT_NODES
 fld  constant public static final java.lang.String org.openide.windows.TopComponent$Registry.PROP_OPENED
+fld  constant public static final java.lang.String org.openide.windows.TopComponent$Registry.PROP_TC_CLOSED
+fld  constant public static final java.lang.String org.openide.windows.TopComponent$Registry.PROP_TC_OPENED
 meth public abstract [Lorg.openide.nodes.Node; org.openide.windows.TopComponent$Registry.getActivatedNodes()
 meth public abstract [Lorg.openide.nodes.Node; org.openide.windows.TopComponent$Registry.getCurrentNodes()
 meth public abstract java.util.Set org.openide.windows.TopComponent$Registry.getOpened()
@@ -10481,16 +7159,16 @@ meth public void org.openide.actions.ActionManager.invokeAction(javax.swing.Acti
 supr java.lang.Object
 CLSS public org.openide.actions.CloneViewAction
 cons public CloneViewAction()
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ENABLED
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ICON
+fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
+fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
+fld  public static final java.lang.String javax.swing.Action.DEFAULT
+fld  public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
+fld  public static final java.lang.String javax.swing.Action.NAME
+fld  public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.SMALL_ICON
 innr public static abstract interface org.openide.util.actions.Presenter$Menu
 innr public static abstract interface org.openide.util.actions.Presenter$Popup
 innr public static abstract interface org.openide.util.actions.Presenter$Toolbar
@@ -10562,16 +7240,16 @@ meth public void org.openide.util.actions.SystemAction.setEnabled(boolean)
 supr org.openide.util.actions.CallbackSystemAction
 CLSS public org.openide.actions.CloseViewAction
 cons public CloseViewAction()
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ENABLED
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ICON
+fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
+fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
+fld  public static final java.lang.String javax.swing.Action.DEFAULT
+fld  public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
+fld  public static final java.lang.String javax.swing.Action.NAME
+fld  public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.SMALL_ICON
 innr public static abstract interface org.openide.util.actions.Presenter$Menu
 innr public static abstract interface org.openide.util.actions.Presenter$Popup
 innr public static abstract interface org.openide.util.actions.Presenter$Toolbar
@@ -10643,16 +7321,16 @@ meth public void org.openide.util.actions.SystemAction.setEnabled(boolean)
 supr org.openide.util.actions.CallbackSystemAction
 CLSS public org.openide.actions.CopyAction
 cons public CopyAction()
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ENABLED
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ICON
+fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
+fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
+fld  public static final java.lang.String javax.swing.Action.DEFAULT
+fld  public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
+fld  public static final java.lang.String javax.swing.Action.NAME
+fld  public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.SMALL_ICON
 innr public static abstract interface org.openide.util.actions.Presenter$Menu
 innr public static abstract interface org.openide.util.actions.Presenter$Popup
 innr public static abstract interface org.openide.util.actions.Presenter$Toolbar
@@ -10724,16 +7402,16 @@ meth public void org.openide.util.actions.SystemAction.setEnabled(boolean)
 supr org.openide.util.actions.CallbackSystemAction
 CLSS public org.openide.actions.CustomizeAction
 cons public CustomizeAction()
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ENABLED
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ICON
+fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
+fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
+fld  public static final java.lang.String javax.swing.Action.DEFAULT
+fld  public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
+fld  public static final java.lang.String javax.swing.Action.NAME
+fld  public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.SMALL_ICON
 innr public static abstract interface org.openide.util.actions.Presenter$Menu
 innr public static abstract interface org.openide.util.actions.Presenter$Popup
 innr public static abstract interface org.openide.util.actions.Presenter$Toolbar
@@ -10804,16 +7482,16 @@ meth public void org.openide.util.actions.NodeAction.setEnabled(boolean)
 supr org.openide.util.actions.NodeAction
 CLSS public org.openide.actions.CutAction
 cons public CutAction()
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ENABLED
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ICON
+fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
+fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
+fld  public static final java.lang.String javax.swing.Action.DEFAULT
+fld  public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
+fld  public static final java.lang.String javax.swing.Action.NAME
+fld  public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.SMALL_ICON
 innr public static abstract interface org.openide.util.actions.Presenter$Menu
 innr public static abstract interface org.openide.util.actions.Presenter$Popup
 innr public static abstract interface org.openide.util.actions.Presenter$Toolbar
@@ -10885,16 +7563,16 @@ meth public void org.openide.util.actions.SystemAction.setEnabled(boolean)
 supr org.openide.util.actions.CallbackSystemAction
 CLSS public org.openide.actions.DeleteAction
 cons public DeleteAction()
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ENABLED
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ICON
+fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
+fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
+fld  public static final java.lang.String javax.swing.Action.DEFAULT
+fld  public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
+fld  public static final java.lang.String javax.swing.Action.NAME
+fld  public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.SMALL_ICON
 innr public static abstract interface org.openide.util.actions.Presenter$Menu
 innr public static abstract interface org.openide.util.actions.Presenter$Popup
 innr public static abstract interface org.openide.util.actions.Presenter$Toolbar
@@ -10971,16 +7649,16 @@ fld  constant public static final int org.openide.util.actions.CookieAction.MODE
 fld  constant public static final int org.openide.util.actions.CookieAction.MODE_EXACTLY_ONE
 fld  constant public static final int org.openide.util.actions.CookieAction.MODE_ONE
 fld  constant public static final int org.openide.util.actions.CookieAction.MODE_SOME
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ENABLED
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ICON
+fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
+fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
+fld  public static final java.lang.String javax.swing.Action.DEFAULT
+fld  public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
+fld  public static final java.lang.String javax.swing.Action.NAME
+fld  public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.SMALL_ICON
 innr public static abstract interface org.openide.util.actions.Presenter$Menu
 innr public static abstract interface org.openide.util.actions.Presenter$Popup
 innr public static abstract interface org.openide.util.actions.Presenter$Toolbar
@@ -11053,16 +7731,16 @@ meth public void org.openide.util.actions.NodeAction.setEnabled(boolean)
 supr org.openide.util.actions.CookieAction
 CLSS public org.openide.actions.FileSystemAction
 cons public FileSystemAction()
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ENABLED
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ICON
+fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
+fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
+fld  public static final java.lang.String javax.swing.Action.DEFAULT
+fld  public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
+fld  public static final java.lang.String javax.swing.Action.NAME
+fld  public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.SMALL_ICON
 innr public static abstract interface org.openide.util.actions.Presenter$Popup
 innr public static abstract interface org.openide.util.actions.Presenter$Toolbar
 intf java.awt.event.ActionListener
@@ -11129,16 +7807,16 @@ fld  constant public static final int org.openide.util.actions.CookieAction.MODE
 fld  constant public static final int org.openide.util.actions.CookieAction.MODE_EXACTLY_ONE
 fld  constant public static final int org.openide.util.actions.CookieAction.MODE_ONE
 fld  constant public static final int org.openide.util.actions.CookieAction.MODE_SOME
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ENABLED
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ICON
+fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
+fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
+fld  public static final java.lang.String javax.swing.Action.DEFAULT
+fld  public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
+fld  public static final java.lang.String javax.swing.Action.NAME
+fld  public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.SMALL_ICON
 innr public static abstract interface org.openide.util.actions.Presenter$Menu
 innr public static abstract interface org.openide.util.actions.Presenter$Popup
 innr public static abstract interface org.openide.util.actions.Presenter$Toolbar
@@ -11211,16 +7889,16 @@ meth public void org.openide.util.actions.NodeAction.setEnabled(boolean)
 supr org.openide.util.actions.CookieAction
 CLSS public org.openide.actions.FindAction
 cons public FindAction()
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ENABLED
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ICON
+fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
+fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
+fld  public static final java.lang.String javax.swing.Action.DEFAULT
+fld  public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
+fld  public static final java.lang.String javax.swing.Action.NAME
+fld  public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.SMALL_ICON
 innr public static abstract interface org.openide.util.actions.Presenter$Menu
 innr public static abstract interface org.openide.util.actions.Presenter$Popup
 innr public static abstract interface org.openide.util.actions.Presenter$Toolbar
@@ -11292,16 +7970,16 @@ meth public void org.openide.util.actions.SystemAction.setEnabled(boolean)
 supr org.openide.util.actions.CallbackSystemAction
 CLSS public org.openide.actions.GarbageCollectAction
 cons public GarbageCollectAction()
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ENABLED
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ICON
+fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
+fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
+fld  public static final java.lang.String javax.swing.Action.DEFAULT
+fld  public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
+fld  public static final java.lang.String javax.swing.Action.NAME
+fld  public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.SMALL_ICON
 innr public static abstract interface org.openide.util.actions.Presenter$Menu
 innr public static abstract interface org.openide.util.actions.Presenter$Popup
 innr public static abstract interface org.openide.util.actions.Presenter$Toolbar
@@ -11366,16 +8044,16 @@ meth public void org.openide.util.actions.SystemAction.setEnabled(boolean)
 supr org.openide.util.actions.CallableSystemAction
 CLSS public org.openide.actions.GotoAction
 cons public GotoAction()
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ENABLED
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ICON
+fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
+fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
+fld  public static final java.lang.String javax.swing.Action.DEFAULT
+fld  public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
+fld  public static final java.lang.String javax.swing.Action.NAME
+fld  public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.SMALL_ICON
 innr public static abstract interface org.openide.util.actions.Presenter$Menu
 innr public static abstract interface org.openide.util.actions.Presenter$Popup
 innr public static abstract interface org.openide.util.actions.Presenter$Toolbar
@@ -11447,16 +8125,16 @@ meth public void org.openide.util.actions.SystemAction.setEnabled(boolean)
 supr org.openide.util.actions.CallbackSystemAction
 CLSS public org.openide.actions.InstantiateAction
 cons public InstantiateAction()
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ENABLED
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ICON
+fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
+fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
+fld  public static final java.lang.String javax.swing.Action.DEFAULT
+fld  public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
+fld  public static final java.lang.String javax.swing.Action.NAME
+fld  public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.SMALL_ICON
 innr public static abstract interface org.openide.util.actions.Presenter$Menu
 innr public static abstract interface org.openide.util.actions.Presenter$Popup
 innr public static abstract interface org.openide.util.actions.Presenter$Toolbar
@@ -11528,16 +8206,16 @@ meth public void org.openide.util.actions.NodeAction.setEnabled(boolean)
 supr org.openide.util.actions.NodeAction
 CLSS public final org.openide.actions.MoveDownAction
 cons public MoveDownAction()
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ENABLED
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ICON
+fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
+fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
+fld  public static final java.lang.String javax.swing.Action.DEFAULT
+fld  public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
+fld  public static final java.lang.String javax.swing.Action.NAME
+fld  public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.SMALL_ICON
 innr public static abstract interface org.openide.util.actions.Presenter$Menu
 innr public static abstract interface org.openide.util.actions.Presenter$Popup
 innr public static abstract interface org.openide.util.actions.Presenter$Toolbar
@@ -11608,16 +8286,16 @@ meth public void org.openide.util.actions.NodeAction.setEnabled(boolean)
 supr org.openide.util.actions.NodeAction
 CLSS public final org.openide.actions.MoveUpAction
 cons public MoveUpAction()
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ENABLED
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ICON
+fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
+fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
+fld  public static final java.lang.String javax.swing.Action.DEFAULT
+fld  public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
+fld  public static final java.lang.String javax.swing.Action.NAME
+fld  public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.SMALL_ICON
 innr public static abstract interface org.openide.util.actions.Presenter$Menu
 innr public static abstract interface org.openide.util.actions.Presenter$Popup
 innr public static abstract interface org.openide.util.actions.Presenter$Toolbar
@@ -11688,16 +8366,16 @@ meth public void org.openide.util.actions.NodeAction.setEnabled(boolean)
 supr org.openide.util.actions.NodeAction
 CLSS public final org.openide.actions.NewAction
 cons public NewAction()
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ENABLED
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ICON
+fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
+fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
+fld  public static final java.lang.String javax.swing.Action.DEFAULT
+fld  public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
+fld  public static final java.lang.String javax.swing.Action.NAME
+fld  public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.SMALL_ICON
 innr public static abstract interface org.openide.util.actions.Presenter$Menu
 innr public static abstract interface org.openide.util.actions.Presenter$Popup
 innr public static abstract interface org.openide.util.actions.Presenter$Toolbar
@@ -11768,16 +8446,16 @@ meth public void org.openide.util.actions.NodeAction.setEnabled(boolean)
 supr org.openide.util.actions.NodeAction
 CLSS public org.openide.actions.NewTemplateAction
 cons public NewTemplateAction()
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ENABLED
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ICON
+fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
+fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
+fld  public static final java.lang.String javax.swing.Action.DEFAULT
+fld  public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
+fld  public static final java.lang.String javax.swing.Action.NAME
+fld  public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.SMALL_ICON
 innr public static abstract interface org.openide.actions.NewTemplateAction$Cookie
 innr public static abstract interface org.openide.util.actions.Presenter$Menu
 innr public static abstract interface org.openide.util.actions.Presenter$Popup
@@ -11850,16 +8528,16 @@ meth public void org.openide.util.actions.NodeAction.setEnabled(boolean)
 supr org.openide.util.actions.NodeAction
 CLSS public org.openide.actions.NextTabAction
 cons public NextTabAction()
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ENABLED
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ICON
+fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
+fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
+fld  public static final java.lang.String javax.swing.Action.DEFAULT
+fld  public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
+fld  public static final java.lang.String javax.swing.Action.NAME
+fld  public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.SMALL_ICON
 innr public static abstract interface org.openide.util.actions.Presenter$Menu
 innr public static abstract interface org.openide.util.actions.Presenter$Popup
 innr public static abstract interface org.openide.util.actions.Presenter$Toolbar
@@ -11936,16 +8614,16 @@ fld  constant public static final int org.openide.util.actions.CookieAction.MODE
 fld  constant public static final int org.openide.util.actions.CookieAction.MODE_EXACTLY_ONE
 fld  constant public static final int org.openide.util.actions.CookieAction.MODE_ONE
 fld  constant public static final int org.openide.util.actions.CookieAction.MODE_SOME
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ENABLED
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ICON
+fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
+fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
+fld  public static final java.lang.String javax.swing.Action.DEFAULT
+fld  public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
+fld  public static final java.lang.String javax.swing.Action.NAME
+fld  public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.SMALL_ICON
 innr public static abstract interface org.openide.util.actions.Presenter$Menu
 innr public static abstract interface org.openide.util.actions.Presenter$Popup
 innr public static abstract interface org.openide.util.actions.Presenter$Toolbar
@@ -12018,16 +8696,16 @@ meth public void org.openide.util.actions.NodeAction.setEnabled(boolean)
 supr org.openide.util.actions.CookieAction
 CLSS public final org.openide.actions.OpenLocalExplorerAction
 cons public OpenLocalExplorerAction()
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ENABLED
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ICON
+fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
+fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
+fld  public static final java.lang.String javax.swing.Action.DEFAULT
+fld  public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
+fld  public static final java.lang.String javax.swing.Action.NAME
+fld  public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.SMALL_ICON
 innr public static abstract interface org.openide.util.actions.Presenter$Menu
 innr public static abstract interface org.openide.util.actions.Presenter$Popup
 innr public static abstract interface org.openide.util.actions.Presenter$Toolbar
@@ -12098,16 +8776,16 @@ meth public void org.openide.util.actions.NodeAction.setEnabled(boolean)
 supr org.openide.util.actions.NodeAction
 CLSS public final org.openide.actions.PageSetupAction
 cons public PageSetupAction()
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ENABLED
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ICON
+fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
+fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
+fld  public static final java.lang.String javax.swing.Action.DEFAULT
+fld  public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
+fld  public static final java.lang.String javax.swing.Action.NAME
+fld  public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.SMALL_ICON
 innr public static abstract interface org.openide.util.actions.Presenter$Menu
 innr public static abstract interface org.openide.util.actions.Presenter$Popup
 innr public static abstract interface org.openide.util.actions.Presenter$Toolbar
@@ -12172,16 +8850,16 @@ meth public void org.openide.util.actions.SystemAction.setEnabled(boolean)
 supr org.openide.util.actions.CallableSystemAction
 CLSS public final org.openide.actions.PasteAction
 cons public PasteAction()
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ENABLED
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ICON
+fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
+fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
+fld  public static final java.lang.String javax.swing.Action.DEFAULT
+fld  public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
+fld  public static final java.lang.String javax.swing.Action.NAME
+fld  public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.SMALL_ICON
 innr public static abstract interface org.openide.util.actions.Presenter$Menu
 innr public static abstract interface org.openide.util.actions.Presenter$Popup
 innr public static abstract interface org.openide.util.actions.Presenter$Toolbar
@@ -12255,16 +8933,16 @@ meth public void org.openide.util.actions.SystemAction.setEnabled(boolean)
 supr org.openide.util.actions.CallbackSystemAction
 CLSS public final org.openide.actions.PopupAction
 cons public PopupAction()
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ENABLED
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ICON
+fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
+fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
+fld  public static final java.lang.String javax.swing.Action.DEFAULT
+fld  public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
+fld  public static final java.lang.String javax.swing.Action.NAME
+fld  public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.SMALL_ICON
 innr public static abstract interface org.openide.util.actions.Presenter$Menu
 innr public static abstract interface org.openide.util.actions.Presenter$Popup
 innr public static abstract interface org.openide.util.actions.Presenter$Toolbar
@@ -12336,16 +9014,16 @@ meth public void org.openide.util.actions.SystemAction.setEnabled(boolean)
 supr org.openide.util.actions.CallbackSystemAction
 CLSS public org.openide.actions.PreviousTabAction
 cons public PreviousTabAction()
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ENABLED
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ICON
+fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
+fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
+fld  public static final java.lang.String javax.swing.Action.DEFAULT
+fld  public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
+fld  public static final java.lang.String javax.swing.Action.NAME
+fld  public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.SMALL_ICON
 innr public static abstract interface org.openide.util.actions.Presenter$Menu
 innr public static abstract interface org.openide.util.actions.Presenter$Popup
 innr public static abstract interface org.openide.util.actions.Presenter$Toolbar
@@ -12422,16 +9100,16 @@ fld  constant public static final int org.openide.util.actions.CookieAction.MODE
 fld  constant public static final int org.openide.util.actions.CookieAction.MODE_EXACTLY_ONE
 fld  constant public static final int org.openide.util.actions.CookieAction.MODE_ONE
 fld  constant public static final int org.openide.util.actions.CookieAction.MODE_SOME
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ENABLED
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ICON
+fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
+fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
+fld  public static final java.lang.String javax.swing.Action.DEFAULT
+fld  public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
+fld  public static final java.lang.String javax.swing.Action.NAME
+fld  public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.SMALL_ICON
 innr public static abstract interface org.openide.util.actions.Presenter$Menu
 innr public static abstract interface org.openide.util.actions.Presenter$Popup
 innr public static abstract interface org.openide.util.actions.Presenter$Toolbar
@@ -12504,16 +9182,16 @@ meth public void org.openide.util.actions.NodeAction.setEnabled(boolean)
 supr org.openide.util.actions.CookieAction
 CLSS public org.openide.actions.PropertiesAction
 cons public PropertiesAction()
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ENABLED
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ICON
+fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
+fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
+fld  public static final java.lang.String javax.swing.Action.DEFAULT
+fld  public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
+fld  public static final java.lang.String javax.swing.Action.NAME
+fld  public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.SMALL_ICON
 innr public static abstract interface org.openide.util.actions.Presenter$Menu
 innr public static abstract interface org.openide.util.actions.Presenter$Popup
 innr public static abstract interface org.openide.util.actions.Presenter$Toolbar
@@ -12584,16 +9262,16 @@ meth public void org.openide.util.actions.NodeAction.setEnabled(boolean)
 supr org.openide.util.actions.NodeAction
 CLSS public org.openide.actions.RedoAction
 cons public RedoAction()
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ENABLED
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ICON
+fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
+fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
+fld  public static final java.lang.String javax.swing.Action.DEFAULT
+fld  public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
+fld  public static final java.lang.String javax.swing.Action.NAME
+fld  public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.SMALL_ICON
 innr public static abstract interface org.openide.util.actions.Presenter$Menu
 innr public static abstract interface org.openide.util.actions.Presenter$Popup
 innr public static abstract interface org.openide.util.actions.Presenter$Toolbar
@@ -12658,16 +9336,16 @@ meth public void org.openide.util.actions.SystemAction.setEnabled(boolean)
 supr org.openide.util.actions.CallableSystemAction
 CLSS public org.openide.actions.RenameAction
 cons public RenameAction()
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ENABLED
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ICON
+fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
+fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
+fld  public static final java.lang.String javax.swing.Action.DEFAULT
+fld  public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
+fld  public static final java.lang.String javax.swing.Action.NAME
+fld  public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.SMALL_ICON
 innr public static abstract interface org.openide.util.actions.Presenter$Menu
 innr public static abstract interface org.openide.util.actions.Presenter$Popup
 innr public static abstract interface org.openide.util.actions.Presenter$Toolbar
@@ -12743,16 +9421,16 @@ fld  constant public static final int org.openide.util.actions.CookieAction.MODE
 fld  constant public static final int org.openide.util.actions.CookieAction.MODE_EXACTLY_ONE
 fld  constant public static final int org.openide.util.actions.CookieAction.MODE_ONE
 fld  constant public static final int org.openide.util.actions.CookieAction.MODE_SOME
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ENABLED
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ICON
+fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
+fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
+fld  public static final java.lang.String javax.swing.Action.DEFAULT
+fld  public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
+fld  public static final java.lang.String javax.swing.Action.NAME
+fld  public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.SMALL_ICON
 innr public static abstract interface org.openide.util.actions.Presenter$Menu
 innr public static abstract interface org.openide.util.actions.Presenter$Popup
 innr public static abstract interface org.openide.util.actions.Presenter$Toolbar
@@ -12825,16 +9503,16 @@ meth public void org.openide.util.actions.NodeAction.setEnabled(boolean)
 supr org.openide.util.actions.CookieAction
 CLSS public org.openide.actions.ReplaceAction
 cons public ReplaceAction()
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ENABLED
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ICON
+fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
+fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
+fld  public static final java.lang.String javax.swing.Action.DEFAULT
+fld  public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
+fld  public static final java.lang.String javax.swing.Action.NAME
+fld  public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.SMALL_ICON
 innr public static abstract interface org.openide.util.actions.Presenter$Menu
 innr public static abstract interface org.openide.util.actions.Presenter$Popup
 innr public static abstract interface org.openide.util.actions.Presenter$Toolbar
@@ -12911,16 +9589,16 @@ fld  constant public static final int org.openide.util.actions.CookieAction.MODE
 fld  constant public static final int org.openide.util.actions.CookieAction.MODE_EXACTLY_ONE
 fld  constant public static final int org.openide.util.actions.CookieAction.MODE_ONE
 fld  constant public static final int org.openide.util.actions.CookieAction.MODE_SOME
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ENABLED
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ICON
+fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
+fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
+fld  public static final java.lang.String javax.swing.Action.DEFAULT
+fld  public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
+fld  public static final java.lang.String javax.swing.Action.NAME
+fld  public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.SMALL_ICON
 innr public static abstract interface org.openide.util.actions.Presenter$Menu
 innr public static abstract interface org.openide.util.actions.Presenter$Popup
 innr public static abstract interface org.openide.util.actions.Presenter$Toolbar
@@ -12993,16 +9671,16 @@ meth public void org.openide.util.actions.NodeAction.setEnabled(boolean)
 supr org.openide.util.actions.CookieAction
 CLSS public final org.openide.actions.SaveAllAction
 cons public SaveAllAction()
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ENABLED
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ICON
+fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
+fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
+fld  public static final java.lang.String javax.swing.Action.DEFAULT
+fld  public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
+fld  public static final java.lang.String javax.swing.Action.NAME
+fld  public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.SMALL_ICON
 innr public static abstract interface org.openide.util.actions.Presenter$Menu
 innr public static abstract interface org.openide.util.actions.Presenter$Popup
 innr public static abstract interface org.openide.util.actions.Presenter$Toolbar
@@ -13067,16 +9745,16 @@ meth public void org.openide.util.actions.SystemAction.setEnabled(boolean)
 supr org.openide.util.actions.CallableSystemAction
 CLSS public final org.openide.actions.SaveAsTemplateAction
 cons public SaveAsTemplateAction()
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ENABLED
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ICON
+fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
+fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
+fld  public static final java.lang.String javax.swing.Action.DEFAULT
+fld  public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
+fld  public static final java.lang.String javax.swing.Action.NAME
+fld  public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.SMALL_ICON
 innr public static abstract interface org.openide.util.actions.Presenter$Menu
 innr public static abstract interface org.openide.util.actions.Presenter$Popup
 innr public static abstract interface org.openide.util.actions.Presenter$Toolbar
@@ -13147,16 +9825,16 @@ meth public void org.openide.util.actions.NodeAction.setEnabled(boolean)
 supr org.openide.util.actions.NodeAction
 CLSS public org.openide.actions.ToolsAction
 cons public ToolsAction()
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ENABLED
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ICON
+fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
+fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
+fld  public static final java.lang.String javax.swing.Action.DEFAULT
+fld  public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
+fld  public static final java.lang.String javax.swing.Action.NAME
+fld  public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.SMALL_ICON
 innr public static abstract interface org.openide.actions.ToolsAction$Model
 innr public static abstract interface org.openide.util.actions.Presenter$Menu
 innr public static abstract interface org.openide.util.actions.Presenter$Toolbar
@@ -13220,16 +9898,16 @@ meth public void org.openide.util.actions.SystemAction.setEnabled(boolean)
 supr org.openide.util.actions.SystemAction
 CLSS public org.openide.actions.UndoAction
 cons public UndoAction()
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ENABLED
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ICON
+fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
+fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
+fld  public static final java.lang.String javax.swing.Action.DEFAULT
+fld  public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
+fld  public static final java.lang.String javax.swing.Action.NAME
+fld  public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.SMALL_ICON
 innr public static abstract interface org.openide.util.actions.Presenter$Menu
 innr public static abstract interface org.openide.util.actions.Presenter$Popup
 innr public static abstract interface org.openide.util.actions.Presenter$Toolbar
@@ -13294,16 +9972,16 @@ meth public void org.openide.util.actions.SystemAction.setEnabled(boolean)
 supr org.openide.util.actions.CallableSystemAction
 CLSS public org.openide.actions.UndockAction
 cons public UndockAction()
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ENABLED
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ICON
+fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
+fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
+fld  public static final java.lang.String javax.swing.Action.DEFAULT
+fld  public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
+fld  public static final java.lang.String javax.swing.Action.NAME
+fld  public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.SMALL_ICON
 innr public static abstract interface org.openide.util.actions.Presenter$Menu
 innr public static abstract interface org.openide.util.actions.Presenter$Popup
 innr public static abstract interface org.openide.util.actions.Presenter$Toolbar
@@ -13380,16 +10058,16 @@ fld  constant public static final int org.openide.util.actions.CookieAction.MODE
 fld  constant public static final int org.openide.util.actions.CookieAction.MODE_EXACTLY_ONE
 fld  constant public static final int org.openide.util.actions.CookieAction.MODE_ONE
 fld  constant public static final int org.openide.util.actions.CookieAction.MODE_SOME
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ENABLED
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ICON
+fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
+fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
+fld  public static final java.lang.String javax.swing.Action.DEFAULT
+fld  public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
+fld  public static final java.lang.String javax.swing.Action.NAME
+fld  public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.SMALL_ICON
 innr public static abstract interface org.openide.util.actions.Presenter$Menu
 innr public static abstract interface org.openide.util.actions.Presenter$Popup
 innr public static abstract interface org.openide.util.actions.Presenter$Toolbar
@@ -13462,16 +10140,16 @@ meth public void org.openide.util.actions.NodeAction.setEnabled(boolean)
 supr org.openide.util.actions.CookieAction
 CLSS public org.openide.actions.WorkspaceSwitchAction
 cons public WorkspaceSwitchAction()
-fld  constant public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
-fld  constant public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
-fld  constant public static final java.lang.String javax.swing.Action.DEFAULT
-fld  constant public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
-fld  constant public static final java.lang.String javax.swing.Action.NAME
-fld  constant public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
-fld  constant public static final java.lang.String javax.swing.Action.SMALL_ICON
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ENABLED
 fld  constant public static final java.lang.String org.openide.util.actions.SystemAction.PROP_ICON
+fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
+fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
+fld  public static final java.lang.String javax.swing.Action.DEFAULT
+fld  public static final java.lang.String javax.swing.Action.LONG_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.MNEMONIC_KEY
+fld  public static final java.lang.String javax.swing.Action.NAME
+fld  public static final java.lang.String javax.swing.Action.SHORT_DESCRIPTION
+fld  public static final java.lang.String javax.swing.Action.SMALL_ICON
 innr public static abstract interface org.openide.util.actions.Presenter$Menu
 innr public static abstract interface org.openide.util.actions.Presenter$Popup
 innr public static abstract interface org.openide.util.actions.Presenter$Toolbar
@@ -13536,6 +10214,7 @@ meth public void org.openide.util.actions.SystemAction.setEnabled(boolean)
 supr org.openide.util.actions.CallableSystemAction
 CLSS public org.openide.awt.Actions
 cons public Actions()
+innr public static abstract interface org.openide.awt.Actions$ButtonActionConnector
 innr public static abstract interface org.openide.awt.Actions$SubMenuModel
 innr public static org.openide.awt.Actions$CheckboxMenuItem
 innr public static org.openide.awt.Actions$MenuItem
@@ -13563,6 +10242,22 @@ meth public static void org.openide.awt.Actions.connect(javax.swing.JMenuItem,ja
 meth public static void org.openide.awt.Actions.connect(javax.swing.JMenuItem,org.openide.util.actions.SystemAction,boolean)
 meth public static void org.openide.awt.Actions.setMenuText(javax.swing.AbstractButton,java.lang.String,boolean)
 supr java.lang.Object
+CLSS public final org.openide.awt.DropDownButtonFactory
+fld  constant public static final java.lang.String org.openide.awt.DropDownButtonFactory.PROP_DROP_DOWN_MENU
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static javax.swing.JButton org.openide.awt.DropDownButtonFactory.createDropDownButton(javax.swing.Icon,javax.swing.JPopupMenu)
+meth public static javax.swing.JToggleButton org.openide.awt.DropDownButtonFactory.createDropDownToggleButton(javax.swing.Icon,javax.swing.JPopupMenu)
+supr java.lang.Object
 CLSS public abstract interface org.openide.awt.DynamicMenuContent
 meth public abstract [Ljavax.swing.JComponent; org.openide.awt.DynamicMenuContent.getMenuPresenters()
 meth public abstract [Ljavax.swing.JComponent; org.openide.awt.DynamicMenuContent.synchMenuPresenters([Ljavax.swing.JComponent;)
@@ -13571,11 +10266,11 @@ CLSS public org.openide.awt.EqualFlowLayout
 cons public EqualFlowLayout()
 cons public EqualFlowLayout(int)
 cons public EqualFlowLayout(int,int,int)
-fld  constant public static final int java.awt.FlowLayout.CENTER
-fld  constant public static final int java.awt.FlowLayout.LEADING
-fld  constant public static final int java.awt.FlowLayout.LEFT
-fld  constant public static final int java.awt.FlowLayout.RIGHT
-fld  constant public static final int java.awt.FlowLayout.TRAILING
+fld  public static final int java.awt.FlowLayout.CENTER
+fld  public static final int java.awt.FlowLayout.LEADING
+fld  public static final int java.awt.FlowLayout.LEFT
+fld  public static final int java.awt.FlowLayout.RIGHT
+fld  public static final int java.awt.FlowLayout.TRAILING
 intf java.awt.LayoutManager
 intf java.io.Serializable
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
@@ -13605,35 +10300,29 @@ CLSS public org.openide.awt.HtmlBrowser
 cons public HtmlBrowser()
 cons public HtmlBrowser(boolean,boolean)
 cons public HtmlBrowser(org.openide.awt.HtmlBrowser$Factory,boolean,boolean)
-fld  constant public static final float java.awt.Component.BOTTOM_ALIGNMENT
-fld  constant public static final float java.awt.Component.CENTER_ALIGNMENT
-fld  constant public static final float java.awt.Component.LEFT_ALIGNMENT
-fld  constant public static final float java.awt.Component.RIGHT_ALIGNMENT
-fld  constant public static final float java.awt.Component.TOP_ALIGNMENT
-fld  constant public static final int java.awt.image.ImageObserver.ABORT
-fld  constant public static final int java.awt.image.ImageObserver.ALLBITS
-fld  constant public static final int java.awt.image.ImageObserver.ERROR
-fld  constant public static final int java.awt.image.ImageObserver.FRAMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.HEIGHT
-fld  constant public static final int java.awt.image.ImageObserver.PROPERTIES
-fld  constant public static final int java.awt.image.ImageObserver.SOMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.WIDTH
-fld  constant public static final int javax.swing.JComponent.UNDEFINED_CONDITION
-fld  constant public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
-fld  constant public static final int javax.swing.JComponent.WHEN_FOCUSED
-fld  constant public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
 fld  constant public static final int org.openide.awt.HtmlBrowser.DEFAULT_HEIGHT
 fld  constant public static final int org.openide.awt.HtmlBrowser.DEFAULT_WIDTH
-fld  constant public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
 fld  protected javax.accessibility.AccessibleContext javax.swing.JComponent.accessibleContext
 fld  protected javax.swing.event.EventListenerList javax.swing.JComponent.listenerList
 fld  protected transient javax.swing.plaf.ComponentUI javax.swing.JComponent.ui
-innr protected abstract java.awt.Component$AccessibleAWTComponent
-innr protected java.awt.Component$BltBufferStrategy
-innr protected java.awt.Component$FlipBufferStrategy
-innr protected java.awt.Container$AccessibleAWTContainer
-innr protected javax.swing.JPanel$AccessibleJPanel
-innr public abstract javax.swing.JComponent$AccessibleJComponent
+fld  public static final float java.awt.Component.BOTTOM_ALIGNMENT
+fld  public static final float java.awt.Component.CENTER_ALIGNMENT
+fld  public static final float java.awt.Component.LEFT_ALIGNMENT
+fld  public static final float java.awt.Component.RIGHT_ALIGNMENT
+fld  public static final float java.awt.Component.TOP_ALIGNMENT
+fld  public static final int java.awt.image.ImageObserver.ABORT
+fld  public static final int java.awt.image.ImageObserver.ALLBITS
+fld  public static final int java.awt.image.ImageObserver.ERROR
+fld  public static final int java.awt.image.ImageObserver.FRAMEBITS
+fld  public static final int java.awt.image.ImageObserver.HEIGHT
+fld  public static final int java.awt.image.ImageObserver.PROPERTIES
+fld  public static final int java.awt.image.ImageObserver.SOMEBITS
+fld  public static final int java.awt.image.ImageObserver.WIDTH
+fld  public static final int javax.swing.JComponent.UNDEFINED_CONDITION
+fld  public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
+fld  public static final int javax.swing.JComponent.WHEN_FOCUSED
+fld  public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
+fld  public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
 innr public static abstract interface org.openide.awt.HtmlBrowser$Factory
 innr public static abstract org.openide.awt.HtmlBrowser$Impl
 innr public static abstract org.openide.awt.HtmlBrowser$URLDisplayer
@@ -14030,62 +10719,6 @@ meth public static final org.openide.awt.HtmlRenderer$Renderer org.openide.awt.H
 supr java.lang.Object
 CLSS public org.openide.awt.JInlineMenu
 cons public JInlineMenu()
-fld  constant public static final float java.awt.Component.BOTTOM_ALIGNMENT
-fld  constant public static final float java.awt.Component.CENTER_ALIGNMENT
-fld  constant public static final float java.awt.Component.LEFT_ALIGNMENT
-fld  constant public static final float java.awt.Component.RIGHT_ALIGNMENT
-fld  constant public static final float java.awt.Component.TOP_ALIGNMENT
-fld  constant public static final int java.awt.image.ImageObserver.ABORT
-fld  constant public static final int java.awt.image.ImageObserver.ALLBITS
-fld  constant public static final int java.awt.image.ImageObserver.ERROR
-fld  constant public static final int java.awt.image.ImageObserver.FRAMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.HEIGHT
-fld  constant public static final int java.awt.image.ImageObserver.PROPERTIES
-fld  constant public static final int java.awt.image.ImageObserver.SOMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.WIDTH
-fld  constant public static final int javax.swing.JComponent.UNDEFINED_CONDITION
-fld  constant public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
-fld  constant public static final int javax.swing.JComponent.WHEN_FOCUSED
-fld  constant public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
-fld  constant public static final int javax.swing.SwingConstants.BOTTOM
-fld  constant public static final int javax.swing.SwingConstants.CENTER
-fld  constant public static final int javax.swing.SwingConstants.EAST
-fld  constant public static final int javax.swing.SwingConstants.HORIZONTAL
-fld  constant public static final int javax.swing.SwingConstants.LEADING
-fld  constant public static final int javax.swing.SwingConstants.LEFT
-fld  constant public static final int javax.swing.SwingConstants.NEXT
-fld  constant public static final int javax.swing.SwingConstants.NORTH
-fld  constant public static final int javax.swing.SwingConstants.NORTH_EAST
-fld  constant public static final int javax.swing.SwingConstants.NORTH_WEST
-fld  constant public static final int javax.swing.SwingConstants.PREVIOUS
-fld  constant public static final int javax.swing.SwingConstants.RIGHT
-fld  constant public static final int javax.swing.SwingConstants.SOUTH
-fld  constant public static final int javax.swing.SwingConstants.SOUTH_EAST
-fld  constant public static final int javax.swing.SwingConstants.SOUTH_WEST
-fld  constant public static final int javax.swing.SwingConstants.TOP
-fld  constant public static final int javax.swing.SwingConstants.TRAILING
-fld  constant public static final int javax.swing.SwingConstants.VERTICAL
-fld  constant public static final int javax.swing.SwingConstants.WEST
-fld  constant public static final java.lang.String javax.swing.AbstractButton.BORDER_PAINTED_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.CONTENT_AREA_FILLED_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.DISABLED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.DISABLED_SELECTED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.FOCUS_PAINTED_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_ALIGNMENT_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_TEXT_POSITION_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.MARGIN_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.MNEMONIC_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.MODEL_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.PRESSED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ENABLED_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_SELECTED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.SELECTED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.TEXT_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.VERTICAL_ALIGNMENT_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.VERTICAL_TEXT_POSITION_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
 fld  protected java.awt.event.ActionListener javax.swing.AbstractButton.actionListener
 fld  protected java.awt.event.ItemListener javax.swing.AbstractButton.itemListener
 fld  protected javax.accessibility.AccessibleContext javax.swing.JComponent.accessibleContext
@@ -14094,14 +10727,62 @@ fld  protected javax.swing.event.ChangeListener javax.swing.AbstractButton.chang
 fld  protected javax.swing.event.EventListenerList javax.swing.JComponent.listenerList
 fld  protected transient javax.swing.event.ChangeEvent javax.swing.AbstractButton.changeEvent
 fld  protected transient javax.swing.plaf.ComponentUI javax.swing.JComponent.ui
-innr protected abstract java.awt.Component$AccessibleAWTComponent
-innr protected abstract javax.swing.AbstractButton$AccessibleAbstractButton
-innr protected java.awt.Component$BltBufferStrategy
-innr protected java.awt.Component$FlipBufferStrategy
-innr protected java.awt.Container$AccessibleAWTContainer
-innr protected javax.swing.AbstractButton$ButtonChangeListener
-innr protected javax.swing.JMenuItem$AccessibleJMenuItem
-innr public abstract javax.swing.JComponent$AccessibleJComponent
+fld  public static final float java.awt.Component.BOTTOM_ALIGNMENT
+fld  public static final float java.awt.Component.CENTER_ALIGNMENT
+fld  public static final float java.awt.Component.LEFT_ALIGNMENT
+fld  public static final float java.awt.Component.RIGHT_ALIGNMENT
+fld  public static final float java.awt.Component.TOP_ALIGNMENT
+fld  public static final int java.awt.image.ImageObserver.ABORT
+fld  public static final int java.awt.image.ImageObserver.ALLBITS
+fld  public static final int java.awt.image.ImageObserver.ERROR
+fld  public static final int java.awt.image.ImageObserver.FRAMEBITS
+fld  public static final int java.awt.image.ImageObserver.HEIGHT
+fld  public static final int java.awt.image.ImageObserver.PROPERTIES
+fld  public static final int java.awt.image.ImageObserver.SOMEBITS
+fld  public static final int java.awt.image.ImageObserver.WIDTH
+fld  public static final int javax.swing.JComponent.UNDEFINED_CONDITION
+fld  public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
+fld  public static final int javax.swing.JComponent.WHEN_FOCUSED
+fld  public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
+fld  public static final int javax.swing.SwingConstants.BOTTOM
+fld  public static final int javax.swing.SwingConstants.CENTER
+fld  public static final int javax.swing.SwingConstants.EAST
+fld  public static final int javax.swing.SwingConstants.HORIZONTAL
+fld  public static final int javax.swing.SwingConstants.LEADING
+fld  public static final int javax.swing.SwingConstants.LEFT
+fld  public static final int javax.swing.SwingConstants.NEXT
+fld  public static final int javax.swing.SwingConstants.NORTH
+fld  public static final int javax.swing.SwingConstants.NORTH_EAST
+fld  public static final int javax.swing.SwingConstants.NORTH_WEST
+fld  public static final int javax.swing.SwingConstants.PREVIOUS
+fld  public static final int javax.swing.SwingConstants.RIGHT
+fld  public static final int javax.swing.SwingConstants.SOUTH
+fld  public static final int javax.swing.SwingConstants.SOUTH_EAST
+fld  public static final int javax.swing.SwingConstants.SOUTH_WEST
+fld  public static final int javax.swing.SwingConstants.TOP
+fld  public static final int javax.swing.SwingConstants.TRAILING
+fld  public static final int javax.swing.SwingConstants.VERTICAL
+fld  public static final int javax.swing.SwingConstants.WEST
+fld  public static final java.lang.String javax.swing.AbstractButton.BORDER_PAINTED_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.CONTENT_AREA_FILLED_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.DISABLED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.DISABLED_SELECTED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.FOCUS_PAINTED_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_ALIGNMENT_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_TEXT_POSITION_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.MARGIN_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.MNEMONIC_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.MODEL_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.PRESSED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ENABLED_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_SELECTED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.SELECTED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.TEXT_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.VERTICAL_ALIGNMENT_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.VERTICAL_TEXT_POSITION_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
 intf java.awt.ItemSelectable
 intf java.awt.MenuContainer
 intf java.awt.image.ImageObserver
@@ -14569,62 +11250,6 @@ supr javax.swing.JMenuItem
 CLSS public org.openide.awt.JMenuPlus
 cons public JMenuPlus()
 cons public JMenuPlus(java.lang.String)
-fld  constant public static final float java.awt.Component.BOTTOM_ALIGNMENT
-fld  constant public static final float java.awt.Component.CENTER_ALIGNMENT
-fld  constant public static final float java.awt.Component.LEFT_ALIGNMENT
-fld  constant public static final float java.awt.Component.RIGHT_ALIGNMENT
-fld  constant public static final float java.awt.Component.TOP_ALIGNMENT
-fld  constant public static final int java.awt.image.ImageObserver.ABORT
-fld  constant public static final int java.awt.image.ImageObserver.ALLBITS
-fld  constant public static final int java.awt.image.ImageObserver.ERROR
-fld  constant public static final int java.awt.image.ImageObserver.FRAMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.HEIGHT
-fld  constant public static final int java.awt.image.ImageObserver.PROPERTIES
-fld  constant public static final int java.awt.image.ImageObserver.SOMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.WIDTH
-fld  constant public static final int javax.swing.JComponent.UNDEFINED_CONDITION
-fld  constant public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
-fld  constant public static final int javax.swing.JComponent.WHEN_FOCUSED
-fld  constant public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
-fld  constant public static final int javax.swing.SwingConstants.BOTTOM
-fld  constant public static final int javax.swing.SwingConstants.CENTER
-fld  constant public static final int javax.swing.SwingConstants.EAST
-fld  constant public static final int javax.swing.SwingConstants.HORIZONTAL
-fld  constant public static final int javax.swing.SwingConstants.LEADING
-fld  constant public static final int javax.swing.SwingConstants.LEFT
-fld  constant public static final int javax.swing.SwingConstants.NEXT
-fld  constant public static final int javax.swing.SwingConstants.NORTH
-fld  constant public static final int javax.swing.SwingConstants.NORTH_EAST
-fld  constant public static final int javax.swing.SwingConstants.NORTH_WEST
-fld  constant public static final int javax.swing.SwingConstants.PREVIOUS
-fld  constant public static final int javax.swing.SwingConstants.RIGHT
-fld  constant public static final int javax.swing.SwingConstants.SOUTH
-fld  constant public static final int javax.swing.SwingConstants.SOUTH_EAST
-fld  constant public static final int javax.swing.SwingConstants.SOUTH_WEST
-fld  constant public static final int javax.swing.SwingConstants.TOP
-fld  constant public static final int javax.swing.SwingConstants.TRAILING
-fld  constant public static final int javax.swing.SwingConstants.VERTICAL
-fld  constant public static final int javax.swing.SwingConstants.WEST
-fld  constant public static final java.lang.String javax.swing.AbstractButton.BORDER_PAINTED_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.CONTENT_AREA_FILLED_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.DISABLED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.DISABLED_SELECTED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.FOCUS_PAINTED_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_ALIGNMENT_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_TEXT_POSITION_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.MARGIN_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.MNEMONIC_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.MODEL_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.PRESSED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ENABLED_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_SELECTED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.SELECTED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.TEXT_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.VERTICAL_ALIGNMENT_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.VERTICAL_TEXT_POSITION_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
 fld  protected java.awt.event.ActionListener javax.swing.AbstractButton.actionListener
 fld  protected java.awt.event.ItemListener javax.swing.AbstractButton.itemListener
 fld  protected javax.accessibility.AccessibleContext javax.swing.JComponent.accessibleContext
@@ -14634,16 +11259,62 @@ fld  protected javax.swing.event.ChangeListener javax.swing.AbstractButton.chang
 fld  protected javax.swing.event.EventListenerList javax.swing.JComponent.listenerList
 fld  protected transient javax.swing.event.ChangeEvent javax.swing.AbstractButton.changeEvent
 fld  protected transient javax.swing.plaf.ComponentUI javax.swing.JComponent.ui
-innr protected abstract java.awt.Component$AccessibleAWTComponent
-innr protected abstract javax.swing.AbstractButton$AccessibleAbstractButton
-innr protected java.awt.Component$BltBufferStrategy
-innr protected java.awt.Component$FlipBufferStrategy
-innr protected java.awt.Container$AccessibleAWTContainer
-innr protected javax.swing.AbstractButton$ButtonChangeListener
-innr protected javax.swing.JMenu$AccessibleJMenu
-innr protected javax.swing.JMenu$WinListener
-innr protected javax.swing.JMenuItem$AccessibleJMenuItem
-innr public abstract javax.swing.JComponent$AccessibleJComponent
+fld  public static final float java.awt.Component.BOTTOM_ALIGNMENT
+fld  public static final float java.awt.Component.CENTER_ALIGNMENT
+fld  public static final float java.awt.Component.LEFT_ALIGNMENT
+fld  public static final float java.awt.Component.RIGHT_ALIGNMENT
+fld  public static final float java.awt.Component.TOP_ALIGNMENT
+fld  public static final int java.awt.image.ImageObserver.ABORT
+fld  public static final int java.awt.image.ImageObserver.ALLBITS
+fld  public static final int java.awt.image.ImageObserver.ERROR
+fld  public static final int java.awt.image.ImageObserver.FRAMEBITS
+fld  public static final int java.awt.image.ImageObserver.HEIGHT
+fld  public static final int java.awt.image.ImageObserver.PROPERTIES
+fld  public static final int java.awt.image.ImageObserver.SOMEBITS
+fld  public static final int java.awt.image.ImageObserver.WIDTH
+fld  public static final int javax.swing.JComponent.UNDEFINED_CONDITION
+fld  public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
+fld  public static final int javax.swing.JComponent.WHEN_FOCUSED
+fld  public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
+fld  public static final int javax.swing.SwingConstants.BOTTOM
+fld  public static final int javax.swing.SwingConstants.CENTER
+fld  public static final int javax.swing.SwingConstants.EAST
+fld  public static final int javax.swing.SwingConstants.HORIZONTAL
+fld  public static final int javax.swing.SwingConstants.LEADING
+fld  public static final int javax.swing.SwingConstants.LEFT
+fld  public static final int javax.swing.SwingConstants.NEXT
+fld  public static final int javax.swing.SwingConstants.NORTH
+fld  public static final int javax.swing.SwingConstants.NORTH_EAST
+fld  public static final int javax.swing.SwingConstants.NORTH_WEST
+fld  public static final int javax.swing.SwingConstants.PREVIOUS
+fld  public static final int javax.swing.SwingConstants.RIGHT
+fld  public static final int javax.swing.SwingConstants.SOUTH
+fld  public static final int javax.swing.SwingConstants.SOUTH_EAST
+fld  public static final int javax.swing.SwingConstants.SOUTH_WEST
+fld  public static final int javax.swing.SwingConstants.TOP
+fld  public static final int javax.swing.SwingConstants.TRAILING
+fld  public static final int javax.swing.SwingConstants.VERTICAL
+fld  public static final int javax.swing.SwingConstants.WEST
+fld  public static final java.lang.String javax.swing.AbstractButton.BORDER_PAINTED_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.CONTENT_AREA_FILLED_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.DISABLED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.DISABLED_SELECTED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.FOCUS_PAINTED_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_ALIGNMENT_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_TEXT_POSITION_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.MARGIN_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.MNEMONIC_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.MODEL_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.PRESSED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ENABLED_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_SELECTED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.SELECTED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.TEXT_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.VERTICAL_ALIGNMENT_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.VERTICAL_TEXT_POSITION_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
 intf java.awt.ItemSelectable
 intf java.awt.MenuContainer
 intf java.awt.image.ImageObserver
@@ -15139,34 +11810,27 @@ meth public void javax.swing.JMenuItem.setUI(javax.swing.plaf.MenuItemUI)
 supr javax.swing.JMenu
 CLSS public org.openide.awt.JPopupMenuPlus
 cons public JPopupMenuPlus()
-fld  constant public static final float java.awt.Component.BOTTOM_ALIGNMENT
-fld  constant public static final float java.awt.Component.CENTER_ALIGNMENT
-fld  constant public static final float java.awt.Component.LEFT_ALIGNMENT
-fld  constant public static final float java.awt.Component.RIGHT_ALIGNMENT
-fld  constant public static final float java.awt.Component.TOP_ALIGNMENT
-fld  constant public static final int java.awt.image.ImageObserver.ABORT
-fld  constant public static final int java.awt.image.ImageObserver.ALLBITS
-fld  constant public static final int java.awt.image.ImageObserver.ERROR
-fld  constant public static final int java.awt.image.ImageObserver.FRAMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.HEIGHT
-fld  constant public static final int java.awt.image.ImageObserver.PROPERTIES
-fld  constant public static final int java.awt.image.ImageObserver.SOMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.WIDTH
-fld  constant public static final int javax.swing.JComponent.UNDEFINED_CONDITION
-fld  constant public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
-fld  constant public static final int javax.swing.JComponent.WHEN_FOCUSED
-fld  constant public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
-fld  constant public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
 fld  protected javax.accessibility.AccessibleContext javax.swing.JComponent.accessibleContext
 fld  protected javax.swing.event.EventListenerList javax.swing.JComponent.listenerList
 fld  protected transient javax.swing.plaf.ComponentUI javax.swing.JComponent.ui
-innr protected abstract java.awt.Component$AccessibleAWTComponent
-innr protected java.awt.Component$BltBufferStrategy
-innr protected java.awt.Component$FlipBufferStrategy
-innr protected java.awt.Container$AccessibleAWTContainer
-innr protected javax.swing.JPopupMenu$AccessibleJPopupMenu
-innr public abstract javax.swing.JComponent$AccessibleJComponent
-innr public static javax.swing.JPopupMenu$Separator
+fld  public static final float java.awt.Component.BOTTOM_ALIGNMENT
+fld  public static final float java.awt.Component.CENTER_ALIGNMENT
+fld  public static final float java.awt.Component.LEFT_ALIGNMENT
+fld  public static final float java.awt.Component.RIGHT_ALIGNMENT
+fld  public static final float java.awt.Component.TOP_ALIGNMENT
+fld  public static final int java.awt.image.ImageObserver.ABORT
+fld  public static final int java.awt.image.ImageObserver.ALLBITS
+fld  public static final int java.awt.image.ImageObserver.ERROR
+fld  public static final int java.awt.image.ImageObserver.FRAMEBITS
+fld  public static final int java.awt.image.ImageObserver.HEIGHT
+fld  public static final int java.awt.image.ImageObserver.PROPERTIES
+fld  public static final int java.awt.image.ImageObserver.SOMEBITS
+fld  public static final int java.awt.image.ImageObserver.WIDTH
+fld  public static final int javax.swing.JComponent.UNDEFINED_CONDITION
+fld  public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
+fld  public static final int javax.swing.JComponent.WHEN_FOCUSED
+fld  public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
+fld  public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
 intf java.awt.MenuContainer
 intf java.awt.image.ImageObserver
 intf java.io.Serializable
@@ -15590,36 +12254,30 @@ cons public ListPane()
 cons public ListPane([Ljava.lang.Object;)
 cons public ListPane(java.util.Vector)
 cons public ListPane(javax.swing.ListModel)
-fld  constant public static final float java.awt.Component.BOTTOM_ALIGNMENT
-fld  constant public static final float java.awt.Component.CENTER_ALIGNMENT
-fld  constant public static final float java.awt.Component.LEFT_ALIGNMENT
-fld  constant public static final float java.awt.Component.RIGHT_ALIGNMENT
-fld  constant public static final float java.awt.Component.TOP_ALIGNMENT
-fld  constant public static final int java.awt.image.ImageObserver.ABORT
-fld  constant public static final int java.awt.image.ImageObserver.ALLBITS
-fld  constant public static final int java.awt.image.ImageObserver.ERROR
-fld  constant public static final int java.awt.image.ImageObserver.FRAMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.HEIGHT
-fld  constant public static final int java.awt.image.ImageObserver.PROPERTIES
-fld  constant public static final int java.awt.image.ImageObserver.SOMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.WIDTH
-fld  constant public static final int javax.swing.JComponent.UNDEFINED_CONDITION
-fld  constant public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
-fld  constant public static final int javax.swing.JComponent.WHEN_FOCUSED
-fld  constant public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
-fld  constant public static final int javax.swing.JList.HORIZONTAL_WRAP
-fld  constant public static final int javax.swing.JList.VERTICAL
-fld  constant public static final int javax.swing.JList.VERTICAL_WRAP
-fld  constant public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
 fld  protected javax.accessibility.AccessibleContext javax.swing.JComponent.accessibleContext
 fld  protected javax.swing.event.EventListenerList javax.swing.JComponent.listenerList
 fld  protected transient javax.swing.plaf.ComponentUI javax.swing.JComponent.ui
-innr protected abstract java.awt.Component$AccessibleAWTComponent
-innr protected java.awt.Component$BltBufferStrategy
-innr protected java.awt.Component$FlipBufferStrategy
-innr protected java.awt.Container$AccessibleAWTContainer
-innr protected javax.swing.JList$AccessibleJList
-innr public abstract javax.swing.JComponent$AccessibleJComponent
+fld  public static final float java.awt.Component.BOTTOM_ALIGNMENT
+fld  public static final float java.awt.Component.CENTER_ALIGNMENT
+fld  public static final float java.awt.Component.LEFT_ALIGNMENT
+fld  public static final float java.awt.Component.RIGHT_ALIGNMENT
+fld  public static final float java.awt.Component.TOP_ALIGNMENT
+fld  public static final int java.awt.image.ImageObserver.ABORT
+fld  public static final int java.awt.image.ImageObserver.ALLBITS
+fld  public static final int java.awt.image.ImageObserver.ERROR
+fld  public static final int java.awt.image.ImageObserver.FRAMEBITS
+fld  public static final int java.awt.image.ImageObserver.HEIGHT
+fld  public static final int java.awt.image.ImageObserver.PROPERTIES
+fld  public static final int java.awt.image.ImageObserver.SOMEBITS
+fld  public static final int java.awt.image.ImageObserver.WIDTH
+fld  public static final int javax.swing.JComponent.UNDEFINED_CONDITION
+fld  public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
+fld  public static final int javax.swing.JComponent.WHEN_FOCUSED
+fld  public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
+fld  public static final int javax.swing.JList.HORIZONTAL_WRAP
+fld  public static final int javax.swing.JList.VERTICAL
+fld  public static final int javax.swing.JList.VERTICAL_WRAP
+fld  public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
 intf java.awt.MenuContainer
 intf java.awt.image.ImageObserver
 intf java.io.Serializable
@@ -16045,33 +12703,27 @@ supr javax.swing.JList
 CLSS public org.openide.awt.MenuBar
 cons public MenuBar()
 cons public MenuBar(org.openide.loaders.DataFolder)
-fld  constant public static final float java.awt.Component.BOTTOM_ALIGNMENT
-fld  constant public static final float java.awt.Component.CENTER_ALIGNMENT
-fld  constant public static final float java.awt.Component.LEFT_ALIGNMENT
-fld  constant public static final float java.awt.Component.RIGHT_ALIGNMENT
-fld  constant public static final float java.awt.Component.TOP_ALIGNMENT
-fld  constant public static final int java.awt.image.ImageObserver.ABORT
-fld  constant public static final int java.awt.image.ImageObserver.ALLBITS
-fld  constant public static final int java.awt.image.ImageObserver.ERROR
-fld  constant public static final int java.awt.image.ImageObserver.FRAMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.HEIGHT
-fld  constant public static final int java.awt.image.ImageObserver.PROPERTIES
-fld  constant public static final int java.awt.image.ImageObserver.SOMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.WIDTH
-fld  constant public static final int javax.swing.JComponent.UNDEFINED_CONDITION
-fld  constant public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
-fld  constant public static final int javax.swing.JComponent.WHEN_FOCUSED
-fld  constant public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
-fld  constant public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
 fld  protected javax.accessibility.AccessibleContext javax.swing.JComponent.accessibleContext
 fld  protected javax.swing.event.EventListenerList javax.swing.JComponent.listenerList
 fld  protected transient javax.swing.plaf.ComponentUI javax.swing.JComponent.ui
-innr protected abstract java.awt.Component$AccessibleAWTComponent
-innr protected java.awt.Component$BltBufferStrategy
-innr protected java.awt.Component$FlipBufferStrategy
-innr protected java.awt.Container$AccessibleAWTContainer
-innr protected javax.swing.JMenuBar$AccessibleJMenuBar
-innr public abstract javax.swing.JComponent$AccessibleJComponent
+fld  public static final float java.awt.Component.BOTTOM_ALIGNMENT
+fld  public static final float java.awt.Component.CENTER_ALIGNMENT
+fld  public static final float java.awt.Component.LEFT_ALIGNMENT
+fld  public static final float java.awt.Component.RIGHT_ALIGNMENT
+fld  public static final float java.awt.Component.TOP_ALIGNMENT
+fld  public static final int java.awt.image.ImageObserver.ABORT
+fld  public static final int java.awt.image.ImageObserver.ALLBITS
+fld  public static final int java.awt.image.ImageObserver.ERROR
+fld  public static final int java.awt.image.ImageObserver.FRAMEBITS
+fld  public static final int java.awt.image.ImageObserver.HEIGHT
+fld  public static final int java.awt.image.ImageObserver.PROPERTIES
+fld  public static final int java.awt.image.ImageObserver.SOMEBITS
+fld  public static final int java.awt.image.ImageObserver.WIDTH
+fld  public static final int javax.swing.JComponent.UNDEFINED_CONDITION
+fld  public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
+fld  public static final int javax.swing.JComponent.WHEN_FOCUSED
+fld  public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
+fld  public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
 intf java.awt.MenuContainer
 intf java.awt.image.ImageObserver
 intf java.io.Externalizable
@@ -16490,19 +13142,6 @@ supr java.lang.Object
 CLSS public org.openide.awt.SpinButton
 cons public SpinButton()
 fld  constant public static final boolean org.openide.awt.SpinButton.DEFAULT_ORIENTATION
-fld  constant public static final float java.awt.Component.BOTTOM_ALIGNMENT
-fld  constant public static final float java.awt.Component.CENTER_ALIGNMENT
-fld  constant public static final float java.awt.Component.LEFT_ALIGNMENT
-fld  constant public static final float java.awt.Component.RIGHT_ALIGNMENT
-fld  constant public static final float java.awt.Component.TOP_ALIGNMENT
-fld  constant public static final int java.awt.image.ImageObserver.ABORT
-fld  constant public static final int java.awt.image.ImageObserver.ALLBITS
-fld  constant public static final int java.awt.image.ImageObserver.ERROR
-fld  constant public static final int java.awt.image.ImageObserver.FRAMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.HEIGHT
-fld  constant public static final int java.awt.image.ImageObserver.PROPERTIES
-fld  constant public static final int java.awt.image.ImageObserver.SOMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.WIDTH
 fld  constant public static final int org.openide.awt.SpinButton.DEFAULT_MAXIMUM
 fld  constant public static final int org.openide.awt.SpinButton.DEFAULT_MINIMUM
 fld  constant public static final int org.openide.awt.SpinButton.DEFAULT_REPEAT_DELAY
@@ -16520,11 +13159,19 @@ fld  protected int org.openide.awt.SpinButton.repeatDelay
 fld  protected int org.openide.awt.SpinButton.repeatRate
 fld  protected int org.openide.awt.SpinButton.step
 fld  protected int org.openide.awt.SpinButton.value
-fld  protected org.openide.awt.SpinButton$RepeatThread org.openide.awt.SpinButton.rt
-innr protected abstract java.awt.Component$AccessibleAWTComponent
-innr protected java.awt.Canvas$AccessibleAWTCanvas
-innr protected java.awt.Component$BltBufferStrategy
-innr protected java.awt.Component$FlipBufferStrategy
+fld  public static final float java.awt.Component.BOTTOM_ALIGNMENT
+fld  public static final float java.awt.Component.CENTER_ALIGNMENT
+fld  public static final float java.awt.Component.LEFT_ALIGNMENT
+fld  public static final float java.awt.Component.RIGHT_ALIGNMENT
+fld  public static final float java.awt.Component.TOP_ALIGNMENT
+fld  public static final int java.awt.image.ImageObserver.ABORT
+fld  public static final int java.awt.image.ImageObserver.ALLBITS
+fld  public static final int java.awt.image.ImageObserver.ERROR
+fld  public static final int java.awt.image.ImageObserver.FRAMEBITS
+fld  public static final int java.awt.image.ImageObserver.HEIGHT
+fld  public static final int java.awt.image.ImageObserver.PROPERTIES
+fld  public static final int java.awt.image.ImageObserver.SOMEBITS
+fld  public static final int java.awt.image.ImageObserver.WIDTH
 intf java.awt.MenuContainer
 intf java.awt.image.ImageObserver
 intf java.io.Serializable
@@ -16814,23 +13461,6 @@ meth public abstract void org.openide.awt.SpinButtonListener.moveUp()
 supr null
 CLSS public org.openide.awt.SplittedPanel
 cons public SplittedPanel()
-fld  constant public static final float java.awt.Component.BOTTOM_ALIGNMENT
-fld  constant public static final float java.awt.Component.CENTER_ALIGNMENT
-fld  constant public static final float java.awt.Component.LEFT_ALIGNMENT
-fld  constant public static final float java.awt.Component.RIGHT_ALIGNMENT
-fld  constant public static final float java.awt.Component.TOP_ALIGNMENT
-fld  constant public static final int java.awt.image.ImageObserver.ABORT
-fld  constant public static final int java.awt.image.ImageObserver.ALLBITS
-fld  constant public static final int java.awt.image.ImageObserver.ERROR
-fld  constant public static final int java.awt.image.ImageObserver.FRAMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.HEIGHT
-fld  constant public static final int java.awt.image.ImageObserver.PROPERTIES
-fld  constant public static final int java.awt.image.ImageObserver.SOMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.WIDTH
-fld  constant public static final int javax.swing.JComponent.UNDEFINED_CONDITION
-fld  constant public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
-fld  constant public static final int javax.swing.JComponent.WHEN_FOCUSED
-fld  constant public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
 fld  constant public static final int org.openide.awt.SplittedPanel.DEFAULT_SPLITTER
 fld  constant public static final int org.openide.awt.SplittedPanel.EMPTY_SPLITTER
 fld  constant public static final int org.openide.awt.SplittedPanel.FIRST_PREFERRED
@@ -16839,9 +13469,25 @@ fld  constant public static final int org.openide.awt.SplittedPanel.NONE
 fld  constant public static final int org.openide.awt.SplittedPanel.RAISED_SPLITTER
 fld  constant public static final int org.openide.awt.SplittedPanel.SECOND_PREFERRED
 fld  constant public static final int org.openide.awt.SplittedPanel.VERTICAL
-fld  constant public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
 fld  protected javax.swing.event.EventListenerList javax.swing.JComponent.listenerList
 fld  protected transient javax.swing.plaf.ComponentUI javax.swing.JComponent.ui
+fld  public static final float java.awt.Component.BOTTOM_ALIGNMENT
+fld  public static final float java.awt.Component.CENTER_ALIGNMENT
+fld  public static final float java.awt.Component.LEFT_ALIGNMENT
+fld  public static final float java.awt.Component.RIGHT_ALIGNMENT
+fld  public static final float java.awt.Component.TOP_ALIGNMENT
+fld  public static final int java.awt.image.ImageObserver.ABORT
+fld  public static final int java.awt.image.ImageObserver.ALLBITS
+fld  public static final int java.awt.image.ImageObserver.ERROR
+fld  public static final int java.awt.image.ImageObserver.FRAMEBITS
+fld  public static final int java.awt.image.ImageObserver.HEIGHT
+fld  public static final int java.awt.image.ImageObserver.PROPERTIES
+fld  public static final int java.awt.image.ImageObserver.SOMEBITS
+fld  public static final int java.awt.image.ImageObserver.WIDTH
+fld  public static final int javax.swing.JComponent.UNDEFINED_CONDITION
+fld  public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
+fld  public static final int javax.swing.JComponent.WHEN_FOCUSED
+fld  public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
 fld  public static final java.lang.Object org.openide.awt.SplittedPanel.ADD_BOTTOM
 fld  public static final java.lang.Object org.openide.awt.SplittedPanel.ADD_FIRST
 fld  public static final java.lang.Object org.openide.awt.SplittedPanel.ADD_LEFT
@@ -16849,11 +13495,7 @@ fld  public static final java.lang.Object org.openide.awt.SplittedPanel.ADD_RIGH
 fld  public static final java.lang.Object org.openide.awt.SplittedPanel.ADD_SECOND
 fld  public static final java.lang.Object org.openide.awt.SplittedPanel.ADD_SPLITTER
 fld  public static final java.lang.Object org.openide.awt.SplittedPanel.ADD_TOP
-innr protected abstract java.awt.Component$AccessibleAWTComponent
-innr protected java.awt.Component$BltBufferStrategy
-innr protected java.awt.Component$FlipBufferStrategy
-innr protected java.awt.Container$AccessibleAWTContainer
-innr public abstract javax.swing.JComponent$AccessibleJComponent
+fld  public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
 innr public static abstract interface org.openide.awt.SplittedPanel$SplitChangeListener
 innr public static org.openide.awt.SplittedPanel$EmptySplitter
 innr public static org.openide.awt.SplittedPanel$SplitChangeEvent
@@ -17264,57 +13906,65 @@ supr java.lang.Object
 CLSS public abstract interface org.openide.awt.StatusLineElementProvider
 meth public abstract java.awt.Component org.openide.awt.StatusLineElementProvider.getStatusLineElement()
 supr null
+CLSS public org.openide.awt.TabbedPaneFactory
+fld  constant public static final java.lang.String org.openide.awt.TabbedPaneFactory.PROP_CLOSE
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static javax.swing.JTabbedPane org.openide.awt.TabbedPaneFactory.createCloseButtonTabbedPane()
+supr java.lang.Object
 CLSS public org.openide.awt.Toolbar
 cons public Toolbar()
 cons public Toolbar(java.lang.String)
 cons public Toolbar(java.lang.String,boolean)
 cons public Toolbar(java.lang.String,java.lang.String)
 cons public Toolbar(java.lang.String,java.lang.String,boolean)
-fld  constant public static final float java.awt.Component.BOTTOM_ALIGNMENT
-fld  constant public static final float java.awt.Component.CENTER_ALIGNMENT
-fld  constant public static final float java.awt.Component.LEFT_ALIGNMENT
-fld  constant public static final float java.awt.Component.RIGHT_ALIGNMENT
-fld  constant public static final float java.awt.Component.TOP_ALIGNMENT
-fld  constant public static final int java.awt.image.ImageObserver.ABORT
-fld  constant public static final int java.awt.image.ImageObserver.ALLBITS
-fld  constant public static final int java.awt.image.ImageObserver.ERROR
-fld  constant public static final int java.awt.image.ImageObserver.FRAMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.HEIGHT
-fld  constant public static final int java.awt.image.ImageObserver.PROPERTIES
-fld  constant public static final int java.awt.image.ImageObserver.SOMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.WIDTH
-fld  constant public static final int javax.swing.JComponent.UNDEFINED_CONDITION
-fld  constant public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
-fld  constant public static final int javax.swing.JComponent.WHEN_FOCUSED
-fld  constant public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
-fld  constant public static final int javax.swing.SwingConstants.CENTER
-fld  constant public static final int javax.swing.SwingConstants.EAST
-fld  constant public static final int javax.swing.SwingConstants.HORIZONTAL
-fld  constant public static final int javax.swing.SwingConstants.LEADING
-fld  constant public static final int javax.swing.SwingConstants.NEXT
-fld  constant public static final int javax.swing.SwingConstants.NORTH
-fld  constant public static final int javax.swing.SwingConstants.NORTH_EAST
-fld  constant public static final int javax.swing.SwingConstants.NORTH_WEST
-fld  constant public static final int javax.swing.SwingConstants.PREVIOUS
-fld  constant public static final int javax.swing.SwingConstants.SOUTH
-fld  constant public static final int javax.swing.SwingConstants.SOUTH_EAST
-fld  constant public static final int javax.swing.SwingConstants.SOUTH_WEST
-fld  constant public static final int javax.swing.SwingConstants.TRAILING
-fld  constant public static final int javax.swing.SwingConstants.VERTICAL
-fld  constant public static final int javax.swing.SwingConstants.WEST
 fld  constant public static final int org.openide.awt.Toolbar.BASIC_HEIGHT
-fld  constant public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
 fld  protected javax.accessibility.AccessibleContext javax.swing.JComponent.accessibleContext
 fld  protected javax.swing.event.EventListenerList javax.swing.JComponent.listenerList
 fld  protected transient javax.swing.plaf.ComponentUI javax.swing.JComponent.ui
-innr protected abstract java.awt.Component$AccessibleAWTComponent
-innr protected java.awt.Component$BltBufferStrategy
-innr protected java.awt.Component$FlipBufferStrategy
-innr protected java.awt.Container$AccessibleAWTContainer
-innr protected javax.swing.JToolBar$AccessibleJToolBar
-innr public abstract javax.swing.JComponent$AccessibleJComponent
+fld  public static final float java.awt.Component.BOTTOM_ALIGNMENT
+fld  public static final float java.awt.Component.CENTER_ALIGNMENT
+fld  public static final float java.awt.Component.LEFT_ALIGNMENT
+fld  public static final float java.awt.Component.RIGHT_ALIGNMENT
+fld  public static final float java.awt.Component.TOP_ALIGNMENT
+fld  public static final int java.awt.image.ImageObserver.ABORT
+fld  public static final int java.awt.image.ImageObserver.ALLBITS
+fld  public static final int java.awt.image.ImageObserver.ERROR
+fld  public static final int java.awt.image.ImageObserver.FRAMEBITS
+fld  public static final int java.awt.image.ImageObserver.HEIGHT
+fld  public static final int java.awt.image.ImageObserver.PROPERTIES
+fld  public static final int java.awt.image.ImageObserver.SOMEBITS
+fld  public static final int java.awt.image.ImageObserver.WIDTH
+fld  public static final int javax.swing.JComponent.UNDEFINED_CONDITION
+fld  public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
+fld  public static final int javax.swing.JComponent.WHEN_FOCUSED
+fld  public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
+fld  public static final int javax.swing.SwingConstants.CENTER
+fld  public static final int javax.swing.SwingConstants.EAST
+fld  public static final int javax.swing.SwingConstants.HORIZONTAL
+fld  public static final int javax.swing.SwingConstants.LEADING
+fld  public static final int javax.swing.SwingConstants.NEXT
+fld  public static final int javax.swing.SwingConstants.NORTH
+fld  public static final int javax.swing.SwingConstants.NORTH_EAST
+fld  public static final int javax.swing.SwingConstants.NORTH_WEST
+fld  public static final int javax.swing.SwingConstants.PREVIOUS
+fld  public static final int javax.swing.SwingConstants.SOUTH
+fld  public static final int javax.swing.SwingConstants.SOUTH_EAST
+fld  public static final int javax.swing.SwingConstants.SOUTH_WEST
+fld  public static final int javax.swing.SwingConstants.TRAILING
+fld  public static final int javax.swing.SwingConstants.VERTICAL
+fld  public static final int javax.swing.SwingConstants.WEST
+fld  public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
 innr public static abstract interface org.openide.awt.Toolbar$DnDListener
-innr public static javax.swing.JToolBar$Separator
 innr public static org.openide.awt.Toolbar$DnDEvent
 intf java.awt.MenuContainer
 intf java.awt.image.ImageObserver
@@ -17700,62 +14350,6 @@ supr javax.swing.JToolBar
 CLSS public org.openide.awt.ToolbarButton
 cons public ToolbarButton()
 cons public ToolbarButton(javax.swing.Icon)
-fld  constant public static final float java.awt.Component.BOTTOM_ALIGNMENT
-fld  constant public static final float java.awt.Component.CENTER_ALIGNMENT
-fld  constant public static final float java.awt.Component.LEFT_ALIGNMENT
-fld  constant public static final float java.awt.Component.RIGHT_ALIGNMENT
-fld  constant public static final float java.awt.Component.TOP_ALIGNMENT
-fld  constant public static final int java.awt.image.ImageObserver.ABORT
-fld  constant public static final int java.awt.image.ImageObserver.ALLBITS
-fld  constant public static final int java.awt.image.ImageObserver.ERROR
-fld  constant public static final int java.awt.image.ImageObserver.FRAMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.HEIGHT
-fld  constant public static final int java.awt.image.ImageObserver.PROPERTIES
-fld  constant public static final int java.awt.image.ImageObserver.SOMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.WIDTH
-fld  constant public static final int javax.swing.JComponent.UNDEFINED_CONDITION
-fld  constant public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
-fld  constant public static final int javax.swing.JComponent.WHEN_FOCUSED
-fld  constant public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
-fld  constant public static final int javax.swing.SwingConstants.BOTTOM
-fld  constant public static final int javax.swing.SwingConstants.CENTER
-fld  constant public static final int javax.swing.SwingConstants.EAST
-fld  constant public static final int javax.swing.SwingConstants.HORIZONTAL
-fld  constant public static final int javax.swing.SwingConstants.LEADING
-fld  constant public static final int javax.swing.SwingConstants.LEFT
-fld  constant public static final int javax.swing.SwingConstants.NEXT
-fld  constant public static final int javax.swing.SwingConstants.NORTH
-fld  constant public static final int javax.swing.SwingConstants.NORTH_EAST
-fld  constant public static final int javax.swing.SwingConstants.NORTH_WEST
-fld  constant public static final int javax.swing.SwingConstants.PREVIOUS
-fld  constant public static final int javax.swing.SwingConstants.RIGHT
-fld  constant public static final int javax.swing.SwingConstants.SOUTH
-fld  constant public static final int javax.swing.SwingConstants.SOUTH_EAST
-fld  constant public static final int javax.swing.SwingConstants.SOUTH_WEST
-fld  constant public static final int javax.swing.SwingConstants.TOP
-fld  constant public static final int javax.swing.SwingConstants.TRAILING
-fld  constant public static final int javax.swing.SwingConstants.VERTICAL
-fld  constant public static final int javax.swing.SwingConstants.WEST
-fld  constant public static final java.lang.String javax.swing.AbstractButton.BORDER_PAINTED_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.CONTENT_AREA_FILLED_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.DISABLED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.DISABLED_SELECTED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.FOCUS_PAINTED_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_ALIGNMENT_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_TEXT_POSITION_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.MARGIN_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.MNEMONIC_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.MODEL_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.PRESSED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ENABLED_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_SELECTED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.SELECTED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.TEXT_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.VERTICAL_ALIGNMENT_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.VERTICAL_TEXT_POSITION_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
 fld  protected java.awt.event.ActionListener javax.swing.AbstractButton.actionListener
 fld  protected java.awt.event.ItemListener javax.swing.AbstractButton.itemListener
 fld  protected javax.accessibility.AccessibleContext javax.swing.JComponent.accessibleContext
@@ -17764,14 +14358,62 @@ fld  protected javax.swing.event.ChangeListener javax.swing.AbstractButton.chang
 fld  protected javax.swing.event.EventListenerList javax.swing.JComponent.listenerList
 fld  protected transient javax.swing.event.ChangeEvent javax.swing.AbstractButton.changeEvent
 fld  protected transient javax.swing.plaf.ComponentUI javax.swing.JComponent.ui
-innr protected abstract java.awt.Component$AccessibleAWTComponent
-innr protected abstract javax.swing.AbstractButton$AccessibleAbstractButton
-innr protected java.awt.Component$BltBufferStrategy
-innr protected java.awt.Component$FlipBufferStrategy
-innr protected java.awt.Container$AccessibleAWTContainer
-innr protected javax.swing.AbstractButton$ButtonChangeListener
-innr protected javax.swing.JButton$AccessibleJButton
-innr public abstract javax.swing.JComponent$AccessibleJComponent
+fld  public static final float java.awt.Component.BOTTOM_ALIGNMENT
+fld  public static final float java.awt.Component.CENTER_ALIGNMENT
+fld  public static final float java.awt.Component.LEFT_ALIGNMENT
+fld  public static final float java.awt.Component.RIGHT_ALIGNMENT
+fld  public static final float java.awt.Component.TOP_ALIGNMENT
+fld  public static final int java.awt.image.ImageObserver.ABORT
+fld  public static final int java.awt.image.ImageObserver.ALLBITS
+fld  public static final int java.awt.image.ImageObserver.ERROR
+fld  public static final int java.awt.image.ImageObserver.FRAMEBITS
+fld  public static final int java.awt.image.ImageObserver.HEIGHT
+fld  public static final int java.awt.image.ImageObserver.PROPERTIES
+fld  public static final int java.awt.image.ImageObserver.SOMEBITS
+fld  public static final int java.awt.image.ImageObserver.WIDTH
+fld  public static final int javax.swing.JComponent.UNDEFINED_CONDITION
+fld  public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
+fld  public static final int javax.swing.JComponent.WHEN_FOCUSED
+fld  public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
+fld  public static final int javax.swing.SwingConstants.BOTTOM
+fld  public static final int javax.swing.SwingConstants.CENTER
+fld  public static final int javax.swing.SwingConstants.EAST
+fld  public static final int javax.swing.SwingConstants.HORIZONTAL
+fld  public static final int javax.swing.SwingConstants.LEADING
+fld  public static final int javax.swing.SwingConstants.LEFT
+fld  public static final int javax.swing.SwingConstants.NEXT
+fld  public static final int javax.swing.SwingConstants.NORTH
+fld  public static final int javax.swing.SwingConstants.NORTH_EAST
+fld  public static final int javax.swing.SwingConstants.NORTH_WEST
+fld  public static final int javax.swing.SwingConstants.PREVIOUS
+fld  public static final int javax.swing.SwingConstants.RIGHT
+fld  public static final int javax.swing.SwingConstants.SOUTH
+fld  public static final int javax.swing.SwingConstants.SOUTH_EAST
+fld  public static final int javax.swing.SwingConstants.SOUTH_WEST
+fld  public static final int javax.swing.SwingConstants.TOP
+fld  public static final int javax.swing.SwingConstants.TRAILING
+fld  public static final int javax.swing.SwingConstants.VERTICAL
+fld  public static final int javax.swing.SwingConstants.WEST
+fld  public static final java.lang.String javax.swing.AbstractButton.BORDER_PAINTED_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.CONTENT_AREA_FILLED_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.DISABLED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.DISABLED_SELECTED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.FOCUS_PAINTED_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_ALIGNMENT_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_TEXT_POSITION_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.MARGIN_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.MNEMONIC_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.MODEL_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.PRESSED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ENABLED_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_SELECTED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.SELECTED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.TEXT_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.VERTICAL_ALIGNMENT_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.VERTICAL_TEXT_POSITION_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
 intf java.awt.ItemSelectable
 intf java.awt.MenuContainer
 intf java.awt.image.ImageObserver
@@ -18211,32 +14853,28 @@ meth public void org.openide.awt.ToolbarButton.processMouseEvent(java.awt.event.
 supr javax.swing.JButton
 CLSS public final org.openide.awt.ToolbarPool
 cons public ToolbarPool(org.openide.loaders.DataFolder)
-fld  constant public static final float java.awt.Component.BOTTOM_ALIGNMENT
-fld  constant public static final float java.awt.Component.CENTER_ALIGNMENT
-fld  constant public static final float java.awt.Component.LEFT_ALIGNMENT
-fld  constant public static final float java.awt.Component.RIGHT_ALIGNMENT
-fld  constant public static final float java.awt.Component.TOP_ALIGNMENT
-fld  constant public static final int java.awt.image.ImageObserver.ABORT
-fld  constant public static final int java.awt.image.ImageObserver.ALLBITS
-fld  constant public static final int java.awt.image.ImageObserver.ERROR
-fld  constant public static final int java.awt.image.ImageObserver.FRAMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.HEIGHT
-fld  constant public static final int java.awt.image.ImageObserver.PROPERTIES
-fld  constant public static final int java.awt.image.ImageObserver.SOMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.WIDTH
-fld  constant public static final int javax.swing.JComponent.UNDEFINED_CONDITION
-fld  constant public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
-fld  constant public static final int javax.swing.JComponent.WHEN_FOCUSED
-fld  constant public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
-fld  constant public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
 fld  constant public static final java.lang.String org.openide.awt.ToolbarPool.DEFAULT_CONFIGURATION
+fld  protected javax.accessibility.AccessibleContext javax.swing.JComponent.accessibleContext
 fld  protected javax.swing.event.EventListenerList javax.swing.JComponent.listenerList
 fld  protected transient javax.swing.plaf.ComponentUI javax.swing.JComponent.ui
-innr protected abstract java.awt.Component$AccessibleAWTComponent
-innr protected java.awt.Component$BltBufferStrategy
-innr protected java.awt.Component$FlipBufferStrategy
-innr protected java.awt.Container$AccessibleAWTContainer
-innr public abstract javax.swing.JComponent$AccessibleJComponent
+fld  public static final float java.awt.Component.BOTTOM_ALIGNMENT
+fld  public static final float java.awt.Component.CENTER_ALIGNMENT
+fld  public static final float java.awt.Component.LEFT_ALIGNMENT
+fld  public static final float java.awt.Component.RIGHT_ALIGNMENT
+fld  public static final float java.awt.Component.TOP_ALIGNMENT
+fld  public static final int java.awt.image.ImageObserver.ABORT
+fld  public static final int java.awt.image.ImageObserver.ALLBITS
+fld  public static final int java.awt.image.ImageObserver.ERROR
+fld  public static final int java.awt.image.ImageObserver.FRAMEBITS
+fld  public static final int java.awt.image.ImageObserver.HEIGHT
+fld  public static final int java.awt.image.ImageObserver.PROPERTIES
+fld  public static final int java.awt.image.ImageObserver.SOMEBITS
+fld  public static final int java.awt.image.ImageObserver.WIDTH
+fld  public static final int javax.swing.JComponent.UNDEFINED_CONDITION
+fld  public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
+fld  public static final int javax.swing.JComponent.WHEN_FOCUSED
+fld  public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
+fld  public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
 innr public static abstract interface org.openide.awt.ToolbarPool$Configuration
 intf java.awt.MenuContainer
 intf java.awt.image.ImageObserver
@@ -18607,62 +15245,6 @@ CLSS public org.openide.awt.ToolbarToggleButton
 cons public ToolbarToggleButton()
 cons public ToolbarToggleButton(javax.swing.Icon)
 cons public ToolbarToggleButton(javax.swing.Icon,boolean)
-fld  constant public static final float java.awt.Component.BOTTOM_ALIGNMENT
-fld  constant public static final float java.awt.Component.CENTER_ALIGNMENT
-fld  constant public static final float java.awt.Component.LEFT_ALIGNMENT
-fld  constant public static final float java.awt.Component.RIGHT_ALIGNMENT
-fld  constant public static final float java.awt.Component.TOP_ALIGNMENT
-fld  constant public static final int java.awt.image.ImageObserver.ABORT
-fld  constant public static final int java.awt.image.ImageObserver.ALLBITS
-fld  constant public static final int java.awt.image.ImageObserver.ERROR
-fld  constant public static final int java.awt.image.ImageObserver.FRAMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.HEIGHT
-fld  constant public static final int java.awt.image.ImageObserver.PROPERTIES
-fld  constant public static final int java.awt.image.ImageObserver.SOMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.WIDTH
-fld  constant public static final int javax.swing.JComponent.UNDEFINED_CONDITION
-fld  constant public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
-fld  constant public static final int javax.swing.JComponent.WHEN_FOCUSED
-fld  constant public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
-fld  constant public static final int javax.swing.SwingConstants.BOTTOM
-fld  constant public static final int javax.swing.SwingConstants.CENTER
-fld  constant public static final int javax.swing.SwingConstants.EAST
-fld  constant public static final int javax.swing.SwingConstants.HORIZONTAL
-fld  constant public static final int javax.swing.SwingConstants.LEADING
-fld  constant public static final int javax.swing.SwingConstants.LEFT
-fld  constant public static final int javax.swing.SwingConstants.NEXT
-fld  constant public static final int javax.swing.SwingConstants.NORTH
-fld  constant public static final int javax.swing.SwingConstants.NORTH_EAST
-fld  constant public static final int javax.swing.SwingConstants.NORTH_WEST
-fld  constant public static final int javax.swing.SwingConstants.PREVIOUS
-fld  constant public static final int javax.swing.SwingConstants.RIGHT
-fld  constant public static final int javax.swing.SwingConstants.SOUTH
-fld  constant public static final int javax.swing.SwingConstants.SOUTH_EAST
-fld  constant public static final int javax.swing.SwingConstants.SOUTH_WEST
-fld  constant public static final int javax.swing.SwingConstants.TOP
-fld  constant public static final int javax.swing.SwingConstants.TRAILING
-fld  constant public static final int javax.swing.SwingConstants.VERTICAL
-fld  constant public static final int javax.swing.SwingConstants.WEST
-fld  constant public static final java.lang.String javax.swing.AbstractButton.BORDER_PAINTED_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.CONTENT_AREA_FILLED_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.DISABLED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.DISABLED_SELECTED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.FOCUS_PAINTED_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_ALIGNMENT_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_TEXT_POSITION_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.MARGIN_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.MNEMONIC_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.MODEL_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.PRESSED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ENABLED_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_SELECTED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.SELECTED_ICON_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.TEXT_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.VERTICAL_ALIGNMENT_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.AbstractButton.VERTICAL_TEXT_POSITION_CHANGED_PROPERTY
-fld  constant public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
 fld  protected java.awt.event.ActionListener javax.swing.AbstractButton.actionListener
 fld  protected java.awt.event.ItemListener javax.swing.AbstractButton.itemListener
 fld  protected javax.accessibility.AccessibleContext javax.swing.JComponent.accessibleContext
@@ -18671,15 +15253,62 @@ fld  protected javax.swing.event.ChangeListener javax.swing.AbstractButton.chang
 fld  protected javax.swing.event.EventListenerList javax.swing.JComponent.listenerList
 fld  protected transient javax.swing.event.ChangeEvent javax.swing.AbstractButton.changeEvent
 fld  protected transient javax.swing.plaf.ComponentUI javax.swing.JComponent.ui
-innr protected abstract java.awt.Component$AccessibleAWTComponent
-innr protected abstract javax.swing.AbstractButton$AccessibleAbstractButton
-innr protected java.awt.Component$BltBufferStrategy
-innr protected java.awt.Component$FlipBufferStrategy
-innr protected java.awt.Container$AccessibleAWTContainer
-innr protected javax.swing.AbstractButton$ButtonChangeListener
-innr protected javax.swing.JToggleButton$AccessibleJToggleButton
-innr public abstract javax.swing.JComponent$AccessibleJComponent
-innr public static javax.swing.JToggleButton$ToggleButtonModel
+fld  public static final float java.awt.Component.BOTTOM_ALIGNMENT
+fld  public static final float java.awt.Component.CENTER_ALIGNMENT
+fld  public static final float java.awt.Component.LEFT_ALIGNMENT
+fld  public static final float java.awt.Component.RIGHT_ALIGNMENT
+fld  public static final float java.awt.Component.TOP_ALIGNMENT
+fld  public static final int java.awt.image.ImageObserver.ABORT
+fld  public static final int java.awt.image.ImageObserver.ALLBITS
+fld  public static final int java.awt.image.ImageObserver.ERROR
+fld  public static final int java.awt.image.ImageObserver.FRAMEBITS
+fld  public static final int java.awt.image.ImageObserver.HEIGHT
+fld  public static final int java.awt.image.ImageObserver.PROPERTIES
+fld  public static final int java.awt.image.ImageObserver.SOMEBITS
+fld  public static final int java.awt.image.ImageObserver.WIDTH
+fld  public static final int javax.swing.JComponent.UNDEFINED_CONDITION
+fld  public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
+fld  public static final int javax.swing.JComponent.WHEN_FOCUSED
+fld  public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
+fld  public static final int javax.swing.SwingConstants.BOTTOM
+fld  public static final int javax.swing.SwingConstants.CENTER
+fld  public static final int javax.swing.SwingConstants.EAST
+fld  public static final int javax.swing.SwingConstants.HORIZONTAL
+fld  public static final int javax.swing.SwingConstants.LEADING
+fld  public static final int javax.swing.SwingConstants.LEFT
+fld  public static final int javax.swing.SwingConstants.NEXT
+fld  public static final int javax.swing.SwingConstants.NORTH
+fld  public static final int javax.swing.SwingConstants.NORTH_EAST
+fld  public static final int javax.swing.SwingConstants.NORTH_WEST
+fld  public static final int javax.swing.SwingConstants.PREVIOUS
+fld  public static final int javax.swing.SwingConstants.RIGHT
+fld  public static final int javax.swing.SwingConstants.SOUTH
+fld  public static final int javax.swing.SwingConstants.SOUTH_EAST
+fld  public static final int javax.swing.SwingConstants.SOUTH_WEST
+fld  public static final int javax.swing.SwingConstants.TOP
+fld  public static final int javax.swing.SwingConstants.TRAILING
+fld  public static final int javax.swing.SwingConstants.VERTICAL
+fld  public static final int javax.swing.SwingConstants.WEST
+fld  public static final java.lang.String javax.swing.AbstractButton.BORDER_PAINTED_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.CONTENT_AREA_FILLED_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.DISABLED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.DISABLED_SELECTED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.FOCUS_PAINTED_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_ALIGNMENT_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.HORIZONTAL_TEXT_POSITION_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.MARGIN_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.MNEMONIC_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.MODEL_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.PRESSED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ENABLED_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.ROLLOVER_SELECTED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.SELECTED_ICON_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.TEXT_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.VERTICAL_ALIGNMENT_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.AbstractButton.VERTICAL_TEXT_POSITION_CHANGED_PROPERTY
+fld  public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
 intf java.awt.ItemSelectable
 intf java.awt.MenuContainer
 intf java.awt.image.ImageObserver
@@ -19161,6 +15790,25 @@ meth public synchronized void org.openide.loaders.ConnectionSupport.register(org
 meth public synchronized void org.openide.loaders.ConnectionSupport.unregister(org.openide.cookies.ConnectionCookie$Type,org.openide.nodes.Node) throws java.io.IOException
 meth public void org.openide.loaders.ConnectionSupport.fireEvent(org.openide.cookies.ConnectionCookie$Event)
 supr java.lang.Object
+CLSS public abstract interface org.openide.loaders.CreateFromTemplateAttributesProvider
+meth public abstract java.util.Map org.openide.loaders.CreateFromTemplateAttributesProvider.attributesFor(org.openide.loaders.DataObject,org.openide.loaders.DataFolder,java.lang.String)
+supr null
+CLSS public abstract org.openide.loaders.CreateFromTemplateHandler
+cons public CreateFromTemplateHandler()
+meth protected abstract boolean org.openide.loaders.CreateFromTemplateHandler.accept(org.openide.filesystems.FileObject)
+meth protected abstract org.openide.filesystems.FileObject org.openide.loaders.CreateFromTemplateHandler.createFromTemplate(org.openide.filesystems.FileObject,org.openide.filesystems.FileObject,java.lang.String,java.util.Map) throws java.io.IOException
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+supr java.lang.Object
 CLSS public abstract interface org.openide.loaders.DataFilter
 fld  constant public static final long org.openide.loaders.DataFilter.serialVersionUID
 fld  public static final org.openide.loaders.DataFilter org.openide.loaders.DataFilter.ALL
@@ -19193,6 +15841,7 @@ intf java.io.Serializable
 intf org.openide.loaders.DataObject$Container
 intf org.openide.nodes.Node$Cookie
 intf org.openide.util.HelpCtx$Provider
+intf org.openide.util.Lookup$Provider
 meth protected final org.openide.loaders.MultiDataObject$Entry org.openide.loaders.MultiDataObject.registerEntry(org.openide.filesystems.FileObject)
 meth protected final org.openide.nodes.CookieSet org.openide.loaders.MultiDataObject.getCookieSet()
 meth protected final void org.openide.loaders.DataObject.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
@@ -19207,6 +15856,7 @@ meth protected org.openide.filesystems.FileObject org.openide.loaders.DataFolder
 meth protected org.openide.filesystems.FileObject org.openide.loaders.DataFolder.handleRename(java.lang.String) throws java.io.IOException
 meth protected org.openide.loaders.DataObject org.openide.loaders.DataFolder.handleCopy(org.openide.loaders.DataFolder) throws java.io.IOException
 meth protected org.openide.loaders.DataObject org.openide.loaders.DataFolder.handleCreateFromTemplate(org.openide.loaders.DataFolder,java.lang.String) throws java.io.IOException
+meth protected org.openide.loaders.DataObject org.openide.loaders.MultiDataObject.handleCopyRename(org.openide.loaders.DataFolder,java.lang.String,java.lang.String) throws java.io.IOException
 meth protected org.openide.loaders.DataShadow org.openide.loaders.DataFolder.handleCreateShadow(org.openide.loaders.DataFolder) throws java.io.IOException
 meth protected org.openide.nodes.Node$Cookie org.openide.loaders.DataObject.getCookie(org.openide.loaders.DataShadow,java.lang.Class)
 meth protected synchronized org.openide.nodes.Node org.openide.loaders.DataFolder.createNodeDelegate()
@@ -19231,6 +15881,7 @@ meth public final org.openide.loaders.DataLoader org.openide.loaders.DataObject.
 meth public final org.openide.loaders.DataObject org.openide.loaders.DataObject.copy(org.openide.loaders.DataFolder) throws java.io.IOException
 meth public final org.openide.loaders.DataObject org.openide.loaders.DataObject.createFromTemplate(org.openide.loaders.DataFolder) throws java.io.IOException
 meth public final org.openide.loaders.DataObject org.openide.loaders.DataObject.createFromTemplate(org.openide.loaders.DataFolder,java.lang.String) throws java.io.IOException
+meth public final org.openide.loaders.DataObject org.openide.loaders.DataObject.createFromTemplate(org.openide.loaders.DataFolder,java.lang.String,java.util.Map) throws java.io.IOException
 meth public final org.openide.loaders.DataShadow org.openide.loaders.DataObject.createShadow(org.openide.loaders.DataFolder) throws java.io.IOException
 meth public final org.openide.loaders.MultiDataObject$Entry org.openide.loaders.MultiDataObject.findSecondaryEntry(org.openide.filesystems.FileObject)
 meth public final org.openide.loaders.MultiDataObject$Entry org.openide.loaders.MultiDataObject.getPrimaryEntry()
@@ -19256,6 +15907,7 @@ meth public native int java.lang.Object.hashCode()
 meth public org.openide.nodes.Children org.openide.loaders.DataFolder.createNodeChildren(org.openide.loaders.DataFilter)
 meth public org.openide.nodes.Node$Cookie org.openide.loaders.MultiDataObject.getCookie(java.lang.Class)
 meth public org.openide.util.HelpCtx org.openide.loaders.DataFolder.getHelpCtx()
+meth public org.openide.util.Lookup org.openide.loaders.DataFolder.getLookup()
 meth public static org.openide.loaders.DataFolder org.openide.loaders.DataFolder.create(org.openide.loaders.DataFolder,java.lang.String) throws java.io.IOException
 meth public static org.openide.loaders.DataFolder org.openide.loaders.DataFolder.findFolder(org.openide.filesystems.FileObject)
 meth public static org.openide.loaders.DataObject org.openide.loaders.DataObject.find(org.openide.filesystems.FileObject) throws org.openide.loaders.DataObjectNotFoundException
@@ -19476,6 +16128,7 @@ innr public static final org.openide.loaders.DataObject$Registry
 intf java.io.Serializable
 intf org.openide.nodes.Node$Cookie
 intf org.openide.util.HelpCtx$Provider
+intf org.openide.util.Lookup$Provider
 meth protected abstract org.openide.filesystems.FileObject org.openide.loaders.DataObject.handleMove(org.openide.loaders.DataFolder) throws java.io.IOException
 meth protected abstract org.openide.filesystems.FileObject org.openide.loaders.DataObject.handleRename(java.lang.String) throws java.io.IOException
 meth protected abstract org.openide.loaders.DataObject org.openide.loaders.DataObject.handleCopy(org.openide.loaders.DataFolder) throws java.io.IOException
@@ -19486,6 +16139,7 @@ meth protected final void org.openide.loaders.DataObject.fireVetoableChange(java
 meth protected final void org.openide.loaders.DataObject.markFiles() throws java.io.IOException
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
 meth protected org.openide.filesystems.FileLock org.openide.loaders.DataObject.takePrimaryFileLock() throws java.io.IOException
+meth protected org.openide.loaders.DataObject org.openide.loaders.DataObject.handleCopyRename(org.openide.loaders.DataFolder,java.lang.String,java.lang.String) throws java.io.IOException
 meth protected org.openide.loaders.DataShadow org.openide.loaders.DataObject.handleCreateShadow(org.openide.loaders.DataFolder) throws java.io.IOException
 meth protected org.openide.nodes.Node org.openide.loaders.DataObject.createNodeDelegate()
 meth protected org.openide.nodes.Node$Cookie org.openide.loaders.DataObject.getCookie(org.openide.loaders.DataShadow,java.lang.Class)
@@ -19507,6 +16161,7 @@ meth public final org.openide.loaders.DataLoader org.openide.loaders.DataObject.
 meth public final org.openide.loaders.DataObject org.openide.loaders.DataObject.copy(org.openide.loaders.DataFolder) throws java.io.IOException
 meth public final org.openide.loaders.DataObject org.openide.loaders.DataObject.createFromTemplate(org.openide.loaders.DataFolder) throws java.io.IOException
 meth public final org.openide.loaders.DataObject org.openide.loaders.DataObject.createFromTemplate(org.openide.loaders.DataFolder,java.lang.String) throws java.io.IOException
+meth public final org.openide.loaders.DataObject org.openide.loaders.DataObject.createFromTemplate(org.openide.loaders.DataFolder,java.lang.String,java.util.Map) throws java.io.IOException
 meth public final org.openide.loaders.DataShadow org.openide.loaders.DataObject.createShadow(org.openide.loaders.DataFolder) throws java.io.IOException
 meth public final org.openide.nodes.Node org.openide.loaders.DataObject.getNodeDelegate()
 meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
@@ -19525,6 +16180,7 @@ meth public native final void java.lang.Object.notifyAll()
 meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
 meth public native int java.lang.Object.hashCode()
 meth public org.openide.nodes.Node$Cookie org.openide.loaders.DataObject.getCookie(java.lang.Class)
+meth public org.openide.util.Lookup org.openide.loaders.DataObject.getLookup()
 meth public static org.openide.loaders.DataObject org.openide.loaders.DataObject.find(org.openide.filesystems.FileObject) throws org.openide.loaders.DataObjectNotFoundException
 meth public static org.openide.loaders.DataObject$Registry org.openide.loaders.DataObject.getRegistry()
 meth public void org.openide.loaders.DataObject.addPropertyChangeListener(java.beans.PropertyChangeListener)
@@ -19606,6 +16262,7 @@ intf java.io.Serializable
 intf org.openide.loaders.DataObject$Container
 intf org.openide.nodes.Node$Cookie
 intf org.openide.util.HelpCtx$Provider
+intf org.openide.util.Lookup$Provider
 meth protected final org.openide.loaders.MultiDataObject$Entry org.openide.loaders.MultiDataObject.registerEntry(org.openide.filesystems.FileObject)
 meth protected final org.openide.nodes.CookieSet org.openide.loaders.MultiDataObject.getCookieSet()
 meth protected final void org.openide.loaders.DataObject.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
@@ -19619,6 +16276,7 @@ meth protected org.openide.filesystems.FileLock org.openide.loaders.MultiDataObj
 meth protected org.openide.filesystems.FileObject org.openide.loaders.DataShadow.handleMove(org.openide.loaders.DataFolder) throws java.io.IOException
 meth protected org.openide.filesystems.FileObject org.openide.loaders.MultiDataObject.handleRename(java.lang.String) throws java.io.IOException
 meth protected org.openide.loaders.DataObject org.openide.loaders.DataShadow.handleCopy(org.openide.loaders.DataFolder) throws java.io.IOException
+meth protected org.openide.loaders.DataObject org.openide.loaders.MultiDataObject.handleCopyRename(org.openide.loaders.DataFolder,java.lang.String,java.lang.String) throws java.io.IOException
 meth protected org.openide.loaders.DataObject org.openide.loaders.MultiDataObject.handleCreateFromTemplate(org.openide.loaders.DataFolder,java.lang.String) throws java.io.IOException
 meth protected org.openide.loaders.DataShadow org.openide.loaders.DataShadow.handleCreateShadow(org.openide.loaders.DataFolder) throws java.io.IOException
 meth protected org.openide.nodes.Node org.openide.loaders.DataShadow.createNodeDelegate()
@@ -19644,6 +16302,7 @@ meth public final org.openide.loaders.DataLoader org.openide.loaders.DataObject.
 meth public final org.openide.loaders.DataObject org.openide.loaders.DataObject.copy(org.openide.loaders.DataFolder) throws java.io.IOException
 meth public final org.openide.loaders.DataObject org.openide.loaders.DataObject.createFromTemplate(org.openide.loaders.DataFolder) throws java.io.IOException
 meth public final org.openide.loaders.DataObject org.openide.loaders.DataObject.createFromTemplate(org.openide.loaders.DataFolder,java.lang.String) throws java.io.IOException
+meth public final org.openide.loaders.DataObject org.openide.loaders.DataObject.createFromTemplate(org.openide.loaders.DataFolder,java.lang.String,java.util.Map) throws java.io.IOException
 meth public final org.openide.loaders.DataShadow org.openide.loaders.DataObject.createShadow(org.openide.loaders.DataFolder) throws java.io.IOException
 meth public final org.openide.loaders.MultiDataObject$Entry org.openide.loaders.MultiDataObject.findSecondaryEntry(org.openide.filesystems.FileObject)
 meth public final org.openide.loaders.MultiDataObject$Entry org.openide.loaders.MultiDataObject.getPrimaryEntry()
@@ -19667,6 +16326,7 @@ meth public native int java.lang.Object.hashCode()
 meth public org.openide.loaders.DataObject org.openide.loaders.DataShadow.getOriginal()
 meth public org.openide.nodes.Node$Cookie org.openide.loaders.DataShadow.getCookie(java.lang.Class)
 meth public org.openide.util.HelpCtx org.openide.loaders.DataShadow.getHelpCtx()
+meth public org.openide.util.Lookup org.openide.loaders.DataShadow.getLookup()
 meth public static org.openide.loaders.DataObject org.openide.loaders.DataObject.find(org.openide.filesystems.FileObject) throws org.openide.loaders.DataObjectNotFoundException
 meth public static org.openide.loaders.DataObject$Registry org.openide.loaders.DataObject.getRegistry()
 meth public static org.openide.loaders.DataShadow org.openide.loaders.DataShadow.create(org.openide.loaders.DataFolder,java.lang.String,org.openide.loaders.DataObject) throws java.io.IOException
@@ -19744,6 +16404,7 @@ meth public native final void java.lang.Object.notifyAll()
 meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
 meth public org.openide.filesystems.FileLock org.openide.loaders.MultiDataObject$Entry.takeLock() throws java.io.IOException
 meth public org.openide.filesystems.FileObject org.openide.loaders.FileEntry.copy(org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException
+meth public org.openide.filesystems.FileObject org.openide.loaders.FileEntry.copyRename(org.openide.filesystems.FileObject,java.lang.String,java.lang.String) throws java.io.IOException
 meth public org.openide.filesystems.FileObject org.openide.loaders.FileEntry.createFromTemplate(org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException
 meth public org.openide.filesystems.FileObject org.openide.loaders.FileEntry.move(org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException
 meth public org.openide.filesystems.FileObject org.openide.loaders.FileEntry.rename(java.lang.String) throws java.io.IOException
@@ -19855,6 +16516,7 @@ intf org.openide.cookies.InstanceCookie
 intf org.openide.cookies.InstanceCookie$Of
 intf org.openide.nodes.Node$Cookie
 intf org.openide.util.HelpCtx$Provider
+intf org.openide.util.Lookup$Provider
 meth protected final org.openide.loaders.MultiDataObject$Entry org.openide.loaders.MultiDataObject.registerEntry(org.openide.filesystems.FileObject)
 meth protected final org.openide.nodes.CookieSet org.openide.loaders.MultiDataObject.getCookieSet()
 meth protected final void org.openide.loaders.DataObject.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
@@ -19869,6 +16531,7 @@ meth protected org.openide.filesystems.FileObject org.openide.loaders.InstanceDa
 meth protected org.openide.filesystems.FileObject org.openide.loaders.MultiDataObject.handleMove(org.openide.loaders.DataFolder) throws java.io.IOException
 meth protected org.openide.loaders.DataObject org.openide.loaders.InstanceDataObject.handleCopy(org.openide.loaders.DataFolder) throws java.io.IOException
 meth protected org.openide.loaders.DataObject org.openide.loaders.InstanceDataObject.handleCreateFromTemplate(org.openide.loaders.DataFolder,java.lang.String) throws java.io.IOException
+meth protected org.openide.loaders.DataObject org.openide.loaders.MultiDataObject.handleCopyRename(org.openide.loaders.DataFolder,java.lang.String,java.lang.String) throws java.io.IOException
 meth protected org.openide.loaders.DataShadow org.openide.loaders.DataObject.handleCreateShadow(org.openide.loaders.DataFolder) throws java.io.IOException
 meth protected org.openide.nodes.Node org.openide.loaders.InstanceDataObject.createNodeDelegate()
 meth protected org.openide.nodes.Node$Cookie org.openide.loaders.DataObject.getCookie(org.openide.loaders.DataShadow,java.lang.Class)
@@ -19892,6 +16555,7 @@ meth public final org.openide.loaders.DataLoader org.openide.loaders.DataObject.
 meth public final org.openide.loaders.DataObject org.openide.loaders.DataObject.copy(org.openide.loaders.DataFolder) throws java.io.IOException
 meth public final org.openide.loaders.DataObject org.openide.loaders.DataObject.createFromTemplate(org.openide.loaders.DataFolder) throws java.io.IOException
 meth public final org.openide.loaders.DataObject org.openide.loaders.DataObject.createFromTemplate(org.openide.loaders.DataFolder,java.lang.String) throws java.io.IOException
+meth public final org.openide.loaders.DataObject org.openide.loaders.DataObject.createFromTemplate(org.openide.loaders.DataFolder,java.lang.String,java.util.Map) throws java.io.IOException
 meth public final org.openide.loaders.DataShadow org.openide.loaders.DataObject.createShadow(org.openide.loaders.DataFolder) throws java.io.IOException
 meth public final org.openide.loaders.MultiDataObject$Entry org.openide.loaders.MultiDataObject.findSecondaryEntry(org.openide.filesystems.FileObject)
 meth public final org.openide.loaders.MultiDataObject$Entry org.openide.loaders.MultiDataObject.getPrimaryEntry()
@@ -19917,6 +16581,7 @@ meth public native final void java.lang.Object.wait(long) throws java.lang.Inter
 meth public native int java.lang.Object.hashCode()
 meth public org.openide.nodes.Node$Cookie org.openide.loaders.InstanceDataObject.getCookie(java.lang.Class)
 meth public org.openide.util.HelpCtx org.openide.loaders.InstanceDataObject.getHelpCtx()
+meth public org.openide.util.Lookup org.openide.loaders.DataObject.getLookup()
 meth public static boolean org.openide.loaders.InstanceDataObject.remove(org.openide.loaders.DataFolder,java.lang.String,java.lang.Class)
 meth public static boolean org.openide.loaders.InstanceDataObject.remove(org.openide.loaders.DataFolder,java.lang.String,java.lang.String)
 meth public static org.openide.loaders.DataObject org.openide.loaders.DataObject.find(org.openide.filesystems.FileObject) throws org.openide.loaders.DataObjectNotFoundException
@@ -20006,6 +16671,7 @@ innr public static final org.openide.loaders.DataObject$Registry
 intf java.io.Serializable
 intf org.openide.nodes.Node$Cookie
 intf org.openide.util.HelpCtx$Provider
+intf org.openide.util.Lookup$Provider
 meth protected final org.openide.loaders.MultiDataObject$Entry org.openide.loaders.MultiDataObject.registerEntry(org.openide.filesystems.FileObject)
 meth protected final org.openide.nodes.CookieSet org.openide.loaders.MultiDataObject.getCookieSet()
 meth protected final void org.openide.loaders.DataObject.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
@@ -20019,6 +16685,7 @@ meth protected org.openide.filesystems.FileLock org.openide.loaders.MultiDataObj
 meth protected org.openide.filesystems.FileObject org.openide.loaders.MultiDataObject.handleMove(org.openide.loaders.DataFolder) throws java.io.IOException
 meth protected org.openide.filesystems.FileObject org.openide.loaders.MultiDataObject.handleRename(java.lang.String) throws java.io.IOException
 meth protected org.openide.loaders.DataObject org.openide.loaders.MultiDataObject.handleCopy(org.openide.loaders.DataFolder) throws java.io.IOException
+meth protected org.openide.loaders.DataObject org.openide.loaders.MultiDataObject.handleCopyRename(org.openide.loaders.DataFolder,java.lang.String,java.lang.String) throws java.io.IOException
 meth protected org.openide.loaders.DataObject org.openide.loaders.MultiDataObject.handleCreateFromTemplate(org.openide.loaders.DataFolder,java.lang.String) throws java.io.IOException
 meth protected org.openide.loaders.DataShadow org.openide.loaders.DataObject.handleCreateShadow(org.openide.loaders.DataFolder) throws java.io.IOException
 meth protected org.openide.nodes.Node org.openide.loaders.MultiDataObject.createNodeDelegate()
@@ -20042,6 +16709,7 @@ meth public final org.openide.loaders.DataLoader org.openide.loaders.DataObject.
 meth public final org.openide.loaders.DataObject org.openide.loaders.DataObject.copy(org.openide.loaders.DataFolder) throws java.io.IOException
 meth public final org.openide.loaders.DataObject org.openide.loaders.DataObject.createFromTemplate(org.openide.loaders.DataFolder) throws java.io.IOException
 meth public final org.openide.loaders.DataObject org.openide.loaders.DataObject.createFromTemplate(org.openide.loaders.DataFolder,java.lang.String) throws java.io.IOException
+meth public final org.openide.loaders.DataObject org.openide.loaders.DataObject.createFromTemplate(org.openide.loaders.DataFolder,java.lang.String,java.util.Map) throws java.io.IOException
 meth public final org.openide.loaders.DataShadow org.openide.loaders.DataObject.createShadow(org.openide.loaders.DataFolder) throws java.io.IOException
 meth public final org.openide.loaders.MultiDataObject$Entry org.openide.loaders.MultiDataObject.findSecondaryEntry(org.openide.filesystems.FileObject)
 meth public final org.openide.loaders.MultiDataObject$Entry org.openide.loaders.MultiDataObject.getPrimaryEntry()
@@ -20064,6 +16732,7 @@ meth public native final void java.lang.Object.wait(long) throws java.lang.Inter
 meth public native int java.lang.Object.hashCode()
 meth public org.openide.nodes.Node$Cookie org.openide.loaders.MultiDataObject.getCookie(java.lang.Class)
 meth public org.openide.util.HelpCtx org.openide.loaders.MultiDataObject.getHelpCtx()
+meth public org.openide.util.Lookup org.openide.loaders.DataObject.getLookup()
 meth public static org.openide.loaders.DataObject org.openide.loaders.DataObject.find(org.openide.filesystems.FileObject) throws org.openide.loaders.DataObjectNotFoundException
 meth public static org.openide.loaders.DataObject$Registry org.openide.loaders.DataObject.getRegistry()
 meth public void org.openide.loaders.DataObject.addPropertyChangeListener(java.beans.PropertyChangeListener)
@@ -20225,6 +16894,9 @@ meth public native final void java.lang.Object.wait(long) throws java.lang.Inter
 meth public native int java.lang.Object.hashCode()
 meth public static org.openide.loaders.RepositoryNodeFactory org.openide.loaders.RepositoryNodeFactory.getDefault()
 supr java.lang.Object
+CLSS public abstract interface org.openide.loaders.SaveAsCapable
+meth public abstract void org.openide.loaders.SaveAsCapable.saveAs(org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException
+supr null
 CLSS public org.openide.loaders.TemplateWizard
 cons protected TemplateWizard(org.openide.loaders.TemplateWizard$Iterator)
 cons public TemplateWizard()
@@ -20268,6 +16940,7 @@ innr public static abstract interface org.openide.WizardDescriptor$FinishPanel
 innr public static abstract interface org.openide.WizardDescriptor$FinishablePanel
 innr public static abstract interface org.openide.WizardDescriptor$InstantiatingIterator
 innr public static abstract interface org.openide.WizardDescriptor$Panel
+innr public static abstract interface org.openide.WizardDescriptor$ProgressInstantiatingIterator
 innr public static abstract interface org.openide.WizardDescriptor$ValidatingPanel
 innr public static abstract interface org.openide.loaders.TemplateWizard$Iterator
 innr public static final org.openide.NotifyDescriptor$Exception
@@ -20329,7 +17002,9 @@ meth public static void org.openide.loaders.TemplateWizard.setDescription(org.op
 meth public static void org.openide.loaders.TemplateWizard.setDescriptionAsResource(org.openide.loaders.DataObject,java.lang.String) throws java.io.IOException
 meth public static void org.openide.loaders.TemplateWizard.setIterator(org.openide.loaders.DataObject,org.openide.loaders.TemplateWizard$Iterator) throws java.io.IOException
 meth public synchronized final void org.openide.WizardDescriptor.setPanels(org.openide.WizardDescriptor$Iterator)
+meth public synchronized final void org.openide.WizardDescriptor.setPanelsAndSettings(org.openide.WizardDescriptor$Iterator,java.lang.Object)
 meth public synchronized java.lang.Object org.openide.WizardDescriptor.getProperty(java.lang.String)
+meth public synchronized java.util.Map org.openide.WizardDescriptor.getProperties()
 meth public void org.openide.DialogDescriptor.setButtonListener(java.awt.event.ActionListener)
 meth public void org.openide.DialogDescriptor.setLeaf(boolean)
 meth public void org.openide.DialogDescriptor.setModal(boolean)
@@ -20436,6 +17111,7 @@ innr public static final org.openide.loaders.XMLDataObject$Info
 intf java.io.Serializable
 intf org.openide.nodes.Node$Cookie
 intf org.openide.util.HelpCtx$Provider
+intf org.openide.util.Lookup$Provider
 meth protected final org.openide.loaders.MultiDataObject$Entry org.openide.loaders.MultiDataObject.registerEntry(org.openide.filesystems.FileObject)
 meth protected final org.openide.nodes.CookieSet org.openide.loaders.MultiDataObject.getCookieSet()
 meth protected final void org.openide.loaders.DataObject.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
@@ -20450,6 +17126,7 @@ meth protected org.openide.filesystems.FileLock org.openide.loaders.MultiDataObj
 meth protected org.openide.filesystems.FileObject org.openide.loaders.MultiDataObject.handleMove(org.openide.loaders.DataFolder) throws java.io.IOException
 meth protected org.openide.filesystems.FileObject org.openide.loaders.MultiDataObject.handleRename(java.lang.String) throws java.io.IOException
 meth protected org.openide.loaders.DataObject org.openide.loaders.MultiDataObject.handleCopy(org.openide.loaders.DataFolder) throws java.io.IOException
+meth protected org.openide.loaders.DataObject org.openide.loaders.MultiDataObject.handleCopyRename(org.openide.loaders.DataFolder,java.lang.String,java.lang.String) throws java.io.IOException
 meth protected org.openide.loaders.DataObject org.openide.loaders.MultiDataObject.handleCreateFromTemplate(org.openide.loaders.DataFolder,java.lang.String) throws java.io.IOException
 meth protected org.openide.loaders.DataShadow org.openide.loaders.DataObject.handleCreateShadow(org.openide.loaders.DataFolder) throws java.io.IOException
 meth protected org.openide.nodes.Node org.openide.loaders.XMLDataObject.createNodeDelegate()
@@ -20475,6 +17152,7 @@ meth public final org.openide.loaders.DataLoader org.openide.loaders.DataObject.
 meth public final org.openide.loaders.DataObject org.openide.loaders.DataObject.copy(org.openide.loaders.DataFolder) throws java.io.IOException
 meth public final org.openide.loaders.DataObject org.openide.loaders.DataObject.createFromTemplate(org.openide.loaders.DataFolder) throws java.io.IOException
 meth public final org.openide.loaders.DataObject org.openide.loaders.DataObject.createFromTemplate(org.openide.loaders.DataFolder,java.lang.String) throws java.io.IOException
+meth public final org.openide.loaders.DataObject org.openide.loaders.DataObject.createFromTemplate(org.openide.loaders.DataFolder,java.lang.String,java.util.Map) throws java.io.IOException
 meth public final org.openide.loaders.DataShadow org.openide.loaders.DataObject.createShadow(org.openide.loaders.DataFolder) throws java.io.IOException
 meth public final org.openide.loaders.MultiDataObject$Entry org.openide.loaders.MultiDataObject.findSecondaryEntry(org.openide.filesystems.FileObject)
 meth public final org.openide.loaders.MultiDataObject$Entry org.openide.loaders.MultiDataObject.getPrimaryEntry()
@@ -20499,6 +17177,7 @@ meth public native final void java.lang.Object.wait(long) throws java.lang.Inter
 meth public native int java.lang.Object.hashCode()
 meth public org.openide.nodes.Node$Cookie org.openide.loaders.XMLDataObject.getCookie(java.lang.Class)
 meth public org.openide.util.HelpCtx org.openide.loaders.XMLDataObject.getHelpCtx()
+meth public org.openide.util.Lookup org.openide.loaders.DataObject.getLookup()
 meth public static final boolean org.openide.loaders.XMLDataObject.addEntityResolver(org.xml.sax.EntityResolver)
 meth public static final org.xml.sax.EntityResolver org.openide.loaders.XMLDataObject.removeEntityResolver(org.xml.sax.EntityResolver)
 meth public static org.openide.loaders.DataObject org.openide.loaders.DataObject.find(org.openide.filesystems.FileObject) throws org.openide.loaders.DataObjectNotFoundException
@@ -20612,39 +17291,34 @@ supr java.lang.Object
 CLSS public org.openide.text.CloneableEditor
 cons public CloneableEditor()
 cons public CloneableEditor(org.openide.text.CloneableEditorSupport)
-fld  constant public static final float java.awt.Component.BOTTOM_ALIGNMENT
-fld  constant public static final float java.awt.Component.CENTER_ALIGNMENT
-fld  constant public static final float java.awt.Component.LEFT_ALIGNMENT
-fld  constant public static final float java.awt.Component.RIGHT_ALIGNMENT
-fld  constant public static final float java.awt.Component.TOP_ALIGNMENT
-fld  constant public static final int java.awt.image.ImageObserver.ABORT
-fld  constant public static final int java.awt.image.ImageObserver.ALLBITS
-fld  constant public static final int java.awt.image.ImageObserver.ERROR
-fld  constant public static final int java.awt.image.ImageObserver.FRAMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.HEIGHT
-fld  constant public static final int java.awt.image.ImageObserver.PROPERTIES
-fld  constant public static final int java.awt.image.ImageObserver.SOMEBITS
-fld  constant public static final int java.awt.image.ImageObserver.WIDTH
-fld  constant public static final int javax.swing.JComponent.UNDEFINED_CONDITION
-fld  constant public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
-fld  constant public static final int javax.swing.JComponent.WHEN_FOCUSED
-fld  constant public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
 fld  constant public static final int org.openide.windows.TopComponent.CLOSE_EACH
 fld  constant public static final int org.openide.windows.TopComponent.CLOSE_LAST
 fld  constant public static final int org.openide.windows.TopComponent.PERSISTENCE_ALWAYS
 fld  constant public static final int org.openide.windows.TopComponent.PERSISTENCE_NEVER
 fld  constant public static final int org.openide.windows.TopComponent.PERSISTENCE_ONLY_OPENED
-fld  constant public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
 fld  protected javax.accessibility.AccessibleContext javax.swing.JComponent.accessibleContext
 fld  protected javax.swing.JEditorPane org.openide.text.CloneableEditor.pane
 fld  protected javax.swing.event.EventListenerList javax.swing.JComponent.listenerList
 fld  protected transient javax.swing.plaf.ComponentUI javax.swing.JComponent.ui
+fld  public static final float java.awt.Component.BOTTOM_ALIGNMENT
+fld  public static final float java.awt.Component.CENTER_ALIGNMENT
+fld  public static final float java.awt.Component.LEFT_ALIGNMENT
+fld  public static final float java.awt.Component.RIGHT_ALIGNMENT
+fld  public static final float java.awt.Component.TOP_ALIGNMENT
+fld  public static final int java.awt.image.ImageObserver.ABORT
+fld  public static final int java.awt.image.ImageObserver.ALLBITS
+fld  public static final int java.awt.image.ImageObserver.ERROR
+fld  public static final int java.awt.image.ImageObserver.FRAMEBITS
+fld  public static final int java.awt.image.ImageObserver.HEIGHT
+fld  public static final int java.awt.image.ImageObserver.PROPERTIES
+fld  public static final int java.awt.image.ImageObserver.SOMEBITS
+fld  public static final int java.awt.image.ImageObserver.WIDTH
+fld  public static final int javax.swing.JComponent.UNDEFINED_CONDITION
+fld  public static final int javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
+fld  public static final int javax.swing.JComponent.WHEN_FOCUSED
+fld  public static final int javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW
+fld  public static final java.lang.String javax.swing.JComponent.TOOL_TIP_TEXT_KEY
 fld  public static final org.openide.windows.CloneableTopComponent$Ref org.openide.windows.CloneableTopComponent.EMPTY
-innr protected abstract java.awt.Component$AccessibleAWTComponent
-innr protected java.awt.Component$BltBufferStrategy
-innr protected java.awt.Component$FlipBufferStrategy
-innr protected java.awt.Container$AccessibleAWTContainer
-innr public abstract javax.swing.JComponent$AccessibleJComponent
 innr public static abstract interface org.openide.windows.TopComponent$Cloneable
 innr public static abstract interface org.openide.windows.TopComponent$Registry
 innr public static org.openide.windows.CloneableTopComponent$Ref
@@ -20706,10 +17380,10 @@ meth protected void org.openide.windows.TopComponent.componentHidden()
 meth protected void org.openide.windows.TopComponent.openNotify()
 meth public [Ljava.awt.Component; java.awt.Container.getComponents()
 meth public [Ljava.util.EventListener; javax.swing.JComponent.getListeners(java.lang.Class)
-meth public [Ljavax.swing.Action; org.openide.windows.TopComponent.getActions()
+meth public [Ljavax.swing.Action; org.openide.text.CloneableEditor.getActions()
 meth public [Ljavax.swing.KeyStroke; javax.swing.JComponent.getRegisteredKeyStrokes()
 meth public [Ljavax.swing.event.AncestorListener; javax.swing.JComponent.getAncestorListeners()
-meth public [Lorg.openide.util.actions.SystemAction; org.openide.text.CloneableEditor.getSystemActions()
+meth public [Lorg.openide.util.actions.SystemAction; org.openide.windows.TopComponent.getSystemActions()
 meth public boolean java.awt.Component.action(java.awt.Event,java.lang.Object)
 meth public boolean java.awt.Component.contains(java.awt.Point)
 meth public boolean java.awt.Component.getFocusTraversalKeysEnabled()
@@ -20777,6 +17451,7 @@ meth public final boolean org.openide.windows.TopComponent.isOpened()
 meth public final boolean org.openide.windows.TopComponent.isOpened(org.openide.windows.Workspace)
 meth public final int java.awt.Container.getComponentZOrder(java.awt.Component)
 meth public final int org.openide.windows.TopComponent.getCloseOperation()
+meth public final int org.openide.windows.TopComponent.getTabPosition()
 meth public final java.lang.Object java.awt.Component.getTreeLock()
 meth public final java.lang.Object javax.swing.JComponent.getClientProperty(java.lang.Object)
 meth public final java.lang.Object org.openide.windows.CloneableTopComponent.clone()
@@ -20794,6 +17469,7 @@ meth public final void javax.swing.JComponent.putClientProperty(java.lang.Object
 meth public final void javax.swing.JComponent.setActionMap(javax.swing.ActionMap)
 meth public final void javax.swing.JComponent.setInputMap(int,javax.swing.InputMap)
 meth public final void org.openide.windows.TopComponent.cancelRequestAttention()
+meth public final void org.openide.windows.TopComponent.openAtTabPosition(int)
 meth public final void org.openide.windows.TopComponent.requestAttention(boolean)
 meth public final void org.openide.windows.TopComponent.setActivatedNodes([Lorg.openide.nodes.Node;)
 meth public final void org.openide.windows.TopComponent.setCloseOperation(int)
@@ -21124,6 +17800,7 @@ meth public native final void java.lang.Object.wait(long) throws java.lang.Inter
 meth public native int java.lang.Object.hashCode()
 meth public org.openide.text.Line$Set org.openide.text.CloneableEditorSupport.getLineSet()
 meth public org.openide.util.Task org.openide.text.CloneableEditorSupport.prepareDocument()
+meth public static javax.swing.text.EditorKit org.openide.text.CloneableEditorSupport.getEditorKit(java.lang.String)
 meth public synchronized void org.openide.text.CloneableEditorSupport.addChangeListener(javax.swing.event.ChangeListener)
 meth public synchronized void org.openide.text.CloneableEditorSupport.removeChangeListener(javax.swing.event.ChangeListener)
 meth public void org.openide.text.CloneableEditorSupport.open()
@@ -21133,6 +17810,21 @@ meth public void org.openide.text.CloneableEditorSupport.setMIMEType(java.lang.S
 meth public void org.openide.windows.CloneableOpenSupport.edit()
 meth public void org.openide.windows.CloneableOpenSupport.view()
 supr org.openide.windows.CloneableOpenSupport
+CLSS public abstract org.openide.text.CloneableEditorSupportRedirector
+cons public CloneableEditorSupportRedirector()
+meth protected abstract org.openide.text.CloneableEditorSupport org.openide.text.CloneableEditorSupportRedirector.redirect(org.openide.util.Lookup)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+supr java.lang.Object
 CLSS public org.openide.text.DataEditorSupport
 cons public DataEditorSupport(org.openide.loaders.DataObject,org.openide.text.CloneableEditorSupport$Env)
 fld  constant public static final java.lang.String org.openide.text.CloneableEditorSupport.EDITOR_MODE
@@ -21165,12 +17857,12 @@ meth protected org.openide.util.Task org.openide.text.CloneableEditorSupport.rel
 meth protected org.openide.windows.CloneableTopComponent org.openide.text.CloneableEditorSupport.createCloneableTopComponent()
 meth protected synchronized final org.openide.awt.UndoRedo$Manager org.openide.text.CloneableEditorSupport.getUndoRedo()
 meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth protected void org.openide.text.CloneableEditorSupport.loadFromStreamToKit(javax.swing.text.StyledDocument,java.io.InputStream,javax.swing.text.EditorKit) throws java.io.IOException,javax.swing.text.BadLocationException
 meth protected void org.openide.text.CloneableEditorSupport.notifyUnmodified()
-meth protected void org.openide.text.CloneableEditorSupport.saveFromKitToStream(javax.swing.text.StyledDocument,javax.swing.text.EditorKit,java.io.OutputStream) throws java.io.IOException,javax.swing.text.BadLocationException
 meth protected void org.openide.text.CloneableEditorSupport.updateTitles()
 meth protected void org.openide.text.DataEditorSupport.initializeCloneableEditor(org.openide.text.CloneableEditor)
+meth protected void org.openide.text.DataEditorSupport.loadFromStreamToKit(javax.swing.text.StyledDocument,java.io.InputStream,javax.swing.text.EditorKit) throws java.io.IOException,javax.swing.text.BadLocationException
 meth protected void org.openide.text.DataEditorSupport.notifyClosed()
+meth protected void org.openide.text.DataEditorSupport.saveFromKitToStream(javax.swing.text.StyledDocument,javax.swing.text.EditorKit,java.io.OutputStream) throws java.io.IOException,javax.swing.text.BadLocationException
 meth public [Ljavax.swing.JEditorPane; org.openide.text.CloneableEditorSupport.getOpenedPanes()
 meth public boolean java.lang.Object.equals(java.lang.Object)
 meth public boolean org.openide.text.CloneableEditorSupport.isDocumentLoaded()
@@ -21193,6 +17885,7 @@ meth public native final void java.lang.Object.wait(long) throws java.lang.Inter
 meth public native int java.lang.Object.hashCode()
 meth public org.openide.text.Line$Set org.openide.text.CloneableEditorSupport.getLineSet()
 meth public org.openide.util.Task org.openide.text.CloneableEditorSupport.prepareDocument()
+meth public static javax.swing.text.EditorKit org.openide.text.CloneableEditorSupport.getEditorKit(java.lang.String)
 meth public static org.openide.loaders.DataObject org.openide.text.DataEditorSupport.findDataObject(org.openide.text.Line)
 meth public static org.openide.text.CloneableEditorSupport org.openide.text.DataEditorSupport.create(org.openide.loaders.DataObject,org.openide.loaders.MultiDataObject$Entry,org.openide.nodes.CookieSet)
 meth public synchronized void org.openide.text.CloneableEditorSupport.addChangeListener(javax.swing.event.ChangeListener)
@@ -21200,6 +17893,7 @@ meth public synchronized void org.openide.text.CloneableEditorSupport.removeChan
 meth public void org.openide.text.CloneableEditorSupport.open()
 meth public void org.openide.text.CloneableEditorSupport.print()
 meth public void org.openide.text.CloneableEditorSupport.setMIMEType(java.lang.String)
+meth public void org.openide.text.DataEditorSupport.saveAs(org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException
 meth public void org.openide.text.DataEditorSupport.saveDocument() throws java.io.IOException
 meth public void org.openide.windows.CloneableOpenSupport.edit()
 meth public void org.openide.windows.CloneableOpenSupport.view()
@@ -21207,6 +17901,8 @@ supr org.openide.text.CloneableEditorSupport
 CLSS public abstract org.openide.text.DocumentLine
 cons public DocumentLine(org.openide.util.Lookup,org.openide.text.PositionRef)
 fld  constant public static final int org.openide.text.Line.SHOW_GOTO
+fld  constant public static final int org.openide.text.Line.SHOW_REUSE
+fld  constant public static final int org.openide.text.Line.SHOW_REUSE_NEW
 fld  constant public static final int org.openide.text.Line.SHOW_SHOW
 fld  constant public static final int org.openide.text.Line.SHOW_TOFRONT
 fld  constant public static final int org.openide.text.Line.SHOW_TRY_SHOW
@@ -21326,9 +18022,9 @@ meth public void org.openide.windows.CloneableOpenSupport.view()
 supr org.openide.loaders.OpenSupport
 CLSS public org.openide.text.FilterDocument
 cons public FilterDocument(javax.swing.text.Document)
-fld  constant public static final java.lang.String javax.swing.text.Document.StreamDescriptionProperty
-fld  constant public static final java.lang.String javax.swing.text.Document.TitleProperty
 fld  protected javax.swing.text.Document org.openide.text.FilterDocument.original
+fld  public static final java.lang.String javax.swing.text.Document.StreamDescriptionProperty
+fld  public static final java.lang.String javax.swing.text.Document.TitleProperty
 intf javax.swing.text.Document
 intf javax.swing.text.StyledDocument
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
@@ -21374,9 +18070,9 @@ meth public void org.openide.text.FilterDocument.setParagraphAttributes(int,int,
 supr java.lang.Object
 CLSS public org.openide.text.FilterStyledDocument
 cons public FilterStyledDocument(javax.swing.text.StyledDocument)
-fld  constant public static final java.lang.String javax.swing.text.Document.StreamDescriptionProperty
-fld  constant public static final java.lang.String javax.swing.text.Document.TitleProperty
 fld  protected javax.swing.text.Document org.openide.text.FilterDocument.original
+fld  public static final java.lang.String javax.swing.text.Document.StreamDescriptionProperty
+fld  public static final java.lang.String javax.swing.text.Document.TitleProperty
 intf javax.swing.text.Document
 intf javax.swing.text.StyledDocument
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
@@ -21460,6 +18156,8 @@ CLSS public abstract org.openide.text.Line
 cons public Line(java.lang.Object)
 cons public Line(org.openide.util.Lookup)
 fld  constant public static final int org.openide.text.Line.SHOW_GOTO
+fld  constant public static final int org.openide.text.Line.SHOW_REUSE
+fld  constant public static final int org.openide.text.Line.SHOW_REUSE_NEW
 fld  constant public static final int org.openide.text.Line.SHOW_SHOW
 fld  constant public static final int org.openide.text.Line.SHOW_TOFRONT
 fld  constant public static final int org.openide.text.Line.SHOW_TRY_SHOW
@@ -21583,4 +18281,36 @@ meth public native final void java.lang.Object.notifyAll()
 meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
 meth public native int java.lang.Object.hashCode()
 meth public org.openide.text.CloneableEditorSupport org.openide.text.PositionRef.getCloneableEditorSupport()
+supr java.lang.Object
+CLSS public final org.openide.text.PrintPreferences
+innr public static final org.openide.text.PrintPreferences$Alignment
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static boolean org.openide.text.PrintPreferences.getWrap()
+meth public static float org.openide.text.PrintPreferences.getLineAscentCorrection()
+meth public static java.awt.Font org.openide.text.PrintPreferences.getFooterFont()
+meth public static java.awt.Font org.openide.text.PrintPreferences.getHeaderFont()
+meth public static java.awt.print.PageFormat org.openide.text.PrintPreferences.getPageFormat(java.awt.print.PrinterJob)
+meth public static java.lang.String org.openide.text.PrintPreferences.getFooterFormat()
+meth public static java.lang.String org.openide.text.PrintPreferences.getHeaderFormat()
+meth public static org.openide.text.PrintPreferences$Alignment org.openide.text.PrintPreferences.getFooterAlignment()
+meth public static org.openide.text.PrintPreferences$Alignment org.openide.text.PrintPreferences.getHeaderAlignment()
+meth public static void org.openide.text.PrintPreferences.setFooterAlignment(org.openide.text.PrintPreferences$Alignment)
+meth public static void org.openide.text.PrintPreferences.setFooterFont(java.awt.Font)
+meth public static void org.openide.text.PrintPreferences.setFooterFormat(java.lang.String)
+meth public static void org.openide.text.PrintPreferences.setHeaderAlignment(org.openide.text.PrintPreferences$Alignment)
+meth public static void org.openide.text.PrintPreferences.setHeaderFont(java.awt.Font)
+meth public static void org.openide.text.PrintPreferences.setHeaderFormat(java.lang.String)
+meth public static void org.openide.text.PrintPreferences.setLineAscentCorrection(float)
+meth public static void org.openide.text.PrintPreferences.setPageFormat(java.awt.print.PageFormat)
+meth public static void org.openide.text.PrintPreferences.setWrap(boolean)
 supr java.lang.Object

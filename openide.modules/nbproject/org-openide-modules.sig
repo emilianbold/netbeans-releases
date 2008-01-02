@@ -1,5 +1,5 @@
 #API master signature file
-#Version 1.5.0_11
+#Version 7.3.1
 CLSS public final org.openide.modules.Dependency
 fld  constant public static final int org.openide.modules.Dependency.COMPARE_ANY
 fld  constant public static final int org.openide.modules.Dependency.COMPARE_IMPL
@@ -7,7 +7,9 @@ fld  constant public static final int org.openide.modules.Dependency.COMPARE_SPE
 fld  constant public static final int org.openide.modules.Dependency.TYPE_IDE
 fld  constant public static final int org.openide.modules.Dependency.TYPE_JAVA
 fld  constant public static final int org.openide.modules.Dependency.TYPE_MODULE
+fld  constant public static final int org.openide.modules.Dependency.TYPE_NEEDS
 fld  constant public static final int org.openide.modules.Dependency.TYPE_PACKAGE
+fld  constant public static final int org.openide.modules.Dependency.TYPE_RECOMMENDS
 fld  constant public static final int org.openide.modules.Dependency.TYPE_REQUIRES
 fld  constant public static final java.lang.String org.openide.modules.Dependency.JAVA_NAME
 fld  constant public static final java.lang.String org.openide.modules.Dependency.VM_NAME

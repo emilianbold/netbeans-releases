@@ -1,44 +1,5 @@
 #API master signature file
-#Version 1.5.0_11
-CLSS public static final java.lang.Thread$State
-fld  public static final java.lang.Thread$State java.lang.Thread$State.BLOCKED
-fld  public static final java.lang.Thread$State java.lang.Thread$State.NEW
-fld  public static final java.lang.Thread$State java.lang.Thread$State.RUNNABLE
-fld  public static final java.lang.Thread$State java.lang.Thread$State.TERMINATED
-fld  public static final java.lang.Thread$State java.lang.Thread$State.TIMED_WAITING
-fld  public static final java.lang.Thread$State java.lang.Thread$State.WAITING
-intf java.io.Serializable
-intf java.lang.Comparable
-meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public final boolean java.lang.Enum.equals(java.lang.Object)
-meth public final int java.lang.Enum.compareTo(java.lang.Enum)
-meth public final int java.lang.Enum.hashCode()
-meth public final int java.lang.Enum.ordinal()
-meth public final java.lang.Class java.lang.Enum.getDeclaringClass()
-meth public final java.lang.String java.lang.Enum.name()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Enum.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public static final [Ljava.lang.Thread$State; java.lang.Thread$State.values()
-meth public static java.lang.Enum java.lang.Enum.valueOf(java.lang.Class,java.lang.String)
-meth public static java.lang.Thread$State java.lang.Thread$State.valueOf(java.lang.String)
-meth public volatile int java.lang.Enum.compareTo(java.lang.Object)
-supr java.lang.Enum
-CLSS public static abstract interface java.lang.Thread$UncaughtExceptionHandler
-meth public abstract void java.lang.Thread$UncaughtExceptionHandler.uncaughtException(java.lang.Thread,java.lang.Throwable)
-supr null
-CLSS public static abstract interface java.util.Map$Entry
-meth public abstract boolean java.util.Map$Entry.equals(java.lang.Object)
-meth public abstract int java.util.Map$Entry.hashCode()
-meth public abstract java.lang.Object java.util.Map$Entry.getKey()
-meth public abstract java.lang.Object java.util.Map$Entry.getValue()
-meth public abstract java.lang.Object java.util.Map$Entry.setValue(java.lang.Object)
-supr null
+#Version 7.3.1
 CLSS public static abstract interface org.openide.filesystems.AbstractFileSystem$Attr
 fld  constant public static final long org.openide.filesystems.AbstractFileSystem$Attr.serialVersionUID
 intf java.io.Serializable
@@ -557,8 +518,10 @@ meth public boolean java.lang.Object.equals(java.lang.Object)
 meth public boolean org.openide.filesystems.FileObject.canRead()
 meth public boolean org.openide.filesystems.FileObject.canWrite()
 meth public boolean org.openide.filesystems.FileObject.existsExt(java.lang.String)
+meth public boolean org.openide.filesystems.FileObject.isLocked()
 meth public boolean org.openide.filesystems.FileObject.isVirtual()
 meth public final boolean org.openide.filesystems.FileObject.hasExt(java.lang.String)
+meth public final java.io.OutputStream org.openide.filesystems.FileObject.getOutputStream() throws java.io.IOException,org.openide.filesystems.FileAlreadyLockedException
 meth public final java.net.URL org.openide.filesystems.FileObject.getURL() throws org.openide.filesystems.FileStateInvalidException
 meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
 meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
@@ -762,6 +725,7 @@ meth public native final void java.lang.Object.notifyAll()
 meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
 meth public native int java.lang.Object.hashCode()
 meth public static [Lorg.openide.filesystems.FileObject; org.openide.filesystems.FileUtil.fromFile(java.io.File)
+meth public static boolean org.openide.filesystems.FileUtil.affectsOrder(org.openide.filesystems.FileAttributeEvent)
 meth public static boolean org.openide.filesystems.FileUtil.isArchiveFile(java.net.URL)
 meth public static boolean org.openide.filesystems.FileUtil.isArchiveFile(org.openide.filesystems.FileObject)
 meth public static boolean org.openide.filesystems.FileUtil.isParentOf(org.openide.filesystems.FileObject,org.openide.filesystems.FileObject)
@@ -777,10 +741,13 @@ meth public static java.lang.String org.openide.filesystems.FileUtil.getRelative
 meth public static java.net.URL org.openide.filesystems.FileUtil.getArchiveFile(java.net.URL)
 meth public static java.net.URL org.openide.filesystems.FileUtil.getArchiveRoot(java.net.URL)
 meth public static java.net.URLStreamHandler org.openide.filesystems.FileUtil.nbfsURLStreamHandler()
+meth public static java.util.List org.openide.filesystems.FileUtil.getOrder(java.util.Collection,boolean) throws java.lang.IllegalArgumentException
 meth public static org.openide.filesystems.FileChangeListener org.openide.filesystems.FileUtil.weakFileChangeListener(org.openide.filesystems.FileChangeListener,java.lang.Object)
 meth public static org.openide.filesystems.FileObject org.openide.filesystems.FileUtil.copyFile(org.openide.filesystems.FileObject,org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException
 meth public static org.openide.filesystems.FileObject org.openide.filesystems.FileUtil.copyFile(org.openide.filesystems.FileObject,org.openide.filesystems.FileObject,java.lang.String,java.lang.String) throws java.io.IOException
+meth public static org.openide.filesystems.FileObject org.openide.filesystems.FileUtil.createData(java.io.File) throws java.io.IOException
 meth public static org.openide.filesystems.FileObject org.openide.filesystems.FileUtil.createData(org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException
+meth public static org.openide.filesystems.FileObject org.openide.filesystems.FileUtil.createFolder(java.io.File) throws java.io.IOException
 meth public static org.openide.filesystems.FileObject org.openide.filesystems.FileUtil.createFolder(org.openide.filesystems.FileObject,java.lang.String) throws java.io.IOException
 meth public static org.openide.filesystems.FileObject org.openide.filesystems.FileUtil.findBrother(org.openide.filesystems.FileObject,java.lang.String)
 meth public static org.openide.filesystems.FileObject org.openide.filesystems.FileUtil.getArchiveFile(org.openide.filesystems.FileObject)
@@ -794,6 +761,7 @@ meth public static void org.openide.filesystems.FileUtil.copyAttributes(org.open
 meth public static void org.openide.filesystems.FileUtil.extractJar(org.openide.filesystems.FileObject,java.io.InputStream) throws java.io.IOException
 meth public static void org.openide.filesystems.FileUtil.preventFileChooserSymlinkTraversal(javax.swing.JFileChooser,java.io.File)
 meth public static void org.openide.filesystems.FileUtil.setMIMEType(java.lang.String,java.lang.String)
+meth public static void org.openide.filesystems.FileUtil.setOrder(java.util.List) throws java.io.IOException,java.lang.IllegalArgumentException
 supr java.lang.Object
 CLSS public org.openide.filesystems.JarFileSystem
 cons public JarFileSystem()
@@ -1037,7 +1005,6 @@ meth protected final void org.openide.filesystems.FileSystem.fireVetoableChange(
 meth protected final void org.openide.filesystems.FileSystem.setCapability(org.openide.filesystems.FileSystemCapability)
 meth protected final void org.openide.filesystems.FileSystem.setSystemName(java.lang.String) throws java.beans.PropertyVetoException
 meth protected final void org.openide.filesystems.MultiFileSystem.hideResource(java.lang.String,boolean) throws java.io.IOException
-meth protected final void org.openide.filesystems.MultiFileSystem.setDelegates([Lorg.openide.filesystems.FileSystem;)
 meth protected final void org.openide.filesystems.MultiFileSystem.setPropagateMasks(boolean)
 meth protected java.util.Set org.openide.filesystems.MultiFileSystem.createLocksOn(java.lang.String) throws java.io.IOException
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
@@ -1045,6 +1012,7 @@ meth protected org.openide.filesystems.FileObject org.openide.filesystems.MultiF
 meth protected org.openide.filesystems.FileSystem org.openide.filesystems.MultiFileSystem.createWritableOn(java.lang.String) throws java.io.IOException
 meth protected org.openide.filesystems.FileSystem org.openide.filesystems.MultiFileSystem.createWritableOnForRename(java.lang.String,java.lang.String) throws java.io.IOException
 meth protected static java.util.Enumeration org.openide.filesystems.MultiFileSystem.hiddenFiles(org.openide.filesystems.FileObject,boolean)
+meth protected transient final void org.openide.filesystems.MultiFileSystem.setDelegates([Lorg.openide.filesystems.FileSystem;)
 meth protected void java.lang.Object.finalize() throws java.lang.Throwable
 meth protected void org.openide.filesystems.MultiFileSystem.markUnimportant(org.openide.filesystems.FileObject)
 meth protected void org.openide.filesystems.MultiFileSystem.notifyMigration(org.openide.filesystems.FileObject)

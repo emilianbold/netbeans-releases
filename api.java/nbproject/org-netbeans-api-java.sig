@@ -1,44 +1,16 @@
 #API master signature file
-#Version 1.5.0_11
-CLSS public static final java.lang.Thread$State
-fld  public static final java.lang.Thread$State java.lang.Thread$State.BLOCKED
-fld  public static final java.lang.Thread$State java.lang.Thread$State.NEW
-fld  public static final java.lang.Thread$State java.lang.Thread$State.RUNNABLE
-fld  public static final java.lang.Thread$State java.lang.Thread$State.TERMINATED
-fld  public static final java.lang.Thread$State java.lang.Thread$State.TIMED_WAITING
-fld  public static final java.lang.Thread$State java.lang.Thread$State.WAITING
-intf java.io.Serializable
-intf java.lang.Comparable
-meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
-meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public final boolean java.lang.Enum.equals(java.lang.Object)
-meth public final int java.lang.Enum.compareTo(java.lang.Enum)
-meth public final int java.lang.Enum.hashCode()
-meth public final int java.lang.Enum.ordinal()
-meth public final java.lang.Class java.lang.Enum.getDeclaringClass()
-meth public final java.lang.String java.lang.Enum.name()
-meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
-meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
-meth public java.lang.String java.lang.Enum.toString()
-meth public native final java.lang.Class java.lang.Object.getClass()
-meth public native final void java.lang.Object.notify()
-meth public native final void java.lang.Object.notifyAll()
-meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public static final [Ljava.lang.Thread$State; java.lang.Thread$State.values()
-meth public static java.lang.Enum java.lang.Enum.valueOf(java.lang.Class,java.lang.String)
-meth public static java.lang.Thread$State java.lang.Thread$State.valueOf(java.lang.String)
-meth public volatile int java.lang.Enum.compareTo(java.lang.Object)
-supr java.lang.Enum
-CLSS public static abstract interface java.lang.Thread$UncaughtExceptionHandler
-meth public abstract void java.lang.Thread$UncaughtExceptionHandler.uncaughtException(java.lang.Thread,java.lang.Throwable)
-supr null
+#Version 1.13.1
 CLSS public final org.netbeans.api.java.classpath.ClassPath$Entry
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
 meth protected void java.lang.Object.finalize() throws java.lang.Throwable
-meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean org.netbeans.api.java.classpath.ClassPath$Entry.equals(java.lang.Object)
+meth public boolean org.netbeans.api.java.classpath.ClassPath$Entry.includes(java.lang.String)
+meth public boolean org.netbeans.api.java.classpath.ClassPath$Entry.includes(java.net.URL)
+meth public boolean org.netbeans.api.java.classpath.ClassPath$Entry.includes(org.openide.filesystems.FileObject)
 meth public boolean org.netbeans.api.java.classpath.ClassPath$Entry.isValid()
 meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
 meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public int org.netbeans.api.java.classpath.ClassPath$Entry.hashCode()
 meth public java.io.IOException org.netbeans.api.java.classpath.ClassPath$Entry.getError()
 meth public java.lang.String org.netbeans.api.java.classpath.ClassPath$Entry.toString()
 meth public java.net.URL org.netbeans.api.java.classpath.ClassPath$Entry.getURL()
@@ -46,10 +18,14 @@ meth public native final java.lang.Class java.lang.Object.getClass()
 meth public native final void java.lang.Object.notify()
 meth public native final void java.lang.Object.notifyAll()
 meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
-meth public native int java.lang.Object.hashCode()
 meth public org.netbeans.api.java.classpath.ClassPath org.netbeans.api.java.classpath.ClassPath$Entry.getDefiningClassPath()
-meth public synchronized org.openide.filesystems.FileObject org.netbeans.api.java.classpath.ClassPath$Entry.getRoot()
+meth public org.openide.filesystems.FileObject org.netbeans.api.java.classpath.ClassPath$Entry.getRoot()
 supr java.lang.Object
+CLSS public static abstract interface org.netbeans.api.java.queries.BinaryForSourceQuery$Result
+meth public abstract [Ljava.net.URL; org.netbeans.api.java.queries.BinaryForSourceQuery$Result.getRoots()
+meth public abstract void org.netbeans.api.java.queries.BinaryForSourceQuery$Result.addChangeListener(javax.swing.event.ChangeListener)
+meth public abstract void org.netbeans.api.java.queries.BinaryForSourceQuery$Result.removeChangeListener(javax.swing.event.ChangeListener)
+supr null
 CLSS public static abstract interface org.netbeans.api.java.queries.JavadocForBinaryQuery$Result
 meth public abstract [Ljava.net.URL; org.netbeans.api.java.queries.JavadocForBinaryQuery$Result.getRoots()
 meth public abstract void org.netbeans.api.java.queries.JavadocForBinaryQuery$Result.addChangeListener(javax.swing.event.ChangeListener)
@@ -66,6 +42,7 @@ fld  constant public static final java.lang.String org.netbeans.api.java.classpa
 fld  constant public static final java.lang.String org.netbeans.api.java.classpath.ClassPath.DEBUG
 fld  constant public static final java.lang.String org.netbeans.api.java.classpath.ClassPath.EXECUTE
 fld  constant public static final java.lang.String org.netbeans.api.java.classpath.ClassPath.PROP_ENTRIES
+fld  constant public static final java.lang.String org.netbeans.api.java.classpath.ClassPath.PROP_INCLUDES
 fld  constant public static final java.lang.String org.netbeans.api.java.classpath.ClassPath.PROP_ROOTS
 fld  constant public static final java.lang.String org.netbeans.api.java.classpath.ClassPath.SOURCE
 innr public final org.netbeans.api.java.classpath.ClassPath$Entry
@@ -153,6 +130,21 @@ meth public native final void java.lang.Object.wait(long) throws java.lang.Inter
 meth public native int java.lang.Object.hashCode()
 meth public static java.lang.Boolean org.netbeans.api.java.queries.AccessibilityQuery.isPubliclyAccessible(org.openide.filesystems.FileObject)
 supr java.lang.Object
+CLSS public final org.netbeans.api.java.queries.BinaryForSourceQuery
+innr public static abstract interface org.netbeans.api.java.queries.BinaryForSourceQuery$Result
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static org.netbeans.api.java.queries.BinaryForSourceQuery$Result org.netbeans.api.java.queries.BinaryForSourceQuery.findBinaryRoots(java.net.URL)
+supr java.lang.Object
 CLSS public org.netbeans.api.java.queries.JavadocForBinaryQuery
 innr public static abstract interface org.netbeans.api.java.queries.JavadocForBinaryQuery$Result
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
@@ -237,6 +229,16 @@ supr null
 CLSS public abstract interface org.netbeans.spi.java.classpath.ClassPathProvider
 meth public abstract org.netbeans.api.java.classpath.ClassPath org.netbeans.spi.java.classpath.ClassPathProvider.findClassPath(org.openide.filesystems.FileObject,java.lang.String)
 supr null
+CLSS public abstract interface org.netbeans.spi.java.classpath.FilteringPathResourceImplementation
+fld  constant public static final java.lang.String org.netbeans.spi.java.classpath.FilteringPathResourceImplementation.PROP_INCLUDES
+fld  constant public static final java.lang.String org.netbeans.spi.java.classpath.PathResourceImplementation.PROP_ROOTS
+intf org.netbeans.spi.java.classpath.PathResourceImplementation
+meth public abstract [Ljava.net.URL; org.netbeans.spi.java.classpath.PathResourceImplementation.getRoots()
+meth public abstract boolean org.netbeans.spi.java.classpath.FilteringPathResourceImplementation.includes(java.net.URL,java.lang.String)
+meth public abstract org.netbeans.spi.java.classpath.ClassPathImplementation org.netbeans.spi.java.classpath.PathResourceImplementation.getContent()
+meth public abstract void org.netbeans.spi.java.classpath.PathResourceImplementation.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public abstract void org.netbeans.spi.java.classpath.PathResourceImplementation.removePropertyChangeListener(java.beans.PropertyChangeListener)
+supr null
 CLSS public abstract interface org.netbeans.spi.java.classpath.PathResourceImplementation
 fld  constant public static final java.lang.String org.netbeans.spi.java.classpath.PathResourceImplementation.PROP_ROOTS
 meth public abstract [Ljava.net.URL; org.netbeans.spi.java.classpath.PathResourceImplementation.getRoots()
@@ -256,13 +258,13 @@ meth public native final void java.lang.Object.notify()
 meth public native final void java.lang.Object.notifyAll()
 meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
 meth public native int java.lang.Object.hashCode()
-meth public static org.netbeans.api.java.classpath.ClassPath org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath([Ljava.net.URL;)
-meth public static org.netbeans.api.java.classpath.ClassPath org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath([Lorg.openide.filesystems.FileObject;)
 meth public static org.netbeans.api.java.classpath.ClassPath org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(java.util.List)
-meth public static org.netbeans.api.java.classpath.ClassPath org.netbeans.spi.java.classpath.support.ClassPathSupport.createProxyClassPath([Lorg.netbeans.api.java.classpath.ClassPath;)
 meth public static org.netbeans.spi.java.classpath.ClassPathImplementation org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPathImplementation(java.util.List)
-meth public static org.netbeans.spi.java.classpath.ClassPathImplementation org.netbeans.spi.java.classpath.support.ClassPathSupport.createProxyClassPathImplementation([Lorg.netbeans.spi.java.classpath.ClassPathImplementation;)
 meth public static org.netbeans.spi.java.classpath.PathResourceImplementation org.netbeans.spi.java.classpath.support.ClassPathSupport.createResource(java.net.URL)
+meth public static transient org.netbeans.api.java.classpath.ClassPath org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath([Ljava.net.URL;)
+meth public static transient org.netbeans.api.java.classpath.ClassPath org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath([Lorg.openide.filesystems.FileObject;)
+meth public static transient org.netbeans.api.java.classpath.ClassPath org.netbeans.spi.java.classpath.support.ClassPathSupport.createProxyClassPath([Lorg.netbeans.api.java.classpath.ClassPath;)
+meth public static transient org.netbeans.spi.java.classpath.ClassPathImplementation org.netbeans.spi.java.classpath.support.ClassPathSupport.createProxyClassPathImplementation([Lorg.netbeans.spi.java.classpath.ClassPathImplementation;)
 supr java.lang.Object
 CLSS public abstract org.netbeans.spi.java.classpath.support.CompositePathResourceBase
 cons public CompositePathResourceBase()
@@ -309,6 +311,9 @@ meth public synchronized final void org.netbeans.spi.java.classpath.support.Path
 supr java.lang.Object
 CLSS public abstract interface org.netbeans.spi.java.queries.AccessibilityQueryImplementation
 meth public abstract java.lang.Boolean org.netbeans.spi.java.queries.AccessibilityQueryImplementation.isPubliclyAccessible(org.openide.filesystems.FileObject)
+supr null
+CLSS public abstract interface org.netbeans.spi.java.queries.BinaryForSourceQueryImplementation
+meth public abstract org.netbeans.api.java.queries.BinaryForSourceQuery$Result org.netbeans.spi.java.queries.BinaryForSourceQueryImplementation.findBinaryRoots(java.net.URL)
 supr null
 CLSS public abstract interface org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation
 meth public abstract org.netbeans.api.java.queries.JavadocForBinaryQuery$Result org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation.findJavadoc(java.net.URL)

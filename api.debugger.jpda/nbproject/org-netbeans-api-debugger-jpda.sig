@@ -1,5 +1,119 @@
 #API master signature file
-#Version 1.5.0_11
+#Version 2.13.1
+CLSS public static final org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE
+fld  public static final org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE.EQUAL
+fld  public static final org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE.GREATER
+fld  public static final org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE.MULTIPLE
+intf java.io.Serializable
+intf java.lang.Comparable
+meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public final boolean java.lang.Enum.equals(java.lang.Object)
+meth public final int java.lang.Enum.compareTo(java.lang.Enum)
+meth public final int java.lang.Enum.hashCode()
+meth public final int java.lang.Enum.ordinal()
+meth public final java.lang.Class java.lang.Enum.getDeclaringClass()
+meth public final java.lang.String java.lang.Enum.name()
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Enum.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public static final [Lorg.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE; org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE.values()
+meth public static java.lang.Enum java.lang.Enum.valueOf(java.lang.Class,java.lang.String)
+meth public static org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE.valueOf(java.lang.String)
+meth public volatile int java.lang.Enum.compareTo(java.lang.Object)
+supr java.lang.Enum
+CLSS public static final org.netbeans.api.debugger.Breakpoint$VALIDITY
+fld  public static final org.netbeans.api.debugger.Breakpoint$VALIDITY org.netbeans.api.debugger.Breakpoint$VALIDITY.INVALID
+fld  public static final org.netbeans.api.debugger.Breakpoint$VALIDITY org.netbeans.api.debugger.Breakpoint$VALIDITY.UNKNOWN
+fld  public static final org.netbeans.api.debugger.Breakpoint$VALIDITY org.netbeans.api.debugger.Breakpoint$VALIDITY.VALID
+intf java.io.Serializable
+intf java.lang.Comparable
+meth protected final java.lang.Object java.lang.Enum.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public final boolean java.lang.Enum.equals(java.lang.Object)
+meth public final int java.lang.Enum.compareTo(java.lang.Enum)
+meth public final int java.lang.Enum.hashCode()
+meth public final int java.lang.Enum.ordinal()
+meth public final java.lang.Class java.lang.Enum.getDeclaringClass()
+meth public final java.lang.String java.lang.Enum.name()
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Enum.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public static final [Lorg.netbeans.api.debugger.Breakpoint$VALIDITY; org.netbeans.api.debugger.Breakpoint$VALIDITY.values()
+meth public static java.lang.Enum java.lang.Enum.valueOf(java.lang.Class,java.lang.String)
+meth public static org.netbeans.api.debugger.Breakpoint$VALIDITY org.netbeans.api.debugger.Breakpoint$VALIDITY.valueOf(java.lang.String)
+meth public volatile int java.lang.Enum.compareTo(java.lang.Object)
+supr java.lang.Enum
+CLSS public static abstract interface org.netbeans.spi.debugger.jpda.EditorContext$BytecodeProvider
+meth public abstract [B org.netbeans.spi.debugger.jpda.EditorContext$BytecodeProvider.byteCodes()
+meth public abstract [B org.netbeans.spi.debugger.jpda.EditorContext$BytecodeProvider.constantPool()
+meth public abstract [I org.netbeans.spi.debugger.jpda.EditorContext$BytecodeProvider.indexAtLines(int,int)
+supr null
+CLSS public static final org.netbeans.spi.debugger.jpda.EditorContext$MethodArgument
+cons public MethodArgument(java.lang.String,java.lang.String,org.netbeans.spi.debugger.jpda.EditorContext$Position,org.netbeans.spi.debugger.jpda.EditorContext$Position)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public java.lang.String org.netbeans.spi.debugger.jpda.EditorContext$MethodArgument.getName()
+meth public java.lang.String org.netbeans.spi.debugger.jpda.EditorContext$MethodArgument.getType()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public org.netbeans.spi.debugger.jpda.EditorContext$Position org.netbeans.spi.debugger.jpda.EditorContext$MethodArgument.getEndPosition()
+meth public org.netbeans.spi.debugger.jpda.EditorContext$Position org.netbeans.spi.debugger.jpda.EditorContext$MethodArgument.getStartPosition()
+supr java.lang.Object
+CLSS public static final org.netbeans.spi.debugger.jpda.EditorContext$Operation
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean org.netbeans.spi.debugger.jpda.EditorContext$Operation.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public int org.netbeans.spi.debugger.jpda.EditorContext$Operation.getBytecodeIndex()
+meth public int org.netbeans.spi.debugger.jpda.EditorContext$Operation.hashCode()
+meth public java.lang.String java.lang.Object.toString()
+meth public java.lang.String org.netbeans.spi.debugger.jpda.EditorContext$Operation.getMethodClassType()
+meth public java.lang.String org.netbeans.spi.debugger.jpda.EditorContext$Operation.getMethodName()
+meth public java.util.List org.netbeans.spi.debugger.jpda.EditorContext$Operation.getNextOperations()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public org.netbeans.api.debugger.jpda.Variable org.netbeans.spi.debugger.jpda.EditorContext$Operation.getReturnValue()
+meth public org.netbeans.spi.debugger.jpda.EditorContext$Position org.netbeans.spi.debugger.jpda.EditorContext$Operation.getEndPosition()
+meth public org.netbeans.spi.debugger.jpda.EditorContext$Position org.netbeans.spi.debugger.jpda.EditorContext$Operation.getMethodEndPosition()
+meth public org.netbeans.spi.debugger.jpda.EditorContext$Position org.netbeans.spi.debugger.jpda.EditorContext$Operation.getMethodStartPosition()
+meth public org.netbeans.spi.debugger.jpda.EditorContext$Position org.netbeans.spi.debugger.jpda.EditorContext$Operation.getStartPosition()
+meth public void org.netbeans.spi.debugger.jpda.EditorContext$Operation.setReturnValue(org.netbeans.api.debugger.jpda.Variable)
+supr java.lang.Object
+CLSS public static final org.netbeans.spi.debugger.jpda.EditorContext$Position
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean org.netbeans.spi.debugger.jpda.EditorContext$Position.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public int org.netbeans.spi.debugger.jpda.EditorContext$Position.getColumn()
+meth public int org.netbeans.spi.debugger.jpda.EditorContext$Position.getLine()
+meth public int org.netbeans.spi.debugger.jpda.EditorContext$Position.getOffset()
+meth public int org.netbeans.spi.debugger.jpda.EditorContext$Position.hashCode()
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+supr java.lang.Object
 CLSS public abstract org.netbeans.api.debugger.jpda.AbstractDICookie
 cons public AbstractDICookie()
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
@@ -50,6 +164,7 @@ meth public abstract java.lang.String org.netbeans.api.debugger.jpda.CallStackFr
 meth public abstract java.util.List org.netbeans.api.debugger.jpda.CallStackFrame.getAvailableStrata()
 meth public abstract org.netbeans.api.debugger.jpda.JPDAThread org.netbeans.api.debugger.jpda.CallStackFrame.getThread()
 meth public abstract org.netbeans.api.debugger.jpda.This org.netbeans.api.debugger.jpda.CallStackFrame.getThisVariable()
+meth public abstract org.netbeans.spi.debugger.jpda.EditorContext$Operation org.netbeans.api.debugger.jpda.CallStackFrame.getCurrentOperation(java.lang.String)
 meth public abstract void org.netbeans.api.debugger.jpda.CallStackFrame.makeCurrent()
 meth public abstract void org.netbeans.api.debugger.jpda.CallStackFrame.popFrame()
 supr null
@@ -63,12 +178,17 @@ fld  constant public static final int org.netbeans.api.debugger.jpda.JPDABreakpo
 fld  constant public static final java.lang.String org.netbeans.api.debugger.Breakpoint.PROP_DISPOSED
 fld  constant public static final java.lang.String org.netbeans.api.debugger.Breakpoint.PROP_ENABLED
 fld  constant public static final java.lang.String org.netbeans.api.debugger.Breakpoint.PROP_GROUP_NAME
+fld  constant public static final java.lang.String org.netbeans.api.debugger.Breakpoint.PROP_HIT_COUNT_FILTER
+fld  constant public static final java.lang.String org.netbeans.api.debugger.Breakpoint.PROP_VALIDITY
 fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint.PROP_BREAKPOINT_TYPE
 fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint.PROP_CLASS_EXCLUSION_FILTERS
 fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint.PROP_CLASS_FILTERS
 fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.JPDABreakpoint.PROP_HIDDEN
 fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.JPDABreakpoint.PROP_PRINT_TEXT
 fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.JPDABreakpoint.PROP_SUSPEND
+innr public static final org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE
+innr public static final org.netbeans.api.debugger.Breakpoint$VALIDITY
+meth protected final void org.netbeans.api.debugger.Breakpoint.setValidity(org.netbeans.api.debugger.Breakpoint$VALIDITY,java.lang.String)
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
 meth protected void java.lang.Object.finalize() throws java.lang.Throwable
 meth protected void org.netbeans.api.debugger.Breakpoint.dispose()
@@ -80,6 +200,7 @@ meth public boolean org.netbeans.api.debugger.jpda.JPDABreakpoint.isEnabled()
 meth public boolean org.netbeans.api.debugger.jpda.JPDABreakpoint.isHidden()
 meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
 meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void org.netbeans.api.debugger.Breakpoint.setHitCountFilter(int,org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE)
 meth public int org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint.getBreakpointType()
 meth public int org.netbeans.api.debugger.jpda.JPDABreakpoint.getSuspend()
 meth public java.lang.String org.netbeans.api.debugger.Breakpoint.getGroupName()
@@ -92,6 +213,10 @@ meth public native final void java.lang.Object.wait(long) throws java.lang.Inter
 meth public native int java.lang.Object.hashCode()
 meth public static org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint.create(int)
 meth public static org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint.create(java.lang.String,boolean,int)
+meth public synchronized final int org.netbeans.api.debugger.Breakpoint.getHitCountFilter()
+meth public synchronized final java.lang.String org.netbeans.api.debugger.Breakpoint.getValidityMessage()
+meth public synchronized final org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE org.netbeans.api.debugger.Breakpoint.getHitCountFilteringStyle()
+meth public synchronized final org.netbeans.api.debugger.Breakpoint$VALIDITY org.netbeans.api.debugger.Breakpoint.getValidity()
 meth public synchronized void org.netbeans.api.debugger.Breakpoint.addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public synchronized void org.netbeans.api.debugger.Breakpoint.removePropertyChangeListener(java.beans.PropertyChangeListener)
 meth public synchronized void org.netbeans.api.debugger.jpda.JPDABreakpoint.addJPDABreakpointListener(org.netbeans.api.debugger.jpda.event.JPDABreakpointListener)
@@ -108,6 +233,23 @@ meth public void org.netbeans.api.debugger.jpda.JPDABreakpoint.setHidden(boolean
 meth public void org.netbeans.api.debugger.jpda.JPDABreakpoint.setPrintText(java.lang.String)
 meth public void org.netbeans.api.debugger.jpda.JPDABreakpoint.setSuspend(int)
 supr org.netbeans.api.debugger.jpda.JPDABreakpoint
+CLSS public abstract interface org.netbeans.api.debugger.jpda.ClassVariable
+intf org.netbeans.api.debugger.jpda.ObjectVariable
+intf org.netbeans.api.debugger.jpda.Variable
+meth public abstract [Lorg.netbeans.api.debugger.jpda.Field; org.netbeans.api.debugger.jpda.ObjectVariable.getAllStaticFields(int,int)
+meth public abstract [Lorg.netbeans.api.debugger.jpda.Field; org.netbeans.api.debugger.jpda.ObjectVariable.getFields(int,int)
+meth public abstract [Lorg.netbeans.api.debugger.jpda.Field; org.netbeans.api.debugger.jpda.ObjectVariable.getInheritedFields(int,int)
+meth public abstract int org.netbeans.api.debugger.jpda.ObjectVariable.getFieldsCount()
+meth public abstract java.lang.String org.netbeans.api.debugger.jpda.ObjectVariable.getToStringValue() throws org.netbeans.api.debugger.jpda.InvalidExpressionException
+meth public abstract java.lang.String org.netbeans.api.debugger.jpda.Variable.getType()
+meth public abstract java.lang.String org.netbeans.api.debugger.jpda.Variable.getValue()
+meth public abstract java.util.List org.netbeans.api.debugger.jpda.ObjectVariable.getReferringObjects(long) throws java.lang.UnsupportedOperationException
+meth public abstract long org.netbeans.api.debugger.jpda.ObjectVariable.getUniqueID()
+meth public abstract org.netbeans.api.debugger.jpda.Field org.netbeans.api.debugger.jpda.ObjectVariable.getField(java.lang.String)
+meth public abstract org.netbeans.api.debugger.jpda.JPDAClassType org.netbeans.api.debugger.jpda.ClassVariable.getClassType()
+meth public abstract org.netbeans.api.debugger.jpda.Super org.netbeans.api.debugger.jpda.ObjectVariable.getSuper()
+meth public abstract org.netbeans.api.debugger.jpda.Variable org.netbeans.api.debugger.jpda.ObjectVariable.invokeMethod(java.lang.String,java.lang.String,[Lorg.netbeans.api.debugger.jpda.Variable;) throws java.lang.NoSuchMethodException,org.netbeans.api.debugger.jpda.InvalidExpressionException
+supr null
 CLSS public org.netbeans.api.debugger.jpda.DebuggerStartException
 cons public DebuggerStartException(java.lang.String)
 cons public DebuggerStartException(java.lang.Throwable)
@@ -145,21 +287,31 @@ fld  constant public static final int org.netbeans.api.debugger.jpda.JPDABreakpo
 fld  constant public static final java.lang.String org.netbeans.api.debugger.Breakpoint.PROP_DISPOSED
 fld  constant public static final java.lang.String org.netbeans.api.debugger.Breakpoint.PROP_ENABLED
 fld  constant public static final java.lang.String org.netbeans.api.debugger.Breakpoint.PROP_GROUP_NAME
+fld  constant public static final java.lang.String org.netbeans.api.debugger.Breakpoint.PROP_HIT_COUNT_FILTER
+fld  constant public static final java.lang.String org.netbeans.api.debugger.Breakpoint.PROP_VALIDITY
 fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.ExceptionBreakpoint.PROP_CATCH_TYPE
+fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.ExceptionBreakpoint.PROP_CLASS_EXCLUSION_FILTERS
+fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.ExceptionBreakpoint.PROP_CLASS_FILTERS
 fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.ExceptionBreakpoint.PROP_CONDITION
 fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.ExceptionBreakpoint.PROP_EXCEPTION_CLASS_NAME
 fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.JPDABreakpoint.PROP_HIDDEN
 fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.JPDABreakpoint.PROP_PRINT_TEXT
 fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.JPDABreakpoint.PROP_SUSPEND
+innr public static final org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE
+innr public static final org.netbeans.api.debugger.Breakpoint$VALIDITY
+meth protected final void org.netbeans.api.debugger.Breakpoint.setValidity(org.netbeans.api.debugger.Breakpoint$VALIDITY,java.lang.String)
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
 meth protected void java.lang.Object.finalize() throws java.lang.Throwable
 meth protected void org.netbeans.api.debugger.Breakpoint.dispose()
 meth protected void org.netbeans.api.debugger.Breakpoint.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth public [Ljava.lang.String; org.netbeans.api.debugger.jpda.ExceptionBreakpoint.getClassExclusionFilters()
+meth public [Ljava.lang.String; org.netbeans.api.debugger.jpda.ExceptionBreakpoint.getClassFilters()
 meth public boolean java.lang.Object.equals(java.lang.Object)
 meth public boolean org.netbeans.api.debugger.jpda.JPDABreakpoint.isEnabled()
 meth public boolean org.netbeans.api.debugger.jpda.JPDABreakpoint.isHidden()
 meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
 meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void org.netbeans.api.debugger.Breakpoint.setHitCountFilter(int,org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE)
 meth public int org.netbeans.api.debugger.jpda.ExceptionBreakpoint.getCatchType()
 meth public int org.netbeans.api.debugger.jpda.JPDABreakpoint.getSuspend()
 meth public java.lang.String org.netbeans.api.debugger.Breakpoint.getGroupName()
@@ -173,6 +325,10 @@ meth public native final void java.lang.Object.notifyAll()
 meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
 meth public native int java.lang.Object.hashCode()
 meth public static org.netbeans.api.debugger.jpda.ExceptionBreakpoint org.netbeans.api.debugger.jpda.ExceptionBreakpoint.create(java.lang.String,int)
+meth public synchronized final int org.netbeans.api.debugger.Breakpoint.getHitCountFilter()
+meth public synchronized final java.lang.String org.netbeans.api.debugger.Breakpoint.getValidityMessage()
+meth public synchronized final org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE org.netbeans.api.debugger.Breakpoint.getHitCountFilteringStyle()
+meth public synchronized final org.netbeans.api.debugger.Breakpoint$VALIDITY org.netbeans.api.debugger.Breakpoint.getValidity()
 meth public synchronized void org.netbeans.api.debugger.Breakpoint.addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public synchronized void org.netbeans.api.debugger.Breakpoint.removePropertyChangeListener(java.beans.PropertyChangeListener)
 meth public synchronized void org.netbeans.api.debugger.jpda.JPDABreakpoint.addJPDABreakpointListener(org.netbeans.api.debugger.jpda.event.JPDABreakpointListener)
@@ -181,6 +337,8 @@ meth public void org.netbeans.api.debugger.Breakpoint.addPropertyChangeListener(
 meth public void org.netbeans.api.debugger.Breakpoint.removePropertyChangeListener(java.lang.String,java.beans.PropertyChangeListener)
 meth public void org.netbeans.api.debugger.Breakpoint.setGroupName(java.lang.String)
 meth public void org.netbeans.api.debugger.jpda.ExceptionBreakpoint.setCatchType(int)
+meth public void org.netbeans.api.debugger.jpda.ExceptionBreakpoint.setClassExclusionFilters([Ljava.lang.String;)
+meth public void org.netbeans.api.debugger.jpda.ExceptionBreakpoint.setClassFilters([Ljava.lang.String;)
 meth public void org.netbeans.api.debugger.jpda.ExceptionBreakpoint.setCondition(java.lang.String)
 meth public void org.netbeans.api.debugger.jpda.ExceptionBreakpoint.setExceptionClassName(java.lang.String)
 meth public void org.netbeans.api.debugger.jpda.JPDABreakpoint.disable()
@@ -197,9 +355,10 @@ meth public abstract java.lang.String org.netbeans.api.debugger.jpda.Field.getDe
 meth public abstract java.lang.String org.netbeans.api.debugger.jpda.Field.getName()
 meth public abstract java.lang.String org.netbeans.api.debugger.jpda.Variable.getType()
 meth public abstract java.lang.String org.netbeans.api.debugger.jpda.Variable.getValue()
+meth public abstract org.netbeans.api.debugger.jpda.JPDAClassType org.netbeans.api.debugger.jpda.Field.getDeclaringClass()
 meth public abstract void org.netbeans.api.debugger.jpda.Field.setValue(java.lang.String) throws org.netbeans.api.debugger.jpda.InvalidExpressionException
 supr null
-CLSS public final org.netbeans.api.debugger.jpda.FieldBreakpoint
+CLSS public org.netbeans.api.debugger.jpda.FieldBreakpoint
 fld  constant public static final int org.netbeans.api.debugger.jpda.FieldBreakpoint.TYPE_ACCESS
 fld  constant public static final int org.netbeans.api.debugger.jpda.FieldBreakpoint.TYPE_MODIFICATION
 fld  constant public static final int org.netbeans.api.debugger.jpda.JPDABreakpoint.SUSPEND_ALL
@@ -208,22 +367,32 @@ fld  constant public static final int org.netbeans.api.debugger.jpda.JPDABreakpo
 fld  constant public static final java.lang.String org.netbeans.api.debugger.Breakpoint.PROP_DISPOSED
 fld  constant public static final java.lang.String org.netbeans.api.debugger.Breakpoint.PROP_ENABLED
 fld  constant public static final java.lang.String org.netbeans.api.debugger.Breakpoint.PROP_GROUP_NAME
+fld  constant public static final java.lang.String org.netbeans.api.debugger.Breakpoint.PROP_HIT_COUNT_FILTER
+fld  constant public static final java.lang.String org.netbeans.api.debugger.Breakpoint.PROP_VALIDITY
 fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.FieldBreakpoint.PROP_BREAKPOINT_TYPE
 fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.FieldBreakpoint.PROP_CLASS_NAME
 fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.FieldBreakpoint.PROP_CONDITION
 fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.FieldBreakpoint.PROP_FIELD_NAME
+fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.FieldBreakpoint.PROP_INSTANCE_FILTERS
+fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.FieldBreakpoint.PROP_THREAD_FILTERS
 fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.JPDABreakpoint.PROP_HIDDEN
 fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.JPDABreakpoint.PROP_PRINT_TEXT
 fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.JPDABreakpoint.PROP_SUSPEND
+innr public static final org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE
+innr public static final org.netbeans.api.debugger.Breakpoint$VALIDITY
+meth protected final void org.netbeans.api.debugger.Breakpoint.setValidity(org.netbeans.api.debugger.Breakpoint$VALIDITY,java.lang.String)
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
 meth protected void java.lang.Object.finalize() throws java.lang.Throwable
 meth protected void org.netbeans.api.debugger.Breakpoint.dispose()
 meth protected void org.netbeans.api.debugger.Breakpoint.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth public [Lorg.netbeans.api.debugger.jpda.JPDAThread; org.netbeans.api.debugger.jpda.FieldBreakpoint.getThreadFilters(org.netbeans.api.debugger.jpda.JPDADebugger)
+meth public [Lorg.netbeans.api.debugger.jpda.ObjectVariable; org.netbeans.api.debugger.jpda.FieldBreakpoint.getInstanceFilters(org.netbeans.api.debugger.jpda.JPDADebugger)
 meth public boolean java.lang.Object.equals(java.lang.Object)
 meth public boolean org.netbeans.api.debugger.jpda.JPDABreakpoint.isEnabled()
 meth public boolean org.netbeans.api.debugger.jpda.JPDABreakpoint.isHidden()
 meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
 meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void org.netbeans.api.debugger.Breakpoint.setHitCountFilter(int,org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE)
 meth public int org.netbeans.api.debugger.jpda.FieldBreakpoint.getBreakpointType()
 meth public int org.netbeans.api.debugger.jpda.JPDABreakpoint.getSuspend()
 meth public java.lang.String org.netbeans.api.debugger.Breakpoint.getGroupName()
@@ -238,6 +407,10 @@ meth public native final void java.lang.Object.notifyAll()
 meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
 meth public native int java.lang.Object.hashCode()
 meth public static org.netbeans.api.debugger.jpda.FieldBreakpoint org.netbeans.api.debugger.jpda.FieldBreakpoint.create(java.lang.String,java.lang.String,int)
+meth public synchronized final int org.netbeans.api.debugger.Breakpoint.getHitCountFilter()
+meth public synchronized final java.lang.String org.netbeans.api.debugger.Breakpoint.getValidityMessage()
+meth public synchronized final org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE org.netbeans.api.debugger.Breakpoint.getHitCountFilteringStyle()
+meth public synchronized final org.netbeans.api.debugger.Breakpoint$VALIDITY org.netbeans.api.debugger.Breakpoint.getValidity()
 meth public synchronized void org.netbeans.api.debugger.Breakpoint.addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public synchronized void org.netbeans.api.debugger.Breakpoint.removePropertyChangeListener(java.beans.PropertyChangeListener)
 meth public synchronized void org.netbeans.api.debugger.jpda.JPDABreakpoint.addJPDABreakpointListener(org.netbeans.api.debugger.jpda.event.JPDABreakpointListener)
@@ -249,6 +422,8 @@ meth public void org.netbeans.api.debugger.jpda.FieldBreakpoint.setBreakpointTyp
 meth public void org.netbeans.api.debugger.jpda.FieldBreakpoint.setClassName(java.lang.String)
 meth public void org.netbeans.api.debugger.jpda.FieldBreakpoint.setCondition(java.lang.String)
 meth public void org.netbeans.api.debugger.jpda.FieldBreakpoint.setFieldName(java.lang.String)
+meth public void org.netbeans.api.debugger.jpda.FieldBreakpoint.setInstanceFilters(org.netbeans.api.debugger.jpda.JPDADebugger,[Lorg.netbeans.api.debugger.jpda.ObjectVariable;)
+meth public void org.netbeans.api.debugger.jpda.FieldBreakpoint.setThreadFilters(org.netbeans.api.debugger.jpda.JPDADebugger,[Lorg.netbeans.api.debugger.jpda.JPDAThread;)
 meth public void org.netbeans.api.debugger.jpda.JPDABreakpoint.disable()
 meth public void org.netbeans.api.debugger.jpda.JPDABreakpoint.enable()
 meth public void org.netbeans.api.debugger.jpda.JPDABreakpoint.setHidden(boolean)
@@ -282,6 +457,20 @@ meth public void java.lang.Throwable.printStackTrace(java.io.PrintStream)
 meth public void java.lang.Throwable.printStackTrace(java.io.PrintWriter)
 meth public void java.lang.Throwable.setStackTrace([Ljava.lang.StackTraceElement;)
 supr java.lang.Exception
+CLSS public abstract interface org.netbeans.api.debugger.jpda.JPDAArrayType
+intf org.netbeans.api.debugger.jpda.JPDAClassType
+intf org.netbeans.api.debugger.jpda.VariableType
+meth public abstract java.lang.String org.netbeans.api.debugger.jpda.JPDAArrayType.getComponentTypeName()
+meth public abstract java.lang.String org.netbeans.api.debugger.jpda.JPDAClassType.getSourceName() throws com.sun.jdi.AbsentInformationException
+meth public abstract java.lang.String org.netbeans.api.debugger.jpda.VariableType.getName()
+meth public abstract java.util.List org.netbeans.api.debugger.jpda.JPDAClassType.getInstances(long) throws java.lang.UnsupportedOperationException
+meth public abstract java.util.List org.netbeans.api.debugger.jpda.JPDAClassType.staticFields()
+meth public abstract long org.netbeans.api.debugger.jpda.JPDAClassType.getInstanceCount() throws java.lang.UnsupportedOperationException
+meth public abstract org.netbeans.api.debugger.jpda.ClassVariable org.netbeans.api.debugger.jpda.JPDAClassType.classObject()
+meth public abstract org.netbeans.api.debugger.jpda.ObjectVariable org.netbeans.api.debugger.jpda.JPDAClassType.getClassLoader()
+meth public abstract org.netbeans.api.debugger.jpda.Super org.netbeans.api.debugger.jpda.JPDAClassType.getSuperClass()
+meth public abstract org.netbeans.api.debugger.jpda.VariableType org.netbeans.api.debugger.jpda.JPDAArrayType.getComponentType()
+supr null
 CLSS public org.netbeans.api.debugger.jpda.JPDABreakpoint
 fld  constant public static final int org.netbeans.api.debugger.jpda.JPDABreakpoint.SUSPEND_ALL
 fld  constant public static final int org.netbeans.api.debugger.jpda.JPDABreakpoint.SUSPEND_EVENT_THREAD
@@ -289,9 +478,14 @@ fld  constant public static final int org.netbeans.api.debugger.jpda.JPDABreakpo
 fld  constant public static final java.lang.String org.netbeans.api.debugger.Breakpoint.PROP_DISPOSED
 fld  constant public static final java.lang.String org.netbeans.api.debugger.Breakpoint.PROP_ENABLED
 fld  constant public static final java.lang.String org.netbeans.api.debugger.Breakpoint.PROP_GROUP_NAME
+fld  constant public static final java.lang.String org.netbeans.api.debugger.Breakpoint.PROP_HIT_COUNT_FILTER
+fld  constant public static final java.lang.String org.netbeans.api.debugger.Breakpoint.PROP_VALIDITY
 fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.JPDABreakpoint.PROP_HIDDEN
 fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.JPDABreakpoint.PROP_PRINT_TEXT
 fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.JPDABreakpoint.PROP_SUSPEND
+innr public static final org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE
+innr public static final org.netbeans.api.debugger.Breakpoint$VALIDITY
+meth protected final void org.netbeans.api.debugger.Breakpoint.setValidity(org.netbeans.api.debugger.Breakpoint$VALIDITY,java.lang.String)
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
 meth protected void java.lang.Object.finalize() throws java.lang.Throwable
 meth protected void org.netbeans.api.debugger.Breakpoint.dispose()
@@ -301,6 +495,7 @@ meth public boolean org.netbeans.api.debugger.jpda.JPDABreakpoint.isEnabled()
 meth public boolean org.netbeans.api.debugger.jpda.JPDABreakpoint.isHidden()
 meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
 meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void org.netbeans.api.debugger.Breakpoint.setHitCountFilter(int,org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE)
 meth public int org.netbeans.api.debugger.jpda.JPDABreakpoint.getSuspend()
 meth public java.lang.String java.lang.Object.toString()
 meth public java.lang.String org.netbeans.api.debugger.Breakpoint.getGroupName()
@@ -310,6 +505,10 @@ meth public native final void java.lang.Object.notify()
 meth public native final void java.lang.Object.notifyAll()
 meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
 meth public native int java.lang.Object.hashCode()
+meth public synchronized final int org.netbeans.api.debugger.Breakpoint.getHitCountFilter()
+meth public synchronized final java.lang.String org.netbeans.api.debugger.Breakpoint.getValidityMessage()
+meth public synchronized final org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE org.netbeans.api.debugger.Breakpoint.getHitCountFilteringStyle()
+meth public synchronized final org.netbeans.api.debugger.Breakpoint$VALIDITY org.netbeans.api.debugger.Breakpoint.getValidity()
 meth public synchronized void org.netbeans.api.debugger.Breakpoint.addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public synchronized void org.netbeans.api.debugger.Breakpoint.removePropertyChangeListener(java.beans.PropertyChangeListener)
 meth public synchronized void org.netbeans.api.debugger.jpda.JPDABreakpoint.addJPDABreakpointListener(org.netbeans.api.debugger.jpda.event.JPDABreakpointListener)
@@ -323,6 +522,17 @@ meth public void org.netbeans.api.debugger.jpda.JPDABreakpoint.setHidden(boolean
 meth public void org.netbeans.api.debugger.jpda.JPDABreakpoint.setPrintText(java.lang.String)
 meth public void org.netbeans.api.debugger.jpda.JPDABreakpoint.setSuspend(int)
 supr org.netbeans.api.debugger.Breakpoint
+CLSS public abstract interface org.netbeans.api.debugger.jpda.JPDAClassType
+intf org.netbeans.api.debugger.jpda.VariableType
+meth public abstract java.lang.String org.netbeans.api.debugger.jpda.JPDAClassType.getSourceName() throws com.sun.jdi.AbsentInformationException
+meth public abstract java.lang.String org.netbeans.api.debugger.jpda.VariableType.getName()
+meth public abstract java.util.List org.netbeans.api.debugger.jpda.JPDAClassType.getInstances(long) throws java.lang.UnsupportedOperationException
+meth public abstract java.util.List org.netbeans.api.debugger.jpda.JPDAClassType.staticFields()
+meth public abstract long org.netbeans.api.debugger.jpda.JPDAClassType.getInstanceCount() throws java.lang.UnsupportedOperationException
+meth public abstract org.netbeans.api.debugger.jpda.ClassVariable org.netbeans.api.debugger.jpda.JPDAClassType.classObject()
+meth public abstract org.netbeans.api.debugger.jpda.ObjectVariable org.netbeans.api.debugger.jpda.JPDAClassType.getClassLoader()
+meth public abstract org.netbeans.api.debugger.jpda.Super org.netbeans.api.debugger.jpda.JPDAClassType.getSuperClass()
+supr null
 CLSS public abstract org.netbeans.api.debugger.jpda.JPDADebugger
 cons public JPDADebugger()
 fld  constant public static final int org.netbeans.api.debugger.jpda.JPDADebugger.STATE_DISCONNECTED
@@ -340,6 +550,7 @@ fld  constant public static final java.lang.String org.netbeans.api.debugger.jpd
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
 meth protected void java.lang.Object.finalize() throws java.lang.Throwable
 meth protected void org.netbeans.api.debugger.jpda.JPDADebugger.fireBreakpointEvent(org.netbeans.api.debugger.jpda.JPDABreakpoint,org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent)
+meth public [J org.netbeans.api.debugger.jpda.JPDADebugger.getInstanceCounts(java.util.List) throws java.lang.UnsupportedOperationException
 meth public abstract boolean org.netbeans.api.debugger.jpda.JPDADebugger.canFixClasses()
 meth public abstract boolean org.netbeans.api.debugger.jpda.JPDADebugger.canPopFrames()
 meth public abstract int org.netbeans.api.debugger.jpda.JPDADebugger.getState()
@@ -357,9 +568,12 @@ meth public abstract void org.netbeans.api.debugger.jpda.JPDADebugger.setSuspend
 meth public abstract void org.netbeans.api.debugger.jpda.JPDADebugger.waitRunning() throws org.netbeans.api.debugger.jpda.DebuggerStartException
 meth public boolean java.lang.Object.equals(java.lang.Object)
 meth public boolean org.netbeans.api.debugger.jpda.JPDADebugger.canBeModified()
+meth public boolean org.netbeans.api.debugger.jpda.JPDADebugger.canGetInstanceInfo()
 meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
 meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
 meth public java.lang.String java.lang.Object.toString()
+meth public java.util.List org.netbeans.api.debugger.jpda.JPDADebugger.getAllClasses()
+meth public java.util.List org.netbeans.api.debugger.jpda.JPDADebugger.getClassesByName(java.lang.String)
 meth public native final java.lang.Class java.lang.Object.getClass()
 meth public native final void java.lang.Object.notify()
 meth public native final void java.lang.Object.notifyAll()
@@ -377,6 +591,7 @@ cons public JPDAStep(org.netbeans.api.debugger.jpda.JPDADebugger,int,int)
 fld  constant public static final int org.netbeans.api.debugger.jpda.JPDAStep.STEP_INTO
 fld  constant public static final int org.netbeans.api.debugger.jpda.JPDAStep.STEP_LINE
 fld  constant public static final int org.netbeans.api.debugger.jpda.JPDAStep.STEP_MIN
+fld  constant public static final int org.netbeans.api.debugger.jpda.JPDAStep.STEP_OPERATION
 fld  constant public static final int org.netbeans.api.debugger.jpda.JPDAStep.STEP_OUT
 fld  constant public static final int org.netbeans.api.debugger.jpda.JPDAStep.STEP_OVER
 fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.JPDAStep.PROP_STATE_EXEC
@@ -427,8 +642,10 @@ meth public abstract java.lang.String org.netbeans.api.debugger.jpda.JPDAThread.
 meth public abstract java.lang.String org.netbeans.api.debugger.jpda.JPDAThread.getName()
 meth public abstract java.lang.String org.netbeans.api.debugger.jpda.JPDAThread.getSourceName(java.lang.String) throws com.sun.jdi.AbsentInformationException
 meth public abstract java.lang.String org.netbeans.api.debugger.jpda.JPDAThread.getSourcePath(java.lang.String) throws com.sun.jdi.AbsentInformationException
+meth public abstract java.util.List org.netbeans.api.debugger.jpda.JPDAThread.getLastOperations()
 meth public abstract org.netbeans.api.debugger.jpda.JPDAThreadGroup org.netbeans.api.debugger.jpda.JPDAThread.getParentThreadGroup()
 meth public abstract org.netbeans.api.debugger.jpda.ObjectVariable org.netbeans.api.debugger.jpda.JPDAThread.getContendedMonitor()
+meth public abstract org.netbeans.spi.debugger.jpda.EditorContext$Operation org.netbeans.api.debugger.jpda.JPDAThread.getCurrentOperation()
 meth public abstract void org.netbeans.api.debugger.jpda.JPDAThread.interrupt()
 meth public abstract void org.netbeans.api.debugger.jpda.JPDAThread.makeCurrent()
 meth public abstract void org.netbeans.api.debugger.jpda.JPDAThread.resume()
@@ -481,29 +698,41 @@ fld  constant public static final int org.netbeans.api.debugger.jpda.JPDABreakpo
 fld  constant public static final java.lang.String org.netbeans.api.debugger.Breakpoint.PROP_DISPOSED
 fld  constant public static final java.lang.String org.netbeans.api.debugger.Breakpoint.PROP_ENABLED
 fld  constant public static final java.lang.String org.netbeans.api.debugger.Breakpoint.PROP_GROUP_NAME
+fld  constant public static final java.lang.String org.netbeans.api.debugger.Breakpoint.PROP_HIT_COUNT_FILTER
+fld  constant public static final java.lang.String org.netbeans.api.debugger.Breakpoint.PROP_VALIDITY
 fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.JPDABreakpoint.PROP_HIDDEN
 fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.JPDABreakpoint.PROP_PRINT_TEXT
 fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.JPDABreakpoint.PROP_SUSPEND
-fld  public static final java.lang.String org.netbeans.api.debugger.jpda.LineBreakpoint.PROP_CONDITION
-fld  public static final java.lang.String org.netbeans.api.debugger.jpda.LineBreakpoint.PROP_LINE_NUMBER
-fld  public static final java.lang.String org.netbeans.api.debugger.jpda.LineBreakpoint.PROP_SOURCE_NAME
-fld  public static final java.lang.String org.netbeans.api.debugger.jpda.LineBreakpoint.PROP_SOURCE_PATH
-fld  public static final java.lang.String org.netbeans.api.debugger.jpda.LineBreakpoint.PROP_STRATUM
-fld  public static final java.lang.String org.netbeans.api.debugger.jpda.LineBreakpoint.PROP_URL
+fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.LineBreakpoint.PROP_CONDITION
+fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.LineBreakpoint.PROP_INSTANCE_FILTERS
+fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.LineBreakpoint.PROP_LINE_NUMBER
+fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.LineBreakpoint.PROP_PREFERRED_CLASS_NAME
+fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.LineBreakpoint.PROP_SOURCE_NAME
+fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.LineBreakpoint.PROP_SOURCE_PATH
+fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.LineBreakpoint.PROP_STRATUM
+fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.LineBreakpoint.PROP_THREAD_FILTERS
+fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.LineBreakpoint.PROP_URL
+innr public static final org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE
+innr public static final org.netbeans.api.debugger.Breakpoint$VALIDITY
+meth protected final void org.netbeans.api.debugger.Breakpoint.setValidity(org.netbeans.api.debugger.Breakpoint$VALIDITY,java.lang.String)
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
 meth protected void java.lang.Object.finalize() throws java.lang.Throwable
 meth protected void org.netbeans.api.debugger.Breakpoint.dispose()
 meth protected void org.netbeans.api.debugger.Breakpoint.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
+meth public [Lorg.netbeans.api.debugger.jpda.JPDAThread; org.netbeans.api.debugger.jpda.LineBreakpoint.getThreadFilters(org.netbeans.api.debugger.jpda.JPDADebugger)
+meth public [Lorg.netbeans.api.debugger.jpda.ObjectVariable; org.netbeans.api.debugger.jpda.LineBreakpoint.getInstanceFilters(org.netbeans.api.debugger.jpda.JPDADebugger)
 meth public boolean java.lang.Object.equals(java.lang.Object)
 meth public boolean org.netbeans.api.debugger.jpda.JPDABreakpoint.isEnabled()
 meth public boolean org.netbeans.api.debugger.jpda.JPDABreakpoint.isHidden()
 meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
 meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void org.netbeans.api.debugger.Breakpoint.setHitCountFilter(int,org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE)
 meth public int org.netbeans.api.debugger.jpda.JPDABreakpoint.getSuspend()
 meth public int org.netbeans.api.debugger.jpda.LineBreakpoint.getLineNumber()
 meth public java.lang.String org.netbeans.api.debugger.Breakpoint.getGroupName()
 meth public java.lang.String org.netbeans.api.debugger.jpda.JPDABreakpoint.getPrintText()
 meth public java.lang.String org.netbeans.api.debugger.jpda.LineBreakpoint.getCondition()
+meth public java.lang.String org.netbeans.api.debugger.jpda.LineBreakpoint.getPreferredClassName()
 meth public java.lang.String org.netbeans.api.debugger.jpda.LineBreakpoint.getSourceName()
 meth public java.lang.String org.netbeans.api.debugger.jpda.LineBreakpoint.getSourcePath()
 meth public java.lang.String org.netbeans.api.debugger.jpda.LineBreakpoint.getStratum()
@@ -515,6 +744,10 @@ meth public native final void java.lang.Object.notifyAll()
 meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
 meth public native int java.lang.Object.hashCode()
 meth public static org.netbeans.api.debugger.jpda.LineBreakpoint org.netbeans.api.debugger.jpda.LineBreakpoint.create(java.lang.String,int)
+meth public synchronized final int org.netbeans.api.debugger.Breakpoint.getHitCountFilter()
+meth public synchronized final java.lang.String org.netbeans.api.debugger.Breakpoint.getValidityMessage()
+meth public synchronized final org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE org.netbeans.api.debugger.Breakpoint.getHitCountFilteringStyle()
+meth public synchronized final org.netbeans.api.debugger.Breakpoint$VALIDITY org.netbeans.api.debugger.Breakpoint.getValidity()
 meth public synchronized void org.netbeans.api.debugger.Breakpoint.addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public synchronized void org.netbeans.api.debugger.Breakpoint.removePropertyChangeListener(java.beans.PropertyChangeListener)
 meth public synchronized void org.netbeans.api.debugger.jpda.JPDABreakpoint.addJPDABreakpointListener(org.netbeans.api.debugger.jpda.event.JPDABreakpointListener)
@@ -528,10 +761,13 @@ meth public void org.netbeans.api.debugger.jpda.JPDABreakpoint.setHidden(boolean
 meth public void org.netbeans.api.debugger.jpda.JPDABreakpoint.setPrintText(java.lang.String)
 meth public void org.netbeans.api.debugger.jpda.JPDABreakpoint.setSuspend(int)
 meth public void org.netbeans.api.debugger.jpda.LineBreakpoint.setCondition(java.lang.String)
+meth public void org.netbeans.api.debugger.jpda.LineBreakpoint.setInstanceFilters(org.netbeans.api.debugger.jpda.JPDADebugger,[Lorg.netbeans.api.debugger.jpda.ObjectVariable;)
 meth public void org.netbeans.api.debugger.jpda.LineBreakpoint.setLineNumber(int)
+meth public void org.netbeans.api.debugger.jpda.LineBreakpoint.setPreferredClassName(java.lang.String)
 meth public void org.netbeans.api.debugger.jpda.LineBreakpoint.setSourceName(java.lang.String)
 meth public void org.netbeans.api.debugger.jpda.LineBreakpoint.setSourcePath(java.lang.String)
 meth public void org.netbeans.api.debugger.jpda.LineBreakpoint.setStratum(java.lang.String)
+meth public void org.netbeans.api.debugger.jpda.LineBreakpoint.setThreadFilters(org.netbeans.api.debugger.jpda.JPDADebugger,[Lorg.netbeans.api.debugger.jpda.JPDAThread;)
 meth public void org.netbeans.api.debugger.jpda.LineBreakpoint.setURL(java.lang.String)
 supr org.netbeans.api.debugger.jpda.JPDABreakpoint
 CLSS public final org.netbeans.api.debugger.jpda.ListeningDICookie
@@ -565,7 +801,7 @@ meth public abstract java.lang.String org.netbeans.api.debugger.jpda.Variable.ge
 meth public abstract java.lang.String org.netbeans.api.debugger.jpda.Variable.getValue()
 meth public abstract void org.netbeans.api.debugger.jpda.LocalVariable.setValue(java.lang.String) throws org.netbeans.api.debugger.jpda.InvalidExpressionException
 supr null
-CLSS public final org.netbeans.api.debugger.jpda.MethodBreakpoint
+CLSS public org.netbeans.api.debugger.jpda.MethodBreakpoint
 fld  constant public static final int org.netbeans.api.debugger.jpda.JPDABreakpoint.SUSPEND_ALL
 fld  constant public static final int org.netbeans.api.debugger.jpda.JPDABreakpoint.SUSPEND_EVENT_THREAD
 fld  constant public static final int org.netbeans.api.debugger.jpda.JPDABreakpoint.SUSPEND_NONE
@@ -574,6 +810,8 @@ fld  constant public static final int org.netbeans.api.debugger.jpda.MethodBreak
 fld  constant public static final java.lang.String org.netbeans.api.debugger.Breakpoint.PROP_DISPOSED
 fld  constant public static final java.lang.String org.netbeans.api.debugger.Breakpoint.PROP_ENABLED
 fld  constant public static final java.lang.String org.netbeans.api.debugger.Breakpoint.PROP_GROUP_NAME
+fld  constant public static final java.lang.String org.netbeans.api.debugger.Breakpoint.PROP_HIT_COUNT_FILTER
+fld  constant public static final java.lang.String org.netbeans.api.debugger.Breakpoint.PROP_VALIDITY
 fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.JPDABreakpoint.PROP_HIDDEN
 fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.JPDABreakpoint.PROP_PRINT_TEXT
 fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.JPDABreakpoint.PROP_SUSPEND
@@ -581,24 +819,34 @@ fld  constant public static final java.lang.String org.netbeans.api.debugger.jpd
 fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.MethodBreakpoint.PROP_CLASS_EXCLUSION_FILTERS
 fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.MethodBreakpoint.PROP_CLASS_FILTERS
 fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.MethodBreakpoint.PROP_CONDITION
+fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.MethodBreakpoint.PROP_INSTANCE_FILTERS
 fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.MethodBreakpoint.PROP_METHOD_NAME
+fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.MethodBreakpoint.PROP_METHOD_SIGNATURE
+fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.MethodBreakpoint.PROP_THREAD_FILTERS
+innr public static final org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE
+innr public static final org.netbeans.api.debugger.Breakpoint$VALIDITY
+meth protected final void org.netbeans.api.debugger.Breakpoint.setValidity(org.netbeans.api.debugger.Breakpoint$VALIDITY,java.lang.String)
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
 meth protected void java.lang.Object.finalize() throws java.lang.Throwable
 meth protected void org.netbeans.api.debugger.Breakpoint.dispose()
 meth protected void org.netbeans.api.debugger.Breakpoint.firePropertyChange(java.lang.String,java.lang.Object,java.lang.Object)
 meth public [Ljava.lang.String; org.netbeans.api.debugger.jpda.MethodBreakpoint.getClassExclusionFilters()
 meth public [Ljava.lang.String; org.netbeans.api.debugger.jpda.MethodBreakpoint.getClassFilters()
+meth public [Lorg.netbeans.api.debugger.jpda.JPDAThread; org.netbeans.api.debugger.jpda.MethodBreakpoint.getThreadFilters(org.netbeans.api.debugger.jpda.JPDADebugger)
+meth public [Lorg.netbeans.api.debugger.jpda.ObjectVariable; org.netbeans.api.debugger.jpda.MethodBreakpoint.getInstanceFilters(org.netbeans.api.debugger.jpda.JPDADebugger)
 meth public boolean java.lang.Object.equals(java.lang.Object)
 meth public boolean org.netbeans.api.debugger.jpda.JPDABreakpoint.isEnabled()
 meth public boolean org.netbeans.api.debugger.jpda.JPDABreakpoint.isHidden()
 meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
 meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void org.netbeans.api.debugger.Breakpoint.setHitCountFilter(int,org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE)
 meth public int org.netbeans.api.debugger.jpda.JPDABreakpoint.getSuspend()
 meth public int org.netbeans.api.debugger.jpda.MethodBreakpoint.getBreakpointType()
 meth public java.lang.String org.netbeans.api.debugger.Breakpoint.getGroupName()
 meth public java.lang.String org.netbeans.api.debugger.jpda.JPDABreakpoint.getPrintText()
 meth public java.lang.String org.netbeans.api.debugger.jpda.MethodBreakpoint.getCondition()
 meth public java.lang.String org.netbeans.api.debugger.jpda.MethodBreakpoint.getMethodName()
+meth public java.lang.String org.netbeans.api.debugger.jpda.MethodBreakpoint.getMethodSignature()
 meth public java.lang.String org.netbeans.api.debugger.jpda.MethodBreakpoint.toString()
 meth public native final java.lang.Class java.lang.Object.getClass()
 meth public native final void java.lang.Object.notify()
@@ -607,6 +855,10 @@ meth public native final void java.lang.Object.wait(long) throws java.lang.Inter
 meth public native int java.lang.Object.hashCode()
 meth public static org.netbeans.api.debugger.jpda.MethodBreakpoint org.netbeans.api.debugger.jpda.MethodBreakpoint.create()
 meth public static org.netbeans.api.debugger.jpda.MethodBreakpoint org.netbeans.api.debugger.jpda.MethodBreakpoint.create(java.lang.String,java.lang.String)
+meth public synchronized final int org.netbeans.api.debugger.Breakpoint.getHitCountFilter()
+meth public synchronized final java.lang.String org.netbeans.api.debugger.Breakpoint.getValidityMessage()
+meth public synchronized final org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE org.netbeans.api.debugger.Breakpoint.getHitCountFilteringStyle()
+meth public synchronized final org.netbeans.api.debugger.Breakpoint$VALIDITY org.netbeans.api.debugger.Breakpoint.getValidity()
 meth public synchronized void org.netbeans.api.debugger.Breakpoint.addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public synchronized void org.netbeans.api.debugger.Breakpoint.removePropertyChangeListener(java.beans.PropertyChangeListener)
 meth public synchronized void org.netbeans.api.debugger.jpda.JPDABreakpoint.addJPDABreakpointListener(org.netbeans.api.debugger.jpda.event.JPDABreakpointListener)
@@ -623,7 +875,10 @@ meth public void org.netbeans.api.debugger.jpda.MethodBreakpoint.setBreakpointTy
 meth public void org.netbeans.api.debugger.jpda.MethodBreakpoint.setClassExclusionFilters([Ljava.lang.String;)
 meth public void org.netbeans.api.debugger.jpda.MethodBreakpoint.setClassFilters([Ljava.lang.String;)
 meth public void org.netbeans.api.debugger.jpda.MethodBreakpoint.setCondition(java.lang.String)
+meth public void org.netbeans.api.debugger.jpda.MethodBreakpoint.setInstanceFilters(org.netbeans.api.debugger.jpda.JPDADebugger,[Lorg.netbeans.api.debugger.jpda.ObjectVariable;)
 meth public void org.netbeans.api.debugger.jpda.MethodBreakpoint.setMethodName(java.lang.String)
+meth public void org.netbeans.api.debugger.jpda.MethodBreakpoint.setMethodSignature(java.lang.String)
+meth public void org.netbeans.api.debugger.jpda.MethodBreakpoint.setThreadFilters(org.netbeans.api.debugger.jpda.JPDADebugger,[Lorg.netbeans.api.debugger.jpda.JPDAThread;)
 supr org.netbeans.api.debugger.jpda.JPDABreakpoint
 CLSS public abstract interface org.netbeans.api.debugger.jpda.ObjectVariable
 intf org.netbeans.api.debugger.jpda.Variable
@@ -634,7 +889,28 @@ meth public abstract int org.netbeans.api.debugger.jpda.ObjectVariable.getFields
 meth public abstract java.lang.String org.netbeans.api.debugger.jpda.ObjectVariable.getToStringValue() throws org.netbeans.api.debugger.jpda.InvalidExpressionException
 meth public abstract java.lang.String org.netbeans.api.debugger.jpda.Variable.getType()
 meth public abstract java.lang.String org.netbeans.api.debugger.jpda.Variable.getValue()
+meth public abstract java.util.List org.netbeans.api.debugger.jpda.ObjectVariable.getReferringObjects(long) throws java.lang.UnsupportedOperationException
+meth public abstract long org.netbeans.api.debugger.jpda.ObjectVariable.getUniqueID()
 meth public abstract org.netbeans.api.debugger.jpda.Field org.netbeans.api.debugger.jpda.ObjectVariable.getField(java.lang.String)
+meth public abstract org.netbeans.api.debugger.jpda.JPDAClassType org.netbeans.api.debugger.jpda.ObjectVariable.getClassType()
+meth public abstract org.netbeans.api.debugger.jpda.Super org.netbeans.api.debugger.jpda.ObjectVariable.getSuper()
+meth public abstract org.netbeans.api.debugger.jpda.Variable org.netbeans.api.debugger.jpda.ObjectVariable.invokeMethod(java.lang.String,java.lang.String,[Lorg.netbeans.api.debugger.jpda.Variable;) throws java.lang.NoSuchMethodException,org.netbeans.api.debugger.jpda.InvalidExpressionException
+supr null
+CLSS public abstract interface org.netbeans.api.debugger.jpda.ReturnVariable
+intf org.netbeans.api.debugger.jpda.ObjectVariable
+intf org.netbeans.api.debugger.jpda.Variable
+meth public abstract [Lorg.netbeans.api.debugger.jpda.Field; org.netbeans.api.debugger.jpda.ObjectVariable.getAllStaticFields(int,int)
+meth public abstract [Lorg.netbeans.api.debugger.jpda.Field; org.netbeans.api.debugger.jpda.ObjectVariable.getFields(int,int)
+meth public abstract [Lorg.netbeans.api.debugger.jpda.Field; org.netbeans.api.debugger.jpda.ObjectVariable.getInheritedFields(int,int)
+meth public abstract int org.netbeans.api.debugger.jpda.ObjectVariable.getFieldsCount()
+meth public abstract java.lang.String org.netbeans.api.debugger.jpda.ObjectVariable.getToStringValue() throws org.netbeans.api.debugger.jpda.InvalidExpressionException
+meth public abstract java.lang.String org.netbeans.api.debugger.jpda.ReturnVariable.methodName()
+meth public abstract java.lang.String org.netbeans.api.debugger.jpda.Variable.getType()
+meth public abstract java.lang.String org.netbeans.api.debugger.jpda.Variable.getValue()
+meth public abstract java.util.List org.netbeans.api.debugger.jpda.ObjectVariable.getReferringObjects(long) throws java.lang.UnsupportedOperationException
+meth public abstract long org.netbeans.api.debugger.jpda.ObjectVariable.getUniqueID()
+meth public abstract org.netbeans.api.debugger.jpda.Field org.netbeans.api.debugger.jpda.ObjectVariable.getField(java.lang.String)
+meth public abstract org.netbeans.api.debugger.jpda.JPDAClassType org.netbeans.api.debugger.jpda.ObjectVariable.getClassType()
 meth public abstract org.netbeans.api.debugger.jpda.Super org.netbeans.api.debugger.jpda.ObjectVariable.getSuper()
 meth public abstract org.netbeans.api.debugger.jpda.Variable org.netbeans.api.debugger.jpda.ObjectVariable.invokeMethod(java.lang.String,java.lang.String,[Lorg.netbeans.api.debugger.jpda.Variable;) throws java.lang.NoSuchMethodException,org.netbeans.api.debugger.jpda.InvalidExpressionException
 supr null
@@ -656,7 +932,10 @@ meth public abstract int org.netbeans.api.debugger.jpda.ObjectVariable.getFields
 meth public abstract java.lang.String org.netbeans.api.debugger.jpda.ObjectVariable.getToStringValue() throws org.netbeans.api.debugger.jpda.InvalidExpressionException
 meth public abstract java.lang.String org.netbeans.api.debugger.jpda.Variable.getType()
 meth public abstract java.lang.String org.netbeans.api.debugger.jpda.Variable.getValue()
+meth public abstract java.util.List org.netbeans.api.debugger.jpda.ObjectVariable.getReferringObjects(long) throws java.lang.UnsupportedOperationException
+meth public abstract long org.netbeans.api.debugger.jpda.ObjectVariable.getUniqueID()
 meth public abstract org.netbeans.api.debugger.jpda.Field org.netbeans.api.debugger.jpda.ObjectVariable.getField(java.lang.String)
+meth public abstract org.netbeans.api.debugger.jpda.JPDAClassType org.netbeans.api.debugger.jpda.ObjectVariable.getClassType()
 meth public abstract org.netbeans.api.debugger.jpda.Super org.netbeans.api.debugger.jpda.ObjectVariable.getSuper()
 meth public abstract org.netbeans.api.debugger.jpda.Variable org.netbeans.api.debugger.jpda.ObjectVariable.invokeMethod(java.lang.String,java.lang.String,[Lorg.netbeans.api.debugger.jpda.Variable;) throws java.lang.NoSuchMethodException,org.netbeans.api.debugger.jpda.InvalidExpressionException
 supr null
@@ -670,7 +949,10 @@ meth public abstract int org.netbeans.api.debugger.jpda.ObjectVariable.getFields
 meth public abstract java.lang.String org.netbeans.api.debugger.jpda.ObjectVariable.getToStringValue() throws org.netbeans.api.debugger.jpda.InvalidExpressionException
 meth public abstract java.lang.String org.netbeans.api.debugger.jpda.Variable.getType()
 meth public abstract java.lang.String org.netbeans.api.debugger.jpda.Variable.getValue()
+meth public abstract java.util.List org.netbeans.api.debugger.jpda.ObjectVariable.getReferringObjects(long) throws java.lang.UnsupportedOperationException
+meth public abstract long org.netbeans.api.debugger.jpda.ObjectVariable.getUniqueID()
 meth public abstract org.netbeans.api.debugger.jpda.Field org.netbeans.api.debugger.jpda.ObjectVariable.getField(java.lang.String)
+meth public abstract org.netbeans.api.debugger.jpda.JPDAClassType org.netbeans.api.debugger.jpda.ObjectVariable.getClassType()
 meth public abstract org.netbeans.api.debugger.jpda.Super org.netbeans.api.debugger.jpda.ObjectVariable.getSuper()
 meth public abstract org.netbeans.api.debugger.jpda.Variable org.netbeans.api.debugger.jpda.ObjectVariable.invokeMethod(java.lang.String,java.lang.String,[Lorg.netbeans.api.debugger.jpda.Variable;) throws java.lang.NoSuchMethodException,org.netbeans.api.debugger.jpda.InvalidExpressionException
 supr null
@@ -684,10 +966,15 @@ fld  constant public static final int org.netbeans.api.debugger.jpda.ThreadBreak
 fld  constant public static final java.lang.String org.netbeans.api.debugger.Breakpoint.PROP_DISPOSED
 fld  constant public static final java.lang.String org.netbeans.api.debugger.Breakpoint.PROP_ENABLED
 fld  constant public static final java.lang.String org.netbeans.api.debugger.Breakpoint.PROP_GROUP_NAME
+fld  constant public static final java.lang.String org.netbeans.api.debugger.Breakpoint.PROP_HIT_COUNT_FILTER
+fld  constant public static final java.lang.String org.netbeans.api.debugger.Breakpoint.PROP_VALIDITY
 fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.JPDABreakpoint.PROP_HIDDEN
 fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.JPDABreakpoint.PROP_PRINT_TEXT
 fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.JPDABreakpoint.PROP_SUSPEND
 fld  constant public static final java.lang.String org.netbeans.api.debugger.jpda.ThreadBreakpoint.PROP_BREAKPOINT_TYPE
+innr public static final org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE
+innr public static final org.netbeans.api.debugger.Breakpoint$VALIDITY
+meth protected final void org.netbeans.api.debugger.Breakpoint.setValidity(org.netbeans.api.debugger.Breakpoint$VALIDITY,java.lang.String)
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
 meth protected void java.lang.Object.finalize() throws java.lang.Throwable
 meth protected void org.netbeans.api.debugger.Breakpoint.dispose()
@@ -697,6 +984,7 @@ meth public boolean org.netbeans.api.debugger.jpda.JPDABreakpoint.isEnabled()
 meth public boolean org.netbeans.api.debugger.jpda.JPDABreakpoint.isHidden()
 meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
 meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public final void org.netbeans.api.debugger.Breakpoint.setHitCountFilter(int,org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE)
 meth public int org.netbeans.api.debugger.jpda.JPDABreakpoint.getSuspend()
 meth public int org.netbeans.api.debugger.jpda.ThreadBreakpoint.getBreakpointType()
 meth public java.lang.String org.netbeans.api.debugger.Breakpoint.getGroupName()
@@ -708,6 +996,10 @@ meth public native final void java.lang.Object.notifyAll()
 meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
 meth public native int java.lang.Object.hashCode()
 meth public static org.netbeans.api.debugger.jpda.ThreadBreakpoint org.netbeans.api.debugger.jpda.ThreadBreakpoint.create()
+meth public synchronized final int org.netbeans.api.debugger.Breakpoint.getHitCountFilter()
+meth public synchronized final java.lang.String org.netbeans.api.debugger.Breakpoint.getValidityMessage()
+meth public synchronized final org.netbeans.api.debugger.Breakpoint$HIT_COUNT_FILTERING_STYLE org.netbeans.api.debugger.Breakpoint.getHitCountFilteringStyle()
+meth public synchronized final org.netbeans.api.debugger.Breakpoint$VALIDITY org.netbeans.api.debugger.Breakpoint.getValidity()
 meth public synchronized void org.netbeans.api.debugger.Breakpoint.addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public synchronized void org.netbeans.api.debugger.Breakpoint.removePropertyChangeListener(java.beans.PropertyChangeListener)
 meth public synchronized void org.netbeans.api.debugger.jpda.JPDABreakpoint.addJPDABreakpointListener(org.netbeans.api.debugger.jpda.event.JPDABreakpointListener)
@@ -725,6 +1017,9 @@ supr org.netbeans.api.debugger.jpda.JPDABreakpoint
 CLSS public abstract interface org.netbeans.api.debugger.jpda.Variable
 meth public abstract java.lang.String org.netbeans.api.debugger.jpda.Variable.getType()
 meth public abstract java.lang.String org.netbeans.api.debugger.jpda.Variable.getValue()
+supr null
+CLSS public abstract interface org.netbeans.api.debugger.jpda.VariableType
+meth public abstract java.lang.String org.netbeans.api.debugger.jpda.VariableType.getName()
 supr null
 CLSS public final org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent
 cons public JPDABreakpointEvent(org.netbeans.api.debugger.jpda.JPDABreakpoint,org.netbeans.api.debugger.jpda.JPDADebugger,int,org.netbeans.api.debugger.jpda.JPDAThread,com.sun.jdi.ReferenceType,org.netbeans.api.debugger.jpda.Variable)
@@ -762,15 +1057,34 @@ meth public abstract void org.netbeans.api.debugger.jpda.event.JPDABreakpointLis
 supr null
 CLSS public abstract org.netbeans.spi.debugger.jpda.EditorContext
 cons public EditorContext()
-fld  public static final java.lang.String org.netbeans.spi.debugger.jpda.EditorContext.BREAKPOINT_ANNOTATION_TYPE
-fld  public static final java.lang.String org.netbeans.spi.debugger.jpda.EditorContext.CALL_STACK_FRAME_ANNOTATION_TYPE
-fld  public static final java.lang.String org.netbeans.spi.debugger.jpda.EditorContext.CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE
-fld  public static final java.lang.String org.netbeans.spi.debugger.jpda.EditorContext.CURRENT_LINE_ANNOTATION_TYPE
-fld  public static final java.lang.String org.netbeans.spi.debugger.jpda.EditorContext.DISABLED_BREAKPOINT_ANNOTATION_TYPE
-fld  public static final java.lang.String org.netbeans.spi.debugger.jpda.EditorContext.DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE
-fld  public static final java.lang.String org.netbeans.spi.debugger.jpda.EditorContext.PROP_LINE_NUMBER
+fld  constant public static final java.lang.String org.netbeans.spi.debugger.jpda.EditorContext.BREAKPOINT_ANNOTATION_TYPE
+fld  constant public static final java.lang.String org.netbeans.spi.debugger.jpda.EditorContext.CALL_STACK_FRAME_ANNOTATION_TYPE
+fld  constant public static final java.lang.String org.netbeans.spi.debugger.jpda.EditorContext.CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE
+fld  constant public static final java.lang.String org.netbeans.spi.debugger.jpda.EditorContext.CURRENT_EXPRESSION_CURRENT_LINE_ANNOTATION_TYPE
+fld  constant public static final java.lang.String org.netbeans.spi.debugger.jpda.EditorContext.CURRENT_EXPRESSION_SECONDARY_LINE_ANNOTATION_TYPE
+fld  constant public static final java.lang.String org.netbeans.spi.debugger.jpda.EditorContext.CURRENT_LAST_OPERATION_ANNOTATION_TYPE
+fld  constant public static final java.lang.String org.netbeans.spi.debugger.jpda.EditorContext.CURRENT_LINE_ANNOTATION_TYPE
+fld  constant public static final java.lang.String org.netbeans.spi.debugger.jpda.EditorContext.CURRENT_OUT_OPERATION_ANNOTATION_TYPE
+fld  constant public static final java.lang.String org.netbeans.spi.debugger.jpda.EditorContext.DISABLED_BREAKPOINT_ANNOTATION_TYPE
+fld  constant public static final java.lang.String org.netbeans.spi.debugger.jpda.EditorContext.DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE
+fld  constant public static final java.lang.String org.netbeans.spi.debugger.jpda.EditorContext.DISABLED_FIELD_BREAKPOINT_ANNOTATION_TYPE
+fld  constant public static final java.lang.String org.netbeans.spi.debugger.jpda.EditorContext.DISABLED_METHOD_BREAKPOINT_ANNOTATION_TYPE
+fld  constant public static final java.lang.String org.netbeans.spi.debugger.jpda.EditorContext.FIELD_BREAKPOINT_ANNOTATION_TYPE
+fld  constant public static final java.lang.String org.netbeans.spi.debugger.jpda.EditorContext.METHOD_BREAKPOINT_ANNOTATION_TYPE
+fld  constant public static final java.lang.String org.netbeans.spi.debugger.jpda.EditorContext.PROP_LINE_NUMBER
+innr public static abstract interface org.netbeans.spi.debugger.jpda.EditorContext$BytecodeProvider
+innr public static final org.netbeans.spi.debugger.jpda.EditorContext$MethodArgument
+innr public static final org.netbeans.spi.debugger.jpda.EditorContext$Operation
+innr public static final org.netbeans.spi.debugger.jpda.EditorContext$Position
+meth protected final org.netbeans.spi.debugger.jpda.EditorContext$Operation org.netbeans.spi.debugger.jpda.EditorContext.createMethodOperation(org.netbeans.spi.debugger.jpda.EditorContext$Position,org.netbeans.spi.debugger.jpda.EditorContext$Position,org.netbeans.spi.debugger.jpda.EditorContext$Position,org.netbeans.spi.debugger.jpda.EditorContext$Position,java.lang.String,java.lang.String,int)
+meth protected final org.netbeans.spi.debugger.jpda.EditorContext$Position org.netbeans.spi.debugger.jpda.EditorContext.createPosition(int,int,int)
+meth protected final void org.netbeans.spi.debugger.jpda.EditorContext.addNextOperationTo(org.netbeans.spi.debugger.jpda.EditorContext$Operation,org.netbeans.spi.debugger.jpda.EditorContext$Operation)
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
 meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public [Ljava.lang.String; org.netbeans.spi.debugger.jpda.EditorContext.getCurrentMethodDeclaration()
+meth public [Lorg.netbeans.spi.debugger.jpda.EditorContext$MethodArgument; org.netbeans.spi.debugger.jpda.EditorContext.getArguments(java.lang.String,int)
+meth public [Lorg.netbeans.spi.debugger.jpda.EditorContext$MethodArgument; org.netbeans.spi.debugger.jpda.EditorContext.getArguments(java.lang.String,org.netbeans.spi.debugger.jpda.EditorContext$Operation)
+meth public [Lorg.netbeans.spi.debugger.jpda.EditorContext$Operation; org.netbeans.spi.debugger.jpda.EditorContext.getOperations(java.lang.String,int,org.netbeans.spi.debugger.jpda.EditorContext$BytecodeProvider)
 meth public abstract [Ljava.lang.String; org.netbeans.spi.debugger.jpda.EditorContext.getImports(java.lang.String)
 meth public abstract boolean org.netbeans.spi.debugger.jpda.EditorContext.showSource(java.lang.String,int,java.lang.Object)
 meth public abstract int org.netbeans.spi.debugger.jpda.EditorContext.getCurrentLineNumber()
@@ -795,6 +1109,8 @@ meth public abstract void org.netbeans.spi.debugger.jpda.EditorContext.updateTim
 meth public boolean java.lang.Object.equals(java.lang.Object)
 meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
 meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public int org.netbeans.spi.debugger.jpda.EditorContext.getMethodLineNumber(java.lang.String,java.lang.String,java.lang.String,java.lang.String)
+meth public java.lang.Object org.netbeans.spi.debugger.jpda.EditorContext.annotate(java.lang.String,int,int,java.lang.String,java.lang.Object)
 meth public java.lang.String java.lang.Object.toString()
 meth public native final java.lang.Class java.lang.Object.getClass()
 meth public native final void java.lang.Object.notify()
@@ -834,6 +1150,7 @@ meth public boolean java.lang.Object.equals(java.lang.Object)
 meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
 meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
 meth public java.lang.String java.lang.Object.toString()
+meth public java.lang.String org.netbeans.spi.debugger.jpda.SourcePathProvider.getSourceRoot(java.lang.String)
 meth public native final java.lang.Class java.lang.Object.getClass()
 meth public native final void java.lang.Object.notify()
 meth public native final void java.lang.Object.notifyAll()

@@ -1,5 +1,5 @@
 #API master signature file
-#Version 1.5.0_11
+#Version 1.6.1
 CLSS public final org.netbeans.api.editor.fold.Fold
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
 meth protected void java.lang.Object.finalize() throws java.lang.Throwable

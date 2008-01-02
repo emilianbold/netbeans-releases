@@ -1,5 +1,5 @@
 #API master signature file
-#Version 1.5.0_11
+#Version 1.15.1
 CLSS public static abstract interface org.openide.util.Lookup$Provider
 meth public abstract org.openide.util.Lookup org.openide.util.Lookup$Provider.getLookup()
 supr null
@@ -27,11 +27,11 @@ meth public boolean org.netbeans.api.project.libraries.Library.equals(java.lang.
 meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
 meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
 meth public int org.netbeans.api.project.libraries.Library.hashCode()
-meth public java.lang.String java.lang.Object.toString()
 meth public java.lang.String org.netbeans.api.project.libraries.Library.getDescription()
 meth public java.lang.String org.netbeans.api.project.libraries.Library.getDisplayName()
 meth public java.lang.String org.netbeans.api.project.libraries.Library.getName()
 meth public java.lang.String org.netbeans.api.project.libraries.Library.getType()
+meth public java.lang.String org.netbeans.api.project.libraries.Library.toString()
 meth public java.util.List org.netbeans.api.project.libraries.Library.getContent(java.lang.String)
 meth public native final java.lang.Class java.lang.Object.getClass()
 meth public native final void java.lang.Object.notify()
@@ -57,7 +57,23 @@ meth public org.netbeans.api.project.libraries.Library org.netbeans.api.project.
 meth public static synchronized org.netbeans.api.project.libraries.LibraryManager org.netbeans.api.project.libraries.LibraryManager.getDefault()
 meth public synchronized [Lorg.netbeans.api.project.libraries.Library; org.netbeans.api.project.libraries.LibraryManager.getLibraries()
 meth public synchronized void org.netbeans.api.project.libraries.LibraryManager.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void org.netbeans.api.project.libraries.LibraryManager.addLibrary(org.netbeans.api.project.libraries.Library) throws java.io.IOException,java.lang.IllegalArgumentException
+meth public void org.netbeans.api.project.libraries.LibraryManager.removeLibrary(org.netbeans.api.project.libraries.Library) throws java.io.IOException,java.lang.IllegalArgumentException
 meth public void org.netbeans.api.project.libraries.LibraryManager.removePropertyChangeListener(java.beans.PropertyChangeListener)
+supr java.lang.Object
+CLSS public org.netbeans.spi.project.libraries.LibraryFactory
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static org.netbeans.api.project.libraries.Library org.netbeans.spi.project.libraries.LibraryFactory.createLibrary(org.netbeans.spi.project.libraries.LibraryImplementation)
 supr java.lang.Object
 CLSS public abstract interface org.netbeans.spi.project.libraries.LibraryImplementation
 fld  constant public static final java.lang.String org.netbeans.spi.project.libraries.LibraryImplementation.PROP_CONTENT
@@ -104,5 +120,7 @@ meth public native final void java.lang.Object.notify()
 meth public native final void java.lang.Object.notifyAll()
 meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
 meth public native int java.lang.Object.hashCode()
+meth public static [Lorg.netbeans.spi.project.libraries.LibraryTypeProvider; org.netbeans.spi.project.libraries.support.LibrariesSupport.getLibraryTypeProviders()
 meth public static org.netbeans.spi.project.libraries.LibraryImplementation org.netbeans.spi.project.libraries.support.LibrariesSupport.createLibraryImplementation(java.lang.String,[Ljava.lang.String;)
+meth public static org.netbeans.spi.project.libraries.LibraryTypeProvider org.netbeans.spi.project.libraries.support.LibrariesSupport.getLibraryTypeProvider(java.lang.String)
 supr java.lang.Object

@@ -1,5 +1,5 @@
 #API master signature file
-#Version 1.5.0_11
+#Version 2.9.1
 CLSS public abstract org.netbeans.spi.debugger.ui.AttachType
 cons public AttachType()
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException

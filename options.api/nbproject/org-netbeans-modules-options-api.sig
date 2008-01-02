@@ -1,5 +1,28 @@
 #API master signature file
-#Version 1.5.0_11
+#Version 1.5.1
+CLSS public static abstract interface org.openide.util.Mutex$Action
+intf org.openide.util.Mutex$ExceptionAction
+meth public abstract java.lang.Object org.openide.util.Mutex$Action.run()
+supr null
+CLSS public static abstract interface org.openide.util.Mutex$ExceptionAction
+meth public abstract java.lang.Object org.openide.util.Mutex$ExceptionAction.run() throws java.lang.Exception
+supr null
+CLSS public final org.netbeans.api.options.OptionsDisplayer
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean org.netbeans.api.options.OptionsDisplayer.open()
+meth public boolean org.netbeans.api.options.OptionsDisplayer.open(java.lang.String)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static org.netbeans.api.options.OptionsDisplayer org.netbeans.api.options.OptionsDisplayer.getDefault()
+supr java.lang.Object
 CLSS public abstract org.netbeans.spi.options.AdvancedOption
 cons public AdvancedOption()
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException

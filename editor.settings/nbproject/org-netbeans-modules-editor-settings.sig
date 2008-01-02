@@ -1,7 +1,24 @@
 #API master signature file
-#Version 1.5.0_11
+#Version 1.12.1
+CLSS public final org.netbeans.api.editor.settings.AttributesUtilities
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static transient javax.swing.text.AttributeSet org.netbeans.api.editor.settings.AttributesUtilities.createComposite([Ljavax.swing.text.AttributeSet;)
+meth public static transient javax.swing.text.AttributeSet org.netbeans.api.editor.settings.AttributesUtilities.createImmutable([Ljava.lang.Object;)
+meth public static transient javax.swing.text.AttributeSet org.netbeans.api.editor.settings.AttributesUtilities.createImmutable([Ljavax.swing.text.AttributeSet;)
+supr java.lang.Object
 CLSS public final org.netbeans.api.editor.settings.CodeTemplateDescription
 cons public CodeTemplateDescription(java.lang.String,java.lang.String,java.lang.String)
+cons public CodeTemplateDescription(java.lang.String,java.lang.String,java.lang.String,java.util.List,java.lang.String)
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
 meth protected void java.lang.Object.finalize() throws java.lang.Throwable
 meth public boolean java.lang.Object.equals(java.lang.Object)
@@ -10,7 +27,9 @@ meth public final void java.lang.Object.wait(long,int) throws java.lang.Interrup
 meth public java.lang.String org.netbeans.api.editor.settings.CodeTemplateDescription.getAbbreviation()
 meth public java.lang.String org.netbeans.api.editor.settings.CodeTemplateDescription.getDescription()
 meth public java.lang.String org.netbeans.api.editor.settings.CodeTemplateDescription.getParametrizedText()
+meth public java.lang.String org.netbeans.api.editor.settings.CodeTemplateDescription.getUniqueId()
 meth public java.lang.String org.netbeans.api.editor.settings.CodeTemplateDescription.toString()
+meth public java.util.List org.netbeans.api.editor.settings.CodeTemplateDescription.getContexts()
 meth public native final java.lang.Class java.lang.Object.getClass()
 meth public native final void java.lang.Object.notify()
 meth public native final void java.lang.Object.notifyAll()
@@ -36,6 +55,7 @@ supr java.lang.Object
 CLSS public final org.netbeans.api.editor.settings.EditorStyleConstants
 fld  public static final java.lang.Object org.netbeans.api.editor.settings.EditorStyleConstants.Default
 fld  public static final java.lang.Object org.netbeans.api.editor.settings.EditorStyleConstants.DisplayName
+fld  public static final java.lang.Object org.netbeans.api.editor.settings.EditorStyleConstants.Tooltip
 fld  public static final java.lang.Object org.netbeans.api.editor.settings.EditorStyleConstants.WaveUnderlineColor
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
 meth protected void java.lang.Object.finalize() throws java.lang.Throwable
@@ -51,6 +71,7 @@ meth public native int java.lang.Object.hashCode()
 supr java.lang.Object
 CLSS public final org.netbeans.api.editor.settings.FontColorNames
 fld  constant public static final java.lang.String org.netbeans.api.editor.settings.FontColorNames.BLOCK_SEARCH_COLORING
+fld  constant public static final java.lang.String org.netbeans.api.editor.settings.FontColorNames.CARET_ROW_COLORING
 fld  constant public static final java.lang.String org.netbeans.api.editor.settings.FontColorNames.CODE_FOLDING_BAR_COLORING
 fld  constant public static final java.lang.String org.netbeans.api.editor.settings.FontColorNames.CODE_FOLDING_COLORING
 fld  constant public static final java.lang.String org.netbeans.api.editor.settings.FontColorNames.DEFAULT_COLORING

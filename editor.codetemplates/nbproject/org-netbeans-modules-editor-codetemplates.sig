@@ -1,5 +1,8 @@
 #API master signature file
-#Version 1.5.0_11
+#Version 1.5.1
+CLSS public static abstract interface org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter$Factory
+meth public abstract org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter$Factory.createFilter(javax.swing.text.JTextComponent,int)
+supr null
 CLSS public final org.netbeans.lib.editor.codetemplates.api.CodeTemplate
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
 meth protected void java.lang.Object.finalize() throws java.lang.Throwable
@@ -10,6 +13,7 @@ meth public java.lang.String org.netbeans.lib.editor.codetemplates.api.CodeTempl
 meth public java.lang.String org.netbeans.lib.editor.codetemplates.api.CodeTemplate.getDescription()
 meth public java.lang.String org.netbeans.lib.editor.codetemplates.api.CodeTemplate.getParametrizedText()
 meth public java.lang.String org.netbeans.lib.editor.codetemplates.api.CodeTemplate.toString()
+meth public java.util.List org.netbeans.lib.editor.codetemplates.api.CodeTemplate.getContexts()
 meth public native final java.lang.Class java.lang.Object.getClass()
 meth public native final void java.lang.Object.notify()
 meth public native final void java.lang.Object.notifyAll()
@@ -36,6 +40,10 @@ meth public static org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager
 meth public void org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager.registerLoadedListener(javax.swing.event.ChangeListener)
 meth public void org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager.waitLoaded()
 supr java.lang.Object
+CLSS public abstract interface org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter
+innr public static abstract interface org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter$Factory
+meth public abstract boolean org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter.accept(org.netbeans.lib.editor.codetemplates.api.CodeTemplate)
+supr null
 CLSS public final org.netbeans.lib.editor.codetemplates.spi.CodeTemplateInsertRequest
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
 meth protected void java.lang.Object.finalize() throws java.lang.Throwable
@@ -44,6 +52,7 @@ meth public boolean org.netbeans.lib.editor.codetemplates.spi.CodeTemplateInsert
 meth public boolean org.netbeans.lib.editor.codetemplates.spi.CodeTemplateInsertRequest.isReleased()
 meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
 meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public int org.netbeans.lib.editor.codetemplates.spi.CodeTemplateInsertRequest.getInsertTextOffset()
 meth public java.lang.String java.lang.Object.toString()
 meth public java.lang.String org.netbeans.lib.editor.codetemplates.spi.CodeTemplateInsertRequest.getInsertText()
 meth public java.lang.String org.netbeans.lib.editor.codetemplates.spi.CodeTemplateInsertRequest.getParametrizedText()
@@ -60,9 +69,12 @@ meth public org.netbeans.lib.editor.codetemplates.spi.CodeTemplateParameter org.
 meth public void org.netbeans.lib.editor.codetemplates.spi.CodeTemplateInsertRequest.setParametrizedText(java.lang.String)
 supr java.lang.Object
 CLSS public final org.netbeans.lib.editor.codetemplates.spi.CodeTemplateParameter
+fld  constant public static final java.lang.String org.netbeans.lib.editor.codetemplates.spi.CodeTemplateParameter.COMPLETION_INVOKE_HINT_NAME
 fld  constant public static final java.lang.String org.netbeans.lib.editor.codetemplates.spi.CodeTemplateParameter.CURSOR_PARAMETER_NAME
 fld  constant public static final java.lang.String org.netbeans.lib.editor.codetemplates.spi.CodeTemplateParameter.DEFAULT_VALUE_HINT_NAME
 fld  constant public static final java.lang.String org.netbeans.lib.editor.codetemplates.spi.CodeTemplateParameter.EDITABLE_HINT_NAME
+fld  constant public static final java.lang.String org.netbeans.lib.editor.codetemplates.spi.CodeTemplateParameter.LINE_HINT_NAME
+fld  constant public static final java.lang.String org.netbeans.lib.editor.codetemplates.spi.CodeTemplateParameter.SELECTION_PARAMETER_NAME
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
 meth protected void java.lang.Object.finalize() throws java.lang.Throwable
 meth public boolean java.lang.Object.equals(java.lang.Object)

@@ -1,5 +1,5 @@
 #API master signature file
-#Version 6.8.22
+#Version 7.10.1
 CLSS public static abstract org.netbeans.modules.openide.util.ActionsBridge$ActionRunnable
 cons public ActionRunnable(java.awt.event.ActionEvent,org.openide.util.actions.SystemAction,boolean)
 fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
@@ -421,6 +421,24 @@ supr null
 CLSS public abstract interface org.openide.util.Cancellable
 meth public abstract boolean org.openide.util.Cancellable.cancel()
 supr null
+CLSS public final org.openide.util.ChangeSupport
+cons public ChangeSupport(java.lang.Object)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean org.openide.util.ChangeSupport.hasListeners()
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void org.openide.util.ChangeSupport.addChangeListener(javax.swing.event.ChangeListener)
+meth public void org.openide.util.ChangeSupport.fireChange()
+meth public void org.openide.util.ChangeSupport.removeChangeListener(javax.swing.event.ChangeListener)
+supr java.lang.Object
 CLSS public abstract interface org.openide.util.ContextAwareAction
 fld  public static final java.lang.String javax.swing.Action.ACCELERATOR_KEY
 fld  public static final java.lang.String javax.swing.Action.ACTION_COMMAND_KEY
@@ -459,7 +477,6 @@ meth public native final void java.lang.Object.notifyAll()
 meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
 meth public native int java.lang.Object.hashCode()
 meth public static final java.util.Enumeration org.openide.util.Enumerations.empty()
-meth public static java.util.Enumeration org.openide.util.Enumerations.array([Ljava.lang.Object;)
 meth public static java.util.Enumeration org.openide.util.Enumerations.concat(java.util.Enumeration)
 meth public static java.util.Enumeration org.openide.util.Enumerations.concat(java.util.Enumeration,java.util.Enumeration)
 meth public static java.util.Enumeration org.openide.util.Enumerations.convert(java.util.Enumeration,org.openide.util.Enumerations$Processor)
@@ -468,6 +485,24 @@ meth public static java.util.Enumeration org.openide.util.Enumerations.queue(jav
 meth public static java.util.Enumeration org.openide.util.Enumerations.removeDuplicates(java.util.Enumeration)
 meth public static java.util.Enumeration org.openide.util.Enumerations.removeNulls(java.util.Enumeration)
 meth public static java.util.Enumeration org.openide.util.Enumerations.singleton(java.lang.Object)
+meth public static transient java.util.Enumeration org.openide.util.Enumerations.array([Ljava.lang.Object;)
+supr java.lang.Object
+CLSS public final org.openide.util.Exceptions
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static java.lang.String org.openide.util.Exceptions.findLocalizedMessage(java.lang.Throwable)
+meth public static java.lang.Throwable org.openide.util.Exceptions.attachLocalizedMessage(java.lang.Throwable,java.lang.String)
+meth public static java.lang.Throwable org.openide.util.Exceptions.attachMessage(java.lang.Throwable,java.lang.String)
+meth public static void org.openide.util.Exceptions.printStackTrace(java.lang.Throwable)
 supr java.lang.Object
 CLSS public final org.openide.util.HelpCtx
 cons public HelpCtx(java.lang.Class)
@@ -507,12 +542,14 @@ meth public boolean java.lang.Object.equals(java.lang.Object)
 meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
 meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
 meth public java.lang.String java.lang.Object.toString()
+meth public java.util.Collection org.openide.util.Lookup.lookupAll(java.lang.Class)
 meth public native final java.lang.Class java.lang.Object.getClass()
 meth public native final void java.lang.Object.notify()
 meth public native final void java.lang.Object.notifyAll()
 meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
 meth public native int java.lang.Object.hashCode()
 meth public org.openide.util.Lookup$Item org.openide.util.Lookup.lookupItem(org.openide.util.Lookup$Template)
+meth public org.openide.util.Lookup$Result org.openide.util.Lookup.lookupResult(java.lang.Class)
 meth public static synchronized org.openide.util.Lookup org.openide.util.Lookup.getDefault()
 supr java.lang.Object
 CLSS public final org.openide.util.LookupEvent
@@ -614,7 +651,7 @@ meth public java.lang.Exception org.openide.util.MutexException.getException()
 meth public java.lang.String java.lang.Throwable.getLocalizedMessage()
 meth public java.lang.String java.lang.Throwable.getMessage()
 meth public java.lang.String java.lang.Throwable.toString()
-meth public java.lang.Throwable java.lang.Throwable.getCause()
+meth public java.lang.Throwable org.openide.util.MutexException.getCause()
 meth public native final java.lang.Class java.lang.Object.getClass()
 meth public native final void java.lang.Object.notify()
 meth public native final void java.lang.Object.notifyAll()
@@ -662,6 +699,43 @@ meth public static synchronized java.net.URL org.openide.util.NbBundle.getLocali
 meth public static void org.openide.util.NbBundle.setBranding(java.lang.String) throws java.lang.IllegalArgumentException
 meth public static void org.openide.util.NbBundle.setClassLoaderFinder(org.openide.util.NbBundle$ClassLoaderFinder)
 supr java.lang.Object
+CLSS public org.openide.util.NbCollections
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static java.lang.Iterable org.openide.util.NbCollections.iterable(java.util.Enumeration)
+meth public static java.lang.Iterable org.openide.util.NbCollections.iterable(java.util.Iterator)
+meth public static java.util.Enumeration org.openide.util.NbCollections.checkedEnumerationByFilter(java.util.Enumeration,java.lang.Class,boolean)
+meth public static java.util.Iterator org.openide.util.NbCollections.checkedIteratorByFilter(java.util.Iterator,java.lang.Class,boolean)
+meth public static java.util.List org.openide.util.NbCollections.checkedListByCopy(java.util.List,java.lang.Class,boolean) throws java.lang.ClassCastException
+meth public static java.util.Map org.openide.util.NbCollections.checkedMapByCopy(java.util.Map,java.lang.Class,java.lang.Class,boolean) throws java.lang.ClassCastException
+meth public static java.util.Map org.openide.util.NbCollections.checkedMapByFilter(java.util.Map,java.lang.Class,java.lang.Class,boolean)
+meth public static java.util.Set org.openide.util.NbCollections.checkedSetByCopy(java.util.Set,java.lang.Class,boolean) throws java.lang.ClassCastException
+meth public static java.util.Set org.openide.util.NbCollections.checkedSetByFilter(java.util.Set,java.lang.Class,boolean)
+supr java.lang.Object
+CLSS public final org.openide.util.NbPreferences
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static java.util.prefs.Preferences org.openide.util.NbPreferences.forModule(java.lang.Class)
+meth public static java.util.prefs.Preferences org.openide.util.NbPreferences.root()
+supr java.lang.Object
 CLSS public org.openide.util.NotImplementedException
 cons public NotImplementedException()
 cons public NotImplementedException(java.lang.String)
@@ -688,6 +762,24 @@ meth public void java.lang.Throwable.printStackTrace(java.io.PrintStream)
 meth public void java.lang.Throwable.printStackTrace(java.io.PrintWriter)
 meth public void java.lang.Throwable.setStackTrace([Ljava.lang.StackTraceElement;)
 supr java.lang.RuntimeException
+CLSS public org.openide.util.Parameters
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static void org.openide.util.Parameters.javaIdentifier(java.lang.CharSequence,java.lang.CharSequence)
+meth public static void org.openide.util.Parameters.javaIdentifierOrNull(java.lang.CharSequence,java.lang.CharSequence)
+meth public static void org.openide.util.Parameters.notEmpty(java.lang.CharSequence,java.lang.CharSequence)
+meth public static void org.openide.util.Parameters.notNull(java.lang.CharSequence,java.lang.Object)
+meth public static void org.openide.util.Parameters.notWhitespace(java.lang.CharSequence,java.lang.CharSequence)
+supr java.lang.Object
 CLSS public org.openide.util.Queue
 cons public Queue()
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
@@ -810,8 +902,8 @@ meth public final void java.lang.Object.wait(long,int) throws java.lang.Interrup
 meth public final void org.openide.util.TopologicalSortException.printStackTrace(java.io.PrintStream)
 meth public final void org.openide.util.TopologicalSortException.printStackTrace(java.io.PrintWriter)
 meth public java.lang.String java.lang.Throwable.getLocalizedMessage()
-meth public java.lang.String java.lang.Throwable.getMessage()
-meth public java.lang.String java.lang.Throwable.toString()
+meth public java.lang.String org.openide.util.TopologicalSortException.getMessage()
+meth public java.lang.String org.openide.util.TopologicalSortException.toString()
 meth public java.lang.Throwable java.lang.Throwable.getCause()
 meth public native final java.lang.Class java.lang.Object.getClass()
 meth public native final void java.lang.Object.notify()
@@ -823,6 +915,28 @@ meth public synchronized native java.lang.Throwable java.lang.Throwable.fillInSt
 meth public void java.lang.Throwable.printStackTrace()
 meth public void java.lang.Throwable.setStackTrace([Ljava.lang.StackTraceElement;)
 supr java.lang.Exception
+CLSS public abstract org.openide.util.Union2
+intf java.io.Serializable
+intf java.lang.Cloneable
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public abstract boolean org.openide.util.Union2.hasFirst()
+meth public abstract boolean org.openide.util.Union2.hasSecond()
+meth public abstract java.lang.Object org.openide.util.Union2.first() throws java.lang.IllegalArgumentException
+meth public abstract java.lang.Object org.openide.util.Union2.second() throws java.lang.IllegalArgumentException
+meth public abstract org.openide.util.Union2 org.openide.util.Union2.clone()
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static org.openide.util.Union2 org.openide.util.Union2.createFirst(java.lang.Object)
+meth public static org.openide.util.Union2 org.openide.util.Union2.createSecond(java.lang.Object)
+meth public volatile java.lang.Object org.openide.util.Union2.clone() throws java.lang.CloneNotSupportedException
+supr java.lang.Object
 CLSS public org.openide.util.UserCancelException
 cons public UserCancelException()
 cons public UserCancelException(java.lang.String)
@@ -919,12 +1033,14 @@ meth public static boolean org.openide.util.Utilities.compareObjects(java.lang.O
 meth public static boolean org.openide.util.Utilities.compareObjectsImpl(java.lang.Object,java.lang.Object,int)
 meth public static final boolean org.openide.util.Utilities.isJavaIdentifier(java.lang.String)
 meth public static final boolean org.openide.util.Utilities.isLargeFrameIcons()
+meth public static final boolean org.openide.util.Utilities.isMac()
 meth public static final boolean org.openide.util.Utilities.isUnix()
 meth public static final boolean org.openide.util.Utilities.isWindows()
 meth public static final int org.openide.util.Utilities.getOperatingSystem()
 meth public static final int org.openide.util.Utilities.showJFileChooser(javax.swing.JFileChooser,java.awt.Component,java.lang.String)
 meth public static final java.awt.Cursor org.openide.util.Utilities.createProgressCursor(java.awt.Component)
 meth public static final java.awt.Dimension org.openide.util.Utilities.getScreenSize()
+meth public static final java.awt.Image org.openide.util.Utilities.icon2Image(javax.swing.Icon)
 meth public static final java.awt.Image org.openide.util.Utilities.loadImage(java.lang.String)
 meth public static final java.awt.Image org.openide.util.Utilities.loadImage(java.lang.String,boolean)
 meth public static final java.awt.Image org.openide.util.Utilities.mergeImages(java.awt.Image,java.awt.Image,int,int)
@@ -1712,7 +1828,7 @@ meth public java.lang.Exception org.openide.util.io.OperationException.getExcept
 meth public java.lang.String java.lang.Throwable.getLocalizedMessage()
 meth public java.lang.String java.lang.Throwable.toString()
 meth public java.lang.String org.openide.util.io.OperationException.getMessage()
-meth public java.lang.Throwable java.lang.Throwable.getCause()
+meth public java.lang.Throwable org.openide.util.io.OperationException.getCause()
 meth public native final java.lang.Class java.lang.Object.getClass()
 meth public native final void java.lang.Object.notify()
 meth public native final void java.lang.Object.notifyAll()
@@ -1763,7 +1879,7 @@ meth public java.lang.Exception org.openide.util.io.SafeException.getException()
 meth public java.lang.String java.lang.Throwable.getMessage()
 meth public java.lang.String org.openide.util.io.FoldingIOException.getLocalizedMessage()
 meth public java.lang.String org.openide.util.io.FoldingIOException.toString()
-meth public java.lang.Throwable java.lang.Throwable.getCause()
+meth public java.lang.Throwable org.openide.util.io.SafeException.getCause()
 meth public native final java.lang.Class java.lang.Object.getClass()
 meth public native final void java.lang.Object.notify()
 meth public native final void java.lang.Object.notifyAll()
@@ -1801,11 +1917,13 @@ meth public final org.openide.util.Lookup$Result org.openide.util.lookup.Abstrac
 meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
 meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
 meth public java.lang.String org.openide.util.lookup.AbstractLookup.toString()
+meth public java.util.Collection org.openide.util.Lookup.lookupAll(java.lang.Class)
 meth public native final java.lang.Class java.lang.Object.getClass()
 meth public native final void java.lang.Object.notify()
 meth public native final void java.lang.Object.notifyAll()
 meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
 meth public native int java.lang.Object.hashCode()
+meth public org.openide.util.Lookup$Result org.openide.util.Lookup.lookupResult(java.lang.Class)
 meth public static synchronized org.openide.util.Lookup org.openide.util.Lookup.getDefault()
 supr org.openide.util.Lookup
 CLSS public final org.openide.util.lookup.InstanceContent
@@ -1844,25 +1962,27 @@ meth public native final void java.lang.Object.notify()
 meth public native final void java.lang.Object.notifyAll()
 meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
 meth public native int java.lang.Object.hashCode()
-meth public static org.openide.util.Lookup org.openide.util.lookup.Lookups.exclude(org.openide.util.Lookup,[Ljava.lang.Class;)
-meth public static org.openide.util.Lookup org.openide.util.lookup.Lookups.fixed([Ljava.lang.Object;)
 meth public static org.openide.util.Lookup org.openide.util.lookup.Lookups.fixed([Ljava.lang.Object;,org.openide.util.lookup.InstanceContent$Convertor)
+meth public static org.openide.util.Lookup org.openide.util.lookup.Lookups.forPath(java.lang.String)
 meth public static org.openide.util.Lookup org.openide.util.lookup.Lookups.metaInfServices(java.lang.ClassLoader)
+meth public static org.openide.util.Lookup org.openide.util.lookup.Lookups.metaInfServices(java.lang.ClassLoader,java.lang.String)
 meth public static org.openide.util.Lookup org.openide.util.lookup.Lookups.proxy(org.openide.util.Lookup$Provider)
 meth public static org.openide.util.Lookup org.openide.util.lookup.Lookups.singleton(java.lang.Object)
 meth public static org.openide.util.Lookup$Item org.openide.util.lookup.Lookups.lookupItem(java.lang.Object,java.lang.String)
+meth public static transient org.openide.util.Lookup org.openide.util.lookup.Lookups.exclude(org.openide.util.Lookup,[Ljava.lang.Class;)
+meth public static transient org.openide.util.Lookup org.openide.util.lookup.Lookups.fixed([Ljava.lang.Object;)
 supr java.lang.Object
 CLSS public org.openide.util.lookup.ProxyLookup
 cons protected ProxyLookup()
-cons public ProxyLookup([Lorg.openide.util.Lookup;)
+cons public transient ProxyLookup([Lorg.openide.util.Lookup;)
 fld  public static final org.openide.util.Lookup org.openide.util.Lookup.EMPTY
 innr public static abstract interface org.openide.util.Lookup$Provider
 innr public static abstract org.openide.util.Lookup$Item
 innr public static abstract org.openide.util.Lookup$Result
 innr public static final org.openide.util.Lookup$Template
 meth protected final [Lorg.openide.util.Lookup; org.openide.util.lookup.ProxyLookup.getLookups()
-meth protected final void org.openide.util.lookup.ProxyLookup.setLookups([Lorg.openide.util.Lookup;)
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected transient final void org.openide.util.lookup.ProxyLookup.setLookups([Lorg.openide.util.Lookup;)
 meth protected void java.lang.Object.finalize() throws java.lang.Throwable
 meth protected void org.openide.util.lookup.ProxyLookup.beforeLookup(org.openide.util.Lookup$Template)
 meth public boolean java.lang.Object.equals(java.lang.Object)
@@ -1871,11 +1991,13 @@ meth public final org.openide.util.Lookup$Item org.openide.util.lookup.ProxyLook
 meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
 meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
 meth public java.lang.String org.openide.util.lookup.ProxyLookup.toString()
+meth public java.util.Collection org.openide.util.Lookup.lookupAll(java.lang.Class)
 meth public native final java.lang.Class java.lang.Object.getClass()
 meth public native final void java.lang.Object.notify()
 meth public native final void java.lang.Object.notifyAll()
 meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
 meth public native int java.lang.Object.hashCode()
+meth public org.openide.util.Lookup$Result org.openide.util.Lookup.lookupResult(java.lang.Class)
 meth public static synchronized org.openide.util.Lookup org.openide.util.Lookup.getDefault()
 meth public synchronized final org.openide.util.Lookup$Result org.openide.util.lookup.ProxyLookup.lookup(org.openide.util.Lookup$Template)
 supr org.openide.util.Lookup

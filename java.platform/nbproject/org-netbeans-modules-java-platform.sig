@@ -1,5 +1,5 @@
 #API master signature file
-#Version 1.5.0_11
+#Version 1.9.1
 CLSS public abstract org.netbeans.api.java.platform.JavaPlatform
 cons protected JavaPlatform()
 fld  constant public static final java.lang.String org.netbeans.api.java.platform.JavaPlatform.PROP_DISPLAY_NAME
@@ -52,8 +52,8 @@ meth public native int java.lang.Object.hashCode()
 meth public org.netbeans.api.java.platform.JavaPlatform org.netbeans.api.java.platform.JavaPlatformManager.getDefaultPlatform()
 meth public static synchronized org.netbeans.api.java.platform.JavaPlatformManager org.netbeans.api.java.platform.JavaPlatformManager.getDefault()
 meth public synchronized [Lorg.netbeans.api.java.platform.JavaPlatform; org.netbeans.api.java.platform.JavaPlatformManager.getInstalledPlatforms()
-meth public synchronized void org.netbeans.api.java.platform.JavaPlatformManager.addPropertyChangeListener(java.beans.PropertyChangeListener)
-meth public synchronized void org.netbeans.api.java.platform.JavaPlatformManager.removePropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void org.netbeans.api.java.platform.JavaPlatformManager.addPropertyChangeListener(java.beans.PropertyChangeListener)
+meth public void org.netbeans.api.java.platform.JavaPlatformManager.removePropertyChangeListener(java.beans.PropertyChangeListener)
 supr java.lang.Object
 CLSS public final org.netbeans.api.java.platform.PlatformsCustomizer
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException

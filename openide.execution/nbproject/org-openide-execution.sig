@@ -1,5 +1,5 @@
 #API master signature file
-#Version 1.5.0_11
+#Version 1.10.1
 CLSS public static final org.openide.ServiceType$Handle
 cons public Handle(org.openide.ServiceType)
 intf java.io.Serializable

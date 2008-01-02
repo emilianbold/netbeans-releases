@@ -1,5 +1,5 @@
 #API master signature file
-#Version 1.5.0_11
+#Version 2.3.1
 CLSS public final org.netbeans.spi.editor.errorstripe.UpToDateStatus
 fld  public static final org.netbeans.spi.editor.errorstripe.UpToDateStatus org.netbeans.spi.editor.errorstripe.UpToDateStatus.UP_TO_DATE_DIRTY
 fld  public static final org.netbeans.spi.editor.errorstripe.UpToDateStatus org.netbeans.spi.editor.errorstripe.UpToDateStatus.UP_TO_DATE_OK

@@ -1,5 +1,5 @@
 #API master signature file
-#Version 1.5.0_11
+#Version 1.9.1
 CLSS public final org.netbeans.api.editor.completion.Completion
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
 meth protected void java.lang.Object.finalize() throws java.lang.Throwable
@@ -40,6 +40,7 @@ meth public abstract void org.netbeans.spi.editor.completion.CompletionItem.proc
 meth public abstract void org.netbeans.spi.editor.completion.CompletionItem.render(java.awt.Graphics,java.awt.Font,java.awt.Color,java.awt.Color,int,int,boolean)
 supr null
 CLSS public abstract interface org.netbeans.spi.editor.completion.CompletionProvider
+fld  constant public static final int org.netbeans.spi.editor.completion.CompletionProvider.COMPLETION_ALL_QUERY_TYPE
 fld  constant public static final int org.netbeans.spi.editor.completion.CompletionProvider.COMPLETION_QUERY_TYPE
 fld  constant public static final int org.netbeans.spi.editor.completion.CompletionProvider.DOCUMENTATION_QUERY_TYPE
 fld  constant public static final int org.netbeans.spi.editor.completion.CompletionProvider.TOOLTIP_QUERY_TYPE
@@ -68,6 +69,7 @@ meth public void org.netbeans.spi.editor.completion.CompletionResultSet.estimate
 meth public void org.netbeans.spi.editor.completion.CompletionResultSet.finish()
 meth public void org.netbeans.spi.editor.completion.CompletionResultSet.setAnchorOffset(int)
 meth public void org.netbeans.spi.editor.completion.CompletionResultSet.setDocumentation(org.netbeans.spi.editor.completion.CompletionDocumentation)
+meth public void org.netbeans.spi.editor.completion.CompletionResultSet.setHasAdditionalItems(boolean)
 meth public void org.netbeans.spi.editor.completion.CompletionResultSet.setTitle(java.lang.String)
 meth public void org.netbeans.spi.editor.completion.CompletionResultSet.setToolTip(javax.swing.JToolTip)
 meth public void org.netbeans.spi.editor.completion.CompletionResultSet.setWaitText(java.lang.String)
@@ -76,6 +78,20 @@ CLSS public abstract interface org.netbeans.spi.editor.completion.CompletionTask
 meth public abstract void org.netbeans.spi.editor.completion.CompletionTask.cancel()
 meth public abstract void org.netbeans.spi.editor.completion.CompletionTask.query(org.netbeans.spi.editor.completion.CompletionResultSet)
 meth public abstract void org.netbeans.spi.editor.completion.CompletionTask.refresh(org.netbeans.spi.editor.completion.CompletionResultSet)
+supr null
+CLSS public abstract interface org.netbeans.spi.editor.completion.LazyCompletionItem
+intf org.netbeans.spi.editor.completion.CompletionItem
+meth public abstract boolean org.netbeans.spi.editor.completion.CompletionItem.instantSubstitution(javax.swing.text.JTextComponent)
+meth public abstract boolean org.netbeans.spi.editor.completion.LazyCompletionItem.accept()
+meth public abstract int org.netbeans.spi.editor.completion.CompletionItem.getPreferredWidth(java.awt.Graphics,java.awt.Font)
+meth public abstract int org.netbeans.spi.editor.completion.CompletionItem.getSortPriority()
+meth public abstract java.lang.CharSequence org.netbeans.spi.editor.completion.CompletionItem.getInsertPrefix()
+meth public abstract java.lang.CharSequence org.netbeans.spi.editor.completion.CompletionItem.getSortText()
+meth public abstract org.netbeans.spi.editor.completion.CompletionTask org.netbeans.spi.editor.completion.CompletionItem.createDocumentationTask()
+meth public abstract org.netbeans.spi.editor.completion.CompletionTask org.netbeans.spi.editor.completion.CompletionItem.createToolTipTask()
+meth public abstract void org.netbeans.spi.editor.completion.CompletionItem.defaultAction(javax.swing.text.JTextComponent)
+meth public abstract void org.netbeans.spi.editor.completion.CompletionItem.processKeyEvent(java.awt.event.KeyEvent)
+meth public abstract void org.netbeans.spi.editor.completion.CompletionItem.render(java.awt.Graphics,java.awt.Font,java.awt.Color,java.awt.Color,int,int,boolean)
 supr null
 CLSS public abstract org.netbeans.spi.editor.completion.support.AsyncCompletionQuery
 cons public AsyncCompletionQuery()

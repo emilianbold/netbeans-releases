@@ -1,5 +1,5 @@
 #API master signature file
-#Version 1.5.0_11
+#Version 1.12.1
 CLSS public static org.netbeans.spi.viewmodel.ModelEvent$NodeChanged
 cons public NodeChanged(java.lang.Object,java.lang.Object)
 cons public NodeChanged(java.lang.Object,java.lang.Object,int)
@@ -75,6 +75,7 @@ meth public abstract void org.netbeans.spi.viewmodel.Models$ActionPerformer.perf
 supr null
 CLSS public static final org.netbeans.spi.viewmodel.Models$CompoundModel
 fld  constant public static final java.lang.String org.netbeans.spi.viewmodel.TreeModel.ROOT
+intf org.netbeans.spi.viewmodel.ExtendedNodeModel
 intf org.netbeans.spi.viewmodel.Model
 intf org.netbeans.spi.viewmodel.NodeActionsProvider
 intf org.netbeans.spi.viewmodel.NodeModel
@@ -86,18 +87,25 @@ meth protected void java.lang.Object.finalize() throws java.lang.Throwable
 meth public [Ljava.lang.Object; org.netbeans.spi.viewmodel.Models$CompoundModel.getChildren(java.lang.Object,int,int) throws org.netbeans.spi.viewmodel.UnknownTypeException
 meth public [Ljavax.swing.Action; org.netbeans.spi.viewmodel.Models$CompoundModel.getActions(java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
 meth public [Lorg.netbeans.spi.viewmodel.ColumnModel; org.netbeans.spi.viewmodel.Models$CompoundModel.getColumns()
+meth public [Lorg.openide.util.datatransfer.PasteType; org.netbeans.spi.viewmodel.Models$CompoundModel.getPasteTypes(java.lang.Object,java.awt.datatransfer.Transferable) throws org.netbeans.spi.viewmodel.UnknownTypeException
 meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean org.netbeans.spi.viewmodel.Models$CompoundModel.canCopy(java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth public boolean org.netbeans.spi.viewmodel.Models$CompoundModel.canCut(java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth public boolean org.netbeans.spi.viewmodel.Models$CompoundModel.canRename(java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
 meth public boolean org.netbeans.spi.viewmodel.Models$CompoundModel.isExpanded(java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
 meth public boolean org.netbeans.spi.viewmodel.Models$CompoundModel.isLeaf(java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
 meth public boolean org.netbeans.spi.viewmodel.Models$CompoundModel.isReadOnly(java.lang.Object,java.lang.String) throws org.netbeans.spi.viewmodel.UnknownTypeException
 meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
 meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
 meth public int org.netbeans.spi.viewmodel.Models$CompoundModel.getChildrenCount(java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth public java.awt.datatransfer.Transferable org.netbeans.spi.viewmodel.Models$CompoundModel.clipboardCopy(java.lang.Object) throws java.io.IOException,org.netbeans.spi.viewmodel.UnknownTypeException
+meth public java.awt.datatransfer.Transferable org.netbeans.spi.viewmodel.Models$CompoundModel.clipboardCut(java.lang.Object) throws java.io.IOException,org.netbeans.spi.viewmodel.UnknownTypeException
 meth public java.lang.Object org.netbeans.spi.viewmodel.Models$CompoundModel.getRoot()
 meth public java.lang.Object org.netbeans.spi.viewmodel.Models$CompoundModel.getValueAt(java.lang.Object,java.lang.String) throws org.netbeans.spi.viewmodel.UnknownTypeException
 meth public java.lang.String org.netbeans.spi.viewmodel.Models$CompoundModel.getDisplayName(java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
 meth public java.lang.String org.netbeans.spi.viewmodel.Models$CompoundModel.getHelpId()
 meth public java.lang.String org.netbeans.spi.viewmodel.Models$CompoundModel.getIconBase(java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth public java.lang.String org.netbeans.spi.viewmodel.Models$CompoundModel.getIconBaseWithExtension(java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
 meth public java.lang.String org.netbeans.spi.viewmodel.Models$CompoundModel.getShortDescription(java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
 meth public java.lang.String org.netbeans.spi.viewmodel.Models$CompoundModel.toString()
 meth public native final java.lang.Class java.lang.Object.getClass()
@@ -110,6 +118,7 @@ meth public void org.netbeans.spi.viewmodel.Models$CompoundModel.nodeCollapsed(j
 meth public void org.netbeans.spi.viewmodel.Models$CompoundModel.nodeExpanded(java.lang.Object)
 meth public void org.netbeans.spi.viewmodel.Models$CompoundModel.performDefaultAction(java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
 meth public void org.netbeans.spi.viewmodel.Models$CompoundModel.removeModelListener(org.netbeans.spi.viewmodel.ModelListener)
+meth public void org.netbeans.spi.viewmodel.Models$CompoundModel.setName(java.lang.Object,java.lang.String) throws org.netbeans.spi.viewmodel.UnknownTypeException
 meth public void org.netbeans.spi.viewmodel.Models$CompoundModel.setValueAt(java.lang.Object,java.lang.String,java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
 supr java.lang.Object
 CLSS public static final org.netbeans.spi.viewmodel.Models$TreeFeatures
@@ -146,6 +155,7 @@ meth public final void java.lang.Object.wait(long,int) throws java.lang.Interrup
 meth public int org.netbeans.spi.viewmodel.ColumnModel.getColumnWidth()
 meth public int org.netbeans.spi.viewmodel.ColumnModel.getCurrentOrderNumber()
 meth public java.beans.PropertyEditor org.netbeans.spi.viewmodel.ColumnModel.getPropertyEditor()
+meth public java.lang.Character org.netbeans.spi.viewmodel.ColumnModel.getDisplayedMnemonic()
 meth public java.lang.String java.lang.Object.toString()
 meth public java.lang.String org.netbeans.spi.viewmodel.ColumnModel.getNextColumnID()
 meth public java.lang.String org.netbeans.spi.viewmodel.ColumnModel.getPreviuosColumnID()
@@ -161,6 +171,40 @@ meth public void org.netbeans.spi.viewmodel.ColumnModel.setSorted(boolean)
 meth public void org.netbeans.spi.viewmodel.ColumnModel.setSortedDescending(boolean)
 meth public void org.netbeans.spi.viewmodel.ColumnModel.setVisible(boolean)
 supr java.lang.Object
+CLSS public abstract interface org.netbeans.spi.viewmodel.ExtendedNodeModel
+intf org.netbeans.spi.viewmodel.Model
+intf org.netbeans.spi.viewmodel.NodeModel
+meth public abstract [Lorg.openide.util.datatransfer.PasteType; org.netbeans.spi.viewmodel.ExtendedNodeModel.getPasteTypes(java.lang.Object,java.awt.datatransfer.Transferable) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth public abstract boolean org.netbeans.spi.viewmodel.ExtendedNodeModel.canCopy(java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth public abstract boolean org.netbeans.spi.viewmodel.ExtendedNodeModel.canCut(java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth public abstract boolean org.netbeans.spi.viewmodel.ExtendedNodeModel.canRename(java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth public abstract java.awt.datatransfer.Transferable org.netbeans.spi.viewmodel.ExtendedNodeModel.clipboardCopy(java.lang.Object) throws java.io.IOException,org.netbeans.spi.viewmodel.UnknownTypeException
+meth public abstract java.awt.datatransfer.Transferable org.netbeans.spi.viewmodel.ExtendedNodeModel.clipboardCut(java.lang.Object) throws java.io.IOException,org.netbeans.spi.viewmodel.UnknownTypeException
+meth public abstract java.lang.String org.netbeans.spi.viewmodel.ExtendedNodeModel.getIconBaseWithExtension(java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth public abstract java.lang.String org.netbeans.spi.viewmodel.NodeModel.getDisplayName(java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth public abstract java.lang.String org.netbeans.spi.viewmodel.NodeModel.getIconBase(java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth public abstract java.lang.String org.netbeans.spi.viewmodel.NodeModel.getShortDescription(java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth public abstract void org.netbeans.spi.viewmodel.ExtendedNodeModel.setName(java.lang.Object,java.lang.String) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth public abstract void org.netbeans.spi.viewmodel.NodeModel.addModelListener(org.netbeans.spi.viewmodel.ModelListener)
+meth public abstract void org.netbeans.spi.viewmodel.NodeModel.removeModelListener(org.netbeans.spi.viewmodel.ModelListener)
+supr null
+CLSS public abstract interface org.netbeans.spi.viewmodel.ExtendedNodeModelFilter
+intf org.netbeans.spi.viewmodel.Model
+intf org.netbeans.spi.viewmodel.NodeModelFilter
+meth public abstract [Lorg.openide.util.datatransfer.PasteType; org.netbeans.spi.viewmodel.ExtendedNodeModelFilter.getPasteTypes(org.netbeans.spi.viewmodel.ExtendedNodeModel,java.lang.Object,java.awt.datatransfer.Transferable) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth public abstract boolean org.netbeans.spi.viewmodel.ExtendedNodeModelFilter.canCopy(org.netbeans.spi.viewmodel.ExtendedNodeModel,java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth public abstract boolean org.netbeans.spi.viewmodel.ExtendedNodeModelFilter.canCut(org.netbeans.spi.viewmodel.ExtendedNodeModel,java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth public abstract boolean org.netbeans.spi.viewmodel.ExtendedNodeModelFilter.canRename(org.netbeans.spi.viewmodel.ExtendedNodeModel,java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth public abstract java.awt.datatransfer.Transferable org.netbeans.spi.viewmodel.ExtendedNodeModelFilter.clipboardCopy(org.netbeans.spi.viewmodel.ExtendedNodeModel,java.lang.Object) throws java.io.IOException,org.netbeans.spi.viewmodel.UnknownTypeException
+meth public abstract java.awt.datatransfer.Transferable org.netbeans.spi.viewmodel.ExtendedNodeModelFilter.clipboardCut(org.netbeans.spi.viewmodel.ExtendedNodeModel,java.lang.Object) throws java.io.IOException,org.netbeans.spi.viewmodel.UnknownTypeException
+meth public abstract java.lang.String org.netbeans.spi.viewmodel.ExtendedNodeModelFilter.getIconBaseWithExtension(org.netbeans.spi.viewmodel.ExtendedNodeModel,java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth public abstract java.lang.String org.netbeans.spi.viewmodel.NodeModelFilter.getDisplayName(org.netbeans.spi.viewmodel.NodeModel,java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth public abstract java.lang.String org.netbeans.spi.viewmodel.NodeModelFilter.getIconBase(org.netbeans.spi.viewmodel.NodeModel,java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth public abstract java.lang.String org.netbeans.spi.viewmodel.NodeModelFilter.getShortDescription(org.netbeans.spi.viewmodel.NodeModel,java.lang.Object) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth public abstract void org.netbeans.spi.viewmodel.ExtendedNodeModelFilter.setName(org.netbeans.spi.viewmodel.ExtendedNodeModel,java.lang.Object,java.lang.String) throws org.netbeans.spi.viewmodel.UnknownTypeException
+meth public abstract void org.netbeans.spi.viewmodel.NodeModelFilter.addModelListener(org.netbeans.spi.viewmodel.ModelListener)
+meth public abstract void org.netbeans.spi.viewmodel.NodeModelFilter.removeModelListener(org.netbeans.spi.viewmodel.ModelListener)
+supr null
 CLSS public abstract interface org.netbeans.spi.viewmodel.Model
 supr null
 CLSS public org.netbeans.spi.viewmodel.ModelEvent

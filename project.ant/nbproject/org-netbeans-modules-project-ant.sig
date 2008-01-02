@@ -1,5 +1,5 @@
 #API master signature file
-#Version 1.5.0_11
+#Version 1.17.1
 CLSS public static abstract interface java.util.Map$Entry
 meth public abstract boolean java.util.Map$Entry.equals(java.lang.Object)
 meth public abstract int java.util.Map$Entry.hashCode()
@@ -7,6 +7,21 @@ meth public abstract java.lang.Object java.util.Map$Entry.getKey()
 meth public abstract java.lang.Object java.util.Map$Entry.getValue()
 meth public abstract java.lang.Object java.util.Map$Entry.setValue(java.lang.Object)
 supr null
+CLSS public final org.netbeans.api.project.ant.AntBuildExtender$Extension
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public void org.netbeans.api.project.ant.AntBuildExtender$Extension.addDependency(java.lang.String,java.lang.String)
+meth public void org.netbeans.api.project.ant.AntBuildExtender$Extension.removeDependency(java.lang.String,java.lang.String)
+supr java.lang.Object
 CLSS public static abstract interface org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton$AntProjectHelperCallback
 meth public abstract org.netbeans.spi.project.support.ant.AntProjectHelper org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton$AntProjectHelperCallback.createHelper(org.openide.filesystems.FileObject,org.w3c.dom.Document,org.netbeans.spi.project.ProjectState,org.netbeans.spi.project.support.ant.AntBasedProjectType)
 meth public abstract void org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton$AntProjectHelperCallback.save(org.netbeans.spi.project.support.ant.AntProjectHelper) throws java.io.IOException
@@ -92,11 +107,47 @@ meth public static [Lorg.netbeans.api.project.ant.AntArtifact; org.netbeans.api.
 meth public static org.netbeans.api.project.ant.AntArtifact org.netbeans.api.project.ant.AntArtifactQuery.findArtifactByID(org.netbeans.api.project.Project,java.lang.String)
 meth public static org.netbeans.api.project.ant.AntArtifact org.netbeans.api.project.ant.AntArtifactQuery.findArtifactFromFile(java.io.File)
 supr java.lang.Object
+CLSS public final org.netbeans.api.project.ant.AntBuildExtender
+innr public final org.netbeans.api.project.ant.AntBuildExtender$Extension
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public java.util.List org.netbeans.api.project.ant.AntBuildExtender.getExtensibleTargets()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public synchronized org.netbeans.api.project.ant.AntBuildExtender$Extension org.netbeans.api.project.ant.AntBuildExtender.addExtension(java.lang.String,org.openide.filesystems.FileObject)
+meth public synchronized org.netbeans.api.project.ant.AntBuildExtender$Extension org.netbeans.api.project.ant.AntBuildExtender.getExtension(java.lang.String)
+meth public synchronized void org.netbeans.api.project.ant.AntBuildExtender.removeExtension(java.lang.String)
+supr java.lang.Object
 CLSS public abstract interface org.netbeans.spi.project.ant.AntArtifactProvider
 meth public abstract [Lorg.netbeans.api.project.ant.AntArtifact; org.netbeans.spi.project.ant.AntArtifactProvider.getBuildArtifacts()
 supr null
 CLSS public abstract interface org.netbeans.spi.project.ant.AntArtifactQueryImplementation
 meth public abstract org.netbeans.api.project.ant.AntArtifact org.netbeans.spi.project.ant.AntArtifactQueryImplementation.findArtifact(java.io.File)
+supr null
+CLSS public final org.netbeans.spi.project.ant.AntBuildExtenderFactory
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public static org.netbeans.api.project.ant.AntBuildExtender org.netbeans.spi.project.ant.AntBuildExtenderFactory.createAntExtender(org.netbeans.spi.project.ant.AntBuildExtenderImplementation)
+supr java.lang.Object
+CLSS public abstract interface org.netbeans.spi.project.ant.AntBuildExtenderImplementation
+meth public abstract java.util.List org.netbeans.spi.project.ant.AntBuildExtenderImplementation.getExtensibleTargets()
+meth public abstract org.netbeans.api.project.Project org.netbeans.spi.project.ant.AntBuildExtenderImplementation.getOwningProject()
 supr null
 CLSS public abstract interface org.netbeans.spi.project.support.ant.AntBasedProjectType
 meth public abstract java.lang.String org.netbeans.spi.project.support.ant.AntBasedProjectType.getPrimaryConfigurationDataElementName(boolean)
@@ -168,7 +219,6 @@ CLSS public final org.netbeans.spi.project.support.ant.EditableProperties
 cons public EditableProperties()
 cons public EditableProperties(boolean)
 cons public EditableProperties(java.util.Map)
-innr public static abstract interface java.util.Map$Entry
 intf java.lang.Cloneable
 intf java.util.Map
 meth protected void java.lang.Object.finalize() throws java.lang.Throwable
@@ -184,9 +234,9 @@ meth public int java.util.AbstractMap.size()
 meth public java.lang.Object java.util.AbstractMap.get(java.lang.Object)
 meth public java.lang.Object java.util.AbstractMap.remove(java.lang.Object)
 meth public java.lang.Object org.netbeans.spi.project.support.ant.EditableProperties.clone()
-meth public java.lang.Object org.netbeans.spi.project.support.ant.EditableProperties.put(java.lang.Object,java.lang.Object)
 meth public java.lang.String java.util.AbstractMap.toString()
 meth public java.lang.String org.netbeans.spi.project.support.ant.EditableProperties.getProperty(java.lang.String)
+meth public java.lang.String org.netbeans.spi.project.support.ant.EditableProperties.put(java.lang.String,java.lang.String)
 meth public java.lang.String org.netbeans.spi.project.support.ant.EditableProperties.setProperty(java.lang.String,[Ljava.lang.String;)
 meth public java.lang.String org.netbeans.spi.project.support.ant.EditableProperties.setProperty(java.lang.String,java.lang.String)
 meth public java.util.Collection java.util.AbstractMap.values()
@@ -202,9 +252,30 @@ meth public void java.util.AbstractMap.putAll(java.util.Map)
 meth public void org.netbeans.spi.project.support.ant.EditableProperties.load(java.io.InputStream) throws java.io.IOException
 meth public void org.netbeans.spi.project.support.ant.EditableProperties.setComment(java.lang.String,[Ljava.lang.String;,boolean)
 meth public void org.netbeans.spi.project.support.ant.EditableProperties.store(java.io.OutputStream) throws java.io.IOException
+meth public volatile java.lang.Object org.netbeans.spi.project.support.ant.EditableProperties.put(java.lang.Object,java.lang.Object)
 supr java.util.AbstractMap
+CLSS public abstract org.netbeans.spi.project.support.ant.FilterPropertyProvider
+cons protected FilterPropertyProvider(org.netbeans.spi.project.support.ant.PropertyProvider)
+intf org.netbeans.spi.project.support.ant.PropertyProvider
+meth protected final void org.netbeans.spi.project.support.ant.FilterPropertyProvider.setDelegate(org.netbeans.spi.project.support.ant.PropertyProvider)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public final java.util.Map org.netbeans.spi.project.support.ant.FilterPropertyProvider.getProperties()
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String java.lang.Object.toString()
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
+meth public synchronized final void org.netbeans.spi.project.support.ant.FilterPropertyProvider.addChangeListener(javax.swing.event.ChangeListener)
+meth public synchronized final void org.netbeans.spi.project.support.ant.FilterPropertyProvider.removeChangeListener(javax.swing.event.ChangeListener)
+supr java.lang.Object
 CLSS public final org.netbeans.spi.project.support.ant.GeneratedFilesHelper
 cons public GeneratedFilesHelper(org.netbeans.spi.project.support.ant.AntProjectHelper)
+cons public GeneratedFilesHelper(org.netbeans.spi.project.support.ant.AntProjectHelper,org.netbeans.api.project.ant.AntBuildExtender)
 cons public GeneratedFilesHelper(org.openide.filesystems.FileObject)
 fld  constant public static final int org.netbeans.spi.project.support.ant.GeneratedFilesHelper.FLAG_MISSING
 fld  constant public static final int org.netbeans.spi.project.support.ant.GeneratedFilesHelper.FLAG_MODIFIED
@@ -227,6 +298,22 @@ meth public native final void java.lang.Object.notifyAll()
 meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
 meth public native int java.lang.Object.hashCode()
 meth public void org.netbeans.spi.project.support.ant.GeneratedFilesHelper.generateBuildScriptFromStylesheet(java.lang.String,java.net.URL) throws java.io.IOException,java.lang.IllegalStateException
+supr java.lang.Object
+CLSS public final org.netbeans.spi.project.support.ant.PathMatcher
+cons public PathMatcher(java.lang.String,java.lang.String,java.io.File)
+meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
+meth protected void java.lang.Object.finalize() throws java.lang.Throwable
+meth public boolean java.lang.Object.equals(java.lang.Object)
+meth public boolean org.netbeans.spi.project.support.ant.PathMatcher.matches(java.lang.String,boolean)
+meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
+meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.lang.String org.netbeans.spi.project.support.ant.PathMatcher.toString()
+meth public java.util.Set org.netbeans.spi.project.support.ant.PathMatcher.findIncludedRoots() throws java.lang.IllegalArgumentException
+meth public native final java.lang.Class java.lang.Object.getClass()
+meth public native final void java.lang.Object.notify()
+meth public native final void java.lang.Object.notifyAll()
+meth public native final void java.lang.Object.wait(long) throws java.lang.InterruptedException
+meth public native int java.lang.Object.hashCode()
 supr java.lang.Object
 CLSS public org.netbeans.spi.project.support.ant.ProjectGenerator
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
@@ -287,10 +374,11 @@ meth public static java.io.File org.netbeans.spi.project.support.ant.PropertyUti
 meth public static java.lang.String org.netbeans.spi.project.support.ant.PropertyUtils.getUsablePropertyName(java.lang.String)
 meth public static java.lang.String org.netbeans.spi.project.support.ant.PropertyUtils.relativizeFile(java.io.File,java.io.File)
 meth public static org.netbeans.spi.project.support.ant.EditableProperties org.netbeans.spi.project.support.ant.PropertyUtils.getGlobalProperties()
-meth public static org.netbeans.spi.project.support.ant.PropertyEvaluator org.netbeans.spi.project.support.ant.PropertyUtils.sequentialPropertyEvaluator(org.netbeans.spi.project.support.ant.PropertyProvider,[Lorg.netbeans.spi.project.support.ant.PropertyProvider;)
 meth public static org.netbeans.spi.project.support.ant.PropertyProvider org.netbeans.spi.project.support.ant.PropertyUtils.fixedPropertyProvider(java.util.Map)
 meth public static org.netbeans.spi.project.support.ant.PropertyProvider org.netbeans.spi.project.support.ant.PropertyUtils.propertiesFilePropertyProvider(java.io.File)
+meth public static org.netbeans.spi.project.support.ant.PropertyProvider org.netbeans.spi.project.support.ant.PropertyUtils.userPropertiesProvider(org.netbeans.spi.project.support.ant.PropertyEvaluator,java.lang.String,java.io.File)
 meth public static synchronized org.netbeans.spi.project.support.ant.PropertyProvider org.netbeans.spi.project.support.ant.PropertyUtils.globalPropertyProvider()
+meth public static transient org.netbeans.spi.project.support.ant.PropertyEvaluator org.netbeans.spi.project.support.ant.PropertyUtils.sequentialPropertyEvaluator(org.netbeans.spi.project.support.ant.PropertyProvider,[Lorg.netbeans.spi.project.support.ant.PropertyProvider;)
 meth public static void org.netbeans.spi.project.support.ant.PropertyUtils.putGlobalProperties(org.netbeans.spi.project.support.ant.EditableProperties) throws java.io.IOException
 supr java.lang.Object
 CLSS public final org.netbeans.spi.project.support.ant.ReferenceHelper
@@ -342,7 +430,10 @@ meth public native final void java.lang.Object.wait(long) throws java.lang.Inter
 meth public native int java.lang.Object.hashCode()
 meth public org.netbeans.api.project.Sources org.netbeans.spi.project.support.ant.SourcesHelper.createSources()
 meth public void org.netbeans.spi.project.support.ant.SourcesHelper.addNonSourceRoot(java.lang.String) throws java.lang.IllegalStateException
+meth public void org.netbeans.spi.project.support.ant.SourcesHelper.addOwnedFile(java.lang.String) throws java.lang.IllegalStateException
+meth public void org.netbeans.spi.project.support.ant.SourcesHelper.addPrincipalSourceRoot(java.lang.String,java.lang.String,java.lang.String,java.lang.String,javax.swing.Icon,javax.swing.Icon) throws java.lang.IllegalStateException
 meth public void org.netbeans.spi.project.support.ant.SourcesHelper.addPrincipalSourceRoot(java.lang.String,java.lang.String,javax.swing.Icon,javax.swing.Icon) throws java.lang.IllegalStateException
+meth public void org.netbeans.spi.project.support.ant.SourcesHelper.addTypedSourceRoot(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,javax.swing.Icon,javax.swing.Icon) throws java.lang.IllegalStateException
 meth public void org.netbeans.spi.project.support.ant.SourcesHelper.addTypedSourceRoot(java.lang.String,java.lang.String,java.lang.String,javax.swing.Icon,javax.swing.Icon) throws java.lang.IllegalStateException
 meth public void org.netbeans.spi.project.support.ant.SourcesHelper.registerExternalRoots(int) throws java.lang.IllegalArgumentException,java.lang.IllegalStateException
 supr java.lang.Object

@@ -184,7 +184,7 @@ public class SpinButton extends Canvas {
     /** Spin repeat thread. When the SpinButton is holded this thread
      *  runs and regulary sends the events to SpinButton.
      */
-    protected RepeatThread rt = null;
+    RepeatThread rt = null;
 
     /** Flag if the SpinRepeatThread is currently running. */
     protected boolean running = false;

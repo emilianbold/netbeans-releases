@@ -1,5 +1,5 @@
 #API master signature file
-#Version 1.5.0_11
+#Version 1.11.1
 CLSS public abstract org.openide.windows.IOProvider
 cons protected IOProvider()
 meth protected native java.lang.Object java.lang.Object.clone() throws java.lang.CloneNotSupportedException
@@ -78,6 +78,9 @@ meth public boolean java.io.PrintWriter.checkError()
 meth public boolean java.lang.Object.equals(java.lang.Object)
 meth public final void java.lang.Object.wait() throws java.lang.InterruptedException
 meth public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException
+meth public java.io.PrintWriter java.io.PrintWriter.append(char)
+meth public java.io.PrintWriter java.io.PrintWriter.append(java.lang.CharSequence)
+meth public java.io.PrintWriter java.io.PrintWriter.append(java.lang.CharSequence,int,int)
 meth public java.lang.String java.lang.Object.toString()
 meth public native final java.lang.Class java.lang.Object.getClass()
 meth public native final void java.lang.Object.notify()
@@ -115,6 +118,9 @@ meth public void java.io.PrintWriter.write(int)
 meth public void java.io.PrintWriter.write(java.lang.String)
 meth public void java.io.PrintWriter.write(java.lang.String,int,int)
 meth public void org.openide.windows.OutputWriter.println(java.lang.String,org.openide.windows.OutputListener,boolean) throws java.io.IOException
+meth public volatile java.io.Writer java.io.PrintWriter.append(char) throws java.io.IOException
+meth public volatile java.io.Writer java.io.PrintWriter.append(java.lang.CharSequence) throws java.io.IOException
+meth public volatile java.io.Writer java.io.PrintWriter.append(java.lang.CharSequence,int,int) throws java.io.IOException
 meth public volatile java.lang.Appendable java.io.PrintWriter.append(char) throws java.io.IOException
 meth public volatile java.lang.Appendable java.io.PrintWriter.append(java.lang.CharSequence) throws java.io.IOException
 meth public volatile java.lang.Appendable java.io.PrintWriter.append(java.lang.CharSequence,int,int) throws java.io.IOException
