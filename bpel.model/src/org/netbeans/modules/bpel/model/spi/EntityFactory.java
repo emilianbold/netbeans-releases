@@ -70,6 +70,6 @@ public interface EntityFactory {
      */
     <T extends BpelEntity> T create(BpelBuilderImpl builder, Class<T> clazz );
     
-    boolean canExtend(ExtensibleElements extensible, Class<? extends ExtensionEntity> extensionType);
+    boolean canExtend(ExtensibleElements extensible, Class<? extends BpelEntity> extensionType);
     
 }

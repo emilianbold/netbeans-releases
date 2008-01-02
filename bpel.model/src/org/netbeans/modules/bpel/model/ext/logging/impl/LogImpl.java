@@ -61,7 +61,7 @@ public class LogImpl extends LoggingEntityImpl implements Log {
         return myAttributes.get();
     }
 
-    public Class<? extends ExtensionEntity> getElementType() {
+    public Class<? extends BpelEntity> getElementType() {
         return Log.class;
     }
 

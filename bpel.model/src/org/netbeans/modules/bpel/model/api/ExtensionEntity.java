@@ -40,5 +40,5 @@ public interface ExtensionEntity extends BpelEntity {
      */
     EntityUpdater getEntityUpdater();
     
-    Class<? extends ExtensionEntity> getElementType();
+//    Class<? extends ExtensionEntity> getElementType();
 }

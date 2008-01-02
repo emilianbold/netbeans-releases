@@ -53,7 +53,7 @@ public class TraceImpl extends LoggingEntityImpl implements Trace {
      * 
      * @see org.netbeans.modules.soa.model.bpel2020.api.BpelEntity#getElementType()
      */
-    public Class<? extends ExtensionEntity> getElementType() {
+    public Class<? extends BpelEntity> getElementType() {
         return Trace.class;
     }
 

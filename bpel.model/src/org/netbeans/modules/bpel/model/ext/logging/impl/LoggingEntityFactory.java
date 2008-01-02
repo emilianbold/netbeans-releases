@@ -94,7 +94,7 @@ public class LoggingEntityFactory implements EntityFactory {
         return newEntity;
     }
 
-    public boolean canExtend(ExtensibleElements extensible, Class<? extends ExtensionEntity> extensionType) {
+    public boolean canExtend(ExtensibleElements extensible, Class<? extends BpelEntity> extensionType) {
         if (Trace.class.equals(extensionType)) {
             if (sSupportedParents.contains(extensible.getElementType())) {
                 return true;

@@ -60,7 +60,7 @@ public class AlertImpl extends LoggingEntityImpl implements Alert {
         return myAttributes.get();
     }
 
-    public Class<? extends ExtensionEntity> getElementType() {
+    public Class<? extends BpelEntity> getElementType() {
         return Alert.class;
     }
 
