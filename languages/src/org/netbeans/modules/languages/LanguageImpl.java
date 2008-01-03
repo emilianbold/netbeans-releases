@@ -259,6 +259,7 @@ public class LanguageImpl extends Language {
         try {
             tokenTypeToID = new HashMap<String, Integer> ();
             idToTokenType = new HashMap<Integer, String> ();
+            featureList = new FeatureList ();
             List<TokenType> tokenTypes = reader.getTokenTypes ();
             if (tokenTypes.isEmpty ()) {
                 org.netbeans.api.lexer.Language lexerLanguage = org.netbeans.api.lexer.Language.find (getMimeType ());
