@@ -34,11 +34,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
+
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.languages.Context;
@@ -303,38 +303,30 @@ public class IndentFactory implements IndentTask.Factory {
             return false;
         }
 
-        private static Map<Language,Object> indentProperties = new WeakHashMap<Language,Object> ();
-
         private static Object getIndentProperties (Language l) {
-            if (!indentProperties.containsKey (l)) {
-                List<Pattern> patterns = new ArrayList<Pattern> ();
-                Set<String> start = new HashSet<String> ();
-                Set<String> end = new HashSet<String> ();
-                Map<String,String> endToStart = new HashMap<String,String> ();
+            List<Pattern> patterns = new ArrayList<Pattern> ();
+            Set<String> start = new HashSet<String> ();
+            Set<String> end = new HashSet<String> ();
+            Map<String,String> endToStart = new HashMap<String,String> ();
 
-                List<Feature> indents = l.getFeatureList ().getFeatures ("INDENT");
-                Iterator<Feature> it = indents.iterator ();
-                while (it.hasNext ()) {
-                    Feature indent = it.next ();
-                    if (indent.getType () == Type.METHOD_CALL) {
-                        return indent;
-                    }
-                    String s = (String) indent.getValue ();
-                    int i = s.indexOf (':');
-                    if (i < 1) {
-                        patterns.add (Pattern.compile (c (s)));
-                        continue;
-                    }
-                    start.add (s.substring (0, i));
-                    end.add (s.substring (i + 1));
-                    endToStart.put (s.substring (i + 1), s.substring (0, i));
+            List<Feature> indents = l.getFeatureList ().getFeatures ("INDENT");
+            Iterator<Feature> it = indents.iterator ();
+            while (it.hasNext ()) {
+                Feature indent = it.next ();
+                if (indent.getType () == Type.METHOD_CALL) {
+                    return indent;
                 }
-                indentProperties.put (
-                    l,
-                    indents.isEmpty() ? null : new Object[] {patterns, start, end, endToStart}
-                );
+                String s = (String) indent.getValue ();
+                int i = s.indexOf (':');
+                if (i < 1) {
+                    patterns.add (Pattern.compile (c (s)));
+                    continue;
+                }
+                start.add (s.substring (0, i));
+                end.add (s.substring (i + 1));
+                endToStart.put (s.substring (i + 1), s.substring (0, i));
             }
-            return indentProperties.get (l);
+            return indents.isEmpty() ? null : new Object[] {patterns, start, end, endToStart};
         }
 
         private static String c (String s) {
