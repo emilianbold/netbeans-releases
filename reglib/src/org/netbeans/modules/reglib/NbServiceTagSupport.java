@@ -604,42 +604,48 @@ public class NbServiceTagSupport {
             return;
         }
 
-        if (Registry.isSupported()) {
-            // Install in the system ST registry
-            Registry.getSystemRegistry().addServiceTag(st);
-        }
         File targetFile;
         if (nbClusterDir.canWrite()) {
-            targetFile = regXmlFileNb;
+            targetFile = serviceTagFileNb;
         } else {
-            targetFile = regXmlFileHome;
+            targetFile = serviceTagFileHome;
         }
-
-        // Write the instance_run to the servicetag file
-        String instanceURN = st.getInstanceURN();
-        BufferedWriter out = null;
-        try {
-            LOG.log(Level.FINE,"Creating file: " + targetFile);
-            out = new BufferedWriter(new FileWriter(targetFile));
-            out.write(instanceURN);
-            out.newLine();
-        } finally {
-            if (out != null) {
-                out.close();
+        
+        if (Registry.isSupported()) {
+            //Check if given service tag is already installed in system registry
+            if ((Registry.getSystemRegistry().getServiceTag(st.getInstanceURN()) != null)) {
+                LOG.log(Level.FINE,"Service tag: " + st.getInstanceURN() 
+                + " is already installed in system registry.");
+                return;
             }
-        }
-        //For NB 6.0 save file 'servicetag' to user dir to avoid creating new ST
-        //by code in IDE launcher
-        if ("6.0".equals(NB_VERSION)) {
-            targetFile = new File(USER_DIR + File.separator + ST_FILE);
+            //Install in the system ST registry
+            Registry.getSystemRegistry().addServiceTag(st);
+
+            // Write the instance_run to the servicetag file
+            BufferedWriter out = null;
             try {
-                LOG.log(Level.FINE,"Creating file: " + targetFile + " Specific for 6.0.");
+                LOG.log(Level.FINE,"Creating file: " + targetFile);
                 out = new BufferedWriter(new FileWriter(targetFile));
-                out.write(instanceURN);
+                out.write(st.getInstanceURN());
                 out.newLine();
             } finally {
                 if (out != null) {
                     out.close();
+                }
+            }
+            //For NB 6.0 save file 'servicetag' to user dir to avoid creating new ST
+            //by code in IDE launcher
+            if ("6.0".equals(NB_VERSION)) {
+                targetFile = new File(USER_DIR + File.separator + ST_FILE);
+                try {
+                    LOG.log(Level.FINE,"Creating file: " + targetFile + " Specific for 6.0.");
+                    out = new BufferedWriter(new FileWriter(targetFile));
+                    out.write(st.getInstanceURN());
+                    out.newLine();
+                } finally {
+                    if (out != null) {
+                        out.close();
+                    }
                 }
             }
         }
