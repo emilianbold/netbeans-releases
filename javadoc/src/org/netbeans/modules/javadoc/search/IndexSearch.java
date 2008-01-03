@@ -507,7 +507,7 @@ public final class IndexSearch
                     public void run(){
                         quickBrowser.setURL( furl );
                     }
-                }, 400 );      
+                }, 650 );      
             }
             else
                 HtmlBrowser.URLDisplayer.getDefault().showURL( url );
