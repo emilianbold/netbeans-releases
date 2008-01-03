@@ -47,6 +47,7 @@ import java.util.Set;
 import javax.swing.BoundedRangeModel;
 
 import org.netbeans.insane.impl.LiveEngine;
+import org.netbeans.insane.scanner.Filter;
 
 /**
  * A live references engine entry point.
@@ -87,6 +88,26 @@ public final class LiveReferences {
      */
     public static Map<Object,Path> fromRoots(Collection<Object> objs, Set<Object> rootsHint, BoundedRangeModel progress) {
         return new LiveEngine(progress).trace(objs, rootsHint);
+    }
+
+    /**
+     * Traces the heap from known roots until all of the objects in 
+     * <code>objs</code> are found or all of the reachable heap is covered.
+     * This call is highly time consuming and can block all of the application,
+     * so it is mostly useful for debugging and runtime field analysis.
+     * This variant allows approximate tracking of the scan progress,
+     * but for real visual feedback, paintImmediatelly might be necessary.
+     *
+     * @param objs a Collection of objects to trace
+     * @param rootsHint a set of Object that should be considered roots. Can be null.
+     * @param progress a model of a ProgressBar to be notified during the scan. Can be null.
+     * @param f the {@link Filter} to apply on heap's live objects.
+     * @return a map with one entry for each found object that maps from
+     * the object to a {@link Path} instance.
+     *
+     */
+    public static Map<Object,Path> fromRoots(Collection<Object> objs, Set<Object> rootsHint, BoundedRangeModel progress, Filter f) {
+        return new LiveEngine(progress, f).trace(objs, rootsHint);
     }
     
     /** No instances */

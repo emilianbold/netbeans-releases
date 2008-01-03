@@ -49,6 +49,7 @@ import org.netbeans.insane.scanner.ObjectMap;
 import org.netbeans.insane.scanner.ScannerUtils;
 import org.netbeans.insane.scanner.Visitor;
 import org.netbeans.insane.live.*;
+import org.netbeans.insane.scanner.Filter;
 
 /**
  * Implementation class, don't use directly.
@@ -64,11 +65,19 @@ public class LiveEngine implements ObjectMap, Visitor {
     private int objCount;
     private int objExpected;  
     private int objStep;
+    private Filter filter = ScannerUtils.skipNonStrongReferencesFilter();
     
     public LiveEngine() {}
 
     public LiveEngine(BoundedRangeModel progress) {
         this.progress = progress;
+    }
+
+    public LiveEngine(BoundedRangeModel progress, Filter filter) {
+        this.progress = progress;
+        if (filter != null) {
+            this.filter = ScannerUtils.compoundFilter(new Filter[] {filter, this.filter});
+        }
     }
 
     //--------------------------------------------
@@ -163,7 +172,7 @@ public class LiveEngine implements ObjectMap, Visitor {
         Set<Object> s = new HashSet<Object>(ScannerUtils.interestingRoots());
         if (roots != null) s.addAll(roots);
         try {
-            InsaneEngine iEngine = new InsaneEngine(this, ScannerUtils.skipNonStrongReferencesFilter(), this, true);
+            InsaneEngine iEngine = new InsaneEngine(this, filter, this, true);
             iEngine.traverse(s);
         } catch (ObjectFoundException ex) {
         } catch (Exception e){
