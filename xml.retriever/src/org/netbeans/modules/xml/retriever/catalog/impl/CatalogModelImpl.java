@@ -55,7 +55,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Reader;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -81,7 +80,6 @@ import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.modules.xml.retriever.catalog.CatalogWriteModel;
 import org.netbeans.modules.xml.retriever.catalog.CatalogWriteModelFactory;
 import org.netbeans.modules.xml.retriever.catalog.ProjectCatalogSupport;
-import org.netbeans.modules.xml.retriever.catalog.SynchModelSourceProvider;
 import org.netbeans.modules.xml.retriever.impl.Util;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
@@ -90,7 +88,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.ls.DOMImplementationLS;
@@ -102,7 +99,7 @@ import org.xml.sax.SAXException;
  *
  * @author girix
  */
-public class CatalogModelImpl implements CatalogModel, SynchModelSourceProvider {
+public class CatalogModelImpl implements CatalogModel {
     protected FileObject catalogFileObject = null;
     private static Logger logger = Logger.getLogger(CatalogModelImpl.class.getName());
     /** Creates a new instance of CatalogModelImpl */
@@ -178,10 +175,10 @@ public class CatalogModelImpl implements CatalogModel, SynchModelSourceProvider 
         }
         if( (absResourceFile == null) || (exn != null) ){
             //means there was no entry found in catalog or relative path resolution            
-                ModelSource rms = getModelSourceFromSystemWideCatalog(locationURI, modelSourceOfSourceDocument);
-                if (rms != null) {
-                    return rms;
-                }
+            ModelSource rms = getModelSourceFromSystemWideCatalog(locationURI, modelSourceOfSourceDocument);
+            if (rms != null) {
+                return rms;
+            }
             try {
                 if(doFetch) {
                     //we did not get any matching entry by conventional way..So try retrieve and cache
