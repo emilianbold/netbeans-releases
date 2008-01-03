@@ -206,8 +206,9 @@ public class SwingLayoutBuilder {
     }
 
     public static boolean isRelevantContainer(Container cont) {
-        return cont.getLayout() != null
-               && cont.getLayout().getClass().getName().equals("org.jdesktop.layout.GroupLayout"); // NOI18N
+        LayoutManager layoutManager = cont.getLayout();
+        String name = (layoutManager == null) ? null : layoutManager.getClass().getName();
+        return "org.jdesktop.layout.GroupLayout".equals(name) || "javax.swing.GroupLayout".equals(name); // NOI18N
     }
 
     // -----
