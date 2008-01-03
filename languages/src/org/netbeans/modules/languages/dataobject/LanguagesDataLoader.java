@@ -98,4 +98,8 @@ public class LanguagesDataLoader extends MultiFileLoader {
     ) {
         return new FileEntry (obj, secondaryFile);
     }
+    
+    public int getNBSFiles () {
+        return 1;
+    }
 }

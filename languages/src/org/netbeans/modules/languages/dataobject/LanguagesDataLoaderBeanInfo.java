@@ -41,13 +41,17 @@
 
 package org.netbeans.modules.languages.dataobject;
 
+import java.awt.Component;
+import java.awt.Image;
+import java.beans.PropertyEditorSupport;
 import org.openide.loaders.MultiFileLoader;
 
-import java.awt.*;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.beans.SimpleBeanInfo;
+import org.openide.util.NbBundle;
 
 
 public class LanguagesDataLoaderBeanInfo extends SimpleBeanInfo {
@@ -63,7 +67,42 @@ public class LanguagesDataLoaderBeanInfo extends SimpleBeanInfo {
     /** @param type Desired type of the icon
     * @return returns the Image loader's icon
     */
-    public Image getIcon(final int type) {
+    public Image getIcon (final int type) {
         return org.openide.util.Utilities.loadImage ("org/netbeans/modules/languages/resources/defaultIcon.png"); // NOI18N
+    }
+    
+    public PropertyDescriptor[] getPropertyDescriptors() {
+        System.out.println("LanguagesDataLoaderBeanInfo.getPropertyDescriptors");
+        try {
+            PropertyDescriptor[] pds = new PropertyDescriptor[] {
+                new PropertyDescriptor ("NBSFiles", LanguagesDataLoader.class, "getNBSFiles", null),
+            };
+            pds [0].setDisplayName ("GLF Files");
+            pds [0].setBound (true);
+            pds [0].setPropertyEditorClass (ActionsEditor.class);
+            return pds;
+        } catch (IntrospectionException ie) {
+            ie.printStackTrace();
+            return new PropertyDescriptor[0];
+        }
+    }
+
+    public static class ActionsEditor extends PropertyEditorSupport {
+
+        public boolean supportsCustomEditor () {
+            return true;
+        }
+
+        public Component getCustomEditor () {
+            return new GLFFilesCustomEditor ();
+        }
+        
+        public String getAsText () {
+            return "NBS files.";
+        }
+        
+        public void setAsText (String text) throws IllegalArgumentException {
+            throw new IllegalArgumentException ();
+        }
     }
 }
