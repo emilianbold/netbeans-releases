@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
+import org.netbeans.modules.xml.retriever.catalog.impl.CatalogModelImpl;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionContext;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider.CompletionModel;
@@ -53,7 +54,6 @@ import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.locator.CatalogModel;
 import org.netbeans.modules.xml.xam.locator.CatalogModelFactory;
-import org.netbeans.modules.xml.retriever.catalog.SynchModelSourceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
@@ -109,8 +109,8 @@ public class DefaultModelProvider extends CompletionModelProvider {
                 catalogModel = catalogModelProvider.getCatalogModel();
             }
             ModelSource schemaModelSource = null;
-            if(catalogModel instanceof SynchModelSourceProvider) {
-                schemaModelSource = ((SynchModelSourceProvider)catalogModel).getModelSourceSynchronous(schemaURI, modelSource, fetch);
+            if(catalogModel instanceof CatalogModelImpl) {
+                schemaModelSource = ((CatalogModelImpl)catalogModel).getModelSourceSynchronous(schemaURI, modelSource, fetch);
             }
             SchemaModel sm = null;
             if(schemaModelSource.getLookup().lookup(FileObject.class) == null) {
