@@ -147,7 +147,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
         if (element.getModifiers().contains(Modifier.PRIVATE)) {
             refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(false, handle.getFileObject()));
         } else {
-            refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(handle));
+            refactoring.getContext().add(RetoucheUtils.getClasspathInfoFor(true, true, RetoucheUtils.getFileObject(handle)));
         }
         dispOldName = oldName;
 

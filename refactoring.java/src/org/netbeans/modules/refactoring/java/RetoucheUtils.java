@@ -90,9 +90,12 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.ClassPath.Entry;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.java.queries.SourceForBinaryQuery.Result;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -569,6 +572,10 @@ public class RetoucheUtils {
     }
     
     public static ClasspathInfo getClasspathInfoFor(boolean dependencies, FileObject ... files) {
+        return getClasspathInfoFor(dependencies, false, files);
+    }
+    
+    public static ClasspathInfo getClasspathInfoFor(boolean dependencies, boolean backSource, FileObject ... files ) {
         assert files.length >0;
         Set<URL> dependentRoots = new HashSet();
         for (FileObject fo: files) {
@@ -589,6 +596,18 @@ public class RetoucheUtils {
                 for(ClassPath cp: GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE)) {
                     for (FileObject root:cp.getRoots()) {
                         dependentRoots.add(URLMapper.findURL(root, URLMapper.INTERNAL));
+                    }
+                }
+            }
+        }
+        
+        if (backSource) {
+            for (FileObject file : files) {
+                ClassPath source = ClassPath.getClassPath(file, ClassPath.COMPILE);
+                for (Entry root : source.entries()) {
+                    Result r = SourceForBinaryQuery.findSourceRoots(root.getURL());
+                    for (FileObject root2:r.getRoots()) {
+                        dependentRoots.add(URLMapper.findURL(root2, URLMapper.INTERNAL));
                     }
                 }
             }
