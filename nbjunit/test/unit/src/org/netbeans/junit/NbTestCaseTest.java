@@ -139,6 +139,42 @@ public class NbTestCaseTest extends NbTestCase {
         fail("The assertion should fail");
     }
 
+    static Object REF_O2;
+
+    static class Node {
+        Object next;
+        Node(Object o) {
+            next = o;
+        }
+    }
+    
+    public void testAssertGcFailsWithTwoPaths() {
+        Object target = new Object();
+        REF_O = new Node(new Node(new Node(target)));
+        REF_O2 = new Node(new Node(new Node(target)));
+        WeakReference<Object> wr = new WeakReference<Object>(target);
+        target = null;
+        
+        String old = System.getProperty("assertgc.paths");
+        System.setProperty("assertgc.paths", "3");
+        try {
+            assertGC("The object is really not referenced", wr);
+        } catch (AssertionFailedError afe) {
+            assertTrue("Found the reference", afe.getMessage().indexOf("REF_O") >= 0);
+            assertTrue("Found the other reference", afe.getMessage().indexOf("REF_O2") >= 0);
+            return;
+        } finally {
+            REF_O = null;
+            REF_O2 = null;
+            if (old == null) {
+                System.clearProperty("assertgc.paths");
+            } else {
+                System.setProperty("assertgc.paths", old);
+            }
+        }
+        fail("The assertion should fail");
+    }
+
     public void testAssertGcFailsForUntracableObject() {
         Object o = new Object();
         WeakReference<Object> wr = new WeakReference<Object>(o);

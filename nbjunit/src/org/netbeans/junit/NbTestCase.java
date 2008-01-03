@@ -58,6 +58,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -1306,11 +1307,28 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     }
     
     private static String findRefsFromRoot(final Object target, final Set<?> rootsHint) throws Exception {
-        @SuppressWarnings("unchecked")
-        Map m = LiveReferences.fromRoots(Collections.singleton(target), (Set<Object>)rootsHint, null);
-        Path p = (Path)m.get(target);
-        if (p != null) return p.toString();
-        return "Not found!!!";
+        int count = Integer.getInteger("assertgc.paths", 1);
+        StringBuilder sb = new StringBuilder();
+        final Map<Object,Boolean> skip = new IdentityHashMap<Object, Boolean>();
+        
+        org.netbeans.insane.scanner.Filter knownPath = new org.netbeans.insane.scanner.Filter() {
+            public boolean accept(Object obj, Object referredFrom, Field reference) {
+                return !skip.containsKey(obj);
+            }
+        };
+        
+        while (count-- > 0) {
+            @SuppressWarnings("unchecked")
+            Map m = LiveReferences.fromRoots(Collections.singleton(target), (Set<Object>)rootsHint, null, knownPath);
+            Path p = (Path)m.get(target);
+            if (p == null) break;
+            sb.append(p);
+            for (; p != null; p=p.nextNode()) {
+                Object o = p.getObject();
+                if (o != target) skip.put(o, Boolean.TRUE);
+            }
+        }
+        return sb.length() > 0 ? sb.toString() : "Not found!!!";
     }
     
 }
