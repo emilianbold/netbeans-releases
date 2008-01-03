@@ -153,12 +153,16 @@ public class CompletionTestBase extends NbTestCase {
         }
         final ClassPath bootPath = createClassPath(System.getProperty("sun.boot.class.path"));
         for (ClassPath.Entry entry : bootPath.entries()) {
-            URL url = entry.getURL();
-            ClassIndexImpl cii = mgr.createUsagesQuery(url, false);
-            BinaryAnalyser ba = cii.getBinaryAnalyser();
-            
-            ba.start(url, null, new AtomicBoolean(false), new AtomicBoolean(false));
-            ba.finish();
+            final URL url = entry.getURL();
+            final ClassIndexImpl cii = mgr.createUsagesQuery(url, false);
+            ClassIndexManager.getDefault().writeLock(new ClassIndexManager.ExceptionAction<Void>() {
+                public Void run() throws IOException, InterruptedException {
+                    BinaryAnalyser ba = cii.getBinaryAnalyser();            
+                    ba.start(url, null, new AtomicBoolean(false), new AtomicBoolean(false));
+                    ba.finish();
+                    return null;
+                }
+            });            
         }                
         ClassPathProvider cpp = new ClassPathProvider() {
             public ClassPath findClassPath(FileObject file, String type) {
