@@ -49,6 +49,7 @@ import org.netbeans.modules.languages.parser.Parser.Cookie;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.languages.lexer.SLexer;
 
 
 public abstract class TokenInputUtils {
@@ -103,12 +104,23 @@ public abstract class TokenInputUtils {
         }
 
         public ASTToken readToken (CharInput input) {
+            if (input.eof ()) return null;
             if (next != null) {
                 ASTToken p = next;
                 next = null;
                 return p;
             }
-            return parser.read (cookie, input, language);
+            ASTToken token = parser.read (cookie, input, language);
+            if (token != null) return token;
+            int offset = input.getIndex ();
+            return ASTToken.create (
+                language,
+                SLexer.ERROR_TOKEN_TYPE_NAME,
+                String.valueOf (input.read ()),
+                offset,
+                1,
+                null
+            );
         }
     
         private class MyCookie implements Cookie {
