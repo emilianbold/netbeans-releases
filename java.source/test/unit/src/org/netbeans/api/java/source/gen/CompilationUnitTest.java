@@ -28,6 +28,7 @@
 package org.netbeans.api.java.source.gen;
 
 import com.sun.source.tree.*;
+import com.sun.source.util.TreePathScanner;
 import java.io.File;
 import java.util.Collections;
 import javax.lang.model.element.Modifier;
@@ -36,6 +37,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TestUtilities;
@@ -408,6 +410,62 @@ public class CompilationUnitTest extends GeneratorTestMDRCompat {
         res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(res, golden2);
+    }
+     
+     public void test121729() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package zoo;\n" +
+            "\n" +
+            "public class A {\n" +
+            "}\n"
+        );
+        
+        FileObject testSourceFO = FileUtil.toFileObject(testFile);
+        assertNotNull(testSourceFO);
+        
+        String golden = 
+            "package zoo;\n" +
+            "\n" +
+            "public class B {\n" +
+            "}\n";
+        
+        JavaSource javaSource = JavaSource.forFileObject(testSourceFO);
+        
+        //does not modify the source:
+        javaSource.runModificationTask(new Task<WorkingCopy>() {
+            public void run(final WorkingCopy parameter) throws Exception {
+                parameter.toPhase(Phase.ELEMENTS_RESOLVED);
+                
+                new TreePathScanner<Void, Void>() {
+                    @Override
+                    public Void visitClass(ClassTree node, Void p) {
+                        assertNotNull(parameter.getTrees().getElement(getCurrentPath()));
+                        return super.visitClass(node, p);
+                    }
+                }.scan(parameter.getCompilationUnit(), null);
+            }
+        }).commit();
+        
+        //does the modification:
+        javaSource.runModificationTask(new Task<WorkingCopy>() {
+            public void run(final WorkingCopy parameter) throws Exception {
+                parameter.toPhase(Phase.ELEMENTS_RESOLVED);
+                
+                new TreePathScanner<Void, Void>() {
+                    @Override
+                    public Void visitClass(ClassTree node, Void p) {
+                        assertNotNull(parameter.getTrees().getElement(getCurrentPath()));
+                        parameter.rewrite(node, parameter.getTreeMaker().setLabel(node, "B"));
+                        return super.visitClass(node, p);
+                    }
+                }.scan(parameter.getCompilationUnit(), null);
+            }
+        }).commit();
+        
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(res, golden);
     }
      
     String getGoldenPckg() {
