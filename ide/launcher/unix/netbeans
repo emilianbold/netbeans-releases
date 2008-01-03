@@ -156,24 +156,6 @@ EOF
 	netbeans_default_options="-J-Xmx${max_heap_size}m ${netbeans_default_options}"
 fi
 
-# add or update service tag record to allow discovery
-case "`uname`" in
-    SunOS*) STS_CLIENT="/usr/bin/stclient";;
-    Linux*) STS_CLIENT="/opt/sun/servicetag/bin/stclient";;
-esac
-
-if [ -x "$STS_CLIENT" -a -d "${userdir}" ]; then
-    if [ -f "${userdir}/servicetag" ]; then
-        $STS_CLIENT -u -i `cat "${userdir}/servicetag"` -F urn:uuid:32dcfb52-224e-11d6-8935-9117368824fa -I product.defined.id
-    else
-        RC=`$STS_CLIENT -a -p "NetBeans Integrated Development Environment" -e "6.0" -t urn:uuid:dd484b15-2f25-11dc-9482-080020a9ed93 -P "Development Tools" -F urn:uuid:32dcfb52-224e-11d6-8935-9117368824fa -m "NetBeans.org" -A Unknown -z Unknown -S Unknown`
-        if [ $? = 0 ]; then
-           echo "$RC" | awk -F=  '{print $2}' >"${userdir}/servicetag"
-        fi
-    fi
-fi
-
-
 launchNbexec() {
     nbexec=`grep -v "^#" "$progdir"/../etc/netbeans.clusters | grep -v "^$" | grep platform | while read X; do
         if [ -f $X/lib/nbexec ]; then
