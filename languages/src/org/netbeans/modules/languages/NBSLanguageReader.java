@@ -147,7 +147,7 @@ public class NBSLanguageReader {
         return features;
     }
     
-    public List<Rule> getRules (Language language) {
+    public List<Rule> getRules (Language language) throws ParseException {
         if (grammarRules == null)
             grammarRules = createRules (grammarTree, language);
         return grammarRules;
@@ -479,7 +479,7 @@ public class NBSLanguageReader {
     private List<Rule> createRules (
         GRNode              grammar,
         Language            language
-    ) {
+    ) throws ParseException {
         List<Rule> rules = new ArrayList<Rule> ();
         Iterator it = grammar.names ().iterator ();
         while (it.hasNext ()) {
@@ -497,7 +497,7 @@ public class NBSLanguageReader {
         List                right, 
         List<Rule>          rules,
         Language            language
-    ) {
+    ) throws ParseException {
         do {
             Set<String> names = grNode.names ();
             if (!grNode.isFinal () && names.isEmpty ())
@@ -561,7 +561,7 @@ public class NBSLanguageReader {
         List            l, 
         String          n,
         Language        language
-    ) {
+    ) throws ParseException {
         if (n.startsWith ("\"") || n.startsWith ("'")) {
             l.add (ASTToken.create (
                 language,
@@ -578,6 +578,11 @@ public class NBSLanguageReader {
         }
         String type = n.substring (0, i);
         int typeID = type.length () > 0 ? language.getTokenID (type) : -1;
+        if (typeID < 0) {
+            throw new ParseException (
+                sourceName + ": Token '" + type + "' not defined!"
+            );
+        }
         i++;
         String identifier = n.substring (i);
         if (identifier.length () > 0)
