@@ -131,6 +131,7 @@ class First {
         while (it.hasNext ()) {
             String nt = it.next ();
             F firstForNT = new F ();
+            int count = 0;
             int ntid = language.getNTID (nt);
             maps [ntid] = firstForNT;
             List<Integer> indexes = ntToIndexes.get (nt);
@@ -158,21 +159,25 @@ class First {
                         ntPath,
                         ntid,
                         new HashSet<Integer> (),
-                        new Debug (nt + "=" + rules.get (ruleIndex).getRight ()),
-                        new Stack ()
+  //                      new Debug (nt + "=" + rules.get (ruleIndex).getRight ()),
+                        new int[] {count}
                     );
                 }
                 if (!changed) break;
-//                if (depthLimit == maxDepth) {
-//                    Thread.dumpStack();
-//                    System.out.println (firstForNT);
-//                    throw new ParseException ("Can not resolve first set for " + nt + ".\n Conflicting input: " + findConflict (firstForNT, depthLimit));
-//                }
+                if (depthLimit == maxDepth) {
+                    String conflict = findConflict (firstForNT, depthLimit);
+                    if (conflict != null) {
+                        Thread.dumpStack();
+                        System.out.println (firstForNT);
+                        throw new ParseException ("Can not resolve first set for " + nt + ".\n Conflicting input: " + conflict);
+                    }
+                }
             }
             //AnalyserAnalyser.printF (f, null);
         }
         for (int j = 0; j < maps.length; j++) {
-            maps [j] = s (maps [j]);
+            if (maps [j] != null)
+                maps [j] = s (maps [j]);
         }
     }
     
@@ -188,9 +193,13 @@ class First {
         Stack<String>               ntPath,
         int                         fNT,
         Set<Integer>                followABS,
-        Debug                       debug,
-        Stack                       tokens
+//        Debug                       debug,
+        int[]                       count
     ) throws ParseException {
+//        if (debug.messages.size () > 300) {
+//            System.out.println(debug);
+//            throw new ParseException ();
+//        }
         if (firstForNT.amp == null)
             firstForNT.amp = new HashSet<Integer> ();
         firstForNT.amp.add (ruleIndex);
@@ -241,7 +250,7 @@ class First {
             List newRightSide = rightSidesStack.pop ();
             String nt = ntPath.pop ();
             absNTSet.remove (nt);
-            debug.add ("pop " + " : " + ntPath + " : " + ntPath.size () + "/" + rightSidesStack.size ());
+//            debug.add ("pop " + " : " + ntPath + " : " + ntPath.size () + "/" + rightSidesStack.size ());
             boolean r = first (
                 newRightSide, 
                 0, 
@@ -254,8 +263,8 @@ class First {
                 ntPath, 
                 fNT, 
                 followABS,
-                debug,
-                tokens
+//                debug,
+                count
             );
             rightSidesStack.push (newRightSide);
             ntPath.push (nt);
@@ -269,8 +278,12 @@ class First {
         Object e = rightSide.get (indexInRightSide);
         if (e instanceof ASTToken) {
             T t = new T ((ASTToken) e);
+            if (firstForNT.find (t.type, t.identifier) == null) { 
+                count[0] ++;
+//                if (count [0] % 1000 == 0)
+//                    System.out.println(count[0]);
+            }
             F newInFirst = firstForNT.get (t.type, t.identifier);
-            tokens.push (e);
             boolean r = first (
                 rightSide, 
                 indexInRightSide + 1, 
@@ -283,10 +296,9 @@ class First {
                 ntPath, 
                 fNT,
                 followABS.isEmpty () ? followABS : new HashSet<Integer> (),
-                debug,
-                tokens
+//                debug,
+                count
             );
-            tokens.pop ();
             return r;
         } else {
             String nt = (String) e;
@@ -317,8 +329,8 @@ class First {
                     ntPath, 
                     fNT,
                     followABS,
-                    new Debug (debug, "rule " + rules.get (rn.intValue ()) + " : " + ntPath.size () + "/" + rightSidesStack.size ()),
-                    tokens
+//                    new Debug (debug, "rule " + rules.get (rn.intValue ()) + " : " + ntPath.size () + "/" + rightSidesStack.size ()),
+                    count
                 );
             }
             rightSidesStack.pop ();
