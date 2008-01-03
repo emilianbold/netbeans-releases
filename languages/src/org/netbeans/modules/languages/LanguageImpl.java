@@ -122,7 +122,7 @@ public class LanguageImpl extends Language {
 
     public int getTokenID (String tokenType) {
         if (!tokenTypeToID.containsKey (tokenType))
-            System.err.println ("unknown token type: " + tokenType);
+            return -1;
         return tokenTypeToID.get (tokenType);
     }
     
@@ -249,6 +249,11 @@ public class LanguageImpl extends Language {
     
     
     // other methods ...........................................................
+    
+    public void read (NBSLanguageReader reader) throws ParseException, IOException {
+        this.reader = reader;
+        read ();
+    }
     
     public void read () throws ParseException, IOException {
         try {

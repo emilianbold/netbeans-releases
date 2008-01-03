@@ -130,9 +130,9 @@ public class NBSLanguage extends Language {
                     "'TOOLTIP'"
                 ),
                 "keyword",
-                0,
+                1,
                 null,
-                0,
+                1,
                 null
             ));
             tokenTypes.add (new TokenType (
@@ -141,9 +141,9 @@ public class NBSLanguage extends Language {
                     "['a'-'z' 'A'-'Z'] ['a'-'z' 'A'-'Z' '0'-'9' '_']*"
                 ),
                 "identifier",
-                1,
+                2,
                 null,
-                1,
+                2,
                 null
             ));
             tokenTypes.add (new TokenType (
@@ -154,9 +154,9 @@ public class NBSLanguage extends Language {
                     "'=' | ';' | '.' | '$'"
                 ),
                 "operator",
-                2,
+                3,
                 null,
-                2,
+                3,
                 null
             ));
             tokenTypes.add (new TokenType (
@@ -171,9 +171,9 @@ public class NBSLanguage extends Language {
                     "'\\\"'"
                 ),
                 "string",
-                3,
+                4,
                 null,
-                3,
+                4,
                 null
             ));
             tokenTypes.add (new TokenType (
@@ -188,41 +188,44 @@ public class NBSLanguage extends Language {
                     "'\\\''"
                 ),
                 "string",
-                3,
+                4,
                 null,
-                3,
+                4,
                 null
             ));
             tokenTypes.add (new TokenType (
                 null, 
                 Pattern.create ("'#' [^'\\n' '\\r']* ['\\n' '\\r']+"),
                 "comment",
-                4,
+                5,
                 null,
-                4,
+                5,
                 null
             ));
             tokenTypes.add (new TokenType (
                 null, 
                 Pattern.create ("'/#' - '#/'"),
                 "comment",
-                4,
+                5,
                 null,
-                4,
+                5,
                 null
             ));
             tokenTypes.add (new TokenType (
                 null, 
                 Pattern.create ("['\\n' '\\r' ' ' '\\t']+"),
                 "whitespace",
-                5,
+                6,
                 null,
-                5,
+                6,
                 null
             ));
         } catch (ParseException ex) {
             Utils.notify (ex);
         }
+        tokenTypeToID.put ("error", 0);
+        idToTokenType.put (0, "error");
+        tokenTypeCount = 1;
         Iterator<TokenType> it = tokenTypes.iterator ();
         while (it.hasNext ()) {
             TokenType tokenType = it.next ();
