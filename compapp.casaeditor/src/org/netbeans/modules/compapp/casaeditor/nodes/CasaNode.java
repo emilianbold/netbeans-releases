@@ -194,6 +194,13 @@ public abstract class CasaNode extends AbstractNode
         return sheet;
     }
     
+    /**
+     * Refreshes the property sheet.
+     */
+    public void refresh() {
+        setSheet(createSheet());
+    }
+    
     protected void setupPropertySheet(Sheet sheet) {
         // Subclasses can intialize the sheet if desired.
     }

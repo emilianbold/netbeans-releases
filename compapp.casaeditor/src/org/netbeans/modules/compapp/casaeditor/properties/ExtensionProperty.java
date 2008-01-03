@@ -42,6 +42,10 @@ package org.netbeans.modules.compapp.casaeditor.properties;
 
 import java.beans.PropertyEditor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaExtensibilityElement;
@@ -52,14 +56,23 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
 /**
- * A CASA extension property.
+ * <code>Node.Property</code> for CASA configuration extension.
  * 
  * @author jqian
  */
-abstract class ExtensionProperty<T> extends BaseCasaProperty<T> {
+class ExtensionProperty<T> extends BaseCasaProperty<T> {
 
-    // parent component of the extensibility element
+    /**
+     * A CASA extension point element, that is, a non-extensibility element 
+     * that is the parent of extensibility elements, 
+     * e.x., casa:connection
+     */
     protected CasaComponent extensionPointComponent;
+    
+    /**
+     * The top-level extensiblity elements under a CASA extension point element,
+     * e.x., redelivery:redelivery
+     */
     protected CasaExtensibilityElement firstEE;
 
     @SuppressWarnings("unchecked")
@@ -70,11 +83,11 @@ abstract class ExtensionProperty<T> extends BaseCasaProperty<T> {
              CasaExtensibilityElement lastEE,
              String propertyType,
              Class valueType,
-             String property,
-             String propDispName,
-             String propDesc) {
+             String propertyName,
+             String displayName,
+             String description) {
         super(node, lastEE, propertyType, valueType,
-                property, propDispName, propDesc);
+                propertyName, displayName, description);
 
         this.extensionPointComponent = extensionPointComponent;
         this.firstEE = firstEE;
@@ -105,10 +118,12 @@ abstract class ExtensionProperty<T> extends BaseCasaProperty<T> {
     }
 }
 
+/**
+ * Extension poperty of String type.
+ *
 class StringExtensionProperty extends ExtensionProperty<String> {
 
-    StringExtensionProperty(
-            CasaNode node,
+    StringExtensionProperty(CasaNode node,
             CasaComponent extensionPointComponent,
             CasaExtensibilityElement firstEE,
             CasaExtensibilityElement lastEE,
@@ -124,8 +139,12 @@ class StringExtensionProperty extends ExtensionProperty<String> {
     public PropertyEditor getPropertyEditor() {
         return new StringEditor();
     }
-}
+}*/
 
+
+/**
+ * Extension poperty of Integer type (empty value allowed).
+ */
 class IntegerExtensionProperty extends ExtensionProperty<Integer> {
 
     IntegerExtensionProperty(
@@ -143,10 +162,15 @@ class IntegerExtensionProperty extends ExtensionProperty<Integer> {
 
     @Override
     public PropertyEditor getPropertyEditor() {
-        return new IntegerEditor();
+        // compared to the built-in IntEditor, this one allows empty value
+        return new IntegerEditor(); 
     }
 }
 
+
+/**
+ * Extension poperty of QName type.
+ */
 class QNameExtensionProperty extends ExtensionProperty<QName> {
 
     QNameExtensionProperty(
@@ -165,17 +189,17 @@ class QNameExtensionProperty extends ExtensionProperty<QName> {
     @Override
     public QName getValue() {
         CasaExtensibilityElement casaEE = (CasaExtensibilityElement) getComponent();
-        return getAttributeNSName(casaEE.getPeer(), getName());       
+        return getAttributeNSName(casaEE.getPeer(), getName());
     }
-    
+
     @Override
     public void setValue(QName qName)
-            throws IllegalAccessException, IllegalArgumentException, 
+            throws IllegalAccessException, IllegalArgumentException,
             InvocationTargetException {
-        
+
         String value = null;
-        
-        String existingPrefix = getNamespacePrefix(extensionPointComponent.getPeer(), 
+
+        String existingPrefix = getNamespacePrefix(extensionPointComponent.getPeer(),
                 qName.getNamespaceURI());
         String newPrefix = null;
         if (existingPrefix != null) {
@@ -184,7 +208,7 @@ class QNameExtensionProperty extends ExtensionProperty<QName> {
             newPrefix = qName.getPrefix();
             value = newPrefix + ":" + qName.getLocalPart();
         }
-        
+
         CasaExtensibilityElement lastEE = (CasaExtensibilityElement) getComponent();
         if (firstEE.getParent() == null) {
             // The extensibility element does not exist in the CASA model yet.
@@ -194,25 +218,25 @@ class QNameExtensionProperty extends ExtensionProperty<QName> {
             if (newPrefix != null) {
                 lastEE.setAttribute("xmlns:" + newPrefix, qName.getNamespaceURI());
             }
-            
+
             // 2. Add the first extensibility element with the new attribute  
             // value into the CASA model.
             getModel().addExtensibilityElement(extensionPointComponent, firstEE);
         } else {
             if (newPrefix != null) {
-                getModel().setExtensibilityElementAttribute(lastEE, 
+                getModel().setExtensibilityElementAttribute(lastEE,
                         "xmlns:" + newPrefix, qName.getNamespaceURI());
-            } 
-                
+            }
+
             getModel().setExtensibilityElementAttribute(lastEE, getName(), value);
         }
     }
-        
+
     private static QName getAttributeNSName(Element e, String attrName) {
         String attrValue = e.getAttribute(attrName);
         return getNSName(e, attrValue);
     }
-    
+
     private static QName getNSName(Element e, String qname) {
         if (qname == null) {
             return null;
@@ -226,7 +250,7 @@ class QNameExtensionProperty extends ExtensionProperty<QName> {
             return new QName(qname);
         }
     }
-        
+
     private static String getNamespaceURI(Node node, String prefix) {
         if ((prefix == null) || (prefix.length() < 1)) {
             return "";
@@ -236,10 +260,10 @@ class QNameExtensionProperty extends ExtensionProperty<QName> {
             NamedNodeMap map = node.getAttributes();
             for (int j = 0; j < map.getLength(); j++) {
                 Node n = map.item(j);
-                String attrName = ((Attr)n).getName();
+                String attrName = ((Attr) n).getName();
                 if (attrName != null) {
                     if (attrName.trim().equals("xmlns:" + prefix)) {
-                        return ((Attr)n).getValue();
+                        return ((Attr) n).getValue();
                     }
                 }
             }
@@ -249,11 +273,11 @@ class QNameExtensionProperty extends ExtensionProperty<QName> {
             }
         } catch (Exception e) {
         }
-        
+
         return "";
     }
-    
-     private static String getNamespacePrefix(Node node, String namespaceURI) {
+
+    private static String getNamespacePrefix(Node node, String namespaceURI) {
         if ((namespaceURI == null) || (namespaceURI.trim().length() < 1)) {
             return null;
         }
@@ -262,10 +286,10 @@ class QNameExtensionProperty extends ExtensionProperty<QName> {
             NamedNodeMap map = node.getAttributes();
             for (int j = 0; j < map.getLength(); j++) {
                 Node n = map.item(j);
-                String attrName = ((Attr)n).getName();
+                String attrName = ((Attr) n).getName();
                 if (attrName != null) {
                     if (attrName.startsWith("xmlns:")) {
-                        if (((Attr)n).getValue().equals(namespaceURI)) {
+                        if (((Attr) n).getValue().equals(namespaceURI)) {
                             return attrName.substring(6);
                         }
                     }
@@ -277,7 +301,7 @@ class QNameExtensionProperty extends ExtensionProperty<QName> {
             }
         } catch (Exception e) {
         }
-        
+
         return null;
     }
 
@@ -285,5 +309,100 @@ class QNameExtensionProperty extends ExtensionProperty<QName> {
     public PropertyEditor getPropertyEditor() {
         return new NamespaceEditor(this, getModel(),
                 getValue(), getDisplayName());
+    }
+}
+
+/**
+ * Extension poperty of enumerated strings for <code>JbiChoiceExtensionElement</code>.
+ */
+class ChoiceExtensionProperty extends ExtensionProperty<String> {
+
+    private List<String> choices;
+    
+    // a map of possible child extensibility elements keyed by the element names
+    private Map<String, CasaExtensibilityElement> choiceMap;
+
+    private CasaNode node;
+    
+    public ChoiceExtensionProperty(
+            CasaNode node,
+            CasaComponent extensionPointComponent,
+            CasaExtensibilityElement firstEE,
+            CasaExtensibilityElement lastEE,
+            String propertyType,
+            String propertyName,
+            String displayName,
+            String description,
+            Map<String, CasaExtensibilityElement> choiceMap) {
+        
+        super(node, extensionPointComponent, firstEE, lastEE, propertyType,
+                String.class, propertyName, displayName, description);
+        
+        this.node = node;
+        this.choiceMap = choiceMap;
+        
+        choices = new ArrayList<String>();
+        choices.addAll(choiceMap.keySet());
+        Collections.sort(choices);
+    }
+
+    @Override
+    public PropertyEditor getPropertyEditor() {
+        return new ComboBoxEditor(choices);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public String getValue()
+            throws IllegalAccessException, InvocationTargetException {
+        CasaExtensibilityElement casaEE = 
+                (CasaExtensibilityElement) getComponent(); // e.x., redelivery:on-failure        
+        List<CasaExtensibilityElement> children = 
+                casaEE.getChildren(CasaExtensibilityElement.class);
+        if (children != null && children.size() == 1) {
+            return children.get(0).getQName().getLocalPart();
+        }
+        return "";
+    }
+
+    @Override
+    public void setValue(String value)
+            throws IllegalAccessException, IllegalArgumentException, 
+            InvocationTargetException {
+        CasaExtensibilityElement lastEE = 
+                (CasaExtensibilityElement) getComponent(); // e.x., redelivery:on-failure
+
+        if (firstEE.getParent() == null) { // e.x., firstEE: redelivery:redelivery
+            // Purge the non-choice elements from the pre-built 
+            // extensibility element tree.
+            for (CasaExtensibilityElement ee : lastEE.getExtensibilityElements()) {
+                lastEE.removeExtensibilityElement(ee);
+            }
+
+            // Add the choice element to the extensibility element tree.
+            CasaExtensibilityElement ee = choiceMap.get(value.toString());
+            assert ee != null : "Failed to find " + value + " from " + choiceMap.keySet();
+            lastEE.addExtensibilityElement(
+                    (CasaExtensibilityElement) ee.copy(lastEE));
+
+            // The extensibility element does not exist in the CASA model yet.
+            getModel().addExtensibilityElement(extensionPointComponent, firstEE);
+
+        } else {
+            // Purge the non-choice elements from the pre-built 
+            // extensibility element tree.
+            for (CasaExtensibilityElement ee : lastEE.getExtensibilityElements()) {
+                getModel().removeExtensibilityElement(lastEE, ee);
+            }
+
+            // Add the choice element to the extensibility element tree.
+            CasaExtensibilityElement ee = choiceMap.get(value.toString());
+            assert ee != null : "Failed to find " + value + " from " + choiceMap.keySet();
+            getModel().addExtensibilityElement(lastEE,
+                    (CasaExtensibilityElement) ee.copy(lastEE));
+        }
+        
+        // rebuild property sheet
+        node.refresh();
     }
 }

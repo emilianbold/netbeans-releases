@@ -41,6 +41,7 @@
 package org.netbeans.modules.compapp.casaeditor.properties;
 
 
+import java.util.Map;
 import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpointRef;
@@ -188,7 +189,7 @@ public abstract class PropertyUtils {
     }
     
     /**
-     * Installs a CASA extension property.
+     * Installs a CASA configuration extension property.
      * 
      * @param propertySet   target property sheet set
      * @param node          node corresponding to the extension point component
@@ -213,7 +214,7 @@ public abstract class PropertyUtils {
             Class valueType,
             String attributeName,
             String displayName,
-            String discription) {
+            String description) {
         
         if (valueType == null) {
             System.err.println("Unsupported property type for " + attributeName);
@@ -230,7 +231,60 @@ public abstract class PropertyUtils {
                 valueType,
                 attributeName,
                 displayName,
-                discription);
+                description);
+            
+            propertySet.put(property);
+        } catch (Exception e) {
+            propertySet.put(createErrorProperty(displayName));
+            ErrorManager.getDefault().notify(e);
+        }
+    }
+    
+    /**
+     * Installs a CASA configuration extension property of enumerated strings.
+     * 
+     * @param propertySet   target property sheet set
+     * @param node          node corresponding to the extension point component
+     * @param extensionPointComponent a CASA extension point component
+     * @param firstEE       the first (top-level) CASA extensibility element 
+     *                      directly under the CASA extension point component
+     * @param lastEE        the owner CASA extensibility element of the new
+     *                      attribute being installed
+     * @param propertyType
+     * @param type          class type of the attribute
+     * @param attributeName name of the attribute
+     * @param displayname   display name of the attribute
+     * @param description   description of the attribute
+     * @param choiceMap     a map mapping choice element names to pre-built 
+     *                      extensibility elements
+     */
+    public static void installChoiceExtensionProperty(
+            Sheet.Set propertySet, 
+            CasaNode node,
+            CasaComponent extensionPointComponent,
+            CasaExtensibilityElement firstEE,
+            CasaExtensibilityElement lastEE,
+            String propertyType, 
+            Class valueType,
+            String attributeName,
+            String displayName,
+            String description,
+            Map<String, CasaExtensibilityElement> choiceMap) {
+        
+        assert valueType == String.class;
+        
+        try {
+            Node.Property property = ExtensionPropertyFactory.getProperty(
+                node, 
+                extensionPointComponent,
+                firstEE,
+                lastEE,
+                propertyType,
+                valueType,
+                attributeName,
+                displayName,
+                description,
+                choiceMap);
             
             propertySet.put(property);
         } catch (Exception e) {

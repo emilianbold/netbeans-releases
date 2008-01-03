@@ -106,7 +106,9 @@ public class JbiInstalledExtensionInfo {
      * DOCUMENT ME!
      */
     public static final String JBI_EXTENSIONS = "JbiExtensions"; // NOI18N
-
+    
+    private static final String CHOICE = "choice";
+    
     private static JbiInstalledExtensionInfo singleton = null;
 
     // a list of Jbi Extension Info known at design time
@@ -199,7 +201,13 @@ public class JbiInstalledExtensionInfo {
             FileObject childFO = child.getPrimaryFile();
             String childName = child.getName();
             if (childFO.isFolder()) {
-                JbiExtensionElement element = new JbiExtensionElement(childName);
+                String choice = (String) childFO.getAttribute(CHOICE); 
+                JbiExtensionElement element;
+                if (choice != null && choice.equalsIgnoreCase("true")) { // NOI18N
+                    element = new JbiChoiceExtensionElement(childName);
+                } else {
+                    element = new JbiExtensionElement(childName);
+                }
                 List[] grandChildren = processElement((DataFolder)child);  
                 element.setElements(grandChildren[0]);
                 element.setAttributes(grandChildren[1]);

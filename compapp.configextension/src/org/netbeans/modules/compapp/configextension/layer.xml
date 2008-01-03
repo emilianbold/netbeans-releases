@@ -28,6 +28,7 @@
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/namebeans/modules/compapp/configextension/resources/config-ext.png" />
             <folder name="redelivery">
                 <folder name="on-failure">
+                    <attr name="choice" stringvalue="true"/>
                     <folder name="error-endpoint">
                         <file name="endpoint-name">
                             <attr name="type" stringvalue="String"/>
@@ -38,6 +39,8 @@
                             <attr name="description" stringvalue="Error endpoint service name"/>
                         </file>
                     </folder>
+                    <folder name="delete"/>
+                    <folder name="suspend"/>  
                 </folder>
                 <file name="maxAttempts">
                     <attr name="type" stringvalue="Integer"/>

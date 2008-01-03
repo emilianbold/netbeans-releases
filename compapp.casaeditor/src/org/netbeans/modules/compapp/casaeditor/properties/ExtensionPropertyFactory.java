@@ -38,9 +38,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.compapp.casaeditor.properties;
 
+import java.util.Map;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaExtensibilityElement;
@@ -58,42 +58,67 @@ public class ExtensionPropertyFactory {
             CasaComponent extensionPointComponent,
             CasaExtensibilityElement firstEE,
             CasaExtensibilityElement lastEE,
-            String propertyType, 
+            String propertyType,
             Class valueType,
             String attributeName,
             String displayName,
             String discription) {
-        
+
         if (valueType == Integer.class) {
             return new IntegerExtensionProperty(
-                node, 
-                extensionPointComponent,
-                firstEE,
-                lastEE,
-                propertyType,
-                attributeName,
-                displayName,
-                discription);
+                    node,
+                    extensionPointComponent,
+                    firstEE,
+                    lastEE,
+                    propertyType,
+                    attributeName,
+                    displayName,
+                    discription);
         } else if (valueType == QName.class) {
             return new QNameExtensionProperty(
-                node, 
-                extensionPointComponent,
-                firstEE,
-                lastEE,
-                propertyType,
-                attributeName,
-                displayName,
-                discription);
+                    node,
+                    extensionPointComponent,
+                    firstEE,
+                    lastEE,
+                    propertyType,
+                    attributeName,
+                    displayName,
+                    discription);
         } else { //if (valueType == String.class) {
-            return new StringExtensionProperty(
-                node, 
+            return new ExtensionProperty<String>(
+                    node,
+                    extensionPointComponent,
+                    firstEE,
+                    lastEE,
+                    propertyType,
+                    String.class,
+                    attributeName,
+                    displayName,
+                    discription);
+        }
+    }
+
+    public static ChoiceExtensionProperty getProperty(
+            CasaNode node,
+            CasaComponent extensionPointComponent,
+            CasaExtensibilityElement firstEE,
+            CasaExtensibilityElement lastEE,
+            String propertyType,
+            Class valueType,
+            String attributeName,
+            String displayName,
+            String discription,
+            Map<String, CasaExtensibilityElement> choiceMap) {
+
+        return new ChoiceExtensionProperty(
+                node,
                 extensionPointComponent,
                 firstEE,
                 lastEE,
                 propertyType,
                 attributeName,
                 displayName,
-                discription);
-        }         
+                discription,
+                choiceMap);
     }
 }

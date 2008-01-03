@@ -39,42 +39,39 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.compapp.casaeditor.properties;
+package org.netbeans.modules.compapp.projects.jbi.api;
 
-import java.beans.PropertyEditorSupport;
-import org.netbeans.modules.compapp.casaeditor.Constants;
-import org.openide.util.NbBundle;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * A property editor for String class
- * @author Ajit Bhate
+ * JBI extension element for choices.
+ * <p>
+ * In the following example, "on-failure" is the choice extension element.
+ * <pre>
+ * &lt;folder name="on-failure">
+ *      &lt;attr name="choice" stringvalue="true"/>
+ *      &lt;folder name="error-endpoint"> ... &lt;/folder>
+ *      &lt;folder name="delete"/>
+ *      &lt;folder name="suspend"/>
+ *  &lt;/folder>
+ * </pre>
+ * 
+ * @author jqian
  */
-public class StringEditor extends PropertyEditorSupport {
-
-    public final static String EMPTY = Constants.EMPTY_STRING;
-
-    /** Creates a new instance of StringEditor */
-    public StringEditor() {
+public class JbiChoiceExtensionElement extends JbiExtensionElement {
+    
+    public JbiChoiceExtensionElement(String name) {
+        super(name);
     }
     
-    public String getAsText() {
-        Object value = super.getValue();
-        return value==null?EMPTY:super.getAsText();
-    }
-
-    /** sets new value */
-    public void setAsText(String s) {
-        if ( EMPTY.equals(s) && getValue() == null ) // NOI18N
-            return;
-        setValue(s);
-    }
-    
-    public boolean isPaintable() {
-        return false;
-    }
-    
-    protected String getPaintableString() {
-        String value=(String)getValue();
-        return value==null?NbBundle.getMessage(StringEditor.class,"LBL_Null"):value;    // NOI18N
+    public List<String> getChoices() {
+        List<String> ret = new ArrayList<String>();
+        
+        for (JbiExtensionElement child : getElements()) {
+            ret.add(child.getName());
+        }
+        
+        return ret;
     }
 }

@@ -346,8 +346,9 @@ public class CasaWrapperModel extends CasaModelImpl {
     /**
      * Adds a casa extensibility element.
      */
-    // TRANSACTION BOUNDARY
+    // TRANSACTION BOUNDARY (MIGHT NOT)
     // USE CASE: from property sheet (editing non-existing extensibility element attribute)
+    // USE CASE: from property sheet (editing choice extensibility element attribute) (NOT TRANSACTION BOUNDARY)
     // AFFECT: CASA
     public void addExtensibilityElement(
             CasaComponent parent, CasaExtensibilityElement ee) {
@@ -355,6 +356,26 @@ public class CasaWrapperModel extends CasaModelImpl {
         startTransaction();
         try {
             parent.addExtensibilityElement(ee);
+        } finally {
+            if (isIntransaction()) {
+                fireChangeEvent(ee, PROPERTY_ENDPOINT_EXTENSION_CHANGED);
+                endTransaction();
+            }
+        }
+    }
+    
+    /**
+     * Removes a casa extensibility element.
+     */
+    // TRANSACTION BOUNDARY (NOT!)
+    // USE CASE: from property sheet (editing choice extensibility element)
+    // AFFECT: CASA
+    public void removeExtensibilityElement(
+            CasaComponent parent, CasaExtensibilityElement ee) {
+
+        startTransaction();
+        try {
+            parent.removeExtensibilityElement(ee);
         } finally {
             if (isIntransaction()) {
                 fireChangeEvent(ee, PROPERTY_ENDPOINT_EXTENSION_CHANGED);
@@ -2364,6 +2385,7 @@ public class CasaWrapperModel extends CasaModelImpl {
         
         // 1. Delete connections
         for (CasaEndpointRef endpointRef : seSU.getEndpoints()) {
+
             List<CasaConnection> visibleConnections =
                     getConnections(endpointRef, false); // don't include "deleted" connection
             for (CasaConnection visibleConnection : visibleConnections) {
