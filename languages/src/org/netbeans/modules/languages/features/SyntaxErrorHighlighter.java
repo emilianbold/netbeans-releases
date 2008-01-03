@@ -54,7 +54,6 @@ import org.netbeans.api.languages.ParserManager.State;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ParserManagerListener;
 import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.ParserManagerImpl;
 import org.netbeans.modules.languages.parser.SyntaxError;
 import org.openide.ErrorManager;
@@ -70,8 +69,6 @@ public class SyntaxErrorHighlighter implements ParserManagerListener {
     
     private NbEditorDocument            doc;
     private ParserManagerImpl           parserManager;
-    private List<ASTItem>               items;
-    private List<Feature>               marks;
     private List<LanguagesAnnotation>   annotations = new ArrayList<LanguagesAnnotation> ();
 
     
@@ -84,18 +81,18 @@ public class SyntaxErrorHighlighter implements ParserManagerListener {
     }
 
     public void parsed (State state, final ASTNode root) {
-        final List<SyntaxError> syntaxErrors = new ArrayList<SyntaxError> (parserManager.getSyntaxErrors ());
+        final List<SyntaxError> newErrors = new ArrayList<SyntaxError> (parserManager.getSyntaxErrors ());
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
                 try {
                     List<LanguagesAnnotation> newAnnotations = new ArrayList<LanguagesAnnotation> ();
-                    Iterator<LanguagesAnnotation> it = annotations.iterator ();
-                    LanguagesAnnotation oldAnnotation = it.hasNext () ? it.next () : null;
-                    Iterator<SyntaxError> it2 = syntaxErrors.iterator ();
+                    Iterator<LanguagesAnnotation> oldIterator = annotations.iterator ();
+                    LanguagesAnnotation oldAnnotation = oldIterator.hasNext () ? oldIterator.next () : null;
+                    Iterator<SyntaxError> newIterator = newErrors.iterator ();
                     int lastLineNumber = -1;
                     int count = 0;
-                    while (it2.hasNext () && count < 100) {
-                        SyntaxError syntaxError = it2.next ();
+                    while (newIterator.hasNext () && count < 100) {
+                        SyntaxError syntaxError = newIterator.next ();
                         ASTItem item = syntaxError.getItem ();
                         String message = syntaxError.getMessage ();
                         while (
@@ -103,7 +100,7 @@ public class SyntaxErrorHighlighter implements ParserManagerListener {
                             oldAnnotation.getPosition ().getOffset () < item.getOffset ()
                         ) {
                             doc.removeAnnotation (oldAnnotation);
-                            oldAnnotation = it.hasNext () ? it.next () : null;
+                            oldAnnotation = oldIterator.hasNext () ? oldIterator.next () : null;
                         }
                         count++;
                         if (
@@ -114,8 +111,10 @@ public class SyntaxErrorHighlighter implements ParserManagerListener {
                             int ln = NbDocument.findLineNumber (doc, oldAnnotation.getPosition ().getOffset ());
                             if (ln > lastLineNumber)
                                 newAnnotations.add (oldAnnotation);
+                            else
+                                doc.removeAnnotation (oldAnnotation);
                             lastLineNumber = ln;
-                            oldAnnotation = it.hasNext () ? it.next () : null;
+                            oldAnnotation = oldIterator.hasNext () ? oldIterator.next () : null;
                             continue;
                         }
                         int ln = NbDocument.findLineNumber (doc, item.getOffset ());
@@ -133,8 +132,8 @@ public class SyntaxErrorHighlighter implements ParserManagerListener {
                     } // while
                     if (oldAnnotation != null)
                         doc.removeAnnotation (oldAnnotation);
-                    while (it.hasNext ())
-                        doc.removeAnnotation (it.next ());
+                    while (oldIterator.hasNext ())
+                        doc.removeAnnotation (oldIterator.next ());
                     annotations = newAnnotations;
                 } catch (BadLocationException ex) {
                     ErrorManager.getDefault ().notify (ex);
