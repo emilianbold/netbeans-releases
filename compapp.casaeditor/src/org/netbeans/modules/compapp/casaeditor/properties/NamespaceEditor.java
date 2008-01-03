@@ -43,7 +43,6 @@ package org.netbeans.modules.compapp.casaeditor.properties;
 
 import java.awt.Component;
 import java.awt.Dialog;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -58,6 +57,8 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.explorer.propertysheet.ExPropertyEditor;
+import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.NbBundle;
 
 
@@ -65,7 +66,8 @@ import org.openide.util.NbBundle;
  * Modified from XML Schema UI.
  * @author Ajit Bhate
  */
-public class NamespaceEditor extends PropertyEditorSupport {
+public class NamespaceEditor extends PropertyEditorSupport 
+        implements ExPropertyEditor {
     
     private final static String EMPTY = Constants.EMPTY_STRING;
     
@@ -105,20 +107,24 @@ public class NamespaceEditor extends PropertyEditorSupport {
     }
     
     
+    @Override
     public boolean supportsCustomEditor() {
         return true;
     }
     
+    @Override
     public String getAsText() {
         Object value = super.getValue();
         return value == null ? EMPTY : super.getAsText();
     }
 
+    @Override
     public void setAsText(String s) {
         if (EMPTY.equals(s) && getValue() == null) // NOI18N
             return;
     }
 
+    @Override
     public boolean isPaintable() {
         return false;
     }
@@ -130,6 +136,7 @@ public class NamespaceEditor extends PropertyEditorSupport {
             getAsText();
     }
 
+    @Override
     public Component getCustomEditor() {
         final NamespaceEditorPanel panel = new NamespaceEditorPanel(
                 mInitialURI, 
@@ -181,6 +188,11 @@ public class NamespaceEditor extends PropertyEditorSupport {
         return dlg;
     }
     
+    public void attachEnv(PropertyEnv env) {
+        // Disable direct inline text editing.
+        env.getFeatureDescriptor().setValue("canEditAsText", false); // NOI18N
+    }
+    
     
     public static class PrefixNamespacePair {
         private String mPrefix;
@@ -195,9 +207,11 @@ public class NamespaceEditor extends PropertyEditorSupport {
         public String getNamespace() {
             return mNamespace;
         }
+        @Override
         public String toString() {
             return mPrefix + Constants.COLON_STRING + mNamespace;
         }
+        @Override
         public boolean equals(Object another) {
             if (this == another) {
                 return true;
@@ -211,6 +225,7 @@ public class NamespaceEditor extends PropertyEditorSupport {
             }
             return false;
         }
+        @Override
         public int hashCode() {
             int hash = 1;
             hash = hash * 31 + mPrefix.hashCode();
