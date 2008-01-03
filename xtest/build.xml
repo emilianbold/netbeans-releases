@@ -160,6 +160,7 @@ made subject to such option by the copyright holder.
 
     <target name="netbeans" depends="build-all"/>
     <target name="nbm" depends="netbeans" description="Dummy target."/>
+    <target name="netbeans-ml" description="Dummy target."/>
 
     <target name="clean-xtest">
         <ant dir="nbjunit" target="clean"/>
