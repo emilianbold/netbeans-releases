@@ -708,8 +708,10 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                                         return (method == e.getEnclosingElement() || e.getModifiers().contains(Modifier.FINAL)) &&
                                                 !illegalForwardRefs.contains(e);
                                     case FIELD:
-                                        if (e.getSimpleName().contentEquals("this") || e.getSimpleName().contentEquals("super")) //NOI18N
+                                        if (e.getSimpleName().contentEquals("this")) //NOI18N
                                             return !isStatic;
+                                        if (e.getSimpleName().contentEquals("super")) //NOI18N
+                                            return false;
                                         if (illegalForwardRefs.contains(e))
                                             return false;
                                     default:
