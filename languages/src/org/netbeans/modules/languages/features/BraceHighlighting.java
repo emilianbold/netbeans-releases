@@ -41,10 +41,13 @@
 
 package org.netbeans.modules.languages.features;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -101,8 +104,10 @@ public class BraceHighlighting implements BracesMatcher, BracesMatcherFactory {
         List<TokenSequence<?>> sequences = th.embeddedTokenSequences(caretOffset, searchBack);
 
         for(int i = sequences.size() - 1; i >= 0; i--) {
-            TokenSequence<?> ts = sequences.get(i);
-            if (ts.language().equals(language)) {
+            TokenSequence<?> ts = sequences.get(i);;
+            /** @todo can ts.language() equals language ?*/
+            //if (ts.language().equals(language)) {
+            if (ts.language().mimeType().equals(language.getMimeType())) {
                 seq = ts;
                 if (i > 0) {
                     TokenSequence<?> outerSeq = sequences.get(i - 1);
@@ -124,31 +129,31 @@ public class BraceHighlighting implements BracesMatcher, BracesMatcherFactory {
             return null;
         }
         
-        Map<String, String>[] pairsMap = getPairsMap(language);
-        if (pairsMap == null) {
+        Map<String, Set<String>>[] pairsMaps = getPairsMap(language);
+        if (pairsMaps == null) {
             return defaultFindOrigin(context);
         }
 
         seq.move(caretOffset);
         if (seq.moveNext()) {
             boolean [] bckwrd = new boolean[1];
-            String [] mtchng = new String[1];
             
             String tokenText = seq.token().text().toString();
-            if (isOrigin(pairsMap, tokenText, mtchng, bckwrd)) {
+            if (isOrigin(pairsMaps, tokenText, bckwrd)) {
                 if (seq.offset() < caretOffset || !searchBack) {
                     originText = tokenText;
-                    matchingText = mtchng[0];
                     backwards = bckwrd[0];
+                    pairsMap = backwards ? pairsMaps[1] : pairsMaps[0];
                     return new int [] { seq.offset(), seq.offset() + seq.token().length() };
                 }
             }
 
             while(moveTheSequence(seq, searchBack, context.getLimitOffset())) {
-                if (isOrigin(pairsMap, tokenText, mtchng, bckwrd)) {
+                tokenText = seq.token().text().toString();
+                if (isOrigin(pairsMaps, tokenText, bckwrd)) {
                     originText = tokenText;
-                    matchingText = mtchng[0];
                     backwards = bckwrd[0];
+                    pairsMap = backwards ? pairsMaps[1] : pairsMaps[0];
                     return new int [] { seq.offset(), seq.offset() + seq.token().length() };
                 }
             }
@@ -166,16 +171,20 @@ public class BraceHighlighting implements BracesMatcher, BracesMatcherFactory {
         // Proper matching using the pairs supplied by the language definition
         assert seq != null : "No token sequence"; //NOI18N
         
-        int depth = 1;
+        List<String> unresolved = new ArrayList<String>();
+        unresolved.add(originText);
         while(moveTheSequence(seq, backwards, -1)) {
             String text = seq.token().text().toString();
-            if (matchingText.equals(text)) {
-                depth--;
-                if (depth == 0) {
+            int depth = unresolved.size() - 1;
+            String currentOrigin = unresolved.get(depth);
+            Set<String> matchingTexts = pairsMap.get(currentOrigin);
+            if (matchingTexts != null && matchingTexts.contains(text)) {
+                unresolved.remove(depth);
+                if (unresolved.size() == 0) {                    
                     return new int [] { seq.offset(), seq.offset() + seq.token().length() };
                 }
-            } else if (originText.equals(text)) {
-                depth++;
+            } else if (pairsMap.containsKey(text)) {
+                unresolved.add(text);
             }
         }
         
@@ -195,14 +204,14 @@ public class BraceHighlighting implements BracesMatcher, BracesMatcherFactory {
     // --------------------------------------------
     
     private static final Logger LOG = Logger.getLogger(BraceHighlighting.class.getName());
-    private static final Map<Language, Map<String, String>[]> PAIRS = new WeakHashMap<Language, Map<String, String>[]>();
+    private static final Map<Language, Map<String, Set<String>>[]> PAIRS = new WeakHashMap<Language, Map<String, Set<String>>[]>();
 
-    private static Map<String, String>[] getPairsMap(Language l) {
+    private static Map<String, Set<String>>[] getPairsMap(Language l) {
         if (!PAIRS.containsKey(l)) {
-            Map<String, String> startToEnd = new HashMap<String, String>();
-            Map<String, String> endToStart = new HashMap<String, String>();
+            Map<String, Set<String>> startToEnd = new HashMap<String, Set<String>>();
+            Map<String, Set<String>> endToStart = new HashMap<String, Set<String>>();
 
-            List<Feature> indents = l.getFeatureList ().getFeatures("BRACE"); //NOI18N
+            List<Feature> indents = l.getFeatureList().getFeatures("BRACE"); //NOI18N
             Iterator<Feature> it = indents.iterator();
             while (it.hasNext()) {
                 Feature indent = it.next();
@@ -210,11 +219,22 @@ public class BraceHighlighting implements BracesMatcher, BracesMatcherFactory {
                 int i = s.indexOf(':'); //NOI18N
                 String start = s.substring(0, i);
                 String end = s.substring(i + 1);
-                startToEnd.put(start, end);
-                endToStart.put(end, start);
+                Set<String> matchTextsEnd = startToEnd.get(start);
+                if (matchTextsEnd == null) {
+                    matchTextsEnd = new HashSet<String>();
+                    startToEnd.put(start, matchTextsEnd);
+
+                }
+                matchTextsEnd.add(end);
+                Set<String> matchTextsStart = endToStart.get(end); 
+                if (matchTextsStart == null) {
+                    matchTextsStart = new HashSet<String>();
+                    endToStart.put(end, matchTextsStart);
+                }
+                matchTextsStart.add(start);
             }
             @SuppressWarnings("unchecked")
-            Map<String, String> [] arr = new Map [] { startToEnd, endToStart };
+            Map<String, Set<String>> [] arr = new Map [] { startToEnd, endToStart };
             PAIRS.put(l, arr);
         }
         return PAIRS.get(l);
@@ -235,16 +255,14 @@ public class BraceHighlighting implements BracesMatcher, BracesMatcherFactory {
         return false;
     }
 
-    private static boolean isOrigin(Map<String, String>[] pairsMaps, String originText, String [] matchingText, boolean backwards[]) {
-        String s = pairsMaps[0].get(originText);
-        if (s != null) {
-            matchingText[0] = s;
+    private static boolean isOrigin(Map<String, Set<String>>[] pairsMaps, String originText, boolean backwards[]) {
+        Set<String> s = pairsMaps[0].get(originText);
+        if (s != null && s.size() > 0) {
             backwards[0] = false;
             return true;
         } else {
             s = pairsMaps[1].get(originText);
-            if (s != null) {
-                matchingText[0] = s;
+            if (s != null && s.size() > 0) {
                 backwards[0] = true;
                 return true;
             }
@@ -264,7 +282,7 @@ public class BraceHighlighting implements BracesMatcher, BracesMatcherFactory {
     private int seqStart;
     private int seqEnd;
     private String originText;
-    private String matchingText;
+    private Map<String, Set<String>> pairsMap;
     private boolean backwards;
     private BracesMatcher defaultMatcher;
     
