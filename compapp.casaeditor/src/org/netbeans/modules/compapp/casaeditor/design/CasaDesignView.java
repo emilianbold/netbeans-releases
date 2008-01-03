@@ -53,7 +53,7 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.nodes.CasaNodeFactory;
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.AutoLayoutAction;
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.BuildAction;
-import org.netbeans.modules.compapp.casaeditor.nodes.actions.CasaValidateAction;
+import org.netbeans.modules.compapp.casaeditor.nodes.actions.DeployAction;
 import org.netbeans.modules.print.api.PrintManager;
 import org.openide.util.NbBundle;
 
@@ -70,6 +70,7 @@ public class CasaDesignView {
     private JToolBar mToolBar;
     private AbstractAction mAutoLayoutAction;
     private AbstractAction mBuildAction;
+    private AbstractAction mDeployAction;
     private AbstractAction mValidateAction;
 
     
@@ -184,8 +185,10 @@ public class CasaDesignView {
     }
     
     private void setupActions() {
+        CasaWrapperModel model = mScene.getModel();
         mAutoLayoutAction = new AutoLayoutAction(mDataObject);
-        mBuildAction = new BuildAction(mScene.getModel());
+        mBuildAction = new BuildAction(model);
+        mDeployAction = new DeployAction(model);
 //        mValidateAction = new CasaValidateAction(mScene.getModel());
     }
 
@@ -201,6 +204,10 @@ public class CasaDesignView {
         mToolBar.add(createButton(mBuildAction,
                                   (String) mBuildAction.getValue(Action.NAME), // NOI18N
                                   (Icon)   mBuildAction.getValue(Action.SMALL_ICON))); // NOI18N
+        
+        mToolBar.add(createButton(mDeployAction,
+                                  (String) mDeployAction.getValue(Action.NAME), // NOI18N
+                                  (Icon)   mDeployAction.getValue(Action.SMALL_ICON))); // NOI18N
        
         // vlv: print
         mToolBar.addSeparator();
