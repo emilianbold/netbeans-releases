@@ -7,21 +7,18 @@
 
 package org.netbeans.modules.languages.parser;
 
-import java.util.Iterator;
-import java.util.Map;
 import org.netbeans.api.languages.ASTToken;
 import org.netbeans.api.languages.CharInput;
 import org.netbeans.api.languages.ParseException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import junit.framework.*;
+
 import org.netbeans.modules.languages.Feature;
-import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.TestLanguage;
 import org.netbeans.modules.languages.TokenType;
 import org.netbeans.modules.languages.parser.Parser.Cookie;
+
 
 /**
  *

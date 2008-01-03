@@ -43,7 +43,6 @@ package org.netbeans.modules.languages;
 
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -52,7 +51,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.netbeans.api.languages.ASTToken;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.modules.languages.parser.LLSyntaxAnalyser;
 import org.netbeans.modules.languages.parser.Parser;
