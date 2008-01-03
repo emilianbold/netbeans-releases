@@ -123,7 +123,7 @@ public class LLSyntaxAnalyser {
 //            AnalyserAnalyser.printRules (a.grammarRules, null);
         //if (a.printFirst)
 //            AnalyserAnalyser.printF (a.first, null, language);
-//        S ystem.out.println(a.first);
+//        System.out.println(a.first);
 //        AnalyserAnalyser.printUndefinedNTs (a.grammarRules, null);
         return a;
     }
@@ -243,11 +243,12 @@ public class LLSyntaxAnalyser {
         Stack<Object> stack = new Stack<Object> ();
         ASTNode root = null, node = null;
         ListIterator it = Collections.singletonList ("S").listIterator ();
+        List<ASTItem> whitespaces;
         boolean firstLine = true;
         do {
             if (cancel [0]) throw new CancelledException ();
             int offset = input.getOffset ();
-            List<ASTItem> whitespaces = readWhitespaces (node, input, skipErrors, embeddings, syntaxErrors, cancel);
+            whitespaces = readWhitespaces (node, input, skipErrors, embeddings, syntaxErrors, cancel);
             if (firstLine && input.eof() && whitespaces != null) {
                 return readNoGrammar (whitespaces, offset, skipErrors, embeddings, syntaxErrors, cancel);
             }
@@ -273,11 +274,11 @@ public class LLSyntaxAnalyser {
                         if (node == null)
                             root = node = ASTNode.create (language, "Root", whitespaces, offset);
                         it.previous ();
-                        it = readError (node, root, input, null, it, stack, embeddings, syntaxErrors, cancel);
+                        it = readError (node, root, input, null, it, stack, embeddings, syntaxErrors, whitespaces, cancel);
                         return root;
                     }
                     it.previous ();
-                    it = readError (node, root, input, null, it, stack, embeddings, syntaxErrors, cancel);
+                    it = readError (node, root, input, null, it, stack, embeddings, syntaxErrors, whitespaces, cancel);
                 } else {
                     Rule rule = grammarRules.get (newRule);
                     Feature parse = language.getFeatureList ().getFeature ("PARSE", rule.getNT ());
@@ -324,7 +325,7 @@ public class LLSyntaxAnalyser {
                     if (!skipErrors)
                         throw new ParseException ("Unexpected end of file.", root);
                     it.previous ();
-                    it = readError (node, root, input, token, it, stack, embeddings, syntaxErrors, cancel);
+                    it = readError (node, root, input, token, it, stack, embeddings, syntaxErrors, whitespaces, cancel);
                     return root;
                 } else
                 if (!isCompatible (token, input.next (1))) {
@@ -334,7 +335,7 @@ public class LLSyntaxAnalyser {
                         if (!skipErrors)
                             throw new ParseException ("Unexpected token " + input.next (1) + ". Expecting " + token, root);
                         it.previous ();
-                        it = readError (node, root, input, token, it, stack, embeddings, syntaxErrors, cancel);
+                        it = readError (node, root, input, token, it, stack, embeddings, syntaxErrors, whitespaces, cancel);
                     }
                 } else {
                     node.addChildren (readEmbeddings (input.read (), skipErrors, embeddings, syntaxErrors, cancel));
@@ -344,12 +345,12 @@ public class LLSyntaxAnalyser {
         if (!skipErrors && !input.eof ())
             throw new ParseException ("Unexpected token " + input.next (1) + ".", root);
         while (!input.eof ())
-            it = readError (node, root, input, null, it, stack, embeddings, syntaxErrors, cancel);
+            it = readError (node, root, input, null, it, stack, embeddings, syntaxErrors, whitespaces, cancel);
         if (root == null) {
             root = ASTNode.create (
                 language,
                 "Root", 
-                readWhitespaces (node, input, skipErrors, embeddings, syntaxErrors, cancel), 
+                whitespaces, 
                 input.getOffset ()
             );
         }
@@ -596,6 +597,7 @@ public class LLSyntaxAnalyser {
         Stack                       stack,
         Map<String,List<ASTItem>>   embeddings,
         List<SyntaxError>           syntaxErrors,
+        List<ASTItem>               whitespaces,
         boolean[]                   cancel
     ) throws ParseException, CancelledException {
         ListIterator newIterator = findError (parentNode, parentNode, input, expectedToken, iterator, stack, embeddings, syntaxErrors, cancel);
@@ -618,8 +620,15 @@ public class LLSyntaxAnalyser {
         }
         //S ystem.out.println ("\nUnrecognized Error " + parentNode.getNT () + " : "+ input + " : " + expectedToken);
         createError (input, expectedToken, syntaxErrors, null);
-        if (!input.eof ())
-            parentNode.addChildren (readEmbeddings (input.read (), true, embeddings, syntaxErrors, cancel));
+        if (!input.eof ()) {
+            if (parentNode != null)
+                parentNode.addChildren (readEmbeddings (input.read (), true, embeddings, syntaxErrors, cancel));
+            else {
+                if (whitespaces == null)
+                    whitespaces = new ArrayList<ASTItem> ();
+                whitespaces.add (readEmbeddings (input.read (), true, embeddings, syntaxErrors, cancel));
+            }
+        }
         return iterator;
     }
 
@@ -634,7 +643,8 @@ public class LLSyntaxAnalyser {
         List<SyntaxError>           syntaxErrors,
         boolean[]                   cancel
     ) throws ParseException, CancelledException {
-        List<Feature> features = language.getFeatureList ().getFeatures ("SYNTAX_ERROR", node.getNT ());
+        String id = node == null ? "S" : node.getNT ();
+        List<Feature> features = language.getFeatureList ().getFeatures ("SYNTAX_ERROR", id);
         if (features.isEmpty ()) return null;
         boolean errorCreated = false;
         Map<String,String> tokenIdentifierToNt = new HashMap<String,String> ();
