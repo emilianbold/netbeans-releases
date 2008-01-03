@@ -41,9 +41,6 @@
 
 package org.netbeans.modules.languages.lexer;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -53,7 +50,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 import org.netbeans.modules.languages.Language;
-import org.netbeans.modules.languages.LanguageImpl;
 import org.netbeans.modules.languages.TokenType;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;

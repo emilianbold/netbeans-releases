@@ -47,6 +47,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.WeakHashMap;
+
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
@@ -66,10 +67,6 @@ import org.netbeans.spi.lexer.LanguageProvider;
  */
 public class SLanguageProvider extends LanguageProvider {
     
-    /** Creates a new instance of SLanguageProvider */
-    public SLanguageProvider () {
-    }
-
     public Language<STokenId> findLanguage (String mimeType) {
         if (LanguagesManager.getDefault ().isSupported (mimeType)) {
             try {
