@@ -48,6 +48,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -175,6 +176,9 @@ public final class Mutex extends Object {
 
     /** protects internal data structures */
     private /*final*/ Object LOCK;
+    
+    /** wrapper, if any */
+    private final Executor wrapper;
 
     /** threads that - owns or waits for this mutex */
     private /*final*/ Map<Thread,ThreadInfo> registeredThreads;
@@ -200,12 +204,14 @@ public final class Mutex extends Object {
     */
     public Mutex(Object lock) {
         init(lock);
+        this.wrapper = null;
     }
 
     /** Default constructor.
     */
     public Mutex() {
         init(new InternalLock());
+        this.wrapper = null;
     }
 
     /** @param privileged can enter privileged states of this Mutex
@@ -218,6 +224,26 @@ public final class Mutex extends Object {
             init(new InternalLock());
             privileged.setParent(this);
         }
+        this.wrapper = null;
+    }
+
+    /** Constructor for those who wish to do some custom additional tasks
+     * whenever an action or runnable is executed in the {@link Mutex}. This
+     * may be useful for wrapping all the actions with custom {@link ThreadLocal}
+     * value, etc. Just implement the {@link Executor}'s <code>execute(Runnable)</code>
+     * method and do pre and post initialization tasks before running the runnable.
+     * <p>
+     * The {@link Executor#execute} method shall return only when the passed in
+     * {@link Runnable} is finished, otherwise methods like {@link Mutex#readAccess(Action)} and co.
+     * might not return proper result.
+     * 
+     * @param privileged can enter privileged states of this Mutex
+     *  @param executor allows to wrap the work of the mutex with a custom code
+     * @since 7.12
+     */
+    public Mutex(Privileged privileged, Executor executor) {
+        LOCK = new Mutex(privileged);
+        this.wrapper = executor;
     }
 
     /** Initiates this Mutex */
@@ -236,10 +262,17 @@ public final class Mutex extends Object {
     * @param action the action to perform
     * @return the object returned from {@link Mutex.Action#run}
     */
-    public <T> T readAccess(Action<T> action) {
+    public <T> T readAccess(final Action<T> action) {
         if (this == EVENT) {
             try {
                 return doEventAccess(action);
+            } catch (MutexException e) {
+                throw (InternalError) new InternalError("Exception from non-Exception Action").initCause(e.getException()); // NOI18N
+            }
+        }
+        if (wrapper != null) {
+            try {
+                return doWrapperAccess(action, null, true);
             } catch (MutexException e) {
                 throw (InternalError) new InternalError("Exception from non-Exception Action").initCause(e.getException()); // NOI18N
             }
@@ -279,9 +312,12 @@ public final class Mutex extends Object {
     * @exception RuntimeException if any runtime exception is thrown from the run method
     * @see #readAccess(Mutex.Action)
     */
-    public <T> T readAccess(ExceptionAction<T> action) throws MutexException {
+    public <T> T readAccess(final ExceptionAction<T> action) throws MutexException {
         if (this == EVENT) {
             return doEventAccess(action);
+        }
+        if (wrapper != null) {
+            return doWrapperAccess(action, null, true);
         }
 
         Thread t = Thread.currentThread();
@@ -310,6 +346,14 @@ public final class Mutex extends Object {
 
             return;
         }
+        if (wrapper != null) {
+            try {
+                doWrapperAccess(null, action, true);
+                return;
+            } catch (MutexException ex) {
+                throw (IllegalStateException)new IllegalStateException().initCause(ex);
+            }
+        }
 
         Thread t = Thread.currentThread();
         readEnter(t);
@@ -331,6 +375,13 @@ public final class Mutex extends Object {
         if (this == EVENT) {
             try {
                 return doEventAccess(action);
+            } catch (MutexException e) {
+                throw (InternalError) new InternalError("Exception from non-Exception Action").initCause(e.getException()); // NOI18N
+            }
+        }
+        if (wrapper != null) {
+            try {
+                return doWrapperAccess(action, null, false);
             } catch (MutexException e) {
                 throw (InternalError) new InternalError("Exception from non-Exception Action").initCause(e.getException()); // NOI18N
             }
@@ -371,6 +422,9 @@ public final class Mutex extends Object {
         if (this == EVENT) {
             return doEventAccess(action);
         }
+        if (wrapper != null) {
+            return doWrapperAccess(action, null, false);
+        }
 
         Thread t = Thread.currentThread();
         writeEnter(t);
@@ -397,6 +451,14 @@ public final class Mutex extends Object {
         if (this == EVENT) {
             doEvent(action);
 
+            return;
+        }
+        if (wrapper != null) {
+            try {
+                doWrapperAccess(null, action, false);
+            } catch (MutexException ex) {
+                throw (IllegalStateException)new IllegalStateException().initCause(ex);
+            }
             return;
         }
 
@@ -431,6 +493,10 @@ public final class Mutex extends Object {
         if (this == EVENT) {
             return javax.swing.SwingUtilities.isEventDispatchThread();
         }
+        if (wrapper != null) {
+            Mutex m = (Mutex)LOCK;
+            return m.isReadAccess();
+        }
 
         Thread t = Thread.currentThread();
         ThreadInfo info;
@@ -459,6 +525,10 @@ public final class Mutex extends Object {
     public boolean isWriteAccess() {
         if (this == EVENT) {
             return javax.swing.SwingUtilities.isEventDispatchThread();
+        }
+        if (wrapper != null) {
+            Mutex m = (Mutex)LOCK;
+            return m.isWriteAccess();
         }
 
         Thread t = Thread.currentThread();
@@ -492,7 +562,7 @@ public final class Mutex extends Object {
      * @param run runnable to run
      */
     public void postReadRequest(final Runnable run) {
-        postRequest(S, run);
+        postRequest(S, run, null);
     }
 
     /** Posts a write request. This request runs immediately iff
@@ -509,7 +579,7 @@ public final class Mutex extends Object {
      * @param run runnable to run
      */
     public void postWriteRequest(Runnable run) {
-        postRequest(X, run);
+        postRequest(X, run, null);
     }
 
     /** toString */
@@ -1128,14 +1198,19 @@ public final class Mutex extends Object {
     * @param mutexMode mutex mode for which the action is rquested
     * @param run the action
     */
-    private void postRequest(int mutexMode, Runnable run) {
+    private void postRequest(final int mutexMode, final Runnable run, Executor exec) {
         if (this == EVENT) {
             doEventRequest(run);
 
             return;
         }
+        if (wrapper != null) {
+            Mutex m = (Mutex)LOCK;
+            m.postRequest(mutexMode, run, wrapper);
+            return;
+        }
 
-        Thread t = Thread.currentThread();
+        final Thread t = Thread.currentThread();
         ThreadInfo info;
 
         synchronized (LOCK) {
@@ -1156,8 +1231,22 @@ public final class Mutex extends Object {
 
         // this mutex is not held
         if (info == null) {
+            if (exec != null) {
+                class Exec implements Runnable {
+                    public void run() {
+                        enter(mutexMode, t, true);
+                        try {
+                            run.run();
+                        } finally {
+                            leave(t);
+                        }
+                    }
+                }
+                exec.execute(new Exec());
+                return;
+            }
+            
             enter(mutexMode, t, true);
-
             try {
                 run.run();
             } finally {
@@ -1191,6 +1280,49 @@ public final class Mutex extends Object {
 
     private boolean canUpgrade(int threadGranted, int requested) {
         return (threadGranted == S) && (requested == X) && (readersNo == 1);
+    }
+    
+    // -------------------------------- WRAPPERS --------------------------------
+    
+    private <T> T doWrapperAccess(
+        final ExceptionAction<T> action, final Runnable runnable, final boolean readOnly
+    ) throws MutexException {
+        class R implements Runnable {
+            T ret;
+            MutexException e;
+            
+            public void run() {
+                Mutex m = (Mutex)LOCK;
+                try {
+                    if (readOnly) {
+                        if (action != null) {
+                            ret = m.readAccess(action);
+                        } else {
+                            m.readAccess(runnable);
+                        }
+                    } else {
+                        if (action != null) {
+                            ret = m.writeAccess(action);
+                        } else {
+                            m.writeAccess(runnable);
+                        }
+                    }
+                } catch (MutexException ex) {
+                    this.e = ex;
+                }
+            }
+        }
+        R run = new R();
+        Mutex m = (Mutex)LOCK;
+        if (m.isWriteAccess() || m.isReadAccess()) {
+            run.run();
+        } else {
+            wrapper.execute(run);
+        }
+        if (run.e != null) {
+            throw run.e;
+        }
+        return run.ret;
     }
 
     // ------------------------------- EVENT METHODS ----------------------------
@@ -1484,7 +1616,7 @@ public final class Mutex extends Object {
             notifyAll();
         }
     }
-
+    
     /** Provides access to Mutex's internal methods.
      *
      * This class can be used when one wants to avoid creating a

@@ -49,6 +49,24 @@ made subject to such option by the copyright holder.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+    <change id="Mutex.Wrapper">
+        <api name="util"/>
+        <summary>Mutex made pluggable</summary>
+        <version major="7" minor="12"/>
+        <date day="3" month="1" year="2008"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Added new constructor
+                <a href="@TOP@/org/openide/util/Mutex.html">Mutex(Priviledged, Executor)</a>
+                that allows creators of the mutex to intercept and wrap posted actions
+                with custom code.
+            </p>
+        </description> 
+        <class package="org.openide.util" name="Mutex"/>
+        <issue number="123832"/>
+    </change>
     <change id="Utilities.isLargeFrameIcons">
         <api name="util"/>
         <summary>Obsolete method <code>Utilities.isLargeFrameIcons</code> deprecated.</summary>
