@@ -56,7 +56,7 @@ COLOR:filename: {
     background_color:"#e0e0e0";
 }
 
-S = file*;
+S = (<plain>)* file*;
 file = name body;
 name = <index>;
 body = (<plain> | <added> | <removed> | <header>)*;
