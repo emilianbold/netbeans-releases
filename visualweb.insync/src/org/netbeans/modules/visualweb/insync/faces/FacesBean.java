@@ -306,7 +306,8 @@ public class FacesBean extends MarkupBean {
      */
     protected Property newCreatedProperty(PropertyDescriptor pd) {
          if (!isMarkupProperty(pd)) {
-             unit.addBean(getBeanInfo(), getName());
+             unit.addBindingBean(getBeanInfo(), getName());
+             setInserted(true);
              setBindingProperty();
          }
          return super.newCreatedProperty(pd);

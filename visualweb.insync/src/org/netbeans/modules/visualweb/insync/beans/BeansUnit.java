@@ -757,15 +757,18 @@ public class BeansUnit implements Unit {
     }
     
     /**
-     * Create and add a new bean
+     * Create binding bean in java source. This should be called
+     * only to add the binding for a component. 
      *
      * @param beanInfo  The definition of the bean to create
      * @param name  The instance name for the new bean
      * @return The newly created bean
      */
-    public final Bean addBean(BeanInfo beanInfo, String name) {
-        Bean b = newCreatedBean(beanInfo, null, name, null, null);
-        return b;
+    public final void addBindingBean(BeanInfo beanInfo, String name) {
+         Bean b = new Bean(this, beanInfo, name);
+         if (b != null) {
+             beansToAdd.add(b);
+         }
     }    
 
     /**
