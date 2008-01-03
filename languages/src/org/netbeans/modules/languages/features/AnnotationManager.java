@@ -228,6 +228,8 @@ public class AnnotationManager extends ASTEvaluator {
         ) {
             this.type = type;
             this.description = description;
+            if (type == null) throw new NullPointerException ();
+            if (description == null) throw new NullPointerException ();
         }
 
         /** Returns name of the file which describes the annotation type.

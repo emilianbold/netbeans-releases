@@ -20,32 +20,7 @@
 package org.netbeans.modules.languages.features;
 
 import java.lang.UnsupportedOperationException;
-import javax.swing.JTree;
-import javax.swing.SwingUtilities;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeCellRenderer;
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
-import org.netbeans.api.languages.ASTToken;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.api.lexer.TokenSequence;
-import org.openide.ErrorManager;
-import org.openide.cookies.EditorCookie;
-import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 import java.util.Enumeration;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.text.AbstractDocument;
-import javax.swing.event.CaretEvent;
-import javax.swing.event.CaretListener;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -59,6 +34,31 @@ import java.util.ConcurrentModificationException;
 import javax.swing.JEditorPane;
 import javax.swing.JScrollPane;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.JTree;
+import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.AbstractDocument;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
+
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.lexer.TokenSequence;
+import org.openide.ErrorManager;
+import org.openide.cookies.EditorCookie;
+import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 
 /**
@@ -516,6 +516,7 @@ final class TokensBrowserTopComponent extends TopComponent {
     private static class Renderer extends DefaultTreeCellRenderer {
         
         private String e (CharSequence t) {
+            if (t == null) return "null";
             StringBuilder sb = new StringBuilder ();
             int i, k = t.length ();
             for (i = 0; i < k; i++) {
