@@ -41,6 +41,7 @@
 package org.netbeans.api.java.source.gen;
 
 import com.sun.source.tree.*;
+import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreeScanner;
 import java.io.File;
 import java.io.IOException;
@@ -303,6 +304,53 @@ public class AnnotationTest extends GeneratorTest {
                 
                 ExpressionTree attr1 = make.Assignment(make.Identifier("test1"), make.Literal("A"));
                 ExpressionTree attr2 = make.Assignment(make.Identifier("test2"), make.Literal(42));
+                AnnotationTree at = make.Annotation(make.Identifier("A"), Arrays.asList(attr1, attr2));
+                ModifiersTree mt = make.Modifiers(ct.getModifiers(), Arrays.asList(at));
+                
+                workingCopy.rewrite(ct.getModifiers(), mt);
+            }
+            
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testAddAnnotation123745b() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "}\n" +
+            "@interface A {\n" +
+            "    public String test1();\n" +
+            "    public int test2();\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "@A(test1 = \"A\", test2 = 42)\n" +
+            "public class Test {\n" +
+            "}\n" +
+            "@interface A {\n" +
+            "    public String test1();\n" +
+            "    public int test2();\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree ct = (ClassTree) cut.getTypeDecls().get(0);
+                
+                ExpressionTree attr1 = workingCopy.getTreeUtilities().parseExpression("test1=\"A\"", new SourcePositions[1]);
+                ExpressionTree attr2 = workingCopy.getTreeUtilities().parseExpression("test2=42", new SourcePositions[1]);
                 AnnotationTree at = make.Annotation(make.Identifier("A"), Arrays.asList(attr1, attr2));
                 ModifiersTree mt = make.Modifiers(ct.getModifiers(), Arrays.asList(at));
                 
