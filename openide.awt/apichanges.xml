@@ -49,15 +49,17 @@ made subject to such option by the copyright holder.
 <changes>
     <change id="SpinButton.RepeatThread">
         <api name="awt"/>
-        <summary>Hidden field SpinButton.rt made package private</summary>
+        <summary>Hidden field SpinButton.rt made accessible</summary>
         <version major="7" minor="0"/>
         <date day="2" month="1" year="2008"/>
         <author login="jtulach"/>
-        <compatibility addition="no" binary="incompatible" source="incompatible" semantic="compatible" deprecation="no" deletion="yes" modification="no"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="yes" deletion="no" modification="no"/>
         <description>
         SpinButton used to have a field <code>rt</code>. The type of the field was a package private class. 
-        As such the field was inaccessible to API users. That is why making it 
-        package private shall not influence any API user.
+        As such the field was inaccessible to API users. Because this is not 
+        checked as an error with our new 
+        <a href="http://wiki.netbeans.org/wiki/view/SignatureTest">signature test infrastructure</a>,
+        we made the type of the field visible.
         </description>
         <class package="org.openide.awt" name="SpinButton"/>
     </change>

@@ -184,7 +184,7 @@ public class SpinButton extends Canvas {
     /** Spin repeat thread. When the SpinButton is holded this thread
      *  runs and regulary sends the events to SpinButton.
      */
-    RepeatThread rt = null;
+    protected RepeatThread rt = null;
 
     /** Flag if the SpinRepeatThread is currently running. */
     protected boolean running = false;
@@ -670,13 +670,19 @@ public class SpinButton extends Canvas {
         }
     }
 
-    class RepeatThread extends Thread {
+    /** @deprecated Made visible only because it was (by mistake) 
+     * visible from public signatures. No need to use it.
+     * @since 7.0
+     */
+    @Deprecated
+    protected final class RepeatThread extends Thread {
         boolean finish = false;
 
-        public RepeatThread() {
+        RepeatThread() {
             finish = false;
         }
 
+        @Override
         public void run() {
             repeatThreadNotify();
 

@@ -13159,6 +13159,7 @@ fld  protected int org.openide.awt.SpinButton.repeatDelay
 fld  protected int org.openide.awt.SpinButton.repeatRate
 fld  protected int org.openide.awt.SpinButton.step
 fld  protected int org.openide.awt.SpinButton.value
+fld  protected org.openide.awt.SpinButton$RepeatThread org.openide.awt.SpinButton.rt
 fld  public static final float java.awt.Component.BOTTOM_ALIGNMENT
 fld  public static final float java.awt.Component.CENTER_ALIGNMENT
 fld  public static final float java.awt.Component.LEFT_ALIGNMENT
