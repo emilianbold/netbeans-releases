@@ -90,10 +90,9 @@ public class XMLTokenIdTest extends TestCase {
         assert(ts.tokenCount() == expectedIds.length);        
         int index = 0;
         while(ts.moveNext()) {
-            Token token = ts.offsetToken();
-//            System.out.println("Class: " + token.getClass());
-//            System.out.println("Id: " + token.id().name());
-//            System.out.println("Text: [" + token.text()+"]");
+            Token token = ts.token();
+            System.out.println("Id :["+ token.id().name() +
+                    "] [Text :["+ token.text()+"]");
             assert(token.id() == expectedIds[index]);
             index++;
         }
@@ -102,8 +101,7 @@ public class XMLTokenIdTest extends TestCase {
     private javax.swing.text.Document getDocument(String path) throws Exception {
         javax.swing.text.Document doc = getResourceAsDocument(path);
         //must set the language inside unit tests
-        Language language = XMLTokenId.language();
-        doc.putProperty(Language.class, language);
+        doc.putProperty(Language.class, XMLTokenId.language());
         return doc;
     }
                  
