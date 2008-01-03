@@ -61,11 +61,11 @@ public class GroovyPositionManager implements PositionManager {
     }
 
     public int getLexicalOffset(ParserResult result, int astOffset) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return astOffset;
     }
 
     public int getAstOffset(ParserResult result, int lexicalOffset) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return lexicalOffset;
     }
 
 }
