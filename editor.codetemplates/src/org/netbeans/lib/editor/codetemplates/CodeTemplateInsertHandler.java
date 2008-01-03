@@ -350,7 +350,7 @@ implements DocumentListener, KeyListener {
                 caretPosition = doc.createPosition(insertOffset + completeInsertString.length());
             }
             
-            if (parametrizedText.indexOf('\n') != -1 && doc instanceof BaseDocument) {
+            if (doc instanceof BaseDocument) {
                 formatter.reformat(bdoc, insertOffset,
                         insertOffset + completeInsertString.length());
             }
