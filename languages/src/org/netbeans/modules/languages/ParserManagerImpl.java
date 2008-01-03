@@ -49,6 +49,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
 
 import org.netbeans.api.languages.ASTEvaluator;
@@ -73,6 +75,7 @@ import org.netbeans.modules.languages.lexer.SLanguageHierarchy;
 import org.netbeans.modules.languages.parser.LLSyntaxAnalyser;
 import org.netbeans.modules.languages.parser.SyntaxError;
 import org.netbeans.modules.languages.parser.TokenInputUtils;
+import org.netbeans.spi.lexer.MutableTextInput;
 import org.openide.util.RequestProcessor;
 
 
@@ -124,6 +127,8 @@ public class ParserManagerImpl extends ParserManager {
                 }
             }
         }
+        
+        managers.put (doc, new WeakReference<ParserManager> (this));
     }
     
     public static ParserManagerImpl getImpl (Document document) {
@@ -460,6 +465,23 @@ public class ParserManagerImpl extends ParserManager {
         }
     }
     
+    private static Map<Document,WeakReference<ParserManager>> managers = 
+        new WeakHashMap<Document,WeakReference<ParserManager>> ();
+
+    // HACK
+    static void refreshHack () {
+        Iterator<Document> it = managers.keySet ().iterator ();
+        while (it.hasNext ()) {
+            AbstractDocument document = (AbstractDocument) it.next ();
+            document.readLock ();
+            try {
+                MutableTextInput mti = (MutableTextInput) document.getProperty (MutableTextInput.class);
+                mti.tokenHierarchyControl ().rebuild ();
+            } finally {
+                document.readUnlock ();
+            }
+        }
+    }
     
     // innerclasses ............................................................
     

@@ -186,6 +186,9 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
                 Utils.message ("Editors/" + mimeType + "/language.nbs: " + ex.getMessage ());
             }
         }
+        
+        // HACK
+        ParserManagerImpl.refreshHack ();
     }
 
     private Set<FileObject> listeningOn = new HashSet<FileObject> ();
