@@ -48,7 +48,7 @@ import org.netbeans.insane.impl.Utils;
 
 /**
  * The representation of the path from GC root to given object.
- * Forms a likned list, where each node represents one Object, next Path node
+ * Forms a linked list, where each node represents one Object, next Path node
  * in the reference chain and the outgoing reference from the node to the next.
  *
  * Root node might have no associated object, while the last node has neither
