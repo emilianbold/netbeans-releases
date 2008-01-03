@@ -1,3 +1,4 @@
+# XXX choke quickly if user not running Python 2.5.1 or later
 import os, re, urllib2, sha, inspect
 from mercurial import util, httprepo
 # Compatibility for Hg not including give-filters-more-context.diff:
@@ -24,6 +25,7 @@ def _repo(r):
 def _trim(filename):
     return os.path.basename(filename)
 def _cachedir():
+    # XXX permit this to be overridden by an environment variable
     d = os.path.expanduser('~/.hgexternalcache')
     if not os.path.exists(d):
         os.makedirs(d)
@@ -45,6 +47,7 @@ def download(s, cmd, filename=None, ui=None, **kwargs):
         data = handle.read()
         handle.close()
         if m.group(2) != _sha1hash(data):
+            # XXX delete cachefile
             raise util.Abort('hash mismatch in %s' % filename)
     else:
         url = cmd + m.group(1)
@@ -54,6 +57,7 @@ def download(s, cmd, filename=None, ui=None, **kwargs):
         handle.close()
         if m.group(2) != _sha1hash(data):
             raise util.Abort('hash mismatch in %s' % filename)
+        # XXX acquire write lock, or write to temp file and do atomic rename
         handle = open(cachefile, 'wb')
         handle.write(data)
         handle.close()
@@ -85,7 +89,7 @@ def upload(s, cmd, filename=None, ui=None, repo=None, **kwargs):
             # or http://www.hackorama.com/python/upload.shtml
             urllib2.build_opener(MultipartPostHandler, auth).open(url, data).close()
         except IOError, err:
-            ui.warn('Problem uploading %s to %s: %s\n' % (filename, url, err))
+            ui.warn('Problem uploading %s to %s (try it manually using a web browser): %s\n' % (filename, url, err))
     return '<<<EXTERNAL %s>>>\n' % full
 util.filtertable.update({
     'download:': download,
