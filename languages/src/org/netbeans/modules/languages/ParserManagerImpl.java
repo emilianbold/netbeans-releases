@@ -69,7 +69,6 @@ import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import org.netbeans.api.languages.TokenInput;
 import org.netbeans.api.lexer.TokenHierarchyListener;
-import org.netbeans.modules.languages.LanguagesManager.LanguagesManagerListener;
 import org.netbeans.modules.languages.lexer.SLanguageHierarchy;
 import org.netbeans.modules.languages.parser.LLSyntaxAnalyser;
 import org.netbeans.modules.languages.parser.SyntaxError;
@@ -464,27 +463,19 @@ public class ParserManagerImpl extends ParserManager {
     
     // innerclasses ............................................................
     
-    private static class DocListener implements TokenHierarchyListener, LanguagesManagerListener {
+    private static class DocListener implements TokenHierarchyListener {
         
         private WeakReference<ParserManagerImpl> pmwr;
         
         DocListener (ParserManagerImpl pm, TokenHierarchy hierarchy) {
             pmwr = new WeakReference<ParserManagerImpl> (pm);
             hierarchy.addTokenHierarchyListener (this);
-            LanguagesManager.getDefault ().addLanguagesManagerListener (this);
         }
         
         private ParserManagerImpl getPM () {
             ParserManagerImpl pm = pmwr.get ();
             if (pm != null) return pm;
-            LanguagesManager.getDefault ().removeLanguagesManagerListener (this);
             return null;
-        }
-
-        public void languageChanged (String mimeType) {
-            ParserManagerImpl pm = getPM ();
-            if (pm == null) return;
-            pm.startParsing ();
         }
     
         public void tokenHierarchyChanged (TokenHierarchyEvent evt) {

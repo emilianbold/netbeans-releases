@@ -43,7 +43,17 @@ package org.netbeans.modules.languages;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.io.OutputStream;
+import java.util.HashSet;
+import java.util.List;
+
 import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
+import org.netbeans.api.languages.ParseException;
 import org.netbeans.modules.languages.features.ActionCreator;
 import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import org.netbeans.modules.languages.features.ColorsManager;
@@ -57,18 +67,6 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.Vector;
-import java.io.OutputStream;
-import java.util.HashSet;
-import java.util.List;
-import org.netbeans.api.languages.ParseException;
 import org.openide.util.RequestProcessor;
 
 
@@ -120,8 +118,6 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
     public synchronized Language getLanguage (String mimeType) 
     throws LanguageDefinitionNotFoundException {
         mimeType = normalizeMimeType(mimeType);
-//        if (mimeType.equals (NBSLanguage.NBS_MIME_TYPE))
-//            return NBSLanguage.getNBSLanguage ();
         if (!mimeTypeToLanguage.containsKey (mimeType)) {
             mimeTypeToLanguage.put (mimeType, parsingLanguage);
             FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
@@ -167,27 +163,28 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
     public void addLanguage (Language l) {
         mimeTypeToLanguage.put (l.getMimeType (), l);
     }
-    
-    private Vector<LanguagesManagerListener> listeners = new Vector<LanguagesManagerListener> ();
-    
-    public void addLanguagesManagerListener (LanguagesManagerListener l) {
-        listeners.add (l);
-    }
-    
-    public void removeLanguagesManagerListener (LanguagesManagerListener l) {
-        listeners.remove (l);
-    }
 
     
     // helper methods .....................................................................................................
     
     private void languageChanged (String mimeType) {
-        mimeTypeToLanguage.remove (mimeType);
-        Vector<LanguagesManagerListener> v = new Vector<LanguagesManagerListener>(listeners);
-        Iterator<LanguagesManagerListener> it = v.iterator ();
-        while (it.hasNext ()) {
-            LanguagesManagerListener l = it.next ();
-            l.languageChanged (mimeType);
+        Language language = mimeTypeToLanguage.get (mimeType);
+        if (language != null && language instanceof LanguageImpl) {
+            try {
+                FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
+                FileObject fo = fs.findResource ("Editors/" + mimeType + "/language.nbs");
+                if (fo == null) {
+                    mimeTypeToLanguage.remove (mimeType);
+                    throw new LanguageDefinitionNotFoundException 
+                        ("Language definition for " + mimeType + " not found.");
+                }
+                NBSLanguageReader reader = NBSLanguageReader.create (fo, mimeType);
+                ((LanguageImpl) language).read (reader);
+            } catch (ParseException ex) {
+                Utils.message ("Editors/" + mimeType + "/language.nbs: " + ex.getMessage ());
+            } catch (IOException ex) {
+                Utils.message ("Editors/" + mimeType + "/language.nbs: " + ex.getMessage ());
+            }
         }
     }
 
@@ -374,12 +371,8 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
         separator.setAttribute("position", position);
     }
     
-    // innerclasses ............................................................
     
-    public static interface LanguagesManagerListener {
-        
-        public void languageChanged (String mimeType);
-    }
+    // innerclasses ............................................................
     
     private class Listener implements FileChangeListener {
         
