@@ -91,6 +91,7 @@ public class JBWebApplicationsChildren extends Children.Keys implements Refresha
             Vector keys = new Vector();
 
             public void run() {
+                ClassLoader orig = Thread.currentThread().getContextClassLoader();
                 try {
                     // Query to the jboss server
                     ObjectName searchPattern;
@@ -102,6 +103,8 @@ public class JBWebApplicationsChildren extends Children.Keys implements Refresha
                     }
 
                     Object server = Util.getRMIServer(lookup);
+                    Thread.currentThread().setContextClassLoader(server.getClass().getClassLoader());
+
                     Set managedObj = (Set) server.getClass().getMethod("queryMBeans", new Class[]  {ObjectName.class, QueryExp.class}).invoke(server, new Object[]  {searchPattern, null});
 
                     JBDeploymentManager dm = (JBDeploymentManager) lookup.lookup(JBDeploymentManager.class);
@@ -143,6 +146,8 @@ public class JBWebApplicationsChildren extends Children.Keys implements Refresha
                     }
                 } catch (Exception ex) {
                     LOGGER.log(Level.INFO, null, ex);
+                } finally {
+                    Thread.currentThread().setContextClassLoader(orig);
                 }
 
                 setKeys(keys);

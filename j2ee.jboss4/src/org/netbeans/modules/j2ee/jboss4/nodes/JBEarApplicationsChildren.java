@@ -79,6 +79,7 @@ public class JBEarApplicationsChildren extends Children.Keys implements Refresha
             Vector keys = new Vector();
 
             public void run() {
+                ClassLoader orig = Thread.currentThread().getContextClassLoader();
                 try {
                     // Query to the jboss4 server
                     ObjectName searchPattern;
@@ -90,7 +91,10 @@ public class JBEarApplicationsChildren extends Children.Keys implements Refresha
                         searchPattern = new ObjectName("jboss.j2ee:service=EARDeployment,*"); // NOI18N
                         propertyName = "url"; // NOI18N
                     }
+
                     Object server = Util.getRMIServer(lookup);
+                    Thread.currentThread().setContextClassLoader(server.getClass().getClassLoader());
+
                     Set managedObj = (Set)server.getClass().getMethod("queryMBeans", new Class[] {ObjectName.class, QueryExp.class}).invoke(server, new Object[] {searchPattern, null});
 
                     // Query results processing
@@ -114,6 +118,8 @@ public class JBEarApplicationsChildren extends Children.Keys implements Refresha
                     }
                 } catch (Exception ex) {
                     Logger.getLogger("global").log(Level.INFO, null, ex);
+                } finally {
+                    Thread.currentThread().setContextClassLoader(orig);
                 }
 
                 setKeys(keys);

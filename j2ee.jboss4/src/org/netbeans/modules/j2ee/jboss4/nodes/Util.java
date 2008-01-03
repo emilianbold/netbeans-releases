@@ -123,15 +123,18 @@ public class Util {
      * @return is remote management supported
      */
     public static boolean isRemoteManagementSupported(Lookup lookup) {
-
+        ClassLoader orig = Thread.currentThread().getContextClassLoader();
         try {
             Object server = Util.getRMIServer(lookup);
+            Thread.currentThread().setContextClassLoader(server.getClass().getClassLoader());
+            
             ObjectName searchPattern;
             searchPattern = new ObjectName("jboss.management.local:*");
             Set managedObj = (Set)server.getClass().getMethod("queryMBeans", new Class[] {ObjectName.class, QueryExp.class}).invoke(server, new Object[] {searchPattern, null});
 
-            if(managedObj.size() == 0)
+            if(managedObj.size() == 0) {
                 return false;
+            }
         } catch (SecurityException ex) {
             Logger.getLogger("global").log(Level.INFO, null, ex);
         } catch (IllegalArgumentException ex) {
@@ -146,6 +149,8 @@ public class Util {
             Logger.getLogger("global").log(Level.INFO, null, ex);
         } catch (NullPointerException ex) {
             Logger.getLogger("global").log(Level.INFO, null, ex);
+        } finally {
+            Thread.currentThread().setContextClassLoader(orig);
         }
 
         return true;
@@ -157,7 +162,9 @@ public class Util {
      * @return if specified object is deployed
      */
     public static boolean isObjectDeployed(Object server, ObjectName searchPattern) {
+        ClassLoader orig = Thread.currentThread().getContextClassLoader();
         try {
+            Thread.currentThread().setContextClassLoader(server.getClass().getClassLoader());
             Set managedObj = (Set)server.getClass().getMethod("queryMBeans", new Class[] {ObjectName.class, QueryExp.class}).invoke(server, new Object[] {searchPattern, null});
 
             if(managedObj.size() > 0)
@@ -172,6 +179,8 @@ public class Util {
             Logger.getLogger("global").log(Level.INFO, null, ex);
         } catch (NoSuchMethodException ex) {
             Logger.getLogger("global").log(Level.INFO, null, ex);
+        } finally {
+            Thread.currentThread().setContextClassLoader(orig);
         }
 
         return false;
@@ -198,9 +207,11 @@ public class Util {
      *
      * @return MBean attribute
      */
-    public static Object getMBeanParameter(JBDeploymentManager dm, String name, String targetObject) {
+    public static Object getMBeanParameter(JBDeploymentManager dm, String name, String targetObject) {     
         MBeanServerConnection server = dm.refreshRMIServer();
+        ClassLoader orig = Thread.currentThread().getContextClassLoader();
         try {
+            Thread.currentThread().setContextClassLoader(server.getClass().getClassLoader());
             return server.getAttribute(new ObjectName(targetObject), name);
         } catch (InstanceNotFoundException ex) {
             LOGGER.log(Level.INFO, null, ex);
@@ -220,9 +231,11 @@ public class Util {
             LOGGER.log(Level.INFO, null, ex);
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, null, ex);
+        } finally {
+            Thread.currentThread().setContextClassLoader(orig);
         }
-
         return null;
+
     }
 
     /**
@@ -240,8 +253,8 @@ public class Util {
             context = getWarContextRoot(warName);
         }
 
-        if ("/ROOT".equals(context)) {
-            return "/";
+        if ("/ROOT".equals(context)) { // NOI18N
+            return "/"; // NOI18N
         }
 
         return context;
@@ -268,7 +281,7 @@ public class Util {
             return null;
         }
 
-        org.w3c.dom.Node node = doc.getElementsByTagName("context-root").item(0);
+        org.w3c.dom.Node node = doc.getElementsByTagName("context-root").item(0); // NOI18N
 
         if (node == null || node.getTextContent() == null) {
             return null;

@@ -171,7 +171,16 @@ public class JBProperties {
         try {
             File rootDir = getRootDir();
             File serverDir = getServerDir();
-            list.add(fileToUrl(new File(rootDir, "client/jboss-j2ee.jar")));  // NOI18N
+            
+            File javaEE = new File(rootDir, "client/jboss-j2ee.jar"); // NOI18N
+            if (!javaEE.exists()) {
+                // jboss 5
+                javaEE = new File(rootDir, "client/jboss-javaee.jar"); // NOI18N
+            }
+            
+            if (javaEE.exists()) {
+                list.add(fileToUrl(javaEE));
+            }
             
             File jaxWsAPILib = new File(rootDir, "client/jboss-jaxws.jar"); // NOI18N
             if (jaxWsAPILib.exists()) {

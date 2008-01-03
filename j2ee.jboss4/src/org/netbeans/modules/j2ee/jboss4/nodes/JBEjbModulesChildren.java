@@ -91,8 +91,11 @@ public class JBEjbModulesChildren extends Children.Keys implements Refreshable {
     }
     
     private void addEjbModules(Object server, List keys) {
-
+        ClassLoader orig = Thread.currentThread().getContextClassLoader();
+        
         try {
+            Thread.currentThread().setContextClassLoader(server.getClass().getClassLoader());
+            
             String propertyName;
             Object searchPattern;
             if (abilitiesSupport.isRemoteManagementSupported() && abilitiesSupport.isJB4x()) {
@@ -116,12 +119,17 @@ public class JBEjbModulesChildren extends Children.Keys implements Refreshable {
 
         } catch (Exception ex) {
             Logger.getLogger("global").log(Level.INFO, null, ex);
+        } finally {
+            Thread.currentThread().setContextClassLoader(orig);
         }
     }
     
     private void addEJB3Modules(Object server, List keys) {
+        ClassLoader orig = Thread.currentThread().getContextClassLoader();
         
         try {
+            Thread.currentThread().setContextClassLoader(server.getClass().getClassLoader());
+            
             ObjectName searchPattern = new ObjectName("jboss.j2ee:service=EJB3,*"); // NOI18N
             Set managedObj = (Set)server.getClass().getMethod("queryMBeans", new Class[] {ObjectName.class, QueryExp.class}).invoke(server, new Object[] {searchPattern, null}); // NOI18N
 
@@ -139,6 +147,8 @@ public class JBEjbModulesChildren extends Children.Keys implements Refreshable {
             }
         } catch (Exception ex) {
             Logger.getLogger("global").log(Level.INFO, null, ex);
+        } finally {
+            Thread.currentThread().setContextClassLoader(orig);
         }
     }
     

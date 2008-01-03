@@ -104,8 +104,30 @@ public class JBPluginUtils {
 
     private static synchronized List<String> getDomainRequirements5x() {
         if (domainRequirements5x == null) {
-            domainRequirements5x = new ArrayList<String>(12);
+            domainRequirements5x = new ArrayList<String>(11);
             Collections.addAll(domainRequirements5x,
+                    "conf", // NOI18N
+                    "deploy", // NOI18N
+                    "lib", // NOI18N
+                    "conf/jboss-service.xml", // NOI18N
+                    "lib/jboss-javaee.jar", // NOI18N
+                    "lib/jboss.jar", // NOI18N
+                    "lib/jbosssx.jar", // NOI18N
+                    "lib/jmx-adaptor-plugin.jar", // NOI18N
+                    "lib/jnpserver.jar", // NOI18N
+                    "lib/log4j.jar", // NOI18N
+                    "deploy/jmx-invoker-service.xml"); // NOI18N
+        }
+        return domainRequirements5x;
+    }
+
+    private static List<String> domainAlterRequirements5x;
+
+    // TODO useful for beta1 and beta2 - probably could be removed
+    private static synchronized List<String> getDomainAlterRequirements5x() {
+        if (domainAlterRequirements5x == null) {
+            domainAlterRequirements5x = new ArrayList<String>(12);
+            Collections.addAll(domainAlterRequirements5x,
                     "conf", // NOI18N
                     "deploy", // NOI18N
                     "lib", // NOI18N
@@ -119,7 +141,7 @@ public class JBPluginUtils {
                     "lib/log4j.jar", // NOI18N
                     "deploy/jmx-invoker-service.xml"); // NOI18N
         }
-        return domainRequirements5x;
+        return domainAlterRequirements5x;
     }
 
     //--------------- checking for possible server directory -------------
@@ -237,7 +259,8 @@ public class JBPluginUtils {
     }
 
     private static boolean isGoodJBInstanceLocation5x(File serverDir, File candidate){
-        return isGoodJBInstanceLocation(candidate, getDomainRequirements5x());
+        return isGoodJBInstanceLocation(candidate, getDomainRequirements5x())
+                || isGoodJBInstanceLocation(candidate, getDomainAlterRequirements5x());
     }
 
     public static boolean isGoodJBInstanceLocation(File serverDir, File candidate){

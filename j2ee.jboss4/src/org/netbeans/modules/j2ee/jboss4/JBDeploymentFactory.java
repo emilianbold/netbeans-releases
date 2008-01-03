@@ -76,15 +76,15 @@ import org.openide.util.Lookup;
  * @author Kirill Sorokin
  */
 public class JBDeploymentFactory implements DeploymentFactory {
-    
+
     public static final String URI_PREFIX = "jboss-deployer:"; // NOI18N
-    
+
     private static final String DISCONNECTED_URI = "jboss-deployer:http://localhost:8080&"; // NOI18N
-    
+
     private static final Logger LOGGER = Logger.getLogger(JBDeploymentFactory.class.getName());
-    
+
     private static JBDeploymentFactory instance;
-    
+
     public static synchronized DeploymentFactory create() {
         if (instance == null) {
             instance = new JBDeploymentFactory();
@@ -92,33 +92,33 @@ public class JBDeploymentFactory implements DeploymentFactory {
 
             registerDefaultServerInstance();
         }
-        
+
         return instance;
     }
-    
+
 //    private DeploymentFactory jbossFactory = null;
     /**
      * Mapping of a server installation directory to a deployment factory
      */
     private HashMap/*<String, DeploymentFactory*/ jbossFactories = new HashMap();
-    
+
     public static class JBClassLoader extends URLClassLoader {
 
         public JBClassLoader(URL[] urls, ClassLoader parent) throws MalformedURLException, RuntimeException {
             super(urls, parent);
         }
-        
+
         protected PermissionCollection getPermissions(CodeSource codeSource) {
             Permissions p = new Permissions();
             p.add(new AllPermission());
             return p;
         }
-        
+
        public Enumeration<URL> getResources(String name) throws IOException {
            // get rid of annoying warnings
            if (name.indexOf("jndi.properties") != -1) {// || name.indexOf("i18n_user.properties") != -1) { // NOI18N
                return Collections.enumeration(Collections.<URL>emptyList());
-           } 
+           }
 
            return super.getResources(name);
        }
@@ -137,6 +137,9 @@ public class JBDeploymentFactory implements DeploymentFactory {
                 domFile = null;
                 LOGGER.log(Level.INFO, "No dom4j.jar availabale on classpath"); // NOI18N
             }
+
+            // jbosssx-client.jar JBoss Application Server 5.0
+            File sxClient50 = new File(serverRoot + "/client/jbosssx-client.jar"); // NOI18N
 
             // jboss-common-client.jar JBoss Application Server 4.x
             File client40 = new File(serverRoot + "/client/jboss-common-client.jar"); // NOI18N
@@ -157,6 +160,10 @@ public class JBDeploymentFactory implements DeploymentFactory {
             urlList.add(new File(serverRoot + "/client/jnp-client.jar").toURI().toURL());           //NOI18N
             if (domFile != null) {
                 urlList.add(domFile.toURI().toURL());
+            }
+
+            if (sxClient50.exists()) {
+                urlList.add(sxClient50.toURI().toURL());
             }
 
             if (client40.exists()) {
@@ -182,33 +189,33 @@ public class JBDeploymentFactory implements DeploymentFactory {
         }
         return null;
     }
-    
+
     public DeploymentFactory getFactory(String instanceURL) {
         DeploymentFactory jbossFactory = null;
         try {
             String jbossRoot = InstanceProperties.getInstanceProperties(instanceURL).
                                     getProperty(JBPluginProperties.PROPERTY_ROOT_DIR);
-            
+
             String domainRoot = InstanceProperties.getInstanceProperties(instanceURL).
                                     getProperty(JBPluginProperties.PROPERTY_SERVER_DIR);
-            
+
             // if jbossRoot is null, then we are in a server instance registration process, thus this call
-            // is made from InstanceProperties creation -> JBPluginProperties singleton contains 
+            // is made from InstanceProperties creation -> JBPluginProperties singleton contains
             // install location of the instance being registered
             if (jbossRoot == null)
                 jbossRoot = JBPluginProperties.getInstance().getInstallLocation();
-            
+
             // if domainRoot is null, then we are in a server instance registration process, thus this call
-            // is made from InstanceProperties creation -> JBPluginProperties singleton contains 
+            // is made from InstanceProperties creation -> JBPluginProperties singleton contains
             // install location of the instance being registered
             if (domainRoot == null)
                 domainRoot = JBPluginProperties.getInstance().getDomainLocation();
-            
+
             jbossFactory = (DeploymentFactory) jbossFactories.get(jbossRoot);
             if ( jbossFactory == null ) {
                 URLClassLoader loader = getJBClassLoader(jbossRoot, domainRoot);
                 jbossFactory = (DeploymentFactory) loader.loadClass("org.jboss.deployment.spi.factories.DeploymentFactoryImpl").newInstance();//NOI18N
-                
+
                 jbossFactories.put(jbossRoot, jbossFactory);
             }
         } catch (Exception e) {
@@ -217,20 +224,20 @@ public class JBDeploymentFactory implements DeploymentFactory {
 
         return jbossFactory;
     }
-    
+
     public boolean handlesURI(String uri) {
         if (uri != null && uri.startsWith(URI_PREFIX)) {
             return true;
         }
-        
+
         return false;
     }
-    
+
     public DeploymentManager getDeploymentManager(String uri, String uname, String passwd) throws DeploymentManagerCreationException {
         if (!handlesURI(uri)) {
             throw new DeploymentManagerCreationException(NbBundle.getMessage(JBDeploymentFactory.class, "MSG_INVALID_URI", uri)); // NOI18N
         }
-        
+
         try {
             DeploymentFactory df = getFactory(uri);
             if (df == null)
@@ -251,12 +258,12 @@ public class JBDeploymentFactory implements DeploymentFactory {
             throw dmce;
         }
     }
-     
+
     public DeploymentManager getDisconnectedDeploymentManager(String uri) throws DeploymentManagerCreationException {
         if (!handlesURI(uri)) {
             throw new DeploymentManagerCreationException(NbBundle.getMessage(JBDeploymentFactory.class, "MSG_INVALID_URI", uri)); // NOI18N
         }
-        
+
         try {
             DeploymentFactory df = null;
             InstanceProperties ip = InstanceProperties.getInstanceProperties(uri);
@@ -288,16 +295,16 @@ public class JBDeploymentFactory implements DeploymentFactory {
             throw dmce;
         }
     }
-    
+
     public String getProductVersion() {
-       
+
         return NbBundle.getMessage (JBDeploymentFactory.class, "LBL_JBossFactoryVersion");
     }
-    
+
     public String getDisplayName() {
         return NbBundle.getMessage(JBDeploymentFactory.class, "SERVER_NAME"); // NOI18N
     }
-    
+
     private static final String INSTALL_ROOT_PROP_NAME = "org.netbeans.modules.j2ee.jboss4.installRoot"; // NOI18N
 
     private static void registerDefaultServerInstance() {
@@ -320,16 +327,16 @@ public class JBDeploymentFactory implements DeploymentFactory {
             LOGGER.log(Level.SEVERE, ioe.getMessage());
         }
     }
-    
+
     private static String getDefaultInstallLocation() {
         String installRoot = System.getProperty(INSTALL_ROOT_PROP_NAME);
         if (installRoot != null && new File(installRoot).exists()) {
             return installRoot;
         }
-        
+
         return "";
     }
-    
+
     private static boolean isAlreadyRegistered(FileObject serverInstanceDir, String domainLocation) throws IOException {
         String domainLocationCan = new File(domainLocation).getCanonicalPath();
         for (FileObject instanceFO : serverInstanceDir.getChildren()) {
@@ -341,7 +348,7 @@ public class JBDeploymentFactory implements DeploymentFactory {
                 }
             }
         }
-        
+
         return false;
     }
 
@@ -368,9 +375,9 @@ public class JBDeploymentFactory implements DeploymentFactory {
 
     private static void register(FileObject serverInstanceDir, String serverLocation, String domainLocation, String host, String port) throws IOException {
         String displayName = generateDisplayName(serverInstanceDir);
-        
+
         String url = URI_PREFIX + host + ":" + port + "#default&" + serverLocation;    // NOI18N
-      
+
         String name = FileUtil.findFreeFileName(serverInstanceDir, "instance", null); // NOI18N
         FileObject instanceFO = serverInstanceDir.createData(name);
 
@@ -394,18 +401,18 @@ public class JBDeploymentFactory implements DeploymentFactory {
         FileObject dir = rep.getDefaultFileSystem().findResource("/J2EE/InstalledServers"); // NOI18N
         return dir;
     }
-    
+
     private static String generateDisplayName(FileObject serverInstanceDir) {
         final String serverName = NbBundle.getMessage(JBDeploymentFactory.class, "SERVER_NAME"); // NOI18N
-        
+
         String instanceName = serverName;
         int counter = 1;
         Set<String> registeredInstances = getServerInstancesNames(serverInstanceDir);
-        
+
         while (registeredInstances.contains(instanceName.toUpperCase())) {
             instanceName = serverName  + " (" + String.valueOf(counter++) + ")";
         }
-        
+
         return instanceName;
     }
 
@@ -415,9 +422,9 @@ public class JBDeploymentFactory implements DeploymentFactory {
             String instanceName = (String)instanceFO.getAttribute(InstanceProperties.DISPLAY_NAME_ATTR);
             names.add(instanceName.toUpperCase());
         }
-        
+
         return names;
     }
-    
+
 }
 
