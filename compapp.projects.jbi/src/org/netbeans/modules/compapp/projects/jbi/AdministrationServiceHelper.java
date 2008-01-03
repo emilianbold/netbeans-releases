@@ -88,16 +88,17 @@ public class AdministrationServiceHelper {
     public static RuntimeManagementServiceWrapper getRuntimeManagementServiceWrapper(
             ServerInstance serverInstance) throws ManagementRemoteException {
         MBeanServerConnection connection = getMBeanServerConnection(serverInstance);
-        ManagementClient mgmtClient = new ManagementClient(connection);
+        ManagementClient mgmtClient = getManagementClient(connection);
         return ServiceFactory.getRuntimeManagementServiceWrapper(mgmtClient);
     }
+    
     public static DeploymentService getDeploymentService(
             ServerInstance serverInstance) throws ManagementRemoteException {
         MBeanServerConnection connection = getMBeanServerConnection(serverInstance);
-        ManagementClient mgmtClient = new ManagementClient(connection);
+        ManagementClient mgmtClient = getManagementClient(connection);
         return mgmtClient.getDeploymentService();
     }
-
+    
 //    static RuntimeManagementService getRuntimeManagementServiceWrapper(String serverInstance) 
 //            throws ManagementRemoteException {
 //        ManagementClient mgmtClient = getManagementClient(serverInstance);
@@ -123,6 +124,14 @@ public class AdministrationServiceHelper {
             String j2eeServerInstance) {
         ServerInstance instance = getServerInstance(netBeansUserDir, j2eeServerInstance);  
         MBeanServerConnection connection = getMBeanServerConnection(instance);
+        return getManagementClient(connection);
+    }
+
+    private static ManagementClient getManagementClient(
+            MBeanServerConnection connection) {
+        if (connection == null) {
+            throw new RuntimeException("MBeanServerConnection is null. Make sure the App Server is running.");
+        }
         return new ManagementClient(connection);
     }
     
