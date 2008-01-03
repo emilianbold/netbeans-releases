@@ -63,7 +63,7 @@
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/namebeans/modules/compapp/configextension/resources/config-ext.png" />
             <folder name="throttling">
                 <file name="maximumConcurrencyLimit">
-                    <attr name="type" stringvalue="int"/>
+                    <attr name="type" stringvalue="Integer"/>
                     <attr name="description" stringvalue="Maximim Concurrency Limit"/>
                 </file>
             </folder>
