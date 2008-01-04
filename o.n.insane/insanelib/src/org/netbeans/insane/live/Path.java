@@ -160,7 +160,7 @@ public final class Path {
     }
 
     public int hashCode() {
-        return item.hashCode();
+        return System.identityHashCode(item);
     }
 
     public boolean equals(Object o) {
