@@ -1208,8 +1208,7 @@ public class XMPPConference implements org.netbeans.lib.collab.Conference {
         }
         if (_listener == null) return;
         ConferenceEventTuple cet = new ConferenceEventTuple(jid);
-        cet.id = StringUtility.removeResource( (isGroupChat) ? 
-            getParticipant(StringUtility.getResource(jid)).toString() : jid);
+        cet.id = (isGroupChat) ? getParticipant(StringUtility.getResource(jid)).toString() : jid;
         if (status == MessageStatus.TYPING_ON) {
             cet.status = Integer.toString(ConferenceEvent.ETYPE_USER_INPUT_STARTED);
         } else if (status == MessageStatus.TYPING_OFF) {
