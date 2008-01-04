@@ -61,8 +61,10 @@ import java.util.List;
  */
 public class JbiChoiceExtensionElement extends JbiExtensionElement {
     
-    public JbiChoiceExtensionElement(String name) {
-        super(name);
+    public JbiChoiceExtensionElement(String name, 
+            List<JbiExtensionElement> subElements,
+            List<JbiExtensionAttribute> attributes) {
+        super(name, subElements, attributes);
     }
     
     public List<String> getChoices() {

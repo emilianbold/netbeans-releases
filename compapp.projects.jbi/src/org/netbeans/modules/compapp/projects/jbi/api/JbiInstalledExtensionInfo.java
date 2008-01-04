@@ -127,10 +127,17 @@ public class JbiInstalledExtensionInfo {
      */
     public static JbiInstalledExtensionInfo getInstalledExtensionInfo() {
         if (singleton == null) {
+            FileSystem fileSystem = Repository.getDefault().getDefaultFileSystem();
+            return getInstalledExtensionInfo(fileSystem);
+        }
+
+        return singleton;
+    }
+    
+    static JbiInstalledExtensionInfo getInstalledExtensionInfo(FileSystem fileSystem) {
+        if (singleton == null) {
             try {
                 singleton = new JbiInstalledExtensionInfo();
-
-                FileSystem fileSystem = Repository.getDefault().getDefaultFileSystem();
 
                 // load new container first
                 FileObject fo = fileSystem.findResource(JBI_EXTENSIONS);
@@ -145,7 +152,7 @@ public class JbiInstalledExtensionInfo {
         return singleton;
     }
 
-    private static void loadJbiDefaultExtensionInfoFromFileObject(FileObject fo) {
+    /*private*/ static void loadJbiDefaultExtensionInfoFromFileObject(FileObject fo) {
         if (fo != null) {
             DataFolder df = DataFolder.findFolder(fo);
             for (DataObject extsDO : df.getChildren()) {
@@ -201,16 +208,18 @@ public class JbiInstalledExtensionInfo {
             FileObject childFO = child.getPrimaryFile();
             String childName = child.getName();
             if (childFO.isFolder()) {
-                String choice = (String) childFO.getAttribute(CHOICE); 
                 JbiExtensionElement element;
-                if (choice != null && choice.equalsIgnoreCase("true")) { // NOI18N
-                    element = new JbiChoiceExtensionElement(childName);
-                } else {
-                    element = new JbiExtensionElement(childName);
-                }
+                String choice = (String) childFO.getAttribute(CHOICE); 
                 List[] grandChildren = processElement((DataFolder)child);  
-                element.setElements(grandChildren[0]);
-                element.setAttributes(grandChildren[1]);
+                List<JbiExtensionElement> subElements = grandChildren[0];
+                List<JbiExtensionAttribute> attributes = grandChildren[1];
+                if (choice != null && choice.equalsIgnoreCase("true")) { // NOI18N
+                    element = new JbiChoiceExtensionElement(
+                            childName, subElements, attributes);
+                } else {
+                    element = new JbiExtensionElement(
+                            childName, subElements, attributes);
+                }
                 elements.add(element);                
             } else {
                 String extType = (String) childFO.getAttribute(ITEM_TYPE);

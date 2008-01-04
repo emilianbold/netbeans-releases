@@ -56,7 +56,8 @@ public class JbiExtensionAttribute implements Serializable {
     private String name;
 
     /**
-     * Type of the extension, e.x., "string", "integer", or "boolean".
+     * Type of the extension. The current supported types are "String", 
+     * "Integer", "Boolean" and "QName".
      */
     private String type;
 

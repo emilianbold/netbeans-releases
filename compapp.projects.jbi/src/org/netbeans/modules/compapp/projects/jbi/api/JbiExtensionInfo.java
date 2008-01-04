@@ -53,7 +53,7 @@ import java.util.List;
 public class JbiExtensionInfo implements Serializable {
 
     /**
-     * Name of the extension.
+     * Name of the extension, e.x., "ConfigExtension".
      */
     private String name;
 
@@ -68,7 +68,7 @@ public class JbiExtensionInfo implements Serializable {
     private String type;
 
     /**
-     * Name of the target component, e.x., "sun-http-binding". "all"
+     * Name of the target component, e.x., "sun-http-binding", "all"
      */
     private String target;
 
@@ -95,11 +95,14 @@ public class JbiExtensionInfo implements Serializable {
     /**
      * DOCUMENT ME!
      *
-     * @param name
-     * @param type
-     * @param icon
-     * @param description
-     * @param ns
+     * @param name      extension name, e.x., "ConfigExtension"
+     * @param type      extension type, e.x., "endpoint", "connection"
+     * @param target    extension target, e.x., "sun-http-binding", "all".
+     * @param file      schema file
+     * @param ns        extension namespace
+     * @param description   extension description
+     * @param icon      extension icon resource
+     * @param elements  a list of extension elements
      */
     public JbiExtensionInfo(String name, String type, String target,
                             String file, String ns, String description, URL icon,

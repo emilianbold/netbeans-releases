@@ -69,25 +69,11 @@ public class JbiExtensionElement implements Serializable {
     /**
      * 
      */
-    public JbiExtensionElement(String name) {
+    public JbiExtensionElement(String name, 
+            List<JbiExtensionElement> subElements,
+            List<JbiExtensionAttribute> attributes) {
         this.name = name;
-    }
-
-    /**
-     * Sets the child elements.
-     *
-     * @param attributes
-     */
-    public void setElements(List<JbiExtensionElement> elements) {
-        this.elements = elements;
-    }
-
-    /**
-     * Sets the list of attributes.
-     *
-     * @param attributes
-     */
-    public void setAttributes(List<JbiExtensionAttribute> attributes) {
+        this.elements = subElements;
         this.attributes = attributes;
     }
     
@@ -111,22 +97,17 @@ public class JbiExtensionElement implements Serializable {
     public List<JbiExtensionAttribute> getAttributes() {
         return attributes;
     }
-    
-//    /**
-//     * Checks whether it is a leaf element.
-//     */
-//    public boolean isLeafElement() {
-//        return elements == null;
-//    }
       
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("JbiExtensionElement:");
         
+        String newLine = System.getProperty("line.separator");
+        
         if (attributes != null) {
             for (JbiExtensionAttribute attr : attributes) {
-                sb.append(System.getProperty("line.separator"));
+                sb.append(newLine);
                 sb.append("  ");
                 sb.append(attr.toString());
             }
@@ -134,7 +115,7 @@ public class JbiExtensionElement implements Serializable {
         
         if (elements != null) {
             for (JbiExtensionElement childElement : elements) {
-                sb.append(System.getProperty("line.separator"));
+                sb.append(newLine);
                 sb.append("  ");
                 sb.append(childElement.toString());
             }

@@ -40,9 +40,36 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<project name="org.netbeans.modules.compapp.projects.jbi/test-unit" basedir="." default="all">
+<project name="org.netbeans.modules.compapp.projects.jbi/test-qa-functional" basedir="." default="all">
 
-    <!-- Imports default-compiler, run-unit-test targets referenced from cfg-unit.xml. -->
-    <import file="../../../../nbbuild/templates/xtest-unit.xml"/>
+    <!-- Imports default qa-functional-compiler and runidetest executor.
+        jemmy and jellytools jars are on classpath for both. -->
+    <import file="../../../../nbbuild/templates/xtest-qa-functional.xml"/>
+
+    <!-- ========= -->
+    <!-- Compilers -->
+    <!-- ========= -->
+
+    <!-- You can override default qa-functional-compiler if you need something special -->
+         <!--
+    <target name="qa-functional-compiler" depends="init-cp">
+        <buildTests srcdir="qa-functional/src" compileexcludes="**/data/**">
+            <classpath refid="test.qa-functional.compile.cp"/>
+        </buildTests>
+    </target>
+    -->
+    
+    <!-- ========= -->
+    <!-- Executors -->
+    <!-- ========= -->
+    
+    <!-- This target executes tests inside IDE. It is defined in default-build-qa-functional.xml.
+         If you need to customize it, you can uncomment the following and override it.
+    <target name="runidetest" depends="init-cp">
+        <executeTests pluginname="ide">
+            <classpath refid="test.qa-functional.run.cp"/>
+        </executeTests>
+    </target>
+    -->
 </project>
 
