@@ -54,8 +54,9 @@ import org.openide.ErrorManager;
 
 
 import com.sun.rave.designtime.DesignContext;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.visualweb.jsfsupport.render.RaveRenderKit;
-import org.openide.util.Exceptions;
 
 /**
  * FacesContainer provides a "mock" web/servlet container environment for hosting the design of a
@@ -208,6 +209,9 @@ public class FacesContainer {
         RenderKit renderKit = factory.getRenderKit(facesContext, id);
         if (!(renderKit instanceof RaveRenderKit))
             factory.addRenderKit(id, new RaveRenderKit(renderKit));
+        
+        // Initialize the JsfTagSupport URI/TLD-FacesConfig map
+        JsfTagSupport.initialize(loader);
     }
     
     /**
@@ -366,14 +370,13 @@ public class FacesContainer {
     
       public String findComponentClass(String tagName, String taglibUri) {
         try {
-            JsfTagSupport jsfTagSupport = JsfTagSupport.getInstance(loader, taglibUri);
-            return jsfTagSupport.getComponentClass(loader, tagName);
+            return JsfTagSupport.getInstance(taglibUri).getComponentClass(loader, tagName);
         } catch (ClassNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
+            Logger.getLogger(JsfTagSupport.class.getName()).log(Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            Exceptions.printStackTrace(ex);
+            Logger.getLogger(JsfTagSupport.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            Exceptions.printStackTrace(ex);
+            Logger.getLogger(JsfTagSupport.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
     }
