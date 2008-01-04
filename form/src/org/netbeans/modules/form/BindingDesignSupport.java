@@ -184,7 +184,7 @@ public class BindingDesignSupport {
     // Used to determine binding properties only
     List<BindingDescriptor>[] getBindingDescriptors(RADComponent component) {
         BeanDescriptor beanDescriptor = component.getBeanInfo().getBeanDescriptor();
-        List<BindingDescriptor>[] descs = getBindingDescriptors(null, beanDescriptor);
+        List<BindingDescriptor>[] descs = getBindingDescriptors(null, beanDescriptor, false);
         Class<?> beanClass = component.getBeanClass();
         if (JTextComponent.class.isAssignableFrom(beanClass)) {
             // get rid of text_... descriptors
@@ -205,7 +205,7 @@ public class BindingDesignSupport {
         return descs;
     }
 
-    List<BindingDescriptor> filterDescriptors(List<BindingDescriptor> descs, String forbiddenPrefix) {
+    private List<BindingDescriptor> filterDescriptors(List<BindingDescriptor> descs, String forbiddenPrefix) {
         List<BindingDescriptor> filtered = new LinkedList<BindingDescriptor>();
         for (BindingDescriptor bd : descs) {
             if (!bd.getPath().startsWith(forbiddenPrefix)) { // NOI18N
@@ -231,7 +231,7 @@ public class BindingDesignSupport {
         return descs;
     }
 
-    private List<BindingDescriptor>[] getBindingDescriptors(TypeHelper type, BeanDescriptor beanDescriptor) {
+    private List<BindingDescriptor>[] getBindingDescriptors(TypeHelper type, BeanDescriptor beanDescriptor, boolean includeReadOnly) {
         Class<?> beanClass = beanDescriptor.getBeanClass();
         List<BindingDescriptor> bindingList = new LinkedList<BindingDescriptor>();
         List<BindingDescriptor> prefList = new LinkedList<BindingDescriptor>();
@@ -263,6 +263,9 @@ public class BindingDesignSupport {
             if (count++<specialPds.size()) {
                 list = bindingList;
             } else {
+                if (!includeReadOnly && (pd.getWriteMethod() == null)) {
+                    continue;
+                }
                 Object propCat = FormUtils.getPropertyCategory(pd, propsCats);                
                 if (propCat == FormUtils.PROP_HIDDEN) {
                     // hidden property => hide also the binding property
@@ -448,7 +451,7 @@ public class BindingDesignSupport {
                 && !clazz.isArray()) {
             try {
                 BeanInfo beanInfo = FormUtils.getBeanInfo(clazz);
-                List<BindingDescriptor>[] typesFromBinary = getBindingDescriptors(type, beanInfo.getBeanDescriptor());
+                List<BindingDescriptor>[] typesFromBinary = getBindingDescriptors(type, beanInfo.getBeanDescriptor(), true);
                 Map<String,BindingDescriptor>[] maps = new Map[3];
                 for (int i=0; i<3; i++) {
                     maps[i] = listToMap(typesFromBinary[i]);
