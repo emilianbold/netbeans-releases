@@ -119,7 +119,7 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.soa.jgo</code-name-base>
+                    <code-name-base>org.netbeans.soa.libs.jgo</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
