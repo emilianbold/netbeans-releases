@@ -50,8 +50,6 @@ import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -69,10 +67,7 @@ import org.openide.windows.TopComponent;
  * @author JohnBaker
  */
 public class CurrentProject {
-    private static CurrentProject _instance = null;
-    private static final Logger LOGGER = 
-            Logger.getLogger(CurrentProject.class.getName());
-
+    private static CurrentProject _instance = null;    
     private Project project = null;
     protected ProjectsChangedListener changedProjectsListener = new ProjectsChangedListener();
         
@@ -97,7 +92,6 @@ public class CurrentProject {
     }
     
     public void setProject(Project project) {
-        LOGGER.log(Level.INFO, "Current Project = " + project); // NOI18N
         this.project = project;
     }
 
