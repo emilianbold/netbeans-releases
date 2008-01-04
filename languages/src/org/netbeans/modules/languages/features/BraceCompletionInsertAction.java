@@ -78,6 +78,10 @@ public class BraceCompletionInsertAction extends ExtDefaultKeyTypedAction {
                 return;
             }
             TokenSequence ts = th.tokenSequence ();
+            if (ts == null) {
+                super.insertString (doc, dotPos, caret, str, overwrite);
+                return;
+            }
             int offset = caret.getDot ();
             while (true) {
                 ts.move (caret.getDot ());

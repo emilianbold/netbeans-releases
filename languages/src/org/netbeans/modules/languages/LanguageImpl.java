@@ -263,14 +263,16 @@ public class LanguageImpl extends Language {
             List<TokenType> tokenTypes = reader.getTokenTypes ();
             if (tokenTypes.isEmpty ()) {
                 org.netbeans.api.lexer.Language lexerLanguage = org.netbeans.api.lexer.Language.find (getMimeType ());
-                Iterator it = lexerLanguage.tokenIds ().iterator ();
-                while (it.hasNext()) {
-                    TokenId tokenId = (TokenId) it.next();
-                    int id = tokenId.ordinal ();
-                    String name = tokenId.name ();
-                    idToTokenType.put (id, name);
-                    tokenTypeToID.put (name, id);
-                    tokenTypeCount = Math.max (tokenTypeCount, id + 1);
+                if (lexerLanguage != null) {
+                    Iterator it = lexerLanguage.tokenIds ().iterator ();
+                    while (it.hasNext()) {
+                        TokenId tokenId = (TokenId) it.next();
+                        int id = tokenId.ordinal ();
+                        String name = tokenId.name ();
+                        idToTokenType.put (id, name);
+                        tokenTypeToID.put (name, id);
+                        tokenTypeCount = Math.max (tokenTypeCount, id + 1);
+                    }
                 }
             } else {
                 Iterator<TokenType> it = tokenTypes.iterator ();
