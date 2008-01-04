@@ -129,7 +129,7 @@ public abstract class JavaSourceTaskFactory {
     protected final void fileObjectsChanged() {
         LOG.log(Level.FINEST, FILEOBJECTS_COMPUTATION);
 
-        final List<FileObject> currentFiles = new ArrayList(getFileObjects());
+        final List<FileObject> currentFiles = new ArrayList<FileObject>(getFileObjects());
 
         if (SYNCHRONOUS_EVENTS) {
             stateChangedImpl(currentFiles);
@@ -151,8 +151,8 @@ public abstract class JavaSourceTaskFactory {
         Map<JavaSource, CancellableTask<CompilationInfo>> toAdd = new HashMap<JavaSource, CancellableTask<CompilationInfo>>();
         
         synchronized (this) {
-            List<FileObject> addedFiles = new ArrayList(currentFiles);
-            List<FileObject> removedFiles = new ArrayList(file2Task.keySet());
+            List<FileObject> addedFiles = new ArrayList<FileObject>(currentFiles);
+            List<FileObject> removedFiles = new ArrayList<FileObject>(file2Task.keySet());
             
             addedFiles.removeAll(file2Task.keySet());
             removedFiles.removeAll(currentFiles);
@@ -232,7 +232,7 @@ public abstract class JavaSourceTaskFactory {
     private final Map<FileObject, CancellableTask<CompilationInfo>> file2Task;
     private final Map<FileObject, JavaSource> file2JS;
 
-    private static RequestProcessor WORKER = new RequestProcessor("JavaSourceTaskFactory", 1);
+    private static RequestProcessor WORKER = new RequestProcessor("JavaSourceTaskFactory", 1); // NOI18N
     
     static {
         JavaSourceTaskFactoryManager.ACCESSOR = new JavaSourceTaskFactoryManager.Accessor() {
