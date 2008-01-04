@@ -564,7 +564,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
     private FileObject getFileObject (String file) {
         File f = new File (file);
         FileObject fo = FileUtil.toFileObject (f);
-        if (FileUtil.isArchiveFile (fo))
+        if (fo != null && FileUtil.isArchiveFile (fo))
             fo = FileUtil.getArchiveRoot (fo);
         return fo;
     }
