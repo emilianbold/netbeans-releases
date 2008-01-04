@@ -1,5 +1,19 @@
 # XXX choke quickly if user not running Python 2.5.1 or later
 import os, re, urllib2, sha, inspect
+
+# Workaround for a Python bug (in linecache.py?):
+# http://bugs.python.org/issue1728
+# http://bugs.python.org/issue1665
+# https://bugs.launchpad.net/ubuntu/+source/python-defaults/+bug/70902
+# http://mail.python.org/pipermail/python-bugs-list/2007-March/037472.html
+_inspect_findsource_orig = inspect.findsource
+def _inspect_findsource_robust(object):
+    try:
+        return _inspect_findsource_orig(object)
+    except IndexError:
+        raise IOError('workaround for linecache bug')
+inspect.findsource=_inspect_findsource_robust
+
 from mercurial import util, httprepo
 # Compatibility for Hg not including give-filters-more-context.diff:
 def _findparamvalue(function, param):
