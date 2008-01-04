@@ -79,6 +79,7 @@ import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
+import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.openide.ErrorManager;
 import org.openide.LifecycleManager;
 import org.openide.awt.Actions;
@@ -379,7 +380,7 @@ public class RakeTargetsAction extends SystemAction implements ContextAwareActio
     }
 
     public static void refreshTargets(Project project) {
-        if (!RubyPlatform.gemManagerFor(project).isValidRake(false)) {
+        if (!RubyPlatform.hasValidRake(project, true)) {
             return;
         }
 
@@ -664,8 +665,7 @@ public class RakeTargetsAction extends SystemAction implements ContextAwareActio
         }
 
         public void run() {
-            RubyPlatform platform = RubyPlatform.platformFor(project);
-            if (!platform.isValidRuby(true) || !platform.getGemManager().isValidRake(true)) {
+            if (!RubyPlatform.hasValidRake(project, true)) {
                 return;
             }
 

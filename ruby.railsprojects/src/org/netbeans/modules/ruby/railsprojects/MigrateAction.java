@@ -307,7 +307,7 @@ public final class MigrateAction extends SystemAction implements ContextAwareAct
         }
 
         public void run() {
-            if (!RubyPlatform.gemManagerFor(project).isValidRake(true)) {
+            if (!RubyPlatform.hasValidRake(project, true)) {
                 return;
             }
 

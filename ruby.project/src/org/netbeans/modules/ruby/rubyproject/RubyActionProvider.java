@@ -367,8 +367,8 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         //    TODO: Somehow pass the properties to the launched process, and have it digest it
         //}
 
-        // FIXME: project or platfrom sensitive
-        RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
+        RubyPlatform platform = RubyPlatform.platformFor(project);
+        assert platform != null : "Action '" + command + "' should be disabled when platform is invalid";
         GemManager gemManager = platform.getGemManager();
         
         // TODO Check for valid installation of Ruby and Rake

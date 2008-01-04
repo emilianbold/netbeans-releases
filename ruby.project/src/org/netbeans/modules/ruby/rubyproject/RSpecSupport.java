@@ -79,7 +79,7 @@ public class RSpecSupport {
 
     private String getVersion(final String gemName) {
         GemManager gemManager = RubyPlatform.gemManagerFor(project);
-        return gemManager.getVersion(gemName);
+        return gemManager == null ? null : gemManager.getVersion(gemName);
     }
     
     public boolean isRSpecInstalled() {

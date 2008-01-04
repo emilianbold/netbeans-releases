@@ -66,6 +66,7 @@ import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyIndex;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.elements.IndexedClass;
+import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.spi.gototest.TestLocator;
 import org.netbeans.spi.gototest.TestLocator.LocationResult;
 import org.openide.filesystems.FileObject;
@@ -121,7 +122,8 @@ public class GotoTest implements TestLocator {
     }
 
     private boolean isZenTestInstalled(final Project project) {
-        return RubyPlatform.gemManagerFor(project).getVersion("ZenTest") != null; // NOI18N
+        GemManager gemManager = RubyPlatform.gemManagerFor(project);
+        return gemManager != null && gemManager.getVersion("ZenTest") != null; // NOI18N
     }
 
     private boolean isRSpecInstalled(final Project project) {

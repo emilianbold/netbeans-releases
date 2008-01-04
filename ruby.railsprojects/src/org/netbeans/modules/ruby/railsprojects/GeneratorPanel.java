@@ -65,7 +65,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  * TODO: Do some checking of the arguments. For example, the documentation says
@@ -307,6 +306,7 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
         }
         
         GemManager gemManager = RubyPlatform.gemManagerFor(project);
+        assert gemManager != null : "Invalid platform for project [" + project + ']';
         
         // 3. Add in RubyGem generators
         File gemDir = new File(gemManager.getGemDir() + File.separator + "gems"); // NOI18N
@@ -458,6 +458,7 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
         changeListener = l; 
     }      
     
+    @Override
     public boolean isValid() {
         Generator generator = getSelectedGenerator();
         if (generator == Generator.NONE) {

@@ -221,7 +221,7 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             runServer("", debugCommand);
             return;
         } else if (COMMAND_TEST.equals(command)) {
-            if (!RubyPlatform.gemManagerFor(project).isValidRake(true)) {
+            if (!RubyPlatform.hasValidRake(project, true)) {
                 return;
             }
             // Save all files first
@@ -261,7 +261,7 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             boolean isDebug = COMMAND_DEBUG_TEST_SINGLE.equals(command);
  
             RSpecSupport rspec = new RSpecSupport(project);
-            if (rspec.isRSpecInstalled() && rspec.isSpecFile(file)) {
+            if (rspec.isRSpecInstalled() && RSpecSupport.isSpecFile(file)) {
                 rspec.runRSpec(null, file, file.getName(), new RailsFileLocator(context, project), true, isDebug);
                 return;
             }
@@ -291,7 +291,7 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             }
             
             RSpecSupport rspec = new RSpecSupport(project);
-            if (rspec.isRSpecInstalled() && rspec.isSpecFile(file)) {
+            if (rspec.isRSpecInstalled() && RSpecSupport.isSpecFile(file)) {
                 // Save all files first - this rake file could be accessing other files
                 LifecycleManager.getDefault().saveAll();
                 rspec.runRSpec(null, file, file.getName(), new RailsFileLocator(context, project), true, debugSingleCommand);
@@ -405,7 +405,7 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             runServer(path, debugCommand || debugSingleCommand);
             return;
         } else if (COMMAND_BUILD.equals(command)) {
-            if (!RubyPlatform.gemManagerFor(project).isValidRake(true)) {
+            if (!RubyPlatform.hasValidRake(project, true)) {
                 return;
             }
             
@@ -443,7 +443,7 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
         }
         
         if (COMMAND_RDOC.equals(command)) {
-            if (!RubyPlatform.gemManagerFor(project).isValidRake(true)) {
+            if (!RubyPlatform.hasValidRake(project, true)) {
                 return;
             }
 

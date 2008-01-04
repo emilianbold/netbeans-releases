@@ -74,7 +74,8 @@ public class AutoTestSupport {
     }
     
     public static boolean isInstalled(final Project project) {
-        return RubyPlatform.gemManagerFor(project).isValidAutoTest(false);
+        GemManager gemManager = RubyPlatform.gemManagerFor(project);
+        return gemManager == null ? false : gemManager.isValidAutoTest(false);
     }
 
     public void start() {

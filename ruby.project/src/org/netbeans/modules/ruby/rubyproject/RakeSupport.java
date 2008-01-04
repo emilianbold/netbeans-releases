@@ -177,11 +177,12 @@ public class RakeSupport {
             pwd = FileUtil.toFile(rakeFile.getParent());
         }
 
-        RubyPlatform platform = RubyPlatform.platformFor(project);
-        GemManager gemManager = platform.getGemManager();
-        if (!platform.isValidRuby(warn) || !gemManager.isValidRake(warn)) {
+        if (!RubyPlatform.hasValidRake(project, warn)) {
             return;
         }
+        
+        RubyPlatform platform = RubyPlatform.platformFor(project);
+        GemManager gemManager = platform.getGemManager();
 
         String rake = gemManager.getRake();
         ExecutionDescriptor desc;

@@ -44,13 +44,14 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.napi.gsfret.source.Source;
+import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -104,7 +105,26 @@ public final class RubyPlatform {
 
     /** Utility method. */
     public static GemManager gemManagerFor(final Project project) {
-        return RubyPlatform.platformFor(project).getGemManager();
+        RubyPlatform platform = RubyPlatform.platformFor(project);
+        return platform == null ? null : platform.getGemManager();
+    }
+
+    /**
+     * Checks whether project has a valid platform and in turn whether the
+     * platform has a valid Rake installed.
+     *
+     * @param warn whether to show warning message to the user if ther is no
+     *        valid Rake installed
+     */
+    public static boolean hasValidRake(final Project project, final boolean warn) {
+        RubyPlatform platform = RubyPlatform.platformFor(project);
+        if (platform == null) {
+            if (warn) {
+                showWarning(project);
+            }
+            return false;
+        }
+        return platform.isValidRuby(warn) && platform.getGemManager().isValidRake(warn);
     }
     
     public String getID() {
@@ -339,43 +359,67 @@ public final class RubyPlatform {
         }
 
         if (warn && !valid) {
-            String msg =
-                    NbBundle.getMessage(RubyInstallation.class, "NotInstalledRuby");
-            JButton closeButton =
-                    new JButton(NbBundle.getMessage(RubyInstallation.class, "CTL_Close"));
-            closeButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RubyInstallation.class,
-                    "AD_Close")); // NOI18N
-
-            final JButton optionsButton =
-                    new JButton(NbBundle.getMessage(RubyInstallation.class, "EditOptions"));
-            Object[] options = new Object[]{optionsButton,
-                closeButton
-            };
-            DialogDescriptor descriptor =
-                    new DialogDescriptor(msg,
-                    NbBundle.getMessage(RubyInstallation.class, "MissingRuby"), true, options,
-                    optionsButton, // XXX TODO i18n
-                    DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(RubyInstallation.class), null);
-            descriptor.setMessageType(NotifyDescriptor.Message.ERROR_MESSAGE);
-
-            Dialog dlg = null;
-            descriptor.setModal(true);
-
-            try {
-                dlg = DialogDisplayer.getDefault().createDialog(descriptor);
-                dlg.setVisible(true);
-            } finally {
-                if (dlg != null) {
-                    dlg.dispose();
-                }
-            }
-
-            if (descriptor.getValue() == optionsButton) {
-                RubyInstallation.displayRubyOptions();
-            }
+            showWarning(this);
         }
 
         return valid;
+    }
+
+    private static void showWarning(final RubyPlatform platform) {
+        String msg = NbBundle.getMessage(RubyInstallation.class, "InvalidRubyPlatform", platform.getLabel());
+        JButton closeButton = getCloseButton();
+
+        Object[] options = new Object[]{closeButton};
+        showDialog(msg, options);
+    }
+    
+    private static void showWarning(final Project project) {
+        String msg =
+                NbBundle.getMessage(RubyInstallation.class, "InvalidRubyPlatformForProject",
+                ProjectUtils.getInformation(project).getDisplayName());
+        JButton closeButton = getCloseButton();
+
+        CustomizerProvider customizer = project.getLookup().lookup(CustomizerProvider.class);
+        Object[] options;
+        JButton propertiesButton =
+                new JButton(NbBundle.getMessage(RubyInstallation.class, "Properties"));
+        if (customizer != null) {
+            options = new Object[]{propertiesButton, closeButton};
+        } else {
+            options = new Object[]{closeButton};
+            
+        }
+        if (showDialog(msg, options) == propertiesButton) {
+            customizer.showCustomizer();
+        }
+    }
+
+    private static Object showDialog(String msg, Object[] options) {
+        DialogDescriptor descriptor =
+                new DialogDescriptor(msg,
+                NbBundle.getMessage(RubyInstallation.class, "MissingRuby"), true, options,
+                options[0],
+                DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(RubyInstallation.class), null);
+        descriptor.setMessageType(NotifyDescriptor.Message.ERROR_MESSAGE);
+        descriptor.setModal(true);
+        Dialog dlg = null;
+        try {
+            dlg = DialogDisplayer.getDefault().createDialog(descriptor);
+            dlg.setVisible(true);
+        } finally {
+            if (dlg != null) {
+                dlg.dispose();
+            }
+        }
+        return descriptor.getValue();
+    }
+
+    private static JButton getCloseButton() {
+        JButton closeButton =
+                new JButton(NbBundle.getMessage(RubyInstallation.class, "CTL_Close"));
+        closeButton.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(RubyInstallation.class, "AD_Close"));
+        return closeButton;
     }
 
     public String getLabel() {
