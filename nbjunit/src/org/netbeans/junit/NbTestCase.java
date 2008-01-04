@@ -1322,6 +1322,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
             Map m = LiveReferences.fromRoots(Collections.singleton(target), (Set<Object>)rootsHint, null, knownPath);
             Path p = (Path)m.get(target);
             if (p == null) break;
+            if (sb.length() > 0) sb.append("\n\n");
             sb.append(p);
             for (; p != null; p=p.nextNode()) {
                 Object o = p.getObject();
