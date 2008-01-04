@@ -106,6 +106,7 @@ public class DocumentsDialogOperatorTest extends JellyTestCase {
         // "Refactor"
         String refactorLabel = Bundle.getStringTrimmed("org.netbeans.modules.refactoring.spi.impl.Bundle", "CTL_Finish");
         new JButtonOperator(copyClassOper, refactorLabel).push();
+        copyClassOper.getTimeouts().setTimeout("Waiter.WaitingTime", 30000);
         copyClassOper.waitClosed();
         editableSourceNode = new Node(sample2, "SampleClass21");// NOI18N
         new OpenAction().performAPI(editableSourceNode);
