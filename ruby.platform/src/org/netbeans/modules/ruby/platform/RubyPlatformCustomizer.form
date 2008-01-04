@@ -20,25 +20,29 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="platformsListSP" min="-2" pref="235" max="-2" attributes="0"/>
-                      <EmptySpace min="6" pref="6" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="plfName" alignment="0" min="-2" pref="81" max="-2" attributes="0"/>
-                          <Component id="plfInterpreter" min="-2" pref="85" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                          <Component id="gemHome" linkSize="4" max="32767" attributes="1"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="plfName" linkSize="4" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="32767" attributes="1"/>
+                          </Group>
+                          <Component id="plfInterpreter" linkSize="4" alignment="0" max="32767" attributes="1"/>
                       </Group>
-                      <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="plfInterpreterValue" pref="320" max="32767" attributes="0"/>
-                          <Component id="plfNameValue" alignment="0" pref="320" max="32767" attributes="0"/>
+                          <Component id="plfInterpreterValue" alignment="0" pref="313" max="32767" attributes="0"/>
+                          <Component id="gemHomeValue" alignment="0" pref="313" max="32767" attributes="0"/>
+                          <Component id="plfNameValue" alignment="1" pref="313" max="32767" attributes="0"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="addButton" min="-2" pref="113" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
                       <Component id="removeButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="465" max="32767" attributes="0"/>
                   </Group>
               </Group>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -56,6 +60,11 @@
                       <Group type="103" groupAlignment="2" attributes="0">
                           <Component id="plfInterpreter" alignment="2" min="-2" max="-2" attributes="0"/>
                           <Component id="plfInterpreterValue" alignment="2" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="gemHome" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="gemHomeValue" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
@@ -130,6 +139,18 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="plfInterpreterValue">
+      <Properties>
+        <Property name="editable" type="boolean" value="false"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="gemHome">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/ruby/platform/Bundle.properties" key="RubyPlatformCustomizer.gemHome.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="gemHomeValue">
       <Properties>
         <Property name="editable" type="boolean" value="false"/>
       </Properties>

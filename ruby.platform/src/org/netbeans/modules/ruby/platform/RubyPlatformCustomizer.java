@@ -105,6 +105,7 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
         }
         plfNameValue.setText(plaf.getLabel());
         plfInterpreterValue.setText(plaf.getInterpreter());
+        gemHomeValue.setText(plaf.getGemManager().getGemDir());
         removeButton.setEnabled(!plaf.isDefault());
     }
 
@@ -124,6 +125,8 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
         plfNameValue = new javax.swing.JTextField();
         plfInterpreter = new javax.swing.JLabel();
         plfInterpreterValue = new javax.swing.JTextField();
+        gemHome = new javax.swing.JLabel();
+        gemHomeValue = new javax.swing.JTextField();
 
         platformsList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         platformsListSP.setViewportView(platformsList);
@@ -150,6 +153,10 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
 
         plfInterpreterValue.setEditable(false);
 
+        org.openide.awt.Mnemonics.setLocalizedText(gemHome, org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.gemHome.text")); // NOI18N
+
+        gemHomeValue.setEditable(false);
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -160,20 +167,26 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .add(platformsListSP, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 235, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .add(6, 6, 6)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                            .add(gemHome, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(layout.createSequentialGroup()
+                                .add(plfName)
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .add(plfInterpreter, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .add(12, 12, 12)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(plfName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 81, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(plfInterpreter, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 85, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .add(8, 8, 8)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(plfInterpreterValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
-                            .add(plfNameValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE))
-                        .addContainerGap())
+                            .add(plfInterpreterValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)
+                            .add(gemHomeValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, plfNameValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)))
                     .add(layout.createSequentialGroup()
                         .add(addButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 113, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .add(12, 12, 12)
-                        .add(removeButton)
-                        .addContainerGap(465, Short.MAX_VALUE))))
+                        .add(removeButton)))
+                .addContainerGap())
         );
+
+        layout.linkSize(new java.awt.Component[] {gemHome, plfInterpreter, plfName}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
@@ -186,7 +199,11 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
                         .add(10, 10, 10)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
                             .add(plfInterpreter)
-                            .add(plfInterpreterValue, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                            .add(plfInterpreterValue, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .add(18, 18, 18)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(gemHome)
+                            .add(gemHomeValue, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                     .add(layout.createSequentialGroup()
                         .add(platformsListSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 339, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -234,6 +251,8 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
+    private javax.swing.JLabel gemHome;
+    private javax.swing.JTextField gemHomeValue;
     private javax.swing.JList platformsList;
     private javax.swing.JScrollPane platformsListSP;
     private javax.swing.JLabel plfInterpreter;
