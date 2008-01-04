@@ -46,6 +46,9 @@ import javax.swing.event.ChangeListener;
  * Provides the known server instances. Any registered listener must be
  * notified when instance is added or removed during the life of the provider.
  * <p>
+ * In order to register your provider you have to register it in filesystem
+ * in folder <code>Servers</code>.
+ * <p>
  * Note you can use {@link org.openide.util.ChangeSupport} for implementation
  * of listener logic.
  *

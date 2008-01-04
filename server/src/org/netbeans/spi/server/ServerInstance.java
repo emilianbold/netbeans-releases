@@ -43,9 +43,11 @@ import javax.swing.JComponent;
 import org.openide.nodes.Node;
 
 /**
- * The representation of the single instance.
+ * The representation of the single server instance. Class describe the instance
+ * and provides needed operations.
  *
  * @author Petr Hejl
+ * @see ServerInstanceProvider
  */
 public abstract class ServerInstance {
 
@@ -66,7 +68,7 @@ public abstract class ServerInstance {
     /**
      * Returns the node representing the instance. Parameter determines whether
      * the node should be manageable (provide actions for the instance,
-     * display its status).
+     * display its status and so on).
      *
      * @param manageable <code>true</code> if the node should display
      *           the status of the instance and provide control functionality
@@ -75,7 +77,10 @@ public abstract class ServerInstance {
     public abstract Node getNode(boolean manageable);
 
     /**
-     * Returns the component allowing the customization of the instance.
+     * Returns the component allowing the customization of the instance. May
+     * return <code>null</code>.
+     * <p>
+     * Always called from Event Dispatch Thread.
      *
      * @return the component allowing the customization of the instance,
      *             may return <code>null</code>

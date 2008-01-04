@@ -44,7 +44,7 @@ import org.openide.WizardDescriptor.InstantiatingIterator;
 /**
  * Provides the iterator and display name for addition of the new instance of
  * the server. Implementation of this class must be registered in
- * <i>Servers</i> folder in the system filesystem.
+ * <code>Servers</code> folder in the system filesystem.
  *
  * @author Petr Hejl
  */
