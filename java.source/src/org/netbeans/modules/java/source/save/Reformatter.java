@@ -1013,8 +1013,10 @@ public class Reformatter implements ReformatTask {
                     }
                     break;
             }
+            boolean isEmpty = true;
             for (StatementTree stat  : node.getStatements()) {
                 if (!isSynthetic(getCurrentPath().getCompilationUnit(), stat)) {
+                    isEmpty = false;
                     if (stat.getKind() == Tree.Kind.LABELED_STATEMENT && cs.absoluteLabelIndent()) {
                         int o = indent;
                         indent = 0;
@@ -1026,6 +1028,8 @@ public class Reformatter implements ReformatTask {
                     scan(stat, p);
                 }
             }
+            if (isEmpty)
+                newline();
             indent = halfIndent;
             if (node instanceof FakeBlock) {
                 String s = getNewlines(1) + getIndent() + "}"; //NOI18N
