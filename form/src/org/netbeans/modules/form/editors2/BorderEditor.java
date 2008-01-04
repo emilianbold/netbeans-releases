@@ -1221,6 +1221,7 @@ public final class BorderEditor extends PropertyEditorSupport
             org.w3c.dom.Node node;
 
             borderSupport = new BorderDesignSupport(borderClass);
+            borderSupport.setPropertyContext(propertyContext);
             FormProperty prop;
 
             node = attributes.getNamedItem(ATTR_BEVEL_TYPE);
