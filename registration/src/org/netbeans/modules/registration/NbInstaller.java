@@ -95,7 +95,7 @@ public class NbInstaller extends ModuleInstall {
         }
         
         try {
-            NbServiceTagSupport.createNbServiceTag("NetBeans IDE 6.0");
+            NbServiceTagSupport.createNbServiceTag(NbBundle.getMessage(NbInstaller.class,"nb.product.name"));
             //NbServiceTagSupport.createGfServiceTag("NetBeans IDE 6.0");
             //NbServiceTagSupport.createJdkServiceTag("NetBeans IDE 6.0");
             //NbServiceTagSupport.getRegistrationHtmlPage(PRODUCT_ID);
