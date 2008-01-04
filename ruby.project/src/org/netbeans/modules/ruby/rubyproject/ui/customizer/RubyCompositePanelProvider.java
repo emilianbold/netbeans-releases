@@ -41,11 +41,9 @@
 
 package org.netbeans.modules.ruby.rubyproject.ui.customizer;
 
-import java.util.List;
 import java.util.ResourceBundle;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -99,8 +97,6 @@ public class RubyCompositePanelProvider implements ProjectCustomizer.CompositeCa
         RubyProjectProperties uiProps = context.lookup(RubyProjectProperties.class);
         if (SOURCES.equals(nm)) {
             return new CustomizerSources(uiProps);
-        } else if (BUILD.equals(nm)) {
-            return new CustomizerCompile(uiProps);
         } else if (RUN.equals(nm)) {
             return new CustomizerRun(uiProps);
         }

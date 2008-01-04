@@ -158,13 +158,9 @@ public class RubyProjectProperties extends SharedRubyProjectProperties {
 //    ComboBoxModel PLATFORM_MODEL;
 //    ListCellRenderer PLATFORM_LIST_RENDERER;
     
-    // CustomizerCompile
 //    ButtonModel NO_DEPENDENCIES_MODEL;
     Document JAVAC_COMPILER_ARG_MODEL;
-    
-    // CustomizerCompileTest
 
-    
     
 //    // CustomizerJar
 //    Document DIST_JAR_MODEL; 

@@ -41,11 +41,9 @@
 
 package org.netbeans.modules.ruby.railsprojects.ui.customizer;
 
-import java.util.List;
 import java.util.ResourceBundle;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -89,9 +87,7 @@ public class RailsCompositePanelProvider implements ProjectCustomizer.CompositeC
     public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
         String nm = category.getName();
         RailsProjectProperties uiProps = context.lookup(RailsProjectProperties.class);
-        if (BUILD.equals(nm)) {
-            return new CustomizerCompile(uiProps);
-        } else if (RAILS.equals(nm)) {
+        if (RAILS.equals(nm)) {
             return new CustomizerRun(uiProps);
         }
         return new JPanel();

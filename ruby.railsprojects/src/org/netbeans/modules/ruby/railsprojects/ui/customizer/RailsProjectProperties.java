@@ -118,7 +118,6 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
     // Properties stored in the PRIVATE.PROPERTIES
     public static final String APPLICATION_ARGS = "application.args"; // NOI18N
     
-    // CustomizerCompile
 //    ButtonModel NO_DEPENDENCIES_MODEL;
     Document JAVAC_COMPILER_ARG_MODEL;
     
