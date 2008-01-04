@@ -163,6 +163,9 @@ public class ProjectDataSourceTracker{
     }
     
     public static String[] getDynamicDataSources(Project project) {
+        // Set the current project
+        CurrentProject.getInstance().setProject(project);
+            
         return getDSTracker(project).getDynamicDataSources() ;
     }
     
@@ -335,11 +338,7 @@ public class ProjectDataSourceTracker{
             
             FileObject file = model.getFile() ;
             String fname = file.getPath() ;
-            Project nb4Proj = FileOwnerQuery.getOwner(file) ;
-            
-            // Set the current project
-            CurrentProject.getInstance().setProject(nb4Proj);
-            
+            Project nb4Proj = FileOwnerQuery.getOwner(file) ;                        
             
             // trim the name down to the relative path (to the project dir)
             String projRoot = nb4Proj.getProjectDirectory().getPath() ;
