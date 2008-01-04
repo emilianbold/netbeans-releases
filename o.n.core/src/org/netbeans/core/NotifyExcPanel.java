@@ -59,6 +59,7 @@ import java.util.ResourceBundle;
 import java.util.concurrent.Callable;
 import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -487,6 +488,11 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
     public void actionPerformed(final java.awt.event.ActionEvent ev) {
         if (ev.getSource () == next && exceptions.setNextElement() || ev.getSource () == previous && exceptions.setPreviousElement()) {
             current = exceptions.get();
+            LogRecord rec = new LogRecord(Level.CONFIG, "NotifyExcPanel: " + ev.getActionCommand());// NOI18N
+            Object[] params = {current.getClassName()+": "+ current.getMessage(), current.getFirstStacktraceLine()}; // NOI18N
+            rec.setParameters(params);
+            //log changes in NotifyPanel - #119632
+            Logger.getLogger("org.netbeans.ui.NotifyExcPanel").log(rec);// NOI18N
             update ();
             // bugfix #27266, don't change the dialog's size when jumping Next<->Previous
             //ensurePreferredSize();

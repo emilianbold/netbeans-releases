@@ -82,6 +82,12 @@ implements ActionListener, Runnable, Callable<JButton> {
     }
 
     public void publish(LogRecord record) {
+        if ((record.getLevel().equals(Level.CONFIG)) &&
+                (record.getMessage().startsWith("NotifyExcPanel: "))) {//NOI18N
+            Installer.setSelectedExcParams(record.getParameters());
+            return;
+        }
+
         if (exceptionOnly) {
             if (record.getThrown() == null) {
                 return;
@@ -90,7 +96,7 @@ implements ActionListener, Runnable, Callable<JButton> {
                 return;
             }
         }
-        
+
         class WriteOut implements Runnable {
             public LogRecord r;
             public void run() {
@@ -130,6 +136,7 @@ implements ActionListener, Runnable, Callable<JButton> {
     
     public void run() {
         Installer.displaySummary("ERROR_URL", true, false,true); // NOI18N
+        Installer.setSelectedExcParams(null);
     }
 
     private JButton button;

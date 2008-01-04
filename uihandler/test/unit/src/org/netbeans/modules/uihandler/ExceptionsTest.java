@@ -66,7 +66,7 @@ public class ExceptionsTest extends NbTestCase {
         clearWorkDir();
     }
     
-    
+   
     
     public void testSetReportPanelSummary(){
         String str = "RETEZEC SUMMARY";
@@ -93,33 +93,55 @@ public class ExceptionsTest extends NbTestCase {
         uiLogger.log(log2);
         uiLogger.log(log3);
         UIHandler.waitFlushed();
-        assertEquals(3, installer.getLogsSize());
-        if (installer.getThrown().getMessage().indexOf("TESTING ERROR") == -1) {
-            fail("Wrong message " + installer.getThrown().getMessage());
+        assertEquals(3, Installer.getLogsSize());
+        if (Installer.getThrown().getMessage().indexOf("TESTING ERROR") == -1) {
+            fail("Wrong message " + Installer.getThrown().getMessage());
         }
         log1 = new LogRecord(Level.SEVERE, "TESTING 2");
         log1.setThrown(t1);
         uiLogger.log(log1);
-        assertEquals(4, installer.getLogsSize());
-        List<LogRecord> arr = installer.getLogs();
+        assertEquals(4, Installer.getLogsSize());
+        List<LogRecord> arr = Installer.getLogs();
         assertEquals("The same amount of logs is loaded: " + arr, 4, arr.size());
-        if (installer.getThrown().getMessage().indexOf("TESTING THROWABLE") == -1) {
-            fail("Wrong message " + installer.getThrown().getMessage());
+        if (Installer.getThrown().getMessage().indexOf("TESTING THROWABLE") == -1) {
+            fail("Wrong message " + Installer.getThrown().getMessage());
         }
         for (int i= 0; i < 10; i++){
             uiLogger.warning("MESSAGE "+Integer.toString(i));
         }
-        assertEquals(14, installer.getLogsSize());
-        if (installer.getThrown().getMessage().indexOf("TESTING THROWABLE") == -1) {
-            fail("Wrong message " + installer.getThrown().getMessage());
+        assertEquals(14, Installer.getLogsSize());
+        if (Installer.getThrown().getMessage().indexOf("TESTING THROWABLE") == -1) {
+            fail("Wrong message " + Installer.getThrown().getMessage());
         }
         uiLogger.log(log4);
-        assertEquals(15, installer.getLogsSize());
-        if (installer.getThrown().getMessage().indexOf("TESTING THROWABLE") == -1){
-            fail("Wrong message " + installer.getThrown().getMessage());
+        assertEquals(15, Installer.getLogsSize());
+        if (Installer.getThrown().getMessage().indexOf("TESTING THROWABLE") == -1){
+            fail("Wrong message " + Installer.getThrown().getMessage());
         }
-        if (installer.getThrown().getMessage().contains("WARNING")){
-            fail("Message should not contain warnings" + installer.getThrown().getMessage());
+        if (Installer.getThrown().getMessage().contains("WARNING")){
+            fail("Message should not contain warnings" + Installer.getThrown().getMessage());
         }
+        StackTraceElement elem = t1.getStackTrace()[0];
+        String mess = elem.getClassName() + "." + elem.getMethodName();
+        Object[] params = {t1.getClass().getName() + ": " + t1.getMessage(), mess}; // NOI18N
+        Installer.setSelectedExcParams(params);
+        if (Installer.getThrown().getMessage().indexOf("TESTING THROWABLE") == -1){
+            fail("Wrong message - selected by user " + Installer.getThrown().getMessage());
+        }
+        if (Installer.getThrown().getMessage().indexOf("TESTING ERROR") != -1){
+            fail("Wrong message - selected by user" + Installer.getThrown().getMessage());
+        }
+
+        elem = t2.getStackTrace()[0];
+        mess = elem.getClassName() + "." + elem.getMethodName();
+        Object[] params2 = {t2.getClass().getName() + ": " + t2.getMessage(), mess}; // NOI18N
+        Installer.setSelectedExcParams(params2);
+        if (Installer.getThrown().getMessage().indexOf("TESTING THROWABLE") != -1){
+            fail("Wrong message - selected by user" + Installer.getThrown().getMessage());
+        }
+        if (Installer.getThrown().getMessage().indexOf("TESTING ERROR") == -1){
+            fail("Wrong message - selected by user" + Installer.getThrown().getMessage());
+        }
+        
     }
 }

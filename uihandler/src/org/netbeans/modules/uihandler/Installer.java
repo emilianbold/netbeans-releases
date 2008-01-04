@@ -146,7 +146,8 @@ public class Installer extends ModuleInstall implements Runnable {
     private static OutputStream logStream;
     private static int logsSize;
     private static URL hintURL;
-
+    private static Object[] selectedExcParams;
+    
     private static Pattern ENCODING = Pattern.compile(
         "<meta.*http-equiv=['\"]Content-Type['\"]" +
         ".*content=.*charset=([A-Za-z0-9\\-]+)['\"]>", Pattern.CASE_INSENSITIVE
@@ -413,20 +414,59 @@ public class Installer extends ModuleInstall implements Runnable {
     }
     
     protected static Throwable getThrown(){
+        LogRecord log = getThrownLog();
+        if (log == null){
+            return null;
+        }else{
+            return log.getThrown();
+        }
+    }
+
+    protected static LogRecord getThrownLog(){
+        String firstLine = null;
+        String message = null;
+        if (selectedExcParams != null){
+            if (selectedExcParams[0] instanceof String){
+                message = (String)selectedExcParams[0];
+            }
+            if (selectedExcParams[1] instanceof StringBuffer){
+                firstLine = (String)selectedExcParams[1];
+            }
+        }
         List<LogRecord> list = getLogs();
         ListIterator<LogRecord> it = list.listIterator(list.size());
+        Throwable thr = null;
+        LogRecord result = null;
         while (it.hasPrevious()){
-            LogRecord previous = it.previous();
-            Throwable t = null;
-            if (previous.getLevel().intValue() >= Level.WARNING.intValue()){
-                t = previous.getThrown();// ignore info messages
+            result = it.previous();
+            if (result.getLevel().intValue() >= Level.WARNING.intValue()){
+                thr = result.getThrown();// ignore info messages
+                if ((thr != null) && (message != null)) {
+                    if (!thr.getMessage().equals(message)){
+                        thr = null;//different messages
+                    }
+                }
+                if ((thr != null) && (firstLine != null)) {
+                    StackTraceElement[] elems = thr.getStackTrace();
+                    if (!(elems == null) && !(elems.length == 0)){
+                        StackTraceElement elem = elems[0];
+                        String thrLine = elem.getClassName() + "." + elem.getMethodName();
+                        if (! thrLine.equals(firstLine)){
+                            thr = null;//different first lines
+                        }
+                    }
+                }
             }
             // find first exception from end
-            if (t != null) {
-                return t;
+            if (thr != null) {
+                return result;
             }
         }
         return null;// no throwable found
+    }
+    
+    protected static void setSelectedExcParams(Object[] params){
+        selectedExcParams = params;
     }
     
     private static boolean doDisplaySummary(String msg, boolean auto, boolean connectDialog) {
@@ -931,6 +971,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 final List<LogRecord> recs = getLogs();
                 saveUserName();
                 LogRecord userData = getUserData(true);
+                recs.add(getThrownLog());//exception selected by user
                 recs.add(TimeToFailure.logFailure());
                 recs.add(userData);
                 if ((report)&&!(reportPanel.asAGuest())){

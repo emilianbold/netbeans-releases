@@ -213,6 +213,15 @@ public final class NbErrorManager extends Handler {
             return (String)find(1);
         }
         
+        String getFirstStacktraceLine(){
+            StackTraceElement[] elems = t.getStackTrace();
+            if ((elems == null) || (elems.length == 0)){
+                return null;
+            }
+            StackTraceElement elem = elems[0];
+            return elem.getClassName() + "." + elem.getMethodName(); // NOI18N
+        }
+        
         /** @return localized message */
         String getLocalizedMessage() {
             String m = t.getLocalizedMessage();
