@@ -1,4 +1,5 @@
-# XXX choke quickly if user not running Python 2.5.1 or later
+# XXX check compatibility; seems to be OK on Python 2.4.4
+
 import os, re, urllib2, sha, inspect
 
 # Workaround for a Python bug (in linecache.py?):
