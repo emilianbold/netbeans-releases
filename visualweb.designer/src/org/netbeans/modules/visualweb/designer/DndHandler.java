@@ -43,6 +43,7 @@ package org.netbeans.modules.visualweb.designer;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.datatransfer.Transferable;
+import java.lang.ref.WeakReference;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 
@@ -129,7 +130,9 @@ public class DndHandler /*extends TransferHandler*/ {
      */
 //    private transient DesignBean select; // have we found a target to select?
 //    private MarkupDesignBean recentDropTarget;
-    private transient Element recentDropTargetComponentRootElement;
+    // XXX #123995 Leaks element which document might get replaced.
+//    private transient Element recentDropTargetComponentRootElement;
+    private transient WeakReference<Element> recentDropTargetComponentRootElementWRef = new WeakReference<Element>(null);
 //    private transient DesignBean currentMatched;
     private transient Element currentMatchedComponentRootElement;
 //    private transient MarkupMouseRegion currentRegion;
@@ -3273,7 +3276,8 @@ public class DndHandler /*extends TransferHandler*/ {
 //    MarkupDesignBean getRecentDropTarget() {
 //        return recentDropTarget;
     Element getRecentDropTargetComponentRootElement() {
-        return recentDropTargetComponentRootElement;
+//        return recentDropTargetComponentRootElement;
+        return recentDropTargetComponentRootElementWRef.get();
     }
 
     /** Compute the list of class names for beans identified by the given palette item transferable */
@@ -3455,7 +3459,8 @@ public class DndHandler /*extends TransferHandler*/ {
 //    public void showDropMatch(MarkupDesignBean bean, MarkupMouseRegion region, int type) {
     public void showDropMatch(Element componentRootElement, Element regionElement, int type) {
 //        recentDropTarget = bean;
-        recentDropTargetComponentRootElement = componentRootElement;
+//        recentDropTargetComponentRootElement = componentRootElement;
+        recentDropTargetComponentRootElementWRef = new WeakReference<Element>(componentRootElement);
         
 //        if (DONT_SHOW_MATCHES || ((currentMatched == bean) && (currentRegion == region))) {
         if (DONT_SHOW_MATCHES || ((currentMatchedComponentRootElement == componentRootElement) && (currentRegionElement == regionElement))) {
