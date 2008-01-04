@@ -600,8 +600,6 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
      */
     
     private final DataFilter NO_FOLDERS_FILTER = new NoFoldersDataFilter();
-
-    private static Action actions[];
         
     private static boolean isEmpty(DataFolder dataFolder) {
         if ( dataFolder == null ) {
@@ -611,6 +609,8 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
     }
     
     final class PackageNode extends FilterNode {
+        
+        private Action actions[];
         
         private final FileObject root;
         private DataFolder dataFolder;
