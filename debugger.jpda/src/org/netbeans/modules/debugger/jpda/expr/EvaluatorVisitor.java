@@ -1089,6 +1089,9 @@ import org.openide.util.NbBundle;
         }
         try {
             LocalVariable lv = evaluationContext.getFrame().visibleVariableByName(name);
+            if (lv == null) {
+                Assert2.error(arg0, "unknownVariable", name);
+            }
             evaluationContext.getVariables().put(arg0, new VariableInfo(lv));
             return evaluationContext.getFrame().getValue(lv);
         } catch (AbsentInformationException aiex) {}
@@ -1149,6 +1152,9 @@ import org.openide.util.NbBundle;
                 String varName = ve.getSimpleName().toString();
                 try {
                     LocalVariable lv = evaluationContext.getFrame().visibleVariableByName(varName);
+                    if (lv == null) {
+                        Assert2.error(arg0, "unknownVariable", varName);
+                    }
                     evaluationContext.getVariables().put(arg0, new VariableInfo(lv));
                     return evaluationContext.getFrame().getValue(lv);
                 } catch (AbsentInformationException aiex) {
@@ -1160,6 +1166,9 @@ import org.openide.util.NbBundle;
                 StackFrame frame = evaluationContext.getFrame();
                 try {
                     LocalVariable lv = frame.visibleVariableByName(paramName);
+                    if (lv == null) {
+                        Assert2.error(arg0, "unknownVariable", paramName);
+                    }
                     evaluationContext.getVariables().put(arg0, new VariableInfo(lv));
                     return frame.getValue(lv);
                 } catch (AbsentInformationException aiex) {
