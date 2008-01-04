@@ -41,6 +41,9 @@
 
 package org.netbeans.modules.languages.lexer;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -69,6 +72,7 @@ public class SLanguageHierarchy extends LanguageHierarchy<STokenId> {
     
     public SLanguageHierarchy (Language language) {
         this.language = language;
+        new Listener (this, language);
     }
     
     protected Collection<STokenId> createTokenIds () {
@@ -106,6 +110,27 @@ public class SLanguageHierarchy extends LanguageHierarchy<STokenId> {
 
     protected String mimeType () {
         return language.getMimeType ();
+    }
+    
+    private static class Listener implements PropertyChangeListener {
+
+        private WeakReference<SLanguageHierarchy>   reference;
+        private Language                            language;
+        
+        Listener (SLanguageHierarchy hierarchy, Language language) {
+            reference = new WeakReference<SLanguageHierarchy> (hierarchy);
+            language.addPropertyChangeListener (this);
+        }
+        
+        public void propertyChange (PropertyChangeEvent evt) {
+            SLanguageHierarchy hierarchy = reference.get ();
+            if (hierarchy == null) {
+                language.removePropertyChangeListener (this);
+                return;
+            }
+            hierarchy.tokenIDToType = null;
+            hierarchy.tokenIDs = null;
+        }
     }
 }
 
