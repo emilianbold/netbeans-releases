@@ -1117,6 +1117,7 @@ import org.openide.util.NbBundle;
                 if (classes.size() > 0) {
                     return classes.get(0);
                 }
+                Assert2.error(arg0, "unknownType", className);
             case ENUM_CONSTANT:
                 VariableElement ve = (VariableElement) elm;
                 String constantName = ve.getSimpleName().toString();
