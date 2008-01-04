@@ -355,20 +355,27 @@ public class JingleAudioSession implements P2PAudioSession{
                             }
                             
                         }
-                    } else if(jingle.getAction().equals(Jingle.ACTION_SESSION_TERMINATE)){
-                        // Notify session listers of termination
-                        for(Iterator i = _listeners.iterator(); i.hasNext(); ){
-                            P2PAudioSessionListener l = (P2PAudioSessionListener) i.next();
-                            l.onTerminate();
-                        }
-                        for(Iterator i = _echolisteners.iterator(); i.hasNext();){
-                            EchoListener l = (EchoListener)i.next();
-                            l.stopListener();
-                        }
-                        _echolisteners.clear();
-                        _state = STATE_TERMINATED;
-                    }
+                    } 
                 }
+            }
+            
+        }
+        // Terminate requests can come any time
+        InfoQuery iq = (InfoQuery)packet;
+        if(iq.getType() == InfoQuery.SET){
+            Jingle jingle = (Jingle) iq.getFirstElement(Jingle.class);
+            if(jingle != null && jingle.ACTION_SESSION_TERMINATE.equals(jingle.getAction())){
+                // Notify session listers of termination
+                for(Iterator i = _listeners.iterator(); i.hasNext(); ){
+                    P2PAudioSessionListener l = (P2PAudioSessionListener) i.next();
+                    l.onTerminate();
+                }
+                for(Iterator i = _echolisteners.iterator(); i.hasNext();){
+                    EchoListener l = (EchoListener)i.next();
+                    l.stopListener();
+                }
+                _echolisteners.clear();
+                _state = STATE_TERMINATED;
             }
             
         }
