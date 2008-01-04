@@ -347,10 +347,13 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertNull(RepositoryUpdater.getDefault().getAttribute(rootURL, RepositoryUpdater.DIRTY_ROOT, null));
         TasklistSettings.setTasklistsEnabled(false);
         
+        recompiled = null;
+        
         TestUtilities.copyStringToFile(fileA, "package pack; public enum A { C;}");
         
         waitScanFinished();
         
+        assertNull(recompiled);
         assertNull(RepositoryUpdater.getDefault().getAttribute(rootURL, RepositoryUpdater.DIRTY_ROOT, null));
         
         assertFalse(TaskCache.getDefault().getErrors(fileA).toString(), TaskCache.getDefault().isInError(fileA, false));

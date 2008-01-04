@@ -1425,7 +1425,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                     }
                                 }
                                 else {
-                                    updateFile (file,root);
+                                    updateFile (file, root, null);
                                 }
                             } catch (Abort abort) {
                                 //Ignore abort
@@ -2001,12 +2001,11 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             }
         }
         
-        private Collection<File> updateFile (final URL file, final URL root) throws IOException {
-            Set<File> result = new LinkedHashSet<File>();
+        private void updateFile (final URL file, final URL root, Collection<File> toRebuild) throws IOException {
             final FileObject fo = URLMapper.findFileObject(file);
             final FileObject rootFo = URLMapper.findFileObject(root);
             if (fo == null || rootFo == null) {
-                return result;
+                return ;
             }
             
             assert "file".equals(root.getProtocol()) : "Unexpected protocol of URL: " + root;   //NOI18N
@@ -2063,9 +2062,11 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         JavacTaskImpl jt = JavaSourceAccessor.INSTANCE.createJavacTask(cpInfo, listener, sourceLevel);
                         jt.setTaskListener(listener);
                         Iterable<? extends CompilationUnitTree> trees = jt.parse(new JavaFileObject[] {active});
-                        Iterable<? extends TypeElement> classes = jt.enter();            
-                        Map<ElementHandle, Collection<String>> members = RebuildOraculum.sortOut(jt.getElements(), classes);
-                        result.addAll(RebuildOraculum.get().findFilesToRebuild(rootFile, file, cpInfo, members));
+                        Iterable<? extends TypeElement> classes = jt.enter();
+                        if (toRebuild != null) {
+                            Map<ElementHandle, Collection<String>> members = RebuildOraculum.sortOut(jt.getElements(), classes);
+                            toRebuild.addAll(RebuildOraculum.get().findFilesToRebuild(rootFile, file, cpInfo, members));
+                        }
                         jt.analyze ();
                         dumpClasses((List<? extends ClassSymbol>)classes, fm, root.toExternalForm(), null,
                                 com.sun.tools.javac.code.Types.instance(jt.getContext()),
@@ -2121,7 +2122,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     _rt.removeAll(added);
                     added.retainAll(removed);                                                                   //Changed
                     
-                    result.addAll(RebuildOraculum.findAllDependent(rootFile, null, cpInfo.getClassIndex(), _rt));
+                    if (toRebuild != null) {
+                        toRebuild.addAll(RebuildOraculum.findAllDependent(rootFile, null, cpInfo.getClassIndex(), _rt));
+                    }
 
                     sa.store();
                     
@@ -2131,11 +2134,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                 added.isEmpty() ? null : new ClassIndexImplEvent(uqImpl,added));                
                     }
                 } catch (OutputFileManager.InvalidSourcePath e) {
-                    return Collections.<File>emptySet();
+                    return ;
                 }
             }
-            
-            return result;
         }
         
         private List<File> delete (final URL file, final URL root, final boolean folder) throws IOException {
@@ -2284,20 +2285,34 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         }
         
         private void compileWithDeps(URL root, Collection<File> storedFiles) throws IOException {
-            Map<URL, Collection<File>> depsToRecompile = new HashMap<URL, Collection<File>>();
+            Map<URL, Collection<File>> depsToRecompile;
+            
+            if (TasklistSettings.isTasklistEnabled() && TasklistSettings.isDependencyTrackingEnabled()) {
+                depsToRecompile = new HashMap<URL, Collection<File>>();
+            } else {
+                depsToRecompile = null;
+            }
+            
             Map<URL, Collection<File>> toCompile = new HashMap<URL, Collection<File>>();
             
             toCompile.put(root, storedFiles);
             
             if (storedFiles.size() == 1) {
-                depsToRecompile.put(root, updateFile(storedFiles.iterator().next().toURI().toURL(), root));
+                URL currentFile = storedFiles.iterator().next().toURI().toURL();
+                List<File> toRebuild = depsToRecompile != null ? new LinkedList<File>() : null;
+                
+                updateFile(currentFile, root, toRebuild);
+                
+                if (depsToRecompile != null) {
+                    depsToRecompile.put(root, toRebuild);
+                }
             } else {
                 Map<URL, Collection<File>> result = compileFileFromRoots(toCompile, false, depsToRecompile);
 
                 assert result.isEmpty(); //not cancellable
             }
             
-            if (!depsToRecompile.isEmpty()) {
+            if (depsToRecompile != null && !depsToRecompile.isEmpty()) {
                 assert depsToRecompile.containsKey(root);
                 
                 Set<File> thisFiles = new LinkedHashSet<File>(depsToRecompile.get(root));
