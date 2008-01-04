@@ -109,7 +109,7 @@ public class TreeEvaluator {
         currentPackage = (idx > 0) ? currentPackage.substring(0, idx + 1) : "";
         operators = new Operators(vm);
         int line = frame.location().lineNumber();
-        String url = evaluationContext.getDebugger().getEngineContext().getURL(frame, evaluationContext.getDebugger().getSession().getCurrentLanguage());
+        String url = evaluationContext.getDebugger().getEngineContext().getURL(frame, "Java");//evaluationContext.getDebugger().getSession().getCurrentLanguage());
         /*try {
             url = frame.location().sourcePath(expression.getLanguage());
         } catch (AbsentInformationException ex) {
@@ -119,7 +119,8 @@ public class TreeEvaluator {
         //if (exprTree == null) return null;
         try {
             Mirror mirror = EditorContextBridge.parseExpression(expression.getExpression(), url, line,
-                                                              new EvaluatorVisitor(), evaluationContext);
+                                                              new EvaluatorVisitor(), evaluationContext,
+                                                              evaluationContext.getDebugger().getEngineContext().getContext());
             if (mirror instanceof Value || mirror == null) {
                 return (Value) mirror;
             } else {

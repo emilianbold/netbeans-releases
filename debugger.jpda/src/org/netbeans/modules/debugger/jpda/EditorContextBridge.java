@@ -57,6 +57,7 @@ import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.jpda.EditorContext.MethodArgument;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
+import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.openide.ErrorManager;
 
 
@@ -119,14 +120,15 @@ public class EditorContextBridge {
      * @return the visitor value or <code>null</code>.
      */
     public static <R,D> R parseExpression(String expression, String url, final int line,
-                                          TreePathScanner<R,D> visitor, D context) {
+                                          TreePathScanner<R,D> visitor, D context,
+                                          SourcePathProvider sp) {
         
         // TODO: return getContext ().parseExpression ();
         try {
             return (R) getContext ().getClass().getMethod(
                     "parseExpression",
-                    new Class[] { String.class, String.class, Integer.TYPE, TreePathScanner.class, Object.class }).
-                        invoke(getContext(), new Object[] { expression, url, line, visitor, context });
+                    new Class[] { String.class, String.class, Integer.TYPE, TreePathScanner.class, Object.class, SourcePathProvider.class }).
+                        invoke(getContext(), new Object[] { expression, url, line, visitor, context, sp });
         } catch (java.lang.reflect.InvocationTargetException itex) {
             Throwable tex = itex.getTargetException();
             if (tex instanceof RuntimeException) {

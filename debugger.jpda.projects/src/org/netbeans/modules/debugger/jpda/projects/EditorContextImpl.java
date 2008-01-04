@@ -97,7 +97,9 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.SourceUtils;
@@ -131,6 +133,8 @@ import org.netbeans.api.java.source.WorkingCopy;
 
 import org.netbeans.editor.JumpList;
 import org.netbeans.spi.debugger.jpda.EditorContext;
+import org.netbeans.spi.debugger.jpda.SourcePathProvider;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -1439,47 +1443,61 @@ public class EditorContextImpl extends EditorContext {
          */
     }
     
+    private JavaSource getJavaSource(SourcePathProvider sp) {
+        String[] roots = sp.getOriginalSourceRoots();
+        List<FileObject> sourcePathFiles = new ArrayList<FileObject>();
+        for (String root : roots) {
+            FileObject fo = FileUtil.toFileObject (new java.io.File(root));
+            if (fo != null && FileUtil.isArchiveFile (fo)) {
+                fo = FileUtil.getArchiveRoot (fo);
+            }
+            sourcePathFiles.add(fo);
+        }
+        ClassPath bootPath = ClassPathSupport.createClassPath(new FileObject[] {});
+        ClassPath classPath = ClassPathSupport.createClassPath(new FileObject[] {});
+        ClassPath sourcePath = ClassPathSupport.createClassPath(sourcePathFiles.toArray(new FileObject[] {}));
+        return JavaSource.create(ClasspathInfo.create(bootPath, classPath, sourcePath), new FileObject[] {});
+    }
+    
     /**
      * Parse the expression into AST tree and traverse is via the provided visitor.
      *
      * @return the visitor value or <code>null</code>.
      */
-    public static <R,D> R parseExpression(final String expression, String url, final int line,
-                                          final TreePathScanner<R,D> visitor, final D context) {
-        FileObject fo;
+    public <R,D> R parseExpression(final String expression, String url, final int line,
+                                   final TreePathScanner<R,D> visitor, final D context,
+                                   final SourcePathProvider sp) {
+        JavaSource js = null;
         try {
-            fo = URLMapper.findFileObject(new URL(url));
+            FileObject fo = URLMapper.findFileObject(new URL(url));
+            js = JavaSource.forFileObject(fo);
         } catch (MalformedURLException ex) {
-            return null;
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, ex);
         }
-        if (fo == null) return null;
-        DataObject dataObject;
-        try {
-            dataObject = DataObject.find(fo);
-        } catch (DataObjectNotFoundException donfex) {
-            return null;
+        if (js == null) {
+            js = getJavaSource(sp);
         }
-        if (dataObject == null) return null;
-        JavaSource js = JavaSource.forFileObject(dataObject.getPrimaryFile());
-        if (js == null) return null;
         final R[] retValue = (R[]) new Object[] { null };
         try {
             js.runUserActionTask(new Task<CompilationController>() {
                 public void run(CompilationController ci) throws Exception {
                     if (ci.toPhase(Phase.PARSED).compareTo(Phase.PARSED) < 0)
                         return;
-                    int offset = findLineOffset((StyledDocument) ci.getDocument(), line);
-                    Scope scope = ci.getTreeUtilities().scopeFor(offset);
-                    Element clazz = scope.getEnclosingClass();
-                    if (clazz == null) {
-                        return ;
+                    Scope scope = null;
+                    int offset = 0;
+                    StyledDocument doc = (StyledDocument) ci.getDocument();
+                    if (doc != null) {
+                        offset = findLineOffset(doc, line);
+                        scope = ci.getTreeUtilities().scopeFor(offset);
                     }
                     SourcePositions[] sourcePtr = new SourcePositions[] { null };
                     Tree tree = ci.getTreeUtilities().parseExpression(
                             expression,
                             sourcePtr
                     );
-                    ci.getTreeUtilities().attributeTree(tree, scope);
+                    if (scope != null) {
+                        ci.getTreeUtilities().attributeTree(tree, scope);
+                    }
                     try {
                         //context.setTrees(ci.getTrees());
                         java.lang.reflect.Method setTreesMethod =
@@ -1492,17 +1510,22 @@ public class EditorContextImpl extends EditorContext {
                                 context.getClass().getMethod("setCompilationUnit", new Class[] { CompilationUnitTree.class });
                         setCompilationUnitMethod.invoke(context, ci.getCompilationUnit());
                     } catch (Exception ex) {}
-                    TreePath treePath;
+                    TreePath treePath = null;
                     try {
                         //context.setTrees(ci.getTrees());
                         java.lang.reflect.Method setTreePathMethod =
                                 context.getClass().getMethod("setTreePath", new Class[] { TreePath.class });
-                        treePath = ci.getTreeUtilities().pathFor(offset);
-                        treePath = new TreePath(treePath, tree);
-                        setTreePathMethod.invoke(context, treePath);
+                        if (doc != null) {
+                            treePath = ci.getTreeUtilities().pathFor(offset);
+                            treePath = new TreePath(treePath, tree);
+                            setTreePathMethod.invoke(context, treePath);
+                        }
                     } catch (Exception ex) { return;}
-                    retValue[0] = visitor.scan(treePath, context);
-                    //retValue[0] = tree.accept(visitor, context);
+                    if (treePath != null) {
+                        retValue[0] = visitor.scan(treePath, context);
+                    } else {
+                        retValue[0] = tree.accept(visitor, context);
+                    }
                 }
             }, true);
             /*

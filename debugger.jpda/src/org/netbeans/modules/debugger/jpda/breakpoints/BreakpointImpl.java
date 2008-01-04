@@ -610,6 +610,8 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
             return ((com.sun.jdi.BooleanValue) value).booleanValue ();
         } catch (ClassCastException e) {
             throw new InvalidExpressionException (e);
+        } catch (NullPointerException npe) {
+            throw new InvalidExpressionException (npe);
         }
     }
     
