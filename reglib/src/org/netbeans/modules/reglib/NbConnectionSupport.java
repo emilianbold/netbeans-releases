@@ -98,6 +98,8 @@ public class NbConnectionSupport {
         String url = System.getProperty("nb.registration.host");
         if (url == null) {
             url = NB_REGISTRATION_HOST + "/RegistrationWeb/register";
+        } else {
+            url += "/RegistrationWeb/register";
         }
 
         // trim whitespaces 
