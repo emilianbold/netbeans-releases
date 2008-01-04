@@ -79,6 +79,7 @@ public class BraceCompletionDeleteAction extends ExtDeleteCharAction {
                 ((NbEditorDocument) doc).readLock ();
             try {
                 TokenSequence ts = th.tokenSequence ();
+                if (ts == null) return;
                 while (true) {
                     ts.move (caret.getDot ());
                     if (!ts.moveNext ()) return;
