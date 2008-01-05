@@ -77,6 +77,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.util.Lookup;
 
 // BEGIN_NOI18N
+import org.openide.util.NbBundle;
 /**
  * General utility methods for WSDL documents.
  */
@@ -84,6 +85,8 @@ public class ManagerUtil {
     public static final int BUFFER_SIZE = 4096;
     public static final String xsdNamespace = "xsd";
     final static public String WSDL_FILE_EXTENSION = "wsdl";
+    public static final String LOCALIZING_BUNDLE = "SystemFileSystem.localizingBundle";
+    
 
     public static boolean isJAXRPCAvailable() {
         return getWebServiceSupportLibDef(false) != null;
@@ -737,7 +740,24 @@ public class ManagerUtil {
         return extensionsResult.allInstances();
     }
     
-    
+    public static String getLocalizedName(FileObject fo) {
+        String name = fo.getNameExt();
+        String bundleName = (String) fo.getAttribute(LOCALIZING_BUNDLE);
+        if (bundleName != null) {
+            try {
+                bundleName = org.openide.util.Utilities.translate(bundleName);
+                ResourceBundle b = NbBundle.getBundle(bundleName);
+                String localizedName = b.getString(fo.getPath());
+                if (localizedName != null) {
+                    name = localizedName;
+                }
+            } catch (MissingResourceException ex) {
+            // ignore
+            }
+        }
+
+        return name;
+    }
 }
 
 // END_NOI18N

@@ -45,6 +45,7 @@
 <filesystem>
     <folder name="RestComponents">
         <folder name="Google">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.components.google.Bundle"/>
             <file name="AddSenseForSearc.xml" url="/org/netbeans/modules/websvc/components/google/resources/AdSenseForSearch.xml" />
             <file name="AddSenseForContent.xml" url="/org/netbeans/modules/websvc/components/google/resources/AdSenseForContent.xml" />
             <file name="GoogleMap.xml" url="/org/netbeans/modules/websvc/components/google/resources/GoogleMap.xml" />

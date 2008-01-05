@@ -46,6 +46,7 @@
     
     <folder name="RestComponents">
         <folder name="StrikeIron">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.components.strikeiron.Bundle"/>
             <file name="AddressVerification40.xml" url="/org/netbeans/modules/websvc/components/strikeiron/resources/AddressVerification40.xml" />
             <file name="EmailVerify30.xml" url="/org/netbeans/modules/websvc/components/strikeiron/resources/EmailVerify30.xml" />
             <file name="IPAddressLookup.xml" url="/org/netbeans/modules/websvc/components/strikeiron/resources/IPAddressLookup.xml" />

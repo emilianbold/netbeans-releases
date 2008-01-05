@@ -57,10 +57,7 @@ import org.openide.util.actions.SystemAction;
  */
 public class StrikeIronWebServiceManager implements WebServiceManagerExt {
 
-    public static final String STRIKE_IRON_GROUP = NbBundle.getMessage(StrikeIronWebServiceManager.class, "STRIKE_IRON_GROUP");
-    
-    //TODO remove in 6.1
-    public static final String STRIKE_IRON_GROUP2 = NbBundle.getMessage(StrikeIronWebServiceManager.class, "STRIKE_IRON_GROUP2");
+    public static final String STRIKE_IRON_GROUP = NbBundle.getMessage(StrikeIronWebServiceManager.class, "RestComponents/StrikeIron");
 
     public Action[] getGroupActions(Node node) {
         if (node.getName().startsWith(STRIKE_IRON_GROUP)) {
@@ -75,8 +72,7 @@ public class StrikeIronWebServiceManager implements WebServiceManagerExt {
     public static String getGroupId() {
         if (strikeIronGroupId == null) {
             for (WebServiceGroup group : WebServiceListModel.getInstance().getWebServiceGroupSet()) {
-                if (STRIKE_IRON_GROUP.equalsIgnoreCase(group.getName()) ||
-                    STRIKE_IRON_GROUP2.equalsIgnoreCase(group.getName())) {
+                if (STRIKE_IRON_GROUP.equalsIgnoreCase(group.getName())) {
                     strikeIronGroupId = group.getId();
                     break;
                 }

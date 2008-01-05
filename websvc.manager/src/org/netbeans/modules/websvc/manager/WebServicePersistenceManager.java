@@ -59,6 +59,7 @@ import java.util.*;
 
 import java.beans.ExceptionListener;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
+import org.netbeans.modules.websvc.manager.util.ManagerUtil;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -241,12 +242,7 @@ public class WebServicePersistenceManager implements ExceptionListener {
             Enumeration<? extends FileObject> en = f.getFolders(false);
             while (en.hasMoreElements()) {
                 FileObject nextFolder = en.nextElement();
-                String groupName = nextFolder.getName();
-                //TODO: (nam) if and how to internalize partner's name
-                if (groupName.equals("StrikeIron")) { // NOI18N
-                    groupName = NbBundle.getMessage(WebServicePersistenceManager.class, "STRIKE_IRON_GROUP");
-                }
-                
+                String groupName = ManagerUtil.getLocalizedName(nextFolder);
                 loadPartnerFromFolder(nextFolder, groupName, false);
             }
         }
@@ -289,14 +285,6 @@ public class WebServicePersistenceManager implements ExceptionListener {
         }
 
         if (currentUrls.size() > 0) {
-            if (groupName == null) {
-                groupName = folder.getName();
-                //TODO: (nam) if and how to internalize partner's name
-                if (groupName.equals("StrikeIron")) { // NOI18N
-                    groupName = NbBundle.getMessage(WebServicePersistenceManager.class, "STRIKE_IRON_GROUP");
-                }
-            }
-            
             WebServiceGroup newGroup = null;
             List<WebServiceGroup> webServiceGroups = WebServiceListModel.getInstance().getWebServiceGroupSet();
             for (WebServiceGroup group : webServiceGroups) {
