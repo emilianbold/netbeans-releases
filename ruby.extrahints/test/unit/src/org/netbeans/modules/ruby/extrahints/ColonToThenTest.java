@@ -68,6 +68,16 @@ public class ColonToThenTest extends HintTestBase  {
                 "when String^: puts 'a string'", ":");
     }
     
+    public void testFix3() throws Exception {
+        applyHint(this, new ColonToThen(), "testfiles/colontothen.rb", 
+                "when Regexp  ^: puts 'a regex'", "Move");
+    }
+    
+    public void testFix4() throws Exception {
+        applyHint(this, new ColonToThen(), "testfiles/colontothen.rb", 
+                "when String^: puts 'a string'", "Move");
+    }
+    
 //    public void testNoPositives() throws Exception {
 //        try {
 //            parseErrorsOk = true;

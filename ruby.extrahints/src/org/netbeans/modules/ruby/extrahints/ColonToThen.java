@@ -42,6 +42,7 @@ package org.netbeans.modules.ruby.extrahints;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -140,9 +141,11 @@ public class ColonToThen implements AstRule {
             
             OffsetRange range = new OffsetRange(offset, offset+1);
             String displayName = NbBundle.getMessage(ColonToThen.class, "ColonToThenGutter");
-            ColonFix fix = new ColonFix(doc, offset);
+            List<Fix> fixes = new ArrayList<Fix>(2);
+            fixes.add(new ColonFix(doc, offset, false));
+            fixes.add(new ColonFix(doc, offset, true));
             Description desc = new Description(this, displayName, info.getFileObject(), range, 
-                    Collections.<Fix>singletonList(fix), 150);
+                    fixes, 150);
             result.add(desc);
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
@@ -186,14 +189,18 @@ public class ColonToThen implements AstRule {
     private static class ColonFix implements PreviewableFix {
         private BaseDocument doc;
         private int offset;
+        private boolean newline;
 
-        public ColonFix(BaseDocument doc, int offset) {
+        public ColonFix(BaseDocument doc, int offset, boolean newline) {
             this.doc = doc;
             this.offset = offset;
+            this.newline = newline;
         }
 
         public String getDescription() {
-            return NbBundle.getMessage(Deprecations.class, "ColonToThenFix");
+            return newline ?
+                NbBundle.getMessage(Deprecations.class, "ColonToThenFixNewline") :
+                NbBundle.getMessage(Deprecations.class, "ColonToThenFix");
         }
 
         public void implement() throws Exception {
@@ -202,20 +209,22 @@ public class ColonToThen implements AstRule {
 
         public EditList getEditList() throws Exception {
             EditList list = new EditList(doc);
-            // TODO - determine if we need whitespace around it
-            String s = doc.getText(offset, 3);
-            String insert;
-            StringBuilder sb = new StringBuilder();
-            if (!Character.isWhitespace(doc.getText(offset-1, 1).charAt(0))) {
-                sb.append(' ');
-            }
-            sb.append("then");
-            if (offset < doc.getLength()-2) {
-                if (!Character.isWhitespace(doc.getText(offset+1, 1).charAt(0))) {
+            if (newline) {
+                list.replace(offset, 1, "\n", true, 0);
+            } else {
+                String s = doc.getText(offset, 3);
+                StringBuilder sb = new StringBuilder();
+                if (!Character.isWhitespace(doc.getText(offset-1, 1).charAt(0))) {
                     sb.append(' ');
                 }
+                sb.append("then");
+                if (offset < doc.getLength()-2) {
+                    if (!Character.isWhitespace(doc.getText(offset+1, 1).charAt(0))) {
+                        sb.append(' ');
+                    }
+                }
+                list.replace(offset, 1, sb.toString(), false, 0);
             }
-            list.replace(offset, 1, sb.toString(), false, 0);
             
             return list;
         }
