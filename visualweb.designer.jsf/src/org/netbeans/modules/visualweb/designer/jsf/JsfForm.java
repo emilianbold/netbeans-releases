@@ -1843,7 +1843,7 @@ public class JsfForm {
         if (markupUnit == null) {
             return false;
         }
-        return getFacesModel().isValid();
+        return facesModel.isValid();
     }
     
     public boolean isModelBusted() {
