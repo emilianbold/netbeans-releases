@@ -192,6 +192,11 @@ public class FacesBean extends MarkupBean {
         String binding = getCompBinding();
         setAttr(BINDING_ATTR, binding);  // not a real property--just set the attr
     }
+
+    void clearBindingProperty() {
+        String binding = getCompBinding();
+        removeAttr(BINDING_ATTR);  // not a real property--just set the attr
+    }
     
     /**
      * Directly set the markup=>java bean binding attribute(s) and also the live instances
@@ -306,10 +311,24 @@ public class FacesBean extends MarkupBean {
      */
     protected Property newCreatedProperty(PropertyDescriptor pd) {
          if (!isMarkupProperty(pd)) {
-             unit.addBindingBean(getBeanInfo(), getName());
-             setInserted(true);
-             setBindingProperty();
+             addBinding();             
          }
          return super.newCreatedProperty(pd);
-     }    
+    }
+
+    public void addBinding() {
+        if (!isInserted()) {
+            unit.addBindingBean(getBeanInfo(), getName());
+            setInserted(true);
+        }
+        setBindingProperty();
+    }
+     
+    public void removeBinding() {
+        if (isInserted()) {
+            unit.removeBindingBean(getBeanInfo(), getName());
+            setInserted(false);
+        }
+        clearBindingProperty();
+    }
 }

@@ -248,6 +248,18 @@ public abstract class MarkupBean extends Bean {
         return element.getAttributeNode(name);
     }    
 
+    /**
+     * Remove a given attribute identified by name.
+     *
+     * @param name
+     */
+    void removeAttr(String name) {
+        Attr attr = element.getAttributeNode(name);
+        if (attr != null) {
+            element.removeAttribute(name);
+        }
+    }
+    
     /*
      * @see org.netbeans.modules.visualweb.insync.beans.Bean#getElement()
      */

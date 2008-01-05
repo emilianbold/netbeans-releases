@@ -769,7 +769,21 @@ public class BeansUnit implements Unit {
          if (b != null) {
              beansToAdd.add(b);
          }
-    }    
+    }
+    
+    /**
+     * Remove binding bean in java source. This should be called
+     * only to remove the binding for a component. 
+     *
+     * @param beanInfo  The definition of the bean to create
+     * @param name  The instance name for the new bean
+     */
+    public final void removeBindingBean(BeanInfo beanInfo, String name) {
+         Bean b = new Bean(this, beanInfo, name);
+         if (b != null) {
+             beansToRemove.add(b);
+         }
+    }
 
     /**
      *
