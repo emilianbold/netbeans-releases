@@ -276,7 +276,7 @@
             </test-dependencies>
             <public-packages>
                 <package>org.netbeans.api.languages</package>
-                <package>org.netbeans.api.languages.support</package>
+                <package>org.netbeans.api.languages.database</package>
             </public-packages>
         </data>
     </configuration>
