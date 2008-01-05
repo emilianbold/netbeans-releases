@@ -321,13 +321,13 @@ public class DatabaseContext extends DatabaseItem {
     }
     
   
-    public DatabaseContext getBestContextAt(int offset) {
+    public DatabaseContext getClosestContext(int offset) {
         DatabaseContext result = null;
         if (contexts != null) {
             /** search children first */
             for (DatabaseContext context : contexts) {
                 if (context.contains(offset)) {
-                    result = context.getBestContextAt(offset);
+                    result = context.getClosestContext(offset);
 		    break;
 		}
 	    }  
@@ -371,12 +371,12 @@ public class DatabaseContext extends DatabaseItem {
         return result;
     }
     
-    public void collectDefinitionsInScopeTo(Collection<DatabaseDefinition> scopeDefinitions) {
+    protected void collectDefinitionsInScope(Collection<DatabaseDefinition> scopeDefinitions) {
         if (definitions != null) {
             scopeDefinitions.addAll(definitions);
         } 
 	if (parent != null) {
-	    parent.collectDefinitionsInScopeTo(scopeDefinitions);
+	    parent.collectDefinitionsInScope(scopeDefinitions);
 	}
     }
     
