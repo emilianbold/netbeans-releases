@@ -41,6 +41,7 @@
 package org.netbeans.api.languages.database;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -54,6 +55,7 @@ import org.netbeans.api.languages.ASTItem;
 /**
  *
  * @author Jan Jancura
+ * @author Caoyuan Deng
  */
 public class DatabaseContext extends DatabaseItem {
 
@@ -72,6 +74,10 @@ public class DatabaseContext extends DatabaseItem {
         this.type = type;
     }
 
+    protected void setParent(DatabaseContext parent) {
+        this.parent = parent;
+    }
+    
     public DatabaseContext getParent() {
         return parent;
     }
@@ -298,7 +304,105 @@ public class DatabaseContext extends DatabaseItem {
 //        }
 //        sb.append (indent).append (getEndOffset ()).append ("\n");
 //    }
+
+    public List<DatabaseContext> getContexts() {
+        if (contexts == null) {
+            return Collections.<DatabaseContext>emptyList();
+        }
+        return contexts;
+    }
     
+      public void addContext(DatabaseContext context) {
+        if (contexts == null) {
+            contexts = new ArrayList<DatabaseContext>();
+	}
+        context.setParent(this);
+	contexts.add(context);
+    }
+    
+  
+    public DatabaseContext getBestContextAt(int offset) {
+        DatabaseContext result = null;
+        if (contexts != null) {
+            /** search children first */
+            for (DatabaseContext context : contexts) {
+                if (context.contains(offset)) {
+                    result = context.getBestContextAt(offset);
+		    break;
+		}
+	    }  
+	}
+	if (result != null) {
+            return result;
+	} else {
+            if (this.contains(offset)) {
+                return this;
+	    } else {
+                /* we should return null here, since it may under a parent context's call, 
+		 * we shall tell the parent there is none in this and children of this
+		 */
+                return null; 
+	    } 
+	}
+    }
+
+    private boolean contains(int offset) {
+        return offset >= getOffset() && offset < getEndOffset();
+    }
+
+    public <T extends DatabaseDefinition> T getFirstDefinition(Class<T> clazz) {
+        if (definitions == null) return null;
+        for (DatabaseDefinition definition : definitions) {
+            if (clazz.isInstance(definition)) {
+                return (T)definition;
+            }
+        }
+        return null;
+    }
+    
+    public <T extends DatabaseDefinition> Collection<T> getDefinitions(Class<T> clazz) {
+        if (definitions == null) return Collections.<T>emptyList();
+        Collection<T> result = new ArrayList<T>();
+        for (DatabaseDefinition definition: definitions) {
+            if (clazz.isInstance(definition)) {
+                result.add((T)definition);
+            }
+        }
+        return result;
+    }
+    
+    public void collectDefinitionsInScopeTo(Collection<DatabaseDefinition> scopeDefinitions) {
+        if (definitions != null) {
+            scopeDefinitions.addAll(definitions);
+        } 
+	if (parent != null) {
+	    parent.collectDefinitionsInScopeTo(scopeDefinitions);
+	}
+    }
+    
+    public <T extends DatabaseDefinition> T getDefinitionInScopeByName(Class<T> clazz, String name) {
+        T result = null;
+	if (definitions != null) {
+	    for (DatabaseDefinition definition : definitions) {
+                if (clazz.isInstance(definition) && name.equals(definition.getName())) {
+                    result = (T) definition;
+		    break;
+	        }
+	    }
+	}
+	if (result != null) {
+            return result;
+	} else {
+            if (parent != null) {
+                return parent.getDefinitionInScopeByName(clazz, name);
+	    } else {
+                return null;
+	    }
+	} 
+    }
+    
+    
+    @Override
     public String toString () {
         return "Context " + getOffset () + "-" + getEndOffset ();
     }
