@@ -67,7 +67,7 @@ public class DatabaseContext extends DatabaseItem {
     private boolean                         usagesSorted = false;
     private boolean                         contextsSorted = false;
     private boolean                         definitionsSorted = false;
-    
+        
     public DatabaseContext (DatabaseContext parent, String type, int offset, int endOffset) {
         super (offset, endOffset);
         this.parent = parent;
