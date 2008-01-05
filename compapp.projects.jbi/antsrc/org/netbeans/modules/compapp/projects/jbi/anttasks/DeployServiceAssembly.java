@@ -51,12 +51,10 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
+import org.netbeans.modules.compapp.jbiserver.JbiManager;
 import org.netbeans.modules.compapp.projects.jbi.AdministrationServiceHelper;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
-import org.netbeans.modules.j2ee.deployment.impl.ServerString;
-import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
-import org.netbeans.modules.j2ee.deployment.impl.ServerTarget;
 import org.netbeans.modules.sun.manager.jbi.GenericConstants;
 import org.netbeans.modules.sun.manager.jbi.management.JBIMBeanTaskResultHandler;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
@@ -234,7 +232,8 @@ public class DeployServiceAssembly extends Task {
         String nbUserDir = getNetBeansUserDir();
         String serverInstanceID = getJ2eeServerInstance();
                 
-        startServer(serverInstanceID);
+        // Make sure the app server is running.
+        JbiManager.startServer(serverInstanceID, false);
         
         ServerInstance serverInstance = AdministrationServiceHelper.getServerInstance(
                 nbUserDir, serverInstanceID);
@@ -296,60 +295,6 @@ public class DeployServiceAssembly extends Task {
             throw new BuildException((String) processResult[0]);
         }             
     }
-      
-    private void startServer(String serverInstanceID) {
-        org.netbeans.modules.j2ee.deployment.impl.ServerInstance inst = null;
-        
-        try {
-             inst = ServerRegistry.getInstance().getServerInstance(serverInstanceID);
-        } catch (Exception e) {
-            // NPE from command line deployment.
-            // Fine. Not supporting auto server start if deployed from command line.
-            return;
-        }
-        
-        if (inst == null) {
-            log("Bad target server ID: " + serverInstanceID);
-            return;
-        }
-        
-        ServerString server = new ServerString(inst);
-        
-        org.netbeans.modules.j2ee.deployment.impl.ServerInstance serverInstance = 
-                server.getServerInstance();
-        if (server == null || serverInstance == null) {
-            log("Make sure a target server is set in project properties.");
-        }
-        
-        // Currently it is not possible to select target to which modules will
-        // be deployed. Lets use the first one.
-        // (This will start the server if the server is not running.)
-        ServerTarget targets[] = serverInstance.getTargets();
-    }
-    
-//    /**
-//     * Retrieves the status of the given Service Assembly deployed on the JBI
-//     * Container on the Server.
-//     *
-//     * @param assemblyName
-//     *            name of a Service Assembly
-//     * @return JBI ServiceAssembly Status
-//     */
-//    private JBIServiceAssemblyStatus getJBIServiceAssemblyStatus(
-//            AdministrationService adminService, String assemblyName) {
-//        
-//        if (adminService != null) {
-//            List<JBIServiceAssemblyStatus> assemblyList = 
-//                    adminService.getServiceAssemblyStatusList();
-//            for (JBIServiceAssemblyStatus assembly : assemblyList) {
-//                if (assembly.getServiceAssemblyName().equals(assemblyName)) {
-//                    return assembly;
-//                }
-//            }
-//        }
-//        
-//        return null;
-//    }
     
     private void deployServiceAssembly(DeploymentService adminService) 
             throws BuildException {

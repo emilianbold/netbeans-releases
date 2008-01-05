@@ -50,6 +50,7 @@ import java.util.Arrays;
 import java.util.List;
 import javax.swing.SwingUtilities;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.modules.compapp.jbiserver.JbiManager;
 import org.netbeans.modules.compapp.projects.jbi.AdministrationServiceHelper;
 import org.netbeans.modules.compapp.projects.jbi.JbiProject;
 import org.netbeans.modules.compapp.projects.jbi.ui.customizer.JbiProjectProperties;
@@ -89,20 +90,29 @@ public abstract class AbstractTestCaseExecutionAction extends NodeAction
         return true;
     }
     
+    @Override
     protected boolean asynchronous() {
-        return false;
+        return true; 
     }
     
     protected void performAction(final Node[] activatedNodes) {
         TestcaseCookie tc = activatedNodes[0].getCookie(TestcaseCookie.class);
         if (tc == null) {
             return;
-        }
+        }        
         
         String[] targetNames = { getAntTargetName() };
         
         /*tc.getTestcaseNode().showDiffTopComponentVisible();*/        
         JbiProject project = tc.getTestcaseNode().getProject();
+        
+        // Make sure the App Server has been selected for the project.
+        if (!JbiManager.isSelectedServer(project)) {
+            return;
+        }
+        
+        // Make sure the App Server is started (blocking until server is ready)
+        JbiManager.startServer(project, true);
         
         // Make sure the SA is deployed and started. It is more effiecient 
         // this way than calling the deploy Ant task blindly in the Ant script.
@@ -125,14 +135,6 @@ public abstract class AbstractTestCaseExecutionAction extends NodeAction
                 String saID = (String) properties.get(JbiProjectProperties.SERVICE_ASSEMBLY_ID);
                 ServiceAssemblyInfo saStatus = adminService.getServiceAssembly(saID, "server");
                 if (saStatus == null) { // not deployed
-                    /*
-                    String msg = NbBundle.getMessage(JbiActionProvider.class, 
-                            "MSG_SERVICE_ASSEMBLY_NOT_DEPLOYED", saID); // NOI18N
-                    NotifyDescriptor d = new NotifyDescriptor.Message(
-                            msg, NotifyDescriptor.WARNING_MESSAGE);
-                    DialogDisplayer.getDefault().notify(d);
-                    return;
-                    */
                     // Add the deploy target to the target list. 
                     // (Alternatively, we could call adminService.deployServiceAssembly
                     // directly, but then we need to worry about project build.)
