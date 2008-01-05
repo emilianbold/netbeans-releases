@@ -229,6 +229,10 @@ public class DomInspector extends TopComponent implements TreeSelectionListener 
 
     private TreePath getPath(CssBox box) {
         LinkedList<Object> pathList = new LinkedList<Object>();
+        // #123989 possible NPE.
+        if (treeModel == null) {
+            return null;
+        }
         BoxTreeNode root = (BoxTreeNode)treeModel.getRoot();
         boolean found = findBox(box, root, pathList);
 
