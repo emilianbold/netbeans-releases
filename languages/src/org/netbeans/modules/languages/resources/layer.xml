@@ -54,11 +54,11 @@ made subject to such option by the copyright holder.
             <folder name="Other">
                 <file name="TokensBrowserAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-languages-features-TokensBrowserAction.instance"/>
-                    <attr name="position" intvalue="900"/>
+                    <attr name="position" intvalue="1000"/>
                 </file>
                 <file name="ASTBrowserAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-languages-features-ASTBrowserAction.instance"/>
-                    <attr name="position" intvalue="1000"/>
+                    <attr name="position" intvalue="1100"/>
                 </file>
             </folder>
         </folder>
