@@ -62,6 +62,7 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenHierarchyEvent;
+import org.netbeans.api.lexer.TokenHierarchyEventType;
 import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
@@ -122,6 +123,11 @@ public final class SyntaxHighlighting extends AbstractHighlightsContainer implem
     // ----------------------------------------------------------------------
 
     public void tokenHierarchyChanged(TokenHierarchyEvent evt) {
+        if (evt.type() == TokenHierarchyEventType.ACTIVITY || evt.type() == TokenHierarchyEventType.LANGUAGE_PATHS) {
+            // ignore
+            return;
+        }
+        
         synchronized (this) {
             version++;
         }
