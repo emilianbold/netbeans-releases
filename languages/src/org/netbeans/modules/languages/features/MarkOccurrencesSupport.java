@@ -27,6 +27,10 @@
  */
 package org.netbeans.modules.languages.features;
 
+import org.netbeans.api.languages.database.DatabaseContext;
+import org.netbeans.api.languages.database.DatabaseUsage;
+import org.netbeans.api.languages.database.DatabaseDefinition;
+import org.netbeans.api.languages.database.DatabaseItem;
 import java.awt.Color;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;

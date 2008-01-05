@@ -61,6 +61,8 @@ import org.netbeans.api.languages.ASTToken;
 import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
+import org.netbeans.api.languages.database.DatabaseContext;
+import org.netbeans.api.languages.database.DatabaseDefinition;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;

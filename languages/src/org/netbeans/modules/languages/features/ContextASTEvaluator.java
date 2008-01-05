@@ -54,6 +54,7 @@ import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.ParserManager;
 import org.netbeans.api.languages.ParserManager.State;
 import org.netbeans.api.languages.SyntaxContext;
+import org.netbeans.api.languages.database.DatabaseContext;
 import org.netbeans.modules.languages.Feature;
 
 

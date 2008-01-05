@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.languages.features;
 
+import org.netbeans.api.languages.database.DatabaseDefinition;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
@@ -65,7 +66,7 @@ import org.netbeans.api.languages.LanguagesManager;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.languages.features.DatabaseContext;
+import org.netbeans.api.languages.database.DatabaseContext;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
