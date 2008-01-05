@@ -2763,7 +2763,12 @@ public class WebForm implements Designer {
     }
 
     public void redoPaneLayout(boolean immediate) {
-        getPane().getPageBox().redoLayout(immediate);
+        PageBox pageBox = getPane().getPageBox();
+        // #123289 Possible NPE (for fragments?).
+        if (pageBox == null) {
+            return;
+        }
+        pageBox.redoLayout(immediate);
     }
 
 //    public void performEscape() {
