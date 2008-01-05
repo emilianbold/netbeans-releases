@@ -1,0 +1,16 @@
+    when Regexp  : puts 'a regex'
+                 -
+HINT:Using : instead of "then" in a when clause is illegal in Ruby 1.9
+FIX:Replace : with "then"
+    when Hash    : puts 'a regex'
+                 -
+HINT:Using : instead of "then" in a when clause is illegal in Ruby 1.9
+FIX:Replace : with "then"
+    when Numeric : puts 'a number'
+                 -
+HINT:Using : instead of "then" in a when clause is illegal in Ruby 1.9
+FIX:Replace : with "then"
+    when String: puts 'a string'
+               -
+HINT:Using : instead of "then" in a when clause is illegal in Ruby 1.9
+FIX:Replace : with "then"
