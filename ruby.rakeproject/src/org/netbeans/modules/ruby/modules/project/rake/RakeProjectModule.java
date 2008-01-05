@@ -74,7 +74,7 @@ import org.xml.sax.InputSource;
  */
 public class RakeProjectModule extends ModuleInstall {
     
-    public void restored() {
+    public @Override void restored() {
         super.restored();
         
         if (Boolean.getBoolean("netbeans.do.not.check.xalan")) // NOI18N
@@ -83,7 +83,7 @@ public class RakeProjectModule extends ModuleInstall {
         long start = System.currentTimeMillis();
         boolean isBuggyXalan = checkForXalan();
         long end = System.currentTimeMillis();
-        Logger.getLogger(RakeProjectModule.class.getName()).log(Level.FINE, "check for buggy xalan took %d", new Long(end - start)); // NOI18N
+        Logger.getLogger(RakeProjectModule.class.getName()).log(Level.FINE, "check for buggy xalan took %d", end - start); // NOI18N
         
         if (isBuggyXalan) {
             showWarning();
@@ -156,7 +156,7 @@ public class RakeProjectModule extends ModuleInstall {
                     LifecycleManager.getDefault().exit();
                 } else {
                     f.addWindowListener(new WindowAdapter() {
-                        public void windowOpened(WindowEvent e) {
+                        public @Override void windowOpened(WindowEvent e) {
                             LifecycleManager.getDefault().exit();
                         }
                     });
