@@ -53,6 +53,7 @@ import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -1301,43 +1302,47 @@ public class MarkupUnit extends SourceUnit implements org.w3c.dom.events.EventLi
         }
     }
     
-    
-//    /** Map <code>Element</code> to <code>MarkupDesignBean</code>. */
-//    private static final Map element2markupDesignBean = new WeakHashMap(200);
-    private static final String KEY_MARKUP_DESIGN_BEAN = "vwpMarkupDesignBean"; // NOI18N
+
+    // XXX #123995 The apache impl of Document userData leaks, so we
+    // need to avoid using it for now. Returning to previous, but also
+    // using weak refs (because there is a link from MarkupDesignBean to Element).
+    /** Map <code>Element</code> to <code>MarkupDesignBean</code>. */
+    private static final Map element2markupDesignBean = new WeakHashMap(200);
+//    private static final String KEY_MARKUP_DESIGN_BEAN = "vwpMarkupDesignBean"; // NOI18N
     
     public static void setMarkupDesignBeanForElement(Element element, MarkupDesignBean markupDesignBean) {
-//        synchronized (element2markupDesignBean) {
-//            element2markupDesignBean.put(element, markupDesignBean);
-//        }
-        if (element == null) {
-            // XXX Log problem?
-            return;
+        synchronized (element2markupDesignBean) {
+            element2markupDesignBean.put(element, new WeakReference(markupDesignBean));
         }
-        element.setUserData(KEY_MARKUP_DESIGN_BEAN, markupDesignBean, MarkupDesignBeanDataHandler.getDefault());
+//        if (element == null) {
+//            // XXX Log problem?
+//            return;
+//        }
+//        element.setUserData(KEY_MARKUP_DESIGN_BEAN, markupDesignBean, MarkupDesignBeanDataHandler.getDefault());
     }
     
     public static MarkupDesignBean getMarkupDesignBeanForElement(Element element) {
-//        synchronized (element2markupDesignBean) {
-//            return (MarkupDesignBean)element2markupDesignBean.get(element);
-//        }
-        if (element == null) {
-            // XXX Log problem?
-            return null;
+        synchronized (element2markupDesignBean) {
+            WeakReference ret = (WeakReference)element2markupDesignBean.get(element);
+            return ret == null ? null : (MarkupDesignBean)ret.get();
         }
-        return (MarkupDesignBean)element.getUserData(KEY_MARKUP_DESIGN_BEAN);
+//        if (element == null) {
+//            // XXX Log problem?
+//            return null;
+//        }
+//        return (MarkupDesignBean)element.getUserData(KEY_MARKUP_DESIGN_BEAN);
     }
     
-    private static class MarkupDesignBeanDataHandler implements UserDataHandler {
-        private static final MarkupDesignBeanDataHandler INSTANCE = new MarkupDesignBeanDataHandler();
-        public static MarkupDesignBeanDataHandler getDefault() {
-            return INSTANCE;
-        }
-        public void handle(short operation, String key, Object data, Node src, Node dst) {
-            // No op.
-            // TODO Provide the copying (after remove the copying in the AbstractRaveElement).
-        }
-    } // End of MarkupDesignBeanUserData.
+//    private static class MarkupDesignBeanDataHandler implements UserDataHandler {
+//        private static final MarkupDesignBeanDataHandler INSTANCE = new MarkupDesignBeanDataHandler();
+//        public static MarkupDesignBeanDataHandler getDefault() {
+//            return INSTANCE;
+//        }
+//        public void handle(short operation, String key, Object data, Node src, Node dst) {
+//            // No op.
+//            // TODO Provide the copying (after remove the copying in the AbstractRaveElement).
+//        }
+//    } // End of MarkupDesignBeanUserData.
 
     //------------------------------------------------------------------------ Change Event Handling
 
