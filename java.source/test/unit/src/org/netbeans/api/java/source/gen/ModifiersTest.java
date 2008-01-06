@@ -112,6 +112,7 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new ModifiersTest("testRemoveClassAnnotationAttribute4"));
 //        suite.addTest(new ModifiersTest("testRemoveClassAnnotationAttribute5"));
 //        suite.addTest(new ModifiersTest("testAddAnnotationToMethodPar"));
+//        suite.addTest(new ModifiersTest("test124701"));
         return suite;
     }
 
@@ -1358,6 +1359,46 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
                                 Collections.<ExpressionTree>emptyList()
                         )
                 );
+                workingCopy.rewrite(mods, copy);
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void test124701() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+                "package flaska;\n" +
+                "\n" +
+                "public class Test {\n" +
+                "    @SuppressWarnings(\"x\")\n" +
+                "    private void alois() {\n" +
+                "    }\n" +
+                "    \n" +
+                "}\n"
+                );
+        String golden =
+                "package flaska;\n" +
+                "\n" +
+                "public class Test {\n" +
+                "    @SuppressWarnings(\"x\")\n" +
+                "    public void alois() {\n" +
+                "    }\n" +
+                "    \n" +
+                "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                ModifiersTree mods = method.getModifiers();
+                ModifiersTree copy = make.Modifiers(EnumSet.of(Modifier.PUBLIC), mods.getAnnotations());
                 workingCopy.rewrite(mods, copy);
             }
         };

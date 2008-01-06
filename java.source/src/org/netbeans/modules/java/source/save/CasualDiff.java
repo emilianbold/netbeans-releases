@@ -1532,12 +1532,12 @@ public class CasualDiff {
                     }
                 }
             } else {
-                if (!oldT.getFlags().isEmpty()) localPointer = endOffset;
                 tokenSequence.move(localPointer);
                 moveToSrcRelevant(tokenSequence, Direction.FORWARD);
                 copyTo(localPointer, localPointer = tokenSequence.offset());
-                printer.printFlags(newT.flags);
                 localPointer = tokenSequence.offset();
+                if (!oldT.getFlags().isEmpty()) localPointer = endOffset;
+                printer.printFlags(newT.flags, oldT.getFlags().isEmpty());
             }
         } else {
             if (endOffset > localPointer) {
