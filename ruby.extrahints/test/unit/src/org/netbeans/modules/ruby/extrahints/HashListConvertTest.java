@@ -62,18 +62,24 @@ public class HashListConvertTest extends HintTestBase  {
                 "x = { \"a\",^ ", "Convert hash");
     }
 
-//    public void testNoPositives() throws Exception {
-//        try {
-//            parseErrorsOk = true;
-//            Set<String> exceptions = new HashSet<String>();
-//            
-//            // Known exceptions
-//            exceptions.add("invokemethod.rb");
-//        
-//            assertNoJRubyMatches(new HashListConvert(), exceptions);
-//            
-//        } finally {
-//            parseErrorsOk = false;
-//        }
-//    }
+    public void testFix2() throws Exception {
+        applyHint(this, new HashListConvert(), "testfiles/httpstatus.rb", 
+                "100,^ 'Continue',", "Convert hash");
+    }
+
+    public void testNoPositives() throws Exception {
+        try {
+            parseErrorsOk = true;
+            Set<String> exceptions = new HashSet<String>();
+            
+            // Known exceptions
+            exceptions.add("format.rb");
+            exceptions.add("httpstatus.rb");
+        
+            assertNoJRubyMatches(new HashListConvert(), exceptions);
+            
+        } finally {
+            parseErrorsOk = false;
+        }
+    }
 }
