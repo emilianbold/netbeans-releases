@@ -39,43 +39,29 @@
 
 package org.netbeans.modules.ruby.extrahints;
 
+import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.ruby.hints.HintTestBase;
 
 /**
  *
- * @author tor
+ * @author Tor Norbye
  */
-public class ColonToThenTest extends HintTestBase  {
+public class HashListConvertTest extends HintTestBase  {
     
-    public ColonToThenTest(String testName) {
+    public HashListConvertTest(String testName) {
         super(testName);
     }            
 
     public void testHints1() throws Exception {
-        findHints(this, new ColonToThen(), "testfiles/colontothen.rb", null);
+        findHints(this, new HashListConvert(), "testfiles/hashlist.rb", null);
     }
 
     public void testFix1() throws Exception {
-        applyHint(this, new ColonToThen(), "testfiles/colontothen.rb", 
-                "when Regexp  ^: puts 'a regex'", ":");
+        applyHint(this, new HashListConvert(), "testfiles/hashlist.rb", 
+                "x = { \"a\",^ ", "Convert hash");
     }
-    
-    public void testFix2() throws Exception {
-        applyHint(this, new ColonToThen(), "testfiles/colontothen.rb", 
-                "when String^: puts 'a string'", ":");
-    }
-    
-    public void testFix3() throws Exception {
-        applyHint(this, new ColonToThen(), "testfiles/colontothen.rb", 
-                "when Regexp  ^: puts 'a regex'", "Move");
-    }
-    
-    public void testFix4() throws Exception {
-        applyHint(this, new ColonToThen(), "testfiles/colontothen.rb", 
-                "when String^: puts 'a string'", "Move");
-    }
-    
+
 //    public void testNoPositives() throws Exception {
 //        try {
 //            parseErrorsOk = true;
@@ -84,7 +70,7 @@ public class ColonToThenTest extends HintTestBase  {
 //            // Known exceptions
 //            exceptions.add("invokemethod.rb");
 //        
-//            assertNoJRubyMatches(new ColonToThen(), exceptions);
+//            assertNoJRubyMatches(new HashListConvert(), exceptions);
 //            
 //        } finally {
 //            parseErrorsOk = false;

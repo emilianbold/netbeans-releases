@@ -1,0 +1,4 @@
+x = { "a", "b", "c", "d"}
+         -
+HINT:Convert the hash from list form to the => format required by Ruby 1.9
+FIX:Convert hash to the => syntax

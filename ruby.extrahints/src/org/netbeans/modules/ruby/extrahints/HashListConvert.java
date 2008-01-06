@@ -40,24 +40,19 @@
 package org.netbeans.modules.ruby.extrahints;
 
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
+import org.jruby.ast.HashNode;
+import org.jruby.ast.ListNode;
 import org.jruby.ast.Node;
 import org.jruby.ast.NodeTypes;
-import org.jruby.ast.WhenNode;
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.OffsetRange;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenId;
-import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.hints.spi.AstRule;
 import org.netbeans.modules.ruby.hints.spi.Description;
 import org.netbeans.modules.ruby.hints.spi.EditList;
@@ -66,93 +61,78 @@ import org.netbeans.modules.ruby.hints.spi.HintSeverity;
 import org.netbeans.modules.ruby.hints.spi.PreviewableFix;
 import org.netbeans.modules.ruby.hints.spi.RuleContext;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
-import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
- * Convert "when foo : bar" to "when foo then bar" as required by Ruby 1.9
+ * Convert {a,b,c,d,...} to {a=>b,c=>d,...} as required by Ruby 1.9.
  * 
  * @author Tor Norbye
  */
-public class ColonToThen implements AstRule {
+public class HashListConvert implements AstRule {
 
     public Set<Integer> getKinds() {
-        return Collections.singleton(NodeTypes.WHENNODE);
+        return Collections.singleton(NodeTypes.HASHNODE);
     }
 
     public void run(RuleContext context, List<Description> result) {
         Node node = context.node;
         CompilationInfo info = context.compilationInfo;
 
-        WhenNode when = (WhenNode)node;
-        Node body = when.getBodyNode();
-        if (body == null) {
+        HashNode hash = (HashNode)node;
+        ListNode listNode = hash.getListNode();
+        if (listNode == null) {
             return;
         }
         
-        // See if the child contains
-        BaseDocument doc = context.doc;
-        try {
-            // (1) make sure the body is on the same line as the when, and
-            // (2) the separator is ":", not "then" or something else
-            int whenStart = when.getPosition().getStartOffset();
-            int bodyStart = body.getPosition().getStartOffset();
-            if (Utilities.getRowEnd(doc, bodyStart) !=
-                    Utilities.getRowEnd(doc, whenStart)) {
-                return;
-            }
+        if (listNode.size() < 2) {
+            return;
+        }
 
-            int offset = -1;
-            try {
-                // Check tokens - look for ":" as opposed to then
-                doc.readLock();
-                TokenSequence<? extends RubyTokenId> ts = LexUtilities.getRubyTokenSequence(doc,
-                        bodyStart);
-                if (ts == null) {
-                    return;
-                }
-                ts.move(bodyStart);
-                while (ts.movePrevious()) {
-                    Token<? extends RubyTokenId> token = ts.token();
-                    TokenId id = token.id();
-                    if (id == RubyTokenId.WHITESPACE) {
-                        continue;
-                    } else if (id == RubyTokenId.NONUNARY_OP) {
-                        String s = token.text().toString();
-                        if (":".equals(s)) {
-                            offset = ts.offset();
-                            break;
-                        } else {
-                            return;
-                        }
-                    } else {
-                        return;
-                    }
-                }
-            } finally {
-                doc.readUnlock();
-            }
+        int commaOffset = getCommaOffset(context, listNode, 0);
+        if (commaOffset == -1) {
+            return;
+        }
+
+        OffsetRange range = new OffsetRange(commaOffset, commaOffset+1);
+        String displayName = NbBundle.getMessage(HashListConvert.class, "HashListConvertGutter");
+        List<Fix> fixes = Collections.<Fix>singletonList(new HashFix(context, listNode));
+        Description desc = new Description(this, displayName, info.getFileObject(), range, 
+                fixes, 140);
+        result.add(desc);
+    }
+    
+    private static int getCommaOffset(RuleContext context, ListNode listNode, int pair) {
+        int prevEnd = listNode.get(2*pair).getPosition().getEndOffset();
+        int nextStart = listNode.get(2*pair+1).getPosition().getStartOffset();
+        OffsetRange lexRange = LexUtilities.getLexerOffsets(context.compilationInfo, 
+                new OffsetRange(prevEnd, nextStart));
+        if (lexRange == OffsetRange.NONE) {
+            return -1;
+        }
+        
+        try {
+            String s = context.doc.getText(lexRange.getStart(), lexRange.getLength());
+            int index = s.indexOf(',');
             
-            OffsetRange range = new OffsetRange(offset, offset+1);
-            String displayName = NbBundle.getMessage(ColonToThen.class, "ColonToThenGutter");
-            List<Fix> fixes = new ArrayList<Fix>(2);
-            fixes.add(new ColonFix(doc, offset, false));
-            fixes.add(new ColonFix(doc, offset, true));
-            Description desc = new Description(this, displayName, info.getFileObject(), range, 
-                    fixes, 150);
-            result.add(desc);
+            // TODO - look out for comments here! Use lexical tokens rather than just document text
+            // (and watch out for RHTML discontiguous sections
+
+            if (index == -1 || s.indexOf("=>") != -1) {
+                return -1;
+            }
+            return lexRange.getStart() + index;
         } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
+            return -1;
         }
     }
 
     public String getId() {
-        return "ColonToThen"; // NOI18N
+        return "HashListConvert"; // NOI18N
     }
 
     public String getDescription() {
-        return NbBundle.getMessage(ColonToThen.class, "ColonToThenDesc");
+        return NbBundle.getMessage(HashListConvert.class, "HashListConvertDesc");
     }
 
     public boolean getDefaultEnabled() {
@@ -168,7 +148,7 @@ public class ColonToThen implements AstRule {
     }
 
     public String getDisplayName() {
-        return NbBundle.getMessage(ColonToThen.class, "ColonToThen");
+        return NbBundle.getMessage(HashListConvert.class, "HashListConvert");
     }
 
     public boolean showInTasklist() {
@@ -179,21 +159,17 @@ public class ColonToThen implements AstRule {
         return HintSeverity.WARNING;
     }
     
-    private static class ColonFix implements PreviewableFix {
-        private BaseDocument doc;
-        private int offset;
-        private boolean newline;
+    private static class HashFix implements PreviewableFix {
+        private RuleContext context;
+        private ListNode listNode;
 
-        public ColonFix(BaseDocument doc, int offset, boolean newline) {
-            this.doc = doc;
-            this.offset = offset;
-            this.newline = newline;
+        public HashFix(RuleContext context, ListNode listNode) {
+            this.context = context;
+            this.listNode = listNode;
         }
 
         public String getDescription() {
-            return newline ?
-                NbBundle.getMessage(Deprecations.class, "ColonToThenFixNewline") :
-                NbBundle.getMessage(Deprecations.class, "ColonToThenFix");
+            return NbBundle.getMessage(Deprecations.class, "HashListConvertFix");
         }
 
         public void implement() throws Exception {
@@ -201,16 +177,19 @@ public class ColonToThen implements AstRule {
         }
 
         public EditList getEditList() throws Exception {
+            BaseDocument doc = context.doc;
             EditList list = new EditList(doc);
-            if (newline) {
-                list.replace(offset, 1, "\n", true, 0);
-            } else {
+            for (int i = 0, n = listNode.size() / 2; i < n; i++) {
+                int offset = getCommaOffset(context, listNode, i);
+                if (offset == -1) {
+                    continue;
+                }
                 String s = doc.getText(offset, 3);
                 StringBuilder sb = new StringBuilder();
                 if (!Character.isWhitespace(doc.getText(offset-1, 1).charAt(0))) {
                     sb.append(' ');
                 }
-                sb.append("then");
+                sb.append("=>");
                 if (offset < doc.getLength()-2) {
                     if (!Character.isWhitespace(doc.getText(offset+1, 1).charAt(0))) {
                         sb.append(' ');
