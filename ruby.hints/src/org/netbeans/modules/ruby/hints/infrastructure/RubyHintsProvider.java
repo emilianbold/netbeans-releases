@@ -42,8 +42,11 @@ import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.Error;
 import org.netbeans.api.gsf.HintsProvider;
 import org.netbeans.api.gsf.OffsetRange;
+import org.netbeans.api.gsf.ParserResult;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
+import org.netbeans.modules.ruby.RubyMimeResolver;
 import org.netbeans.modules.ruby.hints.options.HintsSettings;
 import org.netbeans.modules.ruby.hints.spi.AstRule;
 import org.netbeans.modules.ruby.hints.spi.Description;
@@ -92,7 +95,12 @@ public class RubyHintsProvider implements HintsProvider {
             Exceptions.printStackTrace(ex);
         }
 
-        List<Error> errors = info.getDiagnostics();
+        ParserResult parserResult = info.getEmbeddedResult(RubyMimeResolver.RUBY_MIME_TYPE);
+        if (parserResult == null) {
+            return Collections.emptyList();
+        }
+
+        List<Error> errors = parserResult.getDiagnostics();
         if (errors == null || errors.size() == 0) {
             return Collections.emptyList();
         }
@@ -335,6 +343,15 @@ public class RubyHintsProvider implements HintsProvider {
         if (rules != null) {
             RuleContext context = new RuleContext();
             context.compilationInfo = info;
+            try {
+                context.doc = (BaseDocument) info.getDocument();
+                if (context.doc == null) {
+                    // Document closed
+                    return;
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
             context.node = node;
             context.path = path;
             context.caretOffset = caretOffset;
@@ -358,6 +375,15 @@ public class RubyHintsProvider implements HintsProvider {
                 int countBefore = result.size();
                 RuleContext context = new RuleContext();
                 context.compilationInfo = info;
+                try {
+                    context.doc = (BaseDocument) info.getDocument();
+                    if (context.doc == null) {
+                        // Document closed
+                        return false;
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
                 
                 for (ErrorRule rule : rules) {
                     if (!rule.appliesTo(info)) {
@@ -382,6 +408,15 @@ public class RubyHintsProvider implements HintsProvider {
         //context.path = path;
         context.selectionStart = start;
         context.selectionEnd = end;
+        try {
+            context.doc = (BaseDocument) info.getDocument();
+            if (context.doc == null) {
+                // Document closed
+                return;
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         
         for (SelectionRule rule : rules) {
             if (!rule.appliesTo(info)) {
