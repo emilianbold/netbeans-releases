@@ -40,11 +40,8 @@
  */
 package org.netbeans.api.languages.database;
 
-import org.netbeans.api.languages.ASTToken;
-
 public class DatabaseUsage extends DatabaseItem {
 
-    private ASTToken            token;
     private String              name;
     private DatabaseDefinition  definition;
     
@@ -57,19 +54,8 @@ public class DatabaseUsage extends DatabaseItem {
         this.name = name;
     }
 
-    public DatabaseUsage (
-        ASTToken    token
-    ) {
-        super (token.getOffset(), token.getEndOffset());
-        this.token = token;
-    }    
-    
     public String getName () {
         return name;
-    }
-
-    public ASTToken getToken () {
-        return token;
     }
 
     public DatabaseDefinition getDefinition() {
@@ -80,6 +66,7 @@ public class DatabaseUsage extends DatabaseItem {
         this.definition = definition;
     }
     
+    @Override
     public String toString () {
         return "Usage " + getName ();
     }

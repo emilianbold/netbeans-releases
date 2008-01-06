@@ -103,7 +103,7 @@ public class DatabaseContext extends DatabaseItem {
     }
 
     public void addUsage(ASTToken token, DatabaseDefinition definition) {
-        DatabaseUsage usage = new DatabaseUsage(token);
+        DatabaseUsage usage = new DatabaseUsage("", token.getOffset(), token.getEndOffset());
         definition.addUsage(usage);
         usage.setDatabaseDefinition(definition);
         addUsage(usage);
