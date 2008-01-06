@@ -42,11 +42,9 @@ import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.Error;
 import org.netbeans.api.gsf.HintsProvider;
 import org.netbeans.api.gsf.OffsetRange;
-import org.netbeans.api.gsf.ParserResult;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
-import org.netbeans.modules.ruby.RubyMimeResolver;
 import org.netbeans.modules.ruby.hints.options.HintsSettings;
 import org.netbeans.modules.ruby.hints.spi.AstRule;
 import org.netbeans.modules.ruby.hints.spi.Description;
@@ -95,12 +93,7 @@ public class RubyHintsProvider implements HintsProvider {
             Exceptions.printStackTrace(ex);
         }
 
-        ParserResult parserResult = info.getEmbeddedResult(RubyMimeResolver.RUBY_MIME_TYPE);
-        if (parserResult == null) {
-            return Collections.emptyList();
-        }
-
-        List<Error> errors = parserResult.getDiagnostics();
+        List<Error> errors = info.getDiagnostics();
         if (errors == null || errors.size() == 0) {
             return Collections.emptyList();
         }
