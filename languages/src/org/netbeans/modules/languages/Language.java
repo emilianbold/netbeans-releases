@@ -107,15 +107,17 @@ public abstract class Language extends org.netbeans.api.languages.Language {
             sb.append (ln).append ('\n');
             ln = br.readLine ();
         }
-        
-        // modified by caoyuan
-        ParserHelper helper = new ParserHelper(this, sb.toString());
-        List<TokenInput> tis = helper.createTokenInputs(new boolean[] {false});
-        List<SyntaxError> syntaxErrors = new ArrayList<SyntaxError>();
-        ASTNode root = helper.parse(tis, syntaxErrors, new boolean[] {false});
-        // we can process syntaxErrors here too.
-        // end modified by caoyuan
-        
+        TokenInput ti = TokenInputUtils.create (
+            this,
+            getParser (), 
+            new StringInput (sb.toString ())
+        );
+        ASTNode root = getAnalyser ().read (
+            ti, 
+            true, 
+            new ArrayList<SyntaxError> (), 
+            new boolean[] {false}
+        );
         Feature astProperties = getFeatureList ().getFeature ("AST");
         if (astProperties != null && root != null) {
             ASTNode root1 = (ASTNode) astProperties.getValue (
@@ -206,4 +208,5 @@ public abstract class Language extends org.netbeans.api.languages.Language {
         }
     }
 }
+
 
