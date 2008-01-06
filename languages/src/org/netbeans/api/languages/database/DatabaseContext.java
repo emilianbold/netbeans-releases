@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.netbeans.api.languages.ASTItem;
+import org.netbeans.api.languages.ASTToken;
 
 
 /**
@@ -101,6 +102,13 @@ public class DatabaseContext extends DatabaseItem {
         usagesSorted = false;
     }
 
+    public void addUsage(ASTToken token, DatabaseDefinition definition) {
+        DatabaseUsage usage = new DatabaseUsage(token);
+        definition.addUsage(usage);
+        usage.setDatabaseDefinition(definition);
+        addUsage(usage);
+    }
+    
     public void addContext (ASTItem item, DatabaseContext context) {
         if (contexts == null)
             contexts = new ArrayList<DatabaseContext> ();
