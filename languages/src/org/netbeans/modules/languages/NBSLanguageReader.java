@@ -111,10 +111,18 @@ public class NBSLanguageReader {
     private String          mimeType;
     private GRNode          grammarTree;
     private List<TokenType> tokenTypes;
+    private boolean         containsTokens = false;
     private Map<String,Integer> tokenTypeToID = new HashMap<String,Integer> ();
     private List<Feature>   features;
     private List<Rule>      grammarRules;
     
+    
+    {
+        tokenTypes = new ArrayList<TokenType> ();
+        addToken (null, null, SLexer.ERROR_TOKEN_TYPE_NAME, null, null);
+        addToken (null, null, SLexer.EMBEDDING_TOKEN_TYPE_NAME, null,null);
+        addToken (null, null, LLSyntaxAnalyser.GAP_TOKEN_TYPE_NAME, null, null);
+    }
     
     private NBSLanguageReader (
         String source, 
@@ -138,8 +146,11 @@ public class NBSLanguageReader {
     
     public List<TokenType> getTokenTypes () throws ParseException, IOException {
         if (features == null) readNBS ();
-        if (tokenTypes == null) return Collections.<TokenType>emptyList ();
         return tokenTypes;
+    }
+    
+    public boolean containsTokens () {
+        return containsTokens;
     }
     
     public List<Feature> getFeatures () throws ParseException, IOException {
@@ -288,12 +299,7 @@ public class NBSLanguageReader {
         String endState,
         Feature properties
     ) {
-        if (tokenTypes == null) {
-            tokenTypes = new ArrayList<TokenType> ();
-            addToken (null, null, SLexer.ERROR_TOKEN_TYPE_NAME, null, null);
-            addToken (null, null, SLexer.EMBEDDING_TOKEN_TYPE_NAME, null,null);
-            addToken (null, null, LLSyntaxAnalyser.GAP_TOKEN_TYPE_NAME, null, null);
-        }
+        containsTokens = true;
         int id = tokenTypeToID.size ();
         if (tokenTypeToID.containsKey (typeName))
             id = tokenTypeToID.get (typeName);

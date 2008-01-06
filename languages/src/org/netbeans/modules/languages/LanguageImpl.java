@@ -56,6 +56,7 @@ import javax.swing.event.EventListenerList;
 import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.modules.languages.lexer.SLexer;
 import org.netbeans.modules.languages.parser.LLSyntaxAnalyser;
 import org.netbeans.modules.languages.parser.Parser;
 
@@ -260,8 +261,7 @@ public class LanguageImpl extends Language {
             tokenTypeToID = new HashMap<String, Integer> ();
             idToTokenType = new HashMap<Integer, String> ();
             featureList = new FeatureList ();
-            List<TokenType> tokenTypes = reader.getTokenTypes ();
-            if (tokenTypes.isEmpty ()) {
+            if (!reader.containsTokens ()) {
                 org.netbeans.api.lexer.Language lexerLanguage = org.netbeans.api.lexer.Language.find (getMimeType ());
                 if (lexerLanguage != null) {
                     Iterator it = lexerLanguage.tokenIds ().iterator ();
@@ -273,19 +273,10 @@ public class LanguageImpl extends Language {
                         tokenTypeToID.put (name, id);
                         tokenTypeCount = Math.max (tokenTypeCount, id + 1);
                     }
-                }
-            } else {
-                Iterator<TokenType> it = tokenTypes.iterator ();
-                while (it.hasNext()) {
-                    TokenType tokenType = it.next ();
-                    int id = tokenType.getTypeID ();
-                    String name = tokenType.getType ();
-                    idToTokenType.put (id, name);
-                    tokenTypeToID.put (name, id);
-                    tokenTypeCount = Math.max (tokenTypeCount, id + 1);
-                }
-                parser = Parser.create (tokenTypes);
-            }
+                } else
+                    initLexicalStuff (reader.getTokenTypes ());
+            } else
+                initLexicalStuff (reader.getTokenTypes ());
 
             List<Feature> features = reader.getFeatures ();
             Iterator<Feature> it2 = features.iterator ();
@@ -309,6 +300,19 @@ public class LanguageImpl extends Language {
         } finally {
             reader = null;
         }
+    }
+    
+    private void initLexicalStuff (List<TokenType> tokenTypes) {
+        Iterator<TokenType> it = tokenTypes.iterator ();
+        while (it.hasNext()) {
+            TokenType tokenType = it.next ();
+            int id = tokenType.getTypeID ();
+            String name = tokenType.getType ();
+            idToTokenType.put (id, name);
+            tokenTypeToID.put (name, id);
+            tokenTypeCount = Math.max (tokenTypeCount, id + 1);
+        }
+        parser = Parser.create (tokenTypes);
     }
     
     protected void fire () {
