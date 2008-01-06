@@ -379,7 +379,7 @@ public class DatabaseContext extends DatabaseItem {
         return result;
     }
     
-    protected void collectDefinitionsInScope(Collection<DatabaseDefinition> scopeDefinitions) {
+    public void collectDefinitionsInScope(Collection<DatabaseDefinition> scopeDefinitions) {
         if (definitions != null) {
             scopeDefinitions.addAll(definitions);
         } 

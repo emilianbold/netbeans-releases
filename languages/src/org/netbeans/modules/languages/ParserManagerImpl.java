@@ -308,16 +308,12 @@ public class ParserManagerImpl extends ParserManager {
         String mimeType = (String) document.getProperty ("mimeType");
         Language language = getLanguage (mimeType);
         LLSyntaxAnalyser analyser = language.getAnalyser ();                           //long start = System.currentTimeMillis ();
-        TokenInput input = createTokenInput ();
+        ParserHelper helper = new ParserHelper(language, tokenHierarchy);
+        List<TokenInput> inputs = createTokenInputs(helper);
         if (cancel [0]) return;                                                 //S ystem.out.println ("lex " + (System.currentTimeMillis () - start));start = System.currentTimeMillis ();
         List<SyntaxError> newSyntaxErrors = new ArrayList<SyntaxError> ();
         try {
-            ast = analyser.read (
-                input, 
-                true, 
-                newSyntaxErrors,
-                cancel
-            );                                                                  //S ystem.out.println ("syntax " + (System.currentTimeMillis () - start));
+            ast = helper.parse(inputs, newSyntaxErrors, cancel);
             syntaxErrors = newSyntaxErrors;
         } catch (ParseException ex) {
             // should not be called - read (skipErrors == true)
@@ -344,6 +340,19 @@ public class ParserManagerImpl extends ParserManager {
         }                                                                   //start = System.currentTimeMillis ();
         setChange (State.OK, ast);                                          //S ystem.out.println ("fire " + (System.currentTimeMillis () - start));
     }
+    
+    // add by caoyuan
+    private List<TokenInput> createTokenInputs(final ParserHelper helper) {
+        final List[] ret = new List[1];
+        document.render(new Runnable() {
+            public void run() {
+                ret[0] = helper.createTokenInputs(cancel);
+            }
+        });
+        return ret[0];
+    }
+    // Followinf createTokenInput() getTokens() is useless, keep as reference for ParserHelper
+    // end add by caoyuan
     
     private TokenInput createTokenInput () {
         final TokenInput[] ret = new TokenInput[1];

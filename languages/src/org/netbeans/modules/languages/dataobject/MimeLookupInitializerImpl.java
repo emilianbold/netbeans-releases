@@ -187,7 +187,9 @@ public class MimeLookupInitializerImpl implements MimeLookupInitializer {
 //                                case 4:
 //                                    return CodeFoldingSideBarFactory.class;
                                 case 5:
-                                    return BracesMatcherFactory.class;
+                                    // modified by caoyuan
+                                    return BraceHighlighting.class;
+                                    // end modified by caoyuan
                                 case 6:
                                     return IndentFactory.class;
                                 case 7:
