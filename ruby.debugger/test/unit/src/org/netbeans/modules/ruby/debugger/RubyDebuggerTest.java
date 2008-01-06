@@ -45,6 +45,7 @@ import java.io.File;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.junit.MockServices;
 import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpoint;
 import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpointManager;
@@ -349,7 +350,7 @@ public final class RubyDebuggerTest extends TestBase {
     }
     
     public void testCheckAndTuneSettings() {
-        ExecutionDescriptor descriptor = new ExecutionDescriptor();
+        ExecutionDescriptor descriptor = new ExecutionDescriptor(RubyPlatformManager.getDefaultPlatform());
         // DialogDisplayerImpl.createDialog() assertion would fail if dialog is shown
         assertTrue("default setting OK with JRuby", RubyDebugger.checkAndTuneSettings(descriptor));
     }
