@@ -929,15 +929,18 @@ public class ProfilesModelHelper {
     }
 
     public static void enableSecureConversation(WSDLComponent c, boolean enable) {
+                
         assert (c != null);
         assert ((c instanceof BindingOperation) || (c instanceof Binding));
-
+        
         Binding b = null;
         if (c instanceof BindingOperation) {
             b = (Binding) c.getParent();
         } else {
             b = (Binding) c;
         }
+
+        if (ProfilesModelHelper.isSCEnabled(b)) return;        
         
         WSDLModel model = c.getModel();        
         WSDLComponentFactory wcf = model.getFactory();
