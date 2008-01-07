@@ -252,7 +252,38 @@ public class GroovyLexerBatchTest extends TestCase {
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.NLS, "\n", -1);
     }
-    
+   
+    public void testCRLF() {
+        String text = 
+                "class LineTermination {\n" +
+                "\n" +
+                "\r\n" +
+                "\r" +
+                "}";
+                
+        TokenHierarchy<?> hi = TokenHierarchy.create(text,GroovyTokenId.language());
+        TokenSequence<?> ts = hi.tokenSequence();
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.LITERAL_class, "class", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.WHITESPACE, " ", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.IDENTIFIER, "LineTermination", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.WHITESPACE, " ", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.LBRACE, "{", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.NLS, "\n", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.NLS, "\n", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.NLS, "\r\n", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.NLS, "\r", -1);
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.RBRACE, "}", -1);
+    }
     public void test2() {
         String commentText = "/* test comment  */";
         String text = "abc+ " + commentText + "def public publica publi static x";

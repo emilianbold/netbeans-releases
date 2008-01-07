@@ -63,12 +63,16 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  *
  * @author Martin Adamek
  */
 public class AstUtilities {
+    
+    
 
     public static int getAstOffset(CompilationInfo info, int lexOffset) {
         return info.getPositionManager().getAstOffset(info.getParserResult(), lexOffset);
@@ -211,7 +215,14 @@ public class AstUtilities {
         assert lineNumber >= 0 : "Line number is negative: " + lineNumber;
         assert columnNumber >= 0 : "Column number is negative: " + columnNumber;
         // split text into lines
-        String[] lines = text.split("\n"); // NOI18N
+        String[] lines = text.split("\r\n|\n|\r"); // NOI18N
+        
+        assert lineNumber <= lines.length : "Line number is higher than lines in text: " + lineNumber;
+        
+//        final Logger LOG = Logger.getLogger(AstUtilities.class.getName());
+//        LOG.log(Level.WARNING, "lineNumber   : " + lineNumber);
+//        LOG.log(Level.WARNING, "lines.length : " + lines.length);
+      
         int offset = 0;
         for (int i = 0; i < (lineNumber - 1); i++) {
             // increase offset by length of line + new line character lost in split() action
