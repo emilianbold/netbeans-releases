@@ -275,7 +275,7 @@ public class ProjectsRootNode extends AbstractNode {
             return badgedNodes;
         }        
         
-        private Node logicalViewForProject(Project project, boolean[] projectInLookup) {
+        final Node logicalViewForProject(Project project, boolean[] projectInLookup) {
             Node node;
             
             LogicalViewProvider lvp = project.getLookup().lookup(LogicalViewProvider.class);
@@ -427,10 +427,10 @@ public class ProjectsRootNode extends AbstractNode {
             return new BadgingLookup(n.getLookup(), Lookups.singleton(alwaysSearchableSearchInfo(n.getLookup().lookup(Project.class))));
         }
         
-        private void updateLookup(Node n) {
+        final void updateLookup(Node n, Project project) {
             if (getLookup() instanceof BadgingLookup) {
                 BadgingLookup bl = (BadgingLookup)getLookup();
-                bl.setMyLookups(n.getLookup(), Lookups.singleton(alwaysSearchableSearchInfo(n.getLookup().lookup(Project.class))));
+                bl.setMyLookups(n.getLookup(), Lookups.singleton(alwaysSearchableSearchInfo(project)));
             }
         }
         
@@ -517,7 +517,7 @@ public class ProjectsRootNode extends AbstractNode {
                     ProjectChildren ch = (ProjectChildren)getParentNode().getChildren();
                     Node n = ch.logicalViewForProject(newProj, null);
                     changeOriginal(n, true);
-                    updateLookup(n);
+                    updateLookup(n, newProj);
                 }
             }
         }
