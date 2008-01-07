@@ -147,9 +147,10 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         locationComboBox.setSelectedItem(preselectedGroup);
 
         // Create OS dependent relative name
-        folderTextField.setText(
+        /*folderTextField.setText(
             getRelativeNativeName(preselectedGroup.getRootFolder(), preselectedFolder)
-        );
+        );*/
+        folderTextField.setText("collaborations");
 
         String ext = (template == null) ? "" : template.getExt(); // NOI18N
         expectedExtension = (ext.length() == 0) ? "" : ("." + ext); // NOI18N
