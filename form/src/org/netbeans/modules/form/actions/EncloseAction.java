@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.form.actions;
 
+import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.awt.event.*;
 import java.util.List;
@@ -52,6 +53,8 @@ import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.palette.PaletteItem;
 import org.netbeans.modules.form.layoutdesign.LayoutModel;
 import org.netbeans.modules.form.palette.PaletteUtils;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
 
 public class EncloseAction extends NodeAction {
@@ -143,15 +146,31 @@ public class EncloseAction extends NodeAction {
 
         @Override
         public JPopupMenu getPopupMenu() {
-            JPopupMenu popup = super.getPopupMenu();
+            final JPopupMenu popup = super.getPopupMenu();
             if (!initialized) {
                 popup.removeAll();
-                for (PaletteItem item : getAllContainers()) {
-                    JMenuItem mi = new JMenuItem(item.getNode().getDisplayName());
-                    HelpCtx.setHelpIDString(mi, EncloseAction.class.getName());                    
-                    addSortedMenuItem(popup, mi);
-                    mi.addActionListener(new EncloseActionListener(item));
-                }
+                String waitTxt = NbBundle.getBundle(EncloseAction.class).getString("MSG_EncloseInPleaseWait"); // NOI18N
+                JMenuItem waitItem = new JMenuItem(waitTxt);
+                waitItem.setEnabled(false);
+                popup.add(waitItem);
+                // Find the containers outside EQ, see issue 123794
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        final PaletteItem[] items = getAllContainers();
+                        EventQueue.invokeLater(new Runnable() {
+                            public void run() {
+                                popup.removeAll();
+                                for (PaletteItem item : items) {
+                                    JMenuItem mi = new JMenuItem(item.getNode().getDisplayName());
+                                    HelpCtx.setHelpIDString(mi, EncloseAction.class.getName());                    
+                                    addSortedMenuItem(popup, mi);
+                                    mi.addActionListener(new EncloseActionListener(item));
+                                }
+                                popup.pack();
+                            }
+                        });
+                    }
+                });
                 initialized = true;
             }
             return popup;
