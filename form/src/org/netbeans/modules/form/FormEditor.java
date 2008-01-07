@@ -306,6 +306,12 @@ public class FormEditor {
 	
         openForms.put(formModel, this);
 
+        // Force initialization of Auto Set Component Name.
+        // It cannot be initialized in constructor of FormModel,
+        // because it may call getResourceSupport() which
+        // requires formModel/FormEditor pair to be in openForms.
+        formModel.getSettings().getAutoSetComponentName();
+
         // load the form data (FormModel) and report errors
         synchronized(persistenceManager) {
             try {
