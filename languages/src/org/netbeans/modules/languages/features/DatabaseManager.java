@@ -179,14 +179,16 @@ public class DatabaseManager {
         }
     }
     
-    private static Map<ASTNode,DatabaseContext> astNodeToDatabaseContext = new WeakHashMap<ASTNode,DatabaseContext> ();
+    //private static Map<ASTNode,DatabaseContext> astNodeToDatabaseContext = new WeakHashMap<ASTNode,DatabaseContext> ();
     
     public static DatabaseContext getRoot (ASTNode ast) {
-        return astNodeToDatabaseContext.get (ast);
+        return org.netbeans.api.languages.database.DatabaseManager.getRoot(ast);
+        //return astNodeToDatabaseContext.get (ast);
     }
     
     static void setRoot (ASTNode node, DatabaseContext databaseContext) {
-        astNodeToDatabaseContext.put (node, databaseContext);
+        org.netbeans.api.languages.database.DatabaseManager.setRoot(node, databaseContext);
+        //astNodeToDatabaseContext.put (node, databaseContext);
     }
 }
 
