@@ -57,6 +57,8 @@ import org.netbeans.api.gsf.HtmlFormatter;
 import org.netbeans.api.gsf.NameKind;
 import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.api.ruby.platform.RubyInstallation;
+import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.api.ruby.platform.TestUtil;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -180,7 +182,7 @@ public class CodeCompleterTest extends RubyTestBase {
         System.setProperty("netbeans.user", getWorkDirPath());
         FileObject jrubyHome = TestUtil.getXTestJRubyHomeFO();
         assertNotNull(jrubyHome);
-        FileObject clusterLoc = jrubyHome.getParent();
+        FileObject clusterLoc = jrubyHome.getParent().getFileObject("preindexed");
         Index.setClusterLoc(clusterLoc);
         LanguageRegistry registry = LanguageRegistry.getInstance();
         List<Action> actions = Collections.emptyList();
@@ -194,9 +196,10 @@ public class CodeCompleterTest extends RubyTestBase {
             languages.add(dl);
             registry.addLanguages(languages);
         }
-        // XXX
-//        // Force classpath initialization
-//        Set<URL> urls = RubyInstallation.getInstance().getNonGemLoadPath();
+        // Force classpath initialization
+        RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
+        platform.getGemManager().getNonGemLoadPath();
+        org.netbeans.modules.gsfret.source.usages.ClassIndexManager.getDefault().getBootIndices();
         
         CompilationInfo ci = getInfo(file);
         String text = ci.getText();
@@ -474,7 +477,7 @@ public class CodeCompleterTest extends RubyTestBase {
         System.setProperty("netbeans.user", getWorkDirPath());
         FileObject jrubyHome = TestUtil.getXTestJRubyHomeFO();
         assertNotNull(jrubyHome);
-        FileObject clusterLoc = jrubyHome.getParent();
+        FileObject clusterLoc = jrubyHome.getParent().getFileObject("preindexed");
         Index.setClusterLoc(clusterLoc);
         LanguageRegistry registry = LanguageRegistry.getInstance();
         List<Action> actions = Collections.emptyList();
@@ -488,9 +491,10 @@ public class CodeCompleterTest extends RubyTestBase {
             languages.add(dl);
             registry.addLanguages(languages);
         }
-        // XXX
-//        // Force classpath initialization
-//        Set<URL> urls = RubyInstallation.getInstance().getNonGemLoadPath();
+        // Force classpath initialization
+        RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
+        platform.getGemManager().getNonGemLoadPath();
+        org.netbeans.modules.gsfret.source.usages.ClassIndexManager.getDefault().getBootIndices();
 
         CodeCompleter cc = new CodeCompleter();
         TestCompilationInfo info = getInfo(file);
