@@ -304,6 +304,7 @@ public class JBDeployer implements ProgressObject, Runnable {
             Thread.sleep(2000);
         }
 
+        ClassLoader orig = Thread.currentThread().getContextClassLoader();
         // Try JMX deployer first.
         try {
             // jboss does not escape url special characters
@@ -313,7 +314,9 @@ public class JBDeployer implements ProgressObject, Runnable {
                 info = dm.invokeMBeanOperation(new ObjectName("jboss.system:service=MainDeployer"), // NOI18N
                     "getDeployment", new Object[] {deployedFile.toURL()}, new String[] {"java.net.URL"}); // NOI18N
             }
+
             if (info != null) {
+                Thread.currentThread().setContextClassLoader(info.getClass().getClassLoader());
                 Class infoClass = info.getClass();
                 long lastDeployed = infoClass.getDeclaredField("lastDeployed").getLong(info); // NOI18N
                 Object state = infoClass.getDeclaredField("state").get(info); // NOI18N
@@ -324,16 +327,24 @@ public class JBDeployer implements ProgressObject, Runnable {
         } catch (Exception ex) {
             // pass through, try the old way
             LOGGER.log(Level.INFO, null, ex);
+        } finally {
+            Thread.currentThread().setContextClassLoader(orig);
         }
 
         // We will try the old way (in fact this does not work for EAR).
+        orig = Thread.currentThread().getContextClassLoader();
         try {
             ObjectName searchPattern = new ObjectName("jboss.web.deployment:war=" + warName + ",*"); // NOI18N
+            
             MBeanServerConnection server = Util.getRMIServer(dm);
+            Thread.currentThread().setContextClassLoader(server.getClass().getClassLoader());
+            
             return !server.queryMBeans(searchPattern, null).isEmpty();
         } catch (Exception ex) {
             // pass through, try the old way
             LOGGER.log(Level.INFO, null, ex);
+        } finally {
+            Thread.currentThread().setContextClassLoader(orig);
         }
 
         return false;
@@ -341,11 +352,11 @@ public class JBDeployer implements ProgressObject, Runnable {
 
     private static class ZipEntryInputStream extends InputStream {
         private final ZipInputStream zis;
-        
+
         public ZipEntryInputStream(ZipInputStream zis) {
             this.zis = zis;
         }
-        
+
         @Override
         public int available() throws IOException {
             return zis.available();
