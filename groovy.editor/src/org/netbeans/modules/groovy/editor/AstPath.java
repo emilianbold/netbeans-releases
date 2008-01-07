@@ -46,8 +46,12 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Scanner;
+import javax.swing.text.BadLocationException;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ModuleNode;
+import org.netbeans.editor.BaseDocument;
+import org.openide.util.Exceptions;
 
 /**
  * This represents a path in a Groovy AST.
@@ -63,6 +67,24 @@ public class AstPath implements Iterable<ASTNode> {
 
     public AstPath(ArrayList<ASTNode> path) {
         this.path = path;
+    }
+
+    public AstPath(ASTNode root, int caretOffset, BaseDocument document) {
+        
+        try {
+            Scanner scanner = new Scanner(document.getText(0, caretOffset + 1));
+            int line = 0;
+            String lineText = "";
+            while (scanner.hasNextLine()) {
+                lineText = scanner.nextLine();
+                line++;
+            }
+            int column = lineText.length();
+            findPathTo(root, line, column);
+        } catch (BadLocationException ble) {
+            Exceptions.printStackTrace(ble);
+        }
+        
     }
 
     /**
@@ -181,8 +203,10 @@ public class AstPath implements Iterable<ASTNode> {
             if (column <= endColumn) {
                 return true;
             }
-        } else {
+        } else if (beginLine < line && line < endLine) {
             return true;
+        } else {
+            return false;
         }
         return false;
     }

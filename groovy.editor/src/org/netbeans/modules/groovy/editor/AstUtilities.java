@@ -43,14 +43,17 @@ package org.netbeans.modules.groovy.editor;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import javax.swing.text.Document;
+import org.codehaus.groovy.antlr.AntlrASTProcessor;
+import org.codehaus.groovy.antlr.treewalker.NodeCollector;
+import org.codehaus.groovy.antlr.treewalker.PreOrderTraversal;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
+import org.codehaus.groovy.ast.Parameter;
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.api.gsf.ParserResult;
@@ -66,6 +69,10 @@ import org.openide.util.Exceptions;
  * @author Martin Adamek
  */
 public class AstUtilities {
+
+    public static int getAstOffset(CompilationInfo info, int lexOffset) {
+        return info.getPositionManager().getAstOffset(info.getParserResult(), lexOffset);
+    }
 
     public static BaseDocument getBaseDocument(FileObject fileObject, boolean forceOpen) {
         DataObject dobj;
@@ -163,12 +170,13 @@ public class AstUtilities {
     @SuppressWarnings("unchecked")
     public static List<ASTNode> children(ASTNode root) {
         
+        List<ASTNode> children = new ArrayList<ASTNode>();
+        
         if (root instanceof ModuleNode) {
             ModuleNode moduleNode = (ModuleNode) root;
-            return moduleNode.getClasses();
+            children.addAll(moduleNode.getClasses());
         } else if (root instanceof ClassNode) {
             ClassNode classNode = (ClassNode) root;
-            List children = new ArrayList();
             for (Object object : classNode.getMethods()) {
                 MethodNode method = (MethodNode) object;
                 // getMethods() returns all methods also from superclasses
@@ -184,11 +192,15 @@ public class AstUtilities {
                     children.add(field);
                 }
             }
-
-            return children;
-        } else {
-            return Collections.<ASTNode>emptyList();
+        } else if (root instanceof MethodNode) {
+            MethodNode methodNode = (MethodNode) root;
+            children.add(methodNode.getCode());
+            for (Parameter parameter : methodNode.getParameters()) {
+                children.add(parameter);
+            }
         }
+        
+        return children;
     }
     
     /**
