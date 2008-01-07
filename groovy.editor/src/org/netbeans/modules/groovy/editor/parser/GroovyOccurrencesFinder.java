@@ -41,30 +41,109 @@
 
 package org.netbeans.modules.groovy.editor.parser;
 
-import java.util.Collections;
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
+import javax.swing.text.Document;
+import org.codehaus.groovy.ast.ASTNode;
 import org.netbeans.api.gsf.ColoringAttributes;
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.OccurrencesFinder;
 import org.netbeans.api.gsf.OffsetRange;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.groovy.editor.AstPath;
+import org.netbeans.modules.groovy.editor.AstUtilities;
+import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Martin Adamek
  */
 public class GroovyOccurrencesFinder implements OccurrencesFinder {
-
-    public void setCaretPosition(int position) {
-    }
+    
+    private boolean cancelled;
+    private int caretPosition;
+    private Map<OffsetRange, ColoringAttributes> occurrences;
 
     public Map<OffsetRange, ColoringAttributes> getOccurrences() {
-        return Collections.<OffsetRange, ColoringAttributes>emptyMap();
+        return occurrences;
     }
 
-    public void cancel() {
+    protected final synchronized boolean isCancelled() {
+        return cancelled;
     }
 
-    public void run(CompilationInfo parameter) throws Exception {
+    protected final synchronized void resume() {
+        cancelled = false;
     }
 
+    public final synchronized void cancel() {
+        cancelled = true;
+    }
+
+    public void run(CompilationInfo info) {
+        resume();
+
+        if (isCancelled()) {
+            return;
+        }
+
+        ASTNode root = AstUtilities.getRoot(info);
+
+        if (root == null) {
+            return;
+        }
+
+        Map<OffsetRange, ColoringAttributes> highlights =
+            new HashMap<OffsetRange, ColoringAttributes>(100);
+
+        GroovyParserResult rpr = (GroovyParserResult)info.getParserResult();
+
+        int astOffset = AstUtilities.getAstOffset(info, caretPosition);
+        if (astOffset == -1) {
+            return;
+        }
+
+        Document document = null;
+        try {
+            document = info.getDocument();
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        }
+        AstPath path = new AstPath(root, astOffset, (BaseDocument)document);
+        ASTNode closest = path.leaf();
+        
+//        System.out.println("### closest: " + closest);
+        
+        if (closest != null) {
+        }
+
+        if (isCancelled()) {
+            return;
+        }
+
+        if (highlights.size() > 0) {
+            if (info.getPositionManager().isTranslatingSource()) {
+                Map<OffsetRange, ColoringAttributes> translated = new HashMap<OffsetRange,ColoringAttributes>(2*highlights.size());
+                for (Map.Entry<OffsetRange,ColoringAttributes> entry : highlights.entrySet()) {
+                    OffsetRange range = LexUtilities.getLexerOffsets(info, entry.getKey());
+                    if (range != OffsetRange.NONE) {
+                        translated.put(range, entry.getValue());
+                    }
+                }
+                
+                highlights = translated;
+            }
+
+            this.occurrences = highlights;
+        } else {
+            this.occurrences = null;
+        }
+    }
+
+    public void setCaretPosition(int position) {
+        this.caretPosition = position;
+    }
+    
 }

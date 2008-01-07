@@ -45,9 +45,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.text.Document;
-import org.codehaus.groovy.antlr.AntlrASTProcessor;
-import org.codehaus.groovy.antlr.treewalker.NodeCollector;
-import org.codehaus.groovy.antlr.treewalker.PreOrderTraversal;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
@@ -202,6 +199,12 @@ public class AstUtilities {
             for (Parameter parameter : methodNode.getParameters()) {
                 children.add(parameter);
             }
+        } else if (root instanceof Parameter) {
+        } else if (root instanceof FieldNode) {
+        } else {
+            AstChildrenSupport astChildrenSupport = new AstChildrenSupport();
+            root.visit(astChildrenSupport);
+            children = astChildrenSupport.children();
         }
         
         return children;
