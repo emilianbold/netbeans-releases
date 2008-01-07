@@ -26,6 +26,9 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
     GetArtifactNameStep parentStep;
     GrailsProject project;
     String baseDir;
+    private String fileName = "";
+    String suffix = "";
+    
     SourceCategory cat;
         
     boolean valid(WizardDescriptor settings) {
@@ -71,10 +74,12 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
             case CONTROLLERS:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_CONTROLLERS")); // NOI18N
                 subDirName = "controllers";
+                suffix = "Controller";
                 break;
             case SERVICES:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_SERVICES")); // NOI18N
                 subDirName = "services";
+                suffix = "Service";
                 break; 
             case VIEWS:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_VIEWS")); // NOI18N
@@ -89,13 +94,19 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
         projectTextField.setText(project.getProjectDirectory().getName());
         
         String prefix = "";
+        
+        boolean windows = Utilities.isWindows();
 
-        if(!Utilities.isWindows())
+        if(!windows)
             prefix = File.separator;
         
         baseDir =   prefix + project.getProjectDirectory().getPath() + 
                     File.separatorChar + "grails-app" + File.separatorChar + subDirName;
-            
+        
+        if(windows)
+            baseDir = baseDir.replace("/","\\");
+        
+        
         createdFileTextField.setText(baseDir + File.separatorChar );
         
         // register event listeners to auto-update some fields.
@@ -216,7 +227,9 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
         Document doc = e.getDocument();
                 
         if ( doc == classNameTextField.getDocument() ) {
-            createdFileTextField.setText(baseDir + File.separatorChar + classNameTextField.getText() + ".groovy");
+            
+            fileName = baseDir + File.separatorChar + classNameTextField.getText() + suffix + ".groovy";
+            createdFileTextField.setText(fileName);
             projectTextField.setText(project.getProjectDirectory().getName());
             
             parentStep.fireChangeEvent();
@@ -236,6 +249,10 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
     public void setArtifactName(String text){
         classNameTextField.setText(text);
         parentStep.fireChangeEvent();
+    }
+
+    public String getFileName() {
+        return fileName;
     }
     
 }

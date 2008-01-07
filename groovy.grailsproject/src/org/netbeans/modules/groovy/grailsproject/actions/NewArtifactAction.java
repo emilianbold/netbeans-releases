@@ -35,10 +35,14 @@ import org.netbeans.modules.groovy.grailsproject.ui.wizards.NewArtifactWizardIte
 import org.openide.DialogDisplayer;
 import java.awt.Dialog;
 import java.util.Set;
+import java.util.logging.Level;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.SourceCategory;
 import java.util.logging.Logger;
-import java.util.logging.Level;
+import org.openide.cookies.OpenCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  *
@@ -93,13 +97,22 @@ public class NewArtifactAction extends AbstractAction {
                 dlg.setVisible(true);
                 if (wiz.getValue() == WizardDescriptor.FINISH_OPTION) {
                     Set result = wiz.getInstantiatedObjects();
+                    for ( Object fo : result) {
+                        try {
+                            DataObject dObj = DataObject.find((FileObject)fo);
+                            OpenCookie ok = dObj.getLookup().lookup(OpenCookie.class);
+                            if (ok != null) {
+                                ok.open();
+                            }
+                        } catch (DataObjectNotFoundException ex) {
+                            LOG.log(Level.WARNING, "DataObjectNotFoundException: " +  ex.getMessage());
+                        }
+                    }
+
                 }
             } finally {
                 dlg.dispose();
             }
-        
-        
-        
     }
 
 }

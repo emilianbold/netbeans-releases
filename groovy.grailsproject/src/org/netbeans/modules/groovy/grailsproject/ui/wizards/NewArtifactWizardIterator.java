@@ -78,6 +78,8 @@ public class NewArtifactWizardIterator implements  WizardDescriptor.Instantiatin
     String serverCommand;
     String artifactName = "";
     
+    private  final Logger LOG = Logger.getLogger(NewArtifactWizardIterator.class.getName());
+    
     public NewArtifactWizardIterator (GrailsProject project, SourceCategory cat) {
         this.project = project;
         this.cat = cat;
@@ -121,12 +123,18 @@ public class NewArtifactWizardIterator implements  WizardDescriptor.Instantiatin
                     Exceptions.printStackTrace(ex);
                     }
 
-            File dirF = new File((String) wiz.getProperty("projectFolder"));
-
-            if (dirF != null) {
-                dirF = FileUtil.normalizeFile(dirF);
-                FileObject dir = FileUtil.toFileObject(dirF);
-                resultSet.add(dir);
+            LOG.log(Level.WARNING, "Artifact Name: " + pls.getFileName());
+            File artifactFile = new File(pls.getFileName());
+            
+            if (artifactFile != null) {
+                LOG.log(Level.WARNING, "Created File: " + artifactFile.getAbsolutePath());
+                artifactFile = FileUtil.normalizeFile(artifactFile);
+                FileObject fo = FileUtil.toFileObject(artifactFile);
+                
+                if (fo == null){
+                    LOG.log(Level.WARNING, "Problem creating FileObject(null): " + artifactFile.getAbsolutePath());
+                    }
+                resultSet.add(fo);
             }
 
             return resultSet;
@@ -200,7 +208,7 @@ public class NewArtifactWizardIterator implements  WizardDescriptor.Instantiatin
     
     public class PrivateSwingWorker extends Thread {
         JTextArea grailsServerOutputTextArea;
-        private  final Logger LOG = Logger.getLogger(NewArtifactWizardIterator.class.getName());
+        
         int progressMeter = 0;
         
         public PrivateSwingWorker (JTextArea grailsServerOutputTextArea) {
