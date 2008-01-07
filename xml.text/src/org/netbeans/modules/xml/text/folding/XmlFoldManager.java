@@ -142,9 +142,10 @@ public class XmlFoldManager implements FoldManager {
                 return;
             }
             model = DocumentModel.getDocumentModel((BaseDocument) getDocument());
+            if(model == null)
+                return;
             model.addDocumentModelStateListener(DMLS);
             model.addDocumentModelListener(DML);
-
             updateFolds(transaction);
         } catch (DocumentModelException ex) {
             Exceptions.printStackTrace(ex);
