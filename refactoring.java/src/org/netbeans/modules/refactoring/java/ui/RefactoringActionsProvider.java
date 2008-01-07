@@ -96,7 +96,7 @@ import org.openide.windows.TopComponent;
  * @author Jan Becicka
  */
 public class RefactoringActionsProvider extends ActionsImplementationProvider{
-    
+
     /** Creates a new instance of RefactoringActionsProvider */
     public RefactoringActionsProvider() {
     }
@@ -328,15 +328,27 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     @Override
     public boolean canDelete(Lookup lookup) {
         Collection<? extends Node> nodes = new HashSet(lookup.lookupAll(Node.class));
+        //We live with a 2 pass validation of the selected nodes for now since
+        //the code will become unreadable if we attempt to implement all checks
+        //in one pass.
+        if (multiplePkgsSelected(nodes)) {
+            ErrorManager.getDefault().log(ErrorManager.ERROR, " Multiple selected");
+            return false;
+        }
+        ErrorManager.getDefault().log(ErrorManager.ERROR, " We're doin fine");
         for (Node n:nodes) {
             if (n.getLookup().lookup(TreePathHandle.class) != null) {
                 return true;
             }
-            DataObject dob = n.getCookie(DataObject.class);
-            if (dob==null)
+            DataObject dataObject = n.getCookie(DataObject.class);
+            if (dataObject == null){
                 return false;
-            
-            if (!RetoucheUtils.isRefactorable(dob.getPrimaryFile())) {
+            }
+            FileObject fileObject = dataObject.getPrimaryFile();
+            if (isRefactorableFolder(dataObject)){
+                return true;
+            }
+            if (!RetoucheUtils.isRefactorable(fileObject)) {
                 return false;
             }
         }
@@ -362,8 +374,8 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                             return new SafeDeleteUI(new FileObject[]{file}, Collections.singleton(selectedElement), b);
                         }
                     }
-                    return new SafeDeleteUI(new TreePathHandle[]{selectedElement}, info);
-                }
+                        return new SafeDeleteUI(new TreePathHandle[]{selectedElement}, info);
+                    }
             };
         } else if (nodeHandle(lookup)) {
             task = new TreePathHandleTask(new HashSet(lookup.lookupAll(Node.class))) {
@@ -383,13 +395,24 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 }
                 
             };
+        } else if(isPackageSelected(lookup)) {
+            task = new PackagetoTreePathHandleTask(lookup.lookupAll(Node.class)) {
+                @Override
+                protected RefactoringUI createRefactoringUI(Collection<TreePathHandle> handles, CompilationInfo cinfo) {
+                    if (handles.isEmpty()) {
+                        return new SafeDeleteUI(getFileHandles(), handles, true);
+                    }else{
+                        return new SafeDeleteUI(getFileHandles(), handles, b);
+                    }
+                }
+            };
         } else {
             task = new NodeToFileObjectTask(new HashSet(lookup.lookupAll(Node.class))) {
                 @Override
                 protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
-                        return new SafeDeleteUI(selectedElements, handles, b);
-                    }
-                
+                    return new SafeDeleteUI(selectedElements, handles, b);
+                }
+
             };
         }
         RetoucheUtils.invokeAfterScanFinished(task, getActionName(RefactoringActionsFactory.safeDeleteAction()));
@@ -793,6 +816,44 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
 
         protected abstract RefactoringUI createRefactoringUI(FileObject[] selectedElement, Collection<TreePathHandle> handles);
     }    
+
+    private static boolean isPackageSelected(Lookup lookup) {
+        Node node = lookup.lookup(Node.class);
+        if ( node != null) {
+            DataObject dataObject = node.getLookup().lookup(DataObject.class);
+            if (dataObject == null) {
+                return false;
+            }
+
+            FileObject fileObject = dataObject.getPrimaryFile();
+            if ((dataObject instanceof DataFolder) && 
+                    RetoucheUtils.isFileInOpenProject(fileObject) && 
+                    RetoucheUtils.isOnSourceClasspath(fileObject) &&
+                    !RetoucheUtils.isClasspathRoot(fileObject)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean multiplePkgsSelected(Collection<? extends Node> nodes){
+        boolean pkgSelected = false;
+        for (Node node : nodes) {
+            DataObject dataObject = node.getCookie(DataObject.class);
+            if (dataObject == null){
+                continue;
+            }
+            if (isRefactorableFolder(dataObject)){
+                if (pkgSelected) {
+                    return true;
+                }else{
+                    pkgSelected = true;
+                }
+            }
+        }
+
+        return false;
+    }
     
     static boolean isFromEditor(EditorCookie ec) {
         if (ec != null && ec.getOpenedPanes() != null) {
@@ -811,5 +872,18 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 return true;
         }
         return false;
+    }
+
+    private static boolean isRefactorableFolder(DataObject dataObject) {
+        FileObject fileObject = dataObject.getPrimaryFile();
+        FileObject[] children = fileObject.getChildren();
+        if (children == null || children.length <= 0) {
+            return false;
+        }
+        
+        return (dataObject instanceof DataFolder) && 
+                RetoucheUtils.isFileInOpenProject(fileObject) && 
+                RetoucheUtils.isOnSourceClasspath(fileObject) && 
+                !RetoucheUtils.isClasspathRoot(fileObject);
     }
 }

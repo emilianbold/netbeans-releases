@@ -55,7 +55,11 @@ import org.netbeans.modules.refactoring.java.api.PushDownRefactoring;
 import org.netbeans.modules.refactoring.java.api.UseSuperTypeRefactoring;
 import org.netbeans.modules.refactoring.java.ui.EncapsulateFieldsRefactoring;
 import org.netbeans.modules.refactoring.spi.*;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
 
 /**
@@ -138,7 +142,7 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
         boolean a=false;
         for (FileObject f:object.lookupAll(FileObject.class)) {
             a=true;
-            if (!RetoucheUtils.isJavaFile(f)) {
+            if (!RetoucheUtils.isJavaFile(f) && !isPackage(f)) {
                 return false;
             }
         }
@@ -152,6 +156,24 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
         FileObject f=object.lookup(FileObject.class);
         if (f!=null && RetoucheUtils.isJavaFile(f))
             return true;
+        return false;
+    }
+
+    private static boolean isPackage(FileObject fileObject) {
+        DataObject dataObject = null;
+        try {
+            dataObject = DataObject.find(fileObject);
+
+        } catch (DataObjectNotFoundException dataObjectNotFoundException) {
+            ErrorManager.getDefault().notify(dataObjectNotFoundException);
+            return false;
+        }
+        if ((dataObject instanceof DataFolder) && 
+                RetoucheUtils.isFileInOpenProject(fileObject) && 
+                RetoucheUtils.isOnSourceClasspath(fileObject) &&
+                !RetoucheUtils.isClasspathRoot(fileObject)){
+            return true;
+        }
         return false;
     }
 
