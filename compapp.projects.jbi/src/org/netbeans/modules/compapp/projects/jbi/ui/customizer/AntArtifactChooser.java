@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.compapp.projects.jbi.ui.customizer;
 
 import java.beans.PropertyChangeEvent;
@@ -61,33 +60,33 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 
-
-
 /** Accessory component used in the ProjectChooser for choosing project
  * artifacts.
  *
  * @author  phrebejk
  */
-public class AntArtifactChooser extends javax.swing.JPanel implements PropertyChangeListener {
+public class AntArtifactChooser extends javax.swing.JPanel
+        implements PropertyChangeListener {
+
     private List<String> artifactTypes;
-    
-    public AntArtifactChooser(List<String> nArtifactTypes, JFileChooser chooser ) {
+
+    public AntArtifactChooser(List<String> nArtifactTypes, JFileChooser chooser) {
         this.artifactTypes = nArtifactTypes;
         initComponents();
-        jListArtifacts.setModel( new DefaultListModel() );
-        chooser.addPropertyChangeListener( this );
+        jListArtifacts.setModel(new DefaultListModel());
+        chooser.addPropertyChangeListener(this);
     }
- 
+
     /** Creates new form JarArtifactChooser */
-    public AntArtifactChooser( String artifactType, JFileChooser chooser ) {
+    public AntArtifactChooser(String artifactType, JFileChooser chooser) {
         List<String> newList = new ArrayList<String>();
         newList.add(artifactType);
         this.artifactTypes = newList;
         initComponents();
-        jListArtifacts.setModel( new DefaultListModel() );
-        chooser.addPropertyChangeListener( this );        
+        jListArtifacts.setModel(new DefaultListModel());
+        chooser.addPropertyChangeListener(this);
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -147,59 +146,76 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
-    
-    
-    public void propertyChange( PropertyChangeEvent e ) {
-        
-        if ( JFileChooser.SELECTED_FILE_CHANGED_PROPERTY.equals( e.getPropertyName() ) ) {
+    public void propertyChange(PropertyChangeEvent e) {
+
+        if (JFileChooser.SELECTED_FILES_CHANGED_PROPERTY.equals(e.getPropertyName())) {
             // We have to update the Accessory
-            JFileChooser chooser = (JFileChooser)e.getSource();
-            File dir = chooser.getSelectedFile();
-            DefaultListModel spListModel = (DefaultListModel)jListArtifacts.getModel();
-            
-            Project project = getProject( dir );
-            populateAccessory( project );
+            JFileChooser chooser = (JFileChooser) e.getSource();
+            File[] dirs = chooser.getSelectedFiles();
+
+            List<Project> projects = getProjects(dirs);
+            populateAccessory(projects);
         }
     }
-    
-    private Project getProject( File projectDir ) {
-        if (projectDir == null) { // #46744
-            return null;
+
+    private List<Project> getProjects(File[] projectDirs) {
+        List<Project> ret = new ArrayList<Project>();
+
+        if (projectDirs == null || projectDirs.length == 0) { // #46744
+            return ret;
         }
-        
+
         try {
-            FileObject projectRoot = FileUtil.toFileObject( projectDir );
-            
-            if ( projectRoot != null ) {
-                Project project = ProjectManager.getDefault().findProject( projectRoot );
-                return project;
+            ProjectManager projectManager = ProjectManager.getDefault();
+            for (File projectDir : projectDirs) {
+                FileObject projectRoot = FileUtil.toFileObject(projectDir);
+
+                if (projectRoot != null) {
+                    Project project = projectManager.findProject(projectRoot);
+                    if (project != null) {
+                        ret.add(project);
+                    }
+                }
             }
-        } catch ( IOException e ) {
-            // Return null
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        
-        return null;
+
+        return ret;
     }
-    
-    private void populateAccessory( Project project ) {
-        DefaultListModel model = (DefaultListModel)jListArtifacts.getModel();
+
+    private void populateAccessory(List<Project> projects) {
+        assert projects != null;
+
+        DefaultListModel model = (DefaultListModel) jListArtifacts.getModel();
         model.clear();
-        jTextFieldName.setText(project == null ? "" : ProjectUtils.getInformation(project).getDisplayName()); // NOI18N
-        
-        if ( project != null ) {
-            AntArtifactProvider prov = (AntArtifactProvider)project.getLookup().lookup(AntArtifactProvider.class);
+
+        if (projects.size() == 0) {
+            jTextFieldName.setText(""); // NOI18N
+        } else if (projects.size() == 1) {
+            String projDisplayName =
+                    ProjectUtils.getInformation(projects.get(0)).getDisplayName();
+            jTextFieldName.setText(projDisplayName);
+        } else {
+            String msg = NbBundle.getMessage(AntArtifactChooser.class, 
+                    "N_PROJECTS", projects.size()); // NOI18N   
+            jTextFieldName.setText(msg); 
+        }
+
+        for (Project project : projects) {
+            AntArtifactProvider prov =
+                    project.getLookup().lookup(AntArtifactProvider.class);
             if (prov != null) {
                 AntArtifact[] artifacts = prov.getBuildArtifacts();
                 Iterator<String> artifactTypeItr = null;
-                String artifactType = null;
                 if (artifacts != null) {
                     for (int i = 0; i < artifacts.length; i++) {
                         artifactTypeItr = this.artifactTypes.iterator();
-                        while (artifactTypeItr.hasNext()){
-                            artifactType = artifactTypeItr.next();
+                        while (artifactTypeItr.hasNext()) {
+                            String artifactType = artifactTypeItr.next();
                             if (artifacts[i].getType().startsWith(artifactType)) {
-                                model.addElement( new ArtifactItem( artifacts[i]));
-                                return;
+                                model.addElement(new ArtifactItem(artifacts[i]));
+                                break;
                             }
                         }
                     }
@@ -207,8 +223,6 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
             }
         }
     }
-    
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabelJarFiles;
     private javax.swing.JLabel jLabelName;
@@ -217,76 +231,86 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
     private javax.swing.JTextField jTextFieldName;
     // End of variables declaration//GEN-END:variables
     
-    private static void applyFilefilters(JFileChooser fc, List<FileFilter> filefilterList, FileFilter def) {
-        if ( filefilterList != null ) {
-            if (def == null){
+    private static void applyFilefilters(JFileChooser fc, 
+            List<FileFilter> filefilterList, FileFilter def) {
+        
+        if (filefilterList != null) {
+            if (def == null) {
                 def = fc.getFileFilter();
             }
-            
-            for ( FileFilter ff : filefilterList ) {
-                fc.addChoosableFileFilter( ff );
+
+            for (FileFilter ff : filefilterList) {
+                fc.addChoosableFileFilter(ff);
             }
-            if (def != null){
+            if (def != null) {
                 fc.setFileFilter(def);
             }
         }
     }
 
-    public static AntArtifact[] showDialog(List<String> artifactTypes, Project p, List<FileFilter> filters, FileFilter defFilter ) {
-        JFileChooser chooser = ProjectChooser.projectChooser();
-        chooser.setDialogTitle( NbBundle.getMessage( AntArtifactChooser.class, "LBL_AACH_Title" ) ); // NOI18N
-        chooser.setApproveButtonText( NbBundle.getMessage( AntArtifactChooser.class, "LBL_AACH_SelectProject" ) ); // NOI18N
+    public static AntArtifact[] showDialog(List<String> artifactTypes, 
+            Project p, List<FileFilter> filters, FileFilter defFilter) {
         
-        AntArtifactChooser accessory = new AntArtifactChooser(artifactTypes, chooser );
-        chooser.setAccessory( accessory );
+        JFileChooser chooser = ProjectChooser.projectChooser();
+        chooser.setMultiSelectionEnabled(true);
+        chooser.setDialogTitle(NbBundle.getMessage(
+                AntArtifactChooser.class, "LBL_AACH_Title")); // NOI18N
+        chooser.setApproveButtonText(NbBundle.getMessage(
+                AntArtifactChooser.class, "LBL_AACH_SelectProject")); // NOI18N
+
+        AntArtifactChooser accessory = 
+                new AntArtifactChooser(artifactTypes, chooser);
+        chooser.setAccessory(accessory);
+        
         if (p != null) {
             FileObject dobj = p.getProjectDirectory().getParent();
             if (dobj != null) {
                 chooser.setCurrentDirectory(FileUtil.toFile(dobj));
             }
         }
-        if ( filters != null )
-            applyFilefilters( chooser, filters, defFilter );
         
-        int option = chooser.showOpenDialog( null ); // Show the chooser
-        
-        if ( option == JFileChooser.APPROVE_OPTION ) {
-            DefaultListModel model = (DefaultListModel)accessory.jListArtifacts.getModel();
-            AntArtifact artifacts[] = new AntArtifact[ model.size() ];
+        if (filters != null) {
+            applyFilefilters(chooser, filters, defFilter);
+        }
 
-            for( int i = 0; i < artifacts.length; i++ ) {
-                artifacts[i] = ((ArtifactItem)model.getElementAt( i )).getArtifact();
+        if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+            DefaultListModel model = 
+                    (DefaultListModel) accessory.jListArtifacts.getModel();
+            AntArtifact artifacts[] = new AntArtifact[model.size()];
+
+            for (int i = 0; i < artifacts.length; i++) {
+                artifacts[i] = ((ArtifactItem) model.getElementAt(i)).getArtifact();
             }
-            
-            return artifacts;            
+
+            return artifacts;
         } else {
             return null;
-        }        
+        }
     }
-    
+
     /** Shows dialog with the artifact chooser
      * @return null if canceled selected jars if some jars selected
      */
-    public static AntArtifact[] showDialog(String artifactType, Project p ) {        
+    public static AntArtifact[] showDialog(String artifactType, Project p) {
         List<String> arts = new ArrayList<String>();
         arts.add(artifactType);
         return showDialog(arts, p, null, null);
     }
-        
-    private static class ArtifactItem {    
+
+    private static class ArtifactItem {
+
         private AntArtifact artifact;
-        
-        ArtifactItem( AntArtifact artifact ) {
+
+        ArtifactItem(AntArtifact artifact) {
             this.artifact = artifact;
         }
-        
+
         AntArtifact getArtifact() {
             return artifact;
         }
-        
+
         public String toString() {
             return artifact.getArtifactLocations()[0].toString();
         }
-        
     }
 }
