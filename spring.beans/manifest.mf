@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.web.spring.beans/0
+OpenIDE-Module-Layer: org/netbeans/modules/web/spring/beans/resources/layer.xml
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/web/spring/beans/resources/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.0
+OpenIDE-Module-Implementation-Version: 1
+
+Name: org/netbeans/modules/web/spring/framework/BeansContextDataLoader.class
+Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.core.XMLDataObject
+OpenIDE-Module-Class: Loader

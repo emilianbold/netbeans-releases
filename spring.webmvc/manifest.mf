@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.web.spring.webmvc
+OpenIDE-Module-Layer: org/netbeans/modules/web/spring/webmvc/resources/layer.xml
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/web/spring/webmvc/resources/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.0
