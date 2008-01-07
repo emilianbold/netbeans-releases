@@ -383,6 +383,12 @@ public class OperatorComponentImpl extends ComponentImpl implements OperatorComp
 		return isIncludeTimestamp;
 	}
 	
+	public String getHelpID() {
+		String helpID = null;
+		helpID = (String) getComponentType().getPropertyType(PROP_NON_PERSIST_HELPID).getDefaultValue();
+		return helpID;
+	}
+	
 	public String getDisplayName() {
 		
 		String displayName = null;

@@ -56,6 +56,10 @@ public interface OperatorComponent extends Component {
 	//operators
 	public static String PROP_NON_PERSIST_STATIC_INPUT_MAX_COUNT_KEY = "staticInputMaxCount";
 	
+	//This property is not persisten in operator xml configuration but is global to all
+	//operators
+	public static String PROP_NON_PERSIST_HELPID = "helpID";
+	
 	public static String PROP_FROM_COLUMN_LIST_KEY = "fromColumnList";
 	
 	int getX();
@@ -116,4 +120,5 @@ public interface OperatorComponent extends Component {
 	
 	public String getFromClause();
 	
+	public String getHelpID();
 }
