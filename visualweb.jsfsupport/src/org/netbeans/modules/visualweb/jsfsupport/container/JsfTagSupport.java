@@ -77,7 +77,12 @@ public class JsfTagSupport {
 
     private static void addTaglibFacesConfigMapEntry(URL facesConfigUrl) {
         try {
-            ZipFile in = new ZipFile(facesConfigUrl.getPath().split("!")[0].split(":")[1]);
+            String zipFilePathPrefix = facesConfigUrl.getFile().split("!")[0];
+            String zipFilePath = zipFilePathPrefix.substring(zipFilePathPrefix.indexOf(":") + 1);
+            if (zipFilePath.contains("%20")){
+                zipFilePath = zipFilePath.replaceAll("%20", " ");
+            }
+            ZipFile in = new ZipFile(zipFilePath);
             Enumeration<? extends ZipEntry> entries = in.entries();
             while (entries.hasMoreElements()) {
                 ZipEntry entry = entries.nextElement();
