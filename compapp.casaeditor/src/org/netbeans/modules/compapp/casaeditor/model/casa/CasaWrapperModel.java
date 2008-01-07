@@ -726,6 +726,7 @@ public class CasaWrapperModel extends CasaModelImpl {
             // System.out.println(bType+" Add Potocol: "+ltg.getName());
             if (ltg.getName().equalsIgnoreCase(bType)) {
                 bindingType = ltg;
+                break;
             }
         }
         if (bindingType == null) {
@@ -778,6 +779,8 @@ public class CasaWrapperModel extends CasaModelImpl {
                 definitions.addImport(newImport);
             }
 
+            String targetNamespace = definitions.getTargetNamespace();
+            
             boolean invalidBinding = true;
 
             for (int k = 0; (k < templates.length) && invalidBinding; k++) {
@@ -799,8 +802,17 @@ public class CasaWrapperModel extends CasaModelImpl {
                 BindingGenerator bGen =
                         new BindingGenerator(wsdlModel, portType, configurationMap);
                 bGen.execute();
-
+                
                 binding = bGen.getBinding();
+
+                if (binding != null) {
+                    bindingSubType.getMProvider().postProcess(targetNamespace, binding);
+                }
+
+                if (port != null) {
+                    bindingSubType.getMProvider().postProcess(targetNamespace, port);
+                }            
+
                 List<ValidationInfo> vBindingInfos =
                         bindingSubType.getMProvider().validate(binding);
                 invalidBinding = vBindingInfos.size() > 0;
