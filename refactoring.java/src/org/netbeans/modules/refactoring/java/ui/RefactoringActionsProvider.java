@@ -332,10 +332,8 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         //the code will become unreadable if we attempt to implement all checks
         //in one pass.
         if (multiplePkgsSelected(nodes)) {
-            ErrorManager.getDefault().log(ErrorManager.ERROR, " Multiple selected");
             return false;
         }
-        ErrorManager.getDefault().log(ErrorManager.ERROR, " We're doin fine");
         for (Node n:nodes) {
             if (n.getLookup().lookup(TreePathHandle.class) != null) {
                 return true;
