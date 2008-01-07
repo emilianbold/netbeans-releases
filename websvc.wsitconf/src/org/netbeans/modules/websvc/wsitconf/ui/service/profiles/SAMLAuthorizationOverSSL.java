@@ -128,7 +128,6 @@ public class SAMLAuthorizationOverSSL extends javax.swing.JPanel implements Comb
         setCombo(algoSuiteCombo, AlgoSuiteModelHelper.getAlgorithmSuite(secBinding));
         setCombo(layoutCombo, SecurityPolicyModelHelper.getMessageLayout(comp));
         setChBox(reqSigConfChBox, SecurityPolicyModelHelper.isRequireSignatureConfirmation(comp));
-        setChBox(encryptSignatureChBox, SecurityPolicyModelHelper.isEncryptSignature(comp));
 
         enableDisable();
         
@@ -150,9 +149,6 @@ public class SAMLAuthorizationOverSSL extends javax.swing.JPanel implements Comb
             WSDLComponent tokenKind = SecurityTokensModelHelper.getTokenElement(secBinding, TransportToken.class);
             HttpsToken token = (HttpsToken) SecurityTokensModelHelper.getTokenTypeElement(tokenKind);
             SecurityTokensModelHelper.setRequireClientCertificate(token, reqClientCertChBox.isSelected());
-        }
-        if (source.equals(encryptSignatureChBox)) {
-            SecurityPolicyModelHelper.enableEncryptSignature(secBinding, encryptSignatureChBox.isSelected());
         }
         if (source.equals(reqSigConfChBox)) {
             SecurityPolicyModelHelper.enableRequireSignatureConfirmation(SecurityPolicyModelHelper.getWss11(comp), reqSigConfChBox.isSelected());
@@ -220,7 +216,6 @@ public class SAMLAuthorizationOverSSL extends javax.swing.JPanel implements Comb
         algoSuiteCombo = new javax.swing.JComboBox();
         layoutLabel = new javax.swing.JLabel();
         layoutCombo = new javax.swing.JComboBox();
-        encryptSignatureChBox = new javax.swing.JCheckBox();
 
         samlVersionLabel.setLabelFor(samlVersionCombo);
         org.openide.awt.Mnemonics.setLocalizedText(samlVersionLabel, org.openide.util.NbBundle.getMessage(SAMLAuthorizationOverSSL.class, "LBL_SamlVersion")); // NOI18N
@@ -276,15 +271,6 @@ public class SAMLAuthorizationOverSSL extends javax.swing.JPanel implements Comb
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(encryptSignatureChBox, org.openide.util.NbBundle.getMessage(SAMLAuthorizationOverSSL.class, "LBL_EncryptSignatureLabel")); // NOI18N
-        encryptSignatureChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        encryptSignatureChBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        encryptSignatureChBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                encryptSignatureChBox(evt);
-            }
-        });
-
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -293,7 +279,6 @@ public class SAMLAuthorizationOverSSL extends javax.swing.JPanel implements Comb
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(reqClientCertChBox)
-                    .add(encryptSignatureChBox)
                     .add(reqSigConfChBox)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -335,8 +320,6 @@ public class SAMLAuthorizationOverSSL extends javax.swing.JPanel implements Comb
                 .add(reqClientCertChBox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(reqSigConfChBox)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(encryptSignatureChBox)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -360,10 +343,6 @@ public class SAMLAuthorizationOverSSL extends javax.swing.JPanel implements Comb
         setValue(samlVersionCombo);
     }//GEN-LAST:event_samlVersionComboActionPerformed
 
-    private void encryptSignatureChBox(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_encryptSignatureChBox
-        setValue(encryptSignatureChBox);
-    }//GEN-LAST:event_encryptSignatureChBox
-
     private void layoutComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_layoutComboActionPerformed
         setValue(layoutCombo);
     }//GEN-LAST:event_layoutComboActionPerformed
@@ -375,7 +354,6 @@ public class SAMLAuthorizationOverSSL extends javax.swing.JPanel implements Comb
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox algoSuiteCombo;
     private javax.swing.JLabel algoSuiteLabel;
-    private javax.swing.JCheckBox encryptSignatureChBox;
     private javax.swing.JComboBox layoutCombo;
     private javax.swing.JLabel layoutLabel;
     private javax.swing.JCheckBox reqClientCertChBox;

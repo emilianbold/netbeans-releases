@@ -132,7 +132,6 @@ public class MessageAuthentication extends javax.swing.JPanel {
             setChBox(derivedKeysSecConvChBox, SecurityPolicyModelHelper.isRequireDerivedKeys(secConvT));
             setCombo(wssVersionCombo, SecurityPolicyModelHelper.isWss11(p));
             setChBox(reqSigConfChBox, SecurityPolicyModelHelper.isRequireSignatureConfirmation(p));
-            setChBox(encryptSignatureChBox, SecurityPolicyModelHelper.isEncryptSignature(bootPolicy));
             p = PolicyModelHelper.getTopLevelElement(bootPolicy, Policy.class);
             WSDLComponent tokenKind = SecurityTokensModelHelper.getSupportingToken(p, SecurityTokensModelHelper.SIGNED_SUPPORTING);
             String tokenType = SecurityTokensModelHelper.getTokenType(tokenKind);
@@ -143,7 +142,6 @@ public class MessageAuthentication extends javax.swing.JPanel {
             setChBox(derivedKeysSecConvChBox, false);
             setCombo(wssVersionCombo, SecurityPolicyModelHelper.isWss11(comp));
             setChBox(reqSigConfChBox, SecurityPolicyModelHelper.isRequireSignatureConfirmation(comp));
-            setChBox(encryptSignatureChBox, SecurityPolicyModelHelper.isEncryptSignature(comp));
             WSDLComponent tokenKind = SecurityTokensModelHelper.getSupportingToken(comp, SecurityTokensModelHelper.SIGNED_SUPPORTING);
             String tokenType = SecurityTokensModelHelper.getTokenType(tokenKind);
             setCombo(supportTokenCombo, tokenType);
@@ -230,12 +228,6 @@ public class MessageAuthentication extends javax.swing.JPanel {
                 AlgoSuiteModelHelper.setAlgorithmSuite(topSecBinding, (String) algoSuiteCombo.getSelectedItem());
             }
         }
-        if (source.equals(encryptSignatureChBox)) {
-            SecurityPolicyModelHelper.enableEncryptSignature(secBinding, encryptSignatureChBox.isSelected());
-            if (secConv) {
-                SecurityPolicyModelHelper.enableEncryptSignature(topSecBinding, encryptSignatureChBox.isSelected());
-            }
-        }
         
         enableDisable();
     }
@@ -244,7 +236,6 @@ public class MessageAuthentication extends javax.swing.JPanel {
         boolean secConvEnabled = secConvChBox.isSelected();
         derivedKeysSecConvChBox.setEnabled(secConvEnabled);
         reqSigConfChBox.setEnabled(!secConvEnabled);
-        encryptSignatureChBox.setEnabled(!secConvEnabled);        
         
         boolean wss11 = ComboConstants.WSS11.equals(wssVersionCombo.getSelectedItem());
         reqSigConfChBox.setEnabled(wss11);
@@ -289,7 +280,6 @@ public class MessageAuthentication extends javax.swing.JPanel {
         algoSuiteCombo = new javax.swing.JComboBox();
         layoutLabel = new javax.swing.JLabel();
         layoutCombo = new javax.swing.JComboBox();
-        encryptSignatureChBox = new javax.swing.JCheckBox();
 
         supportTokenLabel.setLabelFor(supportTokenCombo);
         org.openide.awt.Mnemonics.setLocalizedText(supportTokenLabel, org.openide.util.NbBundle.getMessage(MessageAuthentication.class, "LBL_AuthToken")); // NOI18N
@@ -354,15 +344,6 @@ public class MessageAuthentication extends javax.swing.JPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(encryptSignatureChBox, org.openide.util.NbBundle.getMessage(MessageAuthentication.class, "LBL_EncryptSignatureLabel")); // NOI18N
-        encryptSignatureChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        encryptSignatureChBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        encryptSignatureChBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                encryptSignatureChBox(evt);
-            }
-        });
-
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -373,7 +354,6 @@ public class MessageAuthentication extends javax.swing.JPanel {
                     .add(reqSigConfChBox)
                     .add(secConvChBox)
                     .add(derivedKeysSecConvChBox)
-                    .add(encryptSignatureChBox)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layoutLabel)
@@ -416,8 +396,6 @@ public class MessageAuthentication extends javax.swing.JPanel {
                 .add(derivedKeysSecConvChBox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(reqSigConfChBox)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(encryptSignatureChBox)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -445,10 +423,6 @@ public class MessageAuthentication extends javax.swing.JPanel {
         setValue(supportTokenCombo);
     }//GEN-LAST:event_supportTokenComboActionPerformed
 
-    private void encryptSignatureChBox(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_encryptSignatureChBox
-        setValue(encryptSignatureChBox);
-    }//GEN-LAST:event_encryptSignatureChBox
-
     private void layoutComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_layoutComboActionPerformed
         setValue(layoutCombo);
     }//GEN-LAST:event_layoutComboActionPerformed
@@ -461,7 +435,6 @@ public class MessageAuthentication extends javax.swing.JPanel {
     private javax.swing.JComboBox algoSuiteCombo;
     private javax.swing.JLabel algoSuiteLabel;
     private javax.swing.JCheckBox derivedKeysSecConvChBox;
-    private javax.swing.JCheckBox encryptSignatureChBox;
     private javax.swing.JComboBox layoutCombo;
     private javax.swing.JLabel layoutLabel;
     private javax.swing.JCheckBox reqSigConfChBox;
