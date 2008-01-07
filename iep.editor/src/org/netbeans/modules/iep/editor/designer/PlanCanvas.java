@@ -87,9 +87,12 @@ import org.netbeans.spi.palette.PaletteController;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.text.ActiveEditorDrop;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.netbeans.api.javahelp.Help;
+
 
 public class PlanCanvas extends JGoView implements JGoViewListener, GuiConstants, TcgComponentNodeView {
     private static final java.util.logging.Logger mLog = java.util.logging.Logger.getLogger(PlanCanvas.class.getName());
@@ -371,7 +374,31 @@ public class PlanCanvas extends JGoView implements JGoViewListener, GuiConstants
             if (!selectNextNode(evt.getKeyChar())) {
                 Toolkit.getDefaultToolkit().beep();
             }
-        } else {
+        } else if (t == KeyEvent.VK_F1) {
+        	JGoObject obj = getSelection().getPrimarySelection();
+            if (obj != null && obj instanceof EntityNode) {
+            	EntityNode node = (EntityNode)obj;
+            	OperatorComponent comp = node.getModelComponent();
+            	final String helpID = comp.getHelpID();
+            	
+            	final Help help = Lookup.getDefault().lookup(Help.class);
+            	if(help != null) {
+            		Runnable r = new Runnable() {
+            			
+            			public void run() {
+            				help.showHelp(new HelpCtx(helpID));
+            			}
+            		};
+	    			
+            		SwingUtilities.invokeLater(r);
+            	
+            	} else {
+            		super.onKeyEvent(evt);
+            	}
+            }
+            
+        }
+        else {
             super.onKeyEvent(evt);
         }
     }
