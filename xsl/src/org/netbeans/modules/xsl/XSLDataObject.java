@@ -90,9 +90,6 @@ public final class XSLDataObject extends MultiDataObject implements XMLDataObjec
         Source source = DataObjectAdapters.source (this);
         set.add (new TransformableSupport (source));
 
-        // add Scenario support
-        set.add (new ScenarioSupport (this));    
-
         // editor support defines MIME type understood by EditorKits registry         
         TextEditorSupport.TextEditorSupportFactory editorFactory =
             new TextEditorSupport.TextEditorSupportFactory (this, org.netbeans.modules.xml.core.XMLDataObject.MIME_TYPE);

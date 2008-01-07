@@ -49,7 +49,6 @@ import javax.swing.Icon;
 import org.netbeans.api.xml.services.UserCatalog;
 import org.netbeans.modules.xml.api.model.*;
 import org.netbeans.modules.xml.spi.dom.*;
-import org.netbeans.modules.xml.api.cookies.ScenarioCookie;
 import org.netbeans.modules.xsl.api.XSLCustomizer;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.PropertySupport;
@@ -73,8 +72,6 @@ import org.xml.sax.SAXException;
 public final class XSLGrammarQuery implements GrammarQuery{
 
     private DataObject dataObject;
-
-    private ScenarioCookie scenarioCookie;
 
     /** Contains a mapping from XSL namespace element names to set of names of
      * allowed XSL children. Neither the element name keys nor the names in the
@@ -148,7 +145,6 @@ public final class XSLGrammarQuery implements GrammarQuery{
     /** Creates a new instance of XSLGrammarQuery */
     public XSLGrammarQuery(DataObject dataObject) {
         this.dataObject = dataObject;
-        scenarioCookie = (ScenarioCookie)dataObject.getCookie(ScenarioCookie.class);
     }
 
     //////////////////////////////////////////7
