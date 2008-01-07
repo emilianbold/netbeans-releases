@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.qa.form;
 
 import java.io.File;
@@ -76,61 +75,60 @@ import org.netbeans.jemmy.operators.JTextFieldOperator;
  *
  * @author Jana Maleckova
  * Created on 29 January 2007, 15:59
+ * Test is only for java 1.6 for now
  */
-
-
-
 public class OpenTempl_defaultPack extends JellyTestCase {
+
     public String DATA_PROJECT_NAME = "Sample";
     public String PACKAGE_NAME = "Source Package";
     public String PROJECT_NAME = "Java";
     public String workdirpath;
-    
-    
     MainWindowOperator mainWindow;
     ProjectsTabOperator pto;
     ComponentInspectorOperator cio;
-    
+
     /** Constructor required by JUnit */
-    public OpenTempl_defaultPack(String name){
+    public OpenTempl_defaultPack(String name) {
         super(name);
-        
+
     }
-    
+
     /** Creates suite from particular test cases. You can define order of testcases here. */
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new OpenTempl_defaultPack("testApplet"));
         suite.addTest(new OpenTempl_defaultPack("testDialog"));
         suite.addTest(new OpenTempl_defaultPack("testFrame"));
-        suite.addTest(new OpenTempl_defaultPack("testInternalFrame"));
+        suite.addTest(new OpenTempl_defaultPack("testInter"));
         suite.addTest(new OpenTempl_defaultPack("testPanel"));
+        suite.addTest(new OpenTempl_defaultPack("testAppl"));
+        suite.addTest(new OpenTempl_defaultPack("testMidi"));
         suite.addTest(new OpenTempl_defaultPack("testBean"));
         return suite;
     }
-    
+
     /* Method allowing test execution directly from the IDE. */
     public static void main(java.lang.String[] args) {
         // run whole suite
         junit.textui.TestRunner.run(suite());
-        // run only selected test case
-        //junit.textui.TestRunner.run(new DesktopAppTest("test1"));
+    // run only selected test case
+    //junit.textui.TestRunner.run(new DesktopAppTest("test1"));
     }
-    
+
     /** Called before every test case. */
     public void setUp() throws IOException {
         workdirpath = getWorkDir().getParentFile().getAbsolutePath();
-        System.out.println("########  "+getName()+"  #######");
+        System.out.println("########  " + getName() + "  #######");
     }
-    
+
     /** Called after every test case. */
     public void tearDown() {
     }
-    
+
     // Add test methods here, they have to start with 'test' name.
     
     //method create new project in parent dir to workdir
-    public void begin() throws InterruptedException{
+    public void begin() throws InterruptedException {
         DeleteDir.delDir(workdirpath + System.getProperty("file.separator") + DATA_PROJECT_NAME);
         Thread.sleep(5000);
         mainWindow = MainWindowOperator.getDefault();
@@ -138,47 +136,48 @@ public class OpenTempl_defaultPack extends JellyTestCase {
         npwo.selectCategory(PROJECT_NAME);
         npwo.selectProject("Java Application");
         npwo.next();
-        
+
         NewProjectNameLocationStepOperator tfo_name = new NewProjectNameLocationStepOperator();
         tfo_name.txtProjectName().setText(DATA_PROJECT_NAME);
-        
+
         NewProjectNameLocationStepOperator tfo1_location = new NewProjectNameLocationStepOperator();
         tfo_name.txtLocation().setText(workdirpath);
         JButtonOperator bo = new JButtonOperator(npwo, "Finish");
         //bo.getSource().requestFocus();
         bo.push();
-        
-        log("Project "+ DATA_PROJECT_NAME + " was created");
+
+        log("Project " + DATA_PROJECT_NAME + " was created");
         Thread.sleep(4000);
-        
+
     }
+
     public void deleteProject() throws InterruptedException {
         //Project Deleting
         pto = new ProjectsTabOperator();
         ProjectRootNode prn = pto.getProjectRootNode(DATA_PROJECT_NAME);
         prn.select();
-        
+
         DeleteAction delProject = new DeleteAction();
         delProject.perform();
-        
+
         NbDialogOperator ndo = new NbDialogOperator("Delete Project");
         JCheckBoxOperator cbo = new JCheckBoxOperator(ndo);
         cbo.changeSelection(true);
         ndo.yes();
-        
+
         Thread.sleep(10000);
         //check if project was really deleted from disc
         File f = new File(workdirpath + System.getProperty("file.separator") + DATA_PROJECT_NAME);
-        System.out.println("adresar:"+f);
+        System.out.println("adresar:" + f);
         if (f.exists()) {
             log("File " + DATA_PROJECT_NAME + " was not deleted correctly");
             System.exit(1);
         } else {
-            log ("File " + DATA_PROJECT_NAME + " was deleted correctly");
+            log("File " + DATA_PROJECT_NAME + " was deleted correctly");
         }
     }
-    
-    public void openTemplate(String templateName) throws InterruptedException{
+
+    public void openTemplate(String templateName) throws InterruptedException {
         NewFileWizardOperator nfwo = NewFileWizardOperator.invoke();
         nfwo.selectProject(DATA_PROJECT_NAME);
         nfwo.selectCategory("Swing GUI Forms");
@@ -187,142 +186,162 @@ public class OpenTempl_defaultPack extends JellyTestCase {
         JComboBoxOperator jcb_package = new JComboBoxOperator(nfwo, 1);
         jcb_package.clearText();
         Thread.sleep(2000);
-        
+
         if ((templateName == "Bean Form")) {
             nfwo.next();
             JTextFieldOperator class_name = new JTextFieldOperator(nfwo);
             class_name.setText("javax.swing.JButton");
             nfwo.finish();
-            log (templateName + " is created correctly");
+            log(templateName + " is created correctly");
         } else {
             nfwo.finish();
-            log (templateName + " is created correctly");
+            log(templateName + " is created correctly");
             Thread.sleep(3000);
         }
     }
-    
+
     /** Test case 1.
      *Create new JApplet template in default package
      */
     public void testApplet() throws InterruptedException, IOException {
-        
+
+        Thread.sleep(1000);
         begin();
-       
+
         openTemplate("JApplet Form");
-         Thread.sleep(10000);
+        Thread.sleep(10000);
+        System.out.println(getWorkDir());
         testFormFile("NewJApplet");
         testJavaFile("NewJApplet");
-        
+
     }
-    
+
     /** Test case 2.
      * Create new JDialog template in default package
      */
     public void testDialog() throws InterruptedException, IOException {
-        
+
         openTemplate("JDialog Form");
-        
+
         //check if template is generated correctly
         testFormFile("NewJDialog");
         testJavaFile("NewJDialog");
-        
+
     }
-    
+
     /** Test case 3.
      * Create new JFrame template in default package
      */
     public void testFrame() throws InterruptedException, IOException {
-        
+
         openTemplate("JFrame Form");
         //check if template is generated correctly
         testFormFile("NewJFrame");
         testJavaFile("NewJFrame");
     }
-    
-    
+
     /** Test case 4.
      * Create new JInternalFrame template in default package
      */
-    public void testInternalFrame() throws InterruptedException, IOException {
-        
+    public void testInter() throws InterruptedException, IOException {
+
         openTemplate("JInternalFrame Form");
-        
+
         //check if template is generated correctly
+        System.out.println(getWorkDir().getAbsolutePath());
         testFormFile("NewJInternalFrame");
         testJavaFile("NewJInternalFrame");
     }
-    
-    
+
+    public void testAppl() throws InterruptedException, IOException {
+
+        openTemplate("Application Sample Form");
+
+        //check if template is generated correctly
+        testFormFile("NewApplication");
+        testJavaFile("NewApplication");
+
+    }
+
+    public void testMidi() throws InterruptedException, IOException {
+
+        openTemplate("MDI Application Sample Form");
+
+        //check if template is generated correctly
+        testFormFile("NewMDIApplication");
+        testJavaFile("NewMDIApplication");
+
+    }
+
     /** Test case 5.
      * Create new JPanel template in default package
      */
     public void testPanel() throws InterruptedException, IOException {
-        
+
         openTemplate("JPanel Form");
-        
+
         //check if template is generated correctly
         testFormFile("NewJPanel");
         testJavaFile("NewJPanel");
-        
+
     }
-    
+
     /** Test case 6. oa
      * Create new Bean template in default package
      */
     public void testBean() throws InterruptedException, IOException {
-        
+
         openTemplate("Bean Form");
-        
-        
+
+
         testFormFile("NewBeanForm");
         //Bug in generating of new Bean Form template 95403
         //testJavaFile("NewBeanForm");
         Thread.sleep(1000);
-        deleteProject();
+//        deleteProject();
         //Timeout needed
-        Thread.sleep(30000);
+        Thread.sleep(1000);
     }
-    
+
     public void testFormFile(String formfile) throws IOException {
         try {
-            
+
             getRef().print(VisualDevelopmentUtil.readFromFile(
-                    getWorkDir().getParentFile().getAbsolutePath() + File.separatorChar + DATA_PROJECT_NAME +  File.separatorChar + "src" + File.separatorChar + formfile + ".form")
-                    );
-            // System.out.println("reffile: " + this.getName()+".ref");
-           
+                    getWorkDir().getParentFile().getAbsolutePath() + File.separatorChar + DATA_PROJECT_NAME + File.separatorChar + "src" + File.separatorChar + formfile + ".form"));
+        // System.out.println("reffile: " + this.getName()+".ref");
+
         } catch (Exception e) {
             fail("Fail during create reffile: " + e.getMessage());
         }
-        
-        assertFile(new File(getWorkDir() + File.separator + this.getName()+".ref"), getGoldenFile(formfile + "FormFile.pass"), new File(getWorkDir(), formfile+".diff"));
-        
-        
-        
-        //compareReferenceFiles("TestScenario.ref", "testFormFile.pass", null);
+
+        assertFile(new File(getWorkDir() + File.separator + this.getName() + ".ref"), getGoldenFile(formfile + "FormFile.pass"), new File(getWorkDir(), formfile + ".diff"));
+
+
+
+    //compareReferenceFiles("TestScenario.ref", "testFormFile.pass", null);
     }
-    
-    public void testJavaFile(String javafile) throws IOException{
+
+    public void testJavaFile(String javafile) throws IOException {
         try {
             String pokus = VisualDevelopmentUtil.readFromFile(
-                    getWorkDir().getParentFile().getAbsolutePath() + File.separatorChar + DATA_PROJECT_NAME +  File.separatorChar + "src" + File.separatorChar + javafile + ".java");
+                    getWorkDir().getParentFile().getAbsolutePath() + File.separatorChar + DATA_PROJECT_NAME + File.separatorChar + "src" + File.separatorChar + javafile + ".java");
             int start = pokus.indexOf("/*");
             int end = pokus.indexOf("*/");
-            pokus = pokus.substring(0, start )+ pokus.substring(end +2);
-            
+            pokus = pokus.substring(0, start) + pokus.substring(end + 2);
+
             start = pokus.indexOf("/**");
             end = pokus.indexOf("*/");
-            pokus = pokus.substring(0, start )+ pokus.substring(end +2);
+            pokus = pokus.substring(0, start) + pokus.substring(end + 2);
             getRef().print(pokus);
             // System.out.println("reffile: " + this.getName()+".ref");
             log("Java reference file was created");
-        
+
         } catch (Exception e) {
             fail("Fail during create reffile: " + e.getMessage());
         }
-        
-        assertFile(new File(getWorkDir() + File.separator + this.getName()+".ref"), getGoldenFile(javafile + "JavaFile.pass"), new File(getWorkDir(), javafile+".diff"));
-        
-        
+
+        assertFile(new File(getWorkDir() + File.separator + this.getName() + ".ref"), getGoldenFile(javafile + "JavaFile.pass"), new File(getWorkDir(), javafile + ".diff"));
+
+
     }
 }
