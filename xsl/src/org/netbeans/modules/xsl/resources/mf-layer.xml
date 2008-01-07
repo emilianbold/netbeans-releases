@@ -120,11 +120,7 @@ made subject to such option by the copyright holder.
                 <file name="org-netbeans-modules-xsl-grammar-XSLGrammarQueryProvider.instance">
                     <attr name="position" intvalue="100"/>
                 </file>
-                </folder> <!-- GrammarQueryManagers -->
-
-            <folder name="ScenarioFactories">
-                <file name="org-netbeans-modules-xsl-scenario-FileXSLScenarioFactory.instance"/>
-            </folder>
+            </folder> <!-- GrammarQueryManagers -->
         </folder> <!-- XML -->
     </folder> <!-- Plugins -->
     
