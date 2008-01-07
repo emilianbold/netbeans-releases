@@ -229,10 +229,10 @@ public abstract class UnixNativeUtils extends NativeUtils {
         list.add("[Desktop Entry]");
         list.add("Encoding=UTF-8");
         list.add("Name=" + shortcut.getName());
-        list.add("Exec=/bin/sh \"" + shortcut.getTarget() + 
+        list.add("Exec=/bin/sh \"" + shortcut.getTarget() + "\"" + 
                 ((shortcut.getArguments()!=null && shortcut.getArguments().size()!=0) ? 
                     StringUtils.SPACE + shortcut.getArgumentsString() : StringUtils.EMPTY_STRING)
-                    + "\"");
+                    );
        
         if(shortcut.getIcon()!=null) {
             list.add("Icon=" + shortcut.getIconPath());
