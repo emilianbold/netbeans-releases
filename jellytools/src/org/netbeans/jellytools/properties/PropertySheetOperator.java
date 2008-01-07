@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -62,9 +62,9 @@ import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
-import org.netbeans.jemmy.operators.JTextAreaOperator;
 import org.netbeans.jemmy.operators.WindowOperator;
 import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.windows.TopComponent;
@@ -101,7 +101,7 @@ public class PropertySheetOperator extends TopComponentOperator {
     /** JTable representing property sheet. */
     private JTableOperator _tblSheet;
     private JLabelOperator _lblDescriptionHeader;
-    private JTextAreaOperator _txtDescription;
+    private JEditorPaneOperator _txtDescription;
     private JButtonOperator _btHelp;
     
     /** "No Properties" property sheet. */
@@ -110,10 +110,6 @@ public class PropertySheetOperator extends TopComponentOperator {
     public static final int MODE_PROPERTIES_OF_ONE_OBJECT = 1;
     /** "Properties of Multiple Objects" property sheet. */
     public static final int MODE_PROPERTIES_OF_MULTIPLE_OBJECTS = 2;
-    
-    /** "Properties" */
-    private static final String propertiesText = Bundle.getStringTrimmed("org.openide.actions.Bundle",
-                                                                         "Properties");
     
     /** Generic constructor
      * @param sheet instance of PropertySheet
@@ -224,9 +220,9 @@ public class PropertySheetOperator extends TopComponentOperator {
     /** Returns JTextAreaOperator representing text from description area.
      * @return instance of JTextAreaOperator
      */
-    public JTextAreaOperator txtDescription() {
+    public JEditorPaneOperator txtDescription() {
         if(_txtDescription == null) {
-            _txtDescription = new JTextAreaOperator(this);
+            _txtDescription = new JEditorPaneOperator(this);
         }
         return _txtDescription;
     }
@@ -287,6 +283,7 @@ public class PropertySheetOperator extends TopComponentOperator {
      * sheet is placed. It can be a TopComponent in the main window or in a separate
      * frame, or a dialog.
      */
+    @Override
     public void close() {
         if(getSource() instanceof TopComponent) {
             // run in dispatch thread

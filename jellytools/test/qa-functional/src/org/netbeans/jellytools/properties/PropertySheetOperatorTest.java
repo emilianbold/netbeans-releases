@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -88,6 +88,7 @@ public class PropertySheetOperatorTest extends JellyTestCase {
     private static PropertySheetOperator pso;
      
     /** Open sample property sheet and create PropertySheetOperator */
+    @Override
     protected void setUp() throws Exception {
         System.out.println("### "+getName()+" ###");  // NOI18N
         if(pso == null && !getName().equals("testInvoke")) {    // NOI18N
@@ -101,6 +102,7 @@ public class PropertySheetOperatorTest extends JellyTestCase {
     }
     
     /** Clean up after each test case. */
+    @Override
     protected void tearDown() {
     }
     
@@ -141,7 +143,8 @@ public class PropertySheetOperatorTest extends JellyTestCase {
     public void testGetDescription() {
         pso.tblSheet().selectCell(0, 0);
         String expected = Bundle.getString("org.openide.nodes.Bundle", "HINT_Properties");
-        assertEquals("Wrong description was found.", expected, pso.getDescription());
+        assertTrue("Wrong description was found. Should be '"+expected+"' but was '"+pso.getDescription()+"'.",
+                pso.getDescription().indexOf(expected) > 0);
     }
     
     /** Test of sortByName method */
@@ -175,9 +178,9 @@ public class PropertySheetOperatorTest extends JellyTestCase {
         OptionsOperator oo = OptionsOperator.invoke();
         oo.switchToClassicView();
         // select root
-        PropertySheetOperator pso = oo.getPropertySheet("");
+        PropertySheetOperator psoOptions = oo.getPropertySheet("");
         try {
-            pso.help();
+            psoOptions.help();
             new HelpOperator().close();
         } finally {
             oo.close();
