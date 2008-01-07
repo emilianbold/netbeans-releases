@@ -40,19 +40,22 @@
  */
 
 
-package org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser;
+package org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
 
-import org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser.attrT.ArrayTestSuite;
-import org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser.attrT.AssignValueTestSuite;
-import org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser.attrT.AssignValueToFinalVariableTestSuite;
-import org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser.attrT.DirectInitializationTestSuite;
-import org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser.attrT.SimpleVariableDeclarationTestSuite;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.constructorT.BasicConstructorTest;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.constructorT.ConstrAttrCallUsingThisKeywT;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.constructorT.ConstrMethodCallUsingThisKeywT;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.constructorT.ConstrPrimitiveTypeArgT;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.constructorT.ConstrWithObjectArgT;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.constructorT.ConstrWithSuperKeywT;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.constructorT.ConstrWithSuperMethodT;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.constructorT.ConstrWithThrowsClauseT;
 
-public class AttributeTestSuite {
+public class ConstructorTestSuite {
 
 	public static void main(String[] args) {
 		TestRunner.run(suite());
@@ -60,12 +63,19 @@ public class AttributeTestSuite {
 	}
 
 	public static Test suite() {
-		TestSuite suite = new TestSuite("UML Parser Attribute Tests");
-		suite.addTest(SimpleVariableDeclarationTestSuite.suite());
-		suite.addTest(AssignValueTestSuite.suite());
-		suite.addTest(AssignValueToFinalVariableTestSuite.suite());
-		suite.addTest(DirectInitializationTestSuite.suite());
-		suite.addTest(ArrayTestSuite.suite());
+		TestSuite suite = new TestSuite("ReIntegrate Constructor Tests");
+		suite.addTest(new TestSuite(BasicConstructorTest.class));
+		suite
+				.addTest(new TestSuite(
+						ConstrPrimitiveTypeArgT.class));
+		suite.addTest(new TestSuite(ConstrWithObjectArgT.class));
+		suite.addTest(new TestSuite(ConstrWithSuperKeywT.class));
+		suite.addTest(new TestSuite(ConstrWithSuperMethodT.class));
+		suite.addTest(new TestSuite(
+				ConstrAttrCallUsingThisKeywT.class));
+		suite.addTest(new TestSuite(
+				ConstrMethodCallUsingThisKeywT.class));
+		suite.addTest(new TestSuite(ConstrWithThrowsClauseT.class));
 		return suite;
 	}
 }

@@ -40,19 +40,21 @@
  */
 
 
-package org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser;
+package org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
 
-import org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser.attrT.ArrayTestSuite;
-import org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser.attrT.AssignValueTestSuite;
-import org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser.attrT.AssignValueToFinalVariableTestSuite;
-import org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser.attrT.DirectInitializationTestSuite;
-import org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser.attrT.SimpleVariableDeclarationTestSuite;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.operT.BasicOperationTest;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.operT.OperContainsClassT;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.operT.OperWithObjArgT;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.operT.OperWithObjAsRetTypeT;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.operT.OperWithPrimitiveDatatypeArgT;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.operT.OperWithPrimitiveDatatypeRetKeywT;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.operT.OperationWithThrowsClauseTest;
 
-public class AttributeTestSuite {
+public class OperationTestSuite {
 
 	public static void main(String[] args) {
 		TestRunner.run(suite());
@@ -60,12 +62,15 @@ public class AttributeTestSuite {
 	}
 
 	public static Test suite() {
-		TestSuite suite = new TestSuite("UML Parser Attribute Tests");
-		suite.addTest(SimpleVariableDeclarationTestSuite.suite());
-		suite.addTest(AssignValueTestSuite.suite());
-		suite.addTest(AssignValueToFinalVariableTestSuite.suite());
-		suite.addTest(DirectInitializationTestSuite.suite());
-		suite.addTest(ArrayTestSuite.suite());
+		TestSuite suite = new TestSuite("ReIntegrate Operation Tests");
+		suite.addTest(new TestSuite(BasicOperationTest.class));
+		suite.addTest(new TestSuite(OperContainsClassT.class));
+		suite.addTest(new TestSuite(OperWithPrimitiveDatatypeArgT.class));
+		suite.addTest(new TestSuite(OperWithPrimitiveDatatypeRetKeywT.class));
+		suite.addTest(new TestSuite(OperationWithThrowsClauseTest.class));
+		suite.addTest(new TestSuite(OperWithObjArgT.class));
+		suite.addTest(new TestSuite(OperWithObjAsRetTypeT.class));
+		suite.addTest(ConstructorTestSuite.suite());
 		return suite;
 	}
 }

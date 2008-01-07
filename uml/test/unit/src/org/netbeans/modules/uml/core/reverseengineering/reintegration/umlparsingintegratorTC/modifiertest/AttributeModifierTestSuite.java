@@ -40,32 +40,35 @@
  */
 
 
-package org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser;
-
+package org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.modifiertest;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
 
-import org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser.attrT.ArrayTestSuite;
-import org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser.attrT.AssignValueTestSuite;
-import org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser.attrT.AssignValueToFinalVariableTestSuite;
-import org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser.attrT.DirectInitializationTestSuite;
-import org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser.attrT.SimpleVariableDeclarationTestSuite;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.modifiertest.attributemodifiertest.FinalAttributeTest;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.modifiertest.attributemodifiertest.PrivateAttributeTest;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.modifiertest.attributemodifiertest.ProtectedAttributeTest;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.modifiertest.attributemodifiertest.PublicAttributeTest;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.modifiertest.attributemodifiertest.StaticAttributeTest;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.modifiertest.attributemodifiertest.TransientAttributeTest;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.modifiertest.attributemodifiertest.VolatileAttributeTest;
 
-public class AttributeTestSuite {
-
+public class AttributeModifierTestSuite  {	
 	public static void main(String[] args) {
 		TestRunner.run(suite());
 
 	}
 
 	public static Test suite() {
-		TestSuite suite = new TestSuite("UML Parser Attribute Tests");
-		suite.addTest(SimpleVariableDeclarationTestSuite.suite());
-		suite.addTest(AssignValueTestSuite.suite());
-		suite.addTest(AssignValueToFinalVariableTestSuite.suite());
-		suite.addTest(DirectInitializationTestSuite.suite());
-		suite.addTest(ArrayTestSuite.suite());
+		TestSuite suite = new TestSuite("ReIntegrate Attribute Modifier Tests");
+
+		suite.addTest(new TestSuite(FinalAttributeTest.class));
+		suite.addTest(new TestSuite(PrivateAttributeTest.class));
+		suite.addTest(new TestSuite(ProtectedAttributeTest.class));
+		suite.addTest(new TestSuite(PublicAttributeTest.class));
+		suite.addTest(new TestSuite(StaticAttributeTest.class));
+		suite.addTest(new TestSuite(TransientAttributeTest.class));
+		suite.addTest(new TestSuite(VolatileAttributeTest.class));
 		return suite;
 	}
 }

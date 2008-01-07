@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.uml.core.reverseengineering.reintegration;
 
-import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratortestcases.AllUMLParsingIntegrationTestSuite;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.AllUMLParsingIntegrationTestSuite;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;

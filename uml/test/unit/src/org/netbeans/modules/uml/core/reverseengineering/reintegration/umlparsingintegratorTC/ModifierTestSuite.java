@@ -40,19 +40,19 @@
  */
 
 
-package org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser;
+package org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
 
-import org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser.attrT.ArrayTestSuite;
-import org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser.attrT.AssignValueTestSuite;
-import org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser.attrT.AssignValueToFinalVariableTestSuite;
-import org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser.attrT.DirectInitializationTestSuite;
-import org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser.attrT.SimpleVariableDeclarationTestSuite;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.modifiertest.AttributeModifierTestSuite;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.modifiertest.ClassModifierTestSuite;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.modifiertest.ConstructorModifierTestSuite;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.modifiertest.InterfaceModifierTestSuite;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.modifiertest.MethodModifierTestSuite;
 
-public class AttributeTestSuite {
+public class ModifierTestSuite {
 
 	public static void main(String[] args) {
 		TestRunner.run(suite());
@@ -60,12 +60,12 @@ public class AttributeTestSuite {
 	}
 
 	public static Test suite() {
-		TestSuite suite = new TestSuite("UML Parser Attribute Tests");
-		suite.addTest(SimpleVariableDeclarationTestSuite.suite());
-		suite.addTest(AssignValueTestSuite.suite());
-		suite.addTest(AssignValueToFinalVariableTestSuite.suite());
-		suite.addTest(DirectInitializationTestSuite.suite());
-		suite.addTest(ArrayTestSuite.suite());
+		TestSuite suite = new TestSuite("ReIntegrate Modifier Tests");
+		suite.addTest(AttributeModifierTestSuite.suite());
+		suite.addTest(ClassModifierTestSuite.suite());
+		suite.addTest(InterfaceModifierTestSuite.suite());
+		suite.addTest(MethodModifierTestSuite.suite());
+		suite.addTest(ConstructorModifierTestSuite.suite());
 		return suite;
 	}
 }

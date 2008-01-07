@@ -40,19 +40,23 @@
  */
 
 
-package org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser;
+package org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.modifiertest;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
 
-import org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser.attrT.ArrayTestSuite;
-import org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser.attrT.AssignValueTestSuite;
-import org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser.attrT.AssignValueToFinalVariableTestSuite;
-import org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser.attrT.DirectInitializationTestSuite;
-import org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser.attrT.SimpleVariableDeclarationTestSuite;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.modifiertest.methodmodifiertest.AbstractMethodTest;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.modifiertest.methodmodifiertest.FinalMethodTest;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.modifiertest.methodmodifiertest.NativeMethodTest;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.modifiertest.methodmodifiertest.PrivateMethodTest;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.modifiertest.methodmodifiertest.ProtectedMethodTest;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.modifiertest.methodmodifiertest.PublicMethodTest;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.modifiertest.methodmodifiertest.StaticMethodTest;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.modifiertest.methodmodifiertest.StrictfpMethodTest;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.modifiertest.methodmodifiertest.SynchronizedMethodTest;
 
-public class AttributeTestSuite {
+public class MethodModifierTestSuite {
 
 	public static void main(String[] args) {
 		TestRunner.run(suite());
@@ -60,12 +64,16 @@ public class AttributeTestSuite {
 	}
 
 	public static Test suite() {
-		TestSuite suite = new TestSuite("UML Parser Attribute Tests");
-		suite.addTest(SimpleVariableDeclarationTestSuite.suite());
-		suite.addTest(AssignValueTestSuite.suite());
-		suite.addTest(AssignValueToFinalVariableTestSuite.suite());
-		suite.addTest(DirectInitializationTestSuite.suite());
-		suite.addTest(ArrayTestSuite.suite());
+		TestSuite suite = new TestSuite("ReIntegrate Method Modifier Tests");
+		suite.addTest(new TestSuite(AbstractMethodTest.class));
+		suite.addTest(new TestSuite(FinalMethodTest.class));
+		suite.addTest(new TestSuite(NativeMethodTest.class));
+		suite.addTest(new TestSuite(PrivateMethodTest.class));
+		suite.addTest(new TestSuite(ProtectedMethodTest.class));
+		suite.addTest(new TestSuite(PublicMethodTest.class));
+		suite.addTest(new TestSuite(StaticMethodTest.class));
+		suite.addTest(new TestSuite(StrictfpMethodTest.class));
+		suite.addTest(new TestSuite(SynchronizedMethodTest.class));
 		return suite;
 	}
 }

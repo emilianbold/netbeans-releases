@@ -40,19 +40,17 @@
  */
 
 
-package org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser;
+package org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.attrT;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
 
-import org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser.attrT.ArrayTestSuite;
-import org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser.attrT.AssignValueTestSuite;
-import org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser.attrT.AssignValueToFinalVariableTestSuite;
-import org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser.attrT.DirectInitializationTestSuite;
-import org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser.attrT.SimpleVariableDeclarationTestSuite;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.attrT.arraytest.ArrayDeclarationTest;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.attrT.arraytest.ArrayInitializationTest;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.attrT.arraytest.AssignElementsTest;
 
-public class AttributeTestSuite {
+public class ArrayTestSuite {
 
 	public static void main(String[] args) {
 		TestRunner.run(suite());
@@ -60,12 +58,11 @@ public class AttributeTestSuite {
 	}
 
 	public static Test suite() {
-		TestSuite suite = new TestSuite("UML Parser Attribute Tests");
-		suite.addTest(SimpleVariableDeclarationTestSuite.suite());
-		suite.addTest(AssignValueTestSuite.suite());
-		suite.addTest(AssignValueToFinalVariableTestSuite.suite());
-		suite.addTest(DirectInitializationTestSuite.suite());
-		suite.addTest(ArrayTestSuite.suite());
+		TestSuite suite = new TestSuite("ReIntegrate Class Tests");
+		suite.addTest(new TestSuite(ArrayDeclarationTest.class));
+		suite.addTest(new TestSuite(ArrayInitializationTest.class));
+		suite.addTest(new TestSuite(AssignElementsTest.class));
+		
 		return suite;
 	}
 }

@@ -40,19 +40,20 @@
  */
 
 
-package org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser;
+package org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
 
-import org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser.attrT.ArrayTestSuite;
-import org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser.attrT.AssignValueTestSuite;
-import org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser.attrT.AssignValueToFinalVariableTestSuite;
-import org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser.attrT.DirectInitializationTestSuite;
-import org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser.attrT.SimpleVariableDeclarationTestSuite;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.exceptionhandlingtest.ThrowKeywordInsideMethodTest;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.exceptionhandlingtest.ThrowsKeywordInMethodDeclarationTest;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.exceptionhandlingtest.TryCatchFinallyBlockTest;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.exceptionhandlingtest.TryCatchTest;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.exceptionhandlingtest.TryFinallyTest;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.exceptionhandlingtest.TryMultiCatchTest;
 
-public class AttributeTestSuite {
+public class ExceptionHandlingTestSuite {
 
 	public static void main(String[] args) {
 		TestRunner.run(suite());
@@ -60,12 +61,16 @@ public class AttributeTestSuite {
 	}
 
 	public static Test suite() {
-		TestSuite suite = new TestSuite("UML Parser Attribute Tests");
-		suite.addTest(SimpleVariableDeclarationTestSuite.suite());
-		suite.addTest(AssignValueTestSuite.suite());
-		suite.addTest(AssignValueToFinalVariableTestSuite.suite());
-		suite.addTest(DirectInitializationTestSuite.suite());
-		suite.addTest(ArrayTestSuite.suite());
+		TestSuite suite = new TestSuite("ReIntegrate Class Tests");
+		suite.addTest(new TestSuite(ThrowKeywordInsideMethodTest.class));
+		suite
+				.addTest(new TestSuite(
+						ThrowsKeywordInMethodDeclarationTest.class));
+		suite.addTest(new TestSuite(TryCatchFinallyBlockTest.class));
+		suite.addTest(new TestSuite(TryCatchTest.class));
+		suite.addTest(new TestSuite(TryFinallyTest.class));
+		suite.addTest(new TestSuite(TryMultiCatchTest.class));
+
 		return suite;
 	}
 }

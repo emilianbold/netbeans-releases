@@ -40,19 +40,21 @@
  */
 
 
-package org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser;
+package org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.modifiertest;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
 
-import org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser.attrT.ArrayTestSuite;
-import org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser.attrT.AssignValueTestSuite;
-import org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser.attrT.AssignValueToFinalVariableTestSuite;
-import org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser.attrT.DirectInitializationTestSuite;
-import org.netbeans.modules.uml.core.reverseengineering.parsers.umlparser.attrT.SimpleVariableDeclarationTestSuite;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.modifiertest.intmodifierT.PrivNestedIntT;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.modifiertest.intmodifierT.ProtecNestedIntT;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.modifiertest.intmodifierT.PublicInterfaceTest;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.modifiertest.intmodifierT.PublicNestedIntT;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.modifiertest.intmodifierT.StaticNestedIntT;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.modifiertest.intmodifierT.StrictfpInterfaceTest;
+import org.netbeans.modules.uml.core.reverseengineering.reintegration.umlparsingintegratorTC.modifiertest.intmodifierT.StrictfpNestedIntT;
 
-public class AttributeTestSuite {
+public class InterfaceModifierTestSuite {
 
 	public static void main(String[] args) {
 		TestRunner.run(suite());
@@ -60,12 +62,15 @@ public class AttributeTestSuite {
 	}
 
 	public static Test suite() {
-		TestSuite suite = new TestSuite("UML Parser Attribute Tests");
-		suite.addTest(SimpleVariableDeclarationTestSuite.suite());
-		suite.addTest(AssignValueTestSuite.suite());
-		suite.addTest(AssignValueToFinalVariableTestSuite.suite());
-		suite.addTest(DirectInitializationTestSuite.suite());
-		suite.addTest(ArrayTestSuite.suite());
+		TestSuite suite = new TestSuite("ReIntegrate Interface Modifier Tests");
+
+		suite.addTest(new TestSuite(PrivNestedIntT.class));
+		suite.addTest(new TestSuite(ProtecNestedIntT.class));
+		suite.addTest(new TestSuite(PublicNestedIntT.class));
+		suite.addTest(new TestSuite(PublicInterfaceTest.class));
+		suite.addTest(new TestSuite(StaticNestedIntT.class));
+		suite.addTest(new TestSuite(StrictfpNestedIntT.class));
+		suite.addTest(new TestSuite(StrictfpInterfaceTest.class));
 		return suite;
 	}
 }
