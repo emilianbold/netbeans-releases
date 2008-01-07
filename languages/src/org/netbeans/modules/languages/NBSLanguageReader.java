@@ -122,6 +122,19 @@ public class NBSLanguageReader {
         addToken (null, null, SLexer.ERROR_TOKEN_TYPE_NAME, null, null);
         addToken (null, null, SLexer.EMBEDDING_TOKEN_TYPE_NAME, null,null);
         addToken (null, null, LLSyntaxAnalyser.GAP_TOKEN_TYPE_NAME, null, null);
+
+        //HACK adding new token typed does not work because
+        // token hierarchy is not updated when TokenProvider fires change
+        // so we reserved some default token types at least there
+//        addToken (null, null, "string", null, null);
+//        addToken (null, null, "character", null, null);
+//        addToken (null, null, "identifier", null, null);
+//        addToken (null, null, "whitespace", null, null);
+//        addToken (null, null, "number", null, null);
+//        addToken (null, null, "keyword", null, null);
+//        addToken (null, null, "comment", null, null);
+//        addToken (null, null, "operator", null, null);
+        containsTokens = false;
     }
     
     private NBSLanguageReader (
