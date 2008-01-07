@@ -342,11 +342,9 @@ public final class Product extends RegistryNode {
                 progress.setDetail(StringUtils.format(MESSAGE_SYSTEM_REGISTRATION_STRING));
                 SystemUtils.addComponentToSystemInstallManager(getApplicationDescriptor());
             } catch (NativeException e) {
-                LogManager.log(ResourceUtils.getString(Product.class,
+                throw new InstallationException(ResourceUtils.getString(Product.class,
                         ERROR_SYSTEM_INTEGRATION_FAILER_KEY,
-                        getDisplayName()));
-                LogManager.log(e);
-                addInstallationWarning(e);
+                        getDisplayName()),e);
             }
         }
         
