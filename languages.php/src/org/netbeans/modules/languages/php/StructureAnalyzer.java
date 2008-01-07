@@ -93,7 +93,7 @@ public class StructureAnalyzer implements StructureScanner {
             HtmlFormatter formatter )
     {
         // TODO Auto-generated method stub
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
     
     private void addPhpBlockFolds( List<OffsetRange> folds, PhpModel model ) {

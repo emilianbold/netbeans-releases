@@ -46,6 +46,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.netbeans.api.languages.ASTItem;
 import org.netbeans.api.languages.ASTToken;
 import org.netbeans.api.languages.CharInput;
 import org.netbeans.api.languages.Language;
@@ -171,11 +172,11 @@ class EODTokenizer {
             getInput().setIndex( curIndex -1 );
             
             return ASTToken.create( lang, PHP_EOD_STRING, 
-                    text, indx , text.length() , Collections.EMPTY_LIST );
+                    text, indx , text.length() , Collections.<ASTItem>emptyList() );
         }
         else {
             return ASTToken.create( lang, ERROR, 
-                    text, indx , text.length() , Collections.EMPTY_LIST);
+                    text, indx , text.length() , Collections.<ASTItem>emptyList());
         }
     }
     
