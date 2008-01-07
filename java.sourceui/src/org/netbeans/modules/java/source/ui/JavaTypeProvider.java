@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.java.source.ui;
 
-
+import java.io.IOException;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -57,7 +57,10 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ui.TypeElementFinder;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -71,6 +74,7 @@ import org.netbeans.spi.jumpto.type.TypeDescriptor;
 import org.netbeans.spi.jumpto.type.TypeProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -129,7 +133,7 @@ public class JavaTypeProvider implements TypeProvider {
 
    public List<? extends TypeDescriptor> getTypeNames(Project project, String text, SearchType searchType) {
         boolean hasBinaryOpen = Lookup.getDefault().lookup(BinaryElementOpen.class) != null;
-        ClassIndex.NameKind nameKind;
+        final ClassIndex.NameKind nameKind;
         switch (searchType) {
         case EXACT_NAME: nameKind = ClassIndex.NameKind.SIMPLE_NAME; break;
         case CASE_INSENSITIVE_EXACT_NAME: nameKind = ClassIndex.NameKind.CASE_INSENSITIVE_REGEXP; break;        
@@ -265,10 +269,10 @@ public class JavaTypeProvider implements TypeProvider {
 
         ArrayList<JavaTypeDescription> types = new ArrayList<JavaTypeDescription>(cache.size() * 20);
 
-        for( CacheItem ci : cache ) {    
+        for(final CacheItem ci : cache) {
             time = System.currentTimeMillis();
 
-            String textForQuery;
+            final String textForQuery;
             switch( nameKind ) {
                 case REGEXP:
                 case CASE_INSENSITIVE_REGEXP:
@@ -285,7 +289,19 @@ public class JavaTypeProvider implements TypeProvider {
             if (customizer != null) {
                 names = customizer.query(ci.classpathInfo, textForQuery, nameKind, EnumSet.of(ci.isBinary ? ClassIndex.SearchScope.DEPENDENCIES : ClassIndex.SearchScope.SOURCE));
             } else {
-                names = ci.classpathInfo.getClassIndex().getDeclaredTypes(textForQuery, nameKind, EnumSet.of( ci.isBinary ? ClassIndex.SearchScope.DEPENDENCIES : ClassIndex.SearchScope.SOURCE ));
+                final Set<ElementHandle<TypeElement>>[] n = new Set[1];
+                JavaSource source = JavaSource.create(ci.classpathInfo, new FileObject[0]);
+                try {
+                    source.runUserActionTask(new Task<CompilationController>() {
+
+                        public void run(CompilationController parameter) throws Exception {
+                            n[0] = ci.classpathInfo.getClassIndex().getDeclaredTypes(textForQuery, nameKind, EnumSet.of(ci.isBinary ? ClassIndex.SearchScope.DEPENDENCIES : ClassIndex.SearchScope.SOURCE));
+                        }
+                    }, true);
+                    names = n[0];
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
 
             if ( isCanceled ) {
