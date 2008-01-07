@@ -108,14 +108,6 @@ public class GemPanel extends JPanel implements Runnable {
     
     private static boolean useCached;
     
-    static {
-        RubyInstallation.getInstance().addInterpreterLiveChangeListener(new RubyInstallation.InterpreterLiveChangeListener() {
-            public void interpreterChanged(String interpreter) {
-                useCached = false;
-            }
-        });
-    }
-    
     public GemPanel(String availableFilter) {
         initComponents();
        
@@ -966,7 +958,10 @@ public class GemPanel extends JPanel implements Runnable {
         platforms.requestFocus();
     }//GEN-LAST:event_manageButtonActionPerformed
 
-    /** Refresh the list of displayed gems. If refresh is true, refresh the list from the gem manager, otherwise just refilter list */
+    /**
+     * Refresh the list of displayed gems. If refresh is true, refresh the list
+     * from the gem manager, otherwise just refilter list.
+    */
     private void refreshGemList(final int tab) {        
         Runnable runner = new Runnable() {
             public void run() {

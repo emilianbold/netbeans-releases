@@ -40,20 +40,14 @@
  */
 package org.netbeans.api.ruby.platform;
 
-import org.netbeans.modules.ruby.platform.Util;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.EventListener;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.concurrent.CopyOnWriteArrayList;
-
-
 import org.netbeans.api.options.OptionsDisplayer;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.ruby.platform.Util;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
@@ -81,20 +75,11 @@ public class RubyInstallation {
     public static final String RHTML_MIME_TYPE = "application/x-httpd-eruby"; // NOI18N
     private static final RubyInstallation INSTANCE = new RubyInstallation();
 
-    private FileObject jrubyJavaSupport;
     private String jrubyHome;
-    /** Map from gem name to maps from version to File */
-
-    private final List<InterpreterLiveChangeListener> interpreterLCLs = new CopyOnWriteArrayList<InterpreterLiveChangeListener>();
 
     private RubyInstallation() {
     }
     
-//    /** Protected: for test access only */
-//    RubyInstallation(String initialRuby) {
-//        this.ruby = initialRuby;
-//    }
-
     public static RubyInstallation getInstance() {
         return INSTANCE;
     }
@@ -126,17 +111,6 @@ public class RubyInstallation {
         return jruby;
     }
     
-    /**
-     * Returns whether the currently set interpreter is the JRuby
-     * implementation.
-     * 
-     * @return <tt>true</tt> if JRuby is set; <tt>false</tt> otherwise.
-     */
-//    public boolean isJRubySet() {
-//        String interpreter = getRuby();
-//        return interpreter != null ? RubyInstallation.isJRuby(interpreter) : false;
-//    }
-
     public static boolean isJRuby(final String pathToInterpreter) {
         File rubyF = new File(pathToInterpreter);
         return rubyF.getName().startsWith("jruby"); // NOI18N
@@ -178,15 +152,6 @@ public class RubyInstallation {
             return null;
         }
     }
-
-//    private String getJRubyLib() {
-//        String jh = getJRubyHome();
-//        if (jh != null) {
-//            return jh + File.separator + "lib"; // NOI18N
-//        } else {
-//            return null;
-//        }
-//    }
 
     /**
      * AutoUpdate may not set execute permissions on the bundled JRuby files,
@@ -249,24 +214,6 @@ public class RubyInstallation {
         }
     }
 
-    public static interface InterpreterLiveChangeListener extends EventListener {
-        void interpreterChanged(String interpreter);
-    }
-
-    public void fireInterpreterLiveChange(final String interpreter) {
-        for (InterpreterLiveChangeListener listener : interpreterLCLs) {
-            listener.interpreterChanged(interpreter);
-        }
-    }
-    
-    public void addInterpreterLiveChangeListener(final InterpreterLiveChangeListener ilcl) {
-        interpreterLCLs.add(ilcl);
-    }
-    
-    public void removeInterpreterLiveChangeListener(final InterpreterLiveChangeListener ilcl) {
-        interpreterLCLs.remove(ilcl);
-    }
-    
 //    public String getShortName() {
 //        String r = Util.getPreferences().get(KEY_RUBY, null);
 //        final String BUILTIN_JRUBY = NbBundle.getMessage(RubyInstallation.class, "BuiltinRuby");
