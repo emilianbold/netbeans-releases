@@ -47,8 +47,11 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.ArrayList;
 import java.util.Arrays;
 
+import javax.swing.Action;
+import javax.swing.JSeparator;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
@@ -163,15 +166,15 @@ public class ETLEditorViewMultiViewElement extends CloneableTopComponent
             Lookups.fixed(new Object[]{controller}),});
     }
 
-    private  PaletteController createPalette( ) throws IOException {
-         PaletteController controller = PaletteSupport.createPalette(topPanel);
-         return controller;
+    private PaletteController createPalette() throws IOException {
+        PaletteController controller = PaletteSupport.createPalette(topPanel);
+        return controller;
     }
-    
+
     private ETLDataObject getETLDataObject() {
         return dataObject;
     }
-   
+
     /**
      * Overwrite when you want to change default persistence type. Default
      * persistence type is PERSISTENCE_ALWAYS.
@@ -181,14 +184,14 @@ public class ETLEditorViewMultiViewElement extends CloneableTopComponent
      */
     @Override
     public int getPersistenceType() {
-         return PERSISTENCE_ONLY_OPENED;//was PERSISTENCE_NEVER
+        return PERSISTENCE_ONLY_OPENED;//was PERSISTENCE_NEVER
     }
-    
+
     public void setMultiViewCallback(final MultiViewElementCallback callback) {
         ETLEditorSupport editor = dataObject.getETLEditorSupport();
         editor.setTopComponent(callback.getTopComponent());
     }
-    
+
     public CloseOperationState canCloseElement() {
         if ((dataObject != null) && (dataObject.isModified())) {
             return MultiViewFactory.createUnsafeCloseState("Data object modified", null, null);
@@ -326,13 +329,11 @@ public class ETLEditorViewMultiViewElement extends CloneableTopComponent
     }
 
     public void cleanUp() {
-
     }
 
     public class TreeEditorUndoRedo implements UndoRedo {
 
         public void addChangeListener(ChangeListener l) {
-
         }
 
         public boolean canRedo() {
@@ -382,5 +383,30 @@ public class ETLEditorViewMultiViewElement extends CloneableTopComponent
         if (firstObject instanceof ETLDataObject) {
             dataObject = (ETLDataObject) in.readObject();
         }
+    }
+
+    @Override
+    public Action[] getActions() {
+        ArrayList<Action> actionsList = new ArrayList<Action>();
+        for (Action action : super.getActions()) {
+            actionsList.add(action);
+        }
+        actionsList.add(addFromLayers());
+        Action[] actions = new Action[actionsList.size()];
+        actionsList.toArray(actions);
+        return actions;
+    }
+
+    private Action addFromLayers() {
+        Action action = null;
+        Lookup look = Lookups.forPath("Projects/Actions");
+        for (Object next : look.lookupAll(Object.class)) {
+            if (next instanceof Action) {
+                action = (Action) next;
+            } else if (next instanceof JSeparator) {
+                action = null;
+            }
+        }
+        return action;
     }
 }
