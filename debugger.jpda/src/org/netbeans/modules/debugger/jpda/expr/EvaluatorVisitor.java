@@ -335,6 +335,8 @@ import org.openide.util.NbBundle;
                     }
                 } catch (ClassNotLoadedException ex) {
                     // Ignore
+                } catch (ObjectCollectedException ocex) {
+                    // What can we do?
                 }
             }
         }
