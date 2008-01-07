@@ -51,6 +51,7 @@ import java.io.File;
 import java.util.prefs.Preferences;
 import javax.swing.filechooser.FileSystemView;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
@@ -68,6 +69,8 @@ public class OpenProjectListSettings {
     private static final String MAIN_PROJECT_URL = "mainProjectURL"; //NOI18N -URL
     private static final String OPEN_AS_MAIN = "openAsMain"; //NOI18N - boolean
     private static final String OPEN_PROJECTS_URLS = "openProjectsURLs"; //NOI18N - List of URLs
+    private static final String OPEN_PROJECTS_DISPLAY_NAMES = "openProjectsDisplayNames"; //NOI18N - List of names
+    private static final String OPEN_PROJECTS_ICONS = "openProjectsIcons"; //NOI18N - List of icons
     private static final String OPEN_SUBPROJECTS = "openSubprojects"; //NOI18N - boolean
     private static final String PROP_PROJECTS_FOLDER = "projectsFolder"; //NOI18N - String
     private static final String RECENT_PROJECTS_URLS = "recentProjectsURLs"; //NOI18N List of URLs
@@ -197,6 +200,24 @@ public class OpenProjectListSettings {
 
     public void setOpenProjectsURLs( List<URL> list ) {
         setURLList( OPEN_PROJECTS_URLS, list);
+    }
+    public List<String> getOpenProjectsDisplayNames() {
+        return getStringList(OPEN_PROJECTS_DISPLAY_NAMES);
+    }
+
+    public void setOpenProjectsDisplayNames( List<String> list ) {
+        setStringList( OPEN_PROJECTS_DISPLAY_NAMES, list);
+    }
+    public List<ExtIcon> getOpenProjectsIcons() {
+        return getIconList(OPEN_PROJECTS_ICONS);
+    }
+
+    public void setOpenProjectsIcons( List<ExtIcon> list ) {
+        try {
+            setIconList(OPEN_PROJECTS_ICONS, list);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
     
     public boolean isOpenSubprojects() {        

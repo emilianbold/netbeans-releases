@@ -198,6 +198,8 @@ public class OpenProjectListTest extends NbTestCase {
     
     public void testSerialize() throws Exception {
         testOpen();
+        
+        OpenProjectList.waitProjectsFullyOpen();
         Field f = OpenProjectList.class.getDeclaredField("INSTANCE");
         f.setAccessible(true);
         f.set(null, null);
@@ -205,6 +207,9 @@ public class OpenProjectListTest extends NbTestCase {
         CharSequence whatIsLoggedWhenDeserializing = Log.enable("org.netbeans.ui", Level.FINE);
         
         Project[] arr = OpenProjectList.getDefault().getOpenProjects();
+        OpenProjectList.waitProjectsFullyOpen();
+        arr = OpenProjectList.getDefault().getOpenProjects();
+        
         assertEquals("One", 1, arr.length);
         Pattern p = Pattern.compile("Initializing.*1.*TestProject", Pattern.MULTILINE | Pattern.DOTALL);
         Matcher m = p.matcher(whatIsLoggedWhenDeserializing);

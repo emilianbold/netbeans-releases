@@ -63,6 +63,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
@@ -79,6 +80,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
@@ -213,7 +215,7 @@ public class ProjectsRootNode extends AbstractNode {
     
     // XXX Needs to listen to project rename
     // However project rename is currently disabled so it is not a big deal
-    static class ProjectChildren extends Children.Keys<Project> implements ChangeListener, PropertyChangeListener {
+    static class ProjectChildren extends Children.Keys<ProjectChildren.Pair> implements ChangeListener, PropertyChangeListener {
         
         private java.util.Map <Sources,Reference<Project>> sources2projects = new WeakHashMap<Sources,Reference<Project>>();
         
@@ -221,73 +223,88 @@ public class ProjectsRootNode extends AbstractNode {
         
         public ProjectChildren( int type ) {
             this.type = type;
-            OpenProjectList.getDefault().addPropertyChangeListener( this );
         }
         
         // Children.Keys impl --------------------------------------------------
         
-        public void addNotify() {            
+        @Override
+        public void addNotify() {         
+            OpenProjectList.getDefault().addPropertyChangeListener(this);
             setKeys( getKeys() );
         }
         
+        @Override
         public void removeNotify() {
+            OpenProjectList.getDefault().removePropertyChangeListener(this);
             for (Sources sources : sources2projects.keySet()) {
                 sources.removeChangeListener( this );                
             }
             sources2projects.clear();
-            setKeys(Collections.<Project>emptySet());
+            setKeys(Collections.<Pair>emptySet());
         }
         
-        protected Node[] createNodes(Project project) {
-            LogicalViewProvider lvp = project.getLookup().lookup(LogicalViewProvider.class);
+        protected Node[] createNodes(Pair p) {
+            Project project = p.project;
             
-            Node nodes[] = null;
-            boolean projectInLookup = true;
+            Node origNodes[] = null;
+            boolean[] projectInLookup = new boolean[1];
+            projectInLookup[0] = true;
                         
             if ( type == PHYSICAL_VIEW ) {
                 Sources sources = ProjectUtils.getSources( project );
                 sources.removeChangeListener( this );
                 sources.addChangeListener( this );
                 sources2projects.put( sources, new WeakReference<Project>( project ) );
-                nodes = PhysicalView.createNodesForProject( project );
-            }            
-            else if ( lvp == null ) {
-                ErrorManager.getDefault().log(ErrorManager.WARNING, "Warning - project " + ProjectUtils.getInformation(project).getName() + " failed to supply a LogicalViewProvider in its lookup"); // NOI18N
-                Sources sources = ProjectUtils.getSources( project );
-                sources.removeChangeListener( this );
-                sources.addChangeListener( this );
-                nodes = PhysicalView.createNodesForProject( project );
-                if ( nodes.length > 0 ) {
-                    nodes = new Node[] { nodes[0] };
-                }
-                else {
-                    nodes = new Node[] { Node.EMPTY };
-                }
-            }
-            else {
-                nodes = new Node[] { lvp.createLogicalView() };
-                if (nodes[0].getLookup().lookup(Project.class) != project) {
-                    // Various actions, badging, etc. are not going to work.
-                    ErrorManager.getDefault().log(ErrorManager.WARNING, "Warning - project " + ProjectUtils.getInformation(project).getName() + " failed to supply itself in the lookup of the root node of its own logical view"); // NOI18N
-                    //#114664
-                    projectInLookup = false;
-                }
+                origNodes = PhysicalView.createNodesForProject( project );
+            } else {
+                origNodes = new Node[] { logicalViewForProject(project, projectInLookup) };
             }
 
-            Node[] badgedNodes = new Node[ nodes.length ];
-            for( int i = 0; i < nodes.length; i++ ) {
-                if ( type == PHYSICAL_VIEW && !PhysicalView.isProjectDirNode( nodes[i] ) ) {
+            Node[] badgedNodes = new Node[ origNodes.length ];
+            for( int i = 0; i < origNodes.length; i++ ) {
+                if ( type == PHYSICAL_VIEW && !PhysicalView.isProjectDirNode( origNodes[i] ) ) {
                     // Don't badge external sources
-                    badgedNodes[i] = nodes[i];
+                    badgedNodes[i] = origNodes[i];
                 }
                 else {
-                    badgedNodes[i] = new BadgingNode( nodes[i],
-                                                      type == LOGICAL_VIEW  && projectInLookup);
+                    badgedNodes[i] = new BadgingNode( origNodes[i],
+                                                      type == LOGICAL_VIEW  && projectInLookup[0]);
                 }
             }
                         
             return badgedNodes;
         }        
+        
+        private Node logicalViewForProject(Project project, boolean[] projectInLookup) {
+            Node node;
+            
+            LogicalViewProvider lvp = project.getLookup().lookup(LogicalViewProvider.class);
+            
+            if ( lvp == null ) {
+                ErrorManager.getDefault().log(ErrorManager.WARNING, "Warning - project " + ProjectUtils.getInformation(project).getName() + " failed to supply a LogicalViewProvider in its lookup"); // NOI18N
+                Sources sources = ProjectUtils.getSources(project);
+                sources.removeChangeListener(this);
+                sources.addChangeListener(this);
+                Node[] physical = PhysicalView.createNodesForProject(project);
+                if (physical.length > 0) {
+                    node = physical[0];
+                } else {
+                    node = Node.EMPTY;
+                }
+            } else {
+                node = lvp.createLogicalView();
+                if (node.getLookup().lookup(Project.class) != project) {
+                    // Various actions, badging, etc. are not going to work.
+                    ErrorManager.getDefault().log(ErrorManager.WARNING, "Warning - project " + ProjectUtils.getInformation(project).getName() + " failed to supply itself in the lookup of the root node of its own logical view"); // NOI18N
+                    //#114664
+                    if (projectInLookup != null) {
+                        projectInLookup[0] = false;
+                    }
+                }
+            }
+            
+            return node;
+        }
         
         // PropertyChangeListener impl -----------------------------------------
         
@@ -315,18 +332,62 @@ public class ProjectsRootNode extends AbstractNode {
             // Fix for 50259, callers sometimes hold locks
             SwingUtilities.invokeLater( new Runnable() {
                 public void run() {
-                    refreshKey( project );
+                    refreshKey( new Pair(project, project.getProjectDirectory()) );
                 }
             } );
         }
                                 
         // Own methods ---------------------------------------------------------
         
-        public Collection<Project> getKeys() {
+        public Collection<Pair> getKeys() {
             List<Project> projects = Arrays.asList( OpenProjectList.getDefault().getOpenProjects() );
             Collections.sort( projects, OpenProjectList.PROJECT_BY_DISPLAYNAME );
             
-            return projects;
+            List<Pair> dirs = Arrays.asList( new Pair[projects.size()] );
+            
+            for (int i = 0; i < projects.size(); i++) {
+                Project project = projects.get(i);
+                dirs.set(i, new Pair(project, project.getProjectDirectory()));
+            }
+
+            
+            return dirs;
+        }
+        
+        /** Object that comparers two projects just by their directory.
+         * This allows to replace a LazyProject with real one without discarding
+         * the nodes.
+         */
+        private static final class Pair extends Object {
+            public final Project project;
+            public final FileObject fo;
+
+            public Pair(Project project, FileObject fo) {
+                this.project = project;
+                this.fo = fo;
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (obj == null) {
+                    return false;
+                }
+                if (getClass() != obj.getClass()) {
+                    return false;
+                }
+                final Pair other = (Pair) obj;
+                if (this.fo != other.fo && (this.fo == null || !this.fo.equals(other.fo))) {
+                    return false;
+                }
+                return true;
+            }
+
+            @Override
+            public int hashCode() {
+                int hash = 7;
+                hash = 53 * hash + (this.fo != null ? this.fo.hashCode() : 0);
+                return hash;
+            }
         }
                                                 
     }
@@ -341,7 +402,7 @@ public class ProjectsRootNode extends AbstractNode {
         private volatile boolean nameChange;
 
         public BadgingNode(Node n, boolean addSearchInfo) {
-            super(n, null, addSearchInfo ? new ProxyLookup(n.getLookup(), Lookups.singleton(alwaysSearchableSearchInfo(n.getLookup().lookup(Project.class)))) : n.getLookup());
+            super(n, null, addSearchInfo ? badgingLookup(n) : n.getLookup());
             OpenProjectList.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(this, OpenProjectList.getDefault()));
             Project proj = getOriginal().getLookup().lookup(Project.class);
             if (proj != null) {
@@ -361,7 +422,18 @@ public class ProjectsRootNode extends AbstractNode {
                 files = null; 
             }
         }
-
+        
+        private static Lookup badgingLookup(Node n) {
+            return new BadgingLookup(n.getLookup(), Lookups.singleton(alwaysSearchableSearchInfo(n.getLookup().lookup(Project.class))));
+        }
+        
+        private void updateLookup(Node n) {
+            if (getLookup() instanceof BadgingLookup) {
+                BadgingLookup bl = (BadgingLookup)getLookup();
+                bl.setMyLookups(n.getLookup(), Lookups.singleton(alwaysSearchableSearchInfo(n.getLookup().lookup(Project.class))));
+            }
+        }
+        
         public void run() {
             if (nameChange) {
                 fireDisplayNameChange(null, null);
@@ -433,6 +505,21 @@ public class ProjectsRootNode extends AbstractNode {
             if ( OpenProjectList.PROPERTY_MAIN_PROJECT.equals( e.getPropertyName() ) ) {
                 fireDisplayNameChange( null, null );
             }
+            if ( OpenProjectList.PROPERTY_REPLACE.equals(e.getPropertyName())) {
+                Project p = getLookup().lookup(Project.class);
+                if (p == null) {
+                    return;
+                }
+                FileObject fo = p.getProjectDirectory();
+                Project newProj = (Project)e.getNewValue();
+                assert newProj != null;
+                if (newProj.getProjectDirectory().equals(fo)) {
+                    ProjectChildren ch = (ProjectChildren)getParentNode().getChildren();
+                    Node n = ch.logicalViewForProject(newProj, null);
+                    changeOriginal(n, true);
+                    updateLookup(n);
+                }
+            }
         }
 
         private boolean isMain() {
@@ -440,7 +527,16 @@ public class ProjectsRootNode extends AbstractNode {
             return p != null && OpenProjectList.getDefault().isMainProject( p );
         }
         
-    }
+    } // end of BadgingNode
+    
+    private static final class BadgingLookup extends ProxyLookup {
+        public BadgingLookup(Lookup... lkps) {
+            super(lkps);
+        }
+        public void setMyLookups(Lookup... lkps) {
+            setLookups(lkps);
+        }
+    } // end of BadgingLookup
     
     /**
      * Produce a {@link SearchInfo} variant that is always searchable, for speed.

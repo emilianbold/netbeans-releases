@@ -80,6 +80,7 @@ public class OpenProjectsTrampolineImplTest extends NbTestCase {
 //        mysteryproject = scratch.createFolder("mystery");
         TestUtil.setLookup(Lookups.singleton(TestUtil.testProjectFactory()));
         pm = ProjectManager.getDefault();
+        OpenProjectList.waitProjectsFullyOpen();
     }
     
     protected void tearDown() throws Exception {

@@ -65,6 +65,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
@@ -75,7 +76,9 @@ import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.project.ui.api.UnloadedProjectInformation;
@@ -97,10 +100,15 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.Mutex;
 import org.openide.util.Mutex.Action;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
+import org.openide.util.lookup.Lookups;
 import org.openide.windows.WindowManager;
 
 /**
@@ -115,6 +123,7 @@ public final class OpenProjectList {
     public static final String PROPERTY_OPEN_PROJECTS = "OpenProjects";
     public static final String PROPERTY_MAIN_PROJECT = "MainProject";
     public static final String PROPERTY_RECENT_PROJECTS = "RecentProjects";
+    public static final String PROPERTY_REPLACE = "ReplaceProject";
     
     private static OpenProjectList INSTANCE;
     
@@ -125,7 +134,7 @@ public final class OpenProjectList {
     private static final Level LOG_LEVEL = Level.FINE;
     
     private static final RequestProcessor OPENING_RP = new RequestProcessor("Opening projects", 1);
-    
+
     /** List which holds the open projects */
     private List<Project> openProjects;
     private HashMap<ModuleInfo, List<Project>> openProjectsModuleInfos;
@@ -146,8 +155,10 @@ public final class OpenProjectList {
     private NbProjectDeletionListener nbprojectDeleteListener = new NbProjectDeletionListener();
     
     private PropertyChangeListener infoListener;
+    private final LoadOpenProjects LOAD;
     
     OpenProjectList() {
+        LOAD = new LoadOpenProjects(0);
         openProjects = new ArrayList<Project>();
         openProjectsModuleInfos = new HashMap<ModuleInfo, List<Project>>();
         infoListener = new PropertyChangeListener() {
@@ -170,22 +181,112 @@ public final class OpenProjectList {
         Project[] inital = null;
         synchronized ( OpenProjectList.class ) {
             if ( INSTANCE == null ) {
-                needNotify = true;
                 INSTANCE = new OpenProjectList();
                 INSTANCE.openProjects = loadProjectList();                
-                inital = INSTANCE.openProjects.toArray(new Project[0]);
-                INSTANCE.recentTemplates = new ArrayList<String>( OpenProjectListSettings.getInstance().getRecentTemplates() );
-                URL mainProjectURL = OpenProjectListSettings.getInstance().getMainProjectURL();
-                // Load recent project list
-                INSTANCE.recentProjects.load();
-                for( Iterator it = INSTANCE.openProjects.iterator(); it.hasNext(); ) {
+                WindowManager.getDefault().invokeWhenUIReady(INSTANCE.LOAD);
+            }
+        }
+        return INSTANCE;
+    }
+    
+    static void waitProjectsFullyOpen() {
+        getDefault().LOAD.waitFinished();
+    }
+
+    static void preferredProject(Project lazyP) {
+        if (lazyP != null) {
+            getDefault().LOAD.preferredProject(lazyP);
+        }
+    }
+    
+    
+    private final class LoadOpenProjects implements Runnable, LookupListener {
+        final RequestProcessor RP = new RequestProcessor("Load Open Projects"); // NOI18N
+        final RequestProcessor.Task TASK = RP.create(this);
+        private int action;
+        private LinkedList<Project> toOpenProjects = new LinkedList<Project>();
+        private List<Project> openedProjects;
+        private List<String> recentTemplates;
+        private Project mainProject;
+        private Lookup.Result<FileObject> currentFiles;
+        
+        public LoadOpenProjects(int a) {
+            action = a;
+            currentFiles = Utilities.actionsGlobalContext().lookupResult(FileObject.class);
+            currentFiles.addLookupListener(WeakListeners.create(LookupListener.class, this, currentFiles));
+            resultChanged(null);
+        }
+
+        final void waitFinished() {
+            if (EventQueue.isDispatchThread()) {
+                if (action == 0) {
+                    run();
+                }
+            }
+            TASK.waitFinished();
+        }
+        
+        public void run() {
+            switch (action) {
+                case 0: 
+                    action = 1;
+                    TASK.schedule(0);
+                    return;
+                case 1:
+                    action = 2;
+                    loadOnBackground();
+                    updateGlobalState();
+                    return;
+                case 2:
+                    // finished, oK
+                    return;
+                default:
+                    throw new IllegalStateException("unknown action: " + action);
+            }
+        }
+
+        final void preferredProject(Project lazyP) {
+            synchronized (toOpenProjects) {
+                for (Project p : toOpenProjects) {
+                    if (p.getProjectDirectory().equals(lazyP.getProjectDirectory())) {
+                        toOpenProjects.remove(p);
+                        toOpenProjects.addFirst(p);
+                        return;
+                    }
+                }
+            }
+        }
+        
+        private void updateGlobalState() {
+            INSTANCE.openProjects = openedProjects;
+            INSTANCE.mainProject = mainProject;
+            INSTANCE.recentTemplates = recentTemplates;
+            
+            INSTANCE.pchSupport.firePropertyChange(PROPERTY_OPEN_PROJECTS, new Project[0], openedProjects.toArray(new Project[0]));
+            INSTANCE.pchSupport.firePropertyChange(PROPERTY_MAIN_PROJECT, null, INSTANCE.mainProject);
+        }
+            
+        private void loadOnBackground() {
+            openedProjects = new ArrayList<Project>();
+            List<URL> URLs = OpenProjectListSettings.getInstance().getOpenProjectsURLs();
+            toOpenProjects.addAll(URLs2Projects(URLs));
+            Project[] inital;
+            synchronized (toOpenProjects) {
+                inital = toOpenProjects.toArray(new Project[0]);
+            }
+            recentTemplates = new ArrayList<String>( OpenProjectListSettings.getInstance().getRecentTemplates() );
+            URL mainProjectURL = OpenProjectListSettings.getInstance().getMainProjectURL();
+            // Load recent project list
+            INSTANCE.recentProjects.load();
+            synchronized (toOpenProjects) {
+                for( Iterator it = toOpenProjects.iterator(); it.hasNext(); ) {
                     Project p = (Project)it.next();
                     INSTANCE.addModuleInfo(p);
                     // Set main project
                     try {
                         if ( mainProjectURL != null && 
                              mainProjectURL.equals( p.getProjectDirectory().getURL() ) ) {
-                            INSTANCE.mainProject = p;
+                            mainProject = p;
                         }
                     }
                     catch( FileStateInvalidException e ) {
@@ -193,19 +294,33 @@ public final class OpenProjectList {
                     }
                 }          
             }
-        }
-        if ( needNotify ) {
-            //#68738: a project may open other projects in its ProjectOpenedHook:
-            for(Project p: new ArrayList<Project>(INSTANCE.openProjects)) {
-                notifyOpened(p);             
+            for (;;) {
+                Project p;
+                synchronized (toOpenProjects) {
+                    if (toOpenProjects.isEmpty()) {
+                        break;
+                    }
+                    p = toOpenProjects.remove();
+                }
+                openedProjects.add(p);
+                notifyOpened(p);
+                PropertyChangeEvent ev = new PropertyChangeEvent(this, PROPERTY_REPLACE, null, p);
+                pchSupport.firePropertyChange(ev);
             }
-            
+
+            if (inital != null) {
+                log(createRecord("UI_INIT_PROJECTS", inital));
+            }
+
         }
-        if (inital != null) {
-            log(createRecord("UI_INIT_PROJECTS", inital));
+
+        public void resultChanged(LookupEvent ev) {
+            for (FileObject fileObject : currentFiles.allInstances()) {
+                Project p = FileOwnerQuery.getOwner(fileObject);
+                OpenProjectList.preferredProject(p);
+            }
+
         }
-        
-        return INSTANCE;
     }
     
     public void open( Project p ) {
@@ -290,6 +405,7 @@ public final class OpenProjectList {
     
     private void doOpen(Project[] projects, boolean openSubprojects, ProgressHandle handle, OpeningProjectPanel panel) {
         assert !Arrays.asList(projects).contains(null) : "Projects can't be null";
+        LOAD.waitFinished();
             
         boolean recentProjectsChanged = false;
         int  maxWork = 1000;
@@ -401,6 +517,7 @@ public final class OpenProjectList {
     }
        
     public void close( Project projects[], boolean notifyUI ) {
+        LOAD.waitFinished();
         if (!ProjectUtilities.closeAllDocuments (projects, notifyUI )) {
             return;
         }
@@ -618,8 +735,8 @@ public final class OpenProjectList {
     
     // Private methods ---------------------------------------------------------
     
-    private static List<Project> URLs2Projects( Collection<URL> URLs ) {
-        ArrayList<Project> result = new ArrayList<Project>( URLs.size() );
+    private static LinkedList<Project> URLs2Projects( Collection<URL> URLs ) {
+        LinkedList<Project> result = new LinkedList<Project>();
             
         for(URL url: URLs) {
             FileObject dir = URLMapper.findFileObject( url );
@@ -730,7 +847,19 @@ public final class OpenProjectList {
     
     private static List<Project> loadProjectList() {               
         List<URL> URLs = OpenProjectListSettings.getInstance().getOpenProjectsURLs();
-        List<Project> projects = URLs2Projects( URLs );
+        List<String> names = OpenProjectListSettings.getInstance().getOpenProjectsDisplayNames();
+        List<ExtIcon> icons = OpenProjectListSettings.getInstance().getOpenProjectsIcons();
+        List<Project> projects = new ArrayList<Project>();
+        
+        Iterator<URL> urlIt = URLs.iterator();
+        Iterator<String> namesIt = names.iterator();
+        Iterator<ExtIcon> iconIt = icons.iterator();
+        
+        while(urlIt.hasNext() && namesIt.hasNext() && iconIt.hasNext()) {
+            projects.add(new LazyProject(urlIt.next(), namesIt.next(), iconIt.next()));
+        }
+        
+        //List<Project> projects = URLs2Projects( URLs );
         
         return projects;
     }
@@ -739,6 +868,17 @@ public final class OpenProjectList {
     private static void saveProjectList( List<Project> projects ) {        
         List<URL> URLs = projects2URLs( projects );
         OpenProjectListSettings.getInstance().setOpenProjectsURLs( URLs );
+        List<String> names = new ArrayList<String>();
+        List<ExtIcon> icons = new ArrayList<ExtIcon>();
+        for (Iterator<Project> it = projects.iterator(); it.hasNext(); ) {
+            ProjectInformation prjInfo = ProjectUtils.getInformation(it.next());
+            names.add(prjInfo.getDisplayName());
+            ExtIcon extIcon = new ExtIcon();
+            extIcon.setIcon(prjInfo.getIcon());
+            icons.add(extIcon);
+        }
+        OpenProjectListSettings.getInstance().setOpenProjectsDisplayNames(names);
+        OpenProjectListSettings.getInstance().setOpenProjectsIcons(icons);
     }
     
     private static void saveMainProject( Project mainProject ) {        

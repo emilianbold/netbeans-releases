@@ -80,7 +80,7 @@ public class ProjectUtilitiesTest extends NbTestCase {
     static {
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
     }
-    */
+    /**/
     
     private static final String NAVIGATOR_MODE = "navigator";
     
