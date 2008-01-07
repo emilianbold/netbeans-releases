@@ -57,11 +57,15 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
 
+/**
+ * Action that encloses selected components in a given container.
+ * 
+ * @author Tomas Pavek, Jan Stola
+ */
 public class EncloseAction extends NodeAction {
 
     public String getName() {
-        return org.openide.util.NbBundle.getBundle(EncloseAction.class)
-                     .getString("ACT_EncloseInContainer"); // NOI18N
+        return NbBundle.getBundle(EncloseAction.class).getString("ACT_EncloseInContainer"); // NOI18N
     }
 
     public HelpCtx getHelpCtx() {
@@ -93,8 +97,6 @@ public class EncloseAction extends NodeAction {
     protected boolean asynchronous() {
         return false;
     }
-
-    // -------
 
     private static List<RADComponent> getComponents(Node[] nodes) {
         return FormUtils.getSelectedLayoutComponents(nodes);
