@@ -72,7 +72,7 @@ public class SLanguageHierarchy extends LanguageHierarchy<STokenId> {
     
     public SLanguageHierarchy (Language language) {
         this.language = language;
-        new Listener (this, language);
+//        new Listener (this, language);
     }
     
     protected Collection<STokenId> createTokenIds () {
@@ -86,6 +86,8 @@ public class SLanguageHierarchy extends LanguageHierarchy<STokenId> {
                 TokenType tokenType = tokenTypes.get (i);
                 String typeName = tokenType.getType ();
                 if (types.contains (typeName)) continue; // there can be more TokenTypes with same name!!
+                if (language.getTokenID (typeName) < 0)
+                    throw new IndexOutOfBoundsException ();
                 types.add (typeName);
                 STokenId tokenId = new STokenId (
                     typeName, 
@@ -112,26 +114,31 @@ public class SLanguageHierarchy extends LanguageHierarchy<STokenId> {
         return language.getMimeType ();
     }
     
-    private static class Listener implements PropertyChangeListener {
-
-        private WeakReference<SLanguageHierarchy>   reference;
-        private Language                            language;
-        
-        Listener (SLanguageHierarchy hierarchy, Language language) {
-            reference = new WeakReference<SLanguageHierarchy> (hierarchy);
-            language.addPropertyChangeListener (this);
-        }
-        
-        public void propertyChange (PropertyChangeEvent evt) {
-            SLanguageHierarchy hierarchy = reference.get ();
-            if (hierarchy == null) {
-                language.removePropertyChangeListener (this);
-                return;
-            }
-            hierarchy.tokenIDToType = null;
-            hierarchy.tokenIDs = null;
-        }
+    public String toString () {
+        return getClass ().getName () + "@" + hashCode ();
     }
+
+//    private static class Listener implements PropertyChangeListener {
+//
+//        private WeakReference<SLanguageHierarchy>   reference;
+//        private Language                            language;
+//        
+//        Listener (SLanguageHierarchy hierarchy, Language language) {
+//            reference = new WeakReference<SLanguageHierarchy> (hierarchy);
+//            this.language = language;
+//            language.addPropertyChangeListener (this);
+//        }
+//        
+//        public void propertyChange (PropertyChangeEvent evt) {
+//            SLanguageHierarchy hierarchy = reference.get ();
+//            if (hierarchy == null) {
+//                language.removePropertyChangeListener (this);
+//                return;
+//            }
+//            hierarchy.tokenIDToType = null;
+//            hierarchy.tokenIDs = null;
+//        }
+//    }
 }
 
 
