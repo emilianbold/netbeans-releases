@@ -104,6 +104,7 @@ type CDATA #REQUIRED
             <property transient="true" category="IEP.Category.entity" name="wsOutput" title="IEP.Model.Entity.wsOutput.title" description="IEP.Model.Entity.wsOutput.description" required="false" type="boolean" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="false" renderer="string" access="" multiple="false"/>
             <property transient="false" category="IEP.Category.entity" name="batchMode" title="IEP.Model.Entity.batchMode.title" description="IEP.Model.Entity.batchMode.description" required="false" type="boolean" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="false" renderer="string" access="" multiple="false"/>
             <property transient="true" category="IEP.Category.entity" name="palette" title="IEP.Model.Entity.palette.title" description="IEP.Model.Entity.palette.description" required="false" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="" renderer="string" access="" multiple="false"/>
+            <property transient="true" category="IEP.Category.entity" name="helpID" title="IEP.Model.Entity.helpID.title" description="IEP.Model.Entity.helpID.description" required="false" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="iep_work_iepops" renderer="string" access="" multiple="false"/>
             <property transient="true" category="IEP.Category.entity" name="categoryOrder" title="IEP.Model.Entity.categoryOrder.title" description="IEP.Model.Entity.categoryOrder.description" required="false" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.NoEditEditor" default="IEP.Category.main\IEP.Category.entity\IEP.Category.schema" renderer="string" access="" multiple="true"/>
         </property_group>
         <component_type name="Plan" icon="" title="IEP.Model.Plan.title" description="IEP.Model.Plan.description" allowsChildren="true" visible="false" validator="org.netbeans.modules.iep.editor.model.DefaultPlanValidator">
@@ -173,6 +174,7 @@ type CDATA #REQUIRED
                 <property name="isSchemaOwner" default="true"/>
                 <property name="wsInput" default="true"/>
                 <property name="palette" default="input"/>
+                <property name="helpID" default="iep_streaminput_prop"/>
             </property_group>
             <code type="xml" file="vm/iep/input/streamInput.xml"/>
         </component_type>
@@ -194,6 +196,7 @@ type CDATA #REQUIRED
                 <property name="globalId" default="" access="&RW;"/>
                 <property name="isGlobal" default="true" access="&R;"/>
                 <property name="palette" default="input"/>
+                <property name="helpID" default="iep_tableinput_propedit"/>
             </property_group>
             <code type="xml" file="vm/iep/input/relationInput.xml"/>
         </component_type>
@@ -209,6 +212,7 @@ type CDATA #REQUIRED
                 <property name="inputType" default="i18n.IEP.IOType.stream"/>
                 <property name="wsOutput" default="true"/>
                 <property name="palette" default="output"/>
+                <property name="helpID" default="iep_streamout_propedit"/>
             </property_group>
             <property transient="false" category="IEP.Category.main" name="includeTimestamp" title="IEP.Output.StreamOutput.includeTimestamp.title" description="IEP.Output.StreamOutput.includeTimestamp.description" required="false" type="boolean" editor="default" default="false" renderer="string" access="&RW;" multiple="false"/>
             <code type="xml" file="vm/iep/output/streamOutput.xml"/>
@@ -239,6 +243,7 @@ type CDATA #REQUIRED
                 <property name="inputType" default="i18n.IEP.IOType.relation"/>
                 <property name="wsOutput" default="true"/>
                 <property name="palette" default="output"/>
+                <property name="helpID" default="iep_relationout_propedit"/>
             </property_group>
             <property transient="false" category="IEP.Category.main" name="includeTimestamp" title="IEP.Output.RelationOutput.includeTimestamp.title" description="IEP.Output.RelationOutput.includeTimestamp.description" required="false" type="boolean" editor="default" default="false" renderer="string" access="&RW;" multiple="false"/>
             <code type="xml" file="vm/iep/output/relationOutput.xml"/>
@@ -253,6 +258,7 @@ type CDATA #REQUIRED
                 <property name="isGlobal" default="false" access="&RW;"/>
                 <property name="globalId" default="" access="&RW;"/>
                 <property name="palette" default="output"/>
+                <property name="helpID" default="iep_tableout_propedit"/>
             </property_group>
             <code type="xml" file="vm/iep/output/tableOutput.xml"/>
         </component_type>
@@ -271,6 +277,7 @@ type CDATA #REQUIRED
                 <property name="outputType" default="i18n.IEP.IOType.stream"/>
                 <property name="isSchemaOwner" default="true"/>
                 <property name="palette" default="correlationAndFilter"/>
+                <property name="helpID" default="iep_strprj_prop"/>
             </property_group>
             <property transient="false" category="IEP.Category.main" name="fromColumnList" title="IEP.Operator.StreamProjectionAndFilter.fromColumnList.title" description="IEP.Operator.StreamProjectionAndFilter.fromColumnList.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="" multiple="true"/>
             <property transient="false" category="IEP.Category.main" name="toColumnList" title="IEP.Operator.StreamProjectionAndFilter.toColumnList.title" description="IEP.Operator.StreamProjectionAndFilter.toColumnList.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="" multiple="true"/>
@@ -288,6 +295,7 @@ type CDATA #REQUIRED
                 <property name="outputType" default="i18n.IEP.IOType.stream"/>
                 <property name="isSchemaOwner" default="true"/>
                 <property name="palette" default="correlationAndFilter"/>
+                <property name="helpID" default="iep_tupleser_propedit"/>
             </property_group>
             <property transient="false" category="IEP.Category.main" name="fromColumnList" title="IEP.Operator.TupleSerialCorrelation.fromColumnList.title" description="IEP.Operator.TupleSerialCorrelation.fromColumnList.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="&R;" multiple="true"/>
             <property transient="false" category="IEP.Category.main" name="increment" title="IEP.Operator.TupleSerialCorrelation.increment.title" description="IEP.Operator.TupleSerialCorrelation.increment.description" required="true" type="integer" editor="default" default="1" renderer="string" access="&RW;" multiple="false"/>
@@ -307,6 +315,7 @@ type CDATA #REQUIRED
                 <property name="outputType" default="i18n.IEP.IOType.relation"/>
                 <property name="isSchemaOwner" default="true"/>
                 <property name="palette" default="correlationAndFilter"/>
+                <property name="helpID" default="iep_relmap_prop"/>
             </property_group>
             <property transient="false" category="IEP.Category.main" name="fromColumnList" title="IEP.Operator.RelationMap.fromColumnList.title" description="IEP.Operator.RelationMap.fromColumnList.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="" multiple="true"/>
             <property transient="false" category="IEP.Category.main" name="toColumnList" title="IEP.Operator.RelationMap.toColumnList.title" description="IEP.Operator.RelationMap.toColumnList.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="" multiple="true"/>
@@ -327,6 +336,7 @@ type CDATA #REQUIRED
                 <property name="outputType" default="i18n.IEP.IOType.stream"/>
                 <property name="isSchemaOwner" default="true"/>
                 <property name="palette" default="aggregator"/>
+                <property name="helpID" default="iep_tuplebasedagg_propedit"/>
             </property_group>
             <property transient="false" category="IEP.Category.main" name="fromColumnList" title="IEP.Operator.TupleBasedAggregator.fromColumnList.title" description="IEP.Operator.TupleBasedAggregator.fromColumnList.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="" multiple="true"/>
             <property transient="false" category="IEP.Category.main" name="toColumnList" title="IEP.Operator.TupleBasedAggregator.toColumnList.title" description="IEP.Operator.TupleBasedAggregator.toColumnList.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="" multiple="true"/>
@@ -350,6 +360,7 @@ type CDATA #REQUIRED
                 <property name="outputType" default="i18n.IEP.IOType.stream"/>
                 <property name="isSchemaOwner" default="true"/>
                 <property name="palette" default="aggregator"/>
+                <property name="helpID" default="iep_timebased_propedit"/>
             </property_group>
             <property transient="false" category="IEP.Category.main" name="fromColumnList" title="IEP.Operator.TimeBasedAggregator.fromColumnList.title" description="IEP.Operator.TimeBasedAggregator.fromColumnList.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="" multiple="true"/>
             <property transient="false" category="IEP.Category.main" name="toColumnList" title="IEP.Operator.TimeBasedAggregator.toColumnList.title" description="IEP.Operator.TimeBasedAggregator.toColumnList.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="" multiple="true"/>
@@ -375,6 +386,7 @@ type CDATA #REQUIRED
                 <property name="outputType" default="i18n.IEP.IOType.relation"/>
                 <property name="isSchemaOwner" default="true"/>
                 <property name="palette" default="aggregator"/>
+                <property name="helpID" default="iep_relagg_propedit"/>
             </property_group>
             <property transient="false" category="IEP.Category.main" name="fromColumnList" title="IEP.Operator.RelationAggregator.fromColumnList.title" description="IEP.Operator.RelationAggregator.fromColumnList.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="" multiple="true"/>
             <property transient="false" category="IEP.Category.main" name="toColumnList" title="IEP.Operator.RelationAggregator.toColumnList.title" description="IEP.Operator.RelationAggregator.toColumnList.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="" multiple="true"/>
@@ -391,6 +403,7 @@ type CDATA #REQUIRED
                 <property name="inputType" default="i18n.IEP.IOType.stream"/>
                 <property name="outputType" default="i18n.IEP.IOType.relation"/>
                 <property name="palette" default="streamConverter"/>
+                <property name="helpID" default="iep_tuplebased_propedit"/>
             </property_group>
             <property transient="false" category="IEP.Category.main" name="size" title="IEP.Operator.TupleBasedWindow.size.title" description="IEP.Operator.TupleBasedWindow.size.description" required="true" type="integer" editor="default" default="1" renderer="string" access="&RW;" multiple="false"/>
             <code type="xml" file="vm/iep/operator/tupleBasedWindow.xml"/>
@@ -404,6 +417,7 @@ type CDATA #REQUIRED
                 <property name="inputType" default="i18n.IEP.IOType.stream"/>
                 <property name="outputType" default="i18n.IEP.IOType.relation"/>
                 <property name="palette" default="streamConverter"/>
+                <property name="helpID" default="iep_partitionwindow_propedit"/>
             </property_group>
             <property transient="false" category="IEP.Category.main" name="size" title="IEP.Operator.PartitionedWindow.size.title" description="IEP.Operator.PartitionedWindow.size.description" required="true" type="integer" editor="default" default="1" renderer="string" access="&RW;" multiple="false"/>
             <property transient="false" category="IEP.Category.main" name="attributeList" title="IEP.Operator.PartitionedWindow.attributeList.title" description="IEP.Operator.PartitionedWindow.attributeList.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TextAreaEditor" default="" renderer="string" access="&RW;" multiple="true"/>
@@ -418,6 +432,7 @@ type CDATA #REQUIRED
                 <property name="inputType" default="i18n.IEP.IOType.stream"/>
                 <property name="outputType" default="i18n.IEP.IOType.relation"/>
                 <property name="palette" default="streamConverter"/>
+                <property name="helpID" default="iep_attbased_propedit"/>
             </property_group>
             <property transient="false" category="IEP.Category.main" name="attribute" title="IEP.Operator.AttributeBasedWindow.attribute.title" description="IEP.Operator.AttributeBasedWindow.attribute.description" required="true" type="string" editor="default" default="" renderer="string" access="&RW;" multiple="false"/>
             <property transient="false" category="IEP.Category.main" name="size" title="IEP.Operator.AttributeBasedWindow.size.title" description="IEP.Operator.AttributeBasedWindow.size.description" required="true" type="double" editor="default" default="1" renderer="string" access="&RW;" multiple="false"/>
@@ -432,6 +447,7 @@ type CDATA #REQUIRED
                 <property name="inputType" default="i18n.IEP.IOType.stream"/>
                 <property name="outputType" default="i18n.IEP.IOType.relation"/>
                 <property name="palette" default="streamConverter"/>
+                <property name="helpID" default="iep_timebased_window_propedit"/>
             </property_group>
             <property transient="false" category="IEP.Category.main" name="size" title="IEP.Operator.TimeBasedWindow.size.title" description="IEP.Operator.TimeBasedWindow.size.description" required="true" type="integer" editor="default" default="1" renderer="string" access="&RW;" multiple="false"/>
             <property transient="false" category="IEP.Category.main" name="unit" title="IEP.Operator.TimeBasedWindow.unit.title" description="IEP.Operator.TimeBasedWindow.unit.description" required="true" type="string" editor="org.netbeans.modules.iep.editor.tcg.ps.TimeUnitPropertyEditor" default="second" renderer="string" access="&RW;" multiple="false"/>
@@ -446,6 +462,7 @@ type CDATA #REQUIRED
                 <property name="inputType" default="i18n.IEP.IOType.relation"/>
                 <property name="outputType" default="i18n.IEP.IOType.stream"/>
                 <property name="palette" default="relationConverter"/>
+                <property name="helpID" default="iep_streaminsrt_propedit"/>
             </property_group>
             <code type="xml" file="vm/iep/operator/relationToStream/insertStream.xml"/>
         </component_type>
@@ -458,6 +475,7 @@ type CDATA #REQUIRED
                 <property name="inputType" default="i18n.IEP.IOType.relation"/>
                 <property name="outputType" default="i18n.IEP.IOType.stream"/>
                 <property name="palette" default="relationConverter"/>
+                <property name="helpID" default="iep_streamdel_propedit"/>
             </property_group>
             <code type="xml" file="vm/iep/operator/relationToStream/deleteStream.xml"/>
         </component_type>
@@ -470,6 +488,7 @@ type CDATA #REQUIRED
                 <property name="inputType" default="i18n.IEP.IOType.relation"/>
                 <property name="outputType" default="i18n.IEP.IOType.stream"/>
                 <property name="palette" default="relationConverter"/>
+                <property name="helpID" default="iep_relstream_propedit"/>
             </property_group>
             <code type="xml" file="vm/iep/operator/relationToStream/relationStream.xml"/>
         </component_type>
@@ -496,6 +515,7 @@ type CDATA #REQUIRED
                 <property name="inputType" default="i18n.IEP.IOType.relation"/>
                 <property name="outputType" default="i18n.IEP.IOType.table"/>
                 <property name="palette" default="relationConverter"/>
+                <property name="helpID" default="iep_table_propedit"/>
             </property_group>
             <code type="xml" file="vm/iep/operator/table.xml"/>
         </component_type>
@@ -511,6 +531,7 @@ type CDATA #REQUIRED
                 <property name="outputType" default="i18n.IEP.IOType.relation"/>
                 <property name="isSchemaOwner" default="false"/>
                 <property name="palette" default="relationOperator"/>
+                <property name="helpID" default="iep_distinct_propedit"/>
             </property_group>
             <code type="xml" file="vm/iep/operator/distinct.xml"/>
         </component_type>
@@ -526,6 +547,7 @@ type CDATA #REQUIRED
                 <property name="outputType" default="i18n.IEP.IOType.relation"/>
                 <property name="isSchemaOwner" default="false"/>
                 <property name="palette" default="relationOperator"/>
+                <property name="helpID" default="iep_unionall_propedit"/>
             </property_group>
             <code type="xml" file="vm/iep/operator/unionAll.xml"/>
         </component_type>
@@ -541,6 +563,7 @@ type CDATA #REQUIRED
                 <property name="outputType" default="i18n.IEP.IOType.relation"/>
                 <property name="isSchemaOwner" default="false"/>
                 <property name="palette" default="relationOperator"/>
+                <property name="helpID" default="iep_union_propedit"/>
             </property_group>
             <code type="xml" file="vm/iep/operator/union.xml"/>
         </component_type>
@@ -556,6 +579,7 @@ type CDATA #REQUIRED
                 <property name="outputType" default="i18n.IEP.IOType.relation"/>
                 <property name="isSchemaOwner" default="false"/>
                 <property name="palette" default="relationOperator"/>
+                <property name="helpID" default="iep_intersect_propedit"/>
             </property_group>
             <code type="xml" file="vm/iep/operator/intersect.xml"/>
         </component_type>
@@ -571,6 +595,7 @@ type CDATA #REQUIRED
                 <property name="outputType" default="i18n.IEP.IOType.relation"/>
                 <property name="isSchemaOwner" default="false"/>
                 <property name="palette" default="relationOperator"/>
+                <property name="helpID" default="iep_minus_propedit"/>
             </property_group>
             <property transient="false" category="IEP.Category.main" name="subtractFrom" title="IEP.Operator.Minus.subtractFrom.title" description="IEP.Operator.Minus.subtractFrom.description" required="true" type="string" editor="default" default="" renderer="string" access="&RW;" multiple="false"/>
             <code type="xml" file="vm/iep/operator/minus.xml"/>

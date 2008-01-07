@@ -94,7 +94,7 @@ public class TcgComponentNodePropertyCustomizerDialogManager {
      * Creates proper DialogDescriptor and obtain mDialog instance
      * via DialogDisplayer.getDialog() call.
      */
-    private Window getDialog() {
+    private Window getDialog(TcgComponentNodeProperty prop) {
         mOkButton = new JButton(getString("CustomizerDialogManager.OK"));
         
         JButton cancelButton = new JButton(getString("CustomizerDialogManager.Cancel"));
@@ -113,7 +113,14 @@ public class TcgComponentNodePropertyCustomizerDialogManager {
         DialogDescriptor descriptor = new DialogDescriptor(
                 mCustomizer, mTitle, isModal, mOptions, mDefaultOption,
                 DialogDescriptor.DEFAULT_ALIGN, null, mActionListener);
-        descriptor.setHelpCtx(new HelpCtx("iep_work_iepops"));
+        
+        String helpID = prop.getModelComponent().getHelpID();
+//        if(helpID == null) {
+//        	helpID = "iep_work_iepops"; //NO I18N
+//        }
+        
+        descriptor.setHelpCtx(new HelpCtx(helpID));
+        //descriptor.setHelpCtx(new HelpCtx("iep_work_iepops"));
         mDialog = org.openide.DialogDisplayer.getDefault().createDialog(descriptor);
         // mDialog closing reactions
         mDialog.addWindowListener(new WindowAdapter() {
@@ -138,6 +145,6 @@ public class TcgComponentNodePropertyCustomizerDialogManager {
     
     public static void showDialog(TcgComponentNodeProperty prop) {
         TcgComponentNodePropertyCustomizerDialogManager manager = new TcgComponentNodePropertyCustomizerDialogManager(prop);
-        manager.getDialog().setVisible(true);
+        manager.getDialog(prop).setVisible(true);
     }
 }
