@@ -62,6 +62,7 @@ public class BasicCompletionTest extends AbstractTestCase {
     public static Test suite() {
         TestSuite suite = new TestSuite();
         suite.addTest(new BasicCompletionTest("testNoNamespaceCompletion"));
+        suite.addTest(new BasicCompletionTest("testPurchaseOrder"));
         suite.addTest(new BasicCompletionTest("testPurchaseOrder1"));
         suite.addTest(new BasicCompletionTest("testPurchaseOrder2"));
         suite.addTest(new BasicCompletionTest("testCompletionFilter1"));
@@ -90,13 +91,7 @@ public class BasicCompletionTest extends AbstractTestCase {
      * Queries elements from schema with no namespace.
      */
     public void testNoNamespaceCompletion() throws Exception {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
-        buffer.append("<NNSRoot xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=63
-        buffer.append("  xsi:noNamespaceSchemaLocation=\"NoTNSSchema.xsd\">\n"); //offset=51
-        buffer.append("  <\n"); //offset=4
-        buffer.append("</NNSRoot>\n");
-        setupCompletion(PO_INSTANCE_DOCUMENT, buffer);
+        setupCompletion("resources/NoTNS.xml", null);
         List<CompletionResultItem> items = query(157);
         String[] expectedResult = {"NNSChild1", "NNSChild2"};
         assertResult(items, expectedResult);
@@ -105,15 +100,8 @@ public class BasicCompletionTest extends AbstractTestCase {
     /**
      * Queries elements from a PO schema.
      */
-    public void testPurchaseOrder1() throws Exception {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
-        buffer.append("<po:purchaseOrder xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=72
-        buffer.append("  xmlns:po=\"http://xml.netbeans.org/schema/PO\"\n"); //offset=47
-        buffer.append("  xsi:schemaLocation=\"http://xml.netbeans.org/schema/PO PO.xsd\">\n"); //offset=65
-        buffer.append("  <\n"); //offset=4
-        buffer.append("</po:purchaseOrder>\n");
-        setupCompletion(PO_INSTANCE_DOCUMENT, buffer);
+    public void testPurchaseOrder() throws Exception {
+        setupCompletion("resources/PO.xml", null);
         List<CompletionResultItem> items = query(227);
         String[] expectedResult = {"po:shipTo", "po:billTo", "po:comment", "po:items"};
         assertResult(items, expectedResult);
@@ -122,15 +110,19 @@ public class BasicCompletionTest extends AbstractTestCase {
     /**
      * Queries elements from a PO schema.
      */
+    public void testPurchaseOrder1() throws Exception {
+        setupCompletion("resources/PO1.xml", null);
+        List<CompletionResultItem> items = query(237);
+        String[] expectedResult = null;
+        assertResult(items, expectedResult);
+    }
+    
+    /**
+     * Queries elements from a PO schema.
+     * Issue: http://www.netbeans.org/issues/show_bug.cgi?id=117841
+     */
     public void testPurchaseOrder2() throws Exception {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
-        buffer.append("<po:purchaseOrder xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=72
-        buffer.append("  xmlns:po=\"http://xml.netbeans.org/schema/PO\"\n"); //offset=47
-        buffer.append("  xsi:schemaLocation=\"http://xml.netbeans.org/schema/PO PO.xsd\">\n"); //offset=65
-        buffer.append("  <po:billTo>\n"); //offset=14
-        buffer.append("</po:purchaseOrder>\n");
-        setupCompletion(PO_INSTANCE_DOCUMENT, buffer);
+        setupCompletion("resources/PO2.xml", null);
         List<CompletionResultItem> items = query(237);
         String[] expectedResult = null;
         assertResult(items, expectedResult);
@@ -140,14 +132,7 @@ public class BasicCompletionTest extends AbstractTestCase {
      * Tests completion filtering.
      */
     public void testCompletionFilter1() throws Exception {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
-        buffer.append("<po:purchaseOrder xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=72
-        buffer.append("  xmlns:po=\"http://xml.netbeans.org/schema/PO\"\n"); //offset=47
-        buffer.append("  xsi:schemaLocation=\"http://xml.netbeans.org/schema/PO PO.xsd\">\n"); //offset=65
-        buffer.append("  <1\n"); //offset=5
-        buffer.append("</po:purchaseOrder>\n");
-        setupCompletion(PO_INSTANCE_DOCUMENT, buffer);
+        setupCompletion("resources/PO3.xml", null);
         List<CompletionResultItem> items = query(228);
         String[] expectedResult = {};
         assertResult(items, expectedResult);
@@ -158,14 +143,7 @@ public class BasicCompletionTest extends AbstractTestCase {
      * Tests completion filtering.
      */
     public void testCompletionFilter2() throws Exception {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
-        buffer.append("<po:purchaseOrder xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=72
-        buffer.append("  xmlns:po=\"http://xml.netbeans.org/schema/PO\"\n"); //offset=47
-        buffer.append("  xsi:schemaLocation=\"http://xml.netbeans.org/schema/PO PO.xsd\">\n"); //offset=65
-        buffer.append("  <po:s\n"); //offset=8
-        buffer.append("</po:purchaseOrder>\n");
-        setupCompletion(PO_INSTANCE_DOCUMENT, buffer);
+        setupCompletion("resources/PO4.xml", null);
         List<CompletionResultItem> items = query(230);
         String[] expectedResult = {"po:shipTo"};
         assertResult(items, expectedResult);
@@ -175,15 +153,8 @@ public class BasicCompletionTest extends AbstractTestCase {
      * Tests end tag completion.
      */
     public void testEndtagCompletion1() throws Exception {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
-        buffer.append("<po:purchaseOrder xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=72
-        buffer.append("  xmlns:po=\"http://xml.netbeans.org/schema/PO\"\n"); //offset=47
-        buffer.append("  xsi:schemaLocation=\"http://xml.netbeans.org/schema/PO PO.xsd\">\n"); //offset=65
-        buffer.append("  <po:billTo></p\n"); //offset=16
-        buffer.append("</po:purchaseOrder>\n");
-        setupCompletion(PO_INSTANCE_DOCUMENT, buffer);
-        List<CompletionResultItem> items = query(239);
+        setupCompletion("resources/PO5.xml", null);
+        List<CompletionResultItem> items = query(240);
         String[] expectedResult = null;
         assertResult(items, expectedResult);
     }
@@ -192,18 +163,9 @@ public class BasicCompletionTest extends AbstractTestCase {
      * Tests end tag completion.
      */
     public void testEndtagCompletion2() throws Exception {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
-        buffer.append("<po:purchaseOrder xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=72
-        buffer.append("  xmlns:po=\"http://xml.netbeans.org/schema/PO\"\n"); //offset=47
-        buffer.append("  xsi:schemaLocation=\"http://xml.netbeans.org/schema/PO PO.xsd\">\n"); //offset=65
-        buffer.append("  <po:billTo>\n"); //offset=14
-        buffer.append("    <po:name>Samaresh</po:name\n"); //offset=32
-        buffer.append("  </"); //offset=5
-        buffer.append("</po:purchaseOrder>");
-        setupCompletion(PO_INSTANCE_DOCUMENT, buffer);
+        setupCompletion("resources/PO6.xml", null);
         List<CompletionResultItem> items = query(274);
-        String[] expectedResult = null;
+        String[] expectedResult = {};
         assertResult(items, expectedResult);
     }
     
@@ -211,18 +173,9 @@ public class BasicCompletionTest extends AbstractTestCase {
      * Tests end tag completion.
      */
     public void testEndtagCompletion3() throws Exception {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
-        buffer.append("<po:purchaseOrder xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=72
-        buffer.append("  xmlns:po=\"http://xml.netbeans.org/schema/PO\"\n"); //offset=47
-        buffer.append("  xsi:schemaLocation=\"http://xml.netbeans.org/schema/PO PO.xsd\">\n"); //offset=65
-        buffer.append("  <po:billTo>\n"); //offset=14
-        buffer.append("    <po:name>Samaresh</\n"); //offset=25
-        buffer.append("  </po:billTo>\n"); //offset=14
-        buffer.append("</po:purchaseOrder>");
-        setupCompletion(PO_INSTANCE_DOCUMENT, buffer);
-        List<CompletionResultItem> items = query(252);
-        String[] expectedResult = null;
+        setupCompletion("resources/PO7.xml", null);
+        List<CompletionResultItem> items = query(261);
+        String[] expectedResult = {};
         assertResult(items, expectedResult);
     }
     
@@ -231,14 +184,7 @@ public class BasicCompletionTest extends AbstractTestCase {
      * we should show all qualifying elements that are children of the parent.
      */
     public void testEmptyTag1() throws Exception {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
-        buffer.append("<A:rootA3 xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=64
-        buffer.append("  xmlns:A=\"http://xml.netbeans.org/schema/TNSA\"\n"); //offset=48
-        buffer.append("  xsi:schemaLocation=\"http://xml.netbeans.org/schema/TNSA A.xsd\">\n"); //offset=66
-        buffer.append("  <A:A31 />\n"); //offset 20, caret is after '<'
-        buffer.append("</A:rootA3>\n");
-        setupCompletion(TEST_INSTANCE_DOCUMENT, buffer);
+        setupCompletion("resources/EmptyTag.xml", null);
         List<CompletionResultItem> items = query(220);
         String[] expectedResult = {"A:A31", "A:A32"};
         assertResult(items, expectedResult);
@@ -249,14 +195,7 @@ public class BasicCompletionTest extends AbstractTestCase {
      * we should show only A31 as the qualifying element.
      */
     public void testEmptyTag2() throws Exception {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
-        buffer.append("<A:rootA3 xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=64
-        buffer.append("  xmlns:A=\"http://xml.netbeans.org/schema/TNSA\"\n"); //offset=48
-        buffer.append("  xsi:schemaLocation=\"http://xml.netbeans.org/schema/TNSA A.xsd\">\n"); //offset=66
-        buffer.append("  <A:A31 />\n"); //offset 21, caret is after '<A'
-        buffer.append("</A:rootA3>\n");
-        setupCompletion(TEST_INSTANCE_DOCUMENT, buffer);
+        setupCompletion("resources/EmptyTag.xml", null);
         List<CompletionResultItem> items = query(223);
         String[] expectedResult = {"A:A31"};
         assertResult(items, expectedResult);
@@ -266,14 +205,7 @@ public class BasicCompletionTest extends AbstractTestCase {
      * Queries an empty tag.
      */
     public void testEmptyTag3() throws Exception {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
-        buffer.append("<A:rootA3 xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=64
-        buffer.append("  xmlns:A=\"http://xml.netbeans.org/schema/TNSA\"\n"); //offset=48
-        buffer.append("  xsi:schemaLocation=\"http://xml.netbeans.org/schema/TNSA A.xsd\">\n"); //offset=66
-        buffer.append("  <A:A31 />\n"); //offset=8
-        buffer.append("</A:rootA3>\n");
-        setupCompletion(TEST_INSTANCE_DOCUMENT, buffer);
+        setupCompletion("resources/EmptyTag.xml", null);
         List<CompletionResultItem> items = query(226);
         String[] expectedResult = {"attrA31", "attrA32"};
         assertResult(items, expectedResult);
@@ -421,30 +353,14 @@ public class BasicCompletionTest extends AbstractTestCase {
     }
 
     public void testImport1() throws Exception {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
-        buffer.append("<ns:Main  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=64
-        buffer.append("   xmlns:ns=\"http://xml.netbeans.org/schema/Main\"\n"); //offset=50
-        buffer.append("   xsi:schemaLocation=\"http://xml.netbeans.org/schema/Main Main.xsd\">\n"); //offset=70
-        buffer.append("   <ns:MainA>\n"); //offset=14
-        buffer.append("       <\n"); //offset=9
-        buffer.append("   </ns:MainA>\n");
-        buffer.append("</ns:Main>\n");
-        setupCompletion(TEST_INSTANCE_DOCUMENT, buffer);
+        setupCompletion("resources/Import.xml", null);
         List<CompletionResultItem> items = query(246);
         String[] expectedResult = {"ns1:A1","ns1:A2"};
         assertResult(items, expectedResult);
     }
     
     public void testInclude1() throws Exception {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
-        buffer.append("<ns:Main2  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=65
-        buffer.append("   xmlns:ns=\"http://xml.netbeans.org/schema/Main\"\n"); //offset=50
-        buffer.append("   xsi:schemaLocation=\"http://xml.netbeans.org/schema/Main Main.xsd\">\n"); //offset=70
-        buffer.append("       <\n"); //offset=9
-        buffer.append("</ns:Main2>\n");
-        setupCompletion(TEST_INSTANCE_DOCUMENT, buffer);
+        setupCompletion("resources/Include.xml", null);
         List<CompletionResultItem> items = query(233);
         String[] expectedResult = {"ns:M1","ns:M2"};
         assertResult(items, expectedResult);
