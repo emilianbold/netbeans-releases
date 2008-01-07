@@ -728,6 +728,9 @@ public class PlanCanvas extends JGoView implements JGoViewListener, GuiConstants
                 
                 this.mModel.endTransaction();
                 
+                //get this canvas into focus
+                this.requestFocusInWindow();
+                
                 /*rit
                 TcgComponentType type = TcgModelManager.getTcgComponentType(ctPath);
                 Plan plan = mDesigner.getPlan();
