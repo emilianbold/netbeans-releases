@@ -1,0 +1,92 @@
+/*
+ *  ProductCodeRefConverter
+ *
+ * Created on November 27, 2007, 2:08 AM
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+package o.n.m.ws.qaf.rest.crud.converter;
+
+import java.net.URI;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlAttribute;
+import o.n.m.ws.qaf.rest.crud.ProductCode;
+
+
+/**
+ *
+ * @author lukas
+ */
+
+@XmlRootElement(name = "productCodeRef")
+public class ProductCodeRefConverter {
+    private ProductCode entity;
+    private boolean isUriExtendable;
+    private URI uri;
+    
+    /** Creates a new instance of ProductCodeRefConverter */
+    public ProductCodeRefConverter() {
+    }
+
+    /**
+     * Creates a new instance of ProductCodeRefConverter.
+     *
+     * @param entity associated entity
+     * @param uri associated uri
+     * @param isUriExtendable indicates whether the uri can be extended
+     */
+    public ProductCodeRefConverter(ProductCode entity, URI uri, boolean isUriExtendable) {
+        this.entity = entity;
+        this.uri = uri;
+        this.isUriExtendable = isUriExtendable;
+    }
+
+    /**
+     * Getter for prodCode.
+     *
+     * @return value for prodCode
+     */
+    @XmlElement
+    public String getProdCode() {
+        return entity.getProdCode();
+    }
+
+    /**
+     * Returns the URI associated with this reference converter.
+     *
+     * @return the converted uri
+     */
+    @XmlAttribute(name = "uri")
+    public URI getResourceUri() {
+        if (isUriExtendable) {
+            return uri.resolve(entity.getProdCode() + "/");
+        }
+        return uri;
+    }
+
+    /**
+     * Sets the URI for this reference converter.
+     *
+     */
+    public void setResourceUri(URI uri) {
+        this.uri = uri;
+    }
+
+    /**
+     * Returns the ProductCode entity.
+     *
+     * @return ProductCode entity
+     */
+    @XmlTransient
+    public ProductCode getEntity() {
+        ProductCodeConverter result = UriResolver.getInstance().resolve(ProductCodeConverter.class, uri);
+        if (result != null) {
+            return result.getEntity();
+        }
+        return null;
+    }
+}

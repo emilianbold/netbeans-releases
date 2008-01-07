@@ -1,0 +1,261 @@
+/*
+ *  ProductConverter
+ *
+ * Created on November 27, 2007, 2:08 AM
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+package o.n.m.ws.qaf.rest.crud.converter;
+
+import java.math.BigDecimal;
+import java.net.URI;
+import o.n.m.ws.qaf.rest.crud.Product;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlAttribute;
+
+
+/**
+ *
+ * @author lukas
+ */
+
+@XmlRootElement(name = "product")
+public class ProductConverter {
+    private Product entity;
+    private URI uri;
+    
+    /** Creates a new instance of ProductConverter */
+    public ProductConverter() {
+        entity = new Product();
+    }
+
+    /**
+     * Creates a new instance of ProductConverter.
+     *
+     * @param entity associated entity
+     * @param uri associated uri
+     */
+    public ProductConverter(Product entity, URI uri) {
+        this.entity = entity;
+        this.uri = uri;
+    }
+
+    /**
+     * Getter for productId.
+     *
+     * @return value for productId
+     */
+    @XmlElement
+    public Integer getProductId() {
+        return entity.getProductId();
+    }
+
+    /**
+     * Setter for productId.
+     *
+     * @param value the value to set
+     */
+    public void setProductId(Integer value) {
+        entity.setProductId(value);
+    }
+
+    /**
+     * Getter for purchaseCost.
+     *
+     * @return value for purchaseCost
+     */
+    @XmlElement
+    public BigDecimal getPurchaseCost() {
+        return entity.getPurchaseCost();
+    }
+
+    /**
+     * Setter for purchaseCost.
+     *
+     * @param value the value to set
+     */
+    public void setPurchaseCost(BigDecimal value) {
+        entity.setPurchaseCost(value);
+    }
+
+    /**
+     * Getter for quantityOnHand.
+     *
+     * @return value for quantityOnHand
+     */
+    @XmlElement
+    public Integer getQuantityOnHand() {
+        return entity.getQuantityOnHand();
+    }
+
+    /**
+     * Setter for quantityOnHand.
+     *
+     * @param value the value to set
+     */
+    public void setQuantityOnHand(Integer value) {
+        entity.setQuantityOnHand(value);
+    }
+
+    /**
+     * Getter for markup.
+     *
+     * @return value for markup
+     */
+    @XmlElement
+    public BigDecimal getMarkup() {
+        return entity.getMarkup();
+    }
+
+    /**
+     * Setter for markup.
+     *
+     * @param value the value to set
+     */
+    public void setMarkup(BigDecimal value) {
+        entity.setMarkup(value);
+    }
+
+    /**
+     * Getter for available.
+     *
+     * @return value for available
+     */
+    @XmlElement
+    public String getAvailable() {
+        return entity.getAvailable();
+    }
+
+    /**
+     * Setter for available.
+     *
+     * @param value the value to set
+     */
+    public void setAvailable(String value) {
+        entity.setAvailable(value);
+    }
+
+    /**
+     * Getter for description.
+     *
+     * @return value for description
+     */
+    @XmlElement
+    public String getDescription() {
+        return entity.getDescription();
+    }
+
+    /**
+     * Setter for description.
+     *
+     * @param value the value to set
+     */
+    public void setDescription(String value) {
+        entity.setDescription(value);
+    }
+
+    /**
+     * Getter for manufacturerId.
+     *
+     * @return value for manufacturerId
+     */
+    @XmlElement(name = "manufacturerRef")
+    public ManufacturerRefConverter getManufacturerId() {
+        if (entity.getManufacturerId() != null) {
+            return new ManufacturerRefConverter(entity.getManufacturerId(), uri.resolve("manufacturer/"), false);
+        }
+        return null;
+    }
+
+    /**
+     * Setter for manufacturerId.
+     *
+     * @param value the value to set
+     */
+    public void setManufacturerId(ManufacturerRefConverter value) {
+        if (value != null) {
+            entity.setManufacturerId(value.getEntity());
+        }
+    }
+
+    /**
+     * Getter for productCode.
+     *
+     * @return value for productCode
+     */
+    @XmlElement(name = "productCodeRef")
+    public ProductCodeRefConverter getProductCode() {
+        if (entity.getProductCode() != null) {
+            return new ProductCodeRefConverter(entity.getProductCode(), uri.resolve("productCode/"), false);
+        }
+        return null;
+    }
+
+    /**
+     * Setter for productCode.
+     *
+     * @param value the value to set
+     */
+    public void setProductCode(ProductCodeRefConverter value) {
+        if (value != null) {
+            entity.setProductCode(value.getEntity());
+        }
+    }
+
+    /**
+     * Getter for purchaseOrderCollection.
+     *
+     * @return value for purchaseOrderCollection
+     */
+    @XmlElement(name = "purchaseOrders")
+    public PurchaseOrdersConverter getPurchaseOrderCollection() {
+        if (entity.getPurchaseOrderCollection() != null) {
+            return new PurchaseOrdersConverter(entity.getPurchaseOrderCollection(), uri.resolve("purchaseOrders/"));
+        }
+        return null;
+    }
+
+    /**
+     * Setter for purchaseOrderCollection.
+     *
+     * @param value the value to set
+     */
+    public void setPurchaseOrderCollection(PurchaseOrdersConverter value) {
+        if (value != null) {
+            entity.setPurchaseOrderCollection(value.getEntities());
+        }
+    }
+
+    /**
+     * Returns the URI associated with this converter.
+     *
+     * @return the uri
+     */
+    @XmlAttribute(name = "uri")
+    public URI getResourceUri() {
+        return uri;
+    }
+
+    /**
+     * Returns the Product entity.
+     *
+     * @return an entity
+     */
+    @XmlTransient
+    public Product getEntity() {
+        return entity;
+    }
+
+    /**
+     * Sets the Product entity.
+     *
+     * @param entity to set
+     */
+    public void setEntity(Product entity) {
+        this.entity = entity;
+    }
+}

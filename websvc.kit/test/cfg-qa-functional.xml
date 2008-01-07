@@ -77,16 +77,6 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
 
-    <testbag testattribs="rest,full-validation" executor="ide" name="qa-functional tests">
-        <testset dir="qa-functional/src">
-            <patternset>
-                <include name="org/netbeans/modules/ws/qaf/rest/CRUDTSuite.class"/>
-                <include name="org/netbeans/modules/ws/qaf/rest/PatternsTSuite.class"/>
-                <include name="org/netbeans/modules/ws/qaf/rest/CStubsTSuite.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-
     <testbag testattribs="hints,full-validation,stable,validation" executor="ide" name="qa-functional tests">
         <testset dir="qa-functional/src">
             <patternset>

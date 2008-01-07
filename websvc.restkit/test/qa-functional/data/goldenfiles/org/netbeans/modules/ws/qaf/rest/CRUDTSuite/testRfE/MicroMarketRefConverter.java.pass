@@ -1,0 +1,92 @@
+/*
+ *  MicroMarketRefConverter
+ *
+ * Created on November 27, 2007, 2:08 AM
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+package o.n.m.ws.qaf.rest.crud.converter;
+
+import java.net.URI;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlAttribute;
+import o.n.m.ws.qaf.rest.crud.MicroMarket;
+
+
+/**
+ *
+ * @author lukas
+ */
+
+@XmlRootElement(name = "microMarketRef")
+public class MicroMarketRefConverter {
+    private MicroMarket entity;
+    private boolean isUriExtendable;
+    private URI uri;
+    
+    /** Creates a new instance of MicroMarketRefConverter */
+    public MicroMarketRefConverter() {
+    }
+
+    /**
+     * Creates a new instance of MicroMarketRefConverter.
+     *
+     * @param entity associated entity
+     * @param uri associated uri
+     * @param isUriExtendable indicates whether the uri can be extended
+     */
+    public MicroMarketRefConverter(MicroMarket entity, URI uri, boolean isUriExtendable) {
+        this.entity = entity;
+        this.uri = uri;
+        this.isUriExtendable = isUriExtendable;
+    }
+
+    /**
+     * Getter for zipCode.
+     *
+     * @return value for zipCode
+     */
+    @XmlElement
+    public String getZipCode() {
+        return entity.getZipCode();
+    }
+
+    /**
+     * Returns the URI associated with this reference converter.
+     *
+     * @return the converted uri
+     */
+    @XmlAttribute(name = "uri")
+    public URI getResourceUri() {
+        if (isUriExtendable) {
+            return uri.resolve(entity.getZipCode() + "/");
+        }
+        return uri;
+    }
+
+    /**
+     * Sets the URI for this reference converter.
+     *
+     */
+    public void setResourceUri(URI uri) {
+        this.uri = uri;
+    }
+
+    /**
+     * Returns the MicroMarket entity.
+     *
+     * @return MicroMarket entity
+     */
+    @XmlTransient
+    public MicroMarket getEntity() {
+        MicroMarketConverter result = UriResolver.getInstance().resolve(MicroMarketConverter.class, uri);
+        if (result != null) {
+            return result.getEntity();
+        }
+        return null;
+    }
+}

@@ -1,0 +1,171 @@
+/*
+ *  ManufacturerResource
+ *
+ * Created on December 6, 2007, 2:14 PM
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+package o.n.m.ws.qaf.rest.crud.service;
+
+import javax.ws.rs.Path;
+import javax.ws.rs.UriParam;
+import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.ProduceMime;
+import javax.ws.rs.ConsumeMime;
+import javax.ws.rs.WebApplicationException;
+import javax.persistence.NoResultException;
+import javax.ws.rs.core.UriInfo;
+import o.n.m.ws.qaf.rest.crud.Manufacturer;
+import o.n.m.ws.qaf.rest.crud.Product;
+import java.util.Collection;
+import o.n.m.ws.qaf.rest.crud.converter.ManufacturerConverter;
+
+
+/**
+ *
+ * @author lukas
+ */
+
+public class ManufacturerResource {
+    private UriInfo context;
+    
+    /** Creates a new instance of ManufacturerResource */
+    public ManufacturerResource() {
+    }
+
+    /**
+     * Constructor used for instantiating an instance of dynamic resource.
+     *
+     * @param context HttpContext inherited from the parent resource
+     */
+    public ManufacturerResource(UriInfo context) {
+        this.context = context;
+    }
+
+    /**
+     * Get method for retrieving an instance of Manufacturer identified by id in XML format.
+     *
+     * @param id identifier for the entity
+     * @return an instance of ManufacturerConverter
+     */
+    @GET
+    @ProduceMime({"application/xml", "application/json"})
+    public ManufacturerConverter get(@UriParam("manufacturerId")
+    Integer id) {
+        try {
+            return new ManufacturerConverter(getEntity(id), context.getAbsolutePath());
+        } finally {
+            PersistenceService.getInstance().close();
+        }
+    }
+
+    /**
+     * Put method for updating an instance of Manufacturer identified by id using XML as the input format.
+     *
+     * @param id identifier for the entity
+     * @param data an ManufacturerConverter entity that is deserialized from a XML stream
+     */
+    @PUT
+    @ConsumeMime({"application/xml", "application/json"})
+    public void put(@UriParam("manufacturerId")
+    Integer id, ManufacturerConverter data) {
+        PersistenceService service = PersistenceService.getInstance();
+        try {
+            service.beginTx();
+            updateEntity(getEntity(id), data.getEntity());
+            service.commitTx();
+        } finally {
+            service.close();
+        }
+    }
+
+    /**
+     * Delete method for deleting an instance of Manufacturer identified by id.
+     *
+     * @param id identifier for the entity
+     */
+    @DELETE
+    public void delete(@UriParam("manufacturerId")
+    Integer id) {
+        PersistenceService service = PersistenceService.getInstance();
+        try {
+            service.beginTx();
+            Manufacturer entity = getEntity(id);
+            service.removeEntity(entity);
+            service.commitTx();
+        } finally {
+            service.close();
+        }
+    }
+
+    /**
+     * Returns a dynamic instance of ProductsResource used for entity navigation.
+     *
+     * @param id identifier for the parent entity
+     * @return an instance of ProductsResource
+     */
+    @Path("products/")
+    public ProductsResource getProductsResource(@UriParam("manufacturerId")
+    Integer id) {
+        final Manufacturer parent = getEntity(id);
+        return new ProductsResource(context) {
+
+            @Override
+            protected Collection<Product> getEntities(int start, int max) {
+                Collection<Product> result = new java.util.ArrayList<Product>();
+                int index = 0;
+                for (Product e : parent.getProductCollection()) {
+                    if (index >= start && (index - start) < max) {
+                        result.add(e);
+                    }
+                    index++;
+                }
+                return result;
+            }
+
+            @Override
+            protected void createEntity(Product entity) {
+                super.createEntity(entity);
+                entity.setManufacturerId(parent);
+            }
+        };
+    }
+
+    /**
+     * Returns an instance of Manufacturer identified by id.
+     *
+     * @param id identifier for the entity
+     * @return an instance of Manufacturer
+     */
+    protected Manufacturer getEntity(Integer id) {
+        try {
+            return (Manufacturer) PersistenceService.getInstance().createQuery("SELECT e FROM Manufacturer e where e.manufacturerId = :manufacturerId").setParameter("manufacturerId", id).getSingleResult();
+        } catch (NoResultException ex) {
+            throw new WebApplicationException(new Throwable("Resource for " + context.getAbsolutePath() + " does not exist."), 404);
+        }
+    }
+
+    /**
+     * Updates entity using data from newEntity.
+     *
+     * @param entity the entity to update
+     * @param newEntity the entity containing the new data
+     * @return the updated entity
+     */
+    protected Manufacturer updateEntity(Manufacturer entity, Manufacturer newEntity) {
+        newEntity.setManufacturerId(entity.getManufacturerId());
+        entity.getProductCollection().removeAll(newEntity.getProductCollection());
+        for (Product value : entity.getProductCollection()) {
+            value.setManufacturerId(null);
+        }
+        entity = PersistenceService.getInstance().mergeEntity(newEntity);
+        for (Product value : entity.getProductCollection()) {
+            value.setManufacturerId(entity);
+        }
+        return entity;
+    }
+}

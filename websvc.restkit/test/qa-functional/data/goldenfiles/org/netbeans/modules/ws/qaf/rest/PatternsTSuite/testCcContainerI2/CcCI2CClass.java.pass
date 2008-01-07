@@ -1,0 +1,51 @@
+/*
+ *  CcCI2CClass
+ *
+ * Created on December 12, 2007, 1:32 AM
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+package o.n.m.ws.qaf.rest.patterns;
+
+import javax.ws.rs.core.HttpContext;
+import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.Path;
+import javax.ws.rs.GET;
+import javax.ws.rs.ProduceMime;
+
+/**
+ * REST Web Service
+ *
+ * @author lukas
+ */
+
+@Path("/CcCI2ContainerURI")
+public class CcCI2CClass {
+    @HttpContext
+    private UriInfo context;
+    
+    /** Creates a new instance of CcCI2CClass */
+    public CcCI2CClass() {
+    }
+
+    /**
+     * Retrieves representation of an instance of o.n.m.ws.qaf.rest.patterns.CcCI2CClass
+     * @return an instance of java.lang.String
+     */
+    @GET
+    @ProduceMime("text/plain")
+    public String getText() {
+        //TODO return proper representation object
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Sub-resource locator method for  {CcCI2URI}
+     */
+    @Path("{CcCI2URI}")
+    public CcCI2Cl getCcCI2Cl() {
+        return new CcCI2Cl();
+    }
+}

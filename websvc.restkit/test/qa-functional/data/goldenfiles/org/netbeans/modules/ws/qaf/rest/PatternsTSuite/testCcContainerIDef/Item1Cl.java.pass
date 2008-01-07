@@ -1,0 +1,68 @@
+/*
+ *  Item1Cl
+ *
+ * Created on December 12, 2007, 1:31 AM
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+package o.n.m.ws.qaf.rest.patterns;
+
+import javax.ws.rs.core.HttpContext;
+import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.UriParam;
+import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
+import javax.ws.rs.ProduceMime;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.ConsumeMime;
+
+/**
+ * REST Web Service
+ *
+ * @author lukas
+ */
+
+public class Item1Cl {
+    @HttpContext
+    private UriInfo context;
+    
+    /** Creates a new instance of Item1Cl */
+    public Item1Cl() {
+    }
+
+    /**
+     * Retrieves representation of an instance of o.n.m.ws.qaf.rest.patterns.Item1Cl
+     * @param Item1URI resource URI parameter
+     * @return an instance of java.lang.String
+     */
+    @GET
+    @ProduceMime("application/xml")
+    public String getXml(@UriParam("Item1URI")
+    String Item1URI) {
+        //TODO return proper representation object
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * PUT method for updating or creating an instance of Item1Cl
+     * @param Item1URI resource URI parameter
+     * @param content representation for the resource
+     * @return an HTTP response with content of the updated or created resource.
+     */
+    @PUT
+    @ConsumeMime("application/xml")
+    public void putXml(@UriParam("Item1URI")
+    String Item1URI, String content) {
+    }
+
+    /**
+     * DELETE method for resource Item1Cl
+     * @param Item1URI resource URI parameter
+     */
+    @DELETE
+    public void delete(@UriParam("Item1URI")
+    String Item1URI) {
+    }
+}

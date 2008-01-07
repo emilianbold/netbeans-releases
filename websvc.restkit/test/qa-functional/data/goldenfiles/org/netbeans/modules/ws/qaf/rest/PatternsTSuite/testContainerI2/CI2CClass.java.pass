@@ -1,0 +1,67 @@
+/*
+ *  CI2CClass
+ *
+ * Created on December 12, 2007, 1:32 AM
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+package o.n.m.ws.qaf.rest.patterns;
+
+import javax.ws.rs.core.HttpContext;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.Path;
+import javax.ws.rs.GET;
+import javax.ws.rs.ProduceMime;
+import javax.ws.rs.POST;
+import javax.ws.rs.ConsumeMime;
+
+/**
+ * REST Web Service
+ *
+ * @author lukas
+ */
+
+@Path("/CI2ContainerURI")
+public class CI2CClass {
+    @HttpContext
+    private UriInfo context;
+    
+    /** Creates a new instance of CI2CClass */
+    public CI2CClass() {
+    }
+
+    /**
+     * Retrieves representation of an instance of o.n.m.ws.qaf.rest.patterns.CI2CClass
+     * @return an instance of java.lang.String
+     */
+    @GET
+    @ProduceMime("text/plain")
+    public String getText() {
+        //TODO return proper representation object
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * POST method for creating an instance of CI2CClass
+     * @param content representation for the new resource
+     * @return an HTTP response with content of the created resource
+     */
+    @POST
+    @ConsumeMime("text/plain")
+    @ProduceMime("text/plain")
+    public Response postText(String content) {
+        //TODO
+        return Response.created(content, context.getAbsolutePath()).build();
+    }
+
+    /**
+     * Sub-resource locator method for  {CI2URI}
+     */
+    @Path("{CI2URI}")
+    public CI2Cl getCI2Cl() {
+        return new CI2Cl();
+    }
+}

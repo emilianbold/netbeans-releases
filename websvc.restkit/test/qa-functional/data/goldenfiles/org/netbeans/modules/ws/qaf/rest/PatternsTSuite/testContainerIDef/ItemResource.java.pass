@@ -1,0 +1,68 @@
+/*
+ *  ItemResource
+ *
+ * Created on December 12, 2007, 1:31 AM
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+package o.n.m.ws.qaf.rest.patterns;
+
+import javax.ws.rs.core.HttpContext;
+import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.UriParam;
+import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
+import javax.ws.rs.ProduceMime;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.ConsumeMime;
+
+/**
+ * REST Web Service
+ *
+ * @author lukas
+ */
+
+public class ItemResource {
+    @HttpContext
+    private UriInfo context;
+    
+    /** Creates a new instance of ItemResource */
+    public ItemResource() {
+    }
+
+    /**
+     * Retrieves representation of an instance of o.n.m.ws.qaf.rest.patterns.ItemResource
+     * @param id resource URI parameter
+     * @return an instance of java.lang.String
+     */
+    @GET
+    @ProduceMime("application/xml")
+    public String getXml(@UriParam("id")
+    String id) {
+        //TODO return proper representation object
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * PUT method for updating or creating an instance of ItemResource
+     * @param id resource URI parameter
+     * @param content representation for the resource
+     * @return an HTTP response with content of the updated or created resource.
+     */
+    @PUT
+    @ConsumeMime("application/xml")
+    public void putXml(@UriParam("id")
+    String id, String content) {
+    }
+
+    /**
+     * DELETE method for resource ItemResource
+     * @param id resource URI parameter
+     */
+    @DELETE
+    public void delete(@UriParam("id")
+    String id) {
+    }
+}

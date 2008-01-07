@@ -1,0 +1,219 @@
+/*
+ *  ProductResource
+ *
+ * Created on December 12, 2007, 1:27 AM
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+package o.n.m.ws.qaf.rest.crud.service;
+
+import javax.ws.rs.Path;
+import javax.ws.rs.UriParam;
+import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.ProduceMime;
+import javax.ws.rs.ConsumeMime;
+import javax.ws.rs.WebApplicationException;
+import javax.persistence.NoResultException;
+import java.util.Collection;
+import javax.ws.rs.core.UriInfo;
+import o.n.m.ws.qaf.rest.crud.Product;
+import o.n.m.ws.qaf.rest.crud.ProductCode;
+import o.n.m.ws.qaf.rest.crud.PurchaseOrder;
+import o.n.m.ws.qaf.rest.crud.Manufacturer;
+import o.n.m.ws.qaf.rest.crud.converter.ProductConverter;
+
+
+/**
+ *
+ * @author lukas
+ */
+
+public class ProductResource {
+    private UriInfo context;
+    
+    /** Creates a new instance of ProductResource */
+    public ProductResource() {
+    }
+
+    /**
+     * Constructor used for instantiating an instance of dynamic resource.
+     *
+     * @param context HttpContext inherited from the parent resource
+     */
+    public ProductResource(UriInfo context) {
+        this.context = context;
+    }
+
+    /**
+     * Get method for retrieving an instance of Product identified by id in XML format.
+     *
+     * @param id identifier for the entity
+     * @return an instance of ProductConverter
+     */
+    @GET
+    @ProduceMime({"application/xml", "application/json"})
+    public ProductConverter get(@UriParam("productId")
+    Integer id) {
+        try {
+            return new ProductConverter(getEntity(id), context.getAbsolutePath());
+        } finally {
+            PersistenceService.getInstance().close();
+        }
+    }
+
+    /**
+     * Put method for updating an instance of Product identified by id using XML as the input format.
+     *
+     * @param id identifier for the entity
+     * @param data an ProductConverter entity that is deserialized from a XML stream
+     */
+    @PUT
+    @ConsumeMime({"application/xml", "application/json"})
+    public void put(@UriParam("productId")
+    Integer id, ProductConverter data) {
+        PersistenceService service = PersistenceService.getInstance();
+        try {
+            service.beginTx();
+            updateEntity(getEntity(id), data.getEntity());
+            service.commitTx();
+        } finally {
+            service.close();
+        }
+    }
+
+    /**
+     * Delete method for deleting an instance of Product identified by id.
+     *
+     * @param id identifier for the entity
+     */
+    @DELETE
+    public void delete(@UriParam("productId")
+    Integer id) {
+        PersistenceService service = PersistenceService.getInstance();
+        try {
+            service.beginTx();
+            Product entity = getEntity(id);
+            service.removeEntity(entity);
+            service.commitTx();
+        } finally {
+            service.close();
+        }
+    }
+
+    /**
+     * Returns a dynamic instance of ManufacturerResource used for entity navigation.
+     *
+     * @param id identifier for the parent entity
+     * @return an instance of ManufacturerResource
+     */
+    @Path("manufacturer/")
+    public ManufacturerResource getManufacturerResource(@UriParam("productId")
+    Integer id) {
+        final Product parent = getEntity(id);
+        return new ManufacturerResource(context) {
+
+            @Override
+            protected Manufacturer getEntity(Integer id) {
+                Manufacturer entity = parent.getManufacturerId();
+                if (entity == null) {
+                    throw new WebApplicationException(new Throwable("Resource for " + context.getAbsolutePath() + " does not exist."), 404);
+                }
+                return entity;
+            }
+        };
+    }
+
+    /**
+     * Returns a dynamic instance of ProductCodeResource used for entity navigation.
+     *
+     * @param id identifier for the parent entity
+     * @return an instance of ProductCodeResource
+     */
+    @Path("productCode/")
+    public ProductCodeResource getProductCodeResource(@UriParam("productId")
+    Integer id) {
+        final Product parent = getEntity(id);
+        return new ProductCodeResource(context) {
+
+            @Override
+            protected ProductCode getEntity(String id) {
+                ProductCode entity = parent.getProductCode();
+                if (entity == null) {
+                    throw new WebApplicationException(new Throwable("Resource for " + context.getAbsolutePath() + " does not exist."), 404);
+                }
+                return entity;
+            }
+        };
+    }
+
+    /**
+     * Returns a dynamic instance of PurchaseOrdersResource used for entity navigation.
+     *
+     * @param id identifier for the parent entity
+     * @return an instance of PurchaseOrdersResource
+     */
+    @Path("purchaseOrders/")
+    public PurchaseOrdersResource getPurchaseOrdersResource(@UriParam("productId")
+    Integer id) {
+        final Product parent = getEntity(id);
+        return new PurchaseOrdersResource(context) {
+
+            @Override
+            protected Collection<PurchaseOrder> getEntities(int start, int max) {
+                Collection<PurchaseOrder> result = new java.util.ArrayList<PurchaseOrder>();
+                int index = 0;
+                for (PurchaseOrder e : parent.getPurchaseOrderCollection()) {
+                    if (index >= start && (index - start) < max) {
+                        result.add(e);
+                    }
+                    index++;
+                }
+                return result;
+            }
+
+            @Override
+            protected void createEntity(PurchaseOrder entity) {
+                super.createEntity(entity);
+                entity.setProductId(parent);
+            }
+        };
+    }
+
+    /**
+     * Returns an instance of Product identified by id.
+     *
+     * @param id identifier for the entity
+     * @return an instance of Product
+     */
+    protected Product getEntity(Integer id) {
+        try {
+            return (Product) PersistenceService.getInstance().createQuery("SELECT e FROM Product e where e.productId = :productId").setParameter("productId", id).getSingleResult();
+        } catch (NoResultException ex) {
+            throw new WebApplicationException(new Throwable("Resource for " + context.getAbsolutePath() + " does not exist."), 404);
+        }
+    }
+
+    /**
+     * Updates entity using data from newEntity.
+     *
+     * @param entity the entity to update
+     * @param newEntity the entity containing the new data
+     * @return the updated entity
+     */
+    protected Product updateEntity(Product entity, Product newEntity) {
+        newEntity.setProductId(entity.getProductId());
+        entity.getPurchaseOrderCollection().removeAll(newEntity.getPurchaseOrderCollection());
+        for (PurchaseOrder value : entity.getPurchaseOrderCollection()) {
+            value.setProductId(null);
+        }
+        entity = PersistenceService.getInstance().mergeEntity(newEntity);
+        for (PurchaseOrder value : entity.getPurchaseOrderCollection()) {
+            value.setProductId(entity);
+        }
+        return entity;
+    }
+}

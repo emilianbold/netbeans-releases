@@ -1,0 +1,55 @@
+/*
+ *  GenericResource
+ *
+ * Created on December 12, 2007, 1:30 AM
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+package o.n.m.ws.qaf.rest.patterns;
+
+import javax.ws.rs.core.HttpContext;
+import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.Path;
+import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
+import javax.ws.rs.ProduceMime;
+import javax.ws.rs.ConsumeMime;
+
+/**
+ * REST Web Service
+ *
+ * @author lukas
+ */
+
+@Path("generic")
+public class GenericResource {
+    @HttpContext
+    private UriInfo context;
+    
+    /** Creates a new instance of GenericResource */
+    public GenericResource() {
+    }
+
+    /**
+     * Retrieves representation of an instance of o.n.m.ws.qaf.rest.patterns.GenericResource
+     * @return an instance of java.lang.String
+     */
+    @GET
+    @ProduceMime("application/xml")
+    public String getXml() {
+        //TODO return proper representation object
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * PUT method for updating or creating an instance of GenericResource
+     * @param content representation for the resource
+     * @return an HTTP response with content of the updated or created resource.
+     */
+    @PUT
+    @ConsumeMime("application/xml")
+    public void putXml(String content) {
+    }
+}

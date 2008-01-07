@@ -1,0 +1,68 @@
+/*
+ *  CI2Cl
+ *
+ * Created on December 12, 2007, 1:32 AM
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+package o.n.m.ws.qaf.rest.patterns;
+
+import javax.ws.rs.core.HttpContext;
+import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.UriParam;
+import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
+import javax.ws.rs.ProduceMime;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.ConsumeMime;
+
+/**
+ * REST Web Service
+ *
+ * @author lukas
+ */
+
+public class CI2Cl {
+    @HttpContext
+    private UriInfo context;
+    
+    /** Creates a new instance of CI2Cl */
+    public CI2Cl() {
+    }
+
+    /**
+     * Retrieves representation of an instance of o.n.m.ws.qaf.rest.patterns.CI2Cl
+     * @param CI2URI resource URI parameter
+     * @return an instance of java.lang.String
+     */
+    @GET
+    @ProduceMime("text/plain")
+    public String getText(@UriParam("CI2URI")
+    String CI2URI) {
+        //TODO return proper representation object
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * PUT method for updating or creating an instance of CI2Cl
+     * @param CI2URI resource URI parameter
+     * @param content representation for the resource
+     * @return an HTTP response with content of the updated or created resource.
+     */
+    @PUT
+    @ConsumeMime("text/plain")
+    public void putText(@UriParam("CI2URI")
+    String CI2URI, String content) {
+    }
+
+    /**
+     * DELETE method for resource CI2Cl
+     * @param CI2URI resource URI parameter
+     */
+    @DELETE
+    public void delete(@UriParam("CI2URI")
+    String CI2URI) {
+    }
+}

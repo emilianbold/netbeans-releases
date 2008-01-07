@@ -90,6 +90,17 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
+            <test-dependencies>
+                <test-type>
+                    <name>qa-functional</name>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.websvc.kit</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                </test-type>
+            </test-dependencies>
             <public-packages/>
         </data>
     </configuration>

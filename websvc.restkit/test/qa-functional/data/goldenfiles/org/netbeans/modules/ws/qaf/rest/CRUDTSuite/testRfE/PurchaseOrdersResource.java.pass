@@ -1,0 +1,118 @@
+/*
+ *  PurchaseOrdersResource
+ *
+ * Created on December 6, 2007, 2:14 PM
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+package o.n.m.ws.qaf.rest.crud.service;
+
+import java.util.Collection;
+import javax.ws.rs.Path;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.ProduceMime;
+import javax.ws.rs.ConsumeMime;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.HttpContext;
+import javax.ws.rs.core.UriInfo;
+import o.n.m.ws.qaf.rest.crud.PurchaseOrder;
+import o.n.m.ws.qaf.rest.crud.converter.PurchaseOrdersConverter;
+import o.n.m.ws.qaf.rest.crud.converter.PurchaseOrderConverter;
+
+
+/**
+ *
+ * @author lukas
+ */
+
+@Path("/purchaseOrders/")
+public class PurchaseOrdersResource {
+    @HttpContext
+    private UriInfo context;
+    
+    /** Creates a new instance of PurchaseOrdersResource */
+    public PurchaseOrdersResource() {
+    }
+
+    /**
+     * Constructor used for instantiating an instance of dynamic resource.
+     *
+     * @param context HttpContext inherited from the parent resource
+     */
+    public PurchaseOrdersResource(UriInfo context) {
+        this.context = context;
+    }
+
+    /**
+     * Get method for retrieving a collection of PurchaseOrder instance in XML format.
+     *
+     * @return an instance of PurchaseOrdersConverter
+     */
+    @GET
+    @ProduceMime({"application/xml", "application/json"})
+    public PurchaseOrdersConverter get(@QueryParam("start")
+    @DefaultValue("0")
+    int start, @QueryParam("max")
+    @DefaultValue("10")
+    int max) {
+        try {
+            return new PurchaseOrdersConverter(getEntities(start, max), context.getAbsolutePath());
+        } finally {
+            PersistenceService.getInstance().close();
+        }
+    }
+
+    /**
+     * Post method for creating an instance of PurchaseOrder using XML as the input format.
+     *
+     * @param data an PurchaseOrderConverter entity that is deserialized from an XML stream
+     * @return an instance of PurchaseOrderConverter
+     */
+    @POST
+    @ConsumeMime({"application/xml", "application/json"})
+    public Response post(PurchaseOrderConverter data) {
+        PersistenceService service = PersistenceService.getInstance();
+        try {
+            service.beginTx();
+            PurchaseOrder entity = data.getEntity();
+            createEntity(entity);
+            service.commitTx();
+            return Response.created(context.getAbsolutePath().resolve(entity.getOrderNum() + "/")).build();
+        } finally {
+            service.close();
+        }
+    }
+
+    /**
+     * Returns a dynamic instance of PurchaseOrderResource used for entity navigation.
+     *
+     * @return an instance of PurchaseOrderResource
+     */
+    @Path("{orderNum}/")
+    public PurchaseOrderResource getPurchaseOrderResource() {
+        return new PurchaseOrderResource(context);
+    }
+
+    /**
+     * Returns all the entities associated with this resource.
+     *
+     * @return a collection of PurchaseOrder instances
+     */
+    protected Collection<PurchaseOrder> getEntities(int start, int max) {
+        return PersistenceService.getInstance().createQuery("SELECT e FROM PurchaseOrder e").setFirstResult(start).setMaxResults(max).getResultList();
+    }
+
+    /**
+     * Persist the given entity.
+     *
+     * @param entity the entity to persist
+     */
+    protected void createEntity(PurchaseOrder entity) {
+        PersistenceService.getInstance().persistEntity(entity);
+    }
+}

@@ -1,0 +1,150 @@
+/*
+ *  MicroMarketConverter
+ *
+ * Created on November 27, 2007, 2:08 AM
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+package o.n.m.ws.qaf.rest.crud.converter;
+
+import java.net.URI;
+import o.n.m.ws.qaf.rest.crud.MicroMarket;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlAttribute;
+
+
+/**
+ *
+ * @author lukas
+ */
+
+@XmlRootElement(name = "microMarket")
+public class MicroMarketConverter {
+    private MicroMarket entity;
+    private URI uri;
+    
+    /** Creates a new instance of MicroMarketConverter */
+    public MicroMarketConverter() {
+        entity = new MicroMarket();
+    }
+
+    /**
+     * Creates a new instance of MicroMarketConverter.
+     *
+     * @param entity associated entity
+     * @param uri associated uri
+     */
+    public MicroMarketConverter(MicroMarket entity, URI uri) {
+        this.entity = entity;
+        this.uri = uri;
+    }
+
+    /**
+     * Getter for zipCode.
+     *
+     * @return value for zipCode
+     */
+    @XmlElement
+    public String getZipCode() {
+        return entity.getZipCode();
+    }
+
+    /**
+     * Setter for zipCode.
+     *
+     * @param value the value to set
+     */
+    public void setZipCode(String value) {
+        entity.setZipCode(value);
+    }
+
+    /**
+     * Getter for radius.
+     *
+     * @return value for radius
+     */
+    @XmlElement
+    public Double getRadius() {
+        return entity.getRadius();
+    }
+
+    /**
+     * Setter for radius.
+     *
+     * @param value the value to set
+     */
+    public void setRadius(Double value) {
+        entity.setRadius(value);
+    }
+
+    /**
+     * Getter for areaLength.
+     *
+     * @return value for areaLength
+     */
+    @XmlElement
+    public Double getAreaLength() {
+        return entity.getAreaLength();
+    }
+
+    /**
+     * Setter for areaLength.
+     *
+     * @param value the value to set
+     */
+    public void setAreaLength(Double value) {
+        entity.setAreaLength(value);
+    }
+
+    /**
+     * Getter for areaWidth.
+     *
+     * @return value for areaWidth
+     */
+    @XmlElement
+    public Double getAreaWidth() {
+        return entity.getAreaWidth();
+    }
+
+    /**
+     * Setter for areaWidth.
+     *
+     * @param value the value to set
+     */
+    public void setAreaWidth(Double value) {
+        entity.setAreaWidth(value);
+    }
+
+    /**
+     * Returns the URI associated with this converter.
+     *
+     * @return the uri
+     */
+    @XmlAttribute(name = "uri")
+    public URI getResourceUri() {
+        return uri;
+    }
+
+    /**
+     * Returns the MicroMarket entity.
+     *
+     * @return an entity
+     */
+    @XmlTransient
+    public MicroMarket getEntity() {
+        return entity;
+    }
+
+    /**
+     * Sets the MicroMarket entity.
+     *
+     * @param entity to set
+     */
+    public void setEntity(MicroMarket entity) {
+        this.entity = entity;
+    }
+}

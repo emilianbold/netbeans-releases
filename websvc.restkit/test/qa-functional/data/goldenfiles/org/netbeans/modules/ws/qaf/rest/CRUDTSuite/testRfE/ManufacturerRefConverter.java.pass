@@ -1,0 +1,92 @@
+/*
+ *  ManufacturerRefConverter
+ *
+ * Created on November 27, 2007, 2:08 AM
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+package o.n.m.ws.qaf.rest.crud.converter;
+
+import java.net.URI;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlAttribute;
+import o.n.m.ws.qaf.rest.crud.Manufacturer;
+
+
+/**
+ *
+ * @author lukas
+ */
+
+@XmlRootElement(name = "manufacturerRef")
+public class ManufacturerRefConverter {
+    private Manufacturer entity;
+    private boolean isUriExtendable;
+    private URI uri;
+    
+    /** Creates a new instance of ManufacturerRefConverter */
+    public ManufacturerRefConverter() {
+    }
+
+    /**
+     * Creates a new instance of ManufacturerRefConverter.
+     *
+     * @param entity associated entity
+     * @param uri associated uri
+     * @param isUriExtendable indicates whether the uri can be extended
+     */
+    public ManufacturerRefConverter(Manufacturer entity, URI uri, boolean isUriExtendable) {
+        this.entity = entity;
+        this.uri = uri;
+        this.isUriExtendable = isUriExtendable;
+    }
+
+    /**
+     * Getter for manufacturerId.
+     *
+     * @return value for manufacturerId
+     */
+    @XmlElement
+    public Integer getManufacturerId() {
+        return entity.getManufacturerId();
+    }
+
+    /**
+     * Returns the URI associated with this reference converter.
+     *
+     * @return the converted uri
+     */
+    @XmlAttribute(name = "uri")
+    public URI getResourceUri() {
+        if (isUriExtendable) {
+            return uri.resolve(entity.getManufacturerId() + "/");
+        }
+        return uri;
+    }
+
+    /**
+     * Sets the URI for this reference converter.
+     *
+     */
+    public void setResourceUri(URI uri) {
+        this.uri = uri;
+    }
+
+    /**
+     * Returns the Manufacturer entity.
+     *
+     * @return Manufacturer entity
+     */
+    @XmlTransient
+    public Manufacturer getEntity() {
+        ManufacturerConverter result = UriResolver.getInstance().resolve(ManufacturerConverter.class, uri);
+        if (result != null) {
+            return result.getEntity();
+        }
+        return null;
+    }
+}

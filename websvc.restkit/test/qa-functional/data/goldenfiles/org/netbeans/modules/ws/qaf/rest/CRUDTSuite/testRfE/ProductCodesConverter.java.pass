@@ -1,0 +1,98 @@
+/*
+ *  ProductCodesConverter
+ *
+ * Created on November 27, 2007, 2:08 AM
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+package o.n.m.ws.qaf.rest.crud.converter;
+
+import java.net.URI;
+import java.util.Collection;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlAttribute;
+import java.util.ArrayList;
+import o.n.m.ws.qaf.rest.crud.ProductCode;
+
+
+/**
+ *
+ * @author lukas
+ */
+
+@XmlRootElement(name = "productCodes")
+public class ProductCodesConverter {
+    private Collection<ProductCode> entities;
+    private Collection<ProductCodeRefConverter> references;
+    private URI uri;
+    
+    /** Creates a new instance of ProductCodesConverter */
+    public ProductCodesConverter() {
+    }
+
+    /**
+     * Creates a new instance of ProductCodesConverter.
+     *
+     * @param entities associated entities
+     * @param uri associated uri
+     */
+    public ProductCodesConverter(Collection<ProductCode> entities, URI uri) {
+        this.entities = entities;
+        this.uri = uri;
+    }
+
+    /**
+     * Returns a collection of ProductCodeRefConverter.
+     *
+     * @return a collection of ProductCodeRefConverter
+     */
+    @XmlElement(name = "productCodeRef")
+    public Collection<ProductCodeRefConverter> getReferences() {
+        references = new ArrayList<ProductCodeRefConverter>();
+        if (entities != null) {
+            for (ProductCode entity : entities) {
+                references.add(new ProductCodeRefConverter(entity, uri, true));
+            }
+        }
+        return references;
+    }
+
+    /**
+     * Sets a collection of ProductCodeRefConverter.
+     *
+     * @param a collection of ProductCodeRefConverter to set
+     */
+    public void setReferences(Collection<ProductCodeRefConverter> references) {
+        this.references = references;
+    }
+
+    /**
+     * Returns the URI associated with this converter.
+     *
+     * @return the uri
+     */
+    @XmlAttribute(name = "uri")
+    public URI getResourceUri() {
+        return uri;
+    }
+
+    /**
+     * Returns a collection ProductCode entities.
+     *
+     * @return a collection of ProductCode entities
+     */
+    @XmlTransient
+    public Collection<ProductCode> getEntities() {
+        entities = new ArrayList<ProductCode>();
+        if (references != null) {
+            for (ProductCodeRefConverter ref : references) {
+                entities.add(ref.getEntity());
+            }
+        }
+        return entities;
+    }
+}

@@ -1,0 +1,155 @@
+/*
+ *  ProductCodeConverter
+ *
+ * Created on November 27, 2007, 2:08 AM
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+package o.n.m.ws.qaf.rest.crud.converter;
+
+import java.net.URI;
+import o.n.m.ws.qaf.rest.crud.ProductCode;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlAttribute;
+
+
+/**
+ *
+ * @author lukas
+ */
+
+@XmlRootElement(name = "productCode")
+public class ProductCodeConverter {
+    private ProductCode entity;
+    private URI uri;
+    
+    /** Creates a new instance of ProductCodeConverter */
+    public ProductCodeConverter() {
+        entity = new ProductCode();
+    }
+
+    /**
+     * Creates a new instance of ProductCodeConverter.
+     *
+     * @param entity associated entity
+     * @param uri associated uri
+     */
+    public ProductCodeConverter(ProductCode entity, URI uri) {
+        this.entity = entity;
+        this.uri = uri;
+    }
+
+    /**
+     * Getter for prodCode.
+     *
+     * @return value for prodCode
+     */
+    @XmlElement
+    public String getProdCode() {
+        return entity.getProdCode();
+    }
+
+    /**
+     * Setter for prodCode.
+     *
+     * @param value the value to set
+     */
+    public void setProdCode(String value) {
+        entity.setProdCode(value);
+    }
+
+    /**
+     * Getter for discountCode.
+     *
+     * @return value for discountCode
+     */
+    @XmlElement
+    public char getDiscountCode() {
+        return entity.getDiscountCode();
+    }
+
+    /**
+     * Setter for discountCode.
+     *
+     * @param value the value to set
+     */
+    public void setDiscountCode(char value) {
+        entity.setDiscountCode(value);
+    }
+
+    /**
+     * Getter for description.
+     *
+     * @return value for description
+     */
+    @XmlElement
+    public String getDescription() {
+        return entity.getDescription();
+    }
+
+    /**
+     * Setter for description.
+     *
+     * @param value the value to set
+     */
+    public void setDescription(String value) {
+        entity.setDescription(value);
+    }
+
+    /**
+     * Getter for productCollection.
+     *
+     * @return value for productCollection
+     */
+    @XmlElement(name = "products")
+    public ProductsConverter getProductCollection() {
+        if (entity.getProductCollection() != null) {
+            return new ProductsConverter(entity.getProductCollection(), uri.resolve("products/"));
+        }
+        return null;
+    }
+
+    /**
+     * Setter for productCollection.
+     *
+     * @param value the value to set
+     */
+    public void setProductCollection(ProductsConverter value) {
+        if (value != null) {
+            entity.setProductCollection(value.getEntities());
+        }
+    }
+
+    /**
+     * Returns the URI associated with this converter.
+     *
+     * @return the uri
+     */
+    @XmlAttribute(name = "uri")
+    public URI getResourceUri() {
+        return uri;
+    }
+
+    /**
+     * Returns the ProductCode entity.
+     *
+     * @return an entity
+     */
+    @XmlTransient
+    public ProductCode getEntity() {
+        return entity;
+    }
+
+    /**
+     * Sets the ProductCode entity.
+     *
+     * @param entity to set
+     */
+    public void setEntity(ProductCode entity) {
+        this.entity = entity;
+    }
+}
