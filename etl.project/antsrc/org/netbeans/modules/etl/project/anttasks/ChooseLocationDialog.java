@@ -47,6 +47,7 @@ public class ChooseLocationDialog extends javax.swing.JDialog {
 
     private String objDefn = null;
     private String dbLocn = null;
+
     /** Creates new form NewJDialog */
     public ChooseLocationDialog(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
@@ -165,48 +166,59 @@ public class ChooseLocationDialog extends javax.swing.JDialog {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
     private void objDefnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_objDefnActionPerformed
-        JFileChooser chooser = new JFileChooser();   
+        JFileChooser chooser = new JFileChooser();
         //chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         chooser.addChoosableFileFilter(new FileFilter());
         int value = chooser.showOpenDialog(this);
         if (value == JFileChooser.APPROVE_OPTION) {
             objDefnTextField.setText(chooser.getSelectedFile().toString());//getCurrentDirectory().toString());
-        }else{
-             objDefnTextField.setText("");
+        } else {
+            objDefnTextField.setText("");
         }
-         setObjectDefinition(chooser.getCurrentDirectory().getAbsolutePath());
+    //setObjectDefinition(chooser.getCurrentDirectory().getAbsolutePath());
 }//GEN-LAST:event_objDefnActionPerformed
-private void setObjectDefinition(String str){
-    this.objDefn = str;
-}
-public String getObjectDefinition(){
-    return objDefn;
-}
+
+    private void setObjectDefinition(String str) {
+        this.objDefn = str;
+    }
+
+    public String getObjectDefinition() {
+        return objDefn;
+    }
+
     private void dbLocationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dbLocationActionPerformed
         JFileChooser chooser = new JFileChooser();
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);        
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         int value = chooser.showOpenDialog(this);
         if (value == JFileChooser.APPROVE_OPTION) {
             dbLocationTextField.setText(chooser.getSelectedFile().toString());
-        }else{
+        } else {
             dbLocationTextField.setText("");
         }
-        setDBLocation(dbLocationTextField.getText());
+    //setDBLocation(dbLocationTextField.getText());
 }//GEN-LAST:event_dbLocationActionPerformed
-private void setDBLocation(String str){
-    this.dbLocn = str;
-}
-public String getDBLocation(){
-    return dbLocn;
-}
+
+    private void setDBLocation(String str) {
+        this.dbLocn = str;
+    }
+
+    public String getDBLocation() {
+        return dbLocn;
+    }
+
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         this.dispose();
         System.exit(0);
 }//GEN-LAST:event_cancelButtonActionPerformed
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
+        setDBLocation(dbLocationTextField.getText());
+        String str = objDefnTextField.getText();
+        if(str.endsWith("object.xml")){
+          str = str.replace("object.xml", "");          
+        }
+        setObjectDefinition(str);
         this.dispose();       
     }//GEN-LAST:event_okButtonActionPerformed
 
