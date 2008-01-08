@@ -43,9 +43,11 @@ package org.openide.filesystems;
 
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.ArrayList;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 public class FileUtilTestHidden extends TestBaseHid {
@@ -76,6 +78,41 @@ public class FileUtilTestHidden extends TestBaseHid {
     public FileUtilTestHidden(String name) {
         super(name);
     }
+    
+    private static class TestListener extends FileChangeAdapter {
+        boolean wasCalled = false;
+        public void fileFolderCreated(FileEvent fe) {
+            wasCalled = true;
+        }
+    }
+    
+    public void testRunAtomicAction() throws Exception {
+        final LocalFileSystem lfs = new LocalFileSystem();
+        lfs.setRootDirectory(getWorkDir());
+        
+        final FileSystem defSystem = Repository.getDefault().getDefaultFileSystem();
+        final TestListener l = new TestListener();
+        try {
+            defSystem.addFileChangeListener(l);
+            lfs.addFileChangeListener(l);            
+            assertFalse(l.wasCalled);            
+            FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
+                public void run() throws IOException {
+                    assertFalse(l.wasCalled);
+                    assertNull(defSystem.getRoot().getFileObject(getName()));
+                    assertNotNull(FileUtil.createFolder(defSystem.getRoot(), getName()));
+                    assertNull(lfs.getRoot().getFileObject(getName()));
+                    assertNotNull(FileUtil.createFolder(lfs.getRoot(), getName()));
+                    assertFalse(l.wasCalled);
+                }
+            });            
+            assertTrue(l.wasCalled);
+        } finally {
+            defSystem.removeFileChangeListener(l);
+            lfs.removeFileChangeListener(l);            
+        }        
+    }
+    
 
     public void testCreateFolder () throws Exception {
         if (this.testedFS instanceof JarFileSystem) return;

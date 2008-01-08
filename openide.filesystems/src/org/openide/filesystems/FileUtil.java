@@ -74,6 +74,7 @@ import javax.swing.Icon;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileSystemView;
+import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -123,7 +124,44 @@ public final class FileUtil extends Object {
 
     private FileUtil() {
     }
+    
+    /**
+     * Executes atomic action. For more info see {@link FileSystem#runAtomicAction}. 
+     * <p>
+     * All events about filesystem changes (related to events on all affected instances of <code>FileSystem</code>)
+     * are postponed after the whole <code>atomicCode</code> 
+     * is executed.
+     * </p>
+     * @param atomicCode code that is supposed to be run as atomic action. See {@link FileSystem#runAtomicAction}
+     * @throws java.io.IOException
+     * @since 7.5
+     */
+    public static final void runAtomicAction(final AtomicAction atomicCode) throws IOException {
+        Repository.getDefault().getDefaultFileSystem().runAtomicAction(atomicCode);
+    }
 
+    /**
+     * Executes atomic action. For more info see {@link FileSystem#runAtomicAction}. 
+     * <p>
+     * All events about filesystem changes (related to events on all affected instances of <code>FileSystem</code>)
+     * are postponed after the whole <code>atomicCode</code> 
+     * is executed.
+     * </p>
+     * @param atomicCode code that is supposed to be run as atomic action. See {@link FileSystem#runAtomicAction}
+     * @since 7.5
+     */
+    public static final void runAtomicAction(final Runnable atomicCode) {
+        final AtomicAction action = new FileSystem.AtomicAction() {
+            public void run() throws IOException {
+                atomicCode.run();
+            }
+        };
+        try {
+            FileUtil.runAtomicAction(action);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }        
     /**
      * Returns FileObject for a folder.
      * If such a folder does not exist then it is created, including any necessary but nonexistent parent 
