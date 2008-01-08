@@ -163,7 +163,7 @@ final class GroovyLexer implements Lexer<GroovyTokenId> {
             scanner.resetText();
             
             if (lexerInput.readText().toString().startsWith("/")) {
-                lexerInput.backup(lexerInput.readLength()); // I would expect lexerInput.readLength() - 1, but test are passing...
+                lexerInput.backup(lexerInput.readLength() - 1);
                 return createToken(GroovyTokenTypes.DIV, 1);
             } else if (lexerInput.readText().toString().startsWith("\"")) {
                 lexerInput.backup(lexerInput.readLength() - 1);

@@ -42,7 +42,6 @@
 package org.netbeans.modules.groovy.editor;
 
 import junit.framework.TestCase;
-import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
