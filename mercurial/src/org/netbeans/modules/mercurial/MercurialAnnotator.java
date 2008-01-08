@@ -216,7 +216,7 @@ public class MercurialAnnotator extends VCSAnnotator {
                 Mercurial.LOG.log(Level.FINE, "null cached status for: {0} {1} {2}", new Object[] {file, folderToScan, parentFile});
                 folderToScan = parentFile;
                 reScheduleScan(1000);
-                continue;
+                info = new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, false);
             }
             int status = info.getStatus();
             if ((status & includeStatus) == 0) continue;
@@ -447,18 +447,19 @@ public class MercurialAnnotator extends VCSAnnotator {
         String binaryString = "";       // NOI18N
 
         if (needRevisionForFormat) {
-            try {
-                File repository = Mercurial.getInstance().getTopmostManagedParent(file);
-                String revStr = HgCommand.getLastRevision(repository, file);
-                if (revStr != null) {
-                    revisionString = revStr;
+            if ((status & FileInformation.STATUS_NOTVERSIONED_EXCLUDED) == 0) {
+                try {
+                    File repository = Mercurial.getInstance().getTopmostManagedParent(file);
+                    String revStr = HgCommand.getLastRevision(repository, file);
+                    if (revStr != null) {
+                        revisionString = revStr;
+                    }
+                } catch (HgException ex) {
+                    NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
+                    DialogDisplayer.getDefault().notifyLater(e);
                 }
-            } catch (HgException ex) {
-                NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
-                DialogDisplayer.getDefault().notifyLater(e);
             }
         }
-
 
         //String stickyString = SvnUtils.getCopy(file);
         String stickyString = null;
