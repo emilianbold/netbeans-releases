@@ -924,8 +924,9 @@ import org.w3c.dom.Node;
          * Document doc = component.getDocument(); if (doc != null) { dot = Position.first(dot,
          * doc.getEndPosition()); } dot = Position.last(dot, doc.getStartPosition());
          */
+        // XXX #124732 Possible NPE.
 //        if (dot == Position.NONE) {
-        if (dot == DomPosition.NONE) {
+        if (component == null || dot == null || dot == DomPosition.NONE) {
             if (range != null) {
                 range.detach();
                 range = null;
