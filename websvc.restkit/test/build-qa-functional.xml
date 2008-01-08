@@ -49,7 +49,7 @@ made subject to such option by the copyright holder.
     <import file="../../../nbbuild/templates/xtest-qa-functional.xml"/>
 
     <target name="-init-props">
-        <property name="build.dir" value="${nb_all}/websvc/kit/build" />
+        <property name="build.dir" value="${nb_all}/websvc/restkit/build" />
         <mkdir dir="${build.dir}" />
         <property name="lib.dir" value="${build.dir}/libs"/>
         <mkdir dir="${lib.dir}" />
