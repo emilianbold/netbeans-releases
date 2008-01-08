@@ -471,7 +471,7 @@ public class MenuEditLayer extends JPanel {
             if(!(popup.getUI() instanceof VisualDesignerPopupMenuUI)) {
                 popup.setUI(new VisualDesignerPopupMenuUI(this, popup.getUI()));
             }
-            if(menu.isVisible()) {
+            if (menu.isShowing()) {
                 //force popup view creation
                 hackedPopupFactory.getPopup(menu, null, 0, 0);
                 
@@ -1228,12 +1228,13 @@ public class MenuEditLayer extends JPanel {
                                 }
                                 if(evt.getContainer() == getFormMenuBar()) {
                                     JComponent comp = (JComponent) formDesigner.getComponent(getFormMenuBar());
-                                    //comp.revalidate();
-                                    RADVisualContainer rad = (RADVisualContainer) getFormMenuBar();
-                                    comp.removeAll();
-                                    for(RADVisualComponent c : rad.getSubComponents()) {
-                                        if(c!=null) {
-                                            comp.add((JComponent)formDesigner.getComponent(c));
+                                    if (comp != null) { // MenuBar not shown in the designer, see issue 124873
+                                        RADVisualContainer rad = (RADVisualContainer) getFormMenuBar();
+                                        comp.removeAll();
+                                        for(RADVisualComponent c : rad.getSubComponents()) {
+                                            if(c!=null) {
+                                                comp.add((JComponent)formDesigner.getComponent(c));
+                                            }
                                         }
                                     }
                                 }
