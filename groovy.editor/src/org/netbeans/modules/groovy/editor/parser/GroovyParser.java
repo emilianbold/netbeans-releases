@@ -235,9 +235,18 @@ public class GroovyParser implements Parser {
         CompileUnit compileUnit = compilationUnit.getAST();
         List<ModuleNode> modules = compileUnit.getModules();
 
-        if (modules.size() == 1) {
-            AstRootElement astRootElement = new AstRootElement(context.file.getFileObject(), modules.get(0));
-            AstNodeAdapter ast = new AstNodeAdapter(null, modules.get(0), context.source);
+        // there are more modules if class references another class,
+        // there is one module per class
+        ModuleNode module = null;
+        for (ModuleNode moduleNode : modules) {
+            if (fileName.equals(moduleNode.getContext().getName())) {
+                module = moduleNode;
+            }
+        }
+        
+        if (module != null) {
+            AstRootElement astRootElement = new AstRootElement(context.file.getFileObject(), module);
+            AstNodeAdapter ast = new AstNodeAdapter(null, module, context.source);
             GroovyParserResult r = new GroovyParserResult(context.file, astRootElement, ast);
             return r;
         }
