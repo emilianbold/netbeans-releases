@@ -249,6 +249,7 @@ public final class GenerateAction extends NodeAction implements EditorAction {
                                             addOutputRecognizer(recognizer), charsetName).run();
 
                                 task.waitFinished();
+                                project.getProjectDirectory().getFileSystem().refresh(true);
 
                                 List<FileLocation> locations = recognizer.getLocations();
 
