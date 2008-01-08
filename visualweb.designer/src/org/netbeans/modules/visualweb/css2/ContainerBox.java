@@ -2054,8 +2054,12 @@ public class ContainerBox extends CssBox {
             largest += rightMargin;
         }
 
-        // Borders and padding can't be left auto, can they?
-        largest += (leftBorderWidth + leftPadding + rightBorderWidth + rightPadding);
+        // XXX #124104 There are some hacking their border sizes into contentHeight.
+        // see FormComponentBox.
+        if (!isBorderSizeIncluded()) {
+            // Borders and padding can't be left auto, can they?
+            largest += (leftBorderWidth + leftPadding + rightBorderWidth + rightPadding);
+        }
 
         int curr = super.getPrefWidth();
 

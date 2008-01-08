@@ -1867,7 +1867,11 @@ public class CssBox implements Box {
             result = getIntrinsicWidth();
         }
 
-        result += (leftBorderWidth + leftPadding + rightPadding + rightBorderWidth);
+        // XXX #124104 There are some hacking their border sizes into contentHeight.
+        // see FormComponentBox.
+        if (!isBorderSizeIncluded()) {
+            result += (leftBorderWidth + leftPadding + rightPadding + rightBorderWidth);
+        }
 
         if (leftMargin != AUTO) {
             result += leftMargin;
