@@ -152,7 +152,16 @@ public class STSWizard implements TemplateWizard.Iterator {
         FileObject wsdlFolder = wsdlFO.getParent();
         
         String newName = serviceName;
-        FileObject newFO = FileUtil.copyFile(wsdlFO, wsdlFolder, newName);
+        FileObject newFO = null;
+        
+        try {
+            newFO = FileUtil.copyFile(wsdlFO, wsdlFolder, newName);
+        } catch (FileNotFoundException ex) {
+            logger.log(Level.INFO, null, ex);
+        } catch (IOException ex) {
+            logger.log(Level.INFO, null, ex);
+        }
+
         File newFile = FileUtil.toFile(newFO);
         final URL wsdlURL = newFile.toURI().toURL();
          
