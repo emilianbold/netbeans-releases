@@ -126,11 +126,13 @@ public class MessageAuthenticationProfile extends ProfileBase
     }
     
     public void setServiceDefaults(WSDLComponent component, Project p) {
+//        ProprietarySecurityPolicyModelHelper pmh = ProprietarySecurityPolicyModelHelper.getInstance(cfgVersion);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, false);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, false);
     }
  
     public void setClientDefaults(WSDLComponent component, WSDLComponent serviceBinding, Project p) {
+//        ProprietarySecurityPolicyModelHelper pmh = ProprietarySecurityPolicyModelHelper.getInstance(cfgVersion);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, true);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, true);
         ProprietarySecurityPolicyModelHelper.setCallbackHandler(
@@ -177,6 +179,7 @@ public class MessageAuthenticationProfile extends ProfileBase
     }
 
     public void enableSecureConversation(WSDLComponent component, boolean enable) {
+//        SecurityTokensModelHelper stmh = SecurityTokensModelHelper.getInstance(cfgVersion);
         if (enable) {
             WSDLModel model = component.getModel();
 
@@ -186,6 +189,11 @@ public class MessageAuthenticationProfile extends ProfileBase
             }
 
             try {
+//                SecurityPolicyModelHelper spmh = SecurityPolicyModelHelper.getInstance(cfgVersion);
+//                AlgoSuiteModelHelper asmh = AlgoSuiteModelHelper.getInstance(cfgVersion);
+//                RMModelHelper rmh = RMModelHelper.getInstance(cfgVersion);
+//                PolicyModelHelper pmh = PolicyModelHelper.getInstance(cfgVersion);
+                
                 SecurityPolicyModelHelper.enableTrust10(component);
                 SecurityTokensModelHelper.removeSupportingTokens(component);
                 

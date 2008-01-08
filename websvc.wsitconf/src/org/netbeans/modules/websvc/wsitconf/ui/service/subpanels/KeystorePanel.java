@@ -144,40 +144,46 @@ public class KeystorePanel extends JPanel {
         this.keystoreType = type;
     }
     
+    String keyStoreLocation = null;
+    String ksType = null;
+    String keyStorePassword = null;
+    String keyStoreAlias = null;
+    String keyPassword = null;
+    
     public void sync() {
         inSync = true;
 
-        String keystoreLocation = ProprietarySecurityPolicyModelHelper.getStoreLocation(comp, false);
-        if (keystoreLocation != null) {
-            setKeystorePath(keystoreLocation);
+        keyStoreLocation = ProprietarySecurityPolicyModelHelper.getStoreLocation(comp, false);
+        if (keyStoreLocation != null) {
+            setKeystorePath(keyStoreLocation);
         } else if (jsr109) {
             setKeystorePath(Util.getStoreLocation(project, false, client));
         }
 
-        String keystoreType = ProprietarySecurityPolicyModelHelper.getStoreType(comp, false);
-        if (keystoreType != null) {
-            setKeystoreType(keystoreType);
+        ksType = ProprietarySecurityPolicyModelHelper.getStoreType(comp, false);
+        if (ksType != null) {
+            setKeystoreType(ksType);
         }
         
-        String keyStorePassword = ProprietarySecurityPolicyModelHelper.getStorePassword(comp, false);
+        keyStorePassword = ProprietarySecurityPolicyModelHelper.getStorePassword(comp, false);
         if (keyStorePassword != null) {
             setKeystorePassword(keyStorePassword);
             reloadAliases();
         } else if (jsr109) {
-            setKeystorePassword(DEFAULT_PASSWORD);
+            setKeystorePassword(keyStorePassword = DEFAULT_PASSWORD);
             if (!reloadAliases()) {
                 String adminPassword = Util.getPassword(project);
-                setKeystorePassword(adminPassword);
+                setKeystorePassword(keyStorePassword = adminPassword);
             }
             if (!reloadAliases()) {
-                setKeystorePassword("");
+                setKeystorePassword(keyStorePassword = "");
             }
         }
 
-        String keyStoreAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(comp, false);
+        keyStoreAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(comp, false);
         setKeystoreAlias(keyStoreAlias);
 
-        String keyPassword = ProprietarySecurityPolicyModelHelper.getKeyPassword(comp);
+        keyPassword = ProprietarySecurityPolicyModelHelper.getKeyPassword(comp);
         if (keyPassword != null) {
             setKeyPassword(keyPassword);
         }
@@ -195,27 +201,34 @@ public class KeystorePanel extends JPanel {
         
     public void storeState() {
         String keystoreAlias = getKeystoreAlias();
+        //ProprietarySecurityPolicyModelHelper pmh = ProprietarySecurityPolicyModelHelper.getInstance(cfgVersion);
         if ((keystoreAlias == null) || (keystoreAlias.length() == 0)) {
             ProprietarySecurityPolicyModelHelper.setKeyStoreAlias(comp, null, client);
         } else {
             ProprietarySecurityPolicyModelHelper.setKeyStoreAlias(comp, keystoreAlias, client);
         }
         // do not store anything else if GF is target server
-        if (!Util.isGlassfish(project)) {
-            String keyPasswd = getKeyPassword();
-            if ((keyPasswd == null) || (keyPasswd.length() == 0)) {
-                ProprietarySecurityPolicyModelHelper.setKeyPassword(comp, null, client);
-            } else {
-                ProprietarySecurityPolicyModelHelper.setKeyPassword(comp, keyPasswd, client);
-            }
-            String keyStorePasswd = getKeystorePassword();
-            if ((keyStorePasswd == null) || (keyStorePasswd.length() == 0)) {
-                ProprietarySecurityPolicyModelHelper.setStorePassword(comp, null, false, client);
-            } else {
-                ProprietarySecurityPolicyModelHelper.setStorePassword(comp, keyStorePasswd, false, client);
-            }
-            ProprietarySecurityPolicyModelHelper.setStoreType(comp, keystoreType, false, client);
-            ProprietarySecurityPolicyModelHelper.setStoreLocation(comp, getKeystorePath(), false, client);
+        String keyPasswd = getKeyPassword();
+        String keyStorePasswd = getKeystorePassword();
+        String keyStoreLoc = getKeystorePath();
+
+        if (!Util.isGlassfish(project) || 
+            ((keyPasswd != null) && (!keyPasswd.equals(this.keyPassword))) || 
+            ((keyStorePasswd != null) && (!keyStorePasswd.equals(this.keyStorePassword))) || 
+            ((keyStoreLoc != null) && (!keyStoreLoc.equals(this.keyStoreLocation)))
+            ) {
+                if ((keyPasswd == null) || (keyPasswd.length() == 0)) {
+                    ProprietarySecurityPolicyModelHelper.setKeyPassword(comp, null, client);
+                } else {
+                    ProprietarySecurityPolicyModelHelper.setKeyPassword(comp, keyPasswd, client);
+                }
+                if ((keyStorePasswd == null) || (keyStorePasswd.length() == 0)) {
+                    ProprietarySecurityPolicyModelHelper.setStorePassword(comp, null, false, client);
+                } else {
+                    ProprietarySecurityPolicyModelHelper.setStorePassword(comp, keyStorePasswd, false, client);
+                }
+                ProprietarySecurityPolicyModelHelper.setStoreType(comp, keystoreType, false, client);
+                ProprietarySecurityPolicyModelHelper.setStoreLocation(comp, getKeystorePath(), false, client);
         }
     }
     

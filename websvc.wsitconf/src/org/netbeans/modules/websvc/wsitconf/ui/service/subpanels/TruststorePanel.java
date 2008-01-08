@@ -137,33 +137,37 @@ public class TruststorePanel extends JPanel {
         this.storeType = type;
     }
         
+    String storeLocation = null;
+    String ksType = null;
+    String storePassword = null;
+    
     public void sync() {
         inSync = true;
         
-        String storeLocation = ProprietarySecurityPolicyModelHelper.getStoreLocation(comp, true);
+        storeLocation = ProprietarySecurityPolicyModelHelper.getStoreLocation(comp, true);
         if (storeLocation != null) {
             setStoreLocation(storeLocation);
         } else if (jsr109) {
             setStoreLocation(Util.getStoreLocation(project, true, client));
         }
 
-        String storeType = ProprietarySecurityPolicyModelHelper.getStoreType(comp, true);
-        if (storeType != null) {
-            setStoreType(storeType);
+        ksType = ProprietarySecurityPolicyModelHelper.getStoreType(comp, true);
+        if (ksType != null) {
+            setStoreType(ksType);
         }
        
-        String storePassword = ProprietarySecurityPolicyModelHelper.getStorePassword(comp, true);
+        storePassword = ProprietarySecurityPolicyModelHelper.getStorePassword(comp, true);
         if (storePassword != null) {
             setStorePassword(storePassword);
             reloadAliases();
         } else if (jsr109) {
-            setStorePassword(DEFAULT_PASSWORD);
+            setStorePassword(storePassword = DEFAULT_PASSWORD);
             if (!reloadAliases()) {
                 String adminPassword = Util.getPassword(project);
-                setStorePassword(adminPassword);
+                setStorePassword(storePassword = adminPassword);
             }
             if (!reloadAliases()) {
-                setStorePassword("");
+                setStorePassword(storePassword = "");
             }
         }
 
@@ -322,13 +326,20 @@ public class TruststorePanel extends JPanel {
 
     public void storeState() {
         String peerAlias = getPeerAlias();
+//        ProprietarySecurityPolicyModelHelper pmh = ProprietarySecurityPolicyModelHelper.getInstance(cfgVersion);
         if ((peerAlias != null) && (peerAlias.length() == 0)) {
             ProprietarySecurityPolicyModelHelper.setTrustPeerAlias(comp, null, client);
         } else {
             ProprietarySecurityPolicyModelHelper.setTrustPeerAlias(comp, peerAlias, client);
         }
-        if (!Util.isGlassfish(project)) {
-            String storePasswd = getStorePassword();
+        
+        String storePasswd = getStorePassword();
+        String storeLoc = getStoreLocation();
+        
+        if (!Util.isGlassfish(project) ||
+            ((storePasswd != null) && (!storePasswd.equals(this.storePassword))) || 
+            ((storeLoc != null) && (!storeLoc.equals(this.storeLocation)))
+                ) {
             if ((storePasswd != null) && (storePasswd.length() == 0)) {
                 ProprietarySecurityPolicyModelHelper.setStorePassword(comp, null, true, client);
             } else {
@@ -336,8 +347,7 @@ public class TruststorePanel extends JPanel {
             }
 
             ProprietarySecurityPolicyModelHelper.setStoreType(comp, storeType, true, client);
-
-            ProprietarySecurityPolicyModelHelper.setStoreLocation(comp, getStoreLocation(), true, client);
+            ProprietarySecurityPolicyModelHelper.setStoreLocation(comp, storeLoc, true, client);
         }
     }
     

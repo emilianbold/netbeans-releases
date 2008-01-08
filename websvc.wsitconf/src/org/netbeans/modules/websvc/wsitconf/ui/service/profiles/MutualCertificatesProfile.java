@@ -43,8 +43,6 @@ package org.netbeans.modules.websvc.wsitconf.ui.service.profiles;
 
 import java.awt.Dialog;
 import java.io.File;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.undo.UndoManager;
 import org.netbeans.api.project.Project;
@@ -120,14 +118,11 @@ public class MutualCertificatesProfile extends ProfileBase
     }
     
     public void setServiceDefaults(WSDLComponent component, Project p) {
+//        ProprietarySecurityPolicyModelHelper pmh = ProprietarySecurityPolicyModelHelper.getInstance(cfgVersion);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, false);
-        ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, false);        
+        ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, false);
         if (Util.isTomcat(p)) {
             FileObject tomcatLoc = Util.getTomcatLocation(p);
-            if (tomcatLoc == null) {
-                Logger.global.log(Level.INFO, "Tomcat Location could not be detected.");
-                return;
-            }
             ProprietarySecurityPolicyModelHelper.setStoreLocation(component, 
                     tomcatLoc.getPath() + File.separator + CERTS_DIR + File.separator + "server-keystore.jks", false, false);
             ProprietarySecurityPolicyModelHelper.setStoreType(component, KeystorePanel.JKS, false, false);
@@ -137,14 +132,11 @@ public class MutualCertificatesProfile extends ProfileBase
     }    
 
     public void setClientDefaults(WSDLComponent component, WSDLComponent serviceBinding, Project p) {
+//        ProprietarySecurityPolicyModelHelper pmh = ProprietarySecurityPolicyModelHelper.getInstance(cfgVersion);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, true);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, true);
         if (Util.isTomcat(p)) {
             FileObject tomcatLoc = Util.getTomcatLocation(p);
-            if (tomcatLoc == null) {
-                Logger.global.log(Level.INFO, "Tomcat Location could not be detected.");
-                return;
-            }
             ProprietarySecurityPolicyModelHelper.setStoreLocation(component, 
                     tomcatLoc.getPath() + File.separator + CERTS_DIR + File.separator + "client-keystore.jks", false, true);
             ProprietarySecurityPolicyModelHelper.setStoreType(component, KeystorePanel.JKS, false, true);
@@ -157,7 +149,7 @@ public class MutualCertificatesProfile extends ProfileBase
         }
         ProprietarySecurityPolicyModelHelper.setKeyStoreAlias(component,ProfilesModelHelper.XWS_SECURITY_CLIENT, true);
         ProprietarySecurityPolicyModelHelper.setTrustPeerAlias(component,ProfilesModelHelper.XWS_SECURITY_SERVER, true);
-    }
+    }    
     
     public boolean isClientDefaultSetupUsed(WSDLComponent component, Binding serviceBinding, Project p) {
         String keyAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(component, false);
@@ -221,6 +213,7 @@ public class MutualCertificatesProfile extends ProfileBase
     }
 
     public void enableSecureConversation(WSDLComponent component, boolean enable) {
+//        ProfilesModelHelper pmh = ProfilesModelHelper.getInstance(cfgVersion);
         ProfilesModelHelper.enableSecureConversation(component, enable);
     }
     
