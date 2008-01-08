@@ -260,7 +260,7 @@ public class WSDeploymentManager implements DeploymentManager {
                 File.separator +
                 getInstanceProperties().getProperty(
                 WSDeploymentFactory.SERVER_NAME_ATTR) + File.separator +
-                "trace.log"; // NOI18N
+                "SystemOut.log"; // NOI18N
     }
 
     /**
