@@ -213,6 +213,20 @@ made subject to such option by the copyright holder.
             <file name="WoodstockCommonTask.comp_palette_item" url="resources/WoodstockCommonTask.comp_palette_item">
                 <attr name="position" intvalue="1100"/>
             </file>  
+            <file name="WoodstockBubble.comp_palette_item" url="resources/WoodstockBubble.comp_palette_item">
+                <attr name="position" intvalue="1200"/>
+            </file> 
+		<file name="WoodstockAccordion.comp_palette_item" url="resources/WoodstockAccordion.comp_palette_item">
+                <attr name="position" intvalue="1300"/>
+            </file> 
+		<file name="WoodstockAccordionTab.comp_palette_item" url="resources/WoodstockAccordionTab.comp_palette_item">
+                <attr name="position" intvalue="1400"/>
+            </file> 
+		<file name="WoodstockMenu.comp_palette_item" url="resources/WoodstockMenu.comp_palette_item">
+                <attr name="position" intvalue="1500"/>
+            </file> 
+
+
             
             <!-- Woodstock components not included in VWP. Add them here so that people can test the designtime code -->
          <!--   <file name="WoodstockContentPageTitle.comp_palette_item" url="resources/WoodstockContentPageTitle.comp_palette_item">
