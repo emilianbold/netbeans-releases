@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -126,7 +126,7 @@ public class UninstallStep implements WizardDescriptor.FinishablePanel<WizardDes
 
     public PanelBodyContainer getComponent() {
         if (component == null) {
-            panel = new OperationPanel ();
+            panel = new OperationPanel (false);
             panel.addPropertyChangeListener (new PropertyChangeListener () {
                     public void propertyChange (PropertyChangeEvent evt) {
                         if (OperationPanel.RUN_ACTION.equals (evt.getPropertyName ())) {

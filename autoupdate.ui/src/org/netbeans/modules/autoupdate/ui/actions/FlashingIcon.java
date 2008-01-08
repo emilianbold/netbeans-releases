@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -61,7 +61,7 @@ import org.openide.util.RequestProcessor.Task;
  *
  * @author saubrecht
  */
-abstract class FlashingIcon extends JComponent implements MouseListener {
+public abstract class FlashingIcon extends JComponent implements MouseListener {
     
     protected int STOP_FLASHING_DELAY = 10 * 1000;
     protected int DISAPPEAR_DELAY_MILLIS = STOP_FLASHING_DELAY + 50 * 1000;

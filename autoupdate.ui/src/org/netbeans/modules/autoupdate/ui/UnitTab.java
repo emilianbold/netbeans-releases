@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -62,7 +62,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
@@ -93,13 +92,13 @@ import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
-import org.netbeans.modules.autoupdate.ui.UnitCategoryTableModel.Type;
 import org.netbeans.modules.autoupdate.ui.wizards.OperationWizardModel.OperationType;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
+import org.openide.util.TaskListener;
 
 /**
  *
@@ -123,6 +122,7 @@ public class UnitTab extends javax.swing.JPanel {
     private RowTabAction lessAction;
     private RowTabAction removeLocallyDownloaded;
 
+    private static Boolean isWaitingForExternal = false;
     
     private static final RequestProcessor RP = new RequestProcessor ();
     private final RequestProcessor.Task searchTask = RP.create (new Runnable (){
@@ -145,7 +145,6 @@ public class UnitTab extends javax.swing.JPanel {
             }
         }
     });
-    private final Logger log = Logger.getLogger ("org.netbeans.modules.autoupdate.ui.UnitTab");
     
     /** Creates new form UnitTab */
     public UnitTab (UnitTable table, UnitDetails details, PluginManagerUI manager) {
@@ -276,6 +275,18 @@ public class UnitTab extends javax.swing.JPanel {
                 }
             };
             tfSearch.addFocusListener(flForSearch);
+        }
+        RequestProcessor.Task runningTask = PluginManagerUI.getRunningTask ();
+        synchronized (isWaitingForExternal) {
+            if (runningTask != null && ! runningTask.isFinished () && ! isWaitingForExternal) {
+                isWaitingForExternal = true;
+                runningTask.addTaskListener (new TaskListener () {
+                    public void taskFinished (org.openide.util.Task task) {
+                        reloadTask (false).schedule (10);
+                        isWaitingForExternal = false;
+                    }
+                });
+            }
         }
     }
     
@@ -831,6 +842,16 @@ public class UnitTab extends javax.swing.JPanel {
             putValue (NAME, name);
         }
         
+        @Override
+        public boolean isEnabled () {
+            if (super.isEnabled ()) {
+                RequestProcessor.Task t = PluginManagerUI.getRunningTask ();
+                return t == null || t.isFinished ();
+            } else {
+                return false;
+            }
+        }
+        
         public void putIntoActionMap (JComponent component) {
             KeyStroke ks = (KeyStroke)getValue (ACCELERATOR_KEY);
             Object key = getValue (NAME);
@@ -849,7 +870,6 @@ public class UnitTab extends javax.swing.JPanel {
             }
         }
         public final void actionPerformed (ActionEvent e) {
-            int row = getSelectedRow ();
             try {
                 performerImpl ();
             } finally {
@@ -1008,7 +1028,7 @@ public class UnitTab extends javax.swing.JPanel {
             final int row = getSelectedRow();
             final Map<String, Boolean> state = UnitCategoryTableModel.captureState (model.getUnits());
             try {
-                wizardFinished = new InstallUnitWizard ().invokeWizard (OperationType.UPDATE);
+                wizardFinished = new InstallUnitWizard ().invokeWizard (OperationType.UPDATE, manager);
             } finally {
                 //must be called before restoreState
                 fireUpdataUnitChange ();
@@ -1032,7 +1052,7 @@ public class UnitTab extends javax.swing.JPanel {
             final int row = getSelectedRow();
             final Map<String, Boolean> state = UnitCategoryTableModel.captureState (model.getUnits());
             try {
-                wizardFinished = new InstallUnitWizard ().invokeWizard (OperationType.INSTALL);
+                wizardFinished = new InstallUnitWizard ().invokeWizard (OperationType.INSTALL, manager);
             } finally {
                 fireUpdataUnitChange ();
                 if (!wizardFinished) {
@@ -1055,7 +1075,7 @@ public class UnitTab extends javax.swing.JPanel {
             final Map<String, Boolean> state = UnitCategoryTableModel.captureState (model.getUnits ());
             
             try {
-                wizardFinished = new InstallUnitWizard ().invokeWizard (OperationType.LOCAL_DOWNLOAD);
+                wizardFinished = new InstallUnitWizard ().invokeWizard (OperationType.LOCAL_DOWNLOAD, manager);
             } finally {
                 // fireUpdataUnitChange ();
                 if (wizardFinished) {

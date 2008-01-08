@@ -42,6 +42,8 @@
 package org.netbeans.modules.autoupdate.ui.actions;
 
 import java.awt.Dialog;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import javax.swing.JButton;
 import org.netbeans.modules.autoupdate.ui.PluginManagerUI;
 import org.openide.DialogDescriptor;
@@ -53,25 +55,43 @@ import org.openide.util.actions.CallableSystemAction;
 
 public final class PluginManagerAction extends CallableSystemAction {
     private static PluginManagerUI pluginManagerUI = null;
+    private Dialog dlg = null;
     
     public void performAction () {
-        JButton close = new JButton ();
-        close.setDefaultCapable(false);
-        Mnemonics.setLocalizedText (close,NbBundle.getMessage (PluginManagerAction.class, "PluginManager_CloseButton_Name"));
-        pluginManagerUI = new PluginManagerUI (close);
-        DialogDescriptor dd = new DialogDescriptor (
-                                    pluginManagerUI,
-                                    NbBundle.getMessage (PluginManagerAction.class, "PluginManager_Panel_Name"),
-                                    true, 
-                                    new JButton[] { close },
-                                    close,
-                                    DialogDescriptor.DEFAULT_ALIGN,
-                                    null,
-                                    null /*final ActionListener bl*/);
-        dd.setOptions (new Object [0]);
-        
-        Dialog d = DialogDisplayer.getDefault ().createDialog (dd);
-        d.setVisible (true);
+        if (dlg == null) {
+            JButton close = new JButton ();
+            close.setDefaultCapable(false);
+            Mnemonics.setLocalizedText (close,NbBundle.getMessage (PluginManagerAction.class, "PluginManager_CloseButton_Name"));
+            pluginManagerUI = new PluginManagerUI (close);
+            DialogDescriptor dd = new DialogDescriptor (
+                                        pluginManagerUI,
+                                        NbBundle.getMessage (PluginManagerAction.class, "PluginManager_Panel_Name"),
+                                        false, // modal
+                                        new JButton[] { close },
+                                        close,
+                                        DialogDescriptor.DEFAULT_ALIGN,
+                                        null,
+                                        null /*final ActionListener bl*/);
+            dd.setOptions (new Object [0]);
+
+            dlg = DialogDisplayer.getDefault ().createDialog (dd);
+            dlg.setVisible (true);
+            dlg.addWindowListener(new WindowListener () {
+                public void windowOpened (WindowEvent e) {}
+                public void windowClosing (WindowEvent e) {
+                    dlg = null;
+                }
+                public void windowClosed (WindowEvent e) {
+                    dlg = null;
+                }
+                public void windowIconified (WindowEvent e) {}
+                public void windowDeiconified (WindowEvent e) {}
+                public void windowActivated (WindowEvent e) {}
+                public void windowDeactivated (WindowEvent e) {}
+            });
+        } else {
+            dlg.requestFocus ();
+        }
         pluginManagerUI = null;
     }
     

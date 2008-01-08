@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -82,6 +82,8 @@ public class PluginManagerUI extends javax.swing.JPanel  {
     private JButton closeButton;
     final RequestProcessor.Task initTask;
     private Object helpInstance = null;
+    
+    private static RequestProcessor.Task runningTask;
     
     /** Creates new form PluginManagerUI */
     public PluginManagerUI (JButton closeButton) {
@@ -172,6 +174,10 @@ public class PluginManagerUI extends javax.swing.JPanel  {
     public void removeNotify () {
         super.removeNotify ();
         unitilialize ();
+    }
+    
+    public void close () {
+        bClose.doClick ();
     }
     
     public void initialize () {
@@ -525,14 +531,23 @@ private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
         }        
     }
         
-    private LocalDownloadSupport getLocalDownloadSupport() {
-            return  ((LocallyDownloadedTableModel)localTable.getModel()).getLocalDownloadSupport();
-    }
-    
-    
     static boolean canContinue (String message) {
         return NotifyDescriptor.YES_OPTION.equals (DialogDisplayer.getDefault ().notify (new NotifyDescriptor.Confirmation (message)));
     }
+
+    public static void registerRunningTask (RequestProcessor.Task it) {
+        assert runningTask == null || runningTask.isFinished () : "Only once task can be running.";
+        runningTask = it;
+    }
+    
+    public static void unregisterRunningTask () {
+        runningTask = null;
+    }
+    
+    public static RequestProcessor.Task getRunningTask () {
+        return runningTask;
+    }
+    
     //TODO: all the request for refresh should be cancelled if there is already one such running refresh task
     public void updateUnitsChanged () {
         refreshUnits ();

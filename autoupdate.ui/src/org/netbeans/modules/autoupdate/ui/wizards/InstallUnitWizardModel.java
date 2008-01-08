@@ -51,6 +51,7 @@ import org.netbeans.api.autoupdate.OperationException;
 import org.netbeans.api.autoupdate.OperationSupport;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.modules.autoupdate.ui.Containers;
+import org.netbeans.modules.autoupdate.ui.PluginManagerUI;
 import org.openide.util.Exceptions;
 
 /**
@@ -64,6 +65,7 @@ public class InstallUnitWizardModel extends OperationWizardModel {
     private InstallSupport support;
     private InstallSupport additionallySupport = null;
     private OperationContainer<InstallSupport> updateContainer = null;
+    private PluginManagerUI manager;
     
     /** Creates a new instance of InstallUnitWizardModel */
     public InstallUnitWizardModel (OperationType doOperation, OperationContainer<InstallSupport> updateContainer) {
@@ -184,6 +186,14 @@ public class InstallUnitWizardModel extends OperationWizardModel {
         } finally {
             super.doCleanup (false);
         }
+    }
+    
+    public PluginManagerUI getPluginManager () {
+        return manager;
+    }
+    
+    public void setPluginManager (PluginManagerUI manager) {
+        this.manager = manager;
     }
     
 }

@@ -63,8 +63,9 @@ public class InstallUnitWizard {
     /** Creates a new instance of InstallUnitWizard */
     public InstallUnitWizard () {}
     
-    public boolean invokeWizard (OperationType doOperation) {
+    public boolean invokeWizard (OperationType doOperation, PluginManagerUI manager) {
         InstallUnitWizardModel model = new InstallUnitWizardModel (doOperation);
+        model.setPluginManager (manager);
         return invokeWizard (model);
     }
     
