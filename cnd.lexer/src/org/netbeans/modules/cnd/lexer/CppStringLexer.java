@@ -63,6 +63,7 @@ public class CppStringLexer implements Lexer<CppStringTokenId> {
     private LexerInput input;
     
     private TokenFactory<CppStringTokenId> tokenFactory;
+    private boolean escapedLF = false;
     
     public CppStringLexer(LexerRestartInfo<CppStringTokenId> info) {
         this.input = info.input();
@@ -76,7 +77,7 @@ public class CppStringLexer implements Lexer<CppStringTokenId> {
     
     public Token<CppStringTokenId> nextToken() {
         while(true) {
-            int ch = input.read();
+            int ch = read();
             switch (ch) {
                 case EOF:
                     if (input.readLength() > 0)
@@ -88,7 +89,7 @@ public class CppStringLexer implements Lexer<CppStringTokenId> {
                         input.backup(1);
                         return tokenFactory.createToken(CppStringTokenId.TEXT, input.readLength());
                     }
-                    switch (ch = input.read()) {
+                    switch (ch = read()) {
                         case 'b': //NOI18N
                             return token(CppStringTokenId.BACKSPACE);
                         case 'f': //NOI18N
@@ -105,8 +106,8 @@ public class CppStringLexer implements Lexer<CppStringTokenId> {
                             return token(CppStringTokenId.DOUBLE_QUOTE);
                         case '\\': //NOI18N
                             return token(CppStringTokenId.BACKSLASH);
-                        case 'u': //NOI18N
-                            while ('u' == (ch = input.read())) {}; //NOI18N
+                       case 'u': //NOI18N
+                            while ('u' == (ch = read())) {}; //NOI18N
                             
                             for(int i = 0; ; i++) {
                                 ch = Character.toLowerCase(ch);
@@ -120,14 +121,14 @@ public class CppStringLexer implements Lexer<CppStringTokenId> {
                                     return token(CppStringTokenId.UNICODE_ESCAPE);
                                 }
                                 
-                                ch = input.read();
+                                ch = read();
                             }
                             
                         case '0': case '1': case '2': case '3': //NOI18N
-                            switch (input.read()) {
+                            switch (read()) {
                                 case '0': case '1': case '2': case '3': //NOI18N
                                 case '4': case '5': case '6': case '7': //NOI18N
-                                    switch (input.read()) {
+                                    switch (read()) {
                                         case '0': case '1': case '2': case '3': //NOI18N
                                         case '4': case '5': case '6': case '7': //NOI18N
                                             return token(CppStringTokenId.OCTAL_ESCAPE);
@@ -145,9 +146,36 @@ public class CppStringLexer implements Lexer<CppStringTokenId> {
     }
 
     private Token<CppStringTokenId> token(CppStringTokenId id) {
+        escapedLF = false;
         return tokenFactory.createToken(id);
     }
 
+    @SuppressWarnings("fallthrough")
+    protected final int read() {
+        boolean skipEscapedLF = true;
+        int c = input.read();
+        if (skipEscapedLF) { // skip escaped LF
+            int next;
+            while (c == '\\') {
+                switch (next = input.read()) {
+                    case '\r':
+                        input.consumeNewline();
+                        // nobreak
+                    case '\n':
+                        escapedLF = true;
+                        next = input.read();
+                        break;
+                    default:
+                        input.backup(1);
+                        assert c == '\\' : "must be backslash " + (char)c;
+                        return c; // normal backslash, not escaped LF
+                }
+                c = next;
+            }
+        }
+        return c;
+    }
+    
     public void release() {
     }
 

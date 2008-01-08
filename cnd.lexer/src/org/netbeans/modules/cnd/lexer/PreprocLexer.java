@@ -76,7 +76,7 @@ public final class PreprocLexer extends CndLexer {
     
     private static final String WHITESPACE_CATEGORY = CppTokenId.WHITESPACE.primaryCategory();
     private static final String COMMENT_CATEGORY = CppTokenId.LINE_COMMENT.primaryCategory();
-    private static final String PREPROC_KEYWORD_CATEGORY = CppTokenId.PREPROCESSOR_PRAGMA.primaryCategory();
+//    private static final String PREPROC_KEYWORD_CATEGORY = CppTokenId.PREPROCESSOR_PRAGMA.primaryCategory();
     
     private int state = INIT;
     private final Filter<CppTokenId> preprocFilter;
@@ -166,23 +166,46 @@ public final class PreprocLexer extends CndLexer {
                 state = DIRECTIVE_NAME;
                 break;
             case DIRECTIVE_NAME:
-                if (PREPROC_KEYWORD_CATEGORY.equals(id.primaryCategory())) {
-                    if (id == CppTokenId.PREPROCESSOR_DEFINE ||
-                        id == CppTokenId.PREPROCESSOR_UNDEF) {
-                        state = MACRO_NAME;
-                    }
-                } else if (!WHITESPACE_CATEGORY.equals(id.primaryCategory()) &&
-                           !COMMENT_CATEGORY.equals(id.primaryCategory())) {
-                    state = OTHER;
-                }
-                break;
-            case MACRO_NAME:
+//                if (PREPROC_KEYWORD_CATEGORY.equals(id.primaryCategory())) {
+//                    if (id == CppTokenId.PREPROCESSOR_DEFINE ||
+//                        id == CppTokenId.PREPROCESSOR_UNDEF) {
+//                        state = MACRO_NAME;
+//                    } else 
+//                    if (id == CppTokenId.PREPROCESSOR_IF ||
+//                            id == CppTokenId.PREPROCESSOR_ELIF) {
+//                        state = EXPRESSION;
+//                    } else if (id == CppTokenId.PREPROCESSOR_INCLUDE ||
+//                            id == CppTokenId.PREPROCESSOR_INCLUDE_NEXT) {
+//                        state = INCLUDE_DIRECTIVE;
+//                    } else {
+//                        state = OTHER;
+//                    }
+//                } else if (!WHITESPACE_CATEGORY.equals(id.primaryCategory()) &&
+//                           !COMMENT_CATEGORY.equals(id.primaryCategory())) {
+//                    state = OTHER;
+//                }
                 if (!WHITESPACE_CATEGORY.equals(id.primaryCategory()) &&
-                        !COMMENT_CATEGORY.equals(id.primaryCategory())) {
-                    state = MACRO_BODY;
+                           !COMMENT_CATEGORY.equals(id.primaryCategory())) {
+                    if (id == CppTokenId.PREPROCESSOR_IF ||
+                            id == CppTokenId.PREPROCESSOR_ELIF) {
+                        state = EXPRESSION;
+                    } else if (id == CppTokenId.PREPROCESSOR_INCLUDE ||
+                            id == CppTokenId.PREPROCESSOR_INCLUDE_NEXT) {
+                        state = INCLUDE_DIRECTIVE;
+                    } else {
+                        state = OTHER;
+                    }
+                } else {
+                    // do not change state
                 }
                 break;
-            case MACRO_BODY:                
+//            case MACRO_NAME:
+//                if (!WHITESPACE_CATEGORY.equals(id.primaryCategory()) &&
+//                        !COMMENT_CATEGORY.equals(id.primaryCategory())) {
+//                    state = MACRO_BODY;
+//                }
+//                break;
+//            case MACRO_BODY:                
             case INCLUDE_DIRECTIVE:                
             case EXPRESSION:                
             case OTHER:                

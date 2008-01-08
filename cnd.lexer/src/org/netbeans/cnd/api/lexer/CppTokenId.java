@@ -82,9 +82,9 @@ public enum CppTokenId implements TokenId {
     CONTINUE("continue", "keyword-directive"),
     DEFAULT("default", "keyword-directive"),
     DELETE("delete", "keyword"), // C++
-    DYNAMIC_CAST("dynamic_cast", "keyword"), // C++
     DO("do", "keyword-directive"),
     DOUBLE("double", "keyword"),
+    DYNAMIC_CAST("dynamic_cast", "keyword"), // C++
     ELSE("else", "keyword-directive"),
     ENUM("enum", "keyword"),
     EXPLICIT("explicit", "keyword"), // C++
@@ -115,7 +115,7 @@ public enum CppTokenId implements TokenId {
     SIZEOF("sizeof", "keyword"),
     STATIC("static", "keyword"),
     STATIC_CAST("static_cast", "keyword"), // C++
-    STRUCT("sruct", "keyword"),
+    STRUCT("struct", "keyword"),
     SWITCH("switch", "keyword-directive"),
     TEMPLATE("template", "keyword"), //C++
     THIS("this", "keyword"), // C++
@@ -204,7 +204,8 @@ public enum CppTokenId implements TokenId {
     DOLLAR("$", "special"),
     SHARP("#", "special"),
     DBL_SHARP("##", "special"),
-    
+    BACK_SLASH("\\", "special"),
+            
     WHITESPACE(null, "whitespace"),
     LINE_COMMENT(null, "comment"),
     BLOCK_COMMENT(null, "comment"),
@@ -212,34 +213,33 @@ public enum CppTokenId implements TokenId {
     
     // Prerpocessor 
     //   - on top level
-    PREPROCESSOR_DIRECTIVE(null, "preprpocessor"),
+    PREPROCESSOR_DIRECTIVE(null, "preprocessor"),
     //   - tokens
-    PREPROCESSOR_START("#", "preprpocessor"),
-    PREPROCESSOR_IF("if", "preprpocessor-keyword-directive"),
-    PREPROCESSOR_IFDEF("ifdef", "preprpocessor-keyword-directive"),
-    PREPROCESSOR_IFNDEF("ifndef", "preprpocessor-keyword-directive"),
-    PREPROCESSOR_ELSE("else", "preprpocessor-keyword-directive"),
-    PREPROCESSOR_ELIF("elif", "preprpocessor-keyword-directive"),
-    PREPROCESSOR_ENDIF("endif", "preprpocessor-keyword-directive"),
-    PREPROCESSOR_DEFINE("define", "preprpocessor-keyword-directive"),
-    PREPROCESSOR_UNDEF("undef", "preprpocessor-keyword-directive"),
-    PREPROCESSOR_INCLUDE("include", "preprpocessor-keyword-directive"),
-    PREPROCESSOR_INCLUDE_NEXT("include_next", "preprpocessor-keyword-directive"),
-    PREPROCESSOR_LINE("line", "preprpocessor-keyword-directive"),
-    PREPROCESSOR_PRAGMA("pragma", "preprpocessor-keyword-directive"),
-    PREPROCESSOR_WARNING("warning", "preprpocessor-keyword-directive"),
-    PREPROCESSOR_ERROR("error", "preprpocessor-keyword-directive"),
-    PREPROCESSOR_DEFINED("defined", "preprpocessor-operator"),
+    PREPROCESSOR_START("#", "preprocessor"),
+    PREPROCESSOR_IF("if", "preprocessor-keyword-directive"),
+    PREPROCESSOR_IFDEF("ifdef", "preprocessor-keyword-directive"),
+    PREPROCESSOR_IFNDEF("ifndef", "preprocessor-keyword-directive"),
+    PREPROCESSOR_ELSE("else", "preprocessor-keyword-directive"),
+    PREPROCESSOR_ELIF("elif", "preprocessor-keyword-directive"),
+    PREPROCESSOR_ENDIF("endif", "preprocessor-keyword-directive"),
+    PREPROCESSOR_DEFINE("define", "preprocessor-keyword-directive"),
+    PREPROCESSOR_UNDEF("undef", "preprocessor-keyword-directive"),
+    PREPROCESSOR_INCLUDE("include", "preprocessor-keyword-directive"),
+    PREPROCESSOR_INCLUDE_NEXT("include_next", "preprocessor-keyword-directive"),
+    PREPROCESSOR_LINE("line", "preprocessor-keyword-directive"),
+    PREPROCESSOR_PRAGMA("pragma", "preprocessor-keyword-directive"),
+    PREPROCESSOR_WARNING("warning", "preprocessor-keyword-directive"),
+    PREPROCESSOR_ERROR("error", "preprocessor-keyword-directive"),
+    PREPROCESSOR_DEFINED("defined", "preprocessor-operator"),
     
-    PREPROCESSOR_USER_INCLUDE(null, "preprpocessor-user-include-literal"),
-    PREPROCESSOR_SYS_INCLUDE(null, "preprpocessor-system-include-literal"),
-    PREPROCESSOR_IDENTIFIER(null, "preprpocessor-identifier"),
+    PREPROCESSOR_USER_INCLUDE(null, "preprocessor-user-include-literal"),
+    PREPROCESSOR_SYS_INCLUDE(null, "preprocessor-system-include-literal"),
+    PREPROCESSOR_IDENTIFIER(null, "preprocessor-identifier"),
     
     // Errors
     INVALID_COMMENT_END("*/", "error"),
     FLOAT_LITERAL_INVALID(null, "number");
-
-
+    
     private final String fixedText;
 
     private final String primaryCategory;
@@ -262,8 +262,8 @@ public enum CppTokenId implements TokenId {
     private static final Language<CppTokenId> languagePreproc;
     
     static {
-        languageC = CppHierarchy.createCppLanguage();
-        languageCpp = CppHierarchy.createCLanguage();
+        languageC = CppHierarchy.createCLanguage();
+        languageCpp = CppHierarchy.createCppLanguage();
         languagePreproc = CppHierarchy.createPreprocLanguage();
     }
 
@@ -319,7 +319,6 @@ public enum CppTokenId implements TokenId {
             // Additional literals being a lexical error
             cats.put("error", EnumSet.of(
                 CppTokenId.FLOAT_LITERAL_INVALID
-            
             ));
             // Literals category
             EnumSet<CppTokenId> l = EnumSet.of(
@@ -327,10 +326,10 @@ public enum CppTokenId implements TokenId {
                 CppTokenId.LONG_LITERAL,
                 CppTokenId.FLOAT_LITERAL,
                 CppTokenId.DOUBLE_LITERAL,
-                CppTokenId.CHAR_LITERAL
-            
+                CppTokenId.UNSIGNED_LITERAL,
+                CppTokenId.CHAR_LITERAL,
+                CppTokenId.STRING_LITERAL
             );
-            l.add(CppTokenId.STRING_LITERAL);
             cats.put("literal", l);
 
             return cats;

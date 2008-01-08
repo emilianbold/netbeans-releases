@@ -64,6 +64,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 public class CppLexer extends CndLexer {
 
     private final Filter<CppTokenId> lexerFilter;
+    @SuppressWarnings("unchecked")
     public CppLexer(Filter<CppTokenId> defaultFilter, LexerRestartInfo<CppTokenId> info) {
         super(info);
         Filter<CppTokenId> filter = (Filter<CppTokenId>) info.getAttributeValue("lexer-filter"); // NOI18N

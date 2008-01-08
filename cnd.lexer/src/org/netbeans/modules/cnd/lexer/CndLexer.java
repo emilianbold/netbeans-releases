@@ -78,20 +78,22 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
     protected final int read(boolean skipEscapedLF) {
         int c = input.read();
         if (skipEscapedLF) { // skip escaped LF
+            int next;
             while (c == '\\') {
-                switch (c = input.read()) {
+                switch (next = input.read()) {
                     case '\r':
                         input.consumeNewline();
                         // nobreak
                     case '\n':
                         escapedLF = true;
-                        c = input.read();
+                        next = input.read();
                         break;
                     default:
                         input.backup(1);
-                        assert c == '\\' : "must be backslash";
+                        assert c == '\\' : "must be backslash " + (char)c;
                         return c; // normal backslash, not escaped LF
                 }
+                c = next;
             }
         }
         return c;
@@ -203,6 +205,10 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
                 case '>':
                     switch (read(true)) {
                         case '>': // >>
+                            if (read(true) == '=') {
+                                return token(CppTokenId.GTGTEQ);
+                            }
+                            input.backup(1);                            
                             return token(CppTokenId.GTGT);
                         case '=': // >=
                             return token(CppTokenId.GTEQ);
@@ -214,6 +220,7 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
                 {
                     Token<CppTokenId> out = finishLT();
                     assert out != null : "not handled '<'";
+                    return out;
                 }
 
                 case '+':
@@ -399,7 +406,8 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
                 case '8':
                 case '9':
                     return finishNumberLiteral(read(true), false);
-
+                case '\\':
+                    return token(CppTokenId.BACK_SLASH);
                 case '$':
                     return token(CppTokenId.DOLLAR);
 
@@ -566,7 +574,7 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
     protected final Token<CppTokenId> tokenWhitespace() {
         if (input.readLength() == 1) {
             // Return single space as flyweight token
-            return token(CppTokenId.WHITESPACE, " ", PartType.COMPLETE);
+            return token(CppTokenId.WHITESPACE, String.valueOf(input.readText().charAt(0)), PartType.COMPLETE);
         } else {
             return token(CppTokenId.WHITESPACE, null, PartType.COMPLETE);
         }
