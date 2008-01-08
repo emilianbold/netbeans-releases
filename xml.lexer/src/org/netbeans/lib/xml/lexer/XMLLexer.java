@@ -263,7 +263,10 @@ public class XMLLexer implements Lexer<XMLTokenId> {
                         case '<':
                             state = INIT;
                             input.backup(1);
-                            return token(XMLTokenId.TEXT);
+                            if(input.readLength() > 0) {
+                                return token(XMLTokenId.TEXT);
+                            }
+                            break;
                         case '&':
                             if (isInternalDTD() == false) {
                                 state = INIT;
