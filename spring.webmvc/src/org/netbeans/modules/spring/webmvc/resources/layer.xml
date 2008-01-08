@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="j2ee">
+        <folder name="webtier">
+            <folder name="framework">
+                <file name="org-netbeans-modules-spring-webmvc-SpringWebFrameworkProvider.instance"/>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="Templates">
+        <folder name="SpringFramework">
+            <file name="AbstractController.java" url="AbstractController.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.spring.webmvc.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="servlet-types"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/spring/webmvc/resources/abstractController.html"/>
+            </file>
+            <file name="SimpleFormController.java" url="SimpleFormController.template">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.spring.webmvc.resources.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="servlet-types"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/spring/webmvc/resources/simpleFormController.html"/>
+            </file>
+        </folder>
+    </folder>
+</filesystem>
