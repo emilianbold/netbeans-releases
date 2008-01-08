@@ -313,7 +313,9 @@ public final class JUnitAntLogger extends AntLogger {
             String childName = child.getName();
             if (childName.equals("formatter")) {                        //NOI18N
                 String type = child.getAttribute("type");               //NOI18N
+                type = (type != null) ? event.evaluate(type) : null;
                 String usefile = child.getAttribute("usefile");         //NOI18N
+                usefile = (usefile != null) ? event.evaluate(usefile) : null;
                 if ((type != null) && type.equals("xml")                //NOI18N
                        && (usefile != null) && !AntProject.toBoolean(usefile)) {
                     String ifPropName = child.getAttribute("if");       //NOI18N
