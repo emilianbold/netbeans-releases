@@ -60,8 +60,9 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
-import java.util.logging.Logger;
-import java.util.logging.Level;
+import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.stmt.BlockStatement;
 
 /**
  *
@@ -161,11 +162,15 @@ public class AstUtilities {
             }
             FieldNode fieldNode = (FieldNode) node;
             return new OffsetRange(start, start + fieldNode.getName().length());
-        } else {
+        } else if (node instanceof VariableExpression) {
             int start = getOffset(text, node.getLineNumber(), node.getColumnNumber());
-            int end = getOffset(text, node.getLastLineNumber(), node.getLastColumnNumber());
-            return new OffsetRange(start, end);
+            if (start < 0) {
+                start = 0;
+            }
+            VariableExpression variableExpression = (VariableExpression) node;
+            return new OffsetRange(start, start + variableExpression.getName().length());
         }
+        return OffsetRange.NONE;
     }
     
     @SuppressWarnings("unchecked")
@@ -201,6 +206,11 @@ public class AstUtilities {
             }
         } else if (root instanceof Parameter) {
         } else if (root instanceof FieldNode) {
+            FieldNode fieldNode = (FieldNode) root;
+            Expression expression = fieldNode.getInitialExpression();
+            if (expression != null) {
+                children.add(fieldNode.getInitialExpression());
+            }
         } else {
             AstChildrenSupport astChildrenSupport = new AstChildrenSupport();
             root.visit(astChildrenSupport);
@@ -235,5 +245,20 @@ public class AstUtilities {
         offset += (columnNumber - 1);
         return offset;
     }
+    
+    public static ASTNode findLocalScope(ASTNode node, AstPath path) {
+        return findClosestBlock(path);
+    }
+
+   public static BlockStatement findClosestBlock(AstPath path) {
+        // Find the closest block node enclosing the given node
+        for (ASTNode node : path) {
+            if (node instanceof BlockStatement) {
+                return (BlockStatement) node;
+            }
+        }
+        return null;
+    }
+
     
 }

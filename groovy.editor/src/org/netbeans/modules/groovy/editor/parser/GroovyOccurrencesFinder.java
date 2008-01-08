@@ -43,9 +43,12 @@ package org.netbeans.modules.groovy.editor.parser;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.codehaus.groovy.ast.ASTNode;
+import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.netbeans.api.gsf.ColoringAttributes;
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.OccurrencesFinder;
@@ -117,6 +120,15 @@ public class GroovyOccurrencesFinder implements OccurrencesFinder {
 //        System.out.println("### closest: " + closest);
         
         if (closest != null) {
+            if (closest instanceof VariableExpression) {
+                String name = ((VariableExpression)closest).getName();
+                ASTNode block = AstUtilities.findLocalScope(closest, path);
+                try {
+                    highlightLocal(block, name, highlights, document.getText(0, document.getLength() - 1));
+                } catch (BadLocationException ble) {
+                    Exceptions.printStackTrace(ble);
+                }
+            }
         }
 
         if (isCancelled()) {
@@ -146,4 +158,19 @@ public class GroovyOccurrencesFinder implements OccurrencesFinder {
         this.caretPosition = position;
     }
     
+    private void highlightLocal(ASTNode node, String name, Map<OffsetRange, ColoringAttributes> highlights, String text) {
+        if (node instanceof VariableExpression) {
+            VariableExpression variableExpression = (VariableExpression) node;
+            if (name.equals(variableExpression.getName())) {
+                OffsetRange range = AstUtilities.getRange(node, text);
+                highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+            }
+        }
+        // TODO: should use visitor instead?
+        List<ASTNode> list = AstUtilities.children(node);
+        for (ASTNode child : list) {
+            highlightLocal(child, name, highlights, text);
+        }
+    }
+
 }
