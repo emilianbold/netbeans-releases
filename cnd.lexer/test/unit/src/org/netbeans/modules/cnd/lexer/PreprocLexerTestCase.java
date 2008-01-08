@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.cnd.lexer;
 
-import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CppTokenId;
@@ -48,8 +47,9 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 
 /**
- *
- * @author Jan Lahoda
+ * tests for preprocessor directive lexer
+ * 
+ * @author Vladimir Voskresensky
  */
 public class PreprocLexerTestCase extends NbTestCase {
 

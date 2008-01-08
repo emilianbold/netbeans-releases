@@ -40,19 +40,20 @@
  */
 package org.netbeans.modules.cnd.lexer;
 
-import org.netbeans.cnd.api.lexer.DoxygenTokenId;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.cnd.api.lexer.CppStringTokenId;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 
 /**
- * based on JavadocLexerTest
+ * based on JavaStringLexerText
+ * 
  * @author Vladimir Voskresensky
  */
-public class DoxygenLexerTestCase extends NbTestCase {
+public class CppStringLexerTestCase extends NbTestCase {
 
-    public DoxygenLexerTestCase(String testName) {
+    public CppStringLexerTestCase(String testName) {
         super(testName);
     }
 
@@ -61,42 +62,30 @@ public class DoxygenLexerTestCase extends NbTestCase {
         LexerTestUtilities.setTesting(true);
     }
 
-    public void testNextToken() {
-        String text = "@param aaa <code>aaa</code> xyz {@link org.Aaa#aaa()}";
+    public void testNextToken1() {
+        String text = "t";
         
-        TokenHierarchy<?> hi = TokenHierarchy.create(text, DoxygenTokenId.language());
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, CppStringTokenId.language());
         TokenSequence<?> ts = hi.tokenSequence();
-        LexerTestUtilities.assertNextTokenEquals(ts, DoxygenTokenId.TAG, "@param");
-        LexerTestUtilities.assertNextTokenEquals(ts, DoxygenTokenId.OTHER_TEXT, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, DoxygenTokenId.IDENT, "aaa");
-        LexerTestUtilities.assertNextTokenEquals(ts, DoxygenTokenId.OTHER_TEXT, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, DoxygenTokenId.HTML_TAG, "<code>");
-        LexerTestUtilities.assertNextTokenEquals(ts, DoxygenTokenId.IDENT, "aaa");
-        LexerTestUtilities.assertNextTokenEquals(ts, DoxygenTokenId.HTML_TAG, "</code>");
-        LexerTestUtilities.assertNextTokenEquals(ts, DoxygenTokenId.OTHER_TEXT, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, DoxygenTokenId.IDENT, "xyz");
-        LexerTestUtilities.assertNextTokenEquals(ts, DoxygenTokenId.OTHER_TEXT, " {");
-        LexerTestUtilities.assertNextTokenEquals(ts, DoxygenTokenId.TAG, "@link");
-        LexerTestUtilities.assertNextTokenEquals(ts, DoxygenTokenId.OTHER_TEXT, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, DoxygenTokenId.IDENT, "org");
-        LexerTestUtilities.assertNextTokenEquals(ts, DoxygenTokenId.DOT, ".");
-        LexerTestUtilities.assertNextTokenEquals(ts, DoxygenTokenId.IDENT, "Aaa");
-        LexerTestUtilities.assertNextTokenEquals(ts, DoxygenTokenId.HASH, "#");
-        LexerTestUtilities.assertNextTokenEquals(ts, DoxygenTokenId.IDENT, "aaa");
-        LexerTestUtilities.assertNextTokenEquals(ts, DoxygenTokenId.OTHER_TEXT, "()}");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppStringTokenId.TEXT, "t");
     }
-
-//    public void testModification1() throws Exception {
-//        PlainDocument doc = new PlainDocument();
-//        doc.putProperty(Language.class, DoxygenTokenId.language());
-//        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
-//        
-//        {
-//            TokenSequence<?> ts = hi.tokenSequence();
-//            ts.moveStart();
-//            assertFalse(ts.moveNext());
-//        }
-//        
-//        doc.insertString(0, "@", null);
-//    }
+    
+    public void testNextToken2() {
+        String text = "\\t\\b\\b\\t \\tabc\\rsddfdsffffffffff\\uuuuAbcD\\377";
+        
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, CppStringTokenId.language());
+        TokenSequence<?> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, CppStringTokenId.TAB, "\\t");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppStringTokenId.BACKSPACE, "\\b");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppStringTokenId.BACKSPACE, "\\b");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppStringTokenId.TAB, "\\t");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppStringTokenId.TEXT, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppStringTokenId.TAB, "\\t");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppStringTokenId.TEXT, "abc");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppStringTokenId.CR, "\\r");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppStringTokenId.TEXT, "sddfdsffffffffff");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppStringTokenId.UNICODE_ESCAPE, "\\uuuuAbcD");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppStringTokenId.OCTAL_ESCAPE, "\\377");
+    }
+    
 }

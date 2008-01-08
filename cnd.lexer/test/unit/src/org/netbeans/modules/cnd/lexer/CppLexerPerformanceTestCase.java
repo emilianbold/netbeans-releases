@@ -52,11 +52,12 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.test.ModificationTextDocument;
 
 /**
- * This is a test that scans the source that is a copy of stdio.h
+ * This is a test that scans the source that is a copy of <stdio.h> and <istream>
  * and reports the times of creation of all the tokens. It exists
  * mainly because it's easy to run profiler over it.
- *
- * @author mmetelka
+ * 
+ * based on JavaLexerPerformanceTest
+ * @author Vladimir Voskresensky
  */
 public class CppLexerPerformanceTestCase extends NbTestCase {
     

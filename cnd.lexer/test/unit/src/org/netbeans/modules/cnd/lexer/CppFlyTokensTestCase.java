@@ -54,10 +54,10 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 
 /**
- * Test how many flyweight tokens gets created over a typical java source
- * (copy of javax.swing.JComponent is used).
+ * Test how many flyweight tokens gets created over a typical system headers
+ * (copy of <istream> and <stdio.h> are used).
  *
- * @author mmetelka
+ * @author Vladimir Voskresensky
  */
 public class CppFlyTokensTestCase extends NbTestCase {
     
@@ -165,30 +165,5 @@ public class CppFlyTokensTestCase extends NbTestCase {
         assertEquals(tokenCount, 65);
         assertEquals(fwTextLength, 114);
         
-    }
-    
-//    public void testCpp() throws Exception {
-//        File testJComponentFile = new File(getDataDir() + "/testfiles/JComponent.cc.txt");
-//        FileReader r = new FileReader(testJComponentFile);
-//        int fileLen = (int)testJComponentFile.length();
-//        CharBuffer cb = CharBuffer.allocate(fileLen);
-//        r.read(cb);
-//        cb.rewind();
-//        String text = cb.toString();
-//        TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
-//        TokenSequence<?> ts = hi.tokenSequence();
-//        
-//        System.err.println("Flyweight tokens: " + LexerTestUtilities.flyweightTokenCount(ts)
-//                + "\nTotal tokens: " + ts.tokenCount()
-//                + "\nFlyweight text length: " + LexerTestUtilities.flyweightTextLength(ts)
-//                + "\nTotal text length: " + fileLen
-//                + "\nDistribution: " + LexerTestUtilities.flyweightDistribution(ts)
-//        );
-//
-//        assertEquals(LexerTestUtilities.flyweightTokenCount(ts), 13786);
-//        assertEquals(LexerTestUtilities.flyweightTextLength(ts), 21710);
-//        assertEquals(ts.tokenCount(), 21379);
-//        
-//    }    
-    
+    }    
 }
