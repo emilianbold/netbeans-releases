@@ -652,14 +652,14 @@ public class Utilities {
         return null;
     }
 
-    private static Iterable<ExecutableElement> execsIn(Element e, boolean constr, String name) {
+    private static Iterable<ExecutableElement> execsIn(CompilationInfo info, TypeElement e, boolean constr, String name) {
         if (constr) {
-            return ElementFilter.constructorsIn(e.getEnclosedElements());
+            return ElementFilter.constructorsIn(info.getElements().getAllMembers(e));
         }
         
         List<ExecutableElement> result = new LinkedList<ExecutableElement>();
         
-        for (ExecutableElement ee : ElementFilter.methodsIn(e.getEnclosedElements())) {
+        for (ExecutableElement ee : ElementFilter.methodsIn(info.getElements().getAllMembers(e))) {
             if (name.equals(ee.getSimpleName().toString())) {
                 result.add(ee);
             }
@@ -672,7 +672,7 @@ public class Utilities {
         ExecutableElement found = null;
         
         OUTER:
-        for (ExecutableElement ee : execsIn(on.asElement(), constr, name)) {
+        for (ExecutableElement ee : execsIn(info, (TypeElement) on.asElement(), constr, name)) {
             if (ee.getParameters().size() == foundTypes.size() /*XXX: variable arg count*/) {
                 TypeMirror innerCandidate = null;
                 int innerIndex = -1;

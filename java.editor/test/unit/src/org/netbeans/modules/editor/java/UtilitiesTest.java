@@ -94,6 +94,17 @@ public class UtilitiesTest extends NbTestCase {
                 "}", "t(java.lang.String)");
     }
     
+    public void testFuzzyResolveMethod3() throws Exception {
+        performTest("package test;" +
+                "public class Test {" +
+                "   private void test() {" +
+                "       test(\"\", x);\n" +
+                "   }" +
+                "   private static void test(String s, int i) {}\n" +
+                "   private static void test(Object o, int i) {}\n" +
+                "}", "test(java.lang.String,int)");
+    }
+    
     public void testFuzzyResolveConstructor1() throws Exception {
         performTest("package test;" +
                 "public class Test {" +
