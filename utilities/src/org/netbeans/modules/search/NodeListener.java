@@ -42,6 +42,7 @@
 package org.netbeans.modules.search;
 
 import java.awt.EventQueue;
+import java.awt.Point;
 import java.awt.Toolkit;
 import static java.awt.event.InputEvent.BUTTON1_DOWN_MASK;
 import static java.awt.event.InputEvent.BUTTON1_MASK;
@@ -199,6 +200,15 @@ final class NodeListener implements MouseListener, KeyListener,
     }
     
     /**
+     * Displays a pop-up menu (context menu) in the given tree, for a node
+     * given by a tree path.
+     * 
+     * @param  tree  tree in which the menu should be displayed
+     * @param  path  tree path specification of a node
+     * @param  resultModel  data model of the tree
+     * @param  e  mouse event which triggered display of the pop-up menu,
+     *            or {@code null} if it was something else than a mouse
+     *            what triggered it
      */
     private void showPopup(final JTree tree,
                            final TreePath path,
@@ -212,19 +222,40 @@ final class NodeListener implements MouseListener, KeyListener,
             if (nbNode != null) {
                 JPopupMenu popup = createFileNodePopupMenu(nbNode);
                 if (popup != null) {
-                    popup.show(tree, e.getX(), e.getY());
+                    Point location = getPopupMenuLocation(tree, path, e);
+                    popup.show(tree, location.x, location.y);
                 }
             }
         } else if (pathCount == 3) {        //detail node
             Node nbNode = getNbNode(path, resultModel);
             if (nbNode != null) {
-                nbNode.getContextMenu().show(tree, e.getX(), e.getY());
+                Point location = getPopupMenuLocation(tree, path, e);
+                nbNode.getContextMenu().show(tree, location.x, location.y);
             }
         } else {
             assert false;
         }
     }
 
+    /**
+     * Determines location where the pop-up menu for a node should be displayed.
+     * @param  tree  tree in which the pop-up menu should be displayed
+     * @param  path  currently selected tree path
+     * @param  e  mouse event which caused the pop-up menu to be displayed,
+     *            or {@code null} of it was not a mouse event what triggered
+     *            the pop-up menu
+     * @return  point at which the pop-up menu should be displayed
+     */
+    private static Point getPopupMenuLocation(JTree tree,
+                                              TreePath path,
+                                              MouseEvent e) {
+        if (e != null) {
+            return new Point(e.getX(), e.getY());
+        } else {
+            return tree.getPathBounds(path).getLocation();
+        }
+    }
+    
     /**
      * Auto-collapses a given file node if appropriate after
      * the select or unselect operation. The behaviour is given by constants
@@ -639,8 +670,17 @@ final class NodeListener implements MouseListener, KeyListener,
             }
             Node nbNode = getNbNode(selectedPath, getResultModel(tree));
             callDefaultAction(nbNode, e.getSource(), e.getID(), "enter");   //NOI18N
+        } else if ((e.getKeyCode() == KeyEvent.VK_CONTEXT_MENU)
+                   && (e.getModifiersEx() == 0)) {
+            e.consume();
+            JTree tree = (JTree) e.getSource();
+            if (tree.getSelectionCount() == 1) {
+                TreePath path = tree.getSelectionPath();
+                ResultModel resultModel = getResultModel(tree);
+                showPopup(tree, path, resultModel, null);
             }
         }
+    }
 
     public void treeWillExpand(TreeExpansionEvent event)
                                             throws ExpandVetoException {
