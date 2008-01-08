@@ -237,10 +237,11 @@ class GrammarManager extends FileChangeAdapter implements DocumentListener {
      * Nofification from grammar loader thread, new valid grammar.
      * @param grammar grammar or <code>null</code> if cannot load.
      */
-    private synchronized void grammarLoaded(GrammarQuery grammar) {
-        
+    private synchronized void grammarLoaded(GrammarQuery grammar) {        
+        //Issue: http://www.netbeans.org/issues/show_bug.cgi?id=108610
+        //do not show error message since there can be many more completion providers.
         String status = (grammar != null) ? Util.THIS.getString("MSG_loading_done")
-        : Util.THIS.getString("MSG_loading_failed");
+        : null;
         
         this.grammar = grammar == null ? EmptyQuery.INSTANCE : grammar;
         state = VALID;
