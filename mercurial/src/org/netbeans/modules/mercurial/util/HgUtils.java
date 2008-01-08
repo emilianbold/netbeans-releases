@@ -90,6 +90,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Utilities;
@@ -551,22 +552,15 @@ itor tabs #66700).
 
     public static Project getProject(VCSContext context){
         if (context == null) return null;
-        Node [] nodes = context.getElements().lookupAll(Node.class).toArray(new Node[0]);
-        for (Node node : nodes) {
-            Node tmpNode = node;
+        File [] files = context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
 
-            Project project = (Project) tmpNode.getLookup().lookup(Project.class);
-            while (project == null) {
-                tmpNode = tmpNode.getParentNode();
-                if (tmpNode ==  null) {
-                    Mercurial.LOG.log(Level.FINE, "HgUtils.getProjectFile(): No project for {0}",  // NOI18N
-                        node.toString());
-                    break;
-                }
-                project = (Project) tmpNode.getLookup().lookup(Project.class);
-            } 
-            if (project != null) {
-                return project;
+        for (File file : files) {
+            Project p = FileOwnerQuery.getOwner(FileUtil.toFileObject(file));
+            if (p != null) {
+                return p;
+            } else {
+                Mercurial.LOG.log(Level.FINE, "HgUtils.getProjectFile(): No project for {0}",  // NOI18N
+                    file);
             }
         }
         return null;
