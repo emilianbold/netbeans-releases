@@ -230,8 +230,6 @@ public class GroovyParser implements Parser {
         } catch (Exception e) {
         }
 
-        handleErrorCollector(compilationUnit.getErrorCollector(), context);
-        
         CompileUnit compileUnit = compilationUnit.getAST();
         List<ModuleNode> modules = compileUnit.getModules();
 
@@ -243,6 +241,8 @@ public class GroovyParser implements Parser {
                 module = moduleNode;
             }
         }
+
+        handleErrorCollector(compilationUnit.getErrorCollector(), context, module);
         
         if (module != null) {
             AstRootElement astRootElement = new AstRootElement(context.file.getFileObject(), module);
@@ -284,16 +284,20 @@ public class GroovyParser implements Parser {
         context.errorOffset = startOffset;
     }
 
-    private static void handleErrorCollector(ErrorCollector errorCollector, Context context) {
+    private static void handleErrorCollector(ErrorCollector errorCollector, Context context, ModuleNode moduleNode) {
         if (errorCollector != null) {
             List errors = errorCollector.getErrors();
             if (errors != null) {
                 for (Object object : errors) {
                     if (object instanceof SyntaxErrorMessage) {
                         SyntaxException ex = ((SyntaxErrorMessage)object).getCause();
+                        String sourceLocator = ex.getSourceLocator();
+                        String name = moduleNode != null ? moduleNode.getContext().getName() : null;
+                        if (sourceLocator != null && name != null && sourceLocator.equals(name)) {
                             int startOffset = AstUtilities.getOffset(context.source, ex.getStartLine(), ex.getStartColumn());
                             int endOffset = AstUtilities.getOffset(context.source, ex.getLine(), ex.getEndColumn());
                             notifyError(context, null, Severity.ERROR, ex.getMessage(), null, startOffset, endOffset);
+                        }
                     } else if (object instanceof SimpleMessage) {
                         String message = ((SimpleMessage)object).getMessage();
                         notifyError(context, null, Severity.ERROR, message, null, -1);
