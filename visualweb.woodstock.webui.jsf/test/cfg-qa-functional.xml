@@ -733,7 +733,7 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
 
-    <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
+    <executor name="ide" antfile="build-qa-functional.xml" target="runidetest-with-appserver" default="true"/>
     <compiler name="qa-functional-compiler" antfile="build-qa-functional.xml"
         target="qa-functional-compiler" default="true"/>
 </mconfig>
