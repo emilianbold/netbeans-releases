@@ -219,8 +219,8 @@ public final class GemManager {
         File rubyHome = platform.getHome(canonical);
         assert rubyHome != null : "rubyHome not null for " + platform;
 
-        File libGems = new File(platform.getLib() + File.separator + "ruby" +
-                File.separator + "gems");
+        File libGems = new File(platform.getLib() + File.separator + "ruby" + // NOI18N
+                File.separator + "gems"); // NOI18N
         File defaultGemDir = new File(libGems, RubyPlatform.DEFAULT_RUBY_RELEASE);
 
         if (defaultGemDir.isDirectory()) {
@@ -735,7 +735,9 @@ public final class GemManager {
         
         String[] args = argList.toArray(new String[argList.size()]);
         ProcessBuilder pb = new ProcessBuilder(args);
-        pb.environment().put("GEM_HOME", platform.getGemManager().getGemDir());
+        if (!Utilities.isWindows()) {
+            pb.environment().put("GEM_HOME", platform.getGemManager().getGemDir()); // NOI18N
+        }
         pb.directory(cmd.getParentFile());
         pb.redirectErrorStream(true);
 
@@ -1212,7 +1214,7 @@ public final class GemManager {
                 if (name.startsWith("ruby")) { // NOI18N
                     String suffix = name.substring(4);
                     // Try to find with suffix (#120441)
-                    rdoc = findGemExecutable("rdoc" + suffix);
+                    rdoc = findGemExecutable("rdoc" + suffix); // NOI18N
                 }
             }
         }
