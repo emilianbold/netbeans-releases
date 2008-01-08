@@ -50,6 +50,8 @@ package org.netbeans.modules.xml.xdm.nodes;
 
 import java.util.List;
 import junit.framework.*;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.xml.xdm.visitor.FlushVisitor;
 import org.netbeans.modules.xml.xdm.Util;
@@ -70,15 +72,30 @@ public class XMLSyntaxParserTest extends TestCase {
     
     public static Test suite() {
         TestSuite suite = new TestSuite(XMLSyntaxParserTest.class);
-        
+        suite.addTest(new XMLSyntaxParserTest("testParse"));
+        suite.addTest(new XMLSyntaxParserTest("testParseDoctype"));
+        suite.addTest(new XMLSyntaxParserTest("testParseInvalid"));
+        suite.addTest(new XMLSyntaxParserTest("testParseInvalidTag"));
+        suite.addTest(new XMLSyntaxParserTest("testParseInvalidTag2"));
+        suite.addTest(new XMLSyntaxParserTest("testParseInvalidTag3"));
+        suite.addTest(new XMLSyntaxParserTest("testParseInvalidTag4"));
+        suite.addTest(new XMLSyntaxParserTest("testParsePI"));
+        suite.addTest(new XMLSyntaxParserTest("testParseValidTag"));
         return suite;
+    }
+    
+    private BaseDocument getDocument(String path) throws Exception {
+        BaseDocument basedoc = (BaseDocument)Util.getResourceAsDocument(path);
+        //must set the language for XML lexer to work.
+        basedoc.putProperty(Language.class, XMLTokenId.language());
+        return basedoc;
     }
     
     /**
      * Test of parse method, of class org.netbeans.modules.xmltools.xmlmodel.nodes.XMLSyntaxParser.
      */
     public void testParse() throws Exception {
-        BaseDocument basedoc = (BaseDocument)Util.getResourceAsDocument("nodes/test.xml");
+        BaseDocument basedoc = getDocument("nodes/test.xml");
         XMLSyntaxParser parser = new XMLSyntaxParser();
         Document doc = parser.parse(basedoc);
         assertNotNull("Document can not be null", doc);
@@ -91,7 +108,7 @@ public class XMLSyntaxParserTest extends TestCase {
      * Test of parse method, of class org.netbeans.modules.xmltools.xmlmodel.nodes.XMLSyntaxParser.
      */
     public void testParseInvalid() throws Exception {
-        BaseDocument basedoc = (BaseDocument)Util.getResourceAsDocument("nodes/invalid.xml");
+        BaseDocument basedoc = getDocument("nodes/invalid.xml");
         XMLSyntaxParser parser = new XMLSyntaxParser();
         try {
             Document doc = parser.parse(basedoc);
@@ -106,7 +123,7 @@ public class XMLSyntaxParserTest extends TestCase {
      * Test of parse method, of class org.netbeans.modules.xmltools.xmlmodel.nodes.XMLSyntaxParser.
      */
     public void testParseInvalidTag() throws Exception {
-        BaseDocument basedoc = (BaseDocument)Util.getResourceAsDocument("nodes/invalidtag.xml");
+        BaseDocument basedoc = getDocument("nodes/invalidtag.xml");
         XMLSyntaxParser parser = new XMLSyntaxParser();
         try {
             Document doc = parser.parse(basedoc);
@@ -121,7 +138,7 @@ public class XMLSyntaxParserTest extends TestCase {
      * Test of parse method, of class org.netbeans.modules.xmltools.xmlmodel.nodes.XMLSyntaxParser.
      */
     public void testParseInvalidTag2() throws Exception {
-        BaseDocument basedoc = (BaseDocument)Util.getResourceAsDocument("nodes/invalidtag2.xml");
+        BaseDocument basedoc = getDocument("nodes/invalidtag2.xml");
         XMLSyntaxParser parser = new XMLSyntaxParser();
         try {
             Document doc = parser.parse(basedoc);
@@ -136,14 +153,14 @@ public class XMLSyntaxParserTest extends TestCase {
      * Test of parse method, of class org.netbeans.modules.xmltools.xmlmodel.nodes.XMLSyntaxParser.
      */
     public void testParseInvalidTag3() throws Exception {
-        BaseDocument basedoc = (BaseDocument)Util.getResourceAsDocument("nodes/invalidtag3.xml");
+        BaseDocument basedoc = getDocument("nodes/invalidtag3.xml");
         XMLSyntaxParser parser = new XMLSyntaxParser();
         try {
             Document doc = parser.parse(basedoc);
             assertTrue("Should not come here", false);
         } catch(Exception ex) {
             assertTrue("Invalid Token exception" ,
-                    ex.getMessage().contains("Invalid token '<' found in document"));
+                    ex.getMessage().contains("Invalid token found in document"));
         }
     }
     
@@ -151,7 +168,7 @@ public class XMLSyntaxParserTest extends TestCase {
      * Test of parse method, of class org.netbeans.modules.xmltools.xmlmodel.nodes.XMLSyntaxParser.
      */
     public void testParseInvalidTag4() throws Exception {
-        BaseDocument basedoc = (BaseDocument)Util.getResourceAsDocument("nodes/invalidtag4.xml");
+        BaseDocument basedoc = getDocument("nodes/invalidtag4.xml");
         XMLSyntaxParser parser = new XMLSyntaxParser();
         try {
             Document doc = parser.parse(basedoc);
@@ -166,7 +183,7 @@ public class XMLSyntaxParserTest extends TestCase {
      * Test of parse method, of class org.netbeans.modules.xmltools.xmlmodel.nodes.XMLSyntaxParser.
      */
     public void testParseValidTag() throws Exception {
-        BaseDocument basedoc = (BaseDocument)Util.getResourceAsDocument("nodes/validtag.xml");
+        BaseDocument basedoc = getDocument("nodes/validtag.xml");
         XMLSyntaxParser parser = new XMLSyntaxParser();
         try {
             Document doc = parser.parse(basedoc);            
@@ -176,7 +193,7 @@ public class XMLSyntaxParserTest extends TestCase {
     }    
 
     public void testParsePI() throws Exception {
-        BaseDocument basedoc = (BaseDocument)Util.getResourceAsDocument("resources/PI_after_prolog.xml");
+        BaseDocument basedoc = getDocument("resources/PI_after_prolog.xml");
         XMLSyntaxParser parser = new XMLSyntaxParser();
 
         Document doc = parser.parse(basedoc);            
@@ -197,7 +214,7 @@ public class XMLSyntaxParserTest extends TestCase {
      * Test the parsing of doctype
      */
     public void testParseDoctype() throws Exception {
-        BaseDocument basedoc = (BaseDocument)Util.getResourceAsDocument("nodes/testDoctype.xml");
+        BaseDocument basedoc = getDocument("nodes/testDoctype.xml");
         XMLSyntaxParser parser = new XMLSyntaxParser();
         Document doc = parser.parse(basedoc);
         assertNotNull("Document can not be null", doc);

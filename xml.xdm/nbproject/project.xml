@@ -45,6 +45,13 @@ made subject to such option by the copyright holder.
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.modules.xml.xdm</code-name-base>
+            <public-packages>
+                <package>org.netbeans.modules.xml.xdm</package>
+                <package>org.netbeans.modules.xml.xdm.diff</package>
+                <package>org.netbeans.modules.xml.xdm.nodes</package>
+                <package>org.netbeans.modules.xml.xdm.visitor</package>
+                <package>org.netbeans.modules.xml.xdm.xam</package>
+            </public-packages>
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.netbeans.modules.editor.lib</code-name-base>
@@ -56,12 +63,29 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.lexer</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                        <specification-version>1.26</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.xml.core</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>2</release-version>
                         <specification-version>1.9.1.4</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.xml.lexer</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -121,13 +145,6 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages>
-                <package>org.netbeans.modules.xml.xdm</package>
-                <package>org.netbeans.modules.xml.xdm.diff</package>
-                <package>org.netbeans.modules.xml.xdm.nodes</package>
-                <package>org.netbeans.modules.xml.xdm.visitor</package>
-                <package>org.netbeans.modules.xml.xdm.xam</package>
-            </public-packages>
             <test-dependencies>
                 <test-type>
                     <name>unit</name>

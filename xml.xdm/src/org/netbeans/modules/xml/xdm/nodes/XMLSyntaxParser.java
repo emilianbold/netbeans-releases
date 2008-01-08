@@ -41,73 +41,82 @@
 
 package org.netbeans.modules.xml.xdm.nodes;
 
-import java.io.ByteArrayInputStream;
-import java.io.CharConversionException;
-import java.io.EOFException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Stack;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.TokenID;
-import org.netbeans.editor.TokenItem;
-import org.netbeans.editor.ext.ExtSyntaxSupport;
-import org.netbeans.modules.xml.text.syntax.XMLTokenIDs;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.xml.lexer.XMLTokenId;
 
 public class XMLSyntaxParser {
     
     public Document parse(BaseDocument basedoc)
     throws IOException, BadLocationException {
-
-        // get syntax and get token chain
-        ExtSyntaxSupport sup = (ExtSyntaxSupport)basedoc.getSyntaxSupport();
-        TokenItem token = sup.getTokenChain(0, basedoc.getLength());
-        
         // create the core model
         Stack<NodeImpl> stack = new Stack<NodeImpl>();
         Document doc = new Document();
         stack.push(doc);
         NodeImpl currentNode = doc;
         List<Token> currentTokens = new ArrayList<Token>();
+
+        TokenHierarchy th = TokenHierarchy.get(basedoc);
+        TokenSequence<XMLTokenId> tokenSequence = th.tokenSequence();
+        org.netbeans.api.lexer.Token<XMLTokenId> token = tokenSequence.token();
         // Add the text token, if any, before xml decalration to document node
-        if(isValid(token) && token.getTokenID().getNumericID() == XMLTokenIDs.TEXT_ID) {
-            currentTokens.add(Token.create(token.getImage(),TokenType.TOKEN_CHARACTER_DATA));
-            token = token.getNext();
+        if(token != null && token.id() == XMLTokenId.TEXT) {
+            currentTokens.add(Token.create(token.text().toString(),TokenType.TOKEN_CHARACTER_DATA));
+            if(tokenSequence.moveNext()) {
+                token = tokenSequence.token();
+            }
             // if the xml decalration is not there assign this token to document
-            if(isValid(token) && token.getTokenID().getNumericID() != XMLTokenIDs.PI_START_ID) {
+            if(token.id() != XMLTokenId.PI_START) {
                 currentNode.setTokens(new ArrayList<Token>(currentTokens));
                 currentTokens.clear();
             }
         }
         
-        while (token != null) {
-            isValid(token);
-            TokenID tokenId = token.getTokenID();
-            int numericId = tokenId.getNumericID();
-            String image = token.getImage();
-            TokenType coreTokenId = TokenType.TOKEN_WHITESPACE;
-            switch(numericId) {
-                case XMLTokenIDs.PI_START_ID:
+        while (tokenSequence.moveNext()) {
+            token = tokenSequence.token();
+            XMLTokenId tokenId = token.id();
+            String image = token.text().toString();
+            TokenType tokenType = TokenType.TOKEN_WHITESPACE;
+            switch(tokenId) {
+                case PI_START:
                 {
-                    coreTokenId = TokenType.TOKEN_PI_START_TAG;
-                    currentTokens.add(Token.create(image,coreTokenId));
+                    tokenType = TokenType.TOKEN_PI_START_TAG;
+                    currentTokens.add(Token.create(image,tokenType));
                     break;
                 }
-                case XMLTokenIDs.PI_END_ID:
+                case PI_TARGET:
                 {
-                    coreTokenId = TokenType.TOKEN_PI_END_TAG;
-                    currentTokens.add(Token.create(image,coreTokenId));
+                    tokenType = TokenType.TOKEN_PI_NAME;
+                    currentTokens.add(Token.create(image, tokenType));
+                    break;
+                }
+                case PI_CONTENT:
+                {
+                    tokenType = TokenType.TOKEN_PI_VAL;
+                    currentTokens.add(Token.create(image, tokenType));
+                    break;
+                }
+                case PI_END:
+                {
+                    tokenType = TokenType.TOKEN_PI_END_TAG;
+                    currentTokens.add(Token.create(image,tokenType));
                     if(currentNode instanceof Document) {
-                        if(token.getNext().getTokenID().getNumericID() == XMLTokenIDs.TEXT_ID) {
-                            token = token.getNext();
-                            currentTokens.add(Token.create(token.getImage(),TokenType.TOKEN_CHARACTER_DATA));
+                        if(tokenSequence.moveNext()) {
+                            org.netbeans.api.lexer.Token t = tokenSequence.token();
+                            if(t.id() == XMLTokenId.TEXT) {
+                                currentTokens.add(Token.create(t.text().toString(),TokenType.TOKEN_CHARACTER_DATA));                                
+                            } else {
+                                tokenSequence.movePrevious();
+                            }
                         }
-                        stack.push(currentNode);
+                        if(stack.peek() != currentNode)
+                            stack.push(currentNode);
                     }
                     List<Token> list = new ArrayList<Token>(currentNode.getTokens());
                     list.addAll(currentTokens);
@@ -115,7 +124,7 @@ public class XMLSyntaxParser {
                     currentTokens.clear();
                     break;
                 }
-                case XMLTokenIDs.TAG_ID:
+                case TAG:
                 {
                     int len = image.length();
                     if (image.charAt(len-1) == '>') {
@@ -132,7 +141,7 @@ public class XMLSyntaxParser {
                         currentNode.getTokensForWrite().addAll(currentTokens);
                         currentTokens.clear();
                     } else {
-                        coreTokenId = TokenType.TOKEN_ELEMENT_START_TAG;
+                        tokenType = TokenType.TOKEN_ELEMENT_START_TAG;
                         if(image.startsWith("</")) {
                             currentNode = stack.pop();
                             if(!currentNode.getTokens().get(0).getValue().substring(1).
@@ -142,17 +151,21 @@ public class XMLSyntaxParser {
                                         "Please use the text editor to resolve the issues...");
                             } else {//check for invalid endtag: <a></a
                                 String saveTokenImage = image;
-                                currentTokens.add(Token.create(image,coreTokenId));                                
-                                token = token.getNext();
-                                while(token != null) {
-                                    int nextNumericId = token.getTokenID().getNumericID();
-                                    if(nextNumericId != XMLTokenIDs.WS_ID)
+                                currentTokens.add(Token.create(image,tokenType));
+                                tokenSequence.moveNext();
+                                org.netbeans.api.lexer.Token<XMLTokenId> t = tokenSequence.token();
+                                while(t != null) {
+                                    if(t.id() != XMLTokenId.WS) {
+                                        tokenSequence.movePrevious();
                                         break;
-                                    coreTokenId = TokenType.TOKEN_WHITESPACE;
-                                    currentTokens.add(Token.create(token.getImage(), coreTokenId));                                    
-                                    token = token.getNext();
-                                }   
-                                if(token == null || !token.getImage().equals(">"))
+                                    }
+                                    tokenType = TokenType.TOKEN_WHITESPACE;
+                                    currentTokens.add(Token.create(t.text().toString(), tokenType));
+                                    if(!tokenSequence.moveNext())
+                                        break;
+                                    t = tokenSequence.token();
+                                }
+                                if(t == null || !t.text().toString().equals(">"))
                                     throw new IOException("Invalid token '" + saveTokenImage +
                                             "' does not end with '>': Please use the " +
                                             "text editor to resolve the issues...");
@@ -163,51 +176,51 @@ public class XMLSyntaxParser {
                             Node parent = stack.peek();
                             parent.appendChild(currentNode);
                             stack.push(currentNode);
-                            currentTokens.add(Token.create(image,coreTokenId));
+                            currentTokens.add(Token.create(image,tokenType));
                             currentNode.setTokens(new ArrayList<Token>(currentTokens));
                             currentTokens.clear();
                         }
                     }
                     break;
                 }
-                case XMLTokenIDs.ARGUMENT_ID:
+                case ARGUMENT: //attribute of an element
                 {
-                    coreTokenId = TokenType.TOKEN_ATTR_NAME;
+                    tokenType = TokenType.TOKEN_ATTR_NAME;
                     currentNode = new Attribute();
                     Element parent = (Element)stack.peek();
                     parent.appendAttribute((Attribute)currentNode);
-                    currentTokens.add(Token.create(image,coreTokenId));
+                    currentTokens.add(Token.create(image,tokenType));
                     break;
                 }
-                case XMLTokenIDs.VALUE_ID:
-                {
-                    TokenItem nextToken = token.getNext();
-                    isValid(nextToken);
-                    int nextNumericId = nextToken.getTokenID().getNumericID();
-                    while(nextNumericId == XMLTokenIDs.VALUE_ID || nextNumericId == XMLTokenIDs.CHARACTER_ID) {
-                        token = token.getNext();
-                        image = image.concat(token.getImage());
-                        nextNumericId = token.getNext().getTokenID().getNumericID();
-                    }
-                    coreTokenId = TokenType.TOKEN_ATTR_VAL;
-                    currentTokens.add(Token.create(image,coreTokenId));
+                case VALUE:
+                {                    
+//                    tokenSequence.moveNext();
+//                    org.netbeans.api.lexer.Token t = tokenSequence.token();
+//                    while(t.id() == XMLTokenId.VALUE || t.id() == XMLTokenId.CHARACTER) {
+//                        image = image.concat(t.text().toString());
+//                        tokenSequence.moveNext();
+//                        t = tokenSequence.token();
+//                    }
+                    tokenType = TokenType.TOKEN_ATTR_VAL;
+                    currentTokens.add(Token.create(image,tokenType));
                     currentNode.setTokens(new ArrayList<Token>(currentTokens));
                     currentTokens.clear();
                     break;
                 }
-                case XMLTokenIDs.BLOCK_COMMENT_ID:
+                case BLOCK_COMMENT:
                 {
+                    tokenType = TokenType.TOKEN_COMMENT;
                     Node parent = stack.peek();
-                    currentTokens.add(Token.create(image, coreTokenId));
+                    currentTokens.add(Token.create(image, tokenType));
                     if (image.endsWith(Token.COMMENT_END.getValue())) {
                         String combinedString = combineString(currentTokens);
                         Comment comment = new Comment(combinedString);
                         if (parent instanceof Element) {
                             ((Element)parent).appendChild(comment, false);
                         } else {//parent is Document
-                            if(numericId != XMLTokenIDs.BLOCK_COMMENT_ID &&
-                                    token.getImage().trim().length() > 0) {
-                                throw new IOException("Invalid token '" + token.getImage() +
+                            if(token.id() != XMLTokenId.BLOCK_COMMENT &&
+                                    token.text().toString().trim().length() > 0) {
+                                throw new IOException("Invalid token '" + token.text() +
                                         "' found in document: " +
                                         "Please use the text editor to resolve the issues...");
                             }
@@ -217,19 +230,20 @@ public class XMLSyntaxParser {
                     }
                     break;
                 }
-                case XMLTokenIDs.TEXT_ID:
-                case XMLTokenIDs.CHARACTER_ID:
+                case TEXT:
+                case CHARACTER:
                 {
-                    coreTokenId = TokenType.TOKEN_CHARACTER_DATA;
+                    tokenType = TokenType.TOKEN_CHARACTER_DATA;
                     currentNode = new Text();
-                    currentTokens.add(Token.create(image,coreTokenId));
-                    if(numericId == XMLTokenIDs.TEXT_ID) {
-                        while(token.getNext() != null) {
-                            int nextNumericId = token.getNext().getTokenID().getNumericID();
-                            if(nextNumericId != XMLTokenIDs.TEXT_ID && nextNumericId != XMLTokenIDs.CHARACTER_ID)
+                    currentTokens.add(Token.create(image,tokenType));
+                    if(token.id() == XMLTokenId.TEXT) {
+                        while(tokenSequence.moveNext()) {
+                            org.netbeans.api.lexer.Token t = tokenSequence.token();
+                            if(t.id() != XMLTokenId.TEXT && t.id() != XMLTokenId.CHARACTER) {
+                                tokenSequence.movePrevious();
                                 break;
-                            token = token.getNext();
-                            currentTokens.add(Token.create(token.getImage(),coreTokenId));
+                            }
+                            currentTokens.add(Token.create(t.text().toString(), tokenType));
                         }
                     }
                     currentNode.setTokens(new ArrayList<Token>(currentTokens));
@@ -237,9 +251,9 @@ public class XMLSyntaxParser {
                     if (parent instanceof Element) {
                         ((Element)parent).appendChild(currentNode, false);
                     } else {//parent is Document
-                        if(numericId != XMLTokenIDs.BLOCK_COMMENT_ID &&
-                                token.getImage().trim().length() > 0) {
-                            throw new IOException("Invalid token '" + token.getImage() +
+                        if(token.id() != XMLTokenId.BLOCK_COMMENT &&
+                                token.text().toString().trim().length() > 0) {
+                            throw new IOException("Invalid token '" + token.text() +
                                     "' found in document: " +
                                     "Please use the text editor to resolve the issues...");
                         }
@@ -248,44 +262,34 @@ public class XMLSyntaxParser {
                     currentTokens.clear();
                     break;
                 }
-                case XMLTokenIDs.WS_ID:
+                case WS:
                 {
-                    coreTokenId = TokenType.TOKEN_WHITESPACE;
-                    currentTokens.add(Token.create(image, coreTokenId));
+                    tokenType = TokenType.TOKEN_WHITESPACE;
+                    currentTokens.add(Token.create(image, tokenType));
                     break;
                 }
-                case XMLTokenIDs.OPERATOR_ID:
+                case OPERATOR:
                 {
-                    coreTokenId = TokenType.TOKEN_ATTR_EQUAL;
-                    currentTokens.add(Token.create(image,coreTokenId));
+                    tokenType = TokenType.TOKEN_ATTR_EQUAL;
+                    currentTokens.add(Token.create(image,tokenType));
                     break;
                 }
-                case XMLTokenIDs.DECLARATION_ID:
+                case DECLARATION:
                 {
-                    coreTokenId = TokenType.TOKEN_DTD_VAL;
-                    currentTokens.add(Token.create(image, coreTokenId));
-                    while(token.getNext() != null) {
-                        int nextNumericId = token.getNext().getTokenID().getNumericID();
-                        if(nextNumericId != XMLTokenIDs.DECLARATION_ID && nextNumericId != XMLTokenIDs.VALUE_ID)
+                    tokenType = TokenType.TOKEN_DTD_VAL;
+                    currentTokens.add(Token.create(image, tokenType));
+                    while(tokenSequence.moveNext()) {
+                        org.netbeans.api.lexer.Token<XMLTokenId> t = tokenSequence.token();
+                        XMLTokenId id = t.id();                        
+                        if(id != XMLTokenId.DECLARATION && id != XMLTokenId.VALUE) {
+                            tokenSequence.movePrevious();
                             break;
-                        token = token.getNext();
-                        currentTokens.add(Token.create(token.getImage(),coreTokenId));
+                        }
+                        currentTokens.add(Token.create(t.text().toString(), tokenType));
                     }
                     break;
                 }
-                case XMLTokenIDs.PI_CONTENT_ID:
-                {
-                    coreTokenId = TokenType.TOKEN_PI_VAL;
-                    currentTokens.add(Token.create(image, coreTokenId));
-                    break;
-                }
-                case XMLTokenIDs.PI_TARGET_ID:
-                {
-                    coreTokenId = TokenType.TOKEN_PI_NAME;
-                    currentTokens.add(Token.create(image, coreTokenId));
-                    break;
-                }
-                case XMLTokenIDs.CDATA_SECTION_ID:
+                case CDATA_SECTION:
                 {
                     Node parent = stack.peek();
                     CData cdata = new CData(image);
@@ -295,30 +299,27 @@ public class XMLSyntaxParser {
                         throw new IOException("CDATA is not valid as direct child of document" +
                                 "Please use the text editor to resolve the issues...");
                     }
-                    coreTokenId = TokenType.TOKEN_CDATA_VAL;
+                    tokenType = TokenType.TOKEN_CDATA_VAL;
                     break;
                 }
-                case XMLTokenIDs.ERROR_ID:
-                case XMLTokenIDs.EOL_ID:
+                case ERROR:
+                case EOL:
                 default:
-                    //throw new IllegalArgumentException();
-                    throw new IOException("Invalid token '" + token.getImage() + "' found in document: " +
+                    throw new IOException("Invalid token found in document: " +
                             "Please use the text editor to resolve the issues...");
             }
-            token = token.getNext();
         }
         Node result = stack.pop();
         if(result instanceof Document) {           
             return (Document)result;
-        }
-        else
-            //throw new IllegalArgumentException();
+        } else {
             throw new IOException("Document not well formed/Invalid: " +
                     "Please use the text editor to resolve the issues...");
+        }
     }
     
-    private boolean isValid(TokenItem token) throws IOException {
-        if(token!=null && token.getTokenID()!=null)
+    private boolean isValid(org.netbeans.api.lexer.Token token) throws IOException {
+        if(token!=null && token.id() != null)
             return true;
         else
             throw new IOException("Document parsed is invalid: Please use the text " +
@@ -331,5 +332,5 @@ public class XMLSyntaxParser {
             sb.append(t.getValue());
         }
         return sb.toString();
-    } 
+    }
 }

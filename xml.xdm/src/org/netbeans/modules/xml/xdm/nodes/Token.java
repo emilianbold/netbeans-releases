@@ -41,9 +41,6 @@
 
 package org.netbeans.modules.xml.xdm.nodes;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  *
  * @author Ajit Bhate
@@ -87,17 +84,19 @@ public class Token {
 	    case TOKEN_ATTR_EQUAL: {
 		t = EQUALS_TOKEN;
 		break;
-	    } case TOKEN_ELEMENT_END_TAG: {
+	    }
+            case TOKEN_ELEMENT_END_TAG: {
 		t = value.length() == 1 ? CLOSE_ELEMENT:SELF_CLOSE_ELEMENT;
 		break;
-	    } case TOKEN_WHITESPACE: {
+	    }
+            case TOKEN_WHITESPACE: {
                 if(value.equals(" ")){
                     t = WHITESPACE_TOKEN;
                     break;
                 }
             }  
 	    default: {
-		t = new Token(value,type);
+		t = new Token(value.intern(),type);
 	    }
 	}
 	assert t != null;
@@ -123,13 +122,12 @@ public class Token {
 	new Token("]]>", TokenType.TOKEN_CDATA_VAL); //NOI18N
     
     public static final Token COMMENT_START = 
-	new Token("<!--", TokenType.TOKEN_CDATA_VAL); //NOI18N
+	new Token("<!--", TokenType.TOKEN_COMMENT); //NOI18N
     
     public static final Token COMMENT_END =
-	new Token("-->", TokenType.TOKEN_CDATA_VAL); //NOI18N
-
-   // private static Map<String, Token> tokenMap = new HashMap<String, Token>();
-    
+	new Token("-->", TokenType.TOKEN_COMMENT); //NOI18N
+   
     private final String value;
     private final TokenType type;
+    //private static Map<String, Token> tokenPool = new HashMap<String, Token>();
 }

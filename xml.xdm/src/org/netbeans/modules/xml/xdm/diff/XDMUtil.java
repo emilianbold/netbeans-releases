@@ -44,9 +44,7 @@ package org.netbeans.modules.xml.xdm.diff;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.xml.text.syntax.XMLKit;
@@ -63,7 +61,6 @@ import org.netbeans.modules.xml.xdm.visitor.PositionFinderVisitor;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import javax.swing.text.Document;
-import org.netbeans.modules.xml.xdm.nodes.Token;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 

@@ -47,8 +47,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.text.BadLocationException;
@@ -57,6 +55,8 @@ import javax.swing.undo.UndoableEdit;
 import javax.swing.undo.UndoableEditSupport;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.ElementIdentity;
@@ -161,7 +161,9 @@ public class XDMModel {
     public synchronized void prepareSync() {
         Status oldStat = getStatus();
         try {
-            setStatus(Status.PARSING);  // to access in case old broken tree
+            setStatus(Status.PARSING);  // to access in case old broken tree            
+            //must set the language for XML lexer to work.
+            getSwingDocument().putProperty(Language.class, XMLTokenId.language());
             Document newDoc = parser.parse(getSwingDocument());
             Document oldDoc = getCurrentDocument();
             if (oldDoc == null) {
