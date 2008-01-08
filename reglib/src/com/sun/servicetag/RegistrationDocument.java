@@ -176,6 +176,7 @@ class RegistrationDocument {
     // initialize a new document for the registration data
     private static Document initializeDocument() throws IOException {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setNamespaceAware(true);
         try {
             DocumentBuilder builder = factory.newDocumentBuilder();
             Document doc = builder.newDocument();
