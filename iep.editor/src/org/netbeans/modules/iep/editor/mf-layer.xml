@@ -35,7 +35,7 @@
             <file name="EventProcess.iep" url="empty.iep">
                 <attr name="template" boolvalue="true"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.compapp.projects.wizard.NewFileIterator.genericFileIterator"/>
-                <!--<attr name="instantiatingIterator" newvalue="org.netbeans.modules.iep.editor.wizard.IEPWizardIterator"/>-->
+                <!--<attr name="instantiatingIterator" newvalue="org.netbeans.modules.iep.editor.wizard.IEPWizardIterator"/> -->
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.iep.editor.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/iep/editor/eventProcess.png"/> 
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/iep/editor/template.html"/> 
