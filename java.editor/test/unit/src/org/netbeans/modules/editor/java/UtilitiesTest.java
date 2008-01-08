@@ -105,6 +105,16 @@ public class UtilitiesTest extends NbTestCase {
                 "}", "test(java.lang.String,int)");
     }
     
+    public void testFuzzyResolveMethod124901() throws Exception {
+        performTest("package test;" +
+                "public class Test<K> {" +
+                "   private K read() {return null;}\n" +
+                "   private void test() {" +
+                "       read().read();\n" +
+                "   }" +
+                "}", "<not resolved>", "<not resolved>");
+    }
+    
     public void testFuzzyResolveConstructor1() throws Exception {
         performTest("package test;" +
                 "public class Test {" +
@@ -124,7 +134,7 @@ public class UtilitiesTest extends NbTestCase {
                 "       new Font(getSetting(\"fontName\"), Font.BOLD, 12);" +
                 "   }\n" +
                 "   public Object getSetting(String s) {return s;}\n" +
-                "}", "Font(java.lang.String,int,int)", "");
+                "}", "Font(java.lang.String,int,int)", "<not resolved>");
     }
     
     private FileObject source;
@@ -159,7 +169,7 @@ public class UtilitiesTest extends NbTestCase {
                             if (ee != null) {
                                 result.add(ee.toString()); //XXX
                             } else {
-                                result.add("");
+                                result.add("<not resolved>");
                             }
                         }
                         
@@ -174,7 +184,7 @@ public class UtilitiesTest extends NbTestCase {
                             if (ee != null) {
                                 result.add(ee.toString()); //XXX
                             } else {
-                                result.add("");
+                                result.add("<not resolved>");
                             }
                         }
                         

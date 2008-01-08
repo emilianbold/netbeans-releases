@@ -632,6 +632,10 @@ public class Utilities {
                     throw new IllegalStateException();
             }
 
+            if (on == null || on.getKind() != TypeKind.DECLARED) {
+                return null;
+            }
+            
             return resolveMethod(info, actualTypes, (DeclaredType) on, false, false, methodName, proposed, index);
         }
         
@@ -645,6 +649,10 @@ public class Utilities {
             }
 
             TypeMirror on = info.getTrees().getTypeMirror(new TreePath(path, nct.getIdentifier()));
+            
+            if (on == null || on.getKind() != TypeKind.DECLARED) {
+                return null;
+            }
             
             return resolveMethod(info, actualTypes, (DeclaredType) on, false, true, null, proposed, index);
         }
