@@ -143,12 +143,43 @@ final class NodeListener implements MouseListener, KeyListener,
         if (path == null) {
             return;
         }
-
-        final ResultModel resultModel = getResultModel(tree);
-        tree.setSelectionPath(path);
-        if (!isInsideCheckBox(tree, path, resultModel, e)) {
-            showPopup(tree, path, resultModel, e);
+        if (!isPathSelected(path, tree)) {
+            tree.setSelectionPath(path);
         }
+        if (tree.getSelectionCount() == 1) {
+            final ResultModel resultModel = getResultModel(tree);
+            if (!isInsideCheckBox(tree, path, resultModel, e)) {
+                showPopup(tree, path, resultModel, e);
+            }
+        }
+    }
+
+    /**
+     * Checks whether the given tree path is among the paths currently selected
+     * in the given tree.
+     * @param  path  the path whose selection is to be probed
+     * @param  tree  tree whose selection is to be probed
+     * @return  {@code true} if the given path is selected in the given tree,
+     *          {@code false} otherwise
+     */
+    private static boolean isPathSelected(final TreePath path,
+                                          final JTree tree) {
+        int selCount = tree.getSelectionCount();
+        if (selCount == 0) {
+            return false;
+        }
+
+        if (selCount == 1) {
+            return tree.getSelectionPath().equals(path);
+        }
+
+        for (TreePath tp : tree.getSelectionPaths()) {
+            if (tp.equals(path)) {
+                return true;
+            }
+        }
+
+        return false;
     }
     
     /**
@@ -193,7 +224,7 @@ final class NodeListener implements MouseListener, KeyListener,
             assert false;
         }
     }
-    
+
     /**
      * Auto-collapses a given file node if appropriate after
      * the select or unselect operation. The behaviour is given by constants
@@ -608,8 +639,8 @@ final class NodeListener implements MouseListener, KeyListener,
             }
             Node nbNode = getNbNode(selectedPath, getResultModel(tree));
             callDefaultAction(nbNode, e.getSource(), e.getID(), "enter");   //NOI18N
+            }
         }
-    }
 
     public void treeWillExpand(TreeExpansionEvent event)
                                             throws ExpandVetoException {
