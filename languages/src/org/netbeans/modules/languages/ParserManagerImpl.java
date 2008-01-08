@@ -480,6 +480,13 @@ public class ParserManagerImpl extends ParserManager {
             } finally {
                 document.readUnlock ();
             }
+//            final StyledDocument document = (StyledDocument) it.next ();
+//            NbDocument.runAtomic (document, new Runnable () {
+//                public void run() {
+//                    MutableTextInput mti = (MutableTextInput) document.getProperty (MutableTextInput.class);
+//                    mti.tokenHierarchyControl ().rebuild ();
+//                }
+//            });
         }
     }
     

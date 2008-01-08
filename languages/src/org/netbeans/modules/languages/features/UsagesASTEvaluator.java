@@ -284,20 +284,19 @@ class UsagesASTEvaluator extends ASTEvaluator {
                 getUnusedParameterAttributes ()
             );
         else
-        if ("variable".equals (definition.getType ()))
-            SemanticHighlightsLayer.addHighlight (
-                document, 
-                definition.getOffset (), 
-                definition.getEndOffset (), 
-                getUnusedLocalVariableAttributes ()
-            );
-        else
         if ("field".equals (definition.getType ()))
             SemanticHighlightsLayer.addHighlight (
                 document, 
                 definition.getOffset (), 
                 definition.getEndOffset (), 
                 getUnusedFieldAttributes ()
+            );
+        else
+            SemanticHighlightsLayer.addHighlight (
+                document, 
+                definition.getOffset (), 
+                definition.getEndOffset (), 
+                getUnusedLocalVariableAttributes ()
             );
     }
     
