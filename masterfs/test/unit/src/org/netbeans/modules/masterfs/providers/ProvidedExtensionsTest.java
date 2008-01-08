@@ -442,7 +442,7 @@ public class ProvidedExtensionsTest extends NbTestCase {
         
         private static  boolean implsMoveRetVal = true;
         private static boolean implsRenameRetVal = true;
-        private static boolean implsDeleteRetVal = true;
+        private static boolean implsDeleteRetVal = false;
         
         public static FileLock lock;
         

@@ -84,6 +84,10 @@ public final class FileInfo {
     private FileObject fObject = null;
     
 
+    public FileInfo(final File file, int exists) {
+        this.file = file;
+        this.exists = exists; 
+    }
 
     public FileInfo(final File file) {
         this.file = file;

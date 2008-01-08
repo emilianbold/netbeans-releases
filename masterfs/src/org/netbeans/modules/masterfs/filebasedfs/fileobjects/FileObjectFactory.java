@@ -114,7 +114,7 @@ public final class FileObjectFactory {
         if (name == null) return null;
 
         if (name.isFile() && !name.isDirectory()) {
-            assert name.getFile() != null &&  (name.getFile().isFile() || !name.getFile().isDirectory()) : name;
+            //assert name.getFile() != null &&  (name.getFile().isFile() || !name.getFile().isDirectory()) : name;
             final FileObj realRoot = new FileObj(file, name);
             FolderObj par = (FolderObj)realRoot.getExistingParent();
             if (par != null && par.getChildrenCache().getChild(name.getName(), false) == null) {
@@ -124,37 +124,12 @@ public final class FileObjectFactory {
         }
         
         if (!name.isFile() && name.isDirectory()) {            
-            assert name.getFile() != null &&  (!name.getFile().isFile() || name.getFile().isDirectory()) : name;
+            //assert name.getFile() != null &&  (!name.getFile().isFile() || name.getFile().isDirectory()) : name;
             final FolderObj realRoot = new FolderObj(file, name);
             FolderObj par = (FolderObj)realRoot.getExistingParent();            
             if (par != null && par.getChildrenCache().getChild(name.getName(), false) == null) {
                 return null;
             }            
-            return putInCache(realRoot, realRoot.getFileName().getId());
-        }
-
-        if (!name.isFile() && !name.isDirectory() || fInfo.isUnixSpecialFile()) {
-            assert name.getFile() != null &&  (name.getFile().isFile() == name.getFile().isDirectory()) : name;            
-            final FileObj realRoot = new FileObj(file, name) {
-                public InputStream getInputStream() throws FileNotFoundException {
-                    return new ByteArrayInputStream(new byte[] {});
-                }                
-                public boolean isReadOnly() {
-                    return true;
-                }               
-                
-                public OutputStream getOutputStream(final FileLock lock) throws IOException {
-                    throw new IOException(file.getAbsolutePath());
-                }                
-
-                public boolean canWrite() {
-                    return !isReadOnly();
-                }
-            };
-            FolderObj par = (FolderObj)realRoot.getExistingParent();            
-            if (par != null && par.getChildrenCache().getChild(name.getName(), false) == null) {
-                return null;
-            }                        
             return putInCache(realRoot, realRoot.getFileName().getId());
         }
 

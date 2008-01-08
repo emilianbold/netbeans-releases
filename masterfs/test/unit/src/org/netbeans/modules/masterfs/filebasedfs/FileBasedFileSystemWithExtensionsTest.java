@@ -39,55 +39,24 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.masterfs;
+package org.netbeans.modules.masterfs.filebasedfs;
 
-import java.io.IOException;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
+import junit.framework.Test;
+import org.netbeans.modules.masterfs.providers.ProvidedExtensionsTest;
 
 /**
- * @author Radek Matous
+ * @author  rm111737
  */
-public class URLMapperTest extends NbTestCase {
-    private static FileSystem mfs;
-    public URLMapperTest(String name) {
-        super(name);
-        try {
-            mfs = FileBasedFileSystem.getInstance(getWorkDir());
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+public class FileBasedFileSystemWithExtensionsTest extends FileBasedFileSystem2Test {
+    /** Creates new MasterFileSystemTest */
+    public FileBasedFileSystemWithExtensionsTest(Test test) {
+        super(test);
+        ProvidedExtensionsTest.ProvidedExtensionsImpl.setImplsMoveRetVal(true);
+        ProvidedExtensionsTest.ProvidedExtensionsImpl.setImplsRenameRetVal(true);        
+        ProvidedExtensionsTest.ProvidedExtensionsImpl.setImplsDeleteRetVal(true);                
     }
 
-    public void testURLMapperCallingFromMetaInfLookup() {
-        Lookup lkp = Lookups.metaInfServices(Thread.currentThread().getContextClassLoader());
-        Object obj = lkp.lookup(Object.class);
-        assertNotNull(obj);
-        assertEquals(MyInstance2.class, obj.getClass());
+    public static Test suite() {
+        return new FileBasedFileSystemWithExtensionsTest(FileBasedFileSystem2Test.suite());
     }
-
-    public static class MyInstance2 {
-        public MyInstance2() {
-            super();
-            testURLMapper();
-        }
-
-        private static void testURLMapper() {            
-            assertNotNull(mfs);
-            FileObject[] children = mfs.getRoot().getChildren();
-            for (int i = 0; i < children.length; i++) {
-                java.io.File file = FileUtil.toFile(children[i]);
-                assertNotNull(file);
-                assertNotNull(FileUtil.toFileObject(file));
-            }
-        }
-
-    }
-
 }

@@ -48,6 +48,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
+import org.openide.util.Utilities;
 
 /**
  * @author Radek Matous
@@ -65,7 +66,10 @@ public final class NamingFactory {
 
         FileNaming fileName = null;
         for (int i = 0; i < list.size(); i++) {
-            fileName = NamingFactory.registerInstanceOfFileNaming(fileName, (File) list.get(i));
+            File f = (File) list.get(i);
+            //TODO: UNC?
+            FileType type = (i == list.size() - 1) ? FileType.unknown : FileType.directory;
+            fileName = NamingFactory.registerInstanceOfFileNaming(fileName, f, type);
         }
 
         return fileName;
@@ -76,7 +80,7 @@ public final class NamingFactory {
     }
     
     public static synchronized FileNaming fromFile(final FileNaming parentFn, final File file) {            
-        return NamingFactory.registerInstanceOfFileNaming(parentFn, file);
+        return NamingFactory.registerInstanceOfFileNaming(parentFn, file, FileType.unknown);
     }
     
     public static synchronized void checkCaseSensitivity(final FileNaming childName, final File f) {
@@ -98,7 +102,7 @@ public final class NamingFactory {
         remove(fNaming, null);
         retVal = fNaming.rename(newName, handler);
         all.add(fNaming);
-        NamingFactory.registerInstanceOfFileNaming(fNaming.getParent(), fNaming.getFile(), fNaming,true);
+        NamingFactory.registerInstanceOfFileNaming(fNaming.getParent(), fNaming.getFile(), fNaming,true, FileType.unknown);
         renameChildren(all);
         return (retVal) ? ((FileNaming[])all.toArray(new FileNaming[all.size()])) : null;
     }
@@ -138,7 +142,7 @@ public final class NamingFactory {
             all.add(fN);    
             remove(fN, id);
             fN.getId(true);
-            NamingFactory.registerInstanceOfFileNaming(fN.getParent(), fN.getFile(), fN,false);            
+            NamingFactory.registerInstanceOfFileNaming(fN.getParent(), fN.getFile(), fN,false, FileType.unknown);            
         }
     }
 
@@ -158,11 +162,11 @@ public final class NamingFactory {
     public static Integer createID(final File file) {
         return new Integer(file.hashCode());
     }
-    private static FileNaming registerInstanceOfFileNaming(final FileNaming parentName, final File file) {
-        return NamingFactory.registerInstanceOfFileNaming(parentName, file, null,false);       
+    private static FileNaming registerInstanceOfFileNaming(final FileNaming parentName, final File file, FileType type) {
+        return NamingFactory.registerInstanceOfFileNaming(parentName, file, null,false, type);       
     }
 
-    private static FileNaming registerInstanceOfFileNaming(final FileNaming parentName, final File file, final FileNaming newValue,boolean ignoreCache) {
+    private static FileNaming registerInstanceOfFileNaming(final FileNaming parentName, final File file, final FileNaming newValue,boolean ignoreCache, FileType type) {
         FileNaming retVal;
         
         final Object value = NamingFactory.nameMap.get(new Integer(file.hashCode()));
@@ -174,7 +178,7 @@ public final class NamingFactory {
         if (!ignoreCache && cachedElement != null && cachedElement.getFile().compareTo(file) == 0) {
             retVal = cachedElement;
         } else {
-            retVal = (newValue == null) ? NamingFactory.createFileNaming(file, parentName) : newValue;
+            retVal = (newValue == null) ? NamingFactory.createFileNaming(file, parentName, type) : newValue;
             final WeakReference refRetVal = new WeakReference(retVal);
 
             final boolean isList = (value instanceof List);
@@ -244,35 +248,40 @@ public final class NamingFactory {
         return retVal;
     }
 
-    private static FileNaming createFileNaming(final File f, final FileNaming parentName) {
+    public static enum FileType {file, directory, unc, unknown}
+    private static FileNaming createFileNaming(final File f, final FileNaming parentName) {    
+        return createFileNaming(f, parentName, FileType.unknown);
+    }
+    
+    private static FileNaming createFileNaming(final File f, final FileNaming parentName, FileType type) {
         FileName retVal = null;
         //TODO: check all tests for isFile & isDirectory
         final FileInfo fInfo = new FileInfo(f);
-
-        if (f.isFile()) {
-            retVal = new FileName(parentName, f);
-        } else {
+        if (type.equals(FileType.unknown)) {
             if (f.isDirectory()) {
-                retVal = new FolderName(parentName, f);
+                type = FileType.directory;
             } else {
-                if (fInfo.isUNCFolder()) {
-                    retVal = new UNCName(parentName, f);
-                }
-            }
+                //important for resolving  named pipes
+                 type = FileType.file;
+                 /*else {
+                    if (fInfo.isUNCFolder()) {
+                        type = FileType.unc;
+                    }
+                }*/ //UNC doesn't work now anyway
+            }            
         }
-
-        if (retVal == null /*&& new FileInfo(f).isUnixSpecialFile()*/) {
-            // broken symlinks and other for me unknown files (sockets or whatever it is)
-            retVal = new FileName(parentName, f) {
-                public boolean isDirectory() {
-                    return false;
-                }
-
-                public boolean isFile() {
-                    return false;
-                }                
-            };
-
+        
+        switch(type) {
+            case file:
+                retVal = new FileName(parentName, f);
+                break;
+            case directory:
+                retVal = new FolderName(parentName, f);
+                break;
+            case unc:
+                retVal = new UNCName(parentName, f);
+                break;
+                                
         }
 
         assert retVal != null /*|| !fInfo.isConvertibleToFileObject()*/ : f.getAbsolutePath() + " isDirectory: " + f.isDirectory() + " isFile: " + f.isFile() + " exists: " + f.exists();//NOI18N

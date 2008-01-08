@@ -197,11 +197,11 @@ public final class RootObj extends FileObject {
 
 
     public final FileObject createFolder(final String name) throws IOException {
-        throw new IOException(getPath());
+        return realRoot.createFolder(name);
     }
 
     public final FileObject createData(final String name, final String ext) throws IOException {
-        throw new IOException(getPath());
+        return realRoot.createData(name, ext);
     }
 
     public final boolean isReadOnly() {

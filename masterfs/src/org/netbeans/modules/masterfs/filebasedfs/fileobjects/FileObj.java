@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -60,6 +61,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Enumerations;
 import org.openide.util.Mutex;
+import org.openide.util.Utilities;
 
 /**
  * @author rm111737
@@ -76,12 +78,21 @@ public class FileObj extends BaseFileObj {
     }
 
     public OutputStream getOutputStream(final FileLock lock) throws IOException {
-        return getOutputStream(lock, null, null);
+        ProvidedExtensions extensions = getProvidedExtensions();
+        File file = getFileName().getFile();
+        if (!Utilities.isWindows() && !file.isFile()) {
+            throw new IOException(file.getAbsolutePath());
+        }
+        return getOutputStream(lock, extensions, this);
     }
     
     public OutputStream getOutputStream(final FileLock lock, ProvidedExtensions extensions, FileObject mfo) throws IOException {
         final File f = getFileName().getFile();
 
+        if (!Utilities.isWindows() && !f.isFile()) {
+            throw new IOException(f.getAbsolutePath());
+        }
+        
         if (extensions != null) {
             extensions.beforeChange(mfo);
         }        
@@ -126,8 +137,11 @@ public class FileObj extends BaseFileObj {
         MutualExclusionSupport.Closeable closeableReference = null;
         
         try {
+            if (!Utilities.isWindows() && !f.isFile()) { 
+                return new ByteArrayInputStream(new byte[] {});  
+            }             
             final MutualExclusionSupport.Closeable closable = MutualExclusionSupport.getDefault().addResource(this, true);
-            closeableReference = closable;
+            closeableReference = closable;            
             inputStream = new FileInputStream(f) {
                 public void close() throws IOException {
                     super.close();
@@ -160,6 +174,24 @@ public class FileObj extends BaseFileObj {
         return inputStream;
     }
 
+    @Override
+    public boolean isReadOnly() {
+        final File f = getFileName().getFile();
+        if (!Utilities.isWindows() && !f.isFile()) {
+            return true;
+        }        
+        return super.isReadOnly();
+    }
+
+    @Override
+    public boolean canWrite() {
+        final File f = getFileName().getFile();        
+        if (!Utilities.isWindows() && !f.isFile()) {
+            return false;
+        }                
+        return super.canWrite();
+    }
+        
     public final Date lastModified() {
         final File f = getFileName().getFile();
         return new Date(f.lastModified());
@@ -269,12 +301,9 @@ public class FileObj extends BaseFileObj {
     public final FileLock lock() throws IOException {
         final File me = getFileName().getFile();
         try {            
-            boolean lightWeightLock = false;
-            BaseFileObj bfo = getExistingParent();            
-            if (bfo instanceof FolderObj) {
-                lightWeightLock = ((FolderObj)bfo).isLightWeightLockRequired();
-            }
-            return WriteLockFactory.tryLock(me, lightWeightLock);
+            final FileLock result = LockForFile.tryLock(me);
+            getProvidedExtensions().fileLocked(this);
+            return result;
         } catch (FileNotFoundException ex) {
             FileNotFoundException fex = ex;                        
             if (!me.exists()) {
@@ -295,7 +324,7 @@ public class FileObj extends BaseFileObj {
 
     final boolean checkLock(final FileLock lock) throws IOException {
         final File f = getFileName().getFile();
-        return ((lock instanceof WriteLock) && (((WriteLock) lock).isValid(f)));
+        return ((lock instanceof LockForFile) && (((LockForFile) lock).getFile().equals(f)));
     }
 
     public void rename(final FileLock lock, final String name, final String ext, ProvidedExtensions.IOHandler handler) throws IOException {

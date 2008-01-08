@@ -41,19 +41,29 @@
 
 package org.netbeans.modules.masterfs.filebasedfs;
 
+import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
+import java.io.ObjectStreamException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
+import org.netbeans.modules.masterfs.ProvidedExtensionsProxy;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
+import org.netbeans.modules.masterfs.providers.AnnotationProvider;
+import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -61,7 +71,9 @@ import org.openide.util.actions.SystemAction;
  */
 public final class FileBasedFileSystem extends FileSystem {
     private static Map allInstances = new HashMap();
-    private final FileObjectFactory factory;
+    private transient final FileObjectFactory factory;
+    transient private final StatusImpl status = new StatusImpl();
+    
 
     //only for tests purposes
     public static void reinitForTests() {
@@ -97,7 +109,11 @@ public final class FileBasedFileSystem extends FileSystem {
             return new ArrayList(allInstances.values());
         }
     }
-    
+
+    public Status getStatus() {
+        return status;
+    }
+            
     static int getSize () {
         synchronized (FileBasedFileSystem.allInstances) {
             return allInstances.size();
@@ -143,6 +159,10 @@ public final class FileBasedFileSystem extends FileSystem {
     }
 
     public final SystemAction[] getActions(final Set/*<FileObject>*/ foSet) {
+        SystemAction[] some = status.getActions (foSet);
+        if (some != null) {
+            return some;
+        }        
         return new SystemAction[] {};
 
     }
@@ -185,4 +205,140 @@ public final class FileBasedFileSystem extends FileSystem {
     public final FileObjectFactory getFactory() {
         return factory;
     }
+    
+    public Object writeReplace() throws ObjectStreamException {
+        return new SerReplace(this);
+    }
+        
+    private static class SerReplace implements Serializable {
+        /** serial version UID */
+        static final long serialVersionUID = -3714631266626840241L;        
+        private File root;
+        SerReplace(FileSystem fs) {
+            root = FileUtil.toFile(fs.getRoot());
+            assert root != null;
+        }        
+        
+        public Object readResolve() throws ObjectStreamException {
+            return FileBasedFileSystem.getInstance(root);
+        }        
+    }
+        
+    public final class StatusImpl implements FileSystem.HtmlStatus,
+    org.openide.util.LookupListener, org.openide.filesystems.FileStatusListener {
+        /** result with providers */
+        private org.openide.util.Lookup.Result annotationProviders;
+        private Collection previousProviders;
+        {
+            annotationProviders = org.openide.util.Lookup.getDefault ().lookup (
+                new org.openide.util.Lookup.Template (AnnotationProvider.class)
+            );
+            annotationProviders.addLookupListener (this);
+            resultChanged (null);
+        }
+
+        public ProvidedExtensions getExtensions() {
+            Collection c = (previousProviders != null) ?
+                Collections.unmodifiableCollection(previousProviders) : Collections.EMPTY_LIST;
+            return new ProvidedExtensionsProxy(c);
+        }
+        
+        public void resultChanged (org.openide.util.LookupEvent ev) {
+            java.util.Collection now = annotationProviders.allInstances ();
+            java.util.Collection add;
+            
+            if (previousProviders != null) {
+                add = new HashSet (now);
+                add.removeAll (previousProviders);
+                
+                HashSet toRemove = new HashSet(previousProviders);
+                toRemove.removeAll (now);
+                java.util.Iterator it = toRemove.iterator ();
+                while (it.hasNext ()) {
+                    AnnotationProvider ap = (AnnotationProvider)it.next ();
+                    ap.removeFileStatusListener (this);
+                }
+            
+            } else {
+                add = now;
+            }
+
+            
+            
+            java.util.Iterator it = add.iterator ();
+            while (it.hasNext ()) {
+                AnnotationProvider ap = (AnnotationProvider)it.next ();
+                try {
+                    ap.addFileStatusListener (this);
+                } catch (java.util.TooManyListenersException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            
+            previousProviders = now;
+        }
+
+        public SystemAction[] getActions(java.util.Set foSet) {
+            
+            javax.swing.Action[] retVal = null;
+            java.util.Iterator it = annotationProviders.allInstances ().iterator ();
+            while (retVal == null && it.hasNext ()) {
+                AnnotationProvider ap = (AnnotationProvider)it.next ();
+                retVal = ap.actions (foSet);
+            }
+            if (retVal != null) {
+                // right now we handle just SystemAction, it can be changed if necessary
+                SystemAction[] ret = new SystemAction[retVal.length];
+                for (int i = 0; i < retVal.length; i++) {
+                    if (retVal[i] instanceof SystemAction) {
+                        ret[i] = (SystemAction)retVal[i];
+                    }
+                }
+                return ret;
+            }
+            return null;
+        }
+        
+        public void annotationChanged (org.openide.filesystems.FileStatusEvent ev) {
+            fireFileStatusChanged (ev);
+        }
+                
+        public Image annotateIcon(Image icon, int iconType, Set files) {
+            Image retVal = null;            
+            
+            Iterator it = annotationProviders.allInstances ().iterator ();
+            while (retVal == null && it.hasNext ()) {
+                AnnotationProvider ap = (AnnotationProvider)it.next ();
+                retVal = ap.annotateIcon (icon, iconType, files);
+            }
+            if (retVal != null) {
+                return retVal;
+            }
+                        
+            return icon;
+        }
+
+        public String annotateName(String name, Set files) {
+            String retVal = null;
+            Iterator it = annotationProviders.allInstances ().iterator ();
+            while (retVal == null && it.hasNext ()) {
+                AnnotationProvider ap = (AnnotationProvider)it.next ();
+                retVal = ap.annotateName (name, files);
+            }
+            if (retVal != null) {
+                return retVal;
+            }
+            return name;
+        }
+
+        public String annotateNameHtml(String name, Set files) {
+            String retVal = null;
+            Iterator it = annotationProviders.allInstances ().iterator ();
+            while (retVal == null && it.hasNext ()) {
+                AnnotationProvider ap = (AnnotationProvider)it.next ();
+                retVal = ap.annotateNameHtml (name, files);
+            }
+            return retVal;
+        }
+    }        
 }

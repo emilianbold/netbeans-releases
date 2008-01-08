@@ -39,55 +39,75 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.masterfs;
+package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
 
-import java.io.IOException;
+import org.netbeans.modules.masterfs.*;
+import java.io.File;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 
 /**
- * @author Radek Matous
+ *
+ * @author rmatous
  */
-public class URLMapperTest extends NbTestCase {
-    private static FileSystem mfs;
-    public URLMapperTest(String name) {
-        super(name);
-        try {
-            mfs = FileBasedFileSystem.getInstance(getWorkDir());
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+public class FileObjectFactoryTest extends NbTestCase {
+    private File testFile;
+    private FileObject testFo;
+
+
+    public FileObjectFactoryTest(String testName) {
+        super(testName);
     }
 
-    public void testURLMapperCallingFromMetaInfLookup() {
-        Lookup lkp = Lookups.metaInfServices(Thread.currentThread().getContextClassLoader());
-        Object obj = lkp.lookup(Object.class);
-        assertNotNull(obj);
-        assertEquals(MyInstance2.class, obj.getClass());
+    protected void setUp() throws Exception {
+        super.setUp();
+        testFile = new File(getWorkDir(),"testfile");//NOI18N
+        if (!testFile.exists()) {
+            assert testFile.createNewFile();
+        }
+        testFo = FileUtil.toFileObject(testFile);
+        assert testFo != null;
+        
+    }
+    /*
+    public void testIssue64363() throws Exception {
+        assertTrue(testFo.isValid());
+        assertTrue(testFile.delete());
+        testFo.getFileSystem().findResource(testFo.getPath());        
+                
+        FileObject testFo2 = Cache.getDefault().getValidOrInvalid(((MasterFileObject)testFo).getResource());
+        if (!ProvidedExtensionsTest.ProvidedExtensionsImpl.isImplsDeleteRetVal()) {
+            assertFalse(testFo2.isValid());
+        }
+        assertEquals(testFo, testFo2);        
+    }
+    
+    public void testIssue61221() throws Exception {        
+        assertTrue(testFo.isValid());
+        FileObject par = testFo.getParent();
+        testFo.delete();
+        MasterFileObject testFo2 = (MasterFileObject)par.createData(testFo.getNameExt());
+        assertNotSame(testFo2, testFo);
+        Reference ref = new WeakReference(testFo);
+        testFo = null;
+        assertGC("",ref);
+        MasterFileObject testFo3 = (MasterFileObject)par.getFileObject(testFo2.getNameExt());
+        assertEquals(testFo3.isValid(), testFo2.isValid());
+        assertSame(testFo3, testFo2);
     }
 
-    public static class MyInstance2 {
-        public MyInstance2() {
-            super();
-            testURLMapper();
-        }
-
-        private static void testURLMapper() {            
-            assertNotNull(mfs);
-            FileObject[] children = mfs.getRoot().getChildren();
-            for (int i = 0; i < children.length; i++) {
-                java.io.File file = FileUtil.toFile(children[i]);
-                assertNotNull(file);
-                assertNotNull(FileUtil.toFileObject(file));
-            }
-        }
-
+    public void testIssue61221_2() throws Exception {        
+        assertTrue(testFo.isValid());
+        FileObject par = testFo.getParent();
+        testFo.delete();
+        MasterFileObject testFo2 = (MasterFileObject)par.createData(testFo.getNameExt());
+        assertNotSame(testFo2, testFo);
+        Reference ref = new WeakReference(testFo);
+        testFo = null;
+        assertGC("",ref);
+        assertNotNull(Cache.getDefault().get(testFo2.getResource()));
     }
-
+    
+*/    
 }

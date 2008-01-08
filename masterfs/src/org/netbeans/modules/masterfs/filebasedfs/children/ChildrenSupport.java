@@ -199,7 +199,7 @@ public final class ChildrenSupport {
         //assert childs != null : folder.getAbsolutePath();
         if (childs != null) {
             for (int i = 0; i < childs.length; i++) {
-                final FileInfo fInfo = new FileInfo(childs[i]);
+                final FileInfo fInfo = new FileInfo(childs[i],1);
                 if (fInfo.isConvertibleToFileObject()) {
                     FileNaming child = NamingFactory.fromFile(folderName, childs[i]);
                     assert child.getParent() == folderName;

@@ -110,7 +110,7 @@ public final class FolderObj extends BaseFileObj {
         assert lfs != null;
 
         if (child != null) {
-            retVal = lfs.findFileObject(file);
+            retVal = lfs.findFileObject(new FileInfo(file, 1));
         }
 
         return retVal;
@@ -185,12 +185,18 @@ public final class FolderObj extends BaseFileObj {
     }
 
     private void createFolder(final File folder2Create, final String name) throws IOException {
-        boolean isSupported = new FileInfo(folder2Create).isSupportedFile();                                    
+        boolean isSupported = new FileInfo(folder2Create).isSupportedFile();
+        ProvidedExtensions extensions =  getProvidedExtensions();
+        extensions.beforeCreate(this, folder2Create.getName(), true);
+
         if (!isSupported) { 
+            extensions.createFailure(this, folder2Create.getName(), true);
             FSException.io("EXC_CannotCreateFolder", folder2Create.getName(), getPath());// NOI18N   
         } else if (folder2Create.exists()) {
+            extensions.createFailure(this, folder2Create.getName(), true);            
             FSException.io("EXC_CannotCreateExistingFolder", folder2Create.getName(), getPath());// NOI18N               
         } else if (!folder2Create.mkdirs()) {
+            extensions.createFailure(this, folder2Create.getName(), true);
             FSException.io("EXC_CannotCreateFolder", folder2Create.getName(), getPath());// NOI18N               
         }
         LogRecord r = new LogRecord(Level.FINEST, "FolderCreated: "+ folder2Create.getAbsolutePath());
@@ -240,11 +246,17 @@ public final class FolderObj extends BaseFileObj {
 
     private void createData(final File file2Create) throws IOException {
         boolean isSupported = new FileInfo(file2Create).isSupportedFile();                        
+        ProvidedExtensions extensions =  getProvidedExtensions();
+        extensions.beforeCreate(this, file2Create.getName(), false);
+        
         if (!isSupported) {             
+            extensions.createFailure(this, file2Create.getName(), false);
             FSException.io("EXC_CannotCreateData", file2Create.getName(), getPath());// NOI18N
         } else if (file2Create.exists()) {
+            extensions.createFailure(this, file2Create.getName(), false);
             FSException.io("EXC_CannotCreateExistingData", file2Create.getName(), getPath());// NOI18N
         } else if (!file2Create.createNewFile()) {
+            extensions.createFailure(this, file2Create.getName(), false);            
             FSException.io("EXC_CannotCreateData", file2Create.getName(), getPath());// NOI18N
         }        
         LogRecord r = new LogRecord(Level.FINEST, "DataCreated: "+ file2Create.getAbsolutePath());

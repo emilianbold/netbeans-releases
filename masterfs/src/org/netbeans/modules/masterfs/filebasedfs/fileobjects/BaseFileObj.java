@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
 
-import java.util.Iterator;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 import org.netbeans.modules.masterfs.filebasedfs.Statistics;
 import org.netbeans.modules.masterfs.filebasedfs.children.ChildrenCache;
@@ -50,20 +49,19 @@ import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FSException;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
 import org.netbeans.modules.masterfs.providers.Attributes;
+import org.netbeans.modules.masterfs.providers.ProvidedExtensions.IOHandler;
 import org.openide.filesystems.*;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Mutex;
 
 import javax.swing.event.EventListenerList;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.List;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.openide.util.Enumerations;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 
 /**
  * Implements FileObject methods as simple as possible.
@@ -78,6 +76,10 @@ public abstract class BaseFileObj extends FileObject {
     private static final char UNC_PREFIX = '\\';//NOI18N
     private static final String PATH_SEPARATOR = "/";//NOI18N
     private static final char EXT_SEP = '.';//NOI18N
+    private FileChangeListener versioningWeakListener;    
+    private final FileChangeListener versioningListener = new FileChangeListenerForVersioning();
+    
+
     
     //static fields 
     static final long serialVersionUID = -1244650210876356809L;
@@ -94,13 +96,16 @@ public abstract class BaseFileObj extends FileObject {
 
 
     protected BaseFileObj(final File file) {
-        this.fileName = NamingFactory.fromFile(file);
+        this(file, NamingFactory.fromFile(file));
     }
     
     protected BaseFileObj(final File file, final FileNaming name) {
         this.fileName = name;
-    }
+        versioningWeakListener = (FileChangeListener) WeakListeners.create(FileChangeListener.class, FileChangeListener.class, versioningListener, this);
+        addFileChangeListener(versioningWeakListener);
 
+    }
+       
     public final String toString() {
         return getFileName().toString();
     }
@@ -156,8 +161,37 @@ public abstract class BaseFileObj extends FileObject {
     public final boolean isRoot() {
         return false;
     }
-
-    public void move(FileLock lock, FolderObj target, String name, String ext, ProvidedExtensions.IOHandler moveHandler) throws IOException {
+     
+    public final FileObject move(FileLock lock, FileObject target, String name, String ext) throws IOException {
+        if (!checkLock(lock)) {
+            FSException.io("EXC_InvalidLock", lock, getPath()); // NOI18N
+        }
+        ProvidedExtensions extensions =  getProvidedExtensions();
+        FileObject result = null;
+        File to = (target instanceof FolderObj) ? new File(((BaseFileObj) target).getFileName().getFile(), FileInfo.composeName(name, ext)) :
+            new File(FileUtil.toFile(target), FileInfo.composeName(name, ext));            
+        final IOHandler moveHandler = extensions.getMoveHandler(getFileName().getFile(), to);
+        if (moveHandler != null) {
+            if (target instanceof FolderObj) {
+                result = move(lock, (FolderObj)target, name, ext,moveHandler);
+            } else {
+                moveHandler.handle();
+                refresh(true);
+                //perfromance bottleneck to call refresh on folder
+                //(especially for many files to be moved)
+                target.refresh(true);
+                result = target.getFileObject(name, ext);
+                assert (result != null);                        
+            }
+        } else {
+            result = super.move(lock, target, name, ext);
+        }
+        
+        FileUtil.copyAttributes(this, result);
+        return result;                        
+    }
+    
+    public BaseFileObj move(FileLock lock, FolderObj target, String name, String ext, ProvidedExtensions.IOHandler moveHandler) throws IOException {
         moveHandler.handle();
         String nameExt = FileInfo.composeName(name,ext);
         target.getChildrenCache().getChild(nameExt, true);
@@ -166,6 +200,7 @@ public abstract class BaseFileObj extends FileObject {
         assert result != null;
         result.fireFileDataCreatedEvent(false);
         fireFileDeletedEvent(false);
+        return result;
     }
 
 
@@ -229,17 +264,31 @@ public abstract class BaseFileObj extends FileObject {
                     }                
                 }
             }
-        WriteLock.relock(file,file2Rename);
+        //TODO: RELOCK
+        LockForFile.relock(file,file2Rename);
+            
         fireFileRenamedEvent(originalName, originalExt);
     }
 
 
     public final void rename(final FileLock lock, final String name, final String ext) throws IOException {
-        rename(lock, name, ext, null);
+        ProvidedExtensions extensions =  getProvidedExtensions();        
+        rename(lock, name, ext, extensions.getRenameHandler(getFileName().getFile(), FileInfo.composeName(name, ext)));
     }
 
 
     public Object getAttribute(final String attrName) {
+        if (attrName.equals("FileSystem.rootPath")) {
+            return "";//NOI18N
+        }
+        
+        if (attrName.equals("java.io.File")) {
+            File file = getFileName().getFile();
+            if (file != null && file.exists()) {
+                return file;
+            }
+        }
+                
         return BaseFileObj.attribs.readAttribute(getFileName().getFile().getAbsolutePath().replace('\\', '/'), attrName);//NOI18N
     }
 
@@ -422,7 +471,14 @@ public abstract class BaseFileObj extends FileObject {
     }
     
     public final void delete(final FileLock lock) throws IOException {
-        delete(lock, null);
+        ProvidedExtensions pe = getProvidedExtensions();
+        pe.beforeDelete(this);
+        try {
+            delete(lock, pe.getDeleteHandler(getFileName().getFile()));
+        } catch (IOException iex) {
+            getProvidedExtensions().deleteFailure(this);
+            throw iex;
+        }
     }    
 
     public void delete(final FileLock lock, ProvidedExtensions.DeleteHandler deleteHandler) throws IOException {        
@@ -600,4 +656,33 @@ public abstract class BaseFileObj extends FileObject {
         }
         return eventSupport;
     }
+
+    final ProvidedExtensions getProvidedExtensions() {
+        FileBasedFileSystem.StatusImpl status = (FileBasedFileSystem.StatusImpl) getLocalFileSystem().getStatus();
+        ProvidedExtensions extensions = status.getExtensions();
+        return extensions;
+    }
+    
+    private final class FileChangeListenerForVersioning extends FileChangeAdapter {
+        public void fileDataCreated(FileEvent fe) {
+            if (fe.getFile() == BaseFileObj.this) {
+                getProvidedExtensions().createSuccess(fe.getFile());
+            }
+        }
+
+        /**
+         * Implements FileChangeListener.fileFolderCreated(FileEvent fe)
+         */
+        public void fileFolderCreated(FileEvent fe) {
+            if (fe.getFile() == BaseFileObj.this) {            
+                getProvidedExtensions().createSuccess(fe.getFile());
+            }
+        }
+
+        public void fileDeleted(FileEvent fe) {
+            if (fe.getFile() == BaseFileObj.this) {
+                getProvidedExtensions().deleteSuccess(fe.getFile());
+            }
+        }        
+    }    
 }

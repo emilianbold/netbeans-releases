@@ -51,6 +51,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import org.netbeans.modules.masterfs.filebasedfs.fileobjects.RootObj;
 import org.openide.util.Exceptions;
 
 //TODO: JDK problems with URL, URI, File conversion for UNC
@@ -86,11 +87,15 @@ catch] at org.netbeans.modules.javacore.JMManager.scanFiles(JMManager.java:1112)
 
 public final class FileBasedURLMapper extends URLMapper {
     public final URL getURL(final FileObject fo, final int type) {
+        if (type == URLMapper.NETWORK) return null;        
         URL retVal = null;
         try {
-            if (fo instanceof BaseFileObj) {
+            if (fo instanceof BaseFileObj)  {
                 final BaseFileObj bfo = (BaseFileObj) fo;
                 retVal = FileBasedURLMapper.fileToURL(bfo.getFileName().getFile(), fo);
+            } else if (fo instanceof RootObj) {
+                final RootObj rfo = (RootObj) fo;
+                return getURL(rfo.getRealRoot(), type);                
             }
         } catch (MalformedURLException e) {
             retVal = null;

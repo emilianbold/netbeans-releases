@@ -39,55 +39,75 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.masterfs;
+package org.netbeans.modules.masterfs.filebasedfs;
 
-import java.io.IOException;
+import java.io.File;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
+import org.netbeans.modules.masterfs.filebasedfs.fileobjects.BaseFileObj;
+import org.netbeans.modules.masterfs.providers.AnnotationProvider;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  * @author Radek Matous
  */
-public class URLMapperTest extends NbTestCase {
-    private static FileSystem mfs;
-    public URLMapperTest(String name) {
-        super(name);
+public class Deadlock73332 extends NbTestCase {
+    private static FileObject folder;
+    static {
+        System.setProperty("org.openide.util.Lookup", Deadlock73332.TestLookup.class.getName());
+        assertTrue(Lookup.getDefault().getClass().getName(),Lookup.getDefault() instanceof Deadlock73332.TestLookup);
+    }
+    
+    
+    public Deadlock73332(String testName) {
+        super(testName);
+    }
+    
+    public void testDeadLock() throws Exception {
+        assertNotNull(folder);
+        assertTrue(folder instanceof BaseFileObj);
+        FileObject data = FileUtil.createData(folder, "/a/b/c/data.txt");
+        assertNotNull(data);
+        FileLock lock = data.lock();
         try {
-            mfs = FileBasedFileSystem.getInstance(getWorkDir());
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            data.move(lock,folder, data.getName(), data.getExt());
+        } finally {
+            lock.releaseLock();
         }
     }
-
-    public void testURLMapperCallingFromMetaInfLookup() {
-        Lookup lkp = Lookups.metaInfServices(Thread.currentThread().getContextClassLoader());
-        Object obj = lkp.lookup(Object.class);
-        assertNotNull(obj);
-        assertEquals(MyInstance2.class, obj.getClass());
+    
+    protected void setUp() throws Exception {
+        super.setUp();
+        clearWorkDir();
+        File f = this.getWorkDir();
+        folder = FileUtil.toFileObject(f);        
     }
-
-    public static class MyInstance2 {
-        public MyInstance2() {
+    
+    public static class TestLookup extends ProxyLookup {
+        public TestLookup() {
             super();
-            testURLMapper();
+            setLookups(new Lookup[] {getMetaInfLookup()});
         }
-
-        private static void testURLMapper() {            
-            assertNotNull(mfs);
-            FileObject[] children = mfs.getRoot().getChildren();
-            for (int i = 0; i < children.length; i++) {
-                java.io.File file = FileUtil.toFile(children[i]);
-                assertNotNull(file);
-                assertNotNull(FileUtil.toFileObject(file));
+        
+        private Lookup getMetaInfLookup() {
+            return Lookups.metaInfServices(Thread.currentThread().getContextClassLoader());
+        }
+        
+        protected void beforeLookup(Lookup.Template template) {
+            if (template.getType().isAssignableFrom(AnnotationProvider.class)) {
+                RequestProcessor.Task task = RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        folder.getChildren(true);
+                    }
+                });
+                task.waitFinished();
             }
         }
-
     }
-
+    
 }
