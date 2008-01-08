@@ -139,7 +139,12 @@ public class GroovySemanticAnalyzer implements SemanticAnalyzer {
         } else if (node instanceof FieldNode) {
             OffsetRange range = AstUtilities.getRange(node, text);
             highlights.put(range, ColoringAttributes.FIELD);
-        }
+            
+            FieldNode field = (FieldNode)node;
+            if (field.isStatic()){
+                highlights.put(range, ColoringAttributes.STATIC);
+            }
+        } 
 
         List<ASTNode> list = AstUtilities.children(node);
         for (ASTNode child : list) {
