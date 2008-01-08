@@ -126,7 +126,6 @@ public final class FileBasedFileSystem extends FileSystem {
 
     public final org.openide.filesystems.FileObject findResource(final String name) {
         File f = new File(name);
-        assert f.getAbsolutePath().replace('\\', '/').equals(name.replace('\\', '/')) : name + " versus " + f.getAbsolutePath();
         return findFileObject(f);
     }
 
