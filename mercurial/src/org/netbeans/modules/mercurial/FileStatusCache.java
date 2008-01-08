@@ -368,6 +368,10 @@ public class FileStatusCache {
     }
     
     private FileInformation createFileInformation(File file) {        
+        return createFileInformation(file, true);
+    }
+
+    private FileInformation createFileInformation(File file, Boolean callStatus) {        
         Mercurial.LOG.log(Level.FINE, "createFileInformation(): {0}", file); // NOI18N
         if (file == null)
             return FILE_INFORMATION_UNKNOWN;
@@ -381,6 +385,10 @@ public class FileStatusCache {
         if (file.isDirectory())
             return FILE_INFORMATION_UPTODATE_DIRECTORY; // Managed dir
         
+        if (callStatus == false) {
+            return null;
+        }
+
         FileInformation fi;
         try {
             fi = HgCommand.getSingleStatus(rootManagedFolder, file.getParent(), file.getName());
@@ -740,8 +748,8 @@ public class FileStatusCache {
         }
         */
         
-        if (interestingFiles == null || interestingFiles.isEmpty()) return folderFiles;
-
+        if (interestingFiles == null) return folderFiles;
+        
         for (File file : files) {
             if (HgUtils.isPartOfMercurialMetadata(file)) continue;
             
@@ -756,7 +764,7 @@ public class FileStatusCache {
                 if (fi == null) {
                     // We have removed -i from HgCommand.getInterestingFiles
                     // so we might have a file we should be ignoring
-                    fi = createFileInformation(file);
+                    fi = createFileInformation(file, false);
                 }
                 if (fi != null && fi.getStatus() != FileInformation.STATUS_VERSIONED_UPTODATE)
                     folderFiles.put(file, fi);
