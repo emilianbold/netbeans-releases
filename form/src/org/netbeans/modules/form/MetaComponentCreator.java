@@ -172,12 +172,15 @@ public class MetaComponentCreator {
         return copyComponent2(metacomp, metacomp, target) != null;
     }
 
-    public void addComponents(Collection<RADComponent> components, RADComponent targetComp) {
+    public boolean addComponents(Collection<RADComponent> components, RADComponent targetComp) {
         for (RADComponent metacomp : components) {
             TargetInfo target = getTargetInfo(metacomp.getBeanClass(), targetComp, false, false);
-            assert (target != null);
+            if (target == null) {
+                return false;
+            }
             copyComponent2(metacomp, metacomp, target);
         }
+        return true;
     }
     
     public static boolean canAddComponent(Class beanClass,

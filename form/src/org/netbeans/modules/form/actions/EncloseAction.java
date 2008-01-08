@@ -53,6 +53,8 @@ import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.palette.PaletteItem;
 import org.netbeans.modules.form.layoutdesign.LayoutModel;
 import org.netbeans.modules.form.palette.PaletteUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
@@ -211,28 +213,40 @@ public class EncloseAction extends NodeAction {
                         boolean autoUndo = true; // in case of unexpected error, for robustness
                         try {
                             // create and add the new container
-                            RADVisualContainer newCont = (RADVisualContainer)
-                                    creator.createComponent(paletteItem.getComponentClassSource(), metacont, null);
-                            // This also added the container's layout component to
-                            // layout model (and registered undo edit). But we want
-                            // the layout component to be added by LayoutDesigner as
-                            // part of the enclosing operation, so we remove it here.
-                            // From now we also need to care about layout undo.
-                            layoutUndoMark = layoutModel.getChangeMark();
-                            layoutEdit = layoutModel.getUndoableEdit();
-                            layoutModel.removeComponent(newCont.getId(), false); // to be added by LayoutDesigner
-                            String[] compIds = new String[components.size()];
-                            int i = 0;
-                            for (RADComponent metacomp : components) {
-                                compIds[i++] = metacomp.getId();
+                            RADComponent newComp = creator.createComponent(paletteItem.getComponentClassSource(), metacont, null);
+                            boolean success = (newComp instanceof RADVisualContainer);
+                            if (!success) {
+                                String msg = NbBundle.getMessage(EncloseAction.class, "MSG_EncloseInNotEmpty"); // NOI18N
+                                DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(msg));
+                            } else {
+                                RADVisualContainer newCont = (RADVisualContainer)newComp;
+
+                                // This also added the container's layout component to
+                                // layout model (and registered undo edit). But we want
+                                // the layout component to be added by LayoutDesigner as
+                                // part of the enclosing operation, so we remove it here.
+                                // From now we also need to care about layout undo.
+                                layoutUndoMark = layoutModel.getChangeMark();
+                                layoutEdit = layoutModel.getUndoableEdit();
+                                layoutModel.removeComponent(newCont.getId(), false); // to be added by LayoutDesigner
+                                String[] compIds = new String[components.size()];
+                                int i = 0;
+                                for (RADComponent metacomp : components) {
+                                    compIds[i++] = metacomp.getId();
+                                }
+                                for (RADComponent metacomp : components) {
+                                    formModel.removeComponent(metacomp, false);
+                                }
+                                success = creator.addComponents(components, newCont); // this does not affect layout model
+                                if (success) {
+                                    FormEditor.getFormDesigner(formModel).getLayoutDesigner()
+                                        .encloseInContainer(compIds, newCont.getId());
+                                } else {
+                                    String msg = NbBundle.getMessage(EncloseAction.class, "MSG_EncloseInFailed"); // NOI18N
+                                    DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(msg)); 
+                                }
                             }
-                            for (RADComponent metacomp : components) {
-                                formModel.removeComponent(metacomp, false);
-                            }
-                            creator.addComponents(components, newCont); // this does not affect layout model
-                            FormEditor.getFormDesigner(formModel).getLayoutDesigner()
-                                    .encloseInContainer(compIds, newCont.getId());
-                            autoUndo = false;
+                            autoUndo = !success;
                         } finally {
                             if (layoutUndoMark != null && !layoutUndoMark.equals(layoutModel.getChangeMark())) {
                                 formModel.addUndoableEdit(layoutEdit);
