@@ -85,8 +85,6 @@ public class GroovySemanticAnalyzer implements SemanticAnalyzer {
 
     public void run(CompilationInfo info) {
         
-        System.out.println("### GroovySemanticAnalyzer.run: " + info);
-        
         resume();
 
         if (isCancelled()) {
