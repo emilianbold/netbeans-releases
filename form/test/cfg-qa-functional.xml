@@ -111,7 +111,7 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
     
-   <testbag testattribs="test" executor="ide" name="testbag_visualdevelopment">
+   <testbag testattribs="jm" executor="ide" name="testbag_visualdevelopment">
 
         <testset dir="qa-functional/src">
             <patternset>
@@ -142,7 +142,7 @@ made subject to such option by the copyright holder.
     
     <!-- Jana Maleckova -->
 
-    <testbag testattribs="validation, jm" executor="ide" name="testbag_opentempl_defaultpack">
+    <testbag testattribs="validation, test" executor="ide" name="testbag_opentempl_defaultpack">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/qa/form/OpenTempl_defaultPack.*"/>                
