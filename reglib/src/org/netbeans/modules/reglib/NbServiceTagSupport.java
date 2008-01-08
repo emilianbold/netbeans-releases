@@ -58,6 +58,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.URL;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Locale;
@@ -116,14 +117,7 @@ public class NbServiceTagSupport {
     
     private static File registerHtmlParent;
     
-    private static Set<Locale> supportedLocales = new HashSet<Locale>();
-    
     private final static String REGISTRATION_HTML_NAME = "register";
-
-    private final static Locale[] knownSupportedLocales = 
-        new Locale[] { Locale.ENGLISH,
-                       Locale.JAPANESE,
-                       Locale.SIMPLIFIED_CHINESE};
     
     private static boolean inited = false;
     
@@ -653,9 +647,6 @@ public class NbServiceTagSupport {
     
     private static File getRegisterHtmlParent() {
         if (registerHtmlParent == null) {
-            // initialize the supported locales
-            initSupportedLocales(nbInstallDir);
-
             // Determine the location of the offline registration page
             registerHtmlParent = svcTagDirHome;
         }
@@ -681,27 +672,11 @@ public class NbServiceTagSupport {
 
         File parent = getRegisterHtmlParent(); 
 
-        // check if the offline registration page is already generated
         File f = new File(parent, REGISTRATION_HTML_NAME + ".html");
-        if (!f.exists()) {
-            // Generate the localized version of the offline registration Page
-            generateRegisterHtml(parent,product,productNames);
-        }
+        // Generate the localized version of the offline registration Page
+        generateRegisterHtml(parent,product,productNames);
 
-        String name = REGISTRATION_HTML_NAME;
-        Locale locale = Locale.getDefault();
-        if (supportedLocales.contains(locale)) {
-            if (!locale.equals(Locale.ENGLISH)) {
-                name = REGISTRATION_HTML_NAME + "_" + locale.toString();
-            }
-        }
-        File htmlFile = new File(parent, name + ".html");
-        if (f.exists()) {
-            return htmlFile;
-        } else {
-            return new File(parent,
-                            REGISTRATION_HTML_NAME + ".html");
-        }
+        return f;
     }
     
     // Remove the offline registration pages 
@@ -711,64 +686,12 @@ public class NbServiceTagSupport {
             return;
         }
         
-        for (Locale locale : supportedLocales) {
-            String name = REGISTRATION_HTML_NAME;
-            if (!locale.equals(Locale.ENGLISH)) {
-                name += "_" + locale.toString();
-            }
-            File f = new File(parent, name + ".html");
-            if (f.exists()) {
-                f.delete();
-            }
+        String name = REGISTRATION_HTML_NAME;
+        File f = new File(parent, name + ".html");
+        if (f.exists()) {
+            f.delete();
         }
     }
-    
-    private static void initSupportedLocales(File nbDir) {
-        if (supportedLocales.isEmpty()) {
-            // initialize with the known supported locales
-            for (Locale l : knownSupportedLocales) {
-                supportedLocales.add(l);
-            }
-        }
-
-        // Determine unknown supported locales if any
-        // by finding the localized version of README.html
-        // This prepares if a new locale in JDK is supported in
-        // e.g. in the OpenSource world
-        FilenameFilter ff = new FilenameFilter() {
-            public boolean accept(File dir, String name) {
-                String fname = name.toLowerCase();
-                if (fname.startsWith("readme") && fname.endsWith(".html")) { 
-                    return true;
-                }
-                return false;
-            }
-        };
-
-        String[] readmes = svcTagDirHome.list(ff);
-        for (String name : readmes) {
-            String basename = name.substring(0, name.length() - ".html".length()); 
-            String[] ss = basename.split("_");
-            switch (ss.length) {
-                case 1:
-                    // English version
-                    break;
-                case 2:
-                    supportedLocales.add(new Locale(ss[1]));
-                    break;
-                case 3:
-                    supportedLocales.add(new Locale(ss[1], ss[2]));
-                    break;
-                default:
-                    // ignore 
-                    break;
-            }
-        }
-        LOG.log(Level.FINE,"Supported locales: ");
-        for (Locale l : supportedLocales) {
-            LOG.log(Level.FINE,l.toString());
-        }
-    }            
     
     private static final String NB_HEADER_PNG_KEY = "@@NB_HEADER_PNG@@";
     private static final String PRODUCT_KEY = "@@PRODUCT@@";
@@ -812,52 +735,40 @@ public class NbServiceTagSupport {
         String lineSep = System.getProperty("line.separator");
         String payload = xml.replaceAll("\"", "%22").replaceAll(lineSep, " ");
 
-        String resourceFilename = "/org/netbeans/modules/reglib/resources/register";
-        for (Locale locale : supportedLocales) {
-            String name = REGISTRATION_HTML_NAME;
-            resource = resourceFilename;
-            if (!locale.equals(Locale.ENGLISH)) {
-                name += "_" + locale.toString();
-                resource += "_" + locale.toString();
-            }
-            File f = new File(parent, name + ".html");
-            in = NbServiceTagSupport.class.getResourceAsStream(resource + ".html");
-            if (in == null) {
-                // if the resource file is missing
-                LOG.log(Level.FINE,"Missing resource file: " + resource);
-                continue;
-            }
-            LOG.log(Level.FINE,"Generating " + f + " from " + resource);
+        String name = REGISTRATION_HTML_NAME;
+        File f = new File(parent, name + ".html");
+        URL url = null;
+        url = new URL("nbresloc:/org/netbeans/modules/reglib/resources/" + REGISTRATION_HTML_NAME + ".html");
+        in = url.openStream();
+        LOG.log(Level.FINE,"Generating " + f + " from " + url);
 
-            BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-            PrintWriter pw = new PrintWriter(f);
-            String line = null;
-            String productName = "";
-            //= NbBundle.getMessage(NbServiceTagSupport.class,"product." + product);
-            for (int i = 0; i < productNames.length; i++) {
-                if (i > 0) {
-                    productName +=
-                    " " + NbBundle.getMessage(NbServiceTagSupport.class,"MSG_junction") + " ";
-                }
-                productName += "<strong>" + productNames[i] + "</strong>";
+        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+        PrintWriter pw = new PrintWriter(f);
+        String line = null;
+        String productName = "";
+        for (int i = 0; i < productNames.length; i++) {
+            if (i > 0) {
+                productName +=
+                " " + NbBundle.getMessage(NbServiceTagSupport.class,"MSG_junction") + " ";
             }
-            while ((line = reader.readLine()) != null) {
-                String output = line;
-                if (line.contains(PRODUCT_KEY)) {
-                    output = line.replace(PRODUCT_KEY, productName);
-                } else if (line.contains(NB_HEADER_PNG_KEY)) {
-                    output = line.replace(NB_HEADER_PNG_KEY, headerImageSrc);
-                } else if (line.contains(REGISTRATION_URL_KEY)) {
-                    output = line.replace(REGISTRATION_URL_KEY, registerURL);
-                } else if (line.contains(REGISTRATION_PAYLOAD_KEY)) {
-                    output = line.replace(REGISTRATION_PAYLOAD_KEY, payload);
-                }
-                pw.println(output);
-            }
-            pw.flush();
-            pw.close();
-            in.close();
+            productName += "<strong>" + productNames[i] + "</strong>";
         }
+        while ((line = reader.readLine()) != null) {
+            String output = line;
+            if (line.contains(PRODUCT_KEY)) {
+                output = line.replace(PRODUCT_KEY, productName);
+            } else if (line.contains(NB_HEADER_PNG_KEY)) {
+                output = line.replace(NB_HEADER_PNG_KEY, headerImageSrc);
+            } else if (line.contains(REGISTRATION_URL_KEY)) {
+                output = line.replace(REGISTRATION_URL_KEY, registerURL);
+            } else if (line.contains(REGISTRATION_PAYLOAD_KEY)) {
+                output = line.replace(REGISTRATION_PAYLOAD_KEY, payload);
+            }
+            pw.println(output);
+        }
+        pw.flush();
+        pw.close();
+        in.close();
     }
     
 }
