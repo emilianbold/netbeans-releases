@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.visualweb.project.jsf.api;
 
+import org.netbeans.modules.visualweb.project.jsf.framework.JSFFrameworkProvider;
 import org.netbeans.modules.visualweb.project.jsf.actions.ImportFileAction;
 import org.netbeans.modules.visualweb.project.jsf.libraries.LibraryDefinition;
 import org.netbeans.modules.visualweb.project.jsf.libraries.J2SELibraryDefinition;
@@ -89,6 +90,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.web.project.api.WebProjectLibrariesModifier;
 import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
@@ -174,6 +176,14 @@ public class JsfProjectUtils {
     public static boolean isJsfProject(Project project) {
         String version = getProjectVersion(project);
         return version != null && version.length() > 0;
+    }
+
+    public static boolean isJsfFramework(WebFrameworkProvider framework) {
+        if (framework == null) {
+            return false;
+        }
+
+        return (framework instanceof JSFFrameworkProvider);
     }
 
     public static boolean isWebProject(Project project) {
