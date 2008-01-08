@@ -138,15 +138,8 @@ public class GroovySemanticAnalyzer implements SemanticAnalyzer {
             OffsetRange range = AstUtilities.getRange(node, text);
             highlights.put(range, ColoringAttributes.METHOD);
         } else if (node instanceof FieldNode) {
-            FieldNode fieldNode = (FieldNode) node;
-            Expression expression = fieldNode.getInitialExpression();
-            if (expression instanceof ClosureExpression) {
-                OffsetRange range = AstUtilities.getRange(node, text);
-                highlights.put(range, ColoringAttributes.METHOD);
-            } else {
-                OffsetRange range = AstUtilities.getRange(node, text);
-                highlights.put(range, ColoringAttributes.FIELD);
-            }
+            OffsetRange range = AstUtilities.getRange(node, text);
+            highlights.put(range, ColoringAttributes.FIELD);
         }
 
         List<ASTNode> list = AstUtilities.children(node);
