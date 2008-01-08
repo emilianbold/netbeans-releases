@@ -758,4 +758,10 @@ public final class RubyPlatform {
             pcs.removePropertyChangeListener(listener);
         }
     }
+
+    public @Override String toString() {
+        return "RubyPlatform[id:" + getID() + ", label:" + getLabel() + ", " + getInterpreter() + "]"; // NOI18N
+    }
+    
+    
 }
