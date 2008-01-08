@@ -1657,14 +1657,44 @@ public class Reformatter implements ReformatTask {
                 }
             }
             if (inits != null) {
+                CodeStyle.BracePlacement bracePlacement = cs.getOtherBracePlacement();
+                boolean spaceBeforeLeftBrace = cs.spaceBeforeArrayInitLeftBrace();
+                int oldIndent = indent;
+                indent -= continuationIndentSize;
                 int old = indent;
-                indent += (indentSize - continuationIndentSize);
-                if (type != null)
-                    spaces(cs.spaceBeforeArrayInitLeftBrace() ? 1 : 0);
-                accept(LBRACE);
+                int halfIndent = indent;
+                switch(bracePlacement) {
+                    case SAME_LINE:
+                        if (type != null)
+                            spaces(spaceBeforeLeftBrace ? 1 : 0);
+                        accept(LBRACE);
+                        indent += indentSize;
+                        break;
+                    case NEW_LINE:
+                        newline();
+                        accept(LBRACE);
+                        indent += indentSize;
+                        break;
+                    case NEW_LINE_HALF_INDENTED:
+                        indent += (indentSize >> 1);
+                        halfIndent = indent;
+                        newline();
+                        accept(LBRACE);
+                        indent = old + indentSize;
+                        break;
+                    case NEW_LINE_INDENTED:
+                        indent += indentSize;
+                        halfIndent = indent;
+                        newline();
+                        accept(LBRACE);
+                        break;
+                }
                 if (!inits.isEmpty()) {
-                    afterNewline = false;
-                    spaces(cs.spaceWithinBraces() ? 1 : 0, true);
+                    afterNewline = bracePlacement != CodeStyle.BracePlacement.SAME_LINE;
+                    if (afterNewline)
+                        newline();
+                    else
+                        spaces(cs.spaceWithinBraces() ? 1 : 0, true);
                     wrapList(cs.wrapArrayInit(), cs.alignMultilineArrayInit(), inits);
                     int index = tokens.index();
                     int c = col;
@@ -1677,8 +1707,35 @@ public class Reformatter implements ReformatTask {
                     else
                         spaces(cs.spaceWithinBraces() ? 1 : 0);
                 }
+                indent = halfIndent;
+                Diff diff = diffs.isEmpty() ? null : diffs.getFirst();
+                if (diff != null && diff.end == tokens.offset()) {
+                    if (diff.text != null) {
+                        int idx = diff.text.lastIndexOf('\n'); //NOI18N
+                        if (idx < 0)
+                            diff.text = getIndent();
+                        else
+                            diff.text = diff.text.substring(0, idx + 1) + getIndent();
+
+                    }
+                    String spaces = diff.text != null ? diff.text : getIndent();
+                    if (spaces.equals(fText.substring(diff.start, diff.end)))
+                        diffs.removeFirst();
+                } else if (tokens.movePrevious()) {
+                    if (tokens.token().id() == WHITESPACE) {
+                        String text =  tokens.token().text().toString();
+                        int idx = text.lastIndexOf('\n'); //NOI18N
+                        if (idx >= 0) {
+                            text = text.substring(idx + 1);
+                            String ind = getIndent();
+                            if (!ind.equals(text))
+                                diffs.addFirst(new Diff(tokens.offset() + idx + 1, tokens.offset() + tokens.token().length(), ind));
+                        }
+                    }
+                    tokens.moveNext();
+                }
                 accept(RBRACE);
-                indent = old;
+                indent = oldIndent;
             }
             return true;
         }
