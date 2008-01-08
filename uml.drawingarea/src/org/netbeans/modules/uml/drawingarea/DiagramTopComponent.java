@@ -219,12 +219,8 @@ public class DiagramTopComponent extends CloneableTopComponent
                     File etldF = new File(etld);
                     
                     
-                    if (!etlpF.exists())
-                        etlpF.createNewFile();
-                    if (!etldF.exists())
-                        etldF.createNewFile();
-                    
-                    FileObject etlpFO = FileUtil.toFileObject(etlpF);
+                    FileObject etlpFO = FileUtil.createData(etlpF);
+                    FileUtil.createData(etldF);
 
                     if (etlpFO != null)
                         diagramDO = (DiagramDataObject) DataObject.find(etlpFO);
