@@ -83,6 +83,7 @@ public class ExtensibilityElementPrefixCleanupVisitor extends ChildVisitor
                 }
             }
         }
+        prefixesMapAfterTraversal.put("", prefixes.get(""));
         super.visit(definition);
     };
     
