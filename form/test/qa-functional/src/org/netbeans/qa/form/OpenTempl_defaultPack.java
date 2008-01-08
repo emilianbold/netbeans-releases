@@ -147,7 +147,7 @@ public class OpenTempl_defaultPack extends JellyTestCase {
         bo.push();
 
         log("Project " + DATA_PROJECT_NAME + " was created");
-        Thread.sleep(4000);
+        Thread.sleep(5000);
 
     }
 
@@ -298,7 +298,7 @@ public class OpenTempl_defaultPack extends JellyTestCase {
         //Bug in generating of new Bean Form template 95403
         //testJavaFile("NewBeanForm");
         Thread.sleep(1000);
-//        deleteProject();
+        deleteProject();
         //Timeout needed
         Thread.sleep(1000);
     }
