@@ -30,16 +30,29 @@ public class ReminderPanel extends javax.swing.JPanel {
         
         img = Utilities.loadImage("org/netbeans/modules/registration/resources/sun.png");
         icon = new ImageIcon(img);
-        jLabel1.setIcon(icon);
+        jLeftLabel.setIcon(icon);
         
         img = Utilities.loadImage("org/netbeans/modules/registration/resources/netbeans.png");
         icon = new ImageIcon(img);
-        jLabel2.setIcon(icon);
+        jRightLabel.setIcon(icon);
+        
+        img = Utilities.loadImage("org/netbeans/modules/registration/resources/dot.png");
+        icon = new ImageIcon(img);
+        jBottomLabel2.setIcon(icon);
+        jBottomLabel3.setIcon(icon);
+        jBottomLabel4.setIcon(icon);
+        jBottomLabel5.setIcon(icon);
     }
 
     private void setText () {
-        jEditorPane1.setText(NbBundle.getMessage(ReminderPanel.class, "LBL_TopText"));
-        jEditorPane2.setText(NbBundle.getMessage(ReminderPanel.class, "LBL_BottomText"));
+        jTopLabel1.setText(NbBundle.getMessage(ReminderPanel.class, "LBL_TopText1"));
+        jTopLabel2.setText(NbBundle.getMessage(ReminderPanel.class, "LBL_TopText2"));
+        jBottomLabel1.setText(NbBundle.getMessage(ReminderPanel.class, "LBL_BottomText1"));
+        jBottomLabel2.setText(NbBundle.getMessage(ReminderPanel.class, "LBL_BottomText2"));
+        jBottomLabel3.setText(NbBundle.getMessage(ReminderPanel.class, "LBL_BottomText3"));
+        jBottomLabel4.setText(NbBundle.getMessage(ReminderPanel.class, "LBL_BottomText4"));
+        jBottomLabel5.setText(NbBundle.getMessage(ReminderPanel.class, "LBL_BottomText5"));
+        jBottomLabel6.setText(NbBundle.getMessage(ReminderPanel.class, "LBL_BottomText6"));
     }
     /** This method is called from within the constructor to
      * initialize the form.
@@ -50,52 +63,111 @@ public class ReminderPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jPanel2 = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        jEditorPane1 = new javax.swing.JEditorPane();
-        jLabel2 = new javax.swing.JLabel();
-        jPanel1 = new javax.swing.JPanel();
-        jEditorPane2 = new javax.swing.JEditorPane();
+        jTopPanel = new javax.swing.JPanel();
+        jLeftLabel = new javax.swing.JLabel();
+        jRightLabel = new javax.swing.JLabel();
+        jInnerPanel = new javax.swing.JPanel();
+        jTopLabel1 = new javax.swing.JLabel();
+        jTopLabel2 = new javax.swing.JLabel();
+        jBottomPanel = new javax.swing.JPanel();
+        jBottomLabel1 = new javax.swing.JLabel();
+        jBottomLabel2 = new javax.swing.JLabel();
+        jBottomLabel3 = new javax.swing.JLabel();
+        jBottomLabel4 = new javax.swing.JLabel();
+        jBottomLabel5 = new javax.swing.JLabel();
+        jBottomLabel6 = new javax.swing.JLabel();
 
+        setFocusable(false);
         setLayout(new java.awt.BorderLayout());
 
-        jPanel2.setBorder(null);
-        jPanel2.setLayout(new java.awt.BorderLayout());
+        jTopPanel.setBorder(null);
+        jTopPanel.setFocusable(false);
+        jTopPanel.setLayout(new java.awt.BorderLayout());
 
-        jLabel1.setBackground(java.awt.Color.white);
-        jLabel1.setBorder(null);
-        jPanel2.add(jLabel1, java.awt.BorderLayout.WEST);
+        jLeftLabel.setBackground(java.awt.Color.white);
+        jLeftLabel.setFocusable(false);
+        jLeftLabel.setOpaque(true);
+        jTopPanel.add(jLeftLabel, java.awt.BorderLayout.WEST);
 
-        jEditorPane1.setContentType("text/html"); // NOI18N
-        jEditorPane1.setEditable(false);
-        jEditorPane1.setFont(new java.awt.Font("Dialog", 0, 12));
-        jPanel2.add(jEditorPane1, java.awt.BorderLayout.CENTER);
+        jRightLabel.setBackground(java.awt.Color.white);
+        jRightLabel.setFocusable(false);
+        jRightLabel.setOpaque(true);
+        jTopPanel.add(jRightLabel, java.awt.BorderLayout.EAST);
 
-        jLabel2.setBackground(java.awt.Color.white);
-        jLabel2.setBorder(null);
-        jPanel2.add(jLabel2, java.awt.BorderLayout.EAST);
+        jInnerPanel.setBackground(java.awt.Color.white);
+        jInnerPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 20, 10, 10));
+        jInnerPanel.setFocusable(false);
+        jInnerPanel.setLayout(new javax.swing.BoxLayout(jInnerPanel, javax.swing.BoxLayout.Y_AXIS));
 
-        add(jPanel2, java.awt.BorderLayout.CENTER);
+        jTopLabel1.setFont(new java.awt.Font("Dialog", 0, 12));
+        jTopLabel1.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        jTopLabel1.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 2, 0));
+        jTopLabel1.setFocusable(false);
+        jInnerPanel.add(jTopLabel1);
 
-        jPanel1.setLayout(new java.awt.BorderLayout());
+        jTopLabel2.setFont(new java.awt.Font("Dialog", 1, 12));
+        jTopLabel2.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);
+        jTopLabel2.setBorder(javax.swing.BorderFactory.createEmptyBorder(2, 0, 0, 0));
+        jTopLabel2.setFocusable(false);
+        jInnerPanel.add(jTopLabel2);
 
-        jEditorPane2.setBackground(getBackground());
-        jEditorPane2.setContentType("text/html"); // NOI18N
-        jEditorPane2.setEditable(false);
-        jEditorPane2.setFont(new java.awt.Font("Dialog", 0, 12));
-        jPanel1.add(jEditorPane2, java.awt.BorderLayout.CENTER);
+        jTopPanel.add(jInnerPanel, java.awt.BorderLayout.CENTER);
 
-        add(jPanel1, java.awt.BorderLayout.SOUTH);
+        add(jTopPanel, java.awt.BorderLayout.CENTER);
+
+        jBottomPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        jBottomPanel.setFocusable(false);
+        jBottomPanel.setFont(new java.awt.Font("Dialog", 0, 12));
+        jBottomPanel.setLayout(new javax.swing.BoxLayout(jBottomPanel, javax.swing.BoxLayout.Y_AXIS));
+
+        jBottomLabel1.setFont(new java.awt.Font("Dialog", 0, 12));
+        jBottomLabel1.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        jBottomLabel1.setFocusable(false);
+        jBottomPanel.add(jBottomLabel1);
+
+        jBottomLabel2.setFont(new java.awt.Font("Dialog", 0, 12));
+        jBottomLabel2.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 30, 1, 10));
+        jBottomLabel2.setFocusable(false);
+        jBottomPanel.add(jBottomLabel2);
+
+        jBottomLabel3.setFont(new java.awt.Font("Dialog", 0, 12));
+        jBottomLabel3.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 30, 1, 10));
+        jBottomLabel3.setFocusable(false);
+        jBottomPanel.add(jBottomLabel3);
+
+        jBottomLabel4.setFont(new java.awt.Font("Dialog", 0, 12));
+        jBottomLabel4.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 30, 1, 10));
+        jBottomLabel4.setFocusable(false);
+        jBottomPanel.add(jBottomLabel4);
+
+        jBottomLabel5.setFont(new java.awt.Font("Dialog", 0, 12));
+        jBottomLabel5.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 30, 1, 10));
+        jBottomLabel5.setFocusable(false);
+        jBottomPanel.add(jBottomLabel5);
+
+        jBottomLabel6.setFont(new java.awt.Font("Dialog", 0, 12));
+        jBottomLabel6.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        jBottomLabel6.setFocusable(false);
+        jBottomPanel.add(jBottomLabel6);
+
+        add(jBottomPanel, java.awt.BorderLayout.SOUTH);
     }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JEditorPane jEditorPane1;
-    private javax.swing.JEditorPane jEditorPane2;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
+    private javax.swing.JLabel jBottomLabel1;
+    private javax.swing.JLabel jBottomLabel2;
+    private javax.swing.JLabel jBottomLabel3;
+    private javax.swing.JLabel jBottomLabel4;
+    private javax.swing.JLabel jBottomLabel5;
+    private javax.swing.JLabel jBottomLabel6;
+    private javax.swing.JPanel jBottomPanel;
+    private javax.swing.JPanel jInnerPanel;
+    private javax.swing.JLabel jLeftLabel;
+    private javax.swing.JLabel jRightLabel;
+    private javax.swing.JLabel jTopLabel1;
+    private javax.swing.JLabel jTopLabel2;
+    private javax.swing.JPanel jTopPanel;
     // End of variables declaration//GEN-END:variables
     
 }
