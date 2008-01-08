@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -177,45 +177,51 @@ public class UpdateUnitFactory {
         
         // append updates
         for (String simpleItemId : items.keySet ()) {
-
-            // create UpdateItemImpl
-            UpdateItemImpl itemImpl = Trampoline.SPI.impl (items.get (simpleItemId));
-
+            
             UpdateElement updateEl = null;
-            boolean isKitModule = false;
-            if (itemImpl instanceof ModuleItem) {
-                ModuleInfo mi = ((ModuleItem) itemImpl).getModuleInfo ();
-                assert mi != null : "ModuleInfo must be found for " + itemImpl;
-                isKitModule = Utilities.isKitModule (mi);
-            }
-            if (itemImpl instanceof InstalledModuleItem) {
-                if (isKitModule) {
-                    KitModuleUpdateElementImpl impl = new KitModuleUpdateElementImpl ((InstalledModuleItem) itemImpl, null);
+            try {
+
+                // create UpdateItemImpl
+                UpdateItemImpl itemImpl = Trampoline.SPI.impl (items.get (simpleItemId));
+
+                boolean isKitModule = false;
+                if (itemImpl instanceof ModuleItem) {
+                    ModuleInfo mi = ((ModuleItem) itemImpl).getModuleInfo ();
+                    assert mi != null : "ModuleInfo must be found for " + itemImpl;
+                    isKitModule = Utilities.isKitModule (mi);
+                }
+                if (itemImpl instanceof InstalledModuleItem) {
+                    if (isKitModule) {
+                        KitModuleUpdateElementImpl impl = new KitModuleUpdateElementImpl ((InstalledModuleItem) itemImpl, null);
+                        updateEl = Trampoline.API.createUpdateElement (impl);
+                    } else {
+                        ModuleUpdateElementImpl impl = new ModuleUpdateElementImpl ((InstalledModuleItem) itemImpl, null);
+                        updateEl = Trampoline.API.createUpdateElement (impl);
+                    }
+                } else if (itemImpl instanceof ModuleItem) {
+                    if (isKitModule) {
+                        KitModuleUpdateElementImpl impl = new KitModuleUpdateElementImpl ((ModuleItem) itemImpl, provider.getDisplayName ());
+                        updateEl = Trampoline.API.createUpdateElement (impl);
+                    } else {
+                        ModuleUpdateElementImpl impl = new ModuleUpdateElementImpl ((ModuleItem) itemImpl, provider.getDisplayName ());
+                        updateEl = Trampoline.API.createUpdateElement (impl);
+                    }
+                } else if (itemImpl instanceof LocalizationItem) {
+                    updateEl = Trampoline.API.createUpdateElement (new LocalizationUpdateElementImpl ((LocalizationItem) itemImpl, provider.getDisplayName ()));
+                } else if (itemImpl instanceof NativeComponentItem) {
+                    updateEl = Trampoline.API.createUpdateElement (new NativeComponentUpdateElementImpl ((NativeComponentItem) itemImpl, provider.getDisplayName ()));
+                } else if (itemImpl instanceof FeatureItem) {
+                    FeatureUpdateElementImpl impl = new FeatureUpdateElementImpl.Agent (
+                            (FeatureItem) itemImpl,
+                            provider.getDisplayName (),
+                            UpdateManager.TYPE.FEATURE);
                     updateEl = Trampoline.API.createUpdateElement (impl);
                 } else {
-                    ModuleUpdateElementImpl impl = new ModuleUpdateElementImpl ((InstalledModuleItem) itemImpl, null);
-                    updateEl = Trampoline.API.createUpdateElement (impl);
+                    assert false : "Unknown type of UpdateElement " + updateEl;
                 }
-            } else if (itemImpl instanceof ModuleItem) {
-                if (isKitModule) {
-                    KitModuleUpdateElementImpl impl = new KitModuleUpdateElementImpl ((ModuleItem) itemImpl, provider.getDisplayName ());
-                    updateEl = Trampoline.API.createUpdateElement (impl);
-                } else {
-                    ModuleUpdateElementImpl impl = new ModuleUpdateElementImpl ((ModuleItem) itemImpl, provider.getDisplayName ());
-                    updateEl = Trampoline.API.createUpdateElement (impl);
-                }
-            } else if (itemImpl instanceof LocalizationItem) {
-                updateEl = Trampoline.API.createUpdateElement (new LocalizationUpdateElementImpl ((LocalizationItem) itemImpl, provider.getDisplayName ()));
-            } else if (itemImpl instanceof NativeComponentItem) {
-                updateEl = Trampoline.API.createUpdateElement (new NativeComponentUpdateElementImpl ((NativeComponentItem) itemImpl, provider.getDisplayName ()));
-            } else if (itemImpl instanceof FeatureItem) {
-                FeatureUpdateElementImpl impl = new FeatureUpdateElementImpl.Agent (
-                        (FeatureItem) itemImpl,
-                        provider.getDisplayName (),
-                        UpdateManager.TYPE.FEATURE);
-                updateEl = Trampoline.API.createUpdateElement (impl);
-            } else {
-                assert false : "Unknown type of UpdateElement " + updateEl;
+
+            } catch (IllegalArgumentException iae) {
+                log.log (Level.INFO, iae.getLocalizedMessage (), iae);
             }
 
             // add element to map
