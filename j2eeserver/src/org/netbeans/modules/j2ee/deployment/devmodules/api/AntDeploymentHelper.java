@@ -106,8 +106,7 @@ public final class AntDeploymentHelper {
                 provider = si.getAntDeploymentProvider();
             }
         }
-        file.createNewFile();
-        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+        FileObject fo = FileUtil.createData(FileUtil.normalizeFile(file));
         FileLock lock = fo.lock();
         try {
             OutputStream os = fo.getOutputStream(lock);
