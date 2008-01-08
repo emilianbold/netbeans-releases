@@ -71,34 +71,31 @@ public class GspModuleInstaller extends ModuleInstall {
             Method moduleMeth = mm.getClass().getMethod("get", new Class[]{String.class}); //NOI18N
 
             Object gsfapi = moduleMeth.invoke(mm, "org.netbeans.api.gsf"); //NOI18N
-            if (gsfapi != null) {
-                Field frField = gsfapi.getClass().getSuperclass().getDeclaredField("friendNames"); //NOI18N
-                frField.setAccessible(true);
-                Set friends = (Set) frField.get(gsfapi);
-                friends.add("org.netbeans.modules.groovy.gsp"); //NOI18N
-            }
+            modifyFriends(gsfapi);
 
             Object gsf = moduleMeth.invoke(mm, "org.netbeans.modules.gsf"); //NOI18N
-            if (gsf != null) {
-                Field frField = gsf.getClass().getSuperclass().getDeclaredField("friendNames"); //NOI18N
-                frField.setAccessible(true);
-                Set friends = (Set) frField.get(gsf);
-                friends.add("org.netbeans.modules.groovy.gsp"); //NOI18N
-            }
+            modifyFriends(gsf);
 
             Object htmleditor = moduleMeth.invoke(mm, "org.netbeans.modules.html.editor"); //NOI18N
-            if (htmleditor != null) {
-                Field frField = htmleditor.getClass().getSuperclass().getDeclaredField("friendNames"); //NOI18N
-                frField.setAccessible(true);
-                Set friends = (Set) frField.get(htmleditor);
-                friends.add("org.netbeans.modules.groovy.gsp"); //NOI18N
-            }
+            modifyFriends(htmleditor);
+            
         } catch (Exception ex) {
             ex.printStackTrace();
             new IllegalStateException("Cannot fix dependencies for org.netbeans.modules.groovy.gsp."); //NOI18N
         }
     }
 
+    void modifyFriends(Object input) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException{
+        if(input != null){
+            Field frField = input.getClass().getSuperclass().getDeclaredField("friendNames"); //NOI18N
+            frField.setAccessible(true);
+            Set friends = (Set) frField.get(input);
+            friends.add("org.netbeans.modules.groovy.gsp"); //NOI18N
+        }
+    }
+    
+    
+    
     @Override
     public void restored() {
         Settings.addInitializer(new GspEditorSettings());
