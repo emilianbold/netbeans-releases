@@ -267,8 +267,11 @@ public class ProjectsRootNode extends AbstractNode {
                     badgedNodes[i] = origNodes[i];
                 }
                 else {
-                    badgedNodes[i] = new BadgingNode( origNodes[i],
-                                                      type == LOGICAL_VIEW  && projectInLookup[0]);
+                    badgedNodes[i] = new BadgingNode(
+                        origNodes[i],
+                        type == LOGICAL_VIEW  && projectInLookup[0],
+                        type == LOGICAL_VIEW
+                    );
                 }
             }
                         
@@ -400,9 +403,11 @@ public class ProjectsRootNode extends AbstractNode {
         private FileStatusListener fileSystemListener;
         private RequestProcessor.Task task;
         private volatile boolean nameChange;
+        private final boolean logicalView;
 
-        public BadgingNode(Node n, boolean addSearchInfo) {
-            super(n, null, addSearchInfo ? badgingLookup(n) : n.getLookup());
+        public BadgingNode(Node n, boolean addSearchInfo, boolean logicalView) {
+            super(n, null, badgingLookup(n, addSearchInfo));
+            this.logicalView = logicalView;
             OpenProjectList.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(this, OpenProjectList.getDefault()));
             Project proj = getOriginal().getLookup().lookup(Project.class);
             if (proj != null) {
@@ -423,14 +428,11 @@ public class ProjectsRootNode extends AbstractNode {
             }
         }
         
-        private static Lookup badgingLookup(Node n) {
-            return new BadgingLookup(n.getLookup(), Lookups.singleton(alwaysSearchableSearchInfo(n.getLookup().lookup(Project.class))));
-        }
-        
-        final void updateLookup(Node n, Project project) {
-            if (getLookup() instanceof BadgingLookup) {
-                BadgingLookup bl = (BadgingLookup)getLookup();
-                bl.setMyLookups(n.getLookup(), Lookups.singleton(alwaysSearchableSearchInfo(project)));
+        private static Lookup badgingLookup(Node n, boolean addSearchInfo) {
+            if (addSearchInfo) {
+                return new BadgingLookup(n.getLookup(), Lookups.singleton(alwaysSearchableSearchInfo(n.getLookup().lookup(Project.class))));
+            } else {
+                return new BadgingLookup(n.getLookup());
             }
         }
         
@@ -515,9 +517,26 @@ public class ProjectsRootNode extends AbstractNode {
                 assert newProj != null;
                 if (newProj.getProjectDirectory().equals(fo)) {
                     ProjectChildren ch = (ProjectChildren)getParentNode().getChildren();
-                    Node n = ch.logicalViewForProject(newProj, null);
+                    Node n = null;
+                    if (logicalView) {
+                        n = ch.logicalViewForProject(newProj, null);
+                    } else {
+                        for (Node one : PhysicalView.createNodesForProject(newProj)) {
+                            if (PhysicalView.isProjectDirNode(one)) {
+                                n = one;
+                                break;
+                            }
+                        }
+                        assert n != null;
+                    }
                     changeOriginal(n, true);
-                    updateLookup(n, newProj);
+
+                    BadgingLookup bl = (BadgingLookup)getLookup();
+                    if (bl.isSearchInfo()) {
+                        bl.setMyLookups(n.getLookup(), Lookups.singleton(alwaysSearchableSearchInfo(newProj)));
+                    } else {
+                        bl.setMyLookups(n.getLookup());
+                    }
                 }
             }
         }
@@ -535,6 +554,9 @@ public class ProjectsRootNode extends AbstractNode {
         }
         public void setMyLookups(Lookup... lkps) {
             setLookups(lkps);
+        }
+        public boolean isSearchInfo() {
+            return getLookups().length > 1;
         }
     } // end of BadgingLookup
     
