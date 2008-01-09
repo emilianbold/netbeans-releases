@@ -135,18 +135,15 @@ made subject to such option by the copyright holder.
         <module name="xml/multiview" testtypes="unit" attributes="stable"/>
         <module name="xml/tageditorsupport" testtypes="unit" attributes="stable"/>
         <module name="xml/text-edit" testtypes="unit" attributes="stable"/>
-        <!-- other candidate modules - J2EE team: xml/api xml/core xml/schema xml/tax/lib xml/xsl -->
+        <!-- other candidate modules - J2EE team: xml/api xml/core xml/tax/lib xml/xsl -->
 
-<!-- 
-        <module name="debuggerjpda" testtypes="unit" attributes="stable"/>-->      
+        <!-- module name="debuggerjpda" testtypes="unit" attributes="stable"/>-->
         <!-- these two need depend on each other -->
         <module name="openide/execution" testtypes="unit" attributes="stable"/>
         <module name="core/execution" testtypes="unit" attributes="stable"/>
         
          <!-- Visual Web team -->
         <module name="visualweb/designer" testtypes="unit" attributes="stable"/>
-
-
         <module name="ide/launcher/upgrade" testtypes="unit" attributes="stable" />
         <module name="apisupport/project" testtypes ="unit" attributes="stable"/>
         <module name="apisupport/samples/feedreader-sample-ui" testtypes ="unit" attributes="stable"/>
@@ -174,10 +171,10 @@ made subject to such option by the copyright holder.
   <!-- QA functional tests for Netbeans -->
   <config name="qa-functional-nb">
         <module name="ide" testtypes="qa-functional" attributes="validation"/>
-<!--        <module name="java" testtypes="qa-functional" attributes="validation"/>
+<!--    <module name="java" testtypes="qa-functional" attributes="validation"/>
         <module name="java/editor" testtypes="qa-functional" attributes="validation"/>
         <module name="refactoring" testtypes="qa-functional" attributes="validation"/>-->
- <!--       <module name="web" testtypes="qa-functional" attributes="validation"/>
+<!--    <module name="web" testtypes="qa-functional" attributes="validation"/>
         <module name="web/jspsyntax" testtypes="qa-functional" attributes="validation"/>
  --><!-- Will be included again after installing j2ee server on perf/t4u machines
         <module name="web/jspdebug" testtypes="qa-functional" attributes="validation"/>
@@ -238,7 +235,8 @@ made subject to such option by the copyright holder.
   
   <config name="commit-validation-enterprise">
       <!--module name="enterprise/bpel" testtypes="qa-functional" attributes="commit"/-->
-      <!--module name="enterprise/xslt" testtypes="qa-functional" attributes="commit"/-->
+      <module name="enterprise/xslt" testtypes="qa-functional" attributes="commit"/>
+      <module name="xml/schema" testtypes="qa-functional" attributes="commit"/>
   </config>
 
   <config name="commit-validation-cnd">
