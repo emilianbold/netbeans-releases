@@ -124,6 +124,9 @@ public class DeleteUnreferencedClusterFiles extends Task {
         }
         for (String n : d.list()) {
             File f = new File(d, n);
+            if (f.getName().equals(".lastModified")) {
+                continue;
+            }
             if (f.isDirectory()) {
                 scanForExtraFiles(f, prefix + n + "/", files, cluster, extraFiles);
             } else {
