@@ -66,6 +66,7 @@ import org.openide.loaders.DataObject;
 import org.openide.text.PositionBounds;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  * Refactoring support for classes that use Swing App Framework. If such a class
@@ -130,14 +131,16 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
                     // there is a valid properties file for a resource map
                     RefactoringElementImplementation previewElement = null;
                     if (refactoring instanceof RenameRefactoring) {
-                        String displayText = "Rename file " + propertiesDO.getPrimaryFile().getNameExt();
+                        String displayText = NbBundle.getMessage(RefactoringPluginFactoryImpl.class,
+                                "FMT_RenameFileRef", propertiesDO.getPrimaryFile().getNameExt()); // NOI18N
                         previewElement = new PreviewElement(srcFile, displayText);
                     } else if (refactoring instanceof MoveRefactoring) {
                         URL targetURL = ((MoveRefactoring)refactoring).getTarget().lookup(URL.class);
                         try {
                             File f = FileUtil.normalizeFile(new File(targetURL.toURI()));
                             if (f.isDirectory()) {
-                                String displayText = "Move file " + propertiesDO.getPrimaryFile().getNameExt(); // + " to "
+                                String displayText = NbBundle.getMessage(RefactoringPluginFactoryImpl.class,
+                                        "FMT_MoveFileRef", propertiesDO.getPrimaryFile().getNameExt()); // NOI18N
                                 previewElement = new PreviewElement(srcFile, displayText);
                             }
                         } catch (URISyntaxException ex) {
@@ -169,9 +172,9 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
                 FileObject resFolder;
                 if (AppFrameworkSupport.isFrameworkEnabledProject(pkgFolder)
                         && (resFolder = pkgFolder.getFileObject("resources")) != null) { // NOI18N
-                    // there is an app frmework's resources folder
+                    // there is an app framework's resources folder
                     RefactoringElementImplementation previewElement = new PreviewElement(
-                            resFolder, "Rename resources package");
+                            resFolder, NbBundle.getMessage(RefactoringPluginFactoryImpl.class, "CTL_ResourcesPackageRef1")); // NOI18N
                     refactoringElements.add(refactoring, previewElement);
 
                     ResourcePackageUpdate update = new ResourcePackageUpdate(
@@ -211,7 +214,7 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
         }
 
         public String getText() {
-            return "Resources update";
+            return "Resources update"; // NOI18N
         }
 
         public String getDisplayText() {
@@ -336,11 +339,12 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
         }
 
         public String getText() {
-            return "Resources update";
+            return "Resources update"; // NOI18N
         }
 
         public String getDisplayText() {
-            return "Post-refactoring: Resources update";
+            return NbBundle.getMessage(RefactoringPluginFactoryImpl.class,
+                    "CTL_ResourceMapRef", propertiesDO.getPrimaryFile().getNameExt()); // NOI18N
         }
 
         public Lookup getLookup() {
@@ -424,11 +428,11 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
         }
 
         public String getText() {
-            return "Resources update";
+            return "Resources update"; // NOI18N
         }
 
         public String getDisplayText() {
-            return "Post-refactoring: Resources update";
+            return NbBundle.getMessage(RefactoringPluginFactoryImpl.class, "CTL_ResourcesPackageRef2"); // NOI18N
         }
 
         public Lookup getLookup() {
