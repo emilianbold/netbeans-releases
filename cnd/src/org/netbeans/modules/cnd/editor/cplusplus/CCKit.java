@@ -93,7 +93,7 @@ public class CCKit extends NbEditorKit {
     
     @Override
     public Document createDefaultDocument() {
-        BaseDocument doc = new NbEditorDocument(this.getClass());
+        Document doc = super.createDefaultDocument();
         // Force '\n' as write line separator // !!! move to initDocument()
         doc.putProperty(BaseDocument.WRITE_LINE_SEPARATOR_PROP, BaseDocument.LS_LF);
         return doc; 
@@ -102,6 +102,7 @@ public class CCKit extends NbEditorKit {
     /** Initialize document by adding the draw-layers for example. */
     @Override
     protected void initDocument(BaseDocument doc) {
+        super.initDocument(doc);
 //        doc.putProperty(Language.class, getLanguage());
     }
     
