@@ -304,11 +304,20 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
         TabConstraints constr = new TabConstraints("tab"); // NOI18N
         Node.Property[] props = constr.getProperties();
         for (int i=0; i < params.length; i++) {
-            if (params[i] != compExp)
+            if (params[i] != compExp) {
+                Node.Property prop = props[constrPropsIndices[i]];
+                Object comp = compExp.getOrigin().getMetaObject();
+                if ((prop instanceof FormProperty) && (comp instanceof RADComponent)) {
+                    // Issue 124533
+                    FormProperty fprop = (FormProperty)prop;
+                    RADComponent metacomp = (RADComponent)comp;
+                    fprop.setPropertyContext(new FormPropertyContext.Component(metacomp));
+                }
                 FormCodeSupport.readPropertyExpression(
                                     params[i],
-                                    props[constrPropsIndices[i]],
+                                    prop,
                                     false);
+            }
         }
         getConstraintsList().add(constr);
 
