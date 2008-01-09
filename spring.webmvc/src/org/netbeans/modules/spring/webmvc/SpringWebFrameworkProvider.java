@@ -206,7 +206,7 @@ public class SpringWebFrameworkProvider extends WebFrameworkProvider {
         }
 
         protected FileObject copyResource(String resourceName, FileObject target) throws UnsupportedEncodingException, IOException {
-            InputStream in = getClass().getResourceAsStream("templates/resources/" + resourceName);
+            InputStream in = getClass().getResourceAsStream("resources/templates/resources/" + resourceName);
             String lineSeparator = System.getProperty("line.separator");
             StringBuffer buffer = new StringBuffer();
             BufferedReader reader = new BufferedReader(new InputStreamReader(in, ENCODING));
