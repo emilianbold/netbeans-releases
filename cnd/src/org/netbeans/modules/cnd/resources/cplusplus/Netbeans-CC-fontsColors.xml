@@ -63,6 +63,20 @@ made subject to such option by the copyright holder.
     <fontcolor name="cc-string-literal" default="string"/>
     <fontcolor name="cc-whitespace" default="whitespace"/>
     
+    <!-- CppTokenId categories -->
+    <fontcolor name="character" default="char"/>
+    <fontcolor name="errors" default="error"/>
+    <fontcolor name="identifier" default="identifier"/>
+    <fontcolor name="keyword" default="keyword"/>
+    <fontcolor name="literal" default="keyword" />
+    <fontcolor name="comment" default="comment"/>
+    <fontcolor name="number" default="number"/>
+    <fontcolor name="operator" default="operator"/>
+    <fontcolor name="string" default="string"/>
+    <fontcolor name="separator" default="separator"/>
+    <fontcolor name="whitespace" default="whitespace"/>    
+    <fontcolor name="keyword-directive" default="keyword"/>
+
     <!-- CppStringTokenId categories -->
     <fontcolor name="string-escape" default="string">
         <font style="bold" />
@@ -81,12 +95,15 @@ made subject to such option by the copyright holder.
     
     <!-- Preprocessor categories -->
     <fontcolor name="preprocessor" foreColor="009B00"/>
-    <fontcolor name="preprocessor-keyword-directive" default="preprocessor"/>
-     <fontcolor name="preprocessor-system-include-literal" default="string">
+    <fontcolor name="preprocessor-keyword-directive" default="preprocessor">
+        <font style="bold" />
+    </fontcolor>
+    <fontcolor name="preprocessor-keyword" default="preprocessor-keyword-directive">
+    </fontcolor>
+    <fontcolor name="preprocessor-system-include-literal" default="string">
         <font style="italic"/>
     </fontcolor>
     <fontcolor name="preprocessor-user-include-literal" default="string">
-        <font style="bold"/>
     </fontcolor>
     <fontcolor name="preprocessor-identifier" default="preprocessor"/>
    

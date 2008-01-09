@@ -94,8 +94,6 @@ public class CCKit extends NbEditorKit {
     @Override
     public Document createDefaultDocument() {
         Document doc = super.createDefaultDocument();
-        // Force '\n' as write line separator // !!! move to initDocument()
-        doc.putProperty(BaseDocument.WRITE_LINE_SEPARATOR_PROP, BaseDocument.LS_LF);
         return doc; 
     }
 
@@ -103,7 +101,9 @@ public class CCKit extends NbEditorKit {
     @Override
     protected void initDocument(BaseDocument doc) {
         super.initDocument(doc);
-//        doc.putProperty(Language.class, getLanguage());
+        doc.putProperty(Language.class, getLanguage());
+        // Force '\n' as write line separator
+        doc.putProperty(BaseDocument.WRITE_LINE_SEPARATOR_PROP, BaseDocument.LS_LF);
     }
     
     protected Language<CppTokenId> getLanguage() {

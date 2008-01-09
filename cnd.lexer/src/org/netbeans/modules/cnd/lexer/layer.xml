@@ -44,7 +44,6 @@ made subject to such option by the copyright holder.
 <filesystem>
     <folder name="Editors">
         <folder name="text">
-            <!-- Do not turn on yet
             <folder name="x-c">
                 <file name="language.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.cnd.api.lexer.CppTokenId.languageC"/>
@@ -57,7 +56,6 @@ made subject to such option by the copyright holder.
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
             </folder>   
-            -->
         </folder>
     </folder>
     
