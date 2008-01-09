@@ -125,7 +125,7 @@ public final class FileBasedFileSystem extends FileSystem {
     }
 
     public final org.openide.filesystems.FileObject findResource(final String name) {
-        File f = new File(name);
+        File f = new File(getFactory().getRoot().getRealRoot().getFileName().getFile(), name);
         return findFileObject(f);
     }
 
@@ -140,6 +140,9 @@ public final class FileBasedFileSystem extends FileSystem {
             File f2 = FileUtil.normalizeFile(f);
             issue45485 = !f2.getName().endsWith(".");
             if (issue45485) return null;
+        }
+        if (fInfo.getFile().getParentFile() == null) {
+            return getRoot();
         }
         final FileObject retVal = (getFactory().findFileObject(fInfo));
         return (retVal != null && retVal.isValid()) ? retVal : null;

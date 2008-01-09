@@ -724,7 +724,7 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         assertTrue(!f.exists());       
         assertTrue(f.getAbsolutePath(),f.createNewFile());
         fileObject.refresh();
-        assertNotNull(testedFS.findResource(f.getAbsolutePath().replace('\\',File.separatorChar)));
+        assertNotNull(((FileBasedFileSystem)testedFS).getFileObject(f));
     }
 
     public void testGetFileObjectNoCaptureExternalChanges () throws Exception {

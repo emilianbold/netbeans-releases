@@ -160,22 +160,23 @@ public final class RootObj extends FileObject {
     }
 
     public final FileObject[] getChildren() {
-        return new FileObject[]{getRealRoot()};
+        return getRealRoot().getChildren();
     }
 
     public final FileObject getFileObject(final String name, final String ext) {
         FileObject retVal = null;
 
-        if (name.equals(getRealRoot().getName())) {
+        /*if (name.equals(getRealRoot().getName())) {
             final String ext2 = getRealRoot().getExt();
             if (ext == null || ext.length() == 0) {
                 retVal = (ext2 == null || ext2.length() == 0) ? getRealRoot() : null;
             } else {
                 retVal = (ext.equals(ext2)) ? getRealRoot() : null;
             }
-        }
+        }*/
 
-        return retVal;
+        //return retVal;
+        return getRealRoot().getFileObject(name, ext);
     }
 
     public final FileObject getFileObject(String relativePath) {

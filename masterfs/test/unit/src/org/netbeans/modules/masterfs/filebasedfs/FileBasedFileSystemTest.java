@@ -109,6 +109,6 @@ public class FileBasedFileSystemTest extends FileSystemFactoryHid {
     protected void destroyFileSystem(String testName) throws IOException {}    
 
     protected String getResourcePrefix(String testName, String[] resources) {
-        return getWorkDir().getAbsolutePath();
+        return FileBasedFileSystem.getFileObject(getWorkDir()).getPath();
     }
 }

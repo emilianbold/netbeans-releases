@@ -58,6 +58,7 @@ import javax.swing.event.EventListenerList;
 import java.io.*;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.Stack;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.openide.util.Enumerations;
 import org.openide.util.Utilities;
@@ -151,8 +152,26 @@ public abstract class BaseFileObj extends FileObject {
     }
 
     public final String getPath() {
-        return (isRoot()) ? "" : getFileName().getFile().getAbsolutePath().replace(UNC_PREFIX, '/');//NOI18N
+        return (isRoot()) ? "" : getRelativePath(getLocalFileSystem().getFactory().getRoot().getRealRoot().getFileName().getFile(), this.getFileName().getFile());//NOI18N
     }
+    private static String getRelativePath(final File dir, final File file) {
+        Stack<String> stack = new Stack<String>();
+        File tempFile = file;
+        while(tempFile != null && !tempFile.equals(dir)) {
+            stack.push (tempFile.getName());
+            tempFile = tempFile.getParentFile();
+        }
+        assert tempFile != null : file.getAbsolutePath() + "not found in " + dir.getAbsolutePath();//NOI18N
+        StringBuilder retval = new StringBuilder();
+        while (!stack.isEmpty()) {
+            retval.append(stack.pop());
+            if (!stack.isEmpty()) {
+                retval.append('/');//NOI18N
+            }
+        }                        
+        return retval.toString();
+    }
+
 
     public final FileSystem getFileSystem() throws FileStateInvalidException {
         return getLocalFileSystem();
@@ -334,15 +353,19 @@ public abstract class BaseFileObj extends FileObject {
 
     public final FileObject getParent() {
         final FileNaming parent = getFileName().getParent();
-        FileObject retVal;
+        FileObject retVal = null;
         if ((parent != null)) {
             final FileBasedFileSystem localFileSystem = getLocalFileSystem();
             final File file = parent.getFile();
-            retVal = localFileSystem.getFactory().get(file);
-            retVal = (retVal == null) ? localFileSystem.findFileObject(file) : retVal;
-        } else {
-            retVal = getLocalFileSystem().getRoot();
-        }
+            if (file.getParentFile() == null) {
+                retVal = getLocalFileSystem().getRoot();
+            } else {
+                retVal = localFileSystem.getFactory().get(file);
+                retVal = (retVal == null) ? localFileSystem.findFileObject(file) : retVal;
+            }
+        } /*else {
+        retVal = getLocalFileSystem().getRoot();
+        }*/
         return retVal;
     }
         
