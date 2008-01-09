@@ -67,16 +67,12 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 public final class PreprocLexer extends CndLexer {
     private static final int INIT               = 0;
     private static final int DIRECTIVE_NAME     = INIT + 1;
-    private static final int MACRO_NAME         = DIRECTIVE_NAME + 1;
-    private static final int MACRO_BODY         = MACRO_NAME + 1;
-    private static final int EXPRESSION         = MACRO_BODY + 1;
+    private static final int EXPRESSION         = DIRECTIVE_NAME + 1;
     private static final int INCLUDE_DIRECTIVE  = EXPRESSION + 1;
     private static final int OTHER              = INCLUDE_DIRECTIVE + 1;
-    private static final int ERROR              = OTHER + 1;
     
     private static final String WHITESPACE_CATEGORY = CppTokenId.WHITESPACE.primaryCategory();
     private static final String COMMENT_CATEGORY = CppTokenId.LINE_COMMENT.primaryCategory();
-//    private static final String PREPROC_KEYWORD_CATEGORY = CppTokenId.PREPROCESSOR_PRAGMA.primaryCategory();
     
     private int state = INIT;
     private final Filter<CppTokenId> preprocFilter;
@@ -93,7 +89,7 @@ public final class PreprocLexer extends CndLexer {
     }
     
     private void fromState(Object state) {
-        state = state == null ? INIT : ((Integer)state).intValue();
+        this.state = state == null ? INIT : ((Integer)state).intValue();
     }
 
     @Override
@@ -166,50 +162,27 @@ public final class PreprocLexer extends CndLexer {
                 state = DIRECTIVE_NAME;
                 break;
             case DIRECTIVE_NAME:
-//                if (PREPROC_KEYWORD_CATEGORY.equals(id.primaryCategory())) {
-//                    if (id == CppTokenId.PREPROCESSOR_DEFINE ||
-//                        id == CppTokenId.PREPROCESSOR_UNDEF) {
-//                        state = MACRO_NAME;
-//                    } else 
-//                    if (id == CppTokenId.PREPROCESSOR_IF ||
-//                            id == CppTokenId.PREPROCESSOR_ELIF) {
-//                        state = EXPRESSION;
-//                    } else if (id == CppTokenId.PREPROCESSOR_INCLUDE ||
-//                            id == CppTokenId.PREPROCESSOR_INCLUDE_NEXT) {
-//                        state = INCLUDE_DIRECTIVE;
-//                    } else {
-//                        state = OTHER;
-//                    }
-//                } else if (!WHITESPACE_CATEGORY.equals(id.primaryCategory()) &&
-//                           !COMMENT_CATEGORY.equals(id.primaryCategory())) {
-//                    state = OTHER;
-//                }
                 if (!WHITESPACE_CATEGORY.equals(id.primaryCategory()) &&
                            !COMMENT_CATEGORY.equals(id.primaryCategory())) {
-                    if (id == CppTokenId.PREPROCESSOR_IF ||
-                            id == CppTokenId.PREPROCESSOR_ELIF) {
-                        state = EXPRESSION;
-                    } else if (id == CppTokenId.PREPROCESSOR_INCLUDE ||
-                            id == CppTokenId.PREPROCESSOR_INCLUDE_NEXT) {
-                        state = INCLUDE_DIRECTIVE;
-                    } else {
-                        state = OTHER;
+                    switch (id) {
+                        case PREPROCESSOR_IF:
+                        case PREPROCESSOR_ELIF:
+                            state = EXPRESSION;
+                            break;
+                        case PREPROCESSOR_INCLUDE:
+                        case PREPROCESSOR_INCLUDE_NEXT:
+                            state = INCLUDE_DIRECTIVE;
+                            break;
+                        default:
+                            state = OTHER;
                     }
                 } else {
                     // do not change state
                 }
                 break;
-//            case MACRO_NAME:
-//                if (!WHITESPACE_CATEGORY.equals(id.primaryCategory()) &&
-//                        !COMMENT_CATEGORY.equals(id.primaryCategory())) {
-//                    state = MACRO_BODY;
-//                }
-//                break;
-//            case MACRO_BODY:                
             case INCLUDE_DIRECTIVE:                
             case EXPRESSION:                
             case OTHER:                
-            case ERROR:
                 // do not change state
         }
     }
