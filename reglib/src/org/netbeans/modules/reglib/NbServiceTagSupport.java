@@ -742,8 +742,8 @@ public class NbServiceTagSupport {
         in = url.openStream();
         LOG.log(Level.FINE,"Generating " + f + " from " + url);
 
-        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-        PrintWriter pw = new PrintWriter(f);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(in,"UTF-8"));
+        PrintWriter pw = new PrintWriter(f,"UTF-8");
         String line = null;
         String productName = "";
         for (int i = 0; i < productNames.length; i++) {
