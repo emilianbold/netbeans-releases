@@ -59,9 +59,10 @@ import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /**
- * Token ids of java language defined as enum.
+ * Token ids of C/C++ languages defined as enum.
  *
- * @author Miloslav Metelka
+ * @author Vladimir Voskresensky
+ * @version 1.00
  */
 public enum CppTokenId implements TokenId {
 
@@ -230,7 +231,7 @@ public enum CppTokenId implements TokenId {
     PREPROCESSOR_PRAGMA("pragma", "preprocessor-keyword-directive"),
     PREPROCESSOR_WARNING("warning", "preprocessor-keyword-directive"),
     PREPROCESSOR_ERROR("error", "preprocessor-keyword-directive"),
-    PREPROCESSOR_DEFINED("defined", "preprocessor-operator"),
+    PREPROCESSOR_DEFINED("defined", "keyword"),
     
     PREPROCESSOR_USER_INCLUDE(null, "preprocessor-user-include-literal"),
     PREPROCESSOR_SYS_INCLUDE(null, "preprocessor-system-include-literal"),
@@ -332,6 +333,19 @@ public enum CppTokenId implements TokenId {
             );
             cats.put("literal", l);
 
+            // Preprocessor category
+//            EnumSet<CppTokenId> p = EnumSet.of(
+//                CppTokenId.PREPROCESSOR_DEFINE,
+//                CppTokenId.PREPROCESSOR_DEFINED,
+//                CppTokenId.PREPROCESSOR_DIRECTIVE,
+//                CppTokenId.LONG_LITERAL,
+//                CppTokenId.FLOAT_LITERAL,
+//                CppTokenId.DOUBLE_LITERAL,
+//                CppTokenId.UNSIGNED_LITERAL,
+//                CppTokenId.CHAR_LITERAL,
+//                CppTokenId.STRING_LITERAL
+//            );
+//            cats.put("preprocessor", p);            
             return cats;
         }
 

@@ -43,7 +43,6 @@ package org.netbeans.cnd.api.lexer;
 
 import java.util.Collection;
 import java.util.EnumSet;
-import java.util.Map;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.modules.cnd.lexer.DoxygenLexer;
@@ -61,7 +60,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 public enum DoxygenTokenId implements TokenId {
 
     IDENT("comment"),
-    TAG("javadoc-tag"),
+    TAG("doxygen-tag"),
     HTML_TAG("html-tag"),
     DOT("comment"),
     HASH("comment"),
