@@ -116,6 +116,7 @@ import com.tomsawyer.editor.TSENode;
 import com.tomsawyer.editor.TSENodeLabel;
 import com.tomsawyer.editor.TSEObject;
 import com.tomsawyer.editor.TSEObjectUI;
+import com.tomsawyer.editor.TSEPNode;
 import com.tomsawyer.editor.TSEPointGrid;
 import com.tomsawyer.editor.TSEWindowTool;
 import com.tomsawyer.editor.TSTransform;
@@ -256,6 +257,7 @@ import org.netbeans.modules.uml.ui.products.ad.application.IMenuManager;
 import org.netbeans.modules.uml.ui.products.ad.compartments.ETCompartment;
 import org.netbeans.modules.uml.ui.products.ad.diagramengines.ADCoreEngine;
 import org.netbeans.modules.uml.ui.products.ad.diagramengines.DrawingAreaContextMenuSorter;
+import org.netbeans.modules.uml.ui.products.ad.diagramengines.IADSequenceDiagEngine;
 import org.netbeans.modules.uml.ui.products.ad.drawengines.ETContainerDrawEngine;
 import org.netbeans.modules.uml.ui.support.applicationmanager.NodePresentation;
 import org.netbeans.modules.uml.ui.products.ad.graphobjects.ETEdge;
@@ -10029,7 +10031,20 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
             if (etElem != null)
             {
                 etElem.onContextMenu(manager);
+            } 
+            //Fix for Issuezilla#82825. The following is a workaround for having AddOperation 
+            //on edge as well as all bendpoints of MessageToSelf in a SQD
+             else if (graphObj instanceof TSEPNode && m_DiagramEngine instanceof IADSequenceDiagEngine) {
+                if (((TSEPNode) graphObj).isPathNode()) {
+                    TSGraphObject gObj = ((TSEPNode) graphObj).getOwner();
+                    IETGraphObject etElem1 = TypeConversions.getETGraphObject(gObj);
+                    if (etElem1 != null) {
+                        manager.setContextObject(etElem1);
+                        etElem1.onContextMenu(manager);
+                    }
+                }
             }
+            
         } else
         {
             manager.setContextObject(etGraph);
