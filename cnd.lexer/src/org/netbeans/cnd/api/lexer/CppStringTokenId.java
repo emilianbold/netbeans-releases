@@ -91,16 +91,28 @@ public enum CppStringTokenId implements TokenId {
         return primaryCategory;
     }
 
-    private static final Language<CppStringTokenId> language;
+    private static final Language<CppStringTokenId> languageDouble;
+    private static final Language<CppStringTokenId> languageSingle;
+
     static {
-        language = new StringHierarchy().language();
+        languageDouble = new StringHierarchy(true).language();
+        languageSingle = new StringHierarchy(true).language();
     }
 
-    public static Language<CppStringTokenId> language() {
-        return language;
+    public static Language<CppStringTokenId> languageDouble() {
+        return languageDouble;
     }
 
+    public static Language<CppStringTokenId> languageSingle() {
+        return languageSingle;
+    }
+    
     private static final class StringHierarchy extends LanguageHierarchy<CppStringTokenId> {
+        private final boolean dblQuoted;
+        public StringHierarchy(boolean doubleQuotedString) {
+            this.dblQuoted = doubleQuotedString;
+        }
+        
         @Override
         protected Collection<CppStringTokenId> createTokenIds() {
             return EnumSet.allOf(CppStringTokenId.class);
@@ -113,12 +125,12 @@ public enum CppStringTokenId implements TokenId {
 
         @Override
         protected Lexer<CppStringTokenId> createLexer(LexerRestartInfo<CppStringTokenId> info) {
-            return new CppStringLexer(info);
+            return new CppStringLexer(info, this.dblQuoted);
         }
 
         @Override
         protected String mimeType() {
-            return "text/x-cpp-string"; //NOI18N
+            return this.dblQuoted ? "text/x-cpp-string-double" : "text/x-cpp-string-single"; //NOI18N
         }
     }    
 }

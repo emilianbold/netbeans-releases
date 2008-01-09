@@ -65,7 +65,7 @@ public class CppStringLexerTestCase extends NbTestCase {
     public void testNextToken1() {
         String text = "t";
         
-        TokenHierarchy<?> hi = TokenHierarchy.create(text, CppStringTokenId.language());
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, CppStringTokenId.languageDouble());
         TokenSequence<?> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, CppStringTokenId.TEXT, "t");
     }
@@ -73,7 +73,7 @@ public class CppStringLexerTestCase extends NbTestCase {
     public void testNextToken2() {
         String text = "\\t\\b\\b\\t \\tabc\\rsddfdsffffffffff\\uuuuAbcD\\377";
         
-        TokenHierarchy<?> hi = TokenHierarchy.create(text, CppStringTokenId.language());
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, CppStringTokenId.languageDouble());
         TokenSequence<?> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, CppStringTokenId.TAB, "\\t");
         LexerTestUtilities.assertNextTokenEquals(ts, CppStringTokenId.BACKSPACE, "\\b");

@@ -64,10 +64,12 @@ public class CppStringLexer implements Lexer<CppStringTokenId> {
     
     private TokenFactory<CppStringTokenId> tokenFactory;
     private boolean escapedLF = false;
+    private final boolean dblQuoted;
     
-    public CppStringLexer(LexerRestartInfo<CppStringTokenId> info) {
+    public CppStringLexer(LexerRestartInfo<CppStringTokenId> info, boolean doubleQuotedString) {
         this.input = info.input();
         this.tokenFactory = info.tokenFactory();
+        this.dblQuoted = doubleQuotedString;
         assert (info.state() == null); // passed argument always null
     }
     
