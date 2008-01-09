@@ -41,14 +41,20 @@
 
 package org.netbeans;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLStreamHandler;
+import java.net.URLStreamHandlerFactory;
+import java.nio.ByteBuffer;
 import java.security.CodeSource;
 import java.security.PermissionCollection;
 import java.security.Policy;
@@ -57,10 +63,11 @@ import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.jar.Attributes;
 import java.util.jar.Attributes.Name;
@@ -79,6 +86,62 @@ import java.util.zip.ZipEntry;
  */
 public class JarClassLoader extends ProxyClassLoader {
 
+    private static File cacheFile;
+    static Archive archive = new Archive(); // defaults to an empty archive
+
+    static void initializeCache(File cacheF, long timeStamp) {
+        cacheFile = cacheF;
+        archive = new Archive(cacheF, timeStamp);
+    }
+    
+    /**
+     * Stops gathering class/resource loading requests and frees the
+     * resource cache from the memory. The data about additional resources
+     * needed during startup and basic info about current archive is kept
+     * in memory, though, until {@link saveArchive()} updates the archive
+     * 
+     */
+    public static void flushArchive() {
+        archive.stopGathering();
+        archive.stopServing();        
+    }
+    
+    /**
+     * Creates a new archive or updates existing archive with the necessary
+     * resources gathered so far. It also stops gatheing and serving
+     * additional request, if it was still doing so.
+     */    
+    public static void saveArchive() {
+        archive.stopGathering();
+        archive.stopServing();
+        try {
+            archive.save(cacheFile);
+        } catch (IOException ioe) {
+            LOGGER.log(Level.WARNING, null, ioe);
+        }
+    }
+    
+    static {
+        ResURLStreamHandlerFactory fact = new ResURLStreamHandlerFactory();
+        try {
+            java.net.URL.setURLStreamHandlerFactory(fact);
+        } catch (Error e) {
+            try {
+                for (Field f : URL.class.getDeclaredFields()) {
+                    if (f.getType() == URLStreamHandlerFactory.class) {
+                        f.setAccessible(true);
+                        fact.del = (URLStreamHandlerFactory)f.get(null);
+                        f.set(null, null);
+                        break;
+                    }
+                }
+                URL.setURLStreamHandlerFactory(fact);
+            } catch (Throwable t) {
+                throw new InternalError(); // can't really continue
+            }
+        }
+    }
+    
     private static final Logger LOGGER = Logger.getLogger(JarClassLoader.class.getName());
 
     private Source[] sources = new Source[0];
@@ -184,7 +247,7 @@ public class JarClassLoader extends ProxyClassLoader {
                 // XXX full sealing check, URLClassLoader does something more
                 if (pkg.isSealed() && !pkg.isSealed(src.getURL())) throw new SecurityException("sealing violation"); // NOI18N
             } else {
-                Manifest man = src.getManifest();
+                Manifest man = module == null || src != sources[0] ? src.getManifest() : module.getManifest();
                 definePackage (pkgName, man, src.getURL());
             }
 
@@ -228,6 +291,7 @@ public class JarClassLoader extends ProxyClassLoader {
         private URL url;
         private ProtectionDomain pd;
         protected JarClassLoader jcl;
+        private static Map<String,Source> sources = new HashMap<String, Source>();
         
         public Source(URL url) {
             this.url = url;
@@ -274,11 +338,20 @@ public class JarClassLoader extends ProxyClassLoader {
 
         protected abstract void listCoveredPackages(Set<String> known, StringBuffer save);
         
-        protected void destroy() throws IOException {}
+        protected void destroy() throws IOException {
+            // relatively slow (millis instead of micros),
+            // but rare enough to not matter
+            sources.values().remove(this);
+        }
         
         static Source create(File f, JarClassLoader jcl) throws IOException {
             Source src = f.isDirectory() ? new DirSource(f) : new JarSource(f);
             src.jcl = jcl;
+            // should better use the same string as other indexes
+            // this way, there are currently 3 similar long Strings per
+            // JarClassLoader instance - its URL, its identifier
+            // in Archive.sources map and this one
+            sources.put(f.toURI().toString(), src);
             return src;
         }
     }
@@ -294,14 +367,14 @@ public class JarClassLoader extends ProxyClassLoader {
         
         JarSource(File file) throws IOException {
             super(file.toURL());
-            resPrefix = "jar:" + file.toURI() + "!/"; // NOI18N;
+            resPrefix = ResURLStreamHandler.RES_PROTO +":" + file.toURI() + "!/"; // NOI18N;
             this.file = file;
         }
 
         @Override
         public Manifest getManifest() {
             try {
-                return getJarFile().getManifest();
+                return getJarFile("man").getManifest();
             } catch (IOException e) {
                 return null;
             } finally {
@@ -309,13 +382,13 @@ public class JarClassLoader extends ProxyClassLoader {
             }
         }
         
-        private JarFile getJarFile() throws IOException {
+        JarFile getJarFile(String forWhat) throws IOException {
             synchronized(sources) {
                 requests++;
                 used++;
                 if (jar == null) {
                     jar = new JarFile(file, false);
-                    opened(this);
+                    opened(this, forWhat);
                 }
                 return jar;
             }
@@ -330,26 +403,19 @@ public class JarClassLoader extends ProxyClassLoader {
         
         
         protected URL doGetResource(String name) throws IOException  {
-            ZipEntry ze;
-            try {
-                ze = getJarFile().getEntry(name);
-            } catch (IllegalStateException ex) {
-                // this exception occurs in org/netbeans/core/lookup/* tests
-                // without this catch statement the tests fail
-                return null;
-            } finally {
-                releaseJarFile();
-            }
-            
-            if (ze == null) return null;
-
+            byte[] buf = archive.getData(this, name);
+            if (buf == null) return null;
             LOGGER.log(Level.FINER, "Loading {0} from {1}", new Object[] {name, file.getPath()});
-            return new URL(resPrefix + ze.getName());
+            return new URL(resPrefix + name);
         }
         
         protected byte[] readClass(String path) throws IOException {
+            return archive.getData(this, path);
+        }
+        
+        public byte[] resource(String path) throws IOException {
             ZipEntry ze;
-            JarFile jf = getJarFile();
+            JarFile jf = getJarFile(path);
             try {
                 ze = jf.getEntry(path);
                 if (ze == null) return null;
@@ -376,7 +442,7 @@ public class JarClassLoader extends ProxyClassLoader {
 
         protected void listCoveredPackages(Set<String> known, StringBuffer save) {
             try {
-                JarFile src = getJarFile();
+                JarFile src = getJarFile("pkg");
 
                 Enumeration<JarEntry> en = src.entries();
                 while (en.hasMoreElements()) {
@@ -402,6 +468,7 @@ public class JarClassLoader extends ProxyClassLoader {
         
         @Override
         protected void destroy() throws IOException {
+            super.destroy();
             assert dead == false : "Already had dead JAR: " + file;
             
             File orig = file;
@@ -485,7 +552,7 @@ public class JarClassLoader extends ProxyClassLoader {
         private static Set<JarSource> sources = new HashSet<JarSource>();
         private static int LIMIT = Integer.getInteger("org.netbeans.JarClassLoader.limit_fd", 300);
 
-        static void opened(JarSource source) {
+        static void opened(JarSource source, String forWhat) {
             synchronized (sources) {
                 assert !sources.contains(source) : "Failed for " + source.file.getPath() + "\n";
 
@@ -522,6 +589,10 @@ public class JarClassLoader extends ProxyClassLoader {
              
             assert candidate != null; 
             return candidate; 
+        }
+
+        public String getIdentifier() {
+            return getURL().toExternalForm();
         }
     }
 
@@ -603,5 +674,171 @@ public class JarClassLoader extends ProxyClassLoader {
             attr.putValue("Covered-Packages", save.toString());
         }
         return known;
+    }
+    
+    private static class ResURLStreamHandlerFactory implements URLStreamHandlerFactory {
+        URLStreamHandlerFactory del;
+        /**
+         * Creates URLStreamHandler for nbinst protocol
+         * @param protocol
+         * @return NbinstURLStreamHandler if the protocol is nbinst otherwise null
+         */
+        public URLStreamHandler createURLStreamHandler(String protocol) {
+            if (ResURLStreamHandler.RES_PROTO.equals(protocol)) {
+                return new ResURLStreamHandler ();
+            }
+            return del != null ? del.createURLStreamHandler(protocol): null;
+        }
+    }
+    
+    /**
+     * URLStreamHandler for res protocol
+     */
+    private static class ResURLStreamHandler extends URLStreamHandler {
+        public static final String RES_PROTO = "nbjcl";
+
+        ResURLStreamHandler() {}
+
+        /**
+         * Creates URLConnection for URL with res protocol.
+         * @param u URL for which the URLConnection should be created
+         * @return URLConnection
+         * @throws IOException
+         */
+        protected URLConnection openConnection(URL u) throws IOException {
+            String url = u.getFile();//toExternalForm();
+            int bang = url.indexOf("!/");
+            String jar = url.substring(0, bang);
+            String _name = url.substring(bang+2);
+            Source _src = Source.sources.get(jar);
+            return new ResURLConnection (u, _src, _name);
+        }
+
+        protected @Override void parseURL(URL url, String spec, 
+                                int start, int limit) {
+            String file = null;
+            String ref = null;
+            // first figure out if there is an anchor
+            int refPos = spec.indexOf('#', limit);
+            boolean refOnly = refPos == start;
+            if (refPos > -1) {
+                ref = spec.substring(refPos + 1, spec.length());
+                if (refOnly) {
+                    file = url.getFile();
+                }
+            }
+            // then figure out if the spec is 
+            // 1. absolute (res:)
+            // 2. relative (i.e. url + foo/bar/baz.ext)
+            // 3. anchor-only (i.e. url + #foo), which we already did (refOnly)
+            boolean absoluteSpec = false;
+            if (spec.length() >= RES_PROTO.length()+1) {
+                absoluteSpec = spec.substring(0, RES_PROTO.length()+1).equalsIgnoreCase(RES_PROTO+":");
+            }
+            spec = spec.substring(start, limit);
+
+            if (absoluteSpec) {
+                file = parseAbsoluteSpec(spec);
+            } else if (!refOnly) {
+                file = parseContextSpec(url, spec);
+
+                // Canonize the result after the bangslash
+                int bangSlash = file.lastIndexOf("!/") + 1;
+                String toBangSlash = file.substring(0, bangSlash);
+                String afterBangSlash = file.substring(bangSlash);
+                sun.net.www.ParseUtil canonizer = new sun.net.www.ParseUtil(); // XXX
+                afterBangSlash = canonizer.canonizeString(afterBangSlash);
+                file = toBangSlash + afterBangSlash;
+            }
+            setURL(url, RES_PROTO, "", -1, file, ref);	
+        }
+
+        private String parseAbsoluteSpec(String spec) {
+            URL url = null;
+            int index = -1;
+            // check for !/
+            if ((index = spec.lastIndexOf("!/") + 1) == -1) {
+                throw new NullPointerException("no !/ in spec");
+            }
+            // test the inner URL
+            try {
+                String innerSpec = spec.substring(0, index - 1);
+                url = new URL(innerSpec);
+            } catch (MalformedURLException e) {
+                throw new NullPointerException("invalid url: " + 
+                                               spec + " (" + e + ")");
+            }
+            return spec;
+        }
+
+        private String parseContextSpec(URL url, String spec) {
+            String ctxFile = url.getFile();
+            // if the spec begins with /, chop up the jar back !/
+            if (spec.startsWith("/")) {
+                int bangSlash = ctxFile.lastIndexOf("!/");
+                if (bangSlash == -1) {
+                    throw new NullPointerException("malformed " +
+                                                   "context url:" +
+                                                   url + 
+                                                   ": no !/");
+                }
+                ctxFile = ctxFile.substring(0, bangSlash+1);
+            }
+            if (!ctxFile.endsWith("/") && (!spec.startsWith("/"))){
+                // chop up the last component
+                int lastSlash = ctxFile.lastIndexOf('/');
+                if (lastSlash == -1) {
+                    throw new NullPointerException("malformed " +
+                                                   "context url:" +
+                                                   url);
+                }
+                ctxFile = ctxFile.substring(0, lastSlash + 1);
+            }
+            return (ctxFile + spec);
+        }
+    }
+
+    /** URLConnection for URL with res protocol.
+     *
+     */
+    private static class ResURLConnection extends URLConnection {
+        private JarSource src;
+        private String name;
+        private byte[] data;
+        private InputStream iStream;
+
+        /**
+         * Creates new URLConnection
+         * @param url the parameter for which the connection should be
+         * created
+         */
+        private ResURLConnection(URL url, Source src, String name) {
+            super(url);
+            this.src = (JarSource)src;
+            this.name = name;
+        }
+
+
+        public void connect() throws IOException {
+            if (data == null) {
+                data = src.getClassData(name);
+            }
+        }
+
+        public @Override int getContentLength() {
+            try {
+                this.connect();
+                return data.length;
+            } catch (IOException e) {
+                return -1;
+            }
+        }
+
+
+        public @Override InputStream getInputStream() throws IOException {
+            this.connect();
+            if (iStream == null) iStream = new ByteArrayInputStream(data);
+            return iStream;
+        }
     }
 }

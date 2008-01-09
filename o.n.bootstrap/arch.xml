@@ -979,6 +979,43 @@ made subject to such option by the copyright holder.
 -->
     <answer id="resources-file">
         Yes, it must. The Filesystems API has not been loaded when it runs.
+        
+        <api category="devel" group="java.io.File" name=".lastModified" type="export">
+            <p>
+            To speedup testing that module caches are up-to-date, the system
+            recognizes special file inside of each cluster. If <code>.lastModified</code>
+            file is present in a cluster, then the content of the cluster is not 
+            scanned any more deeply and instead the time stamp of the file is
+            used as last modification for the whole content of the cluster.
+            </p>
+            
+            <p>
+            This API is primarily intended for use by installer and RPM packagers
+            and also autoupdate, that are supposed to create such file, as soon
+            as they finish modifications to any cluster. 
+            </p>
+            
+            <p>
+            This file is ignored when accessing user directory, as it is expected
+            that user can modify it, while the user usually does not have access
+            permision or need to modify the shared installation clusters.
+            </p>
+        </api>
+
+        <api category="devel" group="java.io.File" name="all-resources.dat" type="private">
+            <p>
+            To speedup class loading during startup, the system keeps a cache
+            of resources needed during startup in var/cache/all-resources.dat.
+            If the cache is valid, it is loaded during startup and class
+            and resource loading requests are redirected there.
+            </p>
+                        
+            <p>
+            The file is binary and shouldn't be modified by other code than
+            org.netbeans.Archive. The file content uses magic header
+            and versioning to allow evolution of its (private) format.
+            </p>
+        </api>
     </answer>
 
 

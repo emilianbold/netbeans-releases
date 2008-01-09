@@ -49,6 +49,7 @@ import java.net.URL;
 import java.util.Iterator;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import org.netbeans.JarClassLoader;
 import org.netbeans.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -341,6 +342,8 @@ public final class Main extends Object {
     Splash.getInstance().dispose();
     StartLog.logProgress ("Splash hidden"); // NOI18N
     StartLog.logEnd ("Preparation"); // NOI18N
+    
+    JarClassLoader.flushArchive();
   }
   
     /** Loads a class from available class loaders. */
