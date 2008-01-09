@@ -77,6 +77,8 @@ import org.openide.util.HelpCtx;
  * @author Alex Petrov (27.12.2007)
  */
 public class DefineCorrelationWizard implements WizardProperties {
+    private static final long serialVersionUID = 1L;
+    
     private static final Dimension LEFT_DIMENSION_VALUE = new Dimension(100, 300);
     private static final Dimension PANEL_DIMENSION_VALUE = new Dimension(400, 400);
     private static final String[] WIZARD_STEP_NAMES = new String[] {
