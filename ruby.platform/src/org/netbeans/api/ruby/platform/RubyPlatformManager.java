@@ -38,14 +38,19 @@
  */
 package org.netbeans.api.ruby.platform;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.ProjectManager;
@@ -54,11 +59,15 @@ import org.netbeans.modules.ruby.spi.project.support.rake.PropertyUtils;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * Represents one Ruby platform, i.e. installation of a Ruby interpreter.
  */
 public final class RubyPlatformManager {
+    
+    /** For unit tests. */
+    static File TEST_RUBY;
 
     private static final String PLATFORM_PREFIX = "rubyplatform."; // NOI18N
     private static final String PLATFORM_INTEPRETER = ".interpreter"; // NOI18N
@@ -78,6 +87,55 @@ public final class RubyPlatformManager {
      */
     public static synchronized Set<RubyPlatform> getPlatforms() {
         return new HashSet<RubyPlatform>(getPlatformsInternal());
+    }
+
+    public static void performPlatformDetection() {
+        // Check the path to see if we find any other Ruby installations
+        String path = System.getenv("PATH"); // NOI18N
+        if (path == null) {
+            path = System.getenv("Path"); // NOI18N
+        }
+
+        if (path != null) {
+            final Set<File> rubies = new LinkedHashSet<File>();
+            Set<String> dirs = new TreeSet<String>(Arrays.asList(path.split(File.pathSeparator)));
+            for (String dir : dirs) {
+                File f = null;
+                if (Utilities.isWindows()) {
+                    f = new File(dir, "ruby.exe"); // NOI18N
+                } else {
+                    f = new File(dir, "ruby"); // NOI18N
+                    // Don't include /usr/bin/ruby on the Mac - it's no good
+                    // Source: http://developer.apple.com/tools/rubyonrails.html
+                    //   "The version of Ruby that shipped on Mac OS X Tiger prior to 
+                    //    v10.4.6 did not work well with Rails.   If you're running 
+                    //    an earlier version of Tiger, you'll need to either upgrade 
+                    //    to 10.4.6 or upgrade your copy of Ruby to version 1.8.4 or 
+                    //    later using the open source distribution."
+                    if (Utilities.isMac() && "/usr/bin/ruby".equals(f.getPath())) { // NOI18N
+                        String version = System.getProperty("os.version"); // NOI18N
+                        if (version == null || version.startsWith("10.4")) { // Only a problem on Tiger // NOI18N
+                            continue;
+                        }
+                    }
+                }
+                if (f.exists()) {
+                    rubies.add(f);
+                }
+            }
+
+            for (File ruby : rubies) {
+                try {
+                    if (getPlatformByFile(ruby) == null) {
+                        addPlatform(ruby);
+                    }
+                } catch (IOException e) {
+                    // tell the user that something goes wrong
+                    LOGGER.log(Level.WARNING, e.getLocalizedMessage(), e);
+                }
+            }
+        }
+
     }
 
     private static Set<RubyPlatform> getPlatformsInternal() {
@@ -143,11 +201,11 @@ public final class RubyPlatformManager {
         return null;
     }
 
-    public static synchronized RubyPlatform getPlatformByPath(String path) {
+    public static synchronized RubyPlatform getPlatformByFile(File interpreter) {
         for (RubyPlatform p : getPlatformsInternal()) {
             try {
                 File current = new File(p.getInterpreter()).getCanonicalFile();
-                File toFind = new File(path).getCanonicalFile();
+                File toFind = interpreter.getCanonicalFile();
                 if (current.equals(toFind)) {
                     return p;
                 }
@@ -157,8 +215,18 @@ public final class RubyPlatformManager {
         }
         return null;
     }
+    
+    public static synchronized RubyPlatform getPlatformByPath(String path) {
+        return getPlatformByFile(new File(path));
+    }
 
-    public static RubyPlatform addPlatform(final File interpreter, final String label) throws IOException {
+    public static RubyPlatform addPlatform(final File interpreter) throws IOException {
+        String version = computeVersion(interpreter);
+        if (version == null) {
+            return null;
+        }
+
+        final String label = interpreter.getName() + " (" + version + ')';
         final String id = computeID(label);
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
@@ -220,4 +288,27 @@ public final class RubyPlatformManager {
     public static Iterator<RubyPlatform> platformIterator() {
         return getPlatformsInternal().iterator();
     }
+
+    private static String computeVersion(final File interpreter) throws IOException {
+        if (TEST_RUBY == interpreter) { // tests
+            return "test_ruby"; // NOI18N
+        }
+        String ruby = null;
+        try {
+            ProcessBuilder pb = new ProcessBuilder(interpreter.getAbsolutePath(), "-e", "print VERSION"); // NOI18N
+            Process start = pb.start();
+            // FIXME: set timeout
+            start.waitFor();
+            if (start.exitValue() == 0) {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(start.getInputStream()));
+                ruby = reader.readLine();
+            } else {
+                LOGGER.severe(interpreter.getAbsolutePath() + " does not seems to be a valid interpreter"); // TODO localize me
+            }
+        } catch (InterruptedException e) {
+            LOGGER.log(Level.SEVERE, e.getLocalizedMessage(), e);
+        }
+        return ruby;
+    }
+
 }

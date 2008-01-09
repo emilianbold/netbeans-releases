@@ -169,11 +169,7 @@ public final class PlatformComponentFactory {
 
         RubyPlatform addPlatform(final File interpreter) {
             try {
-                String label = computeLabel(interpreter);
-                if (label == null) {
-                    return null;
-                }
-                RubyPlatform platform = RubyPlatformManager.addPlatform(interpreter, interpreter.getName() + " (" + label + ')');
+                RubyPlatform platform = RubyPlatformManager.addPlatform(interpreter);
                 nbPlafs = getSortedPlatforms(null); // refresh
                 fireContentsChanged(this, 0, nbPlafs.length - 1);
                 return platform;
@@ -185,25 +181,6 @@ public final class PlatformComponentFactory {
         }
     }
     
-    private static String computeLabel(final File interpreter) throws IOException {
-        String ruby = null;
-        try {
-            ProcessBuilder pb = new ProcessBuilder(interpreter.getAbsolutePath(), "-e", "print VERSION"); // NOI18N
-            Process start = pb.start();
-            // FIXME: set timeout
-            start.waitFor();
-            if (start.exitValue() == 0) {
-                BufferedReader reader = new BufferedReader(new InputStreamReader(start.getInputStream()));
-                ruby = reader.readLine();
-            } else {
-                LOGGER.severe(interpreter.getAbsolutePath() + " does not seems to be a valid interpreter"); // TODO localize me
-            }
-        } catch (InterruptedException e) {
-            LOGGER.log(Level.SEVERE, e.getLocalizedMessage(), e);
-        }
-        return ruby;
-    }
-
     /**
      * Render {@link RubyPlatform}.
      * <p>Use in conjuction with {@link RubyPlatformListModel}</p>

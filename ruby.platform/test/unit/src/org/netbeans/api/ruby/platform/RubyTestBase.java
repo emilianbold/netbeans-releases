@@ -137,6 +137,7 @@ public abstract class RubyTestBase extends NbTestCase {
             File gembin = new File(gems, version + File.separator + "bin");
             gembin.mkdirs();
         }
+        RubyPlatformManager.TEST_RUBY = ruby;
         return ruby;
     }
 

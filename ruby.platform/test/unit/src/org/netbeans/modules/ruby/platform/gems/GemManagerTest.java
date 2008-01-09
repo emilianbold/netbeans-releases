@@ -65,13 +65,13 @@ public class GemManagerTest extends RubyTestBase {
     }
 
     public void testGetRubyLibGemDir() throws Exception {
-        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems(), "ruby");
+        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());
         GemManager gemManager = platform.getGemManager();
         assertEquals("righ gem dir", new File(platform.getLib(), "ruby/gems/1.8"), new File(gemManager.getGemDir()));
     }
     
     public void testGetGem() throws Exception {
-        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems(), "ruby");
+        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());
         GemManager gemManager = platform.getGemManager();
         assertEquals("righ gem dir", new File(new File(getWorkDir(), "bin"), "gem").getAbsolutePath(), gemManager.getGemTool());
     }

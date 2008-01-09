@@ -80,7 +80,7 @@ public class RubyInstallationTest extends RubyTestBase {
     }
 
     public void testChooseGems() throws Exception {
-        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems(), "ruby");
+        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());
         GemManager gemManager = platform.getGemManager();
         
         String gemLibs = gemManager.getGemDir();
@@ -127,27 +127,27 @@ public class RubyInstallationTest extends RubyTestBase {
     }
 
     public void testFindGemExecutableInRubyBin() throws Exception {
-        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems(), "ruby");
+        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());
         GemManager gemManager = platform.getGemManager();
         touch("rdebug-ide", platform.getBinDir());
         assertNotNull(gemManager.findGemExecutable("rdebug-ide"));
     }
 
     public void testFindGemExecutableInGemRepo() throws Exception {
-        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems(), "ruby");
+        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());
         GemManager gemManager = platform.getGemManager();
         touch("rdebug-ide", new File(gemManager.getGemDir(), "bin").getPath());
         assertNotNull(gemManager.findGemExecutable("rdebug-ide"));
     }
 
     public void testFindRDoc() throws Exception {
-        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems(), "ruby");
+        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());
         GemManager gemManager = platform.getGemManager();
         assertNotNull("rdoc found", gemManager.getRDoc());
     }
 
     public void testFindRDocWithSuffix() throws Exception {
-        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRuby(false, "1.8.6-p110"), "ruby");
+        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRuby(false, "1.8.6-p110"));
         GemManager gemManager = platform.getGemManager();
         assertNotNull("rdoc found", gemManager.getRDoc());
     }

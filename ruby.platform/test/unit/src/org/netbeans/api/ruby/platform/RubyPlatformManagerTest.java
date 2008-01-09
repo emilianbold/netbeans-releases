@@ -53,7 +53,7 @@ public final class RubyPlatformManagerTest extends RubyTestBase {
         assertNotNull("has bundled JRuby", jruby);
         assertTrue("is JRuby", jruby.isJRuby());
         assertNotNull("has label", jruby.getLabel());
-        assertTrue("has label", jruby.isValid());
+        assertTrue("is valid", jruby.isValid());
         assertTrue("is default", jruby.isDefault());
         // XXX
 //        assertEquals("right ruby home", new File("fix me"), jruby.getRubyHome());
@@ -62,7 +62,7 @@ public final class RubyPlatformManagerTest extends RubyTestBase {
 
     public void testAddPlatform() throws Exception {
         assertEquals("bundle JRuby", 1, RubyPlatformManager.getPlatforms().size());
-        RubyPlatform ruby = RubyPlatformManager.addPlatform(setUpRuby(), "ruby");
+        RubyPlatform ruby = RubyPlatformManager.addPlatform(setUpRuby());
         // XXX
 //        assertEquals("right ruby home", new File("fix me"), ruby.getRubyHome());
 //        assertEquals("right ruby lib", new File("fix me"), ruby.getRubyLibDir());
@@ -72,11 +72,16 @@ public final class RubyPlatformManagerTest extends RubyTestBase {
     }
     
     public void testGetPlatformByPath() throws Exception {
-        RubyPlatform ruby = RubyPlatformManager.addPlatform(setUpRuby(), "ruby");
+        RubyPlatform ruby = RubyPlatformManager.addPlatform(setUpRuby());
         RubyPlatform alsoRuby = RubyPlatformManager.getPlatformByPath(ruby.getInterpreter());
         assertSame("found by path", ruby, alsoRuby);
         RubyPlatform jruby = RubyPlatformManager.getPlatformByPath(TestUtil.getXTestJRubyPath());
         assertSame("found by path", RubyPlatformManager.getDefaultPlatform(), jruby);
+    }
+    
+    public void testPlatformDetection() throws Exception {
+        // sanity-check test
+        RubyPlatformManager.performPlatformDetection();
     }
     
 }

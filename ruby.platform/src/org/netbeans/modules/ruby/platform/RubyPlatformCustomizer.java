@@ -41,8 +41,10 @@
 package org.netbeans.modules.ruby.platform;
 
 import java.awt.Dialog;
+import java.awt.EventQueue;
 import java.io.File;
 import java.util.Locale;
+import java.util.prefs.Preferences;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.event.ListSelectionEvent;
@@ -50,16 +52,20 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
+import org.netbeans.modules.ruby.platform.PlatformComponentFactory.RubyPlatformListModel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 
 public class RubyPlatformCustomizer extends javax.swing.JPanel {
     
     private static final String LAST_PLATFORM_DIRECTORY = "lastPlatformDirectory"; // NOI18N
+    private static final String FIRST_TIME_KEY = "platform-manager-called-first-time";
 
     public static void showCustomizer() {
         RubyPlatformCustomizer customizer = new RubyPlatformCustomizer();
@@ -82,23 +88,49 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
 
     public RubyPlatformCustomizer() {
         initComponents();
-        if (platformsList.getModel().getSize() > 0) {
-            platformsList.setSelectedIndex(0);
-        }
+        refreshPlatformList();
         platformsList.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
                 refreshPlatform();
             }
         });
+
+        // run platform detection is this is the first time
+        Preferences preferences = NbPreferences.forModule(RubyPlatformCustomizer.class);
+        if (preferences.getBoolean(FIRST_TIME_KEY, true)) {
+            performPlatformDetection();
+            preferences.putBoolean(FIRST_TIME_KEY, false);
+        }
+    }
+
+    private void refreshPlatformList() {
+        if (platformsList.getModel().getSize() > 0) {
+            platformsList.setSelectedIndex(0);
+        }
         refreshPlatform();
     }
 
     private static String getMessage(String key) {
         return NbBundle.getMessage(RubyPlatformCustomizer.class, key);
     }
+
+    private void performPlatformDetection() {
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                RubyPlatformManager.performPlatformDetection();
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        platformsList.setModel(new RubyPlatformListModel());
+                        refreshPlatformList();
+                    }
+                });
+            }
+        });
+    }
     
     private void refreshPlatform() {
         RubyPlatform plaf = (RubyPlatform) platformsList.getSelectedValue();
+        
         if (plaf == null) {
             removeButton.setEnabled(false);
             return;
