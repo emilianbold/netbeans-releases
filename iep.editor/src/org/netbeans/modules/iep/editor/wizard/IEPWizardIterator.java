@@ -16,7 +16,11 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 
 public final class IEPWizardIterator implements WizardDescriptor.InstantiatingIterator {
 
@@ -44,14 +48,6 @@ public final class IEPWizardIterator implements WizardDescriptor.InstantiatingIt
             };
         
             initializePanels();
-        
-//            panels = new WizardDescriptor.Panel[]{
-//                panel1,
-//                panel2,
-//                panel3
-//            };
-//        
-//            initializePanels();
         }
         
         /*
@@ -89,7 +85,17 @@ public final class IEPWizardIterator implements WizardDescriptor.InstantiatingIt
     }
 
     public Set instantiate() throws IOException {
-        return Collections.EMPTY_SET;
+        FileObject dir = Templates.getTargetFolder( wizard );        
+        DataFolder df = DataFolder.findFolder( dir );
+        FileObject template = Templates.getTemplate( wizard );        
+        DataObject dTemplate = DataObject.find( template );                
+        DataObject createdObject = dTemplate.createFromTemplate( df, Templates.getTargetName(wizard)  );
+        if (createdObject == null)
+            return Collections.emptySet();
+        
+        Set set = new HashSet(1);                
+        set.add(createdObject.getPrimaryFile());
+        return set;
     }
 
     public void initialize(WizardDescriptor wizard) {
@@ -103,7 +109,7 @@ public final class IEPWizardIterator implements WizardDescriptor.InstantiatingIt
         //initialize all panels here:
         panel1 = new IEPWizardPanel1();
         panel2 = new IEPWizardPanel2();
-        panel2EmptyIEPFile = new IEPWizardPanel2EmptyIEPFile();
+        panel2EmptyIEPFile = new IEPWizardPanel2EmptyIEPFile(wizard);
         panel3 = new IEPWizardPanel3();
         
         Object prop = wizard.getProperty("WizardPanel_contentData");

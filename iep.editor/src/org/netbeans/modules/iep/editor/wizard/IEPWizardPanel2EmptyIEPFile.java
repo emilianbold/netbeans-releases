@@ -40,8 +40,17 @@
 package org.netbeans.modules.iep.editor.wizard;
 
 import java.awt.Component;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
+import org.netbeans.modules.xml.xam.ui.ProjectConstants;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
+import org.openide.loaders.DataFolder;
 import org.openide.util.HelpCtx;
 
 /**
@@ -56,27 +65,66 @@ public class IEPWizardPanel2EmptyIEPFile implements WizardDescriptor.Panel {
      */
     private Component component;
 
+    private WizardDescriptor mDescriptor;
+    
+    private WizardDescriptor.Panel mDelegate;
+    
+    public IEPWizardPanel2EmptyIEPFile(WizardDescriptor descriptor) {
+        Project project = Templates.getProject( descriptor );
+        Sources sources = project.getLookup().lookup(org.netbeans.api.project.Sources.class);
+        
+        List<SourceGroup> roots = new ArrayList<SourceGroup>();
+        SourceGroup[] javaRoots = 
+            sources.getSourceGroups(ProjectConstants.JAVA_SOURCES_TYPE);
+        roots.addAll(Arrays.asList(javaRoots));
+        if (roots.isEmpty()) {
+            SourceGroup[] sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
+            roots.addAll(Arrays.asList(sourceGroups));
+        }
+        
+        DataFolder folder = DataFolder.findFolder(roots.get(0).getRootFolder());
+        DataFolder projectFolder = 
+            DataFolder.findFolder(project.getProjectDirectory());
+//        try {
+//            if (mDescriptor.getTargetFolder().equals(projectFolder)) {
+//                wizard.setTargetFolder(folder);
+//            }
+//        } catch (IOException ioe) {
+//            wizard.setTargetFolder(folder);
+//        }
+        
+        SourceGroup[] sourceGroups = roots.toArray(new SourceGroup[roots.size()]);
+        //folderPanel = new WsdlPanel(project);
+        // creates simple wizard panel with bottom panel
+        WizardDescriptor.Panel firstPanel = Templates.createSimpleTargetChooser(project, sourceGroups);
+        mDelegate = firstPanel;
+        
+    }
+    
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
     // but never displayed, or not all panels are displayed, it is better to
     // create only those which really need to be visible.
     public Component getComponent() {
-        if (component == null) {
-            component = new IEPVisualPanel2EmptyIEPFile();
-        }
-        return component;
+//        if (component == null) {
+//            component = new IEPVisualPanel2EmptyIEPFile();
+//        }
+//        return component;
+        return mDelegate.getComponent();
     }
 
     public HelpCtx getHelp() {
+        return mDelegate.getHelp();
         // Show no Help button for this panel:
-        return HelpCtx.DEFAULT_HELP;
+        //return HelpCtx.DEFAULT_HELP;
     // If you have context help:
     // return new HelpCtx(SampleWizardPanel1.class);
     }
 
     public boolean isValid() {
+        return mDelegate.isValid();
         // If it is always OK to press Next or Finish, then:
-        return true;
+//        return true;
     // If it depends on some condition (form filled out...), then:
     // return someCondition();
     // and when this condition changes (last form field filled in...) then:
@@ -85,9 +133,11 @@ public class IEPWizardPanel2EmptyIEPFile implements WizardDescriptor.Panel {
     }
 
     public final void addChangeListener(ChangeListener l) {
+        mDelegate.addChangeListener(l);
     }
 
     public final void removeChangeListener(ChangeListener l) {
+        mDelegate.removeChangeListener(l);
     }
     /*
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1); // or can use ChangeSupport in NB 6.0
@@ -118,8 +168,13 @@ public class IEPWizardPanel2EmptyIEPFile implements WizardDescriptor.Panel {
     // WizardDescriptor.getProperty & putProperty to store information entered
     // by the user.
     public void readSettings(Object settings) {
+        mDescriptor = (WizardDescriptor) settings;
+        
+        
+        mDelegate.readSettings(settings);
     }
 
     public void storeSettings(Object settings) {
+        mDelegate.storeSettings(settings);
     }
 }
