@@ -108,7 +108,7 @@ public final class IEPWizardIterator implements WizardDescriptor.InstantiatingIt
         
         //initialize all panels here:
         panel1 = new IEPWizardPanel1();
-        panel2 = new IEPWizardPanel2();
+        panel2 = new IEPWizardPanel2(this.wizard);
         panel2EmptyIEPFile = new IEPWizardPanel2EmptyIEPFile(wizard);
         panel3 = new IEPWizardPanel3();
         

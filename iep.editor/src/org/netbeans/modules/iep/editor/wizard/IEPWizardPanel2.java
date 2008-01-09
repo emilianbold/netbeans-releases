@@ -6,7 +6,11 @@ package org.netbeans.modules.iep.editor.wizard;
 
 import java.awt.Component;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 
 public class IEPWizardPanel2 implements WizardDescriptor.Panel {
@@ -17,13 +21,24 @@ public class IEPWizardPanel2 implements WizardDescriptor.Panel {
      */
     private Component component;
 
+    private WizardDescriptor mDescriptor;
+    
+    private Project mProject;
+    
+    public IEPWizardPanel2(WizardDescriptor descriptor) {
+        this.mDescriptor = descriptor;
+        
+        FileObject dir = Templates.getTargetFolder( this.mDescriptor );
+        this.mProject = FileOwnerQuery.getOwner(dir);
+    }
+    
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
     // but never displayed, or not all panels are displayed, it is better to
     // create only those which really need to be visible.
     public Component getComponent() {
         if (component == null) {
-            component = new IEPVisualPanel2();
+            component = new IEPVisualPanel2(this.mProject);
         }
         return component;
     }
@@ -79,6 +94,7 @@ public class IEPWizardPanel2 implements WizardDescriptor.Panel {
     // WizardDescriptor.getProperty & putProperty to store information entered
     // by the user.
     public void readSettings(Object settings) {
+        
     }
 
     public void storeSettings(Object settings) {

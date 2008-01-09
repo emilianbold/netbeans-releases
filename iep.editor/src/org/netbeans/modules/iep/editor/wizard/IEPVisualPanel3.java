@@ -7,6 +7,8 @@ package org.netbeans.modules.iep.editor.wizard;
 
 import javax.swing.JPanel;
 
+import org.openide.util.NbBundle;
+
 public final class IEPVisualPanel3 extends JPanel {
 
     /** Creates new form IEPVisualPanel3 */
@@ -16,7 +18,7 @@ public final class IEPVisualPanel3 extends JPanel {
 
     @Override
     public String getName() {
-        return "Step #3";
+    	return NbBundle.getMessage(IEPVisualPanel1.class, "IEPVisualPanel3_title");
     }
 
     /** This method is called from within the constructor to
