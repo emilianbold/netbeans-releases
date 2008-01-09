@@ -59,7 +59,7 @@ made subject to such option by the copyright holder.
         <description>
             <p>
                 Added new constructor
-                <a href="@TOP@/org/openide/util/Mutex.html">Mutex(Priviledged, Executor)</a>
+                <a href="@TOP@/org/openide/util/Mutex.html">Mutex(Privileged, Executor)</a>
                 that allows creators of the mutex to intercept and wrap posted actions
                 with custom code.
             </p>
