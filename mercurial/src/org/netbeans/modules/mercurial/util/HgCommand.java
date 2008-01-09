@@ -1495,18 +1495,15 @@ public class HgCommand {
      * @throws org.netbeans.modules.mercurial.HgException
      */
     public static FileInformation getSingleStatus(File repository, String cwd, String filename)  throws HgException{
-        
+        if(HgUtils.isIgnored(new File(cwd))){
+            return new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED,null, false);
+        }
+ 
         FileInformation info = null;
         List<String> list = doSingleStatusCmd(repository, cwd, filename);
         if(list == null || list.isEmpty())
             return new FileInformation(FileInformation.STATUS_UNKNOWN,null, false);
-        
-        if(HgUtils.isIgnored(new File(cwd))){
-            Mercurial.LOG.log(Level.FINE, "getSingleStatus(): Excluded File - StatusLine: {0} Status: EXCLUDED  RepoPath:{2} cwd:{3}", // NOI18N
-                    new Object[] {list.get(0), filename, repository.getAbsolutePath(), cwd} );
-            return new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED,null, false);
-        }
-        
+
         info =  getFileInformationFromStatusLine(list.get(0));
         // Handles Copy status
         // Could save copy source in FileStatus but for now we don't need it.
