@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.compapp.test.ui;
 
-import java.util.logging.Logger;
 import org.openide.util.NbBundle;
 
 /**
@@ -53,14 +52,16 @@ import org.openide.util.NbBundle;
  * @author Bing Lu
  */
 public class ComparisonTypePropertyEditor extends EnumPropertyEditor {
-    private static final Logger mLogger = Logger.getLogger("org.netbeans.modules.compapp.test.ui.FeaturesStatusPropertyEditor"); // NOI18N
-
+    
     /** Creates a new instance of FeaturesStatusPropertyEditor */
     public ComparisonTypePropertyEditor() {
         super(new String[]{
-                    NbBundle.getMessage(ComparisonTypePropertyEditor.class, "comparisionTypePropertyEditor.identical.displayName"), // NOI18N
-                    NbBundle.getMessage(ComparisonTypePropertyEditor.class, "comparisionTypePropertyEditor.binary.displayName"), // NOI18N
-                    NbBundle.getMessage(ComparisonTypePropertyEditor.class, "comparisionTypePropertyEditor.equals.displayName"), // NOI18N
+                    NbBundle.getMessage(ComparisonTypePropertyEditor.class, 
+                            "comparisionTypePropertyEditor.identical.displayName"), // NOI18N
+                    NbBundle.getMessage(ComparisonTypePropertyEditor.class, 
+                            "comparisionTypePropertyEditor.binary.displayName"), // NOI18N
+                    NbBundle.getMessage(ComparisonTypePropertyEditor.class, 
+                            "comparisionTypePropertyEditor.equals.displayName"), // NOI18N
               },
               new Object[]{
                     "identical", // NOI18N

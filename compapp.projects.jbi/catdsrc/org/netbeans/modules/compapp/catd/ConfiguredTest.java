@@ -96,9 +96,6 @@ import javax.xml.transform.TransformerException;
 import javax.xml.parsers.ParserConfigurationException;
 import junit.framework.TestCase;
 import junit.framework.TestResult;
-import org.custommonkey.xmlunit.Diff;
-import org.custommonkey.xmlunit.DifferenceListener;
-import org.custommonkey.xmlunit.IgnoreTextAndAttributeValuesDifferenceListener;
 import org.xml.sax.SAXException;
 import org.w3c.dom.Node;
 import org.w3c.dom.Element;
@@ -126,7 +123,6 @@ public class ConfiguredTest extends TestCase {
     public final static String COMPARISON_TYPE_IDENTICAL = "identical"; // NOI18N
     public final static String COMPARISON_TYPE_BINARY = "binary"; // NOI18N
     public final static String COMPARISON_TYPE_EQUALS = "equals"; // NOI18N
-    public final static String COMPARISON_TYPE_SKELETON = "skeleton"; // compares xml elements ignoring text and attribute values
     
     private static final String TEST_IN_PROGRESS_VAL = "progress"; // NOI18N
     private static final String TEST_IN_PROGRESS_KEY = "featurestatus"; // NOI18N
@@ -1718,8 +1714,7 @@ public class ConfiguredTest extends TestCase {
         
         // only support identical match with expected
         if ( COMPARISON_TYPE_BINARY.equals(comparisonType) ||
-                COMPARISON_TYPE_EQUALS.equals(comparisonType) ||
-                COMPARISON_TYPE_SKELETON.equals(comparisonType) ){
+                COMPARISON_TYPE_EQUALS.equals(comparisonType) ){
             System.out.println("Only supports IDENTICAL comparison !!!!!!!!!!!!!!");
             comparisonType = COMPARISON_TYPE_IDENTICAL;
         }
@@ -2136,8 +2131,7 @@ public class ConfiguredTest extends TestCase {
             return;
         }
         if ((!COMPARISON_TYPE_BINARY.equals(comparisonType)) &&
-                (!COMPARISON_TYPE_EQUALS.equals(comparisonType)) &&
-                (!COMPARISON_TYPE_SKELETON.equals(comparisonType))){
+                (!COMPARISON_TYPE_EQUALS.equals(comparisonType))){
             comparisonType = COMPARISON_TYPE_IDENTICAL;
         }
         if (comparisonType.equals(COMPARISON_TYPE_EQUALS)) {
@@ -2235,22 +2229,7 @@ public class ConfiguredTest extends TestCase {
                     System.out.println(logPrefix + " Success: response matches expected output.");
                 }
             }
-        } else if (comparisonType.equals(COMPARISON_TYPE_SKELETON)) {
-            DifferenceListener myDifferenceListener = new IgnoreTextAndAttributeValuesDifferenceListener();
-            Diff difference = new Diff(controlXML, testXML);
-            difference.overrideDifferenceListener(myDifferenceListener);
-            
-            boolean isSimilar = difference.similar();
-            
-            if (!isSimilar || mGenerateOutputOnSuccess) {
-                File actualOutputFile = getActualOutputFile(actualOutputDir, isSimilar);
-                writeToFile(actualOutputFile, testXML);
-                
-                String timeStampPrefix = getActualOutputTimeStampPrefix(actualOutputFile);
-                //--assertTrue("Response 'skeleton' is not similar enough to be considered 'equal' to expected output skelton. \nreceived: " + testXML + "\nexpected: " + controlXML + "\ndifference:" + difference, difference.similar());
-                assertTrue(timeStampPrefix + " The response 'skeleton' is not similar enough to be considered 'equal' to expected output skelton.", isSimilar);
-            }
-        }
+        } 
     }
     
     private static File getActualOutputFile(File actualOutputDir, boolean success) {
