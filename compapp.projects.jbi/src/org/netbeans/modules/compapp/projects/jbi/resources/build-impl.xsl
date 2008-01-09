@@ -610,6 +610,8 @@ made subject to such option by the copyright holder.
                     <pathelement path="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-editor-util.jar"/>
                     <pathelement path="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-core.jar"/>
                     <pathelement path="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-editor-lib2.jar"/>
+                    <pathelement path="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-lexer.jar"/>
+                    <pathelement path="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-lexer.jar"/>
                     <pathelement path="${{netbeans.home}}/../platform7/lib/org-openide-modules.jar"/>
                     <pathelement path="${{netbeans.home}}/../platform7/lib/org-openide-util.jar"/>
                     <pathelement path="${{netbeans.home}}/../platform7/modules/org-openide-options.jar"/>
