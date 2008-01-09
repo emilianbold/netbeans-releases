@@ -99,6 +99,62 @@ public class GroovyLexerBatchTest extends TestCase {
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.NLS, "\n", -1);
     }
+ 
+    public void testGstringLexing1(){
+        
+        TokenSequence<?> ts = seqForText("{{}}");
+        
+        next(ts, GroovyTokenId.LBRACE, "{");
+        next(ts, GroovyTokenId.LBRACE, "{");
+        next(ts, GroovyTokenId.RBRACE, "}");
+        next(ts, GroovyTokenId.RBRACE, "}");
+    }
+    
+    public void testGstringLexing2(){
+        
+        TokenSequence<?> ts = seqForText("x=\"z\";assert\"h{$x}\".size()==4");
+        
+        next(ts, GroovyTokenId.IDENTIFIER, "x");
+        next(ts, GroovyTokenId.ASSIGN, "=");
+        next(ts, GroovyTokenId.STRING_LITERAL, "\"z\"");
+        next(ts, GroovyTokenId.SEMI, ";");
+        next(ts, GroovyTokenId.LITERAL_assert, "assert");
+    }
+    
+    public void testGstringLexing3(){
+        
+        TokenSequence<?> ts = seqForText("println \"hallo\".size()");
+        
+        next(ts, GroovyTokenId.IDENTIFIER, "println");
+        next(ts, GroovyTokenId.WHITESPACE, " ");
+        next(ts, GroovyTokenId.STRING_LITERAL, "\"hallo\"");
+        next(ts, GroovyTokenId.DOT, ".");
+        next(ts, GroovyTokenId.IDENTIFIER, "size");
+        next(ts, GroovyTokenId.LPAREN, "(");
+        next(ts, GroovyTokenId.RPAREN, ")");
+        
+    }
+    
+    public void testGstringLexing4(){
+        
+        TokenSequence<?> ts = seqForText("\"hallo\"");
+        
+        next(ts, GroovyTokenId.STRING_LITERAL, "\"hallo\"");
+        
+    }
+    
+    
+    TokenSequence<?> seqForText(String text){
+        TokenHierarchy<?> hi = TokenHierarchy.create(text,GroovyTokenId.language());
+        return hi.tokenSequence();
+    }
+    
+    
+    void next(TokenSequence<?> ts, GroovyTokenId id, String fixedText){
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,id, fixedText, -1);
+    }
+    
     
     public void testFullSyntaxGstring(){
         String text = "def name = 'World'; println \"Hello, ${name}\"";
