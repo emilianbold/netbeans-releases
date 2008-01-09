@@ -52,7 +52,12 @@ import java.util.logging.Level;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.projectapi.TimedWeakReference;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.util.Mutex;
 import org.openide.util.test.MockLookup;
 
 /* XXX tests needed:
@@ -68,7 +73,7 @@ import org.openide.util.test.MockLookup;
  * Test ProjectManager find and save functionality.
  * @author Jesse Glick
  */
-public class ProjectManagerTest extends NbTestCase {
+public class ProjectManagerTest extends NbTestCase implements FileChangeListener {
     
     static {
         // For easier testing.
@@ -93,6 +98,7 @@ public class ProjectManagerTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         scratch = TestUtil.makeScratchDir(this);
+        scratch.getFileSystem().addFileChangeListener(this);
         goodproject = scratch.createFolder("good");
         goodproject.createFolder("testproject");
         goodproject2 = scratch.createFolder("good2");
@@ -107,6 +113,7 @@ public class ProjectManagerTest extends NbTestCase {
     }
     
     protected void tearDown() throws Exception {
+        scratch.getFileSystem().removeFileChangeListener(this);
         scratch = null;
         goodproject = null;
         badproject = null;
@@ -476,6 +483,53 @@ public class ProjectManagerTest extends NbTestCase {
         }
         
         assertTrue("An IllegalStateException was thrown when calling notifyDeleted twice.", wasException);
+    }
+
+    public void testClearNonProjectCacheInWriteAccess() throws Exception {
+        ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+            public Void run() throws Exception {
+                testClearNonProjectCache();
+                return null;
+            }
+        });
+    }
+
+    public void testClearNonProjectCacheInReadAccess() throws Exception {
+        ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<Void>() {
+            public Void run() throws Exception {
+                testClearNonProjectCache();
+                return null;
+            }
+        });
+    }
+    
+    private void assertNoAccess() {
+        assertFalse("No read access", ProjectManager.mutex().isReadAccess());
+        assertFalse("No write access", ProjectManager.mutex().isWriteAccess());
+    }
+    
+    public void fileFolderCreated(FileEvent fe) {
+        assertNoAccess();
+    }
+
+    public void fileDataCreated(FileEvent fe) {
+        assertNoAccess();
+    }
+
+    public void fileChanged(FileEvent fe) {
+        assertNoAccess();
+    }
+
+    public void fileDeleted(FileEvent fe) {
+        assertNoAccess();
+    }
+
+    public void fileRenamed(FileRenameEvent fe) {
+        assertNoAccess();
+    }
+
+    public void fileAttributeChanged(FileAttributeEvent fe) {
+        assertNoAccess();
     }
     
 }
