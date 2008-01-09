@@ -41,6 +41,8 @@
 package org.netbeans.modules.ruby.platform.gems;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.api.ruby.platform.RubyTestBase;
@@ -71,45 +73,26 @@ public class GemManagerTest extends RubyTestBase {
     public void testGetGem() throws Exception {
         RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems(), "ruby");
         GemManager gemManager = platform.getGemManager();
-        assertEquals("righ gem dir", new File(new File(getWorkDir(), "bin"), "gem").getAbsolutePath(), gemManager.getGem());
+        assertEquals("righ gem dir", new File(new File(getWorkDir(), "bin"), "gem").getAbsolutePath(), gemManager.getGemTool());
+    }
+    
+    public void testGemFetching() {
+        RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
+        GemManager gm = jruby.getGemManager();
+        
+        List<String> errors = new ArrayList<String>();
+        List<Gem> available = gm.getRemoteGems(errors);
+        assertNotNull("gem not null", available);
+        System.out.println("available: " + available.size());
+        assertTrue("no errros", errors.isEmpty());
+        
+        List<Gem> installed = gm.getInstalledGems(errors);
+        assertNotNull("gem not null", installed);
+        System.out.println("installed: " + installed.size());
+        assertTrue("no errros", errors.isEmpty());
+        
+        gm.reloadIfNeeded(errors);
+        assertTrue("no errros", errors.isEmpty());
     }
 
-    public void testIsGemInstalled() {
-    }
-
-    public void testGetVersion() {
-    }
-
-    public void testGetInstalledGems() {
-    }
-
-    public void testReload() {
-    }
-
-    public void testReloadInstalledGems() {
-    }
-
-    public void testHaveGem() {
-    }
-
-    public void testGetAvailableGems() {
-    }
-
-    public void testReloadAvailableGems() {
-    }
-
-    public void testHasUptodateAvailableList() {
-    }
-
-    public void testInstallGem() {
-    }
-
-    public void testInstall() {
-    }
-
-    public void testUninstall() {
-    }
-
-    public void testUpdate() {
-    }
 }
