@@ -654,12 +654,7 @@ public final class GemManager {
     public boolean install(Gem[] gems, Component parent, boolean rdoc, boolean ri,
             String version, boolean includeDeps, boolean asynchronous,
             final Runnable asyncCompletionTask) {
-        List<String> gemNames = new ArrayList<String>();
-        
-        for (Gem gem : gems) {
-            gemNames.add(gem.getName());
-        }
-        
+        List<String> gemNames = mapToGemNames(gems);
         GemRunner gemRunner = new GemRunner(platform);
         if (asynchronous) {
             gemRunner.installAsynchronously(gemNames, rdoc, ri, includeDeps, version, resetCompletionTask(asyncCompletionTask), parent);
@@ -684,12 +679,7 @@ public final class GemManager {
      * @param asyncCompletionTask If asynchronous is true and the gem task completes normally, this task will be run at the end.
      */
     public boolean uninstall(Gem[] gems, Component parent, boolean asynchronous, final Runnable asyncCompletionTask) {
-        List<String> gemNames = new ArrayList<String>();
-
-        for (Gem gem : gems) {
-            gemNames.add(gem.getName());
-        }
-
+        List<String> gemNames = mapToGemNames(gems);
         GemRunner gemRunner = new GemRunner(platform);
         if (asynchronous) {
             gemRunner.uninstallAsynchronously(gemNames, resetCompletionTask(asyncCompletionTask), parent);
@@ -716,15 +706,7 @@ public final class GemManager {
      */
     public boolean update(Gem[] gems, Component parent, boolean rdoc,
             boolean ri, boolean asynchronous, Runnable asyncCompletionTask) {
-        
-        List<String> gemNames = new ArrayList<String>();
-
-        if (gems != null) { // ALL
-            for (Gem gem : gems) {
-                gemNames.add(gem.getName());
-            }
-        }
-        
+        List<String> gemNames = gems == null ? null : mapToGemNames(gems);
         GemRunner gemRunner = new GemRunner(platform);
         if (asynchronous) {
             gemRunner.updateAsynchronously(gemNames, rdoc, ri, resetCompletionTask(asyncCompletionTask), parent);
@@ -1081,6 +1063,14 @@ public final class GemManager {
         } catch (MalformedURLException mue) {
             Exceptions.printStackTrace(mue);
         }
+    }
+
+    private List<String> mapToGemNames(Gem[] gems) {
+        List<String> gemNames = new ArrayList<String>();
+        for (Gem gem : gems) {
+            gemNames.add(gem.getName());
+        }
+        return gemNames;
     }
 
     private Runnable resetCompletionTask(final Runnable origTask) {

@@ -52,8 +52,10 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.ListSelectionModel;
@@ -74,23 +76,16 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
- *
  * @todo Use a table instead of a list for the gem lists, use checkboxes to choose
  *   items to be uninstalled, and show the installation date (based
  *   on file timestamps)
- * @todo Find a way to execute both gem commands (local and remote listing) in the
- *   same Ruby VM so it's faster to perform updates. Does
- *      gem list --both
- *   work?
  * @todo Split error output
  *
  * @author  Tor Norbye
  */
-public class GemPanel extends JPanel implements Runnable {
+final class GemPanel extends JPanel implements Runnable {
     
-    private static final int UPDATED_TAB_INDEX  = 0;
-    private static final int INSTALLED_TAB_INDEX  = 1;
-    private static final int NEW_TAB_INDEX  = 2;
+    static enum TabIndex { UPDATED, INSTALLED, NEW; }
     
     private GemManager gemManager;
     
@@ -98,7 +93,6 @@ public class GemPanel extends JPanel implements Runnable {
     private List<Gem> availableGems;
     private List<Gem> newGems;
     private List<Gem> updatedGems;
-    private boolean installedModified;
     private boolean gemsModified;
     private boolean fetchingLocal;
     private boolean fetchingRemote;
@@ -123,11 +117,9 @@ public class GemPanel extends JPanel implements Runnable {
         updatedList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         updatedList.getSelectionModel().addListSelectionListener(new MyListSelectionListener(updatedList, updatedDesc, updateButton));
 
-        installedModified = true;
-
         if (availableFilter != null) {
             searchNewText.setText(availableFilter);
-            gemsTab.setSelectedIndex(NEW_TAB_INDEX);
+            gemsTab.setSelectedIndex(TabIndex.NEW.ordinal());
         }
 
         platforms.addItemListener(new ItemListener() {
@@ -150,12 +142,13 @@ public class GemPanel extends JPanel implements Runnable {
         // This will also update the New and Installed lists because Update depends on these
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
+                gemHomeValue.setText(gemManager.getGemDir());
                 refreshUpdated();
             }
         });
     }
     
-    private void updateGemDescription(JTextPane pane, Gem gem) {
+    private static void updateGemDescription(JTextPane pane, Gem gem) {
         assert SwingUtilities.isEventDispatchThread();
 
         if (gem == null) {
@@ -266,14 +259,14 @@ public class GemPanel extends JPanel implements Runnable {
                 }
             }
 
-            updateList(NEW_TAB_INDEX, true);
-            updateList(UPDATED_TAB_INDEX, true);
+            updateList(TabIndex.NEW, true);
+            updateList(TabIndex.UPDATED, true);
         }
 
         return !(fetchingRemote || fetchingLocal);
     }
     
-    private void updateList(int tab, boolean showCount) {
+    private void updateList(TabIndex tab, boolean showCount) {
         assert SwingUtilities.isEventDispatchThread();
 
         Pattern pattern = null;
@@ -292,15 +285,15 @@ public class GemPanel extends JPanel implements Runnable {
         JList list;
 
         switch (tab) {
-            case NEW_TAB_INDEX:
+            case NEW:
                 gems = newGems;
                 list = newList;
                 break;
-            case UPDATED_TAB_INDEX:
+            case UPDATED:
                 gems = updatedGems;
                 list = updatedList;
                 break;
-            case INSTALLED_TAB_INDEX:
+            case INSTALLED:
                 gems = installedGems;
                 list = installedList;
                 break;
@@ -336,7 +329,7 @@ public class GemPanel extends JPanel implements Runnable {
                 model.addElement(gem);
             }
         }
-        if (remoteFailure != null && (tab == UPDATED_TAB_INDEX || tab == NEW_TAB_INDEX)) {
+        if (remoteFailure != null && (tab == TabIndex.UPDATED || tab == TabIndex.NEW)) {
             model.addElement(NbBundle.getMessage(GemPanel.class, "NoNetwork"));
             for (String line : remoteFailure) {
                 model.addElement("<html><span color=\"red\">" + line + "</span></html>"); // NOI18N
@@ -352,7 +345,7 @@ public class GemPanel extends JPanel implements Runnable {
         //        }
 
         if (showCount) {
-            String tabTitle = gemsTab.getTitleAt(tab);
+            String tabTitle = gemsTab.getTitleAt(tab.ordinal());
             String originalTabTitle = tabTitle;
             int index = tabTitle.lastIndexOf('(');
             if (index != -1) {
@@ -366,7 +359,7 @@ public class GemPanel extends JPanel implements Runnable {
             }
             tabTitle = tabTitle + "(" + count + ")"; // NOI18N
             if (!tabTitle.equals(originalTabTitle)) {
-                gemsTab.setTitleAt(tab, tabTitle);
+                gemsTab.setTitleAt(tab.ordinal(), tabTitle);
             }
         }
     }
@@ -377,42 +370,32 @@ public class GemPanel extends JPanel implements Runnable {
     }
 
     private synchronized void refreshInstalled() {
-        assert SwingUtilities.isEventDispatchThread();
-
-        if (installedList.getSelectedIndex() != -1) {
-            updateGemDescription(installedDesc, null);
-        }
-        installedProgress.setVisible(true);
-        installedProgressLabel.setVisible(true);
+        showProgressBar(installedList, installedDesc, installedProgress, installedProgressLabel);
         fetchingLocal = true;
-        refreshGemList(INSTALLED_TAB_INDEX);
-        installedModified = false;
+        refreshGemList(TabIndex.INSTALLED);
     }
     
     private synchronized void refreshNew() {
-        assert SwingUtilities.isEventDispatchThread();
-
-        if (newList.getSelectedIndex() != -1) {
-            updateGemDescription(newDesc, null);
-        }
-        newProgress.setVisible(true);
-        newProgressLabel.setVisible(true);
+        showProgressBar(newList, newDesc, newProgress, newProgressLabel);
         fetchingRemote = true;
-        refreshGemList(NEW_TAB_INDEX);
+        refreshGemList(TabIndex.NEW);
     }
 
     private void refreshUpdated() {
-        assert SwingUtilities.isEventDispatchThread();
-        gemHomeValue.setText(gemManager.getGemDir());
-
-        if (updatedList.getSelectedIndex() != -1) {
-            updateGemDescription(updatedDesc, null);
-        }
-        updatedProgress.setVisible(true);
-        updatedProgressLabel.setVisible(true);
+        showProgressBar(updatedList, updatedDesc, updatedProgress, updatedProgressLabel);
         refreshInstalled();
         refreshNew();
         refreshGemLists();
+    }
+
+    private static void showProgressBar(JList list, JTextPane description, JProgressBar progress, JLabel progressLabel) {
+        assert SwingUtilities.isEventDispatchThread();
+
+        if (list.getSelectedIndex() != -1) {
+            updateGemDescription(description, null);
+        }
+        progress.setVisible(true);
+        progressLabel.setVisible(true);
     }
     
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -848,11 +831,11 @@ public class GemPanel extends JPanel implements Runnable {
     }//GEN-LAST:event_proxyButtonActionPerformed
 
     private void searchNewTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchNewTextActionPerformed
-        updateList(NEW_TAB_INDEX, true);
+        updateList(TabIndex.NEW, true);
     }//GEN-LAST:event_searchNewTextActionPerformed
 
     private void searchUpdatedTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchUpdatedTextActionPerformed
-        updateList(UPDATED_TAB_INDEX, true);
+        updateList(TabIndex.UPDATED, true);
     }//GEN-LAST:event_searchUpdatedTextActionPerformed
 
     private void reloadReposButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reloadReposButtonActionPerformed
@@ -888,10 +871,9 @@ public class GemPanel extends JPanel implements Runnable {
                 if (result.equals(NotifyDescriptor.OK_OPTION)) {
                     Gem gem = new Gem(panel.getGemName(), null, null);
                     // XXX Do I really need to refresh it right way?
-                    GemListRefresher completionTask = new GemListRefresher(newList, INSTALLED_TAB_INDEX);
+                    GemListRefresher completionTask = new GemListRefresher(newList, TabIndex.INSTALLED);
                     boolean changed = gemManager.install(new Gem[] { gem }, this, false, false, panel.getVersion(),
                             panel.getIncludeDepencies(), true, completionTask);
-                    installedModified = installedModified || changed;
                 }
             }
         }
@@ -899,13 +881,12 @@ public class GemPanel extends JPanel implements Runnable {
     }//GEN-LAST:event_installButtonActionPerformed
 
     private void instSearchTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_instSearchTextActionPerformed
-        updateList(INSTALLED_TAB_INDEX, true);
+        updateList(TabIndex.INSTALLED, true);
     }//GEN-LAST:event_instSearchTextActionPerformed
 
     private void updateAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateAllButtonActionPerformed
-        Runnable completionTask = new GemListRefresher(installedList, INSTALLED_TAB_INDEX);
+        Runnable completionTask = new GemListRefresher(installedList, TabIndex.INSTALLED);
         gemManager.update(null, this, false, false, true, completionTask);
-        installedModified = true;
     }//GEN-LAST:event_updateAllButtonActionPerformed
 
     private void updateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateButtonActionPerformed
@@ -924,9 +905,8 @@ public class GemPanel extends JPanel implements Runnable {
             }
         }
         if (gems.size() > 0) {
-            Runnable completionTask = new GemListRefresher(updatedList, INSTALLED_TAB_INDEX);
+            Runnable completionTask = new GemListRefresher(updatedList, TabIndex.INSTALLED);
             gemManager.update(gems.toArray(new Gem[gems.size()]), this, false, false, true, completionTask);
-            installedModified = true;
         }
     }//GEN-LAST:event_updateButtonActionPerformed
 
@@ -946,9 +926,8 @@ public class GemPanel extends JPanel implements Runnable {
             }
         }
         if (gems.size() > 0) {
-            Runnable completionTask = new GemListRefresher(installedList, INSTALLED_TAB_INDEX);
+            Runnable completionTask = new GemListRefresher(installedList, TabIndex.INSTALLED);
             gemManager.uninstall(gems.toArray(new Gem[gems.size()]), this, true, completionTask);
-            installedModified = true;
         }
     }//GEN-LAST:event_uninstallButtonActionPerformed
 
@@ -967,17 +946,17 @@ public class GemPanel extends JPanel implements Runnable {
      * Refresh the list of displayed gems. If refresh is true, refresh the list
      * from the gem manager, otherwise just refilter list.
     */
-    private void refreshGemList(final int tab) {
+    private void refreshGemList(final TabIndex tab) {
         Runnable runner = new Runnable() {
             public void run() {
                 synchronized(GemPanel.this) {
                     assert !SwingUtilities.isEventDispatchThread();
 
                     List<String> errors = new ArrayList<String>(500);
-                    if (tab == INSTALLED_TAB_INDEX) {
+                    if (tab == TabIndex.INSTALLED) {
                         installedGems = gemManager.getInstalledGems(errors);
                         fetchingLocal = false;
-                    } else if (tab == NEW_TAB_INDEX) {
+                    } else if (tab == TabIndex.NEW) {
                         remoteFailure = null;
                         availableGems = newGems = gemManager.getRemoteGems(errors);
                         if (availableGems.size() == 0 && errors.size() > 0) {
@@ -994,7 +973,7 @@ public class GemPanel extends JPanel implements Runnable {
                             if (!done) {
                                 // Just filter
                                 updateList(tab, false);
-                            } else if (tab == INSTALLED_TAB_INDEX) {
+                            } else if (tab == TabIndex.INSTALLED) {
                                 updateList(tab, true);
                             }
                         }
@@ -1028,7 +1007,7 @@ public class GemPanel extends JPanel implements Runnable {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             notifyGemsUpdated();
-                            updateList(INSTALLED_TAB_INDEX, true);
+                            updateList(TabIndex.INSTALLED, true);
 
                             if (remoteFailure != null && !fetchingLocal) {
                                 // Update the local list which shouldn't have any errors
@@ -1044,17 +1023,17 @@ public class GemPanel extends JPanel implements Runnable {
         RequestProcessor.getDefault().post(runner, 50);
     }
 
-    private String getGemFilter(int tab) {
+    private String getGemFilter(TabIndex tab) {
         assert SwingUtilities.isEventDispatchThread();
 
         String filter = null;
         JTextField tf;
-        if (tab == INSTALLED_TAB_INDEX) {
+        if (tab == TabIndex.INSTALLED) {
             tf = instSearchText;
-        } else if (tab == UPDATED_TAB_INDEX) {
+        } else if (tab == TabIndex.UPDATED) {
             tf = searchUpdatedText;
         } else {
-            assert tab == NEW_TAB_INDEX;
+            assert tab == TabIndex.NEW;
             tf = searchNewText;
         }
         filter = tf.getText().trim();
@@ -1102,9 +1081,9 @@ public class GemPanel extends JPanel implements Runnable {
 
     private class GemListRefresher implements Runnable {
         private JList list;
-        private int tab;
+        private TabIndex tab;
 
-        public GemListRefresher(JList list, int tab) {
+        public GemListRefresher(JList list, TabIndex tab) {
             this.list = list;
             this.tab = tab;
         }
@@ -1114,9 +1093,6 @@ public class GemPanel extends JPanel implements Runnable {
                 gemsModified = true;
             }
             refreshGemList(tab);
-            if (list == installedList) {
-                installedModified = false;
-            }
         }
     }
     
