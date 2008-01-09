@@ -43,14 +43,20 @@ package org.netbeans.modules.groovy.editor;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import javax.swing.text.Document;
 import org.codehaus.groovy.ast.ASTNode;
+import org.codehaus.groovy.ast.ClassCodeVisitorSupport;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.Parameter;
+import org.codehaus.groovy.ast.Variable;
+import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.api.gsf.ParserResult;
@@ -62,7 +68,8 @@ import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
-import org.codehaus.groovy.ast.stmt.BlockStatement;
+import org.codehaus.groovy.ast.stmt.ExpressionStatement;
+import org.codehaus.groovy.control.SourceUnit;
 
 /**
  *
@@ -169,6 +176,13 @@ public class AstUtilities {
             }
             VariableExpression variableExpression = (VariableExpression) node;
             return new OffsetRange(start, start + variableExpression.getName().length());
+        } else if (node instanceof Parameter) {
+            int start = getOffset(text, node.getLineNumber(), node.getColumnNumber());
+            if (start < 0) {
+                start = 0;
+            }
+            Parameter parameter = (Parameter) node;
+            return new OffsetRange(start, start + parameter.getName().length());
         }
         return OffsetRange.NONE;
     }
@@ -209,7 +223,7 @@ public class AstUtilities {
             FieldNode fieldNode = (FieldNode) root;
             Expression expression = fieldNode.getInitialExpression();
             if (expression != null) {
-                children.add(fieldNode.getInitialExpression());
+                children.add(expression);
             }
         } else {
             AstChildrenSupport astChildrenSupport = new AstChildrenSupport();
@@ -246,19 +260,106 @@ public class AstUtilities {
         return offset;
     }
     
-    public static ASTNode findLocalScope(ASTNode node, AstPath path) {
-        return findClosestBlock(path);
-    }
-
-   public static BlockStatement findClosestBlock(AstPath path) {
-        // Find the closest block node enclosing the given node
-        for (ASTNode node : path) {
-            if (node instanceof BlockStatement) {
-                return (BlockStatement) node;
+    public static ASTNode findVariableScope(Variable variable, AstPath path, ModuleNode moduleNode) {
+        
+        String name = variable.getName();
+        VariableScopeVisitor scopeVisitor = new VariableScopeVisitor(moduleNode, name);
+        
+        for (Iterator<ASTNode> it = path.iterator(); it.hasNext();) {
+            ASTNode current = it.next();
+            if (current instanceof MethodNode) {
+                MethodNode methodNode = (MethodNode) current;
+                for (Parameter parameter : methodNode.getParameters()) {
+                    if (name.equals(parameter.getName())) {
+                        return current;
+                    }
+                }
+                scopeVisitor.visitMethod(methodNode);
+                if (scopeVisitor.isDeclaring()) {
+                    return current;
+                }
+            } else if (current instanceof FieldNode) {
+                scopeVisitor.visitField((FieldNode)current);
+                if (scopeVisitor.isDeclaring()) {
+                    return current;
+                }
+            } else if (current instanceof ClassNode) {
+                scopeVisitor.visitClass((ClassNode)current);
+                if (scopeVisitor.isDeclaring()) {
+                    return current;
+                }
+            } else if (current instanceof Parameter) {
+                if (name.equals(((Parameter)current).getName())) {
+                    // found variable is method parameter, return method as scope
+                    return it.next();
+                }
+            } else if (current instanceof DeclarationExpression) {
+                DeclarationExpression declarationExpression = (DeclarationExpression) current;
+                if (name.equals(declarationExpression.getVariableExpression().getName())) {
+                    // found variable is method parameter, return parent scope 
+                    // of whole declaration expression statement
+                    assert it.next() instanceof ExpressionStatement;
+                    return it.next();
+                }
+            } else {
+                current.visit(scopeVisitor);
+                if (scopeVisitor.isDeclaring()) {
+                    return current;
+                }
             }
         }
-        return null;
+        return path.root();
     }
 
+    public static final class VariableScopeVisitor extends ClassCodeVisitorSupport {
+
+        private final SourceUnit sourceUnit;
+        private final String name;
+        private final Set<Variable> localVariables = new HashSet<Variable>();
+        private boolean declaring = false;
+        
+        public VariableScopeVisitor(ModuleNode moduleNode, String variableName) {
+            sourceUnit = moduleNode.getContext();
+            name = variableName;
+        }
+        
+        public boolean isDeclaring() {
+            return declaring;
+        }
+        
+        @Override
+        protected SourceUnit getSourceUnit() {
+            return sourceUnit;
+        }
+
+        @Override
+        public void visitVariableExpression(VariableExpression variableExpression) {
+            if (!localVariables.contains(variableExpression)) {
+                if (name.equals(variableExpression.getName())) {
+                    localVariables.add(variableExpression);
+                }
+                super.visitVariableExpression(variableExpression);
+            }
+        }
+
+        @Override
+        public void visitDeclarationExpression(DeclarationExpression declarationExpression) {
+            super.visitDeclarationExpression(declarationExpression);
+            if (!declaring && name.equals(declarationExpression.getVariableExpression().getName())) {
+                declaring = true;
+            }
+        }
+        
+        @Override
+        public void visitField(FieldNode fieldNode) {
+            if (!localVariables.contains(fieldNode)) {
+                if (name.equals(fieldNode.getName())) {
+                    localVariables.add(fieldNode);
+                }
+                super.visitField(fieldNode);
+            }
+        }
+
+    }
     
 }

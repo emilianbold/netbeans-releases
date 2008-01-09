@@ -48,7 +48,11 @@ import java.util.Map;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.codehaus.groovy.ast.ASTNode;
-import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.FieldNode;
+import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.ModuleNode;
+import org.codehaus.groovy.ast.Parameter;
+import org.codehaus.groovy.ast.Variable;
 import org.netbeans.api.gsf.ColoringAttributes;
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.OccurrencesFinder;
@@ -56,11 +60,13 @@ import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.AstPath;
 import org.netbeans.modules.groovy.editor.AstUtilities;
+import org.netbeans.modules.groovy.editor.elements.AstRootElement;
 import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
 import org.openide.util.Exceptions;
 
 /**
- *
+ * Warning: this is very experimental!
+ * 
  * @author Martin Adamek
  */
 public class GroovyOccurrencesFinder implements OccurrencesFinder {
@@ -101,8 +107,6 @@ public class GroovyOccurrencesFinder implements OccurrencesFinder {
         Map<OffsetRange, ColoringAttributes> highlights =
             new HashMap<OffsetRange, ColoringAttributes>(100);
 
-        GroovyParserResult rpr = (GroovyParserResult)info.getParserResult();
-
         int astOffset = AstUtilities.getAstOffset(info, caretPosition);
         if (astOffset == -1) {
             return;
@@ -120,11 +124,18 @@ public class GroovyOccurrencesFinder implements OccurrencesFinder {
 //        System.out.println("### closest: " + closest);
         
         if (closest != null) {
-            if (closest instanceof VariableExpression) {
-                String name = ((VariableExpression)closest).getName();
-                ASTNode block = AstUtilities.findLocalScope(closest, path);
+            
+            if (closest instanceof Variable) {
+                String name = ((Variable)closest).getName();
+                GroovyParserResult parseResult = (GroovyParserResult)info.getParserResult();
+                AstRootElement astRootElement = (AstRootElement)parseResult.getRoot();
+                ModuleNode moduleNode = (ModuleNode)astRootElement.getNode();
+                ASTNode scope = AstUtilities.findVariableScope((Variable)closest, path, moduleNode);
+                
+//                System.out.println("### block: " + scope);
+                
                 try {
-                    highlightLocal(block, name, highlights, document.getText(0, document.getLength() - 1));
+                    highlightVariable(moduleNode, closest, scope, name, highlights, document.getText(0, document.getLength() - 1));
                 } catch (BadLocationException ble) {
                     Exceptions.printStackTrace(ble);
                 }
@@ -158,18 +169,39 @@ public class GroovyOccurrencesFinder implements OccurrencesFinder {
         this.caretPosition = position;
     }
     
-    private void highlightLocal(ASTNode node, String name, Map<OffsetRange, ColoringAttributes> highlights, String text) {
-        if (node instanceof VariableExpression) {
-            VariableExpression variableExpression = (VariableExpression) node;
+    private void highlightVariable(ModuleNode moduleNode, ASTNode node, ASTNode scope, String name, 
+            Map<OffsetRange, ColoringAttributes> highlights, String text) {
+        
+        if (scope instanceof Variable) {
+            Variable variableExpression = (Variable) scope;
             if (name.equals(variableExpression.getName())) {
-                OffsetRange range = AstUtilities.getRange(node, text);
+                OffsetRange range = AstUtilities.getRange(scope, text);
                 highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
+            }
+        } else if (scope instanceof MethodNode) {
+            MethodNode methodNode = (MethodNode) scope;
+            // if selected node is from this method, we don't want to skip this method body
+            AstPath astPath = new AstPath(scope, node);
+            if (!astPath.iterator().hasNext()) {
+                for (Parameter parameter : methodNode.getParameters()) {
+                    if (name.equals(parameter.getName())) {
+                        // we don't want go into method if one of its parameters has
+                        // same name as our variable
+                        return;
+                    }
+                }
+            }
+            AstUtilities.VariableScopeVisitor visitor = new AstUtilities.VariableScopeVisitor(moduleNode, name);
+            visitor.visitMethod(methodNode);
+            if (visitor.isDeclaring()) {
+                // method shadows our variable
+                return;
             }
         }
         // TODO: should use visitor instead?
-        List<ASTNode> list = AstUtilities.children(node);
+        List<ASTNode> list = AstUtilities.children(scope);
         for (ASTNode child : list) {
-            highlightLocal(child, name, highlights, text);
+            highlightVariable(moduleNode, node, child, name, highlights, text);
         }
     }
 
