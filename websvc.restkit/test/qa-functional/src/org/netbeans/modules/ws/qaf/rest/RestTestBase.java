@@ -70,7 +70,7 @@ import org.xml.sax.SAXException;
 public abstract class RestTestBase extends WebServicesTestBase {
 
     private static final String HOSTNAME = "localhost"; //NOI18N
-    private static final int PORT = 8080;
+    private static final int PORT = resolveServerPort();
     private static final String JDBC_DRIVER = "org.apache.derby.jdbc.ClientDriver"; //NOI18N
     private static final String JDBC_URL = "jdbc:derby://localhost:1527/sample"; //NOI18N
     private static final String DB_USERNAME = "app"; //NOI18N
@@ -323,5 +323,10 @@ public abstract class RestTestBase extends WebServicesTestBase {
         } catch (NoSuchFieldException nsfe) {
             LOGGER.info(nsfe.getMessage());
         }
+    }
+
+    private static int resolveServerPort() {
+        Integer i = Integer.getInteger("glassfish.server.port"); //NOI18N
+        return i != null ? i.intValue() : 8080;
     }
 }
