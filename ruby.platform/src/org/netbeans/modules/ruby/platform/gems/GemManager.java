@@ -41,14 +41,7 @@
 package org.netbeans.modules.ruby.platform.gems;
 
 import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Dialog;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -62,27 +55,17 @@ import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.swing.JButton;
-import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.gsfret.source.usages.ClassIndexManager;
-import org.netbeans.modules.ruby.platform.RubyExecution;
-import org.netbeans.modules.ruby.platform.Util;
-import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
-import org.netbeans.modules.ruby.platform.execution.ExecutionService;
-import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
@@ -129,12 +112,12 @@ public final class GemManager {
     public static String TEST_GEM_HOME;
     
     /** Share over invocations of the dialog since these are slow to compute */
-    private static List<Gem> installed;
+    private List<Gem> installed;
     
     /** Share over invocations of the dialog since these are ESPECIALLY slow to compute */
-    private static List<Gem> available;
+    private List<Gem> remote;
 
-    private String gem;
+    private String gemTool;
     private FileObject gemHomeFo;
     private String gemHomeUrl;
     private String rake;
@@ -146,7 +129,7 @@ public final class GemManager {
     public GemManager(final RubyPlatform platform) {
         this.platform = platform;
     }
-    
+
     private String getGemMissingMessage() {
         if (Utilities.isMac() && "/usr/bin/ruby".equals(platform.getInterpreter())) { // NOI18N
             String version = System.getProperty("os.version"); // NOI18N
@@ -162,7 +145,7 @@ public final class GemManager {
      * an error message which describes the problem.
      */
     public String getGemProblem() {
-        String gem = getGem();
+        String gem = getGemTool();
         
         if (gem == null) {
             return getGemMissingMessage();
@@ -447,16 +430,17 @@ public final class GemManager {
         return gemFiles.keySet();
     }
 
-    public List<String> reload() {
-        List<String> errors = new ArrayList<String>(500);
-        installed = new ArrayList<Gem>();
-        available = new ArrayList<Gem>();
-        refreshList(installed, available, errors);
-        return errors;
+    public void reset() {
+        installed = null;
+        remote = null;
     }
     
-    public List<Gem> getInstalledGems() {
-        return installed;
+    public void resetRemote() {
+        remote = null;
+    }
+    
+    public void resetLocal() {
+        installed = null;
     }
     
     /**
@@ -465,73 +449,86 @@ public final class GemManager {
      * @param errors list to which the errors, which happen during gems
      *        reload, will be accumulated 
      */
-    public List<Gem> reloadInstalledGems(List<String> errors) {
-        installed = new ArrayList<Gem>(40);
-        refreshList(installed, null, errors);
-        return installed;
+    public void getAllGems(List<String> errors) {
+        reloadIfNeeded(errors);
     }
     
-    public boolean haveGem() {
-        return getGem() != null;
-    }
-    
-    public List<Gem> getAvailableGems() {
-        return available;
-    }
-    
-    /** WARNING: Slow! Synchronous gem execution. */
-    public List<Gem> reloadAvailableGems(List<String> lines) {
-        available = new ArrayList<Gem>(300);
-        refreshList(null, available, lines);
-        return available;
-    }
-    
-    public boolean hasUptodateAvailableList() {
-        return available != null;
-    }
-
     /**
+     * <em>WARNING:</em> Slow! Synchronous gem execution.
+     * 
      * @param errors list to which the errors, which happen during gems
      *        reload, will be accumulated 
      */
-    private void refreshList(final List<Gem> localList, final List<Gem> remoteList, final List<String> errors) {
-        if (localList != null) {
-            localList.clear();
+    public List<Gem> getInstalledGems(List<String> errors) {
+        reloadIfNeeded(errors);
+        return installed;
+    }
+    
+    public List<Gem> getRemoteGems(List<String> errors) {
+        reloadIfNeeded(errors);
+        return remote;
+    }
+
+    public boolean haveGemTool() {
+        return getGemTool() != null;
+    }
+    
+    /** Returns false if check fails. True in success case. */
+    private boolean checkGemProblem() {
+        String gemProblem = getGemProblem();
+        if (gemProblem != null) {
+            NotifyDescriptor nd = new NotifyDescriptor.Message(gemProblem,
+                    NotifyDescriptor.Message.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(nd);
+            return false;
         }
-        if (remoteList != null) {
-            remoteList.clear();
+        return true;
+    }
+
+    /**
+     * This method is called automatically every time when installed or remote
+     * gems are looked for. The method reloads only needed gems. Remote, local
+     * or both. You might want to call this method explicitly if you know you
+     * will be getting all (remote and locals) gems subsequently.
+     *
+     * @param errors list into which the errors, which happen during gems
+     *        reload, will be accumulated 
+     */
+    public void reloadIfNeeded(final List<String> errors) {
+        if (!checkGemProblem()) {
+            return;
         }
         
-        // Install the given gem
-        List<String> argList = new ArrayList<String>();
-        
-        if (localList != null && remoteList != null) {
-            argList.add("--both"); // NOI18N
-        } else if (localList != null) {
-            argList.add("--local"); // NOI18N
+        GemRunner gemRunner = new GemRunner(platform);
+        boolean ok;
+        if (installed == null && remote == null) {
+            ok = gemRunner.fetchBoth();
+            installed = new ArrayList<Gem>();
+            remote = new ArrayList<Gem>();
+        } else if (installed == null) {
+            ok = gemRunner.fetchLocal();
+            installed = new ArrayList<Gem>();
+        } else if (remote == null) {
+            ok = gemRunner.fetchRemote();
+            remote = new ArrayList<Gem>();
         } else {
-            assert remoteList != null;
-            argList.add("--remote"); // NOI18N
+            return; // no reload needed
         }
-        
-        String[] args = argList.toArray(new String[argList.size()]);
-        List<String> lines = new ArrayList<String>(3000);
-        boolean ok = gemRunner("list", null, null, lines, args); // NOI18N
         
         if (ok) {
-            parseGemList(lines, localList, remoteList);
+            parseGemList(gemRunner.getOutput(), installed, remote);
             
-            // Sort the list
-            if (localList != null) {
-                Collections.sort(localList);
+            // Sort the lists
+            if (installed != null) {
+                Collections.sort(installed);
             }
-            if (remoteList != null) {
-                Collections.sort(remoteList);
+            if (remote != null) {
+                Collections.sort(remote);
             }
         } else {
             // Produce the error list
             boolean inErrors = false;
-            for (String line : lines) {
+            for (String line : gemRunner.getOutput()) {
                 if (inErrors) {
                     errors.add(line);
                 } else if (line.startsWith("***") || line.startsWith(" ") || line.trim().length() == 0) { // NOI18N
@@ -544,7 +541,7 @@ public final class GemManager {
         }
     }
     
-    private void parseGemList(List<String> lines, List<Gem> localList, List<Gem> remoteList) { 
+    private static void parseGemList(List<String> lines, List<Gem> localList, List<Gem> remoteList) { 
         Gem gem = null;
         boolean listStarted = false;
         boolean inLocal = false;
@@ -618,235 +615,7 @@ public final class GemManager {
             }
         }
     }
-    
-    /** Non-blocking gem executor which also provides progress UI etc. */
-    private void asynchGemRunner(final Component parent, final String description,
-            final String successMessage, final String failureMessage, final List<String> lines,
-            final Runnable successCompletionTask, final String command, final String... commandArgs) {
-        final Cursor originalCursor;
-        if (parent != null) {
-            originalCursor = parent.getCursor();
-            Cursor busy = Utilities.createProgressCursor(parent);
-            parent.setCursor(busy);
-        } else {
-            originalCursor = null;
-        }
-        
-        final ProgressHandle progressHandle = null;
-        final boolean interactive = true;
-        final JButton closeButton = new JButton(NbBundle.getMessage(GemManager.class, "CTL_Close"));
-        final JButton cancelButton =
-                new JButton(NbBundle.getMessage(GemManager.class, "CTL_Cancel"));
-        closeButton.getAccessibleContext()
-                .setAccessibleDescription(NbBundle.getMessage(GemManager.class, "AD_Close"));
-        
-        Object[] options = new Object[] { closeButton, cancelButton };
-        closeButton.setEnabled(false);
-        
-        final GemProgressPanel progress =
-                new GemProgressPanel(NbBundle.getMessage(GemManager.class, "GemPleaseWait"));
-        progress.getAccessibleContext().setAccessibleDescription(
-                NbBundle.getMessage(GemManager.class, "GemProgressPanel.AccessibleContext.accessibleDescription"));
 
-        DialogDescriptor descriptor =
-                new DialogDescriptor(progress, description, true, options, closeButton,
-                DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(GemManager.class), null); // NOI18N
-        descriptor.setModal(true);
-        
-        final Process[] processHolder = new Process[1];
-        final Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
-
-        
-        closeButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ev) {
-                dlg.setVisible(false);
-                dlg.dispose();
-                if (parent != null) parent.setCursor(originalCursor);
-            }
-        });
-        
-        Runnable runner =
-                new Runnable() {
-            public void run() {
-                try {
-                    boolean succeeded =
-                            gemRunner(command, progress, processHolder, lines, commandArgs);
-                    
-                    closeButton.setEnabled(true);
-                    cancelButton.setEnabled(false);
-                    
-                    progress.done(succeeded ? successMessage : failureMessage);
-                    
-                    if (succeeded && (successCompletionTask != null)) {
-                        successCompletionTask.run();
-                    }
-                } finally {
-                    if (parent != null) parent.setCursor(originalCursor);
-                }
-            }
-        };
-        
-        RequestProcessor.getDefault().post(runner, 50);
-        
-        dlg.setVisible(true);
-        
-        if ((descriptor.getValue() == DialogDescriptor.CANCEL_OPTION) ||
-                (descriptor.getValue() == cancelButton)) {
-            if (parent != null) parent.setCursor(originalCursor);
-            cancelButton.setEnabled(false);
-            
-            Process process = processHolder[0];
-            
-            if (process != null) {
-                process.destroy();
-                dlg.setVisible(false);
-                dlg.dispose();
-            }
-        }
-    }
-    
-    private boolean gemRunner(String command, GemProgressPanel progressPanel,
-            Process[] processHolder, List<String> lines, String... commandArgs) {
-        String gemProblem = getGemProblem();
-        if (gemProblem != null) {
-            NotifyDescriptor nd = new NotifyDescriptor.Message(gemProblem, NotifyDescriptor.Message.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notify(nd);
-            return false;
-        }
-        
-        // Install the given gem
-        String gemCmd = getGem();
-        List<String> argList = new ArrayList<String>();
-        
-        File cmd = new File(platform.getInterpreter());
-        
-        if (!cmd.getName().startsWith("jruby") || RubyExecution.LAUNCH_JRUBY_SCRIPT) { // NOI18N
-            argList.add(cmd.getPath());
-        }
-        
-        argList.addAll(RubyExecution.getRubyArgs(platform));
-        
-        argList.add(gemCmd);
-        argList.add(command);
-        
-        for (String arg : commandArgs) {
-            argList.add(arg);
-        }
-        
-        String[] args = argList.toArray(new String[argList.size()]);
-        ProcessBuilder pb = new ProcessBuilder(args);
-        if (!Utilities.isWindows()) {
-            pb.environment().put("GEM_HOME", platform.getGemManager().getGemDir()); // NOI18N
-        }
-        pb.directory(cmd.getParentFile());
-        pb.redirectErrorStream(true);
-
-        // TODO: Following unfortunately does not work -- gems blows up. Looks
-        // like a RubyGems bug.
-        // ERROR:  While executing gem ... (NoMethodError)
-        //    undefined method `[]=' for #<Gem::ConfigFile:0xb6c763 @hash={} ,@args=["--remote", "-p", "http://foo.bar:8080"] ,@config_file_name=nil ,@verbose=true>
-        //argList.add("--http-proxy"); // NOI18N
-        //argList.add(proxy);
-        // (If you uncomment the above, move it up above the args = argList.toArray line)
-        Util.adjustProxy(pb);
-
-        // PATH additions for JRuby etc.
-        new RubyExecution(new ExecutionDescriptor(platform, "gem", pb.directory()).cmd(cmd)).setupProcessEnvironment(pb.environment()); // NOI18N
-        
-        if (lines == null) {
-            lines = new ArrayList<String>(40);
-        }
-        
-        int exitCode = -1;
-        
-        try {
-            ExecutionService.logProcess(pb);
-            pb.redirectErrorStream(true);
-            Process process = pb.start();
-
-            if (processHolder != null) {
-                processHolder[0] = process;
-            }
-            
-            InputStream is = process.getInputStream();
-            
-            if (progressPanel != null) {
-                progressPanel.setProcessInput(process.getOutputStream());
-            }
-            
-            InputStreamReader isr = new InputStreamReader(is);
-            BufferedReader br = new BufferedReader(isr);
-            String line;
-            
-            try {
-                while (true) {
-                    line = br.readLine();
-                    
-                    if (line == null) {
-                        break;
-                    }
-                    
-                    if (progressPanel != null) {
-                        // Add "\n" ?
-                        progressPanel.appendOutput(line);
-                    }
-                    
-                    lines.add(line);
-                }
-            } catch (IOException ioe) {
-                // When we cancel we call Process.destroy which may quite possibly
-                // raise an IO Exception in this thread reading text out of the
-                // process. Silently ignore that.
-                String message = "*** Gem Process Killed ***\n"; // NOI18N
-                lines.add(message);
-                
-                if (progressPanel != null) {
-                    progressPanel.appendOutput(message);
-                }
-            }
-            
-            exitCode = process.waitFor();
-            
-            if (exitCode != 0) {
-                try {
-                    // This might not be necessary now that I'm
-                    // calling ProcessBuilder.redirectErrorStream(true)
-                    // but better safe than sorry
-                    is = process.getErrorStream();
-                    isr = new InputStreamReader(is);
-                    br = new BufferedReader(isr);
-                    
-                    while ((line = br.readLine()) != null) {
-                        if (progressPanel != null) {
-                            // Add "\n" ?
-                            progressPanel.appendOutput(line);
-                        }
-                        
-                        lines.add(line);
-                    }
-                } catch (IOException ioe) {
-                    // When we cancel we call Process.destroy which may quite possibly
-                    // raise an IO Exception in this thread reading text out of the
-                    // process. Silently ignore that.
-                    String message = "*** Gem Process Killed ***\n"; // NOI18N
-                    lines.add(message);
-                    
-                    if (progressPanel != null) {
-                        progressPanel.appendOutput(message);
-                    }
-                }
-            }
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
-        } catch (InterruptedException ex) {
-            ErrorManager.getDefault().notify(ex);
-        }
-        
-        boolean succeeded = exitCode == 0;
-        
-        return succeeded;
-    }
-    
     /**
      * Install the latest version of the given gem with dependencies and refresh
      * IDE caches accordingly after the gem is installed.
@@ -880,55 +649,24 @@ public final class GemManager {
      * @param asyncCompletionTask If asynchronous is true and the gem task completes normally, this task will be run at the end.
      * @param rdoc If true, generate rdoc as part of the installation
      * @param ri If true, generate ri data as part of the installation
-     * @param version If non null, install the specified version rather than the latest available version
+     * @param version If non null, install the specified version rather than the latest remote version
      */
     public boolean install(Gem[] gems, Component parent, boolean rdoc, boolean ri,
             String version, boolean includeDeps, boolean asynchronous,
-            Runnable asyncCompletionTask) {
-        // Install the given gem
-        List<String> argList = new ArrayList<String>();
+            final Runnable asyncCompletionTask) {
+        List<String> gemNames = new ArrayList<String>();
         
         for (Gem gem : gems) {
-            argList.add(gem.getName());
+            gemNames.add(gem.getName());
         }
         
-        //argList.add("--verbose"); // NOI18N
-        if (!rdoc) {
-            argList.add("--no-rdoc"); // NOI18N
-        }
-        
-        if (!ri) {
-            argList.add("--no-ri"); // NOI18N
-        }
-        
-        if (includeDeps) {
-            argList.add("--include-dependencies"); // NOI18N
-        } else {
-            argList.add("--ignore-dependencies"); // NOI18N
-        }
-        
-        argList.add("--version"); // NOI18N
-        
-        if ((version != null) && (version.length() > 0)) {
-            argList.add(version);
-        } else {
-            argList.add("> 0"); // NOI18N
-        }
-        
-        String[] args = argList.toArray(new String[argList.size()]);
-        
-        String title = NbBundle.getMessage(GemManager.class, "Installation");
-        String success = NbBundle.getMessage(GemManager.class, "InstallationOk");
-        String failure = NbBundle.getMessage(GemManager.class, "InstallationFailed");
-        String gemCmd = "install"; // NOI18N
-        
+        GemRunner gemRunner = new GemRunner(platform);
         if (asynchronous) {
-            asynchGemRunner(parent, title, success, failure, null, asyncCompletionTask, gemCmd, args);
-            
+            gemRunner.installAsynchronously(gemNames, rdoc, ri, includeDeps, version, resetCompletionTask(asyncCompletionTask), parent);
             return false;
         } else {
-            boolean ok = gemRunner(gemCmd, null, null, null, args);
-            
+            boolean ok = gemRunner.install(gemNames, rdoc, ri, includeDeps, version);
+            resetLocal();
             return ok;
         }
     }
@@ -945,45 +683,20 @@ public final class GemManager {
      *    gem output). If the exit code is normal, the completion task will be run at the end.
      * @param asyncCompletionTask If asynchronous is true and the gem task completes normally, this task will be run at the end.
      */
-    public boolean uninstall(Gem[] gems, Component parent, boolean asynchronous, Runnable asyncCompletionTask) {
-        // Install the given gem
-        List<String> argList = new ArrayList<String>();
-        
-        // This string is replaced in the loop below, one gem at a time as we iterate over the
-        // deletion results
-        int nameIndex = argList.size();
-        argList.add("placeholder"); // NOI18N
-        
-        //argList.add("--verbose"); // NOI18N
-        argList.add("--all"); // NOI18N
-        argList.add("--executables"); // NOI18N
-        argList.add("--ignore-dependencies"); // NOI18N
-        
-        String[] args = argList.toArray(new String[argList.size()]);
-        String title = NbBundle.getMessage(GemManager.class, "Uninstallation");
-        String success = NbBundle.getMessage(GemManager.class, "UninstallationOk");
-        String failure = NbBundle.getMessage(GemManager.class, "UninstallationFailed");
-        String gemCmd = "uninstall"; // NOI18N
-        
+    public boolean uninstall(Gem[] gems, Component parent, boolean asynchronous, final Runnable asyncCompletionTask) {
+        List<String> gemNames = new ArrayList<String>();
+
+        for (Gem gem : gems) {
+            gemNames.add(gem.getName());
+        }
+
+        GemRunner gemRunner = new GemRunner(platform);
         if (asynchronous) {
-            for (Gem gem : gems) {
-                args[nameIndex] = gem.getName();
-                asynchGemRunner(parent, title, success, failure, null, asyncCompletionTask, gemCmd,
-                        args);
-            }
-            
+            gemRunner.uninstallAsynchronously(gemNames, resetCompletionTask(asyncCompletionTask), parent);
             return false;
         } else {
-            boolean ok = true;
-            
-            for (Gem gem : gems) {
-                args[nameIndex] = gem.getName();
-                
-                if (!gemRunner(gemCmd, null, null, null, args)) {
-                    ok = false;
-                }
-            }
-            
+            boolean ok = gemRunner.uninstall(gemNames);
+            resetLocal();
             return ok;
         }
     }
@@ -1003,40 +716,22 @@ public final class GemManager {
      */
     public boolean update(Gem[] gems, Component parent, boolean rdoc,
             boolean ri, boolean asynchronous, Runnable asyncCompletionTask) {
-        // Install the given gem
-        List<String> argList = new ArrayList<String>();
         
-        if (gems != null) {
+        List<String> gemNames = new ArrayList<String>();
+
+        if (gems != null) { // ALL
             for (Gem gem : gems) {
-                argList.add(gem.getName());
+                gemNames.add(gem.getName());
             }
         }
         
-        argList.add("--verbose"); // NOI18N
-        
-        if (!rdoc) {
-            argList.add("--no-rdoc"); // NOI18N
-        }
-        
-        if (!ri) {
-            argList.add("--no-ri"); // NOI18N
-        }
-        
-        argList.add("--include-dependencies"); // NOI18N
-        
-        String[] args = argList.toArray(new String[argList.size()]);
-        
-        String title = NbBundle.getMessage(GemManager.class, "Update");
-        String success = NbBundle.getMessage(GemManager.class, "UpdateOk");
-        String failure = NbBundle.getMessage(GemManager.class, "UpdateFailed");
-        String gemCmd = "update"; // NOI18N
-        
+        GemRunner gemRunner = new GemRunner(platform);
         if (asynchronous) {
-            asynchGemRunner(parent, title, success, failure, null, asyncCompletionTask, gemCmd, args);
-            
+            gemRunner.updateAsynchronously(gemNames, rdoc, ri, resetCompletionTask(asyncCompletionTask), parent);
             return false;
         } else {
-            boolean ok = gemRunner(gemCmd, null, null, null, args);
+            boolean ok = gemRunner.update(gemNames, rdoc, ri);
+            resetLocal();
             return ok;
         }
     }
@@ -1128,20 +823,20 @@ public final class GemManager {
      * @return path to the <em>gem</em> tool; might be <tt>null</tt> if not
      *         found.
      */
-    public String getGem() {
-        if (gem == null) {
+    public String getGemTool() {
+        if (gemTool == null) {
             String bin = platform.getBinDir();
             if (bin != null) {
-                gem = bin + File.separator + "gem"; // NOI18N
-                if (!new File(gem).isFile()) {
-                    gem = null;
+                gemTool = bin + File.separator + "gem"; // NOI18N
+                if (!new File(gemTool).isFile()) {
+                    gemTool = null;
                 }
             }
         }
-        if (gem == null) {
-            gem = GemManager.findOnPath("gem"); // NOI18N
+        if (gemTool == null) {
+            gemTool = GemManager.findOnPath("gem"); // NOI18N
         }
-        return gem;
+        return gemTool;
     }
     
     private static String findOnPath(final String toFind) {
@@ -1386,5 +1081,14 @@ public final class GemManager {
         } catch (MalformedURLException mue) {
             Exceptions.printStackTrace(mue);
         }
+    }
+
+    private Runnable resetCompletionTask(final Runnable origTask) {
+        return new Runnable() {
+            public void run() {
+                resetLocal();
+                origTask.run();
+            }
+        };
     }
 }

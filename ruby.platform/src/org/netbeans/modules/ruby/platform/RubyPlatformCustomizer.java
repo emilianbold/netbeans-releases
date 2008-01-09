@@ -106,7 +106,7 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
         plfNameValue.setText(plaf.getLabel());
         plfInterpreterValue.setText(plaf.getInterpreter());
         gemHomeValue.setText(plaf.getGemManager().getGemDir());
-        gemToolValue.setText(plaf.getGemManager().getGem());
+        gemToolValue.setText(plaf.getGemManager().getGemTool());
         removeButton.setEnabled(!plaf.isDefault());
     }
 

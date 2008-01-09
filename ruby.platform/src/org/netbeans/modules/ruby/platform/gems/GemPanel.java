@@ -44,7 +44,6 @@ package org.netbeans.modules.ruby.platform.gems;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,7 +61,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.options.OptionsDisplayer;
-import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.modules.ruby.platform.PlatformComponentFactory;
@@ -76,13 +74,13 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
- * 
+ *
  * @todo Use a table instead of a list for the gem lists, use checkboxes to choose
  *   items to be uninstalled, and show the installation date (based
  *   on file timestamps)
- * @todo Find a way to execute both gem commands (local and remote listing) in the 
+ * @todo Find a way to execute both gem commands (local and remote listing) in the
  *   same Ruby VM so it's faster to perform updates. Does
- *      gem list --both 
+ *      gem list --both
  *   work?
  * @todo Split error output
  *
@@ -106,13 +104,16 @@ public class GemPanel extends JPanel implements Runnable {
     private boolean fetchingRemote;
     private List<String> remoteFailure;
     
-    private static boolean useCached;
-    
+    private static String lastPlatformID;
+
     public GemPanel(String availableFilter) {
         initComponents();
-       
+
+        if (lastPlatformID != null) {
+            platforms.setSelectedItem(RubyPlatformManager.getPlatformByID(lastPlatformID));
+        }
         this.gemManager = RubyPlatformManager.getDefaultPlatform().getGemManager();
-        
+
         installedList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         installedList.getSelectionModel().addListSelectionListener(new MyListSelectionListener(installedList, installedDesc, uninstallButton));
 
@@ -132,13 +133,17 @@ public class GemPanel extends JPanel implements Runnable {
         platforms.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent e) {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
-                    GemPanel.this.gemManager = ((RubyPlatform) platforms.getSelectedItem()).getGemManager();
-                    useCached = false;
+                    GemPanel.this.gemManager = getSelectedPlatform().getGemManager();
                     RequestProcessor.getDefault().post(GemPanel.this, 300);
                 }
             }
         });
         RequestProcessor.getDefault().post(this, 300);
+    }
+
+    public @Override void removeNotify() {
+        lastPlatformID = getSelectedPlatform().getID();
+        super.removeNotify();
     }
     
     public void run() {
@@ -201,16 +206,18 @@ public class GemPanel extends JPanel implements Runnable {
             sb.append("</h3>"); // NOI18N
             sb.append(gem.getDescription());
         }
-        
+
         sb.append("</html>"); // NOI18N
-        
+
         pane.setText(sb.toString());
     }
 
-    /** Called when installedList or newList is refreshed; recompute the updated list
+    /**
+     * Called when installedGems or availableGems is refreshed; recompute the
+     * updated list.
      * @return True iff we're done with the updates
      */
-    private synchronized boolean updateGems() {
+    private synchronized boolean notifyGemsUpdated() {
         assert SwingUtilities.isEventDispatchThread();
 
         if (!(fetchingRemote || fetchingLocal)) {
@@ -225,14 +232,14 @@ public class GemPanel extends JPanel implements Runnable {
             installedProgress.setVisible(false);
             installedProgressLabel.setVisible(false);
         }
-    
+
         if (installedGems != null && availableGems != null) {
             Map<String,Gem> nameMap = new HashMap<String,Gem>();
             for (Gem gem : installedGems) {
                 nameMap.put(gem.getName(), gem);
             }
             Set<String> installedNames = nameMap.keySet();
-            
+
             updatedGems = new ArrayList<Gem>();
             newGems = new ArrayList<Gem>();
             for (Gem gem : availableGems) {
@@ -240,7 +247,7 @@ public class GemPanel extends JPanel implements Runnable {
                     // We have this gem; let's see if we have the latest version
                     String available = gem.getAvailableVersions();
                     Gem installedGem = nameMap.get(gem.getName());
-                    String installed = installedGem.getInstalledVersions(); 
+                    String installed = installedGem.getInstalledVersions();
                     // Gem always lists the most recent version first...
                     int firstVer = available.indexOf(',');
                     if (firstVer == -1) {
@@ -258,11 +265,11 @@ public class GemPanel extends JPanel implements Runnable {
                     newGems.add(gem);
                 }
             }
-            
+
             updateList(NEW_TAB_INDEX, true);
             updateList(UPDATED_TAB_INDEX, true);
         }
-        
+
         return !(fetchingRemote || fetchingLocal);
     }
     
@@ -283,29 +290,29 @@ public class GemPanel extends JPanel implements Runnable {
         }
         List<Gem> gems;
         JList list;
-        
+
         switch (tab) {
-        case NEW_TAB_INDEX:
-            gems = newGems;
-            list = newList;
-            break;
-        case UPDATED_TAB_INDEX:
-            gems = updatedGems;
-            list = updatedList;
-            break;
-        case INSTALLED_TAB_INDEX:
-            gems = installedGems;
-            list = installedList;
-            break;
-        default:
-            throw new IllegalArgumentException();
+            case NEW_TAB_INDEX:
+                gems = newGems;
+                list = newList;
+                break;
+            case UPDATED_TAB_INDEX:
+                gems = updatedGems;
+                list = updatedList;
+                break;
+            case INSTALLED_TAB_INDEX:
+                gems = installedGems;
+                list = installedList;
+                break;
+            default:
+                throw new IllegalArgumentException();
         }
-        
+
         if (gems == null) {
             // attempting to filter before the list has been fetched - ignore
             return;
         }
-        
+
         DefaultListModel model = new DefaultListModel();
         for (Gem gem : gems) {
             if (filter == null || filter.length() == 0) {
@@ -324,7 +331,7 @@ public class GemPanel extends JPanel implements Runnable {
                 } else {
                     model.addElement(gem);
                 }
-            } else if (pattern.matcher(gem.getName()).find() || 
+            } else if (pattern.matcher(gem.getName()).find() ||
                     (gem.getDescription() != null && pattern.matcher(gem.getDescription()).find())) {
                 model.addElement(gem);
             }
@@ -353,11 +360,11 @@ public class GemPanel extends JPanel implements Runnable {
             }
             String count;
             if (model.size() < gems.size()) {
-                count = model.size() + "/" + gems.size();
+                count = model.size() + "/" + gems.size(); // NOI18N
             } else {
                 count = Integer.toString(gems.size());
             }
-            tabTitle = tabTitle + "(" + count + ")";
+            tabTitle = tabTitle + "(" + count + ")"; // NOI18N
             if (!tabTitle.equals(originalTabTitle)) {
                 gemsTab.setTitleAt(tab, tabTitle);
             }
@@ -369,7 +376,7 @@ public class GemPanel extends JPanel implements Runnable {
         return gemsModified;
     }
 
-    private synchronized void refreshInstalled(boolean fetch) {
+    private synchronized void refreshInstalled() {
         assert SwingUtilities.isEventDispatchThread();
 
         if (installedList.getSelectedIndex() != -1) {
@@ -378,13 +385,11 @@ public class GemPanel extends JPanel implements Runnable {
         installedProgress.setVisible(true);
         installedProgressLabel.setVisible(true);
         fetchingLocal = true;
-        if (fetch) {
-            refreshGemList(INSTALLED_TAB_INDEX);
-        }
+        refreshGemList(INSTALLED_TAB_INDEX);
         installedModified = false;
     }
     
-    private synchronized void refreshNew(boolean fetch) {
+    private synchronized void refreshNew() {
         assert SwingUtilities.isEventDispatchThread();
 
         if (newList.getSelectedIndex() != -1) {
@@ -393,9 +398,7 @@ public class GemPanel extends JPanel implements Runnable {
         newProgress.setVisible(true);
         newProgressLabel.setVisible(true);
         fetchingRemote = true;
-        if (fetch) {
-            refreshGemList(NEW_TAB_INDEX);
-        }
+        refreshGemList(NEW_TAB_INDEX);
     }
 
     private void refreshUpdated() {
@@ -407,8 +410,8 @@ public class GemPanel extends JPanel implements Runnable {
         }
         updatedProgress.setVisible(true);
         updatedProgressLabel.setVisible(true);
-        refreshInstalled(false);
-        refreshNew(false);
+        refreshInstalled();
+        refreshNew();
         refreshGemLists();
     }
     
@@ -836,7 +839,8 @@ public class GemPanel extends JPanel implements Runnable {
     }// </editor-fold>//GEN-END:initComponents
 
     private void reloadNewButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reloadNewButtonActionPerformed
-        refreshNew(true);
+        gemManager.resetRemote();
+        refreshNew();
     }//GEN-LAST:event_reloadNewButtonActionPerformed
 
     private void proxyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_proxyButtonActionPerformed
@@ -852,7 +856,7 @@ public class GemPanel extends JPanel implements Runnable {
     }//GEN-LAST:event_searchUpdatedTextActionPerformed
 
     private void reloadReposButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reloadReposButtonActionPerformed
-        useCached = false;
+        gemManager.reset();
         refreshUpdated();
     }//GEN-LAST:event_reloadReposButtonActionPerformed
 
@@ -885,7 +889,7 @@ public class GemPanel extends JPanel implements Runnable {
                     Gem gem = new Gem(panel.getGemName(), null, null);
                     // XXX Do I really need to refresh it right way?
                     GemListRefresher completionTask = new GemListRefresher(newList, INSTALLED_TAB_INDEX);
-                    boolean changed = gemManager.install(new Gem[] { gem }, this, false, false, panel.getVersion(), 
+                    boolean changed = gemManager.install(new Gem[] { gem }, this, false, false, panel.getVersion(),
                             panel.getIncludeDepencies(), true, completionTask);
                     installedModified = installedModified || changed;
                 }
@@ -901,7 +905,7 @@ public class GemPanel extends JPanel implements Runnable {
     private void updateAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateAllButtonActionPerformed
         Runnable completionTask = new GemListRefresher(installedList, INSTALLED_TAB_INDEX);
         gemManager.update(null, this, false, false, true, completionTask);
-        installedModified = true; 
+        installedModified = true;
     }//GEN-LAST:event_updateAllButtonActionPerformed
 
     private void updateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateButtonActionPerformed
@@ -916,7 +920,7 @@ public class GemPanel extends JPanel implements Runnable {
                 if (o instanceof Gem) { // Could be error or please wait string
                     Gem gem = (Gem)o;
                     gems.add(gem);
-                }            
+                }
             }
         }
         if (gems.size() > 0) {
@@ -938,7 +942,7 @@ public class GemPanel extends JPanel implements Runnable {
                 if (o instanceof Gem) { // Could be error or please wait string
                     Gem gem = (Gem)o;
                     gems.add(gem);
-                }            
+                }
             }
         }
         if (gems.size() > 0) {
@@ -949,7 +953,8 @@ public class GemPanel extends JPanel implements Runnable {
     }//GEN-LAST:event_uninstallButtonActionPerformed
 
     private void reloadInstalledButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reloadInstalledButtonActionPerformed
-        refreshInstalled(true);
+        gemManager.resetLocal();
+        refreshInstalled();
     }//GEN-LAST:event_reloadInstalledButtonActionPerformed
 
     private void manageButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageButtonActionPerformed
@@ -962,29 +967,29 @@ public class GemPanel extends JPanel implements Runnable {
      * Refresh the list of displayed gems. If refresh is true, refresh the list
      * from the gem manager, otherwise just refilter list.
     */
-    private void refreshGemList(final int tab) {        
+    private void refreshGemList(final int tab) {
         Runnable runner = new Runnable() {
             public void run() {
-                synchronized(this) {
+                synchronized(GemPanel.this) {
                     assert !SwingUtilities.isEventDispatchThread();
 
                     List<String> errors = new ArrayList<String>(500);
                     if (tab == INSTALLED_TAB_INDEX) {
-                        installedGems = gemManager.reloadInstalledGems(errors);
+                        installedGems = gemManager.getInstalledGems(errors);
                         fetchingLocal = false;
                     } else if (tab == NEW_TAB_INDEX) {
                         remoteFailure = null;
-                        availableGems = newGems = gemManager.reloadAvailableGems(errors);
+                        availableGems = newGems = gemManager.getRemoteGems(errors);
                         if (availableGems.size() == 0 && errors.size() > 0) {
                             remoteFailure = errors;
                         }
                         fetchingRemote = false;
                     }
-                    
+
                     // Update UI
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
-                            boolean done = updateGems();
+                            boolean done = notifyGemsUpdated();
 
                             if (!done) {
                                 // Just filter
@@ -997,50 +1002,48 @@ public class GemPanel extends JPanel implements Runnable {
                 }
             }
         };
-        
+
         RequestProcessor.getDefault().post(runner, 50);
     }
 
-    private void refreshGemLists() {        
+    private void refreshGemLists() {
         Runnable runner = new Runnable() {
             public void run() {
-                synchronized(this) {
+                synchronized(GemPanel.this) {
                     assert !SwingUtilities.isEventDispatchThread();
 
-                    List<String> lines = Collections.emptyList();
+                    List<String> errors = new  ArrayList<String>();
                     remoteFailure = null;
-                    if (!useCached) {
-                        lines = gemManager.reload();
-                        useCached = true;
-                    }
-                    installedGems = gemManager.getInstalledGems();
-                    availableGems = gemManager.getAvailableGems();
+                    gemManager.reloadIfNeeded(errors);
+                    installedGems = gemManager.getInstalledGems(errors);
+                    availableGems = gemManager.getRemoteGems(errors);
                     newGems = availableGems;
                     fetchingLocal = false;
                     fetchingRemote = false;
-                    if (availableGems.size() == 0 && lines.size() > 0) {
-                        remoteFailure = lines;
+                    if (availableGems.size() == 0 && errors.size() > 0) {
+                        remoteFailure = errors;
                     }
-                    
+
                     // Update UI
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
-                            updateGems();
+                            notifyGemsUpdated();
                             updateList(INSTALLED_TAB_INDEX, true);
 
                             if (remoteFailure != null && !fetchingLocal) {
                                 // Update the local list which shouldn't have any errors
-                                refreshInstalled(true);
+                                gemManager.resetLocal();
+                                refreshInstalled();
                             }
                         }
                     });
                 }
             }
         };
-        
+
         RequestProcessor.getDefault().post(runner, 50);
     }
-    
+
     private String getGemFilter(int tab) {
         assert SwingUtilities.isEventDispatchThread();
 
@@ -1058,15 +1061,19 @@ public class GemPanel extends JPanel implements Runnable {
         if (filter.length() == 0) {
             filter = null;
         }
-        
+
         return filter;
+    }
+
+    private RubyPlatform getSelectedPlatform() {
+        return (RubyPlatform) platforms.getSelectedItem();
     }
 
     private class MyListSelectionListener implements ListSelectionListener {
         private JButton button;
         private JTextPane pane;
         private JList list;
-        
+
         private MyListSelectionListener(JList list, JTextPane pane, JButton button) {
             this.list = list;
             this.pane = pane;
@@ -1092,11 +1099,11 @@ public class GemPanel extends JPanel implements Runnable {
             button.setEnabled(index != -1);
         }
     }
-            
+
     private class GemListRefresher implements Runnable {
         private JList list;
         private int tab;
-        
+
         public GemListRefresher(JList list, int tab) {
             this.list = list;
             this.tab = tab;
