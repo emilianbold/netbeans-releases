@@ -114,7 +114,7 @@ public abstract class RubyTestBase extends NbTestCase {
         File home = getWorkDir();
 
         // Build a fake ruby structure
-        File rubyLib = new File(new File(home, "lib"), "ruby");
+        File rubyLib = new File(new File(new File(home, "lib"), "ruby"), "1.8");
         rubyLib.mkdirs();
         File bin = new File(home, "bin");
         bin.mkdirs();

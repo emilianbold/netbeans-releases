@@ -38,7 +38,9 @@
  */
 package org.netbeans.api.ruby.platform;
 
+import java.io.File;
 import java.util.Set;
+import org.openide.util.NbBundle;
 
 public final class RubyPlatformManagerTest extends RubyTestBase {
 
@@ -46,7 +48,14 @@ public final class RubyPlatformManagerTest extends RubyTestBase {
         super(testName);
     }
 
-    public void testPlatformBasics() {
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        clearWorkDir();
+        RubyPlatformManager.resetPlatforms();
+    }
+
+    public void testPlatformBasics() throws Exception {
         Set<RubyPlatform> platforms = RubyPlatformManager.getPlatforms();
         assertEquals("bundle JRuby", 1, platforms.size());
         RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
@@ -55,17 +64,19 @@ public final class RubyPlatformManagerTest extends RubyTestBase {
         assertNotNull("has label", jruby.getLabel());
         assertTrue("is valid", jruby.isValid());
         assertTrue("is default", jruby.isDefault());
-        // XXX
-//        assertEquals("right ruby home", new File("fix me"), jruby.getRubyHome());
-//        assertEquals("right ruby lib", new File("fix me"), jruby.getRubyLibDir());
+        assertEquals("right label", NbBundle.getMessage(RubyPlatformManager.class, "CTL_BundledJRubyLabel"), jruby.getLabel());
+        assertEquals("right ruby home", TestUtil.getXTestJRubyHome(), jruby.getHome());
+        assertEquals("right ruby lib", new File(TestUtil.getXTestJRubyHome(), "lib/ruby/1.8").getAbsolutePath(), jruby.getLibDir());
+
+        RubyPlatform ruby = RubyPlatformManager.addPlatform(setUpRuby());
+        assertEquals("right label", "ruby (test_ruby_version)", ruby.getLabel());
     }
 
     public void testAddPlatform() throws Exception {
         assertEquals("bundle JRuby", 1, RubyPlatformManager.getPlatforms().size());
         RubyPlatform ruby = RubyPlatformManager.addPlatform(setUpRuby());
-        // XXX
-//        assertEquals("right ruby home", new File("fix me"), ruby.getRubyHome());
-//        assertEquals("right ruby lib", new File("fix me"), ruby.getRubyLibDir());
+        assertEquals("right ruby home", getWorkDir(), ruby.getHome());
+        assertEquals("right ruby lib", new File(getWorkDir(), "lib/ruby/1.8").getAbsolutePath(), ruby.getLibDir());
         assertEquals("two platforms", 2, RubyPlatformManager.getPlatforms().size());
         RubyPlatformManager.removePlatform(ruby);
         assertEquals("platform removed", 1, RubyPlatformManager.getPlatforms().size());
