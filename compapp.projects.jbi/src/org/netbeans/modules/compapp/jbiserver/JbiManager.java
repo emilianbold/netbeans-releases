@@ -164,7 +164,7 @@ public class JbiManager {
     /**
      * Starts the given App Server if it is not running. Optionally, blocks
      * the current thread until the server is ready.
-     * 
+     * <p>
      * This should not be called from the Event Dispatch Thread.
      * 
      * @param serverInstanceID  server instance ID
@@ -182,8 +182,8 @@ public class JbiManager {
 
     /**
      * Starts the given App Server if it is not running. Optionally, blocks
-     * the current thread until the server is ready.     * 
-     * 
+     * the current thread until the server is ready.      
+     * <p>
      * This should not be called from the Event Dispatch Thread.
      * 
      * @param serverInstanceID  server instance ID
@@ -192,7 +192,8 @@ public class JbiManager {
      */
     public static void startServer(String serverInstanceID, boolean block) {
         
-        assert !SwingUtilities.isEventDispatchThread() : "This should not be called from the EDT.";
+        assert !SwingUtilities.isEventDispatchThread() : 
+            "This should not be called from the EDT."; // NOI18N
                 
         if (isRunningAppServer(serverInstanceID)) {
             return;

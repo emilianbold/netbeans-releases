@@ -231,9 +231,15 @@ public class DeployServiceAssembly extends Task {
                 
         String nbUserDir = getNetBeansUserDir();
         String serverInstanceID = getJ2eeServerInstance();
-                
-        // Make sure the app server is running.
-        JbiManager.startServer(serverInstanceID, false);
+
+        try {
+            // Make sure the app server is running.
+            JbiManager.startServer(serverInstanceID, false);
+        } catch (Exception e) {
+            // NPE from command line because of missing repository in the 
+            // default lookup. The server needs to be started explicitly
+            // in this case.
+        }
         
         ServerInstance serverInstance = AdministrationServiceHelper.getServerInstance(
                 nbUserDir, serverInstanceID);
