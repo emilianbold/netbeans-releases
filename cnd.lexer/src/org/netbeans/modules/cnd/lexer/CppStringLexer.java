@@ -136,10 +136,12 @@ public class CppStringLexer implements Lexer<CppStringTokenId> {
                                             return token(CppStringTokenId.OCTAL_ESCAPE);
                                     }
                                     input.backup(1);
-                                    return token(CppStringTokenId.OCTAL_ESCAPE_INVALID);
+//                                    return token(CppStringTokenId.OCTAL_ESCAPE_INVALID);
+                                    return token(CppStringTokenId.OCTAL_ESCAPE);
                             }
                             input.backup(1);
-                            return token(CppStringTokenId.OCTAL_ESCAPE_INVALID);
+//                            return token(CppStringTokenId.OCTAL_ESCAPE_INVALID);
+                            return token(CppStringTokenId.OCTAL_ESCAPE);
                     }
                     input.backup(1);
                     return token(CppStringTokenId.ESCAPE_SEQUENCE_INVALID);

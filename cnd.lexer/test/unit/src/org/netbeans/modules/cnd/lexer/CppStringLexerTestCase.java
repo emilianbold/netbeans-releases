@@ -62,6 +62,15 @@ public class CppStringLexerTestCase extends NbTestCase {
         LexerTestUtilities.setTesting(true);
     }
 
+    public void testZero() {
+        String text = "\\0";
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, CppStringTokenId.languageSingle());
+        TokenSequence<?> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, CppStringTokenId.OCTAL_ESCAPE, "\\0");
+
+        assertFalse("No more tokens", ts.moveNext());
+    }
+    
     public void testNextToken1() {
         String text = "t";
         
