@@ -105,6 +105,6 @@ made subject to such option by the copyright holder.
     </fontcolor>
     <fontcolor name="preprocessor-user-include-literal" default="string">
     </fontcolor>
-    <fontcolor name="preprocessor-identifier" default="preprocessor"/>
+    <fontcolor name="preprocessor-identifier" default="identifier"/>
    
 </fontscolors>
