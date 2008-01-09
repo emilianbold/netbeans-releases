@@ -10,23 +10,23 @@
     </folder>
     <folder name="Templates">
         <folder name="SpringFramework">
-            <file name="AbstractController.java" url="AbstractController.template">
+            <file name="AbstractController.java" url="templates/AbstractController.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.spring.webmvc.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="servlet-types"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/spring/webmvc/resources/abstractController.html"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/spring/webmvc/resources/templates/descriptions/abstractController.html"/>
             </file>
-            <file name="SimpleFormController.java" url="SimpleFormController.template">
+            <file name="SimpleFormController.java" url="templates/SimpleFormController.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.spring.webmvc.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="servlet-types"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/spring/webmvc/resources/simpleFormController.html"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/spring/webmvc/resources/templates/descriptions/simpleFormController.html"/>
             </file>
         </folder>
     </folder>
