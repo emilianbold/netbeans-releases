@@ -223,8 +223,8 @@ public class StatFilesTest extends NbTestCase {
         monitor();
         FileObject ch = parent.getFileObject("child");
         Results results = monitor.results;        
-        assertEquals(Utilities.isWindows() ? 1:2, results.statResult(StatFiles.ALL));
-        assertEquals(Utilities.isWindows() ? 1:2, results.statResult(StatFiles.READ));
+        assertEquals(2, results.statResult(StatFiles.ALL));
+        assertEquals(2, results.statResult(StatFiles.READ));
         //second time
         monitor.reset();
         ch = parent.getFileObject("child");
