@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ResolverFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Unresolved;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
@@ -278,7 +279,7 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
         super(input);
         this.qualifiedName = QualifiedNameCache.getManager().getString(input.readUTF());
         assert this.qualifiedName != null;
-        this.classOrNspNames = PersistentUtils.readStrings(input, QualifiedNameCache.getManager());
+        this.classOrNspNames = PersistentUtils.readStrings(input, NameCache.getManager());
         
         this.declarationUID = UIDObjectFactory.getDefaultFactory().readUID(input);
     }     

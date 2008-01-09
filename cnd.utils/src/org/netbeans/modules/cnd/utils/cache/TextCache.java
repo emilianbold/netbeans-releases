@@ -47,8 +47,8 @@ package org.netbeans.modules.cnd.utils.cache;
  */
 public class TextCache {
 
-    private static final int CAPACITY = 31; // primary number for better distribution
-    private static final APTStringManager.APTCompoundStringManager instance = new APTStringManager.APTCompoundStringManager(CAPACITY);
+    private static final APTStringManager instance = 
+            APTStringManager.instance(APTStringManager.TEXT_MANAGER,APTStringManager.CacheKind.Sliced);
     
     /** Creates a new instance of TextCache */
     private TextCache() {

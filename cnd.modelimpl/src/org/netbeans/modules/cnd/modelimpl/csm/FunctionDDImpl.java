@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
-import java.util.ArrayList;
 import java.util.List;
 import antlr.collections.AST;
 import java.io.DataInput;
@@ -68,6 +67,7 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
         registerInProject();
     }
 
+    @Override
     public CsmCompoundStatement getBody() {
         return body;
     }
@@ -107,10 +107,12 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
         return null;
     }
     
+    @Override
     public CsmDeclaration.Kind getKind() {
         return CsmDeclaration.Kind.FUNCTION_DEFINITION;
     }
     
+    @Override
     public List<CsmScopeElement> getScopeElements() {
         List<CsmScopeElement> l = super.getScopeElements();
         l.add(getBody());
@@ -120,6 +122,7 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
     
+    @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
         assert this.body != null: "null body in " + this.getQualifiedName();

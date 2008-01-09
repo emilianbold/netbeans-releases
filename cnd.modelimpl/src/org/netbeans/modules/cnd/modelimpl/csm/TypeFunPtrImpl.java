@@ -49,9 +49,9 @@ import antlr.collections.AST;
 import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.*;
-import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 
 /**
  * Represent pointer to function type
@@ -214,7 +214,7 @@ public class TypeFunPtrImpl extends TypeImpl {
     public TypeFunPtrImpl(DataInput input) throws IOException {
         super(input);
 	this.functionPointerDepth = input.readShort();
-        this.functionPointerParamList = TextCache.getString(input.readUTF());
+        this.functionPointerParamList = NameCache.getManager().getString(input.readUTF());
     }
     
 }

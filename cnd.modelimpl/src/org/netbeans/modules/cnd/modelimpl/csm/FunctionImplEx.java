@@ -47,10 +47,10 @@ import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 
 /**
@@ -130,7 +130,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
 	CsmObject owner = findOwner(null);
 	if( owner instanceof CsmQualifiedNamedElement  ) {
 	    qualifiedNameIsFake = false;
-	    return ((CsmQualifiedNamedElement) owner).getQualifiedName() + getScopeSuffix() + "::" + getQualifiedNamePostfix(); // NOI18N
+	    return ((CsmQualifiedNamedElement) owner).getQualifiedName().toString() + getScopeSuffix() + "::" + getQualifiedNamePostfix(); // NOI18N
 	}
 	else {
 	    qualifiedNameIsFake = true;
@@ -217,6 +217,6 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         String read = PersistentUtils.readUTF(input);
         this.qualifiedName = read == null ? null : QualifiedNameCache.getManager().getString(read);
         this.qualifiedNameIsFake = input.readBoolean();
-        this.classOrNspNames = PersistentUtils.readStrings(input, TextCache.getManager());
+        this.classOrNspNames = PersistentUtils.readStrings(input, NameCache.getManager());
     }
 }

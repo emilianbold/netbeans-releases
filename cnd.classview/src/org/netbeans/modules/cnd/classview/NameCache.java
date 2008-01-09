@@ -45,7 +45,8 @@ import org.netbeans.modules.cnd.utils.cache.APTStringManager;
 
 
 public class NameCache {
-    private static final APTStringManager instance = APTStringManager.instance("PERSISTENT_NAME_CACHE"); // NOI18N    
+    private static final APTStringManager instance = 
+            APTStringManager.instance("PERSISTENT_NAME_CACHE", APTStringManager.CacheKind.Single); // NOI18N    
     private NameCache() {
     }
     

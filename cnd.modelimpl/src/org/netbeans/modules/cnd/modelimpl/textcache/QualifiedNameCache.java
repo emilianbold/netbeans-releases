@@ -50,7 +50,8 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  */
 public class QualifiedNameCache extends APTStringManager {
     private static final APTStringManager manager = new QualifiedNameCache();
-    private final APTStringManager instance = APTStringManager.instance("Shared Qualified Names"); // NOI18N;
+    private final APTStringManager instance = 
+            APTStringManager.instance("Shared Qualified Names",APTStringManager.CacheKind.Sliced); // NOI18N;
 
     private QualifiedNameCache() {
     }

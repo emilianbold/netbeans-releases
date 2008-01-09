@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 
@@ -407,10 +408,10 @@ public class TypeImpl extends OffsetableBase implements CsmType {
         this.reference = input.readBoolean();
         this.arrayDepth= (byte) input.readInt();
         this._const = input.readBoolean();
-        this.classifierText = TextCache.getString(input.readUTF());
+        this.classifierText = NameCache.getManager().getString(input.readUTF());
         assert this.classifierText != null;
         
-        this.qname = PersistentUtils.readStrings(input, TextCache.getManager());
+        this.qname = PersistentUtils.readStrings(input, NameCache.getManager());
         this.firstOffset = input.readInt();
         this.classifierUID = UIDObjectFactory.getDefaultFactory().readUID(input);
     }

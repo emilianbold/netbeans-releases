@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmUID;
-import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableIdentifiableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
@@ -208,10 +207,10 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
         super(input);
         this.name = NameCache.getManager().getString(input.readUTF());
         assert this.name != null;
-        this.body = TextCache.getString(input.readUTF());
+        this.body = NameCache.getManager().getString(input.readUTF());
         assert this.body != null;
         this.system = input.readBoolean();
-        CharSequence[] out = PersistentUtils.readStrings(input, TextCache.getManager());
+        CharSequence[] out = PersistentUtils.readStrings(input, NameCache.getManager());
         this.params = out == null ? null : Collections.unmodifiableList(Arrays.asList(out));
     }
 

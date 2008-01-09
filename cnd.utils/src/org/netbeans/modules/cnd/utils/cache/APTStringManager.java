@@ -55,28 +55,48 @@ import java.util.Map;
  * @author Vladimir Voskresensky
  */
 public abstract class APTStringManager  {
+    public enum CacheKind {
+        Single,
+        Sliced
+    }
     
     public abstract CharSequence getString(CharSequence text);
     public abstract void dispose();
 
-    private static final Map<String, APTSingleStringManager> instances = Collections.synchronizedMap(new HashMap<String, APTSingleStringManager>());
+    private static final Map<String, APTStringManager> instances = Collections.synchronizedMap(new HashMap<String, APTStringManager>());
 
     private static final int STRING_MANAGER_DEFAULT_CAPACITY=1024;
+    private static final int STRING_MANAGER_DEFAULT_SLICED_NUMBER = 29;
 
     /*package*/ static final String TEXT_MANAGER="Manager of sharable texts"; // NOI18N
     /*package*/ static final int    TEXT_MANAGER_INITIAL_CAPACITY=STRING_MANAGER_DEFAULT_CAPACITY;
     /*package*/ static final String FILE_PATH_MANAGER="Manager of sharable file paths"; // NOI18N
     /*package*/ static final int    FILE_PATH_MANAGER_INITIAL_CAPACITY=STRING_MANAGER_DEFAULT_CAPACITY;
     
-    public static APTStringManager instance(String kind) {
-        return instance(kind, STRING_MANAGER_DEFAULT_CAPACITY);
+    public static APTStringManager instance(String name, CacheKind kind) {
+        switch (kind){
+            case Single:
+                return instance(name, STRING_MANAGER_DEFAULT_CAPACITY);
+            case Sliced:
+                return instance(name, STRING_MANAGER_DEFAULT_SLICED_NUMBER, STRING_MANAGER_DEFAULT_CAPACITY);
+        }
+        throw new java.lang.IllegalArgumentException();
     }
 
-    /*package*/ static APTSingleStringManager instance(String kind, int initialCapacity) {
-        APTSingleStringManager instance = instances.get(kind);
+    private static APTStringManager instance(String name, int initialCapacity) {
+        APTStringManager instance = instances.get(name);
         if (instance == null) {
-            instance = new APTSingleStringManager(kind, initialCapacity);
-            instances.put(kind, instance);
+            instance = new APTSingleStringManager(name, initialCapacity);
+            instances.put(name, instance);
+        }
+        return instance;
+    }  
+
+    private static APTStringManager instance(String name, int sliceNumber, int initialCapacity) {
+        APTStringManager instance = instances.get(name);
+        if (instance == null) {
+            instance = new APTCompoundStringManager(name, sliceNumber, initialCapacity);
+            instances.put(name, instance);
         }
         return instance;
     }  
@@ -85,14 +105,14 @@ public abstract class APTStringManager  {
         private final WeakSharedSet<CharSequence> storage;
         private final int initialCapacity;
         // To gebug
-        private final String kind;
+        private final String name;
 
         /** Creates a new instance of APTStringManager */
-        private APTSingleStringManager(String kind, int initialCapacity) {
+        private APTSingleStringManager(String name, int initialCapacity) {
             storage = new WeakSharedSet<CharSequence>(initialCapacity);
             this.initialCapacity = initialCapacity;
             // To gebug
-            this.kind = kind;
+            this.name = name;
         }
 
         // we need exclusive copy of string => use "new String(String)" constructor
@@ -121,17 +141,19 @@ public abstract class APTStringManager  {
 
         public final void dispose() {
             if (false){
-                System.out.println("Dispose cache "+kind+" "+getClass().getName());
+                System.out.println("Dispose cache "+name+" "+getClass().getName());
                 Object[] arr = storage.toArray();
                 Map<Class, Integer> classes = new HashMap<Class,Integer>();
                 for(Object o : arr){
-                    Integer i = classes.get(o.getClass());
-                    if (i != null) {
-                        i = new Integer(i.intValue()+1);
-                    } else {
-                        i = new Integer(1);
+                    if (o != null) {
+                        Integer i = classes.get(o.getClass());
+                        if (i != null) {
+                            i = new Integer(i.intValue() + 1);
+                        } else {
+                            i = new Integer(1);
+                        }
+                        classes.put(o.getClass(), i);
                     }
-                    classes.put(o.getClass(),i);
                 }
                 for(Map.Entry<Class,Integer> e:classes.entrySet()){
                     System.out.println("   "+e.getValue()+" of "+e.getKey().getName());
@@ -143,23 +165,29 @@ public abstract class APTStringManager  {
     }
     
     /*package*/ static final class APTCompoundStringManager extends APTStringManager {
-        private final APTSingleStringManager[] instances;
-        private final int capacity; // primary number for better distribution
-        /*package*/APTCompoundStringManager(int capacity) {
-            this.capacity = capacity;
-            instances = new APTSingleStringManager[capacity];
+        private final APTStringManager[] instances;
+        private final int sliceNumber; // primary number for better distribution
+        // To gebug
+        private final String name;
+        /*package*/APTCompoundStringManager(String name, int sliceNumber) {
+            this(name, sliceNumber, APTStringManager.TEXT_MANAGER_INITIAL_CAPACITY);
+        }
+        /*package*/APTCompoundStringManager(String name, int sliceNumber, int initialCapacity) {
+            this.sliceNumber = sliceNumber;
+            instances = new APTStringManager[sliceNumber];
             for (int i = 0; i < instances.length; i++) {
-                instances[i] = APTStringManager.instance(APTStringManager.TEXT_MANAGER + i, APTStringManager.TEXT_MANAGER_INITIAL_CAPACITY);
+                instances[i] = new APTSingleStringManager(name + i, initialCapacity);
             }
+            this.name = name;
         }
         
         private APTStringManager getDelegate(CharSequence text) {
             if (text == null) {
                 throw new NullPointerException("null string is illegal to share"); // NOI18N
             }            
-            int index = text.hashCode() % capacity;
+            int index = text.hashCode() % sliceNumber;
             if (index < 0) {
-                index += capacity;
+                index += sliceNumber;
             }
             return instances[index];
         }

@@ -76,14 +76,17 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
         return this;
     }
 
+    @Override
     public CsmCompoundStatement getBody() {
         return body;
     }
     
+    @Override
     public Kind getKind() {
         return CsmDeclaration.Kind.FUNCTION_DEFINITION;
     }
     
+    @Override
     public List<CsmScopeElement> getScopeElements() {
         List<CsmScopeElement> l = super.getScopeElements();
         l.add(getBody());
@@ -93,6 +96,7 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
     
+    @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
         PersistentUtils.writeCompoundStatement(this.body, output);

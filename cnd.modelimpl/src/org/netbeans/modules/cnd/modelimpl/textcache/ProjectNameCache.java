@@ -50,7 +50,8 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  */
 public final class ProjectNameCache extends APTStringManager {
     private static final APTStringManager manager = new ProjectNameCache();
-    private final APTStringManager instance = APTStringManager.instance("Shared Project Names"); // NOI18N;
+    private final APTStringManager instance = 
+            APTStringManager.instance("Shared Project Names",APTStringManager.CacheKind.Single); // NOI18N;
 
     private ProjectNameCache() {
     }

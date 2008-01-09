@@ -51,12 +51,12 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
@@ -85,6 +85,11 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     
     /** see comments to isConst() */
     private final boolean _const;
+
+    private boolean template;
+    private CharSequence templateSuffix;
+    protected CharSequence classTemplateSuffix;
+    
     
     public FunctionImpl(AST ast, CsmFile file, CsmScope scope) {
         this(ast, file, scope, true);
@@ -128,10 +133,6 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
             registerInProject();
         }
     }
-    
-    private boolean template;
-    private String templateSuffix;
-    protected String classTemplateSuffix;
     
     private void initTemplate(AST node) {
         boolean _template = false, specialization = false;
@@ -215,7 +216,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         this.template = _template;
     }
     
-    protected String getScopeSuffix() {
+    protected CharSequence getScopeSuffix() {
         return classTemplateSuffix != null ? classTemplateSuffix : "";
     }
 
@@ -224,7 +225,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     }
     
     public CharSequence getDisplayName() {
-        return isTemplate() ? getName() + templateSuffix : getName();
+        return isTemplate() ? CharSequenceKey.create(getName().toString() + templateSuffix) : getName();
     }
     
     public List<CsmTemplateParameter> getTemplateParameters() {
@@ -605,10 +606,10 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         
         PersistentUtils.writeUTF(this.signature, output);
         output.writeBoolean(isVoidParameterList);
-        output.writeUTF(this.getScopeSuffix());
+        output.writeUTF(this.getScopeSuffix().toString());
         output.writeBoolean(this.template);
         if (this.template) {
-            output.writeUTF(this.templateSuffix);
+            output.writeUTF(this.templateSuffix.toString());
         }
     }
 
@@ -625,7 +626,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         this.returnType = PersistentUtils.readType(input);
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
         this.parameters = factory.readUIDCollection(new ArrayList<CsmUID<CsmParameter>>(), input);
-        this.rawName = PersistentUtils.readStrings(input, TextCache.getManager());
+        this.rawName = PersistentUtils.readStrings(input, NameCache.getManager());
         this._const = input.readBoolean();
         
         this.scopeUID = UIDObjectFactory.getDefaultFactory().readUID(input);
@@ -638,10 +639,10 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
             this.signature = QualifiedNameCache.getManager().getString(this.signature);
         }
         this.isVoidParameterList = input.readBoolean();
-        this.classTemplateSuffix = input.readUTF();
+        this.classTemplateSuffix = NameCache.getManager().getString(input.readUTF());
         this.template = input.readBoolean();
         if (this.template) {
-            this.templateSuffix = input.readUTF();
+            this.templateSuffix = NameCache.getManager().getString(input.readUTF());
         }
     }
 }
