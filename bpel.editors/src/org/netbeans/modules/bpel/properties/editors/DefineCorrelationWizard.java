@@ -47,14 +47,25 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.text.MessageFormat;
 import java.util.*;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicComboBoxRenderer;
+import org.netbeans.modules.bpel.model.api.Activity;
+import org.netbeans.modules.bpel.model.api.BpelEntity;
+import org.netbeans.modules.bpel.model.api.Invoke;
+import org.netbeans.modules.bpel.model.api.Process;
+import org.netbeans.modules.bpel.model.api.Receive;
+import org.netbeans.modules.bpel.model.api.Reply;
+import org.netbeans.modules.bpel.model.api.Scope;
+import org.netbeans.modules.bpel.model.api.Sequence;
 import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.print.api.PrintUtil;
+import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
@@ -73,13 +84,20 @@ public class DefineCorrelationWizard implements WizardProperties {
         PrintUtil.i18n(DefineCorrelationWizard.class, "LBL_Wizard_Step_Define_Correlation"),
         PrintUtil.i18n(DefineCorrelationWizard.class, "LBL_Wizard_Step_Correlation_Configuration")
     };
+    private static final String ATTRIBUTE_NAME = "name"; //NOI18N
+
+    private static Map<Class<? extends Activity>, ActivityChooser> mapActivityChoosers;
     
     private WizardDescriptor wizardDescriptor;
-    private BpelNode mainBpelNode;
+    private BpelEntity mainBpelEntity;
     private Panel[] wizardPanels;
     
     public DefineCorrelationWizard(BpelNode mainBpelNode) {
-        this.mainBpelNode = mainBpelNode;
+        Object mainBpelNodeRef = mainBpelNode.getReference();
+        if (mainBpelNodeRef instanceof BpelEntity) {
+            this.mainBpelEntity = (BpelEntity) mainBpelNodeRef;
+        }
+        mapActivityChoosers = createActivityChoosersMap();
         
         wizardPanels = getWizardPanelList().toArray(new Panel[] {});
         wizardDescriptor = new WizardDescriptor(wizardPanels);
@@ -114,6 +132,111 @@ public class DefineCorrelationWizard implements WizardProperties {
                 WIZARD_STEP_NAMES[i], i);
         }
         return panelList;
+    }
+    
+    private Map<Class<? extends Activity>, ActivityChooser> createActivityChoosersMap() {
+        Map<Class<? extends Activity>, ActivityChooser> mapActivityChoosers = 
+            new HashMap<Class<? extends Activity>, ActivityChooser>(4);
+        mapActivityChoosers.put(Receive.class, new ActivityChooserForReceive());
+        mapActivityChoosers.put(Reply.class, new ActivityChooserForReply());
+        mapActivityChoosers.put(Invoke.class, new ActivityChooserForInvoke());
+        return mapActivityChoosers;
+    }
+    //========================================================================//
+    private interface ActivityChooser {
+        List<BpelEntity> getListActivitiesForCorrelation(BpelEntity mainBpelEntity);
+    }
+    
+    private abstract class ActivityChooserImpl implements ActivityChooser {
+        protected final 
+            Map<Class<? extends Activity>, Set<Class<? extends Activity>>> mapActivityTypes = createActivityTypesMap();
+        
+        private Map<Class<? extends Activity>, Set<Class<? extends Activity>>> createActivityTypesMap() {
+            Map<Class<? extends Activity>, Set<Class<? extends Activity>>> mapActivityTypes = 
+                new HashMap<Class<? extends Activity>, Set<Class<? extends Activity>>>(4);
+            mapActivityTypes.put(Receive.class, new HashSet(
+                Arrays.asList(new Class[] {Reply.class})));
+            mapActivityTypes.put(Reply.class, new HashSet(
+                Arrays.asList(new Class[] {Receive.class})));
+            mapActivityTypes.put(Invoke.class, new HashSet(
+                Arrays.asList(new Class[] {Receive.class, Reply.class})));
+            return mapActivityTypes;
+        }
+
+        protected BpelEntity getActualParentEntity(BpelEntity mainBpelEntity) {
+            BpelEntity parentEntity = mainBpelEntity.getParent();
+            while ((parentEntity != null) && 
+                   (!(parentEntity instanceof Scope)) && 
+                   (!(parentEntity instanceof Process))) {
+                if (parentEntity == null) return null;
+                parentEntity = parentEntity.getParent();
+            }
+            return parentEntity;    
+        }
+        
+        public List<BpelEntity> getListActivitiesForCorrelation(BpelEntity mainBpelEntity) {
+            List<BpelEntity> activityList = new ArrayList<BpelEntity>();
+            BpelEntity parentEntity = getActualParentEntity(mainBpelEntity);
+            if (parentEntity == null) return activityList;
+            
+            Set<Class<? extends Activity>> setActivityTypes = mapActivityTypes.get(
+                mainBpelEntity.getElementType());
+            List<Sequence> sequences = parentEntity.getChildren(Sequence.class);
+            for (Sequence sequence : sequences) {
+                List<Activity> activities = sequence.getChildren(Activity.class);
+                for (Activity activity : activities) {
+                    if ((mainBpelEntity.equals(activity)) || 
+                        (setActivityTypes.contains(activity.getElementType()))) {
+                        activityList.add((BpelEntity) activity);
+                    }
+                }
+            }
+            return activityList;
+        }
+    }
+    
+    private class ActivityChooserForReceive extends ActivityChooserImpl {
+        @Override
+        public List<BpelEntity> getListActivitiesForCorrelation(BpelEntity mainBpelEntity) {
+            List<BpelEntity> activityList = super.getListActivitiesForCorrelation(mainBpelEntity);
+            if (activityList.isEmpty()) return activityList;
+            
+            // keep only activities below mainBpelEntity (remove all activities 
+            // above mainBpelEntity including mainBpelEntity itself)
+            BpelEntity activity = null;
+            do {
+                activity = activityList.remove(0);
+            } while (! (activity.equals(mainBpelEntity)));
+            return  activityList;
+        }
+    }
+    
+    private class ActivityChooserForReply extends ActivityChooserImpl  {
+        @Override
+        public List<BpelEntity> getListActivitiesForCorrelation(BpelEntity mainBpelEntity) {
+            List<BpelEntity> activityList = super.getListActivitiesForCorrelation(mainBpelEntity);
+            if (activityList.isEmpty()) return activityList;
+
+            // keep only activities above mainBpelEntity (remove all activities 
+            // below mainBpelEntity including mainBpelEntity itself)
+            BpelEntity activity = null;
+            do {
+                activity = activityList.remove(activityList.size() - 1);
+            } while (! (activity.equals(mainBpelEntity)));
+            return  activityList;
+        }
+    }
+    
+    private class ActivityChooserForInvoke extends ActivityChooserImpl  {
+        @Override
+        public List<BpelEntity> getListActivitiesForCorrelation(BpelEntity mainBpelEntity) {
+            List<BpelEntity> activityList = super.getListActivitiesForCorrelation(mainBpelEntity);
+            if (activityList.isEmpty()) return activityList;
+            
+            // keep all activities excepting mainBpelEntity itself
+            activityList.remove(mainBpelEntity);
+            return  activityList;
+        }
     }
     //========================================================================//
     public abstract class WizardAbstractPanel implements WizardDescriptor.ValidatingPanel {
@@ -169,8 +292,9 @@ public class DefineCorrelationWizard implements WizardProperties {
     //========================================================================//
     public class WizardSelectMessagingActivityPanel extends WizardAbstractPanel {
         private final Dimension COMBOBOX_DIMENSION = new Dimension(220, 20);
+        private final int COMBOBOX_MAX_ROW_COUNT = 16;
         private final JComboBox activityComboBox = new JComboBox();
-        private Object previousSelectedActivity, currentSelectedActivity;
+        private BpelEntity previousSelectedActivity, currentSelectedActivity;
             
         public WizardSelectMessagingActivityPanel() {
             super();
@@ -178,13 +302,33 @@ public class DefineCorrelationWizard implements WizardProperties {
             wizardPanel.add(new JLabel(PrintUtil.i18n(
                 WizardSelectMessagingActivityPanel.class, "LBL_Initiated_Messaging_Activities")));
 
+            fillActivityComboBox();
             activityComboBox.setRenderer(new ComboBoxRenderer());
+            activityComboBox.setMaximumRowCount(COMBOBOX_MAX_ROW_COUNT);
             activityComboBox.setEditable(false);
             activityComboBox.setMinimumSize(COMBOBOX_DIMENSION);
             activityComboBox.setPreferredSize(activityComboBox.getMinimumSize());
             wizardPanel.add(activityComboBox);
         }
 
+        private void fillActivityComboBox() {
+            ActivityChooser activityChooser = mapActivityChoosers.get(mainBpelEntity.getElementType());
+            if (activityChooser == null) {
+                String errMsg = "Activity Chooser isn't defined for Bpel Entity of type [" +
+                    mainBpelEntity.getElementType().getName() + "]";
+                System.err.println(errMsg);
+                System.out.println(errMsg);
+                return;
+            }
+            List<BpelEntity> activityEntityList = activityChooser.getListActivitiesForCorrelation(mainBpelEntity);
+            if (activityEntityList != null) {
+                ((DefaultComboBoxModel) activityComboBox.getModel()).removeAllElements();
+                for (BpelEntity activityEntity : activityEntityList) {
+                    activityComboBox.addItem(activityEntity);
+                }
+            }
+        }
+        
         @Override
         public boolean isValid() {
             boolean isOK = ((activityComboBox.getItemCount() > 0) &&
@@ -198,16 +342,29 @@ public class DefineCorrelationWizard implements WizardProperties {
         @Override
         public void validate() throws WizardValidationException {
             previousSelectedActivity = currentSelectedActivity;
-            currentSelectedActivity = activityComboBox.getSelectedItem();
+            currentSelectedActivity = (BpelEntity) activityComboBox.getSelectedItem();
+            WizardDefineCorrelationPanel wizardDefineCorrelationPanel = 
+                ((WizardDefineCorrelationPanel) wizardPanels[1]);
+            if ((previousSelectedActivity == null) ||
+                (! previousSelectedActivity.equals(currentSelectedActivity))) {
+                wizardDefineCorrelationPanel.rebuildActivityCorrelationMapper(currentSelectedActivity);
+            }
         }
         //====================================================================//
         private class ComboBoxRenderer extends BasicComboBoxRenderer.UIResource {
             @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 Component component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                if ((value != null) && (value instanceof BpelNode) &&
+                if ((value != null) && (value instanceof BpelEntity) &&
                     (component != null) && (component instanceof JLabel)) {
-                    ((JLabel) component).setText(((BpelNode) value).getName());
+                    String itemText = null;
+                    try {
+                        itemText = ((BpelEntity) value).getAttribute(
+                            new AbstractDocumentComponent.PrefixAttribute(ATTRIBUTE_NAME));
+                    } catch (Exception e) {
+                        itemText = value.toString();
+                    }
+                    ((JLabel) component).setText(itemText);
                 }
                 return component;
             }
@@ -217,9 +374,14 @@ public class DefineCorrelationWizard implements WizardProperties {
     public class WizardDefineCorrelationPanel extends WizardAbstractPanel {
         public WizardDefineCorrelationPanel() {
             super();
+            JScrollPane jScrollPane = new JScrollPane(
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+            wizardPanel.add(jScrollPane);
+        }
+        
+        public void rebuildActivityCorrelationMapper(BpelEntity correlatedActivity) {
         }
 /*
-wizardPanel.setPreferredSize(null);
 wizardPanel.setLayout(new GridBagLayout());
 initializeGridBagConstraints();
 wizardPanel.add(new JLabel(PrintUtil.i18n(
