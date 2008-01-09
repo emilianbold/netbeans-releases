@@ -80,18 +80,18 @@ public class VariablesTableModel implements TableModel, Constants {
                 return ((Variable) row).getValue();
             }
         } else if (columnID.equals(LOCALS_TYPE_COLUMN_ID) || columnID.equals(WATCH_TYPE_COLUMN_ID)) {
-            if (row instanceof Variable) {
-                return ((Variable) row).getType();
+            if (row instanceof AbstractVariable) {
+                return ((AbstractVariable) row).getType();
             }
         } else if ( columnID.equals(LOCALS_VALUE_COLUMN_ID) || columnID.equals(WATCH_VALUE_COLUMN_ID)) {
-            if (row instanceof Variable) {
-                return ((Variable) row).getValue();
+            if (row instanceof AbstractVariable) {
+                return ((AbstractVariable) row).getValue();
             }
         }
         if (row instanceof JToolTip) {
             row = ((JToolTip) row).getClientProperty("getShortDescrption"); // NOI18N
-            if (row instanceof Variable) {
-                return ((Variable) row).getType();
+            if (row instanceof AbstractVariable) {
+                return ((AbstractVariable) row).getType();
             } else if (row == null) {
                 return "";
             }
@@ -103,14 +103,14 @@ public class VariablesTableModel implements TableModel, Constants {
     }
     
     public boolean isReadOnly(Object row, String columnID) throws UnknownTypeException {
-        if (row instanceof Variable) {
+        if (row instanceof AbstractVariable) {
             if (columnID.equals(LOCALS_TO_STRING_COLUMN_ID) ||
                     columnID.equals(WATCH_TO_STRING_COLUMN_ID) ||
                     columnID.equals(LOCALS_TYPE_COLUMN_ID) ||
                     columnID.equals(WATCH_TYPE_COLUMN_ID)) {
                 return true;
             } else if (columnID.equals(LOCALS_VALUE_COLUMN_ID) || columnID.equals(WATCH_VALUE_COLUMN_ID)) {
-                if (row instanceof AbstractVariable) {
+//                if (row instanceof AbstractVariable) {
                     AbstractVariable var = (AbstractVariable) row;
                     if (GdbUtils.isPointer(var.getType())) {
                         return false;
@@ -120,12 +120,12 @@ public class VariablesTableModel implements TableModel, Constants {
                     } else {
                         return var.getFieldsCount() != 0;
                     }
-                } else {
-                    return true;
+//                } else {
+//                    return true;
+//                }
                 }
-            }
         } else if (row.toString().startsWith("No current thread")) { // NOI18N
-            return true; // NOI18N
+            return true;
         }
         throw new UnknownTypeException(row);
     }

@@ -52,8 +52,9 @@ public class CommandBuffer {
     // Static parts
     public static final int STATE_NONE = 0;
     public static final int STATE_TIMEOUT = 1;
-    public static final int STATE_DONE = 2;
-    public static final int STATE_ERROR = 3;
+    public static final int STATE_COMMAND_TIMEDOUT = 2;
+    public static final int STATE_DONE = 3;
+    public static final int STATE_ERROR = 4;
     
     private static Map<Integer, CommandBuffer> map = new HashMap<Integer, CommandBuffer>();
     
@@ -94,6 +95,9 @@ public class CommandBuffer {
             try {
                 state = STATE_TIMEOUT; // this will change unless we timeout
                 lock.wait(10000);
+                if (state == STATE_TIMEOUT) {
+                    state = STATE_COMMAND_TIMEDOUT;
+                }
                 return toString();
             } catch (InterruptedException ex) {
             }

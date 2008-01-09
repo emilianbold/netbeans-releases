@@ -90,6 +90,7 @@ public class FieldTokenizer {
     
     private void parseNextField(String field) {
         boolean modified = true;
+        field = field.replace("\\n", "").trim(); // NOI18N
         
         while (modified) {
             modified = false;
@@ -113,6 +114,9 @@ public class FieldTokenizer {
                 modified = true;
             } else if (field.endsWith(" const")) { // NOI18N
                 field = field.substring(0, field.length() - 6).trim();
+                modified = true;
+            } else if (field.startsWith("\\n ")) { // NOI18N
+                field = field.substring(2).trim();
                 modified = true;
             }
         }

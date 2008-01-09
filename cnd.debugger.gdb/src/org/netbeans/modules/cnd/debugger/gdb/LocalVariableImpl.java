@@ -70,7 +70,7 @@ public class LocalVariableImpl implements LocalVariable, Field {
     
     public LocalVariableImpl(GdbVariable var) {
         name = var.getName();
-        type = var.getType();
+//        type = var.getType();
         currentValueText = var.getValue();
         previousValueText = var.getValue();
         debugger = null;

@@ -52,12 +52,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Logger;
@@ -79,7 +75,6 @@ import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbMiDefinitions;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
 import org.netbeans.modules.cnd.debugger.gdb.timer.GdbTimer;
 import org.netbeans.modules.cnd.debugger.gdb.utils.CommandBuffer;
-import org.netbeans.modules.cnd.debugger.gdb.utils.FieldTokenizer;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
@@ -97,7 +92,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  * Represents one GDB debugger session.
@@ -114,7 +108,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     public static final String          PROP_CURRENT_THREAD = "currentThread"; // NOI18N
     public static final String          PROP_CURRENT_CALL_STACK_FRAME = "currentCallStackFrame"; // NOI18N
     public static final String          PROP_SUSPEND = "suspend"; // NOI18N
-    public static final String          PROP_LOCALS_VIEW_UPDATE = "localsViewUpdate"; // NOI18N
     public static final String          PROP_KILLTERM = "killTerm"; // NOI18N
 
     public static final String          STATE_NONE = "state_none"; // NOI18N
@@ -155,17 +148,13 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private double gdbVersion = 0.0;
     private boolean continueAfterFirstStop = true;
     private ArrayList<GdbVariable> localVariables = new ArrayList<GdbVariable>();
-    private Map<Integer, GdbVariable> symbolCompletionTable = new HashMap<Integer, GdbVariable>();
-    private Map<Integer, StringBuilder> typeCompletionTable = new HashMap<Integer, StringBuilder>();
-    private Set<String> typePendingTable = new HashSet<String>();
-    private Map<Integer, AbstractVariable> derefValueMap = new HashMap<Integer, AbstractVariable>();
-    private Map<Integer, GdbWatchVariable> watchTypeMap = new HashMap<Integer, GdbWatchVariable>();
+    private Map<Integer, AbstractVariable> typeRequestMap = new HashMap<Integer, AbstractVariable>();
     private Map<Integer, GdbWatchVariable> watchValueMap = new HashMap<Integer, GdbWatchVariable>();
     private Map<Integer, BreakpointImpl> pendingBreakpointMap = new HashMap<Integer, BreakpointImpl>();
     private Map<Integer, AbstractVariable> updateVariablesMap = new HashMap<Integer, AbstractVariable>();
     private Map<String, BreakpointImpl> breakpointList = Collections.synchronizedMap(new HashMap<String, BreakpointImpl>());
-    private Map<String, String> varToTypeMap = new HashMap<String, String>();
-    private Logger log = Logger.getLogger("gdb.logger"); // NOI18N
+    private static Map<String, TypeInfo> ticache = new HashMap<String, TypeInfo>();
+    private static Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     private int currentToken = 0;
     private String currentThreadID = "0"; // NOI18N
     private static final String[] emptyThreadsList = new String[0];
@@ -175,7 +164,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private Timer startupTimer = null;
     private boolean cygwin = false;
     private boolean cplusplus = false;
-    private int tcwait = 0; // counter for type completion
     private String firstBPfullname;
     private String firstBPfile;
     private String firstBPline;
@@ -431,7 +419,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     setStopped();
                 }
             } else if (evt.getNewValue() == STATE_STOPPED) {
-                tcwait = 0;
                 updateLocalVariables(0);
             } else if (evt.getNewValue() == STATE_SILENT_STOP) {
                 interrupt();
@@ -439,12 +426,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     (evt.getOldValue() == STATE_SILENT_STOP ||
                      evt.getOldValue() == STATE_READY))  {
                 gdb.exec_continue();
-            } else if (evt.getNewValue() == STATE_RUNNING) {
-                synchronized (LOCK) {
-                    typeCompletionTable.clear();
-                    typePendingTable.clear();
-                    symbolCompletionTable.clear();
-                }
             } else if (evt.getNewValue() == STATE_EXITED) {
                 finish(false);
             }
@@ -646,6 +627,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     public void resultRecord(int token, String msg) {
         GdbWatchVariable watch;
         AbstractVariable avar;
+        CommandBuffer cb;
         Integer itok = Integer.valueOf(token);
         
         currentToken = token + 1;
@@ -662,27 +644,35 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         } else if (msg.startsWith("^done,locals=")) { // NOI18N (-stack-list-locals)
             if (state.equals(STATE_STOPPED)) { // Ignore data if we've resumed running
                 addLocalsToLocalVariables(msg.substring(13));
-                completeLocalVariables();
+            } else {
+                log.fine("GDI.resultRecord: Skipping results from -stack-list-locals (not stopped)");
             }
         } else if (msg.startsWith("^done,stack-args=")) { // NOI18N (-stack-list-arguments)
             if (state.equals(STATE_STOPPED)) { // Ignore data if we've resumed running
                 addArgsToLocalVariables(msg.substring(17));
+            } else {
+                log.fine("GDI.resultRecord: Skipping results from -stack-list-arguments (not stopped)");
             }
         } else if (msg.startsWith("^done,new-thread-id=")) { // NOI18N (-thread-select)
             String tid = msg.substring(21, msg.indexOf('"', 22));
             if (!tid.equals(currentThreadID)) {
                 String otid = currentThreadID;
                 currentThreadID = tid;
+                log.fine("GDI.resultRecord: Thread change, firing PROP_CURRENT_THREAD");
                 firePropertyChange(PROP_CURRENT_THREAD, otid, currentThreadID);
             }
         } else if (msg.startsWith("^done,value=") && msg.contains("auto; currently c++")) { // NOI18N
             cplusplus = true;
         } else if (msg.startsWith("^done,value=")) { // NOI18N (-data-evaluate-expression)
-            if (token == ttToken) {
+            cb = CommandBuffer.getCommandBuffer(itok);
+            if (cb != null) {
+                cb.append(msg.substring(13, msg.length() - 1));
+                cb.done();
+                cb.callback();
+                cb.dispose();
+            } else if (token == ttToken) {
                 ttAnnotation.postToolTip(msg.substring(13, msg.length() - 1));
                 ttToken = 0;
-            } else if ((avar = derefValueMap.remove(itok)) != null) {
-                avar.setDerefValue(msg.substring(13, msg.length() - 1));
             } else if ((watch = watchValueMap.remove(itok)) != null) {
                 watch.setWatchValue(msg.substring(13, msg.length() - 1));
             } else if ((avar = updateVariablesMap.remove(itok)) != null) {
@@ -690,7 +680,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             }
         } else if (msg.startsWith("^done,thread-id=") && // NOI18N
                 Utilities.getOperatingSystem() == Utilities.OS_MAC) {
-            CommandBuffer cb = CommandBuffer.getCommandBuffer(itok);
+            cb = CommandBuffer.getCommandBuffer(itok);
             if (cb != null) {
                 cb.done();
                 cb.callback();
@@ -699,53 +689,16 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         } else if (msg.equals("^done") && getState().equals(STATE_SILENT_STOP)) { // NOI18N
             setRunning();
         } else if (msg.equals("^done")) { // NOI18N
-            CommandBuffer cb = CommandBuffer.getCommandBuffer(itok);
-            StringBuilder typebuf;
+            cb = CommandBuffer.getCommandBuffer(itok);
             if (cb != null) {
                 cb.done();
                 cb.callback();
                 cb.dispose();
-            } else if ((typebuf = typeCompletionTable.get(itok)) != null) { // complete response of ptype command
-                String tbuf = typebuf.toString();
-                int pos = tbuf.indexOf('='); // its guaranteed to have '='
-                String type = tbuf.substring(0, pos);
-                if (tbuf.endsWith("]")) { // NOI18N
-                    addType(type, stripFields(tbuf.substring(pos + 1)));
-                } else if (tbuf.indexOf('{') == -1) { // NOI18N
-                    addType(type, tbuf.substring(pos + 1));
-                } else if (type.startsWith("enum ")) { // NOI18N
-                    List list = getEnumList(tbuf.substring(pos + 1));
-                    addType(type, list);
-                } else {
-                    String t;
-                    Map map = getCSUFieldMap(tbuf.substring(pos + 1));
-                    if (type.equals("this") && isCplusPlus()) { // NOI18N
-                        int pos1 = tbuf.indexOf(' ');
-                        int pos2 = tbuf.indexOf(' ', pos1 + 1);
-                        t = tbuf.substring(pos1, pos2).trim();
-                        addType(t, map);
-                    } else {
-                        t = varToTypeMap.remove(type);
-                        String n = map.get("<name>").toString(); // NOI18N
-                        if (t == null || n.equals(t)) {
-                            addType(type, map);
-                        } else {
-                            addType(n, map);
-                            addType(t, n);
-                        }
-                    }
-                    if (map.size() > 0) { // NOI18N
-                        checkForUnknownTypes(map);
-                    }
+            } else if ((avar = typeRequestMap.remove(itok)) != null) {
+                if (avar instanceof GdbWatchVariable) {
+                    watch = (GdbWatchVariable) avar;
+                    watch.setWatchType(watch.getTypeBuf());
                 }
-                typePendingTable.remove(type);
-                typeCompletionTable.remove(itok);
-                
-                if (tbuf.indexOf(':') != -1) {
-                    checkForSuperClass(tbuf.substring(pos + 1));
-                }
-            } else if ((watch = watchTypeMap.remove(itok)) != null) {
-                watch.setWatchType(watch.getTypeBuf());
             } else if (pendingBreakpointMap.get(itok) != null) {
                 breakpointValidation(token, null);
             }
@@ -753,33 +706,15 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             setRunning();
         } else if (msg.startsWith("^error,msg=")) { // NOI18N
             msg = msg.substring(11);
-            CommandBuffer cb = CommandBuffer.getCommandBuffer(itok);
+            cb = CommandBuffer.getCommandBuffer(itok);
             
             if (cb != null) {
                 cb.error(msg);
                 cb.callback();
                 cb.dispose();
-            } else if (typeCompletionTable.get(itok) != null) {
-                StringBuilder typebuf = typeCompletionTable.remove(itok);
-                String tbuf = typebuf.toString();
-                int pos = tbuf.indexOf('='); // its guaranteed to have '='
-                String type = tbuf.substring(0, pos);
-                typePendingTable.remove(type);
-                if (msg.startsWith("\"No symbol \\\"")) { // NOI18N
-                    int pos1 = msg.substring(13).indexOf("\""); // NOI18N
-                    if (pos1 != -1 && msg.substring(13, pos1 + 12).equals(type)) {
-                        String var = varToTypeMap.get(type);
-                        if (var != null) {
-                            addTypeCompletion(var);
-                        }
-                    }
-                }
             } else if (token == ttToken) { // invalid tooltip request
                 ttAnnotation.postToolTip('>' + msg.substring(1, msg.length() - 1) + '<');
                 ttToken = 0;
-            } else if (derefValueMap.get(itok) != null) {
-                avar = derefValueMap.remove(itok);
-                avar.setDerefValue(msg.substring(1, msg.length() - 1));
             } else if (watchValueMap.get(itok) != null) {
                 watch = watchValueMap.remove(itok);
                 if (msg.startsWith("\"The program being debugged was signaled while in a function called from GDB.")) { // NOI18N
@@ -788,9 +723,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 } else {
                     watch.setValueToError(msg.substring(1, msg.length() - 1));
                 }
-            } else if (watchTypeMap.get(itok) != null) {
-                watch = watchTypeMap.remove(itok);
-                watch.setTypeToError(msg.substring(1, msg.length() - 1));
+            } else if (typeRequestMap.get(itok) != null) {
+                avar = typeRequestMap.remove(itok);
+                avar.setTypeToError(msg.substring(1, msg.length() - 1));
             } else if ((avar = updateVariablesMap.remove(itok)) != null) {
                 avar.restoreOldValue();
             } else if (msg.equals("\"Can't attach to process.\"")) { // NOI18N
@@ -800,13 +735,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 ((Session) lookupProvider.lookupFirst(null, Session.class)).kill();
             } else if (msg.startsWith("\"No symbol ") && msg.endsWith(" in current context.\"")) { // NOI18N
                 String type = msg.substring(13, msg.length() - 23);
-                if (type.equals("string") || type.equals("std::string")) { // NOI18N
-                    // work-around for gdb bug (in *all* versions)
-                    addTypeCompletion("std::basic_string<char,std::char_traits<char>,std::allocator<char> >"); // NOI18N
-                    addType("string", "std::basic_string<char,std::char_traits<char>,std::allocator<char> >"); // NOI18N
-                } else {
-                    log.warning("Failed type lookup for " + type);
-                }
+                log.warning("Failed type lookup for " + type);
             } else if (msg.equals("\"\\\"finish\\\" not meaningful in the outermost frame.\"")) { // NOI18N
                 finish_from_main();
             } else if (msg.contains("(corrupt stack?)")) { // NOI18N
@@ -850,10 +779,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     
     /** Handle gdb responses starting with '~' */
     public void consoleStreamOutput(int token, String omsg) {
-        StringBuilder typebuf;
-        GdbVariable var;
-        GdbWatchVariable watch;
-        String type;
         CommandBuffer cb = CommandBuffer.getCommandBuffer(Integer.valueOf(token));
         String msg;
         
@@ -864,27 +789,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
         if (cb != null) {
             cb.append(omsg);
-        } else if (msg.startsWith("type = ")) { // NOI18N
-            if ((var = symbolCompletionTable.remove(Integer.valueOf(token))) != null) { // whatis
-                type = msg.substring(7);
-                var.setType(type);
-                if (!GdbUtils.isSimple(type) && !GdbUtils.isSimplePointer(type)) {
-                    if (type.endsWith("{...}")) { // NOI18N
-                        addTypeCompletion('$' + var.getName()); // unnamed type
-                    } else {
-                        varToTypeMap.put(var.getName(), type);
-                        addTypeCompletion(var.getName());
-                    }
-                }
-            } else if ((typebuf = typeCompletionTable.get(Integer.valueOf(token))) != null) { // ptype
-                typebuf.append(msg.substring(7));
-            } else if ((watch = watchTypeMap.get(Integer.valueOf(token))) != null) {
-                watch.appendTypeBuf(msg.substring(7));
-            }
-        } else if ((typebuf = typeCompletionTable.get(Integer.valueOf(token))) != null) {
-            typebuf.append(msg);
-        } else if ((watch = watchTypeMap.get(Integer.valueOf(token))) != null) {
-            watch.appendTypeBuf(msg);
         } else if (gdbVersion < 1.0 && msg.startsWith("GNU gdb ")) { // NOI18N
             // Cancel the startup timer - we've got our first response from gdb
             if (startupTimer != null) {
@@ -990,369 +894,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     public void targetStreamOutput(String msg) {
        log.fine("GDI.targetStreamOutput: " + msg);  // NOI18N
     }
-    
-    private Map<String, Object> addSuperclassEntries(Map<String, Object> map, String info) {
-        char c;
-        int pos;
-        int start = 0;
-        int scount = 1;
         
-        for (int i = 0; i < info.length(); i++) {
-            if (info.substring(i).startsWith("public ")) { // NOI18N
-                i += 7;
-                start = i;
-            } else if (info.substring(i).startsWith("private ")) { // NOI18N
-                i += 8;
-                start = i;
-            } else if (info.substring(i).startsWith("protected ")) { // NOI18N
-                i += 10;
-                start = i;
-            }
-            if (i < info.length()) {
-                c = info.charAt(i);
-                if (c == '<') {
-                    pos = GdbUtils.findMatchingLtGt(info, i);
-                    if (pos != -1) {
-                        i = pos;
-                    }
-                } else if (c == ',') {
-                    map.put("<super" + scount++ + ">", info.substring(start, i).trim()); // NOI18N
-                    if ((i + 1) < info.length()) {
-                    info = info.substring(i + 1);
-                    i = 0;
-                    start = 0;
-                    }
-                }
-            }
-        }
-        map.put("<super" + scount++ + ">", info.substring(start).trim()); // NOI18N
-        
-        return map;
-    }
-    
-    /**
-     * Find the first ":" which isn'f part of a "::".
-     * @param info The string to check
-     * @return The index (if found) or -1
-     */
-    private int getSuperclassColon(String info) {
-        char lastc = 0;
-        char nextc;
-        char ch;
-        
-        for (int i = 0; i < info.length(); i++) {
-            ch = info.charAt(i);
-            nextc = (i + 1) < info.length() ? info.charAt(i + 1) : 0;
-            if (ch == ':' && nextc != ':' && lastc != ':') {
-                return i;
-            } else if (ch == '<') {
-                i = GdbUtils.findMatchingLtGt(info, i);
-            }
-            lastc = ch;
-        }
-        return -1;
-    }
-    
-    private Map getCSUFieldMap(String info) {
-        Map<String, Object> map = new HashMap<String, Object>();
-        int pos0;
-        int pos1 = info.indexOf('{');
-        int pos2 = GdbUtils.findMatchingCurly(info, pos1);
-        String fields = null;
-        String n;
-        
-        if (pos1 != -1) {
-            if ((pos0 = getSuperclassColon(info.substring(0, pos1))) != -1) {
-                map = addSuperclassEntries(map, info.substring(pos0 + 1, pos1));
-            }
-            if (pos0 == -1) {
-                n = info.substring(0, pos1).trim();
-            } else {
-                n = info.substring(0, pos0).trim();
-            }
-            map.put("<name>", n.startsWith("class ") ? n.substring(5).trim() : n); // NOI18N
-        }
-        
-        if (pos1 == -1 && pos2 == -1) {
-            if (GdbUtils.isPointer(info)) {
-                info = info.replace('*', ' ').trim();
-            }
-            Object o = getType(info);
-            if (o != null) { // t can be null if stepping into a macro in a header file
-                String t = o.toString();
-                pos1 = t.indexOf('{');
-                pos2 = GdbUtils.findMatchingCurly(t, pos1);
-                if (pos1 != -1 && pos2 != -1) {
-                    fields = t.substring(pos1 + 1, pos2);
-                }
-            }
-        } else if (pos1 != -1 && pos2 != -1 && pos2 > (pos1 + 1)) {
-            fields = info.substring(pos1 + 1, pos2 - 1);
-        }
-        if (fields != null) {
-            map = parseFields(map, fields);
-            if (map.isEmpty()) {
-                map.put("<" + info.substring(0, pos1) + ">", "<No data fields>"); // NOI18N
-            }
-        }
-        return map;
-    }
-        
-    private Map<String, Object> parseFields(Map<String, Object> map, String info) {
-        if (info != null) {
-            int pos, pos2;
-            FieldTokenizer tok = new FieldTokenizer(info);
-            while (tok.hasMoreFields()) {
-                String[] field = tok.nextField();
-                if (field[0] != null) {
-                    if (isNonAnonymousCSUDef(field)) {
-                        pos = field[0].indexOf('{');
-                        pos2 = field[0].lastIndexOf('}');
-                        Map<String, Object> m;
-                        m = parseFields(new HashMap<String, Object>(), field[0].substring(pos + 1, pos2).trim());
-                        m.put("<typename>", shortenType(field[0])); // NOI18N
-                        map.put(field[1], m);
-                    } else if (field[1].startsWith("<anonymous")) { // NOI18N
-                        // replace string def with Map
-                        pos = field[0].indexOf('{');
-                        String frag = field[0].substring(pos + 1, field[0].length() - 1).trim();
-                        Map<String, Object> m = parseFields(new HashMap<String, Object>(), frag);
-                        map.put(field[1], m);
-                    } else {
-                        pos = field[1].indexOf('[');
-                        if (pos == -1) {
-                            map.put(field[1], field[0]);
-                        } else {
-                            map.put(field[1].substring(0, pos), field[0] + field[1].substring(pos));
-                        }
-                    }
-                }
-            }
-        }
-        return map;
-    }
-    
-    private List getEnumList(String info) {
-        List<String> list = new ArrayList<String>();
-        int pos1 = info.indexOf('{');
-        int pos2 = info.indexOf('}');
-        if (pos1 != -1 && pos2 != -1) {
-            StringTokenizer tok = new StringTokenizer(info.substring(pos1+ 1, pos2), ","); // NOI18N
-            while (tok.hasMoreTokens()) {
-                list.add(tok.nextToken().trim());
-            }
-            return list;
-        } else {
-            return null;
-        }
-    }
-    
-    private String shortenType(String type) {
-        if (type.startsWith("class {")) { // NOI18N
-            return "class {...}"; // NOI18N
-        } else if (type.startsWith("struct {")) { // NOI18N
-            return "struct {...}"; // NOI18N
-        } else if (type.startsWith("union {")) { // NOI18N
-            return "union {...}"; // NOI18N
-        } else {
-            return type;
-        }
-    }
-    
-    /**
-     * See if the info string defines an embedded class/struct/union which is <b>not</b> an
-     * anonymous c/s/u (those don't get typenames).
-     *
-     * @param info The string to check for a non-anonymous class/struct/union definition
-     * @returns True for a non-anonymous class/struct/union definition
-     */
-    private boolean isNonAnonymousCSUDef(String[] field) {
-        String name = field[1];
-        String info = field[0];
-        if (!name.startsWith("<anonymous") && // NOI18N
-                (info.startsWith("class {") || info.startsWith("struct {") || info.startsWith("union {"))) { // NOI18N
-            int start = info.indexOf('{');
-            int end = GdbUtils.findMatchingCurly(info, start) + 1;
-            if (start != -1 && end != 0 && !info.substring(start, end).equals("{...}")) { // NOI18N
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    /** Parse a substring from a ptype class response to see if we have any superclasses */
-    private void checkForSuperClass(String info) {
-        boolean hasSuperClass = false;
-        int pos;
-        char c;
-        
-        for (int i = 0; i < info.length(); i++) {
-            c = info.charAt(i);
-            if (c == '<') {
-                pos = GdbUtils.findMatchingLtGt(info, i);
-                if (pos != -1) {
-                    i = pos - 1;
-                }
-            } else if (c == ':') {
-                if (info.charAt(i + 1) == ':') { // Got ::
-                    i++;
-                } else {
-                    pos = info.indexOf('{', i);
-                    if (pos != -1) {
-                        info = info.substring(i + 1, pos).trim();
-                        hasSuperClass = true;
-                    } else {
-                        return; // invalid info (possible gdb error?)
-                    }
-                    break;
-                }
-            } else if (c == '{') {
-                return; // no superclass
-            }
-        }
-        
-        if (hasSuperClass) {
-            int start = 0;
-            for (int i = 0; i < info.length(); i++) {
-                if (info.substring(i).startsWith("public ")) { // NOI18N
-                    i += 7;
-                    start = i;
-                } else if (info.substring(i).startsWith("private ")) { // NOI18N
-                    i += 8;
-                    start = i;
-                } else if (info.substring(i).startsWith("protected ")) { // NOI18N
-                    i += 10;
-                    start = i;
-                }
-                if (i < info.length()) {
-                    c = info.charAt(i);
-                    if (c == '<') {
-                        pos = GdbUtils.findMatchingLtGt(info, i);
-                        if (pos != -1) {
-                            i = pos;
-                        }
-                    } else if (c == ',') {
-                        addTypeCompletion(info.substring(start, i).trim());
-                        if ((i + 1) < info.length()) {
-                            info = info.substring(i + 1);
-                            i = 0;
-                            start = 0;
-                        }
-                    }
-                }
-            }
-            addTypeCompletion(info.substring(start).trim());
-        }
-    }
-    
-    private void checkForUnknownTypes(Map map) {
-        Iterator iter = map.entrySet().iterator();
-        while (iter.hasNext()) {
-            Map.Entry entry = (Map.Entry) iter.next();
-            Object o = entry.getValue();
-            if (o instanceof String) {
-                String type = o.toString();
-                if (!GdbUtils.isSimple(type) && !type.equals("<No data fields>") && !isUnnamedType(type)) { // NOI18N
-                    addTypeCompletion(o.toString());
-                }
-            } else if (o instanceof Map) {
-                checkForUnknownTypes((Map) o);
-            }
-        }
-    }
-    
-    private boolean isUnnamedType(String type) {
-        int pos = type.indexOf('{');
-        if (pos != -1) {
-            String tmp = null;
-            if (type.startsWith("class ")) { // NOI18N
-                tmp = type.substring(5, pos + 1).trim();
-            } else if (type.startsWith("struct ")) { // NOI18N
-                tmp = type.substring(6, pos + 1).trim();
-            } else if (type.startsWith("union ")) { // NOI18N
-                tmp = type.substring(5, pos + 1).trim();
-            } else {
-                log.warning("Unexpected type information [" + type + "]");
-                tmp = "  "; // NOI18N - this makes this method return false...
-            }
-            return tmp.length() == 1;
-        } else {
-            return false;
-        }
-    }
-    
-    public void addTypeCompletion(String key) {
-        key = trimKey(key);
-        assert key != null && key.length() > 0;
-        if (!GdbUtils.isSimple(key) && !typePendingTable.contains(key) &&
-                !(isCplusPlus() && key.equals("bool")) && getType(key) == null) { // NOI18N
-            int token = gdb.symbol_type(key.replace('$', ' ').trim());
-            typeCompletionTable.put(Integer.valueOf(token), new StringBuilder(key + '='));
-            typePendingTable.add(key);
-        }
-    }
-    
-    public void waitForTypeCompletionCompletion() {
-        waitForTypeCompletionCompletion(40);
-    }
-    
-    private void waitForTypeCompletionCompletion(int maxwait) {
-        if (!isTypeCompletionComplete()) {
-            if (Thread.currentThread().getName().equals("GdbReaderRP")) { // NOI18N
-                log.warning("Attempting to wait for type completion on GDB Reader thread"); // NOI18N
-            } else {
-                while (!isTypeCompletionComplete() && state.equals(STATE_STOPPED)) {
-                    if (maxwait > 0 && tcwait >= maxwait) {
-                        return;
-                    }
-                    if (tcwait > 5) {
-                        log.warning("Waiting for type completion - " + tcwait +
-                                " [TCT: " + typeCompletionTable.size() + // NOI18N
-                                ", TPT: " + typePendingTable.size() + "]"); // NOI18N
-                    }
-                    try {
-                        Thread.sleep(250);
-                    } catch (InterruptedException ex) {
-                        return;
-                    }
-                }
-            }
-        }
-    }
-    
-    public boolean isTypeCompletionComplete() {
-        return typeCompletionTable.isEmpty() && typePendingTable.isEmpty();
-    }
-    
-    /**
-     * Trim off all pointer and array info (including function pointer stuff). If its a Template,
-     * ignore the <> parts.
-     */
-    public String trimKey(String key) {
-        int pos;
-        char c;
-        
-        assert key != null;
-        for (int i = 0; i < key.length(); i++) {
-            c = key.charAt(i);
-            switch (key.charAt(i)) {
-                case '<':
-                    pos = GdbUtils.findMatchingLtGt(key, i);
-                    if (pos != -1) {
-                        i = pos;
-                    }
-                    break;
-                    
-                case '*':
-                case '[':
-                case '(':
-                    String tmp = key.substring(0, i);
-                    return key.substring(0, i).trim();
-            }
-        }
-        return key.trim();
-    }
-    
     private void addArgsToLocalVariables(String info) {
         int pos;
         if (info.startsWith("[frame={level=") && (pos = info.indexOf(",args=[")) > 0 && info.endsWith("]}]")) { // NOI18N
@@ -1363,41 +905,23 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
         Collection<GdbVariable> v = GdbUtils.createArgumentList(info);
         if (!v.isEmpty()) {
+            log.fine("GDI.addArgsToLocalVariables: Starting to add Args to localVariables"); // NOI18N
             synchronized (localVariables) {
                 localVariables.addAll(v);
             }
+            log.fine("GDI.addArgsToLocalVariables: Added " + v.size() + " args");
         }
     }
     
     private void addLocalsToLocalVariables(String info) {
         Collection<GdbVariable> v = GdbUtils.createLocalsList(info.substring(1, info.length() - 1));
         if (!v.isEmpty()) {
+            log.fine("GDI.addLocalsToLocalVariables: Starting to add locals to localVariables"); // NOI18N
             synchronized (localVariables) {
                 localVariables.addAll(v);
             }
+            log.fine("GDI.addLocalsToLocalVariables: Added " + v.size() + " locals");
         }
-    }
-    
-    private void completeLocalVariables() {
-        synchronized (localVariables) {
-            if (!localVariables.isEmpty()) {
-                for (GdbVariable var : localVariables) {
-                    int token = gdb.whatis(var.getName());
-                    symbolCompletionTable.put(Integer.valueOf(token), var);
-                    if (var.getName().equals("this") && isCplusPlus()) { // NOI18N
-                        addTypeCompletion(var.getName());
-                    }
-                }
-            }
-        }
-        
-        final GdbDebugger dbg = this;
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                dbg.waitForTypeCompletionCompletion(-1);
-                dbg.firePropertyChange(PROP_LOCALS_VIEW_UPDATE, 0, 1);
-            }
-        });
     }
     
     public void updateVariable(AbstractVariable var, String name, String value) {
@@ -1541,7 +1065,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
         String oldState = this.state;
         this.state = state;
+        log.fine("GDI.setState: Setting state to " + state + " and firing propertyChange");
         firePropertyChange(PROP_STATE, oldState, state);
+        log.fine("GDI.setState: Done firing propertyChange on state " + state);
     }
     
     public void setStarting() {
@@ -1890,40 +1416,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
      *
      * @return list of local variables
      */
-    @SuppressWarnings("unchecked")
     public List<GdbVariable> getLocalVariables() {
         assert !(Thread.currentThread().getName().equals("GdbReaderRP"));
         synchronized (localVariables) {
-            for (GdbVariable var : localVariables) {
-                if (var.getType() == null) {
-                    for (int i = 0; i < 40; i++) {
-                        try {
-                            Thread.sleep(100);
-                        } catch (InterruptedException ex) {
-                        }
-                        if (var.getType() != null) {
-                            break;
-                        }
-                    }
-                }
-            }
             return (List<GdbVariable>) localVariables.clone();
-        }
-    }
-    
-    public void requestDerefValue(AbstractVariable var, String name) {
-        if (state.equals(STATE_STOPPED)) {
-            int token = gdb.data_evaluate_expression(name);
-            derefValueMap.put(new Integer(token), var);
-        } else {
-            var.setDerefValue("");
-        }
-    }
-    
-    public void requestWatchValue(GdbWatchVariable var) {
-        if (state.equals(STATE_STOPPED) || !watchValueMap.isEmpty()) {
-            int token = evaluate(var.getName());
-            watchValueMap.put(new Integer(token), var);
         }
     }
     
@@ -1939,11 +1435,77 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         return token;
     }
     
+    public Map<String, TypeInfo> getTypeInfoCache() {
+        return ticache;
+    }
+    
+    public String requestValue(String name) {
+        assert !Thread.currentThread().getName().equals("GdbReaderRP"); // NOI18N
+        
+        if (state.equals(STATE_STOPPED)) {
+            CommandBuffer cb = new CommandBuffer(gdb.data_evaluate_expression(name));
+            return cb.postAndWait();
+        } else {
+            return null;
+        }
+    }
+    
+    public String requestDerefValue(String name) {
+        assert !Thread.currentThread().getName().equals("GdbReaderRP"); // NOI18N
+        
+        if (state.equals(STATE_STOPPED)) {
+            CommandBuffer cb = new CommandBuffer(gdb.data_evaluate_expression('*' + name));
+            return cb.postAndWait();
+        } else {
+            return null;
+        }
+    }
+    
+    public void requestWatchValue(GdbWatchVariable var) {
+        if (state.equals(STATE_STOPPED) || !watchValueMap.isEmpty()) {
+            int token = evaluate(var.getName());
+            watchValueMap.put(new Integer(token), var);
+        }
+    }
+    
+    public String requestWhatis(String name) {
+        assert !Thread.currentThread().getName().equals("GdbReaderRP"); // NOI18N
+        
+        if (state.equals(STATE_STOPPED) && name != null && name.length() > 0) {
+            CommandBuffer cb = new CommandBuffer(gdb.whatis(name));
+            String info = cb.postAndWait();
+            if (info == null || info.length() < 1) {
+                return null;
+            } else {
+                return info.substring(7, info.length() - 2);
+            }
+        } else {
+            return null;
+        }
+    }
+    
+    public String requestSymbolType(String type) {
+        assert !Thread.currentThread().getName().equals("GdbReaderRP"); // NOI18N
+        
+        if (state.equals(STATE_STOPPED) && type != null && type.length() > 0) {
+            CommandBuffer cb = new CommandBuffer(gdb.symbol_type(type));
+            String info = cb.postAndWait();
+            if (info.length() == 0) {
+                return type;
+            } else {
+                String tmp = info.substring(7, info.length() - 2);
+                return info.substring(7, info.length() - 2);
+            }
+        } else {
+            return null;
+        }
+    }
+    
     public void requestWatchType(GdbWatchVariable var) {
         if (state.equals(STATE_STOPPED) && var.getName().length() > 0) {
             int token = gdb.whatis(var.getName());
             var.clearTypeBuf();
-            watchTypeMap.put(new Integer(token), var);
+            typeRequestMap.put(new Integer(token), var);
         }
     }
     
@@ -2021,21 +1583,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             currentCallStackFrame = null;
         }
         return currentCallStackFrame;
-    }
-    
-    private Object getType(String key) {
-        CallStackFrame csf = getCurrentCallStackFrame();
-        if (csf != null) {
-            return csf.getType(key);
-        }
-        return null;
-    }
-    
-    private void addType(String key, Object o) {
-        CallStackFrame csf = getCurrentCallStackFrame();
-        if (csf != null) {
-            csf.addType(key, o);
-        }
     }
     
     /**

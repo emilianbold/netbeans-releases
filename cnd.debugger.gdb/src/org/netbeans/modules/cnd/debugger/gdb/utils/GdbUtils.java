@@ -94,7 +94,7 @@ public class GdbUtils {
      *
      *  @param type The type to check
      */
-    public static boolean isSimple(Object type) {
+    public static boolean isSimpleType(Object type) {
         if (type == null || type instanceof Map) {
             return false;
         } else {
@@ -110,16 +110,16 @@ public class GdbUtils {
         }
     }
 
-    public static boolean isSimpleNonArray(Object type) {
-	return type instanceof String && type.toString().indexOf('[') == -1 && isSimple(type.toString());
-    }
+//    public static boolean isSimpleNonArray(Object type) {
+//	return type instanceof String && type.toString().indexOf('[') == -1 && isSimpleType(type.toString());
+//    }
 
     public static boolean isSimplePointer(String type) {
-	return type != null && isSimple(type.replaceFirst("[*]", " ")); // NOI18N
+	return type != null && isSimpleType(type.replaceFirst("[*]", " ")); // NOI18N
     }
     
     /** Test if the type of a type is a keyword type */
-    public static boolean isSimpleTypeKeyword(String type) {
+    private static boolean isSimpleTypeKeyword(String type) {
         return type != null && type.equals("char") // NOI18N
             || type.equals("void") // NOI18N
             || type.equals("short") // NOI18N
@@ -133,18 +133,18 @@ public class GdbUtils {
             || type.equals("signed"); // NOI18N
     }
     
-    /** Test if the type of a type is a keyword type */
-    public static boolean isAbstractTypeKeyword(Object o) {
-        String type = null;
-        return o instanceof String && (type = o.toString()) != null && type.equals("struct") // NOI18N
-            || type.equals("union") // NOI18N
-            || type.equals("class"); // NOI18N
-    }
-    
-    /** Test if a variable is a struct or union */
-    public static boolean isStructOrUnion(Object type) {
-        return type instanceof Map || (type instanceof String && (type.toString().startsWith("struct ") || type.toString().startsWith("union "))); // NOI18N
-    }
+//    /** Test if the type of a type is a keyword type */
+//    public static boolean isAbstractTypeKeyword(Object o) {
+//        String type = null;
+//        return o instanceof String && (type = o.toString()) != null && type.equals("struct") // NOI18N
+//            || type.equals("union") // NOI18N
+//            || type.equals("class"); // NOI18N
+//    }
+//    
+//    /** Test if a variable is a struct or union */
+//    public static boolean isStructOrUnion(Object type) {
+//        return type instanceof Map || (type instanceof String && (type.toString().startsWith("struct ") || type.toString().startsWith("union "))); // NOI18N
+//    }
     
     /** Test if a variable is a class */
     public static boolean isClass(Object type) {
@@ -163,6 +163,23 @@ public class GdbUtils {
     public static boolean isPointer(Object type) {
         return type instanceof String &&
                 (type.toString().endsWith("*") || type.toString().endsWith("* const")); // NOI18N
+    }
+    
+    /**
+     * Test if a variable is a pointer. This method purposely ignores
+     * function pointers.
+     */
+    public static boolean isSinglePointer(Object type) {
+        return isPointer(type) && !isMultiPointer(type);
+    }
+    
+    /**
+     * Test if a variable is a double pointer (ie, "char **"). This method purposely ignores
+     * function pointers.
+     */
+    public static boolean isMultiPointer(Object type) {
+        return type instanceof String &&
+                (type.toString().endsWith("**") || type.toString().endsWith("** const")); // NOI18N
     }
     
     /** Test if a variable is a function pointer */

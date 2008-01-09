@@ -47,6 +47,7 @@ import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.util.Set;
 import java.util.Vector;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.ModelEvent;
@@ -57,7 +58,6 @@ import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.LocalVariable;
-import org.netbeans.modules.cnd.debugger.gdb.LocalVariableImpl;
 import org.netbeans.spi.viewmodel.TreeExpansionModel;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakSet;
@@ -74,6 +74,7 @@ public class LocalsTreeModel implements TreeModel, TreeExpansionModel, PropertyC
     private Vector listeners = new Vector();
     private Set expandedNodes = new WeakSet();
     private Set collapsedNodes = new WeakSet();
+    private static Logger log = Logger.getLogger("gdb.logger"); // NOI18N
         
     public LocalsTreeModel(ContextProvider lookupProvider) {
         debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
@@ -142,16 +143,17 @@ public class LocalsTreeModel implements TreeModel, TreeExpansionModel, PropertyC
             return i == 0;
         }
         
-        /*
-         *`Temporary fix.
-         * AbstractVariable cannot be casted to Field, so we use LocalVariableImpl
-         * to specify children (see getLocalVariables() in CallStackFrame).
-         * The problem is that LocalVariableImpl does not have fields, so
-         * this solution works only for 1-level structures.
-         */
-        if (o instanceof LocalVariableImpl) {
-            return true;
-        } else if (o instanceof LocalVariable) {
+//        /*
+//         *`Temporary fix.
+//         * AbstractVariable cannot be casted to Field, so we use LocalVariableImpl
+//         * to specify children (see getLocalVariables() in CallStackFrame).
+//         * The problem is that LocalVariableImpl does not have fields, so
+//         * this solution works only for 1-level structures.
+//         */
+//        if (o instanceof LocalVariableImpl) {
+//            return true;
+//        } else
+        if (o instanceof LocalVariable) {
             return true;
         } else if (o.equals("NoInfo")) { // NOI18N
             return true;
@@ -180,6 +182,7 @@ public class LocalsTreeModel implements TreeModel, TreeExpansionModel, PropertyC
     }
     
     void fireTreeChanged() {
+        log.fine("LTM.fireTreeChanged:");
         Vector v = (Vector) listeners.clone();
         int i, k = v.size();
         for (i = 0; i < k; i++) {
@@ -248,11 +251,12 @@ public class LocalsTreeModel implements TreeModel, TreeExpansionModel, PropertyC
         private RequestProcessor.Task task;
         
         public void propertyChange(PropertyChangeEvent e) {
-            if (((e.getPropertyName().equals(GdbDebugger.PROP_CURRENT_CALL_STACK_FRAME)) ||
-                    (e.getPropertyName().equals(GdbDebugger.PROP_STATE))) &&
+            if ((e.getPropertyName().equals(GdbDebugger.PROP_CURRENT_CALL_STACK_FRAME) ||
+                    e.getPropertyName().equals(GdbDebugger.PROP_CURRENT_THREAD)) &&
                     (debugger.getState().equals(GdbDebugger.STATE_STOPPED))) {
                 // IF state has been changed to STOPPED or
-                // IF current call stack frame has been changed & state is stoped
+                // IF current call stack frame has been changed & state is stopped
+                log.fine("LTM.propertyChange: Change for " + e.getPropertyName());
                 final LocalsTreeModel ltm = getModel();
                 if (ltm == null) {
                     return;
@@ -264,31 +268,29 @@ public class LocalsTreeModel implements TreeModel, TreeExpansionModel, PropertyC
                 }
                 task = RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
-                        if (!(debugger.getState().equals(GdbDebugger.STATE_STOPPED))) {
-                            return;
-                        }
-                        debugger.waitForTypeCompletionCompletion();
-                        ltm.fireTreeChanged();
-                    }
-                }, 500);
-            } else if ((e.getPropertyName().equals(GdbDebugger.PROP_STATE)) &&
-                    !(debugger.getState().equals(GdbDebugger.STATE_STOPPED)) && (task != null)) {
-                // debugger has been resumed
-                // =>> cancel task
-                task.cancel();
-                task = null;
-            } else if (e.getPropertyName().equals(GdbDebugger.PROP_LOCALS_VIEW_UPDATE)) {
-                final LocalsTreeModel ltm = getModel();
-                if (ltm == null) {
-                    return;
-                }
-                task = RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
                         if (debugger.getState().equals(GdbDebugger.STATE_STOPPED)) {
                             ltm.fireTreeChanged();
                         }
                     }
-                });
+                }, 500);
+            } else if ((e.getPropertyName().equals(GdbDebugger.PROP_STATE)) &&
+                    !(debugger.getState().equals(GdbDebugger.STATE_STOPPED)) && task != null) {
+                // debugger has been resumed
+                // =>> cancel task
+                task.cancel();
+                task = null;
+//            } else {
+//                final LocalsTreeModel ltm = getModel();
+//                if (ltm == null) {
+//                    return;
+//                }
+//                task = RequestProcessor.getDefault().post(new Runnable() {
+//                    public void run() {
+//                        if (debugger.getState().equals(GdbDebugger.STATE_STOPPED)) {
+//                            ltm.fireTreeChanged();
+//                        }
+//                    }
+//                });
             }
         }
     }

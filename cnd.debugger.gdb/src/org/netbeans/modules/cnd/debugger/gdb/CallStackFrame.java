@@ -45,6 +45,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.debugger.gdb.models.AbstractVariable;
 
 /**
@@ -112,39 +113,6 @@ public class CallStackFrame {
     
     public void invalidateCache() {
         cachedLocalVariables = null;
-    }
-    
-    public void addType(String key, Object o) {
-        if (!(o instanceof Map && ((Map)o).isEmpty())) {
-            typeMap.put(key, o);
-        }
-    }
-    
-    /**
-     * When a type is added without a value, its a placeholder telling us that a gdb request
-     * has been made and that we shouldn't send another request to gdb.
-     */
-    public void addType(String key) {
-        addType(key, "");
-    }
-    
-    public Object getType(String key) {
-        if (key != null) {
-            Object o = typeMap.get(key);
-            Object o2 = "";
-            while (o instanceof String && !(o.equals(o2)) && (o2 = typeMap.get(o)) != null) {
-                o = o2;
-            }
-            if (o == null && key.startsWith("class ")) { // NOI18N
-                return getType(key.substring(6));
-            }
-            if (o == null && (o = typeMap.get("class " + key)) != null) { // NOI18N
-                return o;
-            }
-            return o;
-        } else {
-            return "";
-        }
     }
     
     /**
@@ -262,9 +230,15 @@ public class CallStackFrame {
      * Returns local variables.
      * If local variables are not available returns empty array.
      *
+     * NOTE: This method should <b>not</b> be called from GdbReaderRP as it can block
+     * waiting for type information to be returned on that thread.
+     *
      * @return local variables
      */
     public LocalVariable[] getLocalVariables() {
+        assert !(Thread.currentThread().getName().equals("GdbReaderRP"));
+        assert !(SwingUtilities.isEventDispatchThread()); 
+
         if (cachedLocalVariables == null) {
             List<GdbVariable> list = debugger.getLocalVariables();
             int n = list.size();

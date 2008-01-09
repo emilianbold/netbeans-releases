@@ -188,7 +188,7 @@ public class GdbConsoleWindow extends TopComponent implements ActionListener, Pr
         // Reset input field
         debuggerCommand.setSelectedIndex(0);
         if (gdbProxy == null) return;
-        gdbProxy.getProxyEngine().sendCommand(command);
+        gdbProxy.getProxyEngine().sendConsoleCommand(command);
     }
     
     private void addCommandToList(String command) {

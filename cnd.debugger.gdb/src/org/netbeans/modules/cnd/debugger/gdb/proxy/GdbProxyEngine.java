@@ -172,13 +172,24 @@ public class GdbProxyEngine {
      * @param cmd - a command to be sent to the debugger
      */
     int sendCommand(String cmd) {
+        return sendCommand(cmd, false);
+    }
+    
+    int sendCommand(String cmd, boolean consoleCommand) {
         int token = nextToken();
+        if (consoleCommand) {
+            token += 10000;
+        }
         StringBuilder fullcmd = new StringBuilder(String.valueOf(token));
         fullcmd.append(cmd);
         fullcmd.append('\n');
         gdbProxy.getLogger().logMessage(fullcmd.toString());
         toGdb.print(fullcmd.toString());
         return token;
+    }
+    
+    int sendConsoleCommand(String cmd) {
+        return sendCommand(cmd, true);
     }
     
     /**

@@ -148,14 +148,14 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
         }
     }
     
-    public void setTypeToError(String msg) {
-        msg = msg.replace("\\\"", "\""); // NOI18N
-        if (msg.charAt(msg.length() - 1) == '.') {
-            msg = msg.substring(0, msg.length() - 1);
-        }
-        setType('>' + msg + '<');
-        log.fine("GWV.setTypeToError[" + Thread.currentThread().getName() + "]: " + getName()); // NOI18N
-    }
+//    public void setTypeToError(String msg) {
+//        msg = msg.replace("\\\"", "\""); // NOI18N
+//        if (msg.charAt(msg.length() - 1) == '.') {
+//            msg = msg.substring(0, msg.length() - 1);
+//        }
+//        setType('>' + msg + '<');
+//        log.fine("GWV.setTypeToError[" + Thread.currentThread().getName() + "]: " + getName()); // NOI18N
+//    }
     
     private void requestWatchType() {
         synchronized (LOCK) {
