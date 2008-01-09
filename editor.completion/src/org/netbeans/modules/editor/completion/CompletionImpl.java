@@ -98,7 +98,8 @@ import org.openide.util.NbBundle;
 public class CompletionImpl extends MouseAdapter implements DocumentListener,
 CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChangeListener, SettingsChangeListener {
     
-    private static final boolean debug = Boolean.getBoolean("org.netbeans.modules.editor.completion.debug");
+    // -J-Dorg.netbeans.modules.editor.completion.CompletionImpl.level=FINE
+    private static final Logger LOG = Logger.getLogger(CompletionImpl.class.getName());
     private static final boolean alphaSort = Boolean.getBoolean("org.netbeans.modules.editor.completion.alphabeticalSort"); // [TODO] create an option
 
     private static final Logger UI_LOG = Logger.getLogger("org.netbeans.ui.editor.completion"); // NOI18N
@@ -393,20 +394,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
         boolean cancel = false;
         JTextComponent component = EditorRegistry.lastFocusedComponent();
         if (component != getActiveComponent()) {
-            activeProviders = getCompletionProvidersForComponent(component);
-            if (debug) {
-                StringBuffer sb = new StringBuffer("Completion PROVIDERS:\n"); // NOI18N
-                if (activeProviders != null) {
-                    for (int i = 0; i < activeProviders.length; i++) {
-                        sb.append("providers["); // NOI18N
-                        sb.append(i);
-                        sb.append("]: "); // NOI18N
-                        sb.append(activeProviders[i].getClass());
-                        sb.append('\n');
-                    }
-                }
-                System.err.println(sb.toString());
-            }
+            initActiveProviders(component);
             if (getActiveComponent() != null) {
                 getActiveComponent().removeCaretListener(this);
                 getActiveComponent().removeKeyListener(this);
@@ -421,39 +409,49 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
                     component.addMouseListener(this);
                 }
             }
-            activeComponent = component != null ? new WeakReference<JTextComponent>(component) : null;
+            activeComponent = (component != null)
+                    ? new WeakReference<JTextComponent>(component)
+                    : null;
             CompletionSettings.INSTANCE.notifyEditorComponentChange(getActiveComponent());
             layout.setEditorComponent(getActiveComponent());
             installKeybindings();
             cancel = true;
         }
-        Document document = component.getDocument();
-        if (component != null && document != getActiveDocument()) {
-            activeProviders = getCompletionProvidersForComponent(component);
-            if (debug) {
-                StringBuffer sb = new StringBuffer("Completion PROVIDERS:\n"); // NOI18N
-                if (activeProviders != null) {
-                    for (int i = 0; i < activeProviders.length; i++) {
-                        sb.append("providers["); // NOI18N
-                        sb.append(i);
-                        sb.append("]: "); // NOI18N
-                        sb.append(activeProviders[i].getClass());
-                        sb.append('\n');
-                    }
-                }
-                System.err.println(sb.toString());
-            }
+        
+        // Also check document change of an active component
+        Document document = (component != null) ? component.getDocument() : null;
+        if (document != getActiveDocument()) {
+            initActiveProviders(component);
             if (getActiveDocument() != null)
                 DocumentUtilities.removeDocumentListener(getActiveDocument(), this,
                         DocumentListenerPriority.AFTER_CARET_UPDATE);
             if (activeProviders != null)
                 DocumentUtilities.addDocumentListener(document, this,
                         DocumentListenerPriority.AFTER_CARET_UPDATE);
-            activeDocument = new WeakReference<Document>(document);
+            activeDocument = (document != null) ? new WeakReference<Document>(document) : null;
             cancel = true;
         }
         if (cancel)
             completionCancel();
+    }
+    
+    private void initActiveProviders(JTextComponent component) {
+        activeProviders = (component != null)
+                ? getCompletionProvidersForComponent(component)
+                : null;
+        if (LOG.isLoggable(Level.FINE)) {
+            StringBuffer sb = new StringBuffer("Completion PROVIDERS:\n"); // NOI18N
+            if (activeProviders != null) {
+                for (int i = 0; i < activeProviders.length; i++) {
+                    sb.append("providers["); // NOI18N
+                    sb.append(i);
+                    sb.append("]: "); // NOI18N
+                    sb.append(activeProviders[i].getClass());
+                    sb.append('\n');
+                }
+            }
+            LOG.fine(sb.toString());
+        }
     }
     
     private void restartCompletionAutoPopupTimer() {
@@ -1307,15 +1305,15 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         for (int i = resultSets.size() - 1; i >= 0; i--) {
             CompletionResultSetImpl result = resultSets.get(i);
             if (!result.isFinished()) {
-                if (debug) {
-                    System.err.println("CompletionTask: " + result.getTask() // NOI18N
-                            + " not finished yet"); // NOI18N
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("CompletionTask: " + result.getTask() // NOI18N
+                            + " not finished yet\n"); // NOI18N
                 }
                 return false;
             }
         }
-        if (debug) {
-            System.err.println("----- All tasks finished -----");
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("----- All tasks finished -----\n");
         }
         return true;
     }

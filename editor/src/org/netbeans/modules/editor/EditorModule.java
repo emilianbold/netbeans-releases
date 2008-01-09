@@ -66,14 +66,17 @@ import org.netbeans.editor.FindSupport;
 import org.netbeans.editor.FindSupport.SearchPatternWrapper;
 import org.netbeans.editor.LocaleSupport;
 import org.netbeans.editor.Settings;
+import org.netbeans.modules.editor.lib2.EditorApiPackageAccessor;
 import org.netbeans.modules.editor.options.AllOptions;
 import org.netbeans.modules.editor.options.AllOptionsFolder;
 import org.netbeans.modules.editor.options.AnnotationTypesFolder;
 import org.netbeans.modules.editor.options.BaseOptions;
+import org.netbeans.swing.tabcontrol.TabbedContainer;
 import org.openide.cookies.EditorCookie;
 import org.openide.modules.ModuleInstall;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditor;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 import org.openidex.search.SearchHistory;
@@ -92,6 +95,7 @@ public class EditorModule extends ModuleInstall {
 
     private PropertyChangeListener searchSelectedPatternListener;
     private PropertyChangeListener editorHistoryChangeListener;
+    private PropertyChangeListener topComponentRegistryListener;
 
     /** Module installed again. */
     public @Override void restored () {
@@ -267,7 +271,25 @@ public class EditorModule extends ModuleInstall {
          */
          //TEMP end
 
-            
+         EditorApiPackageAccessor.get().setIgnoredAncestorClass(TabbedContainer.class);
+         if (topComponentRegistryListener == null) {
+             topComponentRegistryListener = new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (TopComponent.Registry.PROP_TC_CLOSED.equals(evt.getPropertyName())) {
+                        TopComponent tc = (TopComponent)evt.getNewValue();
+                        // Limit checking to editors and multiviews only - should suffice
+                        // if not then assign: doClose = true;
+                        boolean doNotify = (tc instanceof CloneableEditorSupport.Pane);
+                        LOG.finest("CLOSE-TC: doClose=" + doNotify + ", TC=" + tc + "\n");
+                        if (doNotify) {
+                            EditorApiPackageAccessor.get().notifyClose(tc);
+                        }
+                    }
+                }
+            };
+            TopComponent.getRegistry().addPropertyChangeListener(topComponentRegistryListener);
+         }
+
     }
 
     /** Called when module is uninstalled. Overrides superclass method. */
@@ -350,7 +372,12 @@ public class EditorModule extends ModuleInstall {
                         }
                     }
                 }
-
+                
+                // Remove listening on top component registry
+                if (topComponentRegistryListener != null) {
+                    TopComponent.getRegistry().removePropertyChangeListener(topComponentRegistryListener);
+                    topComponentRegistryListener = null;
+                }
             }
         });
     }

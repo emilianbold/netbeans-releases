@@ -41,11 +41,12 @@
 
 package org.netbeans.modules.editor.lib2;
 
+import javax.swing.JComponent;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 
 /**
- * Accessor for the package-private functionality of bookmarks API.
+ * Accessor for the package-private functionality of editor API.
  *
  * @author Miloslav Metelka
  */
@@ -66,13 +67,13 @@ public abstract class EditorApiPackageAccessor {
     }
 
     public static void register(EditorApiPackageAccessor accessor) {
-        if (INSTANCE != null) {
-            throw new IllegalStateException("Already registered"); // NOI18N
-        }
         INSTANCE = accessor;
     }
     
     /** Register text component to registry. */
     public abstract void register(JTextComponent c);
     
+    public abstract void setIgnoredAncestorClass(Class ignoredAncestorClass);
+    
+    public abstract void notifyClose(JComponent c);
 }
