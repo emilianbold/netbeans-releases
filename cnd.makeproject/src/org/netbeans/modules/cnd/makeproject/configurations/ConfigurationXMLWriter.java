@@ -88,9 +88,10 @@ public class ConfigurationXMLWriter extends XMLDocWriter {
 		// make sure folder is created first...
                 projectDescriptorFile.getParentFile().mkdir();
                 projectDescriptorFile.createNewFile();
+                projectDirectory.getFileSystem().refresh(false);
             }
             catch (IOException ioe) {
-                ;// FIXUP...
+                ioe.printStackTrace();
             }
         }
 
