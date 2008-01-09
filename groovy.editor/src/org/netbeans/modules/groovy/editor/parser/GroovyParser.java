@@ -215,6 +215,7 @@ public class GroovyParser implements Parser {
         
         FileObject fo = context.file.getFileObject();
         ClassPath cp = ClassPathSupport.createProxyClassPath(
+                ClassPath.getClassPath(fo, ClassPath.BOOT),
                 ClassPath.getClassPath(fo, ClassPath.COMPILE),
                 ClassPath.getClassPath(fo, ClassPath.SOURCE)
                 );
@@ -227,7 +228,7 @@ public class GroovyParser implements Parser {
 
         try {
             compilationUnit.compile(Phases.SEMANTIC_ANALYSIS); // which phase should be used?
-        } catch (Exception e) {
+        } catch (Throwable e) {
         }
 
         CompileUnit compileUnit = compilationUnit.getAST();

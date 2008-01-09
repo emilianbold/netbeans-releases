@@ -48,10 +48,15 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.classpath.ClassPath;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
+import org.netbeans.modules.groovy.support.api.GroovySettings;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
+import org.openide.filesystems.FileUtil;
 
 final class BootClassPathImplementation implements ClassPathImplementation {
 
@@ -83,6 +88,8 @@ final class BootClassPathImplementation implements ClassPathImplementation {
             }
         }
         
+        result.addAll(findGroovyPlatform());
+        
         synchronized (this) {
             if (currentId == eventId) {
                 if (this.resourcesCache == null) {
@@ -109,4 +116,40 @@ final class BootClassPathImplementation implements ClassPathImplementation {
         return this.platformManager.getDefaultPlatform();
     }
 
+    private List<PathResourceImplementation> findGroovyPlatform() {
+        List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
+        
+        GroovySettings groovySettings = new GroovySettings();
+        File groovyHome = new File(groovySettings.getGroovyHome());
+        if (!groovyHome.exists()) {
+            return Collections.<PathResourceImplementation>emptyList();
+        }
+        File embeddableDir = new File(groovyHome, "embeddable"); // NOI18N
+        if (!embeddableDir.exists()) {
+            return Collections.<PathResourceImplementation>emptyList();
+        }
+        File[] jars = embeddableDir.listFiles();
+        if (jars == null || jars.length == 0) {
+            File libDir = new File(groovyHome, "lib"); // NOI18N
+            if (!libDir.exists()) {
+                return Collections.<PathResourceImplementation>emptyList();
+            }
+            jars = libDir.listFiles();
+        }
+        for (File f : jars) {
+            try {
+                if (f.isFile()) {
+                    URL entry = f.toURI().toURL();
+                    if (FileUtil.isArchiveFile(entry)) {
+                        entry = FileUtil.getArchiveRoot(entry);
+                        result.add(ClassPathSupport.createResource(entry));
+                    }
+                }
+            } catch (MalformedURLException mue) {
+                assert false : mue;
+            }
+        }
+        return Collections.unmodifiableList(result);
+    }
+    
 }

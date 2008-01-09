@@ -76,18 +76,12 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
         File[] jars = new File(projectRoot, "lib").listFiles();
         for (File f : jars) {
             try {
-                if (!f.isFile()) {
+                if (f.isFile()) {
                     URL entry = f.toURI().toURL();
                     if (FileUtil.isArchiveFile(entry)) {
                         entry = FileUtil.getArchiveRoot(entry);
-                    } else if (!f.exists()) {
-                        // if file does not exist (e.g. build/classes folder
-                        // was not created yet) then corresponding File will
-                        // not be ended with slash. Fix that.
-                        assert !entry.toExternalForm().endsWith("/") : f; // NOI18N
-                        entry = new URL(entry.toExternalForm() + "/"); // NOI18N
+                        result.add(ClassPathSupport.createResource(entry));
                     }
-                    result.add(ClassPathSupport.createResource(entry));
                 }
             } catch (MalformedURLException mue) {
                 assert false : mue;
