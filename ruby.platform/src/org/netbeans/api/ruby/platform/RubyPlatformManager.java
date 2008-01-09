@@ -83,6 +83,14 @@ public final class RubyPlatformManager {
     }
 
     /**
+     * So far, for unit tests only.
+     * <p>
+     * Resets platforms cache.
+     */
+    static void resetPlatforms() {
+        platforms = null;
+    }
+    /**
      * Get a set of all registered platforms.
      */
     public static synchronized Set<RubyPlatform> getPlatforms() {
@@ -226,13 +234,13 @@ public final class RubyPlatformManager {
             return null;
         }
 
-        final String label = interpreter.getName() + " (" + version + ')';
+        final String label = interpreter.getName() + " (" + version + ')'; // NOI18N
         final String id = computeID(label);
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
                 public Void run() throws IOException {
                     if (getPlatformByID(id) != null) {
-                        throw new IOException("ID " + id + " already taken");
+                        throw new IOException("ID " + id + " already taken"); // NOI18N
                     }
                     EditableProperties props = PropertyUtils.getGlobalProperties();
                     String interpreterKey = PLATFORM_PREFIX + id + PLATFORM_INTEPRETER;
@@ -291,7 +299,7 @@ public final class RubyPlatformManager {
 
     private static String computeVersion(final File interpreter) throws IOException {
         if (TEST_RUBY == interpreter) { // tests
-            return "test_ruby"; // NOI18N
+            return "test_ruby_version"; // NOI18N
         }
         String ruby = null;
         try {
