@@ -47,6 +47,7 @@ import java.net.MalformedURLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
+import org.netbeans.api.gsf.annotations.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
@@ -69,7 +70,6 @@ public final class RubyPlatform {
 
     private static final Logger LOGGER = Logger.getLogger(RubyPlatform.class.getName());
     
-    private static final String KEY_RUBY = "ruby"; //NOI18N
     public static final String DEFAULT_RUBY_RELEASE = "1.8"; // NOI18N
 
     /** Version number of the rubystubs */
@@ -98,12 +98,22 @@ public final class RubyPlatform {
         this.label = label;
     }
 
+    /**
+     * Tries to find a {@link RubyPlatform platform} for a given project. Might
+     * return <tt>null</tt>.
+     */
+    @CheckForNull
     public static RubyPlatform platformFor(final Project project) {
         RubyPlatformProvider rpp = project.getLookup().lookup(RubyPlatformProvider.class);
         return rpp == null ? null : rpp.getPlatform();
     }
 
-    /** Utility method. */
+    /** 
+     * Tries to find a {@link GemManager gem manager} for a given project, or
+     * strictly speaking, for its {@link RubyPlatform platform}. Might return
+     * <tt>null</tt>. 
+     */
+    @CheckForNull
     public static GemManager gemManagerFor(final Project project) {
         RubyPlatform platform = RubyPlatform.platformFor(project);
         return platform == null ? null : platform.getGemManager();
@@ -247,16 +257,6 @@ public final class RubyPlatform {
             File home = getHome();
             assert home != null : "home not null";
 
-//            if (home == null) {
-//                String jrubyLib = getJRubyLib();
-//                if (jrubyLib != null) {
-//                    return jrubyLib + File.separator + "ruby" + File.separator + // NOI18N
-//                        DEFAULT_RUBY_RELEASE;
-//                } else {
-//                    return null;
-//                }
-//            }
-
             File lib = new File(home, "lib" + File.separator + "ruby"); // NOI18N
 
             if (!lib.exists()) {
@@ -287,9 +287,6 @@ public final class RubyPlatform {
             }
 
             assert rubylib != null : "rubylib not null";
-//            if (rubylib == null) {
-//                rubylib = getJRubyLib();
-//            }
         }
 
         return rubylib;
@@ -300,18 +297,6 @@ public final class RubyPlatform {
         String sitedir = null;
         File home = getHome();
         assert home != null : "home not null";
-
-//        if (home == null) {
-//            File siteDir =
-//                    new File(getJRubyLib() + File.separator + "ruby" + File.separator + "site_ruby" + // NOI18N
-//                    File.separator + DEFAULT_RUBY_RELEASE);
-//
-//            if (siteDir.exists()) {
-//                return siteDir.getAbsolutePath();
-//            } else {
-//                return null;
-//            }
-//        }
 
         File lib =
                 new File(home, "lib" + File.separator + "ruby" + File.separator + "site_ruby"); // NOI18N
@@ -459,171 +444,6 @@ public final class RubyPlatform {
         return rubybin;
     }
 
-//    public String getRuby() {
-//        return getRuby(true);
-//    }
-//
-//    public String getRuby(boolean canonical) {
-//        if (ruby == null) {
-//            // Test and preindexing hook
-//            ruby = System.getProperty("ruby.interpreter");
-//
-//            if (ruby == null) { // Usually the case
-//                ruby = Util.getPreferences().get(KEY_RUBY, null);
-//
-//                if (ruby == null) {
-//                    ruby = chooseRuby();
-//                    if (ruby != null) {
-//                        Util.getPreferences().put(KEY_RUBY, ruby);
-//                    }
-//                }
-//
-//                if (ruby == null || ruby.equals("jruby")) { // NOI18N
-//                    ruby = getJRuby();
-//                }
-//            }
-//
-//            // Let RepositoryUpdater and friends know where they can root preindexing
-//            // This should be done in a cleaner way.
-//            if (ruby != null) {
-//                org.netbeans.modules.gsfret.source.usages.Index.setPreindexRootUrl(getRubyHomeUrl());
-//            }
-//        }
-//
-//        if (ruby != null && canonical) {
-//            try {
-//                return new File(ruby).getCanonicalFile().getAbsolutePath();
-//            } catch (IOException e) {
-//                LOGGER.log(Level.WARNING, "Cannot get canonical path", e);
-//            }
-//        }
-//        return ruby;
-//    }
-
-//    private String chooseRuby() {
-//        // Check the path to see if we find any other Ruby installations
-//        String path = System.getenv("PATH"); // NOI18N
-//        if (path == null) {
-//            path = System.getenv("Path"); // NOI18N
-//        }
-//        
-//        if (path != null) {
-//            final Set<String> rubies = new TreeSet<String>();
-//            Set<String> dirs = new TreeSet<String>(Arrays.asList(path.split(File.pathSeparator)));
-//            for (String dir : dirs) {
-//                File f = null;
-//                if (Utilities.isWindows()) {
-//                    f = new File(dir, "ruby.exe"); // NOI18N
-//                } else {
-//                    f = new File(dir, "ruby"); // NOI18N
-//                    // Don't include /usr/bin/ruby on the Mac - it's no good
-//                    // Source: http://developer.apple.com/tools/rubyonrails.html
-//                    //   "The version of Ruby that shipped on Mac OS X Tiger prior to 
-//                    //    v10.4.6 did not work well with Rails.   If you're running 
-//                    //    an earlier version of Tiger, you'll need to either upgrade 
-//                    //    to 10.4.6 or upgrade your copy of Ruby to version 1.8.4 or 
-//                    //    later using the open source distribution."
-//                    if (Utilities.isMac() && "/usr/bin/ruby".equals(f.getPath())) { // NOI18N
-//                        String version = System.getProperty("os.version"); // NOI18N
-//                        if (version == null || version.startsWith("10.4")) { // Only a problem on Tiger // NOI18N
-//                            continue;
-//                        }
-//                    }
-//                }
-//                if (f.exists()) {
-//                    try {
-//                        rubies.add(f.getCanonicalPath());
-//                    } catch (IOException e) {
-//                        LOGGER.log(Level.WARNING, "Cannot resolve cannonical path for: " + f, e);
-//                        rubies.add(f.getPath());
-//                    }
-//                }
-//            }
-//            
-//            if (rubies.size() > 0) {
-//                if (SwingUtilities.isEventDispatchThread()) {
-//                    return askForRuby(rubies);
-//                } else {
-//                    SwingUtilities.invokeLater(new Runnable() {
-//                        public void run() {
-//                            String chosen = askForRuby(rubies);
-//                            if (chosen != null && !chosen.equals("jruby") && !chosen.equals(ruby)) { // NOI18N
-//                                setRuby(chosen);
-//                            }
-//                        }
-//                    });
-//                }
-//                
-//            } else {
-//                // No rubies found - just default to using the bundled JRuby
-//                return "jruby"; // NOI18N
-//            }
-//        }
-//            
-//        return "jruby"; // NOI18N
-//    }
-
-//    private String askForRuby(final Set<String> rubies) {
-//        // Ruby found in the path -- offer to use it
-//        String jrubyLabel = NbBundle.getMessage(RubyInstallation.class, "JRubyBundled");
-//        String nativeRubyLabel = NbBundle.getMessage(RubyInstallation.class, "NativeRuby") + " "; 
-//
-//        List<String> displayList = new ArrayList<String>();
-//        String jruby = getJRuby();
-//        if (jruby != null) {
-//            displayList.add(jrubyLabel);
-//        }
-//        for (String r : rubies) {
-//            displayList.add(nativeRubyLabel + r);
-//        }
-//
-//        ChooseRubyPanel panel = new ChooseRubyPanel(displayList);
-//
-//        DialogDescriptor descriptor = new DialogDescriptor(panel,
-//                NbBundle.getMessage(RubyInstallation.class, "ChooseRuby"), true,
-//                DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
-//                DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(RubyInstallation.class), null);
-//        descriptor.setMessageType(NotifyDescriptor.Message.INFORMATION_MESSAGE);
-//
-//        Dialog dlg = null;
-//        descriptor.setModal(true);
-//
-//        try {
-//            dlg = DialogDisplayer.getDefault().createDialog(descriptor);
-//            dlg.setVisible(true);
-//        } finally {
-//            if (dlg != null) {
-//                dlg.dispose();
-//            }
-//        }
-//
-//        if (descriptor.getValue() != DialogDescriptor.OK_OPTION) {
-//            return "jruby"; // NOI18N
-//        }
-//        String displayItem = panel.getChosenInterpreter();
-//        if (displayItem == null) {
-//            // Force user to choose
-//            displayRubyOptions();
-//        } else {
-//            if (displayItem.equals(jrubyLabel)) {
-//                return "jruby"; // NOI18N
-//            } else {
-//                assert displayItem.startsWith(nativeRubyLabel);
-//                String path = displayItem.substring(nativeRubyLabel.length());
-//                
-//                try {
-//                    path = new File(path).getCanonicalPath();
-//                } catch (IOException ioe) {
-//                    Exceptions.printStackTrace(ioe);
-//                }
-//
-//                return path;
-//            }
-//        }
-//
-//        return "jruby"; // NOI18N
-//    }
-    
     public FileObject getRubyStubs() {
         if (stubsFO == null) {
             // Core classes: Stubs generated for the "builtin" Ruby libraries.
@@ -680,27 +500,6 @@ public final class RubyPlatform {
 
         return null;
     }
-
-//    public void setRuby(String ruby) {
-//        File rubyF = new File(ruby);
-//        ruby = rubyF.getAbsolutePath();
-//        if (!ruby.equals(getRuby())) {
-//            Util.getPreferences().put(KEY_RUBY, ruby);
-//        }
-//        if (!FileUtil.normalizeFile(rubyF).equals(FileUtil.normalizeFile(new File(getRuby())))) {
-//            // reset only in case it is not a link to the same file
-//            this.ruby = ruby;
-//            // Recompute lazily:
-//            this.rubylibFo = null;
-//            this.rubyStubsFo = null;
-//            this.jrubyJavaSupport = null;
-//            //this.irb = null;
-//            if (isValidRuby(false)) {
-//                recomputeRoots();
-//            }
-//        }
-//    }
-
 
     private void updateIndexRoots() {
         if (!indexInitialized) {
