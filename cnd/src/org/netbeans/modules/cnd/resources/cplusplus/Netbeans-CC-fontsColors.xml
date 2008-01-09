@@ -62,4 +62,32 @@ made subject to such option by the copyright holder.
     <fontcolor name="cc-user-include" default="string"/>
     <fontcolor name="cc-string-literal" default="string"/>
     <fontcolor name="cc-whitespace" default="whitespace"/>
+    
+    <!-- CppStringTokenId categories -->
+    <fontcolor name="string-escape" default="string">
+        <font style="bold" />
+    </fontcolor>
+    <fontcolor name="string-escape-invalid" waveUnderlined="CE7B00" default="string">
+        <font style="bold" />
+    </fontcolor>
+   
+    <!-- DoxygenTokenId categories -->
+    <fontcolor name="doxygen-tag" default="comment">
+        <font style="bold" />
+    </fontcolor>
+    <fontcolor name="html-tag" default="comment">
+        <font style="bold" />
+    </fontcolor> 
+    
+    <!-- Preprocessor categories -->
+    <fontcolor name="preprocessor" foreColor="009B00"/>
+    <fontcolor name="preprocessor-keyword-directive" default="preprocessor"/>
+     <fontcolor name="preprocessor-system-include-literal" default="string">
+        <font style="italic"/>
+    </fontcolor>
+    <fontcolor name="preprocessor-user-include-literal" default="string">
+        <font style="bold"/>
+    </fontcolor>
+    <fontcolor name="preprocessor-identifier" default="preprocessor"/>
+   
 </fontscolors>

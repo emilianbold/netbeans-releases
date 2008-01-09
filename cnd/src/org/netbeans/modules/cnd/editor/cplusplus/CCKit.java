@@ -50,6 +50,8 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.TokenItem;
 
 import org.openide.util.Lookup;
@@ -97,6 +99,15 @@ public class CCKit extends NbEditorKit {
         return doc; 
     }
 
+    /** Initialize document by adding the draw-layers for example. */
+    @Override
+    protected void initDocument(BaseDocument doc) {
+//        doc.putProperty(Language.class, getLanguage());
+    }
+    
+    protected Language<CppTokenId> getLanguage() {
+        return CppTokenId.languageCpp();
+    }
     /** Create new instance of syntax coloring scanner
      * @param doc document to operate on. It can be null in the cases the syntax
      *   creation is not related to the particular document

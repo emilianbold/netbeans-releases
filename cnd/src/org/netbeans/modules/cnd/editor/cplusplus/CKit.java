@@ -48,6 +48,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Syntax;
 import org.netbeans.editor.TokenItem;
@@ -70,6 +72,11 @@ public class CKit extends CCKit {
     @Override
     public Syntax createSyntax(Document doc) {
         return new CSyntax();
+    }
+    
+    @Override
+    protected Language<CppTokenId> getLanguage() {
+        return CppTokenId.languageC();
     }
     
     @Override
