@@ -218,10 +218,8 @@ public final class OpenProjectList {
         }
 
         final void waitFinished() {
-            if (EventQueue.isDispatchThread()) {
-                if (action == 0) {
-                    run();
-                }
+            if (action == 0) {
+                run();
             }
             TASK.waitFinished();
         }
