@@ -707,7 +707,7 @@ public class NbServiceTagSupport {
         //Extract image from jar
         String resource = "/org/netbeans/modules/reglib/resources/nb_header.png";
         File img = new File(svcTagDirHome, "nb_header.png");
-        String headerImageSrc = img.getCanonicalPath();       
+        String headerImageSrc = img.toURI().toURL().toString();       
         InputStream in = NbServiceTagSupport.class.getResourceAsStream(resource);
         if (in == null) {
             // if the resource file is missing
