@@ -61,6 +61,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.PositionBounds;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  * This class does the actual refactoring changes for one form - updates the
@@ -509,20 +510,17 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
 
     private static class PreviewElement extends SimpleRefactoringElementImplementation {
         private FileObject file;
-//        private String displayText;
 
-        PreviewElement(FileObject file/*, String displayText*/) {
+        PreviewElement(FileObject file) {
             this.file = file;
-//            this.displayText = displayText;
         }
 
         public String getText() {
-            return "GUI form update";
+            return "GUI form update"; // NOI18N
         }
 
         public String getDisplayText() {
-//            return displayText;
-            return "Update GUI form and regenerate code in guarded blocks";
+            return NbBundle.getMessage(FormRefactoringUpdate.class, "CTL_RefactoringUpdate1"); // NOI18N
         }
 
         public void performChange() {
@@ -550,8 +548,7 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
 
     // RefactoringElementImplementation
     public String getDisplayText() {
-//            return displayText;
-        return "Post-refactoring: Update GUI form and regenerate code in guarded blocks";
+        return NbBundle.getMessage(FormRefactoringUpdate.class, "CTL_RefactoringUpdate2"); // NOI18N
     }
 
     // RefactoringElementImplementation
