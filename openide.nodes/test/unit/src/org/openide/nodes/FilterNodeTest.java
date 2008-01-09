@@ -696,6 +696,11 @@ public class FilterNodeTest extends NbTestCase {
         Collection<? extends Node> all = n.getLookup().lookupAll(Node.class);
         assertEquals("One found: " + all, 1, all.size());
         assertEquals("It is the filter node", n, all.iterator().next());
+        
+        Lookup.Result<Object> resObj = n.getLookup().lookup(new Lookup.Template<Object>(null, null, new Object()));
+        Collection<? extends Object> instances = resObj.allInstances();
+        
+        assertTrue("supposed to be empty but was: " + instances.toString(), instances.isEmpty());
     }
     
     public void testNoClassCast89329() throws Exception {
