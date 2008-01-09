@@ -300,9 +300,9 @@ public class SoapBindingSupport implements BindingSupport {
             if (part.getType() != null && part.getType().getQName() != null) {
                 SchemaType type = mSchemaTypeLoader.findType(part.getType().getQName());          
                 xmlGenerator.createSampleForType(type, c);
-            } else if (part.getElement() != null) {
-                SchemaGlobalElement element = mSchemaTypeLoader.findElement(part.getElement().getQName());         
-                xmlGenerator.createSampleForType(element.getType(), c);
+            } else if (part.getElement() != null) { 
+                // This is not BP 1.0 compliant. 
+                createElementForPart(part, c, xmlGenerator);
             } else {
                 mLog.log(Level.SEVERE,
                         NbBundle.getMessage(SoapBindingSupport.class,

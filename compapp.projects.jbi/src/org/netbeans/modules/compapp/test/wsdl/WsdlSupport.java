@@ -81,21 +81,21 @@ import org.openide.filesystems.FileUtil;
  *
  */
 public class WsdlSupport {
-    private static final Logger mLog =Logger.getLogger("org.netbeans.modules.compapp.test.wsdl.WsdlSupport"); // NOI18N
+    private static final Logger mLog = Logger.getLogger("org.netbeans.modules.compapp.test.wsdl.WsdlSupport"); // NOI18N
     
     private String mWsdlUrl;
     private WSDLModel mWsdlModel;
     private SchemaTypeLoader mSchemaTypeLoader;
-    private String wsdlSupportErrStr = ""; //NOI18N
+    private String mWsdlSupportErrStr = ""; //NOI18N
     
     /** Creates a new instance of WsdlSupport */
-    public WsdlSupport(FileObject wsdlFile) {
-        mWsdlUrl = "file:" + FileUtil.toFile(wsdlFile).getPath();
+    public WsdlSupport(FileObject wsdlFileObject) {
+        mWsdlUrl = "file:" + FileUtil.toFile(wsdlFileObject).getPath();
         
         try {
             // Although we are not modifying the WSDL, we still create an
             // editable ModelSource. See #111034.
-            ModelSource wsdlModelSource = Utilities.createModelSource(wsdlFile, true);                      
+            ModelSource wsdlModelSource = Utilities.createModelSource(wsdlFileObject, true);                      
             mWsdlModel = WSDLModelFactory.getDefault().getModel(wsdlModelSource);
         
             mSchemaTypeLoader = loadSchemaTypes(mWsdlUrl);
@@ -110,7 +110,36 @@ public class WsdlSupport {
                 msg += newline;
                 msg += e.getMessage();  // NOI18N
             }
-            wsdlSupportErrStr += msg;
+            mWsdlSupportErrStr += msg;
+            
+            // We don't want the (extra) raw stacktrace thrown in the user's face.
+            // mLog.log(Level.SEVERE, msg, e);
+            mLog.severe(msg);
+        }
+    }
+    
+    // This is only added for unit test purpose
+    WsdlSupport(FileObject wsdlFile, ModelSource wsdlModelSource) {
+        mWsdlUrl = "file:" + FileUtil.toFile(wsdlFile).getPath();
+        
+        try {
+            // Although we are not modifying the WSDL, we still create an
+            // editable ModelSource. See #111034.                    
+            mWsdlModel = WSDLModelFactory.getDefault().getModel(wsdlModelSource);
+        
+            mSchemaTypeLoader = loadSchemaTypes(mWsdlUrl);
+        } catch (Exception e) {
+            String msg = NbBundle.getMessage(WsdlSupport.class, "LBL_Fail_to_load_schema_types", mWsdlUrl); // NOI18N
+            if (e.getMessage() != null) {
+                msg += "\n" + e.getMessage();  // NOI18N
+                String newline = System.getProperty("line.separator"); // NOI18N
+                msg += newline;
+                msg += newline;
+                msg += "The original error message is:"; // NOI18N
+                msg += newline;
+                msg += e.getMessage();  // NOI18N
+            }
+            mWsdlSupportErrStr += msg;
             
             // We don't want the (extra) raw stacktrace thrown in the user's face.
             // mLog.log(Level.SEVERE, msg, e);
@@ -127,11 +156,11 @@ public class WsdlSupport {
     }
     
     public String getWsdlSupportError() {
-        return wsdlSupportErrStr;
+        return mWsdlSupportErrStr;
     }
     
     public void setWsdlSupportError(String s) {
-        wsdlSupportErrStr = s;
+        mWsdlSupportErrStr = s;
     }
     
     private static SchemaTypeLoader loadSchemaTypes(String wsdlUrl) 

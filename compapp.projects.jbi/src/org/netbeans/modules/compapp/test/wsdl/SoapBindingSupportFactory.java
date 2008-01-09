@@ -38,8 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-
 package org.netbeans.modules.compapp.test.wsdl;
 
 import java.util.List;
@@ -57,28 +55,28 @@ import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPBinding;
  * @author Bing Lu
  */
 public class SoapBindingSupportFactory implements BindingSupportFactory {
+
     private static final Logger mLog = Logger.getLogger("org.netbeans.modules.compapp.test.wsdl.SoapBindingSupportFactory"); // NOI18N
-    
-    private static final String SOAP_TRANSPORT_URI = 
+    private static final String SOAP_TRANSPORT_URI =
             "http://schemas.xmlsoap.org/soap/http"; // NOI18N
-    
+
     /** Creates a new instance of SoapBindingSupportFactory */
     public SoapBindingSupportFactory() {
     }
-    
-   public boolean supports(Binding binding) {
-      List eeList = binding.getExtensibilityElements();
-      SOAPBinding soapBinding = (SOAPBinding) 
-              Util.getAssignableExtensiblityElement(eeList, SOAPBinding.class);
-      return soapBinding == null ? false : 
-         soapBinding.getTransportURI().startsWith(SOAP_TRANSPORT_URI);         
-   }
-   
-   public BindingSupport createBindingSupport(
-           Binding binding, 
-           Definitions definition, 
-           SchemaTypeLoader schemaTypeLoader) 
-           throws Exception {
-       return new SoapBindingSupport(binding, definition, schemaTypeLoader);
-   }
+
+    public boolean supports(Binding binding) {
+        List eeList = binding.getExtensibilityElements();
+        SOAPBinding soapBinding = (SOAPBinding) 
+                Util.getAssignableExtensiblityElement(eeList, SOAPBinding.class);
+        return soapBinding == null ? false : 
+            soapBinding.getTransportURI().startsWith(SOAP_TRANSPORT_URI);
+    }
+
+    public BindingSupport createBindingSupport(
+            Binding binding,
+            Definitions definition,
+            SchemaTypeLoader schemaTypeLoader)
+            throws Exception {
+        return new SoapBindingSupport(binding, definition, schemaTypeLoader);
+    }
 }
