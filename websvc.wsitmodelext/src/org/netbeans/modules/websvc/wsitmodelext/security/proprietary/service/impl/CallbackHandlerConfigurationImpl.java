@@ -43,6 +43,7 @@ package org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.im
 
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.CallbackHandlerConfiguration;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.ProprietaryPolicyQName;
+import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.ProprietarySecurityPolicyAttribute;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.ProprietarySecurityPolicyServiceQName;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
@@ -78,4 +79,12 @@ public class CallbackHandlerConfigurationImpl extends ProprietarySecurityPolicyC
         return getAnyAttribute(ProprietaryPolicyQName.VISIBILITY.getQName());
     }
 
+    public void setTimestampTimeout(String timeout) {
+        setAttribute(TIMESTAMPTIMEOUT, ProprietarySecurityPolicyAttribute.TIMESTAMPTIMEOUT, timeout);        
+    }
+
+    public String getTimestampTimeout() {
+        return getAttribute(ProprietarySecurityPolicyAttribute.TIMESTAMPTIMEOUT);
+    }
+    
 }

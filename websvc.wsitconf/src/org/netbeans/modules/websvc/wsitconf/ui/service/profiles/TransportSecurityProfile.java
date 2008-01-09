@@ -118,6 +118,7 @@ public class TransportSecurityProfile extends ProfileBase
     public void setClientDefaults(WSDLComponent component, WSDLComponent serviceBinding, Project p) {
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, true);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, true);
+        ProprietarySecurityPolicyModelHelper.removeCallbackHandlerConfiguration((Binding) component);
     }
 
     public void setServiceDefaults(WSDLComponent component, Project p) {
@@ -126,6 +127,9 @@ public class TransportSecurityProfile extends ProfileBase
     }
     
     public boolean isClientDefaultSetupUsed(WSDLComponent component, Binding serviceBinding, Project p) {
+        if (ProprietarySecurityPolicyModelHelper.getCBHConfiguration((Binding) component) != null) {
+            return false;
+        }
         return true;
     }
  

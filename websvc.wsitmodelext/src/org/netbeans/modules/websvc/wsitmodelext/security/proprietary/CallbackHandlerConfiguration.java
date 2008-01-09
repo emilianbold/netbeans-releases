@@ -49,6 +49,12 @@ import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
  */
 public interface CallbackHandlerConfiguration extends ExtensibilityElement{
 
+    public static final String TIMESTAMPTIMEOUT = "TimestampTimeout";     //NOI18N
+    
     void setVisibility(String vis);
     String getVisibility();
+    
+    public void setTimestampTimeout(String tsTimeout);
+    public String getTimestampTimeout();
+    
 }

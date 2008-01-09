@@ -83,6 +83,7 @@ public class ProprietarySecurityPolicyModelHelper {
 
     public static final String DEFAULT_LIFETIME = "300000";                     //NOI18N
     public static final String DEFAULT_CONTRACT_CLASS = "com.sun.xml.ws.trust.impl.IssueSamlTokenContractImpl"; //NOI18N
+    public static final String DEFAULT_HANDLER_TIMESTAMP_TIMEOUT = "300";                     //NOI18N
     
     /**
      * Creates a new instance of ProprietarySecurityPolicyModelHelper
@@ -373,6 +374,14 @@ public class ProprietarySecurityPolicyModelHelper {
         }
     }
 
+    public static CallbackHandlerConfiguration getCBHConfiguration(Binding b) {
+        if (b == null) return null;
+        Policy p = PolicyModelHelper.getPolicyForElement(b);
+        if (p == null) return null;
+        CallbackHandlerConfiguration chc = (CallbackHandlerConfiguration) PolicyModelHelper.getTopLevelElement(p, CallbackHandlerConfiguration.class);
+        return chc;
+    }
+    
     public static SCClientConfiguration getSCClientConfiguration(Policy p) {
             return (SCClientConfiguration) PolicyModelHelper.getTopLevelElement(p, SCClientConfiguration.class);
     }
@@ -733,7 +742,37 @@ public class ProprietarySecurityPolicyModelHelper {
             }
         }
     }
+    
+    public static String getHandlerTimestampTimeout(Binding b) {
+        CallbackHandlerConfiguration chc = getCBHConfiguration(b);
+        if (chc != null) {
+            return chc.getTimestampTimeout();
+        }
+        return null;
+    }    
 
+    public static void setHandlerTimestampTimeout(Binding b, String value, boolean client) {
+        WSDLModel model = b.getModel();
+        Policy p = PolicyModelHelper.getPolicyForElement(b);        
+        boolean isTransaction = model.isIntransaction();
+        if (!isTransaction) {
+            model.startTransaction();
+        }
+        try {
+            CallbackHandlerConfiguration chc = (CallbackHandlerConfiguration) PolicyModelHelper.getTopLevelElement(p, CallbackHandlerConfiguration.class);
+            if (((p == null) || (chc == null)) && value != null) {
+                chc = createCallbackHandlerConfiguration(b, client);
+            }
+            if (chc != null) {
+                chc.setTimestampTimeout(value);
+            }
+        } finally {
+            if (!isTransaction) {
+                model.endTransaction();
+            }
+        }
+    }
+    
     public static void setTimestampTimeout(Binding b, String value, boolean client) {
         WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);        
@@ -992,6 +1031,24 @@ public class ProprietarySecurityPolicyModelHelper {
             }
         }
     }
+
+    public static void removeCallbackHandlerConfiguration(Binding b) {
+        CallbackHandlerConfiguration cbh = getCBHConfiguration(b);
+        if (cbh != null) {
+            WSDLModel model = cbh.getModel();
+            boolean isTransaction = model.isIntransaction();
+            if (!isTransaction) {
+                model.startTransaction();
+            }
+            try {
+                cbh.getParent().removeExtensibilityElement(cbh);
+            } finally {
+                if (!isTransaction) {
+                    model.endTransaction();
+                }
+            }
+        }
+    }
     
     public static void setCallbackHandler(Binding b, String type, String value, String defaultVal, boolean client) {
         WSDLModel model = b.getModel();
@@ -1011,7 +1068,7 @@ public class ProprietarySecurityPolicyModelHelper {
             }
             if ((defaultVal == null) && (value == null)) {
                 chc.removeExtensibilityElement(h);
-                if (chc.getExtensibilityElements().size() == 0) {
+                if ((chc.getExtensibilityElements().size() == 0) && (chc.getTimestampTimeout() == null)) {
                     chc.getParent().removeExtensibilityElement(chc);
                 }
             } else {           

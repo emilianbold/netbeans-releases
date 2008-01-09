@@ -140,6 +140,7 @@ public class SenderVouchesProfile extends ProfileBase
 //        ProprietarySecurityPolicyModelHelper pmh = ProprietarySecurityPolicyModelHelper.getInstance(cfgVersion);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, true);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, true);
+        ProprietarySecurityPolicyModelHelper.removeCallbackHandlerConfiguration((Binding) component);
         if (Util.isTomcat(p)) {
             FileObject tomcatLoc = Util.getTomcatLocation(p);
             ProprietarySecurityPolicyModelHelper.setStoreLocation(component, 

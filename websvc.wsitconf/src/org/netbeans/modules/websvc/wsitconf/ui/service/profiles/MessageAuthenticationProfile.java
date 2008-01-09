@@ -135,6 +135,7 @@ public class MessageAuthenticationProfile extends ProfileBase
 //        ProprietarySecurityPolicyModelHelper pmh = ProprietarySecurityPolicyModelHelper.getInstance(cfgVersion);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, true);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, true);
+        ProprietarySecurityPolicyModelHelper.removeCallbackHandlerConfiguration((Binding) component);
         ProprietarySecurityPolicyModelHelper.setCallbackHandler(
                 (Binding)component, CallbackHandler.USERNAME_CBHANDLER, null, DEFAULT_USERNAME, true);
         ProprietarySecurityPolicyModelHelper.setCallbackHandler(
@@ -155,6 +156,9 @@ public class MessageAuthenticationProfile extends ProfileBase
     }
 
     public boolean isClientDefaultSetupUsed(WSDLComponent component, Binding serviceBinding, Project p) {
+        if (ProprietarySecurityPolicyModelHelper.getCBHConfiguration((Binding) component) != null) {
+            return false;
+        }
         String trustLoc = ProprietarySecurityPolicyModelHelper.getStoreLocation(component, true);
         String keyLoc = ProprietarySecurityPolicyModelHelper.getStoreLocation(component, false);
         String keyPasswd = ProprietarySecurityPolicyModelHelper.getStorePassword(component, false);

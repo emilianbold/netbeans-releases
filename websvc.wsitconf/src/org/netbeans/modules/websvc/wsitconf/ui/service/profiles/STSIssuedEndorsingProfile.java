@@ -131,7 +131,9 @@ public class STSIssuedEndorsingProfile extends ProfileBase
     }
 
     public void setClientDefaults(WSDLComponent component, WSDLComponent securityBinding, Project p) {
-        // TODO
+        ProprietarySecurityPolicyModelHelper.removeCallbackHandlerConfiguration((Binding) component);
+        ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, true);
+        ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, true);
     }
     
     public boolean isServiceDefaultSetupUsed(WSDLComponent component, Project p) {
@@ -157,6 +159,9 @@ public class STSIssuedEndorsingProfile extends ProfileBase
     }
 
     public boolean isClientDefaultSetupUsed(WSDLComponent component, Binding serviceBinding, Project p) {
+        if (ProprietarySecurityPolicyModelHelper.getCBHConfiguration((Binding) component) != null) {
+            return false;
+        }
         return false;
     }
     

@@ -135,6 +135,7 @@ public class MutualCertificatesProfile extends ProfileBase
 //        ProprietarySecurityPolicyModelHelper pmh = ProprietarySecurityPolicyModelHelper.getInstance(cfgVersion);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, true);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, true);
+        ProprietarySecurityPolicyModelHelper.removeCallbackHandlerConfiguration((Binding) component);
         if (Util.isTomcat(p)) {
             FileObject tomcatLoc = Util.getTomcatLocation(p);
             ProprietarySecurityPolicyModelHelper.setStoreLocation(component, 
@@ -152,12 +153,15 @@ public class MutualCertificatesProfile extends ProfileBase
     }    
     
     public boolean isClientDefaultSetupUsed(WSDLComponent component, Binding serviceBinding, Project p) {
+        if (ProprietarySecurityPolicyModelHelper.getCBHConfiguration((Binding) component) != null) {
+            return false;
+        }
         String keyAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(component, false);
         String trustAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(component, true);
         String trustPasswd = ProprietarySecurityPolicyModelHelper.getStorePassword(component, true);
         String keyPasswd = ProprietarySecurityPolicyModelHelper.getStorePassword(component, false);
         String keyLoc = ProprietarySecurityPolicyModelHelper.getStoreLocation(component, false);
-        String trustLoc = ProprietarySecurityPolicyModelHelper.getStoreLocation(component, true);
+        String trustLoc = ProprietarySecurityPolicyModelHelper.getStoreLocation(component, true);        
         if (ProfilesModelHelper.XWS_SECURITY_CLIENT.equals(keyAlias) && 
             ProfilesModelHelper.XWS_SECURITY_SERVER.equals(trustAlias)) {
                 if (Util.isTomcat(p)) {

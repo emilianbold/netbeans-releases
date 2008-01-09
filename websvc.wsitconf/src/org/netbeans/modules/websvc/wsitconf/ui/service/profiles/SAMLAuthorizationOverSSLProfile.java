@@ -136,6 +136,7 @@ public class SAMLAuthorizationOverSSLProfile extends ProfileBase
     public void setClientDefaults(WSDLComponent component, WSDLComponent serviceBinding, Project p) {
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, true);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, true);
+        ProprietarySecurityPolicyModelHelper.removeCallbackHandlerConfiguration((Binding) component);
 
         FileObject targetFolder = null;
         

@@ -53,6 +53,7 @@ public enum ProprietarySecurityPolicyServiceQName {
     KEYSTORE(createSecurityPolicyQName("KeyStore")),  //NOI18N
     TRUSTSTORE(createSecurityPolicyQName("TrustStore")),  //NOI18N
     CALLBACKHANDLERCONFIGURATION(createSecurityPolicyQName("CallbackHandlerConfiguration")),  //NOI18N
+    TIMESTAMPTIMEOUT(createSecurityPolicyQName("timestampTimeout")),  //NOI18N
     CALLBACKHANDLER(createSecurityPolicyQName("CallbackHandler")), //NOI18N
     DISABLESTREAMINGSECURITY(createSecurityPolicyQName("DisableStreamingSecurity")), //NOI18N
     VALIDATORCONFIGURATION(createSecurityPolicyQName("ValidatorConfiguration")),  //NOI18N

@@ -49,6 +49,7 @@ import org.netbeans.modules.xml.xam.dom.Attribute;
  */
 public enum ProprietarySecurityPolicyAttribute implements Attribute {
         VISIBILITY("visibility"),       //NOI18N
+        TIMESTAMPTIMEOUT("timestampTimeout"),       //NOI18N
         DEFAULT("default"),       //NOI18N
         ENCRYPTISSUEDKEY("encryptIssuedKey"),       //NOI18N
         ENCRYPTISSUEDTOKEN("encryptIssuedToken"),   //NOI18N

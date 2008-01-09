@@ -172,10 +172,12 @@ public class UsernameAuthenticationProfile extends ProfileBase
 //        ProprietarySecurityPolicyModelHelper pmh = ProprietarySecurityPolicyModelHelper.getInstance(cfgVersion);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, true);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, true);
+        ProprietarySecurityPolicyModelHelper.removeCallbackHandlerConfiguration((Binding) component);
         ProprietarySecurityPolicyModelHelper.setCallbackHandler(
                 (Binding)component, CallbackHandler.USERNAME_CBHANDLER, null, DEFAULT_USERNAME, true);
         ProprietarySecurityPolicyModelHelper.setCallbackHandler(
                 (Binding)component, CallbackHandler.PASSWORD_CBHANDLER, null, DEFAULT_PASSWORD, true);
+        ProprietarySecurityPolicyModelHelper.setHandlerTimestampTimeout((Binding) component, null, true);
         if (Util.isTomcat(p)) {
             FileObject tomcatLoc = Util.getTomcatLocation(p);
             ProprietarySecurityPolicyModelHelper.setStoreLocation(component, 
@@ -190,6 +192,9 @@ public class UsernameAuthenticationProfile extends ProfileBase
         String trustAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(component, true);
         String trustPasswd = ProprietarySecurityPolicyModelHelper.getStorePassword(component, true);
         String trustLoc = ProprietarySecurityPolicyModelHelper.getStoreLocation(component, true);
+        if (ProprietarySecurityPolicyModelHelper.getCBHConfiguration((Binding) component) != null) {
+            return false;
+        }
         if (ProfilesModelHelper.XWS_SECURITY_SERVER.equals(trustAlias)) {
             String user = ProprietarySecurityPolicyModelHelper.getDefaultUsername((Binding)component);
             String passwd = ProprietarySecurityPolicyModelHelper.getDefaultPassword((Binding)component);
