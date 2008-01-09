@@ -54,7 +54,7 @@ public class ItemsResource {
     @ProduceMime("application/xml")
     public Response postXml(String content) {
         //TODO
-        return Response.created(content, context.getAbsolutePath()).build();
+        return Response.created(context.getAbsolutePath()).build();
     }
 
     /**
