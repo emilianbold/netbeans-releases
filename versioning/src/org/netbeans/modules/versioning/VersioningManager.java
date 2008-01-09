@@ -112,8 +112,9 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
 
     /**
      * What folder is versioned by what versioning system. 
+     * TODO: use SoftHashMap if there is one available in APIs
      */
-    private final Map<File, VersioningSystem> folderOwners = new WeakHashMap<File, VersioningSystem>(100);
+    private final Map<File, VersioningSystem> folderOwners = new HashMap<File, VersioningSystem>(200);
 
     /**
      * Holds registered local history system.
@@ -122,8 +123,9 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
     
     /**
      * What folders are managed by local history. 
+     * TODO: use SoftHashMap if there is one available in APIs
      */
-    private Map<File, Boolean> localHistoryFolders = new WeakHashMap<File, Boolean>(100);
+    private Map<File, Boolean> localHistoryFolders = new HashMap<File, Boolean>(200);
     
     private final VersioningSystem NULL_OWNER = new VersioningSystem() {
     };
