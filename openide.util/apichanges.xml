@@ -61,7 +61,7 @@ made subject to such option by the copyright holder.
                 Added new constructor
                 <a href="@TOP@/org/openide/util/Mutex.html">Mutex(Privileged, Executor)</a>
                 that allows creators of the mutex to intercept and wrap all actions running
-                inside the mutex with with custom code.
+                inside the mutex with custom code.
             </p>
         </description> 
         <class package="org.openide.util" name="Mutex"/>
