@@ -93,8 +93,8 @@ class QueryBuilderInputTableModel extends DefaultTableModel {
      * rather than a check box.
      */
     public Class getColumnClass(int c) {
-        if ( getRowCount() == 0 ) return (new String("").getClass());       // NOI18N
-        if ( getValueAt(0,c) == null ) return (new String("").getClass());      // NOI18N
+        if ( getRowCount() == 0 ) return String.class;       // NOI18N
+        if ( getValueAt(0,c) == null ) return String.class;      // NOI18N
         return getValueAt(0, c).getClass();
     }
 

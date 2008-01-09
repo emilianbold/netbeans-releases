@@ -832,7 +832,7 @@ public class QueryBuilderGraphFrame extends JPanel
         // This will initiate the QueryBuilder properly.
         if ( ( _queryBuilder.getQueryModel() == null ) ||
 	     ( _queryBuilder.getQueryModel().genText() == null ) ) {
-            String query = new String("select * from " + fullTableName);
+            String query = "select * from " + fullTableName;
             _queryBuilder.populate(query, false);
             _queryBuilder.setSqlCommand(query);
             return;

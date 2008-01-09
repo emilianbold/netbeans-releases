@@ -115,7 +115,7 @@ public  class BaseSpecificXMLDeserializer extends BaseXMLDeserializer
 
         }
 
-        String message = new String("Saw tag " + actual +  " when " + expected + " was expected.");
+        String message = ("Saw tag " + actual +  " when " + expected + " was expected.");
 
         SAXException tagError = new SAXException(message);
 

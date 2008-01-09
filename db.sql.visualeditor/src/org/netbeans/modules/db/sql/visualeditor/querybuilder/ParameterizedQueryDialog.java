@@ -512,30 +512,30 @@ public class ParameterizedQueryDialog extends javax.swing.JPanel {
 
     }//GEN-END:initComponents
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        java.awt.EventQueue.invokeLater(new Runnable() {
-                public void run() {
-                    String[] parameters = new String[5];
-                    String[] values = new String[5];
-                    for (int i = 0; i < parameters.length; i++) {
-                        parameters[i] = new String("Table.column" + i);
-                    }
-                    ParameterizedQueryDialog pqDlg = new ParameterizedQueryDialog(
-                        parameters, true);
-                    System.out.println(pqDlg.getReturnStatus());
-                    if (pqDlg.getReturnStatus() == ParameterizedQueryDialog.RETURNED_OK) {
-                        values = pqDlg.getParameterValues();
-
-                        for (int i = 0; i < values.length; i++) {
-                            System.out.println(values[i] + "\n");
-                        }
-                    }
-                }
-            });
-    }
+//    /**
+//     * @param args the command line arguments
+//     */
+//    public static void main(String args[]) {
+//        java.awt.EventQueue.invokeLater(new Runnable() {
+//                public void run() {
+//                    String[] parameters = new String[5];
+//                    String[] values = new String[5];
+//                    for (int i = 0; i < parameters.length; i++) {
+//                        parameters[i] = ("Table.column" + i);
+//                    }
+//                    ParameterizedQueryDialog pqDlg = new ParameterizedQueryDialog(
+//                        parameters, true);
+//                    System.out.println(pqDlg.getReturnStatus());
+//                    if (pqDlg.getReturnStatus() == ParameterizedQueryDialog.RETURNED_OK) {
+//                        values = pqDlg.getParameterValues();
+//
+//                        for (int i = 0; i < values.length; i++) {
+//                            System.out.println(values[i] + "\n");
+//                        }
+//                    }
+//                }
+//            });
+//    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel mainPanel;
