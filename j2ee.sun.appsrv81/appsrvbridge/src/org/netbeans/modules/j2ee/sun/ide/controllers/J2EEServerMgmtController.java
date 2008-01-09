@@ -1,4 +1,3 @@
-package org.netbeans.modules.j2ee.sun.ide.controllers;
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -39,11 +38,11 @@ package org.netbeans.modules.j2ee.sun.ide.controllers;
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.j2ee.sun.ide.controllers;
+
 import java.util.Iterator;
 import java.util.Map;
 import java.util.List;
-import com.sun.appserv.management.base.Util;
-import com.sun.appserv.management.util.jmx.JMXUtil;
 import com.sun.appserv.management.j2ee.AppClientModule;
 import com.sun.appserv.management.j2ee.EJBModule;
 import com.sun.appserv.management.j2ee.J2EEApplication;
@@ -58,7 +57,7 @@ import com.sun.appserv.management.config.RARModuleConfig;
 import com.sun.appserv.management.config.WebModuleConfig;
 import com.sun.appserv.management.config.DomainConfig;
 import com.sun.appserv.management.j2ee.J2EEDeployedObject;
-import java.util.Arrays;
+import javax.management.ObjectName;
 
 import javax.enterprise.deploy.spi.DeploymentManager;
 import org.netbeans.modules.j2ee.sun.bridge.apis.AppserverMgmtControllerBase;
@@ -230,6 +229,23 @@ public class J2EEServerMgmtController
             new WebModuleController[controllers.size()];
         return (WebModuleController[]) controllers.toArray(result);
     }
+    
+    /**
+     *
+     *
+     */
+    public SIPController[] getSIPModules() {
+        testIfServerInDebug();
+        ObjectName[] sipApps = ControllerUtil.getSIPComponents(getMBeanServerConnection());
+        java.util.Vector controllers = new java.util.Vector();
+        for(int i=0; i<sipApps.length; i++){
+            ObjectName sipAppObjName = sipApps[i];
+            controllers.add(new SIPController(sipAppObjName, getDeploymentManager(), appMgmtConnection)); 
+        }
+        SIPController[] result = new SIPController[controllers.size()];
+        return (SIPController[]) controllers.toArray(result);
+    }
+    
 
     /**
      * Return the web module name of a standlaone or embeded webmodule

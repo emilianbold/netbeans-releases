@@ -38,23 +38,69 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.j2ee.sun.ide.controllers;
 
-import org.netbeans.modules.j2ee.sun.bridge.apis.Controller;
+package org.netbeans.modules.j2ee.sun.ide.runtime.nodes;
+
+import java.util.Arrays;
+import java.util.List;
+import javax.swing.Action;
+import org.netbeans.modules.j2ee.sun.ide.controllers.DeployedItemsController;
+import org.netbeans.modules.j2ee.sun.ide.controllers.SIPController;
+import org.netbeans.modules.j2ee.sun.ide.runtime.actions.EnableDisableAction;
+import org.netbeans.modules.j2ee.sun.ide.runtime.actions.UndeployAction;
+import org.netbeans.modules.j2ee.sun.util.NodeTypes;
+import org.openide.actions.PropertiesAction;
+import org.openide.nodes.Children;
+import org.openide.util.actions.SystemAction;
 
 /**
- * A controller is responsible for acting as the bridge between Netbeans
- * apis and the Sun Java Application Server AMX api for managment and monitoring.
- * This allows for the decoupling of the data model (AMX) from the Netbeans
- * node view.
+ *
+ * @author Nitya Doraisamy
  */
-public interface DeployedItemsController extends Controller {
-
-
+public class SIPModuleNode extends AppserverMgmtApplicationsNode {
+        
+    private static String NODE_TYPE = NodeTypes.SIP_APPLICATION;
+                
+    public SIPModuleNode(SIPController controller, String nodeType) {
+        super(getChildNodes(controller), controller, nodeType, false); 
+        setDisplayName(controller.getDisplayName());
+        setName(controller.getDisplayName());
+    }
+   
     /**
-     * Undeploys this deployed component.
+     *
      */
-    public void undeploy();
-     
-     public void undeploy(String name);
+    static Children getChildNodes(SIPController controller) {
+        return createSIPModuleNodeChildren(controller);
+    }
+    /**
+     * Return the actions associated with the menu drop down seen when
+     * a user right-clicks on an Applications node in the plugin.
+     *
+     * @param boolean true/false
+     * @return An array of Action objects.
+     */
+    public Action[] getActions(boolean flag) {
+        return new SystemAction[]{
+            SystemAction.get(UndeployAction.class),
+            SystemAction.get(EnableDisableAction.class),
+            SystemAction.get(PropertiesAction.class)
+        };
+    }    
+    
+    /**
+     *
+     */
+    static Children createSIPModuleNodeChildren(SIPController controller) {
+        Children children = new Children.Array();
+        return children;  
+    }
+    
+    public void undeploy() {
+        ((DeployedItemsController)getController()).undeploy(getName());
+    }
+    
+    protected List getPropertiesToIgnore() {
+        return Arrays.asList(NodeTypes.getNodeProperties(NodeTypes.SIP_APPLICATION));
+    }
 }

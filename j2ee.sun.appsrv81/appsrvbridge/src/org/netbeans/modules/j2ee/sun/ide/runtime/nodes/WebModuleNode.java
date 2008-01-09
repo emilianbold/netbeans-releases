@@ -64,7 +64,7 @@ import org.openide.util.actions.SystemAction;
  */
 public class WebModuleNode extends AppserverMgmtApplicationsNode {
         
-    private static String NODE_TYPE = NodeTypes.WEB_MODULE;
+    private static String NODE_TYPE = NodeTypes.WEB_APPLICATION;
         
     /**
      *
@@ -150,6 +150,6 @@ public class WebModuleNode extends AppserverMgmtApplicationsNode {
 
     protected List getPropertiesToIgnore() {
         //Only for web module, these properties are the only ones displayed.
-        return Arrays.asList(NodeTypes.WEB_MODULE_NODE);        
+        return Arrays.asList(NodeTypes.WEB_APPLICATION); // should this be WEB_APPLICATION_PROP        
     }
 }

@@ -156,6 +156,6 @@ public class AppClientModuleNode extends AppserverMgmtLeafNode
     }
     
     protected List getPropertiesToIgnore() {
-        return Arrays.asList(NodeTypes.APP_CLIENT_MODULES_NODE);        
+        return Arrays.asList(NodeTypes.APP_CLIENT_MODULE);        
     }
 }

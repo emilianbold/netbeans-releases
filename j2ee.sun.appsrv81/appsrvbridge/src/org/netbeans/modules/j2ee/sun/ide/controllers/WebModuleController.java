@@ -125,7 +125,7 @@ public class WebModuleController extends AppserverMgmtControllerBase
      * @return All the application properties.
      */
     public Map getProperties(List propsToIgnore) { 
-        return getJ2EEAndConfigProperties(NodeTypes.WEB_MODULE, this.webModule,
+        return getJ2EEAndConfigProperties(NodeTypes.WEB_APPLICATION, this.webModule,
             this.webConfig, propsToIgnore);
     }
     

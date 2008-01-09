@@ -88,7 +88,7 @@ public class NodeTypes {
     private static HashMap nodeToInterfaceMap;
     private static HashMap nodeToConfigPeerInterfaceMap;
     private static HashMap deleteResOpNameMapper;
-    
+    private static HashMap propertiesMapper;    
     public static final String ENABLED = "Enabled";
     
     //Container Nodes
@@ -99,12 +99,15 @@ public class NodeTypes {
     public static final String ENTERPRISE_APPLICATIONS = "ENTERPRISE_APPS";
     public static final String ENTERPRISE_APPLICATION = "ENTERPRISE_APP";
     public static final String WEB_APPLICATIONS = "WEB_APPS";
-    public static final String WEB_MODULE = "WEB_APP";
+    public static final String WEB_APPLICATION = "WEB_APP";
     public static final String EJB_MODULES = "EJB_MODULES";
     public static final String EJB_MODULE = "EJB_MODULE";
     public static final String CONNECTOR_MODULES = "CONNECTOR_MODULES";
     public static final String CONNECTOR_MODULE = "CONNECTOR_MODULE";    
     public static final String APP_CLIENT_MODULES = "APPCLIENTS";    
+    public static final String APP_CLIENT_MODULE = "APPCLIENT";
+    public static final String SIP_APPLICATIONS = "SIP_APPS";
+    public static final String SIP_APPLICATION = "SIP_APP";
     
     public static final String JDBC = "JDBC";
     public static final String JDBC_RESOURCES = "JDBC_RESOURCES";
@@ -129,6 +132,7 @@ public class NodeTypes {
     public static final String STANDALONE_INSTANCE = "STANDALONE_INSTANCE";
     public static final String JDBC_RESOURCE = "JDBC_RESOURCE";
     public static final String CONNECTION_FACTORY = "CONNECTION_FACTORY";
+     public static final String CONNECTION_FACTORY_POOL = "CONNECTION_FACTORY_POOL";
     public static final String CONNECTION_POOL = "CONNECTION_POOL";    
     public static final String DESTINATION_RESOURCE = "DESTINATION_RESOURCE";
     public static final String CUSTOM_RESOURCE = "CUSTOM_RESOURCE";
@@ -145,9 +149,8 @@ public class NodeTypes {
     public static final String STATEFUL_SESSION_BEAN = "STATEFUL_BEAN";
     public static final String MESSAGE_DRIVEN_BEAN = "MESSAGE_DRIVEN_BEAN";
     public static final String ENTITY_BEAN = "ENTITY_BEAN";
-    public static final String APP_CLIENT_MODULE = "APPCLIENT";
     public static final String RESOURCE_ADAPTER = "RESOURCE_ADAPTER";
-    
+    public static final String SERVER_RESOURCE = "SERVER_RESOURCE";
     
     //configs
     public static final String EJB_MODULE_CONFIG = "EJB_MODULE_CONFIG";
@@ -156,30 +159,36 @@ public class NodeTypes {
     public static final String APP_CLIENT_MODULE_CONFIG = "APP_CLIENT_MODULE_CONFIG";  
     public static final String WEB_MODULE_CONFIG = "WEB_MODULE_CONFIG";  
     public static final String SERVLET_CONFIG = "SERVLET_CONFIG";  
+    public static final String SIPAPP_CONVERGED_PROP = "isConverged";
+    public static final String SIPAPP = "SIPAPP";
+    public static final String SIPAPP_CONVERGED = "SIPAPP_CONVERGED";
 
+    
     //Property Editor values
-    public static final String[] ENTERPRISE_APPLICATION_NODE = {
+    public static final String[] ENTERPRISE_APPLICATION_PROPS = {
        "ObjectType", "server", "modules", "Properties","PropertyNames" };
-    public static final String[] WEB_MODULE_NODE = {
+    public static final String[] WEB_APPLICATION_PROPS = {
        "AvailabilityEnabled", "ContextRoot", "deploymentDescriptor", "Description", "DirectoryDeployed", "Enabled", "HasWebServices", "Location", "Name", "WelcomeFiles" };
-    public static final String[] EJB_MODULE_NODE = {
+    public static final String[] EJB_MODULE_PROPS = {
        "ObjectType", "server", "ejbs", "Properties","PropertyNames" };
-    public static final String[] CONNECTOR_MODULE_NODE = {
+    public static final String[] CONNECTOR_MODULE_PROPS = {
        "ObjectType", "server", "resourceAdapters", "Properties","PropertyNames" };
-    public static final String[] APP_CLIENT_MODULES_NODE = {
+    public static final String[] APP_CLIENT_MODULE_PROPS = {
        "server" };
-    public static final String[] JVM_NODE = {
+    public static final String[] JVM_PROPS = {
        "Name", "Properties", "PropertyNames" };   
-    public static final String[] SERVER_RESOURCE_NODES = {
+    public static final String[] SERVER_RESOURCE_PROPS = {
        "ObjectType", "PropertyNames" };
-    public static final String[] CONNECTION_FACTORY_NODES = {
+    public static final String[] CONNECTION_FACTORY_PROPS = {
        "ObjectType", "PropertyNames", "Properties" };
-    public static final String[] CONNECTION_FACTORY_POOL_NODES = {
+    public static final String[] CONNECTION_FACTORY_POOL_PROPS = {
        "Description", "Name", "PropertyNames", "MatchConnections", "ResourceAdapterName", "MaxConnectionUsageCount",
        "ValidateAtMostOncePeriodInSeconds", "ConnectionLeakReclaim", "ConnectionLeakTimeoutInSeconds",
        "ConnectionCreationRetryAttempts", "ConnectionDefinitionName", "ConnectionDefinitionName", 
        "LazyConnectionEnlistment", "LazyConnectionAssociation", "AssociateWithThread", 
        "ConnectionCreationRetryIntervalInSeconds" };
+     private static final String[] SIP_APPLICATION_PROPS = {
+        "libraries", "object-type"};
        
     //Child definitions
 //    private static final String[] DOMAIN_CHILD_TYPES = { 
@@ -238,7 +247,7 @@ public class NodeTypes {
         nodeToInterfaceMap.put(SERVLET, Servlet.class);         
         nodeToInterfaceMap.put(EJB_MODULE, EJBModule.class);
         nodeToInterfaceMap.put(CONNECTOR_MODULE, ResourceAdapterModule.class);
-        nodeToInterfaceMap.put(WEB_MODULE, WebModule.class);
+        nodeToInterfaceMap.put(WEB_APPLICATION, WebModule.class);
         nodeToInterfaceMap.put(ENTERPRISE_APPLICATION, J2EEApplication.class);
         nodeToInterfaceMap.put(CONNECTION_FACTORY, ConnectorResourceConfig.class);
         nodeToInterfaceMap.put(DESTINATION_RESOURCE, AdminObjectResourceConfig.class);
@@ -260,7 +269,7 @@ public class NodeTypes {
         nodeToConfigPeerInterfaceMap.put(APP_CLIENT_MODULE, AppClientModuleConfig.class);        
         nodeToConfigPeerInterfaceMap.put(EJB_MODULE, EJBModuleConfig.class);
         nodeToConfigPeerInterfaceMap.put(CONNECTOR_MODULE, RARModuleConfig.class);
-        nodeToConfigPeerInterfaceMap.put(WEB_MODULE, WebModuleConfig.class); 
+        nodeToConfigPeerInterfaceMap.put(WEB_APPLICATION, WebModuleConfig.class); 
         nodeToConfigPeerInterfaceMap.put(RESOURCE_ADAPTER, ResourceAdapterConfig.class);       
         nodeToConfigPeerInterfaceMap.put(APP_CLIENT_MODULE, AppClientModuleConfig.class);        
         nodeToConfigPeerInterfaceMap.put(ENTERPRISE_APPLICATION, J2EEApplicationConfig.class);
@@ -291,6 +300,18 @@ public class NodeTypes {
                 "deleteJmsResource");
         deleteResOpNameMapper.put(DESTINATION_RESOURCE, 
                 "deleteJmsDestinationResource");
+        
+         propertiesMapper = new HashMap();
+         propertiesMapper.put(ENTERPRISE_APPLICATION, ENTERPRISE_APPLICATION_PROPS);
+         propertiesMapper.put(WEB_APPLICATION, WEB_APPLICATION_PROPS);
+         propertiesMapper.put(EJB_MODULE, EJB_MODULE_PROPS);
+         propertiesMapper.put(CONNECTOR_MODULE, CONNECTOR_MODULE_PROPS);
+         propertiesMapper.put(APP_CLIENT_MODULE, APP_CLIENT_MODULE_PROPS);
+         propertiesMapper.put(JVM, JVM_PROPS);                
+         propertiesMapper.put(SERVER_RESOURCE, SERVER_RESOURCE_PROPS);
+         propertiesMapper.put(CONNECTION_FACTORY, CONNECTION_FACTORY_PROPS);
+         propertiesMapper.put(CONNECTION_FACTORY_POOL, CONNECTION_FACTORY_POOL_PROPS);                
+         propertiesMapper.put(SIP_APPLICATION, SIP_APPLICATION_PROPS);
     }
         
     /**
@@ -394,5 +415,17 @@ public class NodeTypes {
             logger.log(Level.FINE, e.getMessage(), e);
         }
         return (type != null) ? type : "";
+    }
+    
+    /**
+     * Returns an array of property names as strings given a particular 
+     * NodeType name.
+     *
+     * @param nodeType The node from which children types are derived.
+     *
+     * @return All the property names for the node type passed.
+     */
+    public static String[] getNodeProperties(String nodeType){
+        return (String[]) propertiesMapper.get(nodeType);
     }
 }

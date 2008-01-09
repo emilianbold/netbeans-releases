@@ -54,9 +54,11 @@ import java.lang.reflect.Method;
 
 import javax.management.Attribute;
 import javax.management.MBeanAttributeInfo;
+import javax.management.MBeanException;
 import javax.management.MBeanInfo;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
+import javax.management.ReflectionException;
 import javax.management.RuntimeMBeanException;
 import javax.enterprise.deploy.spi.DeploymentManager;
 
@@ -64,7 +66,6 @@ import com.sun.appserv.management.base.AMX;
 import com.sun.appserv.management.base.Util;
 import com.sun.appserv.management.base.QueryMgr;
 import com.sun.appserv.management.base.XTypes;
-import com.sun.appserv.management.j2ee.J2EEModule;
 import com.sun.appserv.management.j2ee.J2EEManagedObject;
 import com.sun.appserv.management.j2ee.J2EETypes;
 import com.sun.appserv.management.client.AppserverConnectionSource;
@@ -77,12 +78,16 @@ import com.sun.appserv.management.config.ServerConfig;
 import com.sun.appserv.management.config.ObjectTypeValues;
 import java.io.File;
 
+import java.util.ArrayList;
+import javax.management.AttributeList;
+import javax.management.InstanceNotFoundException;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 import org.netbeans.modules.j2ee.sun.bridge.apis.AppserverMgmtController;
 import org.netbeans.modules.j2ee.sun.util.AppserverConnectionFactory;
 import org.netbeans.modules.j2ee.sun.util.GUIUtils;
 import org.netbeans.modules.j2ee.sun.util.NodeTypes;
 import org.netbeans.modules.j2ee.sun.util.PluginRequestInterceptor;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -102,6 +107,10 @@ public class ControllerUtil {
     private static String JNDI_NAME_ATTRIBUTE = "JNDIName";    
     
     private static final String CONFIG_OBJ_NAME = "com.sun.appserv:type=applications,category=config";
+    private static final String SIP_CONFIG_MBEAN = "com.sun.appserv:type=sip-configs,category=config";
+    
+    private static final String SIP_MODULE_TYPE = "org.jvnet.glassfish.comms.deployment.backend.SipArchiveDeployer";
+        
     private static Logger logger;
     private static Map j2eeTypeToConfigMap;
     
@@ -274,7 +283,7 @@ public class ControllerUtil {
         if(isJNDINameAbsent(declaredAttrs)) {
             declaredAttrs.add(NAME_ATTRIBUTE);
         }
-        if(nodeType.equals(NodeTypes.WEB_MODULE)){
+        if(nodeType.equals(NodeTypes.WEB_APPLICATION)){
             //In this filter, the props in the list are displayed and the rest ignored.    
             attrs = getAttributeProperties(
                 applyFilterToAttributeNamesForWeb(propsToIgnore,declaredAttrs), amx, conn);
@@ -428,6 +437,32 @@ public class ControllerUtil {
         return returnMap;
     }
     
+     public static Map getFilteredMBeanAttributes(Set names, ObjectName oName, MBeanServerConnection conn) {
+        Map returnMap = new HashMap();
+        try {
+            final MBeanInfo mi = conn.getMBeanInfo(oName);
+            final MBeanAttributeInfo[] mai = mi.getAttributes();
+            for (int i = 0; i < mai.length; i++) {
+                try {
+                    if (mai[i] != null && (!names.contains(mai[i].getName()))) {
+                        Object attrValue = conn.getAttribute(oName, mai[i].getName());
+                        //put it in the return map indexed by attribute
+                        returnMap.put(new Attribute(mai[i].getName(),
+                                attrValue), mai[i]);
+                    }
+                } catch (javax.management.AttributeNotFoundException ex) {
+                    continue;
+                }
+            }
+        } catch(Exception e) {
+            logger.log(Level.FINE, e.getMessage(), e);
+        }
+        if(returnMap.size() == 0 || returnMap == null) {
+            logger.log(Level.FINE, "The return Map in getAttrProperties is " +
+                    "size 0!");
+        }
+        return returnMap;
+    }
 
     /**
      * 
@@ -533,6 +568,21 @@ public class ControllerUtil {
             modAttr = null;
         }
         return modAttr;
+    }
+    
+    public static Attribute setAttributeValue(ObjectName oname, String attrName, Object value,
+            MBeanServerConnection conn){
+        Attribute modAttr = new Attribute(attrName, value);
+        try {
+             conn.setAttribute(oname, modAttr);
+        } catch (Exception ex) {
+            Object [] params = new Object[] {attrName, ex.getMessage()};
+            GUIUtils.showError(
+                getLocalizedString("unexpected_setAttr_except", params));
+            modAttr = null;
+        }
+        return modAttr;
+    
     }
     
     private static void updateEnabled(AMX amx, Object value){
@@ -673,9 +723,8 @@ public class ControllerUtil {
      */
     protected static Map stripOutSystemApps(final Map allModules) {
         Map deployedObjects = new HashMap();
-        Iterator iter = allModules.values().iterator();
-        while (iter.hasNext()) {
-            J2EEManagedObject j2eeModule = (J2EEManagedObject) iter.next();
+        for (Iterator it = allModules.values().iterator(); it.hasNext();) {
+            J2EEManagedObject j2eeModule = (J2EEManagedObject) it.next();
             ModuleConfig appConfig = (ModuleConfig) j2eeModule.getConfigPeer();
             if ((appConfig != null) && (ObjectTypeValues.USER.equals(appConfig.getObjectType()))) {
                 deployedObjects.put(j2eeModule.getName(), j2eeModule);
@@ -787,6 +836,44 @@ public class ControllerUtil {
             subComponents = (String[])conn.invoke(oName, "getModuleComponents", params, signature);
         }catch(Exception ex){}           
         return convertToObjNames(subComponents);
+    }
+    
+    public static ObjectName[] getSIPComponents(MBeanServerConnection conn){
+        ObjectName[] subComponents = new ObjectName[] {};
+        try{
+            ObjectName oName = new ObjectName(CONFIG_OBJ_NAME);
+            Object[] params = null;
+            String[] signature = null;
+            subComponents = (ObjectName[])conn.invoke(oName, "getExtensionModule", params, signature);
+            
+            // This would give all the extension modules. Need to get the sip modules only.
+            if ((subComponents != null) && (subComponents.length > 0)) {
+                ArrayList list = new ArrayList();
+                for (ObjectName child : subComponents) {
+                    String moduleType = (String) conn.getAttribute(child, "module-type");
+                    if (SIP_MODULE_TYPE.equals(moduleType)) {
+                        AttributeList props = (AttributeList) conn.invoke(child, "getProperties", null, null);
+                        //boolean converged = Boolean.parseBoolean((String) getPropertyValue(props, "isConverged"));
+                        list.add(child);
+                    }
+                }
+                if (list.size() > 0) {
+                    subComponents = (ObjectName[])list.toArray();
+                }
+            }
+        }catch(Exception ex){ 
+            logger.log(Level.FINE, ex.getMessage(), ex);
+        }           
+        return subComponents;
+    }
+    
+    protected static String isConvergedSIP(ObjectName objName, MBeanServerConnection conn){
+        String sipType = NodeTypes.SIPAPP_CONVERGED;
+        boolean converged = Boolean.parseBoolean((String) getPropertyValue(objName, NodeTypes.SIPAPP_CONVERGED_PROP, conn));
+        if(! converged){
+            sipType = NodeTypes.SIPAPP;
+        }
+        return sipType;
     }
     
     private static ObjectName[] convertToObjNames(String[] objNames){
@@ -914,9 +1001,8 @@ public class ControllerUtil {
      */
     protected static Map getDeployedObjects(final Map allObjects) {
         Map deployedObjects = new HashMap();
-        Iterator iter = allObjects.values().iterator();
-        while(iter.hasNext()){
-            Object configObj = iter.next();
+        for (Iterator it = allObjects.values().iterator(); it.hasNext();) {
+            Object configObj = it.next();
             if (!((configObj instanceof AMXConfig) || (configObj instanceof ModuleConfig))) {
                 continue;
             }
@@ -932,4 +1018,63 @@ public class ControllerUtil {
         }
         return deployedObjects;
     }
+    
+    public static boolean isSIPEnabled(MBeanServerConnection conn) {
+        boolean enabled = false;
+        try {
+            ObjectName objectName = new ObjectName(SIP_CONFIG_MBEAN);
+            Object mbeanInstance = conn.getMBeanInfo(objectName);
+            enabled = true;
+        } catch (InstanceNotFoundException ex) {
+            enabled = false;
+        } catch (Exception ex) {
+            logger.log(Level.FINE, ex.getMessage(), ex);
+        }
+        return enabled;
+    }
+     
+    public static Object getPropertyValue(ObjectName objName, String propName, MBeanServerConnection conn)  {
+        try {
+            AttributeList props = (AttributeList) conn.invoke(objName, "getProperties", null, null);
+            for (Iterator it = props.iterator(); it.hasNext();) {
+                Attribute attribute = (Attribute) it.next();
+                String name = attribute.getName();
+                if (name.equals(propName)) {
+                    return attribute.getValue();
+                }
+            }
+            return null;
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
+    }
+    /**
+     * Returns the value of an attribute as a String
+     * @param objName - ObjectName of component
+     * @param attrName - Name of attribute
+     * @param conn - MBeanServerConnection
+     * @return value of attribute (java.lang.String).
+     */
+    public static String getAttributeValue(ObjectName objName, String attrName, MBeanServerConnection conn) {
+        String strValue = ""; //N0I18N
+        try {
+            Object attrValue = conn.getAttribute(objName, attrName);
+            if(attrValue != null) {
+                strValue = attrValue.toString();
+            }        
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return strValue;
+    } 
+      
+    protected static boolean isModEnabled(ObjectName objName, MBeanServerConnection conn){
+        String val = getAttributeValue(objName, "enabled", conn);
+        boolean isEnabled = Boolean.valueOf(val.toString()).booleanValue();
+        return isEnabled;
+    }
+        
 }
+
+

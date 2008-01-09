@@ -483,6 +483,25 @@ public abstract class AppserverMgmtControllerBase
         }
     }
     
+    public void undeploy(String name) {
+        testIfServerInDebug();
+        DeploymentFacility df = createDeploymentFacility();
+        JESProgressObject progressObject = null;
+        Properties props = null;    
+        
+        if (df.isConnected()) {
+            String[] targetNames = new String[] {"server"};
+            Target[] targets = df.createTargets(targetNames);
+            progressObject = df.undeploy(targets, name, props);
+            df.waitFor(progressObject);
+        }
+        // TODO : this looks suspect. resolve
+        if (null != progressObject) {
+            DeploymentStatus ds = progressObject.getCompletedStatus();
+            ds.toString();
+        }
+    }
+    
     private String[] getRelevantTargets(){
         Map serverConfigs = ControllerUtil.getServerInstancesMap(getAMXObject());
         Vector instances = new Vector();
@@ -595,6 +614,10 @@ public abstract class AppserverMgmtControllerBase
 
     public boolean isDeployMgrLocal(){   
         return ((SunDeploymentManagerInterface)deployMgr).isLocal();
+    }
+     
+    public boolean isSIPEnabled(){   
+        return ControllerUtil.isSIPEnabled(getMBeanServerConnection()); 
     }
     
         

@@ -162,6 +162,6 @@ public class EJBModuleNode extends AppserverMgmtApplicationsNode {
     }
     
     protected List getPropertiesToIgnore() {
-        return Arrays.asList(NodeTypes.EJB_MODULE_NODE);        
+        return Arrays.asList(NodeTypes.EJB_MODULE);        
     }
 }

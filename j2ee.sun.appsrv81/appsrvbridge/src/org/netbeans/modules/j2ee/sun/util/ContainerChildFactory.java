@@ -57,6 +57,7 @@ import org.netbeans.modules.j2ee.sun.ide.controllers.EJBModuleController;
 import org.netbeans.modules.j2ee.sun.ide.controllers.ConnectorModuleController;
 import org.netbeans.modules.j2ee.sun.ide.controllers.WebModuleController;
 import org.netbeans.modules.j2ee.sun.ide.controllers.AppClientModuleController;
+import org.netbeans.modules.j2ee.sun.ide.controllers.SIPController;
 import org.netbeans.modules.j2ee.sun.ide.runtime.nodes.AdminObjectResourceNode;
 import org.netbeans.modules.j2ee.sun.ide.runtime.nodes.AppClientModuleNode;
 import org.netbeans.modules.j2ee.sun.ide.runtime.nodes.ConnectionFactoryNode;
@@ -73,6 +74,7 @@ import org.netbeans.modules.j2ee.sun.ide.runtime.nodes.JDBCResourceNode;
 import org.netbeans.modules.j2ee.sun.ide.runtime.nodes.JVMNode;
 import org.netbeans.modules.j2ee.sun.ide.runtime.nodes.JavaMailSessionResourceNode;
 import org.netbeans.modules.j2ee.sun.ide.runtime.nodes.PersistenceManagerResourceNode;
+import org.netbeans.modules.j2ee.sun.ide.runtime.nodes.SIPModuleNode;
 import org.netbeans.modules.j2ee.sun.ide.runtime.nodes.WebModuleNode;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -155,12 +157,25 @@ public class ContainerChildFactory {
             children = createCustomResourcesChildren();
         } else if(NodeTypes.EXTERNAL_RESOURCES.equals(type)) {
             children = createExternalResourcesChildren();
+         } else if(NodeTypes.SIP_APPLICATIONS.equals(type)) {
+             children = createSIPModulesChildren();
         } else {
             children = createContainerChildren(type);
         } 
         
         return children;
     }
+      
+     Node[] createSIPModulesChildren() {
+         SIPController [] controllers = controller.getJ2EEServerMgmtController().getSIPModules();
+         Node[] nodes = new Node[controllers.length];
+         for(int i = 0; i < controllers.length; i++) {
+            SIPController sipControl = controllers[i];
+            nodes[i] = new SIPModuleNode(sipControl, sipControl.getSIPType());
+         }
+         return (controllers.length > 0) ? nodes : new Node[] {};
+     }
+     
     /**
      *
      */
@@ -172,12 +187,30 @@ public class ContainerChildFactory {
                 nodes[i] = 
                     new AppserverMgmtContainerNode(controller, childTypes[i]);
             }    
+             if (nodeType.equals(NodeTypes.APPLICATIONS)) {
+                 nodes = updateSIPNode(nodes);
+             }
             return nodes;
         } else {
             return new Node[] {};
         }
     }
 
+     Node[] updateSIPNode(Node[] nodes){
+         Node[] baseNodes = nodes;
+         if(controller.isSIPEnabled()){
+             int size = baseNodes.length + 1;
+             Node[] updatedNodes = new Node[baseNodes.length + 1];
+             for(int i = 0; i < baseNodes.length; i++) {
+                 updatedNodes[i] = baseNodes[i];
+             } 
+             updatedNodes[baseNodes.length] = new AppserverMgmtContainerNode(controller, NodeTypes.SIP_APPLICATIONS);
+             return updatedNodes;
+         }else{
+             return baseNodes; 
+         }
+     }
+     
     /**
      *
      */

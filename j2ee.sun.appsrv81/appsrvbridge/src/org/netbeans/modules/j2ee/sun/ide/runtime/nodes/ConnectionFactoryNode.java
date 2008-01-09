@@ -70,7 +70,7 @@ public class ConnectionFactoryNode extends ResourceLeafNode {
     protected java.util.Map getSheetProperties() {
         return getAppserverMgmtController().
             getJMSConnectionFactoryProperties(getResourceName(), 
-                Arrays.asList(NodeTypes.CONNECTION_FACTORY_NODES));
+                Arrays.asList(NodeTypes.CONNECTION_FACTORY));
     }
     
     

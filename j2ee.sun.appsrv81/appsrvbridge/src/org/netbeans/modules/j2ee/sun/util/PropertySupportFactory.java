@@ -222,7 +222,7 @@ public class PropertySupportFactory {
             final AppserverMgmtActiveNode parent, final Attribute attr, 
             final MBeanAttributeInfo info) {  
         PropertySupport support = null;
-        if(attr.getValue() instanceof Boolean) {
+        if(attr.getValue() instanceof Boolean || info.getType().equalsIgnoreCase("boolean")) {  //NOI18N
             support = 
                 createWritablePropertySupportWithEditor(parent, attr, info, "Boolean"); //NOI18N
         } else {

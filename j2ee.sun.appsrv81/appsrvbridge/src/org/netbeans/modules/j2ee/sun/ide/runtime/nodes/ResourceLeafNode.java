@@ -113,7 +113,7 @@ public abstract class ResourceLeafNode extends AppserverMgmtLeafNode
     abstract public void remove();
     
     protected List getPropertiesToIgnore() {
-        return Arrays.asList(NodeTypes.SERVER_RESOURCE_NODES);
+        return Arrays.asList(NodeTypes.SERVER_RESOURCE);
     }
     
     /**
