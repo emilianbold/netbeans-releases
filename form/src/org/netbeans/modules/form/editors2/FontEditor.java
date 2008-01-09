@@ -196,14 +196,10 @@ public class FontEditor extends ResourceWrapperEditor implements XMLPropertyEdit
             }
         } else if (value instanceof Font) {
             // plain font - let the default editor handle the code
-            exp = delegateEditor.getJavaInitializationString();
-            if (ResourceSupport.isResourceableProperty(property)
-                && ResourceSupport.isExcludedProperty(property))
-            {   // add NOI18N comment - font name is a string
-                exp = "*/\n\\1NOI18N*/\n\\0" + exp; // NOI18N
-                // */\n\\1 is a special code mark for line comment
-                // */\n\\0 is a special code mark to indicate that a real code follows
-            }
+            // add NOI18N comment - font name is a string
+            exp = "*/\n\\1NOI18N*/\n\\0" + delegateEditor.getJavaInitializationString(); // NOI18N
+            // */\n\\1 is a special code mark for line comment
+            // */\n\\0 is a special code mark to indicate that a real code follows
         } else { // neither NbFont nor Font - let ResourceWrapperEditor handle it
             exp = super.getJavaInitializationString();
         }
