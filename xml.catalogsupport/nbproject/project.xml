@@ -153,6 +153,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.bpel.editors</friend>
                 <friend>org.netbeans.modules.bpel.project</friend>
                 <friend>org.netbeans.modules.iep.project</friend>
+                <friend>org.netbeans.modules.iep.editor</friend>
                 <friend>org.netbeans.modules.sql.project</friend>
                 <friend>org.netbeans.modules.wlm.model</friend>
                 <friend>org.netbeans.modules.worklist.editor</friend>

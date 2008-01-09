@@ -315,6 +315,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.xml.schema.ui.analysis</friend>
                 <friend>org.netbeans.modules.encoder.ui.basic</friend>
                 <friend>org.netbeans.modules.xml.wsdlui</friend>
+                <friend>org.netbeans.modules.iep.editor</friend>
                 <friend>org.netbeans.modules.xslt.project</friend>
                 <package>org.netbeans.modules.xml.schema.ui.basic</package>
                 <package>org.netbeans.modules.xml.schema.ui.basic.spi</package>
