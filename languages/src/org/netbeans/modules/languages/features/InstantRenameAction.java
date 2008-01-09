@@ -80,14 +80,9 @@ import org.openide.util.RequestProcessor;
  *
  * @author Jan Jancura
  */
-public class InstantRenameAction extends BaseAction implements KeyListener, DocumentListener {
+public class InstantRenameAction extends BaseAction {
     
-    private List<Element>               elements;
-    private List<Highlight>             highlights;
-    private JTextComponent              editor;
-    private NbEditorDocument            document;
-    private String                      text;
-
+    private RenameImplementation renameImplementation;
     
     /** Creates a new instance of InstantRenameAction */
     public InstantRenameAction() {
@@ -95,32 +90,186 @@ public class InstantRenameAction extends BaseAction implements KeyListener, Docu
     }
     
     public void actionPerformed (ActionEvent evt, final JTextComponent editor) {
+        if (renameImplementation != null) return;
         int offset = editor.getCaretPosition ();
         ParserManagerImpl parserManager = ParserManagerImpl.getImpl (editor.getDocument ());
         if (parserManager.getState () == State.PARSING) {
             return;
         }
         try {
-            removeHighlights (highlights);
-            highlights = null;
             ASTNode node = parserManager.getAST ();
             DatabaseContext root = DatabaseManager.getRoot (node);
             if (root == null) return;
-            DatabaseItem item = root.getDatabaseItem (offset);
-            if (item == null)
-                item = root.getDatabaseItem (offset - 1);
-            if (item == null) {
+            DatabaseItem databaseItem = root.getDatabaseItem (offset);
+            if (databaseItem == null)
+                databaseItem = root.getDatabaseItem (offset - 1);
+            if (databaseItem == null) {
                 return;
             }
-            this.editor = editor;
-            document = (NbEditorDocument) editor.getDocument ();
-            elements = getUssages (item, node);
-            addHighlights (elements);
-            document.addDocumentListener (this);
-            editor.addKeyListener (this);
+            renameImplementation = new RenameImplementation (databaseItem, editor, node);
         } catch (BadLocationException ex) {
             ex.printStackTrace ();
         }
+    }
+    
+    private class RenameImplementation implements KeyListener, DocumentListener {
+        
+        private List<Element>               elements;
+        private List<Highlight>             highlights;
+        private JTextComponent              editor;
+        private NbEditorDocument            document;
+        private String                      text;
+        
+        RenameImplementation (
+            DatabaseItem        databaseItem,
+            JTextComponent      editor,
+            ASTNode             node
+        ) throws BadLocationException {
+            this.editor = editor;
+            document = (NbEditorDocument) editor.getDocument ();
+            elements = getUssages (databaseItem, node);
+            MarkOccurrencesSupport.removeHighlights (editor);
+            if (!elements.isEmpty ()) {
+                SwingUtilities.invokeLater (new Runnable () {
+                    public void run () {
+                        highlights = new ArrayList<Highlight> ();
+                        Highlighting highlighting = Highlighting.getHighlighting (document);
+                        Iterator<Element> it = elements.iterator ();
+                        while (it.hasNext ()) {
+                            Element element = it.next ();
+                            ASTItem item = element.getItem ();
+                            highlights.add (highlighting.highlight (item.getOffset (), item.getEndOffset (), getHighlightAS ()));
+                        }
+                    }
+                });
+            }
+            document.addDocumentListener (this);
+            editor.addKeyListener (this);
+        }
+
+        // KeyListener .............................................................
+
+        public void keyTyped (KeyEvent e) {
+        }
+
+        public void keyPressed (KeyEvent e) {
+            if ((e.getKeyCode () == KeyEvent.VK_ESCAPE && e.getModifiers () == 0) || 
+                (e.getKeyCode () == KeyEvent.VK_ENTER  && e.getModifiers() == 0)
+            ) {
+                if (highlights == null) return;
+                final List<Highlight> oldHighlights = highlights;
+                SwingUtilities.invokeLater (new Runnable () {
+                    public void run () {
+                        Iterator<Highlight> it = oldHighlights.iterator ();
+                        while (it.hasNext ())
+                            it.next ().remove ();
+                    }
+                });
+                editor.removeKeyListener (this);
+                document.removeDocumentListener (this);
+                highlights = null;
+                elements = null;
+                editor = null;
+                document = null;
+                renameImplementation = null;
+                 e.consume ();
+            }    
+        }
+
+        public void keyReleased (KeyEvent e) {
+        }
+
+
+        // DocumentListener ........................................................
+
+        public void insertUpdate(DocumentEvent e) {
+            update ();
+        }
+
+        public void removeUpdate(DocumentEvent e) {
+            update ();
+        }
+
+        public void changedUpdate(DocumentEvent e) {
+            update ();
+        }
+
+        private List<Element> getUssages (DatabaseItem item, ASTNode root) throws BadLocationException {
+            List<Element> result = new ArrayList<Element> ();
+            DatabaseDefinition definition = null;
+            if (item instanceof DatabaseDefinition) {
+                definition = (DatabaseDefinition) item;
+            } else {
+                definition = ((DatabaseUsage) item).getDefinition ();
+                ASTItem i = root.findPath (item.getOffset ()).getLeaf ();
+                result.add (new Element (
+                    i, 
+                    document.createPosition (i.getOffset ()),
+                    document.createPosition (i.getEndOffset ()),
+                    document
+                ));
+            }
+            ASTItem i = root.findPath (definition.getOffset ()).getLeaf ();
+            Element element = new Element (
+                i, 
+                document.createPosition (i.getOffset ()),
+                document.createPosition (i.getEndOffset ()),
+                document
+            );
+            result.add (element);
+            text = element.getText ();
+            Iterator<DatabaseUsage> it = definition.getUsages ().iterator ();
+            while (it.hasNext ()) {
+                DatabaseUsage databaseUsage = it.next ();
+                i = root.findPath (databaseUsage.getOffset ()).getLeaf ();
+                if (i == result.get (0).getItem ()) continue;
+                result.add (new Element (
+                    i, 
+                    document.createPosition (i.getOffset ()),
+                    document.createPosition (i.getEndOffset ()),
+                    document
+                ));
+            }
+            return result;
+        }
+
+        private RequestProcessor requestProcessor;
+        private RequestProcessor.Task task;
+
+        private void update () {
+            int offset = editor.getCaretPosition ();
+            if (!elements.get (0).contains (offset)) return;
+            try {
+                String newText = elements.get (0).getText ();
+                if (text.equals (newText)) return;
+                text = newText;
+            } catch (BadLocationException ex) {
+                ex.printStackTrace ();
+            }
+            if (requestProcessor == null)
+                requestProcessor = new RequestProcessor ("InstantRename");
+            if (task != null) task.cancel ();
+            task = requestProcessor.post (new Runnable () {
+                public void run () {
+                    document.removeDocumentListener (RenameImplementation.this);
+                    document.atomicLock ();
+                    try {
+                        Iterator<Element> it = elements.iterator ();
+                        try {
+                            String text = it.next ().getText ();
+                            while (it.hasNext ())
+                                it.next ().setText (text);
+                        } catch (BadLocationException ex) {
+                            ex.printStackTrace ();
+                        }
+                    } finally {
+                        document.atomicUnlock ();
+                        document.addDocumentListener (RenameImplementation.this);
+                    }
+                }
+            });
+        }
+
     }
     
     protected Class getShortDescriptionBundleClass () {
@@ -133,153 +282,6 @@ public class InstantRenameAction extends BaseAction implements KeyListener, Docu
         FontColorSettings fcs = MimeLookup.getLookup(MimePath.EMPTY).lookup(FontColorSettings.class);
         AttributeSet as = fcs.getFontColors("synchronized-text-blocks"); //NOI18N
         return as == null ? defaultSyncedTextBlocksHighlight : as;
-    }
-
-    private static void removeHighlights (
-        final List<Highlight> highlights
-    ) {
-        if (highlights == null) return;
-        SwingUtilities.invokeLater (new Runnable () {
-            public void run () {
-                Iterator<Highlight> it = highlights.iterator ();
-                while (it.hasNext ())
-                    it.next ().remove ();
-            }
-        });
-    }
-
-    private void addHighlights (
-        final List<Element> elements
-    ) {
-        if (elements.isEmpty ()) return;
-        MarkOccurrencesSupport.removeHighlights (editor);
-        SwingUtilities.invokeLater (new Runnable () {
-            public void run () {
-                highlights = new ArrayList<Highlight> ();
-                Highlighting highlighting = Highlighting.getHighlighting (document);
-                Iterator<Element> it = elements.iterator ();
-                while (it.hasNext ()) {
-                    Element element = it.next ();
-                    ASTItem item = element.getItem ();
-                    highlights.add (highlighting.highlight (item.getOffset (), item.getEndOffset (), getHighlightAS ()));
-                }
-            }
-        });
-    }
-    
-    List<Element> getUssages (DatabaseItem item, ASTNode root) throws BadLocationException {
-        List<Element> result = new ArrayList<Element> ();
-        DatabaseDefinition definition = null;
-        if (item instanceof DatabaseDefinition) {
-            definition = (DatabaseDefinition) item;
-        } else {
-            definition = ((DatabaseUsage) item).getDefinition ();
-            ASTItem i = root.findPath (item.getOffset ()).getLeaf ();
-            result.add (new Element (
-                i, 
-                document.createPosition (i.getOffset ()),
-                document.createPosition (i.getEndOffset ()),
-                document
-            ));
-        }
-        ASTItem i = root.findPath (definition.getOffset ()).getLeaf ();
-        Element element = new Element (
-            i, 
-            document.createPosition (i.getOffset ()),
-            document.createPosition (i.getEndOffset ()),
-            document
-        );
-        result.add (element);
-        text = element.getText ();
-        Iterator<DatabaseUsage> it = definition.getUsages ().iterator ();
-        while (it.hasNext ()) {
-            DatabaseUsage databaseUsage = it.next ();
-            i = root.findPath (databaseUsage.getOffset ()).getLeaf ();
-            if (i == result.get (0).getItem ()) continue;
-            result.add (new Element (
-                i, 
-                document.createPosition (i.getOffset ()),
-                document.createPosition (i.getEndOffset ()),
-                document
-            ));
-        }
-        return result;
-    }
-    
-    private RequestProcessor requestProcessor;
-    private RequestProcessor.Task task;
-    
-    private void update () {
-        int offset = editor.getCaretPosition ();
-        if (!elements.get (0).contains (offset)) return;
-        try {
-            String newText = elements.get (0).getText ();
-            if (text.equals (newText)) return;
-            text = newText;
-        } catch (BadLocationException ex) {
-            ex.printStackTrace ();
-        }
-        if (requestProcessor == null)
-            requestProcessor = new RequestProcessor ("InstantRename");
-        if (task != null) task.cancel ();
-        task = requestProcessor.post (new Runnable () {
-            public void run () {
-                document.removeDocumentListener (InstantRenameAction.this);
-                document.atomicLock ();
-                try {
-                    Iterator<Element> it = elements.iterator ();
-                    try {
-                        String text = it.next ().getText ();
-                        while (it.hasNext ())
-                            it.next ().setText (text);
-                    } catch (BadLocationException ex) {
-                        ex.printStackTrace ();
-                    }
-                } finally {
-                    document.atomicUnlock ();
-                    document.addDocumentListener (InstantRenameAction.this);
-                }
-            }
-        });
-    }
-    
-    
-    // KeyListener .............................................................
-
-    public void keyTyped (KeyEvent e) {
-    }
-
-    public void keyPressed (KeyEvent e) {
-	if ((e.getKeyCode () == KeyEvent.VK_ESCAPE && e.getModifiers () == 0) || 
-            (e.getKeyCode () == KeyEvent.VK_ENTER  && e.getModifiers() == 0)
-        ) {
-            removeHighlights (highlights);
-            editor.removeKeyListener (this);
-            document.removeDocumentListener (this);
-            highlights = null;
-            elements = null;
-            editor = null;
-            document = null;
-	     e.consume ();
-        }    
-    }
-
-    public void keyReleased (KeyEvent e) {
-    }
-
-    
-    // DocumentListener ........................................................
-    
-    public void insertUpdate(DocumentEvent e) {
-        update ();
-    }
-
-    public void removeUpdate(DocumentEvent e) {
-        update ();
-    }
-
-    public void changedUpdate(DocumentEvent e) {
-        update ();
     }
     
     
