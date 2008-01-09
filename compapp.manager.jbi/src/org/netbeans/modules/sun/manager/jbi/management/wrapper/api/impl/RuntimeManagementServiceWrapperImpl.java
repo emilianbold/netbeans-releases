@@ -138,7 +138,7 @@ public class RuntimeManagementServiceWrapperImpl
 
     public String stopComponent(String componentName, String target)
             throws ManagementRemoteException {
-        return service.startComponent(componentName, target);
+        return service.stopComponent(componentName, target);
     }
 
     public String stopServiceAssembly(String serviceAssemblyName, String target)
