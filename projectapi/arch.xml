@@ -73,6 +73,14 @@ made subject to such option by the copyright holder.
    manipulated as units. It is used for Ant-based projects but could support
    other scenarios such as makefiles. Modules can plug in project types which can
    recognize certain folders as being projects, and define their behaviors.
+    Besides the visible Javadoc, this module permits a project to add implementations
+    of <code>org.netbeans.spi.queries.FileBuiltQueryImplementation</code>,
+    <code>org.netbeans.spi.queries.SharabilityQueryImplementation</code> and
+    <code>org.netbeans.spi.queries.FileEncodingQueryImplementation</code>
+    into the project lookup (rather than global lookup).
+    The implementations will be consulted only in the case the relevant file
+    belongs to that project (according to <code>org.netbeans.api.project.FileOwnerQuery</code>).
+    This helps avoid the need to consult irrelevant query implementations.   
   </api>
  </answer>
 
