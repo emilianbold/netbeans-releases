@@ -414,66 +414,28 @@ public final class Util extends Object {
                     if (newName.startsWith(f.getName()) && f.getName().length() > file.getName().length())
                         file = f;
                 }
-                if (file.getName().equals(newName))
+                if (file.getName().equals(newName)) {
                     return; // do nothing if the file already exists
-
-                if (!copyInitialContent) { // we'll create an empty file
-                    FileSystem defaultFS = Repository.getDefault().getDefaultFileSystem();
-                    file = defaultFS.findResource("Templates/Other/properties.properties"); // NOI18N
                 }
 
-                final FileObject templateFile = file;
-
-                SaveCookie save = (SaveCookie) propertiesDataObject.getCookie(SaveCookie.class);
-                if (save != null)
-                    save.save();
-
-                // Actually create new file.
-                // First try to create new file and load it by document content from default(=primary) file.
-/*                                    if(editor != null && editor.isDocumentLoaded()) {
-                    // Loading from the document in memory.
-                    final Document document = editor.getDocument();
-                    final String[] buffer = new String[1];
-
-                    // Safely take the text from the document.
-                    document.render(new Runnable() {
-                        public void run() {
-                            try {
-                                buffer[0] = document.getText(0, document.getLength());
-                            } catch(BadLocationException ble) {
-                                // Should be not possible.
-                                ble.printStackTrace();
-                            }
+                if (copyInitialContent) {
+                    if (folder.getFileObject(newName, PropertiesDataLoader.PROPERTIES_EXTENSION) == null) {
+                        SaveCookie save = (SaveCookie) propertiesDataObject.getCookie(SaveCookie.class);
+                        if (save != null) {
+                            save.save();
                         }
-                    });
-
-                    if(buffer[0] != null) {
+                        final FileObject templateFile = file;
                         folder.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
                             public void run() throws IOException {
-                                FileObject newFile = folder.createData(newName, PropertiesDataLoader.PROPERTIES_EXTENSION);
-
-                                FileLock lock = newFile.lock();
-                                try {
-                                    Writer writer = new PropertiesEditorSupport.NewLineWriter(newFile.getOutputStream(lock), editor.getNewLineType());
-
-                                    writer.write(buffer[0]);
-                                    writer.flush();
-                                    writer.close();
-                                } finally {
-                                    lock.releaseLock();
-                                }
+                                templateFile.copy(folder, newName, PropertiesDataLoader.PROPERTIES_EXTENSION);
                             }
                         });
                     }
-                } */
-
-                // If first attempt failed, copy the default (=primary) file.
-                if(folder.getFileObject(newName, PropertiesDataLoader.PROPERTIES_EXTENSION) == null) {
-                    folder.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-                        public void run() throws IOException {
-                            templateFile.copy(folder, newName, PropertiesDataLoader.PROPERTIES_EXTENSION);
-                        }
-                    }); // End of annonymous inner class extended from FileSystem.AtomicAction.
+                } else {
+                    FileObject templateFO = Repository.getDefault().getDefaultFileSystem()
+                            .findResource("Templates/Other/properties.properties"); // NOI18N
+                    DataObject template = DataObject.find(templateFO);
+                    template.createFromTemplate(DataFolder.findFolder(folder), newName);
                 }
             }
         } catch(IOException ioe) {
