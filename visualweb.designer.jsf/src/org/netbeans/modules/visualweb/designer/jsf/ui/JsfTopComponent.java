@@ -45,9 +45,11 @@ import java.util.prefs.PreferenceChangeListener;
 import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition;
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Point;
+import java.awt.SystemColor;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -327,7 +329,10 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
     }
     
     private JComponent createLoadingComponent() {
-        return new JLabel(NbBundle.getMessage(JsfTopComponent.class, "LBL_LoadingModel"), JLabel.CENTER); // TEMP
+        JLabel loadingComponent = new JLabel(NbBundle.getMessage(JsfTopComponent.class, "LBL_LoadingModel"), JLabel.CENTER);
+        loadingComponent.setForeground(SystemColor.textInactiveText);
+        loadingComponent.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        return loadingComponent;
     }
     
     @Override
