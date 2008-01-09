@@ -73,17 +73,14 @@ public class HgProjectUtils {
         ctxAction.actionPerformed(new ActionEvent(caller, 0, "")); // NOI18N
     }
 
-    public static void openProject(Project p, Object caller) {
+    public static void openProject(Project p, Object caller, boolean setMain) {
         Project[] projects = new Project[] {p};
         OpenProjects.getDefault().open(projects, false);
-        OpenProjects.getDefault().setMainProject(p);
+        if (setMain) {
+            OpenProjects.getDefault().setMainProject(p);
+        }
         
         // set as main project and expand
-/*        ContextAwareAction action = (ContextAwareAction) CommonProjectActions.setAsMainProjectAction();
-        Lookup ctx = Lookups.singleton(p);
-        Action ctxAction = action.createContextAwareInstance(ctx);
-        ctxAction.actionPerformed(new ActionEvent(caller, 0, "")); // NOI18N
-*/
         selectAndExpandProject(p);
     }
     

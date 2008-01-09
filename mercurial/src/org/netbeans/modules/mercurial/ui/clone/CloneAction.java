@@ -138,15 +138,9 @@ public class CloneAction extends AbstractAction {
                     try {
                         FileObject cloneProj = FileUtil.toFileObject(clonePrjFile);
                         Project prj = projectManager.findProject(cloneProj);
-                        HgProjectUtils.openProject(prj, this);
-                        // TODO: figure out how to rename the cloned project
-                        // Following brings up Rename Project Dialog but not with correct settings 
-                        // - thought the ctx was ok but must not be
-                        // HgProjectUtils.renameProject(prj);
-
+                        HgProjectUtils.openProject(prj, this, HgModuleConfig.getDefault().getSetMainProject());
                         hg.versionedFilesChanged();
                         hg.refreshAllAnnotations();
-                        //HgUtils.forceStatusRefresh(cloneFolder);
             
                     } catch (java.lang.Exception ex) {
                         NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(new HgException(ex.toString()));
@@ -189,9 +183,7 @@ public class CloneAction extends AbstractAction {
 
                         FileObject cloneProj = FileUtil.toFileObject(clonePrjFile);
                         if (isLocalClone){
-                            if (HgModuleConfig.getDefault().getOpenClonedProject()) {
-                                SwingUtilities.invokeLater(doOpenProject);
-                            }
+                            SwingUtilities.invokeLater(doOpenProject);
                         } else if (HgModuleConfig.getDefault().getShowCloneCompleted()) {
                             CloneCompleted cc = new CloneCompleted(cloneFolder);
                             if (isCanceled()) {
