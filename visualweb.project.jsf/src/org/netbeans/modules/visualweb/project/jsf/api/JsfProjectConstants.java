@@ -119,6 +119,11 @@ public class JsfProjectConstants {
     public static final String PROP_CURRENT_THEME = "jsf.current.theme"; // NOI18N
 
     /**
+     * Special No-Start-Page
+     */
+    public final static String NO_START_PAGE = "__no_start_page__"; // NOI18N
+
+    /**
      * Document root root sources type (source folders for JSPs, HTML ...)
      * @see org.netbeans.api.project.Sources
      */

@@ -108,7 +108,7 @@ public class JsfProjectTemplate extends ProjectTemplate {
             templateParameters.put("j2eePlatformVersion", JsfProjectUtils.getJ2eePlatformVersion(project)); //NOI18N
             templateParameters.put("sourceLevel", JsfProjectUtils.getSourceLevel(project)); //NOI18N
             
-            if (folder.getFileObject(fileName) == null) {
+            if ((fileName.length() > 0) && folder.getFileObject(fileName) == null) {
                 instantiateFileTemplate(folder, fileName, getAttr(node, "template"), templateParameters);  // NOI18N
             }
         } else {

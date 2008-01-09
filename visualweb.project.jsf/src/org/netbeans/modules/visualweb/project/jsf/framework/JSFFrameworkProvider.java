@@ -135,6 +135,8 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         String presetName = JsfProjectUtils.getProjectProperty(project, JsfProjectConstants.PROP_START_PAGE);
         if (presetName == null || presetName.length() == 0) {
             presetName = "Page1.jsp"; // NOI18N
+        } else if (JsfProjectConstants.NO_START_PAGE.equals(presetName)) {
+            presetName = ""; // NOI18N
         }
         final String pageName = presetName;
         JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_START_PAGE, pageName);
