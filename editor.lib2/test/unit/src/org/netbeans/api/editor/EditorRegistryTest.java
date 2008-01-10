@@ -41,10 +41,13 @@
 
 package org.netbeans.api.editor;
 
+import java.awt.BorderLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 import javax.swing.JEditorPane;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.junit.NbTestCase;
@@ -66,9 +69,32 @@ public class EditorRegistryTest extends NbTestCase {
 
         // Test registration
         JTextComponent c1 = new JEditorPane();
-        EditorRegistry.register(c1);
         JTextComponent c2 = new JEditorPane();
+        JTextComponent c3 = new JEditorPane();
+        
+        // Tested ignored ancestor and components with it
+        IgnoredAncestorPanel tabContainer = new IgnoredAncestorPanel();
+        JTextComponent iac1 = new JEditorPane();
+        JPanel tab1 = new JPanel();
+        tab1.add(iac1);
+        JTextComponent iac2 = new JEditorPane();
+        JPanel tab2 = new JPanel();
+        tab2.add(iac2);
+        tabContainer.add(tab1, BorderLayout.WEST);
+        tabContainer.add(tab2, BorderLayout.CENTER);
+
+        // Add to component hierarchy to ensure appearance in the registry
+        JFrame frame = new JFrame();
+        frame.getContentPane().add(c1, BorderLayout.NORTH);
+        frame.getContentPane().add(c2, BorderLayout.CENTER);
+        frame.getContentPane().add(c3, BorderLayout.SOUTH);
+        frame.getContentPane().add(tabContainer, BorderLayout.WEST);
+        frame.pack(); // Causes addition to the hierarchy
+
+        // Register first two
+        EditorRegistry.register(c1);
         EditorRegistry.register(c2);
+
         List<? extends JTextComponent> jtcList = EditorRegistry.componentList();
         assertSame(2, jtcList.size());
         assertSame(c1, jtcList.get(0));
@@ -80,7 +106,6 @@ public class EditorRegistryTest extends NbTestCase {
         assertSame(2, EditorRegistry.componentList().size());
         
         // Extra component
-        JTextComponent c3 = new JEditorPane();
         EditorRegistry.register(c3);
         assertSame(3, EditorRegistry.componentList().size());
         
@@ -111,26 +136,74 @@ public class EditorRegistryTest extends NbTestCase {
         assertSame(1, EditorRegistryListener.INSTANCE.firedCount);
         assertSame(null, EditorRegistryListener.INSTANCE.newValue);
         assertSame(c3, EditorRegistryListener.INSTANCE.oldValue);
-        EditorRegistryListener.INSTANCE.reset(); // Reset to 0
+        EditorRegistryListener.INSTANCE.reset(); // Reset firedCount to 0
 
         EditorRegistry.focusGained(c1, null);
         assertSame(1, EditorRegistryListener.INSTANCE.firedCount);
         assertSame(c1, EditorRegistryListener.INSTANCE.newValue);
         assertSame(null, EditorRegistryListener.INSTANCE.oldValue);
-        EditorRegistryListener.INSTANCE.reset(); // Reset to 0
+        EditorRegistryListener.INSTANCE.reset(); // Reset firedCount to 0
+        
+        // Test ignored ancestor
+        EditorRegistry.setIgnoredAncestorClass(IgnoredAncestorPanel.class);
+        EditorRegistry.register(iac1);
+        EditorRegistry.register(iac2);
+        
+        jtcList = EditorRegistry.componentList();
+        assertSame(5, jtcList.size());
+        EditorRegistry.focusGained(iac1, null);
+        assertSame(iac1, EditorRegistry.lastFocusedComponent());
+        EditorRegistryListener.INSTANCE.reset(); // Reset firedCount to 0
+        // First close iac2 - should not fire EditorRegistry.LAST_FOCUSED_REMOVED_PROPERTY
+        // since lastFocusedComponent is iac1
+        tabContainer.remove(tab2);
+        EditorRegistry.notifyClose(tab2);
+        jtcList = EditorRegistry.componentList();
+        assertSame(4, jtcList.size());
+        assertSame(0, EditorRegistryListener.INSTANCE.firedCount); // Nothing was fired
+        EditorRegistryListener.INSTANCE.reset(); // Reset firedCount to 0
+        assertSame(iac1, EditorRegistry.lastFocusedComponent());
+
+        // Note: Close notification may come even before corresponding focusLost()
+        tabContainer.remove(tab1);
+        EditorRegistry.notifyClose(tab1);
+        jtcList = EditorRegistry.componentList();
+        assertSame(3, jtcList.size());
+        // Since iac1 was the first in the component list then focusLost() would be fired
+        // followed by LAST_FOCUSED_REMOVED_PROPERTY
+        assertSame(2, EditorRegistryListener.INSTANCE.firedCount);
+        assertEquals(EditorRegistry.LAST_FOCUSED_REMOVED_PROPERTY, EditorRegistryListener.INSTANCE.propertyName);
+        assertEquals(EditorRegistry.lastFocusedComponent(), EditorRegistryListener.INSTANCE.newValue);
+        assertEquals(iac1, EditorRegistryListener.INSTANCE.oldValue);
+        EditorRegistryListener.INSTANCE.reset(); // Reset firedCount to 0
+        
+        // Clean ignored ancestor stuff
+        frame.getContentPane().remove(tabContainer);
+        frame.pack();
+        iac1 = iac2 = null;
+        tab1 = tab2 = null;
+        tabContainer = null;
         
         // Partial GC: c3
+        frame.getContentPane().remove(c3);
+        frame.pack();
         c3 = null;
         jtcList = null;
+        EditorRegistryListener.INSTANCE.reset();
+        System.gc();
         System.gc();
         assertSame(2, EditorRegistry.componentList().size());
         
         // Test full GC
         jtcList = null;
+        frame.getContentPane().remove(c1);
+        frame.getContentPane().remove(c2);
+        frame.pack();
         c1 = null;
         c2 = null;
-        c3 = null;
+        jtcList = null;
         EditorRegistryListener.INSTANCE.reset();
+        System.gc();
         System.gc();
         assertSame(0, EditorRegistry.componentList().size());
 
@@ -163,6 +236,13 @@ public class EditorRegistryTest extends NbTestCase {
             newValue = null;
         }
 
+    }
+    
+    /**
+     * Tested ignored ancestor (like NB's TabbedContainer).
+     */
+    static final class IgnoredAncestorPanel extends JPanel {
+        
     }
 
 }
