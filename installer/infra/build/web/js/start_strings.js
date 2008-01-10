@@ -40,8 +40,27 @@ var PRODUCT_NAME      = "NetBeans {build.display.version}";
 var INSTALLER_MESSAGE = "Installer for {0}";
 var NOFILE_MESSAGE    = "No file requested" ;
 
+var NETBEANS_DOWNLOAD_STARTED_HEADER = "NetBeans IDE {build.display.version} Download Started";
+var LICENSE_NOTES_LABEL = "License Notices";
+var RELEASE_NOTES_LABEL = "Release Notes";
+var INSTALL_NOTES_LABEL = "Installation Instructions";
+var FIND_OUT_MORE_LABEL = "Find Out More";
+var PLUGINS_LABEL       = "Plugins";
+var PLUGINS_DESCRIPTION = "Contributed by the NetBeans community and 3rd party vendors.";
+var TUTORIALS_LABEL     = "Tutorials";
+var TUTORIALS_DESCRIPTION = "Written and recorded by the NetBeans community and professionals.";
+var TRAINING_LABEL = "Training";
+var TRAINING_DESCRIPTION = "Courses to help you improve your skills.";
+var SUPPORT_LABEL        = "Support";
+var SUPPORT_DESCRIPTION  = "Flexible support options to help you stay focused on innovation.";
+
+var RELEASE_NOTES_LINK  = "http://www.netbeans.org/community/releases/60/relnotes.html";
+var INSTALL_NOTES_LINK  = "http://www.netbeans.org/community/releases/60/install.html";
+var LICENSE_NOTES_LINK  = "http://www.netbeans.org/about/legal/product-licences.html";
+
 // $PRODUCT_NAME $TYPE (Installer for $PLATFORM/Zip)/$Language ($Language_ID) $filename ($SIZE) MD5: $MD5
 var INFO_MESSAGE = "{0}{1} {2}/{3} ({4})<br>{5} ({6} MB)<br>MD5: {7}";
 
 //DO NOT TRANSLATE
 var SUBSCRIPTION_PHP_URL = "http://services.netbeans.org/sub.php";
+

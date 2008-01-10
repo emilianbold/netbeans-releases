@@ -37,9 +37,9 @@
 
 <html>
     <head>
-	<meta http-equiv="content-type" content="text/html; charset=utf-8">
+	<meta http-equiv="content-type" content="text/html; charset=utf-8">                
         <title>NetBeans IDE {build.display.version} Download</title>	
-        <meta name="description" content="NetBeans IDE {build.display.version} Download"/>        
+        <meta name="description" content="NetBeans IDE {build.display.version} Download"/>
         <link rel="stylesheet" type="text/css" href="css/netbeans.css" media="screen"/>
         <link rel="stylesheet" type="text/css" href="css/download.css" media="screen"/>
 	<link rel="shortcut icon" href="http://www.netbeans.org/favicon.ico" type="image/x-icon"/>
@@ -48,15 +48,10 @@
         <script type="text/javascript" src="js/common.js"></script>
 	<script type="text/javascript" src="js/languages.js"></script>
 
-	<!-- TRANSLATE HERE: change (_strings.js) -> (_strings_<locale>.js) -->
-	<script type="text/javascript" src="js/common_strings.js"></script>
-	<script type="text/javascript" src="js/download_strings.js"></script>
-	<!-- END OF TRANSLATION PART -->
-
-        <script type="text/javascript" src="js/download.js"></script>	
-        <!-- TRANSLATE HERE: change (components.js) -> (components_<locale>.js) -->
-        <script type="text/javascript" src="js/components.js"></script>	
-        <!-- END OF TRANSLATION PART -->
+	<script type="text/javascript">load_js_locale("js/common_strings",".js")</script>
+        <script type="text/javascript">load_js_locale("js/download_strings",".js")</script>
+        <script type="text/javascript" src="js/download.js"></script>
+        <script type="text/javascript">load_js_locale("js/components",".js")</script>	        
     </head>
     
     <body class="blue-bg" onkeyup="handle_keyup(event)">
@@ -81,7 +76,18 @@
                             </tr>
                         </table>
                     </form>
-                </div>		
+                </div>
+                <div class="lang-dropdown" id="pagelanguagesbox" style="visibility: hidden;">
+                    <ul id="nav">
+                        <li onmouseover="this.className+=&quot; over&quot;;" onmouseout="this.className=this.className.replace(&quot; over&quot;, &quot;&quot;);">
+                          <a href="#" style="text=decoration:none;color:#213552;;">Choose page language<img src="http://www.netbeans.org/images/v5/ar-down2.gif" border="0" style="margin-left:3px;"/></a>
+                            <ul class="submenu">
+                                <script type="text/javascript">write_page_languages()</script>
+                            </ul>
+                       </li>
+                    </ul>
+                </div>
+
             </div>
         </div>
         
@@ -98,11 +104,11 @@
                         <!-- Top header -->
                         <table class="top_header">
                               <tr>
-                                  <td class="title">NetBeans IDE {build.display.version} Download</td>
+                                  <td class="title"><script type="text/javascript">message(NETBEANS_DOWNLOAD_HEADER)</script></td>
                                   <td class="menu">
-                                      <a href="http://download.netbeans.org/netbeans/6.0/final/">6.0</a> | 
-                                      Development | 
-                                      <a href="http://www.netbeans.info/downloads/dev.php">Archive</a>
+                                      <a href="http://download.netbeans.org/netbeans/6.0/final/">6.0</a> |
+                                      <script type="text/javascript">message(DEVELOPMENT_TITLE)</script> |
+                                      <a href="http://www.netbeans.info/downloads/dev.php"><script type="text/javascript">message(ARCHIVE_TITLE)</script></a>
                                   </td>
                               </tr>
                         </table>
@@ -127,15 +133,15 @@
 				<td class="valign-top">
 					<table class="subscription">
 						<tr>
-							<td>Email&nbsp;address&nbsp;(optional):&nbsp;</td>
+							<td><script type="text/javascript">message(EMAIL_LABEL)</script></td>
   				        		<td><input type="text" name="email" id="emailfield" class="field" style="width:190px;"/></td>
 						</tr>
   						<tr>
-  							<td class="valign-top">Subscribe&nbsp;to&nbsp;newsletters:</td>
+  							<td class="valign-top"><script type="text/javascript">message(SUBSCRIBE_LABEL)</script></td>
 	  						<td>
-								<input type="checkbox" id="monthlycb" name="monthly" value="1" checked/>Monthly&nbsp;&nbsp;&nbsp;&nbsp;
-  								<input type="checkbox" id="weeklycb" name="weekly" value="1" />Weekly
-  								<br/><input type="checkbox" id="contactcb" name="contact" value="1" checked/>NetBeans&nbsp;can&nbsp;contact&nbsp;me&nbsp;at&nbsp;this&nbsp;address
+								<input type="checkbox" id="monthlycb" name="monthly" value="1" checked/><script type="text/javascript">message(MONTHLY_LABEL)</script>
+  								<input type="checkbox" id="weeklycb" name="weekly" value="1" /><script type="text/javascript">message(WEEKLY_LABEL)</script>
+  								<br/><input type="checkbox" id="contactcb" name="contact" value="1" checked/><script type="text/javascript">message(CONTACT_LABEL)</script>
   							</td>
   						</tr>
 					</table>
@@ -145,14 +151,14 @@
 						<tr>
 		                                        <table class="l_p_select">
                 		                            <td class="spacer">&nbsp;</td>
-                                		            <td class="label">Language:</td>
+                                		            <td class="label"><script type="text/javascript">message(LANGUAGE_LABEL)</script></td>
 		                                            <td class="language_select">
                 		                                <select id="language_select" onchange="update()">
-								    <script type="text/javascript">write_languages()</script>                                    
+								    <script type="text/javascript">write_languages()</script>
 								    <script type="text/javascript">select_language()</script>
                                                 		</select>
 		                                            </td>
-                		                            <td class="label">Platform:</td>
+                		                            <td class="label"><script type="text/javascript">message(PLATFORM_LABEL)</script></td>
                                 		            <td class="platform_select">
                                                 		<select id="platform_select" onchange="update()">
 								    <script type="text/javascript">write_platforms()</script>                                    
@@ -186,19 +192,19 @@
                             <p>
                                 <span style="color: #FF8E00; margin: 0px 4px 0px 1px; font-weight: bold">*</span>
                                 <span style="width: 95%; margin: 0px auto 0px auto">
-                                    You can add or remove packs later using the IDE's Plugin Manager (Tools | Plugins).<br>
+                                    <script type="text/javascript">message(PLUGIN_MANAGER_LABEL)</script>
                                 </span>	
                                 <span style="width: 95%; margin: 0px 17px 0px 17px" id="jdk_note"></span>
                                 <br>
 				<span style="width: 95%; margin: 0px 0px 0px 17px">
-				    You can also download the NetBeans IDE as part of the <a href="http://java.sun.com/javaee/downloads/index.jsp">Java EE 5 Tools Bundle</a>.
+				    <script type="text/javascript">message(JAVATOOLSBUNDLE_LABEL)</script>				    
 				</span>
                             </p>
                             <p style="width: 95%; margin: 0px 17px 0px 17px">							                                
                                 <!--NetBeans Platform is part of NetBeans IDE. If you need it separately, you can <a href="zip/">download the platform</a>.<br/>-->
                                 <!--NetBeans is an open source project. You can build it yourself if you <a href="http://www.netbeans.org/community/sources/">download the sources</a>.-->
-                                NetBeans source code and binary builds without bundled runtimes are also available in <a href="zip/">zip file format</a>.<br>
-                                See also <a href="http://wiki.netbeans.org/wiki/view/WorkingWithNetBeansSources">instructions on how to build the IDE from sources</a>.
+                                <script type="text/javascript">message(SOURCE_BINARY_LABEL)</script>
+				<script type="text/javascript">message(BUILD_WIKI_LABEL)</script>                                
                             </p>
                             <!--
                         <p style="width: 95%; margin: 0px auto 0px auto">
@@ -212,8 +218,8 @@
                         <br/>
                         
                         <div class="align-center">
-                            <a href="http://www.netbeans.org/about/legal/product-licences.html">License Notices</a> | 
-                            <a href="http://www.netbeans.org/community/releases/60/install.html">Installation Instructions</a>
+                            <script type="text/javascript">writeUrl(LICENSE_NOTICE_LINK,LICENSE_NOTICE_LABEL)</script> | 
+                            <script type="text/javascript">writeUrl(INSTALL_NOTES_LINK,INSTALL_NOTES_LABEL)</script>
                         </div>
                         
                         <br/><br/>

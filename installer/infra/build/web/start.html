@@ -43,13 +43,12 @@
         <link rel="stylesheet" type="text/css" href="css/netbeans.css" media="screen"/>
         <link rel="stylesheet" type="text/css" href="css/start.css" media="screen"/>
         <link rel="shortcut icon" href="http://www.netbeans.org/favicon.ico" type="image/x-icon"/>
+
 	<script type="text/javascript" src="js/common.js"></script>
 	<script type="text/javascript" src="js/languages.js"></script>
 
-	<!-- TRANSLATE HERE: change (_strings.js) -> (_strings_<locale>.js) -->
-	<script type="text/javascript" src="js/common_strings.js"></script>
-        <script type="text/javascript" src="js/start_strings.js"></script>
-	<!-- END OF TRANSLATION PART -->
+	<script type="text/javascript">load_js_locale("js/common_strings",".js")</script>
+        <script type="text/javascript">load_js_locale("js/start_strings",".js")</script>
 
 	<script type="text/javascript" src="js/start.js"></script>
 	<script type="text/javascript" src="js/files.js"></script>
@@ -80,7 +79,17 @@
                         </table>
                     </form>
                 </div>
-            </div>
+                <div class="lang-dropdown" id="pagelanguagesbox" style="visibility: hidden;">
+                        <ul id="nav">
+                            <li onmouseover="this.className+=&quot; over&quot;;" onmouseout="this.className=this.className.replace(&quot; over&quot;, &quot;&quot;);">
+                              <a href="#" style="text=decoration:none;color:#213552;;">Choose page language<img src="http://www.netbeans.org/images/v5/ar-down2.gif" border="0" style="margin-left:3px;"/></a>
+                                <ul class="submenu">
+                                    <script type="text/javascript">write_page_languages()</script>
+                                </ul>
+                           </li>
+                        </ul>
+                    </div>
+                </div>
         </div>
         
         <div id="center-container">
@@ -94,7 +103,7 @@
                         <div class="bg-white">                            
                             <table class="top_header">
                                 <tr>
-                                    <td class="title">NetBeans IDE {build.display.version} Download Started</td>
+                                    <td class="title"><script type="text/javascript">message(NETBEANS_DOWNLOAD_STARTED_HEADER)</script></td>
                                 </tr>
                             </table>
                             <div class="bg-white f-page-cell" style="padding-left: 15px">
@@ -104,9 +113,9 @@
                                         <script type="text/javascript">write_download_header();</script>
                                         <script type="text/javascript">write_download_info();</script>
                                         <br>
-                                        <a href="http://www.netbeans.org/about/legal/product-licences.html">License Notices</a> | 
-                                        <a href="http://www.netbeans.org/community/releases/60/relnotes.html">Release Notes</a> | 
-                                        <a href="http://www.netbeans.org/community/releases/60/install.html">Installation Instructions</a>
+                                        <script type="text/javascript">writeUrl(LICENSE_NOTES_LINK,LICENSE_NOTES_LABEL)</script> | 
+                                        <script type="text/javascript">writeUrl(RELEASE_NOTES_LINK,RELEASE_NOTES_LABEL)</script> | 
+                                        <script type="text/javascript">writeUrl(INSTALL_NOTES_LINK,INSTALL_NOTES_LABEL)</script>
                                     </div>
                                 </div>
                             </div>
@@ -114,37 +123,37 @@
                     </div>
 		    <br><br>
                     <div class="b-top-dashed">
-                        <h5 style="padding-left:15px;">Find Out More</h5><br>
+                        <h5 style="padding-left:15px;"><script type="text/javascript">message(FIND_OUT_MORE_LABEL)</script></h5><br>
                         <table class="full-width colapse">
                             <tr>
                                 <td class="f-page-cell" style="width:25%;padding-bottom:0px;padding-top:0px;padding-left:20px;">					
                                     <img src="img/plugins_small.gif" class="valign-top float-left" style="padding-right:12px;padding-bottom:30px;"/>
-                                    <a href="http://plugins.netbeans.org/PluginPortal/">Plugins</a><br><br>
+                                    <a href="http://plugins.netbeans.org/PluginPortal/"><script type="text/javascript">message(PLUGINS_LABEL)</script></a><br><br>
                                     <span style="height:45px;padding-bottom:7px;">
-                                        Contributed by the NetBeans community and 3rd party vendors.
+                                        <script type="text/javascript">message(PLUGINS_DESCRIPTION)</script>
                                     </span>		
                                     
                                 </td>
                                 <td class="f-page-cell b-left b-right"  style="width:26%;padding-bottom:0px;padding-top:0px;padding-right:5px;">
                                     <img src="img/tutorials_small.gif" class="valign-top float-left" style="padding-right:12px;padding-bottom:30px;"/>
-                                    <a href="http://www.netbeans.org/kb/">Tutorials</a><br><br>
+                                    <a href="http://www.netbeans.org/kb/"><script type="text/javascript">message(TUTORIALS_LABEL)</script></a><br><br>
                                     <span style="height:45px;padding-bottom:7px;">
-                                        Written and recorded by the NetBeans community and professionals.
+                                        <script type="text/javascript">message(TUTORIALS_DESCRIPTION)</script>
                                     </span>		
                                 </td>
                                 <td class="f-page-cell b-right" style="width:25%;padding-bottom:0px;padding-top:0px;">                        
                                     <img src="img/training_small.gif" class="valign-top float-left" style="padding-right:12px;"/>
-                                    <a href="http://www.netbeans.org/kb/training.html">Training</a><br><br>
+                                    <a href="http://www.netbeans.org/kb/training.html"><script type="text/javascript">message(TRAINING_LABEL)</script></a><br><br>
                                     <span style="height:45px;padding-bottom:7px;">
-                                        Courses to help you improve your skills.
+                                        <script type="text/javascript">message(TRAINING_DESCRIPTION)</script>
                                     </span>		
                                 </td>
                                 
                                 <td class="f-page-cell" style="width:25%;padding-bottom:0px;padding-top:0px;padding-right:15px;">
                                     <img src="img/support_small.gif" class="valign-top float-left" style="padding-right:12px;padding-bottom:30px;"/>
-                                    <a href="http://www.netbeans.org/kb/support.html">Support</a><br><br>
+                                    <a href="http://www.netbeans.org/kb/support.html"><script type="text/javascript">message(SUPPORT_LABEL)</script></a><br><br>
                                     <span style="height:45px;padding-bottom:7px;">
-                                        Flexible support options to help you stay focused on innovation.
+                                        <script type="text/javascript">message(SUPPORT_DESCRIPTION)</script>
                                     </span>
                                 </td>
                             </tr>

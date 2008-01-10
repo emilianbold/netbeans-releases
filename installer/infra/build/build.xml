@@ -1951,6 +1951,19 @@ jarsigner.storepass=${jarsigner.storepass}
 	    <set property="locale.suffix" value=""/>
         </if>
 	<available file="${web.page.dir}/language${locale.suffix}.properties" property="locale.file.present"/>
+        <condition property="webpage.locale.present">
+            <and>
+                <available file="${web.page.dir}/js/common_strings${locale.suffix}.js"/>
+                <available file="${web.page.dir}/js/download_strings${locale.suffix}.js"/>
+                <available file="${web.page.dir}/js/start_strings${locale.suffix}.js"/>
+            </and>
+        </condition>
+        <condition property="locale.present">
+            <or>
+                <isset property="locale.file.present"/>
+                <isset property="webpage.locale.present"/>
+            </or>
+        </condition>
     </target>
 
     <target name="generate-components-js-locale">
@@ -1962,7 +1975,7 @@ jarsigner.storepass=${jarsigner.storepass}
 
     <target name="prepare-web-page-locale" depends="init-web-page-locale,web-page-replace-tokens,web-page-add-language,generate-components-js-locale"/>	
 
-    <target name="web-page-replace-tokens" if="locale.file.present">
+    <target name="web-page-replace-tokens" if="webpage.locale.present">
 	<property file="${web.page.dir}/replace.properties"/>
 	
 	<for-each from="1" to="${sources.params.length}" property="i">
@@ -1982,11 +1995,20 @@ jarsigner.storepass=${jarsigner.storepass}
         </for-each>                
     </target>
 
-    <target name="web-page-add-language" if="locale.file.present">
-	<property file="${web.page.dir}/language${locale.suffix}.properties"/>
-	<echo encoding="utf-8" file="${languages.js}.temp">LANGUAGE_NAMES.push("${language.name}");
+    <target name="web-page-add-language" if="locale.present">
+	<if property="locale.file.present">
+            <property file="${web.page.dir}/language${locale.suffix}.properties"/>
+	    <echo encoding="utf-8" file="${languages.js}.temp">LANGUAGE_NAMES.push("${language.name}");
 LANGUAGE_IDS.push("${language.id}");
 </echo>
+	</if>
+        <set property="suffix.to.use" value=""/>
+
+        <if property="webpage.locale.present">
+	     <echo encoding="utf-8" file="${languages.js}.temp" append="true">LANGUAGE_SUFFIXES.push("${locale.name}");
+LANGUAGE_WEBPAGE_NAMES.push("${language.webpage.name}");
+</echo>
+        </if>
 
 	<loadfile encoding="utf-8" srcfile="${languages.js}.temp" property="jstmpfile">
 	  <filterchain>

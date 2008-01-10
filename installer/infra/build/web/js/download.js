@@ -342,18 +342,7 @@ function detect_platform() {
 }
 
 function select_language() {
-    var lang = LANGUAGE_IDS[0];
-    if(navigator.userLanguage)  lang = navigator.userLanguage;
-    else if(navigator.language) lang = navigator.language;
-    lang = lang.replace("-", "_");
-    var language = "";
-    for(var i=0; i < LANGUAGE_IDS.length; i++ ) {
-        if(lang.indexOf(LANGUAGE_IDS[i])!=-1) {
-            if(LANGUAGE_IDS[i].length > language.length) {
-                language = LANGUAGE_IDS[i];		
-            }
-        }
-    }
+    var language = get_language(LANGUAGE_IDS);
     var select = document.getElementById("language_select");
     var languageOptions = select.options;
     for(var i=0;i<languageOptions.length;i++) {
@@ -572,12 +561,12 @@ function update() {
     cnd_size = Math.ceil(cnd_size / 1024.0);
 
     if( platform == "zip") {
-       full_size = 140;
-       java_size = 43;
-       javaee_size = 91;
-       javame_size = 54;
-       ruby_size = 32;
-       cnd_size = 22;
+       full_size = 157;
+       java_size = 48;
+       javaee_size = 104;
+       javame_size = 59;
+       ruby_size = 35;
+       cnd_size = 25;
     } 
 
     if ((platform.indexOf("solaris")!=-1) || (platform.indexOf("macosx")!=-1)) {
@@ -685,6 +674,10 @@ function download(option) {
 		file_name+= "&weekly="  + weekly;
 		file_name+= "&contact=" + contact;
         }
+    }
+    var overriden_language=get_overridden_language();
+    if(overriden_language!=DEFAULT_LANGUAGE) {
+        file_name += "&" + PAGELANG_SEP + overriden_language;
     }
     window.location = file_name;
 }

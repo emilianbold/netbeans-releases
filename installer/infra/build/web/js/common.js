@@ -37,6 +37,8 @@
 /* Languages and their ids which NetBeans is available*/
 var LANGUAGE_IDS   = new Array();
 var LANGUAGE_NAMES = new Array();
+var LANGUAGE_SUFFIXES = new Array();
+var LANGUAGE_WEBPAGE_NAMES = new Array();
 
 var PLATFORM_IDS         = new Array();
 var PLATFORM_LONG_NAMES  = new Array();
@@ -65,6 +67,8 @@ BUNDLE_IDS [3] = "ruby";
 BUNDLE_IDS [4] = "cpp";
 BUNDLE_IDS [5] = "all";
 
+var DEFAULT_LANGUAGE = "DEFAULT";
+var PAGELANG_SEP = "pagelang=";
 
 function getNameById(id,ids,names) {
     for(var i = 0 ; i < ids.length; i++) {
@@ -93,3 +97,87 @@ function getBundleLongName(id) {
     return getNameById(id, BUNDLE_IDS, BUNDLE_LONG_NAMES);
 }
 
+function get_overridden_language() {
+    var url = "" + window.location;
+    var idx = url.indexOf(PAGELANG_SEP);
+    var langcode = DEFAULT_LANGUAGE;
+    if(idx != -1) {
+	langcode = url.substring(idx + PAGELANG_SEP.length, url.length);
+    }
+    return langcode;
+    
+}
+
+function get_language(variants) {
+    var resultLanguage = "";
+    if(variants) {
+        var lang = variants[0];
+
+        var override = get_overridden_language();
+
+        if (override != DEFAULT_LANGUAGE) lang = override;
+        else if(navigator.userLanguage)  lang = navigator.userLanguage;
+        else if(navigator.language) lang = navigator.language;
+        lang = lang.replace("-", "_");        
+        for(var i=0; i < variants.length; i++ ) {
+            if(lang.toLowerCase().indexOf(variants[i].toLowerCase())!=-1) {
+                if(variants[i].length > resultLanguage.length) {
+                    resultLanguage = variants[i];		
+                }
+            }
+        }    
+    }
+    return resultLanguage;
+}
+
+function load_js(script_filename) {
+    document.write('<script language="javascript" type="text/javascript" src="' + script_filename + '"></script>');
+}
+
+function load_js_locale(script_filename, extension) {  
+    var suffix = "";
+    var locale_suffix = "";
+    locale_suffix = get_language(LANGUAGE_SUFFIXES);
+    if(locale_suffix!="") {
+	suffix = "_" + locale_suffix;
+    }
+     
+    load_js(script_filename + suffix + extension);
+}
+
+function write_page_languages() {    
+    var locale_suffix = get_language(LANGUAGE_SUFFIXES);
+
+    if(LANGUAGE_SUFFIXES.length > 1) {
+        document.getElementById("pagelanguagesbox").style.visibility = 'visible';
+    }
+    var url = "" + window.location;
+    var qIndex = url.indexOf("?")!=-1 ? url.indexOf("?") : url.length;
+    var aIndex = url.indexOf("&")!=-1 ? url.indexOf("&") : url.length;
+    var page = url.substring(0, Math.min(qIndex, aIndex));
+    
+    var get_request = url.substring(url.indexOf(page) + page.length, url.length);
+    if(get_request.indexOf(PAGELANG_SEP)==-1) { 
+        if(get_request.indexOf("?")==-1) {
+            get_request += "?";
+        } else if(get_request.indexOf("&")) {
+            get_request += "&";
+        } 
+        get_request += PAGELANG_SEP;
+    } else {
+        var regexp =  new RegExp(PAGELANG_SEP + "[a-zA-Z]+(_[a-zA-Z]+){0,2}","g");
+	get_request = get_request.replace(regexp, PAGELANG_SEP);
+    }
+    for(var i=0;i<LANGUAGE_SUFFIXES.length;i++) {
+	if(locale_suffix!=LANGUAGE_SUFFIXES[i]) {
+            document.write('<li><a href="' + page + get_request + LANGUAGE_SUFFIXES[i] + '">' + LANGUAGE_WEBPAGE_NAMES[i]+ '</a></li>');
+        }
+    }
+}
+
+function message(msg) {
+    document.write(msg);
+}
+function writeUrl(url,msg) {
+    document.write('<a href="' + url + '">' + msg + '</a>');
+}
