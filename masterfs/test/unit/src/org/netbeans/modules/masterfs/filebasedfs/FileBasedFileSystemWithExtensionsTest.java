@@ -47,7 +47,7 @@ import org.netbeans.modules.masterfs.providers.ProvidedExtensionsTest;
 /**
  * @author  rm111737
  */
-public class FileBasedFileSystemWithExtensionsTest extends FileBasedFileSystem2Test {
+public class FileBasedFileSystemWithExtensionsTest extends FileBasedFileSystemTest {
     /** Creates new MasterFileSystemTest */
     public FileBasedFileSystemWithExtensionsTest(Test test) {
         super(test);
@@ -57,6 +57,6 @@ public class FileBasedFileSystemWithExtensionsTest extends FileBasedFileSystem2T
     }
 
     public static Test suite() {
-        return new FileBasedFileSystemWithExtensionsTest(FileBasedFileSystem2Test.suite());
+        return new FileBasedFileSystemWithExtensionsTest(FileBasedFileSystemTest.suite());
     }
 }

@@ -106,9 +106,6 @@ public class Deadlock54741 extends NbTestCase {
         } 
     }
     
-    static {
-        System.setProperty("org.openide.util.Lookup", FileBasedFileSystem2Test.TestLookup.class.getName());
-    }
     
     public Deadlock54741(String testName) {
         super(testName);
@@ -154,6 +151,6 @@ public class Deadlock54741 extends NbTestCase {
         NbTestSuite suite = new NbTestSuite();
         suite.addTestSuite(Deadlock54741.class);
          
-        return new FileBasedFileSystem2Test(suite);
+        return new FileBasedFileSystemTest(suite);
     }
 }

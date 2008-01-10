@@ -733,8 +733,9 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         FileObject fileObject = root.getFileObject("testdir");        
         assertNotNull(fileObject);
         File f = FileUtil.toFile(fileObject);
+        FileBasedFileSystem fs = (FileBasedFileSystem) testedFS;
         
-        assertNull(testedFS.findResource(new File (f, externalName).getAbsolutePath().replace('\\',File.separatorChar)));
+        assertNull(fs.getFileObject(new File (f, externalName)));
         assertNull(fileObject.getFileObject(externalName));
         
         assertNotNull(f);
