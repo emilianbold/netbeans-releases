@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.java.hints.errors;
 
-import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
@@ -64,7 +63,6 @@ import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
@@ -74,7 +72,6 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -82,7 +79,7 @@ import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
-import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -276,11 +273,11 @@ public final class UncaughtException implements ErrorRule<Void> {
     }
     
     public String getDisplayName() {
-        return "Add Throws Clause and Surround With try-catch Fixes";
+        return NbBundle.getMessage(UncaughtException.class, "DN_AddThrowsClauseAndSurround");
     }
     
     public String getDescription() {
-        return "Add Throws Clause and Surround With try-catch Fixes";
+        return NbBundle.getMessage(UncaughtException.class, "DESC_AddThrowsClauseAndSurround");
     }
     
     private static final Set<ElementKind> EXECUTABLE_ELEMENTS = EnumSet.of(ElementKind.CONSTRUCTOR, ElementKind. METHOD);
@@ -300,7 +297,7 @@ public final class UncaughtException implements ErrorRule<Void> {
         }
         
         public String getText() {
-            return "Add throws clause for " + fqn;
+            return NbBundle.getMessage(UncaughtException.class, "FIX_AddThrowsClause", new Object[]{String.valueOf(fqn)});
         }
         
         public ChangeInfo implement() throws IOException {
@@ -347,48 +344,6 @@ public final class UncaughtException implements ErrorRule<Void> {
             hash = 13 * hash + (this.fqn != null ? this.fqn.hashCode() : 0);
             hash = 13 * hash + (this.method != null ? this.method.hashCode() : 0);
             return hash;
-        }
-        
-    }
-    
-    private static final class SurroundWithTryCatch implements Fix {
-        
-        private JavaSource js;
-        private List<TypeMirrorHandle> thandles;
-        private int offset;
-        
-        public SurroundWithTryCatch(JavaSource js, List<TypeMirrorHandle> thandles, int offset) {
-            this.js = js;
-            this.thandles = thandles;
-            this.offset = offset;
-        }
-        
-        public String getText() {
-            return "Surround with try-catch";
-        }
-        
-        public ChangeInfo implement() throws IOException {
-            js.runModificationTask(new Task<WorkingCopy>() {
-                public void run(WorkingCopy wc) throws Exception {
-                    wc.toPhase(Phase.RESOLVED);
-                    TreePath currentPath = wc.getTreeUtilities().pathFor(offset + 1);
-
-                    //find statement:
-                    while (currentPath != null && !STATEMENT_KINDS.contains(currentPath.getLeaf().getKind()))
-                        currentPath = currentPath.getParentPath();
-
-                    TreeMaker make = wc.getTreeMaker();
-                    Tree t = currentPath.getLeaf();
-                    BlockTree bt = make.Block(Collections.singletonList((StatementTree) t), false);
-                    List<CatchTree> catches = new ArrayList<CatchTree>();
-
-                    for (TypeMirrorHandle th : thandles) {
-                        catches.add(make.Catch(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "ex", make.Type(th.resolve(wc)), null), make.Block(Collections.<StatementTree>emptyList(), false)));
-                    }
-                    wc.rewrite(t, make.Try(bt, catches, null));
-                }
-            }).commit();
-            return null;
         }
         
     }

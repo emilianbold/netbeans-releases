@@ -66,6 +66,7 @@ import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -107,11 +108,11 @@ public class MakeVariableFinal implements ErrorRule<Void> {
     }
 
     public String getDisplayName() {
-        return "Make Variable Final";
+        return NbBundle.getMessage(MakeVariableFinal.class, "DN_MakeVariableFinal");
     }
 
     public String getDescription() {
-        return "Make Variable Final";
+        return NbBundle.getMessage(MakeVariableFinal.class, "DESC_MakeVariableFinal");
     }
 
     private static final class FixImpl implements Fix {
@@ -126,7 +127,7 @@ public class MakeVariableFinal implements ErrorRule<Void> {
             this.variable = variable;
         }
         public String getText() {
-            return "Make " + variableName + " final";
+            return NbBundle.getMessage(MakeVariableFinal.class, "FIX_MakeVariableFinal", new Object[]{String.valueOf(variableName)});
         }
 
         public ChangeInfo implement() throws IOException {
