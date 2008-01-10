@@ -42,9 +42,11 @@
 package org.netbeans.modules.masterfs.filebasedfs;
 
 import java.awt.Image;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectStreamException;
+import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -54,6 +56,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.masterfs.ProvidedExtensionsProxy;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
@@ -145,6 +148,20 @@ public final class FileBasedFileSystem extends FileSystem {
             return getRoot();
         }
         final FileObject retVal = (getFactory().findFileObject(fInfo));
+        if (retVal == null) {
+            if (retVal == null) {
+                boolean assertionsOn = false;
+                assert assertionsOn = true;
+                if (assertionsOn && f.exists()) {
+                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                    PrintStream ps = new PrintStream(bos);
+                    new Exception().printStackTrace(ps);
+                    ps.close();
+                    String h = "WARNING: externally created " + (f.isDirectory() ? "folder: " : "file: ") + f.getAbsolutePath();
+                    Logger.getLogger("org.netbeans.modules.masterfs.filebasedfs.fileobjects.FolderObj").log(Level.WARNING, bos.toString().replaceAll("java[.]lang[.]Exception", h));
+                } 
+            }
+        }
         return (retVal != null && retVal.isValid()) ? retVal : null;
     }
 

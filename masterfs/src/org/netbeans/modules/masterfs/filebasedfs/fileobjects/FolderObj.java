@@ -111,6 +111,17 @@ public final class FolderObj extends BaseFileObj {
 
         if (child != null) {
             retVal = lfs.findFileObject(new FileInfo(file, 1));
+        } else {
+            boolean assertionsOn = false;
+            assert assertionsOn=true;
+            if (assertionsOn && file.exists()) {
+                ByteArrayOutputStream bos  = new ByteArrayOutputStream();
+                PrintStream ps = new PrintStream(bos);
+                new Exception().printStackTrace(ps);
+                ps.close();
+                String h = "WARNING: externally created "+ (file.isDirectory() ? "folder: " : "file: ") + file.getAbsolutePath() ;                
+                Logger.getLogger("org.netbeans.modules.masterfs.filebasedfs.fileobjects.FolderObj").log(Level.WARNING,bos.toString().replaceAll("java[.]lang[.]Exception", h));
+            }
         }
 
         return retVal;
