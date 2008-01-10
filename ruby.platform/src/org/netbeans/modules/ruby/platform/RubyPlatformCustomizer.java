@@ -101,6 +101,7 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
             performPlatformDetection();
             preferences.putBoolean(FIRST_TIME_KEY, false);
         }
+        setAutoDetecting(false);
     }
 
     private void refreshPlatformList() {
@@ -115,6 +116,7 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
     }
 
     private void performPlatformDetection() {
+        setAutoDetecting(true);
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 RubyPlatformManager.performPlatformDetection();
@@ -122,12 +124,20 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
                     public void run() {
                         platformsList.setModel(new RubyPlatformListModel());
                         refreshPlatformList();
+                        setAutoDetecting(false);
                     }
                 });
             }
         });
     }
-    
+
+    private void setAutoDetecting(boolean autoDetecting) {
+        autoDetectButton.setEnabled(!autoDetecting);
+        addButton.setEnabled(!autoDetecting);
+        autoDetectProgress.setVisible(autoDetecting);
+        autoDetectLabel.setVisible(autoDetecting);
+    }
+
     private void refreshPlatform() {
         RubyPlatform plaf = (RubyPlatform) platformsList.getSelectedValue();
         
@@ -163,6 +173,8 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
         gemTool = new javax.swing.JLabel();
         gemToolValue = new javax.swing.JTextField();
         autoDetectButton = new javax.swing.JButton();
+        autoDetectLabel = new javax.swing.JLabel();
+        autoDetectProgress = new javax.swing.JProgressBar();
 
         platformsList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         platformsListSP.setViewportView(platformsList);
@@ -208,6 +220,10 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(autoDetectLabel, org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.autoDetectLabel.text")); // NOI18N
+
+        autoDetectProgress.setIndeterminate(true);
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -240,7 +256,11 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
                         .add(12, 12, 12)
                         .add(removeButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(autoDetectButton)))
+                        .add(autoDetectButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 222, Short.MAX_VALUE)
+                        .add(autoDetectLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(autoDetectProgress, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
 
@@ -248,6 +268,16 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
 
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(12, 12, 12)
+                .add(platformsListSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 309, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(addButton)
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(removeButton)
+                        .add(autoDetectButton)))
+                .addContainerGap())
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
@@ -265,17 +295,11 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(gemToolValue, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(gemTool))
-                .add(246, 246, 246))
-            .add(layout.createSequentialGroup()
-                .add(12, 12, 12)
-                .add(platformsListSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 309, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(addButton)
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(removeButton)
-                        .add(autoDetectButton)))
-                .addContainerGap())
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 211, Short.MAX_VALUE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(autoDetectProgress, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(autoDetectLabel))
+                .add(20, 20, 20))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -321,6 +345,8 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
     private javax.swing.JButton autoDetectButton;
+    private javax.swing.JLabel autoDetectLabel;
+    private javax.swing.JProgressBar autoDetectProgress;
     private javax.swing.JLabel gemHome;
     private javax.swing.JTextField gemHomeValue;
     private javax.swing.JLabel gemTool;
