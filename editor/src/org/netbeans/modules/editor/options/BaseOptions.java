@@ -54,7 +54,6 @@ import java.util.ArrayList;
 import java.util.logging.Logger;
 import java.awt.Toolkit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.settings.KeyBindingSettings;
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.SettingsDefaults;
@@ -72,20 +71,20 @@ import org.openide.text.IndentEngine;
 import java.beans.IntrospectionException;
 import org.openide.loaders.DataObject;
 import java.io.ObjectOutput;
-import org.openide.util.LookupListener;
 import org.openide.loaders.DataFolder;
 import org.openide.filesystems.FileObject;
 import javax.swing.KeyStroke;
 import java.awt.event.KeyEvent;
 import org.openide.util.Lookup;
-import java.util.StringTokenizer;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import java.awt.RenderingHints;
 import java.util.logging.Level;
+import java.util.prefs.Preferences;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.impl.KitsTracker;
 import org.netbeans.modules.editor.lib.ColoringMap;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.Utilities;
 
@@ -227,25 +226,24 @@ public class BaseOptions extends OptionSupport {
     //private static final String HELP_ID = "editing.global"; // !!! NOI18N
     private static final String NO_INDENT_ENGINE = "NO_INDENT_ENGINE"; // NOI18N
     
-    private transient Settings.Initializer coloringMapInitializer;
+//    private transient Settings.Initializer coloringMapInitializer;
     
     /** Version of the options. It's used for patching the options. */
     private transient int optionsVersion;
     
-    /* Indent engine available during readExternal() */
-    private transient IndentEngine readExternalIndentEngine;
-    private transient boolean inReadExternal;
+//    /* Indent engine available during readExternal() */
+//    private transient IndentEngine readExternalIndentEngine;
+//    private transient boolean inReadExternal;
     
     private transient MIMEOptionNode mimeNode;
-    private transient Map defaultMacrosMap;
-    private transient Map defaultKeyBindingsMap;
+//    private transient Map defaultMacrosMap;
+//    private transient Map defaultKeyBindingsMap;
     private transient MIMEOptionFolder settingsFolder;
     private transient boolean settingsFolderInitialization;
-    private transient Boolean usingNewOptions = null;
-    private transient KeyBindingSettings keyBindingsSettings;    
-    
-    private transient boolean keybindingsInitialized = false;
-    private transient boolean loaded = false;
+//    private transient KeyBindingSettings keyBindingsSettings;    
+//    
+//    private transient boolean keybindingsInitialized = false;
+//    private transient boolean loaded = false;
     
     /** Map of Kit to Options */
     private static final HashMap kitClass2Options = new HashMap();
@@ -253,9 +251,13 @@ public class BaseOptions extends OptionSupport {
     /** Code template expand key setting name */
     public static final String CODE_TEMPLATE_EXPAND_KEY = "code-template-expand-key"; // NOI18N
 
-    private Lookup.Result resultKB;
-    private LookupListener weakLookupListenerKB;
-    private LookupListener lookupListenerKB;
+//    private Lookup.Result resultKB;
+//    private LookupListener weakLookupListenerKB;
+//    private LookupListener lookupListenerKB;
+    
+    // ------------------------------------------------------------------------
+    // BaseOptions creation
+    // ------------------------------------------------------------------------
     
     public BaseOptions() {
         this(BaseKit.class, BASE);
@@ -267,53 +269,7 @@ public class BaseOptions extends OptionSupport {
         kitClass2Options.put(kitClass, this);
 //        new Throwable("BaseOptions: " + getClass() + "; kitClass=" + kitClass + "; typeName=" + typeName).printStackTrace();
     }
-    
-//    public boolean usesNewOptionsDialog() {
-//        if (usingNewOptions == null) {
-//            boolean b = false;
-//            if (!BASE.equals(getTypeName())) {
-//                String mime = getCTImpl();
-//                Lookup lookup = MimeLookup.getLookup(MimePath.parse(mime));
-//                FontColorSettings fcs = lookup.lookup(FontColorSettings.class);
-//                if (fcs != null){
-//                    AttributeSet as = fcs.getTokenFontColors(FontColorNames.DEFAULT_COLORING);
-//                    if (as !=null) {
-//                        b = true;
-//                    }
-//                }
-//            }
-//            
-//            usingNewOptions = b ? Boolean.TRUE : Boolean.FALSE;
-//        }
-//        
-//        return usingNewOptions.booleanValue();
-//    }
 
-    protected String getContentType(){
-        BaseKit kit = BaseKit.getKit(getKitClass());
-        return kit.getContentType();
-    }
-
-    // diagnostics for #101078
-    private String getCTImpl() {
-        String mimeType = getContentType();
-        if (mimeType == null) {
-            String msg = "Can't determine mime type for " + simpleToString(this) + "; kitClass = " + getKitClass(); //NOI18N
-            LOG.log(Level.WARNING, null, new Throwable(msg));
-            
-            mimeType="text/plain"; //NOI18N
-        }
-        return mimeType;
-    }
-    
-    private static String simpleToString(Object o) {
-        if (o == null) {
-            return null;
-        } else {
-            return o.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(o)); //NOI18N
-        }
-    }
-    
     /**
      * Gets an instance of <code>BaseOptions</code> for an editir kit implementation
      * class. Please see description of <code>BaseKit.getKit(Class)</code> for
@@ -361,98 +317,42 @@ public class BaseOptions extends OptionSupport {
         return options;
     }
 
-    /** Listening for Settings.settings creation.*/
+    // ------------------------------------------------------------------------
+    // Mime type
+    // ------------------------------------------------------------------------
     
-    /** Lazy initialization of the MIME specific settings folder. The folder should be created
-     *  via XML layers, if not, it will be created.
-     *  Instances of all XML file in this folder will be created.
+    /**
+     * <b>ALWAYS OVERWRITE THIS AND PROVIDE VALID MIME TYPE!</b>
+     * @return The mime type for this BaseOptions instance.
      */
-    protected MIMEOptionFolder getMIMEFolder() {
-        /* #25541 - Instead of synchronized getMIMEFolder() the kit
-         * is first obtained and then the synchronization is done
-         * to avoid the deadlock caused by locking in opposite order.
-         */
-        String name = getCTImpl();
-        if (name == null) {
+    protected String getContentType() {
+        BaseKit kit = BaseKit.getKit(getKitClass());
+        return kit.getContentType();
+    }
+
+    // diagnostics for #101078
+    private String getCTImpl() {
+        String mimeType = getContentType();
+        if (mimeType == null) {
+            String msg = "Can't determine mime type for " + simpleToString(this) + "; kitClass = " + getKitClass(); //NOI18N
+            LOG.log(Level.WARNING, null, new Throwable(msg));
+            
+            mimeType="text/plain"; //NOI18N
+        }
+        return mimeType;
+    }
+    
+    private static String simpleToString(Object o) {
+        if (o == null) {
             return null;
-        }
-
-        synchronized (Settings.class) {
-            if (settingsFolderInitialization) return null;
-            settingsFolderInitialization = true;
-            try {
-                // return already initialized folder
-                if (settingsFolder!=null) return settingsFolder;
-
-                FileObject f = Repository.getDefault().getDefaultFileSystem().
-                findResource(AllOptionsFolder.FOLDER+"/"+name); //NOI18N
-
-                // MIME folder doesn't exist, let's create it
-                if (f==null){
-                    FileObject fo = Repository.getDefault().getDefaultFileSystem().
-                    findResource(AllOptionsFolder.FOLDER);
-
-                    if (fo != null){
-                        try{
-                            StringTokenizer stok = new StringTokenizer(name,"/"); // NOI18N
-                            while (stok.hasMoreElements()) {
-                                String newFolder = stok.nextToken();
-                                if (fo.getFileObject(newFolder) == null){
-                                    fo = fo.createFolder(newFolder);
-                                }
-                                else
-                                    fo = fo.getFileObject(newFolder);
-                            }
-                        }catch(IOException ioe){
-                            ioe.printStackTrace();
-                        }
-
-                        f = Repository.getDefault().getDefaultFileSystem().
-                        findResource(AllOptionsFolder.FOLDER+"/"+name); // NOI18N
-                    }
-                }
-
-                if (f != null) {
-                    try {
-                        DataObject d = DataObject.find(f);
-                        DataFolder df = (DataFolder)d.getCookie(DataFolder.class);
-                        if (df != null) {
-                            settingsFolder = new MIMEOptionFolder(df, this);
-                            return settingsFolder;
-                        }
-                    } catch (org.openide.loaders.DataObjectNotFoundException ex) {
-                        ex.printStackTrace();
-                    }
-                }
-
-                return null;
-            } finally {
-                settingsFolderInitialization = false;
-            }
+        } else {
+            return o.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(o)); //NOI18N
         }
     }
     
-    /** Gets MIMEOptionNode that belongs to this bean */
-    public MIMEOptionNode getMimeNode() {
-        synchronized (Settings.class) {
-            if (mimeNode == null) {
-                createMIMENode(getTypeName());
-            }
-            return mimeNode;
-        }
-    }
-    
-    /** Creates Node in global options for appropriate MIME type */
-    private void createMIMENode(String typeName){
-        if (typeName.equals(BASE)){
-            return;
-        }
-        try{
-            mimeNode = new MIMEOptionNode(this);
-        }catch(IntrospectionException ie){
-            ie.printStackTrace();
-        }
-    }
+    // ------------------------------------------------------------------------
+    // o.n.e.Settings initialization
+    // ------------------------------------------------------------------------
     
     protected @Override void updateSettingsMap(Class kitClass, Map settingsMap) {
 //        final String id = "kitClass=" + kitClass + "; getKitClass()=" + getKitClass() + "; this=" + this;
@@ -492,15 +392,65 @@ public class BaseOptions extends OptionSupport {
                     }
                 }
             );
-
-            if (coloringMapInitializer != null) {
-                coloringMapInitializer.updateSettingsMap(kitClass, settingsMap);
-            }
+// XXX: remove
+//            if (coloringMapInitializer != null) {
+//                coloringMapInitializer.updateSettingsMap(kitClass, settingsMap);
+//            }
         }
         
-        if (kitClass == BaseKit.class && coloringMapInitializer != null) {
-            coloringMapInitializer.updateSettingsMap(BaseKit.class, settingsMap);
+// XXX: remove
+//        if (kitClass == BaseKit.class && coloringMapInitializer != null) {
+//            coloringMapInitializer.updateSettingsMap(BaseKit.class, settingsMap);
+//        }
+    }
+    
+    // ------------------------------------------------------------------------
+    // Antialiasing
+    // ------------------------------------------------------------------------
+    
+    public boolean isTextAntialiasing() {
+        // artificial setting -> evaluator used (at begining of this class)
+        Boolean val = (Boolean)getSettingValue(TEXT_ANTIALIASING_PROP);
+        if (val != null) {
+            return val.booleanValue();
+        } else {
+            //XXX this prop is not used anymore, but anyway, I believe
+            //it should have been swing.aatext - I've never seen
+            //javax.aatext.  -Tim
+            // #56234: Check -Djavax.aatext=true
+            if (Boolean.getBoolean("javax.aatext")) {
+                return true;
+
+            } else {
+                // fix of #31758
+                if (Utilities.isMac()) {
+                    // On OSX, default to true
+                    return true;
+                } else {
+                    return isSystemAntialias();
+                }
+            }
         }
+    }
+    
+    private static boolean isSystemAntialias() {
+        Map systemHints = (Map)(Toolkit.getDefaultToolkit().getDesktopProperty(
+                "awt.font.desktophints")); //NOI18N
+        if (systemHints != null) {
+            Object o = systemHints.get(RenderingHints.KEY_TEXT_ANTIALIASING);
+            boolean result = o != null && 
+                             o != RenderingHints.VALUE_TEXT_ANTIALIAS_OFF &&  
+                             o != RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT;
+            return result;
+        } else {
+            return false;
+        }
+    }
+    
+    public void setTextAntialiasing(boolean textAntialiasing) {
+        setSettingBoolean(TEXT_ANTIALIASING_PROP, textAntialiasing, TEXT_ANTIALIASING_PROP);
+        // Cause refresh or renderingHints variable in EditorUI
+        Settings.touchValue(getKitClass(), SettingsNames.RENDERING_HINTS);
     }
     
     private Map computeTextAntialiasingMap( boolean aaSetting ) {
@@ -558,45 +508,27 @@ public class BaseOptions extends OptionSupport {
         return systemSetting == gaspConst;
     }
     
-    /* #54893
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx(HELP_ID);
-    }
-     */
+    // ------------------------------------------------------------------------
+    // Code Templates (formerly abbreviations) related getters & setters
+    // ------------------------------------------------------------------------
     
-    public int getTabSize() {
-        return getSettingInteger(SettingsNames.TAB_SIZE);
+    /** Saves the keystroke of code tamplate expansion into properties.xml file under Editors/text/base */
+    public static void setCodeTemplateExpandKey(KeyStroke ks) {
+        Settings.setValue(BaseKit.class, CODE_TEMPLATE_EXPAND_KEY, Utilities.keyToString(ks));
     }
-    public void setTabSize(int tabSize) {
-        if (tabSize < 0) {
-            NbEditorUtilities.invalidArgument("MSG_NegativeValue"); // NOI18N
-            return;
+    
+    /** Gets Code Template Expand Key. Can return null if there is no key in the settings file */
+    public static KeyStroke getCodeTemplateExpandKey(){
+        String ks = (String) Settings.getValue(BaseKit.class, CODE_TEMPLATE_EXPAND_KEY);
+        if (ks != null) {
+            KeyStroke keyStroke = Utilities.stringToKey(ks);
+            if (keyStroke != null) {
+                return keyStroke;
+            }
         }
-        setSettingInteger(SettingsNames.TAB_SIZE, tabSize, TAB_SIZE_PROP);
+        return KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0);
     }
-    
-/*    public boolean getExpandTabs() {
-        return getSettingBoolean(SettingsNames.EXPAND_TABS);
-    }
-    [Mila] Moved to IndentEngine; Setter must stay here
- */
-    
-    public void setExpandTabs(boolean expandTabs) {
-        setSettingBoolean(SettingsNames.EXPAND_TABS, expandTabs, EXPAND_TABS_PROP);
-    }
-    
-/*    public int getSpacesPerTab() {
-        return getSettingInteger(SettingsNames.SPACES_PER_TAB);
-    }
-    [Mila] Moved to IndentEngine; Setter must stay here
- */
-    public void setSpacesPerTab(int i){
-        if (i > 0)
-            setSettingInteger(SettingsNames.SPACES_PER_TAB, i, SPACES_PER_TAB_PROP);
-        else
-            Toolkit.getDefaultToolkit().beep();
-    }
-    
+
     /** 
      * @return The same as <code>getAbbrevMap</code>.
      * @deprecated Use Editor Settings API instead.
@@ -651,149 +583,9 @@ public class BaseOptions extends OptionSupport {
         setAbbrevMap(map, true);
     }
     
-    public String getCaretTypeInsertMode() {
-        return (String)getSettingValue(SettingsNames.CARET_TYPE_INSERT_MODE);
-    }
-    public void setCaretTypeInsertMode(String type) {
-        setSettingValue(SettingsNames.CARET_TYPE_INSERT_MODE, type,
-        CARET_TYPE_INSERT_MODE_PROP);
-    }
-    
-    public String getCaretTypeOverwriteMode() {
-        return (String)getSettingValue(SettingsNames.CARET_TYPE_OVERWRITE_MODE);
-    }
-    public void setCaretTypeOverwriteMode(String type) {
-        setSettingValue(SettingsNames.CARET_TYPE_OVERWRITE_MODE, type,
-        CARET_TYPE_OVERWRITE_MODE_PROP);
-    }
-
-    /**
-     *@deprecated since adaptation to new view implementation
-        the option is not supported 
-     */
-    public boolean getCaretItalicInsertMode() {
-        return false;//getSettingBoolean(SettingsNames.CARET_ITALIC_INSERT_MODE);
-    }
-    /**
-     *@deprecated since adaptation to new view implementation
-        the option is not supported 
-     */
-    public void setCaretItalicInsertMode(boolean b) {
-        setSettingBoolean(SettingsNames.CARET_ITALIC_INSERT_MODE, b,
-        CARET_ITALIC_INSERT_MODE_PROP);
-    }
-
-    /**
-     *@deprecated since adaptation to new view implementation
-        the option is not supported 
-     */
-    public boolean getCaretItalicOverwriteMode() {
-        return false;//getSettingBoolean(SettingsNames.CARET_ITALIC_OVERWRITE_MODE);
-    }
-    /**
-     *@deprecated since adaptation to new view implementation
-        the option is not supported 
-     */
-    public void setCaretItalicOverwriteMode(boolean b) {
-        setSettingBoolean(SettingsNames.CARET_ITALIC_OVERWRITE_MODE, b,
-        CARET_ITALIC_OVERWRITE_MODE_PROP);
-    }
-    
-    public Color getCaretColorInsertMode() {
-        loadSettings(FontsColorsMIMEProcessor.class);
-        return (Color)super.getSettingValue(SettingsNames.CARET_COLOR_INSERT_MODE);
-    }
-    
-    /** Sets new CaretColorInsertMode property to initializer map and save the
-     *  changes to XML file */
-    public void setCaretColorInsertMode(Color color) {
-        setCaretColorInsertMode(color, true);
-    }
-    
-    /** Sets new CaretColorInsertMode property to initializer map and if saveToXML is true,
-     *  then new settings will be saved to XML file (fontsColors.xml). */
-    public void setCaretColorInsertMode(Color color, boolean saveToXML) {
-        if (saveToXML){
-            if (!getCaretColorInsertMode().equals(color) && (color!=null)){
-                // settings has changed, write changed settings to XML file
-                Map map = new HashMap();
-                map.put(SettingsNames.CARET_COLOR_INSERT_MODE,color);
-                if (map!=null){
-                    updateSettings(FontsColorsMIMEProcessor.class,
-                    map);
-                }
-            }
-        }
-        
-        super.setSettingValue(SettingsNames.CARET_COLOR_INSERT_MODE, color,
-        CARET_COLOR_INSERT_MODE_PROP);
-    }
-    
-    public Color getCaretColorOverwriteMode() {
-        loadSettings(FontsColorsMIMEProcessor.class);
-        return (Color)super.getSettingValue(SettingsNames.CARET_COLOR_OVERWRITE_MODE);
-    }
-    
-    /** Sets new CaretColorOverwriteMode property to initializer map and save the
-     *  changes to XML file */
-    public void setCaretColorOverwriteMode(Color color) {
-        setCaretColorOverwriteMode(color, true);
-    }
-    
-    /** Sets new CaretColorOverwriteMode property to initializer map and if saveToXML is true,
-     *  then new settings will be saved to XML file (fontsColors.xml). */
-    public void setCaretColorOverwriteMode(Color color, boolean saveToXML) {
-        if (saveToXML){
-            if (!getCaretColorOverwriteMode().equals(color) && (color!=null)){
-                // settings has changed, write changed settings to XML file
-                Map map = new HashMap();
-                map.put(SettingsNames.CARET_COLOR_OVERWRITE_MODE,color);
-                if (map!=null){
-                    updateSettings(FontsColorsMIMEProcessor.class,
-                    map);
-                }
-            }
-        }
-        
-        super.setSettingValue(SettingsNames.CARET_COLOR_OVERWRITE_MODE, color,
-        CARET_COLOR_OVERWRITE_MODE_PROP);
-    }
-    
-    public int getCaretBlinkRate() {
-        return getSettingInteger(SettingsNames.CARET_BLINK_RATE);
-    }
-    public void setCaretBlinkRate(int rate) {
-        if (rate < 0) {
-            NbEditorUtilities.invalidArgument("MSG_NegativeValue"); // NOI18N
-            return;
-        }
-        setSettingInteger(SettingsNames.CARET_BLINK_RATE, rate,
-        CARET_BLINK_RATE_PROP);
-    }
-    
-    public boolean getLineNumberVisible() {
-        return getSettingBoolean(SettingsNames.LINE_NUMBER_VISIBLE);
-    }
-    public void setLineNumberVisible(boolean b) {
-        setSettingBoolean(SettingsNames.LINE_NUMBER_VISIBLE, b,
-        LINE_NUMBER_VISIBLE_PROP);
-    }
-
-    public Insets getScrollJumpInsets() {
-        return (Insets)getSettingValue(SettingsNames.SCROLL_JUMP_INSETS);
-    }
-    public void setScrollJumpInsets(Insets i) {
-        setSettingValue(SettingsNames.SCROLL_JUMP_INSETS, i,
-        SCROLL_JUMP_INSETS_PROP);
-    }
-    
-    public Insets getScrollFindInsets() {
-        return (Insets)getSettingValue(SettingsNames.SCROLL_FIND_INSETS);
-    }
-    public void setScrollFindInsets(Insets i) {
-        setSettingValue(SettingsNames.SCROLL_FIND_INSETS, i,
-        SCROLL_FIND_INSETS_PROP);
-    }
+    // ------------------------------------------------------------------------
+    // Keybindings related getters/setters
+    // ------------------------------------------------------------------------
     
     /** 
      * @return The same keybindings as <code>getKeyBindingList</code>, but stored
@@ -889,6 +681,10 @@ public class BaseOptions extends OptionSupport {
 //        
 //        super.setSettingValue(SettingsNames.KEY_BINDING_LIST, list, KEY_BINDING_LIST_PROP);
     }
+    
+    // ------------------------------------------------------------------------
+    // Fonts & Colors related getters/setters
+    // ------------------------------------------------------------------------
     
     /**
      * Tries to gather all colorings defined for the mime type of this instance.
@@ -1028,6 +824,10 @@ public class BaseOptions extends OptionSupport {
         setSettingValue(SettingsNames.LINE_HEIGHT_CORRECTION, new Float(f),
         LINE_HEIGHT_CORRECTION_PROP);
     }
+    
+    // ------------------------------------------------------------------------
+    // Editor macros settings
+    // ------------------------------------------------------------------------
     
     /**
      * The same as <code>getMacroMap()</code>.
@@ -1180,6 +980,158 @@ public class BaseOptions extends OptionSupport {
         setMacroMap(macros, true);
     }
     
+    // ------------------------------------------------------------------------
+    // Miscellaneous getters & setters
+    // ------------------------------------------------------------------------
+    
+    public int getTabSize() {
+        return getSettingInteger(SettingsNames.TAB_SIZE);
+    }
+    public void setTabSize(int tabSize) {
+        if (tabSize < 0) {
+            NbEditorUtilities.invalidArgument("MSG_NegativeValue"); // NOI18N
+            return;
+        }
+        setSettingInteger(SettingsNames.TAB_SIZE, tabSize, TAB_SIZE_PROP);
+    }
+    
+/*    public boolean getExpandTabs() {
+        return getSettingBoolean(SettingsNames.EXPAND_TABS);
+    }
+    [Mila] Moved to IndentEngine; Setter must stay here
+ */
+    
+    public void setExpandTabs(boolean expandTabs) {
+        setSettingBoolean(SettingsNames.EXPAND_TABS, expandTabs, EXPAND_TABS_PROP);
+    }
+    
+/*    public int getSpacesPerTab() {
+        return getSettingInteger(SettingsNames.SPACES_PER_TAB);
+    }
+    [Mila] Moved to IndentEngine; Setter must stay here
+ */
+    public void setSpacesPerTab(int i){
+        if (i > 0)
+            setSettingInteger(SettingsNames.SPACES_PER_TAB, i, SPACES_PER_TAB_PROP);
+        else
+            Toolkit.getDefaultToolkit().beep();
+    }
+    
+    public String getCaretTypeInsertMode() {
+        return (String)getSettingValue(SettingsNames.CARET_TYPE_INSERT_MODE);
+    }
+    public void setCaretTypeInsertMode(String type) {
+        setSettingValue(SettingsNames.CARET_TYPE_INSERT_MODE, type,
+        CARET_TYPE_INSERT_MODE_PROP);
+    }
+    
+    public String getCaretTypeOverwriteMode() {
+        return (String)getSettingValue(SettingsNames.CARET_TYPE_OVERWRITE_MODE);
+    }
+    public void setCaretTypeOverwriteMode(String type) {
+        setSettingValue(SettingsNames.CARET_TYPE_OVERWRITE_MODE, type,
+        CARET_TYPE_OVERWRITE_MODE_PROP);
+    }
+
+    /**
+     *@deprecated since adaptation to new view implementation
+        the option is not supported 
+     */
+    public boolean getCaretItalicInsertMode() {
+        return false;//getSettingBoolean(SettingsNames.CARET_ITALIC_INSERT_MODE);
+    }
+    /**
+     *@deprecated since adaptation to new view implementation
+        the option is not supported 
+     */
+    public void setCaretItalicInsertMode(boolean b) {
+        setSettingBoolean(SettingsNames.CARET_ITALIC_INSERT_MODE, b,
+        CARET_ITALIC_INSERT_MODE_PROP);
+    }
+
+    /**
+     *@deprecated since adaptation to new view implementation
+        the option is not supported 
+     */
+    public boolean getCaretItalicOverwriteMode() {
+        return false;//getSettingBoolean(SettingsNames.CARET_ITALIC_OVERWRITE_MODE);
+    }
+    /**
+     *@deprecated since adaptation to new view implementation
+        the option is not supported 
+     */
+    public void setCaretItalicOverwriteMode(boolean b) {
+        setSettingBoolean(SettingsNames.CARET_ITALIC_OVERWRITE_MODE, b,
+        CARET_ITALIC_OVERWRITE_MODE_PROP);
+    }
+    
+    public Color getCaretColorInsertMode() {
+        return (Color)super.getSettingValue(SettingsNames.CARET_COLOR_INSERT_MODE);
+    }
+    
+    /** Sets new CaretColorInsertMode property to initializer map and save the
+     *  changes to XML file */
+    public void setCaretColorInsertMode(Color color) {
+        setCaretColorInsertMode(color, true);
+    }
+    
+    /** Sets new CaretColorInsertMode property to initializer map and if saveToXML is true,
+     *  then new settings will be saved to XML file (fontsColors.xml). */
+    public void setCaretColorInsertMode(Color color, boolean saveToXML) {
+        super.setSettingValue(SettingsNames.CARET_COLOR_INSERT_MODE, color, CARET_COLOR_INSERT_MODE_PROP);
+    }
+    
+    public Color getCaretColorOverwriteMode() {
+        return (Color)super.getSettingValue(SettingsNames.CARET_COLOR_OVERWRITE_MODE);
+    }
+    
+    /** Sets new CaretColorOverwriteMode property to initializer map and save the
+     *  changes to XML file */
+    public void setCaretColorOverwriteMode(Color color) {
+        setCaretColorOverwriteMode(color, true);
+    }
+    
+    /** Sets new CaretColorOverwriteMode property to initializer map and if saveToXML is true,
+     *  then new settings will be saved to XML file (fontsColors.xml). */
+    public void setCaretColorOverwriteMode(Color color, boolean saveToXML) {
+        super.setSettingValue(SettingsNames.CARET_COLOR_OVERWRITE_MODE, color, CARET_COLOR_OVERWRITE_MODE_PROP);
+    }
+    
+    public int getCaretBlinkRate() {
+        return getSettingInteger(SettingsNames.CARET_BLINK_RATE);
+    }
+    public void setCaretBlinkRate(int rate) {
+        if (rate < 0) {
+            NbEditorUtilities.invalidArgument("MSG_NegativeValue"); // NOI18N
+            return;
+        }
+        setSettingInteger(SettingsNames.CARET_BLINK_RATE, rate, CARET_BLINK_RATE_PROP);
+    }
+    
+    public boolean getLineNumberVisible() {
+        return getSettingBoolean(SettingsNames.LINE_NUMBER_VISIBLE);
+    }
+    public void setLineNumberVisible(boolean b) {
+        setSettingBoolean(SettingsNames.LINE_NUMBER_VISIBLE, b,
+        LINE_NUMBER_VISIBLE_PROP);
+    }
+
+    public Insets getScrollJumpInsets() {
+        return (Insets)getSettingValue(SettingsNames.SCROLL_JUMP_INSETS);
+    }
+    public void setScrollJumpInsets(Insets i) {
+        setSettingValue(SettingsNames.SCROLL_JUMP_INSETS, i,
+        SCROLL_JUMP_INSETS_PROP);
+    }
+    
+    public Insets getScrollFindInsets() {
+        return (Insets)getSettingValue(SettingsNames.SCROLL_FIND_INSETS);
+    }
+    public void setScrollFindInsets(Insets i) {
+        setSettingValue(SettingsNames.SCROLL_FIND_INSETS, i,
+        SCROLL_FIND_INSETS_PROP);
+    }
+
     public Insets getMargin() {
         return (Insets)getSettingValue(SettingsNames.MARGIN);
     }
@@ -1287,9 +1239,7 @@ public class BaseOptions extends OptionSupport {
             PAIR_CHARACTERS_COMPLETION);
     }
 
-    
     public Color getTextLimitLineColor() {
-        loadSettings(FontsColorsMIMEProcessor.class);
         return (Color)super.getSettingValue(SettingsNames.TEXT_LIMIT_LINE_COLOR);
     }
     
@@ -1310,20 +1260,7 @@ public class BaseOptions extends OptionSupport {
      * @deprecated Use Editor Settings Storage API instead.
      */
     public void setTextLimitLineColor(Color color , boolean saveToXML) {
-        if (saveToXML){
-            if (!getTextLimitLineColor().equals(color) && (color!=null)){
-                // settings has changed, write changed settings to XML file
-                Map map = new HashMap();
-                map.put(SettingsNames.TEXT_LIMIT_LINE_COLOR,color);
-                if (map!=null){
-                    updateSettings(FontsColorsMIMEProcessor.class,
-                    map);
-                }
-            }
-        }
-        
-        super.setSettingValue(SettingsNames.TEXT_LIMIT_LINE_COLOR, color,
-        TEXT_LIMIT_LINE_COLOR_PROP);
+        super.setSettingValue(SettingsNames.TEXT_LIMIT_LINE_COLOR, color, TEXT_LIMIT_LINE_COLOR_PROP);
     }
     
     public int getTextLimitWidth() {
@@ -1374,51 +1311,6 @@ public class BaseOptions extends OptionSupport {
         setSettingBoolean(TOOLBAR_VISIBLE_PROP, toolbarVisible, TOOLBAR_VISIBLE_PROP);
     }
     
-    public boolean isTextAntialiasing() {
-        // artificial setting -> evaluator used (at begining of this class)
-        Boolean val = (Boolean)getSettingValue(TEXT_ANTIALIASING_PROP);
-        if (val != null) {
-            return val.booleanValue();
-        } else {
-            //XXX this prop is not used anymore, but anyway, I believe
-            //it should have been swing.aatext - I've never seen
-            //javax.aatext.  -Tim
-            // #56234: Check -Djavax.aatext=true
-            if (Boolean.getBoolean("javax.aatext")) {
-                return true;
-
-            } else {
-                // fix of #31758
-                if (Utilities.isMac()) {
-                    // On OSX, default to true
-                    return true;
-                } else {
-                    return isSystemAntialias();
-                }
-            }
-        }
-    }
-    
-    private static boolean isSystemAntialias() {
-        Map systemHints = (Map)(Toolkit.getDefaultToolkit().getDesktopProperty(
-                "awt.font.desktophints")); //NOI18N
-        if (systemHints != null) {
-            Object o = systemHints.get(RenderingHints.KEY_TEXT_ANTIALIASING);
-            boolean result = o != null && 
-                             o != RenderingHints.VALUE_TEXT_ANTIALIAS_OFF &&  
-                             o != RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT;
-            return result;
-        } else {
-            return false;
-        }
-    }
-    
-    public void setTextAntialiasing(boolean textAntialiasing) {
-        setSettingBoolean(TEXT_ANTIALIASING_PROP, textAntialiasing, TEXT_ANTIALIASING_PROP);
-        // Cause refresh or renderingHints variable in EditorUI
-        Settings.touchValue(getKitClass(), SettingsNames.RENDERING_HINTS);
-    }
-    
     public Map<String, Boolean> getCodeFoldingProps(){
         Map<String, Boolean> map = new HashMap<String, Boolean>();
         
@@ -1433,52 +1325,50 @@ public class BaseOptions extends OptionSupport {
         setSettingValue(name, props.get(name));
     }
         
-    /** Retrieves the actions from XML file */
+    /** 
+     * Retrieves the actions from XML file.
+     * @deprecated Use the layers, ie. Editors/<mime-type>/Popup.
+     */
     public void initPopupMenuItems(){
-        //List orderedPopupFiles = getOrderedMultiPropertyFolderFiles("Popup"); //NOI18N
-        //if (orderedPopupFiles.size() >0){
-        //    super.setSettingValue(ExtSettingsNames.POPUP_MENU_ACTION_NAME_LIST,
-        //        OptionUtilities.getPopupStrings(orderedPopupFiles)); //NOI18N
-        //}
+// XXX: remove
+//        List orderedPopupFiles = getOrderedMultiPropertyFolderFiles("Popup"); //NOI18N
+//        if (orderedPopupFiles.size() >0){
+//            super.setSettingValue(ExtSettingsNames.POPUP_MENU_ACTION_NAME_LIST,
+//                OptionUtilities.getPopupStrings(orderedPopupFiles)); //NOI18N
+//        }
     }
     
+    // ------------------------------------------------------------------------
+    // IndentEngines related stuff
+    // ------------------------------------------------------------------------
+    
     public IndentEngine getIndentEngine() {
-        // Due to #11212
-        if (inReadExternal) {
-            return readExternalIndentEngine;
-        }
+// XXX: remove
+//        // Due to #11212
+//        if (inReadExternal) {
+//            return readExternalIndentEngine;
+//        }
+//
+        if (!BASE.equals(getTypeName())) {
+            Preferences prefs = MimeLookup.getLookup(MimePath.parse(getContentType())).lookup(Preferences.class);
+            String handle = prefs.get(INDENT_ENGINE_PROP, null);
+            if (handle != null) {
+                Object instance = null;
+                String handleString = (String) handle;
 
-        if (!BASE.equals(getTypeName())){
-            loadSettings(PropertiesMIMEProcessor.class);        
+                if (handleString.equals(NO_INDENT_ENGINE)) {
+                    return IndentEngine.getDefault();
+                }
 
-            MIMEOptionFile file; 
-            MIMEOptionFolder mimeFolder = getMIMEFolder();
-            if (mimeFolder != null){
-                file= mimeFolder.getFile(PropertiesMIMEProcessor.class, false);
-                if (file != null) {
-                    Map setMap = file.getAllProperties();
-                    Object handle = setMap.get(INDENT_ENGINE_PROP);
-                    if (handle instanceof String){
-                        Object instance = null;
-                        String handleString = (String) handle;
-                        
-                        if (handleString.equals(NO_INDENT_ENGINE)){
-                            return IndentEngine.getDefault();
-                        }
-                        
-                        Lookup.Template tmp = new Lookup.Template(null, handleString, null);
-                        Lookup.Item item = Lookup.getDefault().lookupItem(tmp);
-                        if (item != null) {
-                            instance = item.getInstance();
-                            if(instance instanceof IndentEngine){
-                                return (IndentEngine) instance;
-                            }
-                        }
-
+                Lookup.Template tmp = new Lookup.Template(null, handleString, null);
+                Lookup.Item item = Lookup.getDefault().lookupItem(tmp);
+                if (item != null) {
+                    instance = item.getInstance();
+                    if (instance instanceof IndentEngine) {
+                        return (IndentEngine) instance;
                     }
                 }
             }
-        
         }
 
         // [BACKWARD-COMPATIBILITY-START]
@@ -1510,28 +1400,31 @@ public class BaseOptions extends OptionSupport {
     }
     
     public void setIndentEngine(IndentEngine eng) {
-        /* Disabled direct setting of the engine
-         * during project deserialization to avoid doubled
-         * indent engine as described in #9687
-         */
-        if (!inReadExternal) {
+// XXX: remove
+//        /* Disabled direct setting of the engine
+//         * during project deserialization to avoid doubled
+//         * indent engine as described in #9687
+//         */
+//        if (!inReadExternal) {
             String id = null;
             if (eng != null) {
                 Lookup.Template tmp = new Lookup.Template(null, null, eng);
                 Lookup.Item item = Lookup.getDefault().lookupItem(tmp);
-                if (item != null) id = item.getId();
-                
+                if (item != null) {
+                    id = item.getId();
+                }
             }
 
             if (!BASE.equals(getTypeName())){
-                Map map = new HashMap();
-                if (id == null) id = NO_INDENT_ENGINE; 
-                map.put(INDENT_ENGINE_PROP, id);
-                updateSettings(PropertiesMIMEProcessor.class, map, false);
+                Preferences prefs = MimeLookup.getLookup(MimePath.parse(getContentType())).lookup(Preferences.class);
+                if (id == null) {
+                    id = NO_INDENT_ENGINE;
+                } 
+                prefs.put(INDENT_ENGINE_PROP, id);
             }
 
             refreshIndentEngineSettings();
-        }
+//        }
     }
     
     private void refreshIndentEngineSettings() {
@@ -1560,246 +1453,337 @@ public class BaseOptions extends OptionSupport {
         return null;
     }
     
+    // ------------------------------------------------------------------------
+    // Options versioning
+    // ------------------------------------------------------------------------
+    
+    /**
+     * @deprecated Without any replacement.
+     */
     public void setOptionsVersion(int optionsVersion) {
         int oldOptionsVersion = this.optionsVersion;
         this.optionsVersion = optionsVersion;
 
         if (optionsVersion != oldOptionsVersion) {
-            firePropertyChange(OPTIONS_VERSION_PROP,
-                new Integer(oldOptionsVersion), new Integer(optionsVersion));
+            firePropertyChange(OPTIONS_VERSION_PROP, new Integer(oldOptionsVersion), new Integer(optionsVersion));
         }
-
     }
-    
+
+    /**
+     * @deprecated Without any replacement.
+     */
     public int getOptionsVersion() {
         return optionsVersion;
     }
     
-    public @Override void readExternal(ObjectInput in)
-    throws IOException, ClassNotFoundException {
-        
-        /** Hold the current indent engine due to #11212 */
-        readExternalIndentEngine = getIndentEngine();
-        inReadExternal = true;
-        
-        /* Make the current options version to be zero
-         * temporarily to distinguish whether the options
-         * imported were old and the setOptionsVersion()
-         * was not called or whether the options
-         * were new so the options version was set
-         * to the LATEST_OPTIONS_VERSION value.
-         */
-        optionsVersion = 0;
-        
-        try {
-            // Read the serialized options
-            super.readExternal(in);
-        }catch(java.io.OptionalDataException ode){
-            // #17385. It occurs during reading Settings.settings, that is unimportant
-        } finally {
-
-            // Make sure the indent engine settings are propagated
-            // (SharedClassObject.putProperty() is final)
-            refreshIndentEngineSettings();
-
-            // Possibly upgrade the options
-            //if (optionsVersion < LATEST_OPTIONS_VERSION) {
-            //    upgradeOptions(optionsVersion, LATEST_OPTIONS_VERSION);
-            //}
-
-            optionsVersion = LATEST_OPTIONS_VERSION;
-
-            /** Release temp indent engine -  #11212 */
-            inReadExternal = false;
-            readExternalIndentEngine = null;
-        }
-    }
-    
-    /** Upgrade the deserialized options.
+    /** 
+     * Upgrade the deserialized options.
      * @param version deserialized version of the options
      * @param latestVersion latest version of the options
      *   that will be set to them after they are upgraded
+     * @deprecated Without any replacement. This method is never called.
      */
     protected void upgradeOptions(int version, int latestVersion) {
         // Upgrade in separate class to avoid messing up BaseOptions
         //UpgradeOptions.upgradeOptions(this, version, latestVersion);
     }
     
-    /** Load settings from XML files and initialize changes */
-    private void loadSettings(Class processor){
-        MIMEOptionFile file;
-        if (BASE.equals(getTypeName())){
-            MIMEOptionFolder mimeFolder = AllOptionsFolder.getDefault().getMIMEFolder();
-            if (mimeFolder == null) return;
-            file= mimeFolder.getFile(processor, false);
-        }else{
-            MIMEOptionFolder mimeFolder = getMIMEFolder();
-            if (mimeFolder == null) return;
-            file= mimeFolder.getFile(processor, false);
+    // ------------------------------------------------------------------------
+    // XML-ization & MIME* stuff
+    // ------------------------------------------------------------------------
+    
+    /** 
+     * @return The <code>MIMEOptionFolder</code> instance for the mime type of
+     *   this <code>BaseOptions</code> instance.
+     * @deprecated Use Editor Settings Storage API.
+     */
+    protected MIMEOptionFolder getMIMEFolder() {
+        /* #25541 - Instead of synchronized getMIMEFolder() the kit
+         * is first obtained and then the synchronization is done
+         * to avoid the deadlock caused by locking in opposite order.
+         */
+        String name = getCTImpl();
+        if (name == null) {
+            return null;
         }
-        if ((file!=null) && (!file.isLoaded())) {
-            file.loadSettings();
+
+        synchronized (Settings.class) {
+            if (settingsFolderInitialization) {
+                return null;
+            }
+            settingsFolderInitialization = true;
+            try {
+                // return already initialized folder
+                if (settingsFolder != null) {
+                    return settingsFolder;
+                }
+
+                FileObject f = Repository.getDefault().getDefaultFileSystem().findResource(AllOptionsFolder.FOLDER + "/" + name); //NOI18N
+
+                // MIME folder doesn't exist, let's create it
+                if (f == null) {
+                    FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(AllOptionsFolder.FOLDER);
+                    if (fo != null) {
+                        try {
+                            FileUtil.createFolder(fo, name);
+                        } catch (IOException ioe) {
+                            LOG.log(Level.WARNING, null, ioe);
+                        }
+
+                        f = Repository.getDefault().getDefaultFileSystem().findResource(AllOptionsFolder.FOLDER + "/" + name); // NOI18N
+                    }
+                }
+
+                if (f != null) {
+                    try {
+                        DataObject d = DataObject.find(f);
+                        DataFolder df = (DataFolder) d.getCookie(DataFolder.class);
+                        if (df != null) {
+                            settingsFolder = new MIMEOptionFolder(df, this);
+                            return settingsFolder;
+                        }
+                    } catch (org.openide.loaders.DataObjectNotFoundException ex) {
+                        LOG.log(Level.WARNING, null, ex);
+                    }
+                }
+
+                return null;
+            } finally {
+                settingsFolderInitialization = false;
+            }
         }
     }
     
-    /** Save changes to XML files.
-     * @see #updateSettings(java.lang.Class, java.util.Map, boolean )
-     */
-    private void updateSettings(Class processor, Map settings){
-        updateSettings(processor, settings, true);
+    /** Gets MIMEOptionNode that belongs to this bean */
+    public MIMEOptionNode getMimeNode() {
+        synchronized (Settings.class) {
+            if (mimeNode == null) {
+                createMIMENode(getTypeName());
+            }
+            return mimeNode;
+        }
     }
     
-    /** Save changes to XML files 
-     *  @param processor MIMEProcessor class
-     *  @param settings the settings map 
-     *  @param useRequestProcessorForSaving if true settings will be saved in RequestProcessor thread.
-     */
-    private void updateSettings(Class processor, Map settings, boolean useRequestProcessorForSaving){
-        if (processor == FontsColorsMIMEProcessor.class ||
-            processor == KeyBindingsMIMEProcessor.class ||
-            processor == AbbrevsMIMEProcessor.class ||
-            processor == MacrosMIMEProcessor.class
-        ) {
+    /** Creates Node in global options for appropriate MIME type */
+    private void createMIMENode(String typeName) {
+        if (typeName.equals(BASE)) {
             return;
         }
-        
-        MIMEOptionFile fileX;
-        MIMEOptionFolder mimeFolder;
-        if (BASE.equals(getTypeName())){
-            mimeFolder = AllOptionsFolder.getDefault().getMIMEFolder();
-            if (mimeFolder == null) return;
-            fileX = mimeFolder.getFile(processor, true);
-        }else{
-            mimeFolder = getMIMEFolder();
-            if (mimeFolder == null) return;
-            fileX = mimeFolder.getFile(processor, true);
-        }
-        final Map finalSettings = settings;
-        final MIMEOptionFile file = fileX;
-        if (file!=null){
-            if (useRequestProcessorForSaving){
-                Settings.update(new Runnable() {
-                    public void run() {
-                        file.setAllProperties(finalSettings);
-                    }
-                    public boolean asynchronous() {
-                        return true;
-                    }
-                });
-            }else{
-                file.setAllProperties(finalSettings);                
-            }
-            
-        } else {
-            LOG.info("A settings file for " + processor + " does not exist in " + mimeFolder.getDataFolder()); //NOI18N
+        try {
+            mimeNode = new MIMEOptionNode(this);
+        } catch (IntrospectionException ie) {
+            LOG.log(Level.WARNING, null, ie);
         }
     }
     
-    public @Override void setSettingValue(String settingName, Object newValue) {
-        setSettingValue(settingName, newValue, settingName);
-    }
+// XXX: remove    
+//    /** Load settings from XML files and initialize changes */
+//    private void loadSettings(Class processor){
+//        MIMEOptionFile file;
+//        if (BASE.equals(getTypeName())){
+//            MIMEOptionFolder mimeFolder = AllOptionsFolder.getDefault().getMIMEFolder();
+//            if (mimeFolder == null) return;
+//            file= mimeFolder.getFile(processor, false);
+//        }else{
+//            MIMEOptionFolder mimeFolder = getMIMEFolder();
+//            if (mimeFolder == null) return;
+//            file= mimeFolder.getFile(processor, false);
+//        }
+//        if ((file!=null) && (!file.isLoaded())) {
+//            file.loadSettings();
+//        }
+//    }
+//    
+//    /** Save changes to XML files.
+//     * @see #updateSettings(java.lang.Class, java.util.Map, boolean )
+//     */
+//    private void updateSettings(Class processor, Map settings){
+//        updateSettings(processor, settings, true);
+//    }
+//    
+//    /** Save changes to XML files 
+//     *  @param processor MIMEProcessor class
+//     *  @param settings the settings map 
+//     *  @param useRequestProcessorForSaving if true settings will be saved in RequestProcessor thread.
+//     */
+//    private void updateSettings(Class processor, Map settings, boolean useRequestProcessorForSaving){
+//        if (processor == FontsColorsMIMEProcessor.class ||
+//            processor == KeyBindingsMIMEProcessor.class ||
+//            processor == AbbrevsMIMEProcessor.class ||
+//            processor == MacrosMIMEProcessor.class
+//        ) {
+//            return;
+//        }
+//        
+//        MIMEOptionFile fileX;
+//        MIMEOptionFolder mimeFolder;
+//        if (BASE.equals(getTypeName())){
+//            mimeFolder = AllOptionsFolder.getDefault().getMIMEFolder();
+//            if (mimeFolder == null) return;
+//            fileX = mimeFolder.getFile(processor, true);
+//        }else{
+//            mimeFolder = getMIMEFolder();
+//            if (mimeFolder == null) return;
+//            fileX = mimeFolder.getFile(processor, true);
+//        }
+//        final Map finalSettings = settings;
+//        final MIMEOptionFile file = fileX;
+//        if (file!=null){
+//            if (useRequestProcessorForSaving){
+//                Settings.update(new Runnable() {
+//                    public void run() {
+//                        file.setAllProperties(finalSettings);
+//                    }
+//                    public boolean asynchronous() {
+//                        return true;
+//                    }
+//                });
+//            }else{
+//                file.setAllProperties(finalSettings);                
+//            }
+//            
+//        } else {
+//            LOG.info("A settings file for " + processor + " does not exist in " + mimeFolder.getDataFolder()); //NOI18N
+//        }
+//    }
+//    
+//    public @Override void setSettingValue(String settingName, Object newValue) {
+//        setSettingValue(settingName, newValue, settingName);
+//    }
+//    
+//    private boolean isTheSame(String settingName, Object newValue){
+//        if (settingName == null ||
+//            settingName.equals(NbEditorDocument.INDENT_ENGINE) ||
+//            settingName.equals(NbEditorDocument.FORMATTER)
+//        ) {
+//            return true;
+//        }
+//        Object oldValue = getSettingValue(settingName);
+//        if ((oldValue == null && newValue == null)
+//        || (oldValue != null && oldValue.equals(newValue))
+//        ) {
+//            return true; // the same object
+//        }
+//        return false;
+//    }
+//    
+//
+//    /** Sets setting value to initializer Map and save the changes to XML file
+//     *  (properties.xml) */
+//    public @Override void setSettingValue(String settingName, Object newValue, String propertyName) {
+//        if (!isTheSame(settingName, newValue)){
+//            super.setSettingValue(settingName,newValue,propertyName);
+//            
+//            // Save it
+//            Map map = new HashMap();
+//            map.put(settingName, newValue);
+//            updateSettings(PropertiesMIMEProcessor.class, map);
+//        }
+//    }
+//    
+//    public @Override Object getSettingValue(String settingName) {
+//        loadSettings(PropertiesMIMEProcessor.class);
+//        return super.getSettingValue(settingName);
+//    }
+//    
+//    protected final @Override void setSettingBoolean(String settingName, boolean newValue, String propertyName) {
+//        setSettingValue(settingName, newValue ? Boolean.TRUE : Boolean.FALSE);
+//    }
+//    
+//    protected final @Override void setSettingInteger(String settingName, int newValue, String propertyName) {
+//        setSettingValue(settingName, new Integer(newValue));
+//    }
     
-    private boolean isTheSame(String settingName, Object newValue){
-        if (settingName == null ||
-            settingName.equals(NbEditorDocument.INDENT_ENGINE) ||
-            settingName.equals(NbEditorDocument.FORMATTER)
-        ) {
-            return true;
-        }
-        Object oldValue = getSettingValue(settingName);
-        if ((oldValue == null && newValue == null)
-        || (oldValue != null && oldValue.equals(newValue))
-        ) {
-            return true; // the same object
-        }
-        return false;
-    }
-    
-    /** Sets setting value to initializer Map and save the changes to XML file
-     *  (properties.xml) */
-    public @Override void setSettingValue(String settingName, Object newValue, String propertyName) {
-        if (!isTheSame(settingName, newValue)){
-            super.setSettingValue(settingName,newValue,propertyName);
-            
-            // Save it
-            Map map = new HashMap();
-            map.put(settingName, newValue);
-            updateSettings(PropertiesMIMEProcessor.class, map);
-        }
-    }
-    
-    public @Override Object getSettingValue(String settingName) {
-        loadSettings(PropertiesMIMEProcessor.class);
-        return super.getSettingValue(settingName);
-    }
-    
-    protected final @Override void setSettingBoolean(String settingName, boolean newValue, String propertyName) {
-        setSettingValue(settingName, newValue ? Boolean.TRUE : Boolean.FALSE);
-    }
-    
-    protected final @Override void setSettingInteger(String settingName, int newValue, String propertyName) {
-        setSettingValue(settingName, new Integer(newValue));
-    }
-    
-    /** Load all available settings from XML files and initialize them */
+    /** 
+     * Load all available settings from XML files and initialize them.
+     * @deprecated Use Editor Settings Storage API instead. This method is never called.
+     */
     protected void loadXMLSettings() {
-        if (!loaded) {
-            loaded = true;
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("Loading " + getClass() + "; mimeType='" + getCTImpl() + "'"); //NOI18N
-            }
-
-            loadSettings(PropertiesMIMEProcessor.class);
-
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("Loaded! " + getClass() + "; mimeType='" + getCTImpl() + "'"); //NOI18N
-            }
-        } else {
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("Already loaded! " + getClass() + "; mimeType='" + getCTImpl() + "'"); //NOI18N
-            }
-        }
+// XXX: remove    
+//        if (!loaded) {
+//            loaded = true;
+//            if (LOG.isLoggable(Level.FINE)) {
+//                LOG.fine("Loading " + getClass() + "; mimeType='" + getCTImpl() + "'"); //NOI18N
+//            }
+//
+//            loadSettings(PropertiesMIMEProcessor.class);
+//
+//            if (LOG.isLoggable(Level.FINE)) {
+//                LOG.fine("Loaded! " + getClass() + "; mimeType='" + getCTImpl() + "'"); //NOI18N
+//            }
+//        } else {
+//            if (LOG.isLoggable(Level.FINE)) {
+//                LOG.fine("Already loaded! " + getClass() + "; mimeType='" + getCTImpl() + "'"); //NOI18N
+//            }
+//        }
     }
 
-    /** Overriden writeExternal method. BaseOptions are no longer serialized. */
+    // ------------------------------------------------------------------------
+    // Serialization, Externalization, etc
+    // ------------------------------------------------------------------------
+    
+    /** 
+     * @deprecated Use Editor Settings Storage API instead. BaseOptions are no longer serialized.
+     */
+    public @Override void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+// XXX: remove
+//        /** Hold the current indent engine due to #11212 */
+//        readExternalIndentEngine = getIndentEngine();
+//        inReadExternal = true;
+//        
+//        /* Make the current options version to be zero
+//         * temporarily to distinguish whether the options
+//         * imported were old and the setOptionsVersion()
+//         * was not called or whether the options
+//         * were new so the options version was set
+//         * to the LATEST_OPTIONS_VERSION value.
+//         */
+//        optionsVersion = 0;
+//        
+//        try {
+//            // Read the serialized options
+//            super.readExternal(in);
+//        }catch(java.io.OptionalDataException ode){
+//            // #17385. It occurs during reading Settings.settings, that is unimportant
+//        } finally {
+//
+//            // Make sure the indent engine settings are propagated
+//            // (SharedClassObject.putProperty() is final)
+//            refreshIndentEngineSettings();
+//
+//            // Possibly upgrade the options
+//            //if (optionsVersion < LATEST_OPTIONS_VERSION) {
+//            //    upgradeOptions(optionsVersion, LATEST_OPTIONS_VERSION);
+//            //}
+//
+//            optionsVersion = LATEST_OPTIONS_VERSION;
+//
+//            /** Release temp indent engine -  #11212 */
+//            inReadExternal = false;
+//            readExternalIndentEngine = null;
+//        }
+    }
+    
+    /** 
+     * Overriden writeExternal method. 
+     * @deprecated Use Editor Settings Storage API instead. BaseOptions are no longer serialized.
+     */
     public void writeExternal() throws IOException{
     }
     
-    /** Overriden writeExternal method. BaseOptions are no longer serialized. */
+    /** 
+     * Overriden writeExternal method. 
+     * @deprecated Use Editor Settings Storage API instead. BaseOptions are no longer serialized.
+     */
     public @Override void writeExternal(ObjectOutput out) throws IOException{
     }
 
+    /**
+     * @deprecated Use Editor Settings Storage API instead. BaseOptions are no longer serialized.
+     */
     protected @Override void firePropertyChange(String name, Object oldValue, Object newValue){
         // ignore firing... Quick fix of #47261. 
         // BaseOptions should be rewritten to not extend SystemOption ...
         // there is no need to be compatile with NB 3.2 and deserialize its options...
-    }
-
-    /** Saves the keystroke of code tamplate expansion into properties.xml file under Editors/text/base */
-    public static void setCodeTemplateExpandKey(KeyStroke ks){
-        String s = Utilities.keyToString(ks);
-        BaseOptions base = getOptions(BaseKit.class);
-        Map map = new HashMap();
-        map.put(CODE_TEMPLATE_EXPAND_KEY, s);
-        base.updateSettings(PropertiesMIMEProcessor.class, map);
-    }
-    
-    /** Gets Code Template Expand Key. Can return null if there is no key in the settings file */
-    public static KeyStroke getCodeTemplateExpandKey(){
-        MIMEOptionFolder mimeFolder = AllOptionsFolder.getDefault().getMIMEFolder();
-        if (mimeFolder != null){
-            MIMEOptionFile file = mimeFolder.getFile(PropertiesMIMEProcessor.class, false);
-            if (file != null){
-                if (!file.isLoaded()) {
-                    file.loadSettings(false);
-                }
-                Map properties = file.getAllProperties();
-                String s = (String) properties.get(CODE_TEMPLATE_EXPAND_KEY);
-                if (s != null){
-                    return Utilities.stringToKey(s);
-                }
-            }
-        }
-        return KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0);
     }
 }

@@ -171,16 +171,17 @@ public final class CodeTemplatesStorage implements StorageDescription<String, Co
             } else if (qName.equals(E_CODETEMPLATE)) {
                 boolean removed = Boolean.valueOf(attributes.getValue(A_REMOVE));
                 
+                abbreviation = null;
+                description = null;
+                contexts = null;
+                uuid = null;
+                text = null;
+                cdataText = null;
+                
                 if (removed) {
                     String abbrev = attributes.getValue(A_ABBREV);
                     removedTemplates.add(abbrev);
                     
-                    abbreviation = null;
-                    description = null;
-                    contexts = null;
-                    uuid = null;
-                    text = null;
-                    cdataText = null;
                 } else {
                     // Read the abbreviation
                     abbreviation = attributes.getValue(A_ABBREV);

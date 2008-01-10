@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE editor-preferences PUBLIC "-//NetBeans//DTD Editor Preferences 1.0//EN" "http://www.netbeans.org/dtds/EditorPreferences-1_0.dtd">
+
+<editor-preferences>
+    <entry name="test-prop-A" value="123" javaType="java.lang.Integer" />
+    <entry name="test-prop-B" value="Hello" javaType="java.lang.String" />
+    <entry name="test-prop-C" value="true" javaType="java.lang.Boolean" />
+    <entry name="test-prop-D" value="3.1415927" javaType="java.lang.Double" />
+
+    <entry name="test-prop-clash" value="value_from_preferences.xml" javaType="java.lang.String" />
+</editor-preferences>

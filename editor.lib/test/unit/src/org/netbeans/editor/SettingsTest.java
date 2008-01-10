@@ -31,7 +31,9 @@ import java.awt.event.KeyEvent;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
+import java.util.prefs.Preferences;
 import javax.swing.KeyStroke;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.settings.storage.EditorTestLookup;
@@ -135,9 +137,10 @@ public class SettingsTest extends NbTestCase {
     }
     
     public void testNoEventsWhenInitializing() {
-        Settings.addInitializer(new MyInitializer());
+        MyInitializer init = new MyInitializer();
+        Settings.addInitializer(init);
         try {
-            Thread.sleep(1000);
+            Thread.sleep(2000);
         } catch (InterruptedException ie) {
             
         }
@@ -145,9 +148,14 @@ public class SettingsTest extends NbTestCase {
             MyListener listener = new MyListener();
             Settings.addSettingsChangeListener(listener);
             try {
-                Object value = Settings.getValue(BaseKit.class, MyInitializer.TEST_SETTING_NAME);
-                assertEquals("Wrong test setting value", Boolean.TRUE, value);
+                Settings.getValue(BaseKit.class, MyInitializer.TEST_SETTING_NAME);
+                assertTrue("Initializer not called at all", init.updateCalled > 0);
                 assertEquals("There should be no events", 0, listener.eventsCnt);
+
+                // MyInitializer does not set the value correct way, so the value is
+                // not returned from the first call
+                Object value = Settings.getValue(BaseKit.class, MyInitializer.TEST_SETTING_NAME);
+                assertEquals("Wrong test setting value", Boolean.TRUE, value);                
             } finally {
                 Settings.removeSettingsChangeListener(listener);
             }
@@ -158,6 +166,11 @@ public class SettingsTest extends NbTestCase {
     
     public void testEventsWhenNotInitializing() {
         Settings.addInitializer(new MyInitializer());
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException ie) {
+            
+        }
         try {
             MyListener listener = new MyListener();
             Settings.addSettingsChangeListener(listener);
@@ -191,6 +204,30 @@ public class SettingsTest extends NbTestCase {
         }
     }
     
+    public void testSettingsFromPrefs() {
+        Settings.addInitializer(new MyInitializer3());
+        try {
+            // settings supplied from preferences.xml
+            checkSetting("test-prop-A", Integer.class, 123);
+            checkSetting("test-prop-B", String.class, "Hello");
+            checkSetting("test-prop-C", Boolean.class, true);
+            checkSetting("test-prop-D", Double.class, 3.1415927D);
+            
+            // settings supplied from MyInitializer3
+            checkSetting(MyInitializer3.PROP_A, String.class, MyInitializer3.PROP_A + "_value");
+            
+            // settings supplied from both
+            checkSetting(MyInitializer3.CLASH_PROP, String.class, "value_from_preferences.xml");
+            
+            // writing
+            Settings.setValue(MyKit2.class, "newly-written-setting", 0.1f);
+            Preferences prefs = MimeLookup.getLookup(new MyKit2().getContentType()).lookup(Preferences.class);
+            assertEquals("Value was not written", 0.1f, prefs.getFloat("newly-written-setting", -1f));
+        } finally {
+            Settings.removeInitializer(MyInitializer3.NAME);
+        }        
+    }
+    
     public static final class MyKit extends BaseKit {
         public MyKit() {
             super();
@@ -207,11 +244,14 @@ public class SettingsTest extends NbTestCase {
         public static final String NAME = "TestInitializer";
         public static final String TEST_SETTING_NAME = "TestSetting";
         
+        public int updateCalled = 0;
+        
         public MyInitializer() {
             super(NAME);
         }
         
         public void updateSettingsMap(Class kitClass, Map settingsMap) {
+            updateCalled++;
             Settings.setValue(BaseKit.class, TEST_SETTING_NAME, Boolean.TRUE);
         }
     } // End of MyInitializer class
@@ -238,7 +278,7 @@ public class SettingsTest extends NbTestCase {
                 }                
             } else {
                 if (kitClass == MyKit.class) {
-                    Settings.setValue(BaseKit.class, TEST_SETTING_NAME, Boolean.TRUE);
+                    settingsMap.put(TEST_SETTING_NAME, Boolean.TRUE);
                 }
             }
         }
@@ -252,4 +292,38 @@ public class SettingsTest extends NbTestCase {
             eventsCnt++;
         }
     } // End of MyListener class
+
+    public static final class MyKit2 extends BaseKit {
+        public MyKit2() {
+            super();
+        }
+
+        @Override
+        public String getContentType() {
+            return "text/x-type-B";
+        }
+    } // End of MyKit2 class
+    
+    private static final class MyInitializer3 extends Settings.AbstractInitializer {
+
+        public static final String NAME = "MyInitializer3";
+        public static final String PROP_A = "test-old-prop-A";
+        public static final String CLASH_PROP = "test-prop-clash";
+        
+        public MyInitializer3() {
+            super(NAME);
+        }
+        
+        public void updateSettingsMap(Class kitClass, Map settingsMap) {
+            settingsMap.put(PROP_A, PROP_A + "_value");
+            settingsMap.put(CLASH_PROP, "value_from_MyInitializer3");
+        }
+    } // End of MyInitializer class
+    
+    private static void checkSetting(String name, Class javaType, Object expectedValue) {
+        Object value = Settings.getValue(MyKit2.class, name);
+        assertNotNull("No '" + name + "'", value);
+        assertTrue("Wrong type of '" + name + "'", javaType.isAssignableFrom(value.getClass()));
+        assertEquals("Wrong '" + name + "' value", expectedValue, value);
+    }
 }

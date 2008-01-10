@@ -42,7 +42,9 @@
 package org.netbeans.modules.editor.openide;
 
 import javax.swing.text.EditorKit;
+import org.openide.modules.ModuleInfo;
 import org.openide.text.*;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -55,8 +57,14 @@ public class InheritedNotifyModifiedTest extends NotifyModifiedOnNbEditorLikeKit
         super(methodName);
     }
 
-    protected EditorKit createEditorKit() {
+    protected @Override EditorKit createEditorKit() {
         return new org.netbeans.modules.editor.NbEditorKit();
+    }
+
+    protected @Override void setUp() {
+        super.setUp();
+        
+        Lookup.getDefault().lookup(ModuleInfo.class);
     }
 
 }

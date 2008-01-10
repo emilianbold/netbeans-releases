@@ -46,7 +46,9 @@ import org.netbeans.modules.editor.settings.storage.fontscolors.CompositeFCS;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
@@ -57,6 +59,7 @@ import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.editor.settings.KeyBindingSettings;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.editor.settings.storage.fontscolors.FontColorSettingsImpl;
+import org.netbeans.modules.editor.settings.storage.preferences.PreferencesImpl;
 import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
 import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
@@ -138,6 +141,7 @@ public final class SettingsProvider implements MimeDataProvider {
         private final InstanceContent ic;
         private CompositeFCS fontColorSettings = null;
         private Object keyBindingSettings = null;
+        private Object preferences = null;
         
         private KeyBindingSettingsImpl kbsi;
         
@@ -177,10 +181,12 @@ public final class SettingsProvider implements MimeDataProvider {
             synchronized (this) {
                 fontColorSettings = new CompositeFCS(mimePath, fcsProfile);
                 keyBindingSettings = this.kbsi.createInstanceForLookup();
+                preferences = PreferencesImpl.get(mimePath);
                 
                 ic.set(Arrays.asList(new Object [] {
                     fontColorSettings,
                     keyBindingSettings,
+                    preferences
                 }), null);
             }
         }
@@ -243,10 +249,17 @@ public final class SettingsProvider implements MimeDataProvider {
                 }
                 
                 if (updateContents) {
-                    ic.set(Arrays.asList(new Object [] {
-                        fontColorSettings,
-                        keyBindingSettings,
-                    }), null);
+                    List<Object> list = new ArrayList<Object>();
+                    if (fontColorSettings != null) {
+                        list.add(fontColorSettings);
+                    }
+                    if (keyBindingSettings != null) {
+                        list.add(keyBindingSettings);
+                    }
+                    if (preferences != null) {
+                        list.add(preferences);
+                    }
+                    ic.set(list, null);
                 }
             }
         }

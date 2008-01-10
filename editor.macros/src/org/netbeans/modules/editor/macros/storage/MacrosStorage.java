@@ -174,15 +174,16 @@ public final class MacrosStorage implements StorageDescription<String, MacroDesc
             } else if (qName.equals(E_MACRO)) {
                 boolean removed = Boolean.valueOf(attributes.getValue(A_REMOVE));
                 
+                name = null;
+                description = null;
+                shortcuts = null;
+                text = null;
+                cdataText = null;
+                
                 if (removed) {
                     String macroName = attributes.getValue(A_NAME);
                     removedMacros.add(macroName);
                     
-                    name = null;
-                    description = null;
-                    shortcuts = null;
-                    text = null;
-                    cdataText = null;
                 } else {
                     // Read the name
                     name = attributes.getValue(A_NAME);

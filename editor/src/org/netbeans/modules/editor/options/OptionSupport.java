@@ -159,13 +159,9 @@ public class OptionSupport extends SystemOption {
      * fire the property change.
      * @param settingName name of the setting to change
      * @param newValue new value of the setting
-     * @param propertyName if non-null it means that the property change
-     *  should be fired if the newValue is differernt from the old one.
-     *  Firing is performed using the given property name. Nothing is fired
-     *  when it's set to null.
+     * @param propertyName Ignored.
      */
-    public void setSettingValue(String settingName, Object newValue,
-    String propertyName) {
+    public void setSettingValue(String settingName, Object newValue, String propertyName) {
         
         initializerValuesMap.put(settingName, newValue);
 
@@ -177,15 +173,10 @@ public class OptionSupport extends SystemOption {
         }
 
         Settings.setValue(kitClass, settingName, newValue);
-
-//        if (propertyName != null) {
-            //firePropertyChange(propertyName, oldValue, newValue);[PENDING]
-//        }
     }
 
     
-    public void doSetSettingValue(String settingName, Object newValue,
-    String propertyName) {
+    public void doSetSettingValue(String settingName, Object newValue, String propertyName) {
         initializerValuesMap.put(settingName, newValue);
         Settings.setValue(kitClass, settingName, newValue);
     }
@@ -194,10 +185,7 @@ public class OptionSupport extends SystemOption {
     /** Enables easier handling of the boolean settings.
      * @param settingName name of the setting to change
      * @param newValue new boolean value of the setting
-     * @param propertyName if non-null it means that the property change
-     *  should be fired if the newValue is differernt from the old one.
-     *  Firing is performed using the given property name. Nothing is fired
-     *  when it's set to null.
+     * @param propertyName Ignored.
      */
     protected void setSettingBoolean(String settingName, boolean newValue, String propertyName) {
         setSettingValue(settingName, newValue ? Boolean.TRUE : Boolean.FALSE, propertyName);
@@ -206,10 +194,7 @@ public class OptionSupport extends SystemOption {
     /** Enables easier handling of the integer settings.
      * @param settingName name of the setting to change
      * @param newValue new integer value of the setting
-     * @param propertyName if non-null it means that the property change
-     *  should be fired if the newValue is differernt from the old one.
-     *  Firing is performed using the given property name. Nothing is fired
-     *  when it's set to null.
+     * @param propertyName Ignored.
      */
     protected  void setSettingInteger(String settingName, int newValue, String propertyName) {
         setSettingValue(settingName, new Integer(newValue));

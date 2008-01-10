@@ -64,6 +64,7 @@ import java.awt.Dimension;
  *
  *  @author  Martin Roskanin
  *  @since 08/2001
+ * @deprecated Use Editor Settings Storage API instead.
  */
 public class PropertiesMIMEOptionFile extends MIMEOptionFile{
     
@@ -86,6 +87,10 @@ public class PropertiesMIMEOptionFile extends MIMEOptionFile{
     /** Loads settings from XML file.
      * @param propagate if true - propagates the loaded settings to Editor UI */
     protected void loadSettings(boolean propagate){
+        assert false : "PropertiesMIMEOptionFile should not be used anymore. " + //NOI18N
+            "Please file a bug (http://www.netbeans.org/community/issues.html) " + //NOI18N
+            "for editor/settings and attach this stacktrace to it."; //NOI18N
+        
         synchronized (Settings.class) {
             Document doc = dom;
             Element rootElement = doc.getDocumentElement();
@@ -174,6 +179,10 @@ public class PropertiesMIMEOptionFile extends MIMEOptionFile{
     /** Save settings to XML file 
      *  @param changedProp the Map of settings to save */
     protected void updateSettings(Map changedProp){
+        assert false : "PropertiesMIMEOptionFile should not be used anymore. " + //NOI18N
+            "Please file a bug (http://www.netbeans.org/community/issues.html) " + //NOI18N
+            "for editor/settings and attach this stacktrace to it."; //NOI18N
+        
         synchronized (Settings.class) {
             boolean save = false;
 
