@@ -1602,7 +1602,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 vm = virtualMachine;
             }
             if (vm == null) {
-                throw new UnsupportedOperationException("No VM available.");
+                return new long[classTypes.size()];
             }
             if (classTypes instanceof ClassTypeList) {
                 ClassTypeList cl = (ClassTypeList) classTypes;
