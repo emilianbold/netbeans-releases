@@ -64,7 +64,7 @@ public class NamespaceNode extends NPNode {
         id = ns.getQualifiedName().toString();
         project = ns.getProject();
         String name = ns.getQualifiedName().toString();
-        String displayName = CVUtil.getNamesapceDisplayName(ns).toString();
+        String displayName = CVUtil.getNamespaceDisplayName(ns).toString();
         setName(name);
         setDisplayName(displayName);
         setShortDescription(ns.getQualifiedName().toString());

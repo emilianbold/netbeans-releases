@@ -42,22 +42,30 @@
 package org.netbeans.modules.cnd.classview;
 
 import org.netbeans.modules.cnd.utils.cache.APTStringManager;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 
-public class NameCache {
+public class NameCache extends APTStringManager {
+    private static final APTStringManager manager = new NameCache();
     private static final APTStringManager instance = 
-            APTStringManager.instance("PERSISTENT_NAME_CACHE", APTStringManager.CacheKind.Single); // NOI18N    
+            APTStringManager.instance("Class view display name cache", APTStringManager.CacheKind.Single); // NOI18N    
     private NameCache() {
     }
     
-    public static CharSequence getString(CharSequence text) {
+    public CharSequence getString(CharSequence text) {
         if (text == null){
             return text;
         }
+        text = CharSequenceKey.create(text);
+        //return text;
         return instance.getString(text);
     }
     
-    public static void dispose() {
+    public void dispose() {
         instance.dispose();
+    }
+
+    public static APTStringManager getManager() {
+        return manager;
     }
 }

@@ -47,7 +47,7 @@ package org.netbeans.modules.cnd.utils.cache;
  */
 public class FilePathCache {
     private static final APTStringManager instance = 
-            APTStringManager.instance(APTStringManager.FILE_PATH_MANAGER, APTStringManager.CacheKind.Single);
+            APTStringManager.instance(APTStringManager.FILE_PATH_MANAGER, APTStringManager.CacheKind.Sliced);
     
     private FilePathCache() {
     }

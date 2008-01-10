@@ -99,7 +99,7 @@ public class ChildrenUpdater {
             System.out.println("Clean Children Updater"); // NOI18N
         }
         map.clear();
-        NameCache.dispose();
+        NameCache.getManager().dispose();
     }
     
     public void unregister(CsmProject project){

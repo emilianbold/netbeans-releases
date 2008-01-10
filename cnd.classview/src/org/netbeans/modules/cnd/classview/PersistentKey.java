@@ -105,7 +105,7 @@ public final class PersistentKey {
             CharSequence uniq = ns.getQualifiedName();
             CsmProject project = ns.getProject();
             if (project != null) {
-                return new PersistentKey(NameCache.getString(uniq), project, NAMESPACE, false);
+                return new PersistentKey(uniq, project, NAMESPACE, false);
             }
         } else if (object instanceof CsmEnumerator){
             // special hack.
@@ -120,7 +120,7 @@ public final class PersistentKey {
             }
             CsmProject project = decl.getContainingFile().getProject();
             if (name.length() > 0 && uniq.toString().indexOf("::::") < 0 && project != null){ // NOI18N
-                return new PersistentKey(NameCache.getString(uniq), project, DECLARATION, getStateBit(object));
+                return new PersistentKey(uniq, project, DECLARATION, getStateBit(object));
             } else {
                 //System.out.println("Skip "+uniq);
             }

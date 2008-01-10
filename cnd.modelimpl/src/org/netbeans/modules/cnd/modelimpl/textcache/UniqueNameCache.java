@@ -50,19 +50,20 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  */
 public class UniqueNameCache extends APTStringManager {
     private static final APTStringManager manager = new UniqueNameCache();
-    private final APTStringManager instance = 
-            APTStringManager.instance("Shared Unique Names",APTStringManager.CacheKind.Sliced); // NOI18N;
+    //private final APTStringManager instance = 
+    //        APTStringManager.instance("Shared Unique Names",APTStringManager.CacheKind.Sliced); // NOI18N;
 
     private UniqueNameCache() {
     }
     
     public CharSequence getString(CharSequence text) {
         text = CharSequenceKey.create(text);
-        return instance.getString(text);
+        return text;
+        //return instance.getString(text);
     }
     
     public void dispose() {
-        instance.dispose();
+        //instance.dispose();
     }
     
     public static APTStringManager getManager() {

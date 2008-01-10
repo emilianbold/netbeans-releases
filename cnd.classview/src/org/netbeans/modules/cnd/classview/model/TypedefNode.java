@@ -50,6 +50,8 @@ import  org.netbeans.modules.cnd.api.model.*;
  * @author Vladimir Kvasihn
  */
 public class TypedefNode extends ObjectNode {
+    private CharSequence name;
+    private CharSequence qname;
 
     public TypedefNode(CsmTypedef typedef) {
 	super(typedef, Children.LEAF);
@@ -62,12 +64,42 @@ public class TypedefNode extends ObjectNode {
     }
     
     private void init(CsmTypedef typedef){
-        String shortName = typedef.getName().toString();
-        String longName = typedef.getQualifiedName().toString();
-        setName(shortName);
-        setDisplayName(shortName);
-        setShortDescription(longName);
+        CharSequence old = name;
+        name = typedef.getName();
+        if ((old == null) || !old.equals(name)) {
+            fireNameChange(old == null ? null : old.toString(),
+                    name == null ? null : name.toString());
+            fireDisplayNameChange(old == null ? null : old.toString(),
+                    name == null ? null : name.toString());
+        }
+        old = qname;
+        qname = typedef.getQualifiedName();
+        if ((old == null) || !old.equals(qname)) {
+            fireShortDescriptionChange(old == null ? null : old.toString(),
+                    qname == null ? null : qname.toString());
+        }
+        //String shortName = typedef.getName().toString();
+        //String longName = typedef.getQualifiedName().toString();
+        //setName(shortName);
+        //setDisplayName(shortName);
+        //setShortDescription(longName);
     }
+
+    @Override
+    public String getName() {
+        return name.toString();
+    }
+
+    @Override
+    public String getDisplayName() {
+        return name.toString();
+    }
+
+    @Override
+    public String getShortDescription() {
+        return qname.toString();
+    }
+
 
     public void stateChanged(ChangeEvent e) {
         Object o = e.getSource();

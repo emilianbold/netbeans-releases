@@ -55,10 +55,10 @@ public class CVUtil {
     private static final boolean showParamNames = getBoolean("cnd.classview.show-param-names", true); // NOI18N
     
     public static CharSequence getSignature(CsmFunction fun) {
-	return NameCache.getString(CsmUtilities.getSignature(fun, showParamNames));
+	return NameCache.getManager().getString(CsmUtilities.getSignature(fun, showParamNames));
     }
         
-    public static CharSequence getNamesapceDisplayName(CsmNamespace ns){
+    public static CharSequence getNamespaceDisplayName(CsmNamespace ns){
         String displayName = ns.getName().toString();
         if (displayName.length() == 0) {
             displayName = ns.getQualifiedName().toString();
@@ -68,7 +68,7 @@ public class CVUtil {
             }
             displayName = displayName.replace('<', ' ').replace('>', ' '); // NOI18N
         }
-        return  NameCache.getString(displayName);
+        return  NameCache.getManager().getString(displayName);
     }
 
     public static Node createLoadingNode() {

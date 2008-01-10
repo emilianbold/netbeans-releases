@@ -49,14 +49,16 @@ import org.netbeans.modules.cnd.utils.cache.WeakSharedSet;
  * @author Vladimir Voskresensky
  */
 public class UIDManager {
-    private final WeakSharedSet<CsmUID> storage;
+    private final UIDStorage storage;
     private static final int UID_MANAGER_DEFAULT_CAPACITY=1024;
+    private static final int UID_MANAGER_DEFAULT_SLICED_NUMBER = 29;
+
     
-    private static final UIDManager instance = new UIDManager(UID_MANAGER_DEFAULT_CAPACITY);
+    private static final UIDManager instance = new UIDManager();
     
     /** Creates a new instance of UIDManager */
-    private UIDManager(int initialCapacity) {
-        storage = new WeakSharedSet<CsmUID>(initialCapacity);
+    private UIDManager() {
+        storage = new UIDStorage(UID_MANAGER_DEFAULT_SLICED_NUMBER, UID_MANAGER_DEFAULT_CAPACITY);
     }
     
     public static UIDManager instance() {
@@ -80,7 +82,7 @@ public class UIDManager {
         }
         CsmUID outUID = null;
         synchronized (lock) {
-            outUID = storage.addOrGet(uid);
+            outUID = storage.getSharedUID(uid);
         }
         assert (outUID != null);
         assert (outUID.equals(uid));
@@ -88,6 +90,41 @@ public class UIDManager {
     }
     
     public final void dispose() {
-        storage.clear();
+        storage.dispose();
     }
+    
+    private static final class UIDStorage {
+        private final WeakSharedSet<CsmUID>[] instances;
+        private final int sliceNumber; // primary number for better distribution
+        private final int initialCapacity;
+        private UIDStorage(int sliceNumber, int initialCapacity) {
+            this.sliceNumber = sliceNumber;
+            this.initialCapacity = initialCapacity;
+            instances = new WeakSharedSet[sliceNumber];
+            for (int i = 0; i < instances.length; i++) {
+                instances[i] = new WeakSharedSet<CsmUID>(initialCapacity);
+            }
+        }
+        
+        private WeakSharedSet<CsmUID> getDelegate(CsmUID uid) {
+            int index = uid.hashCode() % sliceNumber;
+            if (index < 0) {
+                index += sliceNumber;
+            }
+            return instances[index];
+        }
+        
+        public final CsmUID getSharedUID(CsmUID uid) {
+            return getDelegate(uid).addOrGet(uid);
+        }
+
+        public final void dispose() {
+            for (int i = 0; i < instances.length; i++) {
+                if (instances[i].size()>0) {
+                    instances[i].clear();
+                    instances[i].resize(initialCapacity);
+                }
+            }            
+        }        
+    }    
 }

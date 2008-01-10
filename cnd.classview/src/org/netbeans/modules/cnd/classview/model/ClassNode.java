@@ -50,18 +50,54 @@ import org.openide.nodes.Children;
  * @author Vladimir Kvasihn
  */
 public class ClassNode extends ClassifierNode {
-    
+
+    private CharSequence name;
+    private CharSequence qname;
+
     public ClassNode(CsmClass cls, Children.Array key) {
         super(cls, key);
         init(cls);
     }
     
     private void init(CsmClass cls){
-        String shortName = cls.isTemplate() ? ((CsmTemplate)cls).getDisplayName().toString() : cls.getName().toString(); 
-        String longName = cls.getQualifiedName() + (cls.isTemplate() ? "<>" : ""); // NOI18N
-        setName(shortName);
-        setDisplayName(shortName);
-        setShortDescription(longName);
+        CharSequence old = name;
+        name = cls.isTemplate() ? ((CsmTemplate)cls).getDisplayName() : cls.getName();
+        if ((old == null) || !old.equals(name)) {
+            fireNameChange(old == null ? null : old.toString(),
+                    name == null ? null : name.toString());
+            fireDisplayNameChange(old == null ? null : old.toString(),
+                    name == null ? null : name.toString());
+        }
+        old = qname;
+        if (cls.isTemplate()) {
+            qname = cls.getQualifiedName()+"<>"; // NOI18N
+        } else {
+            qname = cls.getQualifiedName();
+        }
+        if ((old == null) || !old.equals(qname)) {
+            fireShortDescriptionChange(old == null ? null : old.toString(),
+                    qname == null ? null : qname.toString());
+        }
+        //String shortName = cls.isTemplate() ? ((CsmTemplate)cls).getDisplayName().toString() : cls.getName().toString(); 
+        //String longName = cls.getQualifiedName() + (cls.isTemplate() ? "<>" : ""); // NOI18N
+        //setName(shortName);
+        //setDisplayName(shortName);
+        //setShortDescription(longName);
+    }
+
+    @Override
+    public String getName() {
+        return name.toString();
+    }
+
+    @Override
+    public String getDisplayName() {
+        return name.toString();
+    }
+
+    @Override
+    public String getShortDescription() {
+        return qname.toString();
     }
 
     public void stateChanged(ChangeEvent e) {

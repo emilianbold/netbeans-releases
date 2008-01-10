@@ -50,20 +50,51 @@ import org.openide.nodes.Children;
  * @author Vladimir Kvasihn
  */
 public class EnumNode extends ClassifierNode {
-    
+    private CharSequence name;
+    private CharSequence qname;
+
     public EnumNode(CsmEnum enumeration,Children.Array key) {
         super(enumeration,key);
         init(enumeration);
     }
     
     private void init(CsmEnum enumeration){
-        String shortName = enumeration.getName().toString();
-        String longName = enumeration.getQualifiedName().toString();
-        setName(shortName);
-        setDisplayName(shortName);
-        setShortDescription(longName);
+        CharSequence old = name;
+        name = enumeration.getName();
+        if ((old == null) || !old.equals(name)) {
+            fireNameChange(old == null ? null : old.toString(),
+                    name == null ? null : name.toString());
+            fireDisplayNameChange(old == null ? null : old.toString(),
+                    name == null ? null : name.toString());
+        }
+        old = qname;
+        qname = enumeration.getQualifiedName();
+        if ((old == null) || !old.equals(qname)) {
+            fireShortDescriptionChange(old == null ? null : old.toString(),
+                    qname == null ? null : qname.toString());
+        }
+        //String shortName = enumeration.getName().toString();
+        //String longName = enumeration.getQualifiedName().toString();
+        //setName(shortName);
+        //setDisplayName(shortName);
+        //setShortDescription(longName);
     }
-    
+
+    @Override
+    public String getName() {
+        return name.toString();
+    }
+
+    @Override
+    public String getDisplayName() {
+        return name.toString();
+    }
+
+    @Override
+    public String getShortDescription() {
+        return qname.toString();
+    }
+
     public void stateChanged(ChangeEvent e) {
         Object o = e.getSource();
         if (o instanceof CsmEnum){

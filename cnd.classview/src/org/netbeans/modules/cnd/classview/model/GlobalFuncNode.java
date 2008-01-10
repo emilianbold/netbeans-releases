@@ -50,17 +50,42 @@ import  org.netbeans.modules.cnd.api.model.*;
  * @author Vladimir Kvasihn
  */
 public class GlobalFuncNode extends ObjectNode {
-    
+    private CharSequence text;
     public GlobalFuncNode(CsmFunction fun) {
         super(fun, Children.LEAF);
         init(fun);
     }
     
     private void init(CsmFunction fun){
-        String text = CVUtil.getSignature(fun).toString();
-        setName(text);
-        setDisplayName(text);
-        setShortDescription(text);
+        CharSequence old = text;
+        text = CVUtil.getSignature(fun);
+        if ((old == null) || !old.equals(text)) {
+            fireNameChange(old == null ? null : old.toString(),
+                    text == null ? null : text.toString());
+            fireDisplayNameChange(old == null ? null : old.toString(),
+                    text == null ? null : text.toString());
+            fireShortDescriptionChange(old == null ? null : old.toString(),
+                    text == null ? null : text.toString());
+        }
+        //String text = CVUtil.getSignature(fun).toString();
+        //setName(text);
+        //setDisplayName(text);
+        //setShortDescription(text);
+    }
+
+    @Override
+    public String getName() {
+        return text.toString();
+    }
+
+    @Override
+    public String getDisplayName() {
+        return text.toString();
+    }
+
+    @Override
+    public String getShortDescription() {
+        return text.toString();
     }
     
     public void stateChanged(ChangeEvent e) {

@@ -133,7 +133,7 @@ abstract public class HostKeyArray extends Children.Keys<PersistentKey> implemen
     }
     
     protected SortedName getSortedName(CsmNamespace ns){
-        return new SortedName(0,CVUtil.getNamesapceDisplayName(ns),0);
+        return new SortedName(0,CVUtil.getNamespaceDisplayName(ns),0);
     }
     
     protected SortedName getSortedName(CsmOffsetableDeclaration d){

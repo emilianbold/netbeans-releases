@@ -159,8 +159,10 @@ public abstract class APTStringManager  {
                     System.out.println("   "+e.getValue()+" of "+e.getKey().getName());
                 }
             }
-            storage.clear();
-            storage.resize(initialCapacity);
+            if (storage.size() > 0) {
+                storage.clear();
+                storage.resize(initialCapacity);
+            }
         }
     }
     
@@ -176,7 +178,7 @@ public abstract class APTStringManager  {
             this.sliceNumber = sliceNumber;
             instances = new APTStringManager[sliceNumber];
             for (int i = 0; i < instances.length; i++) {
-                instances[i] = new APTSingleStringManager(name + i, initialCapacity);
+                instances[i] = new APTSingleStringManager(name, initialCapacity);
             }
             this.name = name;
         }

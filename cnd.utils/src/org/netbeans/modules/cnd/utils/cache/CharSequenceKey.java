@@ -46,16 +46,17 @@ import java.util.Comparator;
  * @author Alexander Simon
  */
 public final class CharSequenceKey implements CharSequence, Comparable<CharSequenceKey> {
-    private static final CharSequenceKey EMPTY = new CharSequenceKey("");
+    private static final CharSequence EMPTY = create("");
     public static final Comparator<CharSequence> Comparator = new CharSequenceComparator();
     public static final Comparator<CharSequence> ComparatorIgnoreCase = new CharSequenceComparatorIgnoreCase();
     private final Object value;
     private int hash;
 
-    public static CharSequenceKey create(CharSequence s){
+    public static CharSequence create(CharSequence s){
         if (s == null) {
             return null;
         }
+        //return s.toString();
         if (s instanceof CharSequenceKey) {
             return (CharSequenceKey) s;
         } else if (s instanceof String) {
@@ -64,7 +65,7 @@ public final class CharSequenceKey implements CharSequence, Comparable<CharSeque
         return new CharSequenceKey(s.toString());
     }
 
-    public static CharSequenceKey empty(){
+    public static CharSequence empty(){
         return EMPTY;
     }
     

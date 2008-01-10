@@ -76,7 +76,7 @@ public class Resolver3 implements Resolver {
     private int interestedKind;
     
     private CharSequence currName() {
-        return (names != null && currNamIdx < names.length) ? names[currNamIdx] : "";
+        return (names != null && currNamIdx < names.length) ? names[currNamIdx] : CharSequenceKey.empty();
     }
     
     private CsmNamespace containingNamespace;
@@ -295,7 +295,7 @@ public class Resolver3 implements Resolver {
                 processTypedefsInUpperNamespaces((CsmNamespaceDefinition) decl);
             } else if( decl.getKind() == CsmDeclaration.Kind.TYPEDEF ) {
                 CsmTypedef typedef = (CsmTypedef) decl;
-                if( currName().equals(typedef.getName()) ) {
+                if( CharSequenceKey.Comparator.compare(currName(),typedef.getName())==0 ) {
                     currTypedef = typedef;
                 }
             }
@@ -303,7 +303,7 @@ public class Resolver3 implements Resolver {
     }
     
     private void processTypedefsInUpperNamespaces(CsmNamespaceDefinition nsd) {
-        if( nsd.getName().equals(currName()) ) {
+        if( CharSequenceKey.Comparator.compare(nsd.getName(),currName())==0 )  {
             currNamIdx++;
             doProcessTypedefsInUpperNamespaces(nsd);
         } else {
@@ -364,7 +364,7 @@ public class Resolver3 implements Resolver {
             }
         } else if( kind == CsmDeclaration.Kind.TYPEDEF && needClassifiers()){
             CsmTypedef typedef = (CsmTypedef) element;
-            if( currName().equals(typedef.getName()) ) {
+            if( CharSequenceKey.Comparator.compare(currName(),typedef.getName())==0 ) {
                 currTypedef = typedef;
             }
         }

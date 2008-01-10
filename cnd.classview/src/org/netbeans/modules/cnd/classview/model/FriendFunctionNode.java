@@ -52,17 +52,44 @@ import org.openide.nodes.Children;
  * @author Alexander Simon
  */
 public class FriendFunctionNode extends ObjectNode {
-    
+
+    private CharSequence text;
+
     public FriendFunctionNode(CsmFriendFunction fun) {
         super(fun, Children.LEAF);
         init(fun);
     }
     
     private void init(CsmFriendFunction fun){
-        String text = CVUtil.getSignature(fun).toString();
-        setName(text);
-        setDisplayName(text);
-        setShortDescription(text);
+        CharSequence old = text;
+        text = CVUtil.getSignature(fun);
+        if ((old == null) || !old.equals(text)) {
+            fireNameChange(old == null ? null : old.toString(),
+                    text == null ? null : text.toString());
+            fireDisplayNameChange(old == null ? null : old.toString(),
+                    text == null ? null : text.toString());
+            fireShortDescriptionChange(old == null ? null : old.toString(),
+                    text == null ? null : text.toString());
+        }
+        //String text = CVUtil.getSignature(fun).toString();
+        //setName(text);
+        //setDisplayName(text);
+        //setShortDescription(text);
+    }
+
+    @Override
+    public String getName() {
+        return text.toString();
+    }
+
+    @Override
+    public String getDisplayName() {
+        return text.toString();
+    }
+
+    @Override
+    public String getShortDescription() {
+        return text.toString();
     }
 
     @Override

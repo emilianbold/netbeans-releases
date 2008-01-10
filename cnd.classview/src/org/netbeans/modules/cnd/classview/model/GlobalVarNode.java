@@ -50,6 +50,8 @@ import  org.netbeans.modules.cnd.api.model.*;
  * @author Vladimir Kvasihn
  */
 public class GlobalVarNode extends ObjectNode {
+
+    private CharSequence text;
     
     public GlobalVarNode(CsmVariable var) {
         super(var, Children.LEAF);
@@ -57,10 +59,35 @@ public class GlobalVarNode extends ObjectNode {
     }
     
     private void init(CsmVariable var){
-        String name = var.getName().toString();
-        setName(name);
-        setDisplayName(name);
-        setShortDescription(name);
+        CharSequence old = text;
+        text = var.getName();
+        if ((old == null) || !old.equals(text)) {
+            fireNameChange(old == null ? null : old.toString(),
+                    text == null ? null : text.toString());
+            fireDisplayNameChange(old == null ? null : old.toString(),
+                    text == null ? null : text.toString());
+            fireShortDescriptionChange(old == null ? null : old.toString(),
+                    text == null ? null : text.toString());
+        }
+        //String name = var.getName().toString();
+        //setName(name);
+        //setDisplayName(name);
+        //setShortDescription(name);
+    }
+
+    @Override
+    public String getName() {
+        return text.toString();
+    }
+
+    @Override
+    public String getDisplayName() {
+        return text.toString();
+    }
+
+    @Override
+    public String getShortDescription() {
+        return text.toString();
     }
     
     private CsmVariable getVariable() {

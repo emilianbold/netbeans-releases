@@ -55,6 +55,7 @@ import  org.netbeans.modules.cnd.api.model.*;
 public class EnumeratorNode extends ObjectNode {
     
     private static Image image = null;
+    private CharSequence text;
     
     public EnumeratorNode(CsmEnumerator enumerator) {
         super(enumerator, Children.LEAF);
@@ -62,13 +63,37 @@ public class EnumeratorNode extends ObjectNode {
     }
     
     private void init(CsmEnumerator enumerator){
-        String name = enumerator.getName().toString();
-        setName(name);
-        setDisplayName(name);
-        setShortDescription(name);
+        CharSequence old = text;
+        text = enumerator.getName();
+        if ((old == null) || !old.equals(text)) {
+            fireNameChange(old == null ? null : old.toString(),
+                    text == null ? null : text.toString());
+            fireDisplayNameChange(old == null ? null : old.toString(),
+                    text == null ? null : text.toString());
+            fireShortDescriptionChange(old == null ? null : old.toString(),
+                    text == null ? null : text.toString());
+        }
+        //setName(text);
+        //setDisplayName(text);
+        //setShortDescription(text);
         if( image == null ) {
             image = CsmImageLoader.getImage(enumerator);
         }
+    }
+
+    @Override
+    public String getName() {
+        return text.toString();
+    }
+
+    @Override
+    public String getDisplayName() {
+        return text.toString();
+    }
+
+    @Override
+    public String getShortDescription() {
+        return text.toString();
     }
     
     @Override
