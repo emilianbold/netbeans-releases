@@ -80,6 +80,7 @@ public class OffsetRange {
         return end-start;
     }
 
+    @Override
     public String toString() {
         if (this == NONE) {
             return "OffsetRange[NONE]";
@@ -88,6 +89,7 @@ public class OffsetRange {
         }
     }
 
+    @Override
     public boolean equals(Object o) {
         if (o == null) {
             return false;
@@ -110,6 +112,7 @@ public class OffsetRange {
         return true;
     }
 
+    @Override
     public int hashCode() {
         int hash = 7;
 
