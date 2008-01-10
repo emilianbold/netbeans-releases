@@ -65,7 +65,7 @@ abstract class StaticMemberReferenceResolver extends AbstractCompositeResover
     {
         int index = identifier.indexOf( Utils.NS_OPERATOR);
         if ( index == -1 ){
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
         String className = identifier.substring( 0, index );
         String memberName = identifier.substring( index +2 );
@@ -79,7 +79,7 @@ abstract class StaticMemberReferenceResolver extends AbstractCompositeResover
             SourceElement element = list.get( list.size() -1 );
             return resolve(memberName, clazz, element , exactComparison);
         }
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
     
     protected abstract Class<? extends SourceElement> getOwnType();

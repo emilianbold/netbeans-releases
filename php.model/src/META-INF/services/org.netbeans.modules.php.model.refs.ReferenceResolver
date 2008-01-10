@@ -3,3 +3,6 @@ org.netbeans.modules.php.model.impl.refs.resolvers.ClassReferenceResolver
 org.netbeans.modules.php.model.impl.refs.resolvers.InterfaceReferenceResolver
 org.netbeans.modules.php.model.impl.refs.resolvers.ClassStaticMemberReferenceResover
 org.netbeans.modules.php.model.impl.refs.resolvers.InterfaceStaticMemberReferenceResover
+org.netbeans.modules.php.model.impl.refs.resolvers.ClassFunctionDeclarationResolver
+org.netbeans.modules.php.model.impl.refs.resolvers.FunctionDefinitionResolver
+org.netbeans.modules.php.model.impl.refs.resolvers.CallExpressionResolver

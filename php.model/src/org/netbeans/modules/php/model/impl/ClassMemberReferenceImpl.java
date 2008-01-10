@@ -108,7 +108,6 @@ class ClassMemberReferenceImpl<T extends SourceElement> extends ReferenceImpl<T>
      * @see org.netbeans.modules.php.model.Reference#get()
      */
     public T get() {
-        // TODO : this works ONLY for variables. Need to catch case of functions.
         String id = getIdentifier();
         T result = null;
         if ( id.contains( "$") ){

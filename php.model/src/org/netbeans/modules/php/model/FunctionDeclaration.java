@@ -50,8 +50,14 @@ public interface FunctionDeclaration extends SourceElement {
 
     boolean hasReturnReference();
     
+    /**
+     * @return name of function
+     */
     String getName();
     
+    /**
+     * @return parameters as OM object
+     */
     FormalParameterList getParamaterList();
     
 }

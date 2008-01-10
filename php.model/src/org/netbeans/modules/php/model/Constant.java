@@ -92,8 +92,8 @@ public interface Constant extends IdentifierExpression {
      * <pre>
      * Accessor to constant definition ( call expression ) or function 
      * definition.
-     * It return not null referene only in cases :
-     * 1) when <code>this</code> constant is reference to constant that was somehere 
+     * It return not null reference only in cases :
+     * 1) when <code>this</code> constant is reference to constant that was somewhere 
      * defined in file.
      * Constant is defined with 'define' built-in php function via 
      * define(CONST , $value); 

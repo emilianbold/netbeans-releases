@@ -41,8 +41,10 @@
 package org.netbeans.modules.php.model.impl.refs.resolvers;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import org.netbeans.modules.php.model.ClassConst;
 import org.netbeans.modules.php.model.ClassFunctionDeclaration;
@@ -77,7 +79,7 @@ public class InterfaceStaticMemberReferenceResover
     protected Class<? extends SourceElement> getOwnType() {
         return InterfaceDefinition.class;
     }
-
+    
     /* (non-Javadoc)
      * @see org.netbeans.modules.php.model.impl.refs.resolvers.StaticMemberReferenceResolver#resolve(org.netbeans.modules.php.model.SourceElement, java.lang.String, java.lang.Class, org.netbeans.modules.php.model.SourceElement, boolean)
      */
@@ -85,14 +87,30 @@ public class InterfaceStaticMemberReferenceResover
     protected <T extends SourceElement> List<T> resolve( String memberName, 
             Class<T> clazz, SourceElement owner, boolean exactComparison )
     {
+        // avoid cyclic references to super interfaces
+        Set<String> set = new HashSet<String>();
+        return resolve(memberName, clazz, owner, exactComparison , set );
+    }
+
+    protected <T extends SourceElement> List<T> resolve( String memberName, 
+            Class<T> clazz, SourceElement owner, boolean exactComparison , 
+            Set<String> ifaceNames )
+    {
         if ( !(  owner instanceof InterfaceDefinition )){
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
         List<T> result = new LinkedList<T>();
         InterfaceDefinition definition = (InterfaceDefinition) owner;
+        String name = definition.getName();
+        if ( ifaceNames.contains( name )){
+            return Collections.emptyList();
+        }
+        else {
+            ifaceNames.add( name );
+        }
         InterfaceBody body = definition.getBody();
         if ( body == null ){
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
         List<InterfaceStatement> statements = body.getStatements();
         for (InterfaceStatement interfaceStatement : statements) {
@@ -110,8 +128,8 @@ public class InterfaceStaticMemberReferenceResover
             if ( def == null ){
                 continue;
             }
-            
-            List<T> list = resolve(memberName, clazz, def, exactComparison);
+            List<T> list = resolve(memberName, clazz, def, exactComparison , 
+                    ifaceNames );
             result.addAll( list );
             
             if ( exactComparison && result.size() >0 ){

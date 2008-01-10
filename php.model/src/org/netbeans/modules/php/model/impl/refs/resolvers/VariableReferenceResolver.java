@@ -86,6 +86,8 @@ public class VariableReferenceResolver implements  ReferenceResolver
     private <T extends SourceElement> List<T>  findVariable( SourceElement source, 
             String identifier, Class<T> clazz,  boolean exactComparison) 
     {
+        // TODO : involve other OMs in search procedure.
+        
         Acceptor scope = 
             source.getParent() == null ? source.getModel(): source.getParent();
         SourceElement childScope = source;

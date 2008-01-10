@@ -38,78 +38,40 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.php.model.impl;
+package org.netbeans.modules.php.model.impl.refs.resolvers;
 
 import java.util.List;
 
 import org.netbeans.modules.php.model.CallExpression;
-import org.netbeans.modules.php.model.ClassFunctionDeclaration;
-import org.netbeans.modules.php.model.FunctionDefinition;
-import org.netbeans.modules.php.model.Reference;
 import org.netbeans.modules.php.model.SourceElement;
 import org.netbeans.modules.php.model.refs.ReferenceResolver;
 
 
 /**
- * This reference can return reference to call expression ( with 
- * 'define' function ) or user function definition .
- * So method "get()" return type could be CallExpression or FunctionDefinition. 
+ * This resolver resolves call expressions with given function name.
+ * It is used at least in constant resolving ( "define" can be used as
+ * name of function , in this case resolver finds all "define" calls
+ * and one could check its argument for constant name check ). 
  * @author ads
  *
  */
-class ConstantReferenceImpl extends ReferenceImpl<SourceElement> 
-    implements Reference<SourceElement> {
+public class CallExpressionResolver implements ReferenceResolver {
 
-    private static final String DEFINE = "define";      // NOI18N
-
-    ConstantReferenceImpl( SourceElementImpl source, String identifier ) {
-        super(source, identifier, null );
-    }
-    
     /* (non-Javadoc)
-     * @see org.netbeans.modules.php.model.Reference#get()
+     * @see org.netbeans.modules.php.model.refs.ReferenceResolver#isApplicable(java.lang.Class)
      */
-    public SourceElement get() {
-        if ( getSource().getParent() instanceof CallExpression ){
-            return findFunctionDefinition( );
-        }
-        else {
-            return findDeclareCall();
-        }
+    public <T extends SourceElement> boolean isApplicable( Class<T> clazz ) {
+        return CallExpression.class.isAssignableFrom( clazz );
     }
 
-    private SourceElement findFunctionDefinition() {
-        List<ReferenceResolver> resolvers = getResolvers( 
-                FunctionDefinition.class );
-        for ( ReferenceResolver resolver : resolvers ){
-            List<FunctionDefinition> defs = resolver.resolve( getSource(), 
-                    getIdentifier(), FunctionDefinition.class, true );
-            if ( defs.size() >0 ){
-                return defs.get(0);
-            }
-        }
-        resolvers = getResolvers( 
-                ClassFunctionDeclaration.class );
-        for ( ReferenceResolver resolver : resolvers ){
-            List<ClassFunctionDeclaration> decls = resolver.resolve( getSource(), 
-                    getIdentifier(), ClassFunctionDeclaration.class, true );
-            if ( decls.size() >0 ){
-                return decls.get(0);
-            }
-        }
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.php.model.refs.ReferenceResolver#resolve(org.netbeans.modules.php.model.SourceElement, java.lang.String, java.lang.Class, boolean)
+     */
+    public <T extends SourceElement> List<T> resolve( SourceElement source,
+            String identifier, Class<T> clazz, boolean exactComparison )
+    {
+        // TODO Auto-generated method stub
         return null;
     }
 
-    private SourceElement findDeclareCall() {
-        List<ReferenceResolver> resolvers = getResolvers( 
-                CallExpression.class );
-        for ( ReferenceResolver resolver : resolvers ){
-            List<CallExpression> expressions = resolver.resolve(getSource(), 
-                    DEFINE, CallExpression.class, true);
-            // TODO
-        }
-        return null;
-    }
-
-    
 }

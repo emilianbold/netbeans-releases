@@ -41,8 +41,10 @@
 package org.netbeans.modules.php.model.impl.refs.resolvers;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import org.netbeans.modules.php.model.Attribute;
 import org.netbeans.modules.php.model.AttributesDeclaration;
@@ -90,17 +92,34 @@ public class ClassStaticMemberReferenceResover
      * @see org.netbeans.modules.php.model.impl.refs.resolvers.StaticMemberReferenceResolver#resolve(org.netbeans.modules.php.model.SourceElement, java.lang.String, java.lang.Class, org.netbeans.modules.php.model.SourceElement, boolean)
      */
     @Override
+
     protected <T extends SourceElement> List<T> resolve( String memberName, 
             Class<T> clazz, SourceElement owner, boolean exactComparison )
     {
+        // avoiding cyclic references in super classes or super interfaces
+        Set<String> set = new HashSet<String>(); 
+        return resolve(memberName, clazz, owner, exactComparison, set );
+    }
+
+    protected <T extends SourceElement> List<T> resolve( String memberName, 
+            Class<T> clazz, SourceElement owner, boolean exactComparison , 
+            Set<String> classNames )
+    {
         if ( !(owner instanceof ClassDefinition ) ){
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
         List<T> result = new LinkedList<T>();
         ClassDefinition statement = (ClassDefinition)owner;
+        String name = statement.getName();
+        if ( classNames.contains( name ) ){
+            return Collections.emptyList();
+        }
+        else {
+            classNames.add( name );
+        }
         ClassBody body = statement.getBody();
         if ( body == null){
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
         List<ClassStatement> statements = body.getStatements();
         for (ClassStatement classStatement : statements) {
@@ -117,7 +136,7 @@ public class ClassStaticMemberReferenceResover
             ClassDefinition superClass = superClassRef.get();
             if (superClass != null) {
                 List<T> list = resolve(memberName, clazz, superClass,
-                        exactComparison);
+                        exactComparison , classNames );
                 result.addAll(list);
             }
         }
@@ -128,14 +147,13 @@ public class ClassStaticMemberReferenceResover
         
         List<Reference<InterfaceDefinition>> ifaces = 
             statement.getImplementedInterfaces();
-        InterfaceStaticMemberReferenceResover resolver = null;
         for (Reference<InterfaceDefinition> reference : ifaces) {
             InterfaceDefinition iface = reference.get();
             if ( iface == null ){
                 continue;
             }
             List<T> list =  super.resolve(memberName, clazz, iface, 
-                    exactComparison);
+                    exactComparison , classNames );
             result.addAll( list );
             if ( exactComparison && result.size() >0 ){
                 return result;

@@ -53,6 +53,11 @@ import org.netbeans.modules.php.model.impl.builders.StaticExpressionBuilder;
 
 
 /**
+ * Note : in PHP 5 before 5.3 constant cannot be in form $clazz::CONST,
+ * but in PHP version after 5.3 it is possible.
+ * 
+ * This class and its builder designed only for constant without variable prefix.
+ * 
  * @author ads
  *
  */
