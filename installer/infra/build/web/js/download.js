@@ -561,12 +561,12 @@ function update() {
     cnd_size = Math.ceil(cnd_size / 1024.0);
 
     if( platform == "zip") {
-       full_size = 157;
-       java_size = 48;
-       javaee_size = 104;
-       javame_size = 59;
-       ruby_size = 35;
-       cnd_size = 25;
+       full_size = 148;
+       java_size = 44;
+       javaee_size = 94;
+       javame_size = 54;
+       ruby_size = 33;
+       cnd_size = 22;
     } 
 
     if ((platform.indexOf("solaris")!=-1) || (platform.indexOf("macosx")!=-1)) {
