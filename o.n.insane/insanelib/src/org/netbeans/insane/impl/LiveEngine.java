@@ -169,11 +169,12 @@ public class LiveEngine implements ObjectMap, Visitor {
                 
         for (Object o: objs ) rest.put(o, "");
         
-        Set<Object> s = new HashSet<Object>(ScannerUtils.interestingRoots());
-        if (roots != null) s.addAll(roots);
+        Map<Object,Boolean> s = new IdentityHashMap<Object, Boolean>();
+        for (Object o : ScannerUtils.interestingRoots()) s.put(o, true);
+        if (roots != null) for (Object o : roots) s.put(roots, true);
         try {
             InsaneEngine iEngine = new InsaneEngine(this, filter, this, true);
-            iEngine.traverse(s);
+            iEngine.traverse(s.keySet());
         } catch (ObjectFoundException ex) {
         } catch (Exception e){
             e.printStackTrace();
@@ -193,7 +194,7 @@ public class LiveEngine implements ObjectMap, Visitor {
         for (Iterator it = objs.iterator(); it.hasNext(); ) {
             Object obj = it.next();
             if (rest.containsKey(obj)) continue; // not found
-            Path toObj = findRoots(obj, s);
+            Path toObj = findRoots(obj, s.keySet());
             if (toObj != null) result.put(obj, toObj);
             if (progress != null) {
                 base += step;
