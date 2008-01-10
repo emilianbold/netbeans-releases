@@ -66,15 +66,20 @@ public abstract class ServerInstance {
     public abstract String getServerDisplayName();
 
     /**
-     * Returns the node representing the instance. Parameter determines whether
-     * the node should be manageable (provide actions for the instance,
-     * display its status and so on).
+     * Returns the node representing the runtime instance. The node should
+     * display instance status and provide actions to manage the server.
      *
-     * @param manageable <code>true</code> if the node should display
-     *           the status of the instance and provide control functionality
      * @return the node representing the instance, may return <code>null</code>
      */
-    public abstract Node getNode(boolean manageable);
+    public abstract Node getFullNode();
+
+    /**
+     * Returns the node representing the instance while configuring it.
+     * The node should not display any status, actions or children.
+     *
+     * @return the node representing the instance, may return <code>null</code>
+     */
+    public abstract Node getBasicNode();
 
     /**
      * Returns the component allowing the customization of the instance. May
@@ -88,17 +93,17 @@ public abstract class ServerInstance {
     public abstract JComponent getCustomizer();
 
     /**
+     * Removes the instance. No {@link ServerInstanceProvider} should return
+     * this instance once it is removed.
+     */
+    public abstract void remove();
+
+    /**
      * Returns <code>true</code> if the instance can be removed by
      * {@link #remove()}. Otherwise returns <code>false</code>.
      *
      * @return <code>true</code> if the instance can be removed
      */
     public abstract boolean isRemovable();
-
-    /**
-     * Removes the instance. No {@link ServerInstanceProvider} should return
-     * this instance once it is removed.
-     */
-    public abstract void remove();
 
 }

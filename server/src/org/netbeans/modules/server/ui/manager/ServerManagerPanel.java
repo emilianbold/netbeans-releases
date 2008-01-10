@@ -536,7 +536,7 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
         private final ServerInstance serverInstance;
 
         public ServerNode(ServerInstance serverInstance) {
-            super(serverInstance.getNode(false));
+            super(serverInstance.getBasicNode());
             this.serverInstance = serverInstance;
             setChildren(Children.LEAF);
         }

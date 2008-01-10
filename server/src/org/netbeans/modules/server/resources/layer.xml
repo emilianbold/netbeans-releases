@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
             <file name="ServerRegistry3.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.server.ui.node.RootNode.getInstance"/>
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.server.ui.node.RootNode"/>
-                <attr name="position" intvalue="500"/>
+                <attr name="position" intvalue="400"/>
             </file>
        </folder>
     </folder>
@@ -57,7 +57,7 @@ made subject to such option by the copyright holder.
         <folder name="Tools">
             <file name="ServerManagerAction3.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.server.ui.manager.ServerManagerAction"/>
-                <attr name="position" intvalue="900"/>
+                <attr name="position" intvalue="800"/>
             </file>
         </folder>
     </folder>

@@ -66,7 +66,12 @@ public class TestInstance extends ServerInstance {
     }
 
     @Override
-    public Node getNode() {
+    public Node getFullNode() {
+        return null;
+    }
+
+    @Override
+    public Node getBasicNode() {
         return null;
     }
 

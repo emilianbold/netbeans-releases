@@ -128,7 +128,7 @@ public final class RootNode extends AbstractNode {
 
         @Override
         protected Node createNodeForKey(ServerInstance key) {
-            return key.getNode(true);
+            return key.getFullNode();
         }
 
         @Override
