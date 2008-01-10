@@ -100,13 +100,6 @@ made subject to such option by the copyright holder.
                             </file>
                         </folder>
                     </folder>
-                    <folder name="CityLights">
-                        <folder name="Defaults">
-                            <file name="coloring.xml" url="cplusplus/CityLights-CC-fontsColors.xml">
-                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.cplusplus.Bundle"/>
-                            </file>
-                        </folder>
-                    </folder>
                 </folder>
                 
                 <folder name="Keybindings">

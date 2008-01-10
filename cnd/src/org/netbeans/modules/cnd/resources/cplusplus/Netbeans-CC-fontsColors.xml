@@ -43,26 +43,6 @@ made subject to such option by the copyright holder.
 <!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
 
 <fontscolors>
-    <!-- <fontcolor name="cc-annotation" foreColor="ff006f00" default="default"/> -->
-    <fontcolor name="cc-block-comment" default="comment"/>
-    <fontcolor name="cc-char-literal" default="char"/>
-    <fontcolor name="cc-errors" default="error"/>
-    <fontcolor name="cc-identifier" default="identifier"/>
-    <fontcolor name="cc-keywords" default="keyword"/>
-    <!--
-    <fontcolor name="cc-layer-method" default="default">
-        <font style="bold"/>
-    </fontcolor>
-    -->
-    <fontcolor name="cc-line-comment" default="comment"/>
-    <fontcolor name="cc-numeric-literals" default="number"/>
-    <fontcolor name="cc-operators" default="operator"/>
-    <fontcolor name="cc-preprocessor" foreColor="009B00"/>
-    <fontcolor name="cc-sys-include" default="string"/>
-    <fontcolor name="cc-user-include" default="string"/>
-    <fontcolor name="cc-string-literal" default="string"/>
-    <fontcolor name="cc-whitespace" default="whitespace"/>
-    
     <!-- CppTokenId categories -->
     <fontcolor name="character" default="char"/>
     <fontcolor name="errors" default="error"/>
