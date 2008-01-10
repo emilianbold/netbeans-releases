@@ -61,6 +61,7 @@ import org.openide.util.Utilities;
 public class URLDataLoaderBeanInfo extends SimpleBeanInfo {
 
     /** Gets additional beaninfo. */
+    @Override
     public BeanInfo[] getAdditionalBeanInfo () {
         try {
             return new BeanInfo[] { Introspector.getBeanInfo (UniFileLoader.class) };
@@ -74,6 +75,7 @@ public class URLDataLoaderBeanInfo extends SimpleBeanInfo {
     /** @param type Desired type of the icon
      * @return returns the URL loader's icon
      */
+    @Override
     public Image getIcon(int type) {
         return Utilities.loadImage("org/netbeans/modules/url/urlObject.png"); // NOI18N
     }

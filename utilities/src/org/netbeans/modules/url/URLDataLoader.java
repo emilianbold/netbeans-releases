@@ -72,6 +72,7 @@ public class URLDataLoader extends UniFileLoader {
      * Initializes this loader. This method is called only once the first time
      * this loader is used (not for each instance).
      */
+    @Override
     protected void initialize () {
         super.initialize();
 
@@ -82,6 +83,7 @@ public class URLDataLoader extends UniFileLoader {
     }
 
     /** */
+    @Override
     protected String defaultDisplayName() {
         return NbBundle.getMessage(URLDataLoader.class,
                                    "PROP_URLLoader_Name");              //NOI18N
@@ -93,6 +95,7 @@ public class URLDataLoader extends UniFileLoader {
      *
      * @return  name of the context on layer files to read/write actions to
      */
+    @Override
     protected String actionsContext () {
         return "Loaders/text/url/Actions/";                             //NOI18N
     }
