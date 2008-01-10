@@ -145,9 +145,9 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
                             while (true) {
                                 switch (read(true)) {
                                     case '\r':
-                                        input.consumeNewline();
                                     case '\n':
                                     case EOF:
+                                        input.backup(1);
                                         return token(CppTokenId.LINE_COMMENT);
                                 }
                             }
