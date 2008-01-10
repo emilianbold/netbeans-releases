@@ -83,6 +83,7 @@ import org.netbeans.api.gsfpath.queries.SourceLevelQuery;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.modules.gsf.GsfTaskProvider;
 import org.netbeans.napi.gsfret.source.ClasspathInfo;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.napi.gsfret.source.ParserTaskImpl;
@@ -1259,6 +1260,9 @@ Set added = null;
                     //dumpClasses(listener.getEnteredTypes(), fm, root.toExternalForm(), null, ...
                     //sa.analyse (trees, jt, fm, active, added);
                     sa.analyse (trees, jt, /*fm,*/ active);
+
+                    GsfTaskProvider.refresh(fo);
+                    
                     listener.cleanDiagnostics();                    
                 }
                 sa.store();

@@ -116,8 +116,7 @@ public class LanguageRegistry implements Iterable<Language> {
      * Return a language implementation that corresponds to the given file extension,
      * or null if no such language is supported
      */
-    public Language getLanguageByExtension(@NonNull
-    String extension) {
+    public Language getLanguageByExtension(@NonNull String extension) {
         extension = extension.toLowerCase();
 
         // TODO - create a map if this is slow
@@ -138,8 +137,7 @@ public class LanguageRegistry implements Iterable<Language> {
      * Return a language implementation that corresponds to the given mimeType,
      * or null if no such language is supported
      */
-    public Language getLanguageByMimeType(@NonNull
-    String mimeType) {
+    public Language getLanguageByMimeType(@NonNull String mimeType) {
         assert mimeType.equals(mimeType.toLowerCase());
 
         for (Language language : this) {
@@ -155,8 +153,7 @@ public class LanguageRegistry implements Iterable<Language> {
      * Return true iff the given mimeType is supported by a registered language plugin
      * @return True iff the given mimeType is supported
      */
-    public boolean isSupported(@NonNull
-    String mimeType) {
+    public boolean isSupported(@NonNull String mimeType) {
         if (mimeType == null) {
             return false;
         }
@@ -167,6 +164,18 @@ public class LanguageRegistry implements Iterable<Language> {
         }
 
         return false;
+    }
+    
+    public String getLanguagesDisplayName() {
+        StringBuilder sb = new StringBuilder();
+        for (Language language : this) {
+            if (sb.length() > 0) {
+                sb.append(", ");
+            }
+            sb.append(language.getDisplayName());
+        }
+        
+        return sb.toString();
     }
 
     public Iterator<Language> iterator() {

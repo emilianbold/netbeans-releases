@@ -27,4 +27,17 @@
            -->
         </folder>
     </folder>    
+
+    <folder name="TaskList">
+        <folder name="Scanners">
+            <file name="GsfTaskProvider.instance">
+                <attr name="instanceOf" stringvalue="org.netbeans.spi.tasklist.FileTaskScanner"/>
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.gsf.GsfTaskProvider"/>
+                <!-- I don't know why this instead of instanceClass doesn't work
+                <attr name="instanceCreate" stringvalue="org.netbeans.modules.gsf.GsfTaskProvider.getInstance"/>
+                -->
+            </file>
+        </folder>
+    </folder>
+
 </filesystem>
