@@ -299,8 +299,10 @@ public class CppLexerBatchTestCase extends TestCase {
         assertEquals(18, ep.offset());
         LexerTestUtilities.assertNextTokenEquals(ep, CppTokenId.WHITESPACE, " ");
         assertEquals(19, ep.offset());
-        LexerTestUtilities.assertNextTokenEquals(ep, CppTokenId.LINE_COMMENT, "// comment \\\n comment-again\n");
+        LexerTestUtilities.assertNextTokenEquals(ep, CppTokenId.LINE_COMMENT, "// comment \\\n comment-again");
         assertEquals(20, ep.offset());
+        LexerTestUtilities.assertNextTokenEquals(ep, CppTokenId.WHITESPACE, "\n");
+        assertEquals(47, ep.offset());
         assertFalse("No more tokens", ep.moveNext());
         
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.CHAR, "ch\\\nar");
