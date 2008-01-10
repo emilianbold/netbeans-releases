@@ -159,7 +159,11 @@ PropertyChangeListener, KeyListener, CaretListener {
         
         surroundsWithTimer = new Timer(0, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                showSurroundWithHint();
+                // #124515, give up when the document is locked otherwise we are likely
+                // to cause a deadlock.
+                if (!DocumentUtilities.isReadLocked(doc)) {
+                    showSurroundWithHint();
+                }
             }
         });
         surroundsWithTimer.setRepeats(false);
