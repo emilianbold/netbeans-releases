@@ -153,10 +153,10 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
     }
 
     /** Accessor for mouse motion listener */
-    public MotionListener getMotionListener () {
+    MotionListener getMotionListener () {
         if (motionListener == null) {
             motionListener = new MotionListener(this, topComponentDragSupport);
-        };
+        }
         return motionListener;
     }
 
@@ -1044,7 +1044,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
             // no window if location is unknown
             if (loc == null) {
                 return;
-            }
+        }
             if (fakeWindow == null) {
                 fakeWindow = createFakeWindow();
                 isSizeSet = false;
@@ -1438,6 +1438,27 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
             g.setColor(col);
         }
         
+        public Rectangle getPaintArea() {
+            Rectangle dim = original.getDropComponent().getBounds();
+            if (dim.width > 10 && dim.height > 10) {
+                return null;
+            }
+            Component glassPane = ((JComponent)original.getDropComponent()).getRootPane().getGlassPane();
+            Point leftTop = SwingUtilities.convertPoint(original.getDropComponent(), 0, 0, glassPane);
+                    
+            if (Constants.RIGHT.equals(side)) {
+                leftTop = new Point(leftTop.x - 24, leftTop.y);
+            }
+            else if (Constants.BOTTOM.equals(side)) {
+                leftTop = new Point(0, leftTop.y - 24);
+            }
+            Rectangle rect = new Rectangle(leftTop.x, leftTop.y, Math.max(25, dim.width), Math.max(25, dim.height));
+            if (Constants.BOTTOM.equals(side)) {
+                // for bottom has special hack to use the whole width
+                rect.width = glassPane.getBounds().width;
+            }
+            return rect;
+        }
     }
 
 }

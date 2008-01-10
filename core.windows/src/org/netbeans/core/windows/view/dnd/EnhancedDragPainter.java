@@ -42,6 +42,7 @@
 package org.netbeans.core.windows.view.dnd;
 
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 
 /**
  * allows to intercept the painting of the drag&drop shape. Used to add sliding background to the
@@ -51,5 +52,7 @@ import java.awt.Graphics2D;
 public interface EnhancedDragPainter {
 
     void additionalDragPaint(Graphics2D g);
+    
+    Rectangle getPaintArea();
 
 }
