@@ -233,6 +233,11 @@ public class GsfTaskProvider extends PushTaskScanner  {
         
         public void refreshRubyFile(final FileObject file) {
             if (file.isFolder()) {
+                // HACK Bypass all the libraries in Rails projects
+                // TODO FIXME The hints providers need to pass in relevant directories
+                if (file.getName().equals("vendor") && file.getParent().getFileObject("nbproject") != null) { // NOI18N
+                    return;
+                }
                 for (FileObject child : file.getChildren()) {
                     refreshRubyFile(child);
                 }
