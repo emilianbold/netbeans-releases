@@ -18,7 +18,11 @@
  */
 package org.netbeans.modules.bpel.nodes.actions;
 
+import org.netbeans.modules.bpel.editors.api.utils.Util;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
+import org.netbeans.modules.bpel.nodes.BpelNode;
+import org.openide.loaders.DataNode;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -31,6 +35,8 @@ import org.openide.windows.WindowManager;
  *
  */
 public class ShowBpelMapperAction extends BpelNodeAction {
+
+    private static final long serialVersionUID = 1L;
     
     protected String getBundleName() {
         return NbBundle.getMessage(ShowBpelMapperAction.class,
@@ -41,7 +47,67 @@ public class ShowBpelMapperAction extends BpelNodeAction {
         return ActionType.SHOW_BPEL_MAPPER;
     }
 
+    //TODO m
+    @Override
+    public boolean enable(final Node[] nodes) {
+        if (nodes == null || nodes.length == 0) {
+            return false;
+        }
+        boolean isEnable = false;
+
+        DataNode dataNode = null;
+        for (int i = 0; i < nodes.length; i++) {
+            if (nodes[i] instanceof BpelNode) {
+                isEnable = true;
+            }
+            if (nodes[i] instanceof DataNode) {
+                dataNode = (DataNode)nodes[i];
+            }
+        }
+        
+        // temporary hack, tc doesn't have nested mv tc activated nodes
+        if (dataNode != null) {
+            TopComponent activatedTc = WindowManager.getDefault().getRegistry().getActivated();
+            Node[] activatedNodes = WindowManager.getDefault().getRegistry().getActivatedNodes();
+            BpelEntity[] entities = getBpelEntities(activatedNodes);
+            isEnable = entities != null && entities.length > 0;
+        }
+        return isEnable;
+    }
+
+    private boolean isDataNode(Node[] nodes) {
+        boolean isDataNode = true;
+        DataNode dataNode = null;
+        for (int i = 0; i < nodes.length; i++) {
+            if (nodes[i] instanceof BpelNode) {
+                isDataNode = false;
+            }
+            if (nodes[i] instanceof DataNode) {
+                dataNode = (DataNode)nodes[i];
+            }
+        }
+        isDataNode = isDataNode && dataNode != null;
+        return isDataNode;
+    }
+    
+    @Override
+    public void performAction(Node[] nodes) {
+        if (!enable(nodes)) {
+            return;
+        }
+
+        if (isDataNode(nodes)) {
+            nodes = WindowManager.getDefault().getRegistry().getActivatedNodes();
+        } 
+        
+        BpelEntity[] entities = getBpelEntities(nodes);
+        if (entities != null && entities.length > 0) {
+            performAction(entities);
+        }
+    }
+    
     protected void performAction(BpelEntity[] bpelEntities) {
+        Util.goToBusinessRules(bpelEntities[0]);
 /**        TopComponent mapperTC = WindowManager.getDefault().
                 findTopComponent(BpelMapperTopComponent.ID);
         if (mapperTC == null) {
@@ -55,7 +121,9 @@ public class ShowBpelMapperAction extends BpelNodeAction {
         mapperTC.requestActive();
  */
     }
+
     
+    @Override
     public boolean isChangeAction() {
         return false;
     }    

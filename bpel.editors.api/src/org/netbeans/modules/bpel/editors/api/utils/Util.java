@@ -339,6 +339,76 @@ public final class Util {
         }
     }
 
+    public static void goToLoggingAlerting(Component component) {
+        assert component instanceof BpelEntity ;
+        
+        final BpelEntity bpelEntity = (BpelEntity) component;
+        FileObject fo = getFileObjectByModel(bpelEntity.getBpelModel());
+
+        if (fo == null) {
+            return;                                                        }
+        try {
+            DataObject d = DataObject.find(fo);
+            final Lookup lookup = d.getLookup();
+            
+            final EditCookie ec = (EditCookie) d.getCookie(EditCookie.class);
+            if (ec == null) {
+                return;
+            }
+            
+            javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    ec.edit();
+                    openActiveLoggingEditor();
+                }
+            });
+        } catch (DataObjectNotFoundException ex) {
+            ErrorManager.getDefault().notify(ex);
+        }
+    }
+
+    public static void goToBusinessRules(Component component) {
+        assert component instanceof BpelEntity ;
+        
+        final BpelEntity bpelEntity = (BpelEntity) component;
+        FileObject fo = getFileObjectByModel(bpelEntity.getBpelModel());
+
+        if (fo == null) {
+            return;                                                        }
+        try {
+            DataObject d = DataObject.find(fo);
+            final Lookup lookup = d.getLookup();
+            
+            final EditCookie ec = (EditCookie) d.getCookie(EditCookie.class);
+            if (ec == null) {
+                return;
+            }
+            
+            javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    ec.edit();
+                    openActiveMapperEditor();
+                    if (lookup != null || bpelEntity != null) {
+                        NodeType nodeType = getBasicNodeType(bpelEntity);
+                        if (nodeType == null || NodeType.UNKNOWN_TYPE.equals(nodeType)) {
+                            return;
+                        }
+                        Node bpelNode = FactoryAccess.getPropertyNodeFactory()
+                        .createNode(nodeType,bpelEntity, lookup);
+                        //TODO m
+                        TopComponent mapperTc = WindowManager.getDefault().getRegistry().getActivated();
+                        if (mapperTc != null) {
+                            mapperTc.setActivatedNodes(new Node[0]);
+                            mapperTc.setActivatedNodes(new Node[] {bpelNode});
+                        }
+                    }
+                }
+            });
+        } catch (DataObjectNotFoundException ex) {
+            ErrorManager.getDefault().notify(ex);
+        }
+    }
+
     public static void goToDesign(Component component) {
         goToDesign(component, null, null);
     }
@@ -410,7 +480,6 @@ public final class Util {
                 }
             });
         } catch (DataObjectNotFoundException ex) {
-            ex.printStackTrace();
             ErrorManager.getDefault().notify(ex);
         }
     }
@@ -511,6 +580,14 @@ public final class Util {
 
     private static void openActiveDesignEditor() {
         openActiveMVEditor(BpelEditorConstants.BPEL_DESIGNMV_PREFFERED_ID);
+    }
+
+    private static void openActiveMapperEditor() {
+        openActiveMVEditor(BpelEditorConstants.BPEL_MAPPERMV_PREFFERED_ID);
+    }
+
+    private static void openActiveLoggingEditor() {
+        openActiveMVEditor(BpelEditorConstants.BPEL_LOGGINGMV_PREFFERED_ID);
     }
 
     private static void openActiveSourceEditor() {
