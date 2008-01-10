@@ -61,6 +61,17 @@ public class MeasureActions  {
         suite.addTest(new ExpandNodesProjectsView("testExpandFolderWith100JavaFiles", "Expand folder with 100 java files"));
         suite.addTest(new ExpandNodesProjectsView("testExpandFolderWith100TxtFiles", "Expand folder with 100 txt files"));
         suite.addTest(new ExpandNodesProjectsView("testExpandFolderWith100XmlFiles", "Expand folder with 100 xml files"));
+
+        suite.addTest(new SwitchToFile("testSwitchJavaToJava", "Switch from Java file to Java file"));
+        suite.addTest(new SwitchToFile("testSwitchJavaToJSP", "Switch from Java file to JSP file"));
+        suite.addTest(new SwitchToFile("testSwitchJSPToJSP", "Switch from JSP file to JSP file"));
+        suite.addTest(new SwitchToFile("testSwitchJSPToXML", "Switch from JSP file to XML file"));
+        suite.addTest(new SwitchToFile("testSwitchXMLToJSP", "Switch from XML file to JSP file"));
+
+        suite.addTest(new SwitchView("testSwitchToProjects", "Switch to Projects view"));
+        suite.addTest(new SwitchView("testSwitchToFiles", "Switch to Files view"));
+        suite.addTest(new SwitchView("testSwitchToServices", "Switch to Services view"));
+        suite.addTest(new SwitchView("testSwitchToFavorites", "Switch to Favorite Folders view"));
         
         suite.addTest(new OpenFiles("testOpening20kBJavaFile", "Open Java file (20kB)"));
         suite.addTest(new OpenFilesWithOpenedEditor("testOpening20kBJavaFile", "Open Java file (20kB) if Editor opened"));
@@ -167,10 +178,6 @@ public class MeasureActions  {
         //TODO    suite.addTest(new AddToFavorites("testAddToFavoritesFolders", "Add to Favorites folders"));
 */        
 
-        suite.addTest(new SwitchView("testSwitchToProjects", "Switch to Projects view"));
-        suite.addTest(new SwitchView("testSwitchToFiles", "Switch to Files view"));
-        suite.addTest(new SwitchView("testSwitchToServices", "Switch to Services view"));
-        suite.addTest(new SwitchView("testSwitchToFavorites", "Switch to Favorite Folders view"));
 
         suite.addTest(new OpenFiles("testGC", "GC of opened editors"));
         suite.addTest(new CreateProject("testGC", "GC of created projects"));
