@@ -1,5 +1,3 @@
-package org.netbeans.modules.spring.webmvc;
-
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -43,7 +41,7 @@ package org.netbeans.modules.spring.webmvc;
  * Portions Copyrighted 2008 Craig MacKay.
  */
 
-
+package org.netbeans.modules.spring.webmvc;
 
 /**
  * Provides the user interface for configuring a Spring Framework web application
