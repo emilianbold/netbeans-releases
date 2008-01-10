@@ -41,7 +41,27 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<project name="org.netbeans.modules.xml.schema.model/test-unit" basedir="." default="all">
-    <import file="../../../nbbuild/templates/xtest-unit.xml"/>
+<project name="org.netbeans.modules.scripting.php/test-unit" basedir="." default="all">
+    <import file="../../../../nbbuild/templates/xtest-unit.xml"/>
+
+    <path id="run.extra">
+        <pathelement location="../../../../jemmy/builds/jemmy.jar"/>                    
+        <pathelement location="../../../../jellytools/builds/jelly2-nb.jar"/>
+        <pathelement location="${xtest.home}/lib/junit.jar"/>                    
+        <pathelement location="${xtest.home}/lib/nbjunit.jar"/> 
+       
+        
+    </path>   
+
+
+
+    <target name="default-compiler">
+        <echo message="**** Default Compiler  ***"/>
+
+        <buildTests srcDir="unit/src"> 
+            <classpath refid="run.extra"/>
+        </buildTests>
+    </target>
+
 </project>
 
