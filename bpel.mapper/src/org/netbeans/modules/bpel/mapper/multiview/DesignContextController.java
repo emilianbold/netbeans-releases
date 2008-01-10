@@ -36,6 +36,12 @@ public interface DesignContextController {
     void setContext(BpelDesignContext newContext);
     
     void reloadMapper(ChangeEvent event);
+    
+    void showMapper();
+    
+    void hideMapper();
+    
+    void cleanup();
 
     /**
      * The BpelModel.invoke() method has a parameter source. 

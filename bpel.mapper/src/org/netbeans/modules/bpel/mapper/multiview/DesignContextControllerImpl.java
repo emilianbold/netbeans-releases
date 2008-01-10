@@ -350,5 +350,16 @@ public class DesignContextControllerImpl implements DesignContextController {
         }
         
     }
-    
+
+    public void showMapper() {
+        // do nothing
+    }
+
+    public void hideMapper() {
+        // do nothing
+    }
+
+    public void cleanup() {
+        // TODO a
+    }
 }

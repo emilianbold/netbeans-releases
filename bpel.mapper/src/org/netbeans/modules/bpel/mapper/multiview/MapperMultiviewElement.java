@@ -36,6 +36,7 @@ import javax.swing.JComponent;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
@@ -136,10 +137,12 @@ public abstract class MapperMultiviewElement extends TopComponent
         myMultiViewObserver = callback;
     }
 
+    // TODO r | m
     public DesignContextController getDesignContextController() {
         return myContextController;
     }
     
+    // TODO r
     public TopComponent getTopComponent() {
         return this;
     }
@@ -166,6 +169,7 @@ public abstract class MapperMultiviewElement extends TopComponent
         }
     }
 
+    // TODO m
     @Override
     public void componentActivated() {
 //        System.out.println("mapperTC activated "+getClass());
@@ -232,6 +236,7 @@ public abstract class MapperMultiviewElement extends TopComponent
     public void componentShowing() {
 //        System.out.println("mapperTC showing "+getClass());
         super.componentShowing();
+        myContextController.showMapper();
     }
 
     @Override
@@ -245,6 +250,7 @@ public abstract class MapperMultiviewElement extends TopComponent
     public void componentHidden() {
 //        System.out.println("mapperTC hidden "+getClass());
         super.componentHidden();
+        myContextController.hideMapper();
     }
 
     @Override
@@ -259,7 +265,7 @@ public abstract class MapperMultiviewElement extends TopComponent
             myExplorerManager.setSelectedNodes(new Node[0]);
         } catch (PropertyVetoException e) {
         }
-        removePropertyChangeListener(myContextChangeListener);
+////        removePropertyChangeListener(myContextChangeListener);
 
         removePropertyChangeListener(TopComponent.Registry.PROP_ACTIVATED_NODES, myNodesMediator);
         removePropertyChangeListener(TopComponent.Registry.PROP_ACTIVATED_NODES, myCookieProxyLookup);
@@ -268,6 +274,7 @@ public abstract class MapperMultiviewElement extends TopComponent
 
         //required to release all references to OM
 //        myMapper.closeView();
+        myContextController.cleanup();
         myContextController = null;
         myContextChangeListener = null;
         myMapper = null;
@@ -355,7 +362,6 @@ public abstract class MapperMultiviewElement extends TopComponent
         Node delegate = myDataObject.getNodeDelegate();
         myNodesMediator = new ActivatedNodesMediator(delegate);
         myNodesMediator.setExplorerManager(this);
-        myContextController = createDesignContextController();
         myCookieProxyLookup = new CookieProxyLookup(new Lookup[] {
                 Lookups.fixed(new Object[] {
                         // Need the data object registered in the lookup so that the
@@ -377,7 +383,8 @@ public abstract class MapperMultiviewElement extends TopComponent
                 myNodesMediator);
         addPropertyChangeListener(TopComponent.Registry.PROP_ACTIVATED_NODES,
                 myCookieProxyLookup);
-        initListeneres();
+        myContextController = createDesignContextController();
+//        initListeneres();
     }
 
     protected void initializeUI() {
@@ -401,24 +408,24 @@ public abstract class MapperMultiviewElement extends TopComponent
     }
     
     // TODO m
-    protected void initListeneres( ) {
-
-//         Check if the BPEL mapper is subscribed to changes of activated node
-//         and subscribe if it does not. 
-        if (myContextChangeListener == null) {
-            myContextChangeListener = new DesignContextChangeListener(
-                    myContextController);
-            myContextController.setContext(DesignContextChangeListener.getActivatedContext());
-        } else {
-            TopComponent.getRegistry().
-                    removePropertyChangeListener(myContextChangeListener);
-        }
-        
-        //add TopComponent Active Node changes listener :
-        TopComponent.getRegistry().
-                addPropertyChangeListener(myContextChangeListener);
-        
-    }
+//    protected void initListeneres( ) {
+//
+////         Check if the BPEL mapper is subscribed to changes of activated node
+////         and subscribe if it does not. 
+//        if (myContextChangeListener == null) {
+////            myContextChangeListener = new DesignContextChangeListener(
+////                    myContextController);
+////            myContextController.setContext(DesignContextChangeListener.getActivatedContext());
+//        } else {
+////            TopComponent.getRegistry().
+////                    removePropertyChangeListener(myContextChangeListener);
+//        }
+//        
+//        //add TopComponent Active Node changes listener :
+////        TopComponent.getRegistry().
+////                addPropertyChangeListener(myContextChangeListener);
+//        
+//    }
     
 //    private void showContextMapper() {
 //            Node[] nodes = TopComponent.getRegistry().getActivatedNodes();
@@ -436,9 +443,22 @@ public abstract class MapperMultiviewElement extends TopComponent
 //            }
 //    }
     
-    public void setMapper(Mapper newMapper) {
+    // TODO r
+    public void setMapper(final Mapper newMapper) {
+        if (!EventQueue.isDispatchThread()) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    MapperMultiviewElement.this.setMapperInAwt(newMapper);
+                }
+            });
+        } else {
+            setMapperInAwt(newMapper);
+        }
+    }
+
+    public void setMapperInAwt(Mapper newMapper) {
         assert EventQueue.isDispatchThread();
-        
+
         removeAll();
         this.myMapper = newMapper;
 
@@ -448,16 +468,32 @@ public abstract class MapperMultiviewElement extends TopComponent
             add(new Palette(myMapper).getPanel(), BorderLayout.NORTH);
         }
         revalidate();
-        repaint();
+        repaint();        
     }
     
+    // TODO r
     public Mapper getMapper() {
         return myMapper;
     }
     
     // TODO m
-    public void setMapperModel(MapperModel mModel) {
+    public void setMapperModel(final MapperModel mModel) {
         
+        if (!EventQueue.isDispatchThread()) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    MapperMultiviewElement.this.setMapperModelInAwt(mModel);
+                }
+            });
+        } else {
+            setMapperModelInAwt(mModel);
+        }
+//        updateTitle();
+    }
+    
+    private void setMapperModelInAwt(MapperModel mModel) {
+        assert EventQueue.isDispatchThread();
+
         if (myMapper != null) {
             myMapper.setModel(mModel);
             
@@ -467,10 +503,8 @@ public abstract class MapperMultiviewElement extends TopComponent
             Mapper newMapper = createMapper(mModel);
             setMapper(newMapper);
         }
-        //
-//        updateTitle();
     }
-    
+
     protected abstract Mapper createMapper(MapperModel mModel);
     
 ////    private void updateTitle() {

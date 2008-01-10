@@ -44,26 +44,41 @@ public class BpelModelSynchListener implements ChangeEventListener {
     }
     
     public void notifyPropertyUpdated(PropertyUpdateEvent event) {
-        mController.reloadMapper(event);
+        if (event.isLastInAtomic()) {
+//            System.out.println("PropertyUpdated: ");
+            mController.reloadMapper(event);
+        }
     }
     
     public void notifyArrayUpdated(ArrayUpdateEvent event) {
     }
     
     public void notifyEntityInserted(EntityInsertEvent event) {
-        mController.reloadMapper(event);
+        if (event.isLastInAtomic()) {
+//            System.out.println("entity inserted: ");
+            mController.reloadMapper(event);
+        }
     }
     
     public void notifyEntityRemoved(EntityRemoveEvent event) {
-        mController.reloadMapper(event);
+        if (event.isLastInAtomic()) {
+//            System.out.println("entity removed: ");
+            mController.reloadMapper(event);
+        }
     }
     
     public void notifyEntityUpdated(EntityUpdateEvent event) {
-        mController.reloadMapper(event);
+        if (event.isLastInAtomic()) {
+//            System.out.println("Entity Updated: ");
+            mController.reloadMapper(event);
+        }
     }
     
     public void notifyPropertyRemoved(PropertyRemoveEvent event) {
-        mController.reloadMapper(event);
+        if (event.isLastInAtomic()) {
+//            System.out.println("Property Removed: ");
+            mController.reloadMapper(event);
+        }
     }
     
 }

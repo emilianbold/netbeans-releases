@@ -24,6 +24,7 @@ import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.bpel.core.BPELDataObject;
+import org.netbeans.modules.bpel.editors.api.BpelEditorConstants;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -41,7 +42,6 @@ public class BpelMapperMultiviewElementDesc
     private static final long serialVersionUID = 1L;   
     
     /** unique ID of <code>TopComponent</code> (singleton) */
-    public static final String PREFERED_ID = "bpelMapperMVTC";  //NOI18N
     public static final String GROUP_ID = "bpel_mapper_tcgroup";  //NOI18N
 
     private BPELDataObject myDataObject;
@@ -70,7 +70,7 @@ public class BpelMapperMultiviewElementDesc
     }
 
     public String preferredID() {
-        return PREFERED_ID;
+        return BpelEditorConstants.BPEL_MAPPERMV_PREFFERED_ID;
     }
 
     public MultiViewElement createElement() {

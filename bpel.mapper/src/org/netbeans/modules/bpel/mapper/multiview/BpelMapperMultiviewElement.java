@@ -50,7 +50,8 @@ public class BpelMapperMultiviewElement extends MapperMultiviewElement {
 
     @Override
     protected DesignContextController createDesignContextController() {
-        return new DesignContextControllerImpl(this);
+//        return new DesignContextControllerImpl(this);
+        return new DesignContextControllerImpl2(this);
     }
 
     @Override

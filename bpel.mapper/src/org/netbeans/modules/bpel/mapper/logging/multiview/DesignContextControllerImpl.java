@@ -24,10 +24,6 @@ import java.lang.ref.WeakReference;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
-import javax.swing.event.TreeModelEvent;
-import javax.swing.event.TreeModelListener;
-import javax.swing.tree.TreePath;
-import org.netbeans.modules.bpel.mapper.logging.model.LoggingBpelModelUpdater;
 import org.netbeans.modules.bpel.mapper.logging.model.LoggingMapperModelFactory;
 import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContext;
 import org.netbeans.modules.bpel.mapper.multiview.BpelModelSynchListener;
@@ -357,4 +353,15 @@ public class DesignContextControllerImpl implements DesignContextController {
         
     }
 
+    public void showMapper() {
+        // do nothing
+    }
+
+    public void hideMapper() {
+        // do nothing
+    }
+
+    public void cleanup() {
+        //TODO a
+    }
 }
