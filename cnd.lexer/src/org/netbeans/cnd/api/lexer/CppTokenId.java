@@ -352,7 +352,7 @@ public enum CppTokenId implements TokenId {
         @Override
         protected Lexer<CppTokenId> createLexer(LexerRestartInfo<CppTokenId> info) {
             if (this.preproc) {
-                return new PreprocLexer(info);
+                return new PreprocLexer(CndLexerUtilities.getDefatultFilter(true), info);
             } else {
                 return new CppLexer(CndLexerUtilities.getDefatultFilter(this.cpp), info);
             }

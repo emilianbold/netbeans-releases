@@ -76,10 +76,14 @@ public final class PreprocLexer extends CndLexer {
     
     private int state = INIT;
     private final Filter<CppTokenId> preprocFilter;
+    private final Filter<CppTokenId> keywordsFilter;
 
-    public PreprocLexer(LexerRestartInfo<CppTokenId> info) {
+    public PreprocLexer(Filter<CppTokenId> defaultFilter, LexerRestartInfo<CppTokenId> info) {
         super(info);
         this.preprocFilter = CndLexerUtilities.getPreprocFilter();
+        @SuppressWarnings("unchecked")
+        Filter<CppTokenId> filter = (Filter<CppTokenId>) info.getAttributeValue("lexer-filter"); // NOI18N
+        this.keywordsFilter = filter != null ? filter : defaultFilter;
         fromState(info.state()); // last line in contstructor
     }
 
@@ -139,15 +143,23 @@ public final class PreprocLexer extends CndLexer {
         return super.finishLT();
     }
     
+    @SuppressWarnings("fallthrough")
     @Override
     protected CppTokenId getKeywordOrIdentifierID(CharSequence text) {
         CppTokenId id = null;
-        if (state == DIRECTIVE_NAME) {
-            id = preprocFilter.check(text);
-        } else if (state == EXPRESSION) {
-            if (CharSequenceUtilities.textEquals(CppTokenId.PREPROCESSOR_DEFINED.fixedText(), text)) {
-                id = CppTokenId.PREPROCESSOR_DEFINED;
-            }
+        switch (state) {
+            case DIRECTIVE_NAME:
+                id = preprocFilter.check(text);
+                break;
+            case EXPRESSION:
+                if (CharSequenceUtilities.textEquals(CppTokenId.PREPROCESSOR_DEFINED.fixedText(), text)) {
+                    id = CppTokenId.PREPROCESSOR_DEFINED;
+                    break;
+                }
+                // nobreak
+            case OTHER:
+                id = keywordsFilter.check(text);
+                break;
         }
         return id != null ? id : CppTokenId.PREPROCESSOR_IDENTIFIER;
     }
