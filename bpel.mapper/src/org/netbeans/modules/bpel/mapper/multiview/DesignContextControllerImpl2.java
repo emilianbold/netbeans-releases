@@ -25,6 +25,7 @@ import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bpel.mapper.model.BpelMapperModelFactory;
+import org.netbeans.modules.bpel.mapper.model.GraphExpandProcessor;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
@@ -234,6 +235,8 @@ public class DesignContextControllerImpl2
                     mContext = newContext;
                     setMapperModel(newMapperModel);
                     myMapperStateManager.restoreOldEntityContext(mContext);
+                    //
+                    GraphExpandProcessor.expandGraph(mMapperTcContext, mContext);
                     //
                     mMapperTcContext.showMapperTcGroup(true);
                 }

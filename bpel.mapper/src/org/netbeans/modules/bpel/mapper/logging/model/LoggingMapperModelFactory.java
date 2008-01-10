@@ -20,7 +20,6 @@ package org.netbeans.modules.bpel.mapper.logging.model;
 
 import java.util.Collections;
 import java.util.List;
-import javax.swing.tree.TreePath;
 import org.netbeans.modules.bpel.mapper.logging.tree.LogAlertType;
 import org.netbeans.modules.bpel.mapper.logging.tree.model.LoggingAlertingTreeModel;
 import org.netbeans.modules.bpel.mapper.model.BpelChangeProcessor;
@@ -46,7 +45,6 @@ import org.netbeans.modules.bpel.model.ext.logging.api.Log;
 import org.netbeans.modules.bpel.model.ext.logging.api.Trace;
 import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
-import org.netbeans.modules.soa.mappercore.utils.GraphLayout;
 
 /**
  * Implementaiton of the MapperModelFactory for the Logging mapper.
@@ -101,7 +99,7 @@ public class LoggingMapperModelFactory extends BpelMapperModelFactory {
                     mapperTcContext, changeProcessor, sourceModel, targetModel);
             //
             addTraceGraph(copy, newMapperModel);
-            addPreprocessedExprToGraph(newMapperModel);
+            postProcess(newMapperModel);
             //
             return newMapperModel;
             //
@@ -118,7 +116,7 @@ public class LoggingMapperModelFactory extends BpelMapperModelFactory {
             BpelMapperModel newMapperModel = new BpelMapperModel(
                     mapperTcContext, changeProcessor, sourceModel, targetModel);
             addTraceGraph(assign, newMapperModel);
-            addPreprocessedExprToGraph(newMapperModel);
+            postProcess(newMapperModel);
             //
             return newMapperModel;
             //
@@ -132,7 +130,7 @@ public class LoggingMapperModelFactory extends BpelMapperModelFactory {
                     mapperTcContext, changeProcessor, sourceModel, targetModel);
 
             addTraceGraph((ExtensibleElements)bpelEntity, newMapperModel);
-            addPreprocessedExprToGraph(newMapperModel);
+            postProcess(newMapperModel);
             //
             return newMapperModel;
         }
@@ -185,13 +183,9 @@ public class LoggingMapperModelFactory extends BpelMapperModelFactory {
         //
         List<TreeItemFinder> finderList = Collections.singletonList(
                 (TreeItemFinder)new LoggingNodeFinder(type, location, level));
-        TreePath targetTreePath = newMapperModel.getRightTreeModel().
-                findFirstNode(finderList);
-        if (targetTreePath == null) {
-            return;
-        }
         //
-        newMapperModel.addGraph(newGraph, targetTreePath);
-        GraphLayout.layout(newGraph);
+        PreprocessedGraphLocation graphLocation = 
+                new PreprocessedGraphLocation(newGraph, finderList);
+        mPreprGraphLocationList.add(graphLocation);
     }
 }

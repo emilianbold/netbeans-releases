@@ -26,6 +26,7 @@ import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import org.netbeans.modules.bpel.mapper.model.BpelMapperModelFactory;
+import org.netbeans.modules.bpel.mapper.model.GraphExpandProcessor;
 import org.netbeans.modules.bpel.mapper.tree.TreeExpandedState;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
@@ -302,6 +303,8 @@ public class DesignContextControllerImpl implements DesignContextController {
                     //
                     mContext = newContext;
                     setMapperModel(newMapperModel);
+                    //
+                    GraphExpandProcessor.expandGraph(mMapperTcContext, mContext);
                     //
                     mMapperTcContext.showMapperTcGroup(true);
                 }

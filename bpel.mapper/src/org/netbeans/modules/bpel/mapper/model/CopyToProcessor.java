@@ -20,7 +20,6 @@
 package org.netbeans.modules.bpel.mapper.model;
 
 import java.util.ArrayList;
-import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.search.FinderListBuilder;
 import org.netbeans.modules.bpel.mapper.tree.search.PartFinder;
 import org.netbeans.modules.bpel.mapper.tree.search.PartnerLinkFinder;
@@ -104,10 +103,10 @@ public class CopyToProcessor {
     }
 
     public static ArrayList<TreeItemFinder> constructFindersList(
-            MapperSwingTreeModel rightTreeModel, 
-            BpelEntity contextEntity, To copyTo) {
+            CopyToForm form, 
+            BpelEntity contextEntity, To copyTo, 
+            XPathExpression toExpr) {
         //
-        CopyToForm form = getCopyToForm(copyTo);
         ArrayList<TreeItemFinder> finderList = new ArrayList<TreeItemFinder>();
         //
         switch(form) {
@@ -186,54 +185,13 @@ public class CopyToProcessor {
             break;
         }
         case EXPRESSION: {
-            String exprLang = copyTo.getExpressionLanguage();
-            String exprText = copyTo.getContent();
-            boolean isXPathExpr = (exprLang == null || exprLang.length() == 0 ||
-                    XPathModelFactory.DEFAULT_EXPR_LANGUAGE.equals(exprLang));
+            if (toExpr == null) {
+                toExpr = constructExpression(contextEntity, copyTo);
+            }
             //
-            // we can handle only xpath expressions.
-            if (isXPathExpr && exprText != null && exprText.length() != 0) {
-                try {
-                    XPathModel newXPathModel = XPathModelFactory.create(contextEntity);
-                    // NOT NEED to specify schema context because of an 
-                    // expression with variable is implied here. 
-                    //
-                    XPathExpression expr = newXPathModel.parseExpression(exprText);
-                    //
-                    if (expr != null && expr instanceof AbstractLocationPath) {
-                        //
-                        // Populate predicate manager  
-                        BpelMapperModelFactory.collectPredicates(expr, rightTreeModel);
-                        //
-                        finderList.addAll(FinderListBuilder.build(
-                                (AbstractLocationPath)expr));
-                        
-//                        ExpressionFinderVisitor finderVisitor = 
-//                                new ExpressionFinderVisitor();
-//                        expr.accept(finderVisitor);
-//                        XPathBpelVariable xPathVar = finderVisitor.getVariable();
-//                        //
-//                        if (xPathVar != null) {
-//                            VariableDeclaration varDecl = xPathVar.getVarDecl();
-//                            if (varDecl != null) {
-//                                finderList.add(new VariableFinder(varDecl));
-//                                //
-//                                Part part = xPathVar.getPart();
-//                                if (part != null) {
-//                                    finderList.add(new PartFinder(part));
-//                                }
-//                            }
-//                        }
-//                        //
-//                        AbstractLocationPath path = finderVisitor.getPath();
-//                        //
-//                        if (path != null) {
-//                            finderList.addAll(FinderListBuilder.build(path));
-//                        }
-                    }
-                } catch (XPathException ex) {
-                    // Do nothing
-                }
+            if (toExpr != null && toExpr instanceof AbstractLocationPath) {
+                finderList.addAll(FinderListBuilder.build(
+                        (AbstractLocationPath)toExpr));
             }
             //
             break;
@@ -253,6 +211,31 @@ public class CopyToProcessor {
         }
         //
         return finderList;
+    }
+    
+    public static XPathExpression constructExpression(
+            BpelEntity contextEntity, To copyTo) {
+        //
+        String exprLang = copyTo.getExpressionLanguage();
+        String exprText = copyTo.getContent();
+        boolean isXPathExpr = (exprLang == null || exprLang.length() == 0 ||
+                XPathModelFactory.DEFAULT_EXPR_LANGUAGE.equals(exprLang));
+        //
+        // we can handle only xpath expressions.
+        if (isXPathExpr && exprText != null && exprText.length() != 0) {
+            try {
+                XPathModel newXPathModel = XPathModelFactory.create(contextEntity);
+                // NOT NEED to specify schema context because of an 
+                // expression with variable is implied here. 
+                //
+                XPathExpression expr = newXPathModel.parseExpression(exprText);
+                return expr;
+            } catch (XPathException ex) {
+                // Do nothing
+            }
+        }
+        //
+        return null;
     }
     
     private static class ExpressionFinderVisitor extends XPathVisitorAdapter {
