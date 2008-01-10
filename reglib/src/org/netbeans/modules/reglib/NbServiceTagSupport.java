@@ -53,16 +53,12 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.URL;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Locale;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -737,11 +733,26 @@ public class NbServiceTagSupport {
 
         String name = REGISTRATION_HTML_NAME;
         File f = new File(parent, name + ".html");
-        URL url = null;
-        url = new URL("nbresloc:/org/netbeans/modules/reglib/resources/" + REGISTRATION_HTML_NAME + ".html");
-        in = url.openStream();
-        LOG.log(Level.FINE,"Generating " + f + " from " + url);
-
+        
+        in = null;
+        Locale l = Locale.getDefault();
+        Locale [] locales = new Locale[] {
+          new Locale(l.getLanguage(), l.getCountry(), l.getVariant()),
+          new Locale(l.getLanguage(), l.getCountry()),
+          new Locale(l.getLanguage()),
+          new Locale("")
+        };
+        for (Locale locale : locales) {
+           resource = "/org/netbeans/modules/reglib/resources/register" + (locale.toString().equals("") ? "" : ("_" + locale)) + ".html";
+           LOG.log(Level.FINE,"Looking for html in: " + resource);
+           in = NbServiceTagSupport.class.getResourceAsStream(resource);
+           if (in != null) {
+               break;
+           }
+        } 
+        LOG.log(Level.FINE,"Found html in: " + resource);
+        LOG.log(Level.FINE,"Generating " + f);
+        
         BufferedReader reader = new BufferedReader(new InputStreamReader(in,"UTF-8"));
         PrintWriter pw = new PrintWriter(f,"UTF-8");
         String line = null;
