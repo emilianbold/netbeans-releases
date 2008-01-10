@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    
+     <folder name="Navigator">
+        <folder name="Panels">
+            <folder name="text">
+                <folder name="x-asm">
+                    <file name="org-netbeans-modules-asm-core-assistance-FunctionNavigator.instance"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+
+
+    <folder name="Actions">        
+        <folder name="Build">            
+            <file name="org-netbeans-modules-asm-core-dataobjects-AsmCompileAction.instance"/>            
+        </folder>        
+        <folder name="Window">
+            <file name="org-netbeans-modules-asm-core-ui-top-NavigatorAction.instance"/>                          
+        </folder>
+    </folder>
+    
+    <folder name="Editors">                  
+        <folder name="text">            
+            <folder name="x-asm">                
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.asm.core.resources.Bundle"/>                
+                                                             
+                <file name="org-netbeans-modules-asm-core-assistance-CodeHighlightFactory.instance"/> -->
+                <folder name="HyperlinkProviders">
+                    <file name="AsmHyperlinkProvider.instance">
+                        <attr name="instanceClass"
+                              stringvalue="org.netbeans.modules.asm.core.hyperlink.AsmHyperlinkProvider"
+                        />
+                        <attr name="instanceOf"
+                              stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
+                    </file>
+                </folder>
+                
+                <folder name="FontsColors">                    
+                    <folder name="NetBeans">
+                        <folder name="Defaults">                        
+                            <file name="coloring.xml" url="NetBeans-Asm-fontsColors.xml">                            
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.asm.core.resources.Bundle"/>                           
+                            </file>                        
+                        </folder>                    
+                    </folder>
+                </folder> 
+                                
+
+               <!-- <file name="Settings.settings" url="../options/AsmOptions.settings"/> -->
+                
+                <!--
+                <folder name="FoldManager">                    
+		    <file name="org-netbeans-modules-asm-core-folding-AsmFoldManager$Factory.instance"/>                    
+		</folder>
+                -->
+                <folder name="SideBar">
+		    <!--<file name="org-netbeans-modules-asm-core-folding-AsmCodeFoldingSideBarFactory.instance"/> 
+		    <attr name="org-netbeans-editor-GlyphGutter.instance/org-netbeans-modules-asm-core-folding-AsmCodeFoldingSideBarFactory.instance" boolvalue="true"/> -->
+                    <file name="org-netbeans-modules-asm-core-assistance-LiveRangeSidebarFactory.instance">
+                        <attr name="position" intvalue="4000"/> 
+                    </file>
+		</folder>
+                               
+                
+                <file name="EditorKit.instance">                    
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.asm.core.editor.AsmEditorKit"/>                    
+                </file>                                                
+            </folder>            
+        </folder>        
+    </folder>
+            
+    <folder name="Menu">
+        <folder name="Window">
+            <folder name="Navigator">
+                <file name="NavigatorAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-asm-core-ui-top-NavigatorAction.instance"/>
+                    <attr name="position" intvalue="650"/>
+                </file>                          
+            </folder>
+        </folder>       
+    </folder>
+    <folder name="OptionsDialog">        
+        <folder name="PreviewExamples">            
+            <folder name="text">                
+                <file name="x-asm" url="AsmExample.s"/>                
+            </folder>                       
+        </folder>        
+    </folder> 
+    
+    
+    
+    <folder name="Loaders">        
+        <folder name="text">            
+            <folder name="x-asm">                
+                <folder name="Actions">                    
+                    <file name="org-netbeans-modules-asm-core-dataobjects-separatorBefore.instance">                        
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>                        
+                    </file>
+                    
+                    <attr name="org-netbeans-modules-asm-core-dataobjects-separatorBefore.instance/org-netbeans-modules-asm-core-dataobjects-AsmCompileAction.shadow" boolvalue="false"/>
+                    
+                    <file name="org-netbeans-modules-asm-core-dataobjects-AsmCompileAction.shadow">                        
+                        <attr name="originalFile" stringvalue="Actions/Build/org-netbeans-modules-asm-core-dataobjects-AsmCompileAction.instance"/>                        
+                    </file>
+                    
+                    <attr name="org-netbeans-modules-asm-core-dataobjects-AsmCompileAction.shadow/org-netbeans-modules-asm-core-dataobjects-separatorAfter.instance" boolvalue="false"/>
+                    
+                    <file name="org-netbeans-modules-asm-core-dataobjects-separatorAfter.instance">                        
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>                        
+                    </file>
+                    
+                    <attr name="org-netbeans-modules-asm-core-dataobjects-separatorAfter.instance/org-openide-actions-OpenAction.instance" boolvalue="false"/>
+                    
+                    <attr name="org-netbeans-modules-asm-core-dataobjects-AsmCompileAction.shadow/org-openide-actions-OpenAction.instance" boolvalue="false"/>
+                    
+                    <file name="org-openide-actions-OpenAction.instance"/>
+                    
+                    <attr name="org-openide-actions-OpenAction.instance/org-openide-actions-FileSystemAction.instance" boolvalue="true"/>
+                    
+                    <file name="org-openide-actions-FileSystemAction.instance"/>
+                    
+                    <attr name="org-openide-actions-FileSystemAction.instance/sep-1.instance" boolvalue="true"/>
+                    
+                    <file name="sep-1.instance">                        
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>                        
+                    </file>
+                    
+                    <attr name="sep-1.instance/org-openide-actions-CutAction.instance" boolvalue="true"/>
+                    
+                    <file name="org-openide-actions-CutAction.instance"/>
+                    
+                    <attr name="org-openide-actions-CutAction.instance/org-openide-actions-CopyAction.instance" boolvalue="true"/>
+                    
+                    <file name="org-openide-actions-CopyAction.instance"/>
+                    
+                    <attr name="org-openide-actions-CopyAction.instance/sep-2.instance" boolvalue="true"/>
+                    
+                    <file name="sep-2.instance">                        
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>                        
+                    </file>
+                    
+                    <attr name="sep-2.instance/org-openide-actions-DeleteAction.instance" boolvalue="true"/>
+                    
+                    <file name="org-openide-actions-DeleteAction.instance"/>
+                    
+                    <attr name="org-openide-actions-DeleteAction.instance/org-openide-actions-RenameAction.instance" boolvalue="true"/>
+                    
+                    <file name="org-openide-actions-RenameAction.instance"/>
+                    
+                    <attr name="org-openide-actions-RenameAction.instance/sep-3.instance" boolvalue="true"/>
+                    
+                    <file name="sep-3.instance">                        
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>                        
+                    </file>
+                    
+                    <attr name="sep-3.instance/org-openide-actions-SaveAsTemplateAction.instance" boolvalue="true"/>
+                    
+                    <file name="org-openide-actions-SaveAsTemplateAction.instance"/>
+                    
+                    <attr name="org-openide-actions-SaveAsTemplateAction.instance/sep-4.instance" boolvalue="true"/>
+                    
+                    <file name="sep-4.instance">                        
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>                        
+                    </file>
+                    
+                    <attr name="sep-4.instance/org-openide-actions-ToolsAction.instance" boolvalue="true"/>
+                    
+                    <file name="org-openide-actions-ToolsAction.instance"/>
+                    
+                    <attr name="org-openide-actions-ToolsAction.instance/org-openide-actions-PropertiesAction.instance" boolvalue="true"/>
+                    
+                    <file name="org-openide-actions-PropertiesAction.instance"/>
+                    
+                    <attr name="org-openide-actions-OpenAction.instance/org-netbeans-modules-asm-core-dataobjects-separatorAfter.instance" boolvalue="true"/>
+                    
+                    <attr name="org-netbeans-modules-asm-core-dataobjects-separatorAfter.instance/org-openide-actions-FileSystemAction.instance" boolvalue="true"/>
+                    
+                    <attr name="org-netbeans-modules-asm-core-dataobjects-separatorBefore.instance/org-openide-actions-OpenAction.instance" boolvalue="false"/>
+                    
+                    <attr name="org-netbeans-modules-asm-core-dataobjects-separatorAfter.instance/org-netbeans-modules-asm-core-dataobjects-AsmCompileAction.shadow" boolvalue="true"/>
+                    
+                    <attr name="org-netbeans-modules-asm-core-dataobjects-AsmCompileAction.shadow/org-openide-actions-FileSystemAction.instance" boolvalue="true"/>
+                    
+                    <attr name="org-netbeans-modules-asm-core-dataobjects-AsmCompileAction.shadow/org-netbeans-modules-asm-core-dataobjects-separatorBefore.instance" boolvalue="true"/>
+                    
+                    <attr name="org-netbeans-modules-asm-core-dataobjects-separatorBefore.instance/org-openide-actions-FileSystemAction.instance" boolvalue="true"/>
+                    
+                </folder>                
+            </folder>            
+        </folder>       
+    </folder>
+    
+    <folder name="Services">        
+        <folder name="Hidden">            
+            <file name="org-netbeans-modules-asm-core-dataobjects-MIMEResolver.instance">                
+                <attr name="instanceOf" stringvalue="org.openide.filesystems.MIMEResolver"/>                
+            </file>            
+        </folder>              
+    </folder> 
+    
+    <folder name="Templates">        
+        <folder name="Other">            
+            <file name="AsmTemplate.s" url="AsmTemplate.s">                
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.asm.core.resources.Bundle"/>                
+                <attr name="template" boolvalue="true"/>                
+            </file>            
+        </folder>             
+    </folder>    
+    
+    <folder name="Windows2">
+        <folder name="Components">
+            <file name="NavigatorTopComponent.settings" url="NavigatorTopComponentSettings.xml"/>                                 
+        </folder>
+        <folder name="Modes">         
+             <folder name="navigator">                
+                <file name="NavigatorTopComponent.wstcref" url="NavigatorTopComponentWstcref.xml"/>                
+            </folder> 
+        </folder>
+    </folder>
+</filesystem>

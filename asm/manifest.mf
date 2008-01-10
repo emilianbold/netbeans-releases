@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.asm
+OpenIDE-Module-Layer: org/netbeans/modules/asm/core/resources/layer.xml
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/asm/core/resources/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.0
+AutoUpdate-Show-In-Client: false
+
+Name: org/netbeans/modules/asm/core/dataobjects/AsmDataLoader.class
+OpenIDE-Module-Class: Loader
+Install-Before: org.netbeans.modules.cnd.loaders.AsmDataObject,
+    org.netbeans.modules.cnd.loaders.AssemSrcObject
+
