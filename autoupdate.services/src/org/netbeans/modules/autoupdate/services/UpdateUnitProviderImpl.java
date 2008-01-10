@@ -89,6 +89,7 @@ public final class UpdateUnitProviderImpl {
     private static final String DISPLAY_NAME = "displayName";    
     private static final String ENABLED = "enabled";
     private static final String CATEGORY_NAME = "categoryName";
+    private static final LookupListenerImpl UPDATE_PROVIDERS = new LookupListenerImpl();
             
     public UpdateUnitProviderImpl (UpdateProvider provider) {
         this.provider = provider;
@@ -263,19 +264,8 @@ public final class UpdateUnitProviderImpl {
                 }
             }
         }
-        Lookup.Result<UpdateProvider> result = Lookup.getDefault ().lookup (new Lookup.Template<UpdateProvider> (UpdateProvider.class));
-        result.addLookupListener (new LookupListener () {
-            public void resultChanged(LookupEvent ev) {
-                try {
-                    refreshProviders (null, false);
-                    err.log (Level.FINE, "Lookup.Result changed " + ev);
-                } catch (IOException ioe) {
-                    err.log (Level.INFO, ioe.getMessage (), ioe);
-                }
-            }
-        });
         
-        Collection<? extends UpdateProvider> col = result.allInstances ();
+        Collection<? extends UpdateProvider> col = UPDATE_PROVIDERS.allInstances ();
         Map<String, UpdateProvider> providerMap = new HashMap<String, UpdateProvider> ();
         for (UpdateProvider provider : col) {
             try {
@@ -463,5 +453,28 @@ public final class UpdateUnitProviderImpl {
         private void setHandle(ProgressHandle handle) {
             this.handle = handle;
         }        
-    }    
+    }
+    
+    private static class LookupListenerImpl implements LookupListener {
+        final Lookup.Result<UpdateProvider> result = Lookup.getDefault ().lookupResult(UpdateProvider.class);
+        
+        public LookupListenerImpl() {
+            result.addLookupListener(this);
+        }
+        
+        public void resultChanged(LookupEvent ev) {
+            err.log (Level.FINE, "Lookup.Result changed " + ev);
+            try {
+                refreshProviders (null, false);
+            } catch (IOException ioe) {
+                err.log (Level.INFO, ioe.getMessage (), ioe);
+            }
+        }
+        
+        public Collection<? extends UpdateProvider> allInstances() {
+            Collection<? extends UpdateProvider> res = result.allInstances();
+            return res;
+        }
+    }
+
 }

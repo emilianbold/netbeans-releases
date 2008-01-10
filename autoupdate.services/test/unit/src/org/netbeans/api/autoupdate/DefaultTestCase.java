@@ -49,6 +49,7 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.util.List;
 import org.netbeans.api.autoupdate.TestUtils.CustomItemsProvider;
+import org.netbeans.core.startup.MainLookup;
 import org.netbeans.junit.MockServices;
 import org.netbeans.modules.autoupdate.services.*;
 import org.netbeans.junit.NbTestCase;
@@ -97,7 +98,10 @@ public class DefaultTestCase extends NbTestCase {
         
         TestUtils.setUserDir (getWorkDirPath ());
         TestUtils.testInit();
-        MockServices.setServices(MyProvider.class, CustomItemsProvider.class, InstallIntoNewClusterTest.NetBeansClusterCreator.class);
+        
+        MainLookup.register(new MyProvider());
+        MainLookup.register(new CustomItemsProvider());
+        MainLookup.register(new InstallIntoNewClusterTest.NetBeansClusterCreator());
         assert Lookup.getDefault().lookup(MyProvider.class) != null;
         assert Lookup.getDefault().lookup(CustomItemsProvider.class) != null;
         UpdateUnitProviderFactory.getDefault().refreshProviders (null, true);
