@@ -37,6 +37,8 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.editor.semantic.ColoringAttributes.Coloring;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
@@ -51,7 +53,6 @@ public class LexerBasedHighlightLayer extends AbstractHighlightsContainer {
     private Map<Token, Coloring> colorings;
     private Map<Coloring, AttributeSet> CACHE = new HashMap<Coloring, AttributeSet>();
     private Document doc;
-    private boolean topLevelIsJava;
 
     public static LexerBasedHighlightLayer getLayer(Class id, Document doc) {
         LexerBasedHighlightLayer l = (LexerBasedHighlightLayer) doc.getProperty(id);
@@ -66,9 +67,6 @@ public class LexerBasedHighlightLayer extends AbstractHighlightsContainer {
     private LexerBasedHighlightLayer(Document doc) {
         this.doc = doc;
         this.colorings = Collections.emptyMap();
-        TokenHierarchy th = TokenHierarchy.get(doc);
-        
-        topLevelIsJava = th.tokenSequence().language() == JavaTokenId.language();
     }
     
     public void setColorings(final Map<Token, Coloring> colorings, final Set<Token> addedTokens, final Set<Token> removedTokens) {
@@ -101,11 +99,12 @@ public class LexerBasedHighlightLayer extends AbstractHighlightsContainer {
     
     public HighlightsSequence getHighlights(int startOffset, int endOffset) {
         TokenHierarchy th = TokenHierarchy.get(doc);
+        TokenSequence<? extends TokenId> seq = th.tokenSequence();
         
-        if (topLevelIsJava) {
-            return new LexerBasedHighlightSequence(this, th.tokenSequence().subSequence(startOffset, endOffset), colorings);
+        if (seq.language() == JavaTokenId.language()) {
+            return new LexerBasedHighlightSequence(this, seq.subSequence(startOffset, endOffset), colorings);
         } else {
-            return new EmbeddedLexerBasedHighlightSequence(this, th.tokenSequence().subSequence(startOffset, endOffset), colorings);
+            return new EmbeddedLexerBasedHighlightSequence(this, seq.subSequence(startOffset, endOffset), colorings);
         }
     }
 
