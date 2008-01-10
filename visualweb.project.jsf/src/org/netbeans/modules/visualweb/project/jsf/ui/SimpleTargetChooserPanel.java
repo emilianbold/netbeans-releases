@@ -258,6 +258,11 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
     }
 
     private boolean checkWebForm(String targetName) {
+        if (JsfProjectUtils.getPortletSupport(project) != null) {
+            wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(SimpleTargetChooserPanel.class, "MSG_PortletIncompatible"));
+            return false;
+        }
+
         FileObject docRoot = JsfProjectUtils.getDocumentRoot(project);
         String folderPath = getFolderPath(FileUtil.getFileDisplayName(docRoot));
         if (folderPath == null) {
