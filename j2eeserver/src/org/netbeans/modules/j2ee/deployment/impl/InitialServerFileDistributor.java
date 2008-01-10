@@ -44,14 +44,19 @@ package org.netbeans.modules.j2ee.deployment.impl;
 
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Iterator;
+import java.util.Locale;
+import java.util.jar.JarOutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
 import org.netbeans.modules.j2ee.deployment.execution.DeploymentTarget;
 import org.netbeans.modules.j2ee.deployment.execution.ModuleConfigurationProvider;
 import javax.enterprise.deploy.spi.Target;
+import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.util.NbBundle;
 import javax.enterprise.deploy.shared.CommandType;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -61,16 +66,20 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
+import org.openide.util.Utilities;
 
 /**
  *
  * @author  nn136682
  */
 public class InitialServerFileDistributor extends ServerProgress {
-    ServerString serverString;
-    DeploymentTarget dtarget;
-    IncrementalDeployment incDeployment;
-    Target target;
+    
+    private static final Logger LOGGER = Logger.getLogger(InitialServerFileDistributor.class.getName());
+    
+    private final ServerString serverString;
+    private final DeploymentTarget dtarget;
+    private final IncrementalDeployment incDeployment;
+    private final Target target;
     boolean inPlace = false;
 
     /** Creates a new instance of InitialServerFileDistributor */
@@ -125,7 +134,7 @@ public class InitialServerFileDistributor extends ServerProgress {
             
         } catch (Exception e) {
             setStatusDistributeFailed(e.getMessage());
-            Logger.getLogger("global").log(Level.INFO, null, e);
+            LOGGER.log(Level.INFO, null, e);
             if (!inPlace && !cleanup (dir)) {
                 setStatusDistributeFailed ("Failed to cleanup the data after unsucesful distribution");
             }
@@ -162,12 +171,11 @@ public class InitialServerFileDistributor extends ServerProgress {
     
     private void _distribute(Iterator rootedEntries, File dir, String childModuleUri) {
         FileLock lock = null;
-        InputStream in = null;
-        OutputStream out = null;
 
         try {
-            if (! dir.exists())
+            if (!dir.exists()) {
                 dir.mkdirs();
+            }
             
             // original code deleted the project source... that was probably a
             //   bug.
@@ -175,7 +183,21 @@ public class InitialServerFileDistributor extends ServerProgress {
             
             FileObject[] garbages = destRoot.getChildren();
             for (int i=0; i<garbages.length; i++) {
-                garbages[i].delete();
+                try {
+                    garbages[i].delete();
+                } catch (java.io.IOException ioe) {
+                    LOGGER.log(Level.FINER, null, ioe);
+                    if (Utilities.isWindows()) {                        
+                        String ext = garbages[i].getExt().toLowerCase(Locale.ENGLISH);
+                        if ("jar".equals(ext) || "zip".equals(ext)) {
+                            zeroOutArchive(garbages[i]);
+                        } else {
+                            throw ioe;
+                        }
+                    } else {
+                        throw ioe;
+                    }
+                }
             }
             
             while(rootedEntries.hasNext()) {
@@ -184,17 +206,12 @@ public class InitialServerFileDistributor extends ServerProgress {
                 FileObject sourceFO = entry.getFileObject();
                 FileObject destFolder = ServerFileDistributor.findOrCreateParentFolder(destRoot, relativePath);
                 if (sourceFO.isData ()) {
-                    //try {
+                    if (Utilities.isWindows()) {
+                        // we clould use this for both
+                        copyFile(sourceFO, dir, relativePath);
+                    } else {
                         FileUtil.copyFile(sourceFO, destFolder, sourceFO.getName());
-                    /*} catch (java.io.SyncFailedException sfe) {
-                        in = sourceFO.getInputStream();
-                        FileObject destFO = destFolder.getFileObject(sourceFO.getName(), sourceFO.getExt());
-                        if (destFO != null) {
-                            lock = destFO.lock();
-                            out = destFO.getOutputStream(lock);
-                            FileUtil.copy(in, out);
-                        }
-                    }*/
+                    }
                 }
             }
             
@@ -220,4 +237,35 @@ public class InitialServerFileDistributor extends ServerProgress {
         notify(createCompletedProgressEvent(CommandType.DISTRIBUTE, message)); 
     }
 
+    private void copyFile(FileObject sourceObject, File directory, String relativePath) throws IOException {     
+        FileObject targetObject = FileUtil.createData(new File(directory, relativePath));
+                
+        InputStream is = sourceObject.getInputStream();
+        try {
+            OutputStream os = targetObject.getOutputStream();
+            try {
+                FileUtil.copy(is, os);
+            } finally {
+                os.close();
+            }
+        } finally {
+            is.close();
+        }
+    }
+
+    private void zeroOutArchive(FileObject garbage) throws IOException, FileAlreadyLockedException {
+        OutputStream fileToOverwrite = garbage.getOutputStream();
+        try {
+            JarOutputStream jos = new JarOutputStream(fileToOverwrite);
+            try {
+                jos.putNextEntry(new ZipEntry("META-INF/MANIFEST.MF")); // NOI18N
+                // UTF-8 guaranteed on any platform
+                jos.write("Manifest-Version: 1.0\n".getBytes("UTF-8")); // NOI18N
+            } finally {
+                jos.close();
+            }
+        } finally {
+            fileToOverwrite.close();
+        }
+    }
 }
