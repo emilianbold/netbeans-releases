@@ -92,13 +92,13 @@ abstract public class HostKeyArray extends Children.Keys<PersistentKey> implemen
         return childrenUpdater;
     }
     
-    public void dispose(){
+    protected void dispose(){
         if (isInited) {
             isInited = false;
             myKeys.clear();
             myChanges.clear();
             childrenUpdater.unregister(myProject, myID);
-            setKeys(new PersistentKey[0]);
+            //setKeys(new PersistentKey[0]);
         }
     }
     
