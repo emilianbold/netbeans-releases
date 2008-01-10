@@ -360,5 +360,16 @@ public class BorderDesignSupport implements FormDesignValue
             super.propertyValueChanged(old, current);
             borderNeedsUpdate = (getAccessType() & DETACHED_WRITE) != 0;
         }
+
+        // Issue 73245 explains why is this method overriden
+        @Override
+        public boolean equals(Object property) {
+            return (this == property);
+        }
+
+        @Override
+        public int hashCode() {
+            return System.identityHashCode(this);
+        }
     }
 }
