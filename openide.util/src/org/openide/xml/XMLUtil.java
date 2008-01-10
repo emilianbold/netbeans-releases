@@ -45,6 +45,8 @@ import java.io.CharConversionException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.util.HashSet;
+import java.util.Set;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -58,6 +60,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import org.openide.util.Lookup;
+import org.w3c.dom.CDATASection;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
@@ -351,6 +354,15 @@ public final class XMLUtil extends Object {
      * Writes a DOM document to a stream.
      * The precise output format is not guaranteed but this method will attempt to indent it sensibly.
      * 
+     * <p class="nonnormative"><b>Important</b>: There might be some problems with
+     * <code>&lt;![CDATA[ ]]&gt;</code> sections in the DOM tree you pass into this method. Specifically,
+     * some CDATA sections my not be written as CDATA section or may be merged with
+     * other CDATA section at the same level. Also if plain text nodes are mixed with
+     * CDATA sections at the same level all text is likely to end up in one big CDATA section.
+     * <br/>
+     * For nodes that only have one CDATA section this method should work fine.
+     * </p>
+     * 
      * @param doc DOM document to be written
      * @param out data sink
      * @param enc XML-defined encoding name (e.g. "UTF-8")
@@ -403,6 +415,18 @@ public final class XMLUtil extends Object {
                 t.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, dt.getSystemId());
             }
             t.setOutputProperty(OutputKeys.ENCODING, enc);
+
+            // See #123816
+            Set<String> cdataQNames = new HashSet<String>();
+            collectCDATASections(doc2, cdataQNames);
+            if (cdataQNames.size() > 0) {
+                StringBuilder cdataSections = new StringBuilder();
+                for(String s : cdataQNames) {
+                    cdataSections.append(s).append(' '); //NOI18N
+                }
+                t.setOutputProperty(OutputKeys.CDATA_SECTION_ELEMENTS, cdataSections.toString());
+            }
+            
             Source source = new DOMSource(doc2);
             Result result = new StreamResult(out);
             t.transform(source, result);
@@ -413,6 +437,25 @@ public final class XMLUtil extends Object {
         }
     }
 
+    private static void collectCDATASections(Node node, Set<String> cdataQNames) {
+        if (node instanceof CDATASection) {
+            Node parent = node.getParentNode();
+            if (parent != null) {
+                String uri = parent.getNamespaceURI();
+                if (uri != null) {
+                    cdataQNames.add("{" + uri + "}" + parent.getNodeName()); //NOI18N
+                } else {
+                    cdataQNames.add(parent.getNodeName());
+                }
+            }
+        }
+        
+        NodeList children = node.getChildNodes();
+        for(int i = 0; i < children.getLength(); i++) {
+            collectCDATASections(children.item(i), cdataQNames);
+        }
+    }
+    
     /**
      * Escape passed string as XML attibute value
      * (<code>&lt;</code>, <code>&amp;</code>, <code>'</code> and <code>"</code>
