@@ -61,11 +61,13 @@ import javax.faces.component.UIComponent;
 import javax.faces.component.UIForm;
 import javax.faces.component.UIViewRoot;
 import javax.faces.context.FacesContext;
+import org.netbeans.modules.visualweb.jsfsupport.container.JsfTagSupportException;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.openide.ErrorManager;
 import org.openide.loaders.DataObject;
 
 import org.netbeans.modules.visualweb.extension.openide.util.Trace;
+import org.openide.util.Exceptions;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
@@ -392,18 +394,22 @@ public class FacesPageUnit extends FacesUnit implements PropertyChangeListener {
                 String tagName = e.getLocalName();
                 String name = e.getAttribute(FacesBean.ID_ATTR);
                 String tagLibUri = pgunit.findTaglibUri(e.getPrefix());
-                // Get the bean class via TLD using JSF Designtime container
-                type = container.findComponentClass(tagName, tagLibUri);
-                assert Trace.trace("insync.faces", "FU.bindMarkupBeans type:" + type + 
-                        " tag:" + tagName + " tagLibUri:" + tagLibUri);                
-                BeanInfo bi = getBeanInfo(type);
-                mbean = new FacesBean(this, bi, name, e);
-                // snag the form bean as it goes by for later use as the default parent
-                if (defaultParent == null && tagName.equals(HtmlTag.FORM.name)) {
-                    defaultParent = mbean;
-                }               
-                mbean.setInserted(true);
-                beans.add(mbean);
+                try {
+                    type = container.findComponentClass(tagName, tagLibUri);
+
+                    assert Trace.trace("insync.faces", "FU.bindMarkupBeans type:" + type +
+                            " tag:" + tagName + " tagLibUri:" + tagLibUri);
+                    BeanInfo bi = getBeanInfo(type);
+                    mbean = new FacesBean(this, bi, name, e);
+                    // snag the form bean as it goes by for later use as the default parent
+                    if (defaultParent == null && tagName.equals(HtmlTag.FORM.name)) {
+                        defaultParent = mbean;
+                    }
+                    mbean.setInserted(true);
+                    beans.add(mbean);
+                } catch (JsfTagSupportException ex) {
+                    ErrorManager.getDefault().log(ex.getLocalizedMessage());
+                }
             }
         }
         if (mbean != null) {

@@ -50,7 +50,7 @@ public class JsfTagSupport {
      */
     public static synchronized void initialize(ClassLoader classLoader) {
         try {
-            Enumeration<URL> urls = ((URLClassLoader) classLoader).getResources("META-INF/faces-config.xml");
+            Enumeration<URL> urls = classLoader.getResources("META-INF/faces-config.xml");
             while (urls.hasMoreElements()) {
                 URL url = urls.nextElement();
                 if (!url.getPath().contains("jsfcl.jar")) {
@@ -60,8 +60,7 @@ public class JsfTagSupport {
 
             // Bug Fix 124610 - Unfortunately the JSF RI component informations are not kept
             // in the standard location (META-INF/faces-config.xml)
-            urls = ((URLClassLoader) classLoader).getResources("com/sun/faces/jsf-ri-runtime.xml");
-            URL facesConfigUrl = urls.nextElement();
+            URL facesConfigUrl =  classLoader.getResource("com/sun/faces/jsf-ri-runtime.xml");
             URL tagLibUrl = new URL(facesConfigUrl.toString().split("!")[0] + "!/META-INF/html_basic.tld");
             String taglibUri = "http://java.sun.com/jsf/html";
             TagLibFacesConfigInfo tagLibFacesConfigInfo = new TagLibFacesConfigInfo(taglibUri);
