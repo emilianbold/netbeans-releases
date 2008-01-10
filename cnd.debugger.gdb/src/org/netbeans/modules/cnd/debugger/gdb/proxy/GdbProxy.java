@@ -505,6 +505,8 @@ public class GdbProxy implements GdbMiDefinitions {
      * This command forces gdb to exit immediately.
      */
     public int gdb_exit() {
-        return engine.sendCommand(MI_CMD_GDB_EXIT);
+        int token = engine.sendCommand(MI_CMD_GDB_EXIT);
+        engine.stopSending();
+        return token;
     }
 } /* End of public class GdbProxy */

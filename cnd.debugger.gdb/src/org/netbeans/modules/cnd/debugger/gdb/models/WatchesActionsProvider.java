@@ -145,13 +145,13 @@ public class WatchesActionsProvider implements NodeActionsProvider {
     }
 
     private static void customize(GdbWatchVariable w) {
-        WatchPanel wp = new WatchPanel(w.getExpression());
+        WatchPanel wp = new WatchPanel(w.getWatch().getExpression());
         JComponent panel = wp.getPanel();
 
         ResourceBundle bundle = NbBundle.getBundle(WatchesActionsProvider.class);
         DialogDescriptor dd = new org.openide.DialogDescriptor(
                 panel, MessageFormat.format(bundle.getString("CTL_Edit_Watch_Dialog_Title"), // NOI18N
-                new Object [] { w.getExpression() })
+                new Object [] { w.getWatch().getExpression() })
         );
         dd.setHelpCtx (new HelpCtx("debug.customize.watch")); // NOI18N - FIXME (need help topic)
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
@@ -165,7 +165,7 @@ public class WatchesActionsProvider implements NodeActionsProvider {
             return;
         }
         if (wp.getExpression() != null && wp.getExpression().trim().length() > 0) {
-            w.setExpression(wp.getExpression());
+            w.getWatch().setExpression(wp.getExpression());
         }
     }
 

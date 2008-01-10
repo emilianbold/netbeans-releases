@@ -39,12 +39,8 @@
 
 package org.netbeans.modules.cnd.debugger.gdb;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.debugger.gdb.models.AbstractVariable;
 import org.netbeans.modules.cnd.debugger.gdb.utils.FieldTokenizer;
@@ -59,11 +55,11 @@ public class TypeInfo {
     
     private GdbDebugger debugger;
     private String name;
+    private AbstractVariable var;
     private String resolvedType;
     private Map<String, Object> map;
     private Map<String, TypeInfo> ticache;
     private static Map<String, Map<String, Object>> mcache = new HashMap<String, Map<String, Object>>();
-    private static Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     
     public static TypeInfo getTypeInfo(GdbDebugger debugger, AbstractVariable var) {
         Map<String, TypeInfo> ticache = debugger.getTypeInfoCache();
@@ -86,9 +82,11 @@ public class TypeInfo {
             }
             resolvedType = debugger.requestSymbolType(name);
         }
-        tinfo = ticache.get(resolvedType);
-        if (tinfo != null) {
-            return tinfo;
+        if (resolvedType != null) {
+            tinfo = ticache.get(resolvedType);
+            if (tinfo != null) {
+                return tinfo;
+            }
         }
         
         return new TypeInfo(debugger, var, resolvedType);
@@ -96,21 +94,42 @@ public class TypeInfo {
     
     public TypeInfo(GdbDebugger debugger, AbstractVariable var, String resolvedType) {
         this.debugger = debugger;
+        this.var = var;
         this.resolvedType = resolvedType;
         ticache = debugger.getTypeInfoCache();
         map = null;
         
         String type = var.getType();
-        ticache.put(type, this);
-        if (!type.equals(resolvedType)) {
-            ticache.put(resolvedType, this);
+        if (type != null) {
+            ticache.put(type, this);
+            if (!type.equals(resolvedType)) {
+                ticache.put(resolvedType, this);
+            }
         }
+    }
+    
+    public String getResolvedType() {
+        if (resolvedType == null) {
+            if (GdbUtils.isSimpleType(var.getType())) {
+                resolvedType = var.getType();
+            } else {
+                String n;
+                if (var.getName().equals(NbBundle.getMessage(AbstractVariable.class, "LBL_BaseClass"))) { // NOI18N
+                    n = var.getType();
+                } else if (var.getName().indexOf('.') != -1) {
+                    n = stripName(var.getName()); // getFullName() has already been applied...
+                } else {
+                    n = stripName(var.getFullName(false));
+                }
+                resolvedType = debugger.requestSymbolType(n);
+            }
+        }
+        return resolvedType;
     }
     
     private static String stripName(String name) {
         boolean modified = true;
         int pos;
-        String tmp = new String(name); // FIXME - save while debugging...
         
         while (modified) {
             char ch = name.charAt(name.length() - 1);
@@ -127,10 +146,6 @@ public class TypeInfo {
         }
         return name;
     }
-
-    public String getResolvedType() {
-        return resolvedType;
-    }
     
     public Map<String, Object> getMap() {
         if (map == null) {
@@ -143,8 +158,9 @@ public class TypeInfo {
     }
     
     private Map<String, Object> getCachedMap() {
-        if (resolvedType != null) {
-            return mcache.get(resolvedType);
+        String rt = getResolvedType();
+        if (rt != null) {
+            return mcache.get(rt);
         } else {
             return null;
         }
@@ -152,42 +168,43 @@ public class TypeInfo {
     
     private Map<String, Object> createMap() {
         Map<String, Object> m = createFieldMap();
-        mcache.put(resolvedType, m);
+        mcache.put(getResolvedType(), m);
         return m;
     }
     
     private Map<String, Object> createFieldMap() {
         Map<String, Object> m = new HashMap<String, Object>();
+        String rt = getResolvedType();
         int pos0;
-        int pos1 = resolvedType.indexOf('{');
-        int pos2 = GdbUtils.findMatchingCurly(resolvedType, pos1);
+        int pos1 = rt.indexOf('{');
+        int pos2 = GdbUtils.findMatchingCurly(rt, pos1);
         String fields = null;
         String n;
         n = name;
         
         if (pos1 != -1) {
-            if ((pos0 = getSuperclassColon(resolvedType.substring(0, pos1))) != -1) {
-                m = addSuperclassEntries(m, resolvedType.substring(pos0 + 1, pos1));
+            if ((pos0 = getSuperclassColon(rt.substring(0, pos1))) != -1) {
+                m = addSuperclassEntries(m, rt.substring(pos0 + 1, pos1));
             }
             if (pos0 == -1) {
-                n = resolvedType.substring(0, pos1).trim();
+                n = rt.substring(0, pos1).trim();
             } else {
-                n = resolvedType.substring(0, pos0).trim();
+                n = rt.substring(0, pos0).trim();
             }
             m.put("<name>", n.startsWith("class ") ? n.substring(5).trim() : n); // NOI18N
         }
         
         if (pos1 == -1 && pos2 == -1) {
-            if (GdbUtils.isPointer(resolvedType)) {
-                resolvedType = resolvedType.replace('*', ' ').trim();
+            if (GdbUtils.isPointer(rt)) {
+                rt = rt.replace('*', ' ').trim();
             }
         } else if (pos1 != -1 && pos2 != -1 && pos2 > (pos1 + 1)) {
-            fields = resolvedType.substring(pos1 + 1, pos2 - 2);
+            fields = rt.substring(pos1 + 1, pos2 - 2);
         }
         if (fields != null) {
             m = parseFields(m, fields);
             if (m.isEmpty()) {
-                m.put("<" + resolvedType.substring(0, pos1) + ">", "<No data fields>"); // NOI18N
+                m.put("<" + rt.substring(0, pos1) + ">", "<No data fields>"); // NOI18N
             }
         }
         return m;

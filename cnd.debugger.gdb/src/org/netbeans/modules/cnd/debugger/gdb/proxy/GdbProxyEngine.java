@@ -74,6 +74,7 @@ public class GdbProxyEngine {
     private GdbDebugger debugger;
     private GdbProxy gdbProxy;
     private int nextToken = MIN_TOKEN;
+    private boolean active;
     
     private Logger log = Logger.getLogger("gdb.gdbproxy.logger"); // NOI18N
     
@@ -98,6 +99,7 @@ public class GdbProxyEngine {
         }
         this.debugger = debugger;
         this.gdbProxy = gdbProxy;
+        active = true;
         ProcessBuilder pb = new ProcessBuilder(debuggerCommand);
         
         getLogger().logMessage("Debugger Command: " + debuggerCommand); // NOI18N
@@ -176,20 +178,28 @@ public class GdbProxyEngine {
     }
     
     int sendCommand(String cmd, boolean consoleCommand) {
-        int token = nextToken();
-        if (consoleCommand) {
-            token += 10000;
+        if (active) {
+            int token = nextToken();
+            if (consoleCommand) {
+                token += 10000;
+            }
+            StringBuilder fullcmd = new StringBuilder(String.valueOf(token));
+            fullcmd.append(cmd);
+            fullcmd.append('\n');
+            gdbProxy.getLogger().logMessage(fullcmd.toString());
+            toGdb.print(fullcmd.toString());
+            return token;
+        } else {
+            return -1;
         }
-        StringBuilder fullcmd = new StringBuilder(String.valueOf(token));
-        fullcmd.append(cmd);
-        fullcmd.append('\n');
-        gdbProxy.getLogger().logMessage(fullcmd.toString());
-        toGdb.print(fullcmd.toString());
-        return token;
     }
     
     int sendConsoleCommand(String cmd) {
         return sendCommand(cmd, true);
+    }
+    
+    void stopSending() {
+        active = false;
     }
     
     /**

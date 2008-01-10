@@ -50,7 +50,6 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.modules.cnd.debugger.gdb.CallStackFrame;
 
 import org.netbeans.modules.cnd.debugger.gdb.InvalidExpressionException;
 import org.netbeans.modules.cnd.debugger.gdb.Field;
@@ -72,7 +71,6 @@ import org.openide.util.Utilities;
 public class AbstractVariable implements LocalVariable, Customizer {
     
     private GdbDebugger debugger;
-    private CallStackFrame csf;
     protected String name;
     protected String type;
     protected String value;
@@ -101,7 +99,9 @@ public class AbstractVariable implements LocalVariable, Customizer {
         type = getDebugger().requestWhatis(name);
         ovalue = null;
         fields = new Field[0];
-        tinfo = TypeInfo.getTypeInfo(getDebugger(), this);
+        if (type != null) {
+            tinfo = TypeInfo.getTypeInfo(getDebugger(), this);
+        }
         
         if (Utilities.getOperatingSystem() != Utilities.OS_MAC) {
             this.value = value;
@@ -111,13 +111,20 @@ public class AbstractVariable implements LocalVariable, Customizer {
         }
         
         if (GdbUtils.isSinglePointer(type)) {
-            derefValue = getDebugger().requestDerefValue(name);
+            derefValue = getDebugger().requestValue('*' + name);
         } else {
             derefValue = null;
         }
     }
         
     protected AbstractVariable() {} // used by AbstractField instantiation...
+    
+    private TypeInfo getTypeInfo() {
+        if (tinfo == null) {
+            tinfo = TypeInfo.getTypeInfo(getDebugger(), this);
+        }
+        return tinfo;
+    }
     
     /**
      * Declared type of this local.
@@ -161,7 +168,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
      */
     public void setValue(String value) {
         String msg = null;
-        String rt = tinfo.getResolvedType();
+        String rt = getTypeInfo().getResolvedType();
         int pos;
         
         if (getDebugger() != null) {
@@ -219,7 +226,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
             if (msg == null) {
                 String fullname;
                 if (this instanceof GdbWatchVariable) {
-                    fullname = ((GdbWatchVariable) this).getExpression();
+                    fullname = ((GdbWatchVariable) this).getWatch().getExpression();
                 } else {
                     if (this instanceof AbstractField) {
                         fullname = ((AbstractField) this).getFullName(false);
@@ -300,7 +307,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
      * @returns A valid value (valid in the sense gdb should accept it) or null
      */
     private String setValueEnum(String value) {
-        String rt = tinfo.getResolvedType();
+        String rt = getTypeInfo().getResolvedType();
         int pos1 = rt.indexOf('{');
         int pos2 = rt.indexOf('}');
         if (pos1 > 0 && pos2 > 0) {
@@ -338,8 +345,10 @@ public class AbstractVariable implements LocalVariable, Customizer {
     *
     * @return 0 if the variable shouldn't have a turner and fields.length if it should
     */
-    public synchronized int getFieldsCount() {
-        if (fields.length > 0) {
+    public int getFieldsCount() {
+        if (getDebugger() == null || !getDebugger().getState().equals(GdbDebugger.STATE_STOPPED)) {
+            return 0;
+        } else if (fields.length > 0) {
             return fields.length;
         } else if (mightHaveFields()) {
             return estimateFieldCount();
@@ -355,17 +364,19 @@ public class AbstractVariable implements LocalVariable, Customizer {
      * @return true if the field should have a turner and false if it shouldn't
      */
     private boolean mightHaveFields() {
-        String rt = tinfo.getResolvedType();
-        if (GdbUtils.isArray(rt)) {
-            return true;
-        } else if (isValidPointerAddress()) {
-            if (GdbUtils.isFunctionPointer(rt) || (isCharString(rt) && !GdbUtils.isMultiPointer(rt))) {
-                return false;
-            } else {
+        String rt = getTypeInfo().getResolvedType();
+        if (rt != null) {
+            if (GdbUtils.isArray(rt)) {
+                return true;
+            } else if (isValidPointerAddress()) {
+                if (GdbUtils.isFunctionPointer(rt) || (isCharString(rt) && !GdbUtils.isMultiPointer(rt))) {
+                    return false;
+                } else {
+                    return true;
+                }
+            } else if (value != null && value.charAt(0) == '{') {
                 return true;
             }
-        } else if (value.charAt(0) == '{') {
-            return true;
         }
         return false;
     }
@@ -386,31 +397,33 @@ public class AbstractVariable implements LocalVariable, Customizer {
         int pos1;
         int i;
         
-        if (value.charAt(0) == '(') {
-            pos1 = value.indexOf("*) 0x"); // NOI18N
-            if (pos1 == -1) {
-                pos1 = value.indexOf("* const) 0x"); // NOI18N
-                if (pos1 != -1) {
-                    frag = value.substring(pos1 + 11);
+        if (value != null) { // value can be null for watches during initialization...
+            if (value.length() > 0 && value.charAt(0) == '(') {
+                pos1 = value.indexOf("*) 0x"); // NOI18N
+                if (pos1 == -1) {
+                    pos1 = value.indexOf("* const) 0x"); // NOI18N
+                    if (pos1 != -1) {
+                        frag = value.substring(pos1 + 11);
+                    }
+                } else {
+                    frag = value.substring(pos1 + 5);
                 }
-            } else {
-                frag = value.substring(pos1 + 5);
-            }
-            if (pos1 != -1) {
+                if (pos1 != -1) {
+                    try {
+                        i = Integer.parseInt(frag, 16);
+                    } catch (NumberFormatException ex) {
+                        return false;
+                    }
+                    return i > 0;
+                }
+            } else if (value.startsWith("0x")) { // NOI18N
                 try {
-                    i = Integer.parseInt(frag, 16);
+                    i = Integer.parseInt(value.substring(2), 16);
                 } catch (NumberFormatException ex) {
                     return false;
                 }
                 return i > 0;
             }
-        } else if (value.startsWith("0x")) { // NOI18N
-            try {
-                i = Integer.parseInt(value.substring(2), 16);
-            } catch (NumberFormatException ex) {
-                return false;
-            }
-            return i > 0;
         }
         return false;
     }
@@ -487,18 +500,6 @@ public class AbstractVariable implements LocalVariable, Customizer {
         return debugger;
     }
     
-    private CallStackFrame getCurrentCallStackFrame() {
-        if (csf == null) {
-            if (getDebugger() != null) {
-                csf = getDebugger().getCurrentCallStackFrame();
-            }
-            if (csf == null) {
-                throw new IllegalStateException();
-            }
-        }
-        return csf;
-    }
-    
     public synchronized boolean expandChildren() {
         if (fields.length == 0) {
             createChildren();
@@ -507,7 +508,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
     }
     
     private void createChildren() {
-        String resolvedType = tinfo.getResolvedType();
+        String resolvedType = getTypeInfo().getResolvedType();
         Map<String, Object> map;
         String t;
         String v;
@@ -519,7 +520,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
                 v = null;
             } else {
                 t = GdbUtils.getBaseType(resolvedType);
-                v = getDebugger().requestDerefValue(name);
+                v = getDebugger().requestValue('*' + name);
             }
         } else {
             t = resolvedType;
@@ -530,10 +531,8 @@ public class AbstractVariable implements LocalVariable, Customizer {
                 createChildrenForArray(t, v.substring(1, v.length() - 1));
             } else if (GdbUtils.isMultiPointer(t)) {
                 createChildrenForMultiPointer(t);
-//            } else if (t.startsWith("enum ")) { // NOI18N
-//                createChildrenForEnum(t, v);
             } else {
-                map = tinfo.getMap();
+                map = getTypeInfo().getMap();
                 String val = v.substring(1, v.length() - 1);
                 int start = 0;
                 int end = GdbUtils.findNextComma(val, 0);
@@ -562,12 +561,6 @@ public class AbstractVariable implements LocalVariable, Customizer {
             addField(new AbstractField(this, name + '[' + i++ + ']', t2, v));
         }
     }
-    
-//    private void createChildrenForEnum(String t, String v) {
-//        int pos1 = t.indexOf('{');
-//        String frag = t.substring(pos1, t.length() - 1);
-//        System.err.println("Show frag: " + frag);
-//    }
     
     /**
      * Check the type. Does it resolve to a char *? If so then we don't want to
@@ -872,7 +865,11 @@ public class AbstractVariable implements LocalVariable, Customizer {
         private AbstractVariable parent;
         
         public AbstractField(AbstractVariable parent, String name, String type, String value) {
-            this.name = name;
+            if (name.startsWith("static ")) {
+                this.name = name.substring(7);
+            } else {
+                this.name = name;
+            }
             int lcurly = type.indexOf('{');
             if (lcurly == -1) {
                 this.type = type;
@@ -883,7 +880,6 @@ public class AbstractVariable implements LocalVariable, Customizer {
             this.parent = parent;
             fields = new Field[0];
             derefValue = null;
-            tinfo = TypeInfo.getTypeInfo(getDebugger(), this);
         
             if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
                 this.value = GdbUtils.mackHack(value);

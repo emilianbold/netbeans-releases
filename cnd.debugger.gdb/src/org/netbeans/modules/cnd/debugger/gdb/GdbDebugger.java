@@ -69,7 +69,6 @@ import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointEvent;
 import org.netbeans.modules.cnd.debugger.gdb.expr.Expression;
 import org.netbeans.modules.cnd.debugger.gdb.models.AbstractVariable;
-import org.netbeans.modules.cnd.debugger.gdb.models.GdbWatchVariable;
 import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbMiDefinitions;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
@@ -148,8 +147,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private double gdbVersion = 0.0;
     private boolean continueAfterFirstStop = true;
     private ArrayList<GdbVariable> localVariables = new ArrayList<GdbVariable>();
-    private Map<Integer, AbstractVariable> typeRequestMap = new HashMap<Integer, AbstractVariable>();
-    private Map<Integer, GdbWatchVariable> watchValueMap = new HashMap<Integer, GdbWatchVariable>();
     private Map<Integer, BreakpointImpl> pendingBreakpointMap = new HashMap<Integer, BreakpointImpl>();
     private Map<Integer, AbstractVariable> updateVariablesMap = new HashMap<Integer, AbstractVariable>();
     private Map<String, BreakpointImpl> breakpointList = Collections.synchronizedMap(new HashMap<String, BreakpointImpl>());
@@ -625,7 +622,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     
     /** Handle geb responses starting with '^' */
     public void resultRecord(int token, String msg) {
-        GdbWatchVariable watch;
         AbstractVariable avar;
         CommandBuffer cb;
         Integer itok = Integer.valueOf(token);
@@ -673,8 +669,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             } else if (token == ttToken) {
                 ttAnnotation.postToolTip(msg.substring(13, msg.length() - 1));
                 ttToken = 0;
-            } else if ((watch = watchValueMap.remove(itok)) != null) {
-                watch.setWatchValue(msg.substring(13, msg.length() - 1));
             } else if ((avar = updateVariablesMap.remove(itok)) != null) {
                 avar.setModifiedValue(msg.substring(13, msg.length() - 1));
             }
@@ -694,11 +688,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 cb.done();
                 cb.callback();
                 cb.dispose();
-            } else if ((avar = typeRequestMap.remove(itok)) != null) {
-                if (avar instanceof GdbWatchVariable) {
-                    watch = (GdbWatchVariable) avar;
-                    watch.setWatchType(watch.getTypeBuf());
-                }
             } else if (pendingBreakpointMap.get(itok) != null) {
                 breakpointValidation(token, null);
             }
@@ -715,17 +704,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             } else if (token == ttToken) { // invalid tooltip request
                 ttAnnotation.postToolTip('>' + msg.substring(1, msg.length() - 1) + '<');
                 ttToken = 0;
-            } else if (watchValueMap.get(itok) != null) {
-                watch = watchValueMap.remove(itok);
-                if (msg.startsWith("\"The program being debugged was signaled while in a function called from GDB.")) { // NOI18N
-                   watch.setValueToError(NbBundle.getMessage(GdbDebugger.class,
-                           "ERR_WatchedFunctionAborted")); // NOI18N
-                } else {
-                    watch.setValueToError(msg.substring(1, msg.length() - 1));
-                }
-            } else if (typeRequestMap.get(itok) != null) {
-                avar = typeRequestMap.remove(itok);
-                avar.setTypeToError(msg.substring(1, msg.length() - 1));
             } else if ((avar = updateVariablesMap.remove(itok)) != null) {
                 avar.restoreOldValue();
             } else if (msg.equals("\"Can't attach to process.\"")) { // NOI18N
@@ -1394,7 +1372,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             }
         }
         
-        pcs.firePropertyChange(PROP_CURRENT_CALL_STACK_FRAME, 0, 1);
+        if (!stack.isEmpty()) {
+            pcs.firePropertyChange(PROP_CURRENT_CALL_STACK_FRAME, 0, 1);
+        }
     }
     
     public void setCurrentThread(String tline) {
@@ -1450,24 +1430,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
     }
     
-    public String requestDerefValue(String name) {
-        assert !Thread.currentThread().getName().equals("GdbReaderRP"); // NOI18N
-        
-        if (state.equals(STATE_STOPPED)) {
-            CommandBuffer cb = new CommandBuffer(gdb.data_evaluate_expression('*' + name));
-            return cb.postAndWait();
-        } else {
-            return null;
-        }
-    }
-    
-    public void requestWatchValue(GdbWatchVariable var) {
-        if (state.equals(STATE_STOPPED) || !watchValueMap.isEmpty()) {
-            int token = evaluate(var.getName());
-            watchValueMap.put(new Integer(token), var);
-        }
-    }
-    
     public String requestWhatis(String name) {
         assert !Thread.currentThread().getName().equals("GdbReaderRP"); // NOI18N
         
@@ -1498,14 +1460,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             }
         } else {
             return null;
-        }
-    }
-    
-    public void requestWatchType(GdbWatchVariable var) {
-        if (state.equals(STATE_STOPPED) && var.getName().length() > 0) {
-            int token = gdb.whatis(var.getName());
-            var.clearTypeBuf();
-            typeRequestMap.put(new Integer(token), var);
         }
     }
     

@@ -75,7 +75,9 @@ public class VariablesTableModel implements TableModel, Constants {
     
     public Object getValueAt(Object row, String columnID) throws UnknownTypeException {
         
-        if (columnID.equals(LOCALS_TO_STRING_COLUMN_ID) || columnID.equals(WATCH_TO_STRING_COLUMN_ID)) {
+        if (debugger == null || !debugger.getState().equals(GdbDebugger.STATE_STOPPED)) {
+                return "";
+        } else if (columnID.equals(LOCALS_TO_STRING_COLUMN_ID) || columnID.equals(WATCH_TO_STRING_COLUMN_ID)) {
             if (row instanceof Variable) {
                 return ((Variable) row).getValue();
             }
@@ -104,26 +106,24 @@ public class VariablesTableModel implements TableModel, Constants {
     
     public boolean isReadOnly(Object row, String columnID) throws UnknownTypeException {
         if (row instanceof AbstractVariable) {
-            if (columnID.equals(LOCALS_TO_STRING_COLUMN_ID) ||
+            AbstractVariable var = (AbstractVariable) row;
+            if (debugger == null || !debugger.getState().equals(GdbDebugger.STATE_STOPPED)) {
+                return true;
+            } else if (columnID.equals(LOCALS_TO_STRING_COLUMN_ID) ||
                     columnID.equals(WATCH_TO_STRING_COLUMN_ID) ||
                     columnID.equals(LOCALS_TYPE_COLUMN_ID) ||
                     columnID.equals(WATCH_TYPE_COLUMN_ID)) {
                 return true;
             } else if (columnID.equals(LOCALS_VALUE_COLUMN_ID) || columnID.equals(WATCH_VALUE_COLUMN_ID)) {
-//                if (row instanceof AbstractVariable) {
-                    AbstractVariable var = (AbstractVariable) row;
-                    if (GdbUtils.isPointer(var.getType())) {
-                        return false;
-                    } else if (var.getType().length() == 0 && var.getValue().equals("...")) { // NOI18N
-                        // a truncated array...
-                        return true;
-                    } else {
-                        return var.getFieldsCount() != 0;
-                    }
-//                } else {
-//                    return true;
-//                }
+                if (GdbUtils.isPointer(var.getType())) {
+                    return false;
+                } else if (var.getType().length() == 0 && var.getValue().equals("...")) { // NOI18N
+                    // a truncated array...
+                    return true;
+                } else {
+                    return var.getFieldsCount() != 0;
                 }
+            }
         } else if (row.toString().startsWith("No current thread")) { // NOI18N
             return true;
         }
@@ -131,7 +131,10 @@ public class VariablesTableModel implements TableModel, Constants {
     }
     
     public void setValueAt(Object row, String columnID, Object value) throws UnknownTypeException {
-        if (row instanceof LocalVariable) {
+        
+        if (debugger == null || !debugger.getState().equals(GdbDebugger.STATE_STOPPED)) {
+            return;
+        } else if (row instanceof LocalVariable) {
             if (columnID.equals(LOCALS_VALUE_COLUMN_ID) || columnID.equals(WATCH_VALUE_COLUMN_ID)) {
                 if (row instanceof GdbWatchVariable) {
                     ((GdbWatchVariable) row).setValueAt((String) value);

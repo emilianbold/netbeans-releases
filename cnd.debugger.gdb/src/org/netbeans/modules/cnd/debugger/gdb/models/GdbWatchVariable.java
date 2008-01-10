@@ -45,7 +45,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.modules.cnd.debugger.gdb.Field;
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
+import org.openide.util.RequestProcessor;
 
 /**
  * The variable type used in Gdb watches.
@@ -69,20 +69,17 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
     
     private Watch watch;
     private WatchesTreeModel model;
-    private StringBuilder typeBuf = new StringBuilder();
-    private Object LOCK = new Object();
     
     /** Creates a new instance of GdbWatchVariable */
     public GdbWatchVariable(WatchesTreeModel model, Watch watch) {
         super(watch.getExpression());
         this.model = model;
         this.watch = watch;
+        value = getDebugger().requestValue(watch.getExpression());
         
         if (getDebugger() != null) {
             getDebugger().addPropertyChangeListener(this);
         }
-        setType(null);
-        setValue(null);
         watch.addPropertyChangeListener(this);
     }
     
@@ -95,99 +92,41 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
         getDebugger().removePropertyChangeListener(this);
     }
     
-    public void clearTypeBuf() {
-        typeBuf.delete(0, typeBuf.length());
-    }
-    
-    public void appendTypeBuf(String tline) {
-        typeBuf.append(tline);
-    }
-    
-    public String getTypeBuf() {
-        return typeBuf.toString();
-    }
-    
     public void propertyChange(PropertyChangeEvent ev) {
-        if (ev.getPropertyName().equals(GdbDebugger.PROP_STATE) &&
-                ev.getNewValue().equals(GdbDebugger.STATE_STOPPED)) {
-            setType(null);
-            setValue(null);
-        } else if (ev.getPropertyName().equals(Watch.PROP_EXPRESSION)) {
-            setType(null);
-            setValue(null);
+        
+        if (Thread.currentThread().getName().equals("GdbReaderRP")) { // NOI18N
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    type = getDebugger().requestWhatis(watch.getExpression());
+                    value = getDebugger().requestValue(watch.getExpression());
+                }
+            });
+        } else {
+            type = getDebugger().requestWhatis(watch.getExpression());
+            value = getDebugger().requestValue(watch.getExpression());
         }
     }
     
+    /**
+     * This method must be overriden because the expression can be changed and then the name
+     * the var was created with changes. There is a startup race when getName() gets called
+     * before watch has been set. Its OK, because AbstractVariable.name is initially set from
+     * watch.getExpression() so all is well.
+     * @return
+     */
     @Override
     public String getName() {
-        return watch.getExpression();
-    }
-    
-    @Override
-    public String getType() {
-        if (type == null || type.length() == 0) {
-            log.fine("GWV.getType[" + Thread.currentThread().getName() +
-                    "]: Requesting type for \"" + // NOI18N
-                    getFullName(false) + "\" from GdbDebugger"); // NOI18N
-            requestWatchType();
-            log.fine("GWV.getType[" + Thread.currentThread().getName() + "]: Got type"); // NOI18N
-        }
-        else {
-            log.fine("GWV.getType[" + Thread.currentThread().getName() + "]: Using existing type"); // NOI18N
-        }
-        return type;
-    }
-    
-    @Override
-    public void setType(String type) {
-        if (type == null) {
-            this.type = "";
-            this.value = "";
+        if (watch != null) {
+            return watch.getExpression();
         } else {
-            this.type = type;
-        }
-    }
-    
-//    public void setTypeToError(String msg) {
-//        msg = msg.replace("\\\"", "\""); // NOI18N
-//        if (msg.charAt(msg.length() - 1) == '.') {
-//            msg = msg.substring(0, msg.length() - 1);
-//        }
-//        setType('>' + msg + '<');
-//        log.fine("GWV.setTypeToError[" + Thread.currentThread().getName() + "]: " + getName()); // NOI18N
-//    }
-    
-    private void requestWatchType() {
-        synchronized (LOCK) {
-                try {
-                    getDebugger().requestWatchType(this);
-                    LOCK.wait(200);
-                } catch (InterruptedException ex) {
-                }
-        }
-    }
-    
-    public void setWatchType(String type) {
-        synchronized (LOCK) {
-            this.type = type; // don't use setType, it causes an infinite loop
-            log.fine("GWV.setWatchType[" + Thread.currentThread().getName() + // NOI18N
-                    "]: Setting \"" + getName() + "\" to \"" + type + "\""); // NOI18N
-            LOCK.notifyAll();
+            return super.getName(); // this happens during initialization when name is s
         }
     }
     
     @Override
     public String getValue() {
-        if (value == null || value.length() == 0) {
-            log.fine("GWV.getValue[" + Thread.currentThread().getName() +
-                    "]: Requesting value for \"" + // NOI18N
-                    getFullName(false) + "\" from GdbDebugger"); // NOI18N
-            requestWatchValue();
-            log.fine("GWV.getValue[" + Thread.currentThread().getName() + "]: Got value"); // NOI18N
-        }
-        else {
-            log.fine("GWV.getValue[" + Thread.currentThread().getName() + // NOI18N
-                    "]: Using existing value"); // NOI18N
+        if (value == null) {
+            value = getDebugger().requestValue(watch.getExpression());
         }
         return value;
     }
@@ -214,66 +153,5 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
         log.fine("GWV.setValueToError[" + Thread.currentThread().getName() + "]: " + getName()); // NOI18N
         fields = new Field[0];
         derefValue = null;
-    }
-    
-    private void requestWatchValue() {
-        synchronized (LOCK) {
-                try {
-                    getDebugger().requestWatchValue(this);
-                    LOCK.wait(200);
-                } catch (InterruptedException ex) {
-                }
-        }
-    }
-    
-    public void setWatchValue(String value) {
-        synchronized (LOCK) {
-            this.value = value;
-            log.fine("GWV.setWatchValue[" + Thread.currentThread().getName() + // NOI18N
-                    "]: Setting \"" + getName() + "\" to \"" + value + "\""); // NOI18N
-            LOCK.notifyAll();
-            fields = new Field[0];
-            derefValue = null;
-            expandChildren();
-        }
-    }
-    
-//    private boolean expressionIsSimpleVariable() {
-//        String expression = watch.getExpression();
-//        
-//        if (expression.length() > 0) {
-//            char ch = expression.charAt(0);
-//            if (Character.isLetter(ch) || ch == '_') {
-//                for (int i = 1; i < expression.length(); i++) {
-//                    ch = expression.charAt(i);
-//                    if (!Character.isLetterOrDigit(ch) && ch != '_') {
-//                        return false;
-//                    }
-//                }
-//                return true;
-//            }
-//        }
-//        return false;
-//    }
-//    
-//    private GdbVariable findSimpleVariable() {
-//        String expression = watch.getExpression();
-//        
-//        for (GdbVariable var : getDebugger().getLocalVariables()) {
-//            if (expression.equals(var.getName())) {
-//                return var;
-//            }
-//        }
-//        return null;
-//    }
-    
-    public String getExpression() {
-        return watch.getExpression();
-    }
-    
-    public void setExpression(String expression) {
-        if (expression != null && expression.trim().length() > 0) {
-            watch.setExpression(expression);
-        }
     }
 }
