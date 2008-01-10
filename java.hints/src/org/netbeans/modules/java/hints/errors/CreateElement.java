@@ -352,7 +352,8 @@ public final class CreateElement implements ErrorRule<Void> {
         }
 
         if (fixTypes.contains(ElementKind.FIELD) && isTargetWritable(target, info)) { //IZ 111048 -- don't offer anything if target file isn't writable
-	    if(e.getEnclosingElement().getKind() == ElementKind.ANNOTATION_TYPE) {
+            Element enclosingElement = e.getEnclosingElement();
+	    if(enclosingElement != null && enclosingElement.getKind() == ElementKind.ANNOTATION_TYPE) {
 		result.add(new CreateMethodFix(info, simpleName, modifiers, target, type, types, Collections.<String>emptyList()));
 		return result;
 	    }	
