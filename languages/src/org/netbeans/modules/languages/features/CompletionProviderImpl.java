@@ -295,6 +295,9 @@ public class CompletionProviderImpl implements CompletionProvider {
                 String completionType = (String) feature.getValue ("type");
                 if (completionType != null) return completionType;
             }
+            if (tokenType == null) {
+                return COMPLETION_COMPLETE;
+            }
             if (tokenType.indexOf ("whitespace") >= 0 ||
                 tokenType.indexOf ("operator") >= 0 || 
                 tokenType.indexOf ("separator") >= 0
