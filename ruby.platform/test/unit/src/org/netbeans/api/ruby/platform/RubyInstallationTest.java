@@ -55,11 +55,6 @@ public class RubyInstallationTest extends RubyTestBase {
         super(testName);
     }
 
-    protected @Override void setUp() throws Exception {
-        super.setUp();
-        clearWorkDir();
-    }
-
     public void testCompareGemVersions() {
         assertTrue(GemManager.compareGemVersions("1.0.0", "0.9.9") > 0);
         assertTrue(GemManager.compareGemVersions("0.4.0", "0.3.0") > 0);

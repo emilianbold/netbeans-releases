@@ -51,7 +51,6 @@ public final class RubyPlatformManagerTest extends RubyTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        clearWorkDir();
         RubyPlatformManager.resetPlatforms();
     }
 
@@ -75,8 +74,9 @@ public final class RubyPlatformManagerTest extends RubyTestBase {
     public void testAddPlatform() throws Exception {
         assertEquals("bundle JRuby", 1, RubyPlatformManager.getPlatforms().size());
         RubyPlatform ruby = RubyPlatformManager.addPlatform(setUpRuby());
-        assertEquals("right ruby home", getWorkDir(), ruby.getHome());
-        assertEquals("right ruby lib", new File(getWorkDir(), "lib/ruby/1.8").getAbsolutePath(), ruby.getLibDir());
+        File defaultRubyHome = getTestRubyHome();
+        assertEquals("right ruby home", defaultRubyHome, ruby.getHome());
+        assertEquals("right ruby lib", new File(defaultRubyHome, "lib/ruby/1.8").getAbsolutePath(), ruby.getLibDir());
         assertEquals("two platforms", 2, RubyPlatformManager.getPlatforms().size());
         RubyPlatformManager.removePlatform(ruby);
         assertEquals("platform removed", 1, RubyPlatformManager.getPlatforms().size());

@@ -73,7 +73,7 @@ public class GemManagerTest extends RubyTestBase {
     public void testGetGem() throws Exception {
         RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());
         GemManager gemManager = platform.getGemManager();
-        assertEquals("righ gem dir", new File(new File(getWorkDir(), "bin"), "gem").getAbsolutePath(), gemManager.getGemTool());
+        assertEquals("righ gem dir", new File(new File(getTestRubyHome(), "bin"), "gem").getAbsolutePath(), gemManager.getGemTool());
     }
     
     public void testGemFetching() {

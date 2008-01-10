@@ -48,6 +48,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 
 public abstract class RubyTestBase extends NbTestCase {
+    
+    private FileObject testRubyHome;
 
     public RubyTestBase(final String name) {
         super(name);
@@ -55,11 +57,16 @@ public abstract class RubyTestBase extends NbTestCase {
 
     protected @Override void setUp() throws Exception {
         super.setUp();
+        clearWorkDir();
         MockServices.setServices(IFL.class);
         TestUtil.getXTestJRubyHome();
         System.setProperty("netbeans.user", getWorkDirPath());
     }
 
+    public File getTestRubyHome() {
+        return FileUtil.toFile(testRubyHome);
+    }
+    
     public static final class IFL extends InstalledFileLocator {
         public IFL() {}
         public @Override File locate(String relativePath, String codeNameBase, boolean localized) {
@@ -111,34 +118,27 @@ public abstract class RubyTestBase extends NbTestCase {
         // side effect to ensure that the GEM_HOME check isn't run
         GemManager.TEST_GEM_HOME = "invalid"; // non null but also invalid dir, will bypass $GEM_HOME lookup
         
-        File home = getWorkDir();
-
         // Build a fake ruby structure
-        File rubyLib = new File(new File(new File(home, "lib"), "ruby"), "1.8");
-        rubyLib.mkdirs();
-        File bin = new File(home, "bin");
-        bin.mkdirs();
-        File ruby = touch(bin, "ruby" + suffix);
+        testRubyHome = FileUtil.createFolder(FileUtil.toFileObject(getWorkDir()), "test_ruby");
+        
+        FileObject bin = testRubyHome.createFolder("bin");
+        FileObject libRuby = FileUtil.createFolder(testRubyHome, "lib/ruby");
+        libRuby.createFolder(RubyPlatform.DEFAULT_RUBY_RELEASE);
+        FileObject interpreter = bin.createData("ruby" + suffix);
         String[] binaries = { "rdoc", "gem" };
         for (String binary : binaries) {
-            touch(bin, binary + suffix);
+            bin.createData(binary + suffix);
         }
 
         if (withGems) {
             // Build a fake rubygems repository
-            File gems = new File(rubyLib, "gems");
-            String version = "1.8";
-            File ruby18Libs = new File(rubyLib, version);
-            ruby18Libs.mkdirs();
-            File gemLibs = new File(gems, version + File.separator + "gems");
-            gemLibs.mkdirs();
-            File specs = new File(gems, version + File.separator + "specifications");
-            specs.mkdirs();
-            File gembin = new File(gems, version + File.separator + "bin");
-            gembin.mkdirs();
+            FileObject gemsVer = FileUtil.createFolder(libRuby, "gems/" + RubyPlatform.DEFAULT_RUBY_RELEASE);
+            gemsVer.createFolder("gems");
+            gemsVer.createFolder("specifications");
+            gemsVer.createFolder("bin");
         }
-        RubyPlatformManager.TEST_RUBY = ruby;
-        return ruby;
+        RubyPlatformManager.TEST_RUBY = FileUtil.toFile(interpreter);
+        return RubyPlatformManager.TEST_RUBY;
     }
 
     protected FileObject getTestFile(String relFilePath) {
