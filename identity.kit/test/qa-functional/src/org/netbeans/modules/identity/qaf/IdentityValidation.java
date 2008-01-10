@@ -114,7 +114,7 @@ public class IdentityValidation extends WsValidation {
         suite.addTest(new IdentityValidation("addSDKGlassfish")); //NOI18N
         suite.addTest(new IdentityValidation("prepareWSProject")); //NOI18N
         suite.addTest(new IdentityValidation("prepareWSClientProject")); //NOI18N
-        suite.addTest(new IdentityValidation("startSDKGlassfish")); //NOI18N
+//        suite.addTest(new IdentityValidation("startSDKGlassfish")); //NOI18N
         suite.addTest(new IdentityValidation("checkAMProfiles")); //NOI18N
         suite.addTest(new IdentityValidation("testAMSecurityInWeb")); //NOI18N
         suite.addTest(new IdentityValidation("testAMSecurityInEJB")); //NOI18N
@@ -164,8 +164,8 @@ public class IdentityValidation extends WsValidation {
         SERVER_PATH = "/space/SDK"; //NOI18N
         String osType = System.getProperty("os.name"); //NOI18N
         if (osType.contains("Windows")) { //NOI18N
-//            serverPath = "E:\\Space\\Sun\\SDK";
-            SERVER_PATH = "C:\\Sun\\SDK";      //NOI18N For testing purpose only
+            SERVER_PATH = "E:\\Space\\Sun\\SDK";
+//            SERVER_PATH = "C:\\Sun\\SDK";      //NOI18N For testing purpose only
         }
         String actionName = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.actions.Bundle", "LBL_Add_Server_Instance"); //NOI18N
         RuntimeTabOperator runtime = new RuntimeTabOperator();
