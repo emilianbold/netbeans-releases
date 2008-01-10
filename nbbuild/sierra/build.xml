@@ -276,7 +276,6 @@
             <buildpath location="${enterprise}/libs/jgo/build.xml"/>
             <buildpath location="${enterprise}/libs/wsdl4j/build.xml"/>
             <buildpath location="${enterprise}/libs/xmlbeans/build.xml"/>
-            <buildpath location="${enterprise}/libs/xmlunit/build.xml"/>
         </subant>
     </target>
     

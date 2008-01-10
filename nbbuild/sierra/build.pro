@@ -52,10 +52,7 @@
 
     <property name="modules.cvs.root" value=":pserver:${env.NB_USER}@cvs.netbeans.org:/cvs"/>
     <property name="modules.cvs.branch" value="-A"/>
-    <property name="modules.cvs.modules" value="
-        enterprise
-        print
-    "/>
+    <property name="modules.cvs.modules" value="enterprise print"/>
 
     <property name="sources.cvs.root" value=":pserver:${env.NB_USER}@cvs.netbeans.org:/cvs"/>
     <property name="sources.cvs.branch" value="-A"/>
@@ -100,6 +97,7 @@
         ${test.cvs.path}/ScopeTermination
         ${test.cvs.path}/xslt
     "/>
+
     <property name="home" value="../.."/>
     <property name="cache" value="${home}/.cache"/>
     <property name="dist" value="${cache}/dist"/>
