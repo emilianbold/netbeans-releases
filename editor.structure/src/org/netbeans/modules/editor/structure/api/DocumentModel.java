@@ -660,22 +660,28 @@ public final class DocumentModel {
     }
     
     DocumentElement getParent(DocumentElement de) {
+        int index = elements.indexof(de);
+        if(index < 0) {
+            //the element is not in the list
+            throw new IllegalArgumentException("getParent() called for " + de + " which is not in the elements list!");
+        } else {
+            return getParent(index, de.getStartOffset(), de.getEndOffset());
+        }
+    }
+    
+    private DocumentElement getParent(int index, int de_so, int de_eo) {
+        if (index < 0) {
+            throw new IllegalArgumentException("index must be positive!");
+        }
+        if (index == 0) {
+            //root element has no parent
+            return null;
+        }
         readLock();
         checkDocumentDirty();
         try {
-            int index = elements.indexof(de);
-            if(index < 0) {
-                //the element is not in the list
-                throw new IllegalArgumentException("getParent() called for " + de + " which is not in the elements list!");
-            }
-            if(index == 0) {
-                //root element has no parent
-                return null;
-            }
             //get all elements with startOffset <= de.getStartOffset()
             //scan the elements in reversed order
-            int de_so = de.getStartOffset();
-            int de_eo = de.getEndOffset();
             for(int i = index - 1; i >= 0; i--) {
                 DocumentElement el = elements.get(i);
                 //test whether the element is empty - if so, get next one etc...
@@ -1060,6 +1066,11 @@ public final class DocumentModel {
             //I need to get the parent before removing from the list!
             DocumentElement parent = null;
             
+            int index = elements.indexof(de);
+            if(index <= 0) {
+                return false; //element not found or root element (cannot be removed)
+            }
+            
             //empty element parent optimalization
             //when a bigger part of a document is deleted then a number of 
             //elements gets to the same start and end offsets, in such
@@ -1075,17 +1086,12 @@ public final class DocumentModel {
             }
 
             if(parent == null) {
-                parent = getParent(de);
+                parent = getParent(index, de_so, de_eo);
                 //cache the parent if empty element
                 if(empty) {
                     last_empty_element_start_offset = de_so;
                     last_parent = parent;
                 }
-            }
-            
-            int index = elements.indexof(de);
-            if(index <= 0) {
-                return false; //element not found or root element (cannot be removed)
             }
             
             //get children of the element to be removed
