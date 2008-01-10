@@ -90,28 +90,22 @@ public class InfoCollector {
     List<File> goodFileList = new ArrayList<File>();
     
     File root = null;
+    
+    DocumentTypesEnum docType;
+    
     /** Creates a new instance of InfoCollector */
-    public InfoCollector(File root) {
+    public InfoCollector(File root, DocumentTypesEnum type) {
         this.root = root;
+        this.docType=type;
         goCollect();
     }
     
     public void goCollect(){
-        //get all xsd files starting from root dir
-        List<File> xsdFiles = Utilities.getFilesWithExtension(root, DocumentTypesEnum.schema.toString(), null);
-        //for each schema gather all external refs
-        Map<File,List<String>> xsdFile2Refs = getAllExternalRefs(xsdFiles, DocumentTypesEnum.schema);
-        
-        //get all wsdl files starting from root dir
-        List<File> wsdlFiles = Utilities.getFilesWithExtension(root, DocumentTypesEnum.wsdl.toString(), null);
-        //for each wsdl gather all external refs
-        Map<File,List<String>> wsdlFile2Refs = getAllExternalRefs(wsdlFiles, DocumentTypesEnum.wsdl);
-        
-        //merg 2 results
-        Map<File,List<String>> file2Refs = new HashMap<File,List<String>>();
-        file2Refs.putAll(xsdFile2Refs);
-        file2Refs.putAll(wsdlFile2Refs);
-        
+        //get all files starting from root dir
+        List<File> files = Utilities.getFilesWithExtension(root, docType.toString(), null);
+        //for each schema/wsdl gather all external refs
+        Map<File,List<String>> file2Refs = getAllExternalRefs(files, docType);
+                
         //analyse the result and retain
         analyzeResult(file2Refs);
         makeGoodFileList();

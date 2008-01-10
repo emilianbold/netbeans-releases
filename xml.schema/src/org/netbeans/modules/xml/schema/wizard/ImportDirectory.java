@@ -79,6 +79,8 @@ public final class ImportDirectory implements Runnable{
     
     private boolean overWriteFiles = false;
     
+    private DocumentTypesEnum docType;
+    
     InfoCollector infoCollector = null;
     
     private void initOPTab(){
@@ -94,14 +96,16 @@ public final class ImportDirectory implements Runnable{
     
     /** Creates a new instance of ImportDirectory */
     public ImportDirectory(File importRoot, File toDir) {
-        this(importRoot, toDir, false);
+        //default to schema
+        this(importRoot, toDir, false, DocumentTypesEnum.schema);
     }
     
     /** Creates a new instance of ImportDirectory */
-    public ImportDirectory(File importRoot, File toDir, boolean overWriteFiles) {
+    public ImportDirectory(File importRoot, File toDir, boolean overWriteFiles, DocumentTypesEnum type) {
         this.importRoot = importRoot;
         this.toDir = toDir;
         this.overWriteFiles = overWriteFiles;
+        this.docType = type;
         initOPTab();
         start();
     }
@@ -122,7 +126,7 @@ public final class ImportDirectory implements Runnable{
         ph.start();
         ph.switchToIndeterminate();
         try{
-            infoCollector = new InfoCollector(importRoot);
+            infoCollector = new InfoCollector(importRoot, docType);
             if(infoCollector.hasReports()){
                 if(infoCollector.hasErrors()){
                     //show error and exit

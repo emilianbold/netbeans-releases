@@ -78,6 +78,9 @@ public final class RetrieveXMLResourceWizardIterator implements TemplateWizard.I
     private WizardDescriptor wizard;
     private WizardDescriptor.Panel[] panels;
     
+    private String schemaFileType = "retrieveSchemaResource";
+    private String wsdlFileType = "retrieveWSDLResource";
+    
     /**
      * Initialize panels representing individual wizard's steps and sets
      * various properties for them influencing wizard appearance.
@@ -135,7 +138,11 @@ public final class RetrieveXMLResourceWizardIterator implements TemplateWizard.I
         }
         File storedFile = (File) wizard.getProperty(IConstants.TARGET_FILE_KEY);
         boolean overwriteFiles = ((Boolean)wizard.getProperty(IConstants.OVERWRITE_FILES)).booleanValue();
-        new ImportDirectory(new File(getFileURI), storedFile, overwriteFiles);
+        //for which new file type, was the wizard invoked??
+        if (((TemplateWizard) wizard).getTemplate().getName().equals(schemaFileType) )
+            new ImportDirectory(new File(getFileURI), storedFile, overwriteFiles, DocumentTypesEnum.schema);
+        else 
+            new ImportDirectory(new File(getFileURI), storedFile, overwriteFiles, DocumentTypesEnum.wsdl);
         if (storedFile == null) {
             // Doesn't matter what it is, just so it's not null.
             storedFile = new File(System.getProperty("user.dir"));
