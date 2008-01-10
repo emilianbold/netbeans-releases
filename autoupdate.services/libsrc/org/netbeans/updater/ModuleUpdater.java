@@ -46,6 +46,8 @@ import java.util.*;
 import java.util.jar.*;
 
 //import org.openide.util.NbBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 
 /** Class used by autoupdate module for the work with module files and
@@ -305,7 +307,10 @@ public final class ModuleUpdater extends Thread {
             }
             allTrackings.add (tracking);
 
+            int installedNBMs = 0;
             for (File nbm : getFilesForInstallInCluster (cluster)) {
+                installedNBMs++;
+                
                 UpdateTracking.Version version;
                 UpdateTracking.Module modtrack;
                 
@@ -422,6 +427,16 @@ public final class ModuleUpdater extends Thread {
                 if (! mu.isL10n ()) {
                     modtrack.write ();
                     modtrack.writeConfigModuleXMLIfMissing ();
+                }
+            }
+            
+            if (installedNBMs > 0) {
+                try {
+                    File stamp = new File(cluster, ".lastModified"); // NOI18N
+                    stamp.createNewFile();
+                    stamp.setLastModified(System.currentTimeMillis());
+                } catch (IOException ex) {
+                    ex.printStackTrace();
                 }
             }
         }

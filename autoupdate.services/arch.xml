@@ -1248,9 +1248,13 @@ made subject to such option by the copyright holder.
     </question>
     -->
     <answer id="resources-file">
-        <p>
-            XXX no answer for resources-file
-        </p>
+        <api category="devel" group="java.io.File" name=".lastModified" type="import">
+            <p>
+            Whenever updater touches a cluster, it creates <code>.lastModified</code>
+            file in it and sets its timestamp to current time millis. This is 
+            an information for module system, so it knows to reset its caches.
+            </p>
+        </api>
     </answer>
     
     

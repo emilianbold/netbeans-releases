@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.autoupdate.services;
 
+import java.io.File;
 import org.netbeans.api.autoupdate.UpdateUnit;
 
 /**
@@ -57,8 +58,18 @@ public class InstallTest extends OperationsTestImpl {
     } 
     
     public void testSelf() throws Exception {
+        long now = System.currentTimeMillis();
+        Thread.sleep(100);
+        
         UpdateUnit toInstall = UpdateManagerImpl.getInstance().getUpdateUnit(moduleCodeNameBaseForTest());
         installModule(toInstall, null);
+        
+        File pf = getWorkDir();
+        File lastModified = new File(pf, ".lastModified");
+        assertTrue("Check mark created", lastModified.exists());
+        if (now >= lastModified.lastModified()) {
+            fail("The file shall have newer timestamp: " + lastModified.lastModified());
+        }
     }
     
 }
