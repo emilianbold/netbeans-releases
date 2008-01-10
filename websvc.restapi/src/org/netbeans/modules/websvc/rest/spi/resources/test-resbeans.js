@@ -59,7 +59,8 @@ function TestSupport() {
     this.currentXmlHttpReq = '';
     this.tcStr = '';
     this.prettyContent = '';
-    this.colSize = "100";
+    this.colSize = "58";
+    this.allcat = [];
     
     this.expand = new Image();
     this.expand.src = "expand.gif";
@@ -71,10 +72,10 @@ function TestSupport() {
     this.cg.src = "cg.gif";
 
     this.viewIds = [
-        { "id" : "table" , "value":"MSG_TEST_RESBEANS_TabularView"}, 
-        { "id" : "raw" , "value":"MSG_TEST_RESBEANS_RawView"}, 
-        { "id" : "header" , "value":"MSG_TEST_RESBEANS_Headers"},
-        { "id" : "monitor" , "value":"MSG_TEST_RESBEANS_Monitor"}];
+        { "id" : "table" , "name":"MSG_TEST_RESBEANS_TabularView", "type":"tableContent"}, 
+        { "id" : "raw" , "name":"MSG_TEST_RESBEANS_RawView", "type":"rawContent"}, 
+        { "id" : "header" , "name":"MSG_TEST_RESBEANS_Headers", "type":"headerInfo"},
+        { "id" : "monitor" , "name":"MSG_TEST_RESBEANS_Monitor", "type":"monitorContent"}];
     
     this.xhr = new XHR();
     this.wdr = new WADLParser();
@@ -162,13 +163,45 @@ TestSupport.prototype = {
     doShowContent : function (uri) {
         var r = this.wdr.findResource(uri);
         if(r != null) {
-            var app1 = this.wadlDoc.documentElement;
-            var rs = app1.getElementsByTagName('resources')[0];        
+            var app1 = this.wadlDoc.documentElement;     
             this.currentResource = r;
             this.doShowStaticResource(uri, r);
         } else {
             this.currentResource = null;
             this.doShowDynamicResource(uri, this.wdr.getDefaultMethod(), this.wdr.getDefaultMime());
+        }
+    },
+
+    doShowContentForId : function (ndx) {
+        var cat = ts.allcat[ndx];
+        var r = cat.r;
+        var uri = cat.uri;
+        var aUri = uri;
+        var ndx = aUri.indexOf('{');
+        if(ndx > -1) {
+            aUri = aUri.substring(0, ndx) + 'H' + aUri.substring(aUri.indexOf('}', ndx)+1);
+        }
+        //var c = this.xhr.get(aUri, 'application/vnd.sun.wadl+xml');
+        if(r != null && !ts.wdr.isTemplateResource(r)) {
+            var app1 = this.wadlDoc.documentElement;     
+            this.currentResource = r;
+            this.doShowStaticResource(uri, r);
+        } else {
+            this.currentResource = null;
+            this.doShowDynamicResource(uri, this.wdr.getDefaultMethod(), this.wdr.getDefaultMime());
+        }
+    },
+    
+    getPath : function (n, pathVal) {
+        if(n.parentNode == null || n.attributes.getNamedItem('path') == null)
+            return pathVal.replace(/\/\//g,"\/");
+        else {
+            var path = n.attributes.getNamedItem('path');
+            var pathElem = path.nodeValue;
+            pathElem = pathElem.replace(/\/\//g,"\/");
+            pathElem = ts.wdr.trimSeperator(pathElem);
+            pathElem = ts.wdr.prependSeperator(pathElem);
+            return this.getPath(n.parentNode, pathElem+'/'+pathVal);
         }
     },
     
@@ -201,10 +234,23 @@ TestSupport.prototype = {
         str += "<br/><br/>";
         str += this.getFormRep(null, uri, mName, mediaType);
         document.getElementById('testres').innerHTML = str;
+        var paramRep = "";
+        var req = this.getDisplayUri(uri);
+        var paths = req.split('/');
+        for(var i=0;i<paths.length;i++) {
+            var path = paths[i];
+            if(path.indexOf('{') > -1) {
+                var pname = path.substring(1, path.length-1);
+                paramRep += "<span class=bld>"+pname+":</span>"+"<input id='tparams' name='"+pname+"' type='text' value=''><br><br>";
+            }
+        }
+        if(paramRep != "") {
+            document.getElementById("paramHook").innerHTML = paramRep;
+        }
         var req = uri;
         var disp = this.getDisplayUri(req);
         var uriLink = "<a id='"+req+"' href=javascript:ts.doShowContent('"+req+"') >"+this.getDisplayURL(disp, 80)+"</a>";
-        this.updatepage('request', '<span class=bld>Resource:</span> '+uriLink+' <br/>(<a href="'+req+'" target="_blank"><span class=font10>'+this.getDisplayURL(req, 90)+'</span></a>)<hr>');
+        this.updatepage('request', '<span class=bld>Resource:</span> '+uriLink+' <br/>(<a href="'+req+'" target="_blank"><span>'+this.getDisplayURL(req, 90)+'</span></a>)<hr>');
     },
     
     doShowStaticResource : function (uri, r) {
@@ -229,7 +275,7 @@ TestSupport.prototype = {
         var req = uri;
         var disp = this.getDisplayUri(req);
         var uriLink = "<a id='"+req+"' href=javascript:ts.doShowContent('"+req+"') >"+this.getDisplayURL(disp, 80)+"</a>";
-        this.updatepage('request', '<span class=bld>Resource:</span> '+uriLink+' <br/>(<a href="'+req+'" target="_blank"><span class=font10>'+this.getDisplayURL(req, 90)+'</span></a>)<hr>');
+        this.updatepage('request', '<span class=bld>Resource:</span> '+uriLink+' <br/>(<a href="'+req+'" target="_blank"><span>'+this.getDisplayURL(req, 90)+'</span></a>)<hr>');
     },
     
     getFormRep : function (req, uri, mName, mediaType) {
@@ -244,7 +290,7 @@ TestSupport.prototype = {
         str += "<input name='path' value='"+uri+"' type='hidden'>";
         str += "<input id='methodName' name='methodName' value='"+mName+"' type='hidden'>";
         str += "<input id='mimeType' name='mimeType' value='"+mediaType+"' type='hidden'>";
-        str += "<br/><input value='MSG_TEST_RESBEANS_TestButton' type='button' onclick='ts.testResource()'>";
+        str += "<br/><input class='button' value='MSG_TEST_RESBEANS_TestButton' type='button' onclick='ts.testResource()'>";
         str += "</form>";
         str += "</div>";
         return str;
@@ -252,9 +298,9 @@ TestSupport.prototype = {
     
     addParam : function () {
         var str = "<span class=bld>MSG_TEST_RESBEANS_NewParamName:&nbsp;</span>"+
-            "<input id='newParamNames' name='param"+paramNumber+"' type='text' value='param"+paramNumber+"' size='25'>"+
+            "<input id='newParamNames' name='param"+paramNumber+"' type='text' value='param"+paramNumber+"' size='15'>"+
             "&nbsp;&nbsp;&nbsp;<span class=bld>MSG_TEST_RESBEANS_NewParamValue:&nbsp;</span>"+
-            "<input id='newParamValues' name='value"+paramNumber+"' type='text' value='value"+paramNumber+"' size='25'>"+"<br>";
+            "<input id='newParamValues' name='value"+paramNumber+"' type='text' value='value"+paramNumber+"' size='15'>"+"<br>";
         var prevParam = document.getElementById("paramHook").innerHTML;
         document.getElementById("paramHook").innerHTML = prevParam + "<br>" + str;
         this.saveFormInput('form1', 'resttest-');
@@ -506,8 +552,9 @@ TestSupport.prototype = {
     },
     
     createIFrameForUrl : function (url) {
-        var c = '<iframe id="iFrame_" src="'+url+'" class="frame" width="600" height="400" align="left">'+
-            '<p>See <a href="'+url+'">"'+url+'"</a>.</p>'+
+        var c = 
+            '<iframe id="iFrame_" src="'+url+'" class="frame" width="475" height="200" align="left">'+
+                '<p>See <a href="'+url+'">"'+url+'"</a>.</p>'+
             '</iframe>';
         return c;
     },
@@ -542,50 +589,17 @@ TestSupport.prototype = {
     },
     
     showViews : function (name) {
-        var tableNode = document.getElementById('tableContent').style;
-        var rawNode = document.getElementById('rawContent').style;
-        var headerNode = document.getElementById('headerInfo').style;
-        var monitorNode = document.getElementById('monitorContent').style;
-        var tabs1 = document.getElementById('table').style;
-        var tabs2 = document.getElementById('raw').style;
-        var tabs3 = document.getElementById('header').style;
-        var tabs4 = document.getElementById('monitor').style;
-        if(name == 'table') {
-            tableNode.display="block";
-            rawNode.display="none";
-            headerNode.display="none";
-            monitorNode.display="none";
-            tabs1.display="block";
-            tabs2.display="none";
-            tabs3.display="none";
-            tabs4.display="none";
-        } else if(name == 'raw') {
-            tableNode.display="none";
-            rawNode.display="block";
-            headerNode.display="none";
-            monitorNode.display="none";
-            tabs2.display="block";
-            tabs3.display="none";
-            tabs4.display="none";
-            tabs1.display="none";
-        } else if(name == 'header') {
-            tableNode.display="none";
-            rawNode.display="none";
-            headerNode.display="block";
-            monitorNode.display="none";
-            tabs3.display="block";
-            tabs4.display="none";
-            tabs1.display="none";
-            tabs2.display="none";
-        } else if(name == 'monitor') {
-            tableNode.display="none";
-            rawNode.display="none";
-            headerNode.display="none";
-            monitorNode.display="block";
-            tabs4.display="block";
-            tabs1.display="none";
-            tabs2.display="none";
-            tabs3.display="none";
+        for(var i in this.viewIds) {
+            var vid = this.viewIds[i]['id'];
+            var tab = document.getElementById('tab'+vid);
+            tab.className = 'tab';
+            var tabMain = document.getElementById(this.viewIds[i]['type']);
+            tabMain.style.display="none";
+            if(name == vid) {
+                tab.className += ' activeTab';
+                tab.blur();
+                tabMain.style.display="block";
+            }
         }
     },
 
@@ -621,8 +635,7 @@ TestSupport.prototype = {
             else 
                 content = content.replace(/'/g,"\'");
             try {
-                //ts.debug(content);
-                var cErr = '<table border=1><tr><td class=tableW>Content may not have Container-Containee Relationship. See Raw View for content.</td></tr></table>';
+                var cErr = '<table border=1><tr><td>MSG_TEST_RESBEANS_No_Container</td></tr></table>';
                 var tableContent = cErr;
                 if(content.indexOf("<?xml ") != -1 || 
                         content.indexOf('{"') != -1) {
@@ -646,15 +659,19 @@ TestSupport.prototype = {
                 }
                 this.updatepage('result', '<span class=bld>MSG_TEST_RESBEANS_Status</span> '+ this.currentXmlHttpReq.status+' ('+this.currentXmlHttpReq.statusText+')<br/><br/>'+
                     '<span class=bld>MSG_TEST_RESBEANS_Content</span> '+
+                    '<div class="menu"><table class="result"><tr>'+
                     this.getTab('table', tableViewStyle)+this.getTab('raw', rawViewStyle)+
-                    this.getTab('header', headerViewStyle)+this.getTab('monitor', monitorViewStyle)+                     
+                    this.getTab('header', headerViewStyle)+this.getTab('monitor', monitorViewStyle)+   
+                    '</tr></table></div>'+
+                    '<div class="tabMain">'+
                     '<div id="menu_bottom" class="stab tabsbottom"></div>'+
                     '<div id="headerInfo"'+headerViewStyle+'>'+this.getHeaderAsTable(this.currentXmlHttpReq)+'</div>'+
                     '<div id="tableContent"'+tableViewStyle+'>'+tableContent+'</div>'+
                     '<div id="rawContent"'+rawViewStyle+'>'+
                         '<textarea rows=15 cols='+this.colSize+' align=left readonly>'+this.printPretty(rawContent)+'</textarea></div>'+ 
                     '<div id="monitorContent"'+monitorViewStyle+'>'+
-                        '<textarea id="monitorText" rows=15 cols='+this.colSize+' align=left readonly>'+this.currMonitorText+'</textarea></div>');
+                        '<textarea id="monitorText" rows=15 cols='+this.colSize+' align=left readonly>'+this.currMonitorText+'</textarea></div>')+
+                    '</div>';
                 if(showRaw) {
                     if(content.length > 7 && content.substring(0, 7) == "http://")
                         this.currentValidUrl = content;
@@ -750,18 +767,16 @@ TestSupport.prototype = {
     },
 
     getTab : function (id, style) {
-        var c = '<div id="'+id+'"'+style+'><table class="result"><tr>';
-        var style = 'otab';
+        var name = '';
         for(var i in this.viewIds) {
             var vid = this.viewIds[i]['id'];
-            if(id == vid)
-                style = 'stab';
-            else
-                style = 'otab';
-            c += '<td class="tab '+style+'"><a href="javascript:ts.showViews(\''+
-                vid+'\')" class="tab"><span class="stext">'+this.viewIds[i]['value']+'</span></a></td>';
+            if(id == vid) {
+                name = this.viewIds[i]['name'];
+                break;
+            }
         }
-        c += '</tr></table></div>';
+        var c = '<td><a id="tab'+id+'" href="javascript:ts.showViews(\''+
+                id+'\')" class="tab"><span class="stext">'+name+'</span></a></td>';
         return c;
     },
     
@@ -773,8 +788,8 @@ TestSupport.prototype = {
         colNames[0] = "MSG_TEST_RESBEANS_HeaderName"
         colNames[1] = "MSG_TEST_RESBEANS_HeaderValue"
         var colSizes = new Array()
-        colSizes[0] = "class='tableW1 lfa'"
-        colSizes[1] = "class='tableW2 lfa'"
+        colSizes[0] = ""
+        colSizes[1] = ""
         for (i=0;i<colNames.length;i++) {
             str += "<th width='"+colSizes[i]+"'><span class='bld wht'>"+colNames[i]+"</span></th>";
         }
@@ -791,7 +806,7 @@ TestSupport.prototype = {
                 continue;
             count++;
             var val = rows[i].substring(index+1);
-            str += "<tr class='font9'>";
+            str += "<tr>";
             str += "<td>"+name+"</td>";
             str += "<td>"+val+"</td>";
             str += "</tr>";
@@ -821,8 +836,8 @@ TestSupport.prototype = {
             colNames[0] = "ID"
             colNames[1] = "URI"
             var colSizes = new Array()
-            colSizes[0] = "class='tableW1 lfa'"
-            colSizes[1] = "class='tableW2 lfa'"
+            colSizes[0] = ""
+            colSizes[1] = ""
             var str = "<table class='results' border='1'>";
             str += "<thead class='resultHeader'>";
             for (i=0;i<colNames.length;i++) {
@@ -889,7 +904,7 @@ TestSupport.prototype = {
         str += "<td>";
         var disp = this.getDisplayUri(uri);
         str += "<a id='"+uri+"' href=javascript:ts.doShowContent('"+uri+"') >"+this.getDisplayURL(disp, 70)+"</a>";
-        str += "<br/>(<a href='"+uri+"' target='_blank'><span class=font10>"+this.getDisplayURL(uri, 70)+"</span></a>)";
+        str += "<br/>(<a href='"+uri+"' target='_blank'><span>"+this.getDisplayURL(uri, 70)+"</span></a>)";
         str += "</td>";
         str += "</tr>";
         return str;
@@ -913,7 +928,7 @@ TestSupport.prototype = {
                 str += "<td>";
                 var disp = this.getDisplayUri(uri);
                 str += "<a id='"+uri+"' href=javascript:ts.doShowContent('"+uri+"') >"+this.getDisplayURL(disp, 70)+"</a>";
-                str += "<br/>(<a href='"+uri+"' target='_blank'><span class=font10>"+this.getDisplayURL(uri, 70)+"</span></a>)";
+                str += "<br/>(<a href='"+uri+"' target='_blank'><span>"+this.getDisplayURL(uri, 70)+"</span></a>)";
                 str += "</td>";
                 str += "</tr>";            
             }            
@@ -965,10 +980,10 @@ TestSupport.prototype = {
         var ImageNode = document.getElementById('I' + img);
         var ImageNode1 = document.getElementById('I1' + img);
         if(ImageNode1.src.indexOf('cg.gif')>-1) {
-            //ImageNode.src = expand.src;
+            ImageNode.src = ts.expand.src;
             ImageNode1.src = ts.og.src;
         } else {
-            //ImageNode.src = collapse.src;
+            ImageNode.src = ts.collapse.src;
             ImageNode1.src = ts.cg.src;
         }
     },
@@ -1056,27 +1071,106 @@ WADLParser.prototype = {
             var index = context.indexOf('/', 1);
             if(context.length > 1 && index != -1)
                 context = context.substring(1, index);
-            var resources = new category(rs.nodeName, context);
+            var resources = new category(rs, rs.nodeName, baseURL, context);
             myTree.add(resources);
-            var rarr = rs.getElementsByTagName('resource');
-            for(var i=0;i<rarr.length;i++) {
-                var r = rarr[i];   
-                var path = r.attributes.getNamedItem('path');
-                var pathVal = path.nodeValue;
-                if (pathVal.indexOf('{') > -1) {
-                    continue;
-                }
-                pathVal = this.addSeperator(pathVal);
-                var cName = this.trimSeperator(pathVal);
-                ts.topUrls[i] = pathVal;
-                var start = new item(pathVal, cName, i);
-                resources.add(start);
-            }
+            this.createChildNodes(rs, resources);
         }
         return myTree;
     },
+
+    createChildNodes : function (/*Node*/ node, parentCat) {
+       if(node.childNodes != null && node.childNodes.length > 0) {
+          for (var i = 0; i < node.childNodes.length; ++i) {
+            var n = node.childNodes[i];
+            if(ts.wdr.isResource(n) /*&& !isTemplateResource(ch)*/) {
+                var pathVal = ts.wdr.getNormailizedPath(n);
+                ts.topUrls.push(pathVal);
+            }
+          } 
+       }
+       createChildNodes2(node, parentCat);
+
+       function createChildNodes2(/*Node*/ node, parentCat) {
+         if(node.nodeValue == null){
+             if(node.childNodes != null && node.childNodes.length > 0) {
+                 for (var i = 0; i < node.childNodes.length; ++i) {
+                    var ch = node.childNodes[i];
+                    if(ts.wdr.isResource(ch) /*&& !isTemplateResource(ch)*/) {
+                        var n = createNode(ch, parentCat);
+                        parentCat.add(n);
+                        createChildNodes2(ch, n);
+                    }
+                 } 
+             }
+         }
+       }
+       
+       function createNode(/*Node*/ n, parentCat) {  
+         var pathVal = ts.wdr.getNormailizedPath(n);
+         var cName = ts.wdr.trimSeperator(pathVal);
+         var uri = parentCat.uri+'/'+cName;
+         if(ts.wdr.hasResource(n)) {
+            return new category(n, pathVal, uri, cName);
+         } else {
+            var methods = n.getElementsByTagName('method');
+            if(methods != null && methods.length > 0) {
+                return new item(n, pathVal, uri, cName);
+            } else {
+                var n2 = ts.wdr.findResource(baseURL+pathVal);
+                //if(n2 == null)
+                //    n2 = n;
+                //return new item(n2, pathVal, cName);
+                if(n2 == null) {
+                    return new item(n, pathVal, uri, cName);
+                } else {
+                    if(ts.wdr.hasResource(n2)) {
+                        var cat = new category(n, pathVal+'_1', uri, cName);
+                        createChildNodes2(n2, cat);
+                        return cat;
+                    } else {
+                        return new item(n2, pathVal, uri, cName);
+                    }
+                }
+            }
+         }
+       }
+    },
     
-    addSeperator : function (cName) {
+    getNormailizedPath : function (n) {
+        var path = n.attributes.getNamedItem('path');
+        var pathVal = path.nodeValue;
+        return this.prependSeperator(pathVal);
+    },
+    
+   isResource : function (/*Node*/ n) {  
+        if(n.nodeValue == null && n.nodeName == 'resource') {
+            return true;
+        }
+        return false;
+   },
+
+   isTemplateResource : function (/*Node*/ n) {
+        if (this.getNormailizedPath(n).indexOf('{') > -1) {
+            return true;
+        }
+        return false;
+   },
+
+   hasResource : function (/*Node*/ node) {
+     if(node.nodeValue == null){
+         if(node.childNodes != null && node.childNodes.length > 0) {
+             for (var i = 0; i < node.childNodes.length; ++i) {
+                var ch = node.childNodes[i];
+                if(this.isResource(ch) /*&& !isTemplateResource(ch)*/) {
+                    return true;
+                }
+             } 
+         }
+     }
+     return false;
+   },
+    
+    prependSeperator : function (cName) {
         if(cName != null) {
             if(cName.substring(0, 1) != '/')
                 cName = '/' + cName;
@@ -1105,17 +1199,16 @@ WADLParser.prototype = {
     },
 
     updateTree : function (catId){
-        //ts.debug(catId);
         if(catId == 'resources') {//return if top level
-            showCategory('resources');
+            this.showCategory('resources');
             return;
         }
-        var myTree = this.createTree(wadlDoc);
+        var myTree = this.createTree(ts.wadlDoc);
         document.getElementById('leftSidebar').innerHTML = myTree.toString();
         childrenContent = '';
         this.getChildren(catId);
         currentCategory = catId;
-        setTimeout("this.refreshCategory()",1000);
+        setTimeout("ts.wdr.refreshCategory()",1000);
     },
 
     refreshCategory : function(){
@@ -1166,7 +1259,18 @@ WADLParser.prototype = {
             if(ri > -1) {
                 var app1 = ts.wadlDoc.documentElement;
                 var rs = app1.getElementsByTagName('resources')[0];
-                r = rs.getElementsByTagName('resource')[ri];
+                var rlist = rs.childNodes;
+                if(rlist != null && rlist.length > 0) {
+                    for(var i=0;i<rlist.length;i++) {
+                        var rr = rlist[i];
+                        if(rr.nodeValue == null && rr.nodeName == 'resource') {
+                            var path = rr.attributes.getNamedItem('path');
+                            if(ts.wdr.trimSeperator(path.nodeValue) == ts.wdr.trimSeperator(u)) {
+                                return rr;
+                            }
+                        }
+                    }
+                }
             }
         }
         return r;
@@ -1312,25 +1416,35 @@ tree.prototype = {
     }
 }
 
-function category(id, text, ndx){
+function category(resource, id, uri, text){
+    this.r = resource;
     this.id = id;
     this.text = text;
-    this.ndx = ndx;
+
     this.items = [];
+    this.ndx = ts.allcat.length;
+    ts.allcat.push(this);
+    this.uri = uri;
 }
 
 category.prototype = {
     write : function (){
-        var uri = baseURL + this.id;
-        if(this.id == 'resources')
-            uri = null;
+
+
+
         var categoryString = '<span class="category"';
-        categoryString += '><img src="cg.gif" id="I1' + this.id + '" onClick="updateTree(\'' + this.id + '\')">';
-        categoryString += '<img src="app.gif" id="I' + this.id + '">';
-        if(uri != null)
-            categoryString += "<div class='item2'><a href=javascript:ts.doShowContent('"+uri+"') >"+ this.text + "</a></div>";
-        else
+        if(this.uri != baseURL) {
+            categoryString += '><img src="cg.gif" id="I1' + this.id + '" onClick="ts.wdr.showCategory(\'' + this.id + '\')">';
+            categoryString += '<img src="collapse.gif" id="I' + this.id + '">';
+            categoryString += "<div class='item2'><a href=javascript:ts.doShowContentForId('"+this.ndx+"') >"+ this.text + "</a></div>";
+        } else {
+            categoryString += '><img src="cg.gif" id="I1' + this.id + '" onClick="ts.wdr.updateTree(\'' + this.id + '\')">';
+            categoryString += '<img src="app.gif" id="I' + this.id + '">';
+
+
+
             categoryString += "<div class='item2'>"+this.text+"</div>";
+        }
         categoryString += '</span>';
         categoryString += '<span class="item" id="';
         categoryString += this.id + '">';
@@ -1350,22 +1464,25 @@ category.prototype = {
     }
 }
 
-function item(id, text, ndx){    
+function item(resource, id, uri, text, ndx){
+    this.r = resource;
     this.id = id;
     this.text = text;
-    this.ndx = ndx;
+    this.ndx = ts.allcat.length;
+    ts.allcat.push(this);
+    this.uri = uri;//baseURL + this.id;
 }
 
 item.prototype = {
     write : function (){
-        var uri = baseURL + this.id;
-        var itemString = '<img src="cc.gif" border="0">';
+        var itemString = '<span class="category"><img src="cc.gif" border="0">';
+
         itemString += '<img src="item.gif" border="0">';
-        if(uri != null)
-            itemString += "<a href=javascript:ts.doShowContent('"+uri+"') >"+ this.text + "</a>";
+        if(this.uri != null)
+            itemString += "<div class=item1><a href=javascript:ts.doShowContentForId('"+this.ndx+"') >"+ this.text + "</a></div>";
         else
             itemString += this.text;
-        itemString += '<br>';
+        itemString += '</span>';
         return itemString;
     }
 }
