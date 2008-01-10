@@ -59,13 +59,23 @@ public class IEPAttributeTableModel extends AbstractTableModel {
     }
     
     public int getRowCount() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return this.mAttrList.size();
     }
 
     public int getColumnCount() {
         return 5;
     }
 
+    @Override
+    public boolean isCellEditable(int rowIndex, int columnIndex) {
+        if(columnIndex != 1) {
+            return true;
+        } 
+        
+        return false;
+    }
+
+    
     @Override
     public String getColumnName(int column) {
         String columnName = "";
@@ -165,5 +175,18 @@ public class IEPAttributeTableModel extends AbstractTableModel {
         }
     }
 
+    public void addNewRow() {
+        PlaceholderSchemaAttribute attr = new PlaceholderSchemaAttribute();
+        this.mAttrList.add(attr);
+        
+        this.fireTableDataChanged();
+    }
     
+    public void removeRow(int rowIndex) {
+        if(rowIndex < this.mAttrList.size()) {
+            this.mAttrList.remove(rowIndex);
+        }
+        
+        this.fireTableDataChanged();
+    }
 }

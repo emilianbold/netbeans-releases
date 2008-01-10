@@ -57,7 +57,7 @@ import org.openide.util.HelpCtx;
  *
  * @author radval
  */
-public class IEPWizardPanel2EmptyIEPFile implements WizardDescriptor.Panel {
+public class IEPWizardPanel2EmptyIEPFile implements WizardDescriptor.FinishablePanel {
 
     /**
      * The visual component that displays this panel. If you need to access the
@@ -177,4 +177,10 @@ public class IEPWizardPanel2EmptyIEPFile implements WizardDescriptor.Panel {
     public void storeSettings(Object settings) {
         mDelegate.storeSettings(settings);
     }
+
+    public boolean isFinishPanel() {
+        return true;
+    }
+    
+    
 }

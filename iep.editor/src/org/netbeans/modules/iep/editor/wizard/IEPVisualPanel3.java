@@ -5,6 +5,7 @@
 
 package org.netbeans.modules.iep.editor.wizard;
 
+import java.awt.BorderLayout;
 import javax.swing.JPanel;
 
 import org.openide.util.NbBundle;
@@ -14,6 +15,7 @@ public final class IEPVisualPanel3 extends JPanel {
     /** Creates new form IEPVisualPanel3 */
     public IEPVisualPanel3() {
         initComponents();
+        initGUI();
     }
 
     @Override
@@ -21,6 +23,13 @@ public final class IEPVisualPanel3 extends JPanel {
     	return NbBundle.getMessage(IEPVisualPanel1.class, "IEPVisualPanel3_title");
     }
 
+    private void initGUI() {
+        this.setLayout(new BorderLayout());
+        
+        IEPAttributeConfigurationPanel panel = new IEPAttributeConfigurationPanel();
+        this.add(panel, BorderLayout.CENTER);
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

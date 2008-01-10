@@ -6,15 +6,21 @@
 
 package org.netbeans.modules.iep.editor.wizard;
 
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
 /**
  *
  * @author  radval
  */
 public class IEPAttributeConfigurationPanel extends javax.swing.JPanel {
     
+    private IEPAttributeTableModel mTableModel;
+    
     /** Creates new form IEPAttributeConfigurationPanel */
     public IEPAttributeConfigurationPanel() {
         initComponents();
+        initGUI();
     }
     
     /** This method is called from within the constructor to
@@ -27,9 +33,15 @@ public class IEPAttributeConfigurationPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        mAttributeTable = new javax.swing.JTable();
+        addButton = new javax.swing.JButton();
+        deleteButton = new javax.swing.JButton();
+        moveUpButton = new javax.swing.JButton();
+        moveDownButton = new javax.swing.JButton();
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(IEPAttributeConfigurationPanel.class, "IEPAttributeConfigurationPanel.border.title"))); // NOI18N
+
+        mAttributeTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
                 {null, null, null, null},
@@ -40,7 +52,35 @@ public class IEPAttributeConfigurationPanel extends javax.swing.JPanel {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
-        jScrollPane1.setViewportView(jTable1);
+        jScrollPane1.setViewportView(mAttributeTable);
+
+        addButton.setText(org.openide.util.NbBundle.getMessage(IEPAttributeConfigurationPanel.class, "IEPAttributeConfigurationPanel.addButton.text")); // NOI18N
+        addButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addButtonActionPerformed(evt);
+            }
+        });
+
+        deleteButton.setText(org.openide.util.NbBundle.getMessage(IEPAttributeConfigurationPanel.class, "IEPAttributeConfigurationPanel.deleteButton.text")); // NOI18N
+        deleteButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                deleteButtonActionPerformed(evt);
+            }
+        });
+
+        moveUpButton.setText(org.openide.util.NbBundle.getMessage(IEPAttributeConfigurationPanel.class, "IEPAttributeConfigurationPanel.moveUpButton.text")); // NOI18N
+        moveUpButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                moveUpButtonActionPerformed(evt);
+            }
+        });
+
+        moveDownButton.setText(org.openide.util.NbBundle.getMessage(IEPAttributeConfigurationPanel.class, "IEPAttributeConfigurationPanel.moveDownButton.text")); // NOI18N
+        moveDownButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                moveDownButtonActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -48,22 +88,95 @@ public class IEPAttributeConfigurationPanel extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 375, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(15, Short.MAX_VALUE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 375, Short.MAX_VALUE)
+                        .add(15, 15, 15))
+                    .add(layout.createSequentialGroup()
+                        .add(addButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(deleteButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(moveUpButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(moveDownButton)
+                        .addContainerGap(94, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 275, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(14, Short.MAX_VALUE))
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 232, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(addButton)
+                    .add(deleteButton)
+                    .add(moveUpButton)
+                    .add(moveDownButton))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
+        // TODO add your handling code here:
+        mTableModel.addNewRow();
+}//GEN-LAST:event_addButtonActionPerformed
+
+    private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
+        // TODO add your handling code here:
+        int rowIndex = mAttributeTable.getSelectedRow();
+        mTableModel.removeRow(rowIndex);
+}//GEN-LAST:event_deleteButtonActionPerformed
+
+    private void moveUpButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveUpButtonActionPerformed
+        // TODO add your handling code here:
+}//GEN-LAST:event_moveUpButtonActionPerformed
+
+    private void moveDownButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveDownButtonActionPerformed
+        // TODO add your handling code here:
+}//GEN-LAST:event_moveDownButtonActionPerformed
     
     
+    private void initGUI() {
+        mTableModel = new IEPAttributeTableModel();
+        this.mAttributeTable.setModel(mTableModel);
+        
+        this.mAttributeTable.getSelectionModel().addListSelectionListener(new AttributeTableSelectionListener());
+        
+        this.deleteButton.setEnabled(false);
+        this.moveUpButton.setEnabled(false);
+        this.moveDownButton.setEnabled(false);
+    }
+    
+    class AttributeTableSelectionListener implements ListSelectionListener {
+
+        public void valueChanged(ListSelectionEvent e) {
+            int row = mAttributeTable.getSelectedRow();
+            if(row != -1) {
+                deleteButton.setEnabled(true);
+            } else {
+                deleteButton.setEnabled(false);
+            }
+            
+            int rowCount = mAttributeTable.getRowCount();
+            
+            if(rowCount > 1) {
+                moveUpButton.setEnabled(true);
+                moveDownButton.setEnabled(true);
+            } else {
+                moveUpButton.setEnabled(false);
+                moveDownButton.setEnabled(false);
+            }
+        }
+        
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton addButton;
+    private javax.swing.JButton deleteButton;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTable jTable1;
+    private javax.swing.JTable mAttributeTable;
+    private javax.swing.JButton moveDownButton;
+    private javax.swing.JButton moveUpButton;
     // End of variables declaration//GEN-END:variables
     
 }

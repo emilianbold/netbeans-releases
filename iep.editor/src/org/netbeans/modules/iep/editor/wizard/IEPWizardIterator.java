@@ -43,11 +43,34 @@ public final class IEPWizardIterator implements WizardDescriptor.InstantiatingIt
         //wizard paths
         if (panels == null) {
             panels = new WizardDescriptor.Panel[]{
-                panel1,
-                panel2EmptyIEPFile
+                panel2EmptyIEPFile,
+                panel2,
+                panel3
             };
         
-            initializePanels();
+            String[] steps = createSteps();
+            for (int i = 0; i < panels.length; i++) {
+                Component c = panels[i].getComponent();
+                if (steps[i] == null) {
+                    // Default step name to component name of panel. Mainly
+                    // useful for getting the name of the target chooser to
+                    // appear in the list of steps.
+                    steps[i] = c.getName();
+                }
+                if (c instanceof JComponent) { // assume Swing components
+                    JComponent jc = (JComponent) c;
+                    // Sets step number of a component
+                    jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));
+                    // Sets steps names for a panel
+                    jc.putClientProperty("WizardPanel_contentData", steps);
+                    // Turn on subtitle creation on each step
+                    jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE);
+                    // Show steps on the left side with the image on the background
+                    jc.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE);
+                    // Turn on numbering of all steps
+                    jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE);
+                }
+            }
         }
         
         /*
@@ -107,7 +130,7 @@ public final class IEPWizardIterator implements WizardDescriptor.InstantiatingIt
         this.wizard.putProperty(WizardConstants.WIZARD_FIRST_PANEL_SELECTION_KEY, WizardConstants.WIZARD_FIRST_PANEL_KEY_VALUE_CREATE_EMPTY_IEP);
         
         //initialize all panels here:
-        panel1 = new IEPWizardPanel1();
+//        panel1 = new IEPWizardPanel1();
         panel2 = new IEPWizardPanel2(this.wizard);
         panel2EmptyIEPFile = new IEPWizardPanel2EmptyIEPFile(wizard);
         panel3 = new IEPWizardPanel3();
@@ -120,12 +143,12 @@ public final class IEPWizardIterator implements WizardDescriptor.InstantiatingIt
         //first time we call refresh panel manually so 
         //that we have initially set of panels based on 
         //initial iep file creation option.
-        refreshPanels();
-        
-        //add a listener on first panel for listening
-        //for changes in first panel iep file creation option
-        IEPVisualPanel1 panel1Visual = (IEPVisualPanel1) panel1.getComponent();
-        panel1Visual.getButtonModel().addItemListener(new IEPFileCreationOptionItemListener());
+//        refreshPanels();
+//        
+//        //add a listener on first panel for listening
+//        //for changes in first panel iep file creation option
+//        IEPVisualPanel1 panel1Visual = (IEPVisualPanel1) panel1.getComponent();
+//        panel1Visual.getButtonModel().addItemListener(new IEPFileCreationOptionItemListener());
        
     }
 
@@ -225,64 +248,64 @@ public final class IEPWizardIterator implements WizardDescriptor.InstantiatingIt
         return res;
     }
     
-    private void refreshPanels() {
-        String firstPanelSelectionValue = (String) this.wizard.getProperty(WizardConstants.WIZARD_FIRST_PANEL_SELECTION_KEY);
-        
-        if(firstPanelSelectionValue.equals(WizardConstants.WIZARD_FIRST_PANEL_KEY_VALUE_CREATE_EMPTY_IEP)) {
-            panels = new WizardDescriptor.Panel[]{
-                panel1,
-                panel2EmptyIEPFile
-            };
-            
-        } else {
-            panels = new WizardDescriptor.Panel[]{
-                panel1,
-                panel2,
-                panel3
-            };
-            
-        }
-        
-        initializePanels();
-        
-    }
+//    private void refreshPanels() {
+//        String firstPanelSelectionValue = (String) this.wizard.getProperty(WizardConstants.WIZARD_FIRST_PANEL_SELECTION_KEY);
+//        
+//        if(firstPanelSelectionValue.equals(WizardConstants.WIZARD_FIRST_PANEL_KEY_VALUE_CREATE_EMPTY_IEP)) {
+//            panels = new WizardDescriptor.Panel[]{
+//                panel1,
+//                panel2EmptyIEPFile
+//            };
+//            
+//        } else {
+//            panels = new WizardDescriptor.Panel[]{
+//                panel1,
+//                panel2,
+//                panel3
+//            };
+//            
+//        }
+//        
+//        initializePanels();
+//        
+//    }
     
-    private void initializePanels() {
-        String[] steps = createSteps();
-            for (int i = 0; i < panels.length; i++) {
-                Component c = panels[i].getComponent();
-                if (steps[i] == null) {
-                    // Default step name to component name of panel. Mainly
-                    // useful for getting the name of the target chooser to
-                    // appear in the list of steps.
-                    steps[i] = c.getName();
-                }
-                if (c instanceof JComponent) { // assume Swing components
-                    JComponent jc = (JComponent) c;
-                    // Sets step number of a component
-                    jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));
-                    // Sets steps names for a panel
-                    jc.putClientProperty("WizardPanel_contentData", steps);
-                    // Turn on subtitle creation on each step
-                    jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE);
-                    // Show steps on the left side with the image on the background
-                    jc.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE);
-                    // Turn on numbering of all steps
-                    jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE);
-                }
-            }
-    }
+//    private void initializePanels() {
+//        String[] steps = createSteps();
+//            for (int i = 0; i < panels.length; i++) {
+//                Component c = panels[i].getComponent();
+//                if (steps[i] == null) {
+//                    // Default step name to component name of panel. Mainly
+//                    // useful for getting the name of the target chooser to
+//                    // appear in the list of steps.
+//                    steps[i] = c.getName();
+//                }
+//                if (c instanceof JComponent) { // assume Swing components
+//                    JComponent jc = (JComponent) c;
+//                    // Sets step number of a component
+//                    jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));
+//                    // Sets steps names for a panel
+//                    jc.putClientProperty("WizardPanel_contentData", steps);
+//                    // Turn on subtitle creation on each step
+//                    jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE);
+//                    // Show steps on the left side with the image on the background
+//                    jc.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE);
+//                    // Turn on numbering of all steps
+//                    jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE);
+//                }
+//            }
+//    }
     
-    class IEPFileCreationOptionItemListener implements ItemListener {
-
-        public void itemStateChanged(ItemEvent e) {
-            IEPVisualPanel1 panel1Visual = (IEPVisualPanel1) panel1.getComponent();
-            String selectedCreationOption = panel1Visual.getSelectedOption();
-            IEPWizardIterator.this.wizard.putProperty(WizardConstants.WIZARD_FIRST_PANEL_SELECTION_KEY, selectedCreationOption);
-            
-            refreshPanels();
-            fireChangeEvent();
-        }
-        
-    }
+//    class IEPFileCreationOptionItemListener implements ItemListener {
+//
+//        public void itemStateChanged(ItemEvent e) {
+//            IEPVisualPanel1 panel1Visual = (IEPVisualPanel1) panel1.getComponent();
+//            String selectedCreationOption = panel1Visual.getSelectedOption();
+//            IEPWizardIterator.this.wizard.putProperty(WizardConstants.WIZARD_FIRST_PANEL_SELECTION_KEY, selectedCreationOption);
+//            
+//            refreshPanels();
+//            fireChangeEvent();
+//        }
+//        
+//    }
 }
