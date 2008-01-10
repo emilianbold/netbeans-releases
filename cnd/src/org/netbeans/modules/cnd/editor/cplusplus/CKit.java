@@ -49,7 +49,9 @@ import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.cnd.api.lexer.Filter;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Syntax;
 import org.netbeans.editor.TokenItem;
@@ -77,6 +79,11 @@ public class CKit extends CCKit {
     @Override
     protected Language<CppTokenId> getLanguage() {
         return CppTokenId.languageC();
+    }
+    
+    @Override
+    protected Filter<CppTokenId> getFilter() {
+        return CndLexerUtilities.getStdCFilter();
     }
     
     @Override

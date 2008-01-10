@@ -50,8 +50,11 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.cnd.api.lexer.Filter;
 import org.netbeans.editor.TokenItem;
 
 import org.openide.util.Lookup;
@@ -68,7 +71,6 @@ import org.netbeans.editor.ext.ExtKit.CommentAction;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
 import org.netbeans.editor.ext.ExtKit.ExtDeleteCharAction;
 import org.netbeans.editor.ext.ExtKit.UncommentAction;
-import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorKit;
 
 import org.netbeans.modules.cnd.MIMENames;
@@ -79,7 +81,8 @@ import org.netbeans.modules.cnd.editor.spi.cplusplus.SyntaxSupportProvider;
 
 /** C++ editor kit with appropriate document */
 public class CCKit extends NbEditorKit {
-
+    private InputAttributes lexerAttrs = null;
+    
     @Override
     public String getContentType() {
         return MIMENames.CPLUSPLUS_MIME_TYPE;
@@ -101,6 +104,7 @@ public class CCKit extends NbEditorKit {
     @Override
     protected void initDocument(BaseDocument doc) {
         super.initDocument(doc);
+        doc.putProperty(InputAttributes.class, getLexerAttributes());        
         doc.putProperty(Language.class, getLanguage());
         // Force '\n' as write line separator
         doc.putProperty(BaseDocument.WRITE_LINE_SEPARATOR_PROP, BaseDocument.LS_LF);
@@ -109,6 +113,21 @@ public class CCKit extends NbEditorKit {
     protected Language<CppTokenId> getLanguage() {
         return CppTokenId.languageCpp();
     }
+    
+    protected final synchronized InputAttributes getLexerAttributes() {
+        // for now use shared attributes for all documents to save memory
+        // in future we can make attributes per document based on used compiler info
+        if (lexerAttrs == null) {
+            lexerAttrs = new InputAttributes();
+            lexerAttrs.setValue(getLanguage(), "lexer-filter", getFilter(), true);
+        }
+        return lexerAttrs;
+    }
+    
+    protected Filter<CppTokenId> getFilter() {
+        return CndLexerUtilities.getStdCppFilter();
+    }   
+    
     /** Create new instance of syntax coloring scanner
      * @param doc document to operate on. It can be null in the cases the syntax
      *   creation is not related to the particular document
