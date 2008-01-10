@@ -80,18 +80,6 @@ final class BasicSearchCriteria {
     private static final Logger LOG = Logger.getLogger(
             "org.netbeans.modules.search.BasicSearchCriteria");         //NOI18N
 
-    /**
-     * Maximum number of matches reported for one line.
-     * It eliminates huge memory consumption for single letter searches on long lines.
-     */
-    private static final int MAX_REPORTED_OCCURENCES_ON_LINE = 5;
-
-    /**
-     * Maximum number of matches reported for one file.
-     * It eliminates huge memory consumption for single letter searches in long files.
-     */
-    private static final int MAX_REPORTED_OCCURENCES_IN_FILE = 200;
-    
     /** array of searchable application/x-<em>suffix</em> MIME-type suffixes */
     private static final Collection<String> searchableXMimeTypes;
     
@@ -619,15 +607,8 @@ final class BasicSearchCriteria {
         try {
             reader = getFileObjectReader(fileObj);
             
-            int matchesInFile = 0;
-            loopOverLines:
-            do {
-                String line = reader.readLine();
-                if (line == null) {
-                    break;
-                }
-
-                int matchesOnLine = 0;
+            String line;
+            while ((line = reader.readLine()) != null) {
                 Matcher matcher = textPattern.matcher(line);
                 while (matcher.find()) {
                     if (firstMatch) {
@@ -643,12 +624,8 @@ final class BasicSearchCriteria {
                     det.setColumn(start + 1);
                     det.setMarkLength(len);
                     txtDetails.add(det);
-
-                    if (++matchesOnLine == MAX_REPORTED_OCCURENCES_ON_LINE) {
-                        break;
-                    }
                 }
-            } while (matchesInFile < MAX_REPORTED_OCCURENCES_IN_FILE);
+            }
             if (txtDetails != null) {
                 txtDetails.trimToSize();
                 getDetailsMap().put(dataObj, txtDetails);
