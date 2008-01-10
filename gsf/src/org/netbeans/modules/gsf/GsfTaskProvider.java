@@ -89,6 +89,8 @@ public class GsfTaskProvider extends PushTaskScanner  {
     // Registered by core/tasklist's layer
     private static final String TASKLIST_ERROR = "nb-tasklist-error"; //NOI18N
     private static final String TASKLIST_WARNING = "nb-tasklist-warning"; //NOI18N
+    private static final String TASKLIST_ERROR_HINT = "nb-tasklist-errorhint"; //NOI18N
+    private static final String TASKLIST_WARNING_HINT = "nb-tasklist-warninghint"; //NOI18N
     private static final Set<RequestProcessor.Task> TASKS = new HashSet<RequestProcessor.Task>();
     private static boolean clearing;
     private static final RequestProcessor WORKER = new RequestProcessor("GSF Task Provider");
@@ -301,6 +303,6 @@ public class GsfTaskProvider extends PushTaskScanner  {
     }
     
     private static String severityToTaskListString(Severity severity){
-        return (severity == Severity.ERROR) ? TASKLIST_ERROR : TASKLIST_WARNING;
+        return (severity == Severity.ERROR) ? TASKLIST_ERROR_HINT : TASKLIST_WARNING_HINT;
     }
 }
