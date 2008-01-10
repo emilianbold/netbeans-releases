@@ -40,17 +40,27 @@
  */
 package org.netbeans.modules.j2ee.websphere6.ui.wizard;
 
-import java.util.*;
-import java.io.*;
-import java.net.*;
-import javax.swing.*;
-import javax.swing.event.*;
 
-import org.openide.*;
-import org.openide.util.*;
-import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 
-import org.netbeans.modules.j2ee.websphere6.*;
+import java.io.IOException;
+
+import java.net.Socket;
+import java.net.UnknownHostException;
+
+import java.util.HashSet;
+import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.Vector;
+
+import javax.swing.JOptionPane;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.j2ee.websphere6.WSDeploymentFactory;
+import org.netbeans.modules.j2ee.websphere6.WSURIManager;
+import org.openide.WizardDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  * The main class of the custom wizard for registering a new server instance.
@@ -72,7 +82,7 @@ public class WSInstantiatingIterator
      * The default debugger port for the instance, it will be assigned to it
      * at creation time and can be changed via the properties sheet
      */
-    private static final String DEFAULT_DEBUGGER_PORT = "8787";
+    private static final String DEFAULT_DEBUGGER_PORT = "8787"; // NOI18N
     
     /**
      * The parent wizard descriptor
@@ -121,8 +131,10 @@ public class WSInstantiatingIterator
         Set result = new HashSet();
         
         // build the URL
-        String url = /*"["+domainRoot+"]"+*/WSURIManager.WSURI + this.host + ":" +         // NOI18N
-                this.port; 
+        String url = WSURIManager.WSURI + this.host + ":" + this.port; 
+        if (serverRoot != null && domainRoot != null) {
+            url += ":" + serverRoot + ":" + domainRoot;
+        }
         
         // build the display name
         String displayName = getDisplayName() + " [" + this.host +     // NOI18N
