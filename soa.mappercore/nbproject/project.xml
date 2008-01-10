@@ -26,6 +26,7 @@
             <friend-packages>
                 <friend>org.netbeans.modules.bpel.core</friend>
                 <friend>org.netbeans.modules.bpel.mapper</friend>
+                <friend>org.netbeans.modules.bpel.editors</friend>
                 <package>org.netbeans.modules.soa.mappercore</package>
                 <package>org.netbeans.modules.soa.mappercore.icons</package>
                 <package>org.netbeans.modules.soa.mappercore.model</package>
