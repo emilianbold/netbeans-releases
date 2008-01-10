@@ -6,7 +6,7 @@
             <code-name-base>org.netbeans.modules.cnd.antlr</code-name-base>
             <module-dependencies/>
             <friend-packages>
-                <friend>org.netbeans.modules.asm.base</friend>
+                <friend>org.netbeans.modules.asm</friend>
                 <friend>org.netbeans.modules.cnd.apt</friend>
                 <friend>org.netbeans.modules.cnd.make2netbeans</friend>
                 <friend>org.netbeans.modules.cnd.modelimpl</friend>
