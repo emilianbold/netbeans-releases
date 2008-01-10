@@ -66,6 +66,8 @@ import org.openide.util.Utilities;
  */
 public final class RubyPlatformManager {
     
+    private static final String[] RUBY_EXECUTABLE_NAMES = { "ruby", "jruby" }; // NOI18N
+    
     /** For unit tests. */
     static File TEST_RUBY;
 
@@ -108,27 +110,11 @@ public final class RubyPlatformManager {
             final Set<File> rubies = new LinkedHashSet<File>();
             Set<String> dirs = new TreeSet<String>(Arrays.asList(path.split(File.pathSeparator)));
             for (String dir : dirs) {
-                File f = null;
-                if (Utilities.isWindows()) {
-                    f = new File(dir, "ruby.exe"); // NOI18N
-                } else {
-                    f = new File(dir, "ruby"); // NOI18N
-                    // Don't include /usr/bin/ruby on the Mac - it's no good
-                    // Source: http://developer.apple.com/tools/rubyonrails.html
-                    //   "The version of Ruby that shipped on Mac OS X Tiger prior to 
-                    //    v10.4.6 did not work well with Rails.   If you're running 
-                    //    an earlier version of Tiger, you'll need to either upgrade 
-                    //    to 10.4.6 or upgrade your copy of Ruby to version 1.8.4 or 
-                    //    later using the open source distribution."
-                    if (Utilities.isMac() && "/usr/bin/ruby".equals(f.getPath())) { // NOI18N
-                        String version = System.getProperty("os.version"); // NOI18N
-                        if (version == null || version.startsWith("10.4")) { // Only a problem on Tiger // NOI18N
-                            continue;
-                        }
+                for (String ruby : RUBY_EXECUTABLE_NAMES) {
+                    File f = findPlatform(dir, ruby);
+                    if (f != null) {
+                        rubies.add(f);
                     }
-                }
-                if (f.exists()) {
-                    rubies.add(f);
                 }
             }
 
@@ -143,7 +129,32 @@ public final class RubyPlatformManager {
                 }
             }
         }
+    }
 
+    private static File findPlatform(final String dir, final String ruby) {
+        File f = null;
+        if (Utilities.isWindows()) {
+            f = new File(dir, ruby + ".exe"); // NOI18N
+        } else {
+            f = new File(dir, ruby); // NOI18N
+            // Don't include /usr/bin/ruby on the Mac - it's no good
+            // Source: http://developer.apple.com/tools/rubyonrails.html
+            //   "The version of Ruby that shipped on Mac OS X Tiger prior to 
+            //    v10.4.6 did not work well with Rails.   If you're running 
+            //    an earlier version of Tiger, you'll need to either upgrade 
+            //    to 10.4.6 or upgrade your copy of Ruby to version 1.8.4 or 
+            //    later using the open source distribution."
+            if (ruby.equals("ruby") && Utilities.isMac() && "/usr/bin/ruby".equals(f.getPath())) { // NOI18N
+                String version = System.getProperty("os.version"); // NOI18N
+                if (version == null || version.startsWith("10.4")) { // Only a problem on Tiger // NOI18N
+                    return null;
+                }
+            }
+        }
+        if (f.isFile()) {
+            return f;
+        }
+        return null;
     }
 
     private static Set<RubyPlatform> getPlatformsInternal() {
