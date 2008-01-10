@@ -30,6 +30,8 @@ public interface BpelEditorConstants extends SoaConstants {
     
     String BPEL_SOURCEMV_PREFFERED_ID = "bpelsource"; // NOI18N
     String BPEL_DESIGNMV_PREFFERED_ID = "orch-designer"; // NOI18N
+    String BPEL_MAPPERMV_PREFFERED_ID = "bpel-business-rules"; // NOI18N
+    String BPEL_LOGGINGMV_PREFFERED_ID = "bpel-logging-alerting"; // NOI18N
     
     enum AlarmType {
         INVALID(BpelEditorConstants.INVALID),
