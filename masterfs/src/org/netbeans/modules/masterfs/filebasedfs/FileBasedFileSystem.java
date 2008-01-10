@@ -60,6 +60,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.masterfs.ProvidedExtensionsProxy;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
+import org.netbeans.modules.masterfs.filebasedfs.fileobjects.WriteLockUtils;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
 import org.netbeans.modules.masterfs.providers.AnnotationProvider;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
@@ -152,7 +153,7 @@ public final class FileBasedFileSystem extends FileSystem {
             if (retVal == null) {
                 boolean assertionsOn = false;
                 assert assertionsOn = true;
-                if (assertionsOn && f.exists()) {
+                if (assertionsOn && f.exists() && !WriteLockUtils.hasActiveLockFileSigns(f.getAbsolutePath())) {
                     ByteArrayOutputStream bos = new ByteArrayOutputStream();
                     PrintStream ps = new PrintStream(bos);
                     new Exception().printStackTrace(ps);

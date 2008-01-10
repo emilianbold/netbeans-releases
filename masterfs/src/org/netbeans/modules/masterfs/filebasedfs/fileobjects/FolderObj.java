@@ -114,7 +114,7 @@ public final class FolderObj extends BaseFileObj {
         } else {
             boolean assertionsOn = false;
             assert assertionsOn=true;
-            if (assertionsOn && file.exists()) {
+            if (assertionsOn && file.exists() && f.equals(file.getParentFile()) && !WriteLockUtils.hasActiveLockFileSigns(file.getAbsolutePath())) {
                 ByteArrayOutputStream bos  = new ByteArrayOutputStream();
                 PrintStream ps = new PrintStream(bos);
                 new Exception().printStackTrace(ps);
