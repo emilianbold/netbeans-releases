@@ -50,6 +50,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.io.IOException;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.xml.namespace.QName;
@@ -106,6 +107,29 @@ public abstract class AbstractDocumentModel<T extends DocumentComponent<T>>
      */
     public Set<QName> getQNames() { 
         return Collections.emptySet(); 
+    }
+    
+    private void doSync() throws java.io.IOException {
+        super.sync();
+    }
+    
+    public void sync() throws java.io.IOException {
+	javax.swing.text.Document doc = getBaseDocument();
+        if (doc == null) {
+	    doSync();
+	} else {
+	    final IOException[] ioe = new IOException[1];
+	    doc.render(new Runnable() {
+	        public void run() {
+		    try {
+                        doSync();
+		    } catch (IOException e) {
+		        ioe[0] = e;
+		    }
+		}
+	    });
+	    if (ioe[0] != null) throw ioe[0];
+	}
     }
     
     @Override
