@@ -43,18 +43,22 @@
 package org.netbeans.modules.url;
 
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import org.openide.DialogDisplayer;
-
-import org.openide.cookies.EditCookie;
 import org.openide.cookies.InstanceCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.*;
-import org.openide.nodes.*;
+import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.MultiFileLoader;
 import org.openide.NotifyDescriptor;
 import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
@@ -170,6 +174,7 @@ public class URLDataObject extends MultiDataObject
     }
 
     /** */
+    @Override
     public HelpCtx getHelpCtx () {
         return new HelpCtx(URLDataObject.class);
     }
