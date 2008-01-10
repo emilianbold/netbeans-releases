@@ -130,7 +130,7 @@ public class CamelCaseNames implements AstRule {
     }
 
     public boolean getDefaultEnabled() {
-        return false;
+        return true;
     }
 
     public boolean showInTasklist() {
