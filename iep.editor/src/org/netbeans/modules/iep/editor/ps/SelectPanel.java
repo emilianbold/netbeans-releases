@@ -81,32 +81,6 @@ import org.openide.util.NbBundle;
  */
 public class SelectPanel extends JPanel implements SharedConstants {
     private static final Logger mLog = Logger.getLogger(SelectPanel.class.getName());
-    private static String[] SQL_TYPE_NAMES = new String[] {
-//        SQL_TYPE_BIT,
-//        SQL_TYPE_TINYINT,
-//        SQL_TYPE_SMALLINT,
-        SQL_TYPE_INTEGER,
-        SQL_TYPE_BIGINT,
-//       SQL_TYPE_REAL,
-//        SQL_TYPE_FLOAT,
-        SQL_TYPE_DOUBLE,
-//        SQL_TYPE_DECIMAL,
-//        SQL_TYPE_NUMERIC,
-//        SQL_TYPE_CHAR,
-        SQL_TYPE_VARCHAR,
-//        SQL_TYPE_LONGVARCHAR,
-        SQL_TYPE_DATE,
-        SQL_TYPE_TIME,
-        SQL_TYPE_TIMESTAMP,
-//        SQL_TYPE_BINARY,
-//        SQL_TYPE_VARBINARY,
-//        SQL_TYPE_LONGVARBINARY,
-//        SQL_TYPE_BLOB,
-        SQL_TYPE_CLOB,
-//        "ARRAY",
-//        "REF",
-//        "STRUCT",
-    };
     
     private static Set QUANTITY_TYPES = new HashSet();
     static {

@@ -68,11 +68,7 @@ public class IEPAttributeTableModel extends AbstractTableModel {
 
     @Override
     public boolean isCellEditable(int rowIndex, int columnIndex) {
-        if(columnIndex != 1) {
-            return true;
-        } 
-        
-        return false;
+        return true;
     }
 
     
@@ -182,11 +178,30 @@ public class IEPAttributeTableModel extends AbstractTableModel {
         this.fireTableDataChanged();
     }
     
+    public void insertRow(int rowIndex, PlaceholderSchemaAttribute rowData) {
+        if(rowIndex <= this.mAttrList.size()) {
+            this.mAttrList.add(rowIndex, rowData);
+            
+            this.fireTableDataChanged();
+        }
+    }
+    
     public void removeRow(int rowIndex) {
         if(rowIndex < this.mAttrList.size()) {
             this.mAttrList.remove(rowIndex);
+            
+            this.fireTableDataChanged();
         }
         
-        this.fireTableDataChanged();
+        
+    }
+    
+    public PlaceholderSchemaAttribute getRowData(int rowIndex) {
+        PlaceholderSchemaAttribute rowData = null;
+       
+        if(rowIndex < this.mAttrList.size()) {
+            rowData = this.mAttrList.get(rowIndex);
+        }
+        return rowData;
     }
 }

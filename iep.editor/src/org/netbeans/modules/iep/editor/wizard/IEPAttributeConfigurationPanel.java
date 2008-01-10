@@ -6,8 +6,20 @@
 
 package org.netbeans.modules.iep.editor.wizard;
 
+import java.util.Vector;
+
+import javax.swing.DefaultCellEditor;
+import javax.swing.JComboBox;
+import javax.swing.JList;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.TableColumnModel;
+
+import org.netbeans.modules.iep.editor.designer.JTextFieldFilter;
+import org.netbeans.modules.iep.editor.ps.SelectPanelTableCellRenderer;
+import org.netbeans.modules.iep.editor.share.SharedConstants;
 
 /**
  *
@@ -16,6 +28,18 @@ import javax.swing.event.ListSelectionListener;
 public class IEPAttributeConfigurationPanel extends javax.swing.JPanel {
     
     private IEPAttributeTableModel mTableModel;
+    
+    private static JTextField mTextFieldNumeric;
+    private static JTextField mTextFieldANU;
+    private static JTextField mTextFieldAny;
+    
+    private static DefaultCellEditor mCellEditorNumeric;
+    private static DefaultCellEditor mCellEditorANU;
+    private static DefaultCellEditor mCellEditorAny;
+    private static DefaultCellEditor mCellEditorSqlType;
+    private SelectPanelTableCellRenderer  spTCRenderer;
+    
+    private static JComboBox mComboBoxSqlType;
     
     /** Creates new form IEPAttributeConfigurationPanel */
     public IEPAttributeConfigurationPanel() {
@@ -129,11 +153,39 @@ public class IEPAttributeConfigurationPanel extends javax.swing.JPanel {
 }//GEN-LAST:event_deleteButtonActionPerformed
 
     private void moveUpButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveUpButtonActionPerformed
-        // TODO add your handling code here:
+        int[] rows = mAttributeTable.getSelectedRows();
+        
+        PlaceholderSchemaAttribute prevSibling = mTableModel.getRowData(rows[0]-1);
+        mTableModel.removeRow(rows[0]-1);
+        mTableModel.insertRow(rows[rows.length -1], prevSibling);
+        
+//        for(int i = 0; i < rows.length; i++) {
+//            int row = rows[i];
+//            PlaceholderSchemaAttribute attr = mTableModel.getRowData(row);
+//            mTableModel.removeRow(row);
+//            mTableModel.insertRow(row-1, attr);
+////            mTableModel.
+//            
+//        }
 }//GEN-LAST:event_moveUpButtonActionPerformed
 
     private void moveDownButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveDownButtonActionPerformed
-        // TODO add your handling code here:
+        int[] rows = mAttributeTable.getSelectedRows();
+        
+        PlaceholderSchemaAttribute afterSibling = mTableModel.getRowData(rows[rows.length -1] +1);
+        mTableModel.removeRow(rows[rows.length -1] +1);
+        mTableModel.insertRow(rows[0], afterSibling);
+        
+        
+//        int[] rows = mAttributeTable.getSelectedRows();
+//        for(int i = 0; i < rows.length; i++) {
+//            int row = rows[i];
+//            PlaceholderSchemaAttribute attr = mTableModel.getRowData(row);
+//            mTableModel.removeRow(row);
+//            mTableModel.insertRow(row + 1, attr);
+////            mTableModel.
+//            
+//        }
 }//GEN-LAST:event_moveDownButtonActionPerformed
     
     
@@ -142,10 +194,49 @@ public class IEPAttributeConfigurationPanel extends javax.swing.JPanel {
         this.mAttributeTable.setModel(mTableModel);
         
         this.mAttributeTable.getSelectionModel().addListSelectionListener(new AttributeTableSelectionListener());
-        
+        this.mAttributeTable.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+                
         this.deleteButton.setEnabled(false);
         this.moveUpButton.setEnabled(false);
         this.moveDownButton.setEnabled(false);
+        
+        Vector mSqlType = new Vector();
+        mSqlType.add("");
+        for(int i = 0; i < SharedConstants.SQL_TYPE_NAMES.length; i++)
+            mSqlType.add(SharedConstants.SQL_TYPE_NAMES[i]);
+        
+        mTextFieldANU = new JTextField();
+        mTextFieldANU.setDocument(JTextFieldFilter.newAlphaNumericUnderscore());
+        mCellEditorANU = new DefaultCellEditor(mTextFieldANU);
+        
+        mTextFieldNumeric = new JTextField();
+        mTextFieldNumeric.setDocument(JTextFieldFilter.newNumeric());
+        mCellEditorNumeric = new DefaultCellEditor(mTextFieldNumeric);
+        
+        mTextFieldAny = new JTextField();
+        mCellEditorAny = new DefaultCellEditor(mTextFieldAny);
+        
+        mComboBoxSqlType = new JComboBox(mSqlType);
+        mCellEditorSqlType = new DefaultCellEditor(mComboBoxSqlType);
+        
+        spTCRenderer = new SelectPanelTableCellRenderer();
+        
+        TableColumnModel tcm = this.mAttributeTable.getColumnModel();
+        
+        tcm.getColumn(0).setCellEditor(mCellEditorANU);
+        tcm.getColumn(1).setCellEditor(mCellEditorSqlType);
+        //mComboBoxSqlType.addActionListener(new SQLTypeComboBoxActionListener());
+        tcm.getColumn( 2).setCellEditor(mCellEditorNumeric);
+        tcm.getColumn(3).setCellEditor(mCellEditorNumeric);
+        tcm.getColumn(4).setCellEditor(mCellEditorAny);
+        
+        // setting up renderer
+        tcm.getColumn(0).setCellRenderer(spTCRenderer);
+        tcm.getColumn(1).setCellRenderer(spTCRenderer);
+        tcm.getColumn(2).setCellRenderer(spTCRenderer);
+        tcm.getColumn(3).setCellRenderer(spTCRenderer);
+        tcm.getColumn(4).setCellRenderer(spTCRenderer);
+        
     }
     
     class AttributeTableSelectionListener implements ListSelectionListener {
@@ -160,13 +251,31 @@ public class IEPAttributeConfigurationPanel extends javax.swing.JPanel {
             
             int rowCount = mAttributeTable.getRowCount();
             
-            if(rowCount > 1) {
-                moveUpButton.setEnabled(true);
-                moveDownButton.setEnabled(true);
-            } else {
-                moveUpButton.setEnabled(false);
-                moveDownButton.setEnabled(false);
+            int[] rows = mAttributeTable.getSelectedRows();
+            
+            if(rows.length != 0) {
+	            //if the first row is first row then moveup should be disabled
+	            if(rows[0] == 0) {
+	                moveUpButton.setEnabled(false);
+	            } else {
+	                moveUpButton.setEnabled(true);
+	            }
+	            
+	            //if the last row is last row then move down should be disabled
+	            if(rows[rows.length -1] == mAttributeTable.getRowCount() -1) {
+	                moveDownButton.setEnabled(false);
+	            } else {
+	                moveDownButton.setEnabled(true);
+	            }
             }
+            
+//            if(rowCount > 1) {
+//                moveUpButton.setEnabled(true);
+//                moveDownButton.setEnabled(true);
+//            } else {
+//                moveUpButton.setEnabled(false);
+//                moveDownButton.setEnabled(false);
+//            }
         }
         
     }
