@@ -162,6 +162,7 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
         gemHomeValue = new javax.swing.JTextField();
         gemTool = new javax.swing.JLabel();
         gemToolValue = new javax.swing.JTextField();
+        autoDetectButton = new javax.swing.JButton();
 
         platformsList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         platformsListSP.setViewportView(platformsList);
@@ -200,6 +201,13 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
 
         gemToolValue.setEditable(false);
 
+        org.openide.awt.Mnemonics.setLocalizedText(autoDetectButton, org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.autoDetectButton.text")); // NOI18N
+        autoDetectButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                autoDetectButtonremovePlatform(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -226,12 +234,14 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
                             .add(layout.createSequentialGroup()
                                 .add(gemTool, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 95, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(gemToolValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 573, Short.MAX_VALUE)))
-                        .addContainerGap())
+                                .add(gemToolValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 573, Short.MAX_VALUE))))
                     .add(layout.createSequentialGroup()
                         .add(addButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 113, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .add(12, 12, 12)
-                        .add(removeButton))))
+                        .add(removeButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(autoDetectButton)))
+                .addContainerGap())
         );
 
         layout.linkSize(new java.awt.Component[] {gemHome, gemTool, plfInterpreter, plfName}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -262,7 +272,9 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(addButton)
-                    .add(removeButton))
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(removeButton)
+                        .add(autoDetectButton)))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -302,8 +314,13 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_removeButtonremovePlatform
 
+    private void autoDetectButtonremovePlatform(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_autoDetectButtonremovePlatform
+        performPlatformDetection();
+}//GEN-LAST:event_autoDetectButtonremovePlatform
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
+    private javax.swing.JButton autoDetectButton;
     private javax.swing.JLabel gemHome;
     private javax.swing.JTextField gemHomeValue;
     private javax.swing.JLabel gemTool;
