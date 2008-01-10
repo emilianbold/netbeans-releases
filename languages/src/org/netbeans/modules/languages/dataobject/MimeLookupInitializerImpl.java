@@ -42,7 +42,6 @@
 package org.netbeans.modules.languages.dataobject;
 
 import org.netbeans.modules.languages.LanguagesManager;
-import org.netbeans.modules.languages.dataobject.LanguagesEditorKit;
 import org.netbeans.modules.languages.features.CompletionProviderImpl;
 import org.netbeans.modules.languages.features.GLFHighlightsLayerFactory;
 import org.netbeans.spi.editor.mimelookup.MimeLookupInitializer;
@@ -53,7 +52,6 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.languages.features.BraceHighlighting;
 import org.netbeans.modules.languages.features.IndentFactory;
-import org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory;
 
 
 /**
@@ -187,9 +185,7 @@ public class MimeLookupInitializerImpl implements MimeLookupInitializer {
 //                                case 4:
 //                                    return CodeFoldingSideBarFactory.class;
                                 case 5:
-                                    // modified by caoyuan
                                     return BraceHighlighting.class;
-                                    // end modified by caoyuan
                                 case 6:
                                     return IndentFactory.class;
                                 case 7:

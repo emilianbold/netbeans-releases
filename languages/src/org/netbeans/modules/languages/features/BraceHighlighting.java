@@ -139,22 +139,28 @@ public class BraceHighlighting implements BracesMatcher, BracesMatcherFactory {
             boolean [] bckwrd = new boolean[1];
             
             String tokenText = seq.token().text().toString();
-            if (isOrigin(pairsMaps, tokenText, bckwrd)) {
+            String trimedTokenText = tokenText.trim();
+            if (isOrigin(pairsMaps, trimedTokenText, bckwrd)) {
                 if (seq.offset() < caretOffset || !searchBack) {
-                    originText = tokenText;
+                    originText = trimedTokenText;
                     backwards = bckwrd[0];
                     pairsMap = backwards ? pairsMaps[1] : pairsMaps[0];
-                    return new int [] { seq.offset(), seq.offset() + seq.token().length() };
+                    int offset = seq.offset() + tokenText.indexOf(trimedTokenText);
+                    int length = trimedTokenText.length();
+                    return new int [] { offset, offset + length };
                 }
             }
 
             while(moveTheSequence(seq, searchBack, context.getLimitOffset())) {
                 tokenText = seq.token().text().toString();
-                if (isOrigin(pairsMaps, tokenText, bckwrd)) {
-                    originText = tokenText;
+                trimedTokenText = tokenText.trim();
+                if (isOrigin(pairsMaps, trimedTokenText, bckwrd)) {
+                    originText = trimedTokenText;
                     backwards = bckwrd[0];
                     pairsMap = backwards ? pairsMaps[1] : pairsMaps[0];
-                    return new int [] { seq.offset(), seq.offset() + seq.token().length() };
+                    int offset = seq.offset() + tokenText.indexOf(trimedTokenText);
+                    int length = trimedTokenText.length();
+                    return new int [] { offset, offset + length };
                 }
             }
         }
@@ -174,17 +180,20 @@ public class BraceHighlighting implements BracesMatcher, BracesMatcherFactory {
         List<String> unresolved = new ArrayList<String>();
         unresolved.add(originText);
         while(moveTheSequence(seq, backwards, -1)) {
-            String text = seq.token().text().toString();
+            String tokenText = seq.token().text().toString();
+            String trimedTokenText = tokenText.trim();
             int depth = unresolved.size() - 1;
             String currentOrigin = unresolved.get(depth);
             Set<String> matchingTexts = pairsMap.get(currentOrigin);
-            if (matchingTexts != null && matchingTexts.contains(text)) {
+            if (matchingTexts != null && matchingTexts.contains(trimedTokenText)) {
                 unresolved.remove(depth);
                 if (unresolved.size() == 0) {                    
-                    return new int [] { seq.offset(), seq.offset() + seq.token().length() };
+                    int offset = seq.offset() + tokenText.indexOf(trimedTokenText);
+                    int length = trimedTokenText.length();
+                    return new int [] { offset, offset + length };
                 }
-            } else if (pairsMap.containsKey(text)) {
-                unresolved.add(text);
+            } else if (pairsMap.containsKey(trimedTokenText)) {
+                unresolved.add(trimedTokenText);
             }
         }
         
