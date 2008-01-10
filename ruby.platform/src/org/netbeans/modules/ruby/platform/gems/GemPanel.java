@@ -143,6 +143,7 @@ final class GemPanel extends JPanel implements Runnable {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 gemHomeValue.setText(gemManager.getGemDir());
+                setEnabledGUI(false);
                 refreshUpdated();
             }
         });
@@ -203,6 +204,42 @@ final class GemPanel extends JPanel implements Runnable {
         sb.append("</html>"); // NOI18N
 
         pane.setText(sb.toString());
+    }
+
+    private void setEnabledGUI(boolean enabled) {
+        setEnabled(TabIndex.INSTALLED, enabled);
+        setEnabled(TabIndex.NEW, enabled);
+        setEnabled(TabIndex.UPDATED, enabled);
+    }
+
+    private void setEnabled(TabIndex tab, boolean enabled) {
+        gemsTab.setEnabledAt(tab.ordinal(), enabled);
+        switch (tab) {
+            case NEW:
+                reloadNewButton.setEnabled(enabled);
+                installButton.setEnabled(enabled);
+                newPanel.setEnabled(enabled);
+                newList.setEnabled(enabled);
+                newSP.setEnabled(enabled);
+                break;
+            case UPDATED:
+                updateButton.setEnabled(enabled);
+                updateAllButton.setEnabled(enabled);
+                reloadReposButton.setEnabled(enabled);
+                updatedPanel.setEnabled(enabled);
+                updatedList.setEnabled(enabled);
+                updatedSP.setEnabled(enabled);
+                break;
+            case INSTALLED:
+                reloadInstalledButton.setEnabled(enabled);
+                uninstallButton.setEnabled(enabled);
+                installedPanel.setEnabled(enabled);
+                installedList.setEnabled(enabled);
+                installedSP.setEnabled(enabled);
+                break;
+            default:
+                throw new IllegalArgumentException();
+        }
     }
 
     /**
@@ -361,6 +398,7 @@ final class GemPanel extends JPanel implements Runnable {
             if (!tabTitle.equals(originalTabTitle)) {
                 gemsTab.setTitleAt(tab.ordinal(), tabTitle);
             }
+            setEnabled(tab, true);
         }
     }
     
@@ -372,12 +410,14 @@ final class GemPanel extends JPanel implements Runnable {
     private synchronized void refreshInstalled() {
         showProgressBar(installedList, installedDesc, installedProgress, installedProgressLabel);
         fetchingLocal = true;
+        setEnabled(TabIndex.INSTALLED, false);
         refreshGemList(TabIndex.INSTALLED);
     }
     
     private synchronized void refreshNew() {
         showProgressBar(newList, newDesc, newProgress, newProgressLabel);
         fetchingRemote = true;
+        setEnabled(TabIndex.NEW, false);
         refreshGemList(TabIndex.NEW);
     }
 
@@ -406,7 +446,7 @@ final class GemPanel extends JPanel implements Runnable {
         searchUpdatedText = new javax.swing.JTextField();
         searchUpdatedLbl = new javax.swing.JLabel();
         reloadReposButton = new javax.swing.JButton();
-        jScrollPane3 = new javax.swing.JScrollPane();
+        updatedSP = new javax.swing.JScrollPane();
         updatedList = new javax.swing.JList();
         updateButton = new javax.swing.JButton();
         updateAllButton = new javax.swing.JButton();
@@ -419,7 +459,7 @@ final class GemPanel extends JPanel implements Runnable {
         instSearchLbl = new javax.swing.JLabel();
         reloadInstalledButton = new javax.swing.JButton();
         uninstallButton = new javax.swing.JButton();
-        jScrollPane1 = new javax.swing.JScrollPane();
+        installedSP = new javax.swing.JScrollPane();
         installedList = new javax.swing.JList();
         jScrollPane5 = new javax.swing.JScrollPane();
         installedDesc = new javax.swing.JTextPane();
@@ -430,7 +470,7 @@ final class GemPanel extends JPanel implements Runnable {
         searchNewLbl = new javax.swing.JLabel();
         reloadNewButton = new javax.swing.JButton();
         installButton = new javax.swing.JButton();
-        jScrollPane2 = new javax.swing.JScrollPane();
+        newSP = new javax.swing.JScrollPane();
         newList = new javax.swing.JList();
         jScrollPane4 = new javax.swing.JScrollPane();
         newDesc = new javax.swing.JTextPane();
@@ -455,7 +495,7 @@ final class GemPanel extends JPanel implements Runnable {
         org.openide.awt.Mnemonics.setLocalizedText(reloadReposButton, org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.reloadReposButton.text")); // NOI18N
         reloadReposButton.addActionListener(formListener);
 
-        jScrollPane3.setViewportView(updatedList);
+        updatedSP.setViewportView(updatedList);
         updatedList.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.updatedList.AccessibleContext.accessibleName")); // NOI18N
         updatedList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.updatedList.AccessibleContext.accessibleDescription")); // NOI18N
 
@@ -496,7 +536,7 @@ final class GemPanel extends JPanel implements Runnable {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(updatedProgress, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, updatedPanelLayout.createSequentialGroup()
-                        .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 448, Short.MAX_VALUE)
+                        .add(updatedSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 448, Short.MAX_VALUE)
                         .add(18, 18, 18)
                         .add(jScrollPane6, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 283, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
@@ -511,7 +551,7 @@ final class GemPanel extends JPanel implements Runnable {
                     .add(reloadReposButton))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(updatedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 285, Short.MAX_VALUE)
+                    .add(updatedSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 285, Short.MAX_VALUE)
                     .add(jScrollPane6, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 285, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(updatedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
@@ -526,7 +566,7 @@ final class GemPanel extends JPanel implements Runnable {
         searchUpdatedText.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.searchUpdatedText.AccessibleContext.accessibleDescription")); // NOI18N
         searchUpdatedLbl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.searchUpdatedLbl.AccessibleContext.accessibleDescription")); // NOI18N
         reloadReposButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.reloadReposButton.AccessibleContext.accessibleDescription")); // NOI18N
-        jScrollPane3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.jScrollPane3.AccessibleContext.accessibleDescription")); // NOI18N
+        updatedSP.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.jScrollPane3.AccessibleContext.accessibleDescription")); // NOI18N
         updateButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.updateButton.AccessibleContext.accessibleDescription")); // NOI18N
         updateAllButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.updateAllButton.AccessibleContext.accessibleDescription")); // NOI18N
         jScrollPane6.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.jScrollPane6.AccessibleContext.accessibleDescription")); // NOI18N
@@ -548,7 +588,7 @@ final class GemPanel extends JPanel implements Runnable {
         uninstallButton.setEnabled(false);
         uninstallButton.addActionListener(formListener);
 
-        jScrollPane1.setViewportView(installedList);
+        installedSP.setViewportView(installedList);
         installedList.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.installedList.AccessibleContext.accessibleName")); // NOI18N
         installedList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.installedList.AccessibleContext.accessibleDescription")); // NOI18N
 
@@ -580,7 +620,7 @@ final class GemPanel extends JPanel implements Runnable {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(installedProgress, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, installedPanelLayout.createSequentialGroup()
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 448, Short.MAX_VALUE)
+                        .add(installedSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 448, Short.MAX_VALUE)
                         .add(18, 18, 18)
                         .add(jScrollPane5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 283, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
@@ -595,7 +635,7 @@ final class GemPanel extends JPanel implements Runnable {
                     .add(instSearchText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(installedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 285, Short.MAX_VALUE)
+                    .add(installedSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 285, Short.MAX_VALUE)
                     .add(jScrollPane5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 285, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(installedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
@@ -609,7 +649,7 @@ final class GemPanel extends JPanel implements Runnable {
         instSearchLbl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.instSearchLbl.AccessibleContext.accessibleDescription")); // NOI18N
         reloadInstalledButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.reloadInstalledButton.AccessibleContext.accessibleDescription")); // NOI18N
         uninstallButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.uninstallButton.AccessibleContext.accessibleDescription")); // NOI18N
-        jScrollPane1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.jScrollPane1.AccessibleContext.accessibleDescription")); // NOI18N
+        installedSP.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.jScrollPane1.AccessibleContext.accessibleDescription")); // NOI18N
         jScrollPane5.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.jScrollPane5.AccessibleContext.accessibleDescription")); // NOI18N
         installedProgress.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.installedProgress.AccessibleContext.accessibleDescription")); // NOI18N
         installedProgressLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.installedProgressLabel.AccessibleContext.accessibleDescription")); // NOI18N
@@ -629,7 +669,7 @@ final class GemPanel extends JPanel implements Runnable {
         installButton.setEnabled(false);
         installButton.addActionListener(formListener);
 
-        jScrollPane2.setViewportView(newList);
+        newSP.setViewportView(newList);
         newList.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.newList.AccessibleContext.accessibleName")); // NOI18N
         newList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.newList.AccessibleContext.accessibleDescription")); // NOI18N
 
@@ -661,7 +701,7 @@ final class GemPanel extends JPanel implements Runnable {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(newProgress, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, newPanelLayout.createSequentialGroup()
-                        .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 448, Short.MAX_VALUE)
+                        .add(newSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 448, Short.MAX_VALUE)
                         .add(18, 18, 18)
                         .add(jScrollPane4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 283, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
@@ -676,7 +716,7 @@ final class GemPanel extends JPanel implements Runnable {
                     .add(searchNewText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(newPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 285, Short.MAX_VALUE)
+                    .add(newSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 285, Short.MAX_VALUE)
                     .add(jScrollPane4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 285, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(newPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
@@ -690,7 +730,7 @@ final class GemPanel extends JPanel implements Runnable {
         searchNewLbl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.searchNewLbl.AccessibleContext.accessibleDescription")); // NOI18N
         reloadNewButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.reloadNewButton.AccessibleContext.accessibleDescription")); // NOI18N
         installButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.installButton.AccessibleContext.accessibleDescription")); // NOI18N
-        jScrollPane2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.jScrollPane2.AccessibleContext.accessibleDescription")); // NOI18N
+        newSP.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.jScrollPane2.AccessibleContext.accessibleDescription")); // NOI18N
         jScrollPane4.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.jScrollPane4.AccessibleContext.accessibleDescription")); // NOI18N
         newProgress.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.newProgress.AccessibleContext.accessibleDescription")); // NOI18N
         newProgressLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GemPanel.class, "GemPanel.newProgressLabel.AccessibleContext.accessibleDescription")); // NOI18N
@@ -840,6 +880,7 @@ final class GemPanel extends JPanel implements Runnable {
 
     private void reloadReposButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reloadReposButtonActionPerformed
         gemManager.reset();
+        setEnabledGUI(false);
         refreshUpdated();
     }//GEN-LAST:event_reloadReposButtonActionPerformed
 
@@ -1108,9 +1149,7 @@ final class GemPanel extends JPanel implements Runnable {
     private javax.swing.JPanel installedPanel;
     private javax.swing.JProgressBar installedProgress;
     private javax.swing.JLabel installedProgressLabel;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane installedSP;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JScrollPane jScrollPane6;
@@ -1120,6 +1159,7 @@ final class GemPanel extends JPanel implements Runnable {
     private javax.swing.JPanel newPanel;
     private javax.swing.JProgressBar newProgress;
     private javax.swing.JLabel newProgressLabel;
+    private javax.swing.JScrollPane newSP;
     private javax.swing.JComboBox platforms;
     private javax.swing.JButton proxyButton;
     private javax.swing.JButton reloadInstalledButton;
@@ -1139,6 +1179,7 @@ final class GemPanel extends JPanel implements Runnable {
     private javax.swing.JPanel updatedPanel;
     private javax.swing.JProgressBar updatedProgress;
     private javax.swing.JLabel updatedProgressLabel;
+    private javax.swing.JScrollPane updatedSP;
     // End of variables declaration//GEN-END:variables
     
 }
