@@ -20,6 +20,7 @@ import javax.faces.webapp.UIComponentTagBase;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -49,18 +50,17 @@ public class JsfTagSupport {
      */
     public static synchronized void initialize(ClassLoader classLoader) {
         try {
-             
-            Enumeration<URL>  urls = ((URLClassLoader) classLoader).findResources("META-INF/faces-config.xml");
+            Enumeration<URL> urls = ((URLClassLoader) classLoader).getResources("META-INF/faces-config.xml");
             while (urls.hasMoreElements()) {
                 URL url = urls.nextElement();
                 if (!url.getPath().contains("jsfcl.jar")) {
                     addTaglibFacesConfigMapEntry(url);
                 }
             }
-            
+
             // Bug Fix 124610 - Unfortunately the JSF RI component informations are not kept
             // in the standard location (META-INF/faces-config.xml)
-            urls = ((URLClassLoader) classLoader).findResources("com/sun/faces/jsf-ri-runtime.xml");
+            urls = ((URLClassLoader) classLoader).getResources("com/sun/faces/jsf-ri-runtime.xml");
             URL facesConfigUrl = urls.nextElement();
             URL tagLibUrl = new URL(facesConfigUrl.toString().split("!")[0] + "!/META-INF/html_basic.tld");
             String taglibUri = "http://java.sun.com/jsf/html";
@@ -68,68 +68,62 @@ public class JsfTagSupport {
             tagLibFacesConfigInfo.addTagLibUrl(tagLibUrl);
             tagLibFacesConfigInfo.addFacesConfigUrl(facesConfigUrl);
             statictTaglibFacesConfigLocationMap.put(taglibUri, tagLibFacesConfigInfo);
-            
-        } catch (IOException ex) {
-            ex.printStackTrace();
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
         }
-
     }
 
-    private static void addTaglibFacesConfigMapEntry(URL facesConfigUrl) {
-        try {
-            String zipFilePathPrefix = facesConfigUrl.getFile().split("!")[0];
-            String zipFilePath = zipFilePathPrefix.substring(zipFilePathPrefix.indexOf(":") + 1);
-            if (zipFilePath.contains("%20")){
-                zipFilePath = zipFilePath.replaceAll("%20", " ");
-            }
-            ZipFile in = new ZipFile(zipFilePath);
-            Enumeration<? extends ZipEntry> entries = in.entries();
-            while (entries.hasMoreElements()) {
-                ZipEntry entry = entries.nextElement();
-                if (entry.getName().endsWith(".tld")) {
-                    URL tagLibUrl = new URL(facesConfigUrl.toString().split("!")[0] + "!/" + entry.getName());
-                    try {
-                        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-                        factory.setValidating(false);
-                        DocumentBuilder documentBuilder = factory.newDocumentBuilder();
-                        Document tagLibdocument = documentBuilder.parse(tagLibUrl.openStream());
-                        NodeList tagNodes = tagLibdocument.getElementsByTagName("uri");
-                        // Scan the TLD file to find the taglib URI
-                        String taglibUri = tagNodes.item(0).getTextContent().trim();
+    private static void addTaglibFacesConfigMapEntry(URL facesConfigUrl) throws IOException, ParserConfigurationException, SAXException {
+        String zipFilePathPrefix = facesConfigUrl.getFile().split("!")[0];
+        String zipFilePath = zipFilePathPrefix.substring(zipFilePathPrefix.indexOf(":") + 1);
+        if (zipFilePath.contains("%20")) {
+            zipFilePath = zipFilePath.replaceAll("%20", " ");
+        }
+        ZipFile in = new ZipFile(zipFilePath);
+        Enumeration<? extends ZipEntry> entries = in.entries();
+        while (entries.hasMoreElements()) {
+            ZipEntry entry = entries.nextElement();
+            if (entry.getName().endsWith(".tld")) {
+                URL tagLibUrl = new URL(facesConfigUrl.toString().split("!")[0] + "!/" + entry.getName());
+                DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+                factory.setValidating(false);
+                DocumentBuilder documentBuilder = factory.newDocumentBuilder();
+                Document tagLibdocument = documentBuilder.parse(tagLibUrl.openStream());
+                NodeList tagNodes = tagLibdocument.getElementsByTagName("uri");
+                // Scan the TLD file to find the taglib URI
+                String taglibUri = tagNodes.item(0).getTextContent().trim();
 
-                        TagLibFacesConfigInfo tagLibFacesConfigInfo = new TagLibFacesConfigInfo(taglibUri);
-                        tagLibFacesConfigInfo.addTagLibUrl(tagLibUrl);
-                        tagLibFacesConfigInfo.addFacesConfigUrl(facesConfigUrl);
+                TagLibFacesConfigInfo tagLibFacesConfigInfo = new TagLibFacesConfigInfo(taglibUri);
+                tagLibFacesConfigInfo.addTagLibUrl(tagLibUrl);
+                tagLibFacesConfigInfo.addFacesConfigUrl(facesConfigUrl);
 
-                        statictTaglibFacesConfigLocationMap.put(taglibUri, tagLibFacesConfigInfo);
-                    } catch (Exception ex) {
-                        Logger.getLogger(JsfTagSupport.class.getName()).log(Level.WARNING, null, ex);
-                    }
-                }
+                statictTaglibFacesConfigLocationMap.put(taglibUri, tagLibFacesConfigInfo);
             }
-        } catch (IOException ex) {
-            Logger.getLogger(JsfTagSupport.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
     /** 
      *Factory Method to get TagLibrarySupport for a particular taglibUri and ClassLoader
      */
-    public static JsfTagSupport getInstance(String taglibUri) {
+    public static JsfTagSupport getInstance(
+            String taglibUri) throws JsfTagSupportException, SAXException, ParserConfigurationException, IOException {
         synchronized (lock) {
             if (!cachedTagLibraryInfoMap.containsKey(taglibUri)) {
                 cachedTagLibraryInfoMap.put(taglibUri, new JsfTagSupport(taglibUri));
             }
+
         }
         return cachedTagLibraryInfoMap.get(taglibUri);
     }
 
-    public Object getTagHandler(ClassLoader classLoader, String tagName) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+    public Object getTagHandler(
+            ClassLoader classLoader, String tagName) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         TagInfo tagInfo = tagInfoMap.get(tagName);
         return classLoader.loadClass(tagInfo.getTagClass()).newInstance();
     }
 
-    public Object getComponent(ClassLoader classLoader, String tagName) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+    public Object getComponent(
+            ClassLoader classLoader, String tagName) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         UIComponentTagBase componentTag = (UIComponentTagBase) getTagHandler(classLoader, tagName);
         String componentType = componentTag.getComponentType();
         ComponentInfo componentInfo = componentInfoMap.get(componentType);
@@ -137,58 +131,52 @@ public class JsfTagSupport {
         return classLoader.loadClass(componentClass).newInstance();
     }
 
-    public String getComponentClass(ClassLoader classLoader, String tagName) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+    public String getComponentClass(
+            ClassLoader classLoader, String tagName) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         UIComponentTagBase componentTag = (UIComponentTagBase) getTagHandler(classLoader, tagName);
         String componentType = componentTag.getComponentType();
         ComponentInfo componentInfo = componentInfoMap.get(componentType);
         return componentInfo.getComponentClass();
     }
 
-    private JsfTagSupport(String taglibUri) {
-        try {
-            TagLibFacesConfigInfo tagLibFacesConfigInfo = statictTaglibFacesConfigLocationMap.get(taglibUri);
+    private JsfTagSupport(String taglibUri) throws JsfTagSupportException, SAXException, ParserConfigurationException, IOException {
+        TagLibFacesConfigInfo tagLibFacesConfigInfo = statictTaglibFacesConfigLocationMap.get(taglibUri);
 
-            if (tagLibFacesConfigInfo != null) {
-                DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-                List<URL> tagLibUrlList = tagLibFacesConfigInfo.getTagLibUrls();
-                for (URL tagLibUrl : tagLibUrlList) {
-                    // Create the builder and parse XML data from input stream
-                    Document tagLibdocument = factory.newDocumentBuilder().parse(tagLibUrl.openStream());
-                    parseTagLibary(tagLibdocument);
-                }
-
-                List<URL> facesConfigUrlList = tagLibFacesConfigInfo.getFacesConfigUrls();
-                for (URL facesConfigUrl : facesConfigUrlList) {
-                    // Create the builder and parse XML data from input stream
-                    Document facesConfigdocument = factory.newDocumentBuilder().parse(facesConfigUrl.openStream());
-                    parseFacesConfig(facesConfigdocument);
-                }
-            } else {
-                throw new IllegalArgumentException(NbBundle.getMessage(JsfTagSupport.class, "UNRECOGNIZED_TAGLIB") + taglibUri);
+        if (tagLibFacesConfigInfo != null) {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            List<URL> tagLibUrlList = tagLibFacesConfigInfo.getTagLibUrls();
+            for (URL tagLibUrl : tagLibUrlList) {
+                // Create the builder and parse XML data from input stream
+                Document tagLibdocument = factory.newDocumentBuilder().parse(tagLibUrl.openStream());
+                parseTagLibary(tagLibdocument);
             }
 
-        } catch (SAXException ex) {
-            Logger.getLogger(JsfTagSupport.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            Logger.getLogger(JsfTagSupport.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ParserConfigurationException ex) {
-            Logger.getLogger(JsfTagSupport.class.getName()).log(Level.SEVERE, null, ex);
+            List<URL> facesConfigUrlList = tagLibFacesConfigInfo.getFacesConfigUrls();
+            for (URL facesConfigUrl : facesConfigUrlList) {
+                // Create the builder and parse XML data from input stream
+                Document facesConfigdocument = factory.newDocumentBuilder().parse(facesConfigUrl.openStream());
+                parseFacesConfig(facesConfigdocument);
+            }
+        } else {
+            throw new JsfTagSupportException(NbBundle.getMessage(JsfTagSupport.class, "UNRECOGNIZED_TAGLIB") + taglibUri);
         }
-
     }
 
     private Map<String, ComponentInfo> parseFacesConfig(Document facesConfigdocument) {
         NodeList componentNodes = facesConfigdocument.getElementsByTagName("component");
-        for (int i = 0; i < componentNodes.getLength(); i++) {
+        for (int i = 0; i <
+                componentNodes.getLength(); i++) {
             ComponentInfo componentInfo = new ComponentInfo(componentNodes.item(i));
             componentInfoMap.put(componentInfo.getComponentType(), componentInfo);
         }
+
         return componentInfoMap;
     }
 
     private void parseTagLibary(Document tagLibdocument) {
         NodeList tagNodes = tagLibdocument.getElementsByTagName("tag");
-        for (int i = 0; i < tagNodes.getLength(); i++) {
+        for (int i = 0; i <
+                tagNodes.getLength(); i++) {
             TagInfo tagInfo = new TagInfo(tagNodes.item(i));
             tagInfoMap.put(tagInfo.getName(), tagInfo);
         }

@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.visualweb.jsfsupport.container;
 
+import java.io.IOException;
 import java.util.Map;
 
 import javax.faces.application.Application;
@@ -50,6 +51,7 @@ import javax.faces.render.RenderKitFactory;
 import javax.faces.FactoryFinder;
 //import javax.portlet.PortletContext;
 import javax.servlet.ServletContextEvent;
+import javax.xml.parsers.ParserConfigurationException;
 import org.openide.ErrorManager;
 
 
@@ -57,6 +59,9 @@ import com.sun.rave.designtime.DesignContext;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.visualweb.jsfsupport.render.RaveRenderKit;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
+import org.xml.sax.SAXException;
 
 /**
  * FacesContainer provides a "mock" web/servlet container environment for hosting the design of a
@@ -69,6 +74,7 @@ import org.netbeans.modules.visualweb.jsfsupport.render.RaveRenderKit;
 public class FacesContainer {
 
     protected static boolean DISABLE_RESET_APPLICATION_MAP = false;
+    
 
     static {
         String string = System.getProperty("rave.disableResetApplicationMap");
@@ -79,7 +85,6 @@ public class FacesContainer {
     }
 
     // State variables
-
     private boolean portletContainer;
     private RaveServletContext context;
     private RaveServletConfig config;
@@ -87,7 +92,6 @@ public class FacesContainer {
     private RaveFacesContext facesContext;
     private UIViewRoot defViewRoot;
     private ClassLoader loader;
-
     private static ClassLoader staticLoader;
 
     /**
@@ -112,6 +116,7 @@ public class FacesContainer {
     private static final String DOM_PARSER_FACTORY = "com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl"; // NOI18N
     private static final String NB_STARTUP_SAX_FACTORY = "org.netbeans.core.startup.SAXFactoryImpl"; // NOI18N
     private static final String NB_STARTUP_DOM_FACTORY = "org.netbeans.core.startup.DOMFactoryImpl"; // NOI18N
+
     /**
      * Constructor for the <em>FacesContainer</em>. Only one such object will exist at any given
      * time for a project. Perform the initialization of the mock runtime container (server) as well
@@ -130,24 +135,24 @@ public class FacesContainer {
                 Thread.currentThread().setContextClassLoader(cl);
                 this.portletContainer = isPortletContainer;
                 initialize(cl);
-            }finally {
+            } finally {
                 Thread.currentThread().setContextClassLoader(oldContextClassLoader);
             }
         } finally {
             // XXX #6460001. Hack. By this time the startup shouldn't be getting back, otherwise it would cause issues later.
             if (!NB_STARTUP_SAX_FACTORY.equals(origSaxProperty)) {
-                if(origSaxProperty != null) {
+                if (origSaxProperty != null) {
                     System.setProperty(SYS_PROP_SAX_PARSER_FACTORY, origSaxProperty);
                 }
             }
             if (!NB_STARTUP_DOM_FACTORY.equals(origDomProperty)) {
-                if(origDomProperty != null) {
+                if (origDomProperty != null) {
                     System.setProperty(SYS_PROP_DOM_PARSER_FACTORY, origDomProperty);
                 }
             }
         }
     }
-    
+
     /**
      * Initilize or reinitialize this environment with a new class loader
      *
@@ -155,25 +160,25 @@ public class FacesContainer {
      */
     public void initialize(ClassLoader cl) {
         this.loader = cl;
-        
+
         // Initialize the mock ServletContext
         // This is not right when isPortlet is true, but too many things depend
         // on servlet context (see the configure listeners and such) so at designtime
         // we provide a servlet context too. Note however that the external context
         // is initialized with the portlet context only
         context = new RaveServletContext();
-        
+
         // Initialize the mock ServletConfig object for this context
         config = new RaveServletConfig(context);
         try {
             Class klass = Class.forName("org.netbeans.modules.visualweb.jsfsupport.container.RaveConfigureListener", true, this.getClass().getClassLoader());
             configureListener = (RaveConfigureListener) klass.newInstance();
-            
-        } catch(Throwable e) {
+
+        } catch (Throwable e) {
             ErrorManager.getDefault().notify(e);
         }
         //configureListener = new RaveConfigureListener();
-        
+
         // Initialize the Servlet itself
         try {
             new RaveServlet(config);
@@ -181,12 +186,12 @@ public class FacesContainer {
             // Big, Bad Mojo ... TODO: recover gracefully
             System.err.println("Failed to create Servlet"); //NOI18N
         }
-        
+
         ServletContextEvent e = new ServletContextEvent(context);
         staticLoader = cl;
-        
+
         configureListener.contextInitialized(e);
-        
+
         // We no longer support portlet
 //        if (portletContainer) {
 //             
@@ -195,32 +200,33 @@ public class FacesContainer {
 //            // Initialize the Rave FacesContext object
 //            facesContext = new RaveFacesContext(new RaveExternalContext(context));
 //        }
-        facesContext = new RaveFacesContext(new RaveExternalContext(context));    
+        facesContext = new RaveFacesContext(new RaveExternalContext(context));
         facesContext.unsetCurrentInstance();
         defViewRoot = newViewRoot();
         facesContext.setViewRoot(defViewRoot);  // stub viewRoot to satisfy some components
         facesContext.setCurrentInstance();
         facesContext.setServletContext(context);
-        
+
         // Wrap the default run-time render kit with a design-time render kit, which
         // knows about design-time wrappers for renderers.
         RenderKitFactory factory = (RenderKitFactory) FactoryFinder.getFactory(FactoryFinder.RENDER_KIT_FACTORY);
         String id = facesContext.getViewRoot().getRenderKitId();
         RenderKit renderKit = factory.getRenderKit(facesContext, id);
-        if (!(renderKit instanceof RaveRenderKit))
+        if (!(renderKit instanceof RaveRenderKit)) {
             factory.addRenderKit(id, new RaveRenderKit(renderKit));
-        
+        }
+
         // Initialize the JsfTagSupport URI/TLD-FacesConfig map
         JsfTagSupport.initialize(loader);
     }
-    
+
     /**
      * Destroy this environment, clearing out references to other resources
      */
     public void destroy() {
         facesContext.setDesignContext(null);
     }
-    
+
     /**
      * @return the 'mock' <em>FacesContext</em> instance, making sure it is 'current' first
      */
@@ -228,7 +234,7 @@ public class FacesContainer {
         facesContext.setCurrentInstance();
         return facesContext;
     }
-    
+
     /**
      * Return whether this container is a portlet container. If false, it's a servlet container.
      * @return True iff this container is a portlet container
@@ -236,7 +242,7 @@ public class FacesContainer {
     public boolean isPortletContainer() {
         return portletContainer;
     }
-    
+
     /**
      * @return
      */
@@ -257,14 +263,14 @@ public class FacesContainer {
             }
             viewRoot.setRenderKitId(renderKitId);
             return viewRoot;
-        } catch(Exception exc){
+        } catch (Exception exc) {
             exc.printStackTrace();
-        }finally {
+        } finally {
             Thread.currentThread().setContextClassLoader(oldContextClassLoader);
         }
         return null;
     }
-    
+
     /**
      * Prepare our contexts to render UIComponent(s) from a given DesignContext, and return a usable
      * writer.
@@ -278,32 +284,33 @@ public class FacesContainer {
         ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader(loader);
-            
+
             facesContext.setCurrentInstance();  // make sure the context is available to components via thread lookup
             facesContext.setDesignContext(lc);  //!CQ HACK? to have to point its state to each lc all the time
             facesContext.setViewRoot(viewRoot);  // the view root for the component tree to be rendered
             // TODO: We need to see if we may want to only change app scope on design context being from a different project
-            if (!DISABLE_RESET_APPLICATION_MAP)
+            if (!DISABLE_RESET_APPLICATION_MAP) {
                 facesContext.getExternalContext().getApplicationMap().clear();
+            }
             facesContext.getExternalContext().getSessionMap().clear();
             facesContext.getExternalContext().getRequestMap().clear();
-            
+
 //          DocFragmentJspWriter rw = new DocFragmentJspWriter(this, frag);
 //          facesContext.setResponseWriter(rw);
             facesContext.setResponseWriter(responseWriter);
-            
+
             Map requestMap = facesContext.getExternalContext().getRequestMap();
             requestMap.put("com.sun.faces.FormNumber", new Integer(0));
             requestMap.put("com.sun.faces.INVOCATION_PATH", "/rave");
 //
 //          return rw;
-        } catch(Exception exc){
+        } catch (Exception exc) {
             exc.printStackTrace();
-        }finally {
+        } finally {
             Thread.currentThread().setContextClassLoader(oldContextClassLoader);
         }
     }
-    
+
     /**
      * Finish up a component rendering run.
      * @param rw
@@ -318,22 +325,22 @@ public class FacesContainer {
                 responseWriter.flush();
                 facesContext.setViewRoot(defViewRoot);  // back to the empty default one
 /* TODONOW
- * We need to fix issue where we do not set design context properly, we assume it was
- * set by something else, this is not good.  Reverting it back for now in order for me to
- * be able to commit and have sanity pass.  Will work on issue with Deva, Tor, Craig.
- */
+                 * We need to fix issue where we do not set design context properly, we assume it was
+                 * set by something else, this is not good.  Reverting it back for now in order for me to
+                 * be able to commit and have sanity pass.  Will work on issue with Deva, Tor, Craig.
+                 */
 //                facesContext.setDesignContext(null);
                 facesContext.setResponseWriter(null);
                 facesContext.setResponseStream(null);
             } catch (Exception e) {
             }
-        } catch(Exception exc){
+        } catch (Exception exc) {
             exc.printStackTrace();
-        }finally {
+        } finally {
             Thread.currentThread().setContextClassLoader(oldContextClassLoader);
         }
     }
-    
+
     /**
      * Set the ClassLoader associated with this container
      * @param loader The ClassLoader to be used for loading resources
@@ -342,42 +349,38 @@ public class FacesContainer {
         ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader(this.loader);
-            
+
             // Cleanup.
             if (facesContext != null) {
                 facesContext.resetApplication();
             }
-        } catch(Exception exc){
+        } catch (Exception exc) {
             exc.printStackTrace();
-        }finally {
+        } finally {
             Thread.currentThread().setContextClassLoader(oldContextClassLoader);
         }
-        
+
         // set the loader
         this.loader = loader;
-        
+
         oldContextClassLoader = Thread.currentThread().getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader(loader);
             // initilize the container
             initialize(loader);
-        } catch(Exception exc){
+        } catch (Exception exc) {
             exc.printStackTrace();
-        }finally {
+        } finally {
             Thread.currentThread().setContextClassLoader(oldContextClassLoader);
         }
     }
-    
-      public String findComponentClass(String tagName, String taglibUri) {
+
+    public String findComponentClass(String tagName, String taglibUri) throws JsfTagSupportException {
+        String errorMessage = org.openide.util.NbBundle.getMessage(FacesContainer.class, "JSF_COMPONENT_NOT_FOUND", new Object[]{tagName, taglibUri});
         try {
             return JsfTagSupport.getInstance(taglibUri).getComponentClass(loader, tagName);
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(JsfTagSupport.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            Logger.getLogger(JsfTagSupport.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            Logger.getLogger(JsfTagSupport.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (Exception ex) {
+            throw new JsfTagSupportException(errorMessage, ex);
         }
-        return null;
     }
 }
