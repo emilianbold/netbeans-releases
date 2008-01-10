@@ -52,6 +52,7 @@ public class StampsTest extends NbTestCase {
     private File userdir;
     private File ide;
     private File platform;
+    private File install;
     
     public StampsTest(String testName) {
         super(testName);
@@ -61,8 +62,9 @@ public class StampsTest extends NbTestCase {
     protected void setUp() throws Exception {
         clearWorkDir();
         
-        platform = new File(getWorkDir(), "platform7");
-        ide = new File(getWorkDir(), "ide8");
+        install = new File(getWorkDir(), "install");
+        platform = new File(install, "platform7");
+        ide = new File(install, "ide8");
         userdir = new File(getWorkDir(), "tmp");
         
         System.setProperty("netbeans.home", platform.getPath());
@@ -86,9 +88,30 @@ public class StampsTest extends NbTestCase {
         long stamp = Stamps.moduleJARs();
         assertEquals("Timestamp is taken from api.languages module", 90000L, stamp);
         
-        assertStamp(60000L, platform);
-        assertStamp(90000L, ide);
-        assertStamp(-1L, userdir);
+        assertStamp(60000L, platform, false, true);
+        assertStamp(90000L, ide, false, true);
+        assertStamp(-1L, userdir, false, false);
+        
+        Stamps.main("reset");
+        
+        CountingSecurityManager.initialize(install.getPath());
+
+        long newStamp = Stamps.moduleJARs();
+        
+        CountingSecurityManager.assertCounts("Just two accesses installation", 2);
+        assertEquals("Stamps are the same", stamp, newStamp);
+        
+        
+        assertStamp(60000L, platform, false, true);
+        assertStamp(90000L, ide, false, true);
+        assertStamp(-1L, userdir, false, false);
+
+        Stamps.main("reset");
+        CountingSecurityManager.initialize(new File(userdir, "var").getPath());
+        long newStamp2 = Stamps.moduleJARs();
+        
+        CountingSecurityManager.assertCounts("Just two accesses to cache", 2);
+        assertEquals("Stamps are the same", stamp, newStamp2);
         
     }
 
@@ -101,15 +124,26 @@ public class StampsTest extends NbTestCase {
     
     
     
-    private static void assertStamp(long expectedValue, File cluster) {
-        File stamp = new File(cluster, ".lastModified");
+    private static void assertStamp(long expectedValue, File cluster, boolean global, boolean local) {
+        File globalStamp = new File(cluster, ".lastModified");
+
+        File userDir = new File(System.getProperty("netbeans.user"));
+        File localStamp = new File(new File(new File(new File(userDir, "var"), "cache"), "lastModified"), cluster.getName());
         
-        if (expectedValue == -1L) {
-            assertFalse("File shall not exist: " + stamp, stamp.exists());
+        if (global) {
+            assertTrue("File shall exist: " + globalStamp, globalStamp.exists());
+            assertEquals("Modification time is good " + globalStamp, expectedValue, globalStamp.lastModified());
         } else {
-            assertTrue("File shall exist: " + stamp, stamp.exists());
-            assertEquals("Modification time is good " + stamp, expectedValue, stamp.lastModified());
+            assertFalse("File shall not exist: " + globalStamp, globalStamp.exists());
         }
+
+        if (local) {
+            assertTrue("File shall exist: " + localStamp, localStamp.exists());
+            assertEquals("Modification time is good " + localStamp, expectedValue, localStamp.lastModified());
+        } else {
+            assertFalse("File shall not exist: " + localStamp, localStamp.exists());
+        }
+        
     }
 
     private void createModule(String cnb, File cluster, long accesTime) throws IOException {

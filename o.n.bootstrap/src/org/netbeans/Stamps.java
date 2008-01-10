@@ -126,7 +126,21 @@ public final class Stamps {
             }
             return;
         }
-        
+        String user = System.getProperty ("netbeans.user"); // NOI18N
+        if (user != null) {
+            File userDir = new File(user);
+            stamp = new File(new File(new File(new File(userDir, "var"), "cache"), "lastModified"), cluster.getName());
+            if (checkStampFile && (time = stamp.lastModified()) > 0) {
+                if (time > result.longValue()) {
+                    result.set(time);
+                }
+                return;
+            }
+        } else {
+            createStampFile = false;
+        }
+
+    
         File configDir = new File(new File(cluster, "config"), "Modules"); // NOI18N
         File modulesDir = new File(cluster, "modules"); // NOI18N
         
@@ -135,6 +149,7 @@ public final class Stamps {
     
         if (createStampFile) {
             try {
+                stamp.getParentFile().mkdirs();
                 stamp.createNewFile();
                 stamp.setLastModified(result.longValue());
             } catch (IOException ex) {

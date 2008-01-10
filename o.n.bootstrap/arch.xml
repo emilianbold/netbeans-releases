@@ -1001,8 +1001,17 @@ made subject to such option by the copyright holder.
             permision or need to modify the shared installation clusters.
             </p>
         </api>
+        <api category="private" group="java.io.File" name="cached.lastModified" type="export">
+            <p>
+            If the <code>.lastModified</code> file is not present in cluster
+            directory, it is recomputed on startup and stored in
+            <code>$userdir/var/cache/lastModified/$clustername</code>. This
+            file and its content is meant just for private consumption of the
+            IDE.
+            </p>
+        </api>
 
-        <api category="devel" group="java.io.File" name="all-resources.dat" type="private">
+        <api category="devel" group="java.io.File" name="all-resources.dat" type="export">
             <p>
             To speedup class loading during startup, the system keeps a cache
             of resources needed during startup in var/cache/all-resources.dat.
@@ -1016,7 +1025,7 @@ made subject to such option by the copyright holder.
             and versioning to allow evolution of its (private) format.
             </p>
         </api>
-    </answer>
+    </answer>`
 
 
 
