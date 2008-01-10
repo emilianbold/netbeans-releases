@@ -96,6 +96,8 @@ public class ToolTipAnnotation extends Annotation {
             document.readLock ();
             try {
                 TokenSequence tokenSequence = tokenHierarchy.tokenSequence ();
+                if (tokenSequence == null)
+                    return null;
                 tokenSequence.move (offset);
                 if (!tokenSequence.moveNext() && !tokenSequence.movePrevious()) return null;
                 Token token = tokenSequence.token ();
