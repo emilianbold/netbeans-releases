@@ -242,7 +242,7 @@ made subject to such option by the copyright holder.
                     </folder>
                 </folder>
                 
-                <file name="Settings.settings" url="XMLEditor-options.xml"/>
+                <!-- <file name="Settings.settings" url="XMLEditor-options.xml"/> -->
                 
             </folder> <!-- xml-external-parsed-entity -->
         </folder> <!-- text -->
