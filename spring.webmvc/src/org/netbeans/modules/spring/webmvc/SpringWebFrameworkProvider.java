@@ -152,7 +152,6 @@ public class SpringWebFrameworkProvider extends WebFrameworkProvider {
         if (panel == null) {
             panel = new SpringConfigPanel();
         }
-        panel.setWebModule(webModule);
         return panel;
     }
 
