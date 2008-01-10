@@ -58,7 +58,7 @@ made subject to such option by the copyright holder.
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="servlet-types"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/spring/webmvc/resources/templates/descriptions/abstractController.html"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/spring/webmvc/resources/abstractController.html"/>
             </file>
             <file name="SimpleFormController.java" url="templates/SimpleFormController.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.spring.webmvc.resources.Bundle"/>
@@ -67,7 +67,7 @@ made subject to such option by the copyright holder.
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="servlet-types"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/spring/webmvc/resources/templates/descriptions/simpleFormController.html"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/spring/webmvc/resources/simpleFormController.html"/>
             </file>
         </folder>
     </folder>
