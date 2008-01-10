@@ -76,7 +76,7 @@ public final class IndentUtils {
      * The cache does not contain indents smaller than the particular tabSize
      * since they are only spaces contained in cachedSpacesStrings.
      */
-    private static final String[][] cachedTabIndents = new String[MAX_CACHED_TAB_SIZE][];
+    private static final String[][] cachedTabIndents = new String[MAX_CACHED_TAB_SIZE + 1][];
     
     private IndentUtils() {
         // no instances

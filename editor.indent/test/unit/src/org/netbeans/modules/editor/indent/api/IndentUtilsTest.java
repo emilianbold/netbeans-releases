@@ -98,6 +98,8 @@ public class IndentUtilsTest extends NbTestCase {
         ArrayUtilities.appendSpaces(sb, i);
         assertEquals(sb.toString(), IndentUtils.cachedOrCreatedIndentString(testUncachedIndent, false, 8));
         
+        // Test cache limits (#124352)
+        assertEquals("\t   ", IndentUtils.cachedOrCreatedIndentString(11, false, 8));
     }
 
 }
