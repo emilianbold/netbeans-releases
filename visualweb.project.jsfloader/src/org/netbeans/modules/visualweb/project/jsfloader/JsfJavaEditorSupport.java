@@ -48,6 +48,7 @@ import org.netbeans.modules.visualweb.palette.api.CodeClipPaletteActions;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.netbeans.modules.visualweb.spi.designer.jsf.DesignerJsfServiceProvider;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.EventQueue;
 import java.io.IOException;
 import java.io.Serializable;
@@ -61,6 +62,7 @@ import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
@@ -146,9 +148,19 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
         //Bugfix #10688 open() is now run in AWT thread
         Mutex.EVENT.writeAccess(new Runnable() {
             public void run() {
-                CloneableTopComponent editor = doOpenDesigner();
-                MultiViewHandler handler = MultiViews.findMultiViewHandler(editor);
-                handler.requestActive(handler.getPerspectives()[ELEMENT_INDEX_DESIGNER]);
+                JFrame mainWin = (JFrame)WindowManager.getDefault().getMainWindow();
+                try {
+                    // show wait cursor using same method as Form editor (see FormEditor.java)
+                    mainWin.getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                    mainWin.getGlassPane().setVisible(true);
+                            
+                    CloneableTopComponent editor = doOpenDesigner();
+                    MultiViewHandler handler = MultiViews.findMultiViewHandler(editor);
+                    handler.requestActive(handler.getPerspectives()[ELEMENT_INDEX_DESIGNER]);
+                }finally {
+                    mainWin.getGlassPane().setCursor(null);
+                    mainWin.getGlassPane().setVisible(false);
+                }
             }
         });
     }
@@ -181,9 +193,18 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
     protected void openJsp() {
         Mutex.EVENT.writeAccess(new Runnable() {
             public void run() {
-                CloneableTopComponent editor = openCloneableTopComponent();
-                editor.requestActive();
-                viewJspSource(editor);
+                JFrame mainWin = (JFrame)WindowManager.getDefault().getMainWindow();
+                try {
+                    // show wait cursor using same method as Form editor (see FormEditor.java)
+                    mainWin.getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                    mainWin.getGlassPane().setVisible(true);
+                    CloneableTopComponent editor = openCloneableTopComponent();
+                    editor.requestActive();
+                    viewJspSource(editor);
+                }finally {
+                    mainWin.getGlassPane().setCursor(null);
+                    mainWin.getGlassPane().setVisible(false);
+                }
             }
         });
     }  
