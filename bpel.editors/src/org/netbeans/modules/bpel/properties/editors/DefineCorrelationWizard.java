@@ -45,6 +45,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+import java.awt.datatransfer.Transferable;
 import java.text.MessageFormat;
 import java.util.*;
 import javax.swing.DefaultComboBoxModel;
@@ -52,9 +53,14 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.TreeModelListener;
 import javax.swing.plaf.basic.BasicComboBoxRenderer;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
 import org.netbeans.modules.bpel.model.api.Activity;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.Invoke;
@@ -65,6 +71,14 @@ import org.netbeans.modules.bpel.model.api.Scope;
 import org.netbeans.modules.bpel.model.api.Sequence;
 import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.print.api.PrintUtil;
+import org.netbeans.modules.soa.mappercore.Mapper;
+import org.netbeans.modules.soa.mappercore.model.Graph;
+import org.netbeans.modules.soa.mappercore.model.GraphSubset;
+import org.netbeans.modules.soa.mappercore.model.MapperModel;
+import org.netbeans.modules.soa.mappercore.model.SourcePin;
+import org.netbeans.modules.soa.mappercore.model.TargetPin;
+import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
+import org.netbeans.modules.soa.mappercore.model.VertexItem;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
@@ -347,9 +361,12 @@ public class DefineCorrelationWizard implements WizardProperties {
             currentSelectedActivity = (BpelEntity) activityComboBox.getSelectedItem();
             WizardDefineCorrelationPanel wizardDefineCorrelationPanel = 
                 ((WizardDefineCorrelationPanel) wizardPanels[1]);
-            if ((previousSelectedActivity == null) ||
-                (! previousSelectedActivity.equals(currentSelectedActivity))) {
-                wizardDefineCorrelationPanel.rebuildActivityCorrelationMapper(currentSelectedActivity);
+            if (previousSelectedActivity == null) { // this panel is shown for the 1st time
+                wizardDefineCorrelationPanel.buildCorrelationMapper(mainBpelEntity, currentSelectedActivity);
+            } else { // this panel is shown after clicking of the button "Back"
+                if (! previousSelectedActivity.equals(currentSelectedActivity)) {
+                    wizardDefineCorrelationPanel.buildCorrelationMapper(null, currentSelectedActivity);
+                }
             }
         }
         //====================================================================//
@@ -374,28 +391,141 @@ public class DefineCorrelationWizard implements WizardProperties {
     }
     //========================================================================//
     public class WizardDefineCorrelationPanel extends WizardAbstractPanel {
+        private CorrelationMapperTreeModel leftTreeModel, rightTreeModel;
+        private Mapper correlationMapper;
+        
         public WizardDefineCorrelationPanel() {
             super();
-            JScrollPane jScrollPane = new JScrollPane(
-                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-            wizardPanel.add(jScrollPane);
         }
         
-        public void rebuildActivityCorrelationMapper(BpelEntity correlatedActivity) {
+        public void buildCorrelationMapper(BpelEntity leftBpelEntity, BpelEntity rightBpelEntity) {
+            if (leftBpelEntity != null) {
+                leftTreeModel = new CorrelationMapperTreeModel(leftBpelEntity);
+            }
+            if (rightBpelEntity != null) {
+                rightTreeModel = new CorrelationMapperTreeModel(rightBpelEntity);
+            }
+            MapperModel mapperModel = new CorrelationMapperModel(leftTreeModel, rightTreeModel);
+            if (correlationMapper == null) {
+                correlationMapper = new Mapper(mapperModel);
+                wizardPanel.add(correlationMapper);
+                wizardPanel.revalidate();
+            } else {
+                correlationMapper.setModel(mapperModel);
+            }
         }
-/*
-wizardPanel.setLayout(new GridBagLayout());
-initializeGridBagConstraints();
-wizardPanel.add(new JLabel(PrintUtil.i18n(
-    WizardSelectMessagingActivityPanel.class, "LBL_Initiated_Messaging_Activities")), 
-    gbc);
 
-gbc.gridx = 1;
-JComboBox activityComboBox = new JComboBox();
-activityComboBox.setMinimumSize(new Dimension(200, 20));
-activityComboBox.setPreferredSize(activityComboBox.getMinimumSize());
-wizardPanel.add(activityComboBox, gbc);
-*/
+        @Override
+        public boolean isValid() {
+            boolean isOK = true;
+//*******??????? check that left and right trees in mapper contains at least 1 leaf-child.
+            return isOK;
+        }
+
+        @Override
+        public void validate() throws WizardValidationException {
+        }
+        //====================================================================//
+        private class CorrelationMapperTreeModel extends DefaultTreeModel {
+            public CorrelationMapperTreeModel(BpelEntity bpelEntity) {
+                super(new CorrelationMapperTreeNode(bpelEntity));
+            }
+        }
+        //====================================================================//
+        private class CorrelationMapperTreeNode extends DefaultMutableTreeNode {
+            public CorrelationMapperTreeNode(BpelEntity bpelEntity) {
+                super(bpelEntity);
+            }
+        }
+        //====================================================================//
+        private class CorrelationMapperModel implements MapperModel {
+            private TreeModel letfTreeModel, rightTreeModel;
+
+            public CorrelationMapperModel(TreeModel letfTreeModel, TreeModel rightTreeModel) {
+                this.letfTreeModel = letfTreeModel;
+                this.rightTreeModel = rightTreeModel;
+            }
+            
+            public boolean canConnect(TreePath treePath, SourcePin source, TargetPin target) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            public boolean canCopy(TreePath treePath, GraphSubset graphSubset) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            public boolean canMove(TreePath treePath, GraphSubset graphSubset) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            public void connect(TreePath treePath, SourcePin source, TargetPin target) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            public void copy(TreePath treePath, GraphSubset graphGroup, int x, int y) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            public Graph getGraph(TreePath treePath) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            public GraphSubset getGraphSubset(Transferable transferable) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            public TreeModel getLeftTreeModel() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            public TreeSourcePin getTreeSourcePin(TreePath treePath) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            public void move(TreePath treePath, GraphSubset graphGroup, int x, int y) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            public boolean searchGraphsInside(TreePath treePath) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            public void valueChanged(TreePath treePath, VertexItem vertexItem, Object newValue) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+                public void addTreeModelListener(TreeModelListener l) {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+
+                public Object getChild(Object parent, int index) {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+
+                public int getChildCount(Object parent) {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+
+                public int getIndexOfChild(Object parent, Object child) {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+
+                public Object getRoot() {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+
+                public boolean isLeaf(Object node) {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+
+                public void removeTreeModelListener(TreeModelListener l) {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+
+                public void valueForPathChanged(TreePath path, Object newValue) {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+        }
     }
     //========================================================================//
     public class WizardCorrelationConfigurationPanel extends WizardAbstractPanel {
