@@ -47,13 +47,17 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
+import java.util.ArrayList;
+import javax.swing.Action;
 import javax.swing.JComponent;
+import javax.swing.JSeparator;
 import javax.swing.text.Document;
 
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
+import org.openide.actions.FileSystemAction;
 import org.openide.awt.UndoRedo;
 import org.openide.cookies.SaveCookie;
 import org.openide.nodes.Node;
@@ -237,5 +241,33 @@ public class ETLSourceMultiViewElement extends CloneableEditor implements MultiV
         if (firstObject instanceof ETLDataObject) {
             etlDataObject = (ETLDataObject) firstObject;
         }
+    }
+
+   @Override
+    public Action[] getActions() {
+        ArrayList<Action> actionsList = new ArrayList<Action>();
+        for (Action action : super.getActions()) {            
+            //FileSystemAction gets added from addFromLayers().commenting this will make Local History option appear twice
+            if(!(action instanceof FileSystemAction))
+            actionsList.add(action);
+        }
+        actionsList.add(addFromLayers());
+        Action[] actions = new Action[actionsList.size()];
+        actionsList.toArray(actions);
+        return actions;
+    }
+
+    private Action addFromLayers() {
+        Action action = null;
+        Lookup look = Lookups.forPath("Projects/Actions");
+        for (Object next : look.lookupAll(Object.class)) {
+            if (next instanceof Action) {
+                action = (Action) next;
+            } else if (next instanceof JSeparator) {
+                action = null;
+            }
+        }
+        java.util.logging.Logger.getLogger(ETLSourceMultiViewElement.class.getName()).info("********* addfrmlayers action "+action);
+        return action;
     }
 }

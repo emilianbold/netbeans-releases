@@ -66,7 +66,6 @@ import org.netbeans.modules.etl.model.ETLDefinition;
 import org.netbeans.modules.etl.ui.palette.PaletteSupport;
 import org.netbeans.modules.sql.framework.model.utils.SQLObjectUtil;
 import org.netbeans.modules.etl.ui.view.ETLCollaborationTopPanel;
-import org.netbeans.modules.etl.ui.view.ETLOutputWindowTopComponent;
 import org.netbeans.modules.sql.framework.ui.graph.impl.GraphView;
 import org.netbeans.spi.palette.PaletteController;
 import org.openide.ErrorManager;
@@ -388,7 +387,7 @@ public class ETLEditorViewMultiViewElement extends CloneableTopComponent
     @Override
     public Action[] getActions() {
         ArrayList<Action> actionsList = new ArrayList<Action>();
-        for (Action action : super.getActions()) {
+        for (Action action : super.getActions()) {            
             actionsList.add(action);
         }
         actionsList.add(addFromLayers());
