@@ -96,7 +96,7 @@ public class RegisterExternalHook extends Task {
                     // (glob:** chosen because it sorts after */external/*.ext so will not take precedence.)
                     throw new BuildException(
                             "An existing global encode/decode hook will conflict with " + hook.getName() + "\n" +
-                            "You must edit your Mercurial.ini and change '** = ...' in encode/decode sections to 'glob:** = ...'", getLocation());
+                            "You must edit your Mercurial.ini and change '** = ...' in encode/decode sections to '{}** = ...'", getLocation());
                 }
             }
         } catch (IOException x) {
@@ -105,6 +105,7 @@ public class RegisterExternalHook extends Task {
         File hookInstalled = new File(dotHg, hook.getName());
         if (hookInstalled.isFile()) {
             log(hookInstalled + " is already installed", Project.MSG_VERBOSE);
+            // XXX also verify that it is registered (in the correct place)
             return;
         }
         try {
@@ -141,6 +142,8 @@ public class RegisterExternalHook extends Task {
                 }
                 log("Looking for external binaries in " + repo + " which need to be checked out again using decoder");
                 Process p = new ProcessBuilder("hg", "locate", BINARIES).directory(repo).start();
+                // XXX if this fails, provide instructions on how to correct manually!
+                // (or delete these files using Java code and leave failures to hg co)
                 BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
                 boolean doCheckout = false;
                 String binary;
