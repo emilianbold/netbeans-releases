@@ -225,6 +225,7 @@ public class FacesContainer {
      */
     public void destroy() {
         facesContext.setDesignContext(null);
+        facesContext.release();
     }
 
     /**
