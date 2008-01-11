@@ -704,18 +704,20 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         if(labelsFile.exists()) {
             labels = getLabels(labelsFile);            
         }
-        for(File f : files) {      
-            // XXX check the timestamp when touched
-            long ts = Long.parseLong(f.getName());
-            if(ts < now - ttl) {
-                if(labels.size() > 0) {
-                    labels.remove(ts);
-                }                         
-                f.delete(); 
-            } else {
-                skipped = true;
-            }
-        }                    
+        if(files != null) {
+            for(File f : files) {      
+                // XXX check the timestamp when touched
+                long ts = Long.parseLong(f.getName());
+                if(ts < now - ttl) {
+                    if(labels.size() > 0) {
+                        labels.remove(ts);
+                    }                         
+                    f.delete(); 
+                } else {
+                    skipped = true;
+                }
+            }                    
+        }
         if(!skipped) {
             // all entries are gone -> remove also the metadata             
             labelsFile.delete();            

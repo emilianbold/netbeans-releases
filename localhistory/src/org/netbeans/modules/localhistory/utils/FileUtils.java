@@ -176,10 +176,15 @@ public class FileUtils {
      * @param file file/directory to delete
      */
     public static void deleteRecursively(File file) {
+        if(file == null) {
+            return;
+        }
         if (file.isDirectory()) {
             File [] files = file.listFiles();
-            for (int i = 0; i < files.length; i++) {
-                deleteRecursively(files[i]);
+            if(files != null) {
+                for (int i = 0; i < files.length; i++) {
+                    deleteRecursively(files[i]);
+                }
             }
         }
         file.delete();
