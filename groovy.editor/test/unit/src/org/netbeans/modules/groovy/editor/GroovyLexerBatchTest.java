@@ -424,9 +424,7 @@ public class GroovyLexerBatchTest extends TestCase {
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.WHITESPACE, " ", -1);
         assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.STRING_LITERAL, "\"", -1);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.STRING_LITERAL, "\"", -1);
+        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.STRING_LITERAL, "\"\"", -1);
     }
     
     public void test1() {
@@ -584,7 +582,7 @@ public class GroovyLexerBatchTest extends TestCase {
             cntr++;
         }
         tm = System.currentTimeMillis() - tm;
-        assertTrue("Timeout tm = " + tm + "msec", tm < 1000); // Should be fast
+        assertTrue("Timeout tm = " + tm + "msec", tm < 3000); // Should be fast
         System.out.println("Lexed input " + text.length()
                 + " chars long and created " + cntr + " tokens in " + tm + " ms.");
     }
