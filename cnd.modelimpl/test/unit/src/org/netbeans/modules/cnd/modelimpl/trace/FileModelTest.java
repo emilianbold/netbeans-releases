@@ -64,6 +64,11 @@ public class FileModelTest extends TraceModelTestBase {
         getTraceModel().setDumpPPState(true);
     }
     
+    public void testIncludeMacroExpansion() throws Exception {
+        // IZ#124635
+        performTest("include_macro_expanding.cc");
+    }
+    
     public void testParserRecover() throws Exception {
         performTest("parser_recover.cc");
     }
