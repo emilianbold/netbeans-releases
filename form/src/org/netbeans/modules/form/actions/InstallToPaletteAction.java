@@ -41,8 +41,12 @@
 
 package org.netbeans.modules.form.actions;
 
+import java.util.Arrays;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.form.palette.BeanInstaller;
+import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -87,6 +91,14 @@ public class InstallToPaletteAction extends NodeAction {
             FileObject fobj = n.getLookup().lookup(FileObject.class);
             if (fobj == null || JavaSource.forFileObject(fobj) == null) {
                 return false;
+            }
+            // Issue 73641
+            Project project = FileOwnerQuery.getOwner(fobj);
+            if (project != null) {
+                RecommendedTemplates info = project.getLookup().lookup(RecommendedTemplates.class);
+                if ((info != null) && !Arrays.asList(info.getRecommendedTypes()).contains("java-forms")) { // NOI18N
+                    return false;
+                }
             }
         }
         
