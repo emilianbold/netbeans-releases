@@ -57,19 +57,19 @@ public class AddServerInstanceAction extends NodeAction {
     public void performAction(Node[] nodes) {
         AddServerInstanceWizard.showAddServerInstanceWizard();
     }
-    
+
     public String getName() {
         return NbBundle.getMessage(AddServerInstanceAction.class, "LBL_Add_Server_Instance");
     }
-    
+
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
-    
+
     public boolean enable(Node[] nodes) {
         return true;
     }
-    
+
     public boolean asynchronous() {
         return false;
     }
