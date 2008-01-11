@@ -87,7 +87,12 @@ public class CheckAction extends CookieAction implements CollectXMLAction.XMLAct
 
     /** Human presentable name. */
     public String getName() {
-        return Util.THIS.getString("NAME_Check_XML");
+        //the way its working is that this menu item will is visible for all files
+        //for non-xml files it will be disabled, so wanted to keep a generic menu item name
+        if(this.isEnabled())
+           return Util.THIS.getString("NAME_Check_XML");
+        else
+            return Util.THIS.getString("NAME_Check_File");
     }
 
     /** Do not slow by any icon. */

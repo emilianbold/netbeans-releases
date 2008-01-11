@@ -82,8 +82,13 @@ public class ValidateAction extends CookieAction implements CollectXMLAction.XML
 
     /** Human presentable name. */
     public String getName() {
-        return Util.THIS.getString("NAME_Validate_XML");
-    }
+        //the way its working is that this menu item will is visible for all files
+        //for non-xml files it will be disabled, so wanted to keep a generic menu item name
+        if(this.isEnabled())
+           return Util.THIS.getString("NAME_Validate_XML");
+        else
+            return Util.THIS.getString("NAME_Validate_File");
+   }
 
     protected String iconResource () {
         return "org/netbeans/modules/xml/tools/resources/validate_xml.png";   // NOI18N

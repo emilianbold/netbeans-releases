@@ -51,6 +51,18 @@ made subject to such option by the copyright holder.
 <filesystem>
 
     <!-- register services with Lookup -->
+    <folder name="Menu">
+        <folder name="BuildProject">
+            <file name="org-netbeans-modules-xml-tools-actions-CheckAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-actions-CheckAction.instance"/>
+                <attr name="position" intvalue="850"/>
+            </file>
+            <file name="org-netbeans-modules-xml-tools-actions-ValidateAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/XML/org-netbeans-modules-xml-tools-actions-ValidateAction.instance"/>
+                <attr name="position" intvalue="875"/>
+            </file>
+        </folder>
+    </folder>
     <folder name="Services">
         <folder name="Hidden">
             <file name="org-netbeans-modules-xml-tools-actions-CSSStyleAction.instance">
