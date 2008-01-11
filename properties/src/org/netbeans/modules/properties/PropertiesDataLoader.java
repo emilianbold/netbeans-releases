@@ -106,6 +106,7 @@ public final class PropertiesDataLoader extends MultiFileLoader {
     }
     
     /** */
+    @Override
     protected String defaultDisplayName() {
         return NbBundle.getMessage(PropertiesDataLoader.class,
                                    "PROP_PropertiesLoader_Name");       //NOI18N
@@ -117,6 +118,7 @@ public final class PropertiesDataLoader extends MultiFileLoader {
      *
      * @return  name of the context on layer files to read/write actions to
      */
+    @Override
     protected String actionsContext () {
         return "Loaders/text/x-properties/Actions/";                    //NOI18N
     }
@@ -204,6 +206,7 @@ public final class PropertiesDataLoader extends MultiFileLoader {
     /** Writes extensions to the stream.
     * @param oo ignored
     */
+    @Override
     public void writeExternal (ObjectOutput oo) throws IOException {
         super.writeExternal (oo);
 
@@ -213,6 +216,7 @@ public final class PropertiesDataLoader extends MultiFileLoader {
     /** Reads nothing from the stream.
     * @param oi ignored
     */
+    @Override
     public void readExternal (ObjectInput oi)
     throws IOException, ClassNotFoundException {
         SafeException se;
