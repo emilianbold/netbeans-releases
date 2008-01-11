@@ -147,7 +147,11 @@ public class RADProperty extends FormProperty {
             if(tex instanceof IllegalArgumentException) {
                 ErrorManager.getDefault().annotate(
                     tex, ErrorManager.WARNING, null,
-                    message, null, null);                
+                    message, null, null);
+                // Issue 73627
+                if ("contentType".equals(getName()) && (beanInstance instanceof javax.swing.JTextPane)) { // NOI18N
+                    return;
+                }
                 throw (IllegalArgumentException) tex;
             } else if(tex instanceof IllegalAccessException) {
                 ErrorManager.getDefault().annotate(
