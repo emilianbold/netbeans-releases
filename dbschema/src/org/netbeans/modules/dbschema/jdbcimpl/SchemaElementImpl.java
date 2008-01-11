@@ -46,10 +46,15 @@ import java.beans.PropertyChangeSupport;
 import java.sql.*;
 import java.util.*;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.dbschema.*;
 import org.netbeans.modules.dbschema.util.*;
 
 public class SchemaElementImpl extends DBElementImpl implements SchemaElement.Impl {
+    
+    private static Logger LOGGER = Logger.getLogger(
+            SchemaElementImpl.class.getName());
 
     private DBElementsCollection tables;
 
@@ -230,7 +235,7 @@ public class SchemaElementImpl extends DBElementImpl implements SchemaElement.Im
                     bridge = new DDLBridge(cp.getConnection(), cp.getSchema(), dmd);
                 
                 // issue 76953: do not display tables from the Recycle Bin on Oracle 10 and higher
-                if ("Oracle".equals(dmd.getDatabaseProductName()) && dmd.getDatabaseMajorVersion() >= 10) { // NOI18N
+                if ("Oracle".equals(dmd.getDatabaseProductName()) ) { // NOI18N
                     recycleBinTables = getOracleRecycleBinTables();
                 } else {
                     recycleBinTables = Collections.EMPTY_LIST;
@@ -719,6 +724,10 @@ public class SchemaElementImpl extends DBElementImpl implements SchemaElement.Im
     private List getOracleRecycleBinTables() {
         List result = new ArrayList();
         try {
+            if ( dmd.getDatabaseMajorVersion() >= 10 ) {
+                return Collections.EMPTY_LIST;
+            }
+            
             Statement stmt = dmd.getConnection().createStatement();
             try {
                 ResultSet rs = stmt.executeQuery("SELECT OBJECT_NAME FROM RECYCLEBIN WHERE TYPE = 'TABLE'"); // NOI18N
@@ -733,10 +742,19 @@ public class SchemaElementImpl extends DBElementImpl implements SchemaElement.Im
                 stmt.close();
             }
         } catch (SQLException exc) {
-            // not critical, logging is enough
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) { // NOI18N
-                exc.printStackTrace();
-            }
+            // Some older versions of Oracle driver throw an exception on 
+            // getDatabaseMajorVersion()
+            LOGGER.log(Level.WARNING, "Some older versions of the Oracle " +
+                    " driver do not support getDatabaseMajorVersion().  " +
+                    " Setting recycle bin tables to an empty list.", 
+                    exc); // NOI18N
+
+            result = Collections.EMPTY_LIST;
+        } catch (AbstractMethodError ame) {
+            LOGGER.log(Level.WARNING, "Some older versions of the Oracle " +
+                    " driver do not support getDatabaseMajorVersion().  " +
+                    " Setting recycle bin tables to an empty list.", 
+                    ame); // NOI18N
             result = Collections.EMPTY_LIST;
         }
         return result;
