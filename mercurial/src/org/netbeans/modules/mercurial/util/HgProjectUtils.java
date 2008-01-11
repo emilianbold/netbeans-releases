@@ -61,6 +61,7 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.netbeans.modules.mercurial.Mercurial;
 import java.util.logging.Level;
+import org.netbeans.api.project.ProjectInformation;
 
 
 public class HgProjectUtils {
@@ -111,7 +112,7 @@ public class HgProjectUtils {
         final ProjectManager projectManager = ProjectManager.getDefault();
         FileObject rootFileObj = FileUtil.toFileObject(FileUtil.normalizeFile(root));
         // This can happen if the root is "ssh://<something>"
-        if (rootFileObj == null) {
+        if (rootFileObj == null || projectManager == null) {
             return null;
         }
  
@@ -132,11 +133,12 @@ public class HgProjectUtils {
         }
     }
 
-    public static String getProjectName( final Project p ) {
-        
-        final ExplorerManager.Provider ptLogial = findDefault(ProjectTab_ID_LOGICAL);
-        
-        return (p == null) ? null: ProjectUtils.getInformation( p ).getDisplayName();
+    public static String getProjectName( final Project p ) {        
+        if(p != null) {
+            ProjectInformation pi = ProjectUtils.getInformation( p );
+            return pi == null? null: pi.getDisplayName();
+        }
+        return null;
     }
       
     private static synchronized ExplorerManager.Provider findDefault( String tcID ) {
