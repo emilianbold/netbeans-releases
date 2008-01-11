@@ -94,7 +94,8 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
         
     public void propertyChange(PropertyChangeEvent evt) {
         if(ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
-            selectionChanged(evt);
+            disableNavigationButtons();
+            selectionChanged(evt);            
         } else if (DiffController.PROP_DIFFERENCES.equals(evt.getPropertyName())) {
             refreshNavigationButtons();
         }
@@ -247,6 +248,11 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
         refreshNavigationButtons();
     }
     
+    private void disableNavigationButtons() {
+        panel.prevButton.setEnabled(false);
+        panel.nextButton.setEnabled(false);
+    }    
+
     private void refreshNavigationButtons() {
         int currentDifference = diffView.getDifferenceIndex();
         panel.prevButton.setEnabled(currentDifference > 0);
