@@ -93,7 +93,7 @@ public class RegisterExternalHook extends Task {
                     // Tricky because no trivial way to find where Mercurial.ini is.
                     // If Hg installed to default Python path, could use:
                     // python -c 'from mercurial import util; print util.rcpath()'
-                    // (glob:** chosen because it sorts after */external/*.ext so will not take precedence.)
+                    // ({}** chosen because it sorts after */external/*.ext so will not take precedence.)
                     throw new BuildException(
                             "An existing global encode/decode hook will conflict with " + hook.getName() + "\n" +
                             "You must edit your Mercurial.ini and change '** = ...' in encode/decode sections to '{}** = ...'", getLocation());
