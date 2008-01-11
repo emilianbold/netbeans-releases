@@ -420,6 +420,7 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
         private static final String ELEMENT_SCHEMA = "schema"; // NOI18N
         private static final String ELEMENT_USER = "user"; // NOI18N
         private static final String ELEMENT_PASSWORD = "password"; // NOI18N
+        private static final String ELEMENT_REMEMBER_PASSWORD = "remember-password";
         private static final String ATTR_PROPERTY_VALUE = "value"; // NOI18N
         
         private final String connectionFileName;
@@ -455,22 +456,32 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
             } else if (ELEMENT_USER.equals(qName)) {
                 user = value;
             } else if (ELEMENT_PASSWORD.equals(qName)) {
+                // If the password was saved, then it means the user checked
+                // the box to say the password should be remembered.
+                rememberPassword = true;
+                
                 byte[] bytes = null;
                 try {
                     bytes = Base64.base64ToByteArray(value);
                 } catch (IllegalArgumentException e) {
-                    Logger.getLogger("global").log(Level.WARNING, "Illegal Base 64 string in password for connection " + connectionFileName); // NOI18N
+                    Logger.getLogger("global").log(Level.WARNING, 
+                            "Illegal Base 64 string in password for connection " 
+                            + connectionFileName); // NOI18N
+                    
+                    // This will require the user to re-enter
+                    // the password.
+                    rememberPassword = false;
                 }
                 if (bytes != null) {
                     try {
                         password = decodePassword(bytes);
                     } catch (CharacterCodingException e) {
-                        Logger.getLogger("global").log(Level.WARNING, "Illegal UTF-8 bytes in password for connection " + connectionFileName); // NOI18N
-                    }
-                    if (password != null) {
-                        // If the password was saved, then it means the user checked
-                        // the box to say the password should be remembered.
-                        rememberPassword = true;
+                        Logger.getLogger("global").log(Level.WARNING, 
+                                "Illegal UTF-8 bytes in password for connection " 
+                                + connectionFileName); // NOI18N
+                        
+                        // This will require the user to re-enter the password 
+                        rememberPassword = false;
                     }
                 }
             }

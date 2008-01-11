@@ -407,6 +407,9 @@ public class DatabaseConnection implements DBConnection {
             return;
 
         String oldpwd = pwd;
+        if ( password.length() == 0 ) {
+            password = null;
+        }
         pwd = password;
         if(propertySupport!=null)
             propertySupport.firePropertyChange(PROP_PASSWORD, oldpwd, pwd);
@@ -422,7 +425,7 @@ public class DatabaseConnection implements DBConnection {
             LOGGER.log(Level.FINE, "createJDBCConnection()");
         }
         
-        if (drv == null || db == null || usr == null || pwd == null )
+        if (drv == null || db == null || usr == null )
             throw new DDLException(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("EXC_InsufficientConnInfo"));
 
         Properties dbprops = new Properties();
@@ -501,12 +504,14 @@ public class DatabaseConnection implements DBConnection {
     public Task createConnectTask() {
         return RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                if (drv == null || db == null || usr == null || pwd == null )
+                if (drv == null || db == null || usr == null )
                     sendException(new DDLException(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("EXC_InsufficientConnInfo")));
 
                 Properties dbprops = new Properties();
-                if ((usr != null) && (usr.length() > 0)) {
+                if ( usr.length() > 0 ) {
                     dbprops.put("user", usr); //NOI18N
+                }
+                if ((pwd != null && pwd.length() > 0)) {
                     dbprops.put("password", pwd); //NOI18N
                 }
                 

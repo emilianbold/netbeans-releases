@@ -175,7 +175,11 @@ public class ConnectAction extends DatabaseAction {
 
             // If showDialog is true, show the dialog even if we have all 
             // the connection info
-            if (user == null || pwd == null || !remember || showDialog) {
+            //
+            // Note that we don't have to show the dialog if the password is 
+            // null and remember is true; null is often a valid password
+            // (and is the default password for MySQL and PostgreSQL).
+            if (user == null || !remember || showDialog) {
                 final ConnectPanel basePanel = new ConnectPanel(this, dbcon);
                 final SchemaPanel schemaPanel = new SchemaPanel(this, dbcon);
 
