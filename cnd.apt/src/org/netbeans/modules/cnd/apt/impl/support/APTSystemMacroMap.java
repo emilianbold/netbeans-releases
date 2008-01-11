@@ -53,7 +53,7 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
  *
  * @author Vladimir Voskresensky
  */
-public class APTSystemMacroMap extends APTBaseMacroMap {
+public class APTSystemMacroMap extends APTBaseMacroMap implements APTMacroMap {
     
     private APTMacroMap preMacroMap;
     
@@ -93,7 +93,8 @@ public class APTSystemMacroMap extends APTBaseMacroMap {
         if(res == null) {
             res = preMacroMap.getMacro(token);
         }
-        return res;        
+        // If UNDEFINED_MACRO is found then the requested macro is undefined, return null
+        return (res != APTMacroMapSnapshot.UNDEFINED_MACRO) ? res : null;
     }
     
     protected APTMacroMapSnapshot makeSnapshot(APTMacroMapSnapshot parent) {
@@ -109,5 +110,5 @@ public class APTSystemMacroMap extends APTBaseMacroMap {
     @Override
     public void undef(Token name) {
         throw new UnsupportedOperationException("Can not modify immutable System macro map"); // NOI18N
-    }    
+    }
 }

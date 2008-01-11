@@ -87,6 +87,7 @@ public abstract class APTIncludeBaseNode extends APTTokenBasedNode
         super(token);
     }
     
+    @Override
     public int getEndOffset() {
         return endOffset;
     }
@@ -139,6 +140,7 @@ public abstract class APTIncludeBaseNode extends APTTokenBasedNode
         return true;
     }
     
+    @Override
     public String getText() {
         String ret = super.getText();
         if (isSimpleIncludeToken()) {
@@ -219,6 +221,7 @@ public abstract class APTIncludeBaseNode extends APTTokenBasedNode
             origTokens.add(token);
         }
         
+        @Override
         public String getText() {
             if (origTokens.size() > 0) {
                 return stringize(getTokenList(), null);
@@ -239,7 +242,7 @@ public abstract class APTIncludeBaseNode extends APTTokenBasedNode
         } else {
             expanded = new ListBasedTokenStream(tokens);
         }
-        return APTUtils.stringize(expanded);
+        return APTUtils.stringize(expanded, true);
     }
     
 }

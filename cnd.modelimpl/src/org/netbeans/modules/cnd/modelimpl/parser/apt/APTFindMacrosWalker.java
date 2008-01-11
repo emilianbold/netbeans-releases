@@ -182,7 +182,7 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
 
         public SysMacroReference(CsmFile file, APTToken token, APTMacro macro) {
             super(file, token.getOffset(), token.getEndOffset());
-            ref = MacroImpl.createSystemMacro(token.getText(), APTUtils.stringize(macro.getBody()), ((ProjectBase) file.getProject()).getUnresolvedFile());
+            ref = MacroImpl.createSystemMacro(token.getText(), APTUtils.stringize(macro.getBody(), false), ((ProjectBase) file.getProject()).getUnresolvedFile());
         }
 
         public CsmObject getReferencedObject() {

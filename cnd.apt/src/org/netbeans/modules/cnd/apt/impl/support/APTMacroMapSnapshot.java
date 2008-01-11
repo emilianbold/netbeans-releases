@@ -69,8 +69,7 @@ public final class APTMacroMapSnapshot {
         while (currentSnap != null) {
             APTMacro macro = currentSnap.macros.get(key);
             if (macro != null) {
-                // If UNDEFINED_MACRO is found then the requested macro is undefined, return null
-                return (macro != UNDEFINED_MACRO) ? macro : null;
+                return macro;
             }
             currentSnap = currentSnap.parent;
         }

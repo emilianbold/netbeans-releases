@@ -47,7 +47,6 @@ import antlr.TokenStreamException;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -58,8 +57,8 @@ import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.impl.structure.APTDefineNode;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
+import org.netbeans.modules.cnd.apt.support.APTMacroMap.State;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
-import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
@@ -69,7 +68,7 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
  * support collection of macros and saving/restoring this collection
  * @author Vladimir Voskresensky
  */
-public abstract class APTBaseMacroMap implements APTMacroMap {
+public abstract class APTBaseMacroMap {
 
     protected APTMacroMapSnapshot active;
     
@@ -137,7 +136,7 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
         define(name, null, value);
     }
 
-    public void define(Token name, Collection<Token> params, List<Token> value) {
+    protected void define(Token name, Collection<Token> params, List<Token> value) {
         defineImpl(name, params, value);
     }
     
@@ -145,7 +144,7 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
         active.macros.put(APTUtils.getTokenTextKey(name), createMacro(name, params, value));
     }
     
-    public void undef(Token name) {
+    protected void undef(Token name) {
         active.macros.put(APTUtils.getTokenTextKey(name), APTMacroMapSnapshot.UNDEFINED_MACRO);
     }
     
@@ -155,11 +154,11 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
     ////////////////////////////////////////////////////////////////////////////
     // manage macro access
 
-    public boolean isDefined(Token token) {
+    public final boolean isDefined(Token token) {
         return getMacro(token) != null;
     } 
 
-    public APTMacro getMacro(Token token) {
+    protected APTMacro getMacro(Token token) {
         return active.getMacro(token);
     }
     
@@ -199,6 +198,7 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
             this.snap = cleanedState ? getFirstSnapshot(state.snap) : state.snap;
         }
         
+        @Override
         public String toString() {
             return snap != null ? snap.toString() : "<no snap>"; // NOI18N
         }
@@ -231,6 +231,7 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
     ////////////////////////////////////////////////////////////////////////////
     // implementation details    
 
+    @Override
     public String toString() {
         Map<String, APTMacro> tmpMap = new HashMap<String, APTMacro>();
         APTMacroMapSnapshot.addAllMacros(active, tmpMap);

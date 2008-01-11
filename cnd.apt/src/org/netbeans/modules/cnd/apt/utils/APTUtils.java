@@ -145,14 +145,14 @@ public class APTUtils {
         return retValue.toString();
     }
     
-    public static String stringize(TokenStream ts) {
+    public static String stringize(TokenStream ts, boolean inIncludeDirective) {
         StringBuilder retValue = new StringBuilder();
         try {
             for (APTToken token = (APTToken)ts.nextToken();!isEOF(token);) {
                 assert(token != null) : "list of tokens must not have 'null' elements"; // NOI18N
                 retValue.append(token.getText());
                 APTToken next =(APTToken)ts.nextToken();
-                if (!isEOF(next)) {
+                if (!isEOF(next) && false) { // disable for IZ#124635
                     // if tokens were without spaces => no space
                     // if were with spaces => insert only one space
                     retValue.append(next.getOffset() == token.getEndOffset() ? "" : ' ');// NOI18N

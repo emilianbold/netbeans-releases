@@ -57,7 +57,7 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
  * requests about macros if not found in own macro map
  * @author Vladimir Voskresensky
  */
-public class APTFileMacroMap extends APTBaseMacroMap {
+public class APTFileMacroMap extends APTBaseMacroMap implements APTMacroMap {
     private APTMacroMap sysMacroMap;       
       
     public APTFileMacroMap() {        
@@ -79,6 +79,7 @@ public class APTFileMacroMap extends APTBaseMacroMap {
     }
     
       
+    @Override
     public APTMacro getMacro(Token token) {
         // check own map
         APTMacro res = super.getMacro(token);
@@ -87,19 +88,22 @@ public class APTFileMacroMap extends APTBaseMacroMap {
         if (res == null && sysMacroMap != null) {
             res = sysMacroMap.getMacro(token);
         }        
-        return res;
+        // If UNDEFINED_MACRO is found then the requested macro is undefined, return null
+        return (res != APTMacroMapSnapshot.UNDEFINED_MACRO) ? res : null;
     }
     
+    @Override
     public void define(Token name, Collection<Token> params, List<Token> value) {
-        if (sysMacroMap != null && sysMacroMap.isDefined(name)) {
+        if (sysMacroMap != null && sysMacroMap.isDefined(name) && false) { // disable for IZ#124635
             // TODO: report error about redefining system macros
         } else {
             super.define(name, params, value);
         }
     }
     
+    @Override
     public void undef(Token name) {
-        if (sysMacroMap != null && sysMacroMap.isDefined(name)) {
+        if (sysMacroMap != null && sysMacroMap.isDefined(name) && false) { // disable for IZ#124635
             // TODO: report error about undefined system macros
         }
         super.undef(name);
@@ -113,12 +117,14 @@ public class APTFileMacroMap extends APTBaseMacroMap {
         return new APTMacroMapSnapshot(parent);
     }
     
+    @Override
     public State getState() {
         //Create new snapshot instance in the tree
         changeActiveSnapshotIfNeeded();
         return new FileStateImpl(active.parent, sysMacroMap);
     }
     
+    @Override
     public void setState(State state) {
         active = makeSnapshot(((StateImpl)state).snap);
         if (state instanceof FileStateImpl) {
@@ -139,6 +145,7 @@ public class APTFileMacroMap extends APTBaseMacroMap {
             this.sysMacroMap = state.sysMacroMap;
         }
         
+        @Override
         public String toString() {
             StringBuilder retValue = new StringBuilder();
             retValue.append("FileState\n"); // NOI18N
@@ -152,6 +159,7 @@ public class APTFileMacroMap extends APTBaseMacroMap {
         ////////////////////////////////////////////////////////////////////////
         // persistence support
 
+        @Override
         public void write(DataOutput output) throws IOException {
             super.write(output);
             APTSerializeUtils.writeSystemMacroMap(this.sysMacroMap, output);
@@ -169,6 +177,7 @@ public class APTFileMacroMap extends APTBaseMacroMap {
             }
         }  
         
+        @Override
         public StateImpl copyCleaned() {
             return new FileStateImpl(this, true);
         }
@@ -223,6 +232,7 @@ public class APTFileMacroMap extends APTBaseMacroMap {
         return retValue;
     }*/
 
+    @Override
     public String toString() {
         StringBuilder retValue = new StringBuilder();
         retValue.append("Own Map:\n"); // NOI18N
