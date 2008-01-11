@@ -54,7 +54,7 @@ import java.lang.reflect.Method;
 */
 public class IndexedPropertySupport<T,E> extends Node.IndexedProperty<T,E> {
     /** Instance of the bean. */
-    protected T instance;
+    protected Object instance;
 
     /** setter method */
     private Method setter;
@@ -78,7 +78,7 @@ public class IndexedPropertySupport<T,E> extends Node.IndexedProperty<T,E> {
     * @param indexedSetter set method for one element
     */
     public IndexedPropertySupport(
-        T instance, Class<T> valueType, Class<E> elementType, Method getter, Method setter, Method indexedGetter,
+        Object instance, Class<T> valueType, Class<E> elementType, Method getter, Method setter, Method indexedGetter,
         Method indexedSetter
     ) {
         super(valueType, elementType);
