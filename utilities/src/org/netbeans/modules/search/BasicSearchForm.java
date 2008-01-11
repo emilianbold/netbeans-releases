@@ -434,33 +434,15 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             }
         }
 
-        /**
-         * Listener that selects all text in a text field when the text field
-         * gains permanent focus.
-         */
-        class TextFieldFocusListener implements FocusListener {
-
-            public void focusGained(FocusEvent e) {
-                if (!e.isTemporary()) {
-                    JTextComponent textComp = (JTextComponent) e.getSource();
-                    if (textComp.getText().length() != 0) {
-                        textComp.selectAll();
-                    }
-                }
-            }
-
-            public void focusLost(FocusEvent e) {
-                /* do nothing */
-            }
-
-        }
-
         final TextFieldFocusListener focusListener = new TextFieldFocusListener();
         textToFindEditor.addFocusListener(focusListener);
-        fileNamePatternEditor.addFocusListener(focusListener);
         if (replacementPatternEditor != null) {
             replacementPatternEditor.addFocusListener(focusListener);
         }
+
+        final FileNamePatternWatcher watcher = new FileNamePatternWatcher(fileNamePatternEditor);
+        fileNamePatternEditor.addFocusListener(watcher);
+        fileNamePatternEditor.addHierarchyListener(watcher);
         
         textToFindEditor.getDocument().addDocumentListener(
                 new PatternChangeListener(cboxTextToFind));
@@ -476,9 +458,6 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         if (replacementPatternEditor != null) {
             replacementPatternEditor.addKeyListener(this);
         }
-
-        /* display "(all files)" if no file name pattern is specified: */
-        FileNamePatternWatcher.setUpFor(this, fileNamePatternEditor);
 
         chkRegexp.addItemListener(this);
         chkCaseSensitive.addItemListener(this);
@@ -845,26 +824,39 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
     }
     
     /**
-     * Class that watches how the File Name Patterns combo-box is focused
-     * and text inside it modified and displays an information text in it
-     * if no pattern is specified and the combo-box is not focused.
+     * Listener that selects all text in a text field when the text field
+     * gains permanent focus.
+     */
+    private static class TextFieldFocusListener implements FocusListener {
+
+        public void focusGained(FocusEvent e) {
+            if (!e.isTemporary()) {
+                JTextComponent textComp = (JTextComponent) e.getSource();
+                if (textComp.getText().length() != 0) {
+                    textComp.selectAll();
+                }
+            }
+        }
+
+        public void focusLost(FocusEvent e) {
+            /* do nothing */
+        }
+
+    }
+
+    /**
+     * Extension of the {@code TextFieldFocusListener}
+     * - besides selecting of all text upon focus gain,
+     * it displays &quot;(no files)&quot; if no file name pattern is specified.
      * 
      * @author  Marian Petras
      */
-    private static final class FileNamePatternWatcher
-                                implements HierarchyListener, FocusListener {
-        
-        private static void setUpFor(BasicSearchForm form,
-                                     JTextComponent txtComp) {
-            FileNamePatternWatcher watcher = new FileNamePatternWatcher(form, txtComp);
-            txtComp.addFocusListener(watcher);
-            txtComp.addHierarchyListener(watcher);
-        }
+    private final class FileNamePatternWatcher extends TextFieldFocusListener
+                                               implements HierarchyListener {
         
         private final Logger watcherLogger = Logger.getLogger(
                 "org.netbeans.modules.search.BasicSearchForm.FileNamePatternWatcher");//NOI18N
         
-        private final BasicSearchForm form;
         private final JTextComponent txtComp;
         private final Document doc;
         
@@ -872,9 +864,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         private String infoText;
         private boolean infoDisplayed;
         
-        private FileNamePatternWatcher(BasicSearchForm form,
-                                       JTextComponent txtComp) {
-            this.form = form;
+        private FileNamePatternWatcher(JTextComponent txtComp) {
             this.txtComp = txtComp;
             doc = txtComp.getDocument();
         }
@@ -895,13 +885,23 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             }
         }
         
+        @Override
         public void focusGained(FocusEvent e) {
+
+            /*
+             * Order of method calls hideInfo() and super.focusGained(e)
+             * is important! See bug #113202.
+             */
+
             if (infoDisplayed) {
                 hideInfo();
             }
+            super.focusGained(e);   //selects all text
         }
 
+        @Override
         public void focusLost(FocusEvent e) {
+            super.focusLost(e);     //does nothing
             if (isEmptyText()) {
                 displayInfo();
             }
@@ -930,12 +930,12 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             try {
                 txtComp.setForeground(txtComp.getDisabledTextColor());
                 
-                form.ignoreFileNamePatternChanges = true;
+                ignoreFileNamePatternChanges = true;
                 doc.insertString(0, getInfoText(), null);
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             } finally {
-                form.ignoreFileNamePatternChanges = false;
+                ignoreFileNamePatternChanges = false;
                 infoDisplayed = true;
             }
         }
@@ -945,12 +945,12 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             
             txtComp.setEnabled(true);
             try {
-                form.ignoreFileNamePatternChanges = true;
+                ignoreFileNamePatternChanges = true;
                 doc.remove(0, doc.getLength());
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             } finally {
-                form.ignoreFileNamePatternChanges = false;
+                ignoreFileNamePatternChanges = false;
                 txtComp.setForeground(foregroundColor);
                 infoDisplayed = false;
             }
