@@ -171,22 +171,10 @@ public class MenuEditLayer extends JPanel {
         glassLayer.addMouseListener(mia);
         glassLayer.addMouseMotionListener(mia);
         configureSelectionListener();
-        
-        if (!assistantInitialized) {
-            initAssistant();
-        }
     }
     
     DragOperation getDragOperation() {
         return dragop;
-    }
-    
-    private boolean assistantInitialized = false;
-    private void initAssistant() {
-        String missingMenubarMsg = "You cannot add a menu component to a form without a menubar";
-        AssistantMessages messages = AssistantMessages.getDefault();
-        messages.setMessages("missingMenubar", missingMenubarMsg); // NOI18N
-        assistantInitialized = true;
     }
     
     public static boolean isMenuRelatedRADComponent(RADComponent comp) {
@@ -205,7 +193,6 @@ public class MenuEditLayer extends JPanel {
         }
         return false;
     }
-    
         
     public static boolean isMenuBarContainer(RADComponent comp) {
         if(comp == null) return false;
