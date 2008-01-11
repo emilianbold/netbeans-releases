@@ -1139,6 +1139,8 @@ public final class OpenProjectList {
             }
             // register project delete listener to all open projects
             for (Project p : openProjects) {
+                assert p == null : "There is null in " + openProjects;
+                assert p.getProjectDirectory() != null : "Project " + p + " has null project directory";
                 p.getProjectDirectory().addFileChangeListener(nbprojectDeleteListener);
             }
         }
