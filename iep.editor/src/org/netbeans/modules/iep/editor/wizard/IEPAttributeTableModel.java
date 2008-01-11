@@ -62,6 +62,10 @@ public class IEPAttributeTableModel extends AbstractTableModel {
         return this.mAttrList.size();
     }
 
+    public List<PlaceholderSchemaAttribute> getAttributeList() {
+        return this.mAttrList;
+    }
+            
     public int getColumnCount() {
         return 5;
     }

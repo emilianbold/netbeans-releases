@@ -8,14 +8,28 @@ import java.awt.Component;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.iep.editor.PlanDataObject;
+import org.netbeans.modules.iep.editor.model.ModelObjectFactory;
+import org.netbeans.modules.iep.editor.model.NameGenerator;
+import org.netbeans.modules.iep.editor.share.SharedConstants;
+import org.netbeans.modules.iep.model.IEPComponentFactory;
+import org.netbeans.modules.iep.model.IEPModel;
+import org.netbeans.modules.iep.model.OperatorComponent;
+import org.netbeans.modules.iep.model.OperatorComponentContainer;
+import org.netbeans.modules.iep.model.Property;
+import org.netbeans.modules.iep.model.SchemaAttribute;
+import org.netbeans.modules.iep.model.SchemaComponent;
+import org.netbeans.modules.iep.model.SchemaComponentContainer;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -112,9 +126,75 @@ public final class IEPWizardIterator implements WizardDescriptor.InstantiatingIt
         DataFolder df = DataFolder.findFolder( dir );
         FileObject template = Templates.getTemplate( wizard );        
         DataObject dTemplate = DataObject.find( template );                
-        DataObject createdObject = dTemplate.createFromTemplate( df, Templates.getTargetName(wizard)  );
+        PlanDataObject createdObject = (PlanDataObject) dTemplate.createFromTemplate( df, Templates.getTargetName(wizard)  );
         if (createdObject == null)
             return Collections.emptySet();
+        
+        //if user has provided attribute list
+        //use it and create a stream input.
+        List<PlaceholderSchemaAttribute> attrList = (List<PlaceholderSchemaAttribute>) wizard.getProperty(WizardConstants.WIZARD_SELECTED_ATTRIBUTE_LIST_KEY);
+        
+        if(attrList != null && !attrList.isEmpty()) {
+            IEPModel model = createdObject.getPlanEditorSupport().getModel();
+            IEPComponentFactory factory = model.getFactory();
+            
+            //stream input
+            String ctPath = "/IEP/Input/StreamInput"; //NOT I18N
+            OperatorComponent operator = ModelObjectFactory.getInstance().createOperatorComponent(ctPath, model);
+            OperatorComponentContainer opContainer = model.getPlanComponent().getOperatorComponentContainer();
+                
+            model.startTransaction();
+            String name = NameGenerator.generateNewName(opContainer, operator.getComponentType());
+            operator.setDisplayName(name);
+
+            String id = NameGenerator.generateId(opContainer, "o");
+            operator.setId(id);
+            operator.setName(id);
+            operator.setTitle(id);
+
+            operator.setX(50);
+            operator.setY(50);
+
+                
+            opContainer.addChildComponent(operator);
+                
+            //create schema
+            SchemaComponent sComponent = factory.createSchema(model);
+            SchemaComponentContainer scContainer = model.getPlanComponent().getSchemaComponentContainer();
+
+            
+            String schemaName = NameGenerator.generateSchemaName(scContainer);
+            
+
+            sComponent.setName(schemaName);
+            sComponent.setTitle(schemaName);
+
+            
+                    	
+                    	
+                        
+            List<SchemaAttribute> attrs = new ArrayList<SchemaAttribute>();
+            
+            Iterator<PlaceholderSchemaAttribute> it = attrList.iterator();
+            
+            while(it.hasNext()) {
+                PlaceholderSchemaAttribute attr = it.next();
+                SchemaAttribute sa = factory.createSchemaAttribute(model);
+                sa.setAttributeName(attr.getAttributeName());
+                sa.setAttributeType(attr.getAttributeType());
+                sa.setAttributeSize(attr.getAttributeSize());
+                sa.setAttributeScale(attr.getAttributeScale());
+                
+                attrs.add(sa);
+            }
+            
+            sComponent.setSchemaAttributes(attrs);
+            scContainer.addSchemaComponent(sComponent);
+            
+            Property outputSchema = operator.getProperty(SharedConstants.OUTPUT_SCHEMA_ID_KEY);
+            outputSchema.setValue(sComponent.getName());
+            model.endTransaction();
+        }
         
         Set set = new HashSet(1);                
         set.add(createdObject.getPrimaryFile());

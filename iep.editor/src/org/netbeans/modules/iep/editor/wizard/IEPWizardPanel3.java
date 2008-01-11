@@ -121,6 +121,8 @@ public class IEPWizardPanel3 implements WizardDescriptor.Panel {
     }
 
     public void storeSettings(Object settings) {
+        List<PlaceholderSchemaAttribute> attrList = component.getAttributeList();
+        mDescriptor.putProperty(WizardConstants.WIZARD_SELECTED_ATTRIBUTE_LIST_KEY, attrList);
     }
     
     private List<XSDToIEPAttributeNameVisitor.AttributeNameToType> processElement(GlobalElement element) {
