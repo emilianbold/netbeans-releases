@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -140,7 +140,7 @@ final class ResultView extends TopComponent {
     private final NodeListener nodeListener;
     
     /** */
-    private SearchScope searchScope;
+    private String searchScopeType;
     /** */
     private BasicSearchCriteria basicSearchCriteria;
     /** */
@@ -432,7 +432,7 @@ final class ResultView extends TopComponent {
         
         setRootDisplayName(getInitialRootNodeText());
         /*selectAndActivateNode(root);*/
-        if (searchScope == null) {
+        if (searchScopeType == null) {
             btnModifySearch.setEnabled(false);
         }
     }
@@ -1111,10 +1111,10 @@ final class ResultView extends TopComponent {
     
     /**
      */
-    void rememberInput(SearchScope searchScope,
+    void rememberInput(String searchScopeType,
                        BasicSearchCriteria basicSearchCriteria,
                        List<SearchType> searchTypes) {
-        this.searchScope = searchScope;
+        this.searchScopeType = searchScopeType;
 	this.basicSearchCriteria = basicSearchCriteria;
         this.searchTypes = searchTypes;
     }
@@ -1132,7 +1132,7 @@ final class ResultView extends TopComponent {
         
         SearchPanel searchPanel = new SearchPanel(
                 SearchScopeRegistry.getDefault().getSearchScopes(),
-                searchScope,
+                searchScopeType,
                 basicSearchCriteriaClone,
                 extraSearchTypesClones);
         searchPanel.showDialog();
@@ -1141,7 +1141,8 @@ final class ResultView extends TopComponent {
             return;
         }
         
-        searchScope = searchPanel.getSearchScope();
+        SearchScope searchScope = searchPanel.getSearchScope();
+        searchScopeType = searchScope.getTypeId();
         basicSearchCriteria = searchPanel.getBasicSearchCriteria();
         searchTypes = searchPanel.getSearchTypes();
 

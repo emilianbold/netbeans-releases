@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -109,13 +109,13 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
     
     private final BasicSearchCriteria searchCriteria;
     private final Map<SearchScope, Boolean> searchScopes;
-    private final SearchScope preferredSearchScope;
+    private final String preferredSearchScopeType;
     private SearchScope selectedSearchScope;
     private ChangeListener usabilityChangeListener;
         
     /** Creates new form BasicSearchForm */
     BasicSearchForm(Map<SearchScope, Boolean> searchScopes,
-                    SearchScope preferredSearchScope,
+                    String preferredSearchScopeType,
 		    BasicSearchCriteria criteria,
 		    boolean searchAndReplace,
                     boolean usePreviousValues) {
@@ -123,7 +123,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
                               ? criteria
                               : new BasicSearchCriteria();
         this.searchScopes = searchScopes;
-        this.preferredSearchScope = preferredSearchScope;
+        this.preferredSearchScopeType = preferredSearchScopeType;
         initComponents(searchAndReplace);
         initAccessibility();
         initHistory();
@@ -689,7 +689,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
 
             button.setEnabled(enabled);
             if (enabled) {
-                if (searchScope == preferredSearchScope) {
+                if (searchScope.getTypeId().equals(preferredSearchScopeType)) {
                     button.setSelected(true);
                     preferredScopeSelected = true;
                 } else if (firstEnabled == -1) {
