@@ -156,6 +156,126 @@ public class GroovyLexerBatchTest extends TestCase {
     }
     
     
+    public void testLengthTest1(){
+        String text = "true";
+        
+        TokenHierarchy<?> hi = TokenHierarchy.create(text,GroovyTokenId.language());
+        TokenSequence<?> ts = hi.tokenSequence();
+        
+        assertTrue(ts.moveNext());
+        Token t = ts.token();
+        assertTrue(t.length() == 4);
+        
+    }
+    
+    public void testLengthTest2(){
+        String text = "\"hallo\"";
+        
+        TokenHierarchy<?> hi = TokenHierarchy.create(text,GroovyTokenId.language());
+        TokenSequence<?> ts = hi.tokenSequence();
+        
+        assertTrue(ts.moveNext());
+        Token t = ts.token();
+        assertTrue(t.length() == 7);
+        
+    }
+    
+    public void testLengthTest3(){
+        String text = "assert true";
+        
+        TokenHierarchy<?> hi = TokenHierarchy.create(text,GroovyTokenId.language());
+        TokenSequence<?> ts = hi.tokenSequence();
+        
+        Token t;
+        
+        assertTrue(ts.moveNext());
+        t = ts.token();
+        assertTrue(t.length() == 6);
+        
+        assertTrue(ts.moveNext());
+        t = ts.token();
+        assertTrue(t.length() == 1);
+        
+        assertTrue(ts.moveNext());
+        t = ts.token();
+        assertTrue(t.length() == 4);
+    }
+    
+    public void testLengthTest4(){
+        String text = "\"hallo\".size()";
+        
+        TokenHierarchy<?> hi = TokenHierarchy.create(text,GroovyTokenId.language());
+        TokenSequence<?> ts = hi.tokenSequence();
+        
+        Token t;
+        
+        assertTrue(ts.moveNext());
+        t = ts.token();
+        assertTrue(t.length() == 7);
+        System.out.println("4-Token:" + t.toString());
+        
+        assertTrue(ts.moveNext());
+        t = ts.token();
+        assertTrue(t.length() == 1);
+     
+        assertTrue(ts.moveNext());
+        t = ts.token();
+        assertTrue(t.length() == 4);
+        
+        assertTrue(ts.moveNext());
+        t = ts.token();
+        assertTrue(t.length() == 1);
+        
+        assertTrue(ts.moveNext());
+        t = ts.token();
+        assertTrue(t.length() == 1);
+    }
+    
+    public void testLengthTest5(){
+        String text = "println \"hallo\"";
+        
+        TokenHierarchy<?> hi = TokenHierarchy.create(text,GroovyTokenId.language());
+        TokenSequence<?> ts = hi.tokenSequence();
+        
+        Token t;
+        
+        assertTrue(ts.moveNext());
+        t = ts.token();
+        assertTrue(t.length() == 7);
+        
+        assertTrue(ts.moveNext());
+        t = ts.token();
+        assertTrue(t.length() == 1);
+     
+        assertTrue(ts.moveNext());
+        t = ts.token();
+        System.out.println("5-Token:" + t.toString());
+        System.out.println("5-Token-ID:" + t.id());
+        assertTrue(t.length() == 7);
+    }    
+    
+     public void testLengthTest6(){
+        String text = "println \"hallo\"\n";
+        
+        TokenHierarchy<?> hi = TokenHierarchy.create(text,GroovyTokenId.language());
+        TokenSequence<?> ts = hi.tokenSequence();
+        
+        Token t;
+        
+        assertTrue(ts.moveNext());
+        t = ts.token();
+        assertTrue(t.length() == 7);
+        
+        assertTrue(ts.moveNext());
+        t = ts.token();
+        assertTrue(t.length() == 1);
+     
+        assertTrue(ts.moveNext());
+        t = ts.token();
+        System.out.println("6-Token:" + t.toString());
+        assertTrue(t.length() == 7);
+    }
+     
     public void testFullSyntaxGstring(){
         String text = "def name = 'World'; println \"Hello, ${name}\"";
         
