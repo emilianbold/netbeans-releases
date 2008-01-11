@@ -930,7 +930,8 @@ public class Utility {
      */
     public static PasteType getWSDLOrSchemaPasteType(DataObject dObj, WSDLModel currModel, boolean schema, boolean wsdl) {
         String mimeType = FileUtil.getMIMEType(dObj.getPrimaryFile());
-        if (wsdl && mimeType.contains("wsdl")) {
+        if (mimeType == null) return null;
+        if (wsdl &&  mimeType.contains("wsdl")) {
             WSDLModelCookie wmCookie = dObj.getCookie(WSDLModelCookie.class);
             if (wmCookie != null) {
                 WSDLModel impModel;
