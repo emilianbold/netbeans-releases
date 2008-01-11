@@ -114,14 +114,17 @@ public class TestNode extends FilterNode {
                 );
             }
             
+            @Override
             public void fileFolderCreated(FileEvent fe) {
                 update();
             }
             
+            @Override
             public void fileDeleted(FileEvent fe) {
                 update();
             }
             
+            @Override
             public void fileRenamed(FileRenameEvent fe) {
                 update();
             }
@@ -140,16 +143,19 @@ public class TestNode extends FilterNode {
         }
     }
     
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(TestNode.class, "LBL_TestNode"); // NOI18N
     }
     
     // @overwrite
+    @Override
     public boolean canDestroy() {
         return false;
     }
      
     // @overwrite
+    @Override
     public boolean canRename() {
         return false;
     }
@@ -161,6 +167,7 @@ public class TestNode extends FilterNode {
      *
      * @return DOCUMENT ME!
      */
+    @Override
     public Image getIcon(int type) {
         return computeIcon(false, type);
     }
@@ -172,6 +179,7 @@ public class TestNode extends FilterNode {
      *
      * @return DOCUMENT ME!
      */
+    @Override
     public Image getOpenedIcon(int type) {
         return computeIcon(true, type);
     }
@@ -185,6 +193,7 @@ public class TestNode extends FilterNode {
     }
     
     // Create the popup menu:
+    @Override
     public Action[] getActions(boolean context) {
         List<Action> actionList = new ArrayList<Action>();
         actionList.add(SystemAction.get(AddTestcaseAction.class));
@@ -194,6 +203,7 @@ public class TestNode extends FilterNode {
         return actionList.toArray(new Action[0]);
     }
     
+    @Override
     public Node.Cookie getCookie(Class type) {
         if (type == TestCookie.class) {
             return mTestCookie;

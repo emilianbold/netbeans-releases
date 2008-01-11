@@ -48,7 +48,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.compapp.projects.jbi.JbiProject;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Children;
@@ -67,13 +66,11 @@ public class TestChildren extends Children.Keys implements PropertyChangeListene
     private final JbiProject mProject;    
     
     private static final String[] TEST_PROPERTY_FILES = new String[] {
-        "Invoke.properties", "Concurrent.properties", "Correlation.properties", }; // NOI18N
+        "Invoke.properties", "Concurrent.properties", "Correlation.properties" }; // NOI18N
    
     
     /**
      * Creates a new TestChildren object.
-     *
-     *
      *
      * @param project DOCUMENT ME!
      */
@@ -85,6 +82,7 @@ public class TestChildren extends Children.Keys implements PropertyChangeListene
     /**
      * DOCUMENT ME!
      */
+    @Override
     protected void addNotify() {
         super.addNotify();
         updateKeys();
@@ -95,7 +93,7 @@ public class TestChildren extends Children.Keys implements PropertyChangeListene
     
     
     private static boolean isTest(FileObject fo) {
-        if (!fo.isFolder()) {
+        if (!fo.isFolder()) { 
             return false;
         }
         
@@ -122,6 +120,7 @@ public class TestChildren extends Children.Keys implements PropertyChangeListene
             public int compare(Object o1, Object o2) {
                 return ((FileObject)o1).getName().compareTo(((FileObject)o2).getName());
             }
+            @Override
             public boolean equals(Object obj) {
                 return this == obj;
             }
@@ -132,6 +131,7 @@ public class TestChildren extends Children.Keys implements PropertyChangeListene
     /**
      * DOCUMENT ME!
      */
+    @Override
     protected void removeNotify() {
         //epp.removePropertyChangeListener(this);
         setKeys(Collections.EMPTY_SET);

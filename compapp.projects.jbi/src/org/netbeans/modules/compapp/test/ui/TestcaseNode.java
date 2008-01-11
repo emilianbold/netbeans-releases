@@ -322,7 +322,7 @@ public class TestcaseNode extends FilterNode {
         specList.add(PropertySpec.COMPARISON_TYPE);
         specList.add(PropertySpec.FEATURE_STATUS);
         
-        // Is there only one property file per test case?
+        // There is only one property file per test case.
         mPropertyFile = testcaseDir.getFileObject("Invoke.properties"); // NOI18N
         if (mPropertyFile == null) {
             mPropertyFile = testcaseDir.getFileObject("Concurrent.properties"); // NOI18N
