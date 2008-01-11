@@ -90,10 +90,9 @@ public class ForeignKeyImpl implements Cloneable, ForeignKey {
     public static final String PK_TABLE_ATTR = "pkTable"; // NOI18N
     /** Name of attribute used for marshalling out update rule to XML */
     public static final String PK_UPDATE_ATTR = "updateRule"; // NOI18N
-    
     private static final String RS_PK_NAME = "PK_NAME"; // NOI18N
     private static final String RS_PKCATALOG_NAME = "PKTABLE_CAT"; // NOI18N
-    private static final String RS_PKSCHEMA_NAME = "PKTABLE_SCHEM"; // NOI18N
+    private static final String RS_PKSCHEMA_NAME = "PKTABLE_SCHEMA"; // NOI18N
     private static final String RS_PKTABLE_NAME = "PKTABLE_NAME"; // NOI18N
     private static final String RS_PKCOLUMN_NAME = "PKCOLUMN_NAME"; // NOI18N
     private static final String RS_FK_NAME = "FK_NAME"; // NOI18N
@@ -143,7 +142,7 @@ public class ForeignKeyImpl implements Cloneable, ForeignKey {
 
     /* update cascade rule; holds constant value as defined in java.sql.DatabaseMetaData */
     private int updateRule;
-    
+
     /**
      * Creates a List of ForeignKeyColumn instances from the given ResultSet.
      *
@@ -153,20 +152,20 @@ public class ForeignKeyImpl implements Cloneable, ForeignKey {
      *
      * @throws SQLException if SQL error occurs while reading in data from
      * given ResultSet
-     */    
-    public static Map<String, ForeignKey> createForeignKeyColumnMap(DBTable table, ResultSet rs) 
+     */
+    public static Map<String, ForeignKey> createForeignKeyColumnMap(DBTable table, ResultSet rs)
             throws SQLException {
         if (rs == null) {
             Locale locale = Locale.getDefault();
             ResourceBundle cMessages = ResourceBundle.getBundle("org/netbeans/modules/sql/framework/model/impl/Bundle", locale); // NO i18n
             throw new IllegalArgumentException(
-                cMessages.getString("ERROR_NULL_RS")+"(ERROR_NULL_RS)");
+                    cMessages.getString("ERROR_NULL_RS") + "(ERROR_NULL_RS)");
         }
-        
+
         Map<String, ForeignKey> fkColumns = new HashMap<String, ForeignKey>();
         while (rs.next()) {
-            ForeignKeyImpl fk = (ForeignKeyImpl)fkColumns.get(rs.getString(RS_FK_NAME));
-            if(fk != null){
+            ForeignKeyImpl fk = (ForeignKeyImpl) fkColumns.get(rs.getString(RS_FK_NAME));
+            if (fk != null) {
                 fk.addColumnNames(rs);
             } else {
                 fk = new ForeignKeyImpl(rs);
@@ -176,21 +175,21 @@ public class ForeignKeyImpl implements Cloneable, ForeignKey {
         }
         return fkColumns;
     }
-    
-     private ForeignKeyImpl(ResultSet rs) throws SQLException {
+
+    private ForeignKeyImpl(ResultSet rs) throws SQLException {
         if (rs == null) {
             Locale locale = Locale.getDefault();
             ResourceBundle cMessages = ResourceBundle.getBundle("org/netbeans/modules/sql/framework/model/impl/Bundle", locale); // NO i18n            
             throw new IllegalArgumentException(
-                cMessages.getString("ERROR_VALID_RS")+"(ERROR_VALID_RS)");
+                    cMessages.getString("ERROR_VALID_RS") + "(ERROR_VALID_RS)");
         }
-        
         //parent = fkTable;
         fkName = rs.getString(RS_FK_NAME);
         pkName = rs.getString(RS_PK_NAME);
 
-        pkTable = rs.getString(RS_PKTABLE_NAME);
+        pkTable = rs.getString(RS_PKTABLE_NAME);       
         pkSchema = rs.getString(RS_PKSCHEMA_NAME);
+       
         pkCatalog = rs.getString(RS_PKCATALOG_NAME);
         addColumnNames(rs);
 
@@ -200,7 +199,7 @@ public class ForeignKeyImpl implements Cloneable, ForeignKey {
         deleteRule = rs.getShort(RS_DELETE_RULE);
         deferrability = rs.getShort(RS_DEFERRABILITY);
     }
-     
+
     /**
      * Creates a new instance of ForeignKey with the given key name and referencing the
      * column names in the given List.
@@ -545,17 +544,17 @@ public class ForeignKeyImpl implements Cloneable, ForeignKey {
     /**
      * @see org.netbeans.modules.model.database.ForeignKey#references
      */
-    public boolean references(String pkTableName, String pkSchemaName, String pkCatalogName) {         
-        if(pkCatalogName.equals("")) {
+    public boolean references(String pkTableName, String pkSchemaName, String pkCatalogName) {
+        if (pkCatalogName.equals("")) {
             pkCatalogName = null;
         }
-        if(pkSchemaName.equals("")) {
+        if (pkSchemaName.equals("")) {
             pkSchemaName = null;
-        }    
-        if(pkTableName.equals("")) {
+        }
+        if (pkTableName.equals("")) {
             pkTableName = null;
-        }          
-        
+        }
+
         boolean tableMatches = (pkTableName != null) ? pkTableName.equals(pkTable) : (pkTable == null);
         boolean schemaMatches = (pkSchemaName != null) ? pkSchemaName.equals(pkSchema) : (pkSchema == null);
         boolean catalogMatches = (pkCatalogName != null) ? pkCatalogName.equals(pkCatalog) : (pkCatalog == null);
