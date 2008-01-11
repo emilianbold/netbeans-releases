@@ -54,6 +54,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.plaf.basic.BasicComboBoxRenderer;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -69,11 +70,14 @@ import org.netbeans.modules.bpel.model.api.Receive;
 import org.netbeans.modules.bpel.model.api.Reply;
 import org.netbeans.modules.bpel.model.api.Scope;
 import org.netbeans.modules.bpel.model.api.Sequence;
+import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl;
+import org.netbeans.modules.bpel.model.impl.BpelModelImpl;
 import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.print.api.PrintUtil;
 import org.netbeans.modules.soa.mappercore.Mapper;
 import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.model.GraphSubset;
+import org.netbeans.modules.soa.mappercore.model.Link;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
 import org.netbeans.modules.soa.mappercore.model.SourcePin;
 import org.netbeans.modules.soa.mappercore.model.TargetPin;
@@ -93,8 +97,8 @@ import org.openide.util.HelpCtx;
 public class DefineCorrelationWizard implements WizardProperties {
     private static final long serialVersionUID = 1L;
     
-    private static final Dimension LEFT_DIMENSION_VALUE = new Dimension(100, 300);
-    private static final Dimension PANEL_DIMENSION_VALUE = new Dimension(400, 400);
+    private static final Dimension LEFT_DIMENSION_VALUE = new Dimension(200, 450);
+    private static final Dimension PANEL_DIMENSION_VALUE = new Dimension(600, 450);
     private static final String[] WIZARD_STEP_NAMES = new String[] {
         PrintUtil.i18n(DefineCorrelationWizard.class, "LBL_Wizard_Step_Select_Messaging_Activity"),
         PrintUtil.i18n(DefineCorrelationWizard.class, "LBL_Wizard_Step_Define_Correlation"),
@@ -103,6 +107,8 @@ public class DefineCorrelationWizard implements WizardProperties {
     private static final String ATTRIBUTE_NAME = "name"; //NOI18N
 
     private static Map<Class<? extends Activity>, ActivityChooser> mapActivityChoosers;
+
+    private static Graph TMP_FAKE_GRAPH;
     
     private WizardDescriptor wizardDescriptor;
     private BpelEntity mainBpelEntity;
@@ -134,6 +140,10 @@ public class DefineCorrelationWizard implements WizardProperties {
     
     public void showWizardDialog() {
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
+        dialog.setPreferredSize(new Dimension(
+            LEFT_DIMENSION_VALUE.width + PANEL_DIMENSION_VALUE.width + 50, 
+            PANEL_DIMENSION_VALUE.height));
+        dialog.pack();
         wizardPanels[0].isValid();
         dialog.setVisible(true);
     }
@@ -405,9 +415,11 @@ public class DefineCorrelationWizard implements WizardProperties {
             if (rightBpelEntity != null) {
                 rightTreeModel = new CorrelationMapperTreeModel(rightBpelEntity);
             }
+            
             MapperModel mapperModel = new CorrelationMapperModel(leftTreeModel, rightTreeModel);
             if (correlationMapper == null) {
                 correlationMapper = new Mapper(mapperModel);
+                correlationMapper.setPreferredSize(PANEL_DIMENSION_VALUE);
                 wizardPanel.add(correlationMapper);
                 wizardPanel.revalidate();
             } else {
@@ -427,104 +439,196 @@ public class DefineCorrelationWizard implements WizardProperties {
         }
         //====================================================================//
         private class CorrelationMapperTreeModel extends DefaultTreeModel {
-            public CorrelationMapperTreeModel(BpelEntity bpelEntity) {
-                super(new CorrelationMapperTreeNode(bpelEntity));
+            public CorrelationMapperTreeModel(BpelEntity topBpelEntity) {
+                super(new CorrelationMapperTreeNode(new BpelBuilderImpl(
+                    (BpelModelImpl) topBpelEntity.getBpelModel()).createEmpty()));
+                ((CorrelationMapperTreeNode) getRoot()).add(
+                    new CorrelationMapperTreeNode(topBpelEntity));
+            }
+            
+            public void fireTreeChanged(Object source, TreePath treePath) {
+                Object[] listeners = listenerList.getListenerList(); // guaranteed to return a non-null array
+                TreeModelEvent treeModelEvent = null;
+                // go through the listener list from the last to the first, 
+                // notifying those ones which are interested in this event
+                for (int i = listeners.length - 2; i >= 0; i -= 2) {
+                    if (listeners[i] == TreeModelListener.class) {
+                        if (treeModelEvent == null) { // lazily create the event:
+                            TreePath parentTreePath = treePath.getParentPath();
+                            if (parentTreePath != null) {
+                                Object treeNode = treePath.getLastPathComponent();
+                                // reload cached user object
+                                ((CorrelationMapperTreeNode) treeNode).setUserObject(
+                                    ((CorrelationMapperTreeNode) treeNode).getUserObject());
+
+                                int childIndex = getIndexOfChild(
+                                    parentTreePath.getLastPathComponent(), treeNode);
+
+                                treeModelEvent = new TreeModelEvent(source, parentTreePath, 
+                                    new int[] {childIndex}, new Object[] {treeNode});
+                            } else {
+                                treeModelEvent = new TreeModelEvent(source, treePath, 
+                                    new int[] {}, new Object[] {});
+                            }
+                        }
+                        ((TreeModelListener) listeners[i+1]).treeNodesChanged(treeModelEvent);
+                    }          
+                }
             }
         }
         //====================================================================//
         private class CorrelationMapperTreeNode extends DefaultMutableTreeNode {
+            private String nodeNamePattern;
+            
             public CorrelationMapperTreeNode(BpelEntity bpelEntity) {
+                this(bpelEntity, null);
+            }
+            public CorrelationMapperTreeNode(BpelEntity bpelEntity, String nodeNamePattern) {
                 super(bpelEntity);
+                this.nodeNamePattern = nodeNamePattern;
+            }
+
+            @Override
+            public String toString() {
+                String bpelEntityName = null;
+                BpelEntity bpelEntity = (BpelEntity) getUserObject();
+                try {
+                    bpelEntityName = bpelEntity.getAttribute(
+                        new AbstractDocumentComponent.PrefixAttribute(ATTRIBUTE_NAME));
+                } catch (Exception e) {
+                    bpelEntityName = bpelEntity.toString();
+                }
+                String nodeName = (nodeNamePattern == null ? bpelEntityName : 
+                    MessageFormat.format(nodeNamePattern, new Object[] {bpelEntityName}));
+                return nodeName;
             }
         }
         //====================================================================//
         private class CorrelationMapperModel implements MapperModel {
             private TreeModel letfTreeModel, rightTreeModel;
+            private Map<TreePath, Graph> mapTreePathGraphs = new HashMap<TreePath, Graph>();
 
             public CorrelationMapperModel(TreeModel letfTreeModel, TreeModel rightTreeModel) {
                 this.letfTreeModel = letfTreeModel;
                 this.rightTreeModel = rightTreeModel;
+                TMP_FAKE_GRAPH = new Graph(this);
             }
-            
+
             public boolean canConnect(TreePath treePath, SourcePin source, TargetPin target) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
+                boolean result = false;
+                if ((source != null) && (source instanceof TreeSourcePin)) {
+                    TreePath sourceTreePath = ((TreeSourcePin) source).getTreePath();
+                    if (((TreeNode) sourceTreePath.getLastPathComponent()).isLeaf()) {
+                        result = true;
+                    }
+                }
+                result &= ((TreeNode) treePath.getLastPathComponent()).isLeaf();
 
-            public boolean canCopy(TreePath treePath, GraphSubset graphSubset) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            public boolean canMove(TreePath treePath, GraphSubset graphSubset) {
-                throw new UnsupportedOperationException("Not supported yet.");
+                if (target instanceof Graph) {
+                    Graph targetGraph = (Graph) target;
+                    if (targetGraph.hasIngoingLinks() || targetGraph.hasOutgoingLinks()) {
+                        result = false; // the target tree node already has a connected link
+                    }
+                }
+                return result;
             }
 
             public void connect(TreePath treePath, SourcePin source, TargetPin target) {
-                throw new UnsupportedOperationException("Not supported yet.");
+                Graph graph = getGraph(treePath);
+                if ((graph == null) || (graph == TMP_FAKE_GRAPH)) {
+                    graph = createNewGraph(treePath);
+                }
+                Link newLink = new Link(source, target);
+                graph.addLink(newLink);
+                ((CorrelationMapperTreeModel) rightTreeModel).fireTreeChanged(this, treePath);
             }
 
-            public void copy(TreePath treePath, GraphSubset graphGroup, int x, int y) {
-                throw new UnsupportedOperationException("Not supported yet.");
+            protected Graph createNewGraph(TreePath treePath) {
+                Graph treePathGraph = new Graph(this);
+                mapTreePathGraphs.put(treePath, treePathGraph);
+                ((CorrelationMapperTreeModel) rightTreeModel).fireTreeChanged(this, treePath);
+                return treePathGraph;
             }
-
+            
             public Graph getGraph(TreePath treePath) {
-                throw new UnsupportedOperationException("Not supported yet.");
+                Graph treePathGraph = mapTreePathGraphs.get(treePath);
+                return (treePathGraph != null ? treePathGraph : TMP_FAKE_GRAPH);
             }
 
             public GraphSubset getGraphSubset(Transferable transferable) {
-                throw new UnsupportedOperationException("Not supported yet.");
+                return null;
             }
 
             public TreeModel getLeftTreeModel() {
-                throw new UnsupportedOperationException("Not supported yet.");
+                return leftTreeModel;
             }
 
             public TreeSourcePin getTreeSourcePin(TreePath treePath) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            public void move(TreePath treePath, GraphSubset graphGroup, int x, int y) {
-                throw new UnsupportedOperationException("Not supported yet.");
+                return new TreeSourcePin(treePath);
             }
 
             public boolean searchGraphsInside(TreePath treePath) {
-                throw new UnsupportedOperationException("Not supported yet.");
+                Object treeNode = treePath.getLastPathComponent();
+                for (TreePath graphTreePath : mapTreePathGraphs.keySet()) {
+                    while (true) {
+                        graphTreePath = graphTreePath.getParentPath();
+                        if (graphTreePath == null) {
+                            break;
+                        }
+                        Object parentTreeNode = graphTreePath.getLastPathComponent();
+                        if (parentTreeNode == treeNode) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
             }
 
-            public void valueChanged(TreePath treePath, VertexItem vertexItem, Object newValue) {
-                throw new UnsupportedOperationException("Not supported yet.");
+            public void valueChanged(TreePath treePath, VertexItem vertexItem, Object newValue) {}
+
+            public boolean canCopy(TreePath treePath, GraphSubset graphSubset) {
+                return false;
             }
 
-                public void addTreeModelListener(TreeModelListener l) {
-                    throw new UnsupportedOperationException("Not supported yet.");
-                }
+            public boolean canMove(TreePath treePath, GraphSubset graphSubset) {
+                return false;
+            }
 
-                public Object getChild(Object parent, int index) {
-                    throw new UnsupportedOperationException("Not supported yet.");
-                }
+            public void copy(TreePath treePath, GraphSubset graphGroup, int x, int y) {}
 
-                public int getChildCount(Object parent) {
-                    throw new UnsupportedOperationException("Not supported yet.");
-                }
+            public void move(TreePath treePath, GraphSubset graphGroup, int x, int y) {}
+            
+            public void addTreeModelListener(TreeModelListener l) {
+                rightTreeModel.addTreeModelListener(l);
+            }
 
-                public int getIndexOfChild(Object parent, Object child) {
-                    throw new UnsupportedOperationException("Not supported yet.");
-                }
+            public Object getChild(Object parent, int index) {
+                return rightTreeModel.getChild(parent, index);
+            }
 
-                public Object getRoot() {
-                    throw new UnsupportedOperationException("Not supported yet.");
-                }
+            public int getChildCount(Object parent) {
+                return rightTreeModel.getChildCount(parent);
+            }
 
-                public boolean isLeaf(Object node) {
-                    throw new UnsupportedOperationException("Not supported yet.");
-                }
+            public int getIndexOfChild(Object parent, Object child) {
+                return rightTreeModel.getIndexOfChild(parent, child);
+            }
 
-                public void removeTreeModelListener(TreeModelListener l) {
-                    throw new UnsupportedOperationException("Not supported yet.");
-                }
+            public Object getRoot() {
+                return rightTreeModel.getRoot();
+            }
 
-                public void valueForPathChanged(TreePath path, Object newValue) {
-                    throw new UnsupportedOperationException("Not supported yet.");
-                }
+            public boolean isLeaf(Object node) {
+                return rightTreeModel.isLeaf(node);
+            }
+
+            public void removeTreeModelListener(TreeModelListener l) {
+                rightTreeModel.removeTreeModelListener(l);
+            }
+
+            public void valueForPathChanged(TreePath path, Object newValue) {
+                rightTreeModel.valueForPathChanged(path, newValue);
+            }
         }
     }
     //========================================================================//
