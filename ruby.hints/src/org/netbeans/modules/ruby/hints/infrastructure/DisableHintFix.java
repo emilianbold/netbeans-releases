@@ -35,6 +35,7 @@ import org.netbeans.modules.ruby.hints.options.HintsSettings;
 import org.netbeans.modules.ruby.hints.spi.Rule;
 import org.netbeans.modules.ruby.hints.spi.UserConfigurableRule;
 import org.netbeans.spi.editor.hints.ChangeInfo;
+import org.netbeans.spi.editor.hints.EnhancedFix;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.HintsController;
@@ -44,21 +45,23 @@ import org.openide.util.NbBundle;
  *
  * @author Tor Norbye
  */
-public class DisableHintFix implements Fix {
-    private UserConfigurableRule rule;
-    private CompilationInfo info;
-    private int caretPos;
+public class DisableHintFix implements EnhancedFix {
+    private final UserConfigurableRule rule;
+    private final CompilationInfo info;
+    private final int caretPos;
+    private final String sortText;
     
-    public DisableHintFix(UserConfigurableRule rule, CompilationInfo info, int caretPos) {
+    public DisableHintFix(UserConfigurableRule rule, CompilationInfo info, int caretPos, String sortText) {
         this.rule = rule;
         this.info = info;
         this.caretPos = caretPos;
+        this.sortText = sortText;
     }
 
     public String getText() {
         return NbBundle.getMessage(HintsAdvancedOption.class, "DisableHint");
     }
-
+    
     public ChangeInfo implement() throws Exception {
         HintsSettings.setEnabled(RulesManager.getInstance().getPreferences(rule, null), false);
 
@@ -77,5 +80,9 @@ public class DisableHintFix implements Fix {
         }
         
         return null;
+    }
+
+    public CharSequence getSortText() {
+        return sortText;
     }
 }

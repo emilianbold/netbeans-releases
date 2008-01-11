@@ -56,6 +56,7 @@ import org.netbeans.modules.ruby.hints.spi.RuleContext;
 import org.netbeans.modules.ruby.hints.spi.SelectionRule;
 import org.netbeans.modules.ruby.hints.spi.UserConfigurableRule;
 import org.netbeans.spi.editor.hints.ChangeInfo;
+import org.netbeans.spi.editor.hints.EnhancedFix;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
@@ -231,20 +232,25 @@ public class RubyHintsProvider implements HintsProvider {
         List<Fix> fixList;
         if (desc.getFixes() != null && desc.getFixes().size() > 0) {
             fixList = new ArrayList<Fix>(desc.getFixes().size());
+            
+            // TODO print out priority with left flushed 0's here
+            // this is just a hack
+            String sortText = Integer.toString(10000+desc.getPriority());
+            
             for (org.netbeans.modules.ruby.hints.spi.Fix fix : desc.getFixes()) {
-                fixList.add(new FixWrapper(fix));
+                fixList.add(new FixWrapper(fix, sortText));
                 
                 if (fix instanceof PreviewableFix) {
                     PreviewableFix previewFix = (PreviewableFix)fix;
                     if (previewFix.canPreview() && !isTest()) {
-                        fixList.add(new PreviewHintFix(info, previewFix));
+                        fixList.add(new PreviewHintFix(info, previewFix, sortText));
                     }
                 }
             }
             
             if (rule instanceof UserConfigurableRule && !isTest()) {
                 // Add a hint for disabling this fix
-                fixList.add(new DisableHintFix((UserConfigurableRule)rule, info, caretPos));
+                fixList.add(new DisableHintFix((UserConfigurableRule)rule, info, caretPos, sortText));
             }
         } else {
             fixList = Collections.emptyList();
@@ -459,11 +465,13 @@ public class RubyHintsProvider implements HintsProvider {
         this.testSelectionHints = testSelectionHints;
     }
     
-    private static class FixWrapper implements Fix {
+    private static class FixWrapper implements EnhancedFix {
         private org.netbeans.modules.ruby.hints.spi.Fix fix;
+        private String sortText;
         
-        FixWrapper(org.netbeans.modules.ruby.hints.spi.Fix fix) {
+        FixWrapper(org.netbeans.modules.ruby.hints.spi.Fix fix, String sortText) {
             this.fix = fix;
+            this.sortText = sortText;
         }
 
         public String getText() {
@@ -474,6 +482,10 @@ public class RubyHintsProvider implements HintsProvider {
             fix.implement();
             
             return null;
+        }
+
+        public CharSequence getSortText() {
+            return sortText;
         }
     }
 }

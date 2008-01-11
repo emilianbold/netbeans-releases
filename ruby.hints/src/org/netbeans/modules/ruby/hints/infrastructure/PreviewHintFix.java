@@ -62,6 +62,7 @@ import org.netbeans.api.diff.StreamSource;
 import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.ruby.hints.spi.EditList;
+import org.netbeans.spi.editor.hints.EnhancedFix;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.text.NbDocument;
@@ -71,14 +72,16 @@ import org.openide.text.NbDocument;
  * 
  * @author Tor Norbye
  */
-public class PreviewHintFix implements Fix {
+public class PreviewHintFix implements EnhancedFix {
 
     private CompilationInfo info;
     private PreviewableFix fix;
+    private final String sortText;
 
-    public PreviewHintFix(CompilationInfo info, PreviewableFix fix) {
+    public PreviewHintFix(CompilationInfo info, PreviewableFix fix, String sortText) {
         this.info = info;
         this.fix = fix;
+        this.sortText = sortText;
     }
 
     public String getText() {
@@ -163,7 +166,11 @@ public class PreviewHintFix implements Fix {
 
         return null;
     }
-
+    
+    public CharSequence getSortText() {
+        return sortText;
+    }
+    
     private class DiffSource extends StreamSource {
 
         private String source;
