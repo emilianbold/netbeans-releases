@@ -120,7 +120,7 @@ class VariableResolveVisitor<T extends SourceElement>
     @Override
     public void visit( CallExpression expression )
     {
-        if ( expression.getName() != null && 
+        if ( expression.getName() != null && getStopScope() != null &&
                 !getStopScope().equals( expression.getName() )) 
         {
             visitDeeply( expression.getName() );
@@ -131,14 +131,19 @@ class VariableResolveVisitor<T extends SourceElement>
     public void visit( ArrayMemberExpression expression )
     {
         CallExpression call = expression.getCallExpression();
-        if ( call != null && !call.equals(getStopScope())){
+        if ( call != null && getStopScope() != null && 
+                !call.equals(getStopScope()))
+        {
             visitDeeply( call);
         }
-        if( call!= null && call.equals(getStopScope())){
+        if( call!= null && call.equals(getStopScope()))
+        {
             return;
         }
         IdentifierExpression expr = expression.getOwnerIdentifier();
-        if ( expr != null && !expr.equals( getStopScope())){
+        if ( expr != null && getStopScope() != null && 
+                !expr.equals( getStopScope()))
+        {
             visitDeeply( call );
         }
     }
@@ -148,7 +153,7 @@ class VariableResolveVisitor<T extends SourceElement>
     {
         List<ArrayDefElement> elements = expression.getElements();
         for (ArrayDefElement expr : elements) {
-            if ( !expr.equals( getStopScope())){
+            if ( getStopScope() != null && !expr.equals( getStopScope())){
                 visitDeeply( expr );
             }
             else {
@@ -161,7 +166,9 @@ class VariableResolveVisitor<T extends SourceElement>
     public void visit( AssociativeArrayElement element )
     {
         Expression key = element.getKey();
-        if ( key != null && !key.equals( getStopScope() )){
+        if ( key != null && getStopScope() != null && 
+                !key.equals( getStopScope() ))
+        {
             visitDeeply( key );
         }
     }
@@ -170,7 +177,7 @@ class VariableResolveVisitor<T extends SourceElement>
     public void visit( BinaryExpression expression )
     {
         Expression expr = expression.getLeftOperand();
-        if ( getStopScope().equals(expr) ) {
+        if ( getStopScope() == null || getStopScope().equals(expr) ) {
             return;
         }
         visitDeeply(expr);
@@ -187,7 +194,7 @@ class VariableResolveVisitor<T extends SourceElement>
     public void visit( Case caze )
     {
         Expression expr = caze.getExpression();
-        if ( getStopScope().equals( expr )){
+        if ( expr.equals(getStopScope() ) || getStopScope() == null){
             return;
         }
         visitDeeply( expr );
@@ -204,7 +211,7 @@ class VariableResolveVisitor<T extends SourceElement>
     public void visit( DoStatement statement )
     {
         While wile = statement.getWhile();
-        if ( getStopScope().equals( wile )){
+        if ( wile.equals( getStopScope() ) || getStopScope() == null){
             return;
         }
         visitDeeply( wile );
@@ -220,7 +227,7 @@ class VariableResolveVisitor<T extends SourceElement>
     public void visit( ElseIf elseIf )
     {
         Expression expression = elseIf.getExpression();
-        if ( getStopScope().equals( expression )){
+        if ( getStopScope() == null ||getStopScope().equals( expression ) ){
             return;
         }
         visitDeeply( expression );
@@ -231,12 +238,12 @@ class VariableResolveVisitor<T extends SourceElement>
     public void visit( For forr )
     {
         ForExpression expression = forr.getInitialExpression();
-        if ( getStopScope().equals( expression )){
+        if ( getStopScope() == null || getStopScope().equals( expression ) ){
             return;
         }
         visitDeeply( expression );
         expression = forr.getConditionalExpression();
-        if ( getStopScope().equals( expression )){
+        if ( getStopScope() == null || getStopScope().equals( expression ) ){
             return;
         }
         visitDeeply( expression );
@@ -246,12 +253,12 @@ class VariableResolveVisitor<T extends SourceElement>
     public void visit( ForEach forEach )
     {
         Expression expr = forEach.getExpression();
-        if ( getStopScope().equals( expr ) ){
+        if ( getStopScope() == null || getStopScope().equals( expr )){
             return;
         }
         visitDeeply( expr );
         VariableDeclaration var = forEach.getIndexVariable();
-        if ( getStopScope().equals( var )){
+        if ( getStopScope() == null || getStopScope().equals( var )){
             visitDeeply( var );
         }
     }
@@ -260,7 +267,7 @@ class VariableResolveVisitor<T extends SourceElement>
     public void visit( ForEachStatement statement )
     {
         ForEach forEach = statement.getForEach();
-        if( getStopScope().equals( forEach) ){
+        if( getStopScope() == null ||getStopScope().equals( forEach) ){
             return;
         }
         visitDeeply( forEach );
@@ -279,7 +286,7 @@ class VariableResolveVisitor<T extends SourceElement>
     {
         List<FormalParameter> params = list.getParameters();
         for (FormalParameter parameter : params) {
-            if ( getStopScope().equals(parameter) ) {
+            if ( getStopScope() == null || getStopScope().equals(parameter) ) {
                 return;
             }
             visitDeeply(parameter);
@@ -290,7 +297,7 @@ class VariableResolveVisitor<T extends SourceElement>
     public void visit( ForStatement statement )
     {
         For forr = statement.getFor();
-        if ( getStopScope().equals( forr )){
+        if ( getStopScope() == null || getStopScope().equals( forr ) ){
             return;
         }
         visitDeeply( forr );
@@ -302,7 +309,7 @@ class VariableResolveVisitor<T extends SourceElement>
     {
         List<VariableDeclaration> decls = statement.getVariableDeclarations();
         for (VariableDeclaration declaration : decls) {
-            if ( getStopScope().equals( declaration )){
+            if ( getStopScope() == null || getStopScope().equals( declaration ) ){
                 return;
             }
             visitDeeply( declaration );
@@ -313,7 +320,7 @@ class VariableResolveVisitor<T extends SourceElement>
     public void visit( IfStatement statement )
     {
         If iff = statement.getIf();
-        if ( getStopScope().equals( iff )){
+        if ( getStopScope() == null || getStopScope().equals( iff ) ){
             return;
         }
         visitDeeply( iff );
@@ -325,7 +332,7 @@ class VariableResolveVisitor<T extends SourceElement>
     {
         List<InitializedDeclaration> vars = statement.getVariables();
         for (InitializedDeclaration declaration : vars) {
-            if ( getStopScope().equals( declaration) ){
+            if ( getStopScope() == null || getStopScope().equals( declaration) ){
                 return;
             }
             visitDeeply( declaration );
@@ -336,7 +343,7 @@ class VariableResolveVisitor<T extends SourceElement>
     public void visit( SwitchStatement statement )
     {
         Switch svitch = statement.getSwitch();
-        if ( getStopScope().equals( svitch ) ){
+        if ( getStopScope() == null || getStopScope().equals( svitch ) ){
             return;
         }
         visitDeeply( svitch );
@@ -345,11 +352,15 @@ class VariableResolveVisitor<T extends SourceElement>
     @Override
     public void visit( TernaryExpression expression )
     {
-        if ( getStopScope().equals( expression.getCondition() )){
+        if ( getStopScope() == null || 
+                getStopScope().equals( expression.getCondition() ) )
+        {
             return;
         }
         visitDeeply( expression.getCondition());
-        if ( getStopScope().equals( expression.getTrueExpression())) {
+        if ( getStopScope() == null || 
+                getStopScope().equals( expression.getTrueExpression()) ) 
+        {
             return;
         }
         visitDeeply(expression.getTrueExpression());
@@ -371,7 +382,7 @@ class VariableResolveVisitor<T extends SourceElement>
     public void visit( WhileStatement statement )
     {
         While wile = statement.getWhile();
-        if ( getStopScope().equals( wile) ) {
+        if ( getStopScope() == null || getStopScope().equals( wile) ) {
             return;
         }
         if ( wile.getExpression() != null ) {
@@ -391,7 +402,7 @@ class VariableResolveVisitor<T extends SourceElement>
     
     private void visitExpressions( List<? extends SourceElement> children ) {
         for ( SourceElement child: children ) {
-            if ( getStopScope().equals(child) ) {
+            if ( getStopScope() == null || getStopScope().equals(child) ) {
                 return;
             }
             if ( !( child instanceof Expression )) {
@@ -403,7 +414,7 @@ class VariableResolveVisitor<T extends SourceElement>
 
     private void visitExpressionStatements( List<? extends SourceElement> children ) {
         for ( SourceElement child: children ) {
-            if ( getStopScope().equals(child) ) {
+            if ( getStopScope() == null || getStopScope().equals(child) ) {
                 return;
             }
             if ( !( child instanceof ExpressionStatement ) && 

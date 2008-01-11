@@ -76,8 +76,7 @@ public class FunctionDefinitionResolver implements ReferenceResolver {
             String identifier, Class<T> clazz, boolean exactComparison )
     {
         List<T> result = new LinkedList<T>();
-        SourceElement parent = source.getParent();
-        resolve( parent, result , identifier , clazz, exactComparison );
+        resolve( source, result , identifier , clazz, exactComparison );
         if ( exactComparison && result.size() >0 ){
             return result;
         }
@@ -98,12 +97,20 @@ public class FunctionDefinitionResolver implements ReferenceResolver {
     }
     
     protected <T extends SourceElement> void  resolve( 
-            SourceElement scope , List<T> functions , String funcName ,
+            SourceElement sourceElement , List<T> functions , String funcName ,
             Class<T> clazz , boolean exactComparison) 
     {
-        if ( scope == null ){
+        SourceElement scope = null;
+        if ( sourceElement.getParent() == null ){
+            List<FunctionDefinition> defs = sourceElement.getModel().
+                getStatements( FunctionDefinition.class );
+            findInList(functions, funcName, clazz, exactComparison, defs);
             return;
         }
+        else {
+            scope = sourceElement.getParent();
+        }
+        
         if ( ClassFunctionDefinition.class.isAssignableFrom( clazz ) 
                 && scope instanceof ClassDefinition )
         {
@@ -115,15 +122,23 @@ public class FunctionDefinitionResolver implements ReferenceResolver {
         else {
             findInScope(scope, functions, funcName, clazz, exactComparison);
         }
-        resolve( scope.getParent(), functions , funcName, 
-                clazz , exactComparison );
+        
+        resolve(scope, functions, funcName, clazz,exactComparison);
     }
 
-    protected <T> void findInScope( SourceElement scope, List<T> functions,
-            String funcName, Class<T> clazz, boolean exactComparison )
+    protected <T extends SourceElement> void findInScope( SourceElement scope, 
+            List<T> functions,String funcName, Class<T> clazz, 
+            boolean exactComparison )
     {
         List<FunctionDefinition> list = 
             scope.getChildren( FunctionDefinition.class );
+        findInList(functions, funcName, clazz, exactComparison, list);
+    }
+
+    protected <T extends SourceElement> void findInList( List<T> functions, 
+            String funcName,Class<T> clazz, boolean exactComparison,
+            List<FunctionDefinition> list )
+    {
         for ( FunctionDefinition func : list ){
             if ( !clazz.isAssignableFrom( func.getElementType() )){
                 continue;

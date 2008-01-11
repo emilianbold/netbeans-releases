@@ -46,6 +46,7 @@ import java.util.Set;
 
 import org.netbeans.modules.php.model.ClassDefinition;
 import org.netbeans.modules.php.model.ClassFunctionDeclaration;
+import org.netbeans.modules.php.model.FunctionDefinition;
 import org.netbeans.modules.php.model.InterfaceDefinition;
 import org.netbeans.modules.php.model.Reference;
 import org.netbeans.modules.php.model.SourceElement;
@@ -65,22 +66,28 @@ public class ClassFunctionDeclarationResolver extends FunctionDefinitionResolver
     }
 
     protected <T extends SourceElement> void  resolve( 
-            SourceElement scope , List<T> functions , String funcName ,
+            SourceElement sourceElement , List<T> functions , String funcName ,
             Class<T> clazz , boolean exactComparison) 
     {
-        if ( InterfaceDefinition.class.isAssignableFrom( clazz )){
+        SourceElement scope = sourceElement.getParent();
+        
+        if (  InterfaceDefinition.class.isAssignableFrom( clazz ) && 
+                scope instanceof InterfaceDefinition )
+        {
            // avoid cyclic references to super class and interface
             Set<String> set = new HashSet<String>();
             findInInterface( (InterfaceDefinition) scope , functions , funcName , 
                     clazz, exactComparison , set );
         }
         else {
-            super.resolve(scope , functions , funcName ,  clazz, exactComparison);
+            super.resolve(sourceElement , functions , funcName ,  clazz, 
+                    exactComparison);
         }
     }
     
-    protected <T> void findInScope( SourceElement scope, List<T> functions,
-            String funcName, Class<T> clazz, boolean exactComparison )
+    protected <T extends SourceElement> void findInScope( SourceElement scope, 
+            List<T> functions,String funcName, Class<T> clazz, 
+            boolean exactComparison )
     {
         List<ClassFunctionDeclaration> list = 
             scope.getChildren( ClassFunctionDeclaration.class );
@@ -123,6 +130,13 @@ public class ClassFunctionDeclarationResolver extends FunctionDefinitionResolver
             }
         }
     }
+    
+    protected <T extends SourceElement> void findInList( List<T> functions, 
+            String funcName,Class<T> clazz, boolean exactComparison,
+            List<FunctionDefinition> list )
+    {
+    }
+    
     
     private <T extends SourceElement> void findInInterface(
             InterfaceDefinition scope , List<T> functions , String funcName ,

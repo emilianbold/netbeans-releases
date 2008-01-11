@@ -73,7 +73,23 @@ public class VariableReferenceResolver implements  ReferenceResolver
     public <T extends SourceElement> List<T> resolve( SourceElement source, 
             String identifier, Class<T> clazz , boolean exactComparison ) 
     {
-        return findVariable( source , identifier , clazz , exactComparison);
+        List<T> result = 
+            findVariable( source , identifier , clazz , exactComparison);
+        
+        List<PhpModel> models = ModelResolver.ResolverUtility.getIncludedModels(
+                source.getModel());
+        
+        for (PhpModel model : models) {
+            List<T> vars =  findInScope( identifier , clazz , model ,
+                    null, exactComparison);
+            if ( vars != null ) {
+                result.addAll( vars );
+            }
+            if (exactComparison && result.size() > 0) {
+                return result;
+            }
+        }
+        return result;
     }
 
     /* (non-Javadoc)
@@ -86,8 +102,6 @@ public class VariableReferenceResolver implements  ReferenceResolver
     private <T extends SourceElement> List<T>  findVariable( SourceElement source, 
             String identifier, Class<T> clazz,  boolean exactComparison) 
     {
-        // TODO : involve other OMs in search procedure.
-        
         Acceptor scope = 
             source.getParent() == null ? source.getModel(): source.getParent();
         SourceElement childScope = source;
