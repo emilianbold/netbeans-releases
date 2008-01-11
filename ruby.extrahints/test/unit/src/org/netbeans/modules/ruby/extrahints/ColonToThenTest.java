@@ -58,12 +58,12 @@ public class ColonToThenTest extends HintTestBase  {
 
     public void testFix1() throws Exception {
         applyHint(this, new ColonToThen(), "testfiles/colontothen.rb", 
-                "when Regexp  ^: puts 'a regex'", ":");
+                "when Regexp  ^: puts 'a regex'", "then");
     }
     
     public void testFix2() throws Exception {
         applyHint(this, new ColonToThen(), "testfiles/colontothen.rb", 
-                "when String^: puts 'a string'", ":");
+                "when String^: puts 'a string'", "then");
     }
     
     public void testFix3() throws Exception {
@@ -74,6 +74,16 @@ public class ColonToThenTest extends HintTestBase  {
     public void testFix4() throws Exception {
         applyHint(this, new ColonToThen(), "testfiles/colontothen.rb", 
                 "when String^: puts 'a string'", "Move");
+    }
+    
+    public void testFix5() throws Exception {
+        applyHint(this, new ColonToThen(), "testfiles/colontothen.rb", 
+                "when Regexp  ^: puts 'a regex'", ";");
+    }
+    
+    public void testFix6() throws Exception {
+        applyHint(this, new ColonToThen(), "testfiles/colontothen.rb", 
+                "when String^: puts 'a string'", ";");
     }
     
 //    public void testNoPositives() throws Exception {

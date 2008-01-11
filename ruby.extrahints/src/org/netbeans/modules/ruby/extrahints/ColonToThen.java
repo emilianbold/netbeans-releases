@@ -40,7 +40,6 @@
 package org.netbeans.modules.ruby.extrahints;
 
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -137,8 +136,9 @@ public class ColonToThen implements AstRule {
             OffsetRange range = new OffsetRange(offset, offset+1);
             String displayName = NbBundle.getMessage(ColonToThen.class, "ColonToThenGutter");
             List<Fix> fixes = new ArrayList<Fix>(2);
-            fixes.add(new ColonFix(doc, offset, false));
-            fixes.add(new ColonFix(doc, offset, true));
+            fixes.add(new ColonFix(doc, offset, INSERT_THEN));
+            fixes.add(new ColonFix(doc, offset, INSERT_SEMICOLON));
+            fixes.add(new ColonFix(doc, offset, INSERT_NEWLINE));
             Description desc = new Description(this, displayName, info.getFileObject(), range, 
                     fixes, 150);
             result.add(desc);
@@ -178,22 +178,34 @@ public class ColonToThen implements AstRule {
     public HintSeverity getDefaultSeverity() {
         return HintSeverity.WARNING;
     }
+
+    // ColonFix possibilities
+    private static final int INSERT_THEN = 1;
+    private static final int INSERT_NEWLINE = 2;
+    private static final int INSERT_SEMICOLON = 3;
     
     private static class ColonFix implements PreviewableFix {
         private BaseDocument doc;
         private int offset;
-        private boolean newline;
+        private int mode;
+        
 
-        public ColonFix(BaseDocument doc, int offset, boolean newline) {
+        public ColonFix(BaseDocument doc, int offset, int mode) {
             this.doc = doc;
             this.offset = offset;
-            this.newline = newline;
+            this.mode = mode;
         }
 
         public String getDescription() {
-            return newline ?
-                NbBundle.getMessage(Deprecations.class, "ColonToThenFixNewline") :
-                NbBundle.getMessage(Deprecations.class, "ColonToThenFix");
+            switch (mode) {
+                case INSERT_SEMICOLON: 
+                    return NbBundle.getMessage(Deprecations.class, "ColonToThenFixSemi");
+                case INSERT_THEN: 
+                    return NbBundle.getMessage(Deprecations.class, "ColonToThenFix");
+                case INSERT_NEWLINE: 
+                default:
+                    return NbBundle.getMessage(Deprecations.class, "ColonToThenFixNewline");
+            }
         }
 
         public void implement() throws Exception {
@@ -202,21 +214,28 @@ public class ColonToThen implements AstRule {
 
         public EditList getEditList() throws Exception {
             EditList list = new EditList(doc);
-            if (newline) {
-                list.replace(offset, 1, "\n", true, 0);
-            } else {
+            switch (mode) {
+            case INSERT_NEWLINE:
+                list.replace(offset, 1, "\n", true, 0); // NOI18N
+                break;
+            case INSERT_THEN: {
                 String s = doc.getText(offset, 3);
                 StringBuilder sb = new StringBuilder();
                 if (!Character.isWhitespace(doc.getText(offset-1, 1).charAt(0))) {
                     sb.append(' ');
                 }
-                sb.append("then");
+                sb.append("then"); // NOI18N
                 if (offset < doc.getLength()-2) {
                     if (!Character.isWhitespace(doc.getText(offset+1, 1).charAt(0))) {
                         sb.append(' ');
                     }
                 }
                 list.replace(offset, 1, sb.toString(), false, 0);
+                break;
+                }
+            case INSERT_SEMICOLON:
+                list.replace(offset, 1, ";", false, 0); // NOI18N
+                break;
             }
             
             return list;

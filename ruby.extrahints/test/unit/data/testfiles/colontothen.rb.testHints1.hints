@@ -2,19 +2,23 @@
                  -
 HINT:Using : instead of "then" in a when clause is illegal in Ruby 1.9
 FIX:Replace : with "then"
+FIX:Replace : with ;
 FIX:Move the when body to a separate line
     when Hash    : puts 'a regex'
                  -
 HINT:Using : instead of "then" in a when clause is illegal in Ruby 1.9
 FIX:Replace : with "then"
+FIX:Replace : with ;
 FIX:Move the when body to a separate line
     when Numeric : puts 'a number'
                  -
 HINT:Using : instead of "then" in a when clause is illegal in Ruby 1.9
 FIX:Replace : with "then"
+FIX:Replace : with ;
 FIX:Move the when body to a separate line
     when String: puts 'a string'
                -
 HINT:Using : instead of "then" in a when clause is illegal in Ruby 1.9
 FIX:Replace : with "then"
+FIX:Replace : with ;
 FIX:Move the when body to a separate line
