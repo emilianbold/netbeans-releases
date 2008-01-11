@@ -77,7 +77,9 @@ public final class ResourceMarker {
     
     public static final String CLASS_REF    = "classReference.php";       // NOI18N
     
-    public static final String STATIC_REF   = "staticReferences.php";     // NOI18N     
+    public static final String STATIC_REF   = "staticReferences.php";     // NOI18N   
+    
+    public static final String CONST_REF    = "constantReference.php";    // NOI18N
     
     public static InputStream getStream( String relativeResourceName ){
         /*String pack = ResourceMarker.class.getPackage().getName().
