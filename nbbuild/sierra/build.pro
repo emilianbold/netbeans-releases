@@ -74,6 +74,7 @@
         libs
         openide
         openidex
+        performance
         projects
         refactoring
         schema2beans
