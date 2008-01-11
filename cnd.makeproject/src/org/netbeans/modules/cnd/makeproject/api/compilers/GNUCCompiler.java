@@ -44,7 +44,7 @@ package org.netbeans.modules.cnd.makeproject.api.compilers;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
 
-public class GNUCCompiler extends GNUCorCCCompiler {
+public class GNUCCompiler extends GNUCCCCompiler {
 
     private static final String[] DEVELOPMENT_MODE_OPTIONS = {
         "",  // Fast Build // NOI18N
