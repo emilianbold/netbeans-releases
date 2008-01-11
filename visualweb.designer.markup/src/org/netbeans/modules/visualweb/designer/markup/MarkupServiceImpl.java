@@ -46,6 +46,9 @@ package org.netbeans.modules.visualweb.designer.markup;
 import org.netbeans.modules.visualweb.api.insync.InSyncService;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
 import java.io.StringWriter;
+import java.lang.ref.WeakReference;
+import java.util.Map;
+import java.util.WeakHashMap;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
 import org.apache.batik.css.engine.CSSStylableElement;
@@ -80,13 +83,13 @@ public final class  MarkupServiceImpl {
 
     private static final String KEY_STYLE_PARENT = "vwpStyleParent"; // NOI18N
     
-    private static final String KEY_RENDERED_TEXT = "vwpRenderedText"; // NOI18N
+//    private static final String KEY_RENDERED_TEXT = "vwpRenderedText"; // NOI18N
     
-    private static final String KEY_SOURCE_TEXT = "vwpSourceText"; // NOI18N
+//    private static final String KEY_SOURCE_TEXT = "vwpSourceText"; // NOI18N
 
-    private static final String KEY_RENDERED_ELEMENT = "vwpRenderedElement"; // NOI18N
+//    private static final String KEY_RENDERED_ELEMENT = "vwpRenderedElement"; // NOI18N
     
-    private static final String KEY_SOURCE_ELEMENT="vwpSourceElement"; // NOI18N    
+//    private static final String KEY_SOURCE_ELEMENT="vwpSourceElement"; // NOI18N    
     
     
     private MarkupServiceImpl() {
@@ -841,32 +844,44 @@ public final class  MarkupServiceImpl {
         return false;
     }
 
+    
+    private static final Map<Text, WeakReference<Text>> sourceText2renderedText = new WeakHashMap<Text, WeakReference<Text>>(200);
+    
     static void setRenderedText(Text text, Text renderedText) {
         if (text == null) {
             return;
         }
-        text.setUserData(KEY_RENDERED_TEXT, renderedText, RenderedTextDataHandler.getDefault());
+//        text.setUserData(KEY_RENDERED_TEXT, renderedText, RenderedTextDataHandler.getDefault());
+        sourceText2renderedText.put(text, new WeakReference<Text>(renderedText));
     }
     
     static Text getRenderedText(Text text) {
         if (text == null) {
             return null;
         }
-        return (Text)text.getUserData(KEY_RENDERED_TEXT);
+//        return (Text)text.getUserData(KEY_RENDERED_TEXT);
+        WeakReference<Text> wRef = sourceText2renderedText.get(text);
+        return wRef == null ? null : wRef.get();
     }
+
+    
+    private static final Map<Text, WeakReference<Text>> renderedText2sourceText = new WeakHashMap<Text, WeakReference<Text>>(200);
     
     static void setSourceText(Text text, Text sourceText) {
         if (text == null) {
             return;
         }
-        text.setUserData(KEY_SOURCE_TEXT, sourceText, SourceTextDataHandler.getDefault());
+//        text.setUserData(KEY_SOURCE_TEXT, sourceText, SourceTextDataHandler.getDefault());
+        renderedText2sourceText.put(text, new WeakReference<Text>(sourceText));
     }
     
     static Text getSourceText(Text text) {
         if (text == null) {
             return null;
         }
-        return (Text)text.getUserData(KEY_SOURCE_TEXT);
+//        return (Text)text.getUserData(KEY_SOURCE_TEXT);
+        WeakReference<Text> wRef = renderedText2sourceText.get(text);
+        return wRef == null ? null : wRef.get();
     }
     
     static void linkToSourceText(Text text, Text sourceText) {
@@ -879,19 +894,25 @@ public final class  MarkupServiceImpl {
 //        }
         setRenderedText(sourceText, text);
     }
+
+    
+    private static final Map<Element, WeakReference<Element>> sourceElement2renderedElement = new WeakHashMap<Element, WeakReference<Element>>(200);
     
     static void setRenderedElement(Element element, Element renderedElement) {
         if (element == null) {
             return;
         }
-        element.setUserData(KEY_RENDERED_ELEMENT, renderedElement, RenderedElementDataHandler.getDefault());
+//        element.setUserData(KEY_RENDERED_ELEMENT, renderedElement, RenderedElementDataHandler.getDefault());
+        sourceElement2renderedElement.put(element, new WeakReference<Element>(renderedElement));
     }
     
     static Element getRenderedElement(Element element) {
         if (element == null) {
             return null;
         }
-        return (Element)element.getUserData(KEY_RENDERED_ELEMENT);
+//        return (Element)element.getUserData(KEY_RENDERED_ELEMENT);
+        WeakReference<Element> wRef = sourceElement2renderedElement.get(element);
+        return wRef == null ? null : wRef.get();
     }
     
     static void linkToRenderedElement(Element element, Element renderedElement) {
@@ -904,19 +925,25 @@ public final class  MarkupServiceImpl {
 //        }
         setSourceElement(renderedElement, element);
     }
+
+    
+    private static final Map<Element, WeakReference<Element>> renderedElement2sourceElement = new WeakHashMap<Element, WeakReference<Element>>(200);
     
     static void setSourceElement(Element element, Element sourceElement) {
         if (element == null) {
             return;
         }
-        element.setUserData(KEY_SOURCE_ELEMENT, sourceElement, SourceElementDataHandler.getDefault());
+//        element.setUserData(KEY_SOURCE_ELEMENT, sourceElement, SourceElementDataHandler.getDefault());
+        renderedElement2sourceElement.put(element, new WeakReference(sourceElement));
     }
     
     static Element getSourceElement(Element element) {
         if (element == null) {
             return null;
         }
-        return (Element)element.getUserData(KEY_SOURCE_ELEMENT);
+//        return (Element)element.getUserData(KEY_SOURCE_ELEMENT);
+        WeakReference<Element> wRef = renderedElement2sourceElement.get(element);
+        return wRef == null ? null : wRef.get();
     }
 
     static void linkToSourceElement(Element element, Element sourceElement) {
@@ -1002,57 +1029,57 @@ public final class  MarkupServiceImpl {
     } // End of StyleParentDataHandler.
     
     
-    private static class RenderedTextDataHandler implements UserDataHandler {
-        private static final RenderedTextDataHandler INSTANCE = new RenderedTextDataHandler();
-        
-        public static RenderedTextDataHandler getDefault() {
-            return INSTANCE;
-        }
-
-        public void handle(short operation, String key, Object data, Node src, Node dst) {
-            // No op.
-        }
-    } // End of RenderedTextDataHandler.
-
-    
-    private static class SourceTextDataHandler implements UserDataHandler {
-        private static final SourceTextDataHandler INSTANCE = new SourceTextDataHandler();
-
-        public static SourceTextDataHandler getDefault() {
-            return INSTANCE;
-        }
-        
-        public void handle(short operation, String key, Object data, Node src, Node dst) {
-            // No op.
-        }
-        
-    } // End of SourceTextDataHandler.
+//    private static class RenderedTextDataHandler implements UserDataHandler {
+//        private static final RenderedTextDataHandler INSTANCE = new RenderedTextDataHandler();
+//        
+//        public static RenderedTextDataHandler getDefault() {
+//            return INSTANCE;
+//        }
+//
+//        public void handle(short operation, String key, Object data, Node src, Node dst) {
+//            // No op.
+//        }
+//    } // End of RenderedTextDataHandler.
 
     
-    private static class RenderedElementDataHandler implements UserDataHandler {
-        private static final RenderedElementDataHandler INSTANCE = new RenderedElementDataHandler();
-        
-        public static RenderedElementDataHandler getDefault() {
-            return INSTANCE;
-        }
-        
-        public void handle(short operation, String key, Object data, Node src, Node dst) {
-            // No op.
-            // TODO Make the copying here instead of AbstractRaveElement.copyFrom.
-        }
-    } // End of RenderedElementDataHandler.
+//    private static class SourceTextDataHandler implements UserDataHandler {
+//        private static final SourceTextDataHandler INSTANCE = new SourceTextDataHandler();
+//
+//        public static SourceTextDataHandler getDefault() {
+//            return INSTANCE;
+//        }
+//        
+//        public void handle(short operation, String key, Object data, Node src, Node dst) {
+//            // No op.
+//        }
+//        
+//    } // End of SourceTextDataHandler.
+
+    
+//    private static class RenderedElementDataHandler implements UserDataHandler {
+//        private static final RenderedElementDataHandler INSTANCE = new RenderedElementDataHandler();
+//        
+//        public static RenderedElementDataHandler getDefault() {
+//            return INSTANCE;
+//        }
+//        
+//        public void handle(short operation, String key, Object data, Node src, Node dst) {
+//            // No op.
+//            // TODO Make the copying here instead of AbstractRaveElement.copyFrom.
+//        }
+//    } // End of RenderedElementDataHandler.
     
     
-    private static class SourceElementDataHandler implements UserDataHandler {
-        private static final SourceElementDataHandler INSTANCE = new SourceElementDataHandler();
-        
-        public static SourceElementDataHandler getDefault() {
-            return INSTANCE;
-        }
-        
-        public void handle(short operation, String key, Object data, Node src, Node dst) {
-            // No op.
-            // TODO Make the copying here instead of AbstractRaveElement.copyFrom.
-        }
-    } // End of SourceElementDataHandler.
+//    private static class SourceElementDataHandler implements UserDataHandler {
+//        private static final SourceElementDataHandler INSTANCE = new SourceElementDataHandler();
+//        
+//        public static SourceElementDataHandler getDefault() {
+//            return INSTANCE;
+//        }
+//        
+//        public void handle(short operation, String key, Object data, Node src, Node dst) {
+//            // No op.
+//            // TODO Make the copying here instead of AbstractRaveElement.copyFrom.
+//        }
+//    } // End of SourceElementDataHandler.
 }
