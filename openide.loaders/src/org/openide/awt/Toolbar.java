@@ -751,7 +751,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
             } else if ("Windows".equals(lfid)) {
                 minheight = isXPTheme() ? (23 + 8) : (27 + 8);
             } else if ("GTK".equals(lfid)) {
-                minheight = 30 + 8;
+                minheight = 32 + 8;
             } else {
                 minheight = 28 + 8;
             }
@@ -763,7 +763,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
             } else if ("Windows".equals(lfid)) {
                 minheight = isXPTheme() ? 23 : 27;
             } else if ("GTK".equals(lfid)) {
-                minheight = 30;
+                minheight = 32;
             } else {
                 minheight = 28;
             }
