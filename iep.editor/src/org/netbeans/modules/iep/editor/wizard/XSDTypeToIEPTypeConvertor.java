@@ -39,17 +39,46 @@
 
 package org.netbeans.modules.iep.editor.wizard;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.modules.iep.editor.share.SharedConstants;
+import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
+import org.netbeans.modules.xml.schema.model.SchemaModel;
+import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
+
 /**
  *
  * @author radval
  */
-public class WizardConstants {
+public class XSDTypeToIEPTypeConvertor {
 
-    public static final String WIZARD_FIRST_PANEL_KEY_VALUE_CREATE_EMPTY_IEP = "WIZARD_FIRST_PANEL_KEY_VALUE_CREATE_EMPTY_IEP";
+    private static Map<String, String> xsdTypeToIEPType = new HashMap<String, String>();
     
-    public static final String WIZARD_FIRST_PANEL_KEY_VALUE_CREATE_IEP_USING_INPUT_SCHEMA = "WIZARD_FIRST_PANEL_KEY_VALUE_CREATE_IEP_USING_INPUT_SCHEMA";
+    static {
+        xsdTypeToIEPType.put("string", SharedConstants.SQL_TYPE_VARCHAR);
+        xsdTypeToIEPType.put("integer", SharedConstants.SQL_TYPE_INTEGER);
+        xsdTypeToIEPType.put("int", SharedConstants.SQL_TYPE_INTEGER);
+        xsdTypeToIEPType.put("double", SharedConstants.SQL_TYPE_DOUBLE);
+        xsdTypeToIEPType.put("decimal", SharedConstants.SQL_TYPE_DOUBLE);
+        xsdTypeToIEPType.put("float", SharedConstants.SQL_TYPE_DOUBLE);
+        xsdTypeToIEPType.put("time", SharedConstants.SQL_TYPE_TIME);
+        xsdTypeToIEPType.put("date", SharedConstants.SQL_TYPE_DATE);
+        xsdTypeToIEPType.put("dateTime", SharedConstants.SQL_TYPE_TIMESTAMP);
+        xsdTypeToIEPType.put("NMTOKEN", SharedConstants.SQL_TYPE_VARCHAR);
+       
+                
+    }
     
-    public static final String WIZARD_FIRST_PANEL_SELECTION_KEY = "WIZARD_FIRST_PANEL_SELECTION_KEY";
-    
-    public static final String WIZARD_SELECTED_ELEMENT_OR_TYPE_KEY = "WIZARD_SELECTED_ELEMENT_OR_TYPE_KEY";
+    public static String getIEPType(String xsdType) {
+        String iepType = xsdTypeToIEPType.get(xsdType);
+        
+        //if no type found default is clob
+        if(iepType == null) {
+            iepType = SharedConstants.SQL_TYPE_CLOB;
+        }
+        
+        return iepType;
+        
+    }
 }

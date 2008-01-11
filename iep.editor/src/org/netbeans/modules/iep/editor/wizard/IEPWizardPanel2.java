@@ -19,7 +19,7 @@ public class IEPWizardPanel2 implements WizardDescriptor.Panel {
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
      */
-    private Component component;
+    private IEPVisualPanel2 component;
 
     private WizardDescriptor mDescriptor;
     
@@ -98,6 +98,9 @@ public class IEPWizardPanel2 implements WizardDescriptor.Panel {
     }
 
     public void storeSettings(Object settings) {
+        ElementOrType elementOrType = component.getSelectedElementOrType();
+        
+        mDescriptor.putProperty(WizardConstants.WIZARD_SELECTED_ELEMENT_OR_TYPE_KEY, elementOrType);
     }
 }
 

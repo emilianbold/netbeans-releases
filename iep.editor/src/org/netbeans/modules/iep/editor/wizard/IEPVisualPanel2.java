@@ -15,6 +15,7 @@ public final class IEPVisualPanel2 extends JPanel {
 
     private Project mProject;
     
+    private ElementOrTypeChooserPanel mElementOrTypePanel;
     
     public IEPVisualPanel2(Project project) {
         this.mProject = project;
@@ -49,10 +50,14 @@ public final class IEPVisualPanel2 extends JPanel {
 
 
     private void initGUI() {
-        ElementOrTypeChooserPanel panel = new ElementOrTypeChooserPanel(this.mProject);
+        mElementOrTypePanel = new ElementOrTypeChooserPanel(this.mProject);
         this.setLayout(new BorderLayout());
         
-        this.add(panel, BorderLayout.CENTER);
+        this.add(mElementOrTypePanel, BorderLayout.CENTER);
+    }
+    
+    public ElementOrType getSelectedElementOrType() {
+        return mElementOrTypePanel.getSelectedComponent();
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

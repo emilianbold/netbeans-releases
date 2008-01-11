@@ -6,6 +6,8 @@
 
 package org.netbeans.modules.iep.editor.wizard;
 
+import java.util.Iterator;
+import java.util.List;
 import java.util.Vector;
 
 import javax.swing.DefaultCellEditor;
@@ -45,6 +47,19 @@ public class IEPAttributeConfigurationPanel extends javax.swing.JPanel {
     public IEPAttributeConfigurationPanel() {
         initComponents();
         initGUI();
+    }
+    
+    public void addDefaultIEPAttributes(List<XSDToIEPAttributeNameVisitor.AttributeNameToType> nameToTypeList) {
+        Iterator<XSDToIEPAttributeNameVisitor.AttributeNameToType> it = nameToTypeList.iterator();
+            
+        while(it.hasNext()) {
+            XSDToIEPAttributeNameVisitor.AttributeNameToType attrNameToType = it.next();
+            PlaceholderSchemaAttribute attr = new PlaceholderSchemaAttribute();
+            attr.setAttributeName(attrNameToType.getAttributeName());
+            attr.setAttributeType(attrNameToType.getAttributeType());
+            
+            mTableModel.addRow(attr);
+        }
     }
     
     /** This method is called from within the constructor to

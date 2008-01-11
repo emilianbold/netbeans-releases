@@ -204,8 +204,10 @@ public class ElementOrTypeChooserPanel extends javax.swing.JPanel implements Exp
 
                     if (sc != null && (sc instanceof GlobalType || sc instanceof GlobalElement)) {
                         selectedComponent = sc;
+                        apply();
                         firePropertyChange(PROP_ACTION_APPLY, false, true);
                     }
+                    
                 }
             }
         }

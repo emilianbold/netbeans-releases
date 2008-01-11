@@ -6,12 +6,16 @@
 package org.netbeans.modules.iep.editor.wizard;
 
 import java.awt.BorderLayout;
+import java.util.Iterator;
+import java.util.List;
 import javax.swing.JPanel;
 
 import org.openide.util.NbBundle;
 
 public final class IEPVisualPanel3 extends JPanel {
 
+    private IEPAttributeConfigurationPanel mPanel;
+    
     /** Creates new form IEPVisualPanel3 */
     public IEPVisualPanel3() {
         initComponents();
@@ -26,8 +30,12 @@ public final class IEPVisualPanel3 extends JPanel {
     private void initGUI() {
         this.setLayout(new BorderLayout());
         
-        IEPAttributeConfigurationPanel panel = new IEPAttributeConfigurationPanel();
-        this.add(panel, BorderLayout.CENTER);
+        mPanel = new IEPAttributeConfigurationPanel();
+        this.add(mPanel, BorderLayout.CENTER);
+    }
+    
+    public void addDefaultIEPAttributes(List<XSDToIEPAttributeNameVisitor.AttributeNameToType> nameToTypeList) {
+        mPanel.addDefaultIEPAttributes(nameToTypeList);
     }
     
     /** This method is called from within the constructor to

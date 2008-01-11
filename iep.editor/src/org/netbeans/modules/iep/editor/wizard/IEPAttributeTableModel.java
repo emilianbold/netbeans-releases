@@ -178,6 +178,10 @@ public class IEPAttributeTableModel extends AbstractTableModel {
         this.fireTableDataChanged();
     }
     
+    public void addRow(PlaceholderSchemaAttribute rowData) {
+        this.mAttrList.add(rowData);
+    }
+    
     public void insertRow(int rowIndex, PlaceholderSchemaAttribute rowData) {
         if(rowIndex <= this.mAttrList.size()) {
             this.mAttrList.add(rowIndex, rowData);
