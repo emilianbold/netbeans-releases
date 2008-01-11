@@ -158,3 +158,4 @@ made subject to such option by the copyright holder.
 <replacefilter token="@org-netbeans-modules-projectui@" value="${javadoc.docs.org-netbeans-modules-projectui}"/>
 <replacefilter token="@org-netbeans-modules-refactoring-java@" value="${javadoc.docs.org-netbeans-modules-refactoring-java}"/>
 <replacefilter token="@org-netbeans-bootstrap@" value="${javadoc.docs.org-netbeans-bootstrap}"/>
+<replacefilter token="@org-netbeans-modules-xml-retriever@" value="${javadoc.docs.org-netbeans-modules-xml-retriever}"/>
