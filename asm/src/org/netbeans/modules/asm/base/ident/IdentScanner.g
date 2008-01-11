@@ -62,15 +62,19 @@ tokens {
 
 
 {
-      private int numLines = 0;       
-   
-      public int getNumLines() {
-         return numLines;
-      }         
+    private int numLines = 0;       
 
-      private void deferredNewline() {           
-         numLines++;
-      }    
+    public int getNumLines() {
+        return numLines;
+    }         
+
+    private void deferredNewline() {           
+        numLines++;
+    }    
+
+    protected Token createToken(int type) throws InstantiationException, IllegalAccessException {
+        return new antlr.CommonToken();
+    }
 }
 
 
