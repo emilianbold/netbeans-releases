@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.j2ee.websphere6.ui.nodes;
 
+import javax.swing.Action;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.Lookup;
@@ -56,26 +57,15 @@ public class WSTargetNode extends AbstractNode {
     /**
      * Creates a new instance of the WSTargetNode.
      *
-     * @param lookup a lookup object that contains the objects required for 
+     * @param lookup a lookup object that contains the objects required for
      *      node's customization, such as the deployment manager
      */
     public WSTargetNode(Lookup lookup) {
         super(new Children.Array());
     }
-    
-    /**
-     * A fake implementation of the Object's hashCode() method, in order to 
-     * avoid FindBugsTool's warnings
-     */
-    public int hashCode() {
-        return super.hashCode();
-    }
-    
-    /**
-     * A fake implementation of the Object's hashCode() method, in order to 
-     * avoid FindBugsTool's warnings
-     */
-    public boolean equals(Object obj) {
-        return super.equals(obj);
+
+    @Override
+    public Action[] getActions(boolean b) {
+        return new Action[] {};
     }
 }

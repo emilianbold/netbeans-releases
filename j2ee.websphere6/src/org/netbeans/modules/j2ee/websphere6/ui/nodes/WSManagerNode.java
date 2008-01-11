@@ -40,23 +40,33 @@
  */
 package org.netbeans.modules.j2ee.websphere6.ui.nodes;
 
-import java.awt.*;
-import java.beans.*;
-import java.io.File;
 
-import javax.enterprise.deploy.spi.*;
+import java.awt.Component;
+import java.awt.Image;
+import java.beans.PropertyEditor;
+
+import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.swing.Action;
+
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.websphere6.ui.nodes.actions.ShowAdminConsoleAction;
 import org.netbeans.modules.j2ee.websphere6.ui.nodes.actions.ShowServerLogAction;
 
-import org.openide.util.*;
-import org.openide.nodes.*;
-import org.netbeans.modules.j2ee.deployment.plugins.api.*;
-
-import org.netbeans.modules.j2ee.websphere6.*;
+import org.netbeans.modules.j2ee.websphere6.WSDeploymentFactory;
+import org.netbeans.modules.j2ee.websphere6.WSDeploymentManager;
 import org.netbeans.modules.j2ee.websphere6.j2ee.DeploymentManagerProperties;
 import org.netbeans.modules.j2ee.websphere6.j2ee.WSJ2eePlatformFactory;
-import org.netbeans.modules.j2ee.websphere6.ui.nodes.editors.*;
+import org.netbeans.modules.j2ee.websphere6.ui.nodes.editors.WSPasswordEditor;
+
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.nodes.PropertySupport;
+import org.openide.nodes.Sheet;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -66,13 +76,13 @@ import org.openide.util.actions.SystemAction;
  * @author Kirill Sorokin
  */
 public class WSManagerNode extends AbstractNode implements Node.Cookie {
-    
+
     /**
      * The associated deployment manager, i.e. the plugin's wrapper for
      * the server implementation of the DEploymentManager interface
      */
     private WSDeploymentManager deploymentManager;
-    
+
     // properties names
     private static final String DISPLAY_NAME = "displayName";          // NOI18N
     private static final String URL = "url";                           // NOI18N
@@ -81,13 +91,13 @@ public class WSManagerNode extends AbstractNode implements Node.Cookie {
     private static final String SERVER_ROOT = "serverRoot";            // NOI18N
     private static final String DOMAIN_ROOT = "domainRoot";            // NOI18N
     private static final String DEBUGGER_PORT = "debuggerPort";        // NOI18N
-    
+
     /**
      * Path to the node's icon that should reside in the class path
      */
     private static final String ICON = "org/netbeans/modules/j2ee/" +  // NOI18N
             "websphere6/resources/16x16.gif";                          // NOI18N
-    
+
     /**
      * Creates a new instance of the WSManagerNode.
      *
@@ -97,16 +107,16 @@ public class WSManagerNode extends AbstractNode implements Node.Cookie {
      */
     public WSManagerNode(Children children, Lookup lookup) {
         super(children);
-        
+
         // get the deployment manager from the lookup and save it
-        
+
         this.deploymentManager = (WSDeploymentManager) lookup.lookup(
                 DeploymentManager.class);
-        
+
         // add the node itself to its cookie list
         getCookieSet().add(this);
     }
-    
+
     /**
      * Returns the node's tooltip
      *
@@ -116,7 +126,7 @@ public class WSManagerNode extends AbstractNode implements Node.Cookie {
         return deploymentManager.getInstanceProperties().getProperty(
                 InstanceProperties.URL_ATTR);
     }
-    
+
     /**
      * Returns the node's icon when the node is in closed state
      *
@@ -125,7 +135,7 @@ public class WSManagerNode extends AbstractNode implements Node.Cookie {
     public Image getIcon(int type) {
         return Utilities.loadImage(ICON);
     }
-    
+
     /**
      * Returns the node's icon when the node is in open state
      *
@@ -134,7 +144,7 @@ public class WSManagerNode extends AbstractNode implements Node.Cookie {
     public Image getOpenedIcon(int type) {
         return Utilities.loadImage(ICON);
     }
-    
+
     /**
      * Returns the node's associated help article pointer
      *
@@ -144,17 +154,17 @@ public class WSManagerNode extends AbstractNode implements Node.Cookie {
         return new HelpCtx("j2eeplugins_property_sheet_server_" +
                 "node_websphere"); //NOI18N
     }
-    
+
     public Action[] getActions(boolean context) {
         Action[] newActions = new Action[3] ;
-        
+
         newActions[0] = null;
         newActions[1] = SystemAction.get(ShowAdminConsoleAction.class);
         newActions[2] = SystemAction.get(ShowServerLogAction.class);
-        
+
         return newActions;
     }
-    
+
     /**
      * Creates and returns the node's properties sheet
      *
@@ -163,17 +173,17 @@ public class WSManagerNode extends AbstractNode implements Node.Cookie {
     protected Sheet createSheet() {
         // create a new sheet
         Sheet sheet = super.createSheet();
-        
+
         // get the sheet's properties' set object
         Sheet.Set properties = sheet.get(Sheet.PROPERTIES);
         if (properties == null) {
             properties = Sheet.createPropertiesSet();
             sheet.put(properties);
         }
-        
+
         // declare the new property object and start adding the properties
         Node.Property property;
-        
+
         // DISPLAY NAME
         property = new PropertySupport.ReadWrite(
                 DISPLAY_NAME,
@@ -188,7 +198,7 @@ public class WSManagerNode extends AbstractNode implements Node.Cookie {
                         getProperty(
                         InstanceProperties.DISPLAY_NAME_ATTR);
             }
-            
+
             public void setValue(Object value) {
                 deploymentManager.getInstanceProperties().
                         setProperty(
@@ -197,7 +207,7 @@ public class WSManagerNode extends AbstractNode implements Node.Cookie {
             }
         };
         properties.put(property);
-        
+
         // URL
         property = new PropertySupport.ReadOnly(
                 URL,
@@ -212,7 +222,7 @@ public class WSManagerNode extends AbstractNode implements Node.Cookie {
             }
         };
         properties.put(property);
-        
+
         // USER NAME
         property = new PropertySupport.ReadWrite(
                 USERNAME,
@@ -227,7 +237,7 @@ public class WSManagerNode extends AbstractNode implements Node.Cookie {
                         getProperty(InstanceProperties.
                         USERNAME_ATTR);
             }
-            
+
             public void setValue(Object value) {
                 deploymentManager.getInstanceProperties().
                         setProperty(InstanceProperties.
@@ -235,7 +245,7 @@ public class WSManagerNode extends AbstractNode implements Node.Cookie {
             }
         };
         properties.put(property);
-        
+
         // PASSWORD
         property = new PropertySupport.ReadWrite(
                 PASSWORD,
@@ -252,20 +262,20 @@ public class WSManagerNode extends AbstractNode implements Node.Cookie {
 //                           return password.replaceAll(".", "\\*");     // NOI18N
                 return password;
             }
-            
+
             public void setValue(Object value) {
                 deploymentManager.getInstanceProperties().
                         setProperty(InstanceProperties.PASSWORD_ATTR,
                         (String) value);
             }
-            
+
             public PropertyEditor getPropertyEditor() {
                 return new WSPasswordEditor();
             }
         };
-        
+
         properties.put(property);
-        
+
         // SERVER ROOT
         property = new PropertySupport.ReadOnly(
                 SERVER_ROOT,
@@ -282,7 +292,7 @@ public class WSManagerNode extends AbstractNode implements Node.Cookie {
             }
         };
         properties.put(property);
-        
+
         // DOMAIN ROOT
         property = new PropertySupport.ReadOnly(
                 DOMAIN_ROOT,
@@ -299,7 +309,7 @@ public class WSManagerNode extends AbstractNode implements Node.Cookie {
             }
         };
         properties.put(property);
-        
+
         // DEBUGGER PORT
         property = new PropertySupport.ReadWrite(
                 DEBUGGER_PORT,
@@ -315,7 +325,7 @@ public class WSManagerNode extends AbstractNode implements Node.Cookie {
                         WSDeploymentFactory.DEBUGGER_PORT_ATTR);
                 return new Integer(debuggerPort);
             }
-            
+
             public void setValue(Object value) {
                 deploymentManager.getInstanceProperties().
                         setProperty(WSDeploymentFactory.
@@ -323,48 +333,32 @@ public class WSManagerNode extends AbstractNode implements Node.Cookie {
             }
         };
         properties.put(property);
-        
+
         return sheet;
     }
-    
-    /**
-     * A fake implementation of the Object's hashCode() method, in order to
-     * avoid FindBugsTool's warnings
-     */
-    public int hashCode() {
-        return super.hashCode();
-    }
-    
-    /**
-     * A fake implementation of the Object's equals() method, in order to
-     * avoid FindBugsTool's warnings
-     */
-    public boolean equals(Object obj) {
-        return super.equals(obj);
-    }
-    
+
     public boolean hasCustomizer() {
         return true;
     }
-    
+
     public Component getCustomizer() {
         return new org.netbeans.modules.j2ee.websphere6.ui.Customizer(
                 new WSJ2eePlatformFactory()
                 .getJ2eePlatformImpl(deploymentManager),
                 new DeploymentManagerProperties(deploymentManager));
     }
-    
+
     public WSDeploymentManager getDeploymentManager() {
         return deploymentManager;
     }
-    
+
     public String getAdminConsoleURL() {
         return "http://" + deploymentManager.getHost() + ":" + // NOI18N
                 deploymentManager.getInstanceProperties().
-                getProperty(WSDeploymentFactory.ADMIN_PORT_ATTR) + 
+                getProperty(WSDeploymentFactory.ADMIN_PORT_ATTR) +
                 "/ibm/console"; // NOI18N
     }
-    
+
     public String getLogFilePath() {
         return deploymentManager.getLogFilePath();
     }
