@@ -120,13 +120,12 @@ public class EndorsingCertificateProfile extends ProfileBase
 //        ProprietarySecurityPolicyModelHelper pmh = ProprietarySecurityPolicyModelHelper.getInstance(cfgVersion);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, false);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, false);
-        if (Util.isTomcat(p)) {
-            FileObject tomcatLoc = Util.getTomcatLocation(p);
-            ProprietarySecurityPolicyModelHelper.setStoreLocation(component, 
-                    tomcatLoc.getPath() + File.separator + CERTS_DIR + File.separator + "server-keystore.jks", false, false);
+//        if (Util.isTomcat(p)) {
+            String storeLoc = Util.getStoreLocation(p, false, false);
+            ProprietarySecurityPolicyModelHelper.setStoreLocation(component, storeLoc, false, false);
             ProprietarySecurityPolicyModelHelper.setStoreType(component, KeystorePanel.JKS, false, false);
-            ProprietarySecurityPolicyModelHelper.setStorePassword(component, KeystorePanel.DEFAULT_PASSWORD, false, false);
-        }
+            ProprietarySecurityPolicyModelHelper.setStorePassword(component, Util.getDefaultPassword(p), false, false);
+//        }
         ProprietarySecurityPolicyModelHelper.setKeyStoreAlias(component,ProfilesModelHelper.XWS_SECURITY_SERVER, false);
     }
     
@@ -135,18 +134,17 @@ public class EndorsingCertificateProfile extends ProfileBase
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, true);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, true);
         ProprietarySecurityPolicyModelHelper.removeCallbackHandlerConfiguration((Binding) component);        
-        if (Util.isTomcat(p)) {
-            FileObject tomcatLoc = Util.getTomcatLocation(p);
-            ProprietarySecurityPolicyModelHelper.setStoreLocation(component, 
-                    tomcatLoc.getPath() + File.separator + CERTS_DIR + File.separator + "client-keystore.jks", false, true);
+//        if (Util.isTomcat(p)) {
+            String kstoreLoc = Util.getStoreLocation(p, false, true);
+            ProprietarySecurityPolicyModelHelper.setStoreLocation(component, kstoreLoc, false, true);
             ProprietarySecurityPolicyModelHelper.setStoreType(component, KeystorePanel.JKS, false, true);
-            ProprietarySecurityPolicyModelHelper.setStorePassword(component, KeystorePanel.DEFAULT_PASSWORD, false, true);
+            ProprietarySecurityPolicyModelHelper.setStorePassword(component, Util.getDefaultPassword(p), false, true);
 
-            ProprietarySecurityPolicyModelHelper.setStoreLocation(component, 
-                    tomcatLoc.getPath() + File.separator + CERTS_DIR + File.separator + "client-truststore.jks", true, true);
+            String tstoreLoc = Util.getStoreLocation(p, true, true);
+            ProprietarySecurityPolicyModelHelper.setStoreLocation(component, tstoreLoc, true, true);
             ProprietarySecurityPolicyModelHelper.setStoreType(component, KeystorePanel.JKS, true, true);
-            ProprietarySecurityPolicyModelHelper.setStorePassword(component, KeystorePanel.DEFAULT_PASSWORD, true, true);
-        }
+            ProprietarySecurityPolicyModelHelper.setStorePassword(component, Util.getDefaultPassword(p), true, true);
+//        }
         ProprietarySecurityPolicyModelHelper.setKeyStoreAlias(component,ProfilesModelHelper.XWS_SECURITY_CLIENT, true);
         ProprietarySecurityPolicyModelHelper.setTrustPeerAlias(component,ProfilesModelHelper.XWS_SECURITY_SERVER, true);
     }
@@ -156,20 +154,13 @@ public class EndorsingCertificateProfile extends ProfileBase
         String keyLoc = ProprietarySecurityPolicyModelHelper.getStoreLocation(component, false);
         String keyPasswd = ProprietarySecurityPolicyModelHelper.getStorePassword(component, false);
         if (ProfilesModelHelper.XWS_SECURITY_SERVER.equals(keyAlias)) {
-            if (Util.isTomcat(p)) {
-                FileObject tomcatLoc = Util.getTomcatLocation(p);
-                String loc = tomcatLoc.getPath() + File.separator + CERTS_DIR + File.separator + "server-keystore.jks";
-                if (loc.equals(keyLoc)) {
-                    if (KeystorePanel.DEFAULT_PASSWORD.equals(keyPasswd)) {
+//            if (Util.isTomcat(p)) {
+                if ((Util.getDefaultPassword(p).equals(keyPasswd)) && 
+                    (Util.getStoreLocation(p, false, false).equals(keyLoc))) {
                         return true;
-                    }
                 }
-            } else {
-                if ((keyLoc == null) && (keyPasswd == null)) {
-                    return true;
-                }
-            }
-        }
+//        }
+      }
         return false;
     }
 
@@ -185,24 +176,14 @@ public class EndorsingCertificateProfile extends ProfileBase
         String trustPasswd = ProprietarySecurityPolicyModelHelper.getStorePassword(component, true);
         if (ProfilesModelHelper.XWS_SECURITY_CLIENT.equals(keyAlias) &&
             ProfilesModelHelper.XWS_SECURITY_SERVER.equals(trustAlias)) {
-                if (Util.isTomcat(p)) {
-                    FileObject tomcatLoc = Util.getTomcatLocation(p);
-                    String loc = tomcatLoc.getPath() + File.separator + CERTS_DIR + File.separator + "client-truststore.jks";
-                    if (loc.equals(trustLoc)) {
-                        if (KeystorePanel.DEFAULT_PASSWORD.equals(trustPasswd)) {
-                            loc = tomcatLoc.getPath() + File.separator + CERTS_DIR + File.separator + "client-keystore.jks";
-                            if (loc.equals(keyLoc)) {
-                                if (KeystorePanel.DEFAULT_PASSWORD.equals(keyPasswd)) {
-                                    return true;
-                                }
-                            }
-                        }
+//                if (Util.isTomcat(p)) {
+                    if ((Util.getDefaultPassword(p).equals(keyPasswd)) && 
+                        (Util.getDefaultPassword(p).equals(trustPasswd)) && 
+                        (Util.getStoreLocation(p, false, true).equals(keyLoc)) && 
+                        (Util.getStoreLocation(p, true, true).equals(trustLoc))) {
+                            return true;
                     }
-                } else {
-                    if ((trustLoc == null) && (keyLoc == null) && (keyPasswd == null) && (trustPasswd == null)){
-                        return true;
-                    }
-                }
+//                }
         }
         return false;
     }

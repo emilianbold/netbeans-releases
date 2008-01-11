@@ -54,6 +54,7 @@ public interface TrustStore extends ExtensibilityElement{
     public static final String PEERALIAS = "PeerAlias";     //NOI18N
     public static final String TYPE = "Type";     //NOI18N
     public static final String PASSWORD = "StorePassword";     //NOI18N
+    public static final String CERTSELECTOR = "Selector";     //NOI18N
    
     void setVisibility(String vis);
     String getVisibility();
@@ -72,4 +73,7 @@ public interface TrustStore extends ExtensibilityElement{
 
     void setStorePassword(String storepassword);
     String getStorePassword();    
+
+    void setCertSelector(String certSelector);
+    String getCertSelector();
 }

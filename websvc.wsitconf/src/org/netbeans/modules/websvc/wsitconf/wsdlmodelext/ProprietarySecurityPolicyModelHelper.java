@@ -573,6 +573,20 @@ public class ProprietarySecurityPolicyModelHelper {
             return (ks == null) ? null : ks.getStorePassword();
         }
     }
+
+    public static String getAliasSelector(WSDLComponent b) {
+        Policy p = PolicyModelHelper.getPolicyForElement(b);
+        if (p == null) return null;
+        KeyStore ks = (KeyStore) getStore(p, false);
+        return (ks == null) ? null : ks.getAliasSelector();
+    }
+
+    public static String getCertSelector(WSDLComponent b) {
+        Policy p = PolicyModelHelper.getPolicyForElement(b);
+        if (p == null) return null;
+        TrustStore ts = (TrustStore) getStore(p, true);
+        return (ts == null) ? null : ts.getCertSelector();
+    }
     
     public static void disableSTS(Binding b) {
         STSConfiguration stsConfig = getSTSConfiguration(b);
@@ -632,6 +646,46 @@ public class ProprietarySecurityPolicyModelHelper {
         }
     }
 
+    public static void setAliasSelector(WSDLComponent b, String value, boolean client) {
+        WSDLModel model = b.getModel();
+        Policy p = PolicyModelHelper.getPolicyForElement(b);
+        boolean isTransaction = model.isIntransaction();
+        if (!isTransaction) {
+            model.startTransaction();
+        }
+        try {
+            KeyStore ks = (KeyStore) getStore(p, false);
+            if ((p == null) || (ks == null)) {
+                ks = (KeyStore) createStore(b, false, client);
+            }
+            ks.setAliasSelector(value);
+        } finally {
+            if (!isTransaction) {
+                model.endTransaction();
+            }
+        }
+    }
+
+    public static void setCertSelector(WSDLComponent b, String value, boolean client) {
+        WSDLModel model = b.getModel();
+        Policy p = PolicyModelHelper.getPolicyForElement(b);
+        boolean isTransaction = model.isIntransaction();
+        if (!isTransaction) {
+            model.startTransaction();
+        }
+        try {
+            TrustStore ts = (TrustStore) getStore(p, true);
+            if ((p == null) || (ts == null)) {
+                ts = (TrustStore) createStore(b, true, client);
+            }
+            ts.setCertSelector(value);
+        } finally {
+            if (!isTransaction) {
+                model.endTransaction();
+            }
+        }
+    }
+    
     public static void setKeyStoreAlias(WSDLComponent b, String value, boolean client) {
         WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);        

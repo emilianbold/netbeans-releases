@@ -56,6 +56,7 @@ public interface KeyStore extends ExtensibilityElement{
     public static final String TYPE = "Type";     //NOI18N
     public static final String PASSWORD = "StorePassword";     //NOI18N
     public static final String KEYPASSWORD = "KeyPassword";     //NOI18N
+    public static final String SELECTOR = "Selector";     //NOI18N
     
     void setVisibility(String vis);
     String getVisibility();
@@ -74,4 +75,7 @@ public interface KeyStore extends ExtensibilityElement{
 
     void setKeyPassword(String storepassword);
     String getKeyPassword();
+
+    void setAliasSelector(String aliasSelector);
+    String getAliasSelector();
 }

@@ -42,7 +42,6 @@
 package org.netbeans.modules.websvc.wsitconf.ui.service.profiles;
 
 import java.awt.Dialog;
-import java.io.File;
 import javax.swing.JPanel;
 import javax.swing.undo.UndoManager;
 import org.netbeans.api.project.Project;
@@ -64,7 +63,6 @@ import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.filesystems.FileObject;
 
 /**
  * Transport Security Profile definition
@@ -73,7 +71,6 @@ import org.openide.filesystems.FileObject;
  */
 public class MutualCertificatesProfile extends ProfileBase 
         implements SecureConversationFeature,ClientDefaultsFeature,ServiceDefaultsFeature {
-    private static final String CERTS_DIR = "certs";
     
     public int getId() {
         return 20;
@@ -121,13 +118,12 @@ public class MutualCertificatesProfile extends ProfileBase
 //        ProprietarySecurityPolicyModelHelper pmh = ProprietarySecurityPolicyModelHelper.getInstance(cfgVersion);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, false);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, false);
-        if (Util.isTomcat(p)) {
-            FileObject tomcatLoc = Util.getTomcatLocation(p);
-            ProprietarySecurityPolicyModelHelper.setStoreLocation(component, 
-                    tomcatLoc.getPath() + File.separator + CERTS_DIR + File.separator + "server-keystore.jks", false, false);
+//        if (Util.isTomcat(p)) {
+            String storeLoc = Util.getStoreLocation(p, false, false);
+            ProprietarySecurityPolicyModelHelper.setStoreLocation(component, storeLoc, false, false);
             ProprietarySecurityPolicyModelHelper.setStoreType(component, KeystorePanel.JKS, false, false);
-            ProprietarySecurityPolicyModelHelper.setStorePassword(component, KeystorePanel.DEFAULT_PASSWORD, false, false);
-        }
+            ProprietarySecurityPolicyModelHelper.setStorePassword(component, Util.getDefaultPassword(p), false, false);
+//        }
         ProprietarySecurityPolicyModelHelper.setKeyStoreAlias(component,ProfilesModelHelper.XWS_SECURITY_SERVER, false);
     }    
 
@@ -136,18 +132,17 @@ public class MutualCertificatesProfile extends ProfileBase
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, true);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, true);
         ProprietarySecurityPolicyModelHelper.removeCallbackHandlerConfiguration((Binding) component);
-        if (Util.isTomcat(p)) {
-            FileObject tomcatLoc = Util.getTomcatLocation(p);
-            ProprietarySecurityPolicyModelHelper.setStoreLocation(component, 
-                    tomcatLoc.getPath() + File.separator + CERTS_DIR + File.separator + "client-keystore.jks", false, true);
+//        if (Util.isTomcat(p)) {
+            String kstoreLoc = Util.getStoreLocation(p, false, true);
+            ProprietarySecurityPolicyModelHelper.setStoreLocation(component, kstoreLoc, false, true);
             ProprietarySecurityPolicyModelHelper.setStoreType(component, KeystorePanel.JKS, false, true);
-            ProprietarySecurityPolicyModelHelper.setStorePassword(component, KeystorePanel.DEFAULT_PASSWORD, false, true);
+            ProprietarySecurityPolicyModelHelper.setStorePassword(component, Util.getDefaultPassword(p), false, true);
 
-            ProprietarySecurityPolicyModelHelper.setStoreLocation(component, 
-                    tomcatLoc.getPath() + File.separator + CERTS_DIR + File.separator + "client-truststore.jks", true, true);
+            String tstoreLoc = Util.getStoreLocation(p, true, true);
+            ProprietarySecurityPolicyModelHelper.setStoreLocation(component, tstoreLoc, true, true);
             ProprietarySecurityPolicyModelHelper.setStoreType(component, KeystorePanel.JKS, true, true);
-            ProprietarySecurityPolicyModelHelper.setStorePassword(component, KeystorePanel.DEFAULT_PASSWORD, true, true);
-        }
+            ProprietarySecurityPolicyModelHelper.setStorePassword(component, Util.getDefaultPassword(p), true, true);
+//        }
         ProprietarySecurityPolicyModelHelper.setKeyStoreAlias(component,ProfilesModelHelper.XWS_SECURITY_CLIENT, true);
         ProprietarySecurityPolicyModelHelper.setTrustPeerAlias(component,ProfilesModelHelper.XWS_SECURITY_SERVER, true);
     }    
@@ -164,24 +159,14 @@ public class MutualCertificatesProfile extends ProfileBase
         String trustLoc = ProprietarySecurityPolicyModelHelper.getStoreLocation(component, true);        
         if (ProfilesModelHelper.XWS_SECURITY_CLIENT.equals(keyAlias) && 
             ProfilesModelHelper.XWS_SECURITY_SERVER.equals(trustAlias)) {
-                if (Util.isTomcat(p)) {
-                    FileObject tomcatLoc = Util.getTomcatLocation(p);
-                    String loc = tomcatLoc.getPath() + File.separator + CERTS_DIR + File.separator + "client-truststore.jks";
-                    if (loc.equals(trustLoc)) {
-                        if (KeystorePanel.DEFAULT_PASSWORD.equals(trustPasswd)) {
-                            loc = tomcatLoc.getPath() + File.separator + CERTS_DIR + File.separator + "client-keystore.jks";
-                            if (loc.equals(keyLoc)) {
-                                if (KeystorePanel.DEFAULT_PASSWORD.equals(keyPasswd)) {
-                                    return true;
-                                }
-                            }
-                        }
+//                if (Util.isTomcat(p)) {
+                    if ((Util.getDefaultPassword(p).equals(keyPasswd)) && 
+                        (Util.getDefaultPassword(p).equals(trustPasswd)) && 
+                        (Util.getStoreLocation(p, false, true).equals(keyLoc)) && 
+                        (Util.getStoreLocation(p, true, true).equals(trustLoc))) {
+                            return true;
                     }
-                } else {
-                    if ((keyPasswd == null) && (trustPasswd == null) && (keyLoc == null) && (trustLoc == null)) {
-                        return true;
-                    }
-                }
+//                }
         }
         return false;
     }
@@ -191,20 +176,12 @@ public class MutualCertificatesProfile extends ProfileBase
         String storeLoc = ProprietarySecurityPolicyModelHelper.getStoreLocation(component, false);
         String storePasswd = ProprietarySecurityPolicyModelHelper.getStorePassword(component, false);
         if (ProfilesModelHelper.XWS_SECURITY_SERVER.equals(storeAlias)) {
-            if (Util.isTomcat(p)) {
-                FileObject tomcatLoc = Util.getTomcatLocation(p);
-                String loc = tomcatLoc.getPath() + File.separator + CERTS_DIR + File.separator + "server-keystore.jks";
-                if (loc.equals(storeLoc)) {
-                    if (KeystorePanel.DEFAULT_PASSWORD.equals(storePasswd)) {
+//            if (Util.isTomcat(p)) {
+                if ((Util.getDefaultPassword(p).equals(storePasswd)) && 
+                    (Util.getStoreLocation(p, false, false).equals(storeLoc))) {
                         return true;
-                    }
                 }
-            } else {
-                if ((storeLoc == null) && (storePasswd == null)) {
-                    return true;
-                }
-                return false;
-            }
+//        }
         }
         return false;
     }

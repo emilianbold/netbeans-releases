@@ -63,6 +63,8 @@ public enum ProprietarySecurityPolicyAttribute implements Attribute {
         REQUIRECANCELSCT("requireCancelSCT"),       //NOI18N
         RENEWEXPIREDSCT("renewExpiredSCT"),         //NOI18N
         LOCATION("location"),               //NOI18N
+        ALIASSELECTOR("aliasSelector"),               //NOI18N
+        CERTSELECTOR("certSelector"),               //NOI18N
         ALIAS("alias"),                     //NOI18N
         STSALIAS("stsalias"),               //NOI18N
         PEERALIAS("peeralias"),             //NOI18N

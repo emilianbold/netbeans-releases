@@ -118,5 +118,13 @@ public class TrustStoreImpl extends ProprietarySecurityPolicyComponentImpl imple
     public String getPeerAlias() {
         return getAttribute(ProprietarySecurityPolicyAttribute.PEERALIAS);
     }
+
+    public void setCertSelector(String selector) {
+        setAttribute(CERTSELECTOR, ProprietarySecurityPolicyAttribute.CERTSELECTOR, selector);
+    }
+
+    public String getCertSelector() {
+        return getAttribute(ProprietarySecurityPolicyAttribute.CERTSELECTOR);
+    }
     
 }

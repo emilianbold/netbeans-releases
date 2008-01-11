@@ -438,7 +438,7 @@ public class Util {
         return storeLocation;
     }
 
-    public static String getStoreLocation(String serverInstanceID, boolean trust, boolean client) {
+    private static String getStoreLocation(String serverInstanceID, boolean trust, boolean client) {
         String storeLocation = null;
         J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceID);
         File[] keyLocs = null;
@@ -489,43 +489,7 @@ public class Util {
         }    
         return folder;
     }
-    
-    public static String getDefaultPassword(Project p) {
-        String password = KeystorePanel.DEFAULT_PASSWORD;
-        if (isGlassfish(p)) {
-            String storeLoc = getStoreLocation(p, false, false);
-            try {
-                getAliases(storeLoc, password.toCharArray(), KeystorePanel.JKS);
-            } catch (IOException ioe) {
-                password = Util.getPassword(p);
-                try {
-                    getAliases(storeLoc, password.toCharArray(), KeystorePanel.JKS);
-                } catch (IOException ioe2) {
-                    password = "";
-                }
-            }
-        }        
-        return password;
-    }
-
-    public static String getDefaultPassword(String serverID) {
-        String password = KeystorePanel.DEFAULT_PASSWORD;
-        if (isGlassfish(serverID)) {
-            String storeLoc = getStoreLocation(serverID, false, false);
-            try {
-                getAliases(storeLoc, password.toCharArray(), KeystorePanel.JKS);
-            } catch (IOException ioe) {
-                password = KeystorePanel.DEFAULT_PASSWORD2;
-                try {
-                    getAliases(storeLoc, password.toCharArray(), KeystorePanel.JKS);
-                } catch (IOException ioe2) {
-                    password = "";
-                }
-            }
-        }        
-        return password;
-    }
-    
+        
     public static final void fillDefaultsToDefaultServer() {
 
         String sID = Deployment.getDefault().getDefaultServerInstanceID();
@@ -699,7 +663,7 @@ public class Util {
             return;
         }
 
-        String dstPasswd = getDefaultPassword(project);        
+        String dstPasswd = getDefaultPassword(project);
         if (glassfish) {
             try {
                 if (!client && refreshScript) refreshBuildScript(project);
@@ -1129,5 +1093,42 @@ public class Util {
         }
         return null;
     }
-        
+    
+    public static String getDefaultPassword(Project p) {
+        String password = KeystorePanel.DEFAULT_PASSWORD;
+        if (isGlassfish(p)) {
+            String storeLoc = getStoreLocation(p, false, false);
+            if (!passwordOK(storeLoc, password)) {
+                password = Util.getPassword(p);
+                if (!passwordOK(storeLoc, password)) {
+                    password = "";
+                }
+            }
+        }
+        return password;
+    }
+
+    public static String getDefaultPassword(String serverID) {
+        String password = KeystorePanel.DEFAULT_PASSWORD;
+        if (isGlassfish(serverID)) {
+            String storeLoc = getStoreLocation(serverID, false, false);
+            if (!passwordOK(storeLoc, password)) {
+                password = KeystorePanel.DEFAULT_PASSWORD2;
+                if (!passwordOK(storeLoc, password)) {
+                    password = "";
+                }
+            }
+        }
+        return password;
+    }
+    
+    private static boolean passwordOK(String storePath, String password) {
+        try {
+            Util.getAliases(storePath, password.toCharArray(), KeystorePanel.JKS);
+        } catch (Exception ex) {
+            return false;
+        }
+        return true;
+    }
+    
 }

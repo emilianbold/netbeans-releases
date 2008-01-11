@@ -118,4 +118,12 @@ public class KeyStoreImpl extends ProprietarySecurityPolicyComponentImpl impleme
     public String getKeyPassword() {
         return getAttribute(ProprietarySecurityPolicyAttribute.KEYPASS);
     }
+
+    public void setAliasSelector(String selector) {
+        setAttribute(SELECTOR, ProprietarySecurityPolicyAttribute.ALIASSELECTOR, selector);
+    }
+
+    public String getAliasSelector() {
+        return getAttribute(ProprietarySecurityPolicyAttribute.ALIASSELECTOR);
+    }
 }

@@ -42,7 +42,6 @@
 package org.netbeans.modules.websvc.wsitconf.ui.service.profiles;
 
 import java.awt.Dialog;
-import java.io.File;
 import javax.swing.JPanel;
 import javax.swing.undo.UndoManager;
 import org.netbeans.api.project.Project;
@@ -64,7 +63,6 @@ import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.filesystems.FileObject;
 
 /**
  * Transport Security Profile definition
@@ -120,13 +118,12 @@ public class STSIssuedProfile extends ProfileBase
 //        ProprietarySecurityPolicyModelHelper pmh = ProprietarySecurityPolicyModelHelper.getInstance(cfgVersion);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, false);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, false);
-        if (Util.isTomcat(p)) {
-            FileObject tomcatLoc = Util.getTomcatLocation(p);
-            ProprietarySecurityPolicyModelHelper.setStoreLocation(component, 
-                    tomcatLoc.getPath() + File.separator + "certs" + File.separator + "server-keystore.jks", false, false);
+//        if (Util.isTomcat(p)) {
+            String kstoreLoc = Util.getStoreLocation(p, false, false);
+            ProprietarySecurityPolicyModelHelper.setStoreLocation(component, kstoreLoc, false, false);
             ProprietarySecurityPolicyModelHelper.setStoreType(component, KeystorePanel.JKS, false, false);
             ProprietarySecurityPolicyModelHelper.setStorePassword(component, KeystorePanel.DEFAULT_PASSWORD, false, false);
-        }
+//        }
         ProprietarySecurityPolicyModelHelper.setKeyStoreAlias(component, ProfilesModelHelper.XWS_SECURITY_SERVER, false);
     }
 
@@ -141,19 +138,12 @@ public class STSIssuedProfile extends ProfileBase
         String keyLoc = ProprietarySecurityPolicyModelHelper.getStoreLocation(component, false);
         String keyPasswd = ProprietarySecurityPolicyModelHelper.getStorePassword(component, false);
         if (ProfilesModelHelper.XWS_SECURITY_SERVER.equals(keyAlias)) {
-            if (Util.isTomcat(p)) {
-                FileObject tomcatLoc = Util.getTomcatLocation(p);
-                String loc = tomcatLoc.getPath() + File.separator + "certs" + File.separator + "server-keystore.jks";
-                if (loc.equals(keyLoc)) {
-                    if (KeystorePanel.DEFAULT_PASSWORD.equals(keyPasswd)) {
+//            if (Util.isTomcat(p)) {
+                if ((Util.getDefaultPassword(p).equals(keyPasswd)) && 
+                    (Util.getStoreLocation(p, false, false).equals(keyLoc))) {
                         return true;
-                    }
                 }
-            } else {
-                if ((keyLoc == null) && (keyPasswd == null)) {
-                    return true;
-                }
-            }
+//        }
         }
         return false;
     }
