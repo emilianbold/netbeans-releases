@@ -198,7 +198,11 @@ public class EViewDesignTime extends Task {
         objDefn = dialog.getObjectDefinition(); 
         boolean fileIsValid = dbgen.setEViewConfigFilePath(dialog.getObjectDefinition(),"object.xml");//("C:/temp/eviewconfig", "objectdef.xml");
         if (fileIsValid) {
-            dbgen.createTargetDB(dialog.getDBLocation(), "mdb");//C:\temp\AAADB 
+             File file = new File(dialog.getDBLocation());
+            if(!file.exists()){
+                file.mkdirs();
+            }
+            dbgen.createTargetDB(dialog.getDBLocation(), dialog.getDBName());//C:\temp\AAADB 
         }
         System.out.println("\neTLeView Design Time - Query Builder [END].");
     }

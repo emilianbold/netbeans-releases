@@ -47,6 +47,7 @@ public class ChooseLocationDialog extends javax.swing.JDialog {
 
     private String objDefn = null;
     private String dbLocn = null;
+    private String dbName = null;
 
     /** Creates new form NewJDialog */
     public ChooseLocationDialog(java.awt.Frame parent, boolean modal) {
@@ -71,6 +72,8 @@ public class ChooseLocationDialog extends javax.swing.JDialog {
         dbLocationBtn = new javax.swing.JButton();
         objDefnTextField = new javax.swing.JTextField();
         objDefnBtn = new javax.swing.JButton();
+        dbNameTextField = new javax.swing.JTextField();
+        dbLabel = new javax.swing.JLabel();
         btnPanel = new javax.swing.JPanel();
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
@@ -86,7 +89,10 @@ public class ChooseLocationDialog extends javax.swing.JDialog {
         panel.setPreferredSize(new java.awt.Dimension(500, 150));
         panel.setLayout(new java.awt.GridBagLayout());
 
-        objDefnLabel.setText("eView Object Definition");
+        objDefnLabel.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
+        objDefnLabel.setText("EView Object Definition");
+        objDefnLabel.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
+        objDefnLabel.setPreferredSize(new java.awt.Dimension(130, 25));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -102,7 +108,9 @@ public class ChooseLocationDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(10, 0, 0, 10);
         panel.add(dbLocationTextField, gridBagConstraints);
 
+        dbLocationLabel.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         dbLocationLabel.setText("Staging Database Location");
+        dbLocationLabel.setPreferredSize(new java.awt.Dimension(130, 25));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -141,6 +149,22 @@ public class ChooseLocationDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 10);
         panel.add(objDefnBtn, gridBagConstraints);
+
+        dbNameTextField.setPreferredSize(new java.awt.Dimension(200, 25));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.insets = new java.awt.Insets(10, 0, 0, 10);
+        panel.add(dbNameTextField, gridBagConstraints);
+
+        dbLabel.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
+        dbLabel.setText("Database Name");
+        dbLabel.setPreferredSize(new java.awt.Dimension(130, 25));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.insets = new java.awt.Insets(10, 0, 0, 10);
+        panel.add(dbLabel, gridBagConstraints);
 
         getContentPane().add(panel, java.awt.BorderLayout.CENTER);
 
@@ -206,7 +230,15 @@ public class ChooseLocationDialog extends javax.swing.JDialog {
     public String getDBLocation() {
         return dbLocn;
     }
+    
+    private void setDBName(String str){
+        this.dbName = str;
+    }
 
+    public String getDBName(){
+        return dbName;
+    }
+            
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         this.dispose();
         System.exit(0);
@@ -219,6 +251,7 @@ public class ChooseLocationDialog extends javax.swing.JDialog {
           str = str.replace("object.xml", "");          
         }
         setObjectDefinition(str);
+        setDBName(dbNameTextField.getText());
         this.dispose();       
     }//GEN-LAST:event_okButtonActionPerformed
 
@@ -255,9 +288,11 @@ public class ChooseLocationDialog extends javax.swing.JDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel btnPanel;
     private javax.swing.JButton cancelButton;
+    private javax.swing.JLabel dbLabel;
     private javax.swing.JButton dbLocationBtn;
     private javax.swing.JLabel dbLocationLabel;
     private javax.swing.JTextField dbLocationTextField;
+    private javax.swing.JTextField dbNameTextField;
     private javax.swing.JButton objDefnBtn;
     private javax.swing.JLabel objDefnLabel;
     private javax.swing.JTextField objDefnTextField;
