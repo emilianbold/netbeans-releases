@@ -96,7 +96,17 @@ public final class OpenProjects {
     }
     
     /**
-     * Gets a list of currently open projects.
+     * Gets a list of currently open projects. 
+     * <p>
+     * <span class="nonnormative">Since 1.26, the standard implementation
+     * handling the list of opened projects, delays their actual loading. First of
+     * all the startup of all modules is finished and only then the projects are loaded
+     * and opened on background. As soon as and no sooner before 
+     * all opened projects are opened, the
+     * return value of this method changes and appropriate property change
+     * event with <q>PROPERTY_OPEN_PROJECTS</q> is delivered.
+     * </span>
+     * 
      * @return list of projects currently opened in the IDE's GUI; order not specified
      */
     public Project[] getOpenProjects() {
