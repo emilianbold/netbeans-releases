@@ -266,8 +266,7 @@ public class ETLSourceMultiViewElement extends CloneableEditor implements MultiV
             } else if (next instanceof JSeparator) {
                 action = null;
             }
-        }
-        java.util.logging.Logger.getLogger(ETLSourceMultiViewElement.class.getName()).info("********* addfrmlayers action "+action);
+        }        
         return action;
     }
 }
