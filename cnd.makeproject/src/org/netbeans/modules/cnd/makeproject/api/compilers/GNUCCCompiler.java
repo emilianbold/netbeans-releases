@@ -41,29 +41,10 @@
 
 package org.netbeans.modules.cnd.makeproject.api.compilers;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.List;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
-import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
 
-public class GNUCCCompiler extends CCCCompiler {
-    private static final String compilerStdoutCommand = " -x c++ -E -dM"; // NOI18N
-    private static final String compilerStderrCommand = " -x c++ -E -v"; // NOI18N
-    private PersistentList systemIncludeDirectoriesList = null;
-    private PersistentList systemPreprocessorSymbolsList = null;
-    private boolean saveOK = true;
-    
-    
-    /** Replace this temporary stuff */
-    private static final boolean fullIncludes = true; // Boolean.getBoolean("gcc.full.includes");
+public class GNUCCCompiler extends GNUCorCCCompiler {
     
     private static final String[] DEVELOPMENT_MODE_OPTIONS = {
         "",  // Fast Build // NOI18N
@@ -118,144 +99,17 @@ public class GNUCCCompiler extends CCCCompiler {
     }
     
     @Override
-    public boolean setSystemIncludeDirectories(List values) {
-        assert values != null;
-        if (values.equals(systemIncludeDirectoriesList)) {
-            return false;
-        }
-        systemIncludeDirectoriesList = new PersistentList(values);
-        normalizePaths(systemIncludeDirectoriesList);
-        return true;
+    protected String getDefaultPath() {
+        return "g++"; // NOI18N
     }
     
     @Override
-    public boolean setSystemPreprocessorSymbols(List values) {
-        assert values != null;
-        if (values.equals(systemPreprocessorSymbolsList)) {
-            return false;
-        }
-        systemPreprocessorSymbolsList = new PersistentList(values);
-        return true;
+    protected String getCompilerStderrCommand() {
+        return " -x c++ -E -v"; // NOI18N
     }
     
     @Override
-    public List getSystemPreprocessorSymbols() {
-        if (systemPreprocessorSymbolsList != null)
-            return systemPreprocessorSymbolsList;
-        
-        getSystemIncludesAndDefines();
-        return systemPreprocessorSymbolsList;
-    }
-    
-    @Override
-    public List getSystemIncludeDirectories() {
-        if (systemIncludeDirectoriesList != null)
-            return systemIncludeDirectoriesList;
-        
-        getSystemIncludesAndDefines();
-        return systemIncludeDirectoriesList;
-    }
-    
-    public void saveSystemIncludesAndDefines() {
-        if (systemIncludeDirectoriesList != null && saveOK)
-            systemIncludeDirectoriesList.saveList(getUniqueID() + "systemIncludeDirectoriesList"); // NOI18N
-        if (systemPreprocessorSymbolsList != null && saveOK)
-            systemPreprocessorSymbolsList.saveList(getUniqueID() + "systemPreprocessorSymbolsList"); // NOI18N
-    }
-    
-    private void restoreSystemIncludesAndDefines() {
-        systemIncludeDirectoriesList = PersistentList.restoreList(getUniqueID() + "systemIncludeDirectoriesList"); // NOI18N
-        systemPreprocessorSymbolsList = PersistentList.restoreList(getUniqueID() + "systemPreprocessorSymbolsList"); // NOI18N
-    }
-    
-    private void getSystemIncludesAndDefines() {
-        restoreSystemIncludesAndDefines();
-        if (systemIncludeDirectoriesList == null || systemPreprocessorSymbolsList == null) {
-            getFreshSystemIncludesAndDefines();
-        }
-    }
-    
-    private void getFreshSystemIncludesAndDefines() {
-        systemIncludeDirectoriesList = new PersistentList();
-        systemPreprocessorSymbolsList = new PersistentList();
-        String path = getPath();
-        if (path == null || !new File(path).exists()){
-            path = "g++"; // NOI18N
-        }
-        try {
-            getSystemIncludesAndDefines(path + compilerStderrCommand, false);
-            getSystemIncludesAndDefines(path + compilerStdoutCommand, true);
-            // a workaround for gcc bug - see http://gcc.gnu.org/ml/gcc-bugs/2006-01/msg00767.html
-            if (! containsMacro(systemPreprocessorSymbolsList, "__STDC__")) { // NOI18N
-                systemPreprocessorSymbolsList.add("__STDC__=1"); // NOI18N
-            }
-            saveOK = true;
-        } catch (IOException ioe) {
-            System.err.println("IOException " + ioe);
-            String errormsg = NbBundle.getMessage(getClass(), "CANTFINDCOMPILER", path); // NOI18N
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
-            saveOK = false;
-        }
-    }
-    
-    public void resetSystemIncludesAndDefines() {
-        getFreshSystemIncludesAndDefines();
-    }
-    
-    protected void parseCompilerOutput(InputStream is) {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-        
-        try {
-            String line;
-            boolean startIncludes = false;
-            while ((line = reader.readLine()) != null) {
-                //System.out.println(line);
-                if (line.startsWith("#include <...>")) { // NOI18N
-                    startIncludes = true;
-                    continue;
-                }
-                if (line.startsWith("End of search")) { // NOI18N
-                    startIncludes = false;
-                    continue;
-                }
-                if (startIncludes) {
-                    line = line.trim();
-                    if (getFlavor() == CompilerFlavor.MinGW) {
-                        if (line.toLowerCase().startsWith(getIncludeFilePathPrefix().toLowerCase())) {
-                            line = line.substring(getIncludeFilePathPrefix().length());
-                        }
-                        else if (line.toLowerCase().startsWith("/mingw")) { // NOI18N
-                            line = line.substring(6);
-                        }
-                    }
-                    systemIncludeDirectoriesList.addUnique(normalizePath(getIncludeFilePathPrefix() + line));
-                    if (getIncludeFilePathPrefix().length() > 0 && line.startsWith("/usr/lib")) // NOI18N
-                        systemIncludeDirectoriesList.addUnique(normalizePath(getIncludeFilePathPrefix() + line.substring(4)));
-                    continue;
-                }
-                parseUserMacros(line, systemPreprocessorSymbolsList);
-                if (line.startsWith("#define ")) { // NOI18N
-                    int i = line.indexOf(' ', 8);
-                    if (i > 0) {
-                        String token = line.substring(8, i) + "=" + line.substring(i+1); // NOI18N
-                        systemPreprocessorSymbolsList.add(token);
-                    }
-                }
-            }
-            is.close();
-            reader.close();
-        } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe); // FIXUP
-        }
-    }
-    
-    private void dumpLists() {
-        System.out.println("==================================" + getDisplayName()); // NOI18N
-        for (int i = 0; i < systemIncludeDirectoriesList.size(); i++) {
-            System.out.println("-I" + systemIncludeDirectoriesList.get(i)); // NOI18N
-        }
-        for (int i = 0; i < systemPreprocessorSymbolsList.size(); i++) {
-            System.out.println("-D" + systemPreprocessorSymbolsList.get(i)); // NOI18N
-        }
+    protected String getCompilerStdoutCommand() {
+        return " -x c++ -E -dM"; // NOI18N
     }
 }
