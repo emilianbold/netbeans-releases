@@ -650,8 +650,14 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             }
         }
         char[] data = longestString.toCharArray();
-        int w = getGraphics().getFontMetrics().charsWidth(data, 0,  data.length);
-        return w + 4;
+        Graphics g = getGraphics();
+        if( g != null) {
+            int w = g.getFontMetrics().charsWidth(data, 0,  data.length);
+            return w + 4;    
+        } else {
+            return 0;
+        }
+        
     }
 
     private String getDisplayName(AnnotateLine line) {
