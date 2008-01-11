@@ -212,9 +212,8 @@ public class ServerFileDistributor extends ServerProgress {
         try {
             //get relative-path-key map from FDL
             File dir = incremental.getDirectoryForModule(target);
-            destDir.mkdirs();
-            File parent = destDir.getParentFile();
-            FileObject destRoot = FileUtil.toFileObject(destDir);
+            // mkdirs()/toFileObject is not tolerated any more
+            FileObject destRoot = FileUtil.createFolder(destDir);
             
             // create target FOs map keyed by relative paths
             java.util.Enumeration destFiles = destRoot.getChildren(true);

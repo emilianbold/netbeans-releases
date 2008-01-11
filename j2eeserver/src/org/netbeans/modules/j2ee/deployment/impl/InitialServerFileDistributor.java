@@ -133,8 +133,8 @@ public class InitialServerFileDistributor extends ServerProgress {
             return dir;
             
         } catch (Exception e) {
-            setStatusDistributeFailed(e.getMessage());
             LOGGER.log(Level.INFO, null, e);
+            setStatusDistributeFailed(e.getMessage());
             if (!inPlace && !cleanup (dir)) {
                 setStatusDistributeFailed ("Failed to cleanup the data after unsucesful distribution");
             }
@@ -173,13 +173,8 @@ public class InitialServerFileDistributor extends ServerProgress {
         FileLock lock = null;
 
         try {
-            if (!dir.exists()) {
-                dir.mkdirs();
-            }
-            
-            // original code deleted the project source... that was probably a
-            //   bug.
-            FileObject destRoot = FileUtil.toFileObject(dir);
+            // mkdirs()/toFileObject is not not tolerated any more.
+            FileObject destRoot = FileUtil.createFolder(dir);
             
             FileObject[] garbages = destRoot.getChildren();
             for (int i=0; i<garbages.length; i++) {
@@ -216,6 +211,7 @@ public class InitialServerFileDistributor extends ServerProgress {
             }
             
         } catch (Exception e) {
+            LOGGER.log(Level.FINER, null, e);
             String msg = NbBundle.getMessage(InitialServerFileDistributor.class, "MSG_IncrementalDeployFailed", e);
             setStatusDistributeFailed(msg);
             throw new RuntimeException(e);
