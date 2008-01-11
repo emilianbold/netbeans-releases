@@ -256,9 +256,11 @@ public final class OpenProjectList {
         }
         
         private void updateGlobalState() {
-            INSTANCE.openProjects = openedProjects;
-            INSTANCE.mainProject = mainProject;
-            INSTANCE.recentTemplates = recentTemplates;
+            synchronized (INSTANCE) {
+                INSTANCE.openProjects = openedProjects;
+                INSTANCE.mainProject = mainProject;
+                INSTANCE.recentTemplates = recentTemplates;
+            }
             
             INSTANCE.pchSupport.firePropertyChange(PROPERTY_OPEN_PROJECTS, new Project[0], openedProjects.toArray(new Project[0]));
             INSTANCE.pchSupport.firePropertyChange(PROPERTY_MAIN_PROJECT, null, INSTANCE.mainProject);
@@ -1138,10 +1140,12 @@ public final class OpenProjectList {
                 recentProjectsInfos.clear();
             }
             // register project delete listener to all open projects
-            for (Project p : openProjects) {
-                assert p == null : "There is null in " + openProjects;
-                assert p.getProjectDirectory() != null : "Project " + p + " has null project directory";
-                p.getProjectDirectory().addFileChangeListener(nbprojectDeleteListener);
+            synchronized (this) {
+                for (Project p : openProjects) {
+                    assert p != null : "There is null in " + openProjects;
+                    assert p.getProjectDirectory() != null : "Project " + p + " has null project directory";
+                    p.getProjectDirectory().addFileChangeListener(nbprojectDeleteListener);
+                }
             }
         }
         
