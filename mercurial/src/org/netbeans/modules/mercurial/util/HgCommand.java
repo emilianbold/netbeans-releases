@@ -203,6 +203,8 @@ public class HgCommand {
     private static final String HG_CANNOT_READ_COMMIT_MESSAGE_ERR = "abort: can't read commit message"; // NOI18N
     private static final String HG_CANNOT_RUN_ERR = "Cannot run program"; // NOI18N
     private static final String HG_ABORT_ERR = "abort: "; // NOI18N
+    private static final String HG_ABORT_PUSH_ERR = "abort: push creates new remote branches!"; // NOI18N
+    
     private static final String HG_NO_CHANGE_NEEDED_ERR = "no change needed"; // NOI18N
     private static final String HG_NO_ROLLBACK_ERR = "no rollback information available"; // NOI18N
     private static final String HG_NO_UPDATES_ERR = "0 files updated, 0 files merged, 0 files removed, 0 files unresolved"; // NOI18N
@@ -505,29 +507,32 @@ public class HgCommand {
     }
 
     /**
-     * Push changes to the local repository to the specified repository
-     * By default, update will refuse to run if doing so would require
-     * merging or discarding local changes.
+     * Push changes to the specified repository
+     * By default, push will refuse to run if doing so would create multiple heads
      *
      * @param File repository of the mercurial repository's root directory
-     * @param File source repository to push to
+     * @param String source repository to push to
+     * @param boolean force push even if multiple heads will be created
      * @return hg push output
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static List<String> doPush(File repository, String to) throws HgException {
+    public static List<String> doPush(File repository, String to, boolean bForce) throws HgException {
         if (repository == null || to == null ) return null;
         List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_PUSH_CMD);
-        command.add(HG_PUSH_FORCE_CMD);
+        if(bForce)
+            command.add(HG_PUSH_FORCE_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
         command.add(to);
 
         List<String> list = exec(command);
+
         if (!list.isEmpty() && 
-             isErrorAbort(list.get(list.size() -1))) {
+            !isErrorAbortPush(list.get(list.size() -1)) &&
+            isErrorAbort(list.get(list.size() -1))) {
             handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"));
         }
         return list;
@@ -2109,7 +2114,11 @@ public class HgCommand {
     private static boolean isErrorAbort(String msg) {
         return msg.indexOf(HG_ABORT_ERR) > -1; // NOI18N
     }
-    
+
+    public static boolean isErrorAbortPush(String msg) {
+        return msg.indexOf(HG_ABORT_PUSH_ERR) > -1; // NOI18N
+    }
+
     private static boolean isErrorNoChangeNeeded(String msg) {
         return msg.indexOf(HG_NO_CHANGE_NEEDED_ERR) > -1;    // NOI18N
     }

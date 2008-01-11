@@ -143,16 +143,18 @@ public class PushAction extends AbstractAction {
             HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PushAction.class, "MSG_PUSH_TITLE_SEP")); // NOI18N
 
             List<String> listOutgoing = HgCommand.doOutgoing(root, pushPath);
-            if ((listOutgoing == null) || listOutgoing.isEmpty()) return;
+            if ((listOutgoing == null) || listOutgoing.isEmpty()) {
+                return;
+            }
 
-            File pushFile = new File (pushPath);
+            File pushFile = new File(pushPath);
             boolean bLocalPush = (FileUtil.toFileObject(FileUtil.normalizeFile(pushFile)) != null);
-            boolean bNoChanges = HgCommand.isNoChanges(listOutgoing.get(listOutgoing.size()-1));
+            boolean bNoChanges = HgCommand.isNoChanges(listOutgoing.get(listOutgoing.size() - 1));
 
             if (bLocalPush) {
                 // Warn user if there are local changes which Push will overwrite
                 if (!bNoChanges && !PullAction.confirmWithLocalChanges(pushFile, PushAction.class,
-                     "MSG_PUSH_LOCALMODS_CONFIRM_TITLE", "MSG_PUSH_LOCALMODS_CONFIRM_QUERY", listOutgoing)) { // NOI18N
+                        "MSG_PUSH_LOCALMODS_CONFIRM_TITLE", "MSG_PUSH_LOCALMODS_CONFIRM_QUERY", listOutgoing)) { // NOI18N
                     HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_LOCALMODS_CANCEL")); // NOI18N
                     HgUtils.outputMercurialTab(""); // NOI18N
                     return;
@@ -161,23 +163,38 @@ public class PushAction extends AbstractAction {
 
             List<String> list;
             if (bNoChanges) {
-                list= listOutgoing;
+                list = listOutgoing;
             } else {
-                list = HgCommand.doPush(root, pushPath);
+                list = HgCommand.doPush(root, pushPath, false);
             }
-                    
+            if (!list.isEmpty() &&
+                    HgCommand.isErrorAbortPush(list.get(list.size() - 1))) {
+                boolean bConfirmForcedPush = HgUtils.confirmDialog(PushAction.class,
+                        "MSG_PUSH_FORCE_CONFIRM_TITLE", "MSG_PUSH_FORCE_CONFIRM_QUERY"); // NOI18N 
+
+                if (bConfirmForcedPush) {
+                    HgUtils.outputMercurialTabInRed(
+                            NbBundle.getMessage(PushAction.class,
+                            "MSG_PUSH_FORCE_DO")); // NOI18N
+                    list = HgCommand.doPush(root, pushPath, true);
+                } else {
+                    HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PushAction.class, "MSG_PUSH_FORCE_CANCELED")); // NOI18N
+                    return;
+                }
+            }
+
             if (list != null && !list.isEmpty()) {
-                        
-                if(!HgCommand.isNoChanges(listOutgoing.get(listOutgoing.size()-1))){
+
+                if (!HgCommand.isNoChanges(listOutgoing.get(listOutgoing.size() - 1))) {
                     InputOutput io = IOProvider.getDefault().getIO(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE, false);
                     io.select();
                     OutputWriter out = io.getOut();
                     OutputWriter outRed = io.getErr();
-                    outRed.println(NbBundle.getMessage(PushAction.class,"MSG_CHANGESETS_TO_PUSH")); // NOI18N
-                    for( String s : listOutgoing){
-                        if (s.indexOf(Mercurial.CHANGESET_STR) == 0){
+                    outRed.println(NbBundle.getMessage(PushAction.class, "MSG_CHANGESETS_TO_PUSH")); // NOI18N
+                    for (String s : listOutgoing) {
+                        if (s.indexOf(Mercurial.CHANGESET_STR) == 0) {
                             outRed.println(s);
-                        }else if( !s.equals("")){ // NOI18N
+                        } else if (!s.equals("")) { // NOI18N
                             out.println(s);
                         }
                     }
@@ -187,57 +204,57 @@ public class PushAction extends AbstractAction {
                 }
 
                 HgUtils.outputMercurialTab(list);
-                        
+
                 if (toPrjName == null) {
                     HgUtils.outputMercurialTabInRed(
-                                NbBundle.getMessage(PushAction.class,
-                                "MSG_PUSH_TO_NONAME", bLocalPush? HgUtils.stripDoubleSlash(pushPath): pushPath)); // NOI18N
+                            NbBundle.getMessage(PushAction.class,
+                            "MSG_PUSH_TO_NONAME", bLocalPush ? HgUtils.stripDoubleSlash(pushPath) : pushPath)); // NOI18N
                 } else {
                     HgUtils.outputMercurialTabInRed(
-                                NbBundle.getMessage(PushAction.class,
-                                "MSG_PUSH_TO", toPrjName, bLocalPush? HgUtils.stripDoubleSlash(pushPath): pushPath)); // NOI18N
+                            NbBundle.getMessage(PushAction.class,
+                            "MSG_PUSH_TO", toPrjName, bLocalPush ? HgUtils.stripDoubleSlash(pushPath) : pushPath)); // NOI18N
                 }
                 HgUtils.outputMercurialTabInRed(
-                            NbBundle.getMessage(PushAction.class,
-                            "MSG_PUSH_FROM", fromPrjName, root)); // NOI18N
-                                            
-                boolean bMergeNeeded = HgCommand.isHeadsCreated(list.get(list.size()-1));
+                        NbBundle.getMessage(PushAction.class,
+                        "MSG_PUSH_FROM", fromPrjName, root)); // NOI18N
+
+                boolean bMergeNeeded = HgCommand.isHeadsCreated(list.get(list.size() - 1));
                 boolean bConfirmMerge = false;
                 // Push does not do an Update of the target Working Dir
-                if(!bMergeNeeded){
+                if (!bMergeNeeded) {
                     if (bNoChanges) {
                         return;
                     }
                     if (!bLocalPush) {
                         HgUtils.outputMercurialTabInRed(
-                                    NbBundle.getMessage(PushAction.class,
-                                    "MSG_PUSH_UPDATE_NEEDED_NONAME", toPrjName, pushPath)); // NOI18N
+                                NbBundle.getMessage(PushAction.class,
+                                "MSG_PUSH_UPDATE_NEEDED_NONAME", toPrjName, pushPath)); // NOI18N
                     } else {
-                        list = HgCommand.doUpdateAll(pushFile, false, null, false);                    
+                        list = HgCommand.doUpdateAll(pushFile, false, null, false);
                         HgUtils.outputMercurialTab(list);
                         if (toPrjName != null) {
                             HgUtils.outputMercurialTabInRed(
-                                        NbBundle.getMessage(PushAction.class,
-                                        "MSG_PUSH_UPDATE_DONE", toPrjName, HgUtils.stripDoubleSlash(pushPath))); // NOI18N
+                                    NbBundle.getMessage(PushAction.class,
+                                    "MSG_PUSH_UPDATE_DONE", toPrjName, HgUtils.stripDoubleSlash(pushPath))); // NOI18N
                         } else {
                             HgUtils.outputMercurialTabInRed(
-                                        NbBundle.getMessage(PushAction.class,
-                                        "MSG_PUSH_UPDATE_DONE_NONAME", HgUtils.stripDoubleSlash(pushPath))); // NOI18N
+                                    NbBundle.getMessage(PushAction.class,
+                                    "MSG_PUSH_UPDATE_DONE_NONAME", HgUtils.stripDoubleSlash(pushPath))); // NOI18N
                         }
-                        boolean bOutStandingUncommittedMerges = HgCommand.isMergeAbortUncommittedMsg(list.get(list.size() -1));
+                        boolean bOutStandingUncommittedMerges = HgCommand.isMergeAbortUncommittedMsg(list.get(list.size() - 1));
                         if (bOutStandingUncommittedMerges) {
-                            bConfirmMerge = HgUtils.confirmDialog(PushAction.class, "MSG_PUSH_MERGE_CONFIRM_TITLE", "MSG_PUSH_MERGE_UNCOMMITTED_CONFIRM_QUERY");
+                            bConfirmMerge = HgUtils.confirmDialog(PushAction.class, "MSG_PUSH_MERGE_CONFIRM_TITLE", "MSG_PUSH_MERGE_UNCOMMITTED_CONFIRM_QUERY"); // NOI18N 
                         }
                     }
-                } else {     
-                    bConfirmMerge = HgUtils.confirmDialog(PushAction.class, "MSG_PUSH_MERGE_CONFIRM_TITLE", "MSG_PUSH_MERGE_CONFIRM_QUERY");
-                }     
+                } else {
+                    bConfirmMerge = HgUtils.confirmDialog(PushAction.class, "MSG_PUSH_MERGE_CONFIRM_TITLE", "MSG_PUSH_MERGE_CONFIRM_QUERY"); // NOI18N 
+                }
 
                 if (bConfirmMerge) {
                     HgUtils.outputMercurialTab(""); // NOI18N
                     HgUtils.outputMercurialTabInRed(
-                               NbBundle.getMessage(PushAction.class,
-                               "MSG_PUSH_MERGE_DO")); // NOI18N
+                            NbBundle.getMessage(PushAction.class,
+                            "MSG_PUSH_MERGE_DO")); // NOI18N
                     MergeAction.doMergeAction(pushFile, null);
                 } else {
                     List<String> headRevList = HgCommand.getHeadRevisions(pushPath);
@@ -245,7 +262,7 @@ public class PushAction extends AbstractAction {
                         MergeAction.printMergeWarning(headRevList);
                     }
                 }
-            }     
+            }
             if (bLocalPush && !bNoChanges) {
                 HgUtils.forceStatusRefresh(pushFile);
                 // refresh filesystem to take account of deleted files
@@ -258,7 +275,7 @@ public class PushAction extends AbstractAction {
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);
-        } finally{
+        } finally {
             HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PushAction.class, "MSG_PUSH_DONE")); // NOI18N
             HgUtils.outputMercurialTab(""); // NOI18N
         }
