@@ -72,7 +72,7 @@ public class PrimaryKeyImpl implements Cloneable, PrimaryKey {
     public static final String NAME_ATTR = "name"; // NOI18N
     /**DatabaseMetaData ResultSet column name used to decode name of associated primary key     */
     protected static final String RS_KEY_NAME = "PK_NAME"; // NOI18N
-    private static final String RS_COLUMN_NAME = "PKCOLUMN_NAME"; // NOI18N
+    private static final String RS_COLUMN_NAME = "COLUMN_NAME"; // NOI18N
     /** DatabaseMetaData ResultSet column name used to decode key sequence number*/
     protected static final String RS_SEQUENCE_NUM = "KEY_SEQ";
     /* List of column names in key sequence order. */
@@ -92,8 +92,7 @@ public class PrimaryKeyImpl implements Cloneable, PrimaryKey {
                 ResourceBundle cMessages = ResourceBundle.getBundle("org/netbeans/modules/sql/framework/model/impl/Bundle", locale); // NO i18n
                 throw new IllegalArgumentException(cMessages.getString("ERROR_VALID_RS") + "(ERROR_VALID_RS)"); // NO i18n
             }
-            while (rs.next()) {
-                java.util.logging.Logger.getLogger(PrimaryKeyImpl.class.getName()).info("******** Column name --- " + rs.getString(RS_COLUMN_NAME));
+            while (rs.next()) {                
                 columnNames.add(rs.getString(RS_COLUMN_NAME));
             }
         } catch (SQLException ex) {

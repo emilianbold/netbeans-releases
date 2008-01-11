@@ -92,7 +92,7 @@ public class ForeignKeyImpl implements Cloneable, ForeignKey {
     public static final String PK_UPDATE_ATTR = "updateRule"; // NOI18N
     private static final String RS_PK_NAME = "PK_NAME"; // NOI18N
     private static final String RS_PKCATALOG_NAME = "PKTABLE_CAT"; // NOI18N
-    private static final String RS_PKSCHEMA_NAME = "PKTABLE_SCHEMA"; // NOI18N
+    private static final String RS_PKSCHEMA_NAME = "PKTABLE_SCHEM"; // NOI18N
     private static final String RS_PKTABLE_NAME = "PKTABLE_NAME"; // NOI18N
     private static final String RS_PKCOLUMN_NAME = "PKCOLUMN_NAME"; // NOI18N
     private static final String RS_FK_NAME = "FK_NAME"; // NOI18N
