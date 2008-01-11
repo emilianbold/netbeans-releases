@@ -116,7 +116,23 @@ public class SchemaMoveRefactoringPlugin extends SchemaRefactoringPlugin  implem
         FileObject targetF = URLMapper.findFileObject(url);  
         if ((targetF!=null && !targetF.canWrite())) {
             return new Problem(true, NbBundle.getMessage(SchemaMoveRefactoringPlugin.class,"ERR_PackageIsReadOnly"));                   
-        }                  
+        }    
+        
+        //does the target folder have a file with same name??
+        Referenceable obj = request.getRefactoringSource().lookup(Referenceable.class);
+        if(! (obj instanceof Model) )
+            return null;
+        FileObject fileToMove = ((Model)obj).getModelSource().getLookup().lookup(FileObject.class);
+        String fileName = fileToMove.getName();
+        if (targetF!=null) {
+            FileObject[] children = targetF.getChildren();
+                for (int x = 0; x < children.length; x++) {
+                    if (children[x].getName().equals(fileName) && "xsd".equals(children[x].getExt()) && !children[x].equals(fileToMove) ) { 
+                                return new Problem(true,NbBundle.getMessage(SchemaMoveRefactoringPlugin.class,"ERR_FileToMoveClashes")); 
+                                
+                    }
+                } // for
+        }
         return null;
     }
     
