@@ -228,7 +228,9 @@ public final class PropertiesDataLoader extends MultiFileLoader {
         }
 
         setExtensions ((ExtensionList)oi.readObject ());
-        if (se != null) throw se;
+        if (se != null) {
+            throw se;
+        }
     }
     
 }
