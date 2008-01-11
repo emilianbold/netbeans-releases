@@ -396,7 +396,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
         stopIfStartedByIde();        
         // close the server io window
         InputOutput io = UISupport.getServerIO(url);
-        if (!io.isClosed()) {
+        if (io != null && !io.isClosed()) {
             io.closeInputOutput();
         }
         ServerRegistry.getInstance().removeServerInstance(getUrl());
