@@ -1373,13 +1373,7 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
         String resource = "org-netbeans-modules-j2ee-sun-ddui/" + sunDDFile.getName(); // NOI18N
         FileObject sunDDTemplate = Repository.getDefault().getDefaultFileSystem().findResource(resource);
         if (sunDDTemplate != null) {
-            File configDir = sunDDFile.getParentFile();
-            if (!configDir.exists()) {
-                if (!configDir.mkdirs()) {
-                    throw new IOException("Unable to create folder " + configDir.getPath());
-                }
-            }
-            FileObject configFolder = FileUtil.toFileObject(configDir);
+            FileObject configFolder = FileUtil.createFolder(sunDDFile.getParentFile());
             FileSystem fs = configFolder.getFileSystem();
             XmlFileCreator creator = new XmlFileCreator(sunDDTemplate, configFolder, sunDDTemplate.getName(), sunDDTemplate.getExt());
             fs.runAtomicAction(creator);

@@ -117,10 +117,7 @@ public final class SunDDWizardIterator implements WizardDescriptor.Instantiating
         SunDDWizardPanel wizardPanel = (SunDDWizardPanel) panels[0];
         
         File configDir = wizardPanel.getSelectedLocation();
-        if(!configDir.exists()) {
-            configDir.mkdirs();
-        }
-        FileObject configFolder = FileUtil.toFileObject(configDir);
+        FileObject configFolder = FileUtil.createFolder(configDir);
         Project project = wizardPanel.getProject();
         String sunDDFileName = wizardPanel.getFileName();
 
