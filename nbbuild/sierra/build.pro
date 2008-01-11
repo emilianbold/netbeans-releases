@@ -70,6 +70,7 @@
         j2ee
         j2eeserver
         java
+        junit
         lexer
         libs
         openide
