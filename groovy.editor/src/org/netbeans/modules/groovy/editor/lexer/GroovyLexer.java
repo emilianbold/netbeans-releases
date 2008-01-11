@@ -112,7 +112,7 @@ final class GroovyLexer implements Lexer<GroovyTokenId> {
             if (antlrToken != null) {
                 int intId = antlrToken.getType();
 
-                int len = lexerInput.readLengthEOF() - myCharBuffer.getExtraCharCount();
+                int len = lexerInput.readLength() - myCharBuffer.getExtraCharCount();
                 if ( antlrToken.getText() != null ) {
                     len = Math.max( len, antlrToken.getText().length() );
                 }
