@@ -385,7 +385,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                 int prevBegin = Utilities.getRowFirstNonWhite(doc, rowStart-1);
                 if (prevBegin != -1) {
                     Token<? extends RubyTokenId> firstToken = LexUtilities.getToken(doc, prevBegin);
-                    if (firstToken.id() == RubyTokenId.LINE_COMMENT) {
+                    if (firstToken != null && firstToken.id() == RubyTokenId.LINE_COMMENT) {
                         previousLineWasComment = true;
                     }                
                 }
@@ -405,7 +405,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                     // See if the "continue comments" options is turned on, and this is a line that
                     // contains only a comment (after leading whitespace)
                     Token<? extends RubyTokenId> firstToken = LexUtilities.getToken(doc, begin);
-                    if (firstToken.id() == RubyTokenId.LINE_COMMENT) {
+                    if (firstToken != null && firstToken.id() == RubyTokenId.LINE_COMMENT) {
                         continueComment = true;
                     }
                 }
@@ -1614,7 +1614,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
             // check if the caret is at the very end of the line comment
             token = LexUtilities.getToken(doc, dotPos - 1);
 
-            if (token.id() == RubyTokenId.LINE_COMMENT) {
+            if (token != null && token.id() == RubyTokenId.LINE_COMMENT) {
                 return false;
             }
         }
@@ -1643,7 +1643,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                 if ((dotPos - 1) > 0) {
                     token = LexUtilities.getToken(doc, dotPos - 1);
                     // XXX TODO use language embedding to handle this
-                    insideString = (token.id() == RubyTokenId.STRING_LITERAL);
+                    insideString = (token != null && token.id() == RubyTokenId.STRING_LITERAL);
                 }
             }
         }
