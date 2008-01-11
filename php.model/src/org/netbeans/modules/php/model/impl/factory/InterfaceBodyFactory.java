@@ -70,7 +70,7 @@ public class InterfaceBodyFactory {
     }
     
     public InterfaceStatement build( SourceElement parent , ASTNode node , 
-            TokenSequence sequence )
+            TokenSequence<?> sequence )
     {
         NodeFinder finder = new NodeFinder( node , CHILDREN_TYPES );
         finder.check();

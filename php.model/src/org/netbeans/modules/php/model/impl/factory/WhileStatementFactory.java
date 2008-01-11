@@ -66,7 +66,7 @@ public class WhileStatementFactory {
     }
     
     public List<SourceElement> build( WhileStatement wile, ASTNode node, 
-            TokenSequence sequence ) 
+            TokenSequence<?> sequence ) 
     {
         if ( Utils.getNarrowType(node).equals( ALTERNATIVE)) {
             ASTNode child = node.getNode( BlockFactory.STATEMENT_LIST );

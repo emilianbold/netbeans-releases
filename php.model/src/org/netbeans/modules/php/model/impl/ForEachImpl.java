@@ -58,7 +58,7 @@ import org.netbeans.modules.php.model.VariableDeclaration;
 public class ForEachImpl extends SourceElementImpl implements ForEach {
 
     public ForEachImpl( SourceElement parent, ASTNode node, 
-            ASTNode realNode ,TokenSequence sequence ) 
+            ASTNode realNode ,TokenSequence<?> sequence ) 
     {
         super(parent, node, realNode, sequence);
     }

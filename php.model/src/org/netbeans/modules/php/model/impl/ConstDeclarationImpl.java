@@ -59,7 +59,7 @@ public class ConstDeclarationImpl extends SourceElementImpl
 {
 
     public ConstDeclarationImpl( SourceElement parent, ASTNode node, 
-            ASTNode realNode ,TokenSequence sequence ) {
+            ASTNode realNode ,TokenSequence<?> sequence ) {
         super(parent, node, realNode, sequence);
     }
 

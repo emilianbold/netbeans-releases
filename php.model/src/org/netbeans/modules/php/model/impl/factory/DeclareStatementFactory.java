@@ -41,6 +41,7 @@
 package org.netbeans.modules.php.model.impl.factory;
 
 import java.util.Collections;
+import java.util.List;
 
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.lexer.TokenSequence;
@@ -67,7 +68,7 @@ public class DeclareStatementFactory {
     }
     
     public SourceElement build( StatementContainer parent, ASTNode node,
-            TokenSequence sequence )
+            TokenSequence<?> sequence )
     {
         if  (node.getNT().equals(COMMON) ){
             return new DeclareImpl( parent , node , node , sequence );
@@ -82,8 +83,8 @@ public class DeclareStatementFactory {
         }
     }
     
-    public java.util.List<SourceElement> buildAlternative( 
-            StatementContainer parent, ASTNode node,TokenSequence sequence )
+    public List<SourceElement> buildAlternative( 
+            StatementContainer parent, ASTNode node,TokenSequence<?> sequence )
     {
         if ( node.getNT().equals( ALTERNATIVE)) {
             ASTNode child = node.getNode( BlockFactory.STATEMENT_LIST );

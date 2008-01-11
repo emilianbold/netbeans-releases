@@ -59,7 +59,7 @@ public class InterfaceBodyImpl extends SourceElementImpl implements
 {
 
     public InterfaceBodyImpl( SourceElement parent, ASTNode node, 
-            ASTNode realNode ,TokenSequence sequence ) 
+            ASTNode realNode ,TokenSequence<?> sequence ) 
     {
         super(parent, node, realNode, sequence);
     }

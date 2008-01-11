@@ -56,7 +56,7 @@ public class WhileImpl extends SourceElementImpl implements While {
 
 
     public WhileImpl( SourceElement parent, ASTNode node, 
-            ASTNode realNode ,TokenSequence sequence ) 
+            ASTNode realNode ,TokenSequence<?> sequence ) 
     {
         super(parent, node, realNode , sequence);
     }

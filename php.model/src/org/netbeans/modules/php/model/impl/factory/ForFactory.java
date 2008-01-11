@@ -62,7 +62,7 @@ public class ForFactory {
         return INSTANCE;
     }
     
-    public SourceElement build( For forr, ASTNode node, TokenSequence sequence ) {
+    public SourceElement build( For forr, ASTNode node, TokenSequence<?> sequence ) {
         assert node.getNT().equals( EXPRESSION );
         return new ForExpressionImpl( forr , node ,node , sequence );
     }

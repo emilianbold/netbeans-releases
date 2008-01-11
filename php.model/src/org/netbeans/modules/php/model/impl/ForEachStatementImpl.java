@@ -62,13 +62,13 @@ public class ForEachStatementImpl extends StatementImpl
 {
 
     public ForEachStatementImpl( PhpModel model , ASTNode node, 
-            ASTNode realNode ,TokenSequence sequence) 
+            ASTNode realNode ,TokenSequence<?> sequence) 
     {
         super( model, node , realNode , sequence );
     }
 
     public ForEachStatementImpl( SourceElement parent, ASTNode node, 
-            ASTNode realNode ,TokenSequence sequence ) 
+            ASTNode realNode ,TokenSequence<?> sequence ) 
     {
         super( parent , node , realNode, sequence );
     }

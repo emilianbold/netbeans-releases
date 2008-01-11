@@ -56,7 +56,7 @@ public class IfImpl extends SourceElementImpl implements If {
 
 
     public IfImpl( SourceElement parent, ASTNode node, 
-            ASTNode reaNode, TokenSequence sequence ) {
+            ASTNode reaNode, TokenSequence<?> sequence ) {
         super(parent, node, reaNode, sequence);
     }
 

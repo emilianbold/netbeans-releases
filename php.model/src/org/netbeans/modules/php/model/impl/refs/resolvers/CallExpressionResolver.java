@@ -40,10 +40,14 @@
  */
 package org.netbeans.modules.php.model.impl.refs.resolvers;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import org.netbeans.modules.php.model.CallExpression;
+import org.netbeans.modules.php.model.IdentifierExpression;
+import org.netbeans.modules.php.model.PhpModel;
 import org.netbeans.modules.php.model.SourceElement;
+import org.netbeans.modules.php.model.Statement;
 import org.netbeans.modules.php.model.refs.ReferenceResolver;
 
 
@@ -70,8 +74,58 @@ public class CallExpressionResolver implements ReferenceResolver {
     public <T extends SourceElement> List<T> resolve( SourceElement source,
             String identifier, Class<T> clazz, boolean exactComparison )
     {
-        // TODO Auto-generated method stub
-        return null;
+        List<T> result = new LinkedList<T>(); 
+        List<PhpModel> models = ModelResolver.ResolverUtility.getIncludedModels(
+                source.getModel());
+        
+        findCallExpression( source.getParent() , identifier , clazz , 
+                exactComparison , result);
+        
+        if ( exactComparison && result.size() >0 ){
+            return result;
+        }
+        
+        for ( PhpModel model : models ){
+            List<Statement> statements = model.getStatements();
+            for ( Statement statement : statements ){
+                findCallExpression( statement , identifier, clazz , 
+                        exactComparison , result );
+                if ( exactComparison && result.size() >0 ){
+                    return result;
+                }
+            }
+        }
+        return result;
+    }
+    
+    /*
+     *  TODO : this is flat search algorithm. Possibly it should be changed
+     *  with visitor pattern like variable search.
+     */ 
+    private <T extends SourceElement> void findCallExpression( 
+            SourceElement element , String identifier,Class<T> clazz , 
+            boolean exactComparison , List<T> collected)
+    {
+        if ( element == null ){
+            return;
+        }
+        List<CallExpression> expressions = 
+            element.getChildren( CallExpression.class );
+        for (CallExpression callExpression : expressions) {
+            if ( !clazz.isAssignableFrom( callExpression.getElementType()) ){
+                continue;
+            }
+            IdentifierExpression idExpression = callExpression.getName();
+            if ( exactComparison && idExpression.getText().equals( identifier) ){
+                collected.add( clazz.cast( callExpression) );
+            }
+            else if ( !exactComparison && idExpression.getText().
+                    startsWith( identifier) )
+            {
+                collected.add( clazz.cast( callExpression ) );
+            }
+        }
+        findCallExpression(element, identifier, clazz, exactComparison, collected);
     }
 
 }

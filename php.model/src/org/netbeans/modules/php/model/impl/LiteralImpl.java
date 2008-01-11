@@ -54,7 +54,7 @@ import org.netbeans.modules.php.model.SourceElement;
 public class LiteralImpl extends SourceElementImpl implements Literal {
 
     public LiteralImpl( SourceElement parent, ASTNode node, 
-            ASTNode realNode ,TokenSequence sequence ) 
+            ASTNode realNode ,TokenSequence<?> sequence ) 
     {
         super(parent, node, realNode, sequence);
     }

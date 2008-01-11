@@ -60,13 +60,13 @@ public class FunctionDefinitionImpl extends StatementImpl
 
 
     public FunctionDefinitionImpl( PhpModel model , ASTNode node, 
-            ASTNode realNode ,TokenSequence sequence) 
+            ASTNode realNode ,TokenSequence<?> sequence) 
     {
         super( model, node , realNode, sequence);
     }
     
     public FunctionDefinitionImpl( SourceElement parent, ASTNode node, 
-            ASTNode realNode ,TokenSequence sequence ) 
+            ASTNode realNode ,TokenSequence<?> sequence ) 
     {
         super( parent , node , realNode, sequence );
     }

@@ -58,7 +58,7 @@ import org.netbeans.modules.php.model.SourceElement;
 public class ForImpl extends SourceElementImpl implements For {
 
     public ForImpl( ForStatement statement, ASTNode node, 
-            ASTNode realNode ,TokenSequence sequence ) 
+            ASTNode realNode ,TokenSequence<?> sequence ) 
     {
         super( statement , node, realNode, sequence );
     }

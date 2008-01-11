@@ -82,7 +82,7 @@ public class ClassBodyFactory implements SourceElementBuilder {
     }
     
     public SourceElement build( ClassBody body, ASTNode node, 
-            TokenSequence sequence ) 
+            TokenSequence<?> sequence ) 
     {
         String type = node.getNT();
         assert type.equals( STATEMENT );
@@ -102,7 +102,7 @@ public class ClassBodyFactory implements SourceElementBuilder {
      * @see org.netbeans.modules.php.model.impl.factory.SourceElementBuilder#build(org.netbeans.modules.php.model.PhpModel, org.netbeans.api.languages.ASTNode, org.netbeans.api.languages.ASTNode, org.netbeans.api.lexer.TokenSequence)
      */
     public SourceElement build( PhpModel model, ASTNode node, ASTNode realNode, 
-            TokenSequence sequence ) 
+            TokenSequence<?> sequence ) 
     {
         assert false;
         return null;
@@ -112,7 +112,7 @@ public class ClassBodyFactory implements SourceElementBuilder {
      * @see org.netbeans.modules.php.model.impl.factory.SourceElementBuilder#build(org.netbeans.modules.php.model.SourceElement, org.netbeans.api.languages.ASTNode, org.netbeans.api.languages.ASTNode, org.netbeans.api.lexer.TokenSequence)
      */
     public SourceElement build( SourceElement parent, ASTNode node, 
-            ASTNode realNode, TokenSequence sequence ) 
+            ASTNode realNode, TokenSequence<?> sequence ) 
     {
         String type = realNode.getNT();
         assert type.equals( CLASS_MEMBER );

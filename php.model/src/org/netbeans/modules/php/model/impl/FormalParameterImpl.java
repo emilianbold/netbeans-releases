@@ -61,7 +61,7 @@ public class FormalParameterImpl extends SourceElementImpl implements
 {
 
     public FormalParameterImpl( SourceElement parent, ASTNode node, 
-            ASTNode realNode, TokenSequence sequence ) 
+            ASTNode realNode, TokenSequence<?> sequence ) 
     {
         super(parent, node, realNode, sequence);
     }

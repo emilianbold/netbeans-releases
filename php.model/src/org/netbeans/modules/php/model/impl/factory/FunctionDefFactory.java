@@ -70,7 +70,7 @@ public class FunctionDefFactory {
     }
     
     public SourceElement build( SourceElement parent , ASTNode node , 
-            TokenSequence sequence)
+            TokenSequence<?> sequence)
     {
         if ( isFunctionDefChild(node)) {
             if ( BLOCK.equals( node.getNT()) ){

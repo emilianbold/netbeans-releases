@@ -56,13 +56,13 @@ abstract class StatementImpl extends SourceElementImpl implements Statement {
     public static final String STATEMENT        = "SourceElement";      // NOI18N
 
     StatementImpl( PhpModel model, ASTNode node, ASTNode realNode ,
-            TokenSequence sequence ) 
+            TokenSequence<?> sequence ) 
     {
         super( model , node, realNode, sequence );
     }
     
     StatementImpl( SourceElement parent, ASTNode node, ASTNode realNode ,
-        TokenSequence sequence ) 
+        TokenSequence<?> sequence ) 
     {
         super( parent , node, realNode, sequence );
     }

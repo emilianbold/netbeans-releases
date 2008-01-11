@@ -59,13 +59,13 @@ abstract class LoopControlStatementImpl extends StatementImpl {
     private static final String PHP_INTEGER = "php_integer";
 
     public LoopControlStatementImpl( PhpModel model , ASTNode node, 
-            ASTNode realNode ,TokenSequence sequence) 
+            ASTNode realNode ,TokenSequence<?> sequence) 
     {
         super( model , node , realNode, sequence);
     }
     
     public LoopControlStatementImpl( SourceElement parent, ASTNode node, 
-            ASTNode realNode ,TokenSequence sequence ) 
+            ASTNode realNode ,TokenSequence<?> sequence ) 
     {
         super( parent, node , realNode, sequence );
     }

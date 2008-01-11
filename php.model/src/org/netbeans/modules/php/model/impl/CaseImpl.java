@@ -59,7 +59,7 @@ public class CaseImpl extends SourceElementImpl implements Case {
 
 
     public CaseImpl( SourceElement parent, ASTNode node, ASTNode realNode, 
-            TokenSequence sequence ) {
+            TokenSequence<?> sequence ) {
         super(parent, node, realNode, sequence);
     }
 

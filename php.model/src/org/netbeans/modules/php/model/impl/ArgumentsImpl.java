@@ -57,7 +57,7 @@ import org.netbeans.modules.php.model.SourceElement;
 public class ArgumentsImpl extends SourceElementImpl implements Arguments {
 
     public ArgumentsImpl( SourceElement parent, ASTNode node, ASTNode realNode, 
-            TokenSequence sequence ) 
+            TokenSequence<?> sequence ) 
     {
         super(parent, node, realNode, sequence);
     }

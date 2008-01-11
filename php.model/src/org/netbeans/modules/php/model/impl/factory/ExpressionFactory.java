@@ -69,7 +69,7 @@ public class ExpressionFactory {
     }
     
     public SourceElement build( SourceElement parent , ASTNode node , 
-            TokenSequence sequence)
+            TokenSequence<?> sequence)
     {
         SourceElementBuilder builder = TYPES.get( node.getNT() );
         if ( builder == null ) {

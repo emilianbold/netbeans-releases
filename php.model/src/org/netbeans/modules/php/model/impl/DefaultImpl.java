@@ -58,7 +58,7 @@ public class DefaultImpl extends SourceElementImpl implements Default {
 
 
     public DefaultImpl( SourceElement parent, ASTNode node, 
-            ASTNode realNode ,TokenSequence sequence ) {
+            ASTNode realNode ,TokenSequence<?> sequence ) {
         super(parent, node, realNode, sequence);
     }
 

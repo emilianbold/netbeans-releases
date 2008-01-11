@@ -42,8 +42,10 @@ package org.netbeans.modules.php.model.impl;
 
 import java.util.List;
 
+import org.netbeans.modules.php.model.Arguments;
 import org.netbeans.modules.php.model.CallExpression;
 import org.netbeans.modules.php.model.ClassFunctionDeclaration;
+import org.netbeans.modules.php.model.Expression;
 import org.netbeans.modules.php.model.FunctionDefinition;
 import org.netbeans.modules.php.model.Reference;
 import org.netbeans.modules.php.model.SourceElement;
@@ -106,10 +108,44 @@ class ConstantReferenceImpl extends ReferenceImpl<SourceElement>
         for ( ReferenceResolver resolver : resolvers ){
             List<CallExpression> expressions = resolver.resolve(getSource(), 
                     DEFINE, CallExpression.class, true);
-            // TODO
+            SourceElement found = findDeclareCall( expressions );
+            if( found != null ){
+                return found;
+            }
         }
         return null;
     }
 
+    private SourceElement findDeclareCall( List<CallExpression> callExpressions ){
+        for ( CallExpression expression : callExpressions ){
+            Arguments args = expression.getArguments();
+            if ( args == null ){
+                continue;
+            }
+            List<Expression> arguments = args.getArgumentsList();
+            Expression defineConstant = arguments.get( 0 );
+            if ( defineConstant == null ){
+                continue;
+            }
+            String constant = defineConstant.getText();
+            if ( !constant.contains( getIdentifier()) ){
+                continue;
+            }
+            constant = constant.replace( getIdentifier(), "");
+            if ( constant.length() == 2){
+                boolean isString = constant.charAt( 0  ) == '"' && 
+                    constant.charAt( 1  ) == '"';
+                if ( isString ){
+                    return expression;
+                }
+                isString = constant.charAt( 0  ) == '\'' && 
+                    constant.charAt( 1  ) == '\'';
+                if ( isString ){
+                    return expression;
+                }
+            }
+        }
+        return null;
+    }
     
 }

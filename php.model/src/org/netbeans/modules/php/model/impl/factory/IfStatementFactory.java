@@ -84,7 +84,7 @@ public class IfStatementFactory {
     }
     
     public List<SourceElement> build( IfStatement statement, ASTNode node, 
-            TokenSequence sequence ) 
+            TokenSequence<?> sequence ) 
     {
         if ( node.getNT().equals( IF )) {
             return Collections.singletonList( 
@@ -100,7 +100,7 @@ public class IfStatementFactory {
     } 
 
     private List<SourceElement> handleColon( IfStatement statement, ASTNode node, 
-            TokenSequence sequence ) 
+            TokenSequence<?> sequence ) 
     {
         List<ASTItem> children =  node.getChildren();
         List<SourceElement> list = new LinkedList<SourceElement>();
@@ -117,7 +117,7 @@ public class IfStatementFactory {
     }
 
     private List<SourceElement> handleCurly( IfStatement statement, ASTNode node, 
-            TokenSequence sequence ) 
+            TokenSequence<?> sequence ) 
     {
         List<ASTItem> children =  node.getChildren();
         List<SourceElement> list = new LinkedList<SourceElement>();
@@ -134,7 +134,7 @@ public class IfStatementFactory {
     }
     
     private SourceElement buildCurly( IfStatement statement , ASTNode node , 
-            TokenSequence sequence ) 
+            TokenSequence<?> sequence ) 
     {
         String type = node.getNT();
         if ( StatementsListFactory.getInstance().isStatement(node) ) {
@@ -154,7 +154,7 @@ public class IfStatementFactory {
     }
     
     private SourceElement buildColon( IfStatement statement , ASTNode node , 
-            TokenSequence sequence ) 
+            TokenSequence<?> sequence ) 
     {
         if ( StatementsListFactory.getInstance().isStatement(node) ) {
              return StatementsListFactory.getInstance().build(

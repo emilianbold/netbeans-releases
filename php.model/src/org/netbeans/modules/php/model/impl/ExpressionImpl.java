@@ -59,7 +59,7 @@ import org.netbeans.modules.php.model.SourceElement;
 abstract class ExpressionImpl extends SourceElementImpl implements Expression {
 
     ExpressionImpl( SourceElement parent, ASTNode node, ASTNode realNode, 
-            TokenSequence sequence ) 
+            TokenSequence<?> sequence ) 
     {
         super(parent, node, realNode, sequence);
     }

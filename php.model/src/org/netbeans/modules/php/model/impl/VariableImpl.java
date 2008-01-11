@@ -77,7 +77,7 @@ import org.netbeans.modules.php.model.VariableAppearance;
 public class VariableImpl extends SourceElementImpl implements Variable {
     
     public VariableImpl( SourceElement parent, ASTNode node, ASTNode realNode ,
-            TokenSequence sequence ) 
+            TokenSequence<?> sequence ) 
     {
         /*
          *  TODO : need special builder for variable because it can be built

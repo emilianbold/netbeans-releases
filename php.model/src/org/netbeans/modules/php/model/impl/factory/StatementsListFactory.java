@@ -126,7 +126,7 @@ public class StatementsListFactory {
     }
     
     public SourceElement build( PhpModel model , ASTNode node , 
-            TokenSequence sequence )
+            TokenSequence<?> sequence )
     {
         NodeFinder finder = new NodeFinder( node , TYPES.keySet());
         finder.check();
@@ -147,7 +147,7 @@ public class StatementsListFactory {
     }
     
     public SourceElement build( SourceElement parent , ASTNode node , 
-            TokenSequence sequence )
+            TokenSequence<?> sequence )
     {
         NodeFinder finder = new NodeFinder( node , TYPES.keySet());
         finder.check();
@@ -162,14 +162,14 @@ public class StatementsListFactory {
     }
     
     private Error buildError( PhpModel model, ASTNode node, 
-            TokenSequence sequence ) 
+            TokenSequence<?> sequence ) 
     {
         ASTNode error =  getError(node);
         return new ErrorImpl( model , node , error, sequence );
     }
 
     private Error buildError( SourceElement parent , ASTNode node, 
-            TokenSequence sequence ) 
+            TokenSequence<?> sequence ) 
     {
         ASTNode error = getError(node);
         return new ErrorImpl( parent , node , error, sequence );

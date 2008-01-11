@@ -59,7 +59,7 @@ public class ClassFunctionDefinitionImpl extends FunctionDefinitionImpl
     implements ClassFunctionDefinition {
 
     public ClassFunctionDefinitionImpl( SourceElement parent, ASTNode node, 
-            ASTNode realNode, ASTNode functionDef, TokenSequence sequence ) 
+            ASTNode realNode, ASTNode functionDef, TokenSequence<?> sequence ) 
     {
         super(parent, node, functionDef, sequence);
         myModifiersNode = realNode;

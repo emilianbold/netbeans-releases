@@ -57,14 +57,14 @@ public class UnaryExpressionImpl extends ExpressionImpl implements
 {
     
     public UnaryExpressionImpl( SourceElement parent, ASTNode node, 
-            ASTNode realNode ,TokenSequence sequence , Boolean postfix ) 
+            ASTNode realNode ,TokenSequence<?> sequence , Boolean postfix ) 
     {
         super(parent, node, realNode, sequence);
         isPostfix = postfix;
     }
     
     public UnaryExpressionImpl( SourceElement parent, ASTNode node, 
-            ASTNode realNode ,TokenSequence sequence ) 
+            ASTNode realNode ,TokenSequence<?> sequence ) 
     {
         super(parent, node, realNode, sequence);
     }

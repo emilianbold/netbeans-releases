@@ -55,12 +55,12 @@ import org.netbeans.modules.php.model.SourceElement;
 public class ErrorImpl extends SourceElementImpl implements Error {
 
     public ErrorImpl( PhpModel model, ASTNode node, ASTNode realNode ,
-            TokenSequence sequence ) {
+            TokenSequence<?> sequence ) {
         super(model, node, realNode, sequence);
     }
 
     public ErrorImpl( SourceElement parent, ASTNode node, 
-            ASTNode realNode ,TokenSequence sequence ) {
+            ASTNode realNode ,TokenSequence<?> sequence ) {
         super(parent, node, realNode, sequence);
     }
 

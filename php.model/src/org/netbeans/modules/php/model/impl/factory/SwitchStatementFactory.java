@@ -80,7 +80,7 @@ public class SwitchStatementFactory {
     }
     
     public List<SourceElement> build( SwitchStatement statement, ASTNode node, 
-            TokenSequence sequence ) 
+            TokenSequence<?> sequence ) 
     {
         if ( node.getNT().equals( SWITCH)) {
             return Collections.singletonList( (SourceElement) new SwitchImpl( 
@@ -96,7 +96,7 @@ public class SwitchStatementFactory {
     }
 
     private List<SourceElement> buildBody( SwitchStatement statement, ASTNode node, 
-            TokenSequence sequence ) 
+            TokenSequence<?> sequence ) 
     {
         List<ASTItem> children = node.getChildren();
         List<SourceElement> list = new LinkedList<SourceElement>();
@@ -113,7 +113,7 @@ public class SwitchStatementFactory {
     }
 
     private SourceElement buildClause( SwitchStatement statement, ASTNode child,
-            TokenSequence sequence ) 
+            TokenSequence<?> sequence ) 
     {
         String type = child.getNT();
         if ( type.equals(CASE )) {

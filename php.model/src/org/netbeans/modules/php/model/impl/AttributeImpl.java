@@ -56,7 +56,7 @@ import org.netbeans.modules.php.model.SourceElement;
 public class AttributeImpl extends SourceElementImpl implements Attribute {
 
     public AttributeImpl( SourceElement parent, ASTNode node, ASTNode realNode, 
-            TokenSequence sequence ) 
+            TokenSequence<?> sequence ) 
     {
         super(parent, node, realNode, sequence);
     }

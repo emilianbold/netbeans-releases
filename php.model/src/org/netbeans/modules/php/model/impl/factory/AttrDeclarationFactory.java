@@ -63,7 +63,7 @@ public class AttrDeclarationFactory {
     }
     
     public SourceElement build( AttributesDeclaration decl, ASTNode node, 
-            TokenSequence sequence ) 
+            TokenSequence<?> sequence ) 
     {
         String type = node.getNT();
         assert type.equals( ATTRIBUTE );

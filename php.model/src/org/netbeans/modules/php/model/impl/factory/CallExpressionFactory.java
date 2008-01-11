@@ -72,7 +72,7 @@ public class CallExpressionFactory {
     }
     
     public SourceElement build( CallExpression expression, ASTNode node, 
-            TokenSequence sequence ) 
+            TokenSequence<?> sequence ) 
     {
         String nt = node.getNT();
         if ( ECHO_ID.equals( nt ) || INCLUDE_ID.equals(nt) || 

@@ -71,14 +71,14 @@ public class WhileBuilder implements SourceElementBuilder {
      * @see org.netbeans.modules.php.model.impl.factory.SourceElementBuilder#build(org.netbeans.modules.php.model.PhpModel, org.netbeans.api.languages.ASTNode, org.netbeans.api.lexer.TokenSequence, int)
      */
     public SourceElement build( PhpModel model, ASTNode node, 
-            ASTNode realNode ,TokenSequence sequence ) 
+            ASTNode realNode ,TokenSequence<?> sequence ) 
     {
         assert false;
         return null;
     }
     
     public While build(SourceElement parent , ASTNode node , 
-            ASTNode realNode ,TokenSequence sequence )
+            ASTNode realNode ,TokenSequence<?> sequence )
     {
         if ( isWhile(node) ){
             return new WhileImpl( parent , node , realNode, sequence );

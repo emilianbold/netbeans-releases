@@ -71,7 +71,7 @@ public class ClassReferenceResolver implements ReferenceResolver {
             String identifier, Class<T> clazz, boolean exactComparison )
     {
         if ( !clazz.isAssignableFrom( ClassDefinition.class ) ){
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
         List<PhpModel> models = ModelResolver.ResolverUtility.getIncludedModels(
                 source.getModel());

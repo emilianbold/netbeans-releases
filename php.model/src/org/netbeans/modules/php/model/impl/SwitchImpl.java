@@ -56,7 +56,7 @@ public class SwitchImpl extends SourceElementImpl implements Switch {
 
 
     public SwitchImpl( SourceElement parent, ASTNode node, 
-            ASTNode realNode, TokenSequence sequence ) 
+            ASTNode realNode, TokenSequence<?> sequence ) 
     {
         super(parent, node, realNode, sequence);
     }

@@ -58,13 +58,13 @@ import org.netbeans.modules.php.model.Statement;
 public class BlockImpl extends StatementImpl implements Block {
 
     public BlockImpl( PhpModel model ,  ASTNode node, ASTNode realNode ,
-            TokenSequence sequence ) 
+            TokenSequence<?> sequence ) 
     {
         super( model, node, realNode, sequence );
     }
     
     public BlockImpl( SourceElement parent, ASTNode node, 
-            ASTNode realNode ,TokenSequence sequence ) 
+            ASTNode realNode ,TokenSequence<?> sequence ) 
     {
         super( parent , node , realNode, sequence );
     }

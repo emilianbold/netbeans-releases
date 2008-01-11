@@ -72,13 +72,13 @@ public class ClassDefinitionImpl extends StatementImpl
     private static final String IMPLEMENTS      = "implements";          // NOI18N
     
     public ClassDefinitionImpl( PhpModel model , ASTNode node , 
-            ASTNode realNode ,TokenSequence sequence  )
+            ASTNode realNode ,TokenSequence<?> sequence  )
     {
         super( model , node, realNode, sequence);
     }
     
     public ClassDefinitionImpl( SourceElement parent, ASTNode node, 
-            ASTNode realNode ,TokenSequence sequence ) 
+            ASTNode realNode ,TokenSequence<?> sequence ) 
     {
         super( parent , node , realNode, sequence );
     }

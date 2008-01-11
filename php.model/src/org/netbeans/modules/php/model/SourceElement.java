@@ -66,7 +66,7 @@ public interface SourceElement extends Acceptor {
      *   
      * @return  token sequence for this source element.
      */
-    TokenSequence getTokenSequence();
+    TokenSequence<?> getTokenSequence();
     
     /**
      * Getter for text that this element represent.

@@ -58,10 +58,10 @@ import org.netbeans.modules.php.model.Statement;
 public class ElseIfImpl extends SourceElementImpl implements ElseIf {
 
     public ElseIfImpl( SourceElement parent, ASTNode node, 
-            ASTNode realNode ,TokenSequence sequence , boolean isAltrnative ) 
+            ASTNode realNode ,TokenSequence<?> sequence , boolean isAltrnative ) 
     {
         super(parent, node, realNode, sequence);
-        this.isAlternative = isAltrnative; 
+        isAlternative = isAltrnative; 
     }
 
     /* (non-Javadoc)

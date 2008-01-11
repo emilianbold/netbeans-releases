@@ -53,9 +53,9 @@ import org.netbeans.modules.php.model.SourceElement;
 public interface SourceElementBuilder {
 
     SourceElement build( PhpModel model , ASTNode node , ASTNode realNode ,
-            TokenSequence sequence );
+            TokenSequence<?> sequence );
     
     SourceElement build( SourceElement parent , ASTNode node , ASTNode realNode ,
-            TokenSequence sequence );
+            TokenSequence<?> sequence );
     
 }

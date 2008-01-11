@@ -258,7 +258,7 @@ class PhpModelImpl implements PhpModel {
              * Original hierarchy - embedding HTML and PHP.
              * Consist from tokens PHP, HTML, delimeters.
              */
-            TokenHierarchy hierarchy = TokenHierarchy.create( getContent(), 
+            TokenHierarchy<?> hierarchy = TokenHierarchy.create( getContent(), 
                     PhpTokenId.language() );
             TokenSequence seq = hierarchy.tokenSequence();
 
@@ -298,19 +298,19 @@ class PhpModelImpl implements PhpModel {
     }
 
 
-    private void updateLookup( TokenSequence seq ) {
+    private void updateLookup( TokenSequence<?> seq ) {
         ASTNode oldAst = getLookup().lookup( ASTNode.class );
         if ( oldAst!= null ) { 
             myInstanceContent.remove(oldAst);
         }
-        TokenSequence sequence = getLookup().lookup( TokenSequence.class );
+        TokenSequence<?> sequence = getLookup().lookup( TokenSequence.class );
         if ( sequence != null ){
             myInstanceContent.remove( sequence );
         }
     }
     
     private CharSequence getTokenText( Token<PhpTokenId> token , 
-            TokenSequence sequence) 
+            TokenSequence<?> sequence) 
     {
         if ( token == null ){
             return "";
@@ -342,7 +342,7 @@ class PhpModelImpl implements PhpModel {
         }
     }
     
-    private ASTNode parse( StringBuilder builder , TokenSequence  sequence ) {
+    private ASTNode parse( StringBuilder builder , TokenSequence<?>  sequence ) {
         ASTNode node = null ;
         byte[] array = builder.toString().getBytes();
         ByteArrayInputStream is = new ByteArrayInputStream(array);

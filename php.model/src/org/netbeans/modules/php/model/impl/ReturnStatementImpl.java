@@ -58,13 +58,13 @@ public class ReturnStatementImpl extends StatementImpl
 {
 
     public ReturnStatementImpl( PhpModel model , ASTNode node, 
-            ASTNode realNode, TokenSequence sequence ) 
+            ASTNode realNode, TokenSequence<?> sequence ) 
     {
         super( model, node, realNode , sequence);
     }
     
     public ReturnStatementImpl( SourceElement parent, ASTNode node, 
-            ASTNode realNode, TokenSequence sequence ) 
+            ASTNode realNode, TokenSequence<?> sequence ) 
     {
         super( parent , node, realNode , sequence );
     }

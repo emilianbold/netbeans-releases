@@ -57,13 +57,13 @@ import org.netbeans.modules.php.model.While;
 public class DoStatementImpl extends StatementImpl implements DoStatement {
 
     public DoStatementImpl( PhpModel model , ASTNode node, 
-            ASTNode realNode ,TokenSequence sequence) 
+            ASTNode realNode ,TokenSequence<?> sequence) 
     {
         super( model, node, realNode, sequence);
     }
     
     public DoStatementImpl( SourceElement parent , ASTNode node, 
-            ASTNode realNode ,TokenSequence sequence) 
+            ASTNode realNode ,TokenSequence<?> sequence) 
     {
         super( parent, node, realNode, sequence );
     }

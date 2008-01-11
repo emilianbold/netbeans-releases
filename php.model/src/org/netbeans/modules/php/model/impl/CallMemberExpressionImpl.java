@@ -60,7 +60,7 @@ public class CallMemberExpressionImpl extends CallExpressionImpl {
 
     public CallMemberExpressionImpl( SourceElement parent, ASTNode node, 
             ASTNode realNode, ASTNode beforeArgs, ASTNode argumentsNode, 
-            TokenSequence sequence ) 
+            TokenSequence<?> sequence ) 
     {
         super(parent, node, realNode, sequence);
         myMemberAccess = beforeArgs;

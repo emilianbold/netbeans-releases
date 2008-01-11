@@ -64,13 +64,13 @@ public class IfStatementImpl extends StatementImpl
 {
 
     public IfStatementImpl( PhpModel model , ASTNode node, 
-            ASTNode realNode ,TokenSequence sequence) 
+            ASTNode realNode ,TokenSequence<?> sequence) 
     {
         super( model, node , realNode, sequence  );
     }
     
     public IfStatementImpl( SourceElement parent, ASTNode node, 
-            ASTNode realNode ,TokenSequence sequence ) 
+            ASTNode realNode ,TokenSequence<?> sequence ) 
     {
         super( parent , node , realNode, sequence );
     }

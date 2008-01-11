@@ -61,7 +61,7 @@ public class FunctionDeclarationFactory {
     }
     
     public SourceElement build( FunctionDeclaration declaration, ASTNode node, 
-            TokenSequence sequence ) 
+            TokenSequence<?> sequence ) 
     {
         String type = node.getNT();
         assert type.equals( NAME ) || type.equals( PARAMETER_LIST );

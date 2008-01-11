@@ -61,7 +61,7 @@ public class ConstDeclarationBuilder implements SourceElementBuilder {
      * @see org.netbeans.modules.php.model.impl.factory.SourceElementBuilder#build(org.netbeans.modules.php.model.PhpModel, org.netbeans.api.languages.ASTNode, org.netbeans.api.lexer.TokenSequence, int)
      */
     public SourceElement build( PhpModel model, ASTNode node,
-            ASTNode realNode ,TokenSequence sequence )
+            ASTNode realNode ,TokenSequence<?> sequence )
     {
         assert false;
         return null;
@@ -71,7 +71,7 @@ public class ConstDeclarationBuilder implements SourceElementBuilder {
      * @see org.netbeans.modules.php.model.impl.factory.SourceElementBuilder#build(org.netbeans.modules.php.model.SourceElement, org.netbeans.api.languages.ASTNode, org.netbeans.api.lexer.TokenSequence)
      */
     public ConstDeclaration build( SourceElement parent, ASTNode node,
-            ASTNode realNode ,TokenSequence sequence )
+            ASTNode realNode ,TokenSequence<?> sequence )
     {
         return new ConstDeclarationImpl( parent , node , realNode, sequence );
     }

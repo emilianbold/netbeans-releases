@@ -56,7 +56,7 @@ public class DeclareImpl extends SourceElementImpl implements Declare {
 
 
     public DeclareImpl( SourceElement parent, ASTNode node, ASTNode realNode,
-            TokenSequence sequence )
+            TokenSequence<?> sequence )
     {
         super(parent, node, realNode, sequence);
     }

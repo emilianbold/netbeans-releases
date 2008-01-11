@@ -59,7 +59,7 @@ public class ForExpressionImpl extends SourceElementImpl implements
 {
 
     public ForExpressionImpl( SourceElement parent, ASTNode node, ASTNode realNode, 
-            TokenSequence sequence ) 
+            TokenSequence<?> sequence ) 
     {
         super(parent, node, realNode, sequence);
     }

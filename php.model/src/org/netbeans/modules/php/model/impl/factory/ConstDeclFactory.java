@@ -59,7 +59,7 @@ public class ConstDeclFactory {
     }
 
     public SourceElement build( ConstDeclaration decl, ASTNode node, 
-            TokenSequence sequence ) 
+            TokenSequence<?> sequence ) 
     {
         assert node.getNT().equals( CONST );
         return new ClassConstImpl( decl, node, node, sequence );

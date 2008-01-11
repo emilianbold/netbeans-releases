@@ -65,13 +65,13 @@ public class InterfaceDefinitionImpl extends StatementImpl
 
 
     public InterfaceDefinitionImpl( PhpModel model , ASTNode node, 
-            ASTNode realNode ,TokenSequence sequence) 
+            ASTNode realNode ,TokenSequence<?> sequence) 
     {
         super( model, node, realNode, sequence);
     }
     
     public InterfaceDefinitionImpl( SourceElement parent, ASTNode node, 
-            ASTNode realNode ,TokenSequence sequence ) 
+            ASTNode realNode ,TokenSequence<?> sequence ) 
     {
         super( parent , node , realNode, sequence );
     }

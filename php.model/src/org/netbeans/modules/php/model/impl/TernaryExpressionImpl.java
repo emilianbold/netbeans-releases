@@ -59,7 +59,7 @@ public class TernaryExpressionImpl extends SourceElementImpl implements
 {
 
     public TernaryExpressionImpl( SourceElement parent, ASTNode node, 
-            ASTNode realNode, TokenSequence sequence ) 
+            ASTNode realNode, TokenSequence<?> sequence ) 
     {
         super(parent, node, realNode, sequence);
     }

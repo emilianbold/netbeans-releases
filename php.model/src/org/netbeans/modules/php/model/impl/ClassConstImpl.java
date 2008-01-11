@@ -61,7 +61,7 @@ public class ClassConstImpl extends SourceElementImpl implements ClassConst {
     private static final String IDENTIFIER = "php_identifier";      // NOI18N
 
     public ClassConstImpl( SourceElement parent, ASTNode node, ASTNode realNode, 
-            TokenSequence sequence ) 
+            TokenSequence<?> sequence ) 
     {
         super(parent, node, realNode, sequence);
     }

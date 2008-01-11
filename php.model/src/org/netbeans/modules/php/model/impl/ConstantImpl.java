@@ -64,7 +64,7 @@ import org.netbeans.modules.php.model.impl.builders.StaticExpressionBuilder;
 public class ConstantImpl extends SourceElementImpl implements Constant {
 
     public ConstantImpl( SourceElement parent, ASTNode node, 
-            ASTNode realNode ,TokenSequence sequence ) {
+            ASTNode realNode ,TokenSequence<?> sequence ) {
         super(parent, node, realNode , sequence);
     }
 

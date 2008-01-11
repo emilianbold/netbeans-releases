@@ -57,7 +57,7 @@ public class VariableDeclImpl extends SourceElementImpl implements
 {
 
     public VariableDeclImpl( SourceElement parent, ASTNode node, ASTNode realNode, 
-            TokenSequence sequence ) 
+            TokenSequence<?> sequence ) 
     {
         super(parent, node, realNode, sequence);
     }

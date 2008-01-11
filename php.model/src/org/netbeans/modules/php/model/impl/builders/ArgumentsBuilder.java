@@ -73,7 +73,7 @@ public class ArgumentsBuilder {
     }
     
     public SourceElement build( Expression expression, ASTNode node, 
-            TokenSequence sequence ) 
+            TokenSequence<?> sequence ) 
     {
         String nt = node.getNT();
         // this is the case when arguments initially are MemberAccess node 

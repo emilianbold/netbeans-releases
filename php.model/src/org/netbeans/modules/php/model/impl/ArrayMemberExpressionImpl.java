@@ -69,7 +69,7 @@ public class ArrayMemberExpressionImpl extends SourceElementImpl implements
 {
 
     public ArrayMemberExpressionImpl( SourceElement parent, ASTNode node, 
-            ASTNode realNode, ASTNode memberAccessNode , TokenSequence sequence ) 
+            ASTNode realNode, ASTNode memberAccessNode , TokenSequence<?> sequence ) 
     {
         super(parent, node, realNode, sequence);
         myMemberNode = memberAccessNode;

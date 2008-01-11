@@ -59,7 +59,7 @@ public class ArrayExpressionImpl extends SourceElementImpl implements
 {
 
     public ArrayExpressionImpl( SourceElement parent, ASTNode node, 
-            ASTNode realNode, TokenSequence sequence ) 
+            ASTNode realNode, TokenSequence<?> sequence ) 
     {
         super(parent, node, realNode, sequence);
     }

@@ -60,7 +60,7 @@ public class AbstractFunctionDeclarationImpl extends FunctionDeclarationImpl
 {
 
     public AbstractFunctionDeclarationImpl( SourceElement parent, ASTNode node, 
-            ASTNode realNode, ASTNode declaration , TokenSequence sequence ) 
+            ASTNode realNode, ASTNode declaration , TokenSequence<?> sequence ) 
     {
         super(parent, node, declaration, sequence);
         myNodeWithModifiers = realNode; 

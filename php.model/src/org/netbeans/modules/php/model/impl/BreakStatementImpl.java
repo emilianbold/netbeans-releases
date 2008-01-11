@@ -57,13 +57,13 @@ public class BreakStatementImpl extends LoopControlStatementImpl
 {
 
     public BreakStatementImpl( PhpModel model , ASTNode node, 
-            ASTNode realNode ,TokenSequence sequence) 
+            ASTNode realNode ,TokenSequence<?> sequence) 
     {
         super( model , node , realNode, sequence );
     }
     
     public BreakStatementImpl( SourceElement parent, ASTNode node, 
-            ASTNode realNode ,TokenSequence sequence ) 
+            ASTNode realNode ,TokenSequence<?> sequence ) 
     {
         super( parent, node , realNode, sequence );
     }

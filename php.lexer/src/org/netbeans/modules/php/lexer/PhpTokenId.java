@@ -93,7 +93,7 @@ public enum PhpTokenId implements TokenId {
         return LANGUAGE;
     }
     
-    public static Language getPhpLanguage() {
+    public static Language<?> getPhpLanguage() {
         return getPurePhpLanguage();
     }
     

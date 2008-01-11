@@ -61,7 +61,7 @@ public class ClassFunctionDeclarationBuilder implements SourceElementBuilder {
      * @see org.netbeans.modules.php.model.impl.factory.SourceElementBuilder#build(org.netbeans.modules.php.model.PhpModel, org.netbeans.api.languages.ASTNode, org.netbeans.api.languages.ASTNode, org.netbeans.api.lexer.TokenSequence)
      */
     public SourceElement build( PhpModel model, ASTNode node, ASTNode realNode,
-            TokenSequence sequence )
+            TokenSequence<?> sequence )
     {
         assert false;
         return null;
@@ -71,7 +71,7 @@ public class ClassFunctionDeclarationBuilder implements SourceElementBuilder {
      * @see org.netbeans.modules.php.model.impl.factory.SourceElementBuilder#build(org.netbeans.modules.php.model.SourceElement, org.netbeans.api.languages.ASTNode, org.netbeans.api.languages.ASTNode, org.netbeans.api.lexer.TokenSequence)
      */
     public SourceElement build( SourceElement parent, ASTNode node,
-            ASTNode realNode, TokenSequence sequence )
+            ASTNode realNode, TokenSequence<?> sequence )
     {
         ASTNode declNode = realNode.getNode( FunctionDefFactory.FUNCTION_DECL );
         return new AbstractFunctionDeclarationImpl( parent , node, realNode , 

@@ -176,7 +176,7 @@ public class FactoryVisitor extends PhpModelVisitorAdaptor {
      * So we don't need further for this <code>offset</code>.
      * I keep this method just for the case.   
      */
-    void init( ASTNode node , TokenSequence sequence , int offset ) {
+    void init( ASTNode node , TokenSequence<?> sequence , int offset ) {
         clean();
         myNode = node;
         mySequence = sequence;
@@ -184,7 +184,7 @@ public class FactoryVisitor extends PhpModelVisitorAdaptor {
         //myOffset = offset ;
     }
     
-    void init( ASTNode node , TokenSequence sequence ) {
+    void init( ASTNode node , TokenSequence<?> sequence ) {
         clean();
         myNode = node;
         mySequence = sequence;
@@ -549,7 +549,7 @@ public class FactoryVisitor extends PhpModelVisitorAdaptor {
     
     private SourceElement mySource;
     
-    private TokenSequence mySequence;
+    private TokenSequence<?> mySequence;
     
     private List<SourceElement> myList;
 

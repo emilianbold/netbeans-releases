@@ -65,7 +65,7 @@ public class VariableFactory {
     }
     
     public SourceElement build( VariableAppearance var, ASTNode node, 
-            TokenSequence sequence ) 
+            TokenSequence<?> sequence ) 
     {
         if (  node.getNT().equals( SIMPLE_VARIABLE ) ) {
             return LiteralBuilder.getInstance().build( var , node , node , 

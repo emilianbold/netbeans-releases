@@ -60,13 +60,13 @@ public class DoStatementBuilder implements SourceElementBuilder {
      * @see org.netbeans.modules.php.model.impl.factory.SourceElementBuilder#build(org.netbeans.api.languages.ASTNode)
      */
     public SourceElement build( PhpModel model ,  ASTNode node , 
-            ASTNode realNode ,TokenSequence sequence) 
+            ASTNode realNode ,TokenSequence<?> sequence) 
     {
         return new DoStatementImpl( model, node , realNode , sequence );
     }
     
     public SourceElement build( SourceElement parent, ASTNode node, 
-            ASTNode realNode ,TokenSequence sequence ) 
+            ASTNode realNode ,TokenSequence<?> sequence ) 
     {
         return new DoStatementImpl( parent , node , realNode, sequence );
     }

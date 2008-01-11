@@ -59,7 +59,7 @@ public class BinaryExpressionImpl extends ExpressionImpl implements
 {
 
     public BinaryExpressionImpl( SourceElement parent, ASTNode node, 
-            ASTNode realNode , TokenSequence sequence ) {
+            ASTNode realNode , TokenSequence<?> sequence ) {
         super(parent, node, realNode , sequence);
     }
 

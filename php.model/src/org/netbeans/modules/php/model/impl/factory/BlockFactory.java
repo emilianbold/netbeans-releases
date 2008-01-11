@@ -62,7 +62,7 @@ public class BlockFactory {
     }
 
     public List<SourceElement> build( StatementContainer block, ASTNode node,
-            TokenSequence sequence )
+            TokenSequence<?> sequence )
     {
         List<SourceElement> children = new LinkedList<SourceElement>();
         /*

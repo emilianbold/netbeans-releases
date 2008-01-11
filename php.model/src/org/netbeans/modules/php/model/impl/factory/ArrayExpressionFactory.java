@@ -62,7 +62,7 @@ public class ArrayExpressionFactory {
     }
     
     public SourceElement build( ArrayExpression expression, ASTNode node, 
-            TokenSequence sequence ) 
+            TokenSequence<?> sequence ) 
     {
         if ( node.getNT().equals( COMMA ) ){
             // This is not source element , just token that we don't care

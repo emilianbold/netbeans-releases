@@ -63,7 +63,7 @@ public class NewExpressionImpl extends SourceElementImpl implements
 {
 
     public NewExpressionImpl( SourceElement parent, ASTNode node, 
-            ASTNode realNode ,TokenSequence sequence ) 
+            ASTNode realNode ,TokenSequence<?> sequence ) 
     {
         super(parent, node, realNode, sequence);
     }

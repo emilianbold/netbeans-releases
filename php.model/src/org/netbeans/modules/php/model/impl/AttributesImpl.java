@@ -61,7 +61,7 @@ public class AttributesImpl extends SourceElementImpl implements AttributesDecla
 
 
     public AttributesImpl( SourceElement parent, ASTNode node, ASTNode realNode, 
-            TokenSequence sequence ) 
+            TokenSequence<?> sequence ) 
     {
         super(parent, node, realNode, sequence);
     }

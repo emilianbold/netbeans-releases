@@ -60,13 +60,13 @@ public class StaticStatementImpl extends SourceElementImpl implements
 {
 
     public StaticStatementImpl( SourceElement parent, ASTNode node, 
-            ASTNode realNode, TokenSequence sequence ) 
+            ASTNode realNode, TokenSequence<?> sequence ) 
     {
         super(parent, node, realNode, sequence);
     }
 
     public StaticStatementImpl( PhpModel model, ASTNode node, ASTNode realNode, 
-            TokenSequence sequence ) 
+            TokenSequence<?> sequence ) 
     {
         super(model, node, realNode, sequence);
     }

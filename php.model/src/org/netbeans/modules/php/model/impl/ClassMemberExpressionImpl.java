@@ -68,7 +68,8 @@ public class ClassMemberExpressionImpl extends SourceElementImpl implements
 {
 
     public ClassMemberExpressionImpl( SourceElement parent, ASTNode node, 
-            ASTNode realNode, ASTNode memberAccessNode ,TokenSequence sequence ) 
+            ASTNode realNode, ASTNode memberAccessNode ,
+            TokenSequence<?> sequence ) 
     {
         super(parent, node, realNode, sequence);
         myMemberNode = memberAccessNode;

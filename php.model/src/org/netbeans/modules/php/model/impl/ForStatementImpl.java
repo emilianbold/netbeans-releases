@@ -61,13 +61,13 @@ public class ForStatementImpl extends StatementImpl implements ForStatement {
 
 
     public ForStatementImpl( PhpModel model  , ASTNode node , 
-            ASTNode realNode ,TokenSequence sequence ) 
+            ASTNode realNode ,TokenSequence<?> sequence ) 
     {
         super( model, node , realNode, sequence);
     }
     
     public ForStatementImpl( SourceElement parent, ASTNode node, 
-            ASTNode realNode ,TokenSequence sequence ) 
+            ASTNode realNode ,TokenSequence<?> sequence ) 
     {
         super( parent , node , realNode, sequence );
     }

@@ -68,7 +68,7 @@ public class ForEachFactory {
     }
     
     public SourceElement build( ForEachStatement statement, ASTNode node, 
-            TokenSequence sequence ) 
+            TokenSequence<?> sequence ) 
     {
         if ( StatementsListFactory.getInstance().isStatement( node ) ) {
             return StatementsListFactory.getInstance().build( statement , 
@@ -81,7 +81,7 @@ public class ForEachFactory {
     }
     
     public List<SourceElement> buildAlternative( ForEachStatement statement, 
-            ASTNode node, TokenSequence sequence ) 
+            ASTNode node, TokenSequence<?> sequence ) 
     {
         if ( node.getNT().equals( ALTERNATIVE)) {
             ASTNode child = node.getNode( BlockFactory.STATEMENT_LIST );

@@ -58,7 +58,7 @@ public class ClassBodyImpl extends SourceElementImpl implements ClassBody {
 
 
     public ClassBodyImpl( SourceElement parent, ASTNode node, 
-            ASTNode realNode ,TokenSequence sequence ) 
+            ASTNode realNode ,TokenSequence<?> sequence ) 
     {
         super(parent, node, realNode, sequence);
     }

@@ -59,7 +59,7 @@ public class ArgumentsFactory {
     }
     
     public SourceElement build( Arguments args, ASTNode parent , 
-            ASTNode node, TokenSequence sequence ) 
+            ASTNode node, TokenSequence<?> sequence ) 
     {
         ASTNode realNode = node;
         if ( LIST_ARG.equals( node.getNT()) ){

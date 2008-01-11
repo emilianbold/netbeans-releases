@@ -68,13 +68,13 @@ public class CallExpressionImpl extends SourceElementImpl implements
 {
 
     public CallExpressionImpl( SourceElement parent, ASTNode node, 
-            ASTNode realNode , TokenSequence sequence ) 
+            ASTNode realNode , TokenSequence<?> sequence ) 
     {
         super(parent, node, realNode , sequence);
     }
     
     public CallExpressionImpl( SourceElement parent, ASTNode node, 
-            ASTNode realNode , ASTNode args , TokenSequence sequence ) 
+            ASTNode realNode , ASTNode args , TokenSequence<?> sequence ) 
     {
         this( parent , node, realNode , sequence );
         myArgs = args; 

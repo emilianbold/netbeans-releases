@@ -60,7 +60,7 @@ public class ContinueStatBuilder implements SourceElementBuilder {
      * @see org.netbeans.modules.php.model.impl.factory.SourceElementBuilder#build(org.netbeans.api.languages.ASTNode)
      */
     public SourceElement build( PhpModel model ,  ASTNode node , 
-            ASTNode realNode ,TokenSequence sequence) 
+            ASTNode realNode ,TokenSequence<?> sequence) 
     {
         return new ContinueStatementImpl( model , node , realNode, sequence );
     }
@@ -69,7 +69,7 @@ public class ContinueStatBuilder implements SourceElementBuilder {
      * @see org.netbeans.modules.php.model.impl.factory.SourceElementBuilder#build(org.netbeans.modules.php.model.SourceElement, org.netbeans.api.languages.ASTNode, org.netbeans.api.lexer.TokenSequence)
      */
     public SourceElement build( SourceElement parent, ASTNode node, 
-            ASTNode realNode ,TokenSequence sequence ) 
+            ASTNode realNode ,TokenSequence<?> sequence ) 
     {
         return new ContinueStatementImpl( parent , node , realNode, sequence );
     } 

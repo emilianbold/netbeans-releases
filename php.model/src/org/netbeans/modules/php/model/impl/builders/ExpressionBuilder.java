@@ -148,7 +148,7 @@ public class ExpressionBuilder implements SourceElementBuilder {
      * @see org.netbeans.modules.php.model.impl.factory.SourceElementBuilder#build(org.netbeans.modules.php.model.PhpModel, org.netbeans.api.languages.ASTNode, org.netbeans.api.lexer.TokenSequence)
      */
     public SourceElement build( PhpModel model, ASTNode node,
-            ASTNode realNode ,TokenSequence sequence )
+            ASTNode realNode ,TokenSequence<?> sequence )
     {
         assert false;
         return null;
@@ -158,7 +158,7 @@ public class ExpressionBuilder implements SourceElementBuilder {
      * @see org.netbeans.modules.php.model.impl.factory.SourceElementBuilder#build(org.netbeans.modules.php.model.SourceElement, org.netbeans.api.languages.ASTNode, org.netbeans.api.lexer.TokenSequence)
      */
     public SourceElement build( SourceElement parent, ASTNode node,
-            ASTNode realNode ,TokenSequence sequence )
+            ASTNode realNode ,TokenSequence<?> sequence )
     {
         ASTNode startNode = realNode == null ? node : realNode;
         ASTNode real = Utils.getNarrowNode( startNode );
@@ -264,7 +264,7 @@ public class ExpressionBuilder implements SourceElementBuilder {
     static class NewExpressionBuilder implements SourceElementBuilder {
 
         public SourceElement build( PhpModel model, ASTNode node, 
-                ASTNode realNode ,TokenSequence sequence ) 
+                ASTNode realNode ,TokenSequence<?> sequence ) 
         {
             assert false;
             return null;
@@ -274,7 +274,7 @@ public class ExpressionBuilder implements SourceElementBuilder {
          * @see org.netbeans.modules.php.model.impl.factory.SourceElementBuilder#build(org.netbeans.modules.php.model.SourceElement, org.netbeans.api.languages.ASTNode, org.netbeans.api.lexer.TokenSequence)
          */
         public SourceElement build( SourceElement parent, ASTNode node, 
-                ASTNode realNode ,TokenSequence sequence ) 
+                ASTNode realNode ,TokenSequence<?> sequence ) 
         {
             return new NewExpressionImpl( parent , node , realNode, sequence );
         }
@@ -284,7 +284,7 @@ public class ExpressionBuilder implements SourceElementBuilder {
     static class PrimaryExpressionBuilder implements SourceElementBuilder {
 
         public SourceElement build( PhpModel model, ASTNode node, 
-                ASTNode realNode ,TokenSequence sequence ) 
+                ASTNode realNode ,TokenSequence<?> sequence ) 
         {
             assert false;
             return null;
@@ -294,7 +294,7 @@ public class ExpressionBuilder implements SourceElementBuilder {
          * @see org.netbeans.modules.php.model.impl.factory.SourceElementBuilder#build(org.netbeans.modules.php.model.SourceElement, org.netbeans.api.languages.ASTNode, org.netbeans.api.lexer.TokenSequence)
          */
         public SourceElement build( SourceElement parent, ASTNode node, 
-                ASTNode realNode ,TokenSequence sequence ) 
+                ASTNode realNode ,TokenSequence<?> sequence ) 
         {
             ASTNode expr = realNode.getNode( ExpressionFactory.EXPRESSION );
             if ( expr != null ) {
@@ -319,7 +319,7 @@ public class ExpressionBuilder implements SourceElementBuilder {
     static class ArrayExpressionBuilder implements SourceElementBuilder {
 
         public SourceElement build( PhpModel model, ASTNode node, 
-                ASTNode realNode ,TokenSequence sequence ) 
+                ASTNode realNode ,TokenSequence<?> sequence ) 
         {
             assert false;
             return null;
@@ -329,7 +329,7 @@ public class ExpressionBuilder implements SourceElementBuilder {
          * @see org.netbeans.modules.php.model.impl.factory.SourceElementBuilder#build(org.netbeans.modules.php.model.SourceElement, org.netbeans.api.languages.ASTNode, org.netbeans.api.lexer.TokenSequence)
          */
         public SourceElement build( SourceElement parent, ASTNode node, 
-                ASTNode realNode ,TokenSequence sequence ) 
+                ASTNode realNode ,TokenSequence<?> sequence ) 
         {
             return new ArrayExpressionImpl( parent , node, realNode , sequence );
         }
@@ -339,7 +339,7 @@ public class ExpressionBuilder implements SourceElementBuilder {
     static class ListExpressionBuilder implements SourceElementBuilder {
 
         public SourceElement build( PhpModel model, ASTNode node,
-                ASTNode realNode, TokenSequence sequence )
+                ASTNode realNode, TokenSequence<?> sequence )
         {
             assert false;
             return null;
@@ -349,7 +349,7 @@ public class ExpressionBuilder implements SourceElementBuilder {
          * @see org.netbeans.modules.php.model.impl.factory.SourceElementBuilder#build(org.netbeans.modules.php.model.SourceElement, org.netbeans.api.languages.ASTNode, org.netbeans.api.lexer.TokenSequence)
          */
         public SourceElement build( SourceElement parent, ASTNode node,
-                ASTNode realNode, TokenSequence sequence )
+                ASTNode realNode, TokenSequence<?> sequence )
         {
             return new CallExpressionImpl(parent, node, realNode, sequence);
         }

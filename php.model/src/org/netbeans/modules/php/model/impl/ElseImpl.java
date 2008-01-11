@@ -57,10 +57,10 @@ import org.netbeans.modules.php.model.Statement;
 public class ElseImpl extends SourceElementImpl implements Else {
 
     public ElseImpl( SourceElement parent, ASTNode node, ASTNode realNode ,
-            TokenSequence sequence , boolean isAltrnative) 
+            TokenSequence<?> sequence , boolean isAltrnative) 
     {
         super(parent, node, realNode, sequence);
-        this.isAlternative = isAltrnative;
+        isAlternative = isAltrnative;
     }
 
     /* (non-Javadoc)

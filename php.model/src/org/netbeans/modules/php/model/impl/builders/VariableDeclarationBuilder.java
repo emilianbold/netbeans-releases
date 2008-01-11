@@ -66,7 +66,7 @@ public class VariableDeclarationBuilder {
     }
     
     public SourceElement build( SourceElement element, ASTNode node, 
-            TokenSequence sequence ) 
+            TokenSequence<?> sequence ) 
     {
         if ( node.getNT().equals( VAR_DECL) ){
             ASTNode realNode = node.getNode( StaticExpressionBuilder.VARIABLE );

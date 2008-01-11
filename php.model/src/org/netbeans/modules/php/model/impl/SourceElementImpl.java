@@ -62,7 +62,7 @@ abstract class SourceElementImpl implements SourceElement {
 
 
     SourceElementImpl( PhpModel model , SourceElement parent,
-            ASTNode node , ASTNode realNode, TokenSequence sequence )
+            ASTNode node , ASTNode realNode, TokenSequence<?> sequence )
     {
         assert model == null || model instanceof PhpModelImpl;
         myModel = ( PhpModelImpl ) model;
@@ -77,13 +77,13 @@ abstract class SourceElementImpl implements SourceElement {
     }
     
     SourceElementImpl( PhpModel model , 
-            ASTNode node , ASTNode realNode , TokenSequence sequence )
+            ASTNode node , ASTNode realNode , TokenSequence<?> sequence )
     {
         this( model , null , node , realNode , sequence );
     }
     
     SourceElementImpl( SourceElement parent , 
-            ASTNode node , ASTNode realNode , TokenSequence sequence )
+            ASTNode node , ASTNode realNode , TokenSequence<?> sequence )
     {
         this( null , parent , node , realNode , sequence );
     }
@@ -91,7 +91,7 @@ abstract class SourceElementImpl implements SourceElement {
     /* (non-Javadoc)
      * @see org.netbeans.modules.php.model.SourceElement#getTokenSequence()
      */
-    public TokenSequence getTokenSequence() {
+    public TokenSequence<?> getTokenSequence() {
         return mySequence;
     }
     
@@ -230,7 +230,7 @@ abstract class SourceElementImpl implements SourceElement {
     }
     
     
-    private TokenSequence mySequence;
+    private TokenSequence<?> mySequence;
     
     private ASTNode myNode;
     

@@ -57,13 +57,13 @@ public class ContinueStatementImpl extends LoopControlStatementImpl
 {
 
     public ContinueStatementImpl( PhpModel model ,  ASTNode node, 
-            ASTNode realNode ,TokenSequence sequence) 
+            ASTNode realNode ,TokenSequence<?> sequence) 
     {
         super( model , node, realNode, sequence);
     }
     
     public ContinueStatementImpl( SourceElement parent, ASTNode node, 
-            ASTNode realNode ,TokenSequence sequence ) 
+            ASTNode realNode ,TokenSequence<?> sequence ) 
     {
         super( parent , node, realNode, sequence );
     }
