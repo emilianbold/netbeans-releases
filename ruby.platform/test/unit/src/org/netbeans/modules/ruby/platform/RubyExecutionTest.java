@@ -55,11 +55,7 @@ public class RubyExecutionTest extends RubyTestBase {
 
     public void testComputeJRubyClassPath() {
         String[] expectedJars = {
-            "asm-2.2.3.jar",
-            "asm-commons-2.2.3.jar",
-            "backport-util-concurrent.jar",
             "bsf.jar",
-            "jline-0.9.91.jar",
             "jruby.jar",
         };
         Arrays.sort(expectedJars);

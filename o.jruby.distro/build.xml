@@ -19,8 +19,8 @@
             <include name="config/ModuleAutoDeps/${code.name.base.dashes}.xml" if="has.module.auto.deps"/>
             <include name="ant/nblib/${code.name.base.dashes}.jar"/>
             <!-- JRuby+Rails stuff -->
-            <include name="jruby-1.0.3/**"/>
-            <exclude name="jruby-1.0.3/**/netbeans-index-*.zip"/>
+            <include name="jruby-${jruby_src_version}/**"/>
+            <exclude name="jruby-${jruby_src_version}/**/netbeans-index-*.zip"/>
         </patternset>
     </target>    
 
@@ -30,7 +30,7 @@
         <mkdir dir="${unpatched_source}"/>
         <unzip dest="${unpatched_source}">
 			<fileset dir="../jruby/external/">
-				<include name="jruby-src*.zip"/>
+				<include name="jruby-src-${jruby_src_version}.zip"/>
 			</fileset>
 		</unzip>
         <!-- Patch build.xml to modify gem behavior: install locally -->

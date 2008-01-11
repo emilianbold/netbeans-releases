@@ -71,6 +71,7 @@ public class AttributeIsLocalTest extends HintTestBase {
             Set<String> exceptions = new HashSet<String>();
             
             // Known exceptions
+            exceptions.add("platform.rb");
             exceptions.add("game.rb");
             exceptions.add("routing.rb");
             exceptions.add("mime_type.rb");

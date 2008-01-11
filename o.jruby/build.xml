@@ -17,7 +17,7 @@
         -->
         <unzip dest="${patched_source}">
 			<fileset dir="external/">
-				<include name="jruby-src*.zip"/>
+				<include name="jruby-src-${jruby_src_version}.zip"/>
 			</fileset>
 	</unzip>
         <!-- I don't need the bsf stuff -->

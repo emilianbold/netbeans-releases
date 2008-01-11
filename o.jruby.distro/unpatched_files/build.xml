@@ -11,11 +11,12 @@
   <property file="default.build.properties"/>
 
   <path id="build.classpath">
-    <fileset dir="${lib.dir}" includes="*.jar" excludes="jruby.jar"/>
+    <fileset dir="${build.lib.dir}" includes="*.jar"/>
+    <fileset dir="${lib.dir}" includes="bsf.jar"/>
   </path>
 
   <!-- directory that contains emma.jar and emma_ant.jar: -->
-  <property name="emma.dir" value="${lib.dir}" />
+  <property name="emma.dir" value="${build.lib.dir}" />
 
   <path id="emma.classpath">
     <pathelement location="${emma.dir}/emma.jar" />
@@ -36,6 +37,10 @@
   <patternset id="other.src.pattern">
     <include name="**/*.properties"/>
   </patternset>
+  
+  <taskdef name="retro" classname="net.sourceforge.retroweaver.ant.RetroWeaverTask" classpathref="build.classpath"/>
+  
+  <import file="netbeans-ant.xml" optional="true"/>
 
   <target name="init" description="initialize the build">
     <xmlproperty file="build-config.xml" keepRoot="false" collapseAttributes="true"/>
@@ -121,7 +126,7 @@
   </target>
 
   <target name="compile-jruby" depends="compile.tasks, check-for-optional-packages">
-    <javac destdir="${jruby.classes.dir}" debug="true" source="${javac.version}" deprecation="true" encoding="UTF-8">
+    <javac destdir="${jruby.classes.dir}" debug="true" source="${javac.version}" target="${javac.version}" deprecation="true" encoding="UTF-8">
        <classpath refid="build.classpath"/>
        <src path="${src.dir}"/>
        <patternset refid="java.src.pattern"/>
@@ -134,10 +139,20 @@
 
   <target name="generate-method-classes" depends="compile">
     <touch file="${build.dir}/__empty.rb"/>
-    <java classname="org.jruby.Main" fork="true">
+    <!-- individual invokers -->
+    <java classname="org.jruby.Main" fork="true" failonerror="true">
       <classpath refid="build.classpath"/>
       <classpath path="${jruby.classes.dir}"/>
       <sysproperty key="jruby.dump_invocations" value="${jruby.classes.dir}"/>
+      <arg value="-rjava"/>
+      <arg value="${build.dir}/__empty.rb"/>
+    </java>
+    <!-- indexed invokers -->
+    <java classname="org.jruby.Main" fork="true" failonerror="true">
+      <classpath refid="build.classpath"/>
+      <classpath path="${jruby.classes.dir}"/>
+      <sysproperty key="jruby.dump_invocations" value="${jruby.classes.dir}"/>
+      <sysproperty key="jruby.indexed.methods" value="true"/>
       <arg value="-rjava"/>
       <arg value="${build.dir}/__empty.rb"/>
     </java>
@@ -145,24 +160,62 @@
   </target>
 
   <target name="jar-jruby" unless="jar-up-to-date">
-    <antcall target="generate-method-classes" inheritall="true"/>
-    <jar destfile="${lib.dir}/jruby.jar" compress="true">
-      <fileset dir="${jruby.classes.dir}">
-        <exclude name="org/jruby/util/ant/**/*.class"/>
-      </fileset>
-      <manifest>
-        <attribute name="Built-By" value="${user.name}"/>
-        <attribute name="Main-Class" value="org.jruby.Main"/>
-        <attribute name="Class-Path" value="asm-2.2.3.jar asm-commons-2.2.3.jar jline-0.9.91.jar bsf.jar backport-util-concurrent.jar"/>
-      </manifest>
-    </jar>
+      <antcall target="generate-method-classes" inheritall="true"/>
+      <taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpath="${build.lib.dir}/jarjar-0.7.jar"/>
+      <jarjar destfile="${lib.dir}/jruby.jar">
+        <fileset dir="${jruby.classes.dir}">
+          <exclude name="org/jruby/util/ant/**/*.class"/>
+        </fileset>
+        <zipfileset src="${build.lib.dir}/asm-3.0.jar"/>
+        <zipfileset src="${build.lib.dir}/asm-commons-3.0.jar"/>
+        <zipfileset src="${build.lib.dir}/asm-util-3.0.jar"/>
+        <zipfileset src="${build.lib.dir}/asm-analysis-3.0.jar"/>
+        <zipfileset src="${build.lib.dir}/asm-tree-3.0.jar"/>
+        <zipfileset src="${build.lib.dir}/jline-0.9.91.jar"/>
+        <zipfileset src="${build.lib.dir}/joni.jar"/>
+        <zipfileset src="${build.lib.dir}/jna.jar"/>
+        <zipfileset src="${build.lib.dir}/joda-time-1.5.1.jar"/>
+        <rule pattern="org.objectweb.asm.**" result="jruby.objectweb.asm.@1"/>
+        <manifest>
+          <attribute name="Built-By" value="${user.name}"/>
+          <attribute name="Main-Class" value="org.jruby.Main"/>
+        </manifest>
+      </jarjar>
   </target>
 
+  <path id="lib.classpath">
+    <pathelement location="${build.lib.dir}/retroweaver-rt-2.0.jar"/>
+    <pathelement location="${build.lib.dir}/backport-util-concurrent.jar"/>
+    <pathelement location="/usr/java/j2sdk1.4.2_16/jre/lib/rt.jar" />
+    <pathelement location="${lib.dir}/bsf.jar" />
+  </path>
+
+  <target name="jar-1.4" depends="jar-jruby">
+    <copy file="${lib.dir}/jruby.jar" tofile="${lib.dir}/jruby1.5.jar"/>
+    <retro inputjar="${lib.dir}/jruby1.5.jar" outputjar="${lib.dir}/jruby.jar" target="1.4" failonerror="false" verify="true">
+      <classpath>
+        <path refid="lib.classpath"/>
+        <pathelement location="${lib.dir}/jruby.jar" />
+      </classpath>
+    </retro>
+    <delete file="${lib.dir}/jruby1.5.jar"/>
+  </target>
+
+  <target name="jar-complete-1.4" depends="jar-complete">
+    <copy file="${lib.dir}/jruby-complete.jar" tofile="${lib.dir}/jruby-complete1.5.jar"/>
+    <retro inputjar="${lib.dir}/jruby-complete1.5.jar" outputjar="${lib.dir}/jruby-complete.jar" target="1.4" failonerror="false" verify="true">
+      <classpath>
+        <path refid="lib.classpath"/>
+        <pathelement location="${lib.dir}/jruby-complete.jar" />
+      </classpath>
+    </retro>
+    <delete file="${lib.dir}/jruby-complete1.5.jar"/>
+  </target>
 
     <target name="jar-complete" depends="generate-method-classes" description="Create the 'complete' JRuby jar. Pass 'mainclass' and 'filename' to adjust.">
       <property name="mainclass" value="org.jruby.Main"/>
       <property name="filename" value="jruby-complete.jar"/>
-      <taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpath="${lib.dir}/jarjar-0.7.jar"/>
+      <taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpath="${build.lib.dir}/jarjar-0.7.jar"/>
       <jarjar destfile="${lib.dir}/${filename}">
         <fileset dir="${jruby.classes.dir}">
           <exclude name="org/jruby/util/ant/**/*.class"/>
@@ -170,10 +223,15 @@
         <fileset dir="${basedir}/lib/ruby/1.8">
           <include name="**/*.rb"/>
         </fileset>
-        <zipfileset src="${lib.dir}/asm-2.2.3.jar"/>
-        <zipfileset src="${lib.dir}/asm-commons-2.2.3.jar"/>
-        <zipfileset src="${lib.dir}/jline-0.9.91.jar"/>
-      	<zipfileset src="${lib.dir}/backport-util-concurrent.jar"/>
+        <zipfileset src="${build.lib.dir}/asm-3.0.jar"/>
+        <zipfileset src="${build.lib.dir}/asm-commons-3.0.jar"/>
+        <zipfileset src="${build.lib.dir}/asm-util-3.0.jar"/>
+        <zipfileset src="${build.lib.dir}/asm-analysis-3.0.jar"/>
+        <zipfileset src="${build.lib.dir}/asm-tree-3.0.jar"/>
+        <zipfileset src="${build.lib.dir}/jline-0.9.91.jar"/>
+        <zipfileset src="${build.lib.dir}/joni.jar"/>
+        <zipfileset src="${build.lib.dir}/jna.jar"/>
+        <zipfileset src="${build.lib.dir}/joda-time-1.5.1.jar"/>
         <rule pattern="org.objectweb.asm.**" result="jruby.objectweb.asm.@1"/>
         <zipfileset dir="${basedir}" prefix="META-INF/jruby.home">
           <include name="bin/*"/>
@@ -190,47 +248,6 @@
     </target>
 
 
-    <target name="jar-light" depends="generate-method-classes" description="Create the 'light' JRuby jar. Pass 'mainclass' and 'filename' to adjust.">
-        <property name="mainclass" value="org.jruby.Main"/>
-        <property name="filename" value="jruby-light.jar"/>
-        <taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpath="${lib.dir}/jarjar-0.7.jar"/>
-      <jarjar destfile="${lib.dir}/${filename}">
-        <fileset dir="${jruby.classes.dir}">
-          <include name="**/*.class"/>
-        <include name="**/*.properties"/>
-          <exclude name="org/jruby/util/ant/**/*.class"/>
-        </fileset>
-        <fileset dir="${basedir}/lib/ruby/1.8">
-          <include name="**/*.rb"/>
-              <exclude name="**/rdoc/**"/>
-              <exclude name="**/cgi/**"/>
-              <exclude name="**/bigdecimal/**"/>
-              <exclude name="**/drb/**"/>
-              <exclude name="**/io/**"/>
-              <exclude name="**/net/**"/>
-              <exclude name="**/racc/**"/>
-              <exclude name="**/rexml/**"/>
-              <exclude name="**/rinda/**"/>
-              <exclude name="**/runit/**"/>
-              <exclude name="**/shell/**"/>
-              <exclude name="**/soap/**"/>
-              <exclude name="**/test/**"/>
-              <exclude name="**/uri/**"/>
-              <exclude name="**/webrick/**"/>
-              <exclude name="**/xmlrpc/**"/>
-              <exclude name="**/xsd/**"/>
-        </fileset>
-          <zipfileset src="${lib.dir}/asm-2.2.3.jar"/>
-          <zipfileset src="${lib.dir}/asm-commons-2.2.3.jar"/>
-          <zipfileset src="${lib.dir}/jline-0.9.91.jar"/>
-      	  <zipfileset src="${lib.dir}/backport-util-concurrent.jar"/>
-        <manifest>
-          <attribute name="Built-By" value="${user.name}"/>
-          <attribute name="Main-Class" value="${mainclass}"/>
-        </manifest>
-      </jarjar>
-    </target>
-
     <target name="jar-console" depends="generate-method-classes" description="Create the jruby graphical console jar">
           <antcall target="jar-light">
               <param name="mainclass" value="org.jruby.demo.IRBConsole"/>
@@ -241,9 +258,6 @@
   <target name="jar" depends="init" description="Create the jruby.jar file">
     <antcall target="jar-jruby" inheritall="true"/>
   </target>
-
-  <target name="jar.standalone" depends="generate-method-classes, jar"
-    description="Create a standalone jruby.jar file using libraries from RUBY_HOME/lib/ruby/1.8"/>
 
   <target name="compile-test" depends="jar" description="Compile the unit tests">
     <javac destdir="${test.classes.dir}" deprecation="true" debug="true" 
@@ -267,7 +281,7 @@
 
   <target name="install-gems">
     <property name="jruby.home" value="${basedir}"/>
-    <java classname="org.jruby.Main" fork="true" maxmemory="256M" failonerror="true">
+    <java classname="org.jruby.Main" fork="true" maxmemory="${jruby.launch.memory}" failonerror="true">
       <classpath refid="build.classpath"/>
       <classpath path="${jruby.classes.dir}"/>
       <sysproperty key="jruby.home" value="${jruby.home}"/>
@@ -289,46 +303,29 @@
       <arg value="--env-shebang"/>
       <arg value="--no-rdoc"/>
       <arg value="--no-ri"/>
+      <arg value="--local"/>
     </java>
   </target>
   
-  <target name="run-spec">
-    <echo message="Running spec(s) located at: ${SPEC}"/>
-    <java classname="org.jruby.Main" fork="true" maxmemory="256M" failonerror="true">
+  <target name="compile-stdlib">
+    <copy todir="${build.dir}/stdlib">
+        <fileset dir="${basedir}/lib/ruby/1.8">
+          <include name="**/*.rb"/>
+        </fileset>
+    </copy>
+    <java classname="org.jruby.Main" fork="true" maxmemory="${jruby.launch.memory}" failonerror="true" dir="${build.dir}/stdlib">
       <classpath refid="build.classpath"/>
       <classpath path="${jruby.classes.dir}"/>
       <sysproperty key="jruby.home" value="${basedir}"/>
-      <arg value="-S"/>
-      <arg value="spec"/>
-      <arg value="--format"/>
-      <arg value="e"/>
-      <arg line="${SPEC}"/>
-    	
+      <sysproperty key="jruby.objectspace.enabled" value="true"/>
       <jvmarg value="-ea"/>
-    </java>
-  </target>
-  
-  <target name="run-spec-compiled">
-    <echo message="Running spec(s) located at: ${SPEC}"/>
-    <java classname="org.jruby.Main" fork="true" failonerror="true">
-      <classpath refid="build.classpath"/>
-      <classpath path="${jruby.classes.dir}"/>
-      <sysproperty key="jruby.home" value="${basedir}"/>
-      <sysproperty key="jruby.jit.threshold" value="0"/>
+      
+      <arg value="-I"/>
+      <arg value="bin/"/>
       <arg value="-S"/>
-      <arg value="spec"/>
-      <arg value="--format"/>
-      <arg value="e"/>
-      <arg line="${SPEC}"/>
-    	
-      <jvmarg value="-ea"/>
+      <arg value="jrubyc"/>
+      <arg line="."/>
     </java>
-  </target>
-
-  <target name="spec" depends="jar,install-gems">
-    <antcall target="run-spec">
-        <param name="SPEC" value="test/externals/rubinius/spec"/>
-    </antcall>
   </target>
 
   <target name="emma" description="turns on EMMA instrumentation/reporting" >
@@ -364,133 +361,204 @@
     </emma>
   </target>
 
-  <!-- This now has enabled the compiler by default; we may want to run both with and without compilation later -->
-  <target name="test" depends="copy-test-files,instrument,run-junit-compiled,run-junit-interpreted,test-spec-compiled,test-spec-interpreted,coverage-report">
+  <target name="test-short" depends="
+    copy-test-files,
+    instrument,
+    run-junit-interpreted,
+    run-junit-interpreted-1.9,
+    coverage-report">
   </target>
 
-  <target name="test-compiled" depends="copy-test-files,run-junit-compiled"/>
+  <target name="test" depends="
+    copy-test-files,
+    instrument,
+    run-junit-compiled,
+    run-junit-interpreted,
+    run-junit-compiled-1.9,
+    run-junit-interpreted-1.9,
+    compile-stdlib,
+    coverage-report">
+  </target>
+
+  <target name="test-compiled" depends="copy-test-files,run-junit-compiled,run-junit-precompiled"/>
+  <target name="test-compiled-1.9" depends="copy-test-files,run-junit-compiled-1.9,run-junit-precompiled-1.9"/>
   <target name="test-interpreted" depends="copy-test-files,run-junit-interpreted"/>
+  <target name="test-interpreted-1.9" depends="copy-test-files,run-junit-interpreted-1.9"/>
+  <target name="test-reflected" depends="copy-test-files,run-junit-reflected-compiled,run-junit-reflected-precompiled,run-junit-reflected-interpreted"/>
+  <target name="test-threadpool" depends="copy-test-files,run-junit-compiled-threadpool,run-junit-precompiled-threadpool,run-junit-interpreted-threadpool"/>
   
-  <target name="test-spec" depends="test-spec-compiled, test-spec-interpreted"/>
-  
-  <target name="test-spec-compiled" depends="install-gems">
-    <antcall target="run-spec-compiled"><param name="SPEC" value="
-test/externals/rubinius/spec/core/false_spec.rb
-test/externals/rubinius/spec/core/hash_spec.rb
-test/externals/rubinius/spec/core/integer_spec.rb
-test/externals/rubinius/spec/core/io_spec.rb
-test/externals/rubinius/spec/core/nil_spec.rb
-test/externals/rubinius/spec/core/objectspace_spec.rb
-test/externals/rubinius/spec/core/proc_spec.rb
-test/externals/rubinius/spec/core/range_spec.rb
-test/externals/rubinius/spec/core/struct_spec.rb
-test/externals/rubinius/spec/core/symbol_spec.rb
-test/externals/rubinius/spec/core/true_spec.rb
-test/externals/rubinius/spec/language/assignment_spec.rb
-test/externals/rubinius/spec/language/class_spec.rb
-test/externals/rubinius/spec/language/case_spec.rb
-test/externals/rubinius/spec/language/splat_spec.rb
-test/externals/rubinius/spec/language/variables_spec.rb
-test/externals/rubinius/spec/language/expressions/for_spec.rb
-test/externals/rubinius/spec/language/expressions/if_spec.rb
-test/externals/rubinius/spec/language/expressions/unless_spec.rb
-test/externals/rubinius/spec/language/keywords/break_spec.rb
-test/externals/rubinius/spec/language/keywords/defined_spec.rb
-test/externals/rubinius/spec/language/literals
-test/externals/rubinius/spec/library
-test/externals/rubinius/spec/parser"/></antcall>
-  </target>
-  
-  <target name="test-spec-interpreted" depends="install-gems">
-    <antcall target="run-spec"><param name="SPEC" value="
-test/externals/rubinius/spec/core/false_spec.rb
-test/externals/rubinius/spec/core/hash_spec.rb
-test/externals/rubinius/spec/core/integer_spec.rb
-test/externals/rubinius/spec/core/io_spec.rb
-test/externals/rubinius/spec/core/nil_spec.rb
-test/externals/rubinius/spec/core/objectspace_spec.rb
-test/externals/rubinius/spec/core/proc_spec.rb
-test/externals/rubinius/spec/core/range_spec.rb
-test/externals/rubinius/spec/core/struct_spec.rb
-test/externals/rubinius/spec/core/symbol_spec.rb
-test/externals/rubinius/spec/core/true_spec.rb
-test/externals/rubinius/spec/language/assignment_spec.rb
-test/externals/rubinius/spec/language/class_spec.rb
-test/externals/rubinius/spec/language/case_spec.rb
-test/externals/rubinius/spec/language/splat_spec.rb
-test/externals/rubinius/spec/language/variables_spec.rb
-test/externals/rubinius/spec/language/expressions/for_spec.rb
-test/externals/rubinius/spec/language/expressions/if_spec.rb
-test/externals/rubinius/spec/language/expressions/unless_spec.rb
-test/externals/rubinius/spec/language/keywords/break_spec.rb
-test/externals/rubinius/spec/language/keywords/defined_spec.rb
-test/externals/rubinius/spec/language/literals
-test/externals/rubinius/spec/library
-test/externals/rubinius/spec/parser"/></antcall>
-  </target>
+  <target name="test-all" depends="
+      copy-test-files,
+      instrument,
+      run-junit-interpreted,
+      run-junit-compiled,
+      run-junit-precompiled,
+      run-junit-interpreted-1.9,
+      run-junit-compiled-1.9,
+      run-junit-precompiled-1.9,
+      run-junit-reflected-interpreted,
+      run-junit-reflected-compiled,
+      run-junit-reflected-precompiled,
+      run-junit-compiled-threadpool,
+      run-junit-precompiled-threadpool,
+      run-junit-interpreted-threadpool,
+      run-junit-object-persistence,
+      compile-stdlib,
+      coverage-report
+  "/>
   
   <target name="run-junit-interpreted" description="runs junit tests">
-    <taskdef name="junit" classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTask" classpath="${lib.dir}/junit.jar"/>
-    <junit fork="yes" forkMode="once" haltonfailure="true" dir="${basedir}" maxmemory="384M" showoutput="true">
-      <classpath>
-        <pathelement location="${jruby.instrumented.classes.dir}" />
-        <path refid="build.classpath"/>
-        <pathelement path="${java.class.path}"/>
-        <pathelement path="${lib.dir}/jruby.jar"/>
-        <pathelement location="${test.classes.dir}"/>
-        <pathelement path="${test.dir}/requireTest.jar"/>
-        <pathelement location="${test.dir}"/>
-      </classpath>
-      <sysproperty key="java.awt.headless" value="true"/>
-      <sysproperty key="jruby.base" value="${basedir}"/>
-      <sysproperty key="jruby.home" value="${basedir}"/>
-      <sysproperty key="jruby.lib" value="${lib.dir}"/>
-      <sysproperty key="jruby.jit.enabled" value="false"/>
-      <sysproperty key="emma.coverage.out.file" value="${test.results.dir}/coverage.emma" />
-      <sysproperty key="emma.coverage.out.merge" value="true" />
-
-      <jvmarg value="-ea"/>
-
-      <formatter type="xml"/>
-      <formatter type="brief" usefile="false"/>
-
-      <test name="org.jruby.test.MainTestSuite" todir="${test.results.dir}"/>
-      <test name="org.jruby.test.ScriptTestSuite" todir="${test.results.dir}"/>
-      <test name="org.jruby.test.TestUnitTestSuite" todir="${test.results.dir}"/>
-      <test name="org.jvyamlb.YAMLLoadTest" todir="${test.results.dir}"/>
-      <test name="org.jvyamlb.YAMLDumpTest" todir="${test.results.dir}"/>
-    </junit>
+      <antcall target="run-junit-1.8" inheritall="false"/>
+  </target>
+  
+  <target name="run-junit-interpreted-1.9" description="runs junit tests">
+      <antcall target="run-junit-1.9" inheritall="false"/>
+  </target>
+  
+  <target name="run-junit-reflected-interpreted" description="runs junit tests">
+      <antcall target="run-junit-1.8" inheritall="false">
+          <param name="reflection " value="true"/>
+      </antcall>
+  </target>
+  
+  <target name="run-junit-reflected-interpreted-1.9" description="runs junit tests">
+      <antcall target="run-junit-1.9" inheritall="false">
+          <param name="reflection " value="true"/>
+      </antcall>
   </target>
   
   <target name="run-junit-compiled" description="runs junit tests">
-    <taskdef name="junit" classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTask" classpath="${lib.dir}/junit.jar"/>
-    <junit fork="yes" forkMode="once" haltonfailure="true" dir="${basedir}" maxmemory="384M" showoutput="true">
-      <classpath>
-        <pathelement location="${jruby.instrumented.classes.dir}" />
-        <path refid="build.classpath"/>
-        <pathelement path="${java.class.path}"/>
-        <pathelement path="${lib.dir}/jruby.jar"/>
-        <pathelement location="${test.classes.dir}"/>
-        <pathelement path="${test.dir}/requireTest.jar"/>
-        <pathelement location="${test.dir}"/>
-      </classpath>
+      <antcall target="run-junit-1.8" inheritall="false">
+          <param name="compile.mode" value="JIT"/>
+          <param name="jit.threshold" value="0"/>
+      </antcall>
+  </target>
+  
+  <target name="run-junit-compiled-1.9" description="runs junit tests">
+      <antcall target="run-junit-1.9" inheritall="false">
+          <param name="compile.mode" value="JIT"/>
+          <param name="jit.threshold" value="0"/>
+      </antcall>
+  </target>
+  
+  <target name="run-junit-reflected-compiled" description="runs junit tests">
+      <antcall target="run-junit-1.8" inheritall="false">
+          <param name="compile.mode" value="JIT"/>
+          <param name="jit.threshold" value="0"/>
+          <param name="reflection" value="true"/>
+      </antcall>
+  </target>
+  
+  <target name="run-junit-reflected-compiled-1.9" description="runs junit tests">
+      <antcall target="run-junit-1.9" inheritall="false">
+          <param name="compile.mode" value="JIT"/>
+          <param name="jit.threshold" value="0"/>
+          <param name="reflection" value="true"/>
+      </antcall>
+  </target>
+  
+  <target name="run-junit-precompiled" description="runs junit tests">
+      <antcall target="run-junit-1.8" inheritall="false">
+          <param name="compile.mode" value="FORCE"/>
+          <param name="jit.threshold" value="0"/>
+      </antcall>
+  </target>
+  
+  <target name="run-junit-precompiled-1.9" description="runs junit tests">
+      <antcall target="run-junit-1.9" inheritall="false">
+          <param name="compile.mode" value="FORCE"/>
+          <param name="jit.threshold" value="0"/>
+      </antcall>
+  </target>
+  
+  <target name="run-junit-reflected-precompiled" description="runs junit tests">
+      <antcall target="run-junit-1.8" inheritall="false">
+          <param name="compile.mode" value="FORCE"/>
+          <param name="jit.threshold" value="0"/>
+          <param name="reflection" value="true"/>
+      </antcall>
+  </target>
+  
+  <target name="run-junit-reflected-precompiled-1.9" description="runs junit tests">
+      <antcall target="run-junit-1.9" inheritall="false">
+          <param name="compile.mode" value="FORCE"/>
+          <param name="jit.threshold" value="0"/>
+          <param name="reflection" value="true"/>
+      </antcall>
+  </target>
+  
+  <target name="run-junit-threadpool" depends="run-junit-interpreted-threadpool,run-junit-compiled-threadpool"/>
+  
+  <target name="run-junit-interpreted-threadpool" description="runs junit tests">
+      <antcall target="run-junit-1.8" inheritall="false">
+          <param name="thread.pooling" value="true"/>
+      </antcall>
+  </target>
+  
+  <target name="run-junit-compiled-threadpool" description="runs junit tests">
+      <antcall target="run-junit-1.8" inheritall="false">
+          <param name="compile.mode" value="JIT"/>
+          <param name="jit.threshold" value="0"/>
+          <param name="thread.pooling" value="true"/>
+      </antcall>
+  </target>
+  
+  <target name="run-junit-precompiled-threadpool" description="runs junit tests">
+      <antcall target="run-junit-1.8" inheritall="false">
+          <param name="compile.mode" value="FORCE"/>
+          <param name="jit.threshold" value="0"/>
+          <param name="thread.pooling" value="true"/>
+      </antcall>
+  </target>
+  
+  <path id="test.class.path">
+    <pathelement location="${jruby.instrumented.classes.dir}" />
+    <path refid="build.classpath"/>
+    <pathelement path="${java.class.path}"/>
+    <pathelement path="${lib.dir}/jruby.jar"/>
+    <pathelement location="${test.classes.dir}"/>
+    <pathelement path="${test.dir}/requireTest.jar"/>
+    <pathelement location="${test.dir}"/>
+  </path>
+  
+  <target name="run-junit-1.8" description="runs junit tests for 1.8 functionality">
+    <!-- set up properties that haven't been assigned -->
+    <property name="compile.mode" value="OFF"/>
+    <property name="jit.threshold" value="20"/>
+    <property name="objectspace.enabled" value="true"/>
+    <property name="thread.pooling" value="false"/>
+    <property name="reflection" value="false"/>
+    <echo message="compile=${compile.mode}, threshold=${jit.threshold}, objectspace=${objectspace.enabled} threadpool=${thread.pooling} reflection=${reflection}"/>
+    
+    <taskdef name="junit" classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTask" classpath="${build.lib.dir}/junit.jar"/>
+    <junit fork="yes" forkMode="once" haltonfailure="true" dir="${basedir}" maxmemory="${jruby.test.memory}" showoutput="true" timeout="600000">
+      <classpath refid="test.class.path"/>
+      
       <sysproperty key="java.awt.headless" value="true"/>
       <sysproperty key="jruby.base" value="${basedir}"/>
       <sysproperty key="jruby.home" value="${basedir}"/>
       <sysproperty key="jruby.lib" value="${lib.dir}"/>
-      <sysproperty key="jruby.jit.enabled" value="true"/>
-      <sysproperty key="jruby.jit.threshold" value="0"/>
+      <sysproperty key="jruby.compile.mode" value="${compile.mode}"/>
+      <sysproperty key="jruby.jit.threshold" value="${jit.threshold}"/>
+      <sysproperty key="jruby.objectspace.enabled" value="${objectspace.enabled}"/>
+      <sysproperty key="jruby.thread.pooling" value="${thread.pooling}"/>
+      <sysproperty key="jruby.reflection" value="${reflection}"/>
+      <sysproperty key="jruby.jit.logging.verbose" value="true"/>
       <sysproperty key="emma.coverage.out.file" value="${test.results.dir}/coverage.emma" />
       <sysproperty key="emma.coverage.out.merge" value="true" />
-    	
+
       <jvmarg value="-ea"/>
 
       <formatter type="xml"/>
-      <formatter type="brief" usefile="false"/>
+      <formatter type="brief" usefile="false" />
 
       <test name="org.jruby.test.MainTestSuite" todir="${test.results.dir}"/>
       <test name="org.jruby.test.ScriptTestSuite" todir="${test.results.dir}"/>
-      <test name="org.jruby.test.TestUnitTestSuite" todir="${test.results.dir}"/>
+      <test name="org.jruby.test.BFTSTestSuite" todir="${test.results.dir}" />
+      <test name="org.jruby.test.JRubyTestSuite" todir="${test.results.dir}" />
+      <test name="org.jruby.test.MRITestSuite" todir="${test.results.dir}" />
+      <test name="org.jruby.test.RubiconTestSuite" todir="${test.results.dir}" />
+      <test name="org.jruby.test.RubyTestTestSuite" todir="${test.results.dir}" />
       <test name="org.jvyamlb.YAMLLoadTest" todir="${test.results.dir}"/>
       <test name="org.jvyamlb.YAMLDumpTest" todir="${test.results.dir}"/>
     </junit>
@@ -500,11 +568,243 @@ test/externals/rubinius/spec/parser"/></antcall>
       <report format="frames" todir="${html.test.results.dir}"/>
     </junitreport>
   </target>
+  
+  <target name="run-junit-1.9" description="runs junit tests">
+    <!-- set up properties that haven't been assigned -->
+    <property name="compile.mode" value="OFF"/>
+    <property name="jit.threshold" value="20"/>
+    <property name="objectspace.enabled" value="false"/>
+    <property name="thread.pooling" value="false"/>
+    <property name="reflection" value="false"/>
+    <echo message="compile=${compile.mode}, threshold=${jit.threshold}, objectspace=${objectspace.enabled} threadpool=${thread.pooling} reflection=${reflection}"/>
+    
+    <taskdef name="junit" classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTask" classpath="${build.lib.dir}/junit.jar"/>
+    <junit fork="yes" forkMode="once" haltonfailure="true" dir="${basedir}" maxmemory="${jruby.test.memory}" showoutput="true" timeout="600000">
+      <classpath refid="test.class.path"/>
+      
+      <sysproperty key="java.awt.headless" value="true"/>
+      <sysproperty key="jruby.base" value="${basedir}"/>
+      <sysproperty key="jruby.home" value="${basedir}"/>
+      <sysproperty key="jruby.lib" value="${lib.dir}"/>
+      <sysproperty key="jruby.compile.mode" value="${compile.mode}"/>
+      <sysproperty key="jruby.jit.threshold" value="${jit.threshold}"/>
+      <sysproperty key="jruby.objectspace.enabled" value="${objectspace.enabled}"/>
+      <sysproperty key="jruby.thread.pooling" value="${thread.pooling}"/>
+      <sysproperty key="jruby.reflection" value="${reflection}"/>
+      <sysproperty key="jruby.compat.version" value="ruby1_9"/>
+      <sysproperty key="jruby.jit.logging.verbose" value="true"/>
+      <sysproperty key="emma.coverage.out.file" value="${test.results.dir}/coverage.emma" />
+      <sysproperty key="emma.coverage.out.merge" value="true" />
+
+      <jvmarg value="-ea"/>
+
+      <formatter type="xml"/>
+      <formatter type="brief" usefile="false"/>
+
+      <test name="org.jruby.test.Ruby1_9TestSuite" todir="${test.results.dir}" />
+    </junit>
+
+    <junitreport todir="${test.results.dir}">
+      <fileset dir="${test.results.dir}" includes="TEST-*.xml"/>
+      <report format="frames" todir="${html.test.results.dir}"/>
+    </junitreport>
+  </target>
+  
+  <target name="run-junit-object-persistence" description="runs junit tests for object persistence support">
+    <!-- set up properties that haven't been assigned -->
+    <property name="compile.mode" value="OFF"/>
+    <property name="jit.threshold" value="20"/>
+    <property name="objectspace.enabled" value="false"/>
+    <property name="thread.pooling" value="false"/>
+    <property name="reflection" value="false"/>
+    <echo message="compile=${compile.mode}, threshold=${jit.threshold}, objectspace=${objectspace.enabled} threadpool=${thread.pooling} reflection=${reflection}"/>
+    
+    <taskdef name="junit" classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTask" classpath="${build.lib.dir}/junit.jar"/>
+    <junit fork="yes" forkMode="once" haltonfailure="true" dir="${basedir}" maxmemory="${jruby.test.memory}" showoutput="true" timeout="600000">
+      <classpath refid="test.class.path"/>
+      
+      <sysproperty key="java.awt.headless" value="true"/>
+      <sysproperty key="jruby.base" value="${basedir}"/>
+      <sysproperty key="jruby.home" value="${basedir}"/>
+      <sysproperty key="jruby.lib" value="${lib.dir}"/>
+      <sysproperty key="jruby.runtime.threadlocal" value="true"/>
+      <sysproperty key="emma.coverage.out.file" value="${test.results.dir}/coverage.emma" />
+      <sysproperty key="emma.coverage.out.merge" value="true" />
+
+      <jvmarg value="-ea"/>
+
+      <formatter type="xml"/>
+      <formatter type="brief" usefile="false"/>
+
+      <test name="org.jruby.test.ObjectPersistenceTestSuite" todir="${test.results.dir}" />
+    </junit>
+
+    <junitreport todir="${test.results.dir}">
+      <fileset dir="${test.results.dir}" includes="TEST-*.xml"/>
+      <report format="frames" todir="${html.test.results.dir}"/>
+    </junitreport>
+  </target>
+  
+  <target name="spec" depends="fetch-specs, run-specs"/>
+  
+  <target name="spec-all" depends="fetch-specs, run-specs-all"/>
+  
+  <target name="fetch-specs">
+      <condition property="rubinius-repo-exists">
+          <available file="${build.dir}/rubinius"/>
+      </condition>
+      
+      <antcall target="do-fetch-specs"/>
+      <antcall target="do-update-specs"/>
+  </target>
+  
+  <target name="do-fetch-specs" unless="rubinius-repo-exists">
+      <exec dir="${build.dir}" executable="git">
+          <arg value="clone"/>
+          <arg value="--depth"/><arg value="1"/>
+          <arg value="git://git.rubini.us/code"/>
+          <arg value="rubinius"/>
+      </exec>
+  </target>
+  
+  <target name="do-update-specs" if="rubinius-repo-exists">
+      <exec dir="${build.dir}/rubinius" executable="git">
+          <arg value="pull"/>
+      </exec>
+  </target>
+  
+  <target name="clear-specs">
+      <delete dir="${build.dir}/rubinius"/>
+  </target>
+  
+  <target name="run-specs">
+      <antcall target="run-specs-precompiled"/>
+      <antcall target="run-specs-compiled"/>
+      <antcall target="run-specs-interpreted"/>
+  </target>
+  
+  <target name="run-specs-all">
+      <antcall target="run-specs-all-precompiled"/>
+  </target>
+  
+  <target name="run-specs-compiled">
+      <antcall target="_run_specs_internal_" inheritall="false">
+          <param name="compile.mode" value="JIT"/>
+          <param name="jit.threshold" value="0"/>
+          <param name="SPEC" value="${working.rubinius.specs}"/>
+      </antcall>
+  </target>
+  
+  <target name="run-specs-precompiled">
+      <antcall target="_run_specs_internal_" inheritall="false">
+          <param name="compile.mode" value="FORCE"/>
+          <param name="jit.threshold" value="0"/>
+          <param name="SPEC" value="${working.rubinius.specs}"/>
+      </antcall>
+  </target>
+  
+  <target name="run-specs-all-precompiled">
+      <antcall target="_run_specs_all_internal_" inheritall="false">
+          <param name="compile.mode" value="FORCE"/>
+          <param name="jit.threshold" value="0"/>
+          <param name="SPEC" value="${working.rubinius.specs}"/>
+      </antcall>
+  </target>
+  
+  <target name="run-specs-interpreted">
+      <antcall target="_run_specs_internal_" inheritall="false">
+          <param name="compile.mode" value="OFF"/>
+          <param name="jit.threshold" value="0"/>
+          <param name="SPEC" value="${working.rubinius.specs}"/>
+      </antcall>
+  </target>
+  
+  <target name="update-excludes">
+    <java classname="org.jruby.Main" fork="true" maxmemory="${jruby.launch.memory}" failonerror="false" dir="${build.dir}/rubinius">
+      <classpath refid="build.classpath"/>
+      <classpath path="${jruby.classes.dir}"/>
+      <sysproperty key="jruby.home" value="${basedir}"/>
+      <sysproperty key="jruby.launch.inproc" value="false"/>
+      
+      <arg value="bin/ci"/>
+      <arg value="-t"/><arg value="${basedir}/bin/jruby"/>
+      <arg value="-c"/>
+      <arg value="-E"/><arg value="${basedir}/test/spec_excludes"/>
+      <arg value="spec/ruby/1.8"/>
+    </java>
+  </target>
+  
+  <target name="_run_specs_internal_">
+    <!-- set up properties that haven't been assigned -->
+    <property name="compile.mode" value="OFF"/>
+    <property name="jit.threshold" value="20"/>
+    <property name="objectspace.enabled" value="true"/>
+    <property name="thread.pooling" value="false"/>
+    <property name="reflection" value="false"/>
+    <echo message="compile=${compile.mode}, threshold=${jit.threshold}, objectspace=${objectspace.enabled} threadpool=${thread.pooling} reflection=${reflection}"/>
+    
+    <java classname="org.jruby.Main" fork="true" maxmemory="${jruby.launch.memory}" failonerror="true" dir="${build.dir}/rubinius">
+      <classpath refid="build.classpath"/>
+      <classpath path="${jruby.classes.dir}"/>
+      
+      <jvmarg value="-ea"/>
+      
+      <sysproperty key="jruby.home" value="${basedir}"/>
+      <sysproperty key="jruby.launch.inproc" value="false"/>
+      
+      <!-- properties tweaked for individual runs -->
+      <sysproperty key="jruby.compile.mode" value="${compile.mode}"/>
+      <sysproperty key="jruby.jit.threshold" value="${jit.threshold}"/>
+      <sysproperty key="jruby.objectspace.enabled" value="${objectspace.enabled}"/>
+      <sysproperty key="jruby.thread.pooling" value="${thread.pooling}"/>
+      <sysproperty key="jruby.reflection" value="${reflection}"/>
+      <sysproperty key="jruby.compat.version" value="ruby1_8"/>
+      
+      <arg value="bin/ci"/>
+      <arg value="-t"/><arg value="${basedir}/bin/jruby"/>
+      <arg value="-f"/><arg value="m"/>
+      <arg value="-E"/><arg value="${basedir}/test/spec_excludes"/>
+      <arg value="spec/ruby/1.8"/>
+    </java>
+  </target>
+  
+  <target name="_run_specs_all_internal_">
+    <!-- set up properties that haven't been assigned -->
+    <property name="compile.mode" value="OFF"/>
+    <property name="jit.threshold" value="20"/>
+    <property name="objectspace.enabled" value="true"/>
+    <property name="thread.pooling" value="false"/>
+    <property name="reflection" value="false"/>
+    <echo message="compile=${compile.mode}, threshold=${jit.threshold}, objectspace=${objectspace.enabled} threadpool=${thread.pooling} reflection=${reflection}"/>
+    
+    <java classname="org.jruby.Main" fork="true" maxmemory="${jruby.launch.memory}" failonerror="true" dir="${build.dir}/rubinius">
+      <classpath refid="build.classpath"/>
+      <classpath path="${jruby.classes.dir}"/>
+      
+      <jvmarg value="-ea"/>
+      
+      <sysproperty key="jruby.home" value="${basedir}"/>
+      <sysproperty key="jruby.launch.inproc" value="false"/>
+      
+      <!-- properties tweaked for individual runs -->
+      <sysproperty key="jruby.compile.mode" value="${compile.mode}"/>
+      <sysproperty key="jruby.jit.threshold" value="${jit.threshold}"/>
+      <sysproperty key="jruby.objectspace.enabled" value="${objectspace.enabled}"/>
+      <sysproperty key="jruby.thread.pooling" value="${thread.pooling}"/>
+      <sysproperty key="jruby.reflection" value="${reflection}"/>
+      <sysproperty key="jruby.compat.version" value="ruby1_8"/>
+      
+      <arg value="bin/mspec"/>
+      <arg value="-t"/><arg value="${basedir}/bin/jruby"/>
+      <arg value="-V"/>
+      <arg value="spec/ruby/1.8"/>
+    </java>
+  </target>
 
   <target name="create-apidocs" depends="prepare" 
           description="Creates the Java API docs">
     <javadoc destdir="${api.docs.dir}" author="true" version="true" use="true" 
-             windowtitle="JRuby API" source="${javac.version}">
+             windowtitle="JRuby API" source="${javac.version}" useexternalfile="true">
       <fileset dir="${src.dir}">
         <include name="**/*.java"/>
       </fileset>
@@ -553,6 +853,7 @@ test/externals/rubinius/spec/parser"/></antcall>
     <patternset refid="dist.files"/>
     <include name="src/**"/>
     <include name="test/**"/>
+    <include name="build_lib/**"/>
     <include name="build.xml"/>
     <include name="build-config.xml"/>
     <include name="nbproject/*"/>
@@ -632,10 +933,43 @@ test/externals/rubinius/spec/parser"/></antcall>
     </zip>
   </target>
 
+  <target name="dist-snapshot" depends="jar">
+    <exec executable="${basedir}/bin/jruby" dir="${basedir}">
+      <arg value="tool/snapshot.rb"/>
+      <arg value="${jruby.classes.dir}/jruby.properties"/>
+    </exec>
+    <jar destfile="${lib.dir}/jruby.jar" update="true">
+      <fileset dir="${jruby.classes.dir}">
+        <include name="jruby.properties"/>
+      </fileset>
+    </jar>
+    <property name="jar-up-to-date" value="true"/>
+    <antcall target="dist-bin">
+      <param file="${jruby.classes.dir}/jruby.properties"/>
+    </antcall>
+  </target>
+
+  <target name="dist-snapshot-install-stuff">
+    <unzip dest="${snapshot.install.dir}" src="jruby-bin-${version.jruby}.zip"/>
+    <chmod perm="755" file="${snapshot.install.dir}/jruby-${version.jruby}/bin/jruby"/>
+    <exec executable="${snapshot.install.dir}/jruby-${version.jruby}/bin/jruby"
+      dir="${snapshot.install.dir}/jruby-${version.jruby}">
+      <arg value="-v"/>
+      <arg value="-e"/>
+      <arg value="system('rm -f ${snapshot.install.dir}/current &amp;&amp; ln -s ${snapshot.install.dir}/jruby-${version.jruby} ${snapshot.install.dir}/current'); puts 'Successfully installed snapshot'"/>
+    </exec>
+  </target>
+
+  <target name="dist-snapshot-install" depends="dist-snapshot" if="snapshot.install.dir">
+    <antcall target="dist-snapshot-install-stuff">
+      <param file="${jruby.classes.dir}/jruby.properties"/>
+    </antcall>
+  </target>
+
   <target name="dist" depends="dist-bin,dist-src"/>
 
   <target name="dist-clean">
-    <delete includeEmptyDirs="true">
+    <delete includeEmptyDirs="true" quiet="true">
       <fileset dir=".">
         <include name="jruby-*.tar.gz"/>
         <include name="jruby-*.zip"/>
@@ -651,59 +985,52 @@ test/externals/rubinius/spec/parser"/></antcall>
         <fileset dir="${lib.dir}" includes="jruby*.jar"/>
     </delete>
     <delete dir="${api.docs.dir}"/>
+  </target>  
+
+  <property name="nailgun.home" value="${basedir}/tool/nailgun"/>
+
+  <target name="need-ng">
+    <condition property="should.build.ng">
+      <and>
+        <os family="unix"/>
+        <not><available file="${nailgun.home}/ng"/></not>
+      </and>
+    </condition>
   </target>
-  
-  <target name="profile-gem-install-rake" depends="jar" description="Profile a local gem installation of Rake">
-    <fail unless="netbeans.home">This target can only run inside the NetBeans IDE.</fail>
 
-    <nbprofiledirect>
-        <classpath> <pathelement location="... specify ..."/> </classpath>
-    </nbprofiledirect>
-
-    <java classname="org.jruby.Main" maxmemory="256M" fork="true">
-      <classpath>
-        <pathelement location="${jruby.instrumented.classes.dir}" />
-        <path refid="build.classpath"/>
-        <pathelement path="${lib.dir}/jruby.jar"/>
-        <pathelement path="${test.classes.dir}"/>
-        <pathelement path="${test.dir}/requireTest.jar"/>
-      </classpath>
-      <jvmarg value="-Djruby.base=${basedir}"/>
-      <jvmarg value="-Djruby.home=${basedir}"/>
-      <jvmarg value="-Djruby.lib=${lib.dir}"/>
-      <jvmarg value="-Djruby.shell=/bin/sh"/>
-      <jvmarg value="-Djruby.script=jruby"/>
-      <jvmarg value="${profiler.info.jvmargs.agent}"/>
-      <arg value="bin/gem"/>
-      <arg value="install"/>
-      <arg value="lib/ruby/gems/1.8/cache/rake-0.7.1.gem"/>
-    </java>
+  <target name="build-ng" depends="need-ng" if="should.build.ng">
+    <exec executable="make" dir="${nailgun.home}"/>
   </target>
-  
-  <target name="profile-rails-server" depends="jar" description="Profile a local gem installation of Rake">
-    <fail unless="netbeans.home">This target can only run inside the NetBeans IDE.</fail>
 
-    <nbprofiledirect>
-        <classpath> <pathelement location="... specify ..."/> </classpath>
-    </nbprofiledirect>
-
-    <java classname="org.jruby.Main" maxmemory="256M" fork="true">
-      <classpath>
-        <pathelement location="${jruby.instrumented.classes.dir}" />
-        <path refid="build.classpath"/>
-        <pathelement path="${lib.dir}/jruby.jar"/>
-        <pathelement path="${test.classes.dir}"/>
-        <pathelement path="${test.dir}/requireTest.jar"/>
-      </classpath>
-      <jvmarg value="-Djruby.base=${basedir}"/>
-      <jvmarg value="-Djruby.home=${basedir}"/>
-      <jvmarg value="-Djruby.lib=${lib.dir}"/>
-      <jvmarg value="-Djruby.shell=/bin/sh"/>
-      <jvmarg value="-Djruby.script=jruby"/>
-      <jvmarg value="-Djruby.thread.pooling=true"/>
-      <jvmarg value="-server"/>
-      <jvmarg value="${profiler.info.jvmargs.agent}"/>
-      <arg value="testapp/script/server"/>
-    </java>
+  <target name="jruby-nailgun" depends="generate-method-classes,build-ng"
+    description="Set up JRuby to be run with Nailgun (jruby-ng, jruby-ng-server)">
+    <mkdir dir="${build.dir}/nailmain"/>
+    <javac srcdir="${nailgun.home}/src/java" destdir="${build.dir}/nailmain"
+      classpath="${nailgun.home}/nailgun-0.7.1.jar:${jruby.classes.dir}" debug="true"
+      source="${javac.version}" target="${javac.version}"
+      deprecation="true" encoding="UTF-8" />
+    <taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask"
+      classpath="${build.lib.dir}/jarjar-0.7.jar"/>
+    <jarjar destfile="${nailgun.home}/jruby-nailgun.jar">
+      <fileset dir="${jruby.classes.dir}">
+        <exclude name="org/jruby/util/ant/**/*.class"/>
+      </fileset>
+      <fileset dir="${build.dir}/nailmain"/>
+      <zipfileset src="${build.lib.dir}/asm-3.0.jar"/>
+      <zipfileset src="${build.lib.dir}/asm-commons-3.0.jar"/>
+      <zipfileset src="${build.lib.dir}/asm-util-3.0.jar"/>
+      <zipfileset src="${build.lib.dir}/asm-analysis-3.0.jar"/>
+      <zipfileset src="${build.lib.dir}/asm-tree-3.0.jar"/>
+      <zipfileset src="${build.lib.dir}/jline-0.9.91.jar"/>
+      <zipfileset src="${build.lib.dir}/joni.jar"/>
+      <zipfileset src="${build.lib.dir}/jna.jar"/>
+      <zipfileset src="${build.lib.dir}/joda-time-1.5.1.jar"/>
+      <zipfileset src="${nailgun.home}/nailgun-0.7.1.jar"/>
+      <rule pattern="org.objectweb.asm.**" result="jruby.objectweb.asm.@1"/>
+      <manifest>
+        <attribute name="Built-By" value="${user.name}"/>
+        <attribute name="Main-Class" value="org.jruby.Main"/>
+      </manifest>
+    </jarjar>
   </target>
 </project>
