@@ -144,6 +144,7 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 //    // XXX Get rid of this suspicious impl.
 //    private static boolean pendingRefreshAll;
 
+    private boolean componentInited;
 //    private transient boolean initialized;
     private transient JToolBar toolbar;
     private transient boolean needListeners = true;
@@ -189,11 +190,19 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
     
     private final JsfLookupProvider jsfLookupProvider/* = new JsfLookupProvider(this)*/; // TEMP
 
+    // XXX #124931 We need to keep a link to DataObject until the FacesModel is created.
+    // Consequence of a bad model creation in insync (it can't create not-fully loaded model,
+    // which would maintain the link to the DataObject correctly).
+    private DataObject jspDataObject;
+            
     
     public JsfTopComponent(/*WebForm webform*/ JsfForm jsfForm, Designer designer, DataObject jspDataObject) {
 //        super(webform);
         super(jsfForm, designer);
 
+        this.jspDataObject = jspDataObject;
+        
+        
         // XXX Moved to designer/jsf/PaletteControllerFactory.
 //        /*
 //         * Hack - We have created a dependency on project/jsf to get JsfProjectUtils. 
@@ -240,13 +249,6 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         initActivatedNodes(jspDataObject);
 
         initDesignerPreferences();
-        
-        if (jsfForm.isValid()) {
-            initDesigner();
-        } else {
-            // XXX Model not available yet.
-            initLoadingComponent();
-        }
     }
 
     
@@ -284,6 +286,15 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         setGridTraceHeight(jsfDesignerPreferences.getGridHeight());
         designer.setShowDecorations(jsfDesignerPreferences.isShowDecorations());
         designer.setDefaultFontSize(jsfDesignerPreferences.getDefaultFontSize());
+    }
+    
+    private void initComponent() {
+        if (jsfForm.isValid()) {
+            initDesigner();
+        } else {
+            // XXX Model not available yet.
+            initLoadingComponent();
+        }
     }
     
     private void initDesigner() {
@@ -1217,6 +1228,20 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 //        // after page layout instead.
 ////        html.requestFocus();
 //        designer.paneRequestFocus();
+
+        if (!componentInited) {
+            componentInited = true;
+            if (!jsfForm.isValid()) {
+                if (!JsfForm.tryFacesModelForJsfForm(jsfForm, jspDataObject)) {
+                    JsfForm.loadFacesModelForJsfForm(jsfForm, jspDataObject);
+                }
+                // XXX #124931 We don't need to keep the link anymore.
+                jspDataObject = null;
+            }
+            
+            initComponent();
+        }
+        
         if (jsfForm.isValid()) {
             designerShowing();
         }

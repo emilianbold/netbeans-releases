@@ -336,27 +336,54 @@ public class JsfForm {
                 }
             }
 
-        final JsfForm finalJsfForm = jsfForm;
-        // XXX FacesModel was not loaded, do it now.
-        if (facesModel == null) {
-            ModelSet.addModelSetsListener(new ModelSetsListener() {
-                public void modelSetAdded(ModelSet modelSet) {
-                    Project project = modelSet.getProject();
-                    FileObject fileObject = dataObject.getPrimaryFile();
-                    Project jsfProject = FileOwnerQuery.getOwner(fileObject);
-                    if (project == jsfProject) {
-                        finalJsfForm.loadFacesModel(dataObject);                        
-                        ModelSet.removeModelSetsListener(this);
-                    }
-                }
-
-                public void modelSetRemoved(ModelSet modelSet) {
-                }        
-            });
-            FacesModelSet.startModeling(dataObject.getPrimaryFile());            
-        }
+//        // XXX FacesModel was not loaded yet, request it now.
+//        if (facesModel == null) {
+//            loadFacesModelForJsfForm(jsfForm, dataObject);
+//        }
         
         return jsfForm;
+    }
+
+    public static boolean tryFacesModelForJsfForm(JsfForm jsfForm, DataObject dataObject) {
+        if (FacesModelSet.getFacesModelIfAvailable(dataObject.getPrimaryFile()) == null) {
+            return false;
+        } else {
+            FacesModel facesModel = jsfForm.loadFacesModel(dataObject);
+            if (facesModel == null) {
+                return false;
+            }
+            jsfForm.setFacesModel(facesModel);
+            jsfForm.init();
+            return true;
+        }
+    }
+    
+    public static void loadFacesModelForJsfForm(final JsfForm jsfForm, final DataObject dataObject) {
+        ModelSet.addModelSetsListener(new ModelSetsListener() {
+            public void modelSetAdded(ModelSet modelSet) {
+                Project project = modelSet.getProject();
+                FileObject fileObject = dataObject.getPrimaryFile();
+                Project jsfProject = FileOwnerQuery.getOwner(fileObject);
+                if (project == jsfProject) {
+                    FacesModel facesModel = jsfForm.loadFacesModel(dataObject);
+                    if (facesModel != null) {
+                        jsfForm.setFacesModel(facesModel);
+                        EventQueue.invokeLater(new Runnable() {
+                            public void run() {
+                                jsfForm.init();
+                                jsfForm.notifyViewsModelLoaded();
+                            }
+                        });
+                    }
+                    
+                    ModelSet.removeModelSetsListener(this);
+                }
+            }
+
+            public void modelSetRemoved(ModelSet modelSet) {
+            }        
+        });
+        FacesModelSet.startModeling(dataObject.getPrimaryFile());
     }
     
     // XXX Revise, the need for this method is suspicious.
@@ -2937,28 +2964,20 @@ public class JsfForm {
         return getFacesModel() != null;
     }
 
-    private void loadFacesModel(final DataObject dataObject) {
+    private FacesModel loadFacesModel(final DataObject dataObject) {
         FacesModel facesModel;
         try {
             facesModel = getFacesModel(dataObject);
         // XXX FacesModel throws runtime exceptions, which is wrong.    
         } catch (Exception ex) {
             loadingFailed(new IllegalStateException("FacesModel was not loaded for DataObject, dataObject=" + dataObject, ex));
-            return;
+            return null;
         }
         if (facesModel == null) {
             loadingFailed(new NullPointerException("No FacesModel for DataObject, dataObject=" + dataObject));
-            return;
+            return null;
         }
-        
-        setFacesModel(facesModel);
-        
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                init();
-                notifyViewsModelLoaded();
-            }
-        });
+        return facesModel;
     }
     
     private void loadingFailed(Exception ex) {
