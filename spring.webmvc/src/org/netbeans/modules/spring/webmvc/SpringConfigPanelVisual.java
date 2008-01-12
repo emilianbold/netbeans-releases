@@ -43,6 +43,10 @@
 
 package org.netbeans.modules.spring.webmvc;
 
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import org.openide.util.ChangeSupport;
+
 /**
  * Provides the user interface for configuring a Spring Framework web application
  * Also implements the AtomicAction fired off when the web framework providers
@@ -52,8 +56,43 @@ package org.netbeans.modules.spring.webmvc;
  */
 public class SpringConfigPanelVisual extends javax.swing.JPanel {
     
-    public SpringConfigPanelVisual() {
+    private final SpringConfigPanel configPanel;
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private final DocumentListener docListener = new DocumentListener() {
+
+        public void insertUpdate(DocumentEvent e) {
+            fireChange();
+        }
+
+        public void removeUpdate(DocumentEvent e) {
+            fireChange();
+        }
+
+        public void changedUpdate(DocumentEvent e) {
+            fireChange();
+        }
+    };
+    
+    public SpringConfigPanelVisual(SpringConfigPanel configPanel) {
+        this.configPanel = configPanel;
+        changeSupport.addChangeListener(configPanel);
         initComponents();
+        nameText.setText(configPanel.getDispatcherName());
+        nameText.getDocument().addDocumentListener(docListener);
+        mappingText.setText(configPanel.getDispatcherMapping());
+        mappingText.getDocument().addDocumentListener(docListener);
+    }
+    
+    public String getDispatcherName() {
+        return nameText.getText();
+    }
+    
+    public String getDispatcherMapping() {
+        return mappingText.getText();
+    }
+    
+    private void fireChange() {
+        changeSupport.fireChange();
     }
     
     /** This method is called from within the constructor to
@@ -73,13 +112,9 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
 
         setLayout(new java.awt.BorderLayout());
 
-        nameText.setText(org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "SpringConfigPanelVisual.nameText.text")); // NOI18N
-
         nameLabel.setText(org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "SpringConfigPanelVisual.nameLabel.text")); // NOI18N
 
         mappingLabel.setText(org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "SpringConfigPanelVisual.mappingLabel.text")); // NOI18N
-
-        mappingText.setText(org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "SpringConfigPanelVisual.mappingText.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout standardPanelLayout = new org.jdesktop.layout.GroupLayout(standardPanel);
         standardPanel.setLayout(standardPanelLayout);
@@ -115,14 +150,6 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
         add(tabbedPanel, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
-    public String getDispatcherName() {
-        return nameText.getText();
-    }
-    
-    public String getDispatcherMapping() {
-        return mappingText.getText();
-    }
-    
     public void enableComponents(boolean enabled) {
         standardPanel.setEnabled(enabled);
         mappingLabel.setEnabled(enabled);
