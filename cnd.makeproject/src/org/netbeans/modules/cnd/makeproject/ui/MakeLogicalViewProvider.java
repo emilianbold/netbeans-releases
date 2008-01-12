@@ -1125,6 +1125,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             this.folder = folder;
         }
         
+        @Override
         public Object getValue(String valstring) {
             if (valstring == null)
                 return super.getValue(valstring);
@@ -1151,6 +1152,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             return projectNode;
         }
         
+        @Override
         public Image getIcon( int type ) {
             return getProjectNode().getIcon(type);
         }
@@ -1297,22 +1299,27 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         public Item getItem() {
             return item;
         }
+        @Override
         public boolean canRename() {
             return true;
         }
         
+        @Override
         public boolean canDestroy() {
             return true;
         }
         
+        @Override
         public boolean canCut() {
             return true;
         }
         
+        @Override
         public boolean canCopy() {
             return true;
         }
         
+        @Override
         public Transferable clipboardCopy() throws IOException {
             try {
                 Transferable t = new ViewItemTransferable(this, DnDConstants.ACTION_COPY);
@@ -1323,6 +1330,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             
         }
         
+        @Override
         public Transferable clipboardCut() throws IOException {
             try {
                 Transferable t = new ViewItemTransferable(this, DnDConstants.ACTION_MOVE);
@@ -1332,6 +1340,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             }
         }
         
+        @Override
         public Transferable drag() throws IOException {
             try {
                 Transferable t = new ViewItemTransferable(this, DnDConstants.ACTION_NONE);
@@ -1343,6 +1352,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         
         // The node will be removed when the Item gets notification that the file has been destroyed.
         // No need to do it here.
+        @Override
         public void destroy() throws IOException {
 //            File file = new File(item.getAbsPath());
 //            if (file.exists())
@@ -1351,6 +1361,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             super.destroy();
         }
         
+        @Override
         public Object getValue(String valstring) {
             if (valstring == null)
                 return super.getValue(valstring);
@@ -1365,6 +1376,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             return super.getValue(valstring);
         }
         
+        @Override
         public Action[] getActions( boolean context ) {
             // Replace DeleteAction with Remove Action
             // Replace PropertyAction with customizeProjectAction
@@ -1390,6 +1402,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             return (Action[]) newActions.toArray(new Action[newActions.size()]);
         }
 
+        @Override
         public Image getIcon(int type) {
             Image image = super.getIcon(type);
             if (isExcluded() && (image instanceof BufferedImage)) {
@@ -1400,6 +1413,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             return image;
         }
 
+        @Override
         public String getHtmlDisplayName() {
             if (isExcluded()) {
                 return "<font color='!controlShadow'>"+getDisplayName(); // NOI18N
@@ -1408,7 +1422,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
         
         private boolean isExcluded(){
-            if (item == null){
+            if (item == null || item.getFolder() == null || item.getFolder().getConfigurationDescriptor() == null || item.getFolder().getConfigurationDescriptor().getConfs() == null){
                 return false;
             }
             MakeConfiguration makeConfiguration = (MakeConfiguration)item.getFolder().getConfigurationDescriptor().getConfs().getActive();
