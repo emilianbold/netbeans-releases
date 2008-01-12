@@ -44,7 +44,7 @@ package org.netbeans.modules.xsl;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
 
-import org.netbeans.modules.xml.core.XMLDataLoader;
+import org.netbeans.modules.xml.XMLDataLoader;
 
 /**
  * XSL object loader. It is mime type based.

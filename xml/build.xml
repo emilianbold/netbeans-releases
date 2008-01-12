@@ -25,9 +25,9 @@ your own identifying information:
 
 Contributor(s):
 
- The Original Software is NetBeans. The Initial Developer of the Original
- Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- Microsystems, Inc. All Rights Reserved.
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
 or only the GPL Version 2, indicate your decision by adding
@@ -40,96 +40,6 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-
 <project name="xml" default="netbeans" basedir=".">
-
-    <property name="nbroot" location=".."/>
-    <property name="nbext_root" location="${nbroot}/nbbuild"/>
-
-    <taskdef  name="for-each" classname="org.netbeans.nbbuild.ForEach" classpath="${nbext_root}/nbantext.jar"/>
-    <property name="submodules" value="api, core, tax, catalog, tools, text-edit, tree-edit, css, xsl, schema"/>
-
-    <property name="build.compiler.debug" value="on"/>
-
-
-    <target name="init">
-        <property name="buildnumber" value="dev"/>
-        <echo message="buildnumber = ${buildnumber}"/>
-    </target>
-
-    <target name="compile">
-        <!-- There is dependency prpblem core dependes on tax/lib and tax depends on core! -->
-        <for-each locations="tax/lib"/>
-        <for-each locations="${submodules}"/>
-    </target>
-
-    <target name="jars" depends="init,compile">
-        <for-each locations="${submodules}"/>
-    </target>
-
-    <target name="release">
-        <for-each locations="${submodules}"/>
-    </target>
-
-    <target name="javahelp">
-        <for-each locations="${submodules}"/>
-    </target>
-
-    <target name="netbeans" depends="jars,release,javahelp">
-        <for-each locations="${submodules}"/>
-    </target>
-
-    <target name="nbm" depends="netbeans">
-        <for-each locations="${submodules}"/>
-    </target>
-
-    <target name="clean">
-        <delete file="xml-nbms.zip"/>
-
-        <for-each locations="${submodules}"/>
-    </target>
-
-    <target name="real-clean" depends="clean">
-        <delete dir="javadoc"/>
-
-        <for-each locations="${submodules}"/>
-    </target>
-
-    <target name="all" depends="clean,nbm">
-        <for-each locations="${submodules}"/>
-    </target>
-
-    <target name="javadoc">
-        <for-each locations="${submodules}"/>
-    </target>
-
-
-    <!-- Build xml module and all modules which is depend on. -->
-    <target name="all-xml" depends="all-depend,clean,netbeans"/>
-
-    <target name="all-depend">
-        <property name="modules" value="../openide, ../core, ../editor"/>
-        <for-each locations="${modules}" target="clean"/>
-        <for-each locations="${modules}" target="jars"/>
-    </target>
-
-
-    <!-- Update www documents. -->
-    <target name="www">
-        <ant dir="www" target="all"/>
-    </target>
-
-
-    <!-- Create zip archive from all nbm files. -->
-    <target name="zip" depends="nbm">
-        <zip zipfile="xml-nbms.zip"
-             basedir="."
-             includes="*.nbm"
-             compress="true"/>
-    </target>
-
-    <target name="test">
-        <for-each locations="${submodules}"/>
-    </target>
-
+    <import file="../nbbuild/templates/projectized.xml"/>
 </project>

@@ -93,7 +93,7 @@ public class ValidationAnnotation extends Annotation implements PropertyChangeLi
 	 */
 	@Override
 	public String getAnnotationType() {
-		return "org-netbeans-modules-xml-core-error"; //NOI18N
+		return "org-netbeans-modules-xml-error"; //NOI18N
 	}
 	
 	

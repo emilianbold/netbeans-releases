@@ -51,11 +51,12 @@ import org.openide.nodes.CookieSet;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.netbeans.spi.xml.cookies.*;
-import org.netbeans.modules.xml.core.XMLDataObjectLook;
-import org.netbeans.modules.xml.core.text.TextEditorSupport;
-import org.netbeans.modules.xml.core.sync.*;
-import org.netbeans.modules.xml.core.cookies.*;
+import org.netbeans.modules.xml.XMLDataObjectLook;
+import org.netbeans.modules.xml.text.TextEditorSupport;
+import org.netbeans.modules.xml.sync.*;
+import org.netbeans.modules.xml.cookies.*;
 import org.netbeans.modules.xml.api.XmlFileEncodingQueryImpl;
+import org.netbeans.modules.xml.text.syntax.XMLKit;
 import org.netbeans.modules.xsl.cookies.ValidateXSLSupport;
 
 /**
@@ -92,7 +93,7 @@ public final class XSLDataObject extends MultiDataObject implements XMLDataObjec
 
         // editor support defines MIME type understood by EditorKits registry         
         TextEditorSupport.TextEditorSupportFactory editorFactory =
-            new TextEditorSupport.TextEditorSupportFactory (this, org.netbeans.modules.xml.core.XMLDataObject.MIME_TYPE);
+            new TextEditorSupport.TextEditorSupportFactory (this, XMLKit.MIME_TYPE);
         editorFactory.registerCookies (set);
 		
     }

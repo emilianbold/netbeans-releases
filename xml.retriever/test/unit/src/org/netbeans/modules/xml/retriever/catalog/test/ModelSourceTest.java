@@ -73,52 +73,7 @@ public class ModelSourceTest extends TestCase {
     }
     
     public void testModelSource(){
-        
-                /*
-                 * Step1: Copy
-                 * <nb_src>/xml/retriever/test/unit/src/org/netbeans/modules/xml/retriever/catalog/test/TestCatalogModel.java
-                 * to your unit test area.
-                 */
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        /*
-         *Step 2: IMPORTANT NOTE: also make sure that all the required jars are actually set in the unit test class path.
-         * This is done by placing or appending to the property (for more accurate list, copy and use from:
-         <nb_src>/xml/retriever/nbproject/project.properties)
-         
-         test.unit.cp.extra=\
-            ${netbeans.dest.dir}/ide7/modules/org-netbeans-modules-xml-retriever.jar:\
-            ${netbeans.dest.dir}/ide7/modules/org-netbeans-modules-xml-xdm.jar:\
-            ${netbeans.dest.dir}/ide7/modules/org-netbeans-modules-xml-xam.jar:\
-            ${netbeans.dest.dir}/ide7/modules/org-apache-xml-resolver.jar:\
-            ${netbeans.dest.dir}/ide7/modules/org-netbeans-modules-editor.jar:\
-            ${netbeans.dest.dir}/platform6/lib/org-openide-modules.jar:\
-            ${netbeans.dest.dir}/ide7/modules/org-netbeans-modules-editor-util.jar:\
-            ${netbeans.dest.dir}/ide7/modules/org-netbeans-modules-xml-text.jar:\
-            ${netbeans.dest.dir}/ide7/modules/org-netbeans-modules-xml-core.jar:\
-            ${netbeans.dest.dir}/ide7/modules/org-netbeans-modules-editor-lib.jar:\
-            ${netbeans.dest.dir}/ide7/modules/org-netbeans-modules-projectapi.jar:\
-            ${netbeans.dest.dir}/platform6/modules/org-netbeans-modules-masterfs.jar:\
-            ${netbeans.dest.dir}/platform6/modules/org-openide-windows.jar:\
-            ${netbeans.dest.dir}/platform6/modules/org-openide-dialogs.jar:\
-            ${netbeans.dest.dir}/platform6/modules/org-openide-awt.jar:\
-            ${netbeans.dest.dir}/platform6/modules/org-openide-options.jar:\
-            ${netbeans.dest.dir}/platform6/modules/org-openide-loaders.jar:\
-            ${netbeans.dest.dir}/platform6/core/org-openide-filesystems.jar:\
-            ${netbeans.dest.dir}/platform6/modules/org-openide-nodes.jar:\
-            ${netbeans.dest.dir}/platform6/modules/org-openide-text.jar:\
-            ${netbeans.dest.dir}/platform6/lib/org-openide-util.jar
-         */
-        
-        
+                
         //To create a model source use this code
         
         //ModelSource ms = TestCatalogModel.getDefault().createTestModelSource(FileObject, editable);
