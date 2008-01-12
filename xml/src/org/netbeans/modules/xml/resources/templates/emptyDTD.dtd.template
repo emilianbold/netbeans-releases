@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+
+<!--
+    Document   : __NAME__
+    Created on : __DATE__, __TIME__
+    Author     : __USER__
+    Description:
+        Purpose of the document follows.
+
+    TODO define vocabulary identification data
+    PUBLIC ID  : -//vendor//vocabulary//EN
+    SYSTEM ID  : http://server/path/__NAME__
+-->
+
+<!-- TODO define your own vocabulary/syntax. Example follows:  -->
+<!ELEMENT __ROOT__ ANY>
+<!ATTLIST __ROOT__ version CDATA #REQUIRED>
+

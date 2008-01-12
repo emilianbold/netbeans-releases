@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    Document   : __NAME__
+    Created on : __DATE__, __TIME__
+    Author     : __USER__
+    Description:
+        Purpose of the document follows.
+-->
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML Basic 1.0//EN"
+                      "http://www.w3.org/TR/xhtml-basic/xhtml-basic10.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>TODO Page Title</title>
+    </head>
+
+    <body>
+        <h1>Heading</h1>
+        <p>TODO Words, just words ...
+        </p>
+    </body>
+</html>
