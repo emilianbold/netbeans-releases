@@ -78,7 +78,11 @@ public class BpelModelUpdater extends AbstractBpelModelUpdater {
      */
     public Object updateOnChanges(TreePath treePath) throws Exception {
         //
-        BpelEntity bpelEntity = getDesignContext().getBpelEntity();
+        // TODO m
+        BpelEntity bpelEntity = getDesignContext().getGraphEntity();
+        if (bpelEntity == null) {
+            bpelEntity = getDesignContext().getContextEntity();
+        }
         //
         if (bpelEntity instanceof Copy) {
             updateCopy(treePath, (Copy) bpelEntity);

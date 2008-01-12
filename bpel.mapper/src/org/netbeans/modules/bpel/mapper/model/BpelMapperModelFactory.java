@@ -126,17 +126,18 @@ public class BpelMapperModelFactory implements MapperModelFactory {
         mapperTcContext.getDesignContextController().
                 setBpelModelUpdateSource(changeProcessor);
         //
-        BpelEntity bpelEntity = context.getBpelEntity();
-        if (bpelEntity instanceof Copy) {
-            BpelEntity copyParent = bpelEntity.getParent();
-            if (copyParent instanceof Assign) {
-                BpelDesignContext correctedContext = new BpelDesignContext(
-                        copyParent, 
-                        context.getActivatedNode(), 
-                        context.getLookup());
-                return constructModel(mapperTcContext, correctedContext);
-            }
-        } else if (bpelEntity instanceof Assign) {
+        BpelEntity bpelEntity = context.getContextEntity();
+//        if (bpelEntity instanceof Copy) {
+//            BpelEntity copyParent = bpelEntity.getParent();
+//            if (copyParent instanceof Assign) {
+//                BpelDesignContext correctedContext = new BpelDesignContext(
+//                        copyParent, 
+//                        context.getActivatedNode(), 
+//                        context.getLookup());
+//                return constructModel(mapperTcContext, correctedContext);
+//            }
+//        } else 
+        if (bpelEntity instanceof Assign) {
             Assign assign = (Assign)bpelEntity;
             //
             EmptyTreeModel sourceModel = new EmptyTreeModel();

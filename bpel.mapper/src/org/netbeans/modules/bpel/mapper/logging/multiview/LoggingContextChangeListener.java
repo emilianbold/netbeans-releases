@@ -23,6 +23,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.netbeans.modules.soa.ui.nodes.InstanceRef;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
+import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
@@ -58,13 +59,14 @@ public class LoggingContextChangeListener implements PropertyChangeListener {
         }
     }
     
+    // TODO r after implementation of logging design context factory 
     /**
      * Don't chnage context in case non bpel entity were selected
      * 
      * @return new context, null if context should be changed, 
      * bpel model changes are supported self by DesignContextController
      */
-    private static BpelDesignContext getActivatedContext() {
+    public static BpelDesignContext getActivatedContext() {
         Node[] nodes = TopComponent.getRegistry().getActivatedNodes();
         if (nodes == null || nodes.length != 1) {
             return null;
@@ -81,8 +83,37 @@ public class LoggingContextChangeListener implements PropertyChangeListener {
         
         Lookup lookup = nodes[0].getLookup();
         BpelDesignContext bpelContext = 
-                new BpelDesignContext(bpelEntity, nodes[0], lookup);
+                new SimpleBpelDesignContext(bpelEntity, nodes[0], lookup);
+//                new BpelDesignContext(bpelEntity, nodes[0], lookup);
         return bpelContext;
     }
     
+    public static BpelDesignContext getActivatedContext(BpelModel currentBpelModel) {
+        if (currentBpelModel == null) {
+            return null;
+        }
+        
+        Node[] nodes = TopComponent.getRegistry().getActivatedNodes();
+        if (nodes == null || nodes.length != 1) {
+            return null;
+        }
+        BpelEntity bpelEntity = null;
+        if (nodes[0] instanceof InstanceRef) {
+            Object entity = ((InstanceRef) nodes[0]).getReference();
+            if (entity instanceof BpelEntity 
+                    && currentBpelModel.equals(((BpelEntity)entity).getBpelModel())) 
+            {
+                bpelEntity = (BpelEntity)entity;
+            }
+        } else {
+            return null;
+        }
+        
+        Lookup lookup = nodes[0].getLookup();
+        BpelDesignContext bpelContext = 
+                new SimpleBpelDesignContext(bpelEntity, nodes[0], lookup);
+//                new BpelDesignContext(bpelEntity, nodes[0], lookup);
+        return bpelContext;
+    }
+
 }

@@ -57,7 +57,8 @@ public class LoggingBpelModelUpdater extends BpelModelUpdater {
     @Override
     public Object updateOnChanges(TreePath treePath) throws Exception {
         //
-        BpelEntity bpelEntity = getDesignContext().getBpelEntity();
+//        BpelEntity bpelEntity = getDesignContext().getBpelEntity();
+        BpelEntity bpelEntity = getDesignContext().getSelectedEntity();
         //
         if (bpelEntity instanceof ExtensibleElements) {
             updateExtensileElements(treePath, (ExtensibleElements)bpelEntity);

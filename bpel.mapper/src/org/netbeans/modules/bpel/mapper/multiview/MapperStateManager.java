@@ -30,7 +30,7 @@ import org.netbeans.modules.soa.mappercore.Mapper;
 import org.netbeans.modules.soa.mappercore.RightTree;
 
 /**
- *
+ * Store mapper state for context entity which is the unique id of mapper
  * @author Vitaly Bychkov
  * @version 1.0
  */
@@ -53,7 +53,7 @@ public class MapperStateManager {
         TreeExpandedState rightTreeState = getRightTreeExpandedState();
         BpelEntity entity = null;
 
-        entity = oldContext.getBpelEntity();
+        entity = oldContext.getContextEntity();
 
         UniqueId entityUID = entity != null ? entity.getUID() : null;
         if (entityUID != null) {
@@ -70,7 +70,7 @@ public class MapperStateManager {
             return;
         }
 
-        BpelEntity entity = context.getBpelEntity();
+        BpelEntity entity = context.getContextEntity();
         UniqueId uid = entity != null ? entity.getUID() : null;
         if  ( uid == null) {
             return;

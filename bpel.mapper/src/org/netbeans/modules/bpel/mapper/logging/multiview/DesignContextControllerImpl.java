@@ -157,7 +157,8 @@ public class DesignContextControllerImpl implements DesignContextController {
         }
         
         BpelModel model = getCurrBpelModel();
-        BpelEntity newEntity = newContext.getBpelEntity();
+//        BpelEntity newEntity = newContext.getBpelEntity();
+        BpelEntity newEntity = newContext.getSelectedEntity();
         // avoid entities from another BpelModel
         if ((model != null && newEntity != null 
                 && !model.equals(newEntity.getBpelModel())) || newEntity == null) 
@@ -273,7 +274,7 @@ public class DesignContextControllerImpl implements DesignContextController {
             // Copy the context to a new local variable at first.
             BpelDesignContext newContext = mNewContext;
             //
-            if (newContext == null || newContext.getBpelEntity() == null) {
+            if (newContext == null || newContext.getSelectedEntity() == null) {
                 // Hide the mapper if there is not a BPEL entity selected
                 disableMapper();
                 return;
@@ -285,7 +286,7 @@ public class DesignContextControllerImpl implements DesignContextController {
             } 
             //
             if (!newContext.equals(mContext)) {
-                BpelEntity contextEntity = newContext.getBpelEntity();
+                BpelEntity contextEntity = newContext.getSelectedEntity();
                 boolean needShow = 
                         LoggingMapperModelFactory.needShowMapper(contextEntity);
                 //

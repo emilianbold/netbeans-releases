@@ -78,7 +78,8 @@ public class LoggingMapperModelFactory extends BpelMapperModelFactory {
         mapperTcContext.getDesignContextController().
                 setBpelModelUpdateSource(changeProcessor);
         //
-        BpelEntity bpelEntity = context.getBpelEntity();
+//        BpelEntity bpelEntity = context.getBpelEntity();
+        BpelEntity bpelEntity = context.getSelectedEntity();
         if (!(bpelEntity instanceof ExtensibleElements)) {
             return null;
         }

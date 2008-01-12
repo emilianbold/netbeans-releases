@@ -65,6 +65,7 @@ import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
  */
 public class GraphExpandProcessor {
     
+    // TODO m add graphEntity support
     public static void expandGraph(
             MapperTcContext mapperTcContext, BpelDesignContext context) {
         //
@@ -73,7 +74,7 @@ public class GraphExpandProcessor {
         assert mm instanceof BpelMapperModel;
         BpelMapperModel mModel = ((BpelMapperModel)mm);
         //
-        BpelEntity contextEntity = context.getBpelEntity();
+        BpelEntity contextEntity = context.getContextEntity();
         expandVariablesNode(mapper, contextEntity.getBpelModel(), true, true);
         //
         List<TreePath> tPathList = getTargetPathes(mapperTcContext, contextEntity);

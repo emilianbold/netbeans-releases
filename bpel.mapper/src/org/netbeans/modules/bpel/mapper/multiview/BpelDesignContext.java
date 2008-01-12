@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.bpel.mapper.multiview;
 
-import java.lang.ref.WeakReference;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.openide.nodes.Node;
@@ -29,9 +28,18 @@ import org.openide.util.Lookup;
  * Immutable holder of the current state of the BPEL mapper.
  * 
  * @author nk160297
+ * @author Vitaly Bychkov
  */
-public class BpelDesignContext {
-
+public interface BpelDesignContext {
+    
+    Node getActivatedNode();
+    Lookup getLookup();
+    BpelModel getBpelModel();
+    BpelEntity getContextEntity();
+    BpelEntity getGraphEntity();
+    BpelEntity getSelectedEntity();
+    
+/*
     private WeakReference<BpelEntity> mEntityRef;
     private WeakReference<Node> mActivatedNode;
     private Lookup mLookup;
@@ -80,4 +88,5 @@ public class BpelDesignContext {
         }
         return false;
     }
+ */ 
 }

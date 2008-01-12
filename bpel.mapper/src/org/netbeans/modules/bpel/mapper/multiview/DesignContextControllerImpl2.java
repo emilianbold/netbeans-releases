@@ -119,15 +119,16 @@ public class DesignContextControllerImpl2
     }
     
     private synchronized void initContext() {
-        setContext(DesignContextChangeListener.getActivatedContext(myBpelModel));
+        setContext(BpelDesignContextFactory.getInstance().getActivatedContext(myBpelModel));
         myMapperStateManager = new MapperStateManager(mMapperTcContext);
     }
     
+    // context changes if selectedEntity changes
     public synchronized void setContext(BpelDesignContext newContext) {
         if (newContext == null) {
             return;
         }
-        BpelEntity newEntity = newContext.getBpelEntity();
+        BpelEntity newEntity = newContext.getSelectedEntity();
         // avoid entities from another BpelModel
         if ((newEntity != null && !myBpelModel.equals(newEntity.getBpelModel())) 
                 || newEntity == null) 
@@ -135,7 +136,7 @@ public class DesignContextControllerImpl2
             return;
         }
 
-        BpelEntity oldEntity = mContext != null ? mContext.getBpelEntity() : null;
+        BpelEntity oldEntity = mContext != null ? mContext.getSelectedEntity() : null;
         UniqueId oldEntityUid = oldEntity != null ? oldEntity.getUID() : null;
         UniqueId newEntityUid = newEntity.getUID();
         // the context doesn't changed
@@ -204,11 +205,12 @@ public class DesignContextControllerImpl2
             myMapperStateManager.restoreOldEntityContext(mContext);
         }
     
+        // TODO m correct behaviour if just selectedEntity changes
         public void setContextImpl() {
             // Copy the context to a new local variable at first.
             BpelDesignContext newContext = mNewContext;
             //
-            if (newContext == null || newContext.getBpelEntity() == null) {
+            if (newContext == null || newContext.getSelectedEntity() == null) {
                 // Hide the mapper if there is not a BPEL entity selected
                 disableMapper();
                 return;
@@ -221,7 +223,7 @@ public class DesignContextControllerImpl2
             //
             if (!newContext.equals(mContext)) {
                 myMapperStateManager.storeOldEntityContext(mContext);
-                BpelEntity contextEntity = newContext.getBpelEntity();
+                BpelEntity contextEntity = newContext.getSelectedEntity();
                 boolean needShow = 
                         BpelMapperModelFactory.needShowMapper(contextEntity);
                 //
@@ -236,7 +238,11 @@ public class DesignContextControllerImpl2
                     setMapperModel(newMapperModel);
                     myMapperStateManager.restoreOldEntityContext(mContext);
                     //
-                    GraphExpandProcessor.expandGraph(mMapperTcContext, mContext);
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            GraphExpandProcessor.expandGraph(mMapperTcContext, mContext);
+                        }
+                    });
                     //
                     mMapperTcContext.showMapperTcGroup(true);
                 }
@@ -294,8 +300,8 @@ public class DesignContextControllerImpl2
         myPreviousTask = RequestProcessor.getDefault().post(
                 new Runnable() {
             public void run() {
-                BpelDesignContext newBpelContext = DesignContextChangeListener.getActivatedContext(myBpelModel);
-                setContext(newBpelContext);
+//                BpelDesignContext newBpelContext = DesignContextChangeListener.getActivatedContext(myBpelModel);
+                setContext(BpelDesignContextFactory.getInstance().getActivatedContext(myBpelModel));
             }
         }, ACTION_NODE_CHANGE_TASK_DELAY);
         

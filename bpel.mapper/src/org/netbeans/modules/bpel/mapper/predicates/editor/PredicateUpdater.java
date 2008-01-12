@@ -254,7 +254,7 @@ public class PredicateUpdater extends AbstractBpelModelUpdater {
         }
         //
         // Create a new model
-        BpelEntity bpelEntity = getDesignContext().getBpelEntity();
+        BpelEntity bpelEntity = getDesignContext().getSelectedEntity();
         //
         if (bpelEntity == null) {
             return null;

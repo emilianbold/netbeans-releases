@@ -78,7 +78,7 @@ public class VariableTreeModel implements MapperTreeExtensionModel<Object> {
         mPredManager = predManager;
         mTreeInfoProvider = treeInfoProvider;
         //
-        mVisScope = new VisibilityScope(context.getBpelEntity());
+        mVisScope = new VisibilityScope(context.getSelectedEntity());
         mOverriddenVariables = VisibilityScope.Utils.
                 getAllOverridenVariables(mVisScope);
     }

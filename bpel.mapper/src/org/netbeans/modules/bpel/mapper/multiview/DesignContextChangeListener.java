@@ -65,36 +65,36 @@ public class DesignContextChangeListener/* implements PropertyChangeListener */{
 //        }
 //    }
     
-    /**
-     * Don't change context in case non bpel entity were selected
-     * 
-     * @return new context, null if context should be changed, 
-     * bpel model changes are supported self by DesignContextController
-     */
-    public static BpelDesignContext getActivatedContext(BpelModel currentBpelModel) {
-        if (currentBpelModel == null) {
-            return null;
-        }
-        
-        Node[] nodes = TopComponent.getRegistry().getActivatedNodes();
-        if (nodes == null || nodes.length != 1) {
-            return null;
-        }
-        BpelEntity bpelEntity = null;
-        if (nodes[0] instanceof InstanceRef) {
-            Object entity = ((InstanceRef) nodes[0]).getReference();
-            if (entity instanceof BpelEntity 
-                    && currentBpelModel.equals(((BpelEntity)entity).getBpelModel())) 
-            {
-                bpelEntity = (BpelEntity)entity;
-            }
-        } else {
-            return null;
-        }
-        
-        Lookup lookup = nodes[0].getLookup();
-        BpelDesignContext bpelContext = 
-                new BpelDesignContext(bpelEntity, nodes[0], lookup);
-        return bpelContext;
-    }
+//    /**
+//     * Don't change context in case non bpel entity were selected
+//     * 
+//     * @return new context, null if context should be changed, 
+//     * bpel model changes are supported self by DesignContextController
+//     */
+//    public static BpelDesignContext getActivatedContext(BpelModel currentBpelModel) {
+//        if (currentBpelModel == null) {
+//            return null;
+//        }
+//        
+//        Node[] nodes = TopComponent.getRegistry().getActivatedNodes();
+//        if (nodes == null || nodes.length != 1) {
+//            return null;
+//        }
+//        BpelEntity bpelEntity = null;
+//        if (nodes[0] instanceof InstanceRef) {
+//            Object entity = ((InstanceRef) nodes[0]).getReference();
+//            if (entity instanceof BpelEntity 
+//                    && currentBpelModel.equals(((BpelEntity)entity).getBpelModel())) 
+//            {
+//                bpelEntity = (BpelEntity)entity;
+//            }
+//        } else {
+//            return null;
+//        }
+//        
+//        Lookup lookup = nodes[0].getLookup();
+//        BpelDesignContext bpelContext = 
+//                new BpelDesignContext(bpelEntity, nodes[0], lookup);
+//        return bpelContext;
+//    }
 }
