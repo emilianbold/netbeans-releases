@@ -1,0 +1,56 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+            "http://www.w3.org/TR/html4/loose.dtd">
+<!--
+*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+    <head>
+        <title>Subversion: Manage Labels Dialog</title>
+        <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css"
+            rel="StyleSheet" type="text/css">
+    </head>  
+    
+    <body>
+        <h2>Subversion: Manage Labels Dialog</h2>
+        
+        <p><small><a href="#seealso">See Also</a></small></p>
+       
+        <p>The Manage Labels dialog enables you to specify how versioned files should 
+            be annotated in the Projects, Files, Favorites, and Versioning windows 
+            depending on the repository folder the files belong to.</p>
+           
+        <p>You can access this panel from the <a href="svn_options.html">Subversion 
+            Options window</a> by clicking the Define {folder} button.</p>
+        
+        <p>The <strong>Repository Folder Name</strong> table specifies a set of generic 
+            rules defining the path to, and identity of, repository folders.</p>
+            
+        <ul>
+            <li><strong>Repository URL Pattern</strong>. Regex pattern that matches the 
+                URL to a repository folder.</li>
+            <li><strong>Folder Name</strong>. May be represented by one of the following:
+
+            <ul>
+                <li>a simple string - e.g. &quot;mybranch&quot;</li>
+                <li>a reference to a group from the regex pattern in the corresponding 
+                    Repository URL Pattern column - e.g. &quot;\2&quot; gives the value 
+                    represented by the second group defined by the regular expression in 
+                    the adjacent Repository URL Pattern column</li>
+                <li>a combination from references and strings - e.g. &quot;mybranch - 
+                    \2&quot;</li>
+            </ul></li>
+
+        </ul>
+                
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../svn_status.html">Viewing File Status Information</a></dd>
+            <dd><a href="../svn_quickref.html">Subversion Tasks: Quick Reference</a></dd>            
+        </dl>
+        
+        <hr>
+        <small><a href="../../credits.html">Legal Notices</a></small>
+        <br><br><br>
+    </body>
+</html>

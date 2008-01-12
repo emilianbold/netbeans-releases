@@ -16,8 +16,8 @@
         
         <p><small><a href="#seealso">See Also</a></small></p>
        
-        <p>The Subversion Options window allows you to configure CVS-specific parameters 
-            that effect the behavior of CVS in the IDE.</p>
+        <p>The Subversion Options window allows you to configure Subversion-specific parameters 
+            that effect the behavior of Subversion in the IDE.</p>
            
         <p>You can access this panel by choosing Tools &gt; Options from the main menu,
             then under the Miscellaneous button at the top of the Options window select
@@ -34,8 +34,10 @@
                 view previously saved repository URLs used in the IDE. From the Manage Connection
                 Settings dialog, you can change URL-specific settings, such as username and 
                 password. You can also remove previously saved URLs.</li>
-            <li><strong>Subversion Status Labels</strong>. Click the Add Variable button to add
-                Subversion dynamic variables to the Format text field. Options include:
+            <li><strong>Subversion Status Labels</strong>. The Status Labels Format text field 
+                specifies how versioned files in the Projects, Files, and Favorites explorers 
+                are annotated. Click the Add Variable button to add Subversion dynamic variables 
+                to the Format text field. Options include:
                 
                 <ul>
                     <li><tt>{revision}</tt>: Lists the revision number.</li>
@@ -52,9 +54,9 @@
                         hold Ctrl as you select variables.</li>
                 </ul></li>
             
-            <li><strong>Folder variable content</strong>. To use regex commands to dynamically add
-                your own status labels to the Status Label format text field, click the Define {folder}
-                button.</li>
+            <li><strong>Variable content</strong>. You can specify rules defining how status 
+                labels should appear depending on the repository folder(s) which files belong 
+                to. To do so, click the Define {folder} button.</li>
         </ul>
     
         <dl>

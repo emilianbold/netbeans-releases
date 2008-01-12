@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 
 <!--
-*     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 
@@ -127,7 +127,7 @@
     <!-- TODO: Request new target (currently: org.openide.util.HelpCtx.DEFAULT_HELP) -->
 
     <!-- Manage Labels dialog (accessed from Options window) -->
-    <mapID target="org.netbeans.modules.subversion.options.AnnotationSettings" url="pending.html" />
+    <mapID target="org.netbeans.modules.subversion.options.AnnotationSettings" url="svnmodule/csh/svn_manage_labels.html" />
 
     <!-- Subversion menu -->
     <mapID target="org.netbeans.modules.subversion.ui.status.OpenVersioningAction" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/pending.html" />
