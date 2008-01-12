@@ -223,7 +223,7 @@ public class IndentFactory implements IndentTask.Factory {
             Map<String,Integer> p = new HashMap<String,Integer> ();
             do {
                 Token t = ts.token ();
-                String id = t.text ().toString ();
+                String id = t.text ().toString ().trim();
                 if (((Set) params [1]).contains (id)) {
                     Integer i = p.get (id);
                     if (i == null) {
@@ -232,7 +232,7 @@ public class IndentFactory implements IndentTask.Factory {
                         i = Integer.valueOf (i.intValue () + 1);
                     p.put (id, i);
                 }
-                if (((Set) params [2]).contains (t.text ().toString ())) {
+                if (((Set) params [2]).contains (t.text ().toString ().trim())) {
                     id = (String) ((Map) params [3]).get (id);
                     Integer i = p.get (id);
                     if (i == null) {
@@ -279,8 +279,8 @@ public class IndentFactory implements IndentTask.Factory {
                 if (ts.offset () > end) return false;
             }
             Token t = ts.token ();
-            String id = t.text ().toString ();
-            return ((Set) params [2]).contains (t.text ().toString ());
+            String id = t.text ().toString ().trim();
+            return ((Set) params [2]).contains (id);
         }
 
         private static boolean isEmpty (
