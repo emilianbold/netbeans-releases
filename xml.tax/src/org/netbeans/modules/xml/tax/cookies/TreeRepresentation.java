@@ -48,9 +48,7 @@ import org.xml.sax.*;
 
 import org.netbeans.tax.*;
 import org.netbeans.tax.io.*;
-import org.netbeans.modules.xml.core.sync.*;
-import org.netbeans.modules.xml.tax.cookies.TreeEditorCookie;
-import org.netbeans.modules.xml.tax.cookies.TreeEditorCookieImpl;
+import org.netbeans.modules.xml.sync.*;
 
 /**
  * Manages tree model and its editor interaction.

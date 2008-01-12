@@ -44,7 +44,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 import junit.textui.TestRunner;
-import org.netbeans.modules.xml.core.XMLDataObject;
+import org.netbeans.modules.xml.XMLDataObject;
 import org.netbeans.modules.xml.tax.cookies.TreeEditorCookie;
 import org.netbeans.tests.xml.XTest;
 import org.openide.cookies.CloseCookie;

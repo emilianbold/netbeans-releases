@@ -43,8 +43,8 @@ package org.netbeans.modules.xml.tools.generator;
 import org.openide.nodes.Node;
 import org.openide.loaders.DataObject;
 
-import org.netbeans.modules.xml.core.XMLDataObject;
-import org.netbeans.modules.xml.core.cookies.CookieFactory;
+import org.netbeans.modules.xml.XMLDataObject;
+import org.netbeans.modules.xml.cookies.CookieFactory;
 
 /**
  *

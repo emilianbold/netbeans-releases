@@ -65,7 +65,7 @@ made subject to such option by the copyright holder.
     <folder name="Services">
         <folder name="Hidden">
             <file name="org-netbeans-modules-xsl-actions-TransformAction.instance">
-                <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.core.actions.CollectXMLAction$XMLAction"/>
+                <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.actions.CollectXMLAction$XMLAction"/>
             </file>
         </folder>
 
@@ -135,7 +135,7 @@ made subject to such option by the copyright holder.
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="400"/>
                     </file>
-                    <file name="org-netbeans-modules-xml-core-actions-CollectXMLAction.instance">
+                    <file name="org-netbeans-modules-xml-actions-CollectXMLAction.instance">
                         <attr name="position" intvalue="500"/>
                     </file>
                     <file name="sep-2.instance">

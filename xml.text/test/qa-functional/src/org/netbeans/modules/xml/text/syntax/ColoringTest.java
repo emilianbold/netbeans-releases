@@ -43,13 +43,12 @@ package org.netbeans.modules.xml.text.syntax;
 import org.openide.execution.NbfsURLConnection;
 import org.openide.loaders.DataFolder;
 import org.netbeans.tax.*;
-import org.netbeans.modules.xml.core.DTDDataObject;
+import org.netbeans.modules.xml.DTDDataObject;
 import org.openide.cookies.SaveCookie;
 import org.openide.cookies.EditorCookie;
 
-import org.netbeans.modules.xml.core.XMLDataObject;
+import org.netbeans.modules.xml.XMLDataObject;
 import org.openide.nodes.CookieSet;
-import javax.swing.text.Document;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;

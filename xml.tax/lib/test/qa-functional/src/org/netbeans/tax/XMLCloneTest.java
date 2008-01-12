@@ -47,7 +47,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import junit.textui.TestRunner;
-import org.netbeans.modules.xml.core.XMLDataObject;
+import org.netbeans.modules.xml.XMLDataObject;
 import org.netbeans.modules.xml.tax.cookies.TreeEditorCookie;
 import org.netbeans.tax.TreeNamedObjectMap.KeyListener;
 import org.netbeans.tax.TreeDocumentType.DTDIdentity;

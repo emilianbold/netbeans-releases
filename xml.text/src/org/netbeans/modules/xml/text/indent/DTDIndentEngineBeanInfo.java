@@ -45,6 +45,7 @@ import java.util.MissingResourceException;
 
 import org.netbeans.modules.editor.FormatterIndentEngineBeanInfo;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.openide.util.NbBundle;
 
 /**
  * @author  Libor Kramolis
@@ -100,7 +101,7 @@ public class DTDIndentEngineBeanInfo extends FormatterIndentEngineBeanInfo {
      */
     protected String getString (String key) {
         try {
-            return Util.THIS.getString (key);
+            return NbBundle.getMessage(DTDIndentEngineBeanInfo.class, key);
         } catch (MissingResourceException e) {
             return super.getString (key);
         }

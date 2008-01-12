@@ -56,7 +56,6 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import javax.rmi.CORBA.Util;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -66,9 +65,10 @@ import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.CloseOperationHandler;
 import org.netbeans.core.spi.multiview.CloseOperationState;
+import org.netbeans.modules.xml.api.EncodingUtil;
 import org.netbeans.modules.xml.axi.AXIModel;
 import org.netbeans.modules.xml.axi.AXIModelFactory;
-import org.netbeans.modules.xml.core.cookies.CookieManagerCookie;
+import org.netbeans.modules.xml.core.lib.EncodingHelper;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.schema.multiview.SchemaMultiViewSupport;
@@ -418,7 +418,7 @@ public class SchemaEditorSupport extends DataEditorSupport
     protected void loadFromStreamToKit(StyledDocument doc, InputStream in,
             EditorKit kit) throws IOException, BadLocationException {
         // Detect the encoding to get optimized reader if UTF-8.
-        String enc = EncodingHelper.detectEncoding(in);
+        String enc = EncodingUtil.detectEncoding(in);
         if (enc == null) {
             enc = "UTF8"; // NOI18N
         }
@@ -433,7 +433,7 @@ public class SchemaEditorSupport extends DataEditorSupport
     protected void saveFromKitToStream(StyledDocument doc, EditorKit kit,
             OutputStream out) throws IOException, BadLocationException {
         // Detect the encoding, using UTF8 if the encoding is not set.
-        String enc = EncodingHelper.detectEncoding(doc);
+        String enc = EncodingUtil.detectEncoding(doc);
         if (enc == null) {
             enc = "UTF8"; // NOI18N
         }
@@ -467,14 +467,14 @@ public class SchemaEditorSupport extends DataEditorSupport
         final StyledDocument doc = getDocument();
         // Save document using encoding declared in XML prolog if possible,
         // otherwise use UTF-8 (in such case it updates the prolog).
-        String enc = EncodingHelper.detectEncoding(doc);
+        String enc = EncodingUtil.detectEncoding(doc);
         if (enc == null) {
             enc = "UTF8"; // NOI18N
         }
         try {
             // Test the encoding on a dummy stream.
             new OutputStreamWriter(new ByteArrayOutputStream(1), enc);
-            if (!checkCharsetConversion(Convertors.java2iana(enc))){
+            if (!checkCharsetConversion(EncodingHelper.getJava2IANAMapping(enc))){
                 return;
             }
             super.saveDocument();

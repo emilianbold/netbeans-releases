@@ -58,11 +58,11 @@ import org.openide.loaders.*;
 import org.openide.filesystems.*;
 
 import org.netbeans.tax.*;
-import org.netbeans.modules.xml.core.DTDDataObject;
+import org.netbeans.modules.xml.DTDDataObject;
 
-import org.netbeans.modules.xml.core.lib.GuiUtil;
+import org.netbeans.modules.xml.lib.GuiUtil;
 import org.netbeans.modules.xml.tools.generator.SelectFileDialog;
-import org.netbeans.modules.xml.core.actions.CollectDTDAction;
+import org.netbeans.modules.xml.actions.CollectDTDAction;
 import org.netbeans.modules.xml.tax.cookies.TreeEditorCookie;
 /**
  * Creates a CSS draft upon a standalone DTD. Stores it into css file.

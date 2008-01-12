@@ -47,13 +47,9 @@ import javax.swing.text.Document;
 import javax.swing.text.BadLocationException;
 
 import org.openide.windows.*;
-
-import org.netbeans.editor.Syntax;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.*;
-
-import org.netbeans.modules.xml.core.lib.EncodingHelper;
+import org.netbeans.modules.xml.api.EncodingUtil;
 
 /**
  * Editor kit implementation for xml content type.
@@ -72,7 +68,7 @@ public class UniKit extends NbEditorKit {
     public void read(InputStream in, Document doc, int pos) throws IOException, BadLocationException {
 
         // predetect it to get optimalized XmlReader if utf-8
-        String enc = EncodingHelper.detectEncoding(in);
+        String enc = EncodingUtil.detectEncoding(in);
         if ( enc == null ) {
             enc = "UTF8"; //!!! // NOI18N
         }
@@ -90,7 +86,7 @@ public class UniKit extends NbEditorKit {
 
     /** Write document. */
     public void write(OutputStream out, Document doc, int pos, int len) throws IOException, BadLocationException {
-        String enc = EncodingHelper.detectEncoding(doc);
+        String enc = EncodingUtil.detectEncoding(doc);
         if ( enc == null ) {
             enc = "UTF8"; //!!! // NOI18N
         }

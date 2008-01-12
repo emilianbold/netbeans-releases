@@ -45,7 +45,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.actions.CookieAction;
 
 import org.netbeans.api.xml.cookies.TransformableCookie;
-import org.netbeans.modules.xml.core.actions.CollectXMLAction;
+import org.netbeans.modules.xml.actions.CollectXMLAction;
 
 import org.netbeans.modules.xsl.XSLDataObject;
 import org.netbeans.modules.xsl.transform.TransformPerformer;

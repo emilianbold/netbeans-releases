@@ -65,13 +65,11 @@ import org.openide.cookies.*;
 import org.netbeans.tax.*;
 import org.netbeans.tax.event.TreeEvent;
 
-import org.netbeans.modules.xml.core.*;
-import org.netbeans.modules.xml.core.tree.*;
-import org.netbeans.modules.xml.core.cookies.*;
-import org.netbeans.modules.xml.core.text.*;
-import org.netbeans.modules.xml.core.sync.*;
-import org.netbeans.modules.xml.tax.cookies.TreeDocumentCookie;
-import org.netbeans.modules.xml.tax.cookies.TreeEditorCookie;
+import org.netbeans.modules.xml.*;
+import org.netbeans.modules.xml.tree.*;
+import org.netbeans.modules.xml.cookies.*;
+import org.netbeans.modules.xml.text.*;
+import org.netbeans.modules.xml.sync.*;
 import org.netbeans.modules.xml.tax.*;
 import org.netbeans.modules.xml.tax.parser.DTDParsingSupport;
 import org.netbeans.modules.xml.tax.parser.ParsingSupport;

@@ -45,7 +45,7 @@ import javax.swing.*;
 import java.net.URL;
 import java.net.MalformedURLException;
 
-import org.netbeans.modules.xml.core.lib.A11YUtil;
+import org.netbeans.modules.xml.lib.A11YUtil;
 
 /**
  * A panel allowing to customize SAX generator i.e. setting file locations and element mapping.

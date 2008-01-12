@@ -43,10 +43,10 @@ made subject to such option by the copyright holder.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd" [
     <!ENTITY localize-it "<attr name='SystemFileSystem.localizingBundle' stringvalue='org.netbeans.modules.xml.tools.resources.Bundle'/>">
     <!-- Defer class loading by declaring hint for lookup. -->
-    <!ENTITY xml-action-attributes "<attr name='instanceOf' stringvalue='org.netbeans.modules.xml.core.actions.CollectXMLAction$XMLAction'/>">
-    <!ENTITY dtd-action-attributes "<attr name='instanceOf' stringvalue='org.netbeans.modules.xml.core.actions.CollectDTDAction$DTDAction'/>">
-    <!ENTITY xml-cookie-attributes "<attr name='instanceOf' stringvalue='org.netbeans.modules.xml.core.XMLDataObject$XMLCookieFactoryCreator'/>">
-    <!ENTITY dtd-cookie-attributes "<attr name='instanceOf' stringvalue='org.netbeans.modules.xml.core.DTDDataObject$DTDCookieFactoryCreator'/>">
+    <!ENTITY xml-action-attributes "<attr name='instanceOf' stringvalue='org.netbeans.modules.xml.actions.CollectXMLAction$XMLAction'/>">
+    <!ENTITY dtd-action-attributes "<attr name='instanceOf' stringvalue='org.netbeans.modules.xml.actions.CollectDTDAction$DTDAction'/>">
+    <!ENTITY xml-cookie-attributes "<attr name='instanceOf' stringvalue='org.netbeans.modules.xml.XMLDataObject$XMLCookieFactoryCreator'/>">
+    <!ENTITY dtd-cookie-attributes "<attr name='instanceOf' stringvalue='org.netbeans.modules.xml.DTDDataObject$DTDCookieFactoryCreator'/>">
 ]>
 <filesystem>
 

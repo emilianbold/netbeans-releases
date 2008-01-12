@@ -41,15 +41,8 @@
 package org.netbeans.modules.xml.text.syntax;
 
 import javax.swing.text.Document;
-
 import org.netbeans.editor.Syntax;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.editor.NbEditorKit;
-
 import org.netbeans.modules.editor.*;
-
-import org.netbeans.modules.xml.core.DTDDataObject;
-
 import org.netbeans.modules.xml.text.syntax.javacc.lib.*;
 import org.netbeans.modules.xml.text.syntax.javacc.*;
 
@@ -69,6 +62,9 @@ public class DTDKit extends UniKit {
     /** Serial Version UID */
     private static final long serialVersionUID =-6140259975700590155L;
     
+    /** Default DTD MIME type. */
+    public static final String MIME_TYPE = "application/xml-dtd"; // http://www.ietf.org/rfc/rfc3023.txt // NOI18N
+    
     /** Create new instance of syntax coloring parser */
     public Syntax createSyntax(Document doc) {
         return new JJEditorSyntax( 
@@ -83,7 +79,7 @@ public class DTDKit extends UniKit {
     }
 
     public String getContentType() {
-        return DTDDataObject.MIME_TYPE;
+        return MIME_TYPE;
     }
 
 }

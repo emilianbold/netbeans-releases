@@ -6,6 +6,6 @@ OpenIDE-Module-Specification-Version: 1.0
 AutoUpdate-Show-In-Client: false
 
 Name: org/netbeans/modules/xslt/core/XSLTDataLoader.class
-Install-Before: org.netbeans.modules.xsl.XSLDataObject, org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.core.XMLDataObject
+Install-Before: org.netbeans.modules.xsl.XSLDataObject, org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.XMLDataObject
 OpenIDE-Module-Class: Loader
 

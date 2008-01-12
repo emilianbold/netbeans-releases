@@ -122,7 +122,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>2</release-version>
-                        <implementation-version/>
+                        <specification-version>1.14</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -280,6 +280,8 @@ made subject to such option by the copyright holder.
             <friend-packages>
                 <friend>org.netbeans.modules.mobility.end2end</friend>
                 <friend>org.netbeans.modules.web.core.syntax</friend>
+                <friend>org.netbeans.modules.xml</friend>
+                <friend>org.netbeans.modules.xsl</friend>
                 <friend>org.netbeans.modules.xml.lexer</friend>
                 <friend>org.netbeans.modules.xml.retriever</friend>
                 <friend>org.netbeans.modules.xml.schema.abe</friend>

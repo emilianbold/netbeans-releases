@@ -61,7 +61,7 @@ import org.netbeans.api.xml.cookies.*;
 import org.netbeans.api.xml.services.UserCatalog;
 import org.netbeans.spi.xml.cookies.*;
 
-import org.netbeans.modules.xml.core.XMLDataObject;
+import org.netbeans.modules.xml.XMLDataObject;
 
 import org.netbeans.modules.xsl.XSLDataObject;
 

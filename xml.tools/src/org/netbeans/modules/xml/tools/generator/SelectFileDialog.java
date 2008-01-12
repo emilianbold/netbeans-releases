@@ -52,7 +52,7 @@ import org.openide.loaders.DataObject;
 import org.openide.filesystems.*;
 import org.openide.util.*;
 
-import org.netbeans.modules.xml.core.lib.GuiUtil;
+import org.netbeans.modules.xml.lib.GuiUtil;
 
 /**
  * Extremely simple dialog with one input line. Invoke using

@@ -44,7 +44,7 @@ import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CookieAction;
 
-import org.netbeans.modules.xml.core.actions.*;
+import org.netbeans.modules.xml.actions.*;
 
 import org.netbeans.api.xml.cookies.*;
 import org.openide.util.NbBundle;

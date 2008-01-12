@@ -40,15 +40,12 @@
  */
 package org.netbeans.modules.xml.tax.cookies;
 
-import java.io.IOException;
 import org.xml.sax.*;
 
 import org.openide.*;
 
 import org.netbeans.tax.*;
-import org.netbeans.modules.xml.core.sync.*;
-import org.netbeans.modules.xml.tax.cookies.TreeEditorCookieImpl;
-import org.netbeans.modules.xml.tax.cookies.TreeRepresentation;
+import org.netbeans.modules.xml.sync.*;
 
 /**
  * Manages relations between tree model ant tree editor.

@@ -55,8 +55,8 @@ import org.openide.util.*;
 
 import org.netbeans.tax.*;
 import org.netbeans.tax.decl.*;
-import org.netbeans.modules.xml.core.DTDDataObject;
-import org.netbeans.modules.xml.core.lib.GuiUtil;
+import org.netbeans.modules.xml.DTDDataObject;
+import org.netbeans.modules.xml.lib.GuiUtil;
 import org.netbeans.modules.xml.tax.cookies.TreeEditorCookie;
 
 public class GenerateDOMScannerSupport implements XMLGenerateCookie {

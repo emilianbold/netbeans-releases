@@ -62,9 +62,9 @@ import org.openide.loaders.*;
 import org.openide.util.MapFormat;
 import org.openide.xml.*;
 
-import org.netbeans.modules.xml.core.DTDDataObject;
-import org.netbeans.modules.xml.core.lib.GuiUtil;
-import org.netbeans.modules.xml.core.lib.FileUtilities;
+import org.netbeans.modules.xml.DTDDataObject;
+import org.netbeans.modules.xml.lib.GuiUtil;
+import org.netbeans.modules.xml.lib.FileUtilities;
 import org.netbeans.modules.xml.tax.cookies.TreeEditorCookie;
 import org.netbeans.tax.*;
 

@@ -43,10 +43,10 @@ package org.netbeans.modules.xml.tax;
 
 import org.openide.loaders.DataObject;
 
-import org.netbeans.modules.xml.core.DTDDataObject;
-import org.netbeans.modules.xml.core.XMLDataObject;
-import org.netbeans.modules.xml.core.XMLDataObjectLook;
-import org.netbeans.modules.xml.core.cookies.CookieFactory;
+import org.netbeans.modules.xml.DTDDataObject;
+import org.netbeans.modules.xml.XMLDataObject;
+import org.netbeans.modules.xml.XMLDataObjectLook;
+import org.netbeans.modules.xml.cookies.CookieFactory;
 import org.netbeans.modules.xml.tax.cookies.TreeEditorCookieImpl;
 
 

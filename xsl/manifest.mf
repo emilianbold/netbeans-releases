@@ -7,5 +7,5 @@ AutoUpdate-Show-In-Client: false
 
 Name: org/netbeans/modules/xsl/XSLDataLoader.class
 OpenIDE-Module-Class: Loader
-Install-Before: org.netbeans.modules.xml.core.XMLDataObject
+Install-Before: org.netbeans.modules.xml.XMLDataObject
 

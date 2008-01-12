@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.xml.tax.parser;
 
-import org.netbeans.modules.xml.core.lib.AbstractUtil;
+import org.netbeans.modules.xml.tax.util.AbstractUtil;
 
 /**
  *

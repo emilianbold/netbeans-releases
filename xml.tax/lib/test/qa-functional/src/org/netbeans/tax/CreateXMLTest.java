@@ -41,8 +41,8 @@
 package org.netbeans.tax;
 
 import junit.textui.TestRunner;
-import org.netbeans.modules.xml.core.DTDDataObject;
-import org.netbeans.modules.xml.core.XMLDataObject;
+import org.netbeans.modules.xml.DTDDataObject;
+import org.netbeans.modules.xml.XMLDataObject;
 import org.netbeans.modules.xml.tax.cookies.TreeEditorCookie;
 import org.netbeans.tests.xml.XTest;
 import org.openide.loaders.DataFolder;

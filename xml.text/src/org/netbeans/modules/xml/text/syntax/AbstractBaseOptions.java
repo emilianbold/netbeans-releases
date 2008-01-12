@@ -48,7 +48,7 @@ import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.editor.LocaleSupport;
 import org.netbeans.editor.LocaleSupport.Localizer;
 
-import org.netbeans.modules.xml.text.indent.XMLIndentEngine;
+import org.openide.util.NbBundle;
 
 /**
  * @author  Libor Kramolis
@@ -90,7 +90,7 @@ abstract class AbstractBaseOptions extends BaseOptions implements Localizer {
      */
     public String getString (String s) {
         try {
-            return Util.THIS.getString (s);
+            return NbBundle.getMessage(AbstractBaseOptions.class, s);
         } catch (MissingResourceException e) {
             return super.getString (s);
         }

@@ -41,7 +41,13 @@
 package org.netbeans.modules.xml.core.lib;
 
 import java.io.*;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.*;
+import org.openide.util.NbBundle;
 
 /**
  * XML uses inband encoding detection - this class obtains it.
@@ -52,8 +58,31 @@ import javax.swing.text.*;
 public class EncodingHelper extends Object {
 
     // heuristic constant guessing max prolog length
-    public static final int EXPECTED_PROLOG_LENGTH = 1000;
-
+    private static final int EXPECTED_PROLOG_LENGTH = 1000;
+    private static final Logger logger = Logger.getLogger(EncodingHelper.class.getName());
+    
+    /**
+     * Returns the Java encoding name for the specified IANA encoding name.
+     * 
+     * @param ianaEncoding
+     * @return
+     */
+    public static String getIANA2JavaMapping(String ianaEncoding) {
+        String java = (String) encodingIANA2JavaMap.get (ianaEncoding.toUpperCase ());
+        return java == null ? ianaEncoding : java;
+    }
+    
+    /**
+     * Returns the IANA encoding name for the specified Java encoding name.    
+     * 
+     * @param ianaEncoding
+     * @return
+     */
+    public static String getJava2IANAMapping(String javaEncoding) {
+        String iana = (String) encodingJava2IANAMap.get (javaEncoding);
+        return iana == null ? javaEncoding : iana;
+    }
+        
     /** Detect input stream encoding.
     * The stream stays intact.
     * @return java encoding names ("UTF8", "ASCII", etc.) or null
@@ -61,8 +90,8 @@ public class EncodingHelper extends Object {
     */
     public static String detectEncoding(InputStream in) throws IOException {
 
-        if (! in.markSupported()) {
-            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("EncodingHelper got unmarkable stream: " + in.getClass()); // NOI18N
+        if (! in.markSupported()) {            
+            logger.log(Level.WARNING, "EncodingHelper got unmarkable stream: " + in.getClass()); // NOI18N
             return null;
         }
 
@@ -85,7 +114,7 @@ public class EncodingHelper extends Object {
             enc = detectDeclaredEncoding(bytes, enc);
             if (enc == null) return null;
             
-            return Convertors.iana2java (enc);
+            return getIANA2JavaMapping(enc);
         } finally {
             in.reset();
         }
@@ -95,7 +124,7 @@ public class EncodingHelper extends Object {
     /**
      * @return Java encoding family identifier or <tt>null</tt> for unrecognized
      */
-    static String autoDetectEncoding(byte[] buf) throws IOException {
+    public static String autoDetectEncoding(byte[] buf) throws IOException {
         
 
         if (buf.length >= 4) {
@@ -169,7 +198,7 @@ public class EncodingHelper extends Object {
      * Look for encoding='' anyway stop at <tt>?></tt>
      * @return found encoding or null if none declared
      */
-    static String detectDeclaredEncoding(byte[] data, String baseEncoding) throws IOException {
+    public static String detectDeclaredEncoding(byte[] data, String baseEncoding) throws IOException {
 
         StringBuffer buf = new StringBuffer();
         Reader r;
@@ -224,7 +253,7 @@ public class EncodingHelper extends Object {
     /**
      * Parse MIME content type for attributes. 
      */
-    static String parseMIMECharSet(String mime) {
+    public static String parseMIMECharSet(String mime) {
         
         final String CHARSET = "charset";
         
@@ -275,11 +304,9 @@ public class EncodingHelper extends Object {
     * @return java encoding names ("UTF8", "ASCII", etc.) or null if no guess
     */
     public static String detectEncoding(Document doc) throws IOException {
-
         if (doc == null) return null;
 
         try {
-
             String text = doc.getText(0,
                                       doc.getLength() > EXPECTED_PROLOG_LENGTH ?
                                       EXPECTED_PROLOG_LENGTH : doc.getLength()
@@ -292,5 +319,190 @@ public class EncodingHelper extends Object {
         }
 
     }
+    
 
+    /**
+     * IANA to Java encoding mappings
+     */
+    final static Map<String, String> encodingIANA2JavaMap = new TreeMap<String, String>();
+    final static Map<String, String> encodingIANADescriptionMap = new TreeMap<String, String>();
+    final static Map<String, String> encodingIANAAliasesMap = new TreeMap<String, String>();
+    final static Map<String, String> encodingJava2IANAMap = new TreeMap<String, String>();
+
+    /**
+     * Static initialization
+     */
+    static {
+        encodingIANA2JavaMap.put("BIG5", "Big5"); // NOI18N
+        encodingIANADescriptionMap.put("BIG5", NbBundle.getMessage(EncodingHelper.class, "NAME_BIG5")); // NOI18N
+        encodingIANAAliasesMap.put("BIG5", "BIG5"); // NOI18N
+
+        encodingIANA2JavaMap.put("IBM037", "CP037");  // NOI18N
+        encodingIANADescriptionMap.put("IBM037", NbBundle.getMessage(EncodingHelper.class, "NAME_IBM037")); // NOI18N
+        encodingIANAAliasesMap.put("IBM037", "IBM037"); // NOI18N
+        encodingIANAAliasesMap.put("EBCDIC-CP-US", "IBM037"); // NOI18N
+        encodingIANAAliasesMap.put("EBCDIC-CP-CA", "IBM037"); // NOI18N
+        encodingIANAAliasesMap.put("EBCDIC-CP-NL", "IBM037"); // NOI18N
+        encodingIANAAliasesMap.put("EBCDIC-CP-WT", "IBM037"); // NOI18N
+
+        encodingIANA2JavaMap.put("IBM277", "CP277");  // NOI18N
+        encodingIANADescriptionMap.put("IBM277", NbBundle.getMessage(EncodingHelper.class, "NAME_IBM277")); // NOI18N
+        encodingIANAAliasesMap.put("IBM277", "IBM277"); // NOI18N
+        encodingIANAAliasesMap.put("EBCDIC-CP-DK", "IBM277"); // NOI18N
+        encodingIANAAliasesMap.put("EBCDIC-CP-NO", "IBM277"); // NOI18N
+
+        encodingIANA2JavaMap.put("IBM278", "CP278");  // NOI18N
+        encodingIANADescriptionMap.put("IBM278", NbBundle.getMessage(EncodingHelper.class, "NAME_IBM277")); // NOI18N
+        encodingIANAAliasesMap.put("IBM278", "IBM278"); // NOI18N
+        encodingIANAAliasesMap.put("EBCDIC-CP-FI", "IBM278"); // NOI18N
+        encodingIANAAliasesMap.put("EBCDIC-CP-SE", "IBM278"); // NOI18N
+
+        encodingIANA2JavaMap.put("IBM280", "CP280");  // NOI18N
+        encodingIANADescriptionMap.put("IBM280", NbBundle.getMessage(EncodingHelper.class, "NAME_IBM280")); // NOI18N
+        encodingIANAAliasesMap.put("IBM280", "IBM280"); // NOI18N
+        encodingIANAAliasesMap.put("EBCDIC-CP-IT", "IBM280"); // NOI18N
+
+        encodingIANA2JavaMap.put("IBM284", "CP284");  // NOI18N
+        encodingIANADescriptionMap.put("IBM284", NbBundle.getMessage(EncodingHelper.class, "NAME_IBM284")); // NOI18N
+        encodingIANAAliasesMap.put("IBM284", "IBM284"); // NOI18N
+        encodingIANAAliasesMap.put("EBCDIC-CP-ES", "IBM284"); // NOI18N
+
+        encodingIANA2JavaMap.put("IBM285", "CP285");  // NOI18N
+        encodingIANADescriptionMap.put("IBM285", NbBundle.getMessage(EncodingHelper.class, "NAME_IBM285")); // NOI18N
+        encodingIANAAliasesMap.put("IBM285", "IBM285"); // NOI18N
+        encodingIANAAliasesMap.put("EBCDIC-CP-GB", "IBM285"); // NOI18N
+
+        encodingIANA2JavaMap.put("IBM297", "CP297");  // NOI18N
+        encodingIANADescriptionMap.put("IBM297", NbBundle.getMessage(EncodingHelper.class, "NAME_IBM297")); // NOI18N
+        encodingIANAAliasesMap.put("IBM297", "IBM297"); // NOI18N
+        encodingIANAAliasesMap.put("EBCDIC-CP-FR", "IBM297"); // NOI18N
+
+        encodingIANA2JavaMap.put("IBM424", "CP424");  // NOI18N
+        encodingIANADescriptionMap.put("IBM424", NbBundle.getMessage(EncodingHelper.class, "NAME_IBM424")); // NOI18N
+        encodingIANAAliasesMap.put("IBM424", "IBM424"); // NOI18N
+        encodingIANAAliasesMap.put("EBCDIC-CP-HE", "IBM424"); // NOI18N
+
+        encodingIANA2JavaMap.put("IBM500", "CP500");  // NOI18N
+        encodingIANADescriptionMap.put("IBM500", NbBundle.getMessage(EncodingHelper.class, "NAME_IBM500")); // NOI18N
+        encodingIANAAliasesMap.put("IBM500", "IBM500"); // NOI18N
+        encodingIANAAliasesMap.put("EBCDIC-CP-CH", "IBM500"); // NOI18N
+        encodingIANAAliasesMap.put("EBCDIC-CP-BE", "IBM500"); // NOI18N
+
+        encodingIANA2JavaMap.put("IBM870", "CP870");  // NOI18N
+        encodingIANADescriptionMap.put("IBM870", NbBundle.getMessage(EncodingHelper.class, "NAME_IBM870")); // NOI18N
+        encodingIANAAliasesMap.put("IBM870", "IBM870"); // NOI18N
+        encodingIANAAliasesMap.put("EBCDIC-CP-ROECE", "IBM870"); // NOI18N
+        encodingIANAAliasesMap.put("EBCDIC-CP-YU", "IBM870"); // NOI18N
+
+        encodingIANA2JavaMap.put("IBM871", "CP871");  // NOI18N
+        encodingIANADescriptionMap.put("IBM871", NbBundle.getMessage(EncodingHelper.class, "NAME_IBM871")); // NOI18N
+        encodingIANAAliasesMap.put("IBM871", "IBM871"); // NOI18N
+        encodingIANAAliasesMap.put("EBCDIC-CP-IS", "IBM871"); // NOI18N
+
+        encodingIANA2JavaMap.put("IBM918", "CP918");  // NOI18N
+        encodingIANADescriptionMap.put("IBM918", NbBundle.getMessage(EncodingHelper.class, "NAME_IBM918")); // NOI18N
+        encodingIANAAliasesMap.put("IBM918", "IBM918"); // NOI18N
+        encodingIANAAliasesMap.put("EBCDIC-CP-AR2", "IBM918"); // NOI18N
+
+        encodingIANA2JavaMap.put("EUC-JP", "EUCJIS"); // NOI18N
+        encodingIANADescriptionMap.put("EUC-JP", NbBundle.getMessage(EncodingHelper.class, "NAME_EUC-JP")); // NOI18N
+        encodingIANAAliasesMap.put("EUC-JP", "EUC-JP"); // NOI18N
+
+        encodingIANA2JavaMap.put("EUC-KR", "KSC5601"); // NOI18N
+        encodingIANADescriptionMap.put("EUC-KR", NbBundle.getMessage(EncodingHelper.class, "NAME_EUC-KR")); // NOI18N
+        encodingIANAAliasesMap.put("EUC-KR", "EUC-KR");  // NOI18N
+
+        encodingIANA2JavaMap.put("GB2312", "GB2312"); // NOI18N
+        encodingIANADescriptionMap.put("GB2312", NbBundle.getMessage(EncodingHelper.class, "NAME_GB2312")); // NOI18N
+        encodingIANAAliasesMap.put("GB2312", "GB2312"); // NOI18N
+
+        encodingIANA2JavaMap.put("ISO-2022-JP", "JIS");  // NOI18N
+        encodingIANADescriptionMap.put("ISO-2022-JP", NbBundle.getMessage(EncodingHelper.class, "NAME_ISO-2022-JP")); // NOI18N
+        encodingIANAAliasesMap.put("ISO-2022-JP", "ISO-2022-JP"); // NOI18N
+
+        encodingIANA2JavaMap.put("ISO-2022-KR", "ISO2022KR");   // NOI18N
+        encodingIANADescriptionMap.put("ISO-2022-KR", NbBundle.getMessage(EncodingHelper.class, "NAME_ISO-2022-KR")); // NOI18N
+        encodingIANAAliasesMap.put("ISO-2022-KR", "ISO-2022-KR"); // NOI18N
+
+        encodingIANA2JavaMap.put("ISO-8859-1", "8859_1");     // NOI18N
+        encodingIANADescriptionMap.put("ISO-8859-1", NbBundle.getMessage(EncodingHelper.class, "NAME_ISO-8859-1")); // NOI18N
+        encodingIANAAliasesMap.put("ISO-8859-1", "ISO-8859-1"); // NOI18N
+        encodingIANAAliasesMap.put("LATIN1", "ISO-8859-1"); // NOI18N
+        encodingIANAAliasesMap.put("L1", "ISO-8859-1"); // NOI18N
+        encodingIANAAliasesMap.put("IBM819", "ISO-8859-1"); // NOI18N
+        encodingIANAAliasesMap.put("CP819", "ISO-8859-1"); // NOI18N
+
+        encodingIANA2JavaMap.put("ISO-8859-2", "8859_2");     // NOI18N
+        encodingIANADescriptionMap.put("ISO-8859-2", NbBundle.getMessage(EncodingHelper.class, "NAME_ISO-8859-2")); // NOI18N
+        encodingIANAAliasesMap.put("ISO-8859-2", "ISO-8859-2"); // NOI18N
+        encodingIANAAliasesMap.put("LATIN2", "ISO-8859-2"); // NOI18N
+        encodingIANAAliasesMap.put("L2", "ISO-8859-2"); // NOI18N
+
+        encodingIANA2JavaMap.put("ISO-8859-3", "8859_3");     // NOI18N
+        encodingIANADescriptionMap.put("ISO-8859-3", NbBundle.getMessage(EncodingHelper.class, "NAME_ISO-8859-3")); // NOI18N
+        encodingIANAAliasesMap.put("ISO-8859-3", "ISO-8859-3"); // NOI18N
+        encodingIANAAliasesMap.put("LATIN3", "ISO-8859-3"); // NOI18N
+        encodingIANAAliasesMap.put("L3", "ISO-8859-3"); // NOI18N
+
+        encodingIANA2JavaMap.put("ISO-8859-4", "8859_4");     // NOI18N
+        encodingIANADescriptionMap.put("ISO-8859-4", NbBundle.getMessage(EncodingHelper.class, "NAME_ISO-8859-4")); // NOI18N
+        encodingIANAAliasesMap.put("ISO-8859-4", "ISO-8859-4"); // NOI18N
+        encodingIANAAliasesMap.put("LATIN4", "ISO-8859-4"); // NOI18N
+        encodingIANAAliasesMap.put("L4", "ISO-8859-4"); // NOI18N
+
+        encodingIANA2JavaMap.put("ISO-8859-5", "8859_5");     // NOI18N
+        encodingIANADescriptionMap.put("ISO-8859-5", NbBundle.getMessage(EncodingHelper.class, "NAME_ISO-8859-5")); // NOI18N
+        encodingIANAAliasesMap.put("ISO-8859-5", "ISO-8859-5"); // NOI18N
+        encodingIANAAliasesMap.put("CYRILLIC", "ISO-8859-5"); // NOI18N
+
+        encodingIANA2JavaMap.put("ISO-8859-6", "8859_6");     // NOI18N
+        encodingIANADescriptionMap.put("ISO-8859-6", NbBundle.getMessage(EncodingHelper.class, "NAME_ISO-8859-6")); // NOI18N
+        encodingIANAAliasesMap.put("ISO-8859-6", "ISO-8859-6"); // NOI18N
+
+        encodingIANA2JavaMap.put("ISO-8859-7", "8859_7");     // NOI18N
+        encodingIANADescriptionMap.put("ISO-8859-7", NbBundle.getMessage(EncodingHelper.class, "NAME_ISO-8859-7")); // NOI18N
+        encodingIANAAliasesMap.put("ISO-8859-7", "ISO-8859-7"); // NOI18N
+        encodingIANAAliasesMap.put("GREEK", "ISO-8859-7"); // NOI18N
+        encodingIANAAliasesMap.put("GREEK8", "ISO-8859-7"); // NOI18N
+
+        encodingIANA2JavaMap.put("ISO-8859-8", "8859_8");     // NOI18N
+        encodingIANADescriptionMap.put("ISO-8859-8", NbBundle.getMessage(EncodingHelper.class, "NAME_ISO-8859-8")); // NOI18N
+        encodingIANAAliasesMap.put("ISO-8859-8", "ISO-8859-8"); // NOI18N
+        encodingIANAAliasesMap.put("HEBREW", "ISO-8859-8"); // NOI18N
+
+        encodingIANA2JavaMap.put("ISO-8859-9", "8859_9");     // NOI18N
+        encodingIANADescriptionMap.put("ISO-8859-9", NbBundle.getMessage(EncodingHelper.class, "NAME_ISO-8859-9")); // NOI18N
+        encodingIANAAliasesMap.put("ISO-8859-9", "ISO-8859-9"); // NOI18N
+        encodingIANAAliasesMap.put("LATIN5", "ISO-8859-9"); // NOI18N
+        encodingIANAAliasesMap.put("L5", "ISO-8859-9"); // NOI18N
+
+        encodingIANA2JavaMap.put("KOI8-R", "KOI8_R"); // NOI18N
+        encodingIANADescriptionMap.put("KOI8-R", NbBundle.getMessage(EncodingHelper.class, "NAME_KOI8-R")); // NOI18N
+        encodingIANAAliasesMap.put("KOI8-R", "KOI8-R"); // NOI18N
+
+        encodingIANADescriptionMap.put("US-ASCII", NbBundle.getMessage(EncodingHelper.class, "NAME_ASCII")); // NOI18N
+        encodingIANAAliasesMap.put("ASCII", "US-ASCII");  // NOI18N
+        encodingIANAAliasesMap.put("US-ASCII", "US-ASCII");  // NOI18N
+        encodingIANAAliasesMap.put("ISO646-US", "US-ASCII");  // NOI18N
+        encodingIANAAliasesMap.put("IBM367", "US-ASCII");  // NOI18N
+        encodingIANAAliasesMap.put("CP367", "US-ASCII");  // NOI18N
+
+        encodingIANA2JavaMap.put("UTF-8", "UTF8");  // NOI18N
+        encodingIANADescriptionMap.put("UTF-8", NbBundle.getMessage(EncodingHelper.class, "NAME_UTF-8")); // NOI18N
+        encodingIANAAliasesMap.put("UTF-8", "UTF-8"); // NOI18N
+
+        encodingIANA2JavaMap.put("UTF-16", "Unicode"); // NOI18N
+        encodingIANADescriptionMap.put("UTF-16", NbBundle.getMessage(EncodingHelper.class, "NAME_UTF-16")); // NOI18N
+        encodingIANAAliasesMap.put("UTF-16", "UTF-16");  // NOI18N
+
+
+        Iterator<String> iter = encodingIANA2JavaMap.keySet().iterator();
+        String key;
+        while (iter.hasNext()) {
+            key = iter.next();
+            encodingJava2IANAMap.put(encodingIANA2JavaMap.get(key), key);
+        }
+        encodingIANA2JavaMap.put("US-ASCII", "8859_1"); // NOI18N    
+    }
+    
 }

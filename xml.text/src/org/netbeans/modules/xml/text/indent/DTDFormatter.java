@@ -106,8 +106,8 @@ public class DTDFormatter extends ExtFormatter {
     * @return new offset to place cursor to
     */
     public int indentNewLine (Document doc, int offset) {
-        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("\n+ XMLFormatter::indentNewLine: doc = " + doc); // NOI18N
-        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("+             ::indentNewLine: offset = " + offset); // NOI18N
+//        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("\n+ XMLFormatter::indentNewLine: doc = " + doc); // NOI18N
+//        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("+             ::indentNewLine: offset = " + offset); // NOI18N
 
         if (doc instanceof BaseDocument) {
             BaseDocument bdoc = (BaseDocument)doc;
@@ -120,17 +120,17 @@ public class DTDFormatter extends ExtFormatter {
                 int fullLine = Utilities.getFirstNonWhiteBwd (bdoc, offset - 1);
                 int indent = Utilities.getRowIndent (bdoc, fullLine);
                 
-                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("+             ::indentNewLine: fullLine = " + fullLine); // NOI18N
-                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("+             ::indentNewLine: indent   = " + indent); // NOI18N
-
-                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("+             ::indentNewLine: offset   = " + offset); // NOI18N
+//                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("+             ::indentNewLine: fullLine = " + fullLine); // NOI18N
+//                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("+             ::indentNewLine: indent   = " + indent); // NOI18N
+//
+//                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("+             ::indentNewLine: offset   = " + offset); // NOI18N
 //                    if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("+             ::indentNewLine: sb       = '" + sb.toString() + "'"); // NOI18N
 
                 String indentation = getIndentString(bdoc, indent);
                 bdoc.insertString (offset, indentation, null);
                 offset += indentation.length();
 
-                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("+             ::indentNewLine: offset = " + offset); // NOI18N
+//                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("+             ::indentNewLine: offset = " + offset); // NOI18N
             } catch (BadLocationException e) {
                 if (Boolean.getBoolean ("netbeans.debug.exceptions")) { // NOI18N
                     e.printStackTrace();
@@ -186,7 +186,7 @@ public class DTDFormatter extends ExtFormatter {
                 
             } else { // remove end-line whitespace
                 while (pos.getToken() != null) {
-                    if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("XMLFormatSupport::StripEndWhitespaceLayer::format: position = " + pos); // NOI18N
+                    //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("XMLFormatSupport::StripEndWhitespaceLayer::format: position = " + pos); // NOI18N
 
                     pos = xfs.removeLineEndWhitespace (pos);
                     if (pos.getToken() != null) {

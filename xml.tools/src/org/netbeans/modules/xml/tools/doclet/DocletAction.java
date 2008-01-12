@@ -57,8 +57,8 @@ import org.openide.util.datatransfer.ExClipboard;
 import org.openide.util.actions.*;
 
 import org.netbeans.tax.*;
-import org.netbeans.modules.xml.core.*;
-import org.netbeans.modules.xml.core.actions.CollectDTDAction;
+import org.netbeans.modules.xml.*;
+import org.netbeans.modules.xml.actions.CollectDTDAction;
 import org.netbeans.modules.xml.tools.generator.*;
 import org.netbeans.modules.xml.tax.cookies.TreeEditorCookie;
 

@@ -60,7 +60,6 @@ import org.netbeans.editor.*;
 import org.netbeans.editor.ext.*;
 import org.netbeans.modules.editor.*;
 
-import org.netbeans.modules.xml.core.XMLDataObject;
 import org.netbeans.modules.xml.text.completion.NodeSelector;
 import org.netbeans.modules.xml.text.completion.XMLCompletion;
 
@@ -79,6 +78,9 @@ public class XMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
     /** Serial Version UID */
     private static final long serialVersionUID =5326735092324267367L;
     
+    /** Default XML Mime Type. */
+    public static final String MIME_TYPE = "text/xml"; // NOI18N
+
     // comment action name
     public static final String xmlCommentAction = "xml-comment";
     
@@ -157,7 +159,7 @@ public class XMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
 
     //??? +xml handling
     public String getContentType() {
-        return XMLDataObject.MIME_TYPE;
+        return MIME_TYPE;
     }
 
     /**

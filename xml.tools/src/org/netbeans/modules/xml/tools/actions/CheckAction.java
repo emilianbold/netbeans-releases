@@ -49,8 +49,8 @@ import org.openide.util.actions.CookieAction;
 import org.openide.loaders.*;
 
 import org.netbeans.tax.*;
-import org.netbeans.modules.xml.core.*;
-import org.netbeans.modules.xml.core.actions.*;
+import org.netbeans.modules.xml.*;
+import org.netbeans.modules.xml.actions.*;
 
 import org.netbeans.api.xml.cookies.*;
 import org.openide.util.RequestProcessor;

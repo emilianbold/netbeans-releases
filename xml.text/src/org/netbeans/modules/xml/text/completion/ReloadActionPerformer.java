@@ -42,7 +42,7 @@
 package org.netbeans.modules.xml.text.completion;
 
 import javax.swing.text.Document;
-import org.netbeans.modules.xml.core.actions.XMLUpdateDocumentAction;
+//import org.netbeans.modules.xml.core.actions.XMLUpdateDocumentAction;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
 
@@ -53,7 +53,7 @@ import org.openide.nodes.Node;
  *
  * @author  Petr Kuzel
  */
-public final class ReloadActionPerformer implements XMLUpdateDocumentAction.Performer {
+public final class ReloadActionPerformer { //implements XMLUpdateDocumentAction.Performer {
 
     public void perform(Node node) {
         if (node == null) return;

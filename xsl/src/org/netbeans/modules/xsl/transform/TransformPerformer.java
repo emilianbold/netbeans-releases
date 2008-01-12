@@ -42,7 +42,6 @@ package org.netbeans.modules.xsl.transform;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.io.OutputStream;
 import java.util.*;
 import java.net.URL;
@@ -70,19 +69,12 @@ import org.openide.nodes.Node;
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Task;
-import org.openide.util.actions.CookieAction;
 
 import org.netbeans.api.xml.cookies.*;
 
-import org.netbeans.modules.xml.core.XMLDataObject;
-import org.netbeans.modules.xml.core.actions.CollectXMLAction;
-import org.netbeans.modules.xml.core.actions.InputOutputReporter;
-
-import org.netbeans.modules.xml.core.lib.GuiUtil;
-import org.netbeans.modules.xml.core.lib.FileUtilities;
-
-import org.netbeans.modules.xsl.XSLDataObject;
+import org.netbeans.modules.xml.actions.InputOutputReporter;
+import org.netbeans.modules.xml.lib.FileUtilities;
+import org.netbeans.modules.xml.lib.GuiUtil;
 import org.netbeans.modules.xsl.ui.TransformPanel;
 import org.netbeans.modules.xsl.settings.TransformHistory;
 import org.netbeans.modules.xsl.actions.TransformAction;

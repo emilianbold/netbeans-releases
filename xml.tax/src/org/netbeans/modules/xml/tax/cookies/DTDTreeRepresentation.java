@@ -42,8 +42,7 @@ package org.netbeans.modules.xml.tax.cookies;
 
 import org.xml.sax.*;
 
-import org.netbeans.modules.xml.core.sync.*;
-import org.netbeans.modules.xml.tax.cookies.TreeEditorCookieImpl;
+import org.netbeans.modules.xml.sync.*;
 
 /**
  *

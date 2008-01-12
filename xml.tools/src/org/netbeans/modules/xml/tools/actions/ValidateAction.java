@@ -42,8 +42,8 @@
 package org.netbeans.modules.xml.tools.actions;
 
 import org.netbeans.api.xml.cookies.ValidateXMLCookie;
-import org.netbeans.modules.xml.core.actions.CollectXMLAction;
-import org.netbeans.modules.xml.core.actions.InputOutputReporter;
+import org.netbeans.modules.xml.actions.CollectXMLAction;
+import org.netbeans.modules.xml.actions.InputOutputReporter;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;

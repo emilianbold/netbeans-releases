@@ -73,6 +73,7 @@ import org.openide.util.WeakListeners;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.openide.awt.StatusDisplayer;
+import org.openide.util.NbBundle;
 
 /**
  * Manages grammar to text editor association. It is able to
@@ -142,7 +143,7 @@ class GrammarManager extends FileChangeAdapter implements DocumentListener {
         
         // make current loader a zombie
         if (state == VALID) {
-            String msg = Util.THIS.getString("MSG_loading_cancel");
+            String msg = NbBundle.getMessage(GrammarManager.class, "MSG_loading_cancel");
             StatusDisplayer.getDefault().setStatusText(msg);
         }
         
@@ -240,7 +241,7 @@ class GrammarManager extends FileChangeAdapter implements DocumentListener {
     private synchronized void grammarLoaded(GrammarQuery grammar) {        
         //Issue: http://www.netbeans.org/issues/show_bug.cgi?id=108610
         //do not show error message since there can be many more completion providers.
-        String status = (grammar != null) ? Util.THIS.getString("MSG_loading_done")
+        String status = (grammar != null) ? NbBundle.getMessage(GrammarManager.class, "MSG_loading_done")
         : null;
         
         this.grammar = grammar == null ? EmptyQuery.INSTANCE : grammar;
@@ -259,7 +260,7 @@ class GrammarManager extends FileChangeAdapter implements DocumentListener {
         GrammarQuery loaded = null;
         try {
             
-            String status = Util.THIS.getString("MSG_loading");
+            String status = NbBundle.getMessage(GrammarManager.class, "MSG_loading");
             StatusDisplayer.getDefault().setStatusText(status);
             
             // prepare grammar environment

@@ -48,10 +48,10 @@ import org.openide.util.HelpCtx;
 import org.openide.util.actions.CookieAction;
 import org.openide.util.RequestProcessor;
 
-import org.netbeans.modules.xml.core.actions.CollectXMLAction;
-import org.netbeans.modules.xml.core.actions.CollectDTDAction;
+import org.netbeans.modules.xml.actions.CollectXMLAction;
+import org.netbeans.modules.xml.actions.CollectDTDAction;
 
-import org.netbeans.modules.xml.core.lib.GuiUtil;
+import org.netbeans.modules.xml.lib.GuiUtil;
 
 public abstract class XMLGenerateAction extends CookieAction {
 

@@ -59,6 +59,7 @@ import org.netbeans.modules.xml.text.syntax.dom.*;
 import org.netbeans.modules.xml.api.model.*;
 import org.netbeans.modules.xml.spi.dom.UOException;
 import org.netbeans.modules.xml.text.syntax.dom.SyntaxNode;
+import org.openide.util.NbBundle;
 
 /**
  * Consults grammar and presents list of possible choices
@@ -168,7 +169,7 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
                     if (stlist != null && !stlist.isEmpty()) {
                         ElementResultItem item = (ElementResultItem)stlist.get(0); //we always get just one item
                         if(!item.getItemText().startsWith("/") || item.getItemText().startsWith(helper.getPreText().substring(1))) {
-                            String title = Util.THIS.getString("MSG_result", helper.getPreText());
+                            String title = NbBundle.getMessage(XMLCompletionQuery.class, "MSG_result", helper.getPreText());
                             return new XMLCompletionResult(component, title,
                                     stlist, helper.getOffset(), 0);
                         }
@@ -176,7 +177,7 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
                 }
                 
                 String debugMsg = Boolean.getBoolean("netbeans.debug.xml") ? " " + helper.getOffset() + "-" + helper.getEraseCount() : "";
-                String title = Util.THIS.getString("MSG_result", helper.getPreText()) + debugMsg;
+                String title = NbBundle.getMessage(XMLCompletionQuery.class, "MSG_result", helper.getPreText()) + debugMsg;
                 
                 // add to the list end tag if detected '<'
                 // unless following end tag is of the same name
@@ -230,7 +231,7 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
                         encodings.add(new XMLResultItem("\"UTF-16\""));         // NOI18N
                         return new XMLCompletionResult(
                                 component,
-                                Util.THIS.getString("MSG_encoding_comp"),
+                                NbBundle.getMessage(XMLCompletionQuery.class, "MSG_encoding_comp"),
                                 encodings,
                                 helper.getOffset(),
                                 0
@@ -241,7 +242,7 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
             }
             
         } catch (BadLocationException e) {
-            Util.THIS.debug(e);
+            //Util.THIS.debug(e);
         }
         
         // nobody knows what happened...
@@ -257,7 +258,7 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
         if (auto) return null;
         return new XMLCompletionResult(
                 component,
-                Util.THIS.getString("BK0002"),
+                NbBundle.getMessage(XMLCompletionQuery.class, "BK0002"),
                 Collections.EMPTY_LIST,
                 0,
                 0
@@ -273,7 +274,7 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
         if (auto) return null;
         return new XMLCompletionResult(
                 component,
-                Util.THIS.getString("BK0003"),
+                NbBundle.getMessage(XMLCompletionQuery.class, "BK0003"),
                 Collections.EMPTY_LIST,
                 0,
                 0
@@ -405,7 +406,7 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
      * @return list with one ElementResult or empty.
      */
     private static List findStartTag(SyntaxNode text, String prefix) {
-        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("XMLCompletionQuery.findStartTag: text=" + text);
+        //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("XMLCompletionQuery.findStartTag: text=" + text);
         
         Node parent = text.getParentNode();
         if (parent == null) {
@@ -413,17 +414,13 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
         }
         
         String name = parent.getNodeName();
-        if ( Util.THIS.isLoggable() ) /* then */ {
-            Util.THIS.debug("    name=" + name);
-        }
+        //if ( Util.THIS.isLoggable() ) Util.THIS.debug("    name=" + name);
         if ( name == null ) {
             return Collections.EMPTY_LIST;
         }
         
         XMLResultItem res = new ElementResultItem(prefix + name);
-        if ( Util.THIS.isLoggable() ) /* then */ {
-            Util.THIS.debug("    result=" + res);
-        }
+        //if ( Util.THIS.isLoggable() ) Util.THIS.debug("    result=" + res);
         
         List list = new ArrayList(1);
         list.add(res);
