@@ -7,4 +7,4 @@ AutoUpdate-Show-In-Client: false
 
 Name: org/netbeans/modules/compapp/casaeditor/CasaDataLoader.class
 OpenIDE-Module-Class: Loader
-Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.core.XMLDataObject, com.stc.projects.icanpro.ui.portmap.PortMapDataObject
+Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.XMLDataObject, com.stc.projects.icanpro.ui.portmap.PortMapDataObject
