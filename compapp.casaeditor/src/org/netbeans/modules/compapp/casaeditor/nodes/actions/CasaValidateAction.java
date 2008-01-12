@@ -44,8 +44,8 @@ import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.List;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
-//import org.netbeans.modules.xml.validation.ValidateAction;
-//import org.netbeans.modules.xml.validation.ui.ValidationOutputWindow;
+import org.netbeans.modules.xml.validation.ValidateAction;
+import org.netbeans.modules.xml.validation.ui.ValidationOutputWindow;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
@@ -58,10 +58,6 @@ import org.openide.windows.OutputWriter;
  *
  * @author jqian
  */
-public class CasaValidateAction {
-    
-}
-/*
 public class CasaValidateAction extends ValidateAction {
 
     private CasaWrapperModel model;
@@ -72,6 +68,7 @@ public class CasaValidateAction extends ValidateAction {
         this.model = model;
     }
 
+    @Override
     public void actionPerformed(ActionEvent event) {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
@@ -131,4 +128,4 @@ public class CasaValidateAction extends ValidateAction {
             return validationResults;
         }
     }
-}*/
+}

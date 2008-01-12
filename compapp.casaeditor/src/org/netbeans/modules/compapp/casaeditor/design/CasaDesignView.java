@@ -53,6 +53,7 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.nodes.CasaNodeFactory;
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.AutoLayoutAction;
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.BuildAction;
+import org.netbeans.modules.compapp.casaeditor.nodes.actions.CasaValidateAction;
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.DeployAction;
 import org.netbeans.modules.print.api.PrintManager;
 import org.openide.util.NbBundle;
@@ -82,14 +83,14 @@ public class CasaDesignView {
         mScroller.getHorizontalScrollBar().setUnitIncrement(20);
         
         final CasaWrapperModel model = mDataObject.getEditorSupport().getModel(); 
-//        if (model != null) {
-//            // validate after casa view is shown
-//            SwingUtilities.invokeLater(new Runnable() {
-//                public void run() {      
-//                    new CasaValidateAction(model).actionPerformed(null);
-//                }
-//            });
-//        }
+        if (model != null) {
+            // validate after casa view is shown
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {      
+                    new CasaValidateAction(model).actionPerformed(null);
+                }
+            });
+        }
       
         JComponent view = null;
         if (model == null) {
@@ -133,6 +134,7 @@ public class CasaDesignView {
     private void initializeSceneForDesignView() {
         mScroller.addComponentListener(new ComponentAdapter() {
             private boolean mIsIgnoringResizeEvents;
+            @Override
             public void componentResized(ComponentEvent evt) {
                 if (evt.getID() == ComponentEvent.COMPONENT_RESIZED) {
                     if (
@@ -189,7 +191,7 @@ public class CasaDesignView {
         mAutoLayoutAction = new AutoLayoutAction(mDataObject);
         mBuildAction = new BuildAction(model);
         mDeployAction = new DeployAction(model);
-//        mValidateAction = new CasaValidateAction(mScene.getModel());
+        mValidateAction = new CasaValidateAction(model);
     }
 
     private void setupToolBar() {
@@ -197,27 +199,27 @@ public class CasaDesignView {
         mToolBar.addSeparator();
 
         mToolBar.add(createButton(mAutoLayoutAction,
-                                  (String) mAutoLayoutAction.getValue(Action.NAME), // NOI18N
-                                  (Icon)   mAutoLayoutAction.getValue(Action.SMALL_ICON))); // NOI18N
+                                  (String) mAutoLayoutAction.getValue(Action.NAME), 
+                                  (Icon)   mAutoLayoutAction.getValue(Action.SMALL_ICON))); 
         mToolBar.addSeparator();
 
         mToolBar.add(createButton(mBuildAction,
-                                  (String) mBuildAction.getValue(Action.NAME), // NOI18N
-                                  (Icon)   mBuildAction.getValue(Action.SMALL_ICON))); // NOI18N
+                                  (String) mBuildAction.getValue(Action.NAME), 
+                                  (Icon)   mBuildAction.getValue(Action.SMALL_ICON))); 
         
         mToolBar.add(createButton(mDeployAction,
-                                  (String) mDeployAction.getValue(Action.NAME), // NOI18N
-                                  (Icon)   mDeployAction.getValue(Action.SMALL_ICON))); // NOI18N
+                                  (String) mDeployAction.getValue(Action.NAME),
+                                  (Icon)   mDeployAction.getValue(Action.SMALL_ICON)));
        
         // vlv: print
         mToolBar.addSeparator();
         mToolBar.add(PrintManager.getDefault().getPrintPreviewAction()); 
         
-//        mToolBar.addSeparator();
-//
-//        mToolBar.add(createButton(mValidateAction,
-//                                  (String) mValidateAction.getValue(Action.NAME), // NOI18N
-//                                  (Icon)   mValidateAction.getValue(Action.SMALL_ICON))); // NOI18N
+        mToolBar.addSeparator();
+
+        mToolBar.add(createButton(mValidateAction,
+                                  (String) mValidateAction.getValue(Action.NAME),
+                                  (Icon)   mValidateAction.getValue(Action.SMALL_ICON)));
     }
 
     private JButton createButton(Action action, String tooltip, Icon icon) {
