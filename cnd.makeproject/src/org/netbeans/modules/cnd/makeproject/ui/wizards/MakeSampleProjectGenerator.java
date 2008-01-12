@@ -108,7 +108,9 @@ public class MakeSampleProjectGenerator {
         // update project.xml
         try {
             // Change project name in 'project.xml'
-            File projXml = FileUtil.toFile(prjLoc.getFileObject(AntProjectHelper.PROJECT_XML_PATH));
+            prjLoc.getFileSystem().refresh(false); // IZ124952
+            FileObject fo = prjLoc.getFileObject(AntProjectHelper.PROJECT_XML_PATH);
+            File projXml = FileUtil.toFile(fo);
             Document doc = XMLUtil.parse(new InputSource(projXml.toURI().toString()), false, true, null, null);
             if (name != null)
                 changeXmlFileByNameNS(doc, PROJECT_CONFIGURATION_NAMESPACE, "name", name, null); // NOI18N
@@ -235,9 +237,9 @@ public class MakeSampleProjectGenerator {
             while ((ent = zip.getNextEntry()) != null) {
                 File f = new File(targetFolder, ent.getName());
                 if (ent.isDirectory()) {
-                    f.mkdirs();
+                    FileUtil.createFolder(f);//f.mkdirs();
                 } else {
-                    f.getParentFile().mkdirs();
+                    FileUtil.createFolder(f.getParentFile()); //f.getParentFile().mkdirs();
                     FileOutputStream out = new FileOutputStream(f);
                     try {
                         FileUtil.copy(zip, out);
