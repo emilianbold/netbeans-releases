@@ -45,15 +45,22 @@ import com.sun.rave.designtime.ContextMethod;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -325,8 +332,8 @@ public class JavaClass {
                         if (beansUnit != null) {
                             blockTree = beansUnit.getPropertiesInitMethod().removeSetStatements(wc, bean, blockTree);
                         }
+                        bean.setInserted(false);
                     }
-                    bean.removeEntry();
                 }
                 if(beansUnit != null) {
                    beansUnit.getCleanupMethod().removeCleanupStatements(wc, beans);
@@ -735,4 +742,163 @@ public class JavaClass {
             }
         }, fObj);        
     }
+    
+    /*
+     * @return The usage status, it returns 
+     *         UseStatus.init_use_only if the bean is used in _init() method
+     *         UseStatus.used if it is used elsewhere in .java in addition to _init() method
+     *         UseStatus.not_used if it is not used in  
+     */    
+    public UseStatus isPropertyUsed(final String name, final List<FileObject> fObjs) {
+        final HashMap<ElementHandle, String> elementAndNames = getElementHandlesToReplace(name, name);
+        return (UseStatus)WriteTaskWrapper.execute( new WriteTaskWrapper.Write() {
+            public Object run(WorkingCopy wc) {
+                ElementsUsageFinder usageFinder = new ElementsUsageFinder(wc, elementAndNames);
+                usageFinder.scan(wc.getCompilationUnit(), null);
+                UseStatus result = usageFinder.getUseStatus();
+                return result;
+            }
+        }, fObjs);
+    }
+    
+    public enum UseStatus {
+        not_used, init_use_only, used;
+        private List<String> propNames = new ArrayList<String>();
+        
+        /*
+         * @return the properties initialized in _init() method
+         */
+        public List<String> getInitializedProperties() {
+            return propNames;
+        }
+        
+        /*
+         * @param The name of the property initialized in _init() method
+         */        
+        public void addInitializedProperty(String name) {
+            propNames.add(name);
+        }
+    }
+    
+    /* Look for the occurence of list of elements and a EL expression string literal
+     * in the given java source. It sets an instance field by name useStatus as following
+     *      UseStatus.init_use_only if the elements/literal is used in _init() method
+     *      UseStatus.used if elements/literal is used elsewhere in addition to _init() method
+     *      UseStatus.not_used if not used
+     */
+    class ElementsUsageFinder extends TreePathScanner<Tree, Void> {
+        private final CompilationInfo cinfo;
+        private HashMap<Element, String> elementAndNames = new HashMap<Element, String>();
+        private UseStatus useStatus = UseStatus.not_used;
+        private String vbExpression;
+
+        /** Creates a new instance of Refactor */
+        public ElementsUsageFinder(CompilationInfo cinfo, HashMap<? extends ElementHandle, String> handleAndNames) {
+            this.cinfo = cinfo;
+            for (ElementHandle elemHandle : handleAndNames.keySet()) {
+                Element elem = elemHandle.resolve(cinfo);
+                elementAndNames.put(elem, handleAndNames.get(elemHandle));
+            }
+            //To take care of VB expressions, Ex:- getValue(#{SessionBean1.personRowSet})
+            //renamePropertyBindingExpression(wc, name, newName);
+            vbExpression = "#{" + getShortName() + "." + name + "}";                
+        }
+
+        @Override
+        public Tree visitIdentifier(IdentifierTree tree, Void v) {
+            if (useStatus != UseStatus.used) {
+                UseStatus status = getUseStatus(getCurrentPath());
+                if(status != useStatus && status != UseStatus.not_used) {
+                    useStatus = status;
+                }
+                return super.visitIdentifier(tree, v);
+            }
+            return null;
+        }
+
+        @Override
+        public Tree visitMethod(MethodTree tree, Void v) {
+            if (useStatus != UseStatus.used && !canSkip(getCurrentPath())) {
+                return super.visitMethod(tree, v);
+            }
+            return null;
+        }
+
+        @Override
+        public Tree visitVariable(VariableTree tree, Void v) {
+            if (useStatus != UseStatus.used && !canSkip(getCurrentPath())) {
+                return super.visitVariable(tree, v);
+            }
+            return null;
+        }
+
+        public UseStatus getUseStatus() {
+            return useStatus;
+        }
+        
+        @Override
+        public Tree visitLiteral(LiteralTree tree, Void v) {
+            if (useStatus != UseStatus.used) {
+                UseStatus status = getUseStatus(tree);
+                if (status != useStatus && status != UseStatus.not_used) {
+                    useStatus = status;
+                }
+                return super.visitLiteral(tree, v);
+            }
+            return null;
+        }
+        
+        private UseStatus getUseStatus(LiteralTree tree) {
+            if(tree.getKind() == Tree.Kind.STRING_LITERAL && vbExpression.equals(tree.getValue())) {
+                if(getEnclosingMethodName(getCurrentPath()).equals("_init")) {
+                    return UseStatus.init_use_only;
+                }else {
+                    return UseStatus.used;
+                }
+            }else {
+                return UseStatus.not_used;
+            }
+        }        
+
+        private UseStatus getUseStatus(TreePath path) {
+            if (cinfo.getTreeUtilities().isSynthetic(path)) {
+                return UseStatus.not_used;
+            }
+            Element el = cinfo.getTrees().getElement(path);
+            if (el != null && elementAndNames.containsKey(el)) {
+                if(getEnclosingMethodName(path).equals("_init")) {
+                    return UseStatus.init_use_only;
+                }else {
+                    return UseStatus.used;
+                }
+            }
+            return UseStatus.not_used;
+        }
+        
+        private boolean canSkip(TreePath path) {
+            if (cinfo.getTreeUtilities().isSynthetic(path)) {
+                return false;
+            }
+            Element el = cinfo.getTrees().getElement(path);
+            if (el != null && elementAndNames.containsKey(el)) {
+                TreePath declPath = cinfo.getTrees().getPath(el);
+                if(declPath.getLeaf().equals(path.getLeaf())) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        private String getEnclosingMethodName(TreePath path) {
+            while(path != null) {
+                Tree leaf = path.getLeaf();
+                if(leaf.getKind() == Kind.METHOD) {
+                    MethodTree mtree = (MethodTree)leaf;
+                    return mtree.getName().toString();
+                }
+                path = path.getParentPath();
+            }
+            return null;
+        }
+    }    
 }

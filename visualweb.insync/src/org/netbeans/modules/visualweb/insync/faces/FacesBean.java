@@ -56,9 +56,12 @@ import com.sun.rave.designtime.markup.AttributeDescriptor;
 import com.sun.rave.designtime.Constants;
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.Position;
+import java.util.ArrayList;
 import org.netbeans.modules.visualweb.insync.beans.Bean;
 import org.netbeans.modules.visualweb.insync.beans.EventSet;
 import org.netbeans.modules.visualweb.insync.beans.Property;
+import org.openide.filesystems.FileObject;
+import org.netbeans.modules.visualweb.insync.java.JavaClass.UseStatus;
 
 /**
  * A MarkupBean for a JSF component that lives in a FacesPageUnit.
@@ -318,17 +321,66 @@ public class FacesBean extends MarkupBean {
 
     public void addBinding() {
         if (!isInserted()) {
-            unit.addBindingBean(getBeanInfo(), getName());
-            setInserted(true);
+            unit.addBindingBean(getName());
         }
         setBindingProperty();
     }
-     
+    
+    /*
+     * @return The usage status, it returns 
+     *         UseStatus.init_use_only if the bean is used in _init() method
+     *         UseStatus.used if it is used elsewhere in .jsp/.java in addition to _init() method
+     *         UseStatus.not_used if it is not used in .jsp/.java
+     */
+    public UseStatus getUseStatus() {
+        UseStatus status = UseStatus.not_used;
+        if(isUsedInBindingExpression()) {
+            status = UseStatus.used;
+        }
+        if(status != UseStatus.used) {
+            List<FileObject> fObjs = new ArrayList<FileObject>();
+            fObjs.add(unit.getJavaUnit().getFileObject());
+            status = unit.getThisClass().isPropertyUsed(getName(), fObjs);
+            if(status == UseStatus.init_use_only) {
+                for (Property p : getProperties()) {
+                    if (p.isInserted()) {
+                        status.addInitializedProperty(p.getName());
+                    }
+                }                         
+            }
+        }
+  
+        return status;
+    }
+    
+    /*
+     * @return true if the bean is used in an EL expression inside .jsp 
+     */    
+    private boolean isUsedInBindingExpression(){
+        for (Bean b : unit.getBeans()) {
+            for (Property p : b.getProperties()) {
+                if (!p.isInserted()) {
+                    String vbExpression = "#{" + unit.getThisClass().getShortName() + "." + getName()+ "}";
+                    String vbExpression1 = "#{" + unit.getThisClass().getShortName() + "." + getName()+ ".";
+                    String ps = p.getValueSource();
+                    if (ps != null && (ps.contains(vbExpression) || ps.contains(vbExpression1))) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    
     public void removeBinding() {
         if (isInserted()) {
-            unit.removeBindingBean(getBeanInfo(), getName());
-            setInserted(false);
+            unit.removeBindingBean(getName());
+            for (Property p : getProperties()) {
+                if (p.isInserted()) {
+                    unsetProperty(p);
+                }
+            }            
         }
         clearBindingProperty();
     }
-}
+ }

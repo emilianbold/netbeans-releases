@@ -396,7 +396,6 @@ public class FacesPageUnit extends FacesUnit implements PropertyChangeListener {
                 String tagLibUri = pgunit.findTaglibUri(e.getPrefix());
                 try {
                     type = container.findComponentClass(tagName, tagLibUri);
-
                     assert Trace.trace("insync.faces", "FU.bindMarkupBeans type:" + type +
                             " tag:" + tagName + " tagLibUri:" + tagLibUri);
                     BeanInfo bi = getBeanInfo(type);
@@ -405,7 +404,6 @@ public class FacesPageUnit extends FacesUnit implements PropertyChangeListener {
                     if (defaultParent == null && tagName.equals(HtmlTag.FORM.name)) {
                         defaultParent = mbean;
                     }
-                    mbean.setInserted(true);
                     beans.add(mbean);
                 } catch (JsfTagSupportException ex) {
                     ErrorManager.getDefault().log(ex.getLocalizedMessage());
@@ -549,8 +547,9 @@ public class FacesPageUnit extends FacesUnit implements PropertyChangeListener {
         String tag = getBeanTagName(bi);
         // Determine the source tag for this bean and if not a faces bean to 
         // bind, delegate it to super class
-        if (tag == null)
+        if (tag == null) {
             return super.newBoundBean(bi, name, typeNames);
+        }
         return null;
     }
 

@@ -501,10 +501,14 @@ public class BeansUnit implements Unit {
     protected void bindBeans() {
         HashMap<String, List<String>> props = javaClass.getPropertiesNameAndTypes();
         for(String key : props.keySet()) {
-            Bean bean = bindBean(key, props.get(key));
-            if(bean != null) {
-                beans.add(bean);
+            Bean bean = getBean(key);
+            if(bean == null) {
+                bean = bindBean(key, props.get(key));
+                if (bean != null) {
+                    beans.add(bean);
+                }
             }
+            bean.setInserted(true);
         }
    }
 
@@ -528,11 +532,7 @@ public class BeansUnit implements Unit {
         if (bi == null) {
             return null;
         }
-        Bean bean = newBoundBean(bi, name, typeNames.subList(1, typeNames.size()));
-        if(bean != null) {
-            bean.setInserted(true);
-        }
-        return bean;
+        return newBoundBean(bi, name, typeNames.subList(1, typeNames.size()));
     }
     
     /**
@@ -760,29 +760,27 @@ public class BeansUnit implements Unit {
      * Create binding bean in java source. This should be called
      * only to add the binding for a component. 
      *
-     * @param beanInfo  The definition of the bean to create
      * @param name  The instance name for the new bean
      * @return The newly created bean
      */
-    public final void addBindingBean(BeanInfo beanInfo, String name) {
-         Bean b = new Bean(this, beanInfo, name);
-         if (b != null) {
-             beansToAdd.add(b);
-         }
+    public final void addBindingBean(String name) {
+        Bean b = getBean(name);
+        if (b != null) {
+            beansToAdd.add(b);
+        }
     }
     
     /**
      * Remove binding bean in java source. This should be called
      * only to remove the binding for a component. 
      *
-     * @param beanInfo  The definition of the bean to create
      * @param name  The instance name for the new bean
      */
-    public final void removeBindingBean(BeanInfo beanInfo, String name) {
-         Bean b = new Bean(this, beanInfo, name);
-         if (b != null) {
-             beansToRemove.add(b);
-         }
+    public final void removeBindingBean(String name) {
+        Bean b = getBean(name);
+        if (b != null) {
+            beansToRemove.add(b);
+        }
     }
 
     /**
@@ -811,6 +809,7 @@ public class BeansUnit implements Unit {
         if (parent != null)
             parent.removeChild(bean);  // remove from parent list
         beansToRemove.add(bean);
+        bean.removeEntry();
         if (!bean.isInserted() && beansToAdd.contains(bean)) {
             //It may exist in the beansToAdd list if the removal happens before
             //the bean is inserted into java source
