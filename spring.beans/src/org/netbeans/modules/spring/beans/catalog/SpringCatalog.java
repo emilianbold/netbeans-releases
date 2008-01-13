@@ -59,112 +59,112 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 /**
- * Catalog for Spring Framework Schema files
- * 
+ * Catalog for Spring Framework XML schemas.
+ *
  * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
  */
 public class SpringCatalog implements CatalogReader, CatalogDescriptor, EntityResolver {
 
-    private static final String SPRING_AOP_2_0_XSD = "spring-aop-2.0.xsd";
-    private static final String SPRING_AOP_2_0 = "http://www.springframework.org/schema/aop/spring-aop-2.0.xsd";
-    private static final String SPRING_AOP_2_0_URL = "nbres:/org/netbeans/modules/spring/beans/catalog/resources/spring-aop-2.0.xsd";
-    private static final String SPRING_AOP_2_0_ID = "SCHEMA:" + SPRING_AOP_2_0;
-    
-    private static final String SPRING_AOP_2_1_XSD = "spring-aop-2.1.xsd";
-    private static final String SPRING_AOP_2_1 = "http://www.springframework.org/schema/aop/spring-aop-2.1.xsd";
-    private static final String SPRING_AOP_2_1_URL = "nbres:/org/netbeans/modules/spring/beans/catalog/resources/spring-aop-2.1.xsd";
-    private static final String SPRING_AOP_2_1_ID = "SCHEMA:" + SPRING_AOP_2_1;
+    private static final String SPRING_AOP_2_0_XSD = "spring-aop-2.0.xsd";                                                                                      // NOI18N              
+    private static final String SPRING_AOP_2_0 = "http://www.springframework.org/schema/aop/spring-aop-2.0.xsd";                                                                                                   // NOI18N 
+    private static final String SPRING_AOP_2_0_URL = "nbres:/org/netbeans/modules/spring/beans/catalog/resources/spring-aop-2.0.xsd";                           // NOI18N                                                                         
+    private static final String SPRING_AOP_2_0_ID = "SCHEMA:" + SPRING_AOP_2_0;                                                                                 // NOI18N                   
 
-    private static final String SPRING_AOP_2_5_XSD = "spring-aop-2.5.xsd";
-    private static final String SPRING_AOP_2_5 = "http://www.springframework.org/schema/aop/spring-aop-2.5.xsd";
-    private static final String SPRING_AOP_2_5_URL = "nbres:/org/netbeans/modules/spring/beans/catalog/resources/spring-aop-2.5.xsd";
-    private static final String SPRING_AOP_2_5_ID = "SCHEMA:" + SPRING_AOP_2_5;
-    
-    private static final String SPRING_BEANS_2_0_XSD = "spring-beans-2.0.xsd";
-    private static final String SPRING_BEANS_2_0 = "http://www.springframework.org/schema/beans/spring-beans-2.0.xsd";
-    private static final String SPRING_BEANS_2_0_URL = "nbres:/org/netbeans/modules/spring/beans/catalog/resources/spring-beans-2.0.xsd";
-    private static final String SPRING_BEANS_2_0_ID = "SCHEMA:" + SPRING_BEANS_2_0;
-    
-    private static final String SPRING_BEANS_2_5_XSD = "spring-beans-2.5.xsd";
-    private static final String SPRING_BEANS_2_5 = "http://www.springframework.org/schema/beans/spring-beans-2.5.xsd";
-    private static final String SPRING_BEANS_2_5_URL = "nbres:/org/netbeans/modules/spring/beans/catalog/resources/spring-beans-2.5.xsd";
-    private static final String SPRING_BEANS_2_5_ID = "SCHEMA:" + SPRING_BEANS_2_5;
-    
-    private static final String SPRING_CONTEXT_2_5_XSD = "spring-context-2.5.xsd";
-    private static final String SPRING_CONTEXT_2_5 = "http://www.springframework.org/schema/context/spring-context-2.5.xsd";
-    private static final String SPRING_CONTEXT_2_5_URL = "nbres:/org/netbeans/modules/spring/beans/catalog/resources/spring-context-2.5.xsd";
-    private static final String SPRING_CONTEXT_2_5_ID = "SCHEMA:" + SPRING_CONTEXT_2_5;
-    
-    private static final String SPRING_JEE_2_0_XSD = "spring-jee-2.0.xsd";
-    private static final String SPRING_JEE_2_0 = "http://www.springframework.org/schema/jee/spring-jee-2.0.xsd";
-    private static final String SPRING_JEE_2_0_URL = "nbres:/org/netbeans/modules/spring/beans/catalog/resources/spring-jee-2.0.xsd";
-    private static final String SPRING_JEE_2_0_ID = "SCHEMA:" + SPRING_JEE_2_0;
-    
-    private static final String SPRING_JEE_2_5_XSD = "spring-jee-2.5.xsd";
-    private static final String SPRING_JEE_2_5 = "http://www.springframework.org/schema/jee/spring-jee-2.5.xsd";
-    private static final String SPRING_JEE_2_5_URL = "nbres:/org/netbeans/modules/spring/beans/catalog/resources/spring-jee-2.5.xsd";
-    private static final String SPRING_JEE_2_5_ID = "SCHEMA:" + SPRING_JEE_2_5;
-    
-    private static final String SPRING_JMS_2_5_XSD = "spring-jms-2.5.xsd";
-    private static final String SPRING_JMS_2_5 = "http://www.springframework.org/schema/jms/spring-jms-2.5.xsd";
-    private static final String SPRING_JMS_2_5_URL = "nbres:/org/netbeans/modules/spring/beans/catalog/resources/spring-jms-2.5.xsd";
-    private static final String SPRING_JMS_2_5_ID = "SCHEMA:" + SPRING_JMS_2_5;
-    
-    private static final String SPRING_LANG_2_0_XSD = "spring-lang-2.0.xsd";
-    private static final String SPRING_LANG_2_0 = "http://www.springframework.org/schema/lang/spring-lang-2.0.xsd";
-    private static final String SPRING_LANG_2_0_URL = "nbres:/org/netbeans/modules/spring/beans/catalog/resources/spring-lang-2.0.xsd";
-    private static final String SPRING_LANG_2_0_ID = "SCHEMA:" + SPRING_LANG_2_0;
-    
-    private static final String SPRING_LANG_2_5_XSD = "spring-lang-2.5.xsd";
-    private static final String SPRING_LANG_2_5 = "http://www.springframework.org/schema/lang/spring-lang-2.5.xsd";
-    private static final String SPRING_LANG_2_5_URL = "nbres:/org/netbeans/modules/spring/beans/catalog/resources/spring-lang-2.5.xsd";
-    private static final String SPRING_LANG_2_5_ID = "SCHEMA:" + SPRING_LANG_2_5;
-    
-    private static final String SPRING_OSGI_XSD = "spring-osgi.xsd";
-    private static final String SPRING_OSGI = "http://www.springframework.org/schema/osgi/spring-osgi.xsd";
-    private static final String SPRING_OSGI_URL = "nbres:/org/netbeans/modules/spring/beans/catalog/resources/spring-osgi.xsd";
-    private static final String SPRING_OSGI_ID = "SCHEMA:" + SPRING_OSGI;
-    
-    private static final String SPRING_TOOL_2_0_XSD = "spring-tool-2.0.xsd";
-    private static final String SPRING_TOOL_2_0 = "http://www.springframework.org/schema/lang/spring-tool-2.0.xsd";
-    private static final String SPRING_TOOL_2_0_URL = "nbres:/org/netbeans/modules/spring/beans/catalog/resources/spring-tool-2.0.xsd";
-    private static final String SPRING_TOOL_2_0_ID = "SCHEMA:" + SPRING_TOOL_2_0;
-    
-    private static final String SPRING_TOOL_2_5_XSD = "spring-tool-2.5.xsd";
-    private static final String SPRING_TOOL_2_5 = "http://www.springframework.org/schema/lang/spring-tool-2.5.xsd";
-    private static final String SPRING_TOOL_2_5_URL = "nbres:/org/netbeans/modules/spring/beans/catalog/resources/spring-tool-2.5.xsd";
-    private static final String SPRING_TOOL_2_5_ID = "SCHEMA:" + SPRING_TOOL_2_5;
+    private static final String SPRING_AOP_2_1_XSD = "spring-aop-2.1.xsd";                                                                                      // NOI18N              
+    private static final String SPRING_AOP_2_1 = "http://www.springframework.org/schema/aop/spring-aop-2.1.xsd";                                                // NOI18N                                                    
+    private static final String SPRING_AOP_2_1_URL = "nbres:/org/netbeans/modules/spring/beans/catalog/resources/spring-aop-2.1.xsd";                           // NOI18N                                                                         
+    private static final String SPRING_AOP_2_1_ID = "SCHEMA:" + SPRING_AOP_2_1;                                                                                 // NOI18N                   
 
-    private static final String SPRING_TX_2_0_XSD = "spring-tx-2.0.xsd";
-    private static final String SPRING_TX_2_0 = "http://www.springframework.org/schema/tx/spring-tx-2.0.xsd";
-    private static final String SPRING_TX_2_0_URL = "nbres:/org/netbeans/modules/spring/beans/catalog/resources/spring-tx-2.0.xsd";
-    private static final String SPRING_TX_2_0_ID = "SCHEMA:" + SPRING_TX_2_0;
-    
-    private static final String SPRING_TX_2_1_XSD = "spring-tx-2.1.xsd";
-    private static final String SPRING_TX_2_1 = "http://www.springframework.org/schema/tx/spring-tx-2.1.xsd";
-    private static final String SPRING_TX_2_1_URL = "nbres:/org/netbeans/modules/spring/beans/catalog/resources/spring-tx-2.1.xsd";
-    private static final String SPRING_TX_2_1_ID = "SCHEMA:" + SPRING_TX_2_1;
-    
-    private static final String SPRING_TX_2_5_XSD = "spring-tx-2.5.xsd";
-    private static final String SPRING_TX_2_5 = "http://www.springframework.org/schema/tx/spring-tx-2.5.xsd";
-    private static final String SPRING_TX_2_5_URL = "nbres:/org/netbeans/modules/spring/beans/catalog/resources/spring-tx-2.5.xsd";
-    private static final String SPRING_TX_2_5_ID = "SCHEMA:" + SPRING_TX_2_5;
-    
-    private static final String SPRING_UTIL_2_0_XSD = "spring-util-2.0.xsd";
-    private static final String SPRING_UTIL_2_0 = "http://www.springframework.org/schema/util/spring-util-2.0.xsd";
-    private static final String SPRING_UTIL_2_0_URL = "nbres:/org/netbeans/modules/spring/beans/catalog/resources/spring-util-2.0.xsd";
-    private static final String SPRING_UTIL_2_0_ID = "SCHEMA:" + SPRING_UTIL_2_0;
-    
-    private static final String SPRING_UTIL_2_5_XSD = "spring-util-2.5.xsd";
-    private static final String SPRING_UTIL_2_5 = "http://www.springframework.org/schema/util/spring-util-2.5.xsd";
-    private static final String SPRING_UTIL_2_5_URL = "nbres:/org/netbeans/modules/spring/beans/catalog/resources/spring-util-2.5.xsd";
-    private static final String SPRING_UTIL_2_5_ID = "SCHEMA:" + SPRING_UTIL_2_5;
-    
-    private static final String SPRING_WEBFLOW_CONFIG_1_0_XSD = "spring-webflow-config-1.0.xsd";
-    private static final String SPRING_WEBFLOW_CONFIG_1_0 = "http://www.springframework.org/schema/webflow-config/spring-webflow-config-1.0.xsd";
-    private static final String SPRING_WEBFLOW_CONFIG_1_0_URL = "nbres:/org/netbeans/modules/spring/beans/catalog/resources/spring-webflow-config-1.0.xsd";
-    private static final String SPRING_WEBFLOW_CONFIG_1_0_ID = "SCHEMA:" + SPRING_WEBFLOW_CONFIG_1_0;
-    
+    private static final String SPRING_AOP_2_5_XSD = "spring-aop-2.5.xsd";                                                                                      // NOI18N              
+    private static final String SPRING_AOP_2_5 = "http://www.springframework.org/schema/aop/spring-aop-2.5.xsd";                                                // NOI18N                                                    
+    private static final String SPRING_AOP_2_5_URL = "nbres:/org/netbeans/modules/spring/beans/catalog/resources/spring-aop-2.5.xsd";                           // NOI18N                                                                         
+    private static final String SPRING_AOP_2_5_ID = "SCHEMA:" + SPRING_AOP_2_5;                                                                                 // NOI18N                   
+
+    private static final String SPRING_BEANS_2_0_XSD = "spring-beans-2.0.xsd";                                                                                  // NOI18N                  
+    private static final String SPRING_BEANS_2_0 = "http://www.springframework.org/schema/beans/spring-beans-2.0.xsd";                                          // NOI18N                                                          
+    private static final String SPRING_BEANS_2_0_URL = "nbres:/org/netbeans/modules/spring/beans/catalog/resources/spring-beans-2.0.xsd";                       // NOI18N                                                                             
+    private static final String SPRING_BEANS_2_0_ID = "SCHEMA:" + SPRING_BEANS_2_0;                                                                             // NOI18N                       
+
+    private static final String SPRING_BEANS_2_5_XSD = "spring-beans-2.5.xsd";                                                                                  // NOI18N                  
+    private static final String SPRING_BEANS_2_5 = "http://www.springframework.org/schema/beans/spring-beans-2.5.xsd";                                          // NOI18N                                                          
+    private static final String SPRING_BEANS_2_5_URL = "nbres:/org/netbeans/modules/spring/beans/catalog/resources/spring-beans-2.5.xsd";                       // NOI18N                                                                             
+    private static final String SPRING_BEANS_2_5_ID = "SCHEMA:" + SPRING_BEANS_2_5;                                                                             // NOI18N                       
+
+    private static final String SPRING_CONTEXT_2_5_XSD = "spring-context-2.5.xsd";                                                                              // NOI18N                      
+    private static final String SPRING_CONTEXT_2_5 = "http://www.springframework.org/schema/context/spring-context-2.5.xsd";                                    // NOI18N                                                                
+    private static final String SPRING_CONTEXT_2_5_URL = "nbres:/org/netbeans/modules/spring/beans/catalog/resources/spring-context-2.5.xsd";                   // NOI18N                                                                                 
+    private static final String SPRING_CONTEXT_2_5_ID = "SCHEMA:" + SPRING_CONTEXT_2_5;                                                                         // NOI18N                           
+
+    private static final String SPRING_JEE_2_0_XSD = "spring-jee-2.0.xsd";                                                                                      // NOI18N              
+    private static final String SPRING_JEE_2_0 = "http://www.springframework.org/schema/jee/spring-jee-2.0.xsd";                                                // NOI18N                                                    
+    private static final String SPRING_JEE_2_0_URL = "nbres:/org/netbeans/modules/spring/beans/catalog/resources/spring-jee-2.0.xsd";                           // NOI18N                                                                         
+    private static final String SPRING_JEE_2_0_ID = "SCHEMA:" + SPRING_JEE_2_0;                                                                                 // NOI18N                   
+
+    private static final String SPRING_JEE_2_5_XSD = "spring-jee-2.5.xsd";                                                                                      // NOI18N              
+    private static final String SPRING_JEE_2_5 = "http://www.springframework.org/schema/jee/spring-jee-2.5.xsd";                                                // NOI18N                                                    
+    private static final String SPRING_JEE_2_5_URL = "nbres:/org/netbeans/modules/spring/beans/catalog/resources/spring-jee-2.5.xsd";                           // NOI18N                                                                         
+    private static final String SPRING_JEE_2_5_ID = "SCHEMA:" + SPRING_JEE_2_5;                                                                                 // NOI18N                   
+
+    private static final String SPRING_JMS_2_5_XSD = "spring-jms-2.5.xsd";                                                                                      // NOI18N              
+    private static final String SPRING_JMS_2_5 = "http://www.springframework.org/schema/jms/spring-jms-2.5.xsd";                                                // NOI18N                                                    
+    private static final String SPRING_JMS_2_5_URL = "nbres:/org/netbeans/modules/spring/beans/catalog/resources/spring-jms-2.5.xsd";                           // NOI18N                                                                         
+    private static final String SPRING_JMS_2_5_ID = "SCHEMA:" + SPRING_JMS_2_5;                                                                                 // NOI18N                   
+
+    private static final String SPRING_LANG_2_0_XSD = "spring-lang-2.0.xsd";                                                                                    // NOI18N                
+    private static final String SPRING_LANG_2_0 = "http://www.springframework.org/schema/lang/spring-lang-2.0.xsd";                                             // NOI18N                                                       
+    private static final String SPRING_LANG_2_0_URL = "nbres:/org/netbeans/modules/spring/beans/catalog/resources/spring-lang-2.0.xsd";                         // NOI18N                                                                           
+    private static final String SPRING_LANG_2_0_ID = "SCHEMA:" + SPRING_LANG_2_0;                                                                               // NOI18N                     
+
+    private static final String SPRING_LANG_2_5_XSD = "spring-lang-2.5.xsd";                                                                                    // NOI18N                
+    private static final String SPRING_LANG_2_5 = "http://www.springframework.org/schema/lang/spring-lang-2.5.xsd";                                             // NOI18N                                                       
+    private static final String SPRING_LANG_2_5_URL = "nbres:/org/netbeans/modules/spring/beans/catalog/resources/spring-lang-2.5.xsd";                         // NOI18N                                                                           
+    private static final String SPRING_LANG_2_5_ID = "SCHEMA:" + SPRING_LANG_2_5;                                                                               // NOI18N                     
+
+    private static final String SPRING_OSGI_XSD = "spring-osgi.xsd";                                                                                            // NOI18N        
+    private static final String SPRING_OSGI = "http://www.springframework.org/schema/osgi/spring-osgi.xsd";                                                     // NOI18N                                               
+    private static final String SPRING_OSGI_URL = "nbres:/org/netbeans/modules/spring/beans/catalog/resources/spring-osgi.xsd";                                 // NOI18N                                                                   
+    private static final String SPRING_OSGI_ID = "SCHEMA:" + SPRING_OSGI;                                                                                       // NOI18N             
+
+    private static final String SPRING_TOOL_2_0_XSD = "spring-tool-2.0.xsd";                                                                                    // NOI18N                
+    private static final String SPRING_TOOL_2_0 = "http://www.springframework.org/schema/lang/spring-tool-2.0.xsd";                                             // NOI18N                                                       
+    private static final String SPRING_TOOL_2_0_URL = "nbres:/org/netbeans/modules/spring/beans/catalog/resources/spring-tool-2.0.xsd";                         // NOI18N                                                                           
+    private static final String SPRING_TOOL_2_0_ID = "SCHEMA:" + SPRING_TOOL_2_0;                                                                               // NOI18N                     
+
+    private static final String SPRING_TOOL_2_5_XSD = "spring-tool-2.5.xsd";                                                                                    // NOI18N                
+    private static final String SPRING_TOOL_2_5 = "http://www.springframework.org/schema/lang/spring-tool-2.5.xsd";                                             // NOI18N                                                       
+    private static final String SPRING_TOOL_2_5_URL = "nbres:/org/netbeans/modules/spring/beans/catalog/resources/spring-tool-2.5.xsd";                         // NOI18N                                                                           
+    private static final String SPRING_TOOL_2_5_ID = "SCHEMA:" + SPRING_TOOL_2_5;                                                                               // NOI18N                     
+
+    private static final String SPRING_TX_2_0_XSD = "spring-tx-2.0.xsd";                                                                                        // NOI18N            
+    private static final String SPRING_TX_2_0 = "http://www.springframework.org/schema/tx/spring-tx-2.0.xsd";                                                   // NOI18N                                                 
+    private static final String SPRING_TX_2_0_URL = "nbres:/org/netbeans/modules/spring/beans/catalog/resources/spring-tx-2.0.xsd";                             // NOI18N                                                                       
+    private static final String SPRING_TX_2_0_ID = "SCHEMA:" + SPRING_TX_2_0;                                                                                   // NOI18N                 
+
+    private static final String SPRING_TX_2_1_XSD = "spring-tx-2.1.xsd";                                                                                        // NOI18N            
+    private static final String SPRING_TX_2_1 = "http://www.springframework.org/schema/tx/spring-tx-2.1.xsd";                                                   // NOI18N                                                 
+    private static final String SPRING_TX_2_1_URL = "nbres:/org/netbeans/modules/spring/beans/catalog/resources/spring-tx-2.1.xsd";                             // NOI18N                                                                       
+    private static final String SPRING_TX_2_1_ID = "SCHEMA:" + SPRING_TX_2_1;                                                                                   // NOI18N                 
+
+    private static final String SPRING_TX_2_5_XSD = "spring-tx-2.5.xsd";                                                                                        // NOI18N            
+    private static final String SPRING_TX_2_5 = "http://www.springframework.org/schema/tx/spring-tx-2.5.xsd";                                                   // NOI18N                                                 
+    private static final String SPRING_TX_2_5_URL = "nbres:/org/netbeans/modules/spring/beans/catalog/resources/spring-tx-2.5.xsd";                             // NOI18N                                                                       
+    private static final String SPRING_TX_2_5_ID = "SCHEMA:" + SPRING_TX_2_5;                                                                                   // NOI18N                 
+
+    private static final String SPRING_UTIL_2_0_XSD = "spring-util-2.0.xsd";                                                                                    // NOI18N                
+    private static final String SPRING_UTIL_2_0 = "http://www.springframework.org/schema/util/spring-util-2.0.xsd";                                             // NOI18N                                                       
+    private static final String SPRING_UTIL_2_0_URL = "nbres:/org/netbeans/modules/spring/beans/catalog/resources/spring-util-2.0.xsd";                         // NOI18N                                                                           
+    private static final String SPRING_UTIL_2_0_ID = "SCHEMA:" + SPRING_UTIL_2_0;                                                                               // NOI18N                     
+
+    private static final String SPRING_UTIL_2_5_XSD = "spring-util-2.5.xsd";                                                                                    // NOI18N                
+    private static final String SPRING_UTIL_2_5 = "http://www.springframework.org/schema/util/spring-util-2.5.xsd";                                             // NOI18N                                                       
+    private static final String SPRING_UTIL_2_5_URL = "nbres:/org/netbeans/modules/spring/beans/catalog/resources/spring-util-2.5.xsd";                         // NOI18N                                                                           
+    private static final String SPRING_UTIL_2_5_ID = "SCHEMA:" + SPRING_UTIL_2_5;                                                                               // NOI18N                     
+
+    private static final String SPRING_WEBFLOW_CONFIG_1_0_XSD = "spring-webflow-config-1.0.xsd";                                                                // NOI18N                                    
+    private static final String SPRING_WEBFLOW_CONFIG_1_0 = "http://www.springframework.org/schema/webflow-config/spring-webflow-config-1.0.xsd";               // NOI18N                                                                                     
+    private static final String SPRING_WEBFLOW_CONFIG_1_0_URL = "nbres:/org/netbeans/modules/spring/beans/catalog/resources/spring-webflow-config-1.0.xsd";     // NOI18N                                                                                               
+    private static final String SPRING_WEBFLOW_CONFIG_1_0_ID = "SCHEMA:" + SPRING_WEBFLOW_CONFIG_1_0;                                                           // NOI18N                                         
+
     public Iterator getPublicIDs() {
         List<String> list = new ArrayList<String>();
         list.add(SPRING_AOP_2_0_ID);
@@ -187,12 +187,10 @@ public class SpringCatalog implements CatalogReader, CatalogDescriptor, EntityRe
         list.add(SPRING_UTIL_2_0_ID);
         list.add(SPRING_UTIL_2_5_ID);
         list.add(SPRING_WEBFLOW_CONFIG_1_0_ID);
-        
-        return list.listIterator();
+        return list.iterator();
     }
 
     public void refresh() {
-        
     }
 
     public String getSystemID(String publicId) {
@@ -236,8 +234,7 @@ public class SpringCatalog implements CatalogReader, CatalogDescriptor, EntityRe
             return SPRING_UTIL_2_5_URL;
         } else if(publicId.equals(SPRING_WEBFLOW_CONFIG_1_0_ID)) {
             return SPRING_WEBFLOW_CONFIG_1_0_URL;
-        } 
-        
+        }
         return null;
     }
 
@@ -250,15 +247,13 @@ public class SpringCatalog implements CatalogReader, CatalogDescriptor, EntityRe
     }
 
     public void addCatalogListener(CatalogListener catalogListener) {
-        
     }
 
     public void removeCatalogListener(CatalogListener catalogListener) {
-        
     }
 
     public Image getIcon(int i) {
-        return Utilities.loadImage("org/netbeans/modules/spring/beans/resources/spring.png");
+        return Utilities.loadImage("org/netbeans/modules/spring/beans/resources/spring.png"); // NOI18N
     }
 
     public String getDisplayName() {
@@ -270,11 +265,9 @@ public class SpringCatalog implements CatalogReader, CatalogDescriptor, EntityRe
     }
 
     public void addPropertyChangeListener(PropertyChangeListener propertyChangeListener) {
-        
     }
 
     public void removePropertyChangeListener(PropertyChangeListener propertyChangeListener) {
-        
     }
 
     public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
@@ -284,42 +277,42 @@ public class SpringCatalog implements CatalogReader, CatalogDescriptor, EntityRe
         if (systemId != null && systemId.endsWith(SPRING_AOP_2_0_XSD)){
             return new org.xml.sax.InputSource(SPRING_AOP_2_0_URL);
         }
-        
+
         if (SPRING_AOP_2_1.equals(systemId)){
             return new org.xml.sax.InputSource(SPRING_AOP_2_1_URL);
         }
         if (systemId != null && systemId.endsWith(SPRING_AOP_2_1_XSD)){
             return new org.xml.sax.InputSource(SPRING_AOP_2_1_URL);
         }
-        
+
         if (SPRING_AOP_2_5.equals(systemId)){
             return new org.xml.sax.InputSource(SPRING_AOP_2_5_URL);
         }
         if (systemId != null && systemId.endsWith(SPRING_AOP_2_5_XSD)){
             return new org.xml.sax.InputSource(SPRING_AOP_2_5_URL);
         }
-        
+
         if (SPRING_BEANS_2_0.equals(systemId)){
             return new org.xml.sax.InputSource(SPRING_BEANS_2_0_URL);
         }
         if (systemId != null && systemId.endsWith(SPRING_BEANS_2_0_XSD)){
             return new org.xml.sax.InputSource(SPRING_BEANS_2_0_URL);
         }
-        
+
         if (SPRING_BEANS_2_5.equals(systemId)){
             return new org.xml.sax.InputSource(SPRING_BEANS_2_5_URL);
         }
         if (systemId != null && systemId.endsWith(SPRING_BEANS_2_5_XSD)){
             return new org.xml.sax.InputSource(SPRING_BEANS_2_5_URL);
         }
-        
+
         if (SPRING_CONTEXT_2_5.equals(systemId)){
             return new org.xml.sax.InputSource(SPRING_CONTEXT_2_5_URL);
         }
         if (systemId != null && systemId.endsWith(SPRING_CONTEXT_2_5_XSD)){
             return new org.xml.sax.InputSource(SPRING_CONTEXT_2_5_URL);
         }
-        
+
         if (SPRING_JEE_2_0.equals(systemId)){
             return new org.xml.sax.InputSource(SPRING_JEE_2_0_URL);
         }
@@ -333,91 +326,91 @@ public class SpringCatalog implements CatalogReader, CatalogDescriptor, EntityRe
         if (systemId != null && systemId.endsWith(SPRING_JEE_2_5_XSD)){
             return new org.xml.sax.InputSource(SPRING_JEE_2_5_URL);
         }
-        
+
         if (SPRING_JMS_2_5.equals(systemId)){
             return new org.xml.sax.InputSource(SPRING_JMS_2_5_URL);
         }
         if (systemId != null && systemId.endsWith(SPRING_JMS_2_5_XSD)){
             return new org.xml.sax.InputSource(SPRING_JMS_2_5_URL);
         }
-        
+
         if (SPRING_LANG_2_0.equals(systemId)){
             return new org.xml.sax.InputSource(SPRING_LANG_2_0_URL);
         }
         if (systemId != null && systemId.endsWith(SPRING_LANG_2_0_XSD)){
             return new org.xml.sax.InputSource(SPRING_LANG_2_0_URL);
         }
-        
+
         if (SPRING_LANG_2_5.equals(systemId)){
             return new org.xml.sax.InputSource(SPRING_LANG_2_5_URL);
         }
         if (systemId != null && systemId.endsWith(SPRING_LANG_2_5_XSD)){
             return new org.xml.sax.InputSource(SPRING_LANG_2_5_URL);
         }
-        
+
         if (SPRING_OSGI.equals(systemId)){
             return new org.xml.sax.InputSource(SPRING_OSGI_URL);
         }
         if (systemId != null && systemId.endsWith(SPRING_OSGI_XSD)){
             return new org.xml.sax.InputSource(SPRING_OSGI_URL);
         }
-        
+
         if (SPRING_TOOL_2_0.equals(systemId)){
             return new org.xml.sax.InputSource(SPRING_TOOL_2_0_URL);
         }
         if (systemId != null && systemId.endsWith(SPRING_TOOL_2_0_XSD)){
             return new org.xml.sax.InputSource(SPRING_TOOL_2_0_URL);
         }
-        
+
         if (SPRING_TOOL_2_5.equals(systemId)){
             return new org.xml.sax.InputSource(SPRING_TOOL_2_5_URL);
         }
         if (systemId != null && systemId.endsWith(SPRING_TOOL_2_5_XSD)){
             return new org.xml.sax.InputSource(SPRING_TOOL_2_5_URL);
         }
-        
+
         if (SPRING_TX_2_0.equals(systemId)){
             return new org.xml.sax.InputSource(SPRING_TX_2_0_URL);
         }
         if (systemId != null && systemId.endsWith(SPRING_TX_2_0_XSD)){
             return new org.xml.sax.InputSource(SPRING_TX_2_0_URL);
         }
-        
+
         if (SPRING_TX_2_1.equals(systemId)){
             return new org.xml.sax.InputSource(SPRING_TX_2_1_URL);
         }
         if (systemId != null && systemId.endsWith(SPRING_TX_2_1_XSD)){
             return new org.xml.sax.InputSource(SPRING_TX_2_1_URL);
         }
-        
+
         if (SPRING_TX_2_5.equals(systemId)){
             return new org.xml.sax.InputSource(SPRING_TX_2_5_URL);
         }
         if (systemId != null && systemId.endsWith(SPRING_TX_2_5_XSD)){
             return new org.xml.sax.InputSource(SPRING_TX_2_5_URL);
         }
-        
+
         if (SPRING_UTIL_2_0.equals(systemId)){
             return new org.xml.sax.InputSource(SPRING_UTIL_2_0_URL);
         }
         if (systemId != null && systemId.endsWith(SPRING_UTIL_2_0_XSD)){
             return new org.xml.sax.InputSource(SPRING_UTIL_2_0_URL);
         }
-        
+
         if (SPRING_UTIL_2_5.equals(systemId)){
             return new org.xml.sax.InputSource(SPRING_UTIL_2_5_URL);
         }
         if (systemId != null && systemId.endsWith(SPRING_UTIL_2_5_XSD)){
             return new org.xml.sax.InputSource(SPRING_UTIL_2_5_URL);
         }
-        
+
         if (SPRING_WEBFLOW_CONFIG_1_0.equals(systemId)){
             return new org.xml.sax.InputSource(SPRING_WEBFLOW_CONFIG_1_0_URL);
         }
         if (systemId != null && systemId.endsWith(SPRING_WEBFLOW_CONFIG_1_0_XSD)){
             return new org.xml.sax.InputSource(SPRING_WEBFLOW_CONFIG_1_0_URL);
         }
-        
+
         return null;
     }
 

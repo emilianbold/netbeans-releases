@@ -48,7 +48,6 @@ import java.util.List;
 import java.util.Stack;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.xml.XMLConstants;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.modules.xml.text.syntax.SyntaxElement;

@@ -44,9 +44,9 @@ package org.netbeans.modules.spring.beans.hyperlink;
 import org.netbeans.modules.spring.beans.editor.ContextUtilities;
 
 /**
- * Hyperlink Processor for p-namespace stuff. Delegates to beanref processor 
+ * Hyperlink Processor for p-namespace stuff. Delegates to beanref processor
  * and property processor for computation
- * 
+ *
  * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
  */
 public class PHyperlinkProcessor implements HyperlinkProcessor {
@@ -55,23 +55,23 @@ public class PHyperlinkProcessor implements HyperlinkProcessor {
             = new BeansRefHyperlinkProcessor(true);
     private PropertyHyperlinkProcessor propertyHyperlinkProcessor
             = new PropertyHyperlinkProcessor();
+
     public PHyperlinkProcessor() {
-        
     }
 
     public void process(HyperlinkEnv env) {
         String attribName = env.getAttribName();
         if(env.getType() == BeansContextHyperlinkProvider.Type.ATTRIB_VALUE) {
-            if(attribName.endsWith("-ref")) {
+            if(attribName.endsWith("-ref")) { // NOI18N
                 beansRefHyperlinkProcessor.process(env);
             }
         } else if(env.getType() == BeansContextHyperlinkProvider.Type.ATTRIB) {
             String temp = ContextUtilities.getLocalNameFromTag(attribName);
             if(temp.endsWith("-ref")) {
-                temp = temp.substring(0, temp.indexOf("-ref"));
+                temp = temp.substring(0, temp.indexOf("-ref")); // NOI18N
             }
-            
-            HyperlinkEnv newEnv = new HyperlinkEnv(env.getDocument(), 
+
+            HyperlinkEnv newEnv = new HyperlinkEnv(env.getDocument(),
                     env.getCurrentTag(), env.getTagName(), env.getAttribName(), temp, env.getType());
             propertyHyperlinkProcessor.process(newEnv);
         }

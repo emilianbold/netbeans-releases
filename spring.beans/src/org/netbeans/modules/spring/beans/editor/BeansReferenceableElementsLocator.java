@@ -56,7 +56,7 @@ import org.w3c.dom.NodeList;
 public class BeansReferenceableElementsLocator implements
         ReferenceableElementsLocator {
 
-    public static final String BEAN_NAME_DELIMITERS = ",; ";
+    public static final String BEAN_NAME_DELIMITERS = ",; "; // NOI18N
 
     public Map<String, Node> getReferenceableElements(Document document) {
         Map<String, Node> nodes = new HashMap<String, Node>();
@@ -65,13 +65,13 @@ public class BeansReferenceableElementsLocator implements
 
         for (int i = 0; i < childNodes.getLength(); i++) {
             Node node = childNodes.item(i);
-            if ("bean".equals(node.getNodeName())) {
-                if (BeansEditorUtils.hasAttribute(node, "id")) {
-                    nodes.put(BeansEditorUtils.getAttribute(node, "id"), node);
+            if ("bean".equals(node.getNodeName())) { // NOI18N
+                if (BeansEditorUtils.hasAttribute(node, "id")) { // NOI18N
+                    nodes.put(BeansEditorUtils.getAttribute(node, "id"), node); // NOI18N
                 }
-                if (BeansEditorUtils.hasAttribute(node, "name")) {
+                if (BeansEditorUtils.hasAttribute(node, "name")) { // NOI18N
                     String aliasesString = BeansEditorUtils.getAttribute(node,
-                            "name");
+                            "name"); // NOI18N
                     String[] nameArr = StringUtils.tokenizeToStringArray(
                             aliasesString, BEAN_NAME_DELIMITERS);
                     for (String name : nameArr) {

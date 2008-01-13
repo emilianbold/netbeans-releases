@@ -87,10 +87,10 @@ import org.openide.util.NbBundle;
  */
 public class SpringWebFrameworkProvider extends WebFrameworkProvider {
 
-    public static final String SPRING_LIB_NAME = "spring-framework-2.5";
-    public static final String CONTEXT_LOADER = "org.springframework.web.context.ContextLoaderListener";
-    public static final String DISPATCHER_SERVLET = "org.springframework.web.servlet.DispatcherServlet";
-    public static final String ENCODING = "UTF-8";
+    public static final String SPRING_LIB_NAME = "spring-framework-2.5"; // NOI18N
+    public static final String CONTEXT_LOADER = "org.springframework.web.context.ContextLoaderListener"; // NOI18N
+    public static final String DISPATCHER_SERVLET = "org.springframework.web.servlet.DispatcherServlet"; // NOI18N
+    public static final String ENCODING = "UTF-8"; // NOI18N
 
     private SpringConfigPanel panel;
 
@@ -119,7 +119,7 @@ public class SpringWebFrameworkProvider extends WebFrameworkProvider {
         boolean isInWebModule = false;
         try {
             WebApp webApp = getWebApp(webModule);
-            isInWebModule = (webApp.findBeanByName("Servlet", "ServletClass", DISPATCHER_SERVLET) != null) || (webApp.findBeanByName("Listener", "ListenerClass", CONTEXT_LOADER) != null);
+            isInWebModule = (webApp.findBeanByName("Servlet", "ServletClass", DISPATCHER_SERVLET) != null) || (webApp.findBeanByName("Listener", "ListenerClass", CONTEXT_LOADER) != null); // NOI18N
         } catch (IOException e) {
             ErrorManager.getDefault().notify(e);
         }
@@ -131,11 +131,11 @@ public class SpringWebFrameworkProvider extends WebFrameworkProvider {
         FileObject webInf = webModule.getWebInf();
         List<File> files = new ArrayList<File>();
         if (webModule.getDeploymentDescriptor() != null) {
-            FileObject file = webInf.getFileObject("applicationContext.xml");
+            FileObject file = webInf.getFileObject("applicationContext.xml"); // NOI18N
             if (file != null) {
                 files.add(FileUtil.toFile(file));
             }
-            file = webInf.getFileObject("dispatcher-servlet.xml");
+            file = webInf.getFileObject("dispatcher-servlet.xml"); // NOI18N
             if (file != null) {
                 files.add(FileUtil.toFile(file));
             }
@@ -178,20 +178,20 @@ public class SpringWebFrameworkProvider extends WebFrameworkProvider {
             // MODIFY WEB.XML
             FileObject dd = webModule.getDeploymentDescriptor();
             WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
-            addContextParam(ddRoot, "contextConfigLocation", "/WEB-INF/applicationContext.xml");
+            addContextParam(ddRoot, "contextConfigLocation", "/WEB-INF/applicationContext.xml"); // NOI18N
             addListener(ddRoot, CONTEXT_LOADER);
-            addServlet(ddRoot, frameworkPanel.getDispatcherName(), DISPATCHER_SERVLET, frameworkPanel.getDispatcherMapping(), "2");
+            addServlet(ddRoot, frameworkPanel.getDispatcherName(), DISPATCHER_SERVLET, frameworkPanel.getDispatcherMapping(), "2"); // NOI18N
             WelcomeFileList welcomeFiles = ddRoot.getSingleWelcomeFileList();
             if (welcomeFiles == null) {
                 try {
-                    welcomeFiles = (WelcomeFileList) ddRoot.createBean("WelcomeFileList");
+                    welcomeFiles = (WelcomeFileList) ddRoot.createBean("WelcomeFileList"); // NOI18N
                     ddRoot.setWelcomeFileList(welcomeFiles);
                 } catch (ClassNotFoundException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
             if (welcomeFiles.sizeWelcomeFile() == 0) {
-                welcomeFiles.addWelcomeFile("index.jsp");
+                welcomeFiles.addWelcomeFile("index.jsp"); // NOI18N
             }
             ddRoot.write(dd);
 
@@ -203,21 +203,21 @@ public class SpringWebFrameworkProvider extends WebFrameworkProvider {
             FileObject jsp = webInf.createFolder("jsp");
 
             // COPY TEMPLATE SPRING RESOURCES (JSP, XML, PROPERTIES)
-            copyResource("index.jsp", FileUtil.createData(jsp, "index.jsp"));
-            copyResource("taglibs.jsp", FileUtil.createData(jsp, "taglibs.jsp"));
-            copyResource("header.jsp", FileUtil.createData(jsp, "header.jsp"));
-            copyResource("footer.jsp", FileUtil.createData(jsp, "footer.jsp"));
-            copyResource("jdbc.properties", FileUtil.createData(webInf, "jdbc.properties"));
-            addFileToOpen(copyResource("applicationContext.xml", FileUtil.createData(webInf, "applicationContext.xml")));
-            addFileToOpen(copyResource("dispatcher-servlet.xml", FileUtil.createData(webInf, frameworkPanel.getDispatcherName() + "-servlet.xml")));
+            copyResource("index.jsp", FileUtil.createData(jsp, "index.jsp")); // NOI18N
+            copyResource("taglibs.jsp", FileUtil.createData(jsp, "taglibs.jsp")); // NOI18N
+            copyResource("header.jsp", FileUtil.createData(jsp, "header.jsp")); // NOI18N
+            copyResource("footer.jsp", FileUtil.createData(jsp, "footer.jsp")); // NOI18N
+            copyResource("jdbc.properties", FileUtil.createData(webInf, "jdbc.properties")); // NOI18N
+            addFileToOpen(copyResource("applicationContext.xml", FileUtil.createData(webInf, "applicationContext.xml"))); // NOI18N
+            addFileToOpen(copyResource("dispatcher-servlet.xml", FileUtil.createData(webInf, frameworkPanel.getDispatcherName() + "-servlet.xml"))); // NOI18N
 
             // MODIFY EXISTING INDEX.JSP
             FileObject documentBase = webModule.getDocumentBase();
-            FileObject indexJsp = documentBase.getFileObject("index.jsp");
+            FileObject indexJsp = documentBase.getFileObject("index.jsp"); // NOI18N
             if (indexJsp == null) {
-                indexJsp = FileUtil.createData(documentBase, "index.jsp");
+                indexJsp = FileUtil.createData(documentBase, "index.jsp"); // NOI18N
             }
-            addFileToOpen(copyResource("redirect.jsp", indexJsp));
+            addFileToOpen(copyResource("redirect.jsp", indexJsp)); // NOI18N
         }
         
         public void addFileToOpen(FileObject file) {
@@ -229,8 +229,8 @@ public class SpringWebFrameworkProvider extends WebFrameworkProvider {
         }
 
         protected FileObject copyResource(String resourceName, FileObject target) throws UnsupportedEncodingException, IOException {
-            InputStream in = getClass().getResourceAsStream("resources/templates/" + resourceName);
-            String lineSeparator = System.getProperty("line.separator");
+            InputStream in = getClass().getResourceAsStream("resources/templates/" + resourceName); // NOI18N
+            String lineSeparator = System.getProperty("line.separator"); // NOI18N
             StringBuffer buffer = new StringBuffer();
             BufferedReader reader = new BufferedReader(new InputStreamReader(in, ENCODING));
             try {
@@ -263,14 +263,14 @@ public class SpringWebFrameworkProvider extends WebFrameworkProvider {
         }
 
         protected Listener addListener(WebApp webApp, String classname) throws IOException {
-            Listener listener = (Listener) createBean(webApp, "Listener");
+            Listener listener = (Listener) createBean(webApp, "Listener"); // NOI18N
             listener.setListenerClass(classname);
             webApp.addListener(listener);
             return listener;
         }
 
         protected Servlet addServlet(WebApp webApp, String name, String classname, String pattern, String loadOnStartup) throws IOException {
-            Servlet servlet = (Servlet) createBean(webApp, "Servlet");
+            Servlet servlet = (Servlet) createBean(webApp, "Servlet"); // NOI18N
             servlet.setServletName(name);
             servlet.setServletClass(classname);
             if (loadOnStartup != null) {
@@ -284,7 +284,7 @@ public class SpringWebFrameworkProvider extends WebFrameworkProvider {
         }
         
         protected ServletMapping addServletMapping(WebApp webApp, String name, String pattern) throws IOException {
-            ServletMapping mapping = (ServletMapping) createBean(webApp, "ServletMapping");
+            ServletMapping mapping = (ServletMapping) createBean(webApp, "ServletMapping"); // NOI18N
             mapping.setServletName(name);
             mapping.setUrlPattern(pattern);
             webApp.addServletMapping(mapping);
@@ -292,7 +292,7 @@ public class SpringWebFrameworkProvider extends WebFrameworkProvider {
         }
 
         protected InitParam addContextParam(WebApp webApp, String name, String value) throws IOException {
-            InitParam initParam = (InitParam) createBean(webApp, "InitParam");
+            InitParam initParam = (InitParam) createBean(webApp, "InitParam"); // NOI18N
             initParam.setParamName(name);
             initParam.setParamValue(value);
             webApp.addContextParam(initParam);
@@ -305,7 +305,7 @@ public class SpringWebFrameworkProvider extends WebFrameworkProvider {
                 bean = creator.createBean(beanName);
             } catch (ClassNotFoundException ex) {
                 ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
-                throw new IOException("Error creating bean with name:" + beanName);
+                throw new IOException("Error creating bean with name:" + beanName); // NOI18N
             }
             return bean;
         }

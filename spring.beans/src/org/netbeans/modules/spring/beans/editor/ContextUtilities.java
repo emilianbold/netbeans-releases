@@ -131,8 +131,8 @@ public final class ContextUtilities {
      */
     public static String getPrefixFromTag(String tagName) {
         if(tagName == null) return null;
-        return (tagName.indexOf(":") == -1) ? null :
-            tagName.substring(0, tagName.indexOf(":"));
+        return (tagName.indexOf(":") == -1) ? null : // NOI18N
+            tagName.substring(0, tagName.indexOf(":")); // NOI18N
     }
     
     /**
@@ -140,8 +140,8 @@ public final class ContextUtilities {
      */
     public static String getLocalNameFromTag(String tagName) {
         if(tagName == null) return null;
-        return (tagName.indexOf(":") == -1) ? tagName :
-            tagName.substring(tagName.indexOf(":")+1, tagName.length());
+        return (tagName.indexOf(":") == -1) ? tagName : // NOI18N
+            tagName.substring(tagName.indexOf(":")+1, tagName.length()); // NOI18N
     }
     
     /**
@@ -153,7 +153,7 @@ public final class ContextUtilities {
         if (!namespace.startsWith(XMLConstants.XMLNS_ATTRIBUTE)) return null;
         int xmlnsLength = XMLConstants.XMLNS_ATTRIBUTE.length();
         if (namespace.length() == xmlnsLength) {
-            return "";
+            return ""; // NOI18N
         }
         if (namespace.charAt(xmlnsLength) == ':') {
             return namespace.substring(xmlnsLength + 1);
