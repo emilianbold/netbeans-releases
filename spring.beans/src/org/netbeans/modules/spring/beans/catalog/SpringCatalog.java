@@ -266,7 +266,7 @@ public class SpringCatalog implements CatalogReader, CatalogDescriptor, EntityRe
     }
 
     public String getShortDescription() {
-        return NbBundle.getMessage(SpringCatalog.class, "DESC_SpringCatalog");
+        return NbBundle.getMessage(SpringCatalog.class, "LBL_SpringCatalogDescription");
     }
 
     public void addPropertyChangeListener(PropertyChangeListener propertyChangeListener) {

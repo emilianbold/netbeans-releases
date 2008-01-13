@@ -95,7 +95,7 @@ public class SpringWebFrameworkProvider extends WebFrameworkProvider {
     private SpringConfigPanel panel;
 
     public SpringWebFrameworkProvider() {
-        super(NbBundle.getMessage(SpringWebFrameworkProvider.class, "FrameworkProvider.name"), NbBundle.getMessage(SpringWebFrameworkProvider.class, "FrameworkProvider.description"));
+        super(NbBundle.getMessage(SpringWebFrameworkProvider.class, "LBL_FrameworkName"), NbBundle.getMessage(SpringWebFrameworkProvider.class, "LBL_FrameworkDescription"));
     }
 
     @Override

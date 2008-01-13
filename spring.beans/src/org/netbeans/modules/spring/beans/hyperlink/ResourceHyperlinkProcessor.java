@@ -38,12 +38,8 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.spring.beans.hyperlink;
 
-import java.text.MessageFormat;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
@@ -63,26 +59,32 @@ public class ResourceHyperlinkProcessor implements HyperlinkProcessor {
 
     public void process(HyperlinkEnv env) {
         FileObject fo = NbEditorUtilities.getFileObject(env.getDocument());
+        if (fo == null) {
+            return;
+        }
         FileObject parent = fo.getParent();
 
-        String key = "goto_resource_not_found"; // NOI18N
-        String msg = NbBundle.getBundle(ResourceHyperlinkProcessor.class).getString(key);
-
-        FileObject targetFO = parent.getFileObject(env.getValueString());
-        if (targetFO != null) {
-            try {
-                DataObject dObj = DataObject.find(targetFO);
-                EditorCookie editorCookie = dObj.getCookie(EditorCookie.class);
-                if (editorCookie != null) {
-                    editorCookie.open();
-                } else {
-                    StatusDisplayer.getDefault().setStatusText(MessageFormat.format(msg, new Object[]{env.getValueString()}));
-                }
-            } catch (DataObjectNotFoundException ex) {
-                Logger.getLogger("global").log(Level.SEVERE, ex.getMessage(), ex);
-            }
-        } else {
-            StatusDisplayer.getDefault().setStatusText(MessageFormat.format(msg, new Object[]{env.getValueString()}));
+        if (!openFile(parent.getFileObject(env.getValueString()))) {
+            String message = NbBundle.getMessage(ResourceHyperlinkProcessor.class, "LBL_ResourceNotFound", env.getValueString());
+            StatusDisplayer.getDefault().setStatusText(message);
         }
+    }
+
+    private boolean openFile(FileObject file) {
+        if (file == null) {
+            return false;
+        }
+        DataObject dObj;
+        try {
+            dObj = DataObject.find(file);
+        } catch (DataObjectNotFoundException ex) {
+            return false;
+        }
+        EditorCookie editorCookie = dObj.getCookie(EditorCookie.class);
+        if (editorCookie == null) {
+            return false;
+        }
+        editorCookie.open();
+        return true;
     }
 }

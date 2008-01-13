@@ -112,9 +112,9 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
 
         setLayout(new java.awt.BorderLayout());
 
-        nameLabel.setText(org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "SpringConfigPanelVisual.nameLabel.text")); // NOI18N
+        nameLabel.setText(org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "LBL_DispatcherName")); // NOI18N
 
-        mappingLabel.setText(org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "SpringConfigPanelVisual.mappingLabel.text")); // NOI18N
+        mappingLabel.setText(org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "LBL_DispatcherMapping")); // NOI18N
 
         org.jdesktop.layout.GroupLayout standardPanelLayout = new org.jdesktop.layout.GroupLayout(standardPanel);
         standardPanel.setLayout(standardPanelLayout);
@@ -127,8 +127,8 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
                     .add(mappingLabel))
                 .add(8, 8, 8)
                 .add(standardPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(nameText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 458, Short.MAX_VALUE)
-                    .add(mappingText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 458, Short.MAX_VALUE))
+                    .add(nameText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 455, Short.MAX_VALUE)
+                    .add(mappingText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 455, Short.MAX_VALUE))
                 .addContainerGap())
         );
         standardPanelLayout.setVerticalGroup(
@@ -145,7 +145,7 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
                 .addContainerGap(337, Short.MAX_VALUE))
         );
 
-        tabbedPanel.addTab(org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "configTab"), standardPanel); // NOI18N
+        tabbedPanel.addTab(org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "LBL_Configuration"), standardPanel); // NOI18N
 
         add(tabbedPanel, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
