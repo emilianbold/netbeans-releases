@@ -105,7 +105,7 @@ made subject to such option by the copyright holder.
     <folder name="Templates">
         <folder name="SpringFramework">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.spring.beans.resources.Bundle"/>
-            <attr name="position" intValue="1350"/>
+            <attr name="position" intvalue="1350"/>
             <file name="BeansContextTemplate.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.spring.beans.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/spring/beans/resources/spring.png"/>
