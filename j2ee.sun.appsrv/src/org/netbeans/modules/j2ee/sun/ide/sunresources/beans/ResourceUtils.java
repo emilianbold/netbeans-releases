@@ -75,6 +75,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.sun.api.SunURIManager;
 
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
 
@@ -1001,8 +1002,11 @@ public class ResourceUtils implements WizardConstants{
                     if(resourceLoc.exists ()){
                         resourceDir = FileUtil.toFileObject (resourceLoc);
                     }else{
-                        resourceLoc.mkdirs ();
-                        resourceDir = FileUtil.toFileObject (resourceLoc);
+                        try {
+                            resourceDir = FileUtil.createFolder(resourceLoc);
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
                     }
                 }
             }
