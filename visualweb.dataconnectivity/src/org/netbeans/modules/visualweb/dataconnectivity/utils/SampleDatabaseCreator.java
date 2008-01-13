@@ -46,7 +46,6 @@
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
  */
-
 package org.netbeans.modules.visualweb.dataconnectivity.utils;
 
 import java.io.File;
@@ -68,46 +67,38 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.netbeans.modules.derby.api.DerbyDatabases;
+import org.openide.util.NbPreferences;
 
 /**
  *
  * @author John Baker
  */
-public class SampleDatabaseCreator  {
-
+public class SampleDatabaseCreator {
     public static final String DRIVER_CLASS_NET = "org.apache.derby.jdbc.ClientDriver"; // NOI18N
     public static final String DRIVER_DISP_NAME_NET = "Java DB (Network)"; // NOI18N
     private static Logger LOGGER = Logger.getLogger(SampleDatabaseCreator.class.getName());
-    
+
     /** Creates a new instance of SampleDatabaseUtils */
     public SampleDatabaseCreator() {
     }
 
-
-    // Create database and connection then extract zip file containing the schema
+    /**
+     * Create connection and register a NetBeans property to indicate that sample databae had been created, so as not to recreate if deleted intentionally.
+     */
     public static void createAll(String database, String username, String password, String schema, String sampleZipFile, boolean rememberPassword, String server, int port) {
-
         try {
             if (DerbyDatabases.isDerbyRegistered()) {
                 SampleDatabaseCreator sample = new SampleDatabaseCreator();
-                if (!DerbyDatabases.databaseExists(database)) {
-                    sample.registerDatabase(database, username, schema.toUpperCase(), password, rememberPassword, server, port);
-                    sample.extractSampleDatabase(database, sampleZipFile);
-                }
-                // if userdir is deleted and sample databases exist then resurrect the connections
-                else
-                    sample.registerDatabase(database, username, schema.toUpperCase(), password, rememberPassword, server, port);              
+                if (DerbyDatabases.databaseExists(database)) {
+                    sample.registerDatabase(database, username, schema.toUpperCase(), password, rememberPassword, server, port);             
+                    NbPreferences.forModule(SampleDatabaseCreator.class).put("VISUALWEB_SAMPLE_DATABASE_REGISTERED", "true");  // NOI18N               
+                } 
             }
-            // if Java DB server isn't registered, do nothing. Once Java EE 5 server is registered then Java DB will be automatically registered
-        } catch(IOException ioe) {
-            ioe.printStackTrace();
+        // if Java DB server isn't registered, do nothing. Once Java EE 5 server is registered then Java DB will be automatically registered        
         } catch (DatabaseException de) {
-            de.printStackTrace();
+            LOGGER.log(Level.WARNING, "Sample database error, ", de);
         }
-
-
     }
-
 
     /**
      * Extracts the sample database under the given name in the Derby system home.
@@ -115,7 +106,7 @@ public class SampleDatabaseCreator  {
      *
      * <p>Not public because used in tests.</p>
      */
-    private void extractSampleDatabase(String databaseName, String zipFile) throws IOException{
+    private void extractSampleDatabase(String databaseName, String zipFile) throws IOException {
 
         File systemHomeFile = DerbyDatabases.getSystemHome();
         if (systemHomeFile == null) { // NOI18N
@@ -126,8 +117,8 @@ public class SampleDatabaseCreator  {
         FileObject systemHomeFO = FileUtil.toFileObject(systemHomeFile);
         // Partial fix for Issue 121195.  If toFileObject can't find the file on disk, it returns null
         if (systemHomeFO == null) {
-            LOGGER.log(Level.WARNING, org.openide.util.NbBundle.getMessage(SampleDatabaseCreator.class, "MSG_DERBY_SYSTEM_FOLDER_NOT_FOUND"));
-            throw new FileNotFoundException(org.openide.util.NbBundle.getMessage(SampleDatabaseCreator.class, "MSG_DERBY_SYSTEM_FOLDER_NOT_FOUND") + systemHomeFile.getCanonicalPath());
+            LOGGER.log(Level.WARNING, org.openide.util.NbBundle.getMessage(SampleDatabaseCreator.class, "MSG_DERBY_SYSTEM_FOLDER_NOT_FOUND")); // NOI18N
+            throw new FileNotFoundException(org.openide.util.NbBundle.getMessage(SampleDatabaseCreator.class, "MSG_DERBY_SYSTEM_FOLDER_NOT_FOUND") + systemHomeFile.getCanonicalPath()); // NOI18N
         }
         FileObject sampleFO = systemHomeFO.getFileObject(databaseName); // NOI18N
         if (sampleFO == null) {
@@ -145,28 +136,27 @@ public class SampleDatabaseCreator  {
         if (drivers.length == 0) {
             throw new IllegalStateException("The " + DRIVER_DISP_NAME_NET + " driver was not found"); // NOI18N
         }
-        
-        DatabaseConnection dbconn = DatabaseConnection.create(drivers[0], "jdbc:derby://" + server + ":" + port +  "/" + databaseName, user, schema, password, rememberPassword); // NOI18N
+        DatabaseConnection dbconn = DatabaseConnection.create(drivers[0], "jdbc:derby://" + server + ":" + port + "/" + databaseName, user, schema, password, rememberPassword); // NOI18N
         ConnectionManager.getDefault().addConnection(dbconn);
         return dbconn;
     }
-    
+
     // Unzips sample database file from modules/ext
     public static void extractZip(File source, FileObject target) throws IOException {
         FileInputStream is = new FileInputStream(source);
         try {
             ZipInputStream zis = new ZipInputStream(is);
             ZipEntry ze;
-            
+
             while ((ze = zis.getNextEntry()) != null) {
                 String name = ze.getName();
-                
+
                 // if directory, create
                 if (ze.isDirectory()) {
                     FileUtil.createFolder(target, name);
                     continue;
                 }
-                
+
                 // if file, copy
                 FileObject fd = FileUtil.createData(target, name);
                 FileLock lock = fd.lock();
@@ -184,9 +174,14 @@ public class SampleDatabaseCreator  {
         } finally {
             is.close();
         }
-    }               
-    
-    public static void createDatabase (String database,  String sampleZipFile) {
+    }
+
+    /**
+     * Unzip sample database if derby registered
+     * @param database
+     * @param sampleZipFile
+     */
+    public static void createDatabase(String database, String sampleZipFile) {
         try {
             if (DerbyDatabases.isDerbyRegistered()) {
                 SampleDatabaseCreator sample = new SampleDatabaseCreator();
@@ -195,8 +190,7 @@ public class SampleDatabaseCreator  {
                 }
             }
         } catch (IOException ioe) {
-            ioe.printStackTrace();
+            LOGGER.log(Level.WARNING, "Sample database error, ", ioe); // NOI18N
         }
     }
-
 }

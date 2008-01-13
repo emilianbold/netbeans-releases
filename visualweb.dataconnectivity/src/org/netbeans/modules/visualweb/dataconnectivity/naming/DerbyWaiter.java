@@ -47,6 +47,7 @@ import org.netbeans.api.db.explorer.JDBCDriverListener;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.modules.derby.api.DerbyDatabases;
 import org.netbeans.modules.visualweb.dataconnectivity.utils.SampleDatabaseCreator;
+import org.openide.util.NbPreferences;
 
 
 /**
@@ -62,25 +63,30 @@ public class DerbyWaiter {
     
     private final JDBCDriverListener jdbcDriverListener = new JDBCDriverListener() {
         public void driversChanged() {
+            createDatabase("travel", "startup/samples/travel.zip");  //NOI18N
+            createDatabase("vir", "startup/samples/vir.zip");  //NOI18N
             registerConnections();
         }
     };
     
     public DerbyWaiter(boolean migration) {
         isMigration = migration;
-        if (JDBCDriverManager.getDefault().getDrivers(DRIVER_CLASS_NET).length == 0) {
-            JDBCDriverManager.getDefault().addDriverListener(jdbcDriverListener);
-        } else  {
-            registerConnections();
-        }
-        
-        // Create databases if they had been removed
-        if (!DerbyDatabases.databaseExists("travel")) {
-            SampleDatabaseCreator.createDatabase("travel", "startup/samples/travel.zip"); //NOI18N
-        }
+        String sampleDatabaseRegistered = NbPreferences.forModule(SampleDatabaseCreator.class).get("VISUALWEB_SAMPLE_DATABASE_REGISTERED", "");  // NOI18N   
+        if (!migration && sampleDatabaseRegistered.equals("")) { // NOI18N
+            if (JDBCDriverManager.getDefault().getDrivers(DRIVER_CLASS_NET).length == 0) {
+                JDBCDriverManager.getDefault().addDriverListener(jdbcDriverListener);
+            } else {
+                createDatabase("travel", "startup/samples/travel.zip");  //NOI18N
+                createDatabase("vir", "startup/samples/vir.zip");  //NOI18N
+                registerConnections();
 
-        if (!DerbyDatabases.databaseExists("vir")) {
-            SampleDatabaseCreator.createDatabase("vir", "startup/samples/vir.zip"); //NOI18N
+            }
+        }               
+    }
+    
+    private void createDatabase(String databaseName, String databaseZipFileLocation) {
+        if (!DerbyDatabases.databaseExists(databaseName)) {
+            SampleDatabaseCreator.createDatabase(databaseName, databaseZipFileLocation); //NOI18N
         }
     }
     
