@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -228,12 +228,10 @@ public class AutoupdateCheckScheduler {
         return updates;
     }
     
-    public static boolean timeToCheck () {
+    private static boolean timeToCheck () {
         if (getReqularlyTimerTask () != null) {
             // if time is off then is time to check
             if (getReqularlyTimerTask ().getDelay () <= 0 && getWaitPeriod () > 0) {
-                // schedule next check
-                getReqularlyTimerTask ().schedule (getWaitPeriod ());
                 return true;
             }
         }
@@ -246,8 +244,10 @@ public class AutoupdateCheckScheduler {
         switch (AutoupdateSettings.getPeriod ()) {
             case AutoupdateSettings.EVERY_STARTUP:
                 return true;
-            case AutoupdateSettings.EVERY_NEVER:
+            case AutoupdateSettings.NEVER:
                 return false;
+            case AutoupdateSettings.CUSTOM_CHECK_INTERVAL:
+                return AutoupdateSettings.getLastCheck ().getTime () + AutoupdateSettings.getCheckInterval () < new Date ().getTime ();
             default:
                 Date lastCheck = AutoupdateSettings.getLastCheck();
                 GregorianCalendar calendar = new GregorianCalendar();
@@ -305,13 +305,18 @@ public class AutoupdateCheckScheduler {
             if (SwingUtilities.isEventDispatchThread ()) {
                 RequestProcessor.getDefault ().post (doCheck);
             }
-            scheduleRefreshProviders ();
+            if (timeToCheck ()) {
+                scheduleRefreshProviders ();
+                if (getWaitPeriod () > 0 && regularlyCheck != null && regularlyCheck.getDelay () <= 0) {
+                    regularlyCheck = REGULARLY_CHECK_TIMER.post (doCheck, getWaitPeriod (), Thread.MIN_PRIORITY);
+                }
+            }
         }
     };
 
     private static int getWaitPeriod () {
         switch (AutoupdateSettings.getPeriod ()) {
-            case AutoupdateSettings.EVERY_NEVER:
+            case AutoupdateSettings.NEVER:
                 return 0;
             case AutoupdateSettings.EVERY_STARTUP:
                 return 0;
@@ -323,6 +328,8 @@ public class AutoupdateCheckScheduler {
                 return 1000 * 3600 * 24 * 14;
             case AutoupdateSettings.EVERY_MONTH:
                 return Integer.MAX_VALUE; // 1000 * 3600 * 24 * 28 is close but too big 
+            case AutoupdateSettings.CUSTOM_CHECK_INTERVAL:
+                return AutoupdateSettings.getCheckInterval ();
             default:
                 return 0;
         }

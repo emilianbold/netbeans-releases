@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -50,6 +50,7 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import org.netbeans.modules.autoupdate.ui.Utilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.util.NbPreferences;
@@ -71,8 +72,20 @@ public class AutoupdateSettings {
     public static final int EVERY_WEEK = 2;
     public static final int EVERY_2WEEKS = 3;
     public static final int EVERY_MONTH = 4;
-    public static final int EVERY_NEVER = 5;
+    public static final int NEVER = 5;
+    public static final int CUSTOM_CHECK_INTERVAL = 6;
     
+    private static final String [][] KNOWN = {
+        {"EVERY_STARTUP", "0"},
+        {"EVERY_DAY", "1"},
+        {"EVERY_WEEK", "2"},
+        {"EVERY_2WEEKS", "3"},
+        {"EVERY_MONTH", "4"},
+        {"NEVER", "5"},
+    };
+    
+    private static int checkInterval = 0;
+
     private AutoupdateSettings () {
     }
     
@@ -96,10 +109,25 @@ public class AutoupdateSettings {
     }
     
     public static int getPeriod () {
-        return getPreferences ().getInt (PROP_PERIOD, EVERY_WEEK);
+        boolean stillDefault = getPreferences ().get (PROP_PERIOD, null) == null;
+        Integer defaultCheckInterval = null;
+        if (stillDefault) {
+            defaultCheckInterval = parse (Utilities.getCustomCheckIntervalInMinutes ());
+            if (defaultCheckInterval == null) {
+                defaultCheckInterval = EVERY_WEEK;
+            }
+        }
+        err.log (Level.FINEST, "getPeriod () returns " + getPreferences ().getInt (PROP_PERIOD, defaultCheckInterval));
+        return getPreferences ().getInt (PROP_PERIOD, defaultCheckInterval);
     }
 
+    public static int getCheckInterval () {
+        err.log (Level.FINEST, "getCheckInterval () returns " + checkInterval + "ms");
+        return checkInterval;
+    }
+    
     public static void setPeriod (int period) {
+        err.log (Level.FINEST, "Called setPeriod (" + period +")");
         getPreferences ().putInt (PROP_PERIOD, period);
     }
     
@@ -169,6 +197,34 @@ public class AutoupdateSettings {
 
     private static String generateNewId () {
         return "0" + UUID.randomUUID ().toString ();
+    }
+    
+    private static Integer parse (String s) {
+        if (s == null || s.trim ().length () == 0) {
+            return null;
+        }
+        Integer period = null;
+        for (String [] pair: KNOWN) {
+            if (pair [0].equalsIgnoreCase (s)) {
+                try {
+                    period = Integer.parseInt (pair[1]);
+                } catch (NumberFormatException nfe) {
+                    assert false : "Invalid value " + pair + " throws " + nfe;
+                }
+            }
+        }
+        if (period == null) {
+            try {
+                checkInterval = Long.parseLong (s) * 1000 * 60 > Integer.MAX_VALUE ? Integer.MAX_VALUE : Integer.parseInt (s) * 1000 * 60;
+                period = CUSTOM_CHECK_INTERVAL;
+                err.log (Level.FINE, "Custom value of " + Utilities.PLUGIN_MANAGER_CHECK_INTERVAL + " is " + s + " minutes.");
+            } catch (NumberFormatException nfe) {
+                err.log (Level.FINE, "Invalid value " + s + " of " + Utilities.PLUGIN_MANAGER_CHECK_INTERVAL + " throws " + nfe);
+            }
+        } else {
+            err.log (Level.FINE, "Custom value of " + Utilities.PLUGIN_MANAGER_CHECK_INTERVAL + " is " + s);
+        }
+        return period;
     }
     
 }

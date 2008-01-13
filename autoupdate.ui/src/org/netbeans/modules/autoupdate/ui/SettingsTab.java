@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -75,6 +75,7 @@ import javax.swing.table.TableColumnModel;
 import org.netbeans.api.autoupdate.UpdateUnitProvider;
 import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.modules.autoupdate.ui.actions.AutoupdateSettings;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -125,6 +126,9 @@ public class SettingsTab extends javax.swing.JPanel {
             getMessage("CTL_Update_every_month"),
             getMessage("CTL_Update_never")
         }));
+        if (AutoupdateSettings.CUSTOM_CHECK_INTERVAL == getAutoUpdatePeriod ()) {
+            cbCheckPeriod.addItem (getMessage("CTL_Update_custom"));
+        }
         cbCheckPeriod.setSelectedIndex (getAutoUpdatePeriod ());
         //cbModules.setSelected(Utilities.modulesOnly());
         //cbPlugins.setSelected(!Utilities.modulesOnly());
@@ -622,18 +626,15 @@ private class Listener implements ListSelectionListener,  TableModelListener {
         
     }
 
-    int getAutoUpdatePeriod () {
-        return getAutoupdatePreferences ().getInt ("period", 2 /*EVERY_WEEK*/); // NOI18N
+    private int getAutoUpdatePeriod () {
+        return AutoupdateSettings.getPeriod ();
     }
     
-    void setAutoUpdatePeriod (int period) {
-        if (period != getAutoUpdatePeriod()) {
-            getAutoupdatePreferences ().putInt ("period", period); // NOI18N
+    private void setAutoUpdatePeriod (int period) {
+        if (period != getAutoUpdatePeriod ()) {
+            AutoupdateSettings.setPeriod (period);
+            cbCheckPeriod.removeItem (getMessage("CTL_Update_custom"));
         }
-    }
-    
-    private static Preferences getAutoupdatePreferences () {
-        return NbPreferences.root ().node ("org/netbeans/modules/autoupdate");
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

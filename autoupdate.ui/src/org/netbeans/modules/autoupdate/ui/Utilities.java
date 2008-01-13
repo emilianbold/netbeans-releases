@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -89,7 +89,10 @@ public class Utilities {
     private static Logger logger = Logger.getLogger(Utilities.class.getName());
     private static Boolean isModulesOnly;
     private static String PLUGIN_MANAGER_MODULES_ONLY = "plugin_manager_modules_only";
-    private static String PLUGIN_MANAGER_SHARED_INSTALLATION = "plugin_manager_shared_installation";    
+    private static String PLUGIN_MANAGER_SHARED_INSTALLATION = "plugin_manager_shared_installation";
+    
+    public static String PLUGIN_MANAGER_CHECK_INTERVAL = "plugin.manager.check.interval";
+    
     public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat ("yyyy/MM/dd"); // NOI18N
     
     static final String UNSORTED_CATEGORY = NbBundle.getMessage (Utilities.class, "Utilities_Unsorted_Category");
@@ -359,6 +362,10 @@ public class Utilities {
     
     public static boolean showExtendedDescription () {
         return Boolean.valueOf (System.getProperty ("plugin.manager.extended.description"));
+    }
+    
+    public static String getCustomCheckIntervalInMinutes () {
+        return System.getProperty (PLUGIN_MANAGER_CHECK_INTERVAL);
     }
 
     /** Do auto-check for available new plugins a while after startup.
