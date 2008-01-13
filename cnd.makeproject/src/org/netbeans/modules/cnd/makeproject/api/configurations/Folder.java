@@ -232,7 +232,9 @@ public class Folder {
     }
     
     public Item addItemAction(Item item) {
-        addItem(item);
+        if (addItem(item) == null) {
+            return null; // Nothing added
+        }
         ArrayList list = new ArrayList(1);
         list.add(item);
         ((MakeConfigurationDescriptor)configurationDescriptor).fireFilesAdded(list);
@@ -242,10 +244,12 @@ public class Folder {
     public Item addItem(Item item) {
         if (item == null)
             return null;
-        // Check if already in project. Silently ignore if already there.
-        if (isProjectFiles() && ((MakeConfigurationDescriptor)configurationDescriptor).findProjectItemByPath(item.getPath()) != null) {
-            System.err.println("Folder - addItem - item ignored, already added: " + item); // NOI18N  // FIXUP: correct?
-            return null;
+        // Check if already in project. Refresh if it's there.
+        Item existingItem;
+        if (isProjectFiles() && (existingItem = ((MakeConfigurationDescriptor)configurationDescriptor).findProjectItemByPath(item.getPath())) != null) {
+            //System.err.println("Folder - addItem - item ignored, already added: " + item); // NOI18N  // FIXUP: correct?
+            refresh(existingItem);
+            return null; // Nothing added
         }
         // Add it to the folder
         item.setFolder(this);
