@@ -74,13 +74,13 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
-
+import org.netbeans.modules.j2ee.sun.ide.j2ee.PlatformValidator;
 /**
  * Iterator for registering an SJSAS/GF domain
  * 
  * @author vkraemer
  */
-public final class AddDomainWizardIterator implements
+public class AddDomainWizardIterator implements
         WizardDescriptor.InstantiatingIterator,ChangeListener {
     
     private int index;
@@ -108,7 +108,7 @@ public final class AddDomainWizardIterator implements
     final static String PROP_ERROR_MESSAGE = "WizardPanel_errorMessage";        // NOI18N
     final static String TYPE = "type";                                          //NOI18N
     final static String PROP_DISPLAY_NAME = "ServInstWizard_displayName";       // NOI18N
-    
+
     
     final private AddDomainHostPortPanel hppanel =
             new AddDomainHostPortPanel();
@@ -116,7 +116,7 @@ public final class AddDomainWizardIterator implements
             new AddDomainDirectoryPanel(false);
     final private AddDomainDirectoryPanel personalDirPanel =
             new AddDomainDirectoryPanel(true);
-    final private AddDomainPlatformPanel platformPanel =
+    final AddDomainPlatformPanel platformPanel =
             new AddDomainPlatformPanel();
     final private AddDomainNamePasswordPanel unamePanel =
             new AddDomainNamePasswordPanel();
@@ -138,6 +138,15 @@ public final class AddDomainWizardIterator implements
     final private WizardDescriptor.Panel[] personalFlow = {
         platformPanel, personalDirPanel, unamePanel, portsPanel
     };
+    
+    public AddDomainWizardIterator(PlatformValidator pv) {
+        platformPanel.setPlatformValidator(pv);
+    }
+
+    public AddDomainWizardIterator(PlatformValidator pv, String serverVersion) {
+        platformPanel.setPlatformValidator(pv, serverVersion);
+    }
+    
     /**
      * Initialize panels representing individual wizard's steps and sets
      * various properties for them influencing wizard appearance.

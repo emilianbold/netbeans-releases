@@ -58,6 +58,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.TargetModuleIDResolver;
+import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 import org.netbeans.modules.j2ee.sun.ide.dm.SunDatasourceManager;
 import org.netbeans.modules.j2ee.sun.ide.dm.SunDeploymentManager;
 import org.netbeans.modules.j2ee.sun.ide.dm.SunJDBCDriverDeployer;
@@ -65,19 +66,34 @@ import org.netbeans.modules.j2ee.sun.ide.dm.SunMessageDestinationDeployment;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.jsps.FindJSPServletImpl;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.incrdeploy.DirectoryDeploymentFacade;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.AddDomainWizardIterator;
-//import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.TargetServerData;
-//import org.netbeans.modules.tomcat5.AntDeploymentProviderImpl;
+import org.netbeans.modules.j2ee.sun.ide.j2ee.PlatformValidator;
 
 /**
  *
  * @author  ludo
  */
-
-
 public  class OptionalFactory extends OptionalDeploymentManagerFactory {
     
+    private String serverVersion = "";
+    
     /** Creates a new instance of OptionalFactory */
+    private OptionalFactory (String version) {
+        this.serverVersion = version;
+    }
+    
     public OptionalFactory () {
+    }
+    
+    public static OptionalFactory createFactoryForGF_V1() {
+        return new OptionalFactory(PlatformValidator.GLASSFISH_V1);
+    }
+    
+    public static OptionalFactory createFactoryForGF_V2() {
+        return new OptionalFactory(PlatformValidator.GLASSFISH_V2);
+    }
+    
+    public static OptionalFactory createFactoryForSF_V1() {
+        return new OptionalFactory(PlatformValidator.SAILFIN_V1);
     }
     
     public FindJSPServlet getFindJSPServlet (DeploymentManager dm) {
@@ -101,7 +117,7 @@ public  class OptionalFactory extends OptionalDeploymentManagerFactory {
     
     public WizardDescriptor.InstantiatingIterator getAddInstanceIterator() {
         WizardDescriptor.InstantiatingIterator retVal = 
-                new AddDomainWizardIterator();
+                new AddDomainWizardIterator(new PlatformValidator(), serverVersion);
         return retVal;
     }
     
@@ -128,4 +144,5 @@ public  class OptionalFactory extends OptionalDeploymentManagerFactory {
         return new SunJDBCDriverDeployer(dm);
     }
     
+  
 }

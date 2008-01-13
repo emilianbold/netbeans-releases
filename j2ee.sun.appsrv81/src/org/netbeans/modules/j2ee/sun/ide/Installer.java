@@ -59,6 +59,7 @@ public class Installer extends ModuleInstall {
     private static DeploymentFactory facadeDF = null;
     private static DeploymentFactory facadeDFGlassFishV1 = null;
     private static DeploymentFactory facadeDFGlassFishV2 = null;
+    private static DeploymentFactory facadeDFJavaEEPlusSIP = null;
     
     private static final String PROP_FIRST_RUN = "first_run";
     
@@ -94,6 +95,17 @@ public class Installer extends ModuleInstall {
         }
         return facadeDFGlassFishV2;
     }    
+    
+    /** Factory method to create DeploymentFactory for SailFin V1.
+     */
+    public static synchronized Object createJavaEEPlusSIP() {
+        if (facadeDFJavaEEPlusSIP == null){
+            //this is our JSR88 factory lazy init, only when needed via layer.
+            PluginProperties.configureDefaultServerInstance();
+            facadeDFJavaEEPlusSIP =  new org.netbeans.modules.j2ee.sun.ide.dm.SunDeploymentFactory(NbBundle.getMessage(Installer.class, "LBL_JavaEEPlusSIP"));
+        }
+        return facadeDFJavaEEPlusSIP;
+    }  
     
     @Override public void restored() {
         WindowManager.getDefault().invokeWhenUIReady(new PrepareEnvironment());

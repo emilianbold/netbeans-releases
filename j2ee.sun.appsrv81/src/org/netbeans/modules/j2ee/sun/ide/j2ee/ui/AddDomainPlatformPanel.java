@@ -56,10 +56,12 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.j2ee.sun.api.Asenv;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
+import org.netbeans.modules.j2ee.sun.ide.Installer;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.netbeans.modules.j2ee.sun.ide.j2ee.PlatformValidator;
 
 /** Queries the user for the platform directory associated with the
  * instance they are registering.
@@ -150,7 +152,7 @@ class AddDomainPlatformPanel implements WizardDescriptor.FinishablePanel,
             retVal = false;
         }
         File location = new File(getAIVPP().getInstallLocation());
-        if (retVal && !ServerLocationManager.isGoodAppServerLocation(location)) {
+        if (retVal && !platformValidator.isGoodAppServerLocation(location)) {
             Object selectedType = getAIVPP().getSelectedType();
             if (selectedType == AddDomainWizardIterator.REMOTE){
                 wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
@@ -360,7 +362,16 @@ class AddDomainPlatformPanel implements WizardDescriptor.FinishablePanel,
     // by the user.
     public void readSettings(Object settings) {
         wiz = (WizardDescriptor) settings;
+        if(! serverVersion.equals("")) { //NOI18N
+            platformValidator = new PlatformValidator() {
+                @Override
+                public boolean isGoodAppServerLocation(File loc) {
+                    return super.isDescriminatorPresent(loc, serverVersion);
+                }
+            };
+        }
     }
+
     public void storeSettings(Object settings) {
         // TODO implement?
     }
@@ -376,6 +387,18 @@ class AddDomainPlatformPanel implements WizardDescriptor.FinishablePanel,
     public boolean isFinishPanel() {
         Object selectedType = getAIVPP().getSelectedType();
         return selectedType == AddDomainWizardIterator.DEFAULT;
+    }
+    
+    private PlatformValidator platformValidator;
+    private String serverVersion = "";
+    
+    public void setPlatformValidator(PlatformValidator pv) {
+        platformValidator = pv;
+    }
+    
+    public void setPlatformValidator(PlatformValidator pv, String sversion) {
+        platformValidator = pv;
+        serverVersion = sversion;
     }
     
 }

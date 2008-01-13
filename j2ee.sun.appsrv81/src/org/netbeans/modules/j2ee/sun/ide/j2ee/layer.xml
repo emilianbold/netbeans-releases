@@ -77,7 +77,7 @@ made subject to such option by the copyright holder.
 					<attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory"/>
 				</file>
 				<file name="OptionalFactory.instance">
-					<attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.OptionalFactory"/>
+					<attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.OptionalFactory.createFactoryForGF_V2"/>
 					<attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.OptionalFactory"/>
 					<attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory"/>
 				</file>
@@ -104,6 +104,59 @@ made subject to such option by the copyright holder.
 
 				</folder>
 			</folder>
+            <folder name="JavaEEPlusSIP">
+                <file name="Descriptor" url="nbdep.xml"/>
+                <file name="Factory.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.sun.ide.Installer.createJavaEEPlusSIP"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.sun.ide.Installer"/>
+                    <attr name="instanceOf" stringvalue="javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
+                </file>
+                <file name="RegistryNodeFactory.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.nodes.NodeFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.RegistryNodeFactory"/>
+                </file>
+                <file name="ModConFactory.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.ModConFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory"/>
+                </file>
+                <file name="J2eeVerifierSupport.instance">
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.VerifierImpl"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.VerifierImpl"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.VerifierSupport"/>
+                </file>
+                <file name="J2eePlatformFactory.instance">
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.PlatformFactory"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.PlatformFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory"/>
+                </file>
+                <file name="OptionalFactory.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.OptionalFactory.createFactoryForSF_V1"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.OptionalFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory"/>
+                </file>
+                
+                <folder name="DeploymentFileNames">
+                    <folder name="WAR">
+                        <file name="WEB-INF\sun-web.xml"/>
+                    </folder>
+                    <folder name="EJB">
+                        <file name="META-INF\sun-ejb-jar.xml"/>
+                        <file name="META-INF\sun-cmp-mappings.xml"/>
+                    </folder>
+                    <folder name="EAR">
+                        <file name="META-INF\sun-application.xml"/>
+                    </folder> 
+                    <folder name="RAR">
+                        <file name="META-INF\sun-ra.xml"/>
+                    </folder>
+                    
+                    <folder name="CAR">
+                        <file name="META-INF\sun-application-client.xml"/>
+                    </folder>
+                    
+                    
+                </folder>
+            </folder>
 		    <folder name="APPSERVERSJS">
 			    <file name="Descriptor" url="nbdep.xml"/>
 				<file name="Factory.instance">
@@ -183,7 +236,7 @@ made subject to such option by the copyright holder.
 					<attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory"/>
 				</file>
 				<file name="OptionalFactory.instance">
-					<attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.OptionalFactory"/>
+					<attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.OptionalFactory.createFactoryForGF_V1"/>
 					<attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.sun.ide.j2ee.OptionalFactory"/>
 					<attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory"/>
 				</file>

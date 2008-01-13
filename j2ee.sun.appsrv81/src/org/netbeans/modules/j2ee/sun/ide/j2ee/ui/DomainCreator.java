@@ -56,6 +56,7 @@ import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.util.NbBundle;
+import org.netbeans.modules.j2ee.sun.ide.j2ee.PlatformValidator;
 
 /**
  * Helper class which serves to create and register a new domain without
@@ -109,7 +110,7 @@ public final class DomainCreator {
      *  Do not allow to create instances of this class.
      */
     private DomainCreator() {
-        wizard = new AddDomainWizardIterator();
+        wizard = new AddDomainWizardIterator(new PlatformValidator());
         wizardDescriptor = new WizardDescriptor(new Panel[] {});
     }
     
