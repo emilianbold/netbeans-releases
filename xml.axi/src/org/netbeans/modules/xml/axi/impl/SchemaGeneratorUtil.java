@@ -65,7 +65,7 @@ import org.netbeans.modules.xml.axi.visitor.AXINonCyclicVisitor;
 import org.netbeans.modules.xml.schema.model.*;
 import org.netbeans.modules.xml.schema.model.Attribute.Use;
 import org.netbeans.modules.xml.axi.visitor.FindUsageVisitor;
-import org.netbeans.modules.xml.axi.visitor.Preview;
+import org.netbeans.modules.xml.axi.impl.Preview;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;

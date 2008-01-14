@@ -39,52 +39,63 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.xml.axi.visitor;
+package org.netbeans.modules.xml.axi.impl;
 
-import org.netbeans.modules.xml.axi.impl.Preview;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.modules.xml.axi.AXIComponent;
-import org.netbeans.modules.xml.axi.AXIDocument;
-import org.netbeans.modules.xml.axi.AXIModel;
-import org.netbeans.modules.xml.axi.Element;
 
 /**
+ * The preview class encapsulates a collection of global elements,
+ * used by other global elements.
  *
  * @author Ayub Khan
  */
-public class FindUsageVisitor extends AXINonCyclicVisitor {
+public class Preview {
     
-    Preview p = null;
+    Map<AXIComponent, java.util.List<AXIComponent>> pmap =
+            new HashMap<AXIComponent, java.util.List<AXIComponent>>();
+    Map<AXIComponent, java.util.List<AXIComponent>> reversemap =
+            new HashMap<AXIComponent, java.util.List<AXIComponent>>();
     
-    Element usedBy = null;
-    
-    /** Creates a new instance of FindUsageVisitor */
-    public FindUsageVisitor(AXIModel am) {
-        super(am);
-        p = new Preview();
+    /** Creates a new instance of Preview */
+    public Preview() {
     }
     
-    public Preview findUsages(AXIDocument root) {
-        if(root == null) return null;
-        java.util.List<Element> axiges = root.getElements();
-        for(Element e : axiges) {
-            findUsages(e);
+    /**
+     * Returns a collection of schema components, all of which,
+     * reference the same global schema component.
+     */
+    public Map<AXIComponent, java.util.List<AXIComponent>> getUsages() {
+        return pmap;
+    }
+    
+    /**
+     * Returns a collection of schema components, all of which,
+     * reference the same global schema component.
+     */
+    public Map<AXIComponent, java.util.List<AXIComponent>> getReverseUsages() {
+        return reversemap;
+    }
+    
+    public void addToUsage(AXIComponent c, AXIComponent usedBy) {
+        java.util.List<AXIComponent> l = pmap.get(c);
+        if(l == null) {
+            l = new ArrayList<AXIComponent>();
+            pmap.put(c, l);
         }
-        return p;
+        l.add(usedBy);
+        
+        addToReverseUsage(c, usedBy);
     }
     
-    public Preview findUsages(Element e) {
-        usedBy = e;
-        p.addToUsage(e, usedBy);
-        for(AXIComponent child: e.getChildren()) {
-            child.accept(this);
+    public void addToReverseUsage(AXIComponent c, AXIComponent usedBy) {
+        java.util.List<AXIComponent> r = reversemap.get(usedBy);
+        if(r == null) {
+            r = new ArrayList<AXIComponent>();
+            reversemap.put(usedBy, r);
         }
-        return p;
-    }
-    
-    public void visit(Element e) {
-        if(!canVisit(e)) //skip recursion
-            return;
-        p.addToUsage(e, usedBy);
-        visitChildren(e);
+        r.add(c);
     }
 }
