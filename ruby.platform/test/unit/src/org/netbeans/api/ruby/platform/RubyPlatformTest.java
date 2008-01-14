@@ -61,8 +61,10 @@ public class RubyPlatformTest extends RubyTestBase {
         assertEquals("right ruby lib", new File(TestUtil.getXTestJRubyHome(), "lib/ruby/1.8").getAbsolutePath(), jruby.getLibDir());
     }
     
-    public void testHasRubyGemsInstalled() {
+    public void testHasRubyGemsInstalled() throws Exception {
         assertTrue(RubyPlatformManager.getDefaultPlatform().hasRubyGemsInstalled());
+        RubyPlatform ruby = RubyPlatformManager.addPlatform(setUpRuby());
+        assertFalse(ruby.hasRubyGemsInstalled());
     }
 
 }

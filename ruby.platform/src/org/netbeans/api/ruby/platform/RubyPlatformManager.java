@@ -71,7 +71,7 @@ public final class RubyPlatformManager {
     private static final String[] RUBY_EXECUTABLE_NAMES = { "ruby", "jruby" }; // NOI18N
     
     /** For unit tests. */
-    static File TEST_RUBY;
+    static Properties TEST_RUBY_PROPS;
 
     private static final String PLATFORM_PREFIX = "rubyplatform."; // NOI18N
     private static final String PLATFORM_INTEPRETER = ".interpreter"; // NOI18N
@@ -351,17 +351,8 @@ public final class RubyPlatformManager {
     }
 
     private static Info computeInfo(final File interpreter) throws IOException {
-        if (TEST_RUBY == interpreter) { // tests
-            Properties props = new Properties();
-            props.put(Info.RUBY_KIND, "Ruby");
-            props.put(Info.RUBY_VERSION, "0.1");
-            props.put(Info.RUBY_PATCHLEVEL, "123");
-            props.put(Info.RUBY_RELEASE_DATE, "2000-01-01");
-            props.put(Info.RUBY_PLATFORM, "abcd");
-            props.put(Info.GEM_HOME, "/a/b/c");
-            props.put(Info.GEM_PATH, "/a/b/c");
-            props.put(Info.GEM_VERSION, "0.2");
-            return new Info(props);
+        if (TEST_RUBY_PROPS != null) { // tests
+            return new Info(TEST_RUBY_PROPS);
         }
         Info info = null;
         try {

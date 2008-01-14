@@ -429,8 +429,14 @@ public final class RubyPlatform {
         return new File(interpreter).isFile();
     }
 
+    /**
+     * See also {@link #hasRubyGemsInstalled}.
+     *
+     * @return either an instance of {@link GemManager} or <tt>null</tt>.
+     */
+    @CheckForNull
     public GemManager getGemManager() {
-        if (gemManager == null) {
+        if (gemManager == null && hasRubyGemsInstalled()) {
             gemManager = new GemManager(this);
         }
         return gemManager;
@@ -517,8 +523,8 @@ public final class RubyPlatform {
 
             org.netbeans.modules.gsfret.source.usages.Index.addPreindexRoot(FileUtil.toFileObject(getHome(true)));
 
-            String gemDir = getGemManager().getGemDir(true);
-            if (gemDir != null) {
+            if (hasRubyGemsInstalled()) {
+                String gemDir = getGemManager().getGemDir(true);
                 FileObject gemFo = FileUtil.toFileObject(new File(gemDir));
                 org.netbeans.modules.gsfret.source.usages.Index.addPreindexRoot(gemFo);
             }
@@ -564,6 +570,9 @@ public final class RubyPlatform {
         }
     }
 
+    /**
+     * @return whether the RubyGems are installed for this platform.
+     */
     public boolean hasRubyGemsInstalled() {
         return info.getGemHome() != null;
     }
@@ -622,8 +631,12 @@ public final class RubyPlatform {
             info.releaseDate = "2008-01-12";
             info.executable = null;
             info.platform = "java";
-            info.gemHome = "/space/ruby/gem-repo";
-            info.gemPath = "/space/ruby/gem-repo";
+            File jrubyHome = InstalledFileLocator.getDefault().locate(
+                    "jruby-1.1RC1", "org.netbeans.modules.ruby.platform", false);  // NOI18N
+            // XXX handle valid case when it is not available, see #124534
+            assert (jrubyHome != null && jrubyHome.isDirectory()) : "Default platform available";
+            info.gemHome = FileUtil.toFile(FileUtil.toFileObject(jrubyHome).getFileObject("/lib/ruby/gems/1.8")).getAbsolutePath();
+            info.gemPath = info.gemHome;
             info.gemVersion = "1.0.1 (1.0.1)";
             return info;
         }

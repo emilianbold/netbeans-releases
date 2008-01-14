@@ -40,6 +40,8 @@ package org.netbeans.api.ruby.platform;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Properties;
+import org.netbeans.api.ruby.platform.RubyPlatform.Info;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
@@ -136,15 +138,25 @@ public abstract class RubyTestBase extends NbTestCase {
             bin.createData(binary + suffix);
         }
 
+        Properties props = new Properties();
+        props.put(Info.RUBY_KIND, "Ruby");
+        props.put(Info.RUBY_VERSION, "0.1");
+        props.put(Info.RUBY_PATCHLEVEL, "123");
+        props.put(Info.RUBY_RELEASE_DATE, "2000-01-01");
+        props.put(Info.RUBY_PLATFORM, "abcd");
         if (withGems) {
             // Build a fake rubygems repository
             FileObject gemsVer = FileUtil.createFolder(libRuby, "gems/" + RubyPlatform.DEFAULT_RUBY_RELEASE);
             gemsVer.createFolder("gems");
             gemsVer.createFolder("specifications");
             gemsVer.createFolder("bin");
+            props.put(Info.GEM_HOME, FileUtil.toFile(gemsVer).getAbsolutePath());
+            props.put(Info.GEM_PATH, "/a/b/c");
+            props.put(Info.GEM_VERSION, "0.2");
         }
-        RubyPlatformManager.TEST_RUBY = FileUtil.toFile(interpreter);
-        return RubyPlatformManager.TEST_RUBY;
+
+        RubyPlatformManager.TEST_RUBY_PROPS = props;
+        return FileUtil.toFile(interpreter);
     }
 
     protected FileObject getTestFile(String relFilePath) {

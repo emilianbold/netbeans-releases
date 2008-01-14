@@ -127,6 +127,7 @@ public final class GemManager {
     private final RubyPlatform platform;
     
     public GemManager(final RubyPlatform platform) {
+        assert platform.hasRubyGemsInstalled() : "called when RubyGems installed";
         this.platform = platform;
     }
 
@@ -181,67 +182,9 @@ public final class GemManager {
      * Not cached.
      */
     public String getGemDir(boolean canonical) {
-        String gemdir = null;
-        
-        String gemHome = TEST_GEM_HOME; // test hook
-        // XXX: do not use GEM_HOME for bundle JRuby for now
-        if (!platform.isDefault() && gemHome == null) {
-            gemHome = System.getenv().get("GEM_HOME"); // NOI18N
-        }
-        if (gemHome != null) {
-            File lib = new File(gemHome); // NOI18N
-            if (!lib.isDirectory()) {
-                LOGGER.finest("Cannot find Gems repository. \"" + lib + "\" does not exist or is not a directory."); // NOI18N
-                // Fall through and try the Ruby interpreter's area
-            } else {
-                gemHomeFo = FileUtil.toFileObject(lib);
-                return lib.getAbsolutePath();
-            }
-        }
-        
-        File rubyHome = platform.getHome(canonical);
-        assert rubyHome != null : "rubyHome not null for " + platform;
-
-        File libGems = new File(platform.getLib() + File.separator + "ruby" + // NOI18N
-                File.separator + "gems"); // NOI18N
-        File defaultGemDir = new File(libGems, RubyPlatform.DEFAULT_RUBY_RELEASE);
-
-        if (defaultGemDir.isDirectory()) {
-            return defaultGemDir.getAbsolutePath();
-        }
-
-        // Special case for Debian: /usr/share/doc/rubygems/README.Debian documents
-        // a special location for gems
-        if ("/usr".equals(rubyHome.getPath())) { // NOI18N
-            File varGem = new File("/var/lib/gems/1.8"); // NOI18N
-            if (varGem.exists()) {
-                gemHomeFo = FileUtil.toFileObject(varGem);
-                return varGem.getPath();
-            }
-        }
-
-        // Search for a numbered directory
-        File[] children = libGems.listFiles();
-        if (children != null) {
-            for (File c : children) {
-                if (!c.isDirectory()) {
-                    continue;
-                }
-
-                if (c.getName().matches("\\d+\\.\\d+")) { // NOI18N
-                    gemHomeFo = FileUtil.toFileObject(c);
-                    gemdir = c.getAbsolutePath();
-                    break;
-                }
-            }
-        }
-
-        if ((gemdir == null) && (children != null) && (children.length > 0)) {
-            gemHomeFo = FileUtil.toFileObject(children[0]);
-            gemdir = children[0].getAbsolutePath();
-        }
-
-        return gemdir;
+        String gemHome = platform.getInfo().getGemHome();
+        gemHomeFo = FileUtil.toFileObject(new File(gemHome));
+        return gemHome;
     }
 
     /** Return > 0 if version1 is greater than version 2, 0 if equal and -1 otherwise */
