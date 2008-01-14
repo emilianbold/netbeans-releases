@@ -132,7 +132,7 @@ public class RestUtils {
     public static RestServicesModel getRestServicesMetadataModel(Project project) {
         RestSupport support = getRestSupport(project);
         if (support != null) {
-            return support.getRestServicesMetadataModel();
+            return support.getRestServicesModel();
         }
         return null;
     }
@@ -153,13 +153,6 @@ public class RestUtils {
          wsModel.enablePropertyChangeListener();
     }
 
-    public static void addRestApiJar(Project project) throws IOException {
-        RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
-        if (restSupport != null) {
-            restSupport.addJSR311apiJar();
-        }
-    }
-    
     //
     // TODO: The following methods don't belong here. Some of them should go into
     // JavaSourceHelper and the XML/DOM related methods should go into

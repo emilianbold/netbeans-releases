@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.websvc.rest.spi;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -49,7 +51,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -62,11 +67,15 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.jaxws.spi.JAXWSSupportProvider;
+import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
 import org.netbeans.modules.websvc.rest.model.spi.RestServicesMetadataModelFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.classpath.PathResourceImplementation;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileLock;
@@ -108,7 +117,8 @@ public abstract class RestSupport {
     public static final String JSR311_API_LOCATION = "modules/ext/rest/jsr311-api.jar";
     
     private AntProjectHelper helper;
-    protected RestServicesModel restServicesMetadataModel;
+    protected RestServicesModel restServicesModel;
+    private List<PropertyChangeListener> modelListeners = new ArrayList<PropertyChangeListener>();
     protected final Project project;
 
     /** Creates a new instance of RestSupport */
@@ -144,8 +154,12 @@ public abstract class RestSupport {
      */
     public abstract FileObject getPersistenceXml();
     
-    private FileObject findSourceRoot() {
-        SourceGroup[] sourceGroups = ProjectUtils.getSources(getProject()).getSourceGroups(
+    public FileObject findSourceRoot() {
+        return findSourceRoot(getProject());
+    }
+    
+    public static FileObject findSourceRoot(Project project) {
+        SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(
                 JavaProjectConstants.SOURCES_TYPE_JAVA);
         if (sourceGroups != null && sourceGroups.length > 0) {
             return sourceGroups[0].getRootFolder();
@@ -153,20 +167,94 @@ public abstract class RestSupport {
         return null;
     }
 
-    public RestServicesModel getRestServicesMetadataModel() {
+    public void addModelListener(PropertyChangeListener listener) {
+        modelListeners.add(listener);
+        if (restServicesModel != null) {
+            restServicesModel.addPropertyChangeListener(listener);
+        }
+    }
+
+    public void removeModelListener(PropertyChangeListener listener) {
+        modelListeners.remove(listener);
+        if (restServicesModel != null) {
+            restServicesModel.removePropertyChangeListener(listener);
+        }
+    }
+    
+    public RestServicesModel getRestServicesModel() {
         FileObject sourceRoot = findSourceRoot();
-        if (restServicesMetadataModel == null && sourceRoot != null) {
+        if (restServicesModel == null && sourceRoot != null) {
             ClassPathProvider cpProvider = getProject().getLookup().lookup(ClassPathProvider.class);
             MetadataUnit metadataUnit = MetadataUnit.create(
                     cpProvider.findClassPath(sourceRoot, ClassPath.BOOT),
-                    cpProvider.findClassPath(sourceRoot, ClassPath.COMPILE),
+                    extendWithJsr311Api(cpProvider.findClassPath(sourceRoot, ClassPath.COMPILE)),
                     cpProvider.findClassPath(sourceRoot, ClassPath.SOURCE),
                     null);
-            restServicesMetadataModel = RestServicesMetadataModelFactory.createMetadataModel(metadataUnit);
+            restServicesModel = RestServicesMetadataModelFactory.createMetadataModel(metadataUnit, project);
+            for (PropertyChangeListener pcl : modelListeners) {
+                restServicesModel.addPropertyChangeListener(pcl);
+            }
         }
-        return restServicesMetadataModel;
+        return restServicesModel;
+    }
+
+    protected void refreshRestServicesMetadataModel() {
+        if (restServicesModel != null) {
+            for (PropertyChangeListener pcl : modelListeners) {
+                restServicesModel.removePropertyChangeListener(pcl);
+            }
+            restServicesModel = null;
+        }
+
+        try {
+            getRestServicesModel().runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
+
+                public Void run(RestServicesMetadata metadata) throws IOException {
+                    metadata.getRoot().sizeRestServiceDescription();
+                    return null;
+                }
+                });
+        } catch (IOException ex) {
+            Logger.getLogger(this.getClass().getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
+        }
     }
     
+    public static ClassPath extendWithJsr311Api(ClassPath classPath) {
+        File jsr311JarFile = InstalledFileLocator.getDefault().locate(JSR311_API_LOCATION, null, false);
+        return extendClassPath(classPath, jsr311JarFile);
+    }
+    
+    public static ClassPath extendClassPath(ClassPath classPath, File path) {
+        if (path == null) {
+            return classPath;
+        }
+        try {
+            PathResourceImplementation jsr311Path = getPathResource(path);
+            List<PathResourceImplementation> roots = new ArrayList<PathResourceImplementation>();
+            roots.add(jsr311Path);
+            for (FileObject fo : classPath.getRoots()) {
+                roots.add(ClassPathSupport.createResource(fo.getURL()));
+            }
+            return ClassPathSupport.createClassPath(roots);
+        } catch (Exception ex) {
+            return classPath;
+        }
+    }
+
+    private static PathResourceImplementation getPathResource(File path) throws MalformedURLException {
+        URL url = path.toURI().toURL();
+        if (FileUtil.isArchiveFile(url)) {
+            url = FileUtil.getArchiveRoot(url);
+        } else {
+            url = path.toURI().toURL();
+            String surl = url.toExternalForm();
+            if (!surl.endsWith("/")) {
+                url = new URL(surl + "/");
+            }
+        }
+        return ClassPathSupport.createResource(url);
+    }
+
     /**
      * Generates test client.  Typically RunTestClientAction would need to call 
      * this before invoke the build script target.
@@ -328,52 +416,6 @@ public abstract class RestSupport {
         }
     }
     
-    public  void addJSR311apiJar() throws IOException {
-        Project project = getProject();
-        if (project == null) {
-            return;
-        }
-
-        SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        
-        if (sgs.length == 0) {
-            return;
-        }
-        
-        FileObject sourceRoot = sgs[0].getRootFolder();
-        
-        Library library = LibraryManager.getDefault().getLibrary(RESTAPI_LIBRARY);
-        if (library == null) {
-            return;
-        }
-        
-        File f = InstalledFileLocator.getDefault().locate(JSR311_API_LOCATION, null, false); 
-        if (f == null) {
-            return;
-        }
-        
-        URL jsr311JarURL = null;
-        for (URL jarURL :library.getContent("classpath")) { //NOI18N
-            if (jarURL.getPath().indexOf(REST_API_JAR) > -1) {
-                jsr311JarURL = jarURL;
-                break;
-            }
-        }
-        if (jsr311JarURL == null) {
-            return;
-        }
-
-        FileObject jsr311FO = FileUtil.toFileObject(f);
-        ClassPathProvider cpp = project.getLookup().lookup(ClassPathProvider.class);
-        ClassPath cp = cpp.findClassPath(sourceRoot, ClassPath.COMPILE);
-        if (cp.contains(jsr311FO)) {
-            return;
-        }
-        
-        //ProjectClassPathModifier.addRoots(new URL[] {jsr311FO.getURL()}, sourceRoot, ClassPath.COMPILE);
-        ProjectClassPathModifier.addLibraries(new Library[] {library}, sourceRoot, ClassPath.COMPILE);
-    }
-
     public Project getProject() {
         return project;
     }
@@ -458,5 +500,33 @@ public abstract class RestSupport {
         }
         return helper;
     }
+
+    /*public class RestServicesChangeListener implements PropertyChangeListener {
+        RestServicesChangeListener() {
+        }
+        
+        public void propertyChange(PropertyChangeEvent evt) {
+            //System.out.println("updating rest services");
+            try {
+                final int[] serviceCount = new int[1];
+                restServicesMetadataModel.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
+                    public Void run(RestServicesMetadata metadata) throws IOException {
+                        serviceCount[0] = metadata.getRoot().sizeRestServiceDescription();
+                        return null;
+                    }
+                });
+
+                if (serviceCount[0] > 0) {
+                    ensureRestDevelopmentReady();
+                } else {
+                    removeRestDevelopmentReadiness();
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(this.getClass().getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
+            }
+            //System.out.println("done updating rest services");
+        }
+    }*/
+    
 }
 

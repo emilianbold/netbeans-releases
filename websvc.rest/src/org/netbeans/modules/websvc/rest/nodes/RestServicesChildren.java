@@ -55,13 +55,13 @@ import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServices;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
+import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.openide.util.RequestProcessor;
 
 
 
 public class RestServicesChildren extends Children.Keys {
     private Project project;
-    private RestServicesModel model;
     private RestServicesListener listener;
     
     private RequestProcessor.Task updateNodeTask = RequestProcessor.getDefault().create(new Runnable() {
@@ -70,22 +70,33 @@ public class RestServicesChildren extends Children.Keys {
         }
     });
     
-    public RestServicesChildren(Project project, RestServicesModel model) {
-        this.model = model;
+    public RestServicesChildren(Project project) {
         this.project = project;
+    }
+    
+    private RestServicesModel getModel() {
+        RestSupport support = project.getLookup().lookup(RestSupport.class);
+        if (support != null) {
+            return support.getRestServicesModel();
+        }
+        return null;
     }
     
     protected void addNotify() {
         super.addNotify();
         listener = new RestServicesListener();
         try {
-            model.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
-                public Void run(RestServicesMetadata metadata) throws IOException {
-                    metadata.getRoot().addPropertyChangeListener(listener);
-                    
-                    return null;
-                }
-            });
+            RestServicesModel model = getModel();
+            assert model != null : "null model";
+            if (model != null) {
+                model.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
+                    public Void run(RestServicesMetadata metadata) throws IOException {
+                        metadata.getRoot().addPropertyChangeListener(listener);
+
+                        return null;
+                    }
+                });
+            }
         } catch (IOException ex) {
             
         }
@@ -95,13 +106,17 @@ public class RestServicesChildren extends Children.Keys {
     
     protected void removeNotify() {
         try {
-            model.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
-                public Void run(RestServicesMetadata metadata) throws IOException {
-                    metadata.getRoot().removePropertyChangeListener(listener);
-                    
-                    return null;
-                }
-            });
+            RestServicesModel model = getModel();
+            assert model != null : "null model";
+            if (model != null) {
+                model.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
+                    public Void run(RestServicesMetadata metadata) throws IOException {
+                        metadata.getRoot().removePropertyChangeListener(listener);
+
+                        return null;
+                    }
+                });
+            }
         } catch (IOException ex) {
             
         }
@@ -113,17 +128,21 @@ public class RestServicesChildren extends Children.Keys {
         final List<String> keys = new ArrayList<String>();
         
         try {
-            model.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
-                public Void run(RestServicesMetadata metadata) throws IOException {
-                    RestServices root = metadata.getRoot();
-                    
-                    for (RestServiceDescription desc : root.getRestServiceDescription()) {
-                        keys.add(RestServiceNode.getKey(desc));
+            RestServicesModel model = getModel();
+            assert model != null : "null model";
+            if (model != null) {
+                model.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
+                    public Void run(RestServicesMetadata metadata) throws IOException {
+                        RestServices root = metadata.getRoot();
+
+                        for (RestServiceDescription desc : root.getRestServiceDescription()) {
+                            keys.add(RestServiceNode.getKey(desc));
+                        }
+
+                        return null;
                     }
-                    
-                    return null;
-                }
-            });
+                });
+            }
         } catch (IOException ex) {
             
         }
@@ -133,21 +152,24 @@ public class RestServicesChildren extends Children.Keys {
     
     protected Node[] createNodes(final Object key) {
         try {
-            Node[] nodes = model.runReadAction(new MetadataModelAction<RestServicesMetadata, Node[]>() {
-                public Node[] run(RestServicesMetadata metadata) throws IOException {
-                    RestServices root = metadata.getRoot();
-                    
-                    for (RestServiceDescription desc : root.getRestServiceDescription()) {
-                        if (RestServiceNode.getKey(desc).equals(key)) {
-                            return new Node[] {new RestServiceNode(project, model, desc)};
+            final RestServicesModel model = getModel();
+            assert model != null : "null model";
+            if (model != null) {
+                Node[] nodes = model.runReadAction(new MetadataModelAction<RestServicesMetadata, Node[]>() {
+                    public Node[] run(RestServicesMetadata metadata) throws IOException {
+                        RestServices root = metadata.getRoot();
+
+                        for (RestServiceDescription desc : root.getRestServiceDescription()) {
+                            if (RestServiceNode.getKey(desc).equals(key)) {
+                                return new Node[] {new RestServiceNode(project, model, desc)};
+                            }
                         }
+
+                        return new Node[0];
                     }
-                    
-                    return new Node[0];
-                }
-            });
-            
-            return nodes;
+                });
+                return nodes;
+            }            
         } catch (IOException ex) {
             
         }

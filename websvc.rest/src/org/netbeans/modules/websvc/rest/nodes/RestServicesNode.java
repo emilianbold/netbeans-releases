@@ -57,15 +57,13 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 public class RestServicesNode extends AbstractNode { //implements PropertyChangeListener{
-    private Project project;
     private static final Image REST_SERVICES_BADGE = Utilities.loadImage( "org/netbeans/modules/websvc/rest/nodes/resources/restservices.png", true ); // NOI18N
     static Icon folderIconCache;
     static Icon openedFolderIconCache;
     
-    public RestServicesNode(Project project, RestServicesModel model) {
-        super(new RestServicesChildren(project, model));
+    public RestServicesNode(Project project) {
+        super(new RestServicesChildren(project));
         setDisplayName(NbBundle.getBundle(RestServicesNode.class).getString("LBL_RestServices"));
-        this.project=project;
     }
     
     public Image getIcon( int type ) {

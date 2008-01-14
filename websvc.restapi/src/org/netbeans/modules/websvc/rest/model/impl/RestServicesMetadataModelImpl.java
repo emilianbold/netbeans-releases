@@ -41,18 +41,16 @@
 package org.netbeans.modules.websvc.rest.model.impl;
 
 import java.beans.PropertyChangeListener;
-import org.netbeans.modules.websvc.rest.model.impl.RestServicesImpl;
-import org.netbeans.modules.websvc.rest.model.impl.RestServicesMetadataImpl;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
-import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelImplementation;
 import org.netbeans.modules.websvc.rest.model.api.RestServices;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
 
 /**
@@ -65,14 +63,12 @@ public class RestServicesMetadataModelImpl implements RestServicesModel {
     private final RestServices root;
     private final RestServicesMetadata metadata;
     
-    public RestServicesMetadataModelImpl(MetadataUnit metadataUnit) {
+    public RestServicesMetadataModelImpl(MetadataUnit metadataUnit, Project project) {
         ClasspathInfo cpi = ClasspathInfo.create(metadataUnit.getBootPath(), metadataUnit.getCompilePath(), metadataUnit.getSourcePath());
         helper = AnnotationModelHelper.create(cpi);
-        
-        root = RestServicesImpl.create(helper);
+        root = RestServicesImpl.create(helper, project);
         metadata = new RestServicesMetadataImpl(root);
     }
-    
     
     public <R> R runReadAction(final MetadataModelAction<RestServicesMetadata, R> action) throws IOException {
         return helper.runJavaSourceTask(new Callable<R>() {

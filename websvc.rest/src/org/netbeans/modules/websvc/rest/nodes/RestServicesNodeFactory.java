@@ -51,12 +51,11 @@ import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.model.api.RestServices;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
+import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.nodes.Node;
@@ -77,10 +76,9 @@ public class RestServicesNodeFactory implements NodeFactory {
         return new RestNodeList(p);
     }
     
-    private static class RestNodeList implements NodeList<String> {
+    private static class RestNodeList implements NodeList<String>, PropertyChangeListener {
         private static final String KEY_SERVICES = "rest_services"; // NOI18N
         private Project project;
-        private RestServicesModel model;
         
         private RequestProcessor.Task updateNodeTask = RequestProcessor.getDefault().create(new Runnable() {
             public void run() {
@@ -89,16 +87,14 @@ public class RestServicesNodeFactory implements NodeFactory {
         });
         
         private List<ChangeListener> listeners = new ArrayList<ChangeListener>();
-        private final RestServicesChangeListener restServicesListener;
         
         public RestNodeList(Project proj) {
             this.project = proj;
-            this.model = RestUtils.getRestServicesMetadataModel(project);
-            this.restServicesListener = new RestServicesChangeListener();
         }
         
         public List<String> keys() {
             final List<String> result = new ArrayList<String>();
+            RestServicesModel model = getModel();
             if (model == null) {
                 return Collections.emptyList();
             }
@@ -119,6 +115,14 @@ public class RestServicesNodeFactory implements NodeFactory {
             }
             
             return result;
+        }
+
+        public RestServicesModel getModel() {
+            RestSupport support = project.getLookup().lookup(RestSupport.class);
+            if (support != null) {
+                return support.getRestServicesModel();
+            }
+            return null;
         }
         
         public synchronized void addChangeListener(ChangeListener l) {
@@ -143,30 +147,27 @@ public class RestServicesNodeFactory implements NodeFactory {
         
         public Node node(String key) {
             if (KEY_SERVICES.equals(key)) {
-                return new RestServicesNode(project, model);
+                return new RestServicesNode(project);
             }
             return null;
         }
         
         public void addNotify() {
-            if (model == null) {
-                return;
+            RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
+            if (restSupport != null) {
+                restSupport.addModelListener(this);
             }
-            model.addPropertyChangeListener(restServicesListener);
         }
         
         public void removeNotify() {
-            if (model == null) {
-                return;
+            RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
+            if (restSupport != null) {
+                restSupport.removeModelListener(this);
             }
-            model.removePropertyChangeListener(restServicesListener);
         }
-        
-        
-        private final class RestServicesChangeListener implements PropertyChangeListener {
-            public void propertyChange(PropertyChangeEvent evt) {
-                updateNodeTask.schedule(2000);
-            }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            updateNodeTask.schedule(2000);
         }
     }
     

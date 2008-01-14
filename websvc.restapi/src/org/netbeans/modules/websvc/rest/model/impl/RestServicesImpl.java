@@ -52,13 +52,16 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.Element;
+import javax.lang.model.type.ErrorType;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.j2ee.dd.api.common.Icon;
 import org.netbeans.modules.j2ee.dd.api.common.NameAlreadyUsedException;
@@ -71,6 +74,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.Persisten
 import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServices;
+import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -83,21 +87,23 @@ public class RestServicesImpl implements RestServices {
         UNMODIFIED, MODIFIED, REMOVED
     }
     
+    private Project project;
     private AnnotationModelHelper helper;
     private final PropertyChangeSupport propChangeSupport = new PropertyChangeSupport(this);
     private volatile PersistentObjectManager<RestServiceDescriptionImpl> restServiceManager;
     private boolean disableChangeSupport;
     
-    public static RestServicesImpl create(AnnotationModelHelper helper) {
-        RestServicesImpl instance =  new RestServicesImpl(helper);
+    public static RestServicesImpl create(AnnotationModelHelper helper, Project project) {
+        RestServicesImpl instance =  new RestServicesImpl(helper, project);
         instance.initialize();
         
         return instance;
         
     }
     
-    private RestServicesImpl(AnnotationModelHelper helper) {
+    private RestServicesImpl(AnnotationModelHelper helper, Project project) {
         this.helper = helper;
+        this.project = project;
     }
     
     /**
@@ -172,6 +178,9 @@ public class RestServicesImpl implements RestServices {
         public List<RestServiceDescriptionImpl> createObjects(TypeElement type) {
             //System.out.println("createObjects() type = " + type);
             //(new Exception()).printStackTrace();
+            if (Utils.checkForJsr311Bootstrap(type, project)) {
+                return Collections.emptyList();
+            }
             
             if (type.getKind() != ElementKind.INTERFACE) { // don't consider interfaces
                 boolean isRest = false;
@@ -195,6 +204,9 @@ public class RestServicesImpl implements RestServices {
         }
         
         public boolean modifyObjects(TypeElement type, List<RestServiceDescriptionImpl> objects) {
+            if (Utils.checkForJsr311Bootstrap(type, project)) {
+                return false;
+            }
             //System.out.println("modifyObject type = " + type);
             assert objects.size() == 1;
             RestServiceDescriptionImpl restService = objects.get(0);
@@ -221,6 +233,9 @@ public class RestServicesImpl implements RestServices {
             helper.getAnnotationScanner().findAnnotations(annotationType, kinds,
                     new AnnotationHandler() {
                 public void handleAnnotation(TypeElement type, Element element, AnnotationMirror annotation) {
+                    if (Utils.checkForJsr311Bootstrap(type, project)) {
+                        return;
+                    }
                     if (!result.containsKey(type)) {
                         result.put(type, new RestServiceDescriptionImpl(helper, type));
                     }

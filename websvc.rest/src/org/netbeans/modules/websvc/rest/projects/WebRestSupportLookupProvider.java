@@ -49,7 +49,6 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.websvc.rest.RestUtils;
-import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServices;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
@@ -76,42 +75,18 @@ public class WebRestSupportLookupProvider implements LookupProvider {
         
         ProjectOpenedHook openhook = new ProjectOpenedHook() {
             
-            PropertyChangeListener pcl;
-            
             protected void projectOpened() {
                 
-                final RestServicesModel wsModel = RestUtils.getRestServicesMetadataModel(prj);
                 // note that some sample web project does not have java source root
-                if (wsModel != null) { 
                     try {
-                        // make sure REST API jar is included in project compile classpath
-                        RestUtils.addRestApiJar(prj);
+                        //TODO maybe delay it until first REST service added
                         new AntFilesHelper(restSupport).initRestBuildExtension();
-                                pcl = new RestServicesChangeListener(wsModel, prj);
-                                wsModel.addPropertyChangeListener(pcl);
                     } catch (java.io.IOException ex) {
                         Logger.getLogger(this.getClass().getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
                     }
-                }
             }
             
-            
             protected void projectClosed() {
-                final RestServicesModel wsModel = RestUtils.getRestServicesMetadataModel(prj);
-                if (wsModel == null) {
-                    return;
-                }
-                try {
-                    wsModel.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
-                        public Void run(final RestServicesMetadata metadata) {
-                            RestServices RestServices = metadata.getRoot();
-                            RestServices.removePropertyChangeListener(pcl);
-                            return null;
-                        }
-                    });
-                } catch (java.io.IOException ex) {
-                    Logger.getLogger(this.getClass().getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
-                }
             }
         };
         
@@ -129,37 +104,4 @@ public class WebRestSupportLookupProvider implements LookupProvider {
         return Lookups.fixed(new Object[] {restSupport, openhook, templates});
     }
     
-    private class RestServicesChangeListener implements PropertyChangeListener {
-        private RestServicesModel wsModel;
-        private Project prj;
-        private RestSupport support;
-        
-        RestServicesChangeListener(RestServicesModel wsModel, Project prj) {
-            this.wsModel=wsModel;
-            this.prj=prj;
-            this.support = prj.getLookup().lookup(RestSupport.class);
-        }
-        
-        public void propertyChange(PropertyChangeEvent evt) {
-            //System.out.println("updating rest services");
-            try {
-                final int[] serviceCount = new int[1];
-                wsModel.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
-                    public Void run(RestServicesMetadata metadata) throws IOException {
-                        serviceCount[0] = metadata.getRoot().sizeRestServiceDescription();
-                        return null;
-                    }
-                });
-
-                if (serviceCount[0] > 0) {
-                    RestUtils.ensureRestDevelopmentReady(prj);
-                } else {
-                    RestUtils.removeRestDevelopmentReadiness(prj);
-                }
-            } catch (IOException ex) {
-                Logger.getLogger(this.getClass().getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
-            }
-            //System.out.println("done updating rest services");
-        }
-    }
 }
