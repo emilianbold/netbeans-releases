@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.bpel.properties.editors;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Dimension;
@@ -48,11 +50,15 @@ import java.awt.Insets;
 import java.awt.datatransfer.Transferable;
 import java.text.MessageFormat;
 import java.util.*;
+import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.border.EtchedBorder;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
@@ -60,7 +66,6 @@ import javax.swing.plaf.basic.BasicComboBoxRenderer;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.bpel.model.api.Activity;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
@@ -72,6 +77,7 @@ import org.netbeans.modules.bpel.model.api.Scope;
 import org.netbeans.modules.bpel.model.api.Sequence;
 import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl;
 import org.netbeans.modules.bpel.model.impl.BpelModelImpl;
+import org.netbeans.modules.bpel.model.xam.BpelAttributes;
 import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.print.api.PrintUtil;
 import org.netbeans.modules.soa.mappercore.Mapper;
@@ -83,13 +89,20 @@ import org.netbeans.modules.soa.mappercore.model.SourcePin;
 import org.netbeans.modules.soa.mappercore.model.TargetPin;
 import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
 import org.netbeans.modules.soa.mappercore.model.VertexItem;
-import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
+import org.netbeans.modules.xml.wsdl.model.Input;
+import org.netbeans.modules.xml.wsdl.model.Message;
+import org.netbeans.modules.xml.wsdl.model.Operation;
+import org.netbeans.modules.xml.wsdl.model.Output;
+import org.netbeans.modules.xml.wsdl.model.Part;
+import org.netbeans.modules.xml.wsdl.model.PortType;
+import org.netbeans.modules.xml.wsdl.model.RequestResponseOperation;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.WizardValidationException;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
+import org.openide.util.Utilities;
 
 /**
  * @author Alex Petrov (27.12.2007)
@@ -104,11 +117,16 @@ public class DefineCorrelationWizard implements WizardProperties {
         PrintUtil.i18n(DefineCorrelationWizard.class, "LBL_Wizard_Step_Define_Correlation"),
         PrintUtil.i18n(DefineCorrelationWizard.class, "LBL_Wizard_Step_Correlation_Configuration")
     };
-    private static final String ATTRIBUTE_NAME = "name"; //NOI18N
 
     private static Map<Class<? extends Activity>, ActivityChooser> mapActivityChoosers;
 
     private static Graph TMP_FAKE_GRAPH;
+
+    private static final String 
+        IMAGE_FOLDER_NAME = "org/netbeans/modules/bpel/editors/api/nodes/images/", // NOI18N
+        IMAGE_FILE_EXT = ".png"; // NOI18N
+
+    private Map<Class<?>, Icon> mapTreeNodeIcons;
     
     private WizardDescriptor wizardDescriptor;
     private BpelEntity mainBpelEntity;
@@ -119,8 +137,13 @@ public class DefineCorrelationWizard implements WizardProperties {
         if (mainBpelNodeRef instanceof BpelEntity) {
             this.mainBpelEntity = (BpelEntity) mainBpelNodeRef;
         }
-        mapActivityChoosers = createActivityChoosersMap();
-        
+        if (mapActivityChoosers == null) {
+            mapActivityChoosers = createActivityChoosersMap();
+        }
+        if (mapTreeNodeIcons == null) {
+            mapTreeNodeIcons = createTreeNodeIconsMap();
+        }
+            
         wizardPanels = getWizardPanelList().toArray(new Panel[] {});
         wizardDescriptor = new WizardDescriptor(wizardPanels);
         
@@ -167,6 +190,30 @@ public class DefineCorrelationWizard implements WizardProperties {
         mapActivityChoosers.put(Reply.class, new ActivityChooserForReply());
         mapActivityChoosers.put(Invoke.class, new ActivityChooserForInvoke());
         return mapActivityChoosers;
+    }
+    
+    private Map<Class<?>, Icon> createTreeNodeIconsMap() {
+        Map<Class<?>, Icon> mapIcons =  new HashMap<Class<?>, Icon>(6);
+        
+        String iconFileName = IMAGE_FOLDER_NAME + "UNKNOWN_TYPE" + IMAGE_FILE_EXT; // NOI18N
+        mapIcons.put(Object.class, new ImageIcon(Utilities.loadImage(iconFileName)));
+
+        iconFileName = IMAGE_FOLDER_NAME + "RECEIVE" + IMAGE_FILE_EXT; // NOI18N
+        mapIcons.put(Receive.class, new ImageIcon(Utilities.loadImage(iconFileName)));
+
+        iconFileName = IMAGE_FOLDER_NAME + "REPLY" + IMAGE_FILE_EXT; // NOI18N
+        mapIcons.put(Reply.class, new ImageIcon(Utilities.loadImage(iconFileName)));
+
+        iconFileName = IMAGE_FOLDER_NAME + "INVOKE" + IMAGE_FILE_EXT; // NOI18N
+        mapIcons.put(Invoke.class, new ImageIcon(Utilities.loadImage(iconFileName)));
+        
+        iconFileName = IMAGE_FOLDER_NAME + "MESSAGE_TYPE" + IMAGE_FILE_EXT; // NOI18N
+        mapIcons.put(Message.class, new ImageIcon(Utilities.loadImage(iconFileName)));
+        
+        iconFileName = IMAGE_FOLDER_NAME + "MESSAGE_PART" + IMAGE_FILE_EXT; // NOI18N
+        mapIcons.put(Part.class, new ImageIcon(Utilities.loadImage(iconFileName)));
+        
+        return mapIcons;
     }
     //========================================================================//
     private interface ActivityChooser {
@@ -388,8 +435,7 @@ public class DefineCorrelationWizard implements WizardProperties {
                     (component != null) && (component instanceof JLabel)) {
                     String itemText = null;
                     try {
-                        itemText = ((BpelEntity) value).getAttribute(
-                            new AbstractDocumentComponent.PrefixAttribute(ATTRIBUTE_NAME));
+                        itemText = ((BpelEntity) value).getAttribute(BpelAttributes.NAME);
                     } catch (Exception e) {
                         itemText = value.toString();
                     }
@@ -410,25 +456,103 @@ public class DefineCorrelationWizard implements WizardProperties {
         public void buildCorrelationMapper(BpelEntity leftBpelEntity, BpelEntity rightBpelEntity) {
             CorrelationMapperTreeModel leftTreeModel = null, rightTreeModel = null;
             if (leftBpelEntity != null) {
-                leftTreeModel = new CorrelationMapperTreeModel(leftBpelEntity,
+                leftTreeModel = new CorrelationMapperTreeModel();
+                CorrelationMapperTreeNode topLeftTreeNode = buildCorrelationTree(leftBpelEntity,
                     PrintUtil.i18n(WizardDefineCorrelationPanel.class, "LBL_Left_Mapper_Top_Tree_Node_Name_Pattern"));
+                leftTreeModel.buildCorrelationMapperTree(topLeftTreeNode);
             }
             if (rightBpelEntity != null) {
-                rightTreeModel = new CorrelationMapperTreeModel(rightBpelEntity,
+                rightTreeModel = new CorrelationMapperTreeModel();
+                CorrelationMapperTreeNode topRightTreeNode = buildCorrelationTree(rightBpelEntity,
                     PrintUtil.i18n(WizardDefineCorrelationPanel.class, "LBL_Right_Mapper_Top_Tree_Node_Name_Pattern"));
+                rightTreeModel.buildCorrelationMapperTree(topRightTreeNode);
             }
             
             MapperModel mapperModel = new CorrelationMapperModel(leftTreeModel, rightTreeModel);
             if (correlationMapper == null) {
+                wizardPanel.setLayout(new BorderLayout());
                 correlationMapper = new Mapper(mapperModel);
-                correlationMapper.setPreferredSize(PANEL_DIMENSION_VALUE);
                 wizardPanel.add(correlationMapper);
+
+//*******????????                
+System.out.println("");                
+System.out.println("getCellRenderer() = " + correlationMapper.getLeftTree().getCellRenderer().getClass().getName());
+// getCellRenderer() = org.netbeans.modules.soa.mappercore.DefaultLeftTreeCellRenderer
+System.out.println("");                
+//*******????????
+                
+                EtchedBorder panelBorder = (EtchedBorder) BorderFactory.createEtchedBorder(EtchedBorder.LOWERED, 
+                    Color.LIGHT_GRAY, Color.DARK_GRAY);
+                panelBorder.getBorderInsets(correlationMapper, new Insets(4, 4, 4, 4));
+                wizardPanel.setBorder(panelBorder);
+                
                 wizardPanel.revalidate();
             } else {
                 correlationMapper.setModel(mapperModel);
             }
         }
 
+        private CorrelationMapperTreeNode buildCorrelationTree(BpelEntity topBpelEntity, String nodeNamePattern) {
+            CorrelationMapperTreeNode topTreeNode = new CorrelationMapperTreeNode(
+                topBpelEntity, nodeNamePattern);
+            if (topBpelEntity instanceof Receive) {
+                topTreeNode = buildReceiveCorrelationTree(topBpelEntity, topTreeNode);
+            } else if (topBpelEntity instanceof Reply) {
+                topTreeNode = buildReplyCorrelationTree(topBpelEntity, topTreeNode);
+            } else if (topBpelEntity instanceof Invoke) {
+                topTreeNode = buildInvokeCorrelationTree(topBpelEntity, topTreeNode);
+            }
+            return topTreeNode;
+        }
+        
+        private CorrelationMapperTreeNode buildReceiveCorrelationTree(BpelEntity topBpelEntity, 
+            CorrelationMapperTreeNode topTreeNode) {
+            PortType portType = ((Receive) topBpelEntity).getPortType().get();
+            Collection<Operation> operations = portType.getOperations();
+            for (Operation operation : operations) {
+                if (operation instanceof RequestResponseOperation) {
+                    Input input = operation.getInput();
+                    Message message = input.getMessage().get();
+                    Collection<Part> parts = message.getParts();
+                    if (! parts.isEmpty()) {
+                        CorrelationMapperTreeNode messageNode = new CorrelationMapperTreeNode(message, null);
+                        for (Part part : parts) {
+                            messageNode.add(new CorrelationMapperTreeNode(part, null));
+                        }
+                        topTreeNode.add(messageNode);
+                    }
+                }
+            }
+            return topTreeNode;
+        }
+
+        private CorrelationMapperTreeNode buildReplyCorrelationTree(BpelEntity topBpelEntity, 
+            CorrelationMapperTreeNode topTreeNode) {
+            PortType portType = (PortType) ((Reply) topBpelEntity).getPortType().get();
+            Collection<Operation> operations = portType.getOperations();
+            for (Operation operation : operations) {
+                if (operation instanceof RequestResponseOperation) {
+                    Output output = operation.getOutput();
+                    output.getMessage();
+                    Message message = output.getMessage().get();
+                    Collection<Part> parts = message.getParts();
+                    if (! parts.isEmpty()) {
+                        CorrelationMapperTreeNode messageNode = new CorrelationMapperTreeNode(message, null);
+                        for (Part part : parts) {
+                            messageNode.add(new CorrelationMapperTreeNode(part, null));
+                        }
+                        topTreeNode.add(messageNode);
+                    }
+                }
+            }
+            return topTreeNode;
+        }
+
+        private CorrelationMapperTreeNode buildInvokeCorrelationTree(BpelEntity topBpelEntity, 
+            CorrelationMapperTreeNode topTreeNode) {
+            return topTreeNode;
+        }
+        
         @Override
         public boolean isValid() {
             boolean isOK = false;
@@ -450,14 +574,16 @@ public class DefineCorrelationWizard implements WizardProperties {
         }
         //====================================================================//
         private class CorrelationMapperTreeModel extends DefaultTreeModel {
-            public CorrelationMapperTreeModel(BpelEntity topBpelEntity) {
-                this(topBpelEntity, null);
+            public CorrelationMapperTreeModel() {
+                super(null);
             }
-            public CorrelationMapperTreeModel(BpelEntity topBpelEntity, String nodeNamePattern) {
-                super(new CorrelationMapperTreeNode(new BpelBuilderImpl(
-                    (BpelModelImpl) topBpelEntity.getBpelModel()).createEmpty()));
-                ((CorrelationMapperTreeNode) getRoot()).add(
-                    new CorrelationMapperTreeNode(topBpelEntity, nodeNamePattern));
+        
+            public void buildCorrelationMapperTree(CorrelationMapperTreeNode topTreeNode) {
+                BpelEntity topBpelEntity = (BpelEntity) (topTreeNode).getUserObject();
+                CorrelationMapperTreeNode fakeRootTreeNode = new CorrelationMapperTreeNode(
+                    new BpelBuilderImpl((BpelModelImpl) topBpelEntity.getBpelModel()).createEmpty());
+                fakeRootTreeNode.add(topTreeNode);
+                setRoot(fakeRootTreeNode);
             }
             
             public BpelEntity getTopBpelEntity() {
@@ -499,27 +625,43 @@ public class DefineCorrelationWizard implements WizardProperties {
         private class CorrelationMapperTreeNode extends DefaultMutableTreeNode {
             private String nodeNamePattern;
             
-            public CorrelationMapperTreeNode(BpelEntity bpelEntity) {
-                this(bpelEntity, null);
+            public CorrelationMapperTreeNode(Object userObject) {
+                this(userObject, null);
             }
-            public CorrelationMapperTreeNode(BpelEntity bpelEntity, String nodeNamePattern) {
-                super(bpelEntity);
+            public CorrelationMapperTreeNode(Object userObject, String nodeNamePattern) {
+                super(userObject);
                 this.nodeNamePattern = nodeNamePattern;
             }
 
             @Override
             public String toString() {
-                String bpelEntityName = null;
-                BpelEntity bpelEntity = (BpelEntity) getUserObject();
+                String userObjectName = null;
+                Object userObj = getUserObject();
                 try {
-                    bpelEntityName = bpelEntity.getAttribute(
-                        new AbstractDocumentComponent.PrefixAttribute(ATTRIBUTE_NAME));
+                    if (userObj instanceof BpelEntity) {
+                        userObjectName = ((BpelEntity) userObj).getAttribute(BpelAttributes.NAME);
+                    } else if (userObj instanceof Message) {
+                        userObjectName = ((Message) userObj).getName();
+                    }  else if (userObj instanceof Part) {
+                        userObjectName = ((Part) userObj).getName();
+                    } else {
+                        userObjectName = userObj.toString();
+                    }
                 } catch (Exception e) {
-                    bpelEntityName = bpelEntity.toString();
+                    userObjectName = userObj.toString();
                 }
-                String nodeName = (nodeNamePattern == null ? bpelEntityName : 
-                    MessageFormat.format(nodeNamePattern, new Object[] {bpelEntityName}));
+                String nodeName = (nodeNamePattern == null ? userObjectName : 
+                    MessageFormat.format(nodeNamePattern, new Object[] {userObjectName}));
                 return nodeName;
+            }
+            
+            public Icon getIcon() {
+                Object userObj = getUserObject();
+                Icon icon = mapTreeNodeIcons.get(userObj.getClass());
+                if (icon == null) {
+                    icon = mapTreeNodeIcons.get(Object.class);
+                }
+                return icon;
             }
         }
         //====================================================================//
