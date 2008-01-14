@@ -68,9 +68,10 @@ import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
+import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.spi.webmodule.FrameworkConfigurationPanel;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
+import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -98,20 +99,20 @@ public class SpringWebFrameworkProvider extends WebFrameworkProvider {
         super(NbBundle.getMessage(SpringWebFrameworkProvider.class, "LBL_FrameworkName"), NbBundle.getMessage(SpringWebFrameworkProvider.class, "LBL_FrameworkDescription"));
     }
 
-    @Override
-    public Set extend(WebModule webModule) {
-        EnableFrameworkAction enableFrameworkAction = new EnableFrameworkAction(webModule, getSpringConfigPanel(webModule));
+    // not named extend() so as to avoid implementing WebFrameworkProvider.extend()
+    public Set<FileObject> extendImpl(WebModule webModule) {
+        CreateSpringConfig createSpringConfig = new CreateSpringConfig(webModule);
         FileObject webInf = webModule.getWebInf();
         if (webInf != null) {
             try {
                 FileSystem fs = webInf.getFileSystem();
-                fs.runAtomicAction(enableFrameworkAction);
+                fs.runAtomicAction(createSpringConfig);
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(e);
                 return null;
             }
         }        
-        return enableFrameworkAction.getFilesToOpen();
+        return createSpringConfig.getFilesToOpen();
     }
 
     @Override
@@ -142,18 +143,13 @@ public class SpringWebFrameworkProvider extends WebFrameworkProvider {
         }
         return files.toArray(new java.io.File[0]);
     }
-
-    @Override
-    public FrameworkConfigurationPanel getConfigurationPanel(WebModule webModule) {
-        return getSpringConfigPanel(webModule);
-    }
-
-    protected SpringConfigPanel getSpringConfigPanel(WebModule webModule) {
-        if (panel == null) {
-            panel = new SpringConfigPanel();
-        }
+    
+    public WebModuleExtender createWebModuleExtender(WebModule webModule, ExtenderController controller) {
+        boolean defaultValue = (webModule == null || !isInWebModule(webModule));
+        panel = new SpringConfigPanel(this, controller, !defaultValue);
+        // may need to use panel for setting an extended configuration
         return panel;
-    }
+    }  
 
     public WebApp getWebApp(WebModule webModule) throws IOException {
         return DDProvider.getDefault().getDDRoot(webModule.getDeploymentDescriptor());
@@ -163,15 +159,13 @@ public class SpringWebFrameworkProvider extends WebFrameworkProvider {
         return DDProvider.getDefault().getDDRootCopy(webModule.getDeploymentDescriptor());
     }
 
-    private class EnableFrameworkAction implements FileSystem.AtomicAction {
+    private class CreateSpringConfig implements FileSystem.AtomicAction {
 
         private Set<FileObject> filesToOpen = new LinkedHashSet<FileObject>();
         private WebModule webModule;
-        private SpringConfigPanel frameworkPanel;
 
-        public EnableFrameworkAction(WebModule webModule, SpringConfigPanel frameworkPanel) {
+        public CreateSpringConfig(WebModule webModule) {
             this.webModule = webModule;
-            this.frameworkPanel = frameworkPanel;
         }
 
         public void run() throws IOException {
@@ -180,7 +174,7 @@ public class SpringWebFrameworkProvider extends WebFrameworkProvider {
             WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
             addContextParam(ddRoot, "contextConfigLocation", "/WEB-INF/applicationContext.xml"); // NOI18N
             addListener(ddRoot, CONTEXT_LOADER);
-            addServlet(ddRoot, frameworkPanel.getDispatcherName(), DISPATCHER_SERVLET, frameworkPanel.getDispatcherMapping(), "2"); // NOI18N
+            addServlet(ddRoot, panel.getDispatcherName(), DISPATCHER_SERVLET, panel.getDispatcherMapping(), "2"); // NOI18N
             WelcomeFileList welcomeFiles = ddRoot.getSingleWelcomeFileList();
             if (welcomeFiles == null) {
                 try {
@@ -209,7 +203,7 @@ public class SpringWebFrameworkProvider extends WebFrameworkProvider {
             copyResource("footer.jsp", FileUtil.createData(jsp, "footer.jsp")); // NOI18N
             copyResource("jdbc.properties", FileUtil.createData(webInf, "jdbc.properties")); // NOI18N
             addFileToOpen(copyResource("applicationContext.xml", FileUtil.createData(webInf, "applicationContext.xml"))); // NOI18N
-            addFileToOpen(copyResource("dispatcher-servlet.xml", FileUtil.createData(webInf, frameworkPanel.getDispatcherName() + "-servlet.xml"))); // NOI18N
+            addFileToOpen(copyResource("dispatcher-servlet.xml", FileUtil.createData(webInf, panel.getDispatcherName() + "-servlet.xml"))); // NOI18N
 
             // MODIFY EXISTING INDEX.JSP
             FileObject documentBase = webModule.getDocumentBase();
