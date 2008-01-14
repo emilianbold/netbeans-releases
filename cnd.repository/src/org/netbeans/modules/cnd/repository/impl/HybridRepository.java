@@ -50,7 +50,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.netbeans.modules.cnd.repository.api.Repository;
-import org.netbeans.modules.cnd.repository.api.RepositoryTranslation;
 import org.netbeans.modules.cnd.repository.disk.DiskRepositoryManager;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
@@ -69,6 +68,8 @@ public class HybridRepository implements Repository {
     private Lock refQueueLock;
     private ReferenceQueue refQueue;
 
+    private static final int DEFAULT_CACHE_CAPACITY = 77165;
+    
     /** Creates a new instance of HybridRepository */
     public HybridRepository() {
         cache = new ConcurrentHashMap<Key, Object>(DEFAULT_CACHE_CAPACITY);
@@ -221,5 +222,4 @@ public class HybridRepository implements Repository {
     public void startup(int persistMechanismVersion) {
         RepositoryTranslatorImpl.startup(persistMechanismVersion);
     }
-    private static final int DEFAULT_CACHE_CAPACITY = 77165;
 }
