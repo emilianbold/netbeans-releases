@@ -62,7 +62,6 @@ import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 
 public class RubyPlatformCustomizer extends javax.swing.JPanel {
@@ -99,7 +98,7 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
         });
 
         // run platform detection is this is the first time
-        Preferences preferences = NbPreferences.forModule(RubyPlatformCustomizer.class);
+        Preferences preferences = Util.getPreferences();
         if (preferences.getBoolean(FIRST_TIME_KEY, true)) {
             performPlatformDetection();
             preferences.putBoolean(FIRST_TIME_KEY, false);
