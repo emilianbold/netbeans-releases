@@ -255,6 +255,17 @@ public abstract class RestSupport {
         return ClassPathSupport.createResource(url);
     }
 
+    public abstract void extendBuildScripts() throws IOException;
+    
+    private boolean buildExtensionInited = false;
+    public void initBuildScripts() throws IOException {
+        if (! buildExtensionInited) {
+            extendBuildScripts();
+            buildExtensionInited = true;
+        }
+        
+    }
+    
     /**
      * Generates test client.  Typically RunTestClientAction would need to call 
      * this before invoke the build script target.
@@ -263,6 +274,8 @@ public abstract class RestSupport {
      * @return test file object, containing token BASE_URL_TOKEN whether used or not.
      */
     public FileObject generateTestClient(File testdir) throws IOException {        
+        initBuildScripts();
+        
         if (! testdir.isDirectory()) {
             testdir.mkdirs();
         }

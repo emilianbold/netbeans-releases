@@ -76,14 +76,20 @@ public class WebProjectRestSupport extends RestSupport {
         super(project);
     }
 
+    @Override
+    public void extendBuildScripts() throws IOException {
+        new AntFilesHelper(this).initRestBuildExtension();
+    }
+
     public void ensureRestDevelopmentReady() throws IOException {
         boolean needsRefresh = false;
         if (! isRestSupportOn()) {
             needsRefresh = true;
             setProjectProperty(REST_SUPPORT_ON, "true");
-            new AntFilesHelper(this).initRestBuildExtension();
         }
         
+        extendBuildScripts();
+
         if (ignorePlatformRestLibrary() || ! hasSwdpLibrary()) {
             addSwdpLibrary(new String[] {
                 ClassPath.COMPILE,

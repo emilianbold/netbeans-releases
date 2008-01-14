@@ -88,7 +88,7 @@ public class RestUtils {
      */
     public static void ensureRestDevelopmentReady(Project project) throws IOException {
         RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
-        if (restSupport != null && ! restSupport.isRestSupportOn()) {
+        if (restSupport != null) {
             restSupport.ensureRestDevelopmentReady();
         }
     }
