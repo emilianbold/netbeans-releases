@@ -42,6 +42,7 @@
 package org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.impl;
 
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.ProprietaryPolicyQName;
+import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.ProprietarySecurityPolicyAttribute;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.ValidatorConfiguration;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.ProprietarySecurityPolicyServiceQName;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
@@ -77,26 +78,30 @@ public class ValidatorConfigurationImpl extends ProprietarySecurityPolicyCompone
         return getAnyAttribute(ProprietaryPolicyQName.VISIBILITY.getQName());
     }
 
-//    public void setMaxClockSkew(String maxClockSkew) {
-//        setAnyAttribute(ProprietarySecurityPolicyServiceQName.MAXCLOCKSKEW.getQName(), maxClockSkew);
-//        setAttribute(MAXCLOCKSKEW, ProprietarySecurityPolicyAttribute.MAXCLOCKSKEW, maxClockSkew);        
-//    }
-//
-//    public String getMaxClockSkew() {
-//        return getAnyAttribute(ProprietarySecurityPolicyServiceQName.MAXCLOCKSKEW.getQName());
-//        return getAttribute(ProprietarySecurityPolicyAttribute.MAXCLOCKSKEW);
-//    }
-//
-//    public void setTimestampFreshnessLimit(String limit) {
-//        setAnyAttribute(ProprietarySecurityPolicyServiceQName.TIMESTAMPFRESHNESSLIMIT.getQName(), limit);
-//        setAttribute(TIMESTAMPFRESHNESS, ProprietarySecurityPolicyAttribute.TIMESTAMPFRESHNESSLIMIT, limit);
-//    }
-//
-//    public String getTimestampFreshnessLimit() {
-//        return getAnyAttribute(ProprietarySecurityPolicyServiceQName.TIMESTAMPFRESHNESSLIMIT.getQName());
-//        return getAttribute(ProprietarySecurityPolicyAttribute.TIMESTAMPFRESHNESSLIMIT);
-//    }
-//
+    public void setMaxClockSkew(String maxClockSkew) {
+        setAttribute(MAXCLOCKSKEW, ProprietarySecurityPolicyAttribute.MAXCLOCKSKEW, maxClockSkew);        
+    }
+
+    public String getMaxClockSkew() {
+        return getAttribute(ProprietarySecurityPolicyAttribute.MAXCLOCKSKEW);
+    }
+
+    public void setTimestampFreshnessLimit(String limit) {
+        setAttribute(TIMESTAMPFRESHNESS, ProprietarySecurityPolicyAttribute.TIMESTAMPFRESHNESS, limit);
+    }
+
+    public String getTimestampFreshnessLimit() {
+        return getAttribute(ProprietarySecurityPolicyAttribute.TIMESTAMPFRESHNESS);
+    }
+
+    public void setRevocationEnabled(boolean revocation) {
+        setAttribute(REVOCATION, ProprietarySecurityPolicyAttribute.REVOCATION, Boolean.toString(revocation));
+    }
+
+    public boolean isRevocationEnabled() {
+        return Boolean.parseBoolean(getAttribute(ProprietarySecurityPolicyAttribute.REVOCATION));
+    }
+    
 //    public void setMaxNonceAge(String maxNonceAge) {
 //        setAttribute(MAXNONCEAGE, ProprietarySecurityPolicyAttribute.MAXNONCEAGE, maxNonceAge);
 //    }

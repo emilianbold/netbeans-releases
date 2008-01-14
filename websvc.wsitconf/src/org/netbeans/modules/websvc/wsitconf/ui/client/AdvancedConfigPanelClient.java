@@ -50,6 +50,7 @@ import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPoli
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMSunModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RequiredConfigurationHelper;
+import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
 import org.netbeans.modules.xml.multiview.ui.SectionVisualTheme;
@@ -78,7 +79,9 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
     private DefaultFormatterFactory rmSendDff = null;
     private DefaultFormatterFactory rmReqDff = null;
     private DefaultFormatterFactory timeoutDff = null;
-
+    private DefaultFormatterFactory freshnessDff = null;
+    private DefaultFormatterFactory skewDff = null;
+    
     public AdvancedConfigPanelClient(SectionView view, Binding binding, WSDLModel serviceModel) {
         super(view);
         this.serviceModel = serviceModel;
@@ -133,7 +136,27 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
         rmCloseTimeoutFormatter.setCommitsOnValidEdit(true);
         rmCloseTimeoutFormatter.setMinimum(0);
         closeTimeoutDff.setDefaultFormatter(rmCloseTimeoutFormatter);
-        
+
+        freshnessDff = new DefaultFormatterFactory();
+        NumberFormat freshnessFormat = NumberFormat.getIntegerInstance();
+        freshnessFormat.setGroupingUsed(false);
+        freshnessFormat.setParseIntegerOnly(true);
+        freshnessFormat.setMaximumFractionDigits(0);
+        NumberFormatter freshnessFormatter = new NumberFormatter(freshnessFormat);
+        freshnessFormatter.setCommitsOnValidEdit(true);
+        freshnessFormatter.setMinimum(0);
+        freshnessDff.setDefaultFormatter(freshnessFormatter);
+
+        skewDff = new DefaultFormatterFactory();
+        NumberFormat skewFormat = NumberFormat.getIntegerInstance();
+        skewFormat.setGroupingUsed(false);
+        skewFormat.setParseIntegerOnly(true);
+        skewFormat.setMaximumFractionDigits(0);
+        NumberFormatter skewFormatter = new NumberFormatter(skewFormat);
+        skewFormatter.setCommitsOnValidEdit(true);
+        skewFormatter.setMinimum(0);
+        skewDff.setDefaultFormatter(skewFormatter);
+
         initComponents();
 
         lifeTimeLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
@@ -148,6 +171,11 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
         rmResendLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         rmCloseTimeoutLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         rmCloseTimeoutField.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+        maxClockSkewField.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+        maxClockSkewLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+        freshnessField.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+        freshnessLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+        revocationChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
 
         addImmediateModifier(rmAckRequestField);
         addImmediateModifier(rmCloseTimeoutField);
@@ -156,6 +184,9 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
 //        addImmediateModifier(timestampTimeoutField);
         addImmediateModifier(renewExpiredChBox);
         addImmediateModifier(requireCancelChBox);
+        addImmediateModifier(maxClockSkewField);
+        addImmediateModifier(freshnessField);
+        addImmediateModifier(revocationChBox);
 
         sync();
     }
@@ -170,6 +201,20 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
             lifeTimeTextField.setText(lifeTime);
         } 
 
+        String skew = ProprietarySecurityPolicyModelHelper.getMaxClockSkew(binding);
+        if (skew == null) {
+            maxClockSkewField.setText(ProprietarySecurityPolicyModelHelper.DEFAULT_MAXCLOCKSKEW);
+        } else {
+            maxClockSkewField.setText(skew);
+        } 
+
+        String freshness = ProprietarySecurityPolicyModelHelper.getTimestampFreshness(binding);
+        if (freshness == null) {
+            freshnessField.setText(ProprietarySecurityPolicyModelHelper.DEFAULT_TIMESTAMPFRESHNESS);
+        } else {
+            freshnessField.setText(freshness);
+        } 
+        
 //        String timeout = ProprietarySecurityPolicyModelHelper.getTimestampTimeout(binding, true);
 //        if (timeout == null) {
 //            timestampTimeoutField.setText(DEFAULT_TIMEOUT);
@@ -201,6 +246,8 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
         setChBox(renewExpiredChBox, ProprietarySecurityPolicyModelHelper.isRenewExpired(binding));
         setChBox(requireCancelChBox, ProprietarySecurityPolicyModelHelper.isRequireCancel(binding));
 
+        setChBox(revocationChBox, ProprietarySecurityPolicyModelHelper.isRevocationEnabled(binding));
+
         enableDisable();
         
         inSync = false;
@@ -218,6 +265,26 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
                 }
             }
 
+            if (source.equals(maxClockSkewField)) {
+                String skew = ((Integer) maxClockSkewField.getValue()).toString();
+                if ((skew == null) || (skew.length() == 0) || 
+                    (ProprietarySecurityPolicyModelHelper.DEFAULT_MAXCLOCKSKEW.equals(skew))) {
+                        ProprietarySecurityPolicyModelHelper.setMaxClockSkew(binding, null, true);
+                } else {
+                    ProprietarySecurityPolicyModelHelper.setMaxClockSkew(binding, skew, true);
+                }
+            }
+
+            if (source.equals(freshnessField)) {
+                String freshness = ((Integer) freshnessField.getValue()).toString();
+                if ((freshness == null) || (freshness.length() == 0) || 
+                    (ProprietarySecurityPolicyModelHelper.DEFAULT_TIMESTAMPFRESHNESS.equals(freshness))) {
+                        ProprietarySecurityPolicyModelHelper.setTimestampFreshness(binding, null, true);
+                } else {
+                    ProprietarySecurityPolicyModelHelper.setTimestampFreshness(binding, freshness, true);
+                }
+            }
+            
 //            if (source.equals(timestampTimeoutField)) {
 //                String timeout = timestampTimeoutField.getText();
 //                if ((timeout == null) || (timeout.length() == 0) || (DEFAULT_TIMEOUT.equals(timeout))) {
@@ -261,6 +328,10 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
             if (source.equals(requireCancelChBox)) {
                 ProprietarySecurityPolicyModelHelper.setRequireCancel(binding, requireCancelChBox.isSelected());
             }
+
+            if (source.equals(revocationChBox)) {
+                ProprietarySecurityPolicyModelHelper.setRevocation(binding, revocationChBox.isSelected(), true);
+            }
         }
     }
 
@@ -281,7 +352,12 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
         lifeTimeLabel.setEnabled(secConvConfigRequired);
         renewExpiredChBox.setEnabled(secConvConfigRequired);
         requireCancelChBox.setEnabled(secConvConfigRequired);
-                
+
+        boolean security = SecurityPolicyModelHelper.isSecurityEnabled(serviceBinding);
+        requireCancelChBox.setEnabled(security);
+        maxClockSkewField.setEnabled(security);
+        freshnessField.setEnabled(security);
+        
 //        timestampTimeoutLabel.setEnabled(timestampEnabled);
 //        timestampTimeoutField.setEnabled(timestampEnabled);
     }
@@ -331,6 +407,11 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
         lifeTimeTextField = new javax.swing.JFormattedTextField();
         rmCloseTimeoutLabel = new javax.swing.JLabel();
         rmCloseTimeoutField = new javax.swing.JFormattedTextField();
+        maxClockSkewLabel = new javax.swing.JLabel();
+        maxClockSkewField = new javax.swing.JFormattedTextField();
+        freshnessLabel = new javax.swing.JLabel();
+        freshnessField = new javax.swing.JFormattedTextField();
+        revocationChBox = new javax.swing.JCheckBox();
 
         lifeTimeLabel.setLabelFor(lifeTimeTextField);
         org.openide.awt.Mnemonics.setLocalizedText(lifeTimeLabel, org.openide.util.NbBundle.getMessage(AdvancedConfigPanelClient.class, "LBL_AdvancedConfigPanel_SCTokenLifeTime")); // NOI18N
@@ -360,6 +441,20 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
 
         rmCloseTimeoutField.setFormatterFactory(closeTimeoutDff);
 
+        maxClockSkewLabel.setLabelFor(rmResendField);
+        org.openide.awt.Mnemonics.setLocalizedText(maxClockSkewLabel, org.openide.util.NbBundle.getMessage(AdvancedConfigPanelClient.class, "LBL_AdvancedConfigPanel_MaxClockSkew")); // NOI18N
+
+        maxClockSkewField.setFormatterFactory(skewDff);
+
+        freshnessLabel.setLabelFor(rmResendField);
+        org.openide.awt.Mnemonics.setLocalizedText(freshnessLabel, org.openide.util.NbBundle.getMessage(AdvancedConfigPanelClient.class, "LBL_AdvancedConfigPanel_TimestampFreshness")); // NOI18N
+
+        freshnessField.setFormatterFactory(freshnessDff);
+
+        org.openide.awt.Mnemonics.setLocalizedText(revocationChBox, org.openide.util.NbBundle.getMessage(AdvancedConfigPanelClient.class, "LBL_AdvancedConfigPanel_Revocation")); // NOI18N
+        revocationChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        revocationChBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -369,6 +464,15 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(renewExpiredChBox)
                     .add(requireCancelChBox)
+                    .add(revocationChBox)
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(maxClockSkewLabel)
+                            .add(freshnessLabel))
+                        .add(37, 37, 37)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(freshnessField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 69, Short.MAX_VALUE)
+                            .add(maxClockSkewField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 69, Short.MAX_VALUE)))
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(rmResendLabel)
@@ -406,8 +510,20 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
                 .add(renewExpiredChBox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(requireCancelChBox)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(maxClockSkewLabel)
+                    .add(maxClockSkewField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(freshnessLabel)
+                    .add(freshnessField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(revocationChBox)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        layout.linkSize(new java.awt.Component[] {freshnessField, lifeTimeTextField, maxClockSkewField, rmAckRequestField, rmCloseTimeoutField, rmResendField}, org.jdesktop.layout.GroupLayout.VERTICAL);
 
         lifeTimeLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AdvancedConfigPanelClient.class, "ACSN_AdvancedConfigPanel_SCTokenLifeTime")); // NOI18N
         lifeTimeLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AdvancedConfigPanelClient.class, "ACSD_AdvancedConfigPanel_SCTokenLifeTime")); // NOI18N
@@ -425,10 +541,15 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JFormattedTextField freshnessField;
+    private javax.swing.JLabel freshnessLabel;
     private javax.swing.JLabel lifeTimeLabel;
     private javax.swing.JFormattedTextField lifeTimeTextField;
+    private javax.swing.JFormattedTextField maxClockSkewField;
+    private javax.swing.JLabel maxClockSkewLabel;
     private javax.swing.JCheckBox renewExpiredChBox;
     private javax.swing.JCheckBox requireCancelChBox;
+    private javax.swing.JCheckBox revocationChBox;
     private javax.swing.JFormattedTextField rmAckRequestField;
     private javax.swing.JLabel rmAckRequestLabel;
     private javax.swing.JFormattedTextField rmCloseTimeoutField;

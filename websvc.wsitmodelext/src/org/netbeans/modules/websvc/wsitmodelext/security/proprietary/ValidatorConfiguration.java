@@ -49,19 +49,23 @@ import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
  */
 public interface ValidatorConfiguration extends ExtensibilityElement{
 
-//    public static final String TIMESTAMPFRESHNESS = "TimestampFreshnessLimit";  //NOI18N
+    public static final String TIMESTAMPFRESHNESS = "TimestampFreshnessLimit";  //NOI18N
 //    public static final String MAXNONCEAGE = "MaxNonceAge";         //NOI18N
-//    public static final String MAXCLOCKSKEW = "MaxClockSkew";       //NOI18N
+    public static final String MAXCLOCKSKEW = "MaxClockSkew";       //NOI18N
+    public static final String REVOCATION = "Revocation";  //NOI18N
 
     void setVisibility(String vis);
     String getVisibility();
     
-//    void setMaxClockSkew(String maxClockSkew);
-//    String getMaxClockSkew();
-//
-//    void setTimestampFreshnessLimit(String limit);
-//    String getTimestampFreshnessLimit();
-//
+    void setMaxClockSkew(String maxClockSkew);
+    String getMaxClockSkew();
+
+    void setTimestampFreshnessLimit(String limit);
+    String getTimestampFreshnessLimit();
+
+    void setRevocationEnabled(boolean revocation);
+    boolean isRevocationEnabled();
+    
 //    void setMaxNonceAge(String maxNonceAge);
 //    String getMaxNonceAge();
 }

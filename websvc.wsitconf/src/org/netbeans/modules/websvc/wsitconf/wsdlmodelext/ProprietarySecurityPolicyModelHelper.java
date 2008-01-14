@@ -84,6 +84,8 @@ public class ProprietarySecurityPolicyModelHelper {
     public static final String DEFAULT_LIFETIME = "300000";                     //NOI18N
     public static final String DEFAULT_CONTRACT_CLASS = "com.sun.xml.ws.trust.impl.IssueSamlTokenContractImpl"; //NOI18N
     public static final String DEFAULT_HANDLER_TIMESTAMP_TIMEOUT = "300";                     //NOI18N
+    public static final String DEFAULT_MAXCLOCKSKEW = "1";                     //NOI18N
+    public static final String DEFAULT_TIMESTAMPFRESHNESS = "1";                     //NOI18N
     
     /**
      * Creates a new instance of ProprietarySecurityPolicyModelHelper
@@ -323,6 +325,16 @@ public class ProprietarySecurityPolicyModelHelper {
         return false;
     }
 
+    public static boolean isRevocationEnabled(Binding b) {
+        Policy p = PolicyModelHelper.getPolicyForElement(b);
+        ValidatorConfiguration vc = (ValidatorConfiguration) 
+                PolicyModelHelper.getTopLevelElement(p, ValidatorConfiguration.class);
+        if (vc != null) {
+            return vc.isRevocationEnabled();
+        }
+        return false;
+    }
+    
     public static boolean isStreamingSecurity(Binding b) {
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         DisableStreamingSecurity streaming = PolicyModelHelper.getTopLevelElement(p, DisableStreamingSecurity.class);
@@ -346,25 +358,23 @@ public class ProprietarySecurityPolicyModelHelper {
         }
     }
     
-//    public static String getMaxClockSkew(Binding b, boolean client) {
-//        WSDLModel model = b.getModel();
-//        Policy p = PolicyModelHelper.getPolicyForElement(b);
-//        ValidatorConfiguration vc = (ValidatorConfiguration) PolicyModelHelper.getTopLevelElement(p, ValidatorConfiguration.class);
-//        if (vc != null) {
-//            return vc.getMaxClockSkew();
-//        }
-//        return null;
-//    }
-//    
-//    public static String getTimestampFreshness(Binding b, boolean client) {
-//        WSDLModel model = b.getModel();
-//        Policy p = PolicyModelHelper.getPolicyForElement(b);
-//        ValidatorConfiguration vc = (ValidatorConfiguration) PolicyModelHelper.getTopLevelElement(p, ValidatorConfiguration.class);
-//        if (vc != null) {
-//            return vc.getTimestampFreshnessLimit();
-//        }
-//        return null;
-//    }
+    public static String getMaxClockSkew(Binding b) {
+        Policy p = PolicyModelHelper.getPolicyForElement(b);
+        ValidatorConfiguration vc = (ValidatorConfiguration) PolicyModelHelper.getTopLevelElement(p, ValidatorConfiguration.class);
+        if (vc != null) {
+            return vc.getMaxClockSkew();
+        }
+        return null;
+    }
+    
+    public static String getTimestampFreshness(Binding b) {
+        Policy p = PolicyModelHelper.getPolicyForElement(b);
+        ValidatorConfiguration vc = (ValidatorConfiguration) PolicyModelHelper.getTopLevelElement(p, ValidatorConfiguration.class);
+        if (vc != null) {
+            return vc.getTimestampFreshnessLimit();
+        }
+        return null;
+    }
 
     public static WSDLComponent getStore(Policy p, boolean trust) {
         if (trust) {
@@ -1333,45 +1343,69 @@ public class ProprietarySecurityPolicyModelHelper {
         }
     }
     
-//    public static void setMaxClockSkew(Binding b, String value, boolean client) {
-//        WSDLModel model = b.getModel();
-//        Policy p = PolicyModelHelper.getPolicyForElement(b);
-//        ValidatorConfiguration vc = (ValidatorConfiguration) PolicyModelHelper.getTopLevelElement(p, ValidatorConfiguration.class);
-//        if ((vc == null) || (p == null)) {
-//            vc = createValidatorConfiguration(b, client);
-//        }
-//        boolean isTransaction = model.isIntransaction();
-//        if (!isTransaction) {
-//            model.startTransaction();
-//        }
-//        try {
-//            vc.setMaxClockSkew(value);
-//        } finally {
-//            if (!isTransaction) {
-//                model.endTransaction();
-//            }
-//        }
-//    }
+    public static void setMaxClockSkew(Binding b, String value, boolean client) {
+        WSDLModel model = b.getModel();
+        Policy p = PolicyModelHelper.getPolicyForElement(b);
+        boolean isTransaction = model.isIntransaction();
+        if (!isTransaction) {
+            model.startTransaction();
+        }
+        try {
+            ValidatorConfiguration vc = (ValidatorConfiguration) PolicyModelHelper.getTopLevelElement(p, ValidatorConfiguration.class);
+            if ((vc == null) || (p == null)) {
+                vc = createValidatorConfiguration(b, client);
+            }
+            if (vc != null) {
+                vc.setMaxClockSkew(value);
+            }
+        } finally {
+            if (!isTransaction) {
+                model.endTransaction();
+            }
+        }
+    }
 
-//    public static void setTimestampFreshness(Binding b, String value, boolean client) {
-//        WSDLModel model = b.getModel();
-//        Policy p = PolicyModelHelper.getPolicyForElement(b);
-//        ValidatorConfiguration vc = (ValidatorConfiguration) PolicyModelHelper.getTopLevelElement(p, ValidatorConfiguration.class);
-//        if ((vc == null) || (p == null)) {
-//            vc = createValidatorConfiguration(b, client);
-//        }
-//        boolean isTransaction = model.isIntransaction();
-//        if (!isTransaction) {
-//            model.startTransaction();
-//        }
-//        try {
-//            vc.setTimestampFreshnessLimit(value);
-//        } finally {
-//            if (!isTransaction) {
-//                model.endTransaction();
-//            }
-//        }
-//    }
+    public static void setRevocation(Binding b, boolean value, boolean client) {
+        WSDLModel model = b.getModel();
+        Policy p = PolicyModelHelper.getPolicyForElement(b);
+        boolean isTransaction = model.isIntransaction();
+        if (!isTransaction) {
+            model.startTransaction();
+        }
+        try {
+            ValidatorConfiguration vc = (ValidatorConfiguration) PolicyModelHelper.getTopLevelElement(p, ValidatorConfiguration.class);
+            if (vc == null) {
+                vc = createValidatorConfiguration(b, client);
+            }
+            if (vc != null) {
+                vc.setRevocationEnabled(value);
+            }
+        } finally {
+            if (!isTransaction) {
+                model.endTransaction();
+            }
+        }
+    }
+    
+    public static void setTimestampFreshness(Binding b, String value, boolean client) {
+        WSDLModel model = b.getModel();
+        Policy p = PolicyModelHelper.getPolicyForElement(b);
+        boolean isTransaction = model.isIntransaction();
+        if (!isTransaction) {
+            model.startTransaction();
+        }
+        try {
+            ValidatorConfiguration vc = (ValidatorConfiguration) PolicyModelHelper.getTopLevelElement(p, ValidatorConfiguration.class);
+            if ((vc == null) || (p == null)) {
+                vc = createValidatorConfiguration(b, client);
+            }
+            vc.setTimestampFreshnessLimit(value);
+        } finally {
+            if (!isTransaction) {
+                model.endTransaction();
+            }
+        }
+    }
 
 //    public static void setMaxNonceAge(Binding b, String value, boolean client) {
 //        WSDLModel model = b.getModel();
@@ -1754,4 +1788,5 @@ public class ProprietarySecurityPolicyModelHelper {
         }
         return h;
     }
+        
 }
