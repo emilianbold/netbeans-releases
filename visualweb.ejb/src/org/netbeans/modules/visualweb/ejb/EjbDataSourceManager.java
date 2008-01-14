@@ -169,6 +169,9 @@ public class EjbDataSourceManager {
     private static String getUserDirDataSrcFileName() throws IOException {
         File ejbDataSourceDir = new File(Util.getEjbStateDir(), "ejb-datasource");
         if (!ejbDataSourceDir.isDirectory()) {
+            // XXX This is broken since it does not update an existing ejbsources.xml file
+            // with the updated location
+            
             // Try to migrate EJB DataSources from old to new location
             String userDir = System.getProperty("netbeans.user"); // NOI18N
             if (userDir != null) {

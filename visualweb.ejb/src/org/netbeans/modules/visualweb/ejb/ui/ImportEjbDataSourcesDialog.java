@@ -54,6 +54,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import javax.swing.JButton;
+import org.netbeans.modules.visualweb.ejb.util.Util;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -179,7 +180,7 @@ public class ImportEjbDataSourcesDialog implements ActionListener {
     private void copyJars( EjbGroup ejbGroup )
     {
         try {
-            String ejbDir = System.getProperty("netbeans.user") + File.separator + "ejb-datasource"; // NOI18N
+            String ejbDir = Util.getEjbStateDir().getAbsolutePath() + File.separator + "ejb-datasource"; // NOI18N
             
             // Client jars
             for( Iterator iter = ejbGroup.getClientJarFiles().iterator(); iter.hasNext(); )

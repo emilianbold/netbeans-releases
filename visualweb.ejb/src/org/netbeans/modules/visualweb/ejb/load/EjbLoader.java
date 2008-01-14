@@ -627,13 +627,11 @@ public class EjbLoader {
     }
     
     private String getWrapperBeanSrcDir() {
-        String srcDir = System.getProperty("netbeans.user"); // NOI18N
-        srcDir = srcDir + File.separator + "ejb-datasource"; // NOI18N
-        File srcDirF = new File( srcDir );
+        File srcDirF = new File(Util.getEjbStateDir(), "ejb-datasource"); // NOI18N
         if( !srcDirF.exists() )
             srcDirF.mkdirs();
         
-        return srcDir;
+        return srcDirF.getAbsolutePath();
     }
     
     private void validateAppServerSelection( Map descriptors ) throws EjbLoadException {
