@@ -49,8 +49,10 @@
 
 package org.netbeans.modules.masterindex.plugin;
 
+import org.netbeans.modules.masterindex.plugin.datamodel.ObjectDefinitionBuilder;
 import org.netbeans.modules.masterindex.plugin.datamodel.Field;
 import org.netbeans.modules.masterindex.plugin.datamodel.Lookup;
+import org.netbeans.modules.masterindex.plugin.datamodel.ObjectDefinition;
 import org.netbeans.modules.masterindex.plugin.util.PluginDTConstants;
 import java.io.File;
 import java.io.IOException;
@@ -75,6 +77,7 @@ public class TargetDBSchemaGenerator {
     
     private static TargetDBSchemaGenerator targetdbSchemaGenerator = null;
     private Lookup lookup = null;
+    private static ObjectDefinition objDef = null;
     private Connection conn = null;
     //eview data model type vs. db data type
     private String[][] datatypes = {
@@ -82,6 +85,7 @@ public class TargetDBSchemaGenerator {
                                      {"int"    , "INTEGER"},
                                      {"char"   , "CHAR"},
                                      {"boolean", "BOOLEAN"},
+                                     {"date"   , "DATE"},
                                      {"blob"   , "BLOB"},
                                    };
     /**
@@ -129,7 +133,7 @@ public class TargetDBSchemaGenerator {
     }
     
     private String createSQL(String normtablename, String modeltablename){
-        String query =  "CREATE TABLE IF NOT EXISTS " + normtablename + " ( " + createSQLTableColumns(modeltablename) + " )";
+        String query =  "CREATE EXTERNAL TABLE IF NOT EXISTS " + normtablename + " ( " + createSQLTableColumns(modeltablename) + " ) " + createOrganizationString(normtablename);
         logger.log(Level.INFO,"SQL Executed : " + query);
         return query;
     }
@@ -167,10 +171,15 @@ public class TargetDBSchemaGenerator {
     
     private String createForeignKeyConstraint(String modeltablename){
         String tablename = modeltablename.substring(modeltablename.lastIndexOf(".") + 1);
-        if (tablename != lookup.getRootName()){
+        if (!tablename.equals(lookup.getRootName())){
             return ", CONSTRAINT fk_" + lookup.getRootName().toLowerCase() + "id" +  tablename.toLowerCase() + " FOREIGN KEY (" + lookup.getRootName() + "Id"  + ") REFERENCES " + normalizeTableName(lookup.getRootName())  + "(" + lookup.getRootName() + "Id" + ")";
         }
         return "";
+    }
+    
+    private String createOrganizationString(String normtablename){
+        String orgstr = "organization(LOADTYPE='delimited' filename='" + normtablename + ".csv" + "' FIELDDELIMITER='|')";
+        return orgstr;  
     }
     
     /**
@@ -259,7 +268,9 @@ public class TargetDBSchemaGenerator {
                 BufferedDataInputStream bdis = null;
                 try {
                     bdis = afs.openBufferedDIS(configfile);
-                    lookup = Lookup.createLookup(bdis);
+                    objDef = new ObjectDefinitionBuilder().parse(bdis);
+                    addExtraFieldsToParent(objDef);
+                    lookup = Lookup.createLookup(objDef);
                 } catch (AxionException ex) {
                     logger.severe("Error Reading eview config file : " + ex.getMessage());
                 } finally {
@@ -276,6 +287,21 @@ public class TargetDBSchemaGenerator {
             logger.severe("EView Config File is not available. Set the file using DataSourceReaderFactory.setEViewConfigFilePath()");
             
         }
+    }
+    
+    private static void addExtraFieldsToParent(ObjectDefinition objDef){
+        String[] sysfields = DefaultSystemFields.getDefaultSystemFields();
+        for (int i=0; i < sysfields.length; i++){
+            objDef.addField(i, createExtraFieldObj(sysfields[i]));
+        }
+    }
+    
+    private static Field createExtraFieldObj(String name){
+        Field newfield = new Field();
+        newfield.setName(name);
+        newfield.setType("string"); //Change Later
+        newfield.setSize(32); //Change Later
+        return newfield;
     }
     
     private ArrayList buildTableList(){
