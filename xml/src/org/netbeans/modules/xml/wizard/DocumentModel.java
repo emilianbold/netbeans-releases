@@ -48,7 +48,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import org.netbeans.modules.xml.axi.visitor.XMLContentAttributes;
 import org.openide.nodes.Node;
 
 /**

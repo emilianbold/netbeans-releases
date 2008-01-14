@@ -8,7 +8,7 @@ package org.netbeans.modules.xml.wizard;
 
 import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
-import org.netbeans.modules.xml.axi.visitor.XMLContentAttributes;
+
 
 /**
  *

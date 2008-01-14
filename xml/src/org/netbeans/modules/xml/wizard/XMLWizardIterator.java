@@ -64,7 +64,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.JComponent;
 import org.netbeans.modules.xml.api.EncodingUtil;
 
-import org.netbeans.modules.xml.axi.visitor.XMLGeneratorVisitor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.loaders.TemplateWizard;
 import org.openide.WizardDescriptor;
@@ -282,8 +281,8 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
                                 }
                                
                             }
-         //best if we could write to the newXMLDocument from here                    
-       //                 generateXMLBody(model, root, writer);
+                            
+                        generateXMLBody(model, root, writer);
                         
                     } else {
                         writer.write("<" + root + ">\n");                       // NOI18N
@@ -322,12 +321,6 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
         Util.performDefaultAction(createdObject);
         set.add(createdObject);      
        
-        //try writing to XML 
-        //open a writer to the newXMLDocument and then make the call
-        //the newXMLDocument is fileObject[0]
-        //if i open the writer here, will have to "seek" the position from where
-        //to writet the xml body
-        //generateXMLBody(model, model.getRoot(), writer);
         return set;
     }
     
@@ -576,11 +569,9 @@ public class XMLWizardIterator implements TemplateWizard.Iterator {
     }
     
     private void generateXMLBody(DocumentModel model, String root, Writer writer){
-       try {
-          XMLGeneratorVisitor visitor = new XMLGeneratorVisitor(model.getPrimarySchema(), model.getXMLContentAttributes(), writer);
-          visitor.generateXML(root);
-        }catch(Exception e) {
-        }
+        XMLGeneratorVisitor visitor = new XMLGeneratorVisitor(model.getPrimarySchema(), model.getXMLContentAttributes(), writer);
+        visitor.generateXML(root);
+       
        
     }
 }
