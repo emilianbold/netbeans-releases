@@ -455,10 +455,10 @@ public class CodeCompleterTest extends RubyTestBase {
     //    // before resuming
     //    checkCompletion("testfiles/completion/lib/test2.rb", "Result is #{@^myfield} and #@another.");
     //}
-    
-    public void testCompletion3() throws Exception {
-        checkCompletion("testfiles/completion/lib/test2.rb", "Result is #{@myfield} and #@a^nother.");
-    }
+    // 
+    //public void testCompletion3() throws Exception {
+    //    checkCompletion("testfiles/completion/lib/test2.rb", "Result is #{@myfield} and #@a^nother.");
+    //}
     
     public void testCompletion4() throws Exception {
         checkCompletion("testfiles/completion/lib/test2.rb", "Hell^o World");
