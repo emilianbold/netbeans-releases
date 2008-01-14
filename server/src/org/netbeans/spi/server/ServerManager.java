@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,39 +38,56 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.spi.server;
 
-package org.netbeans.modules.server.ui.manager;
-import org.netbeans.spi.server.ServerManager;
+import java.awt.Dialog;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.CallableSystemAction;
-
+import javax.swing.JButton;
+import org.netbeans.modules.server.ui.manager.ServerManagerPanel;
 
 /**
- * ServerManagerAction displays server manager.
+ * Class providing access to UI dialogs. Usable in spi implementation.
  *
- * @author  Stepan Herold
+ * @author Petr Hejl
  */
-public class ServerManagerAction extends CallableSystemAction {
+public final class ServerManager {
 
-    public ServerManagerAction() {
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+    private ServerManager() {
+        super();
     }
 
-    public void performAction() {
-        ServerManager.showCustomizer(null);
-    }
+    /**
+     * Displays the modal server manager dialog with the specified server instance
+     * preselected. This method must be called form the AWT event dispatch
+     * thread.
+     *
+     * @param instance server instance which should be preselected,
+     *             if <code>null</code> the first server instance will
+     *             be preselected
+     */
+    public static void showCustomizer(ServerInstance instance) {
+        ServerManagerPanel customizer = new ServerManagerPanel(instance);
 
-    public String getName() {
-        return NbBundle.getMessage(ServerManagerAction.class, "CTL_ServerManager"); // NOI18N
-    }
+        JButton close = new JButton(NbBundle.getMessage(ServerManager.class, "CTL_Close"));
+        close.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ServerManager.class, "AD_Close"));
 
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
+        DialogDescriptor descriptor = new DialogDescriptor(customizer,
+                NbBundle.getMessage(ServerManager.class, "TXT_ServerManager"),
+                true,
+                new Object[] {close},
+                close,
+                DialogDescriptor.DEFAULT_ALIGN,
+                new HelpCtx(ServerManager.class),
+                null);
 
-    @Override
-    protected boolean asynchronous() {
-        return false;
+        Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
+        try {
+            dlg.setVisible(true);
+        } finally {
+            dlg.dispose();
+        }
     }
 }
