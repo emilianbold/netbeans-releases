@@ -60,7 +60,7 @@ public class ServerStringTest extends ServerRegistryTestBase {
 
     public void testConstructors() throws InstanceCreationException {
         ServerRegistry registry = ServerRegistry.getInstance();
-        registry.addInstance(TEST_URL, "user", "password", "TestInstance", null);
+        registry.addInstance(TEST_URL, "user", "password", "TestInstance", true, null);
         ServerInstance instance = registry.getServerInstance(TEST_URL);
 
         ServerString serverString = new ServerString(TEST_PLUGIN, TEST_URL, null, null);

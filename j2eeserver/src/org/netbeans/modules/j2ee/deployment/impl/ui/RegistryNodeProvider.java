@@ -41,13 +41,16 @@
 
 package org.netbeans.modules.j2ee.deployment.impl.ui;
 
-import org.netbeans.modules.j2ee.deployment.impl.*;
+
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
+import org.netbeans.modules.j2ee.deployment.impl.Server;
+import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
+import org.netbeans.modules.j2ee.deployment.impl.ServerTarget;
 import org.openide.util.Exceptions;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.RegistryNodeFactory;
 
@@ -58,6 +61,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.RegistryNodeFactory;
  * Created on December 19, 2003, 11:21 AM
  * @author  nn136682
  */
+
 public class RegistryNodeProvider {
     RegistryNodeFactory factory;
     
@@ -98,25 +102,25 @@ public class RegistryNodeProvider {
         return xnode;
     }
     
-    static Lookup createLookup(final Server server) {
-        return new Lookup() {
-            public Object lookup(Class clazz) {
-                if (DeploymentFactory.class.isAssignableFrom(clazz))
-                    return server.getDeploymentFactory();
-                if (DeploymentManager.class.isAssignableFrom(clazz)) {
-                    try {
-                        return server.getDisconnectedDeploymentManager();
-                    } catch (DeploymentManagerCreationException dmce) {
-                        Exceptions.printStackTrace(dmce);
-                    }
-                }
-                return null;
-            }
-            public Lookup.Result lookup(Lookup.Template template) {
-                return null;
-            }
-        };
-    }
+//    static Lookup createLookup(final Server server) {
+//        return new Lookup() {
+//            public Object lookup(Class clazz) {
+//                if (DeploymentFactory.class.isAssignableFrom(clazz))
+//                    return server.getDeploymentFactory();
+//                if (DeploymentManager.class.isAssignableFrom(clazz)) {
+//                    try {
+//                        return server.getDisconnectedDeploymentManager();
+//                    } catch (DeploymentManagerCreationException dmce) {
+//                        Exceptions.printStackTrace(dmce);
+//                    }
+//                }
+//                return null;
+//            }
+//            public Lookup.Result lookup(Lookup.Template template) {
+//                return null;
+//            }
+//        };
+//    }
     
     static Lookup createLookup(final ServerInstance instance) {
         return new Lookup() {
@@ -160,5 +164,6 @@ public class RegistryNodeProvider {
             public Lookup.Result lookup(Lookup.Template template) {
                 return null;
             }
-        };    }
+        };
+    }
 }

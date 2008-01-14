@@ -43,6 +43,22 @@ made subject to such option by the copyright holder.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 <filesystem>
 
+    <folder name="Servers">
+        <folder name="J2EEWrapper">
+            <file name="ServerInstanceProviderLookup.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.deployment.impl.bridge.ServerInstanceProviderLookup.getInstance"/>
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.deployment.impl.bridge.ServerInstanceProviderLookup"/>
+                <attr name="instanceOf" stringvalue="org.openide.util.Lookup"/>
+            </file>   
+            <file name="ServerWizardProviderLookup.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.deployment.impl.bridge.ServerWizardProviderLookup.getInstance"/>
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.deployment.impl.bridge.ServerWizardProviderLookup"/>
+                <attr name="instanceOf" stringvalue="org.openide.util.Lookup"/>
+            </file>
+        </folder>
+    </folder>
+    
+    
   <folder name="J2EE">
     <folder name="ApplicationProviders">
     </folder>
@@ -60,13 +76,13 @@ made subject to such option by the copyright holder.
   </folder>
 
   <folder name="UI">
-    <folder name="Runtime">
+     <!-- <folder name="Runtime">
        <file name="ServerRegistry2.instance">
-<!--          <module name="org.netbeans.modules.j2eeserver/3" spec="1.0"/> -->
-          <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.deployment.impl.ui.ServerRegistryNode"/>
+           <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.deployment.impl.ui.ServerRegistryNode.getServerRegistryNode"/>
+           <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.deployment.impl.ui.ServerRegistryNode"/>
            <attr name="position" intvalue="400"/>
             </file>
-       </folder>
+       </folder> -->
     <folder name="Services">
         <folder name="IDEConfiguration">
            <folder name="ServerAndExternalToolSettings">
@@ -128,12 +144,12 @@ made subject to such option by the copyright holder.
         </folder> <!--memory-->
     </folder>
 
-    <folder name="Menu">
+    <!-- <folder name="Menu">
         <folder name="Tools">
             <file name="ServerManagerAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.deployment.impl.ui.actions.ServerManagerAction"/>
                 <attr name="position" intvalue="800"/>
             </file>
             </folder>
-    </folder>
+    </folder> -->
 </filesystem>

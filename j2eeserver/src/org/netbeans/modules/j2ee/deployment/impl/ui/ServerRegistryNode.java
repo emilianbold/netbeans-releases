@@ -70,12 +70,11 @@ implements ServerRegistry.PluginListener, InstanceListener {
     
     static final String SERVERS_ICON = "org/netbeans/modules/j2ee/deployment/impl/ui/resources/Servers.png";//NOI18N
     
-    private transient Map serverNodes = new HashMap();
     private transient HelpCtx helpCtx;
     private boolean expandablePassTargetNode = true;
     
     /** Creates a new instance of ServerRegistryNode2 */
-    public ServerRegistryNode() {
+    private ServerRegistryNode() {
         super(new ServerChildren());
         setName(""); //NOI18N
         setDisplayName(NbBundle.getMessage(ServerRegistryNode.class, "SERVER_REGISTRY_NODE"));
@@ -96,7 +95,6 @@ implements ServerRegistry.PluginListener, InstanceListener {
     public void setExpandablePassTargetNode(boolean v) {
         expandablePassTargetNode = v;
         setChildren(new ServerChildren());
-        serverNodes.clear();
     }
     
     public void instanceAdded(String instance) {
@@ -176,7 +174,13 @@ implements ServerRegistry.PluginListener, InstanceListener {
         }
     }
     
-    public static ServerRegistryNode getServerRegistryNode() {
-        return Lookups.forPath("UI/Runtime").lookup(ServerRegistryNode.class);
+    private static ServerRegistryNode instance;
+    
+    public static synchronized ServerRegistryNode getServerRegistryNode() {
+        if (instance == null) {
+            instance = new ServerRegistryNode();
+        }
+        return instance;
+        //return Lookups.forPath("UI/Runtime").lookup(ServerRegistryNode.class);
     }
 }

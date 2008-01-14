@@ -111,6 +111,24 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="createInstancePropertiesWithoutUI">
+	    <api name="j2eeserver"/>
+	    <summary>
+                Provides a way how can plugin register to j2eeserver without any UI.
+	    </summary>
+	    <version major="1" minor="37"/>
+	    <date day="11" month="01" year="2008"/>
+	    <author login="phejl"/>
+	    <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+	    <description>
+                <p>
+                    Provides a way how can plugin register to j2eeserver without any UI.
+                    SPI provided by Common Server should be used for UI integration.
+                </p>
+	    </description>
+	    <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="InstanceProperties"/>
+	    <issue number="122885"/>
+	</change>        
         <change id="fixedProfilerAPIConstants">
 	    <api name="profiler"/>
 	    <summary>

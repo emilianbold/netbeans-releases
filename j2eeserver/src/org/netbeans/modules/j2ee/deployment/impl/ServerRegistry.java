@@ -53,6 +53,7 @@ import org.openide.util.NbBundle;
 
 import java.util.*;
 import java.io.*;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.deployment.profiler.spi.Profiler;
@@ -145,7 +146,7 @@ public final class ServerRegistry implements java.io.Serializable {
         init();
         return servers;
     }
-    private Map instancesMap() {
+    private synchronized Map instancesMap() {
         init();
         return instances;
     }
@@ -154,14 +155,14 @@ public final class ServerRegistry implements java.io.Serializable {
         try {
             if (fo.isFolder()) {
                 name = fo.getName();
-                if (serversMap().containsKey(name)){
+                if (serversMap().containsKey(name)) {
                     return;
                 }
                 Server server = new Server(fo);
-                serversMap().put(name,server);
+                serversMap().put(name, server);
 
                 fetchInstances(server);
-                firePluginListeners(server,true);
+                firePluginListeners(server, true);
             }
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "Plugin " + name + " installation failed"); //NOI18N
@@ -231,11 +232,11 @@ public final class ServerRegistry implements java.io.Serializable {
         return serversMap().values();
     }
 
-    public Collection getInstances() {
-        return instancesMap().values();
+    public synchronized Collection getInstances() {
+        return new ArrayList(instancesMap().values());
     }
 
-    public String[] getInstanceURLs() {
+    public synchronized String[] getInstanceURLs() {
         return (String[]) instancesMap().keySet().toArray(new String[instancesMap().size()]);
     }
 
@@ -261,11 +262,11 @@ public final class ServerRegistry implements java.io.Serializable {
         pluginListeners.add(pl);
     }
 
-    public ServerInstance getServerInstance(String url) {
+    public synchronized ServerInstance getServerInstance(String url) {
         return (ServerInstance) instancesMap().get(url);
     }
 
-    public void removeServerInstance(String url) {
+    public synchronized void removeServerInstance(String url) {
         if (url == null)
             return;
 
@@ -285,7 +286,7 @@ public final class ServerRegistry implements java.io.Serializable {
                 newinst != null ? newinst.getUrl() : null);
     }
 
-    public ServerInstance[] getServerInstances() {
+    public synchronized ServerInstance[] getServerInstances() {
         ServerInstance[] ret = new ServerInstance[instancesMap().size()];
         instancesMap().values().toArray(ret);
         return ret;
@@ -320,15 +321,15 @@ public final class ServerRegistry implements java.io.Serializable {
      *         registered.
      */
     public void addInstance(String url, String username, String password,
-            String displayName, Map<String, String> initialproperties) throws InstanceCreationException {
+            String displayName, boolean withoutUI, Map<String, String> initialproperties) throws InstanceCreationException {
         // should never have empty url; UI should have prevented this
         if (url == null || url.equals("")) { //NOI18N
-            Logger.getLogger("global").log(Level.INFO, NbBundle.getMessage(ServerRegistry.class, "MSG_EmptyUrl"));
+            LOGGER.log(Level.INFO, NbBundle.getMessage(ServerRegistry.class, "MSG_EmptyUrl"));
             return;
         }
 
         checkInstanceAlreadyExists(url);
-        if (!addInstanceImpl(url, username, password, displayName, initialproperties)) {
+        if (!addInstanceImpl(url, username, password, displayName, withoutUI, initialproperties)) {
             throw new InstanceCreationException(NbBundle.getMessage(ServerRegistry.class, "MSG_FailedToCreateInstance", displayName));
         }
     }
@@ -383,7 +384,7 @@ public final class ServerRegistry implements java.io.Serializable {
      *             <code>false</code> otherwise.
      */
     private synchronized boolean addInstanceImpl(String url, String username,
-            String password, String displayName, Map<String, String> initialProperties) {
+            String password, String displayName, boolean withoutUI, Map<String, String> initialProperties) {
         if (instancesMap().containsKey(url)) {
             return false;
         }
@@ -400,6 +401,8 @@ public final class ServerRegistry implements java.io.Serializable {
                     // try to create a disconnected deployment manager to see
                     // whether the instance is not corrupted - see #46929
                     writeInstanceToFile(url,username,password);
+                    instance.getInstanceProperties().setProperty(
+                            InstanceProperties.REGISTERED_WITHOUT_UI, Boolean.toString(withoutUI));
                     if (displayName != null) {
                         instance.getInstanceProperties().setProperty(
                            InstanceProperties.DISPLAY_NAME_ATTR, displayName);
@@ -423,7 +426,7 @@ public final class ServerRegistry implements java.io.Serializable {
                     removeInstanceFromFile(url);
                     instancesMap().remove(url);
                 }
-                Logger.getLogger("global").log(Level.INFO, null, e);
+                LOGGER.log(Level.INFO, null, e);
             }
         }
         return false;
@@ -439,6 +442,7 @@ public final class ServerRegistry implements java.io.Serializable {
         properties.remove(InstanceProperties.USERNAME_ATTR);
         properties.remove(InstanceProperties.PASSWORD_ATTR);
         properties.remove(InstanceProperties.DISPLAY_NAME_ATTR);
+        properties.remove(InstanceProperties.REGISTERED_WITHOUT_UI);
         return properties;
     }
 
@@ -447,8 +451,9 @@ public final class ServerRegistry implements java.io.Serializable {
         String username = (String) fo.getAttribute(USERNAME_ATTR);
         String password = (String) fo.getAttribute(PASSWORD_ATTR);
         String displayName = (String) fo.getAttribute(InstanceProperties.DISPLAY_NAME_ATTR);
-        //        System.err.println("Adding instance " + fo);
-        addInstanceImpl(url, username, password, displayName, null);
+        String withoutUI = (String) fo.getAttribute(InstanceProperties.REGISTERED_WITHOUT_UI);
+        boolean withoutUIFlag = withoutUI == null ? false : Boolean.valueOf(withoutUI);
+        addInstanceImpl(url, username, password, displayName, withoutUIFlag, null);
     }
 
     public Collection getInstances(InstanceListener il) {

@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,47 +31,54 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.j2ee.deployment.plugins.spi;
+package org.netbeans.modules.j2ee.deployment.impl.bridge;
 
-
-import org.openide.nodes.Node;
-import org.openide.util.Lookup;
+import org.netbeans.modules.j2ee.deployment.impl.Server;
+import org.openide.util.lookup.InstanceContent;
 
 /**
- * <i>Do not use this class anymore, use Common Server SPI to display nodes.</i>
  *
- * This interface allows plugin to create all the registry nodes
- * (other than the root node) as {@link org.openide.nodes.Node} subclasses,
- * and use {@link org.openide.nodes.FilterNode} to generate the display,
- * adding infrastructure actions in, and exposing certain infrastructure to
- * the plugins for use in constructing nodes.
- * Use a look-like infrastructure so migration to looks can happen easier.
- * Plugins need to register an instance of this class in module layer in folder
- * <code>J2EE/DeploymentPlugins/{plugin_name}</code>.
- *
- * @see org.openide.nodes.Node
- * @see org.openide.nodes.FilterNode
- *
- * @author  George Finklang
- * @deprecated use the Common Server SPI for registering nodes
+ * @author Petr Hejl
  */
-public interface RegistryNodeFactory {
+public class ServerInstanceProviderLookup extends AbstractServerLookup<BridgingServerInstanceProvider> {
 
-     /**
-      * Return node representing the admin server.  Children of this node are filtered.
-      * Start/Stop/Remove/SetAsDefault actions will be added by FilterNode if appropriate.
-      * @param lookup will contain DeploymentFactory, DeploymentManager, Management objects. 
-      * @return admin server node.
-      */
-     public Node getManagerNode(Lookup lookup);
+    private static ServerInstanceProviderLookup instance;
 
-     /**
-      * Provide node representing Deployment API Target object.  
-      * Start/Stop/SetAsDefault actions will be added by FilterNode if appropriate.
-      * @param lookup will contain DeploymentFactory, DeploymentManager, Target, Management objects.
-      * @return target server node
-      */
-     public Node getTargetNode(Lookup lookup);
+    private ServerInstanceProviderLookup(InstanceContent content) {
+        super(content);
+    }
+
+    public static synchronized ServerInstanceProviderLookup getInstance() {
+        if (instance == null) {
+            instance = new ServerInstanceProviderLookup(new InstanceContent());
+        }
+        return instance;
+    }
+
+    @Override
+    protected BridgingServerInstanceProvider createBridgingInstance(Server server) {
+        return new BridgingServerInstanceProvider(server);
+    }
+
+    @Override
+    protected void afterAddition(BridgingServerInstanceProvider instance) {
+        instance.addInstanceListener();
+    }
+
+    @Override
+    protected void beforeFinish(BridgingServerInstanceProvider instance) {
+        // nothing to do
+    }
+
+    @Override
+    protected void finishBridgingInstance(Server server, BridgingServerInstanceProvider instance) {
+        instance.removeInstanceListener();
+    }
+
 }
