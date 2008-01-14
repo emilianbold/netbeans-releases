@@ -81,6 +81,8 @@ public class XMLSyntaxParserTest extends TestCase {
         suite.addTest(new XMLSyntaxParserTest("testParseInvalidTag4"));
         suite.addTest(new XMLSyntaxParserTest("testParsePI"));
         suite.addTest(new XMLSyntaxParserTest("testParseValidTag"));
+        suite.addTest(new XMLSyntaxParserTest("testParseTestXML"));
+        suite.addTest(new XMLSyntaxParserTest("testParseWSDL"));
         return suite;
     }
     
@@ -222,5 +224,30 @@ public class XMLSyntaxParserTest extends TestCase {
         String docBuf = fv.flushModel(doc);
         assertEquals("The document should be unaltered",basedoc.getText(0,basedoc.getLength()),docBuf);
     }
+    
+    /**
+     * Parses a xml document, which is really a wsdl.
+     */
+    public void testParseWSDL() throws Exception {
+        BaseDocument basedoc = getDocument("nodes/wsdl.xml");
+        XMLSyntaxParser parser = new XMLSyntaxParser();
+        try {
+            Document doc = parser.parse(basedoc);            
+        } catch(Exception ex) {
+            assertTrue("Should not come here", false);
+        }
+    }    
 	
+    /**
+     * Parses a xml document, which is really a wsdl.
+     */
+    public void testParseTestXML() throws Exception {
+        BaseDocument basedoc = getDocument("resources/test1_2.xml");
+        XMLSyntaxParser parser = new XMLSyntaxParser();
+        try {
+            Document doc = parser.parse(basedoc);            
+        } catch(Exception ex) {
+            assertTrue("Should not come here", false);
+        }
+    }    
 }

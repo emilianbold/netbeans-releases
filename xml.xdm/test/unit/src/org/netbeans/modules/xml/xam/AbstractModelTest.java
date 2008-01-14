@@ -923,19 +923,6 @@ public class AbstractModelTest extends NbTestCase {
         assertNotNull(d.getChild(B.class));
     }
     
-    public void testFlushOnMutationFromSyncEvent() throws Exception {
-        defaultSetup();
-        model.addComponentListener(new Handler());
-        Util.setDocumentContentTo(doc, "resources/test1_2.xml");
-        model.sync();
-        D d = model.getRootComponent().getChild(D.class);
-        assertNotNull(d.getChild(B.class));
-        
-        model = Util.dumpAndReloadModel(model);
-        d = model.getRootComponent().getChild(D.class);
-        assertNotNull(d.getChild(B.class));
-    }
-
     public void testUndoRedoOnMutationFromEvent() throws Exception {
         defaultSetup();
         model.addComponentListener(new Handler());
@@ -953,25 +940,7 @@ public class AbstractModelTest extends NbTestCase {
         d = model.getRootComponent().getChild(D.class);
         assertNotNull(d.getChild(B.class));
     }
-
-    public void testUndoOnMutationFromSyncEvent() throws Exception {
-        defaultSetup();
-        model.addComponentListener(new Handler());
-        UndoManager um = new UndoManager();
-        model.addUndoableEditListener(um);
-
-        Util.setDocumentContentTo(doc, "resources/test1_2.xml");
-        model.sync();
-        D d = model.getRootComponent().getChild(D.class);
-        assertNotNull(d.getChild(B.class));
-        um.undo();
-        model.getAccess().flush(); // after fix for 83963 need manual flush after undo/redo
-
-        assertNull(model.getRootComponent().getChild(D.class));
-        model = Util.dumpAndReloadModel(model);
-        assertNull(model.getRootComponent().getChild(D.class));
-    }
-
+    
     public void testXmlContentPropertyChangeEventRemove() throws Exception {
         setUp();
         doc = Util.getResourceAsDocument("resources/testXmlContentEvent.xml");
@@ -1037,5 +1006,40 @@ public class AbstractModelTest extends NbTestCase {
         assertEquals("101", old.get(0).getXmlFragmentText());
         assertEquals("1001", now.get(0).getXmlFragmentText());
         plistener.assertEvent(DocumentComponent.TEXT_CONTENT_PROPERTY, a, " <nondomain>101</nondomain>", " <nondomain>1001</nondomain>");
+    }
+    
+    //////////////////////////////////////////////////////////////
+    // The following two tests must be reviewed at a later time //
+    //////////////////////////////////////////////////////////////
+    
+    public void testUndoOnMutationFromSyncEvent() throws Exception {
+        defaultSetup();
+        model.addComponentListener(new Handler());
+        UndoManager um = new UndoManager();
+        model.addUndoableEditListener(um);
+
+        Util.setDocumentContentTo(doc, "resources/test1_2.xml");
+        model.sync();
+        D d = model.getRootComponent().getChild(D.class);
+        assertNotNull(d.getChild(B.class));
+        um.undo();
+        model.getAccess().flush(); // after fix for 83963 need manual flush after undo/redo
+
+        assertNull(model.getRootComponent().getChild(D.class));
+        model = Util.dumpAndReloadModel(model);
+        assertNull(model.getRootComponent().getChild(D.class));
+    }
+
+    public void testFlushOnMutationFromSyncEvent() throws Exception {
+        defaultSetup();
+        model.addComponentListener(new Handler());
+        Util.setDocumentContentTo(doc, "resources/test1_2.xml");
+        model.sync();
+        D d = model.getRootComponent().getChild(D.class);
+        assertNotNull(d.getChild(B.class));
+        
+        model = Util.dumpAndReloadModel(model);
+        d = model.getRootComponent().getChild(D.class);
+        assertNotNull(d.getChild(B.class));
     }
 }
