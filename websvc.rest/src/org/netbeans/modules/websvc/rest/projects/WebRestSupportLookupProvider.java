@@ -73,23 +73,6 @@ public class WebRestSupportLookupProvider implements LookupProvider {
         final Project prj = baseContext.lookup(Project.class);
         final RestSupport restSupport = new WebProjectRestSupport(prj);
         
-        ProjectOpenedHook openhook = new ProjectOpenedHook() {
-            
-            protected void projectOpened() {
-                
-                // note that some sample web project does not have java source root
-                    try {
-                        //TODO maybe delay it until first REST service added
-                        new AntFilesHelper(restSupport).initRestBuildExtension();
-                    } catch (java.io.IOException ex) {
-                        Logger.getLogger(this.getClass().getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
-                    }
-            }
-            
-            protected void projectClosed() {
-            }
-        };
-        
         PrivilegedTemplates templates = new PrivilegedTemplates() {
             public String[] getPrivilegedTemplates() {
                 return new String[] {
@@ -101,7 +84,7 @@ public class WebRestSupportLookupProvider implements LookupProvider {
         };
         
         //ProjectRestServiceNotifier servicesNotifier = new ProjectRestServiceNotifier(prj);
-        return Lookups.fixed(new Object[] {restSupport, openhook, templates});
+        return Lookups.fixed(new Object[] {restSupport, templates});
     }
     
 }

@@ -60,7 +60,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation;
 import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
-import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.openide.filesystems.FileObject;
 
@@ -78,8 +77,13 @@ public class WebProjectRestSupport extends RestSupport {
     }
 
     public void ensureRestDevelopmentReady() throws IOException {
-        boolean needsRefresh = ! isRestSupportOn();
-        setProjectProperty(REST_SUPPORT_ON, "true");
+        boolean needsRefresh = false;
+        if (! isRestSupportOn()) {
+            needsRefresh = true;
+            setProjectProperty(REST_SUPPORT_ON, "true");
+            new AntFilesHelper(this).initRestBuildExtension();
+        }
+        
         if (ignorePlatformRestLibrary() || ! hasSwdpLibrary()) {
             addSwdpLibrary(new String[] {
                 ClassPath.COMPILE,

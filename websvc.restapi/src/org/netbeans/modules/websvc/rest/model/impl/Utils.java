@@ -222,15 +222,17 @@ public class Utils {
                         //TODO: ELEMENTS_RESOLVED may be sufficient
                         ci.toPhase(Phase.RESOLVED);
                         Document doc = ci.getDocument();
-                        for (Diagnostic d : ci.getDiagnostics()) {
-                            if (Kind.ERROR == d.getKind()) {
-                                try {
-                                    int start = (int) d.getStartPosition();
-                                    int len = (int) d.getEndPosition() - start;
-                                    String snip = doc.getText(start, len);
-                                    result.add(snip);
-                                } catch (BadLocationException ex) {
-                                    continue;
+                        if (doc != null) {
+                            for (Diagnostic d : ci.getDiagnostics()) {
+                                if (Kind.ERROR == d.getKind()) {
+                                    try {
+                                        int start = (int) d.getStartPosition();
+                                        int len = (int) d.getEndPosition() - start;
+                                        String snip = doc.getText(start, len);
+                                        result.add(snip);
+                                    } catch (BadLocationException ex) {
+                                        continue;
+                                    }
                                 }
                             }
                         }
