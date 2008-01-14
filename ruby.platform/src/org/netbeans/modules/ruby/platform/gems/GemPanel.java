@@ -69,6 +69,7 @@ import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.modules.ruby.platform.PlatformComponentFactory;
 import org.netbeans.modules.ruby.platform.RubyPlatformCustomizer;
+import org.netbeans.modules.ruby.platform.Util;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -87,6 +88,8 @@ import org.openide.util.RequestProcessor;
  */
 final class GemPanel extends JPanel implements Runnable {
     
+    private static final String LAST_PLATFORM_ID = "gemPanellastPlatformID"; // NOI18N
+
     static enum TabIndex { UPDATED, INSTALLED, NEW; }
     
     private GemManager gemManager;
@@ -100,14 +103,18 @@ final class GemPanel extends JPanel implements Runnable {
     private boolean fetchingRemote;
     private List<String> remoteFailure;
     
-    private static String lastPlatformID;
-
     public GemPanel(String availableFilter) {
         initComponents();
 
+        RubyPlatform platform = null;
+        String lastPlatformID = Util.getPreferences().get(LAST_PLATFORM_ID, null);
         if (lastPlatformID != null) {
-            platforms.setSelectedItem(RubyPlatformManager.getPlatformByID(lastPlatformID));
+            platform = RubyPlatformManager.getPlatformByID(lastPlatformID);
         }
+        if (platform == null) {
+            platform = RubyPlatformManager.getDefaultPlatform();
+        }
+        platforms.setSelectedItem(platform);
         this.gemManager = getSelectedPlatform().getGemManager();
 
         installedList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
@@ -136,7 +143,7 @@ final class GemPanel extends JPanel implements Runnable {
     }
 
     public @Override void removeNotify() {
-        lastPlatformID = getSelectedPlatform().getID();
+        Util.getPreferences().put(LAST_PLATFORM_ID, getSelectedPlatform().getID());
         super.removeNotify();
     }
     
