@@ -35,8 +35,9 @@ public class BpelChangeProcessor implements GraphChangeProcessor {
 
     private BpelModelUpdater mBpelModelUpdater;
     
-    public BpelChangeProcessor(MapperTcContext mapperTcContext) {
-        mBpelModelUpdater = new BpelModelUpdater(mapperTcContext);
+    public BpelChangeProcessor(BpelModelUpdater bpelModelUpdater) {
+        assert bpelModelUpdater != null;
+        mBpelModelUpdater = bpelModelUpdater;
     }
     
     public void processChanges(final TreePath graphTreePath) {

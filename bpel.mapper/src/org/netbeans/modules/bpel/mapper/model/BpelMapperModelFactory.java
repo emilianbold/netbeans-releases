@@ -122,7 +122,7 @@ public class BpelMapperModelFactory implements MapperModelFactory {
             MapperTcContext mapperTcContext, BpelDesignContext context) {
         //
         BpelChangeProcessor changeProcessor = 
-                new BpelChangeProcessor(mapperTcContext);
+                new BpelChangeProcessor(new BpelModelUpdater(mapperTcContext));
         mapperTcContext.getDesignContextController().
                 setBpelModelUpdateSource(changeProcessor);
         //

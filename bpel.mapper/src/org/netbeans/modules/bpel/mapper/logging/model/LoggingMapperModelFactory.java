@@ -74,7 +74,7 @@ public class LoggingMapperModelFactory extends BpelMapperModelFactory {
             MapperTcContext mapperTcContext, BpelDesignContext context) {
         //
         BpelChangeProcessor changeProcessor = 
-                new BpelChangeProcessor(mapperTcContext);
+                new BpelChangeProcessor(new LoggingBpelModelUpdater(mapperTcContext));
         mapperTcContext.getDesignContextController().
                 setBpelModelUpdateSource(changeProcessor);
         //
