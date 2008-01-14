@@ -3775,9 +3775,13 @@ class JavaCodeGenerator extends CodeGenerator {
 
                 // form loaded
                 if (ev.getChangeType() == FormModelEvent.FORM_LOADED) {
-                    if (formModel.getSettings().getListenerGenerationStyle() == CEDL_MAINCLASS)
-                        listenersInMainClass_lastSet =
-                            formModel.getFormEvents().getCEDLTypes();
+                    if (formModel.getSettings().getListenerGenerationStyle() == CEDL_MAINCLASS) {
+                        if (FormEditor.getFormEditor(formModel).needPostCreationUpdate()) {
+                            listenersInMainClass_lastSet = new Class[0];
+                        } else {
+                            listenersInMainClass_lastSet = formModel.getFormEvents().getCEDLTypes();
+                        }
+                    }
                     continue;
                 }
 
