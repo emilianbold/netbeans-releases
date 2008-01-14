@@ -113,9 +113,9 @@ public class AutoupdateSettings {
         Integer defaultCheckInterval = null;
         if (stillDefault) {
             defaultCheckInterval = parse (Utilities.getCustomCheckIntervalInMinutes ());
-            if (defaultCheckInterval == null) {
-                defaultCheckInterval = EVERY_WEEK;
-            }
+        }
+        if (defaultCheckInterval == null) {
+            defaultCheckInterval = EVERY_WEEK;
         }
         err.log (Level.FINEST, "getPeriod () returns " + getPreferences ().getInt (PROP_PERIOD, defaultCheckInterval));
         return getPreferences ().getInt (PROP_PERIOD, defaultCheckInterval);
