@@ -6,8 +6,8 @@
     <target name="groovy-build">
         <ant dir="../editor"/>
         <ant dir="../grails"/>
-        <ant dir="../grailsproject"/>
         <ant dir="../support"/>
+        <ant dir="../grailsproject"/>
         <ant dir="../groovyproject"/>
         <ant dir="../gsp"/>
         <antcall target="netbeans"/>
@@ -16,8 +16,8 @@
     <target name="groovy-clean">
         <ant dir="../gsp" inheritAll="false" target="clean"/>
         <ant dir="../groovyproject" inheritAll="false" target="clean"/>
-        <ant dir="../support" inheritAll="false" target="clean"/>
         <ant dir="../grailsproject" inheritAll="false" target="clean"/>
+        <ant dir="../support" inheritAll="false" target="clean"/>
         <ant dir="../grails" inheritAll="false" target="clean"/>
         <ant dir="../editor" inheritAll="false" target="clean"/>
         <ant target="clean"/>
