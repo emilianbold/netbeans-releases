@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.websvc.core.client.wizard;
 
 import java.io.File;
@@ -110,53 +109,45 @@ import org.openide.ErrorManager;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileObject;
 
-
 /**
  *
  * @author Peter Williams
  */
 public final class ClientInfo extends JPanel implements WsdlRetriever.MessageReceiver {
-    
+
     private static final String PROP_ERROR_MESSAGE = "WizardPanel_errorMessage"; // NOI18N
-    
     private static final int WSDL_FROM_PROJECT = 0;
     private static final int WSDL_FROM_FILE = 1;
     private static final int WSDL_FROM_URL = 2;
-    
     private static final FileFilter WSDL_FILE_FILTER = new WsdlFileFilter();
     private static String previousDirectory = ""; //NOI18N
-    
     private WebServiceClientWizardDescriptor descriptorPanel;
     private WizardDescriptor wizardDescriptor;
-    
     private boolean settingFields;
     private int wsdlSource;
     private File wsdlTmpFile;
-    
     // properties for 'get from server'
     private WsdlRetriever retriever;
     private String downloadMsg;
-    
     private boolean retrieverFailed = false;
-    
     private Project project;
     private int projectType;
-    
+
     public ClientInfo(WebServiceClientWizardDescriptor panel) {
         descriptorPanel = panel;
-        
+
         this.settingFields = false;
         this.wsdlSource = WSDL_FROM_PROJECT;
         this.wsdlTmpFile = null;
         this.retriever = null;
-        
+
         initComponents();
         jLblClientType.setVisible(false);
         jCbxClientType.setVisible(false);
-        jComboBoxJaxVersion.setModel(new DefaultComboBoxModel(new String[] {ClientWizardProperties.JAX_WS, ClientWizardProperties.JAX_RPC}));
+        jComboBoxJaxVersion.setModel(new DefaultComboBoxModel(new String[]{ClientWizardProperties.JAX_WS, ClientWizardProperties.JAX_RPC}));
         initUserComponents();
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -776,10 +767,8 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         
         retrieverFailed = false;
         retriever = null;
-        if (((projectType != 0 && !Util.isJavaEE5orHigher(project))
-                || (projectType == 0 && jComboBoxJaxVersion.getSelectedItem().equals(ClientWizardProperties.JAX_RPC)))
-                && (wsdlSource != WSDL_FROM_FILE)) {
-            
+        if(jComboBoxJaxVersion.getSelectedItem().equals(ClientWizardProperties.JAX_RPC)
+                &&  (wsdlSource != WSDL_FROM_FILE)){            
             retriever = new WsdlRetriever(this,
                     wsdlSource==WSDL_FROM_PROJECT?jTxtWsdlProject.getText():jTxtWsdlURL.getText().trim());      
             retriever.run();
