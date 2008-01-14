@@ -332,8 +332,6 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
 	    if (ret == JFileChooser.CANCEL_OPTION)
 		return;
 	    String path = fileChooser.getSelectedFile().getPath();
-	    path = FilePathAdaptor.mapToRemote(path);
-	    path = FilePathAdaptor.normalize(path);
 	    // FIXUP: why are baseDir UNIX path when remote?
 	    if (PathPanel.getMode() == PathPanel.REL_OR_ABS)
 		path = IpeUtils.toAbsoluteOrRelativePath(baseDir, path);
@@ -341,6 +339,7 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
 		path = IpeUtils.toRelativePath(baseDir, path);
 	    else
 		path = path;
+	    path = FilePathAdaptor.mapToRemote(path);
 	    path = FilePathAdaptor.normalize(path);
 	    myListEditorPanel.addObjectAction(new LibraryItem.LibFileItem(path));
 	}
