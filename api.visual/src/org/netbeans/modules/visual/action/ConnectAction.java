@@ -84,6 +84,10 @@ public class ConnectAction extends WidgetAction.LockedAdapter {
     public WidgetAction.State mousePressed (Widget widget, WidgetAction.WidgetMouseEvent event) {
         if (isLocked ())
             return WidgetAction.State.createLocked (widget, this);
+        return mousePressedCore (widget, event);
+    }
+
+    protected State mousePressedCore (Widget widget, WidgetMouseEvent event) {
         if (event.getButton () == MouseEvent.BUTTON1 && event.getClickCount () == 1) {
             if (provider.isSourceWidget (widget)) {
                 sourceWidget = widget;
@@ -93,7 +97,7 @@ public class ConnectAction extends WidgetAction.LockedAdapter {
                 assert connectionWidget != null;
                 connectionWidget.setSourceAnchor (decorator.createSourceAnchor (widget));
                 interractionLayer.addChild (connectionWidget);
-                return WidgetAction.State.createLocked (widget, this);
+                return State.createLocked (widget, this);
             }
         }
         return State.REJECTED;

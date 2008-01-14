@@ -70,7 +70,7 @@ public class ExtendedConnectAction extends ConnectAction {
         if ((event.getModifiers () & modifiers) == modifiers) {
             if ((Utilities.getOperatingSystem () & Utilities.OS_MAC) != 0)
                 macLocking = true;
-            return super.mousePressed(widget,event);
+            return super.mousePressedCore(widget,event);
         }
         return State.REJECTED;
     }
