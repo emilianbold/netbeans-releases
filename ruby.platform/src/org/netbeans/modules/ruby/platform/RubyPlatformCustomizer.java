@@ -105,7 +105,6 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
             performPlatformDetection();
             preferences.putBoolean(FIRST_TIME_KEY, false);
         }
-        setAutoDetecting(false);
     }
 
     private void refreshPlatformList() {
