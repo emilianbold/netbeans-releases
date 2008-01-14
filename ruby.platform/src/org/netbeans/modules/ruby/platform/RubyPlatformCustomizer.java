@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.ruby.platform;
 
+import java.awt.Color;
 import java.awt.Dialog;
 import java.awt.EventQueue;
 import java.io.File;
@@ -47,6 +48,7 @@ import java.util.Locale;
 import java.util.prefs.Preferences;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
+import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
@@ -65,7 +67,9 @@ import org.openide.util.RequestProcessor;
 public class RubyPlatformCustomizer extends javax.swing.JPanel {
     
     private static final String LAST_PLATFORM_DIRECTORY = "lastPlatformDirectory"; // NOI18N
-    private static final String FIRST_TIME_KEY = "platform-manager-called-first-time";
+    private static final String FIRST_TIME_KEY = "platform-manager-called-first-time"; // NOI18N
+    
+    private static final Color INVALID_PLAF_COLOR = UIManager.getColor("nb.errorForeground"); // NOI18N
 
     public static void showCustomizer() {
         RubyPlatformCustomizer customizer = new RubyPlatformCustomizer();
@@ -140,15 +144,26 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
 
     private void refreshPlatform() {
         RubyPlatform plaf = (RubyPlatform) platformsList.getSelectedValue();
-        
+
         if (plaf == null) {
             removeButton.setEnabled(false);
             return;
         }
         plfNameValue.setText(plaf.getInfo().getLongDescription());
         plfInterpreterValue.setText(plaf.getInterpreter());
-        gemHomeValue.setText(plaf.getGemManager().getGemDir());
-        gemToolValue.setText(plaf.getGemManager().getGemTool() + " (" + plaf.getInfo().getGemVersion() + ')'); // NOI18N
+        Color color;
+        if (plaf.hasRubyGemsInstalled()) {
+            gemHomeValue.setText(plaf.getGemManager().getGemDir());
+            gemToolValue.setText(plaf.getGemManager().getGemTool() + " (" + plaf.getInfo().getGemVersion() + ')'); // NOI18N
+            color = UIManager.getColor("Label.foreground");
+        } else {
+            color = INVALID_PLAF_COLOR;
+            String notInstalled = NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.rubyGemsNotInstalled");
+            gemHomeValue.setText(notInstalled);
+            gemToolValue.setText(notInstalled);
+        }
+        gemHomeValue.setForeground(color);
+        gemToolValue.setForeground(color);
         removeButton.setEnabled(!plaf.isDefault());
     }
 

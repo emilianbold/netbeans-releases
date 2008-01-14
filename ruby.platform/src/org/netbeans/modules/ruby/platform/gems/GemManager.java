@@ -806,6 +806,9 @@ public final class GemManager {
      *         found.
      */
     public String getGemTool() {
+        if (!platform.hasRubyGemsInstalled()) {
+            return null;
+        }
         if (gemTool == null) {
             String bin = platform.getBinDir();
             if (bin != null) {

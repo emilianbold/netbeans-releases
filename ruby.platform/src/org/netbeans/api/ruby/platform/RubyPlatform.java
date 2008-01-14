@@ -564,6 +564,10 @@ public final class RubyPlatform {
         }
     }
 
+    public boolean hasRubyGemsInstalled() {
+        return info.getGemHome() != null;
+    }
+
     public @Override String toString() {
         return "RubyPlatform[id:" + getID() + ", label:" + getLabel() + ", " + getInterpreter() + "]"; // NOI18N
     }
