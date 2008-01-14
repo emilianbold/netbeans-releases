@@ -200,8 +200,13 @@ public class IEPAttributeTableModel extends AbstractTableModel {
             
             this.fireTableDataChanged();
         }
-        
-        
+    }
+    
+    public void removeRow(PlaceholderSchemaAttribute rowData) {
+        if(this.mAttrList.contains(rowData)) {
+            this.mAttrList.remove(rowData);
+            this.fireTableDataChanged();
+        }
     }
     
     public PlaceholderSchemaAttribute getRowData(int rowIndex) {
@@ -212,4 +217,5 @@ public class IEPAttributeTableModel extends AbstractTableModel {
         }
         return rowData;
     }
+    
 }

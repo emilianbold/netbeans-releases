@@ -6,6 +6,7 @@
 
 package org.netbeans.modules.iep.editor.wizard;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
@@ -166,9 +167,21 @@ public class IEPAttributeConfigurationPanel extends javax.swing.JPanel {
 }//GEN-LAST:event_addButtonActionPerformed
 
     private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
-        // TODO add your handling code here:
-        int rowIndex = mAttributeTable.getSelectedRow();
-        mTableModel.removeRow(rowIndex);
+        List<PlaceholderSchemaAttribute> attrList = new ArrayList<PlaceholderSchemaAttribute>();
+        
+        int[] rows = mAttributeTable.getSelectedRows();
+        for(int i = 0; i < rows.length; i++) {
+            int rowIndex = rows[i];
+            PlaceholderSchemaAttribute attr = mTableModel.getRowData(rowIndex);
+            attrList.add(attr);
+        }
+
+        Iterator<PlaceholderSchemaAttribute> it = attrList.iterator();
+        while(it.hasNext()) {
+            PlaceholderSchemaAttribute attr = it.next();
+            mTableModel.removeRow(attr);
+        }
+        
 }//GEN-LAST:event_deleteButtonActionPerformed
 
     private void moveUpButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveUpButtonActionPerformed
