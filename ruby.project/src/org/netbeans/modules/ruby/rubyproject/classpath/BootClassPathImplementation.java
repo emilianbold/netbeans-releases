@@ -53,10 +53,10 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.PatternSyntaxException;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformProvider;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
@@ -65,6 +65,8 @@ import org.openide.util.WeakListeners;
 
 final class BootClassPathImplementation implements ClassPathImplementation, PropertyChangeListener {
 
+    private static final Logger LOGGER = Logger.getLogger(BootClassPathImplementation.class.getName());
+    
     private static final Pattern GEM_EXCLUDE_FILTER;
     private static final Pattern GEM_INCLUDE_FILTER;
     
@@ -132,10 +134,22 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
 //            if (jp != null) {
                 //TODO: May also listen on CP, but from Platform it should be fixed.
             List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
-            GemManager gemManager = getGemManager();
-            Set<URL> nonGemUrls = gemManager.getNonGemLoadPath();
+            RubyPlatform platform = new RubyPlatformProvider(evaluator).getPlatform();
+            if (platform == null) {
+                LOGGER.severe("Cannot resolve platform for project");
+            }
+
+            if (!platform.hasRubyGemsInstalled()) {
+                LOGGER.fine("Not RubyGems installed, returning empty result");
+                return Collections.emptyList();
+            }
             
-            for (URL url : nonGemUrls) {
+            // the rest of code depend on RubyGems to be installed
+
+            GemManager gemManager = getGemManager();
+            assert gemManager != null : "not null when RubyGems are installed";
+            
+            for (URL url : gemManager.getNonGemLoadPath()) {
                 result.add(ClassPathSupport.createResource(url));
             }
 
