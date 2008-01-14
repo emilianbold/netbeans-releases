@@ -410,23 +410,25 @@ final class TaskListTopComponent extends TopComponent {
         if( null == changeListener ) {
             changeListener = new PropertyChangeListener() {
                 public void propertyChange( PropertyChangeEvent e ) {
-                    if( ((Boolean)e.getNewValue()).booleanValue() ) {
-                        if( null == progress ) {
-                            progress = ProgressHandleFactory.createHandle( 
-                                    NbBundle.getMessage( TaskListTopComponent.class, "LBL_ScanProgress" ), //NOI18N
-                                    new Cancellable() { //NOI18N
-                                        public boolean cancel() {
-                                            taskManager.abort();
-                                            return true;
-                                        }
-                                    });                            
+                    synchronized( this ) {
+                        if( ((Boolean)e.getNewValue()).booleanValue() ) {
+                            if( null == progress ) {
+                                progress = ProgressHandleFactory.createHandle( 
+                                        NbBundle.getMessage( TaskListTopComponent.class, "LBL_ScanProgress" ), //NOI18N
+                                        new Cancellable() { //NOI18N
+                                            public boolean cancel() {
+                                                taskManager.abort();
+                                                return true;
+                                            }
+                                        });                            
+                            }
+                            progress.start();
+                            progress.switchToIndeterminate();
+                        } else {
+                            if( null != progress )
+                                progress.finish();
+                            progress = null;
                         }
-                        progress.start();
-                        progress.switchToIndeterminate();
-                    } else {
-                        if( null != progress )
-                            progress.finish();
-                        progress = null;
                     }
                 }
             };
