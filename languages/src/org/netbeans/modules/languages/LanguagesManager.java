@@ -304,11 +304,11 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
             int pos = selectInPos + increment;
             createSeparator(popup, "SeparatorAfterSelectInPopupAction", pos);
             boolean actionAdded = false;
-            if (l.getFeatureList ().getFeatures("SEMANTIC_USAGE").size() > 0) {
+            //if (l.getFeatureList ().getFeatures("SEMANTIC_USAGE").size() > 0) {
                 actionAdded = true;
                 pos += increment;
                 FileUtil.createData (popup, "org-netbeans-modules-languages-features-GoToDeclarationAction.instance").setAttribute("position", pos);
-            }
+            //}
             if (l.getFeatureList ().getFeatures("INDENT").size() > 0) {
                 actionAdded = true;
                 pos += increment;
