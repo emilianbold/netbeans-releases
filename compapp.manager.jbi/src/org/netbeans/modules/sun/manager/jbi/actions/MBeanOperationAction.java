@@ -111,7 +111,6 @@ public class MBeanOperationAction extends AbstractAction {
                             componentName, mBeanKey, operationName,
                             new Object[]{}, new String[]{},
                             AppserverJBIMgmtController.SERVER_TARGET, null);
-                    Thread.sleep(5000);
 
                     Lookup lookup = activatedNodes[0].getLookup();
                     final Refreshable refreshable =
@@ -130,8 +129,6 @@ public class MBeanOperationAction extends AbstractAction {
                             }
                         });
                     }
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
                 } catch (ManagementRemoteException e) {
                     NotifyDescriptor d = new NotifyDescriptor.Message(
                             e.getMessage(),
