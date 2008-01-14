@@ -96,10 +96,12 @@ public class InputPanel<T extends WSDLComponent> extends SectionInnerPanel {
         tokenCombo.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         signedChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         endorsingChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+//        targetOverrideChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
 
         addImmediateModifier(tokenCombo);
         addImmediateModifier(signedChBox);
         addImmediateModifier(endorsingChBox);
+//        addImmediateModifier(targetOverrideChBox);
 
         inSync = true;
         tokenCombo.removeAllItems();
@@ -248,9 +250,9 @@ public class InputPanel<T extends WSDLComponent> extends SectionInnerPanel {
         tokenCombo.setEnabled(securityEnabled && !secConversation && !bindingScopeTokenPresent);
         tokenComboLabel.setEnabled(securityEnabled && !secConversation && !bindingScopeTokenPresent);
         
-        targetOverrideChBox.setEnabled(securityEnabled && !isSSL && !PolicyModelHelper.isSharedPolicy(input));
+//        targetOverrideChBox.setEnabled(securityEnabled && !isSSL && !PolicyModelHelper.isSharedPolicy(input));
         targetsButton.setEnabled(securityEnabled && !isSSL);
-
+        
         boolean tokenSelected = !ComboConstants.NONE.equals((String)tokenCombo.getSelectedItem());
         signedChBox.setEnabled(securityEnabled && tokenSelected && !secConversation && !bindingScopeTokenPresent);
         endorsingChBox.setEnabled(securityEnabled && tokenSelected && 
@@ -270,7 +272,6 @@ public class InputPanel<T extends WSDLComponent> extends SectionInnerPanel {
         targetsButton = new javax.swing.JButton();
         signedChBox = new javax.swing.JCheckBox();
         endorsingChBox = new javax.swing.JCheckBox();
-        targetOverrideChBox = new javax.swing.JCheckBox();
 
         tokenComboLabel.setLabelFor(tokenCombo);
         org.openide.awt.Mnemonics.setLocalizedText(tokenComboLabel, org.openide.util.NbBundle.getMessage(InputPanel.class, "LBL_tokenComboLabel")); // NOI18N
@@ -289,8 +290,6 @@ public class InputPanel<T extends WSDLComponent> extends SectionInnerPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(endorsingChBox, org.openide.util.NbBundle.getMessage(InputPanel.class, "LBL_Token_Endorsing")); // NOI18N
         endorsingChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-
-        org.openide.awt.Mnemonics.setLocalizedText(targetOverrideChBox, org.openide.util.NbBundle.getMessage(InputPanel.class, "LBL_OverrideTargetDefaults")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -311,10 +310,8 @@ public class InputPanel<T extends WSDLComponent> extends SectionInnerPanel {
                             .add(signedChBox))
                         .add(216, 216, 216))
                     .add(layout.createSequentialGroup()
-                        .add(targetOverrideChBox)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(targetsButton)
-                        .addContainerGap())))
+                        .addContainerGap(327, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -328,9 +325,7 @@ public class InputPanel<T extends WSDLComponent> extends SectionInnerPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(endorsingChBox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(targetOverrideChBox)
-                    .add(targetsButton))
+                .add(targetsButton)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -361,7 +356,6 @@ public class InputPanel<T extends WSDLComponent> extends SectionInnerPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox endorsingChBox;
     private javax.swing.JCheckBox signedChBox;
-    private javax.swing.JCheckBox targetOverrideChBox;
     private javax.swing.JButton targetsButton;
     private javax.swing.JComboBox tokenCombo;
     private javax.swing.JLabel tokenComboLabel;

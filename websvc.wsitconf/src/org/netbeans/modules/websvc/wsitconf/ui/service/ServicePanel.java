@@ -443,7 +443,6 @@ public class ServicePanel extends SectionInnerPanel {
             profileInfoField.setEnabled(secSelected);
             profConfigButton.setEnabled(secSelected);
 
-            boolean storeConfigRequired = true;
             boolean keyStoreConfigRequired = true;
             boolean trustStoreConfigRequired = true;
             boolean validatorsRequired = true;
@@ -460,7 +459,7 @@ public class ServicePanel extends SectionInnerPanel {
                 devDefaultsChBox.setEnabled(defaultsSupported);
                 
                 boolean isSSL = ProfilesModelHelper.isSSLProfile(secProfile);
-                if (isSSL) {
+                if ((isSSL) || ComboConstants.PROF_KERBEROS.equals(secProfile)) {
                     keyStoreConfigRequired = false;
                     trustStoreConfigRequired = false;
                 }
@@ -498,7 +497,7 @@ public class ServicePanel extends SectionInnerPanel {
                 devDefaultsChBox.setEnabled(false);
             }
                   
-            secAdvancedButton.setEnabled(secSelected);
+            secAdvancedButton.setEnabled(secSelected && !defaults);
             
             stsChBox.setEnabled(secSelected && !isFromJava && stsAllowed);
 
@@ -512,8 +511,8 @@ public class ServicePanel extends SectionInnerPanel {
             }
             
             validatorsButton.setEnabled(secSelected && !gf && !defaults && validatorsRequired);
-            keyButton.setEnabled(storeConfigRequired && secSelected && keyStoreConfigRequired && !defaults);
-            trustButton.setEnabled(storeConfigRequired && secSelected && trustStoreConfigRequired && !defaults);
+            keyButton.setEnabled(secSelected && keyStoreConfigRequired && !defaults);
+            trustButton.setEnabled(secSelected && trustStoreConfigRequired && !defaults);
         } else { // no wsit fun, there's access manager security selected
             profileComboLabel.setEnabled(false);
             profileCombo.setEnabled(false);
