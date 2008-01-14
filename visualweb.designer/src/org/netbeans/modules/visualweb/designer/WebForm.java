@@ -80,7 +80,6 @@ import org.netbeans.spi.palette.PaletteController;
 import org.openide.ErrorManager;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.UserDataHandler;
 
 
 /**
@@ -595,6 +594,8 @@ public class WebForm implements Designer {
 //        }
 //    }
 
+    private static Map<Element, Map<WebForm, WeakReference<CssBox>>> element2webformMap = new WeakHashMap<Element, Map<WebForm, WeakReference<CssBox>>>(500);
+    
     public void setCssBoxForElement(Element element, CssBox box) {
         // XXX Copied from the original impl (in RaveElement).
         Node parent = element.getParentNode();
@@ -614,7 +615,8 @@ public class WebForm implements Designer {
             webform2box = new WeakHashMap<WebForm, WeakReference<CssBox>>();
         }
         webform2box.put(this, new WeakReference<CssBox>(box));
-        element.setUserData(KEY_CSS_BOX_MAP, webform2box, CssBoxDataHandler.getDefault());
+//        element.setUserData(KEY_CSS_BOX_MAP, webform2box, CssBoxDataHandler.getDefault());
+        element2webformMap.put(element, webform2box);
     }
     
     public CssBox getCssBoxForElement(Element element) {
@@ -624,7 +626,8 @@ public class WebForm implements Designer {
         if (element == null) {
             return null;
         }
-        Map<WebForm, WeakReference<CssBox>> webform2box = (Map<WebForm, WeakReference<CssBox>>)element.getUserData(KEY_CSS_BOX_MAP);
+//        Map<WebForm, WeakReference<CssBox>> webform2box = (Map<WebForm, WeakReference<CssBox>>)element.getUserData(KEY_CSS_BOX_MAP);
+        Map<WebForm, WeakReference<CssBox>> webform2box = element2webformMap.get(element);
 //        return webform2box == null ? null : webform2box.get(this);
         WeakReference<CssBox> cssBoxWRef = webform2box == null ? null : webform2box.get(this);
         return cssBoxWRef == null ? null : cssBoxWRef.get();
@@ -2906,17 +2909,17 @@ public class WebForm implements Designer {
     }
     
     
-    private static class CssBoxDataHandler implements UserDataHandler {
-        private static final CssBoxDataHandler INSTANCE = new CssBoxDataHandler();
-        
-        public static CssBoxDataHandler getDefault() {
-            return INSTANCE;
-        }
-        
-        public void handle(short operation, String key, Object data, Node src, Node dst) {
-            // No op.
-        }
-    } // End of CssBoxDataHandler.
+//    private static class CssBoxDataHandler implements UserDataHandler {
+//        private static final CssBoxDataHandler INSTANCE = new CssBoxDataHandler();
+//        
+//        public static CssBoxDataHandler getDefault() {
+//            return INSTANCE;
+//        }
+//        
+//        public void handle(short operation, String key, Object data, Node src, Node dst) {
+//            // No op.
+//        }
+//    } // End of CssBoxDataHandler.
     
     
     void paintDesignerDecorations(Graphics2D g) {
